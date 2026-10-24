@@ -257,6 +257,7 @@ function step(direction: -1 | 1) {
         <StudentMetrics
           v-if="metrics"
           :metrics="metrics"
+          show-count
         /><p
           v-if="metrics"
           class="web-caption"

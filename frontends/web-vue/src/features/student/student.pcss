@@ -1,4 +1,7 @@
 .student-page {
+  --student-current-min-height: 21.875rem;
+  --student-metric-min-height: 9.1875rem;
+  --student-metric-narrow-min-height: 10.1875rem;
   --student-attendance-column-width: 4.25rem;
   --student-attendance-subject-height: 9rem;
   --student-chart-height: 15rem;
@@ -184,6 +187,7 @@
   gap: var(--space-3);
 }
 .student-current {
+  min-block-size: var(--student-current-min-height);
   padding: var(--space-6);
   border: var(--web-border) solid var(--color-border-accent);
   border-radius: var(--radius-2xl);
@@ -191,6 +195,12 @@
 }
 .student-current > .web-button {
   inline-size: 100%;
+}
+.student-current > .web-button:first-of-type {
+  margin-block-start: auto;
+}
+.student-featured-content {
+  gap: var(--space-2);
 }
 .student-lesson {
   gap: var(--space-3);
@@ -275,7 +285,11 @@
 .student-metrics.is-compact {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
+.student-metrics.has-count {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
 .student-metric {
+  min-block-size: var(--student-metric-min-height);
   padding: var(--space-4);
   border: var(--web-border) solid var(--color-border-default);
   border-radius: var(--radius-2xl);
@@ -284,6 +298,7 @@
 }
 .student-metric dt {
   order: 2;
+  margin-block-start: auto;
 }
 .student-metric dd {
   margin: 0;
@@ -421,8 +436,18 @@
   .student-trend {
     grid-template-columns: minmax(0, 1fr);
   }
-  .student-metrics {
+  .student-metrics,
+  .student-metrics.has-count {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 26.5625rem) {
+  .student-metrics:not(.is-compact),
+  .student-metrics.has-count {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .student-metric {
+    min-block-size: var(--student-metric-narrow-min-height);
   }
 }
 @media (max-width: 40rem) {

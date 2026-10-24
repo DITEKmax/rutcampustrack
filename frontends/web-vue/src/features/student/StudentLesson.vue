@@ -18,7 +18,26 @@ const statuses = {
       'is-cancelled': lesson.status === 'CANCELLED',
     }"
   >
-    <div class="student-lesson-main">
+    <div
+      v-if="featured"
+      class="web-stack student-featured-content"
+    >
+      <h3>{{ lesson.subject.name }}</h3>
+      <p>Тип: {{ lessonTypeLabel(lesson.subject.type) }}</p>
+      <p>Время: {{ lesson.startsAt.slice(0, 5) }}–{{ lesson.endsAt.slice(0, 5) }}</p>
+      <p v-if="lesson.room.current">
+        Аудитория: {{ lesson.room.current }}
+      </p>
+      <p v-if="lesson.room.changeState === 'CHANGED'">
+        Аудитория изменена<template v-if="lesson.room.previous">
+          : раньше {{ lesson.room.previous }}
+        </template>
+      </p>
+    </div>
+    <div
+      v-else
+      class="student-lesson-main"
+    >
       <p class="student-lesson-time">
         {{ lesson.startsAt.slice(0, 5) }}–{{ lesson.endsAt.slice(0, 5) }}
       </p>

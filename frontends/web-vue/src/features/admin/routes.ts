@@ -35,7 +35,7 @@ export const adminRoutes: RouteRecordRaw[] = [
     path: '/admin/map',
     name: 'admin-map',
     component: () => import('./MapPage.vue'),
-    meta: { label: 'Карта', requiredRoles: ['ADMIN'] },
+    meta: { label: 'Схемы', requiredRoles: ['ADMIN'] },
   },
   {
     path: '/admin/attendance',

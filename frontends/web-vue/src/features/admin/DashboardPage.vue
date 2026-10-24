@@ -178,7 +178,6 @@ onBeforeUnmount(() => live?.stop());
                   {{ activity.summary.metrics[code].numerator }} /
                   {{ activity.summary.metrics[code].denominator }}
                 </p><p class="web-caption">
-                  {{ adminActivityDelta(activity.summary.metrics[code], code).text }} ·
                   {{ adminActivityDelta(activity.summary.metrics[code], code).description }}
                 </p>
               </template>

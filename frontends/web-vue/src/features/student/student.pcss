@@ -1,4 +1,6 @@
 .student-page {
+  --student-attendance-column-width: 4.25rem;
+  --student-attendance-subject-height: 9rem;
   --student-chart-height: 15rem;
   --student-metric-min-width: 8rem;
   --student-lesson-time-width: 7rem;
@@ -6,6 +8,21 @@
   --student-detail-width: 24rem;
   min-inline-size: 0;
 }
+.student-attendance-scroll, .student-table-scroll { overflow: auto; min-inline-size: 0; border: var(--web-border) solid var(--color-border-subtle); border-radius: var(--radius-xl); }
+.student-attendance-table { border-collapse: collapse; min-inline-size: 100%; font-size: var(--font-size-micro); }
+.student-attendance-table th, .student-attendance-table td { border: var(--web-border) solid var(--color-border-subtle); min-inline-size: var(--student-attendance-column-width); text-align: center; padding: var(--space-2); }
+.student-attendance-table thead { background: var(--color-surface-raised); }
+.student-attendance-subject { display: block; writing-mode: vertical-rl; rotate: 180deg; block-size: auto; min-block-size: var(--student-attendance-column-width); inline-size: var(--student-attendance-subject-height); text-align: start; margin: auto; padding: var(--space-3); }
+.student-attendance-table th .web-caption { display: block; margin-block-start: var(--space-2); }
+.student-mark-button { border: 0; font-size: var(--font-size-dense); }
+.student-mark-button:hover, .student-mark-button:focus-visible { outline: var(--web-border) solid var(--color-border-focus); outline-offset: var(--space-1); }
+.student-table small { display: block; }
+.student-subject-detail { padding: var(--space-4); }
+.student-ranking-list { list-style: none; padding: 0; margin: 0; display: grid; gap: var(--space-2); }
+.student-ranking-list li { display: flex; align-items: start; justify-content: space-between; gap: var(--space-4); padding: var(--space-2); }
+.student-ranking-list .is-self { background: var(--color-accent-soft); border-radius: var(--radius-md); }
+.student-auto-edge { display: block; block-size: var(--web-border); }
+.student-history { display: flex; gap: var(--space-2); flex-wrap: wrap; }
 .student-dashboard-pair {
   display: grid;
   grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);

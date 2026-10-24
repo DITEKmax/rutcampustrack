@@ -1,8 +1,8 @@
 # Приёмка ролей — 2026-10-24
 
 Промежуточный срез существующего PR3. Собранный frontend revision
-`3f5852b9524245e98b16110b8fb4fde4bd68f389`; исходный знаменатель117 active
-сохранён. **Implemented115/117 (98,29%); locally verified111/117 (94,87%).**
+`c3c08a935c223f1964a9913e299ae9e4a8d13026`; исходный знаменатель117 active
+сохранён. **Implemented116/117 (99,15%); locally verified112/117 (95,73%).**
 Реализация означает принятый после независимого review исходный код.
 Локальная проверка означает достаточное подтверждение пользовательского действия
 на настоящем изолированном backend вместе с адресными проверками поведения.
@@ -15,7 +15,7 @@
 | STUDENT | 16 | 16/16 (100%) | 16/16 (100%) |
 | HEADMAN | 38 | 38/38 (100%) | 38/38 (100%) |
 | TEACHER | 8 | 8/8 (100%) | 8/8 (100%) |
-| ADMIN | 34 | 32/34 (94,12%) | 28/34 (82,35%) |
+| ADMIN | 34 | 33/34 (97,06%) | 29/34 (85,29%) |
 
 ## Что подтверждено
 
@@ -39,7 +39,7 @@ ABSENT/auto_scheduler → PRESENT/late_checkin. Реальный STOMP вызв�
 reads в двух открытых студентских представлениях: решение и отметка появились
 без refresh, navigation, injected events или новой команды студента. Focused
 mark остался тем же DOM. Metadata53, весь64, отметка12 и остальные участники53
-не изменились. Положительная геоотметка64 остаётся отдельным gate.
+не изменились. Положительная GEO15/64 позже принята отдельно; её native receipts доступны в PROGRESS.
 
 HEADMAN38: журнал и отдельные отметки/audit/geo-block, отмена/восстановление/
 перенос/аудитория, очередь и решения/вложения, состав/помощники/CAS/revoke,
@@ -52,7 +52,7 @@ PDF через реальный LibreOffice. Старое воспроизвед
 TEACHER8 приняты ранее: назначенная группа **и** назначенный предмет, только
 разрешённые чтение/экспорт. Новых прав преподавателя не добавлено.
 
-ADMIN28 подтверждены на настоящем стенде: dashboard/activity, реестры и фильтры,
+ADMIN29 подтверждены на настоящем стенде: dashboard/activity, реестры и фильтры,
 создание/редактирование/роль/перевод/архивация/восстановление пользователя,
 recovery, группы/староста/история/архивация/восстановление, семестровые операции
 кроме активации, схемы кроме final delete, посещаемость и экспорты.
@@ -62,22 +62,21 @@ recovery, группы/староста/история/архивация/вос
 Переименование открытой группы использует актуальное имя при последующей
 архивации; восстановлено исходное имя и состояние own fixture.
 
-## Шесть оставшихся action gates
+## Пять оставшихся action gates
 
 | Action | Source | Недостающее подтверждение / зависимость |
 |---|---|---|
 | ACT-ADMIN-ACCESS | implemented | Настоящая запись/отзыв прав. Read-only USERS_VIEW-only lookup и cancel/draft проверены; попытка отдельного privileged fixture отклонена approval review и не выполнялась. |
-| ACT-ADMIN-PROMOTE | implemented | Actual latest completed SPRING отсутствует, own3 preview409; legacy1 typeNULL сохранён. Правило created-after-cutoff подтверждено source, положительного stand witness ещё нет. |
-| ACT-ADMIN-SEMESTER-ACTIVATE | implemented | Временная активация с восстановлением исходного active2 требует согласованного исключительного окна стенда. |
+| ACT-ADMIN-SEMESTER-ACTIVATE | implemented | Готовится отдельный synthetic realAuth стенд, без изменения mainactive2/снимков основного стенда. |
 | ACT-ADMIN-REGENERATE-PASSWORD | implemented | FULL/self и unknown-result сценарий own8 ожидает ответ Q-ENV-003 после отказа approval review;8 заморожен. |
-| ACT-ADMIN-MAP-DELETE | blocked | Whole-version/BYTEA purge подготовлен отдельно; formatter/HTTP PostgreSQL/regression/build не запускались после отказа approval review, Q-ENV-004. |
+| ACT-ADMIN-MAP-DELETE | implemented | Whole-version/BYTEA purge, nullable scope, API+WEB reviewed и объединённые сборки PASS. HTTP/PostgreSQL использует Auth stub; full actual Auth+WEB ещё NOT RUN. Основной Academic950 не обновлён. |
 | ACT-ADMIN-GROUP-FINAL-DELETE | blocked | Q-PROD-004: судьба membership и grants участников. Аккаунты не удаляются; решение владельца не выдумывается. |
 
 Проценты не включают глобальное завершение поставки: пока остаются активный
 Angular, подготовка Vue image/static serving и переключение build/oracle wiring,
 сборка итоговой runtime HTML-галереи и итоговые проверки изменённых границ.
 Удаление Angular последует после замены принятых возможностей. Эти задачи
-нельзя скрыть за115/117. CI/Coverage/Security/OpenAPI **PAUSED**, не PASS.
+нельзя скрыть за116/117. CI/Coverage/Security/OpenAPI **PAUSED**, не PASS.
 
 ## Независимое review и настоящие artifacts
 
@@ -108,13 +107,4 @@ Shipping preparation original4445 → root820d8fe99 independently reviewed PASS:
 
 Actual shipping images/inner nginx checks now PASS atsourcea813; initialPNG403 и VFS/disk incident сохранены в [shipping checkpoint](SHIPPING-CHECKPOINT-20261024.md). Outer wiring/Angular removal остаются. Added ADMIN24 render gallery exact634cd и real canonical home FULL1→dashboard/USERS_VIEW17→users, no access writes.
 
-Actual PROMOTE admission update: completedSPRING=null, own3preview409; legacy1(2026Feb-Jun) has typeNULL, active2AUTUMN and future4SPRING. The source created-after-cutoff rule is not an actual current stand witness. No valid seed/promotion emitted/executed; new synthetic prerequisite is being assessed with existing rows unchanged.
-
-
-PROMOTE input packetbf13b7aa independently source-reviewed PASS. Actual seed is
-NOT RUN: pre-code SyntaxError then automatic approval rejection before command
-execution; no SQL attempt/namespace/intent. Q-ENV-006 requests exact3 synthetic
-historical inputs and ordinary UI run. Existing rows remain unchanged. This does
-not close ACT-ADMIN-PROMOTE. Clock snapshot remains separately blocked Q-ENV-005.
-
-NativeGEO64 теперьlocallyverified: [пакет](../../validation/web-vue-pr3/checkpoints/native-geo-20261024/acceptance.json), source1aea/readonlycopy43b7. ONEPOST200→PRESENT/STUDENT_GEO; независимыйpostguard8/8 сохраняетprotected53/foreign64/occ45r1/main13. Тестовыйbrowserproviderявносимулирован. Student16/16; остаются6ADMINgates. QENV005не требуется, snapshotне запускался.
+PROMOTE принят после явного Q-ENV-006: один UI200, курс1→2, ровно1ledger, повторный preview ALREADY_PROCESSED. Own6 архивирована обычным API, цикл5/ledger сохранены; активный2 не менялся. [Приёмка, квалификации фоновых изменений и cleanup](../../validation/web-vue-pr3/checkpoints/promotion-map-20261024/promotion-acceptance.json).

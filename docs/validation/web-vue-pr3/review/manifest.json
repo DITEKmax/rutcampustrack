@@ -278,5 +278,35 @@
     "path": "mobile-png-ROOT-REVIEW-4042d1878.md",
     "original_path": "Root independent frozen-blob standard-library CRC verification",
     "sha256": "2950316c65f4e635cca85ff1bb592db6ee21997141270b59cc3480de23cd3e4b"
+  },
+  {
+    "path": "map-REVIEW-0100dd7c.md",
+    "original_path": "/workspace/rct-pr3-review/map-whole-delete/REVIEW-0100dd7c.md",
+    "sha256": "d6ff36891975d2aa7c45ac6ee451c92ea6d8bef161de13ce41c9ad1ec2491ed9",
+    "originalSha256": "d6ff36891975d2aa7c45ac6ee451c92ea6d8bef161de13ce41c9ad1ec2491ed9"
+  },
+  {
+    "path": "map-RECHECK-6839fa54c.md",
+    "original_path": "/workspace/rct-pr3-review/map-whole-delete/RECHECK-6839fa54c.md",
+    "sha256": "ac97f47cec5f3b31d3646bf799d3c69d393e02c282cdbabbf3f21ef671949f48",
+    "originalSha256": "ac97f47cec5f3b31d3646bf799d3c69d393e02c282cdbabbf3f21ef671949f48"
+  },
+  {
+    "path": "map-RECHECK-1fe1588d.md",
+    "original_path": "/workspace/rct-pr3-review/map-whole-delete/RECHECK-1fe1588d.md",
+    "sha256": "204f0bc276f854520aa91fe71d00a75b245ee0d42fa065a551e939cc2d950aff",
+    "originalSha256": "204f0bc276f854520aa91fe71d00a75b245ee0d42fa065a551e939cc2d950aff"
+  },
+  {
+    "path": "map-web-REVIEW-a36ab626-85d801b9.md",
+    "original_path": "/workspace/rct-pr3-review/web-map/REVIEW-a36ab626-85d801b9.md",
+    "sha256": "22181e607e43a0e1118a57baf0164a02829dcc652c81971bf777447ff74d40f0",
+    "originalSha256": "22181e607e43a0e1118a57baf0164a02829dcc652c81971bf777447ff74d40f0"
+  },
+  {
+    "path": "publication-REVIEW-promotion-map-c3c08.md",
+    "original_path": "/workspace/rct-pr3-review/publication/REVIEW-promotion-map-c3c08.md",
+    "sha256": "7a862bc60f395afd78614557d1281937458887988f922e99bcabc8b0b54d8add",
+    "originalSha256": "7a862bc60f395afd78614557d1281937458887988f922e99bcabc8b0b54d8add"
   }
 ]

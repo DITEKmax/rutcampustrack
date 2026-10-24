@@ -160,25 +160,46 @@ Directory history/filter uses archive lookup, create-user picker keeps default.
 PWA/TMA omitted flag stays active-only. No new mobile page or permission widening.
 
 
-## API-006 — whole-scheme map final deletion (implementation in progress)
+## API-006 — whole-scheme map final deletion (source accepted, runtime pending)
 
-Canonical owner decision2026-10-02 already authorizes deleting all scheme versions
-and PNG/SVG bytes with preview/password proof. Current format=null endpoint only
-cleared a pointer; whole-chain inspection confirms there is no hidden file GC.
-Approved compatible fix keeps existing routes/request/result/granular permissions,
-Auth confirmation/catalog lock and durable receipts. All-format preview counts
-and hashes the whole version/slot/asset graph, including orphan retained history;
-old narrow digest cannot authorize wider deletion. Within one PostgreSQL transaction
-it removes only owned versions/format rows/BYTEA assets, preserves floor/building/
-usage inventory and receipts, and rolls back on failure. Internal additive high-water
-version counter prevents reusing old metadata URLs after reupload. Exact replay
-cannot delete fresh content. Selected-format availability branch is preserved.
+Canonical owner decision2026-10-02 already authorizes all scheme versions and
+PNG/SVG bytes with preview/password proof. Source0100+6839+1fe and shared APIa36/
+WEB85 are integrated in rootc3c08a935; independent backend and combined WEB/API
+reviews PASS. Existing routes/request/result/granular permissions/Auth proof/
+catalog lock/durable receipt remain. format=null preview hashes the complete
+owned graph, including orphan history; old narrow digest cannot authorize it.
+One PostgreSQL transaction removes owned versions/format rows/BYTEA assets,
+preserves building/floor/usage/receipts and rolls back on failure. Additive active
+Academic FlywayV13 high-water prevents metadata URL reuse after reupload;
+exact replay cannot delete a new version. Explicit PNG/SVG keeps the existing
+selected-format meaning.
 
-PWA/TMA: existing DTO shapes remain; all-format deletion now implements the already
-agreed meaning, preview totals become exact for the full graph. No new mobile page.
-Real HTTP/PostgreSQL multi-version/equal-hash other-floor, stale/replay/reupload and
-forced rollback cases plus independent review are required before acceptance.
-No production migration/deletion; synthetic resources only. Web final-scheme
-operation must send format=null, not substitute floor inventory deletion.
+Optional nullable preview field deletionScope: ALL_VERSIONS for format=null,
+CURRENT_FORMAT for an explicit format. Old missing/null responses remain readable;
+they do not enable whole deletion in WEB. Non-null unknown or format-mismatched
+values are rejected by the shared adapter. Actual OpenAPI3.1 schema includes
+literal JSON null in its enum; generated TypeScript allows null. Scope UI/replay
+keeps the original operation identity and requires explicit password confirmation;
+no automatic retry or fresh key after an unknown result.
 
-Current runtime checkpoint2026-10-24: immutable Authf3c03bd81 and Academic950e621b0 supersede earlier build artifacts above. Actual USERS_VIEW-only17 sees safe archived option id/name/archived, while protected group profile remains403. Web admin source independently accepted32/34; FULL/self credential-generation runtime remains Q-ENV-003, not complete. Map whole-delete work remains separate uncommitted WIP: scoped formatter/tests/JAR NOT RUN after automatic approval rejection, Q-ENV-004.
+PWA/TMA existing AdminMapScreen passes explicit format and keeps previous
+behavior; the additive field is ignored there. No new mobile whole-delete page.
+Shared client compatibility and strict WEB/PWA/TMA builds PASS. New WEB action
+was not silently added to mobile.
+
+Verification: real HTTP/PostgreSQL3 whole-graph/stale/replay/reupload/rollback
+cases + one selected-format regression PASS;4 scope/snapshot business cases and
+OpenAPI nullable corpus11 PASS, client16 and WEBstate12 PASS; Academic-only types
+check and immutable bootJar PASS. Backend IT explicitly stubs remote Auth password
+confirmation, so it is not a full Auth+WEB runtime acceptance. First migration-path
+failure and initial nullable-enum P2 remain recorded alongside passing corrections.
+Final immutable Academic1fe JAR SHA256
+`a433178685a4a9cf421ab949fc699b5efaf03fe91c50d3917c1655bfca24cbe2`.
+Main stand stays Academic950; no rollout, stand map deletion or production migration.
+Separate synthetic realAuth lane is in preparation for actual WEB acceptance.
+
+[Backend review](../../validation/web-vue-pr3/review/map-REVIEW-0100dd7c.md),
+[nullable recheck](../../validation/web-vue-pr3/review/map-RECHECK-1fe1588d.md),
+[combined API/WEB review](../../validation/web-vue-pr3/review/map-web-REVIEW-a36ab626-85d801b9.md).
+Original detailed receipts remain in /tmp/map-whole-delete-* and /tmp/map-scope-null-*;
+[source/build checkpoint](../../validation/web-vue-pr3/checkpoints/promotion-map-20261024/combined-frontends-build.json).

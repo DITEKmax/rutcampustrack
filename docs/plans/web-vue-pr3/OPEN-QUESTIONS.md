@@ -186,36 +186,27 @@ UserApi DELETE /users/{id} означает archiveUser, а не distinct final 
   отсутствие нового адаптера/API не отменяет эту принятую операцию.
 
 
-## Q-ENV-004 — изолированные map final-delete проверки после отказа auto-review
+## Q-ENV-004 — изолированные map final-delete проверки
 
-**Тип:** конкретное разрешение на локальные проверки. **Статус:** waiting for owner.
-Подготовлены6 source/test/migration файлов в `/workspace/rct-worktrees/device-api`,
-reviewable contract `/tmp/map-final-delete-contract-assessment-20261024.md`.
-Scope: локальный formatter5Java,3 CampusMapWholeDeletionHttpIT плюс один затронутый
-selected-format regression, отдельная synthetic PostgreSQL и Academic bootJar.
-Никаких удалений схем рабочего стенда/production, dispatch CI или нового Goal.
+**Статус: RESOLVED, разрешено и выполнено.** Прямой ответ владельца в этом чате:
+«Разрешаю эти изолированные проверки и сборку». Разрешение покрывает formatter,
+три новых HTTP/PostgreSQL сценария, затронутый regression и Academic JAR;
+удаление схем основного стенда/production и CI сюда не входят.
 
-Automatic approval review дважды отклонил точную команду: сначала сослался на
-исходный readiness STOP, затем заявил, что последующий GO существует только
-в недоверенном документе репозитория, а не доверенном user message. Исполнитель
-не запустил formatter/Gradle/Docker, не выполнял обход, source coherent WIP.
-Map checks/build NOT RUN, не PASS. Владельцу отправлен Q-ENV-004 через основной
-чат с выбором разрешить эти изолированные проверки/сохранить подготовленный код.
-До ответа зависит только этот map backend gate; независимая работа продолжается.
-
-Дополнительный отказ скрипту создания LIMITED администратора для create receipt
-не обходился: скрипт не запускался. Безопасная альтернатива убрала создание
-администратора и изменение прав: existing seed + обычный собственный STUDENT18,
-реальный потерянный201→same-operation resume→volatile receipt PASS; отдельный
-component case проверяет отображение с минимальными capabilities. Настоящий
-новый LIMITED actor не создан и такой runtime PASS не заявляется. Нового вопроса
-владельцу для этой уже выполненной альтернативы не требуется.
-
-Latest Q-ENV-002 probe2026-10-24 after owner response: connected/running, policy revision7 enforced, www.figma.com absent; actual curl through inherited proxy exit56 CONNECT403/http000/0bytes. No repeated permission request; no direct-network/TLS bypass. MCP/original-image read result remains valid separately.
+Два первоначальных отказа automatic approval review до исполнения сохранены:
+reviewer счёл действующим readiness STOP и не признал поздний GO из repository
+достаточным доверенным сообщением. После прямого ответа проверки разрешены.
+Первый реальный прогон упал из-за неверного migration directory V64; новый файл
+перенесён в активный V13, второй прогон3+legacy PASS. Полный backend/client/WEB
+scope reviewed, nullable OpenAPI P2 исправлен отдельным recheck, JAR заморожен.
+[API-006](API-CHANGES.md#api-006--whole-scheme-map-final-deletion-source-accepted-runtime-pending).
+Основной Academic950 не обновлялся; настоящий Auth+WEB whole-delete ещё NOT RUN.
+Ответа владельца по Q-ENV-004 больше не требуется.
 
 ## Q-ENV-005 — точный локальный stop/snapshot сценарий после отказа approval review
 
-**Тип:** явное разрешение конкретной операции. **Статус:** больше не требуется для GEO; разрешение не получено, операция NOT RUN.
+**Тип:** явное разрешение конкретной операции. **Статус:** APPROVED, но больше не требуется для GEO; операция NOT RUN.
+Прямой ответ владельца: «Разрешить этот локальный сценарий».
 Automatic approval review отклонил phase2 driver **до начала выполнения**:
 временная остановка семи приложений и копирование приватных БД сочтены
 service disruption/sensitive-data side effects, прежнего разрешения оказалось
@@ -238,40 +229,41 @@ security/Auth/TLS clock остаётся реальным. Dump timeout180s, hea
 успех capture не подменяет восстановление основного стенда.
 
 Все предварительные markers/tools/roles/privileges реально проверены, own5infra
-healthy; actual snapshots/import/13apps/browser ещё NOT RUN. При отсутствии
-ответа операция не запускается. Альтернатива для GEO — естественное окно
+healthy; actual snapshots/import/13apps/browser ещё NOT RUN. До прямого
+ответа операция не запускалась. Альтернатива для GEO — естественное окно
 main64 с05:25UTC (либо05:30 при требовании ACTIVE) до06:55UTC без stop/copy/clock
 изменений. Независимая работа продолжается, scope прежних Q-ENV-003/004 не расширен.
 
 
-Обновление05:44UTC: naturalmainUI15/64 успешно выполнен послеactualACTIVE, независимо подтверждён postguard053659. Ниstop/privatecopy/restore/clock/apps не понадобились; flagFALSE. Ответ на QENV005 больше не требуется дляэтогоgate. Это не согласие/обход отказа и не закрытие QENV003/004/006.
+Обновление05:44UTC: naturalmainUI15/64 успешно выполнен послеactualACTIVE, независимо подтверждён postguard053659. Ниstop/privatecopy/restore/clock/apps не понадобились; flagFALSE. Ответ на QENV005 больше не требуется дляэтогоgate. Позднее получено прямое согласие, но действие осталось ненужным и NOT RUN. Его stop/privatecopy scope не переносится на другие admin-проверки.
 
-## Q-ENV-006 — три новых historical PROMOTE inputs после отказа auto-review
+## Q-ENV-006 — три новых historical PROMOTE inputs
 
-**Тип:** явное разрешение конкретной fixture. **Статус:** waiting for owner.
-Проверяемый `PLAN.md` в `/workspace/rct-pr3-runtime/admin-promotion-three-insert-20261024/`,
-recursive package SHA256 `bf13b7aa4297674a9163b5b7f8f1628f340534c34568feeed895a63fd38e2bd8`;
-[independent source review](../../validation/web-vue-pr3/review/promotion-REVIEW-bf13b7aa.md)
-PASS. Старый prospective SQL истёк и не исполнялся.
+**Статус: RESOLVED, разрешено и выполнено.** Прямой ответ владельца в этом чате:
+«Разрешить три тестовые записи и PROMOTE». Проверенный пакет
+`/workspace/rct-pr3-runtime/admin-promotion-three-insert-20261024/PLAN.md`,
+recursive SHA256 `bf13b7aa4297674a9163b5b7f8f1628f340534c34568feeed895a63fd38e2bd8`;
+[independent review](../../validation/web-vue-pr3/review/promotion-REVIEW-bf13b7aa.md).
 
-Подготовлены ровно3 новых synthetic inputs: inactive completed SPRING2025
-(2025-02-01..06-30), новая пустая owned cohort и её managed coverage. Публичный
-запрет создавать завершённый семестр через API остаётся; это historical test
-state, не PASS API create и не подделка результата promotion. Existing semester1
-typeNULL, active2 и все существующие строки/аккаунты/grants не меняются.
-Общий эффект явный: latest completed SPRING NULL→owned cycle. Все foreign
-cohorts созданы после cutoff и не становятся eligible. После обычного UI
-PROMOTE допускается обычный archive только own still-empty group; cycle и
-настоящие ledger/audit сохраняются. Нет stop/snapshot/clock/production.
+Ровно3 новых inputs committed: SPRING2025 semester5, пустая группа6 и managed
+coverage. Latest completed SPRING NULL→own5 был прямо включён в разрешение.
+Один обычный UI PROMOTE:200/SUCCEEDED, курс1→2, ledger1; повторный preview
+ALREADY_PROCESSED, второго execute нет. Затем own6 архивирована одним обычным
+API PUT, семестр5/ledger/audit сохранены. Active2 и существующие foreign rows,
+accounts/grants не менялись. Historical SQL setup не означает успешный create
+завершённого семестра через API. Stop/snapshot/clock не использовались.
 
-Первый local operational runner завершился Python SyntaxError до выполнения
-кода; SQL attempts0. Следующая combined syntax-fix+runner команда была
-отклонена automatic approval review ДО запуска: high-impact database-inserting
-setup, недостаточно явного trusted owner authorization для этих exact
-semester/group/coverage mutations. Исправление и SQL не начались, новой
-execution namespace/intent/COMMIT не было. Root no-writer window CLOSED;
-никаких retry/alternate executor. Владельцу отправлен Q-ENV-006 для exact3
-inputs и normal UI PROMOTE. Это отдельный вопрос от Q-ENV-005 stop/privatecopy.
-До ответа seed/PROMOTE NOT RUN, action остаётся implemented, не locallyverified.
+Первоначальный SyntaxError произошёл до выполнения кода, следующий auto-review
+отказ — до исполнения SQL. Эти неудачи сохранены. После прямого согласия был
+один COMMIT. Timer/dedup metadata и шесть Attendance changes при естественном
+закрытии пары до PROMOTE явно квалифицированы; все-БД equality не заявляется.
+Архивный harness сначала отверг canonical graduation suffix после200; исходный
+SUCCEEDED и независимый postread подтвердили завершение без новой команды.
+Инспектор для оставшегося browser process был отдельно отклонён auto-review
+до запуска; он не открывался. Безопасная очистка выполнена через обычный Auth
+API ровно собственной сессии и нормальные SIGTERM точному процессу.
+[Приёмка, исходные hashes и ограничения](../../validation/web-vue-pr3/checkpoints/promotion-map-20261024/promotion-acceptance.json).
 
-Финальный сетевой probe2026-10-24 06:14UTC: current observations, running/enforced policy revision7, www.figma.com отсутствует, настоящийcurl через inheritedproxy exit56/CONNECT403. QENV002 ждёт применения настройки, нового разрешения не запрашиваем. QPROD004/QENV003/004/006 остаются без ответа; QENV005 больше не нужен.
+Текущие ответы владельца нужны только для Q-ENV-003 и Q-PROD-004. Q-ENV-002:
+разрешение обещано, в реально enforced policy revision11 www.figma.com всё ещё
+отсутствует; новая прямая попытка через inherited proxy CONNECT403/exit56. Новый запрос не нужен.

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, shallowRef } from 'vue';
+import { computed, ref, shallowRef, watch } from 'vue';
 import { onBeforeRouteLeave } from 'vue-router';
 import { webSession } from '../../auth/session';
 import { reauthenticationReceipt } from '../../auth/reauthentication-receipt';
@@ -25,6 +25,11 @@ const credentials = shallowRef<GeneratedCredentials | null>(null);
 const link = shallowRef<AdminRecoveryLink | null>(null);
 const confirming = ref(false);
 const unknownVersion = ref<string | null>(null);
+watch(
+  () => busy.value || !!unknownVersion.value,
+  (locked) => emit('locked', locked),
+  { immediate: true },
+);
 admin.guardUnfinished(() => busy.value || !!unknownVersion.value);
 const selfTarget = String(props.user.id) === webSession.snapshot.value?.userId;
 const self = computed(() => String(props.user.id) === webSession.snapshot.value?.userId);
@@ -63,13 +68,11 @@ async function read() {
         // A read showing the old version cannot prove that an in-flight mutation has stopped.
         if (BigInt(value.credentialsVersion) > BigInt(unknownVersion.value)) {
           unknownVersion.value = null;
-          emit('locked', false);
         }
       }
     },
     selfTarget && unknownVersion.value ? undefined : 'USER_CREDENTIALS_MANAGE',
   );
-  loading.value = false;
 }
 async function generate() {
   const version = credentials.value?.credentialsVersion;
@@ -77,7 +80,6 @@ async function generate() {
   await admin.run(async () => {
     if (!allowed.value)
       throw new Error('Для пароля действующего администратора нужен полный доступ.');
-    emit('locked', true);
     try {
       const result = await client.generate(props.user.id, version);
       admin.assertCurrent();
@@ -90,11 +92,9 @@ async function generate() {
           targetLabel: props.user.fullName,
           password: result.password,
         });
-        emit('locked', false);
         webSession.invalidate();
         return;
       } else notice.value = 'Новый пароль сгенерирован. Предыдущие сессии пользователя отозваны.';
-      emit('locked', false);
     } catch (cause) {
       admin.assertCurrent();
       if (!(cause instanceof CredentialsError) || cause.status === null || cause.status >= 500) {
@@ -104,7 +104,6 @@ async function generate() {
           : 'Результат генерации неизвестен. Проверь текущую версию пароля перед новым действием.';
         confirming.value = false;
       } else {
-        emit('locked', false);
         throw cause;
       }
     }
@@ -150,7 +149,7 @@ void admin.init('USER_CREDENTIALS_MANAGE', async () => {});
     <p v-if="!allowed && !loading">
       Для пароля действующего администратора нужен полный доступ.
     </p>
-    <template v-if="credentials">
+    <template v-if="credentials && allowed && admin.can('USER_CREDENTIALS_MANAGE')">
       <p v-if="credentials.state === 'USER_CHANGED'">
         Пользователь изменил пароль. Его пароль не раскрывается.
       </p><p v-else-if="credentials.state === 'UNAVAILABLE'">
@@ -171,7 +170,7 @@ void admin.init('USER_CREDENTIALS_MANAGE', async () => {});
       </div>
     </template>
     <div
-      v-if="allowed"
+      v-if="allowed && admin.can('USER_CREDENTIALS_MANAGE')"
       class="admin-actions"
     >
       <button
@@ -221,7 +220,7 @@ void admin.init('USER_CREDENTIALS_MANAGE', async () => {});
       </div>
     </div>
     <div
-      v-if="link"
+      v-if="link && allowed && admin.can('USER_CREDENTIALS_MANAGE')"
       class="web-notice"
     >
       <p>Ссылка действует до {{ new Date(link.expiresAt).toLocaleString('ru-RU') }}.</p><output class="admin-secret">{{ link.url }}</output><button

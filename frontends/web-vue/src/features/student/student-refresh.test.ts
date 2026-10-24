@@ -7,6 +7,7 @@ import {
   type App,
   type Component,
   type FunctionalComponent,
+  type Ref,
 } from 'vue'
 
 const server = vi.hoisted(() => ({
@@ -18,12 +19,15 @@ const server = vi.hoisted(() => ({
   subjectTypes: [] as string[][],
   rankingPages: [] as (number | null)[],
   invalidate: () => {},
+  attendanceBarrier: null as null | { started(): void; wait: Promise<void> },
 }))
 vi.mock('../../auth/session', async () => {
   const { ref } = await import('vue')
   return {
     webSession: {
       identity: ref('student-unit-owner'),
+      phase: ref('ready'),
+      accessToken: () => 'unit-bearer',
       generation: ref(0),
       snapshot: ref({
         userId: '15',
@@ -50,11 +54,8 @@ vi.mock('vue-router', () => ({
   useRouter: () => ({ replace: async () => {} }),
   onBeforeRouteLeave() {},
 }))
-vi.mock('../../app/api', () => ({
-  createWebTransport: () => ({
-    accessToken: () => null,
-    assertCurrent() {},
-    onUnauthorized: async () => {},
+const fixture = {
+  response: {
     fetcher: async (input: RequestInfo | URL) => {
       const url = new URL(String(input), 'https://unit.invalid')
       const metrics = {
@@ -110,8 +111,21 @@ vi.mock('../../app/api', () => ({
           sessionVersion: '1',
           serverNow: '2026-10-24T08:00:00Z',
         })
+      if (url.pathname.endsWith('/today'))
+        return Response.json({
+          date: '2026-10-24',
+          serverNow: '2026-10-24T08:00:00Z',
+          timeZone: 'Europe/Moscow',
+          lessons: [],
+          _links: {},
+        })
       if (url.pathname.endsWith('/attendance')) {
         server.attendanceReads++
+        const barrier = server.attendanceBarrier
+        if (barrier) {
+          barrier.started()
+          await barrier.wait
+        }
         if (server.failAttendance)
           return Response.json({ detail: 'Связь потеряна' }, { status: 503 })
         return Response.json({
@@ -212,8 +226,11 @@ vi.mock('../../app/api', () => ({
         })
       throw Error(`Unexpected request ${url.pathname}`)
     },
-  }),
-}))
+  },
+}
+
+// The homework panel has a separate owner/transport; this suite exercises Student reads.
+vi.mock('./StudentHomeworkDay.vue', () => ({ default: () => null }))
 
 class TestNode {
   text = ''
@@ -284,7 +301,11 @@ class TestNode {
     delete this.props[key]
   }
 }
-const testDocument = { activeElement: null as TestNode | null }
+const testDocument = {
+  activeElement: null as TestNode | null,
+  addEventListener() {},
+  removeEventListener() {},
+}
 function flatten(node: TestNode): TestNode[] {
   return [node, ...node.children.flatMap(flatten)]
 }
@@ -330,9 +351,13 @@ async function settle() {
   }
 }
 const RouterLinkStub: FunctionalComponent = (_props, { slots }) => h('a', slots.default?.())
-function mount(component: Component) {
+function mount(component: Component, errors?: unknown[]) {
   const root = new TestNode('root')
   const app = renderer.createApp(component)
+  if (errors)
+    app.config.errorHandler = (cause) => {
+      errors.push(cause)
+    }
   app.component('RouterLink', RouterLinkStub)
   app.mount(root)
   apps.push(app)
@@ -359,9 +384,10 @@ function lecture(root: TestNode) {
   if (!node) throw Error('No lecture filter')
   return node
 }
-beforeEach(() => {
+beforeEach(async () => {
   server.status = 'ABSENT'
   server.failAttendance = false
+  server.attendanceBarrier = null
   server.requestsVisible = false
   server.attendanceReads = 0
   server.requestReads = 0
@@ -379,6 +405,10 @@ beforeEach(() => {
   })
   vi.stubGlobal('document', testDocument)
   vi.stubGlobal('navigator', { onLine: true })
+  vi.stubGlobal('fetch', fixture.response.fetcher)
+  const { webSession } = await import('../../auth/session')
+  ;(webSession.identity as Ref<string | null>).value = 'student-unit-owner'
+  ;(webSession.generation as Ref<number>).value = 0
 })
 afterEach(() => {
   for (const app of apps.splice(0)) app.unmount()
@@ -387,6 +417,51 @@ afterEach(() => {
 })
 
 describe('student SFC live reading and retained selections', () => {
+  it('retires an awaited Home read without an unhandled watch error or overwriting the successor page', async () => {
+    const { default: Home } = await import('./StudentHomePage.vue')
+    const { default: Attendance } = await import('./StudentAttendancePage.vue')
+    const { webSession } = await import('../../auth/session')
+    const { createWebTransport, WebAuthorityChangedError } = await import('../../app/api')
+    let release!: () => void, started!: () => void
+    const waiting = new Promise<void>((resolve) => {
+      started = resolve
+    })
+    server.attendanceBarrier = {
+      started,
+      wait: new Promise<void>((resolve) => {
+        release = resolve
+      }),
+    }
+    const errors: unknown[] = []
+    const transport = createWebTransport()
+    mount(Home, errors)
+    await waiting
+    ;(webSession.identity as Ref<string | null>).value = 'student-successor-owner'
+    ;(webSession.generation as Ref<number>).value++
+    apps.pop()!.unmount()
+    server.attendanceBarrier = null
+    server.status = 'PRESENT'
+    const successor = mount(Attendance, errors)
+    await settle()
+    expect(text(mark(successor))).toBe('+')
+    release()
+    await settle()
+    expect(errors).toEqual([])
+    expect(text(mark(successor))).toBe('+')
+    expect(() => transport.assertCurrent()).toThrow(WebAuthorityChangedError)
+  })
+  it('ignores a queued attendance filter from a retired owner without leaking a rejected action', async () => {
+    const { default: Page } = await import('./StudentAttendancePage.vue')
+    const { webSession } = await import('../../auth/session')
+    const root = mount(Page)
+    await settle()
+    const filter = flatten(root).find((node) => node.tag === 'select')!
+    ;(webSession.identity as Ref<string | null>).value = 'student-successor-owner'
+    ;(webSession.generation as Ref<number>).value++
+    const pending = (filter.props.onChange as () => Promise<void>)()
+    await expect(pending).resolves.toBeUndefined()
+  })
+
   it('updates the authoritative mark under ordinary hover/focus without replacing its focused cell or selected type', async () => {
     const { default: Page } = await import('./StudentAttendancePage.vue')
     const root = mount(Page)

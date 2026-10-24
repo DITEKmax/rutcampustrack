@@ -51,8 +51,8 @@ async function load() {
     attendance.load(() => scope.api.getAttendance(semester.id), true),
     options.load(() => scope.api.getRequestOptions(), true),
   ]);
-  scope.transport.assertCurrent();
   if (!scope.current()) return;
+  scope.transport.assertCurrent();
   if (!week.value && today.data.value) week.value = monday(today.data.value.date);
   await loadSubject();
 }

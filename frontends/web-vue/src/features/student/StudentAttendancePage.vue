@@ -61,6 +61,7 @@ async function load() {
   await loadSubject();
 }
 async function loadSubject() {
+  if (!scope.current()) return;
   const semester = scope.session.value?.semester;
   if (!semester || !subject.value || !types.value.length) {
     subjectStats.clear();
@@ -71,6 +72,7 @@ async function loadSubject() {
   await subjectStats.load(() => scope.api.getStatisticsSubject(id, semester.id, 'weeks', chosen));
 }
 async function remember() {
+  if (!scope.current()) return;
   scope.transport.assertCurrent();
   const query = {
     view: mode.value,

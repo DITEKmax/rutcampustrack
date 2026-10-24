@@ -218,14 +218,14 @@ interface RequestState {
   reconcile(): Promise<void>
   sendPending(replay: boolean): Promise<void>
 }
-function requests() {
+function requests(kind: 'EXCUSE' | 'LATE_CHECKIN' = 'EXCUSE', loseAcknowledgement = false) {
   const bodies: Record<string, unknown>[] = []
   let admitted = false,
     foreign = false
   const fetcher: typeof fetch = async (path, init) => {
     if (String(path).includes('?'))
       return Response.json({
-        content: [summary],
+        content: [{ ...summary, kind }],
         page: 0,
         size: 20,
         totalElements: 1,
@@ -235,11 +235,14 @@ function requests() {
       bodies.push(JSON.parse(String(init.body)) as Record<string, unknown>)
       if (bodies.length === 1) throw new TypeError('not admitted')
       admitted = true
+      if (loseAcknowledgement) throw new TypeError('committed response lost')
     }
     const body = bodies[0]
     return Response.json({
       summary: {
         ...summary,
+        kind,
+        decisionBy: foreign ? 99 : admitted ? 3 : null,
         status: admitted || foreign ? 'REJECTED' : 'PENDING',
         decisionComment: admitted || foreign ? 'Причина' : null,
       },
@@ -248,7 +251,7 @@ function requests() {
       currentAffectedLessons: [occurrence],
       decisionRevision: 'a'.repeat(64),
       decisionSelection:
-        admitted || foreign
+        kind === 'EXCUSE' && (admitted || foreign)
           ? {
               requestKey: foreign ? 'other-command-key' : body?.requestKey,
               expectedRevision: body?.expectedRevision,
@@ -288,6 +291,54 @@ describe('actual persisted decision completion', () => {
     expect(server.bodies[1]).toEqual(server.bodies[0])
     expect(state.pending).toBeNull()
     expect(storage.length).toBe(0)
+  })
+  it('continues a restored unadmitted late decision and reads its lost acknowledgement by actor', async () => {
+    const server = requests('LATE_CHECKIN', true)
+    box.feature = feature({ requests: server.api() })
+    let state = mount<RequestState>(RequestsPage)
+    await settle()
+    await state.open('ticket-14')
+    state.proposed = 'REJECTED'
+    state.reason = 'Причина'
+    await state.decide()
+    expect(server.bodies).toHaveLength(1)
+    dispose?.()
+    box.feature = feature({ requests: server.api() })
+    state = mount<RequestState>(RequestsPage)
+    await settle()
+    await state.reconcile()
+    expect(state.replayReady).toBe(state.pending)
+    await state.sendPending(true)
+    expect(server.bodies).toHaveLength(2)
+    expect(server.bodies[1]).toEqual(server.bodies[0])
+    expect(server.bodies[1]).toEqual({ decision: 'REJECTED', reason: 'Причина' })
+    expect(state.pending).not.toBeNull()
+    dispose?.()
+    box.feature = feature({ requests: server.api() })
+    state = mount<RequestState>(RequestsPage)
+    await settle()
+    await state.reconcile()
+    expect(state.pending).toBeNull()
+    expect(storage.length).toBe(0)
+    expect(server.bodies).toHaveLength(2)
+    expect(state.error).toBeNull()
+  })
+  it('keeps another actor late acknowledgement distinct even with identical decision and reason', async () => {
+    const server = requests('LATE_CHECKIN')
+    box.feature = feature({ requests: server.api() })
+    const state = mount<RequestState>(RequestsPage)
+    await settle()
+    await state.open('ticket-14')
+    state.proposed = 'REJECTED'
+    state.reason = 'Причина'
+    await state.decide()
+    await state.reconcile()
+    expect(state.replayReady).toBe(state.pending)
+    server.foreign()
+    await state.sendPending(true)
+    expect(server.bodies).toHaveLength(1)
+    expect(state.pending).toBeNull()
+    expect(state.error).toContain('другим решением')
   })
   it('checks current write authority and another receipt before replaying', async () => {
     const server = requests()

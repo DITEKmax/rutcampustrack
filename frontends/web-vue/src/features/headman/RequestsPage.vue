@@ -49,6 +49,7 @@ const excluded = ref<readonly string[]>([]),
   pending = shallowRef<FrozenRequestDecision | null>(null);
 const proposed = ref<'APPROVED' | 'REJECTED' | null>(null);
 const replayReady = shallowRef<FrozenRequestDecision | null>(null);
+const decisionActor = webSession.snapshot.value?.userId;
 const decisionStorage = `rct:web:headman:request-decision:${webSession.identity.value}`;
 let restored = false;
 function persistDecision(value: FrozenRequestDecision | null) {
@@ -157,10 +158,20 @@ async function decide() {
   }
   await sendPending(false);
 }
+function matchesOwnLateDecision(operation: FrozenRequestDecision, observed: HeadmanRequestDetail) {
+  return (
+    !operation.selection &&
+    observed.summary.id === operation.id &&
+    observed.summary.kind === 'LATE_CHECKIN' &&
+    observed.summary.status === operation.decision &&
+    observed.summary.decisionComment === operation.reason &&
+    String(observed.summary.decisionBy) === decisionActor
+  );
+}
 async function sendPending(replay: boolean) {
   const operation = pending.value;
   if (!operation) return;
-  if (busy.value || (replay && (replayReady.value !== operation || !operation.selection))) return;
+  if (busy.value || (replay && replayReady.value !== operation)) return;
   busy.value = true;
   replayReady.value = null;
   error.value = null;
@@ -171,11 +182,13 @@ async function sendPending(replay: boolean) {
     });
     feature.assertCurrent();
     if (outcome.status === 'done' || outcome.status === 'conflict') {
+      const conflict =
+        outcome.status === 'conflict' && !matchesOwnLateDecision(operation, outcome.detail);
       detail.value = outcome.detail;
       persistDecision(null);
       proposed.value = null;
       await load();
-      if (outcome.status === 'conflict')
+      if (conflict)
         error.value = 'Заявка уже обработана другим решением. Показано текущее состояние.';
     } else if (outcome.status === 'rejected') {
       persistDecision(null);
@@ -197,12 +210,17 @@ async function reconcile() {
   try {
     const observed = await feature.requests.get(operation.id);
     feature.assertCurrent();
+    if (observed.summary.id !== operation.id) throw new Error('Сервер вернул другую заявку.');
     detail.value = observed;
     excluded.value = operation.selection?.excludedOccurrenceIds ?? [];
     reason.value = operation.reason ?? '';
     proposed.value = operation.decision;
     const outcome =
-      observed.summary.status === 'PENDING' ? null : await reconcileRequestDecision(operation);
+      observed.summary.status === 'PENDING'
+        ? null
+        : matchesOwnLateDecision(operation, observed)
+          ? { status: 'done' as const, detail: observed }
+          : await reconcileRequestDecision(operation);
     feature.assertCurrent();
     if (outcome?.status === 'done' || outcome?.status === 'conflict') {
       detail.value = outcome.detail;
@@ -211,10 +229,15 @@ async function reconcile() {
       await load();
       if (outcome.status === 'conflict')
         error.value = 'Решение отличается от отправленного. Показан результат сервера.';
-    } else if (outcome === null && operation.selection) {
+    } else if (
+      outcome === null &&
+      (operation.selection || observed.summary.kind === 'LATE_CHECKIN')
+    ) {
       replayReady.value = operation;
       error.value =
-        'Заявка ещё ожидает решения. Можно явно продолжить исходное сохранение с прежним ключом.';
+        operation.selection
+          ? 'Заявка ещё ожидает решения. Можно явно продолжить исходное сохранение с прежним ключом.'
+          : 'Апелляция ещё ожидает решения. Можно явно продолжить сохранение исходного решения и причины.';
     } else
       error.value = 'Решение ещё не подтверждено. Можно повторить проверку без отправки решения.';
   } catch (cause) {

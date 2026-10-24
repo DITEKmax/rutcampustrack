@@ -24,6 +24,8 @@ import java.util.*;
 @Component
 public class EventConsumer extends AbstractEventConsumer {
     public static final String CONSUMER_ID = "notification-web";
+    private static final org.slf4j.Logger log =
+            org.slf4j.LoggerFactory.getLogger(EventConsumer.class);
     private final SimpMessagingTemplate messagingTemplate;
     private final WebPushDeliveryService webPushDeliveryService;
     private final IdempotencyGuard idempotencyGuard;
@@ -156,7 +158,8 @@ public class EventConsumer extends AbstractEventConsumer {
         Runnable publish =
                 () ->
                         recipients.forEach(
-                                userId ->
+                                userId -> {
+                                    try {
                                         messagingTemplate.convertAndSend(
                                                 "/topic/user/" + userId,
                                                 Map.of(
@@ -165,7 +168,16 @@ public class EventConsumer extends AbstractEventConsumer {
                                                         "payload",
                                                         Map.of(
                                                                 "group_id",
-                                                                Long.toString(groupId)))));
+                                                                Long.toString(groupId))));
+                                    } catch (RuntimeException failure) {
+                                        // A denied/closed old socket must not suppress another
+                                        // user's invalidation.
+                                        log.debug(
+                                                "Unable to publish group projection change"
+                                                    + " error={}",
+                                                failure.getClass().getSimpleName());
+                                    }
+                                });
         if (!TransactionSynchronizationManager.isSynchronizationActive()) {
             publish.run();
             return;

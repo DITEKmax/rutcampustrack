@@ -35,6 +35,31 @@ class EventConsumerTest {
     }
 
     @Test
+    void retiredSocketFailureDoesNotSuppressTheRetainedTeacherHint() {
+        var envelope =
+                new HashMap<String, Object>(
+                        event(
+                                "group.updated",
+                                Map.of(
+                                        "group_id",
+                                        9007199254740993L,
+                                        "affected_user_ids",
+                                        List.of(12L, 13L))));
+        envelope.put("source", "academic-service");
+        envelope.put("event_version", 1);
+        var signal =
+                Map.of("type", "group.updated", "payload", Map.of("group_id", "9007199254740993"));
+        doThrow(
+                        new org.springframework.messaging.MessageDeliveryException(
+                                "synthetic denied old socket"))
+                .when(messaging)
+                .convertAndSend("/topic/user/12", signal);
+        assertThatCode(() -> consumer.onEvent(envelope)).doesNotThrowAnyException();
+        verify(messaging).convertAndSend("/topic/user/13", signal);
+        verifyNoInteractions(audience, history, intents, provider, prefs);
+    }
+
+    @Test
     void hiddenGroupInvalidationRejectsForeignSourcesAndMalformedRecipientsBeforeClaim() {
         var envelope =
                 new HashMap<String, Object>(

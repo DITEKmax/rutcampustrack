@@ -7,7 +7,7 @@ import './app/live';
 let lastRole = webSession.snapshot.value?.activeRole ?? null;
 
 watch(
-  [webSession.phase, () => webSession.snapshot.value?.activeRole],
+  [webSession.phase, () => webSession.snapshot.value?.activeRole, webSession.identity],
   ([phase], [previousPhase]) => {
     if (phase === 'guest' && previousPhase !== 'starting' && !router.currentRoute.value.meta.guest)
       void router.replace({ name: 'login' });

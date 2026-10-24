@@ -152,8 +152,10 @@ function formatStatus(format: MapFormat) {
     </p>
     <template v-if="map.buildings.value.length">
       <div class="web-map-pickers">
-        <label class="web-field"><span>Корпус</span>
+        <div class="web-field">
+          <label :for="`${id}-building`">Корпус</label>
           <select
+            :id="`${id}-building`"
             :value="map.buildingId.value"
             @change="map.selectBuilding(($event.target as HTMLSelectElement).value)"
           >
@@ -161,11 +163,15 @@ function formatStatus(format: MapFormat) {
               v-for="building in map.buildings.value"
               :key="building.id"
               :value="building.id"
-            >{{ building.label }}</option>
+            >
+              {{ building.label }}
+            </option>
           </select>
-        </label>
-        <label class="web-field"><span>Этаж</span>
+        </div>
+        <div class="web-field">
+          <label :for="`${id}-floor`">Этаж</label>
           <select
+            :id="`${id}-floor`"
             :value="map.floorId.value"
             :disabled="!map.floors.value.length"
             @change="map.selectFloor(($event.target as HTMLSelectElement).value)"
@@ -174,9 +180,11 @@ function formatStatus(format: MapFormat) {
               v-for="floor in map.floors.value"
               :key="floor.id"
               :value="floor.id"
-            >{{ floor.label }}</option>
+            >
+              {{ floor.label }}
+            </option>
           </select>
-        </label>
+        </div>
       </div>
       <p
         class="web-sr-only"

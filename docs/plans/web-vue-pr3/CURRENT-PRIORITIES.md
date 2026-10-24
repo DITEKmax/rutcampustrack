@@ -29,43 +29,32 @@ CI/Coverage/Security/OpenAPI PAUSED/manual; без merge/deploy/production.
 Перед завершением обновляются галерея, карта, PROGRESS, API-CHANGES,
 MOBILE-FOLLOWUPS и итог PR; PAUSED не объявляется PASS.
 
-Текущие пакеты после опубликованного888 checkpoint:
+Текущие пакеты и зависимости:
 
-- Password CLOSED: native self-known5→6 /lostACK6→7 и successor isolation PASS;
-  independentpost9598 подтверждает cleanup. Не повторять генерацию/старую очистку.
-- LIMITED CLOSED: natural visible-page withdrawal3708ms, oldADMIN/session403,
-  Teacher/profile200. Raw driver exit1 сохранён как TEST enum gap. Independent
-  postc7ee: profile8unassigned, все4 собственные сессии revoked, чужие данные целы.
-- Group status и fixtures исправлены,20 boundary cases CLOSED.64f/backend,
-  ae546/client, f67/UI и authority-retirement3e174 интегрированы. Найден APP gap
-  адресной доставки удаления на открытые WEB/PWA/TMA;8e83 исправляет hidden hint
-  и active projection refresh, review/F1recheck/55client/6unit/2PG/1Mongo PASS,
-  интегрированb039. Следующий результат: matching JARs + real same-realm Notification
-  и один UI delete с числовым preview/паролем/original receipt, отзывом открытого
-  доступа и независимым сохранением чужих аккаунтов/ролей/групп. До запуска —
-  qualification shared schema/JAR consumers и ресурсный admission.20PASS не повторять.
-- Визуал параллельно:249 actual gallery PNG с отдельными qualifications, TMA
-  controlled host отделён от native provider. Compact navigation исправлена и
-  проверена300/root16/root20 +widecontrol. Profile loading skeletonc35 reviewed
-  и integrateda851;2 held-read after кадра next, loaded1440 reuse если пригоден.
-  Остальные экран/тема/адаптив/состояния — конечный список, без общего процента.
+- Пароль, LIMITED и whole-map delete/Auth — закрыты. Посты9598/c7ee подтверждают
+  отзыв собственных сессий/временных полномочий; успешные операции не повторять.
+- Group: status/fixtures исправлены,20 boundary cases закрыты. Live8e83 и matching
+  Academic/Notification/BFF JAR приняты. Runtime12 v3180f и cohort a23logic review
+  PASS; final source binding57e2d8f8 pins Root85c/productd69/558frontend inputs,
+  узкий binding review PASS. Следующий результат — один UI delete с числовым
+  preview/паролем/original UUID, шестью заранее открытыми WEB/PWA/TMA views,
+  естественным отзывом целевого доступа и сохранением чужих аккаунтов/ролей/групп.
+  Auth может оставить SID для другой роли; проверять grants и версию сессии.
+- Q-ENV-010 pending: фактически5.38GB, нужен preflight7GiB и свежий Root GO.
+  Запрошено минимум+2GiB с сохранением workspace/Docker-данных. До этого start,
+  fixtures и delete0; ограничения и guards не ослабляются.
+- Визуал: Journal skeleton/error/retry и WEB Teacher focused live/pagination
+  исправлены и независимо приняты наd69; all3 Vue build/strict PASS переиспользуется.
+  Student selection→readonly draft6 actual frames на85c закрыли локальную валидацию,
+  пустой фильтр, выбор, focus и переход без отправки. Gallery267/portable267;
+  PWA40 bounded observed consumers и10 not visually checked из50, это не полная
+  готовность40 экранов. TMA controlled host/provider разделены. Следующий лёгкий
+  пакет — недостающие readonly Teacher views; сначала existing evidence, затем PREP.
+- После настоящего group gate: полное Angular removal по inventory и assembled
+  common Nginx (deep links/refresh/static/API/realtime, /app/, /mini-app/,
+  auth/updates/WebPush). Angular пока активен; build PASS этот gate не закрывает.
 
-После закрытия единственного оставшегося ADMIN action gate — полное Angular
-removal по inventory и assembled common-Nginx flow. Никакой промежуточный PASS
-не закрывает эти gates. Q-ENV-010 ожидает увеличения свободного диска минимум2GiB;
-actual5.54GB меньше уточнённого preflight7GiB
-для12-service same-realm BFF/Notification +WEB/PWA/TMA. PREP/visual независимы, start/delete не запускались.
-
-
-Последний законченный пакет d69: mobile Journal localerror/recovery/skeleton и
-WEB Teacher backgroundfocus/pagination independentlyreviewed; Rootall3Vuebuild
-PASS. Four actual Journalafterframes закрывают changedPWAcriterion; oldsixbefore
-и authcleanupFAIL сохранены и квалифицированы отдельно. OwnProfile/Teacher helper
-sessions revoked independently, held92079/64379 closed. No source/backend reruns
-ради нового отчёта. Gallery261/portable261; число кадров не равно готовности.
-
-RuntimePREP12v3180f и cohortlogica23 прошли independentrechecks. Перед execution
-нужны finalRootbinding+actual≥7GiB disk (QENV010pending) и scopedRootGO. Один realUI
-delete/6openviews+foreignpreservation; grants withdrawn does not mean entireSID
-revoked. Angular/commonNginx ждут этотactiongate. Независимый Student selection/
-readonlydraft6-frame packet PREP готов/qualityreviewPASS, ждёт checkpointHEAD+GO.
+Новых продуктовых вопросов нет; ответ владельца нужен только по ресурсу Q-ENV-010.
+Source-only recovery223044Z.zip:6482207B, SHA256b4262299…, snapshot источников/WIP
+с manifest/CRC/bundle проверкой; секреты/DB/runtime исключены. Это точка во времени,
+а актуальные продуктовые исправления уже опубликованы в существующей ветке PR3.

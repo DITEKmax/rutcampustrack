@@ -1,7 +1,7 @@
 # CURRENT — existing Goal PR3, 2026-10-24
 
 Owner GO active; only codex/web-vue-redesign / existing PR3. Root product d69ac9159,
-last remote verifiedcab3eed18. Root docs/Git; children explicit gpt-6.1-sol/high,
+last remote verified85c068210. Root docs/Git; children explicit gpt-6.1-sol/high,
 actual model telemetry unavailable. No main/merge/deploy/production/globalcleanup.
 CI/Coverage/Security/OpenAPI manual/PAUSED, not PASS.
 
@@ -33,7 +33,7 @@ loadedJournal60-window preserved atomically/cursor90, late-owner fences retained
 Mobile15behaviorPASS, Web15distinct withcausalreuse; Root all3Vuebuild+strictPASS.
 Root11productfile byteequal authorfinals. No backendbuild/test repeated for UI.
 
-Visual gallery261PNG +portable261 metadata (old204 retained pinned, new57 hashed).
+Visual gallery267PNG +portable267 metadata (old204 retained pinned, new63 hashed).
 PWA300light/TMA300dark Profileloading+realrelease200 accepted. ProfilePWArawFAIL
 TESTBearer-vs-cookie gate preserved; ownhelper+post95d933+92079exit2 closed.
 TeacherJournal6beforeframes found bareloading/staleglobalwarning; rawcookiefilter
@@ -41,7 +41,10 @@ FAIL preserved. Ownhelper+postf137+Rootproof closed64379exit1. No live heldbrows
 After4d69 actualPASS: skeleton425light/local503/realretry200425light+300dark, exact
 ownselfDELETE204/oldbearer401/browserclosed. This is technical session cleanup,
 not a repeated nativeUIlogout claim. NativeTelegram provider remains unknown;
-controlledSDK/host/HMAC labelled. NextStudent request-selection6 PREP only.
+controlledSDK/host/HMAC labelled. Student request-selection6 actualEXIT0: realAPI200,
+local validation/empty/focus/readonlydraft; no submit/domain writes. Technicalexact
+ownselfDELETE204/oldBearer401/browserclosed. PWA40boundedobserved/10unchecked of50,
+not40 fullyready screens. Next bounded Teacher readonly packet PREP only.
 
 READY runtimePREP12 v3-auth-handles hash180fecc3,31publicfiles/6JARs/1530source.
 FullreviewAAA2P2 corrected+narrowPASS. OwnedAuth/ACA/GW/TLSedge replacements only;
@@ -52,10 +55,11 @@ oldsem2 viaAPI; noOS/Auth/securityclock/main changes. OwnTMAconfiguredtestsigner
 RAM selector, onlynewownbindings; no productionsecrets/botmessages.
 Cohortlogic a23d3155 full5P2 corrected+narrowPASS, eightfiles76487B. Sixliveviews+
 Admin beforeoneUIdelete, originalUUID, naturalTMAHeadman successor accounted,
-causalposthintGET and exactowncleanup/restorebridge. Binding WAIT/null stillblocks
-beforeprivate/effects; finalbinding follows publishedRoot source. Runtimewrites0.
+causalposthintGET and exactowncleanup/restorebridge. Finalbinding57e2d8f8 pins publishedRoot85c/productd69 and558frontendinputs2df2;
+logic byteequal a23, binding-only independentreview PASS. Fresh actualcapacity
+and matchingRootGO stillrequired beforeprivate/effects. Runtimewrites0.
 
-BLOCKER Q-ENV-010: actual≈5.43GB free <7GiB actual preflight. Owner askedminimum
+BLOCKER Q-ENV-010: actual≈5.38GB free <7GiB actual preflight. Owner askedminimum
 +2GiB preservingworkspace/Dockerdata; pending, notapproval/notresource. No disk
 configtool here. Keep2GiB hard floor/2.5GiB earlyguard250ms; cgroup16GiB/4CPU,
 not hostMem18.9GB. OneHEAVYfree. Existing30containers retained sofar.

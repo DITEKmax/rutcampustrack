@@ -11,7 +11,7 @@
   "originalHashIntegrity": "140/140 match retained manifest; noimagesmodified",
   "mappedPwaBaselineScreens": 36,
   "pwaVisualNotCheckedScreens": 14,
-  "tmaPostLoginScreens": 0,
+  "tmaPostLoginScreens": 2,
   "fullScreenAllStateWidthReadyClaim": false,
   "newFunctionalActions": 0,
   "sourceChangedPaths": {
@@ -51,5 +51,136 @@
     "teacher-home-light-1440",
     "tma-controlled-unsigned-gate-light-300",
     "tma-controlled-unsigned-gate-dark-300"
-  ]
+  ],
+  "qualifiedAgainstSourceRevision": "85c068210262b611f6f98d18fb9d7bdd8cecea95",
+  "latestMobileSourceDiffFrom77f": [
+    "frontends/mobile-core/src/features/admin-groups/admin-group-deletion-client.test.ts",
+    "frontends/mobile-core/src/features/admin-groups/admin-groups-client.ts",
+    "frontends/mobile-core/src/features/notifications/notifications-realtime.test.ts",
+    "frontends/mobile-core/src/features/notifications/notifications-realtime.ts",
+    "frontends/mobile-core/src/features/notifications/notifications-screen.pcss",
+    "frontends/mobile-core/src/features/profile/ProfileScreen.vue",
+    "frontends/mobile-core/src/features/profile/profile-screen.pcss",
+    "frontends/mobile-core/src/features/teacher/TeacherAttendanceScreen.vue",
+    "frontends/mobile-core/src/features/teacher/TeacherExcuseScreen.vue",
+    "frontends/mobile-core/src/features/teacher/TeacherHomeScreen.vue",
+    "frontends/mobile-core/src/features/teacher/TeacherJournalScreen.vue",
+    "frontends/mobile-core/src/features/teacher/TeacherLessonScreen.vue",
+    "frontends/mobile-core/src/features/teacher/TeacherManualExcuseScreen.vue",
+    "frontends/mobile-core/src/features/teacher/TeacherStatsScreen.vue",
+    "frontends/mobile-core/src/features/teacher/teacher-journal-pagination.test.ts",
+    "frontends/mobile-core/src/features/teacher/teacher-journal-screen.pcss",
+    "frontends/mobile-core/src/shared/components/StudentFeatureOwner.test.ts",
+    "frontends/mobile-core/src/shared/components/StudentFeatureOwner.vue",
+    "frontends/mobile-core/src/shared/components/TeacherFeatureOwner.vue",
+    "frontends/mobile-core/src/shared/components/mobile-bottom-nav.pcss",
+    "frontends/mobile-core/src/shared/components/teacher-context-retry.test.ts",
+    "frontends/mobile-core/src/shared/projection-refresh.ts",
+    "frontends/pwa-vue/src/App.vue",
+    "frontends/pwa-vue/src/group-live-readmission.test.ts",
+    "frontends/tma-vue/src/App.vue"
+  ],
+  "nextPacketState": "StudentNEXT6actual closed EXIT0/technicalexactselfDELETE204guest401/browserclosed; no furtherAuth/capture withoutRootGO",
+  "latestPwaTodayWidthPacket": {
+    "qualifiedReceipt": "mobile-next-first-qualified.json",
+    "actualState": "day-ended/two-lessons/no-checkin-action",
+    "newFrames": 12,
+    "widths": [
+      425,
+      600,
+      768,
+      1024,
+      1280,
+      1920
+    ],
+    "themes": [
+      "light",
+      "dark"
+    ],
+    "cleanup": "native204/guest401",
+    "notificationConsumer": "notchecked:wronglocator/noinboxrequest"
+  },
+  "currentPwaScreensWithObservedBaselines": 40,
+  "currentPwaNotVisuallyCheckedScreens": 10,
+  "originalMappedPwaBaselineScreensUnchanged": 36,
+  "latestNotificationConsumer": {
+    "observedFrames": 4,
+    "sourceRevision": "7ad6e29353b78f7f7087360ef8a5e107a3cf5873",
+    "qualifiedReceipt": "mobile-notification-first4-qualified.json",
+    "status": "entry/back/history observed; minor300title fix",
+    "rawRun": "exit0",
+    "cleanup": "native204/guest401",
+    "afterFix": {
+      "sourceRevision": "5e6a1843352b549f0d9a49c8a7327e00b2f62714",
+      "newFrames": 3,
+      "qualifiedReceipt": "notification-title-fix/after-qualified-5e6.json",
+      "status": "V-MOB-NOTIF-300closed; actualInbox200/native204/guest401"
+    }
+  },
+  "notificationTitle300Finding": "CLOSED boundedroot16 PWA300light/dark; after-qualified-5e6.json",
+  "tmaPostLoginQualification": "2sharedconsumers withcontrolledsigned actualAuth/data slices; notallstates/widths; notnativeTelegramprovider",
+  "tmaControlledPostLoginScreens": 2,
+  "tmaSharedScreenDenominator": 48,
+  "tmaNativeProviderPostLoginScreens": 0,
+  "tmaFullScreensAllStatesWidthsReady": 0,
+  "tmaControlledExchange888": {
+    "receipt": "TMA-controlled-qualified-888.json",
+    "manifest": "TMA-controlled-manifest-888.json",
+    "screens": 2,
+    "frames": 5,
+    "profile300": "naturalinitialloadingonly/notloadedbaseline",
+    "actualAuth200OnePost": true,
+    "cleanup": "native204/guest401/browserclosed",
+    "nativeProvider": "notchecked",
+    "finding": "V-MOBILE-NAV-300 P3"
+  },
+  "sharedNav300Finding": {
+    "status": "CLOSED boundedPWA300light/TMA300dark root16/20+PWA1440light",
+    "manifest": "changed-nav-e715-manifest.json",
+    "qualifiedReceipt": "changed-nav-e715-qualified.json",
+    "newFrames": 5,
+    "root20MinTarget": "46×75CSSpx",
+    "cleanup": "2native204/guest401/browserclosed",
+    "scope": "changedfive-slotnav only; no wholeapp/role/allstatesclaim"
+  },
+  "profileInitialLoading": {
+    "status": "CLOSED boundedPWA300light/TMAcontrolled300dark root16",
+    "manifest": "profile-loading-manifest-cab3.json",
+    "qualifiedReceipt": "profile-loading-qualified-cab3.json",
+    "afterFrames": 2,
+    "loaded1440": "reuse888/notnewPASS",
+    "rawPwaAttempt": "FAIL preserved; cleanupseparatelyRootPG95d933+knownclose",
+    "TmaRemaining": "actualPASS/native204guest401/browserclosed"
+  },
+  "teacherJournalConsumer": {
+    "status": "bounded before6+changedafter4 observed; loading/recovery qualified",
+    "sourceRevision": "d69ac9159e3bfff169c4b2bd25adbcc7d9def771",
+    "qualifiedReceipt": "teacher-journal-after-run/qualified-d69.json",
+    "newAfterFrames": 4,
+    "reusedBeforeFrames": 2,
+    "afterWidthsThemes": {
+      "light": [
+        425
+      ],
+      "dark": [
+        300
+      ]
+    },
+    "cleanup": "technicalexactownselfDELETE204/samebearer401/browserclosed; notnativeUIlogoutPASS",
+    "limits": "No whole-screen/all-state/width/TMA runtime/provider/actioncount claim; localtable scroll interaction notchecked"
+  },
+  "reconciliationQualification": "40/50 PWAconsumers have observed bounded baseline slices;10 visuallyunchecked. Historical36/14 mapped-original fields retained; no fullreadiness%/actioncount increase.",
+  "studentRequestSelectionConsumer": {
+    "revision": "85c068210262b611f6f98d18fb9d7bdd8cecea95",
+    "qualifiedReceipt": "student-request-selection-run/qualified-85c.json",
+    "newFrames": 6,
+    "newPreviouslySourceOnlyConsumers": [
+      "MOBILE-REQUESTLESSONSELECTION",
+      "MOBILE-EXCUSEREQUEST"
+    ],
+    "states": "type425light/selection425light/invaliddates+validempty300dark/selectedkeyboard768light/draftpreview425light",
+    "cleanup": "one technicalexactselfDELETE204/samebearer401/browserclosed; NOTnativeUIlogoutPASS",
+    "limits": "Realcachedoptions/noforcedloading; no submit/upload/commands/allstatewidth/TMAprovider claim"
+  },
+  "currentSourceQualification": "Historical77f inventory remains; newer changed consumers qualified by individual source pins/reviews and current visual sidecars. Empty global mobile delta is not claimed."
 }

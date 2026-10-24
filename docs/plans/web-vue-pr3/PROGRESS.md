@@ -248,3 +248,26 @@ Runtime12v3180f ready/reviewPASS, cohorta23 logicready/reviewPASS. Actualgroupde
 владельцу. Неисправлялиcapacity за счёт чужих/старых данных. FreshStudentrequest
 selection→readonlyform6frames PREP/read-onlyreviewPASS, executionещёнет.
 Angularstillactive, commonNginx finalcheckpointвпереди. ОбщейготовностиPRв%нет.
+
+
+## Student selection / readonly draft — закрыт на85c
+
+Результат: студент обычным UI выбирает тип заявки и собственную пару, видит
+локальную ошибку диапазона/пустой фильтр/disabled, получает клавиатурный focus
+и открывает форму с выбранной парой без отправки. Actual Auth200 и GET requests/
+options200; API не подменялся, loading из cached options не заявлен. Six personally
+inspected frames300dark/425light/768light, EXIT0. Exact own technical selfDELETE204
+и sameBearer401, browserclosed; native UI logout не перепроверялся. Domain/prefs/
+rights writes0; число117действий и116 принятых не меняется.
+[Галерея](../../validation/web-vue-pr3/runtime-gallery/student-request-selection-20261024/index.html).
+
+Gallery267PNG/portable267 с ID/темой/шириной/revision/hash. В конечном mobile списке
+PWA40 bounded observed/10not visually checked из50; это не40 полностью готовых
+экранов. TMA отдельно. Неизменённые successful проверки переиспользованы; новых
+сборок/паролей/ACL/cleanup helpers ради отчёта нет.
+
+Cohort sourcebinding57e2d8f8: Root85c/productd69,558 frontendinputs2df2; logic
+byteequal принятомуa23. Binding-only review PASS, runtime STOP QENV010:
+actual5.38GB<7GiB; start/fixtures/UIdelete0. Следующий независимый пакет — readonly
+Teacher consumer gaps, сначала PREP по existing evidence. Angular/commonNginx
+по-прежнему ждут реальный group gate. CI manual/PAUSED, без merge/deploy.

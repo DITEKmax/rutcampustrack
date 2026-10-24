@@ -1,0 +1,35 @@
+{
+  "kind": "SOURCE_BINDING_ONLY_DELTA",
+  "previousAcceptedLogicPackageSha256": "a23d3155e8d75b5959ea0b7b64d284c0e5add2bbfbaf0c53e91a66805375d8c4",
+  "finalPackageSha256": "57e2d8f8777534563691f8426cfec72ba41a1babf37434a9bfdc50d024e58813",
+  "publishedRootHead": "85c068210262b611f6f98d18fb9d7bdd8cecea95",
+  "acceptedProductCommit": "d69ac9159e3bfff169c4b2bd25adbcc7d9def771",
+  "productDeltaD69ToPublishedEmpty": true,
+  "unchangedLogicAndChecks": {
+    "native-cohort.cjs": true,
+    "cohort-proof.py": true,
+    "freeze.py": true,
+    "correction-checks.json": true
+  },
+  "frontendInputs": 558,
+  "frontendProductFingerprint": "2df2d40eb54dc19ac2a776881a9d86400cd978a750f55d2a2ea2ce1cb37281d7",
+  "allFrontendManifestEntriesMatch": true,
+  "backendInputs": 1530,
+  "backendFingerprintReusedRootAccepted": "31a5aa9bab8084b707d48652d9ab78bb019995de758667ab3efb907cca0b5028",
+  "nativeV3PackageSha256": "180fecc3c66834c36ecbff44271742d1457d74964bfc0b41159fb7730d693d5c",
+  "threeStrictFrontendBuilds": "Root accepted PASS; reused without rerun",
+  "logicReview": "/workspace/rct-pr3-review/group-final-cohort/RECHECK-a23d3155.md PASS reused",
+  "metadataFilesChanged": [
+    "bindings.json",
+    "root-go.example.json",
+    "README.md",
+    "CORRECTIONS.md"
+  ],
+  "manifestAdded": "frontend-inputs.SHA256SUMS",
+  "browserAuthApiDbCredentialActions": 0,
+  "testsRerun": 0,
+  "capacity": "QENV010 PENDING; no execution GO",
+  "remaining": "Narrow binding-only review then wait for actual capacity and fresh matching Root admission",
+  "bindingOnlyReview": "PASS: ../../review/group-final-cohort-bindings-RECHECK-57e2d8f8.md",
+  "executionAdmission": "STOP; actual5.381GB<7GiB; QENV010 pending; fresh currentHEAD binding and actual RootGO required"
+}

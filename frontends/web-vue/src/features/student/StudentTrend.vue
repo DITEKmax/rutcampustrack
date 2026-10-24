@@ -229,7 +229,7 @@ function paths(key: 'present' | 'presentOrExcused' | 'group') {
                 v-if="point.state !== 'DATA'"
                 class="web-caption"
               >
-                · {{ point.state === 'FUTURE' ? 'Будущий период' : 'Нет данных' }}</span>
+                · {{ point.state === 'FUTURE' ? 'Пары ещё не завершены' : 'Нет данных' }}</span>
             </td>
           </tr>
         </tbody>

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useProjectionRefresh } from '../../shared/projection-refresh';
 import { computed, onBeforeUnmount, ref, watch } from 'vue';
 import MobileIcon from '../../shared/components/MobileIcon.vue';
 import StudentWarningBlock from '../../shared/components/StudentWarningBlock.vue';
@@ -42,17 +43,16 @@ watch(
 onBeforeUnmount(() => {
   revision += 1;
 });
-async function load(): Promise<void> {
+async function load(retainProjection = false): Promise<void> {
   const api = props.api,
     lessonId = props.lessonId,
     studentId = props.studentId,
     run = ++revision;
-  state.value = null;
-  entry.value = null;
+  if (!retainProjection) { state.value = null; entry.value = null; }
   loading.value = false;
   error.value = null;
   if (!api || lessonId === null || studentId === null) return;
-  loading.value = true;
+  loading.value = !retainProjection;
   try {
     const response = await api.lesson(lessonId);
     if (run !== revision) return;
@@ -65,6 +65,7 @@ async function load(): Promise<void> {
     entry.value = student;
   } catch (cause) {
     if (run !== revision || cause instanceof StaleSessionGenerationError) return;
+    state.value = null;
     error.value =
       cause instanceof TeacherApiError ? cause.message : 'Не удалось открыть причину отсутствия.';
     emit('error', cause);
@@ -72,6 +73,7 @@ async function load(): Promise<void> {
     if (run === revision) loading.value = false;
   }
 }
+useProjectionRefresh(() => load(true));
 </script>
 <template>
   <main
@@ -106,7 +108,7 @@ async function load(): Promise<void> {
       :message="error"
       severity="error"
       action-label="Повторить"
-      @action="load"
+      @action="load()"
     />
     <template v-else-if="state && entry">
       <article class="teacher-screen__ticket">

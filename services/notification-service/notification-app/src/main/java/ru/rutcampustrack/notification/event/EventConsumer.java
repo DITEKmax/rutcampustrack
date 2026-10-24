@@ -1,9 +1,11 @@
 package ru.rutcampustrack.notification.event;
 
-import java.util.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
+
 import ru.rutcampustrack.notification.history.*;
 import ru.rutcampustrack.notification.preferences.NotificationPreferencesService;
 import ru.rutcampustrack.notification.push.NotificationPushIntentStore;
@@ -12,6 +14,8 @@ import ru.rutcampustrack.notification.reminder.ReminderAttendanceStateService;
 import ru.rutcampustrack.shared.events.AbstractEventConsumer;
 import ru.rutcampustrack.shared.events.EventIdempotent;
 import ru.rutcampustrack.shared.events.IdempotencyGuard;
+
+import java.util.*;
 
 /**
  * The event claim, immutable audience, history and external intent commit together; no provider
@@ -75,6 +79,10 @@ public class EventConsumer extends AbstractEventConsumer {
     @EventIdempotent(consumer = CONSUMER_ID)
     @org.springframework.transaction.annotation.Transactional
     public void onEvent(Map<String, Object> envelope) {
+        if ("group.updated".equals(envelope.get("event_type"))) {
+            groupUpdated(envelope);
+            return;
+        }
         if ("dashboard.invalidated".equals(envelope.get("event_type"))) {
             if (!("academic-service".equals(envelope.get("source"))
                             || "attendance-service".equals(envelope.get("source")))
@@ -132,6 +140,42 @@ public class EventConsumer extends AbstractEventConsumer {
                                     admitted.put(id, roles);
                             });
                     intents.enqueue(envelope, admitted);
+                });
+    }
+
+    private void groupUpdated(Map<String, Object> envelope) {
+        if (!"academic-service".equals(envelope.get("source"))
+                || !Integer.valueOf(1).equals(envelope.get("event_version"))
+                || !(envelope.get("payload") instanceof Map<?, ?> payload)
+                || !(payload.get("affected_user_ids") instanceof List<?> rawRecipients)) return;
+        long groupId = NotificationAudienceClient.positive(payload.get("group_id"));
+        Set<Long> recipients = new LinkedHashSet<>();
+        for (Object raw : rawRecipients) recipients.add(NotificationAudienceClient.positive(raw));
+        if (!idempotencyGuard.tryClaim(CONSUMER_ID, envelope)) return;
+        // Hidden hints share the existing private topic; no history, push, or live audience lookup.
+        Runnable publish =
+                () ->
+                        recipients.forEach(
+                                userId ->
+                                        messagingTemplate.convertAndSend(
+                                                "/topic/user/" + userId,
+                                                Map.of(
+                                                        "type",
+                                                        "group.updated",
+                                                        "payload",
+                                                        Map.of(
+                                                                "group_id",
+                                                                Long.toString(groupId)))));
+        if (!TransactionSynchronizationManager.isSynchronizationActive()) {
+            publish.run();
+            return;
+        }
+        TransactionSynchronizationManager.registerSynchronization(
+                new TransactionSynchronization() {
+                    @Override
+                    public void afterCommit() {
+                        publish.run();
+                    }
                 });
     }
 

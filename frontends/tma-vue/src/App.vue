@@ -751,7 +751,14 @@ watch(
           if (!sessionOwner.isCurrent(generation)) throw new StaleSessionGenerationError();
           return sessionOwner.accessToken.value;
         },
-        refreshFor: (generation) => sessionOwner.authenticateFor(generation),
+        refreshFor: async (generation) => {
+          try {
+            await sessionOwner.authenticateFor(generation);
+          } catch (cause) {
+            if (sessionOwner.isCurrent(generation) && isAuthDenied(cause)) onOwnerError(cause);
+            throw cause;
+          }
+        },
       },
       scope: {
         userId,
@@ -1509,6 +1516,7 @@ onBeforeUnmount(() => {
   />
   <TeacherFeatureOwner
     v-else-if="teacherViewVisible"
+    :realtime-revision="notificationRealtimeRevision"
     ref="teacherNotificationOwner"
     :key="`teacher-${ownerRevision}`"
     :on-notifications="openNotifications"
@@ -1750,6 +1758,7 @@ onBeforeUnmount(() => {
   </AdminShell>
   <StudentFeatureOwner
     v-else-if="studentViewVisible"
+    :realtime-revision="notificationRealtimeRevision"
     ref="studentNotificationOwner"
     :key="ownerKey"
     :owner-key="ownerKey"

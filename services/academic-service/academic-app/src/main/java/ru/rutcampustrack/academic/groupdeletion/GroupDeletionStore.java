@@ -315,8 +315,12 @@ VALUES(?,?,?,?,?,?,?,?,?::jsonb,?,?,?::jsonb,'PREPARING')
         var affectedUsers =
                 jdbc.queryForList(
                         "SELECT user_id FROM academic_role_eligibility WHERE group_id=? UNION"
-                                + " SELECT student_id FROM headman_assistants WHERE group_id=?",
+                            + " SELECT student_id FROM headman_assistants WHERE group_id=? UNION"
+                            + " SELECT teacher_id FROM assignments WHERE group_id=? UNION SELECT"
+                            + " teacher_id FROM teacher_subject_groups WHERE group_id=?",
                         Long.class,
+                        current.group(),
+                        current.group(),
                         current.group(),
                         current.group());
         caches.afterCommit(affectedUsers, List.of(current.group()));
@@ -355,7 +359,8 @@ VALUES(?,?,?,?,?,?,?,?,?::jsonb,?,?,?::jsonb,'PREPARING')
                         + " phase='COMPLETED',failure=NULL,updated_at=now() WHERE operation_id=?",
                 id);
         events.publishEvent(
-                new ru.rutcampustrack.academic.event.GroupUpdatedEvent(this, current.group()));
+                new ru.rutcampustrack.academic.event.GroupUpdatedEvent(
+                        this, current.group(), affectedUsers));
         events.publishEvent(new ru.rutcampustrack.academic.event.DashboardInvalidatedEvent(this));
     }
 

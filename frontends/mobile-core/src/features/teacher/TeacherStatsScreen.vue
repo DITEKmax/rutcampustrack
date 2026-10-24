@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useProjectionRefresh } from '../../shared/projection-refresh';
 import ExportButton from '../../shared/components/ExportButton.vue';
 import { toTeacherStatsReportSelector } from './teacher-client';
 import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue';
@@ -337,18 +338,51 @@ async function loadContext(): Promise<void> {
   }
 }
 
+async function refreshProjection(): Promise<void> {
+  if (!contextReady.value) { await loadContext(); return; }
+  const api = props.api,
+    semesterId = props.semesterId,
+    current = ++contextRevision;
+  if (!api || !semesterId) return;
+  try {
+    const catalog = await api.catalog(semesterId);
+    if (!isCurrentContext(current)) return;
+    authorizedGroups.value = catalog.groups;
+    catalogSubjectOptions.value = mergeSubjectOptions(
+      catalog.taughtSubjectOptions,
+      catalog.subjectOptions,
+    );
+    authorizedSubjectOptions.value = mergeSubjectOptions(catalogSubjectOptions.value, []);
+    if (
+      selectedGroupId.value !== null &&
+      !catalog.groups.some((group) => group.id === selectedGroupId.value)
+    ) {
+      selectedGroupId.value = null;
+      selectedSubjectId.value = null;
+      stats.value = null;
+      statsQuery.value = null;
+      return;
+    }
+    await loadStatsForRevision(++revision.value, true);
+  } catch (cause) {
+    if (!isCurrentContext(current) || cause instanceof StaleSessionGenerationError) return;
+    error.value =
+      cause instanceof Error ? cause.message : 'Не удалось получить назначения преподавателя.';
+    emit('error', cause);
+  }
+}
+
 async function loadStats(): Promise<void> {
   if (!canChooseContext.value) return;
   const current = ++revision.value;
   await loadStatsForRevision(current);
 }
 
-async function loadStatsForRevision(current: number): Promise<void> {
+async function loadStatsForRevision(current: number, retainProjection = false): Promise<void> {
   const api = props.api;
   const semesterId = props.semesterId;
-  stats.value = null;
-  statsQuery.value = null;
-  statsLoading.value = true;
+  if (!retainProjection) { stats.value = null; statsQuery.value = null; }
+  statsLoading.value = !retainProjection;
   error.value = null;
   try {
     if (!api || !semesterId) {
@@ -691,6 +725,7 @@ function isCurrentContext(requestRevision: number): boolean {
 function isCurrent(requestRevision: number): boolean {
   return !disposed && requestRevision === revision.value;
 }
+useProjectionRefresh(refreshProjection);
 </script>
 
 <template>

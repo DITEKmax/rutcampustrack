@@ -209,6 +209,30 @@ class GroupDeletionHttpIT extends AbstractAcademicIntegrationTest {
     @Test
     void passwordPreviewDeletionPreserveAccountOtherRoleAndForeignGroupAndReplay()
             throws Exception {
+        long assignedTeacher = identityFixture.canonical().teacherId();
+        long legacyTeacher = admin.userId();
+        long subject =
+                jdbc.queryForObject(
+                        "SELECT id FROM subjects WHERE group_id=? AND semester_id IS NOT NULL",
+                        Long.class,
+                        group);
+        long semester = identityFixture.canonical().semesterId();
+        jdbc.update(
+                "INSERT INTO"
+                    + " assignments(teacher_id,subject_id,group_id,semester_id,lesson_type,valid_from)"
+                    + " VALUES(?,?,?,?,'lecture','2026-01-01')",
+                assignedTeacher,
+                subject,
+                group,
+                semester);
+        jdbc.update(
+                "INSERT INTO teacher_subject_groups(teacher_id,subject_id,group_id,semester_id)"
+                    + " VALUES(?,?,?,?)",
+                legacyTeacher,
+                subject,
+                group,
+                semester);
+        Set<Long> affected = Set.of(member, helper, assignedTeacher, legacyTeacher);
         String account = authAccountHash(member);
         String localProfile =
                 jdbc.queryForObject(
@@ -278,6 +302,15 @@ class GroupDeletionHttpIT extends AbstractAcademicIntegrationTest {
                                 key),
                         200);
         assertThat(completed.path("phase").asText()).isEqualTo("COMPLETED");
+        String committedHint = groupHint();
+        assertThat(json.readTree(committedHint).path("payload").path("affected_user_ids"))
+                .satisfies(
+                        ids -> {
+                            Set<Long> actual = new HashSet<>();
+                            ids.forEach(value -> actual.add(value.asLong()));
+                            assertThat(actual).containsExactlyInAnyOrderElementsOf(affected);
+                            assertThat(ids.size()).isEqualTo(affected.size());
+                        });
         assertThat(count("SELECT count(*) FROM groups WHERE id=" + group)).isZero();
         assertThat(count("SELECT count(*) FROM subjects WHERE group_id=" + group)).isZero();
         assertThat(count("SELECT count(*) FROM homeworks WHERE group_id=" + group)).isZero();
@@ -375,6 +408,7 @@ class GroupDeletionHttpIT extends AbstractAcademicIntegrationTest {
                                                 + " operation_id=?",
                                         key))
                 .isInstanceOf(org.springframework.dao.DataAccessException.class);
+        assertThat(groupHint()).isEqualTo(committedHint);
         // The preserved, now grantless helper remains usable by the ordinary identity CAS flow.
         try (var ignored = identityFixture.request(admin, UUID.randomUUID())) {
             assertThat(
@@ -579,7 +613,8 @@ class GroupDeletionHttpIT extends AbstractAcademicIntegrationTest {
     }
 
     @org.junit.jupiter.params.ParameterizedTest
-    @org.junit.jupiter.params.provider.ValueSource(strings = {"permission", "credentials", "expiry"})
+    @org.junit.jupiter.params.provider.ValueSource(
+            strings = {"permission", "credentials", "expiry"})
     void delayedPrepareCannotCommitAfterOriginalAuthorityOrProofIsWithdrawn(String change)
             throws Exception {
         delayedPrepareCannotCommitAfterWithdrawal(change);
@@ -868,6 +903,14 @@ class GroupDeletionHttpIT extends AbstractAcademicIntegrationTest {
                                     .path("phase")
                                     .asText())
                     .isEqualTo("COMMITTING");
+            assertThat(
+                            count(
+                                    "SELECT count(*) FROM academic_outbox WHERE"
+                                        + " event_type='group.updated' AND payload #>>"
+                                        + " '{payload,group_id}'='"
+                                            + group
+                                            + "'"))
+                    .isZero();
             assertThat(count("SELECT count(*) FROM groups WHERE id=" + group)).isEqualTo(1);
             assertThat(count("SELECT count(*) FROM subjects WHERE group_id=" + group)).isEqualTo(2);
             assertThat(
@@ -900,6 +943,21 @@ class GroupDeletionHttpIT extends AbstractAcademicIntegrationTest {
                                 .asText())
                 .isEqualTo("COMPLETED");
         assertThat(count("SELECT count(*) FROM groups WHERE id=" + group)).isZero();
+        JsonNode recipients = json.readTree(groupHint()).path("payload").path("affected_user_ids");
+        Set<Long> actual = new HashSet<>();
+        recipients.forEach(value -> actual.add(value.asLong()));
+        assertThat(actual).containsExactlyInAnyOrder(member, helper);
+    }
+
+    private String groupHint() {
+        var hints =
+                jdbc.queryForList(
+                        "SELECT payload::text FROM academic_outbox WHERE event_type='group.updated'"
+                            + " AND payload #>> '{payload,group_id}'=?",
+                        String.class,
+                        Long.toString(group));
+        assertThat(hints).hasSize(1);
+        return hints.getFirst();
     }
 
     @Test
@@ -1162,7 +1220,7 @@ class GroupDeletionHttpIT extends AbstractAcademicIntegrationTest {
                         .authJdbc()
                         .queryForObject(
                                 "SELECT (to_jsonb(i)-'catalog_version')::text FROM auth_identities"
-                                    + " i WHERE id=?",
+                                        + " i WHERE id=?",
                                 String.class,
                                 user);
         return ru.rutcampustrack.academic.subjectdeletion.SubjectDeletionAcademicData.hash(row);

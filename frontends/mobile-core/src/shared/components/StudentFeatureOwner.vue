@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useProjectionRefresh } from '../projection-refresh';
 import type { NotificationAction } from '../../features/notifications/notifications-v2-models';
 import { computed, onBeforeUnmount, reactive, ref, shallowRef, watch } from 'vue';
 import { useQuery, useQueryClient } from '@tanstack/vue-query';
@@ -115,6 +116,7 @@ import { createProfileViewPublication } from './profile-view-publication';
 const props = withDefaults(
   defineProps<{
     api: StudentApi | null;
+    realtimeRevision?: number;
     scope: StudentFeatureScope | null;
     ownerKey?: string | null;
     offline: boolean;
@@ -150,6 +152,7 @@ const props = withDefaults(
     onRetryConnection?: (() => void | Promise<void>) | undefined;
   }>(),
   {
+    realtimeRevision: 0,
     readOnly: false,
     unreadCount: null,
     ownerKey: null,
@@ -2083,6 +2086,28 @@ function openNotificationAction(action: NotificationAction, isCurrent: () => boo
   }
   return false;
 }
+useProjectionRefresh(
+  async () => {
+    // Reads preserve the mounted form, request draft, and pending/unknown command owners.
+    const id = route.value.id;
+    if (id === 'today') await today.refresh();
+    else if (id === 'homework') await homework.query.refetch();
+    else if (id === 'attendance') await attendance.query.refetch();
+    else if (id === 'more/schedule') await semesterQuery.refetch();
+    else if (id.startsWith('more/statistics')) await statistics.query.refetch();
+  },
+  {
+    revision: () => props.realtimeRevision,
+    blocked: () =>
+      offline.value ||
+      props.readOnly ||
+      today.mutation.isPending.value ||
+      homework.mutation.isPending.value ||
+      requests.view.mutation === 'submitting' ||
+      route.value.surface === 'task',
+  },
+);
+
 defineExpose({ openNotificationAction });
 </script>
 

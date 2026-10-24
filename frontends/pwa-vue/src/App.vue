@@ -896,7 +896,15 @@ watch(
           if (!auth.isCurrent(generation)) throw new StaleSessionGenerationError();
           return auth.accessToken.value;
         },
-        refreshFor: (generation) => auth.refreshFor(generation),
+        refreshFor: async (generation) => {
+          try {
+            await auth.refreshFor(generation);
+          } catch (cause) {
+            if (auth.isCurrent(generation) && isConfirmedOnlineAuthDenial(cause))
+              await handleOnlineAuthDenial(cause);
+            throw cause;
+          }
+        },
       },
       scope: {
         userId,
@@ -2388,6 +2396,7 @@ onBeforeUnmount(() => {
   />
   <TeacherFeatureOwner
     v-else-if="teacherViewVisible"
+    :realtime-revision="notificationRealtimeRevision"
     ref="teacherNotificationOwner"
     :key="`teacher-${ownerRevision}`"
     :report-download="reportDownload"
@@ -2629,6 +2638,7 @@ onBeforeUnmount(() => {
   </AdminShell>
   <StudentFeatureOwner
     v-else-if="studentViewVisible"
+    :realtime-revision="notificationRealtimeRevision"
     ref="studentNotificationOwner"
     :key="ownerKey"
     :report-download="reportDownload"

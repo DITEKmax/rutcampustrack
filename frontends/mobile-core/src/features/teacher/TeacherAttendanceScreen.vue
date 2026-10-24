@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useProjectionRefresh } from '../../shared/projection-refresh';
 import {
   computed,
   nextTick,
@@ -390,6 +391,28 @@ function isDate(value: string): boolean {
   const date = new Date(`${value}T00:00:00Z`);
   return Number.isFinite(date.getTime()) && date.toISOString().slice(0, 10) === value;
 }
+async function refreshProjection(): Promise<void> {
+  if (!semester.value) { await loadContext(); return; }
+  const api = props.api, semesterId = props.semesterId, run = ++revision;
+  if (!api || !semesterId) return;
+  try {
+    const data = await api.catalog(semesterId);
+    if (!current(run)) return;
+    groups.value = [...data.groups].sort((a, b) => a.name.localeCompare(b.name, 'ru'));
+    subjectOptions.value = data.subjectOptions;
+    if (!groups.value.some(group => group.id === selectedGroupId.value)) selectedGroupId.value = null;
+    if (!subjects.value.some(subject => subject.subjectId === selectedSubjectId.value)) selectedSubjectId.value = null;
+    selectedTypes.value = selectedTypes.value.filter(type => types.value.includes(type));
+    feed.reset(query.value, request => api.journal(request));
+    if (query.value && props.active) await loadMore();
+  } catch (cause) {
+    if (!current(run) || cause instanceof StaleSessionGenerationError) return;
+    errorSeverity.value = warningSeverity(cause);
+    error.value = cause instanceof Error ? cause.message : 'Не удалось получить группы и предметы.';
+    emit('error', cause);
+  }
+}
+useProjectionRefresh(refreshProjection, { blocked: () => !props.active });
 </script>
 
 <template>

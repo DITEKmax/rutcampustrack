@@ -66,6 +66,19 @@ export function createGenerationBoundNotificationsRealtime(
   let lastDashboardInvalidationAt = 0
   let client: StompClientHandle | null = null
   let subscriptions: StompSubscription[] = []
+  let readmissionUsed = false
+  let readmissionInFlight: Promise<void> | null = null
+
+  function readmitOnce(): Promise<void> {
+    if (readmissionInFlight) return readmissionInFlight
+    if (!isCurrent() || readmissionUsed) return Promise.resolve()
+    readmissionUsed = true
+    const pending = options.owner.refreshFor(generation).then(() => assertCurrent())
+    readmissionInFlight = pending
+    return pending.finally(() => {
+      if (readmissionInFlight === pending) readmissionInFlight = null
+    })
+  }
 
   const isCurrent = (): boolean => active && options.owner.currentGeneration() === generation
 
@@ -80,6 +93,7 @@ export function createGenerationBoundNotificationsRealtime(
   }
 
   async function requestTicket(retried = false): Promise<string> {
+    if (readmissionInFlight) await readmissionInFlight
     assertCurrent()
     const token = options.owner.accessTokenFor(generation)
     const headers = new Headers({ Accept: 'application/json' })
@@ -98,8 +112,10 @@ export function createGenerationBoundNotificationsRealtime(
     }
     assertCurrent()
 
-    if (response.status === 401 && !retried) {
-      await options.owner.refreshFor(generation)
+    const roleDenied = response.status === 403 && (await isRoleDenial(response))
+    assertCurrent()
+    if ((response.status === 401 || roleDenied) && !retried && !readmissionUsed) {
+      await readmitOnce()
       assertCurrent()
       return requestTicket(true)
     }
@@ -196,6 +212,7 @@ export function createGenerationBoundNotificationsRealtime(
     },
     onConnect: () => {
       if (!isCurrent()) return
+      readmissionUsed = false
       subscriptions = destinations.map((destination) =>
         client!.subscribe(destination, (message) => {
           if (!isCurrent()) return
@@ -218,6 +235,9 @@ export function createGenerationBoundNotificationsRealtime(
     },
     onWebSocketClose: () => {
       subscriptions = []
+      // The server may close a retired role before its invalidation MESSAGE can
+      // be delivered. One normal owner admission also fences reconnect races.
+      if (isCurrent()) void readmitOnce().catch(() => undefined)
     },
   }
 
@@ -296,5 +316,18 @@ function exportHint(body: string): string | null {
       : null
   } catch {
     return null
+  }
+}
+
+async function isRoleDenial(response: Response): Promise<boolean> {
+  try {
+    const problem = asRecord(await response.clone().json())
+    return (
+      problem?.code === 'WRONG_ROLE' ||
+      problem?.code === 'ROLE_NOT_GRANTED' ||
+      problem?.code === 'ROLE_NOT_SELECTABLE'
+    )
+  } catch {
+    return false
   }
 }

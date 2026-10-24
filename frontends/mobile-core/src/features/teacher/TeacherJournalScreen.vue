@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useProjectionRefresh } from '../../shared/projection-refresh';
 import {
   exportStateLabel,
   reportDownloadAcceptedMessage,
@@ -252,19 +253,21 @@ function changeSubject(raw: string): void {
     pageSize: 100,
   });
 }
-async function load(): Promise<void> {
+async function load(retainProjection = false): Promise<void> {
   const api = props.api;
   const value = effectiveQuery.value;
   const current = ++revision;
-  chartRevision += 1;
-  chartMetrics.value = null;
-  chartError.value = null;
-  chartLoading.value = false;
-  studentId.value = null;
+  if (!retainProjection) {
+    chartRevision += 1;
+    chartMetrics.value = null;
+    chartError.value = null;
+    chartLoading.value = false;
+    studentId.value = null;
+  }
   if (!api || !value || !teacherJournalTypes(value).length) return;
-  loading.value = true;
+  loading.value = !retainProjection;
   error.value = null;
-  state.value = null;
+  if (!retainProjection) state.value = null;
   const context = journalContextKey(value);
   const active = () =>
     !disposed &&
@@ -279,6 +282,8 @@ async function load(): Promise<void> {
     }
   } catch (cause) {
     if (!active() || cause instanceof StaleSessionGenerationError) return;
+    state.value = null;
+    chartMetrics.value = null;
     error.value =
       cause instanceof TeacherApiError
         ? cause.message
@@ -452,6 +457,13 @@ async function loadChartMetrics(): Promise<void> {
     if (active()) chartLoading.value = false;
   }
 }
+useProjectionRefresh(
+  async () => {
+    await load(true);
+    if (chart.value) await loadChartMetrics();
+  },
+  { blocked: () => !props.active || exportLoading.value },
+);
 </script>
 <template>
   <component
@@ -562,7 +574,7 @@ async function loadChartMetrics(): Promise<void> {
       :message="error"
       severity="error"
       action-label="Повторить"
-      @action="load"
+      @action="load()"
     />
     <p
       v-else-if="!completedJournal?.lessons.length"

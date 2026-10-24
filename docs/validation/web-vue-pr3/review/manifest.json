@@ -238,5 +238,15 @@
     "path": "promotion-REVIEW-bf13b7aa.md",
     "original_path": "/workspace/rct-pr3-review/promotion/REVIEW-bf13b7aa.md",
     "sha256": "feed0365ead699c7b2754ebe90986be9bb3ed2c45bc20d869a7f6c7acad2b050"
+  },
+  {
+    "path": "shipping-REVIEW-0d30f35ce.md",
+    "original_path": "/workspace/rct-pr3-review/shipping/REVIEW-0d30f35ce.md",
+    "sha256": "f16937614a973ffe7e95345f1fa6f7c7b2d9fd604a37a2f68bb2943778548dcd"
+  },
+  {
+    "path": "shipping-RECHECK-6ff8874ad.md",
+    "original_path": "/workspace/rct-pr3-review/shipping/RECHECK-6ff8874ad.md",
+    "sha256": "81452314d8325d0ffbb2d0454a4be098c16b2303fc9bbaf4b16cb689f7645899"
   }
 ]

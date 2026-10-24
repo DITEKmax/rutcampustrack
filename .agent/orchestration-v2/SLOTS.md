@@ -57,3 +57,11 @@ Narrow source-only ownership override05:06Z: web_foundation owns ONLY
  tests/e2e/fixtures/{auth.ts,axe.ts,web-panel-route.ts,web-panel-route.control.mjs}
 for currentVue helpers/finitecontrols. Runtime owner idle; no conflict. No browser,
 DBwrites/roles/config/workflows/lockfile or Angularremoval in that packet.
+
+
+05:19Z adapter review update:0d30 initial2P2 corrected by6ff, narrowrecheckPASS,
+rootintegratesboth0d37/576 together. Nextweb_foundation ownership extends to
+fixtures/users.ts and specs/{auth,role-student,role-headman,role-teacher,role-admin}.spec.ts
+plusonlyneededstudent/headmanoracles/existingcontrol. Sourceonly, no browser,
+backendwrites/config/workflows/lockfiles. Admincreate/studentexcuse excluded.
+Runtime separate readonly naturalGEOguardprep; QENV005/006deniedactionsfrozen.

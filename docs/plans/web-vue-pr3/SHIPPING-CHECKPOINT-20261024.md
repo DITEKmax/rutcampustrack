@@ -95,3 +95,15 @@ Served-artifact oracle original8b8f3c7ac→root4851387b7 now requires exact Vue
 HTML/module bytes and path bounds remain strict. Author8 unittest PASS;
 independent source review PASS. No new outeredge/container/deploy execution is
 claimed. Existing actual innerstatic12checks at UIa813 remain separate evidence.
+
+
+Vue browser adapters original0d30f35ce+correction6ff8874ad→root0d37bc982/
+576faf38b: four bounded fixtures now use current auth/role/nav/landmark and six
+ADMIN/TEACHER data→DOM oracles. Unsupported legacy intent explicitly throws
+PENDING_VUE before browser actions, never a green skip. Existing finitecontrol
+ran once native0 (10positive/22rejected, browserProoffalse); scopedstrictTS0.
+Independent initialreview found2P2 (nestedpasswordlabel/compactrolecarrier),
+correction-onlyauth.ts passednarrowrecheck. Both reports retained. No browser,
+backendwrites, rolegrants or productchange; accepted115/110counts unchanged.
+Further existingusers/role/authspec migration is separately owned and pending;
+admincreate/studentexcuse/retired410carriers remain explicit later scope.

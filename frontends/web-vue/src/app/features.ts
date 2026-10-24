@@ -1,5 +1,6 @@
 import type { RouteRecordRaw } from 'vue-router'
 import NotificationsPage from '../features/notifications/NotificationsPage.vue'
+import MapPage from '../features/map/MapPage.vue'
 import ProfilePage from '../features/profile/ProfilePage.vue'
 import HomeworkPage from '../features/student-homework/HomeworkPage.vue'
 import { headmanRoutes } from '../features/headman/routes'
@@ -28,8 +29,32 @@ function integrateRoute(route: RouteRecordRaw): RouteRecordRaw {
 
 /** A role feature owns its pages and exports records; only this registry integrates them. */
 export const webFeatures: RouteRecordRaw[] = [
-  { name: 'notifications', path: '/notifications', component: NotificationsPage, meta: { label: 'Уведомления', navHidden: true, requiredRoles: ['STUDENT', 'HEADMAN', 'TEACHER', 'ADMIN'] } },
-  { name: 'settings', path: '/settings', component: ProfilePage, meta: { label: 'Настройки', navHidden: true, requiredRoles: ['STUDENT', 'HEADMAN', 'TEACHER', 'ADMIN'] } },
+  {
+    name: 'map',
+    path: '/map',
+    component: MapPage,
+    meta: { label: 'Карта', requiredRoles: ['STUDENT', 'HEADMAN', 'TEACHER', 'ADMIN'] },
+  },
+  {
+    name: 'notifications',
+    path: '/notifications',
+    component: NotificationsPage,
+    meta: {
+      label: 'Уведомления',
+      navHidden: true,
+      requiredRoles: ['STUDENT', 'HEADMAN', 'TEACHER', 'ADMIN'],
+    },
+  },
+  {
+    name: 'settings',
+    path: '/settings',
+    component: ProfilePage,
+    meta: {
+      label: 'Настройки',
+      navHidden: true,
+      requiredRoles: ['STUDENT', 'HEADMAN', 'TEACHER', 'ADMIN'],
+    },
+  },
   ...studentRoutes.map(integrateRoute),
   ...headmanRoutes.map(integrateRoute),
   ...adminRoutes.map(integrateRoute),

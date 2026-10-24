@@ -113,5 +113,5 @@ export function useStudentCheckin(scope: StudentScope, refresh: () => Promise<vo
       }
     }
   }
-  return { busy, busyLesson, uncertain, error, result, allowed, label, submit }
+  return { busy, busyLesson, uncertain, error, result, clock, allowed, label, submit }
 }

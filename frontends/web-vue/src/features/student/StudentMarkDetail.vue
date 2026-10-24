@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import type { StudentAttendanceLesson } from '../../../../mobile-core/src/api/types'
-import { formatLessonDate, lessonTypeLabel, studentMark } from './student-format'
-defineProps<{ lesson: StudentAttendanceLesson; readOnly: boolean }>()
-defineEmits<{ close: [] }>()
+import type { StudentAttendanceLesson } from '../../../../mobile-core/src/api/types';
+import { formatLessonDate, lessonTypeLabel, studentMark } from './student-format';
+defineProps<{ lesson: StudentAttendanceLesson; readOnly: boolean }>();
+defineEmits<{ close: [] }>();
 </script>
 <template>
   <section
@@ -20,7 +20,9 @@ defineEmits<{ close: [] }>()
       </button>
     </div>
     <p>
-      {{ formatLessonDate(lesson.date) }} · {{ lessonTypeLabel(lesson.type) }} · {{ lesson.schedule.startsAt.slice(0,5) }}–{{ lesson.schedule.endsAt.slice(0,5) }}<template v-if="lesson.schedule.room">
+      {{ formatLessonDate(lesson.date) }} · {{ lessonTypeLabel(lesson.type) }} ·
+      {{ lesson.schedule.startsAt.slice(0, 5) }}–{{ lesson.schedule.endsAt.slice(0, 5)
+      }}<template v-if="lesson.schedule.room">
         · {{ lesson.schedule.room }}
       </template>
     </p>
@@ -42,7 +44,7 @@ defineEmits<{ close: [] }>()
       <RouterLink
         v-if="option.enabled && !readOnly"
         class="web-button"
-        :to="{ name:'student-requests', query:{lesson:lesson.id,kind:option.kind} }"
+        :to="{ name: 'student-requests', query: { lesson: lesson.id, kind: option.kind } }"
       >
         {{ option.label }}
       </RouterLink>
@@ -50,7 +52,8 @@ defineEmits<{ close: [] }>()
         v-else
         class="web-caption"
       >
-        {{ option.label }}: {{ readOnly ? 'доступен только просмотр' : option.reason || 'недоступно для этой пары' }}
+        {{ option.label }}:
+        {{ readOnly ? 'доступен только просмотр' : option.reason || 'недоступно для этой пары' }}
       </p>
     </div>
   </section>

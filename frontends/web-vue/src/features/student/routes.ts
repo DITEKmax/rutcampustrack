@@ -3,6 +3,18 @@ import type { ProfileRole } from '../../auth/session'
 const requiredRoles: readonly ProfileRole[] = ['STUDENT']
 export const studentRoutes: RouteRecordRaw[] = [
   {
+    name: 'student-requests',
+    path: '/student/requests',
+    component: () => import('./StudentRequestsPage.vue'),
+    meta: { label: 'Заявки и тикеты', requiredRoles },
+  },
+  {
+    name: 'student-request',
+    path: '/student/requests/:requestId',
+    component: () => import('./StudentRequestsPage.vue'),
+    meta: { label: 'Моя заявка', requiredRoles, navHidden: true },
+  },
+  {
     name: 'student-attendance',
     path: '/student/attendance',
     component: () => import('./StudentAttendancePage.vue'),

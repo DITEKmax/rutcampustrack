@@ -1,20 +1,34 @@
 <script setup lang="ts">
-import { computed, nextTick, ref, watch } from 'vue'
-import type { StudentAttendanceLesson } from '../../../../mobile-core/src/api/types'
-import { formatLessonDate, lessonTypeLabel, studentMark } from './student-format'
-import StudentMarkDetail from './StudentMarkDetail.vue'
-const props = defineProps<{ lessons: readonly StudentAttendanceLesson[]; readOnly: boolean }>()
-const selected = ref<StudentAttendanceLesson | null>(null), detail = ref<InstanceType<typeof StudentMarkDetail> | null>(null)
-let trigger: HTMLElement | null = null
-const dates = computed(() => [...new Set(props.lessons.map(l=>l.date))].map(date=>({date,count:props.lessons.filter(l=>l.date===date).length})))
-watch(() => props.lessons, () => { selected.value = null })
+import { computed, nextTick, ref, watch } from 'vue';
+import type { StudentAttendanceLesson } from '../../../../mobile-core/src/api/types';
+import { formatLessonDate, lessonTypeLabel, studentMark } from './student-format';
+import StudentMarkDetail from './StudentMarkDetail.vue';
+const props = defineProps<{ lessons: readonly StudentAttendanceLesson[]; readOnly: boolean }>();
+const selected = ref<StudentAttendanceLesson | null>(null),
+  detail = ref<InstanceType<typeof StudentMarkDetail> | null>(null);
+let trigger: HTMLElement | null = null;
+const dates = computed(() =>
+  [...new Set(props.lessons.map((l) => l.date))].map((date) => ({
+    date,
+    count: props.lessons.filter((l) => l.date === date).length,
+  })),
+);
+watch(
+  () => props.lessons,
+  () => {
+    selected.value = null;
+  },
+);
 async function open(lesson: StudentAttendanceLesson, event: MouseEvent) {
-  trigger = event.currentTarget as HTMLElement
-  selected.value = lesson
-  await nextTick()
-  detail.value?.$el.focus()
+  trigger = event.currentTarget as HTMLElement;
+  selected.value = lesson;
+  await nextTick();
+  detail.value?.$el.focus();
 }
-function close() { selected.value = null; trigger?.focus() }
+function close() {
+  selected.value = null;
+  trigger?.focus();
+}
 </script>
 <template>
   <div class="web-stack">
@@ -57,7 +71,7 @@ function close() { selected.value = null; trigger?.focus() }
                 :data-tone="studentMark(lesson.status).tone"
                 :aria-expanded="selected?.id === lesson.id"
                 :aria-label="`${lesson.subject.name}, ${formatLessonDate(lesson.date)}, ${studentMark(lesson.status).label}: подробности`"
-                @click="open(lesson,$event)"
+                @click="open(lesson, $event)"
               >
                 {{ studentMark(lesson.status).symbol }}
               </button>

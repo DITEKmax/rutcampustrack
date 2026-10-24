@@ -4,6 +4,7 @@ import type {
   StudentAttendanceResponse,
   StudentStatisticsSubjectDetailResponse,
   StudentToday,
+  StudentRequestOptions,
 } from '../../../../mobile-core/src/api/types';
 import { useStudentResource, useStudentScope } from './student-state';
 import { useStudentCheckin } from './use-student-checkin';
@@ -16,10 +17,16 @@ import StudentPwaBanner from './StudentPwaBanner.vue';
 import StudentHomeworkDay from './StudentHomeworkDay.vue';
 import StudentTrend from './StudentTrend.vue';
 import StudentPeriodPager from './StudentPeriodPager.vue';
+import { canRequestLesson } from '../../../../mobile-core/src/features/requests/state';
 const scope = useStudentScope();
 const today = useStudentResource<StudentToday>(scope);
 const attendance = useStudentResource<StudentAttendanceResponse>(scope);
 const subject = useStudentResource<StudentStatisticsSubjectDetailResponse>(scope);
+const options = useStudentResource<StudentRequestOptions>(scope);
+const receivedAt = ref(Date.now());
+watch(today.data, () => {
+  receivedAt.value = Date.now();
+});
 const week = ref(''),
   range = ref<'week' | 'semester'>('week');
 const hero = computed(
@@ -34,11 +41,13 @@ async function load() {
     today.clear();
     attendance.clear();
     subject.clear();
+    options.clear();
     return;
   }
   await Promise.all([
     today.load(() => scope.api.getToday()),
     attendance.load(() => scope.api.getAttendance(semester.id)),
+    options.load(() => scope.api.getRequestOptions()),
   ]);
   scope.transport.assertCurrent();
   if (!scope.current()) return;
@@ -81,7 +90,17 @@ const progress = computed(() => {
   const start = Date.parse(`${lesson.date}T${lesson.startsAt}+03:00`),
     end = Date.parse(`${lesson.date}T${lesson.endsAt}+03:00`);
   return Number.isFinite(start) && end > start
-    ? Math.max(0, Math.min(100, ((Date.parse(value.serverNow) - start) / (end - start)) * 100))
+    ? Math.max(
+        0,
+        Math.min(
+          100,
+          ((Date.parse(value.serverNow) +
+            Math.max(0, checkin.clock.value - receivedAt.value) -
+            start) /
+            (end - start)) *
+            100,
+        ),
+      )
     : null;
 });
 </script>
@@ -123,9 +142,7 @@ const progress = computed(() => {
           aria-labelledby="student-current-title"
         >
           <h2 id="student-current-title">
-            {{
-              hero?.schedule.status === 'ACTIVE' ? 'Текущая пара' : 'Ближайшая пара'
-            }}
+            {{ hero?.schedule.status === 'ACTIVE' ? 'Текущая пара' : 'Ближайшая пара' }}
           </h2>
           <template v-if="hero">
             <StudentLesson
@@ -270,7 +287,35 @@ const progress = computed(() => {
               <StudentLesson
                 :lesson="lesson.schedule"
                 :today="lesson"
-              />
+              >
+                <template #actions>
+                  <template
+                    v-for="kind in ['EXCUSE', 'LATE_CHECKIN'] as const"
+                    :key="kind"
+                  >
+                    <RouterLink
+                      v-if="
+                        !scope.readOnly.value &&
+                          canRequestLesson(
+                            options.data.value?.lessons.find(
+                              (option) => option.lesson.id === lesson.schedule.id,
+                            ),
+                            kind,
+                          )
+                      "
+                      class="web-button"
+                      :to="{
+                        name: 'student-requests',
+                        query: { lesson: lesson.schedule.id, kind },
+                      }"
+                    >
+                      {{
+                        kind === 'EXCUSE' ? 'Подать уважительную причину' : 'Оспорить отсутствие'
+                      }}
+                    </RouterLink>
+                  </template>
+                </template>
+              </StudentLesson>
             </li>
           </ol>
           <RouterLink

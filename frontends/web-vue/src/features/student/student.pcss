@@ -8,21 +8,157 @@
   --student-detail-width: 24rem;
   min-inline-size: 0;
 }
-.student-attendance-scroll, .student-table-scroll { overflow: auto; min-inline-size: 0; border: var(--web-border) solid var(--color-border-subtle); border-radius: var(--radius-xl); }
-.student-attendance-table { border-collapse: collapse; min-inline-size: 100%; font-size: var(--font-size-micro); }
-.student-attendance-table th, .student-attendance-table td { border: var(--web-border) solid var(--color-border-subtle); min-inline-size: var(--student-attendance-column-width); text-align: center; padding: var(--space-2); }
-.student-attendance-table thead { background: var(--color-surface-raised); }
-.student-attendance-subject { display: block; writing-mode: vertical-rl; rotate: 180deg; block-size: auto; min-block-size: var(--student-attendance-column-width); inline-size: var(--student-attendance-subject-height); text-align: start; margin: auto; padding: var(--space-3); }
-.student-attendance-table th .web-caption { display: block; margin-block-start: var(--space-2); }
-.student-mark-button { border: 0; font-size: var(--font-size-dense); }
-.student-mark-button:hover, .student-mark-button:focus-visible { outline: var(--web-border) solid var(--color-border-focus); outline-offset: var(--space-1); }
-.student-table small { display: block; }
-.student-subject-detail { padding: var(--space-4); }
-.student-ranking-list { list-style: none; padding: 0; margin: 0; display: grid; gap: var(--space-2); }
-.student-ranking-list li { display: flex; align-items: start; justify-content: space-between; gap: var(--space-4); padding: var(--space-2); }
-.student-ranking-list .is-self { background: var(--color-accent-soft); border-radius: var(--radius-md); }
-.student-auto-edge { display: block; block-size: var(--web-border); }
-.student-history { display: flex; gap: var(--space-2); flex-wrap: wrap; }
+.student-attendance-scroll,
+.student-table-scroll {
+  overflow: auto;
+  min-inline-size: 0;
+  border: var(--web-border) solid var(--color-border-subtle);
+  border-radius: var(--radius-xl);
+}
+.student-attendance-table {
+  border-collapse: collapse;
+  min-inline-size: 100%;
+  font-size: var(--font-size-micro);
+}
+.student-attendance-table th,
+.student-attendance-table td {
+  border: var(--web-border) solid var(--color-border-subtle);
+  min-inline-size: var(--student-attendance-column-width);
+  text-align: center;
+  padding: var(--space-2);
+}
+.student-attendance-table thead {
+  background: var(--color-surface-raised);
+}
+.student-attendance-subject {
+  display: block;
+  writing-mode: vertical-rl;
+  rotate: 180deg;
+  block-size: auto;
+  min-block-size: var(--student-attendance-column-width);
+  inline-size: var(--student-attendance-subject-height);
+  text-align: start;
+  margin: auto;
+  padding: var(--space-3);
+}
+.student-attendance-table th .web-caption {
+  display: block;
+  margin-block-start: var(--space-2);
+}
+.student-mark-button {
+  border: 0;
+  font-size: var(--font-size-dense);
+}
+.student-mark-button:hover,
+.student-mark-button:focus-visible {
+  outline: var(--web-border) solid var(--color-border-focus);
+  outline-offset: var(--space-1);
+}
+.student-table small {
+  display: block;
+}
+.student-subject-detail {
+  padding: var(--space-4);
+}
+.student-ranking-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: var(--space-2);
+}
+.student-ranking-list li {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-2);
+}
+.student-ranking-list .is-self {
+  background: var(--color-accent-soft);
+  border-radius: var(--radius-md);
+}
+.student-auto-edge {
+  display: block;
+  block-size: var(--web-border);
+}
+.student-history {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+.student-request-form {
+  padding: var(--space-6);
+  border-block: var(--web-border) solid var(--color-border-subtle);
+}
+.student-request-lessons {
+  max-block-size: calc(var(--student-chart-height) * 2);
+  overflow: auto;
+}
+.student-request-option {
+  display: flex;
+  align-items: start;
+  gap: var(--space-3);
+  padding: var(--space-3);
+}
+.student-request-form fieldset {
+  border: 0;
+  margin: 0;
+  padding: 0;
+}
+.student-request-card h2 {
+  overflow-wrap: anywhere;
+}
+.student-request-card {
+  scroll-margin-block: var(--space-6);
+}
+.student-request-status {
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-full);
+  background: var(--color-surface-float);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-micro);
+}
+.student-request-status[data-tone='warning'] {
+  background: var(--color-state-info-bg);
+  color: var(--color-state-info-text);
+}
+.student-request-status[data-tone='success'] {
+  background: var(--color-state-success-bg);
+  color: var(--color-state-success-text);
+}
+.student-request-status[data-tone='danger'] {
+  background: var(--color-state-danger-bg);
+  color: var(--color-state-danger-text);
+}
+.student-request-lesson {
+  padding: var(--space-3);
+  gap: var(--space-2);
+}
+.student-dropzone {
+  border: var(--web-border) dashed var(--color-border-default);
+  border-radius: var(--radius-2xl);
+  padding: var(--space-5);
+  text-align: center;
+  align-items: center;
+}
+.student-attachment-image {
+  max-inline-size: 100%;
+  max-block-size: calc(var(--student-chart-height) * 2);
+  object-fit: contain;
+}
+.student-attachment strong {
+  overflow-wrap: anywhere;
+}
+.student-attachment .is-expired {
+  text-decoration: line-through;
+}
+.student-request-form .web-field {
+  min-inline-size: 0;
+}
+.student-request-form input[type='file'] {
+  max-inline-size: 100%;
+}
 .student-dashboard-pair {
   display: grid;
   grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);

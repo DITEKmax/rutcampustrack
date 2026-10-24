@@ -1,20 +1,36 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
-import type { StudentLessonType, StudentStatisticsSubjectDetailResponse } from '../../../../mobile-core/src/api/types'
-import { type StudentScope, useStudentResource } from './student-state'
-import { lessonTypeLabel, percent, studentMark } from './student-format'
-import StudentTrend from './StudentTrend.vue'
-import StudentNotice from './StudentNotice.vue'
-const props=defineProps<{scope:StudentScope;subjectId:string}>()
-const detail=useStudentResource<StudentStatisticsSubjectDetailResponse>(props.scope)
-const range=ref<'days'|'weeks'>('weeks'),types=ref<StudentLessonType[]>([]),initialized=ref(false)
+import { ref, watch } from 'vue';
+import type {
+  StudentLessonType,
+  StudentStatisticsSubjectDetailResponse,
+} from '../../../../mobile-core/src/api/types';
+import { type StudentScope, useStudentResource } from './student-state';
+import { lessonTypeLabel, percent, studentMark } from './student-format';
+import StudentTrend from './StudentTrend.vue';
+import StudentNotice from './StudentNotice.vue';
+const props = defineProps<{ scope: StudentScope; subjectId: string }>();
+const detail = useStudentResource<StudentStatisticsSubjectDetailResponse>(props.scope);
+const range = ref<'days' | 'weeks'>('weeks'),
+  types = ref<StudentLessonType[]>([]),
+  initialized = ref(false);
 async function load() {
-  const semester=props.scope.session.value?.semester
-  if(!semester || (initialized.value && !types.value.length))return
-  await detail.load(()=>props.scope.api.getStatisticsSubject(props.subjectId,semester.id,range.value,types.value),true)
-  if(props.scope.current() && detail.data.value && !initialized.value){types.value=[...detail.data.value.selectedTypes];initialized.value=true}
+  const semester = props.scope.session.value?.semester;
+  if (!semester || (initialized.value && !types.value.length)) return;
+  await detail.load(
+    () =>
+      props.scope.api.getStatisticsSubject(props.subjectId, semester.id, range.value, types.value),
+    true,
+  );
+  if (props.scope.current() && detail.data.value && !initialized.value) {
+    types.value = [...detail.data.value.selectedTypes];
+    initialized.value = true;
+  }
 }
-watch(()=>[props.subjectId,props.scope.refreshed.value],()=>load(),{immediate:true})
+watch(
+  () => [props.subjectId, props.scope.refreshed.value],
+  () => load(),
+  { immediate: true },
+);
 </script>
 <template>
   <section
@@ -30,7 +46,7 @@ watch(()=>[props.subjectId,props.scope.refreshed.value],()=>load(),{immediate:tr
       <div class="student-filter">
         <fieldset class="student-actions">
           <legend>Типы занятий на графике</legend><label
-            v-for="type in ['LECTURE','PRACTICE','LAB'] as const"
+            v-for="type in ['LECTURE', 'PRACTICE', 'LAB'] as const"
             :key="type"
           ><input
             v-model="types"
@@ -38,10 +54,12 @@ watch(()=>[props.subjectId,props.scope.refreshed.value],()=>load(),{immediate:tr
             :value="type"
             :disabled="!detail.data.value.availableTypes.includes(type) || detail.loading.value"
             @change="load"
-          >{{ lessonTypeLabel(type) }}<span
+          >{{ lessonTypeLabel(type)
+          }}<span
             v-if="!detail.data.value.availableTypes.includes(type)"
             class="web-caption"
-          > · нет занятий</span></label>
+          >
+            · нет занятий</span></label>
         </fieldset><label class="web-field">Период графика<select
           v-model="range"
           :disabled="detail.loading.value"
@@ -86,10 +104,11 @@ watch(()=>[props.subjectId,props.scope.refreshed.value],()=>load(),{immediate:tr
               <th scope="row">
                 {{ lessonTypeLabel(card.type) }}
               </th><td
-                v-for="metric in ['present','presentOrExcused','excused','absent'] as const"
+                v-for="metric in ['present', 'presentOrExcused', 'excused', 'absent'] as const"
                 :key="metric"
               >
-                {{ percent(card.metrics[metric].percent) }}<small class="web-caption">{{ card.metrics[metric].count }} / {{ card.metrics.held }}</small>
+                {{ percent(card.metrics[metric].percent)
+                }}<small class="web-caption">{{ card.metrics[metric].count }} / {{ card.metrics.held }}</small>
               </td>
             </tr>
           </tbody>
@@ -110,11 +129,11 @@ watch(()=>[props.subjectId,props.scope.refreshed.value],()=>load(),{immediate:tr
           class="student-history"
         >
           <span
-            v-for="(mark,index) in card.history"
+            v-for="(mark, index) in card.history"
             :key="mark.id"
             class="student-mark"
             :data-tone="studentMark(mark.status).tone"
-            :aria-label="`${index+1}: ${studentMark(mark.status).label}`"
+            :aria-label="`${index + 1}: ${studentMark(mark.status).label}`"
             :title="studentMark(mark.status).label"
           >{{ studentMark(mark.status).symbol }}</span>
         </div>

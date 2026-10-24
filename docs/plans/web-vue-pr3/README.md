@@ -3,7 +3,8 @@
 > **Актуальный статус 2026-10-24:** владелец отдельно запустил существующий Goal. Автономная реализация, commit/push в существующую ветку и обновление PR №3 разрешены. Канон: [GOAL-CONTRACT.md](GOAL-CONTRACT.md). Readiness новой среды и архива: [READINESS-CHECK-20261024.md](READINESS-CHECK-20261024.md). CI/Coverage/Security/OpenAPI PAUSED; без main writes/merge/deploy/production.
 
 Дата решений: 2026-10-23. Ветка `codex/web-vue-redesign`, база main
-`aa98a6aabd1463ee72ce2ef09a3195fdeef7b74f`. Feature source c3c08a935, release inputs8e280baef:116/117 implemented,112/117 locally verified.
+`aa98a6aabd1463ee72ce2ef09a3195fdeef7b74f`. Проверенный frontend source0421d344c,
+release inputs8e280baef:116/117 implemented,113/117 locally verified.
 Первоначальная подготовка ниже — исторический материал; существующий PR имеет №3.
 
 ## Читать по порядку
@@ -29,7 +30,7 @@
 GitHub-проверки пока PAUSED, это не PASS. Продуктовый GO, merge и deploy
 этим подготовительным commit не выдаются. Main и глобальные settings не менялись.
 
-Текущий промежуточный срез: implemented116/117 и locally verified112/117.
+Текущий промежуточный срез: implemented116/117 и locally verified113/117.
 Подробная [приёмка ролей](ROLE-ACCEPTANCE-20261024.md), [единый runtime HTML](../../validation/web-vue-pr3/runtime-gallery/PORTABLE.md), [план удаления Angular](ANGULAR-REMOVAL-INVENTORY.md).
 
 Актуальное состояние после начала Goal: [PROGRESS](PROGRESS.md), [integration checkpoint](INTEGRATION-CHECKPOINT-20261024.md), [mobile followups](MOBILE-FOLLOWUPS.md).

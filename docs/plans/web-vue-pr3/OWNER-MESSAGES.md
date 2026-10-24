@@ -144,4 +144,4 @@ C:\Users\maksd\OneDrive\Desktop\webscreens
 - Q-ENV-005: «Разрешить этот локальный сценарий». Exact GEO stop/snapshot/import driver; после natural GEO не понадобился, NOT RUN. Не переносить разрешение на другие admin fixtures.
 - Q-ENV-006: «Разрешить три тестовые записи и PROMOTE». Exact пакетbf13, own historical SPRING+empty group+coverage, normal UI PROMOTE и обычная архивация пустой own group; cycle/ledger сохраняются. Выполнено, см. PROGRESS.
 
-Q-ENV-003 и Q-PROD-004 пока без ответа. Остальные независимые задачи существующего Goal продолжаются; новый Goal не создаётся.
+Q-ENV-003 и Q-PROD-004 пока без ответа. Дополнительно задан Q-ENV-007 после отказа auto-review на отдельный whole-map UI; ответа ещё нет. Остальные независимые задачи существующего Goal продолжаются; новый Goal не создаётся.

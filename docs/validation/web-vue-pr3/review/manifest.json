@@ -320,5 +320,85 @@
     "original_path": "/workspace/rct-pr3-review/release-inputs/RECHECK-469ec5eca.md",
     "sha256": "bd70c44a2d178cc54710139b3cb70c6974c48448030bc655f2d41b2b59c104c8",
     "originalSha256": "bd70c44a2d178cc54710139b3cb70c6974c48448030bc655f2d41b2b59c104c8"
+  },
+  {
+    "path": "isolated-admin-RECHECK-727506cd.md",
+    "original_path": "/workspace/rct-pr3-review/admin-isolated/RECHECK-727506cd.md",
+    "sha256": "e57e3e654aac56978d8638c617a1a76608b8a1fc1aea8122426ba3e8e31f0946"
+  },
+  {
+    "path": "isolated-admin-RECHECK-e37cf79d.md",
+    "original_path": "/workspace/rct-pr3-review/admin-isolated/RECHECK-e37cf79d.md",
+    "sha256": "4df0d43a22ccc1f718ee311844eb3abc69e6f9d9fb221e446c218cb4db5d1a58"
+  },
+  {
+    "path": "isolated-admin-REVIEW-case-dependency-qualification-20261024.md",
+    "original_path": "/workspace/rct-pr3-review/admin-isolated/REVIEW-case-dependency-qualification-20261024.md",
+    "sha256": "62f4a52d227c0a6d264ecf5e51e3ce8b5bdbb1a7de5ce6996d839b0bcfbedfeb"
+  },
+  {
+    "path": "isolated-admin-REVIEW-derived-clock-cleanup-c291e82b.md",
+    "original_path": "/workspace/rct-pr3-review/admin-isolated/REVIEW-derived-clock-cleanup-c291e82b.md",
+    "sha256": "92585245c7d132fd6c841405f28fc672106e949385b06b29d34a016c982e3998"
+  },
+  {
+    "path": "isolated-admin-REVIEW-prep-24ec16aa.md",
+    "original_path": "/workspace/rct-pr3-review/admin-isolated/REVIEW-prep-24ec16aa.md",
+    "sha256": "f42695938282c9f800d1624d0e09620b2bf9fe10660244ee00eaf589099def46"
+  },
+  {
+    "path": "isolated-admin-REVIEW-transition-0b098c61.md",
+    "original_path": "/workspace/rct-pr3-review/admin-isolated/REVIEW-transition-0b098c61.md",
+    "sha256": "f307d04738ede8678509ebeeb7ec3c849b5e597a2b38bc4697f7a5e0d25b603b"
+  },
+  {
+    "path": "native-admin-RECHECK-repin-00a74bde.md",
+    "original_path": "/workspace/rct-pr3-review/admin-native/RECHECK-repin-00a74bde.md",
+    "sha256": "8be47dd560817690f4a6c613ef7eec671084e7e90df7e43cf2bb07be812f69e2"
+  },
+  {
+    "path": "native-admin-RECHECK-repin-6e89b6c8.md",
+    "original_path": "/workspace/rct-pr3-review/admin-native/RECHECK-repin-6e89b6c8.md",
+    "sha256": "a5d41ecbe0af29a57612feb9cfb1dc25181ea78cdaa55ad4a9337783ae719117"
+  },
+  {
+    "path": "native-admin-RECHECK-role-binding-4d8ab400.md",
+    "original_path": "/workspace/rct-pr3-review/admin-native/RECHECK-role-binding-4d8ab400.md",
+    "sha256": "b9e6bc9d7d858ee7cfd99546afe7d7d562d5ec61967c4262f8f59b0d1379f4ff"
+  },
+  {
+    "path": "native-admin-RECHECK-selector-c75be9e4.md",
+    "original_path": "/workspace/rct-pr3-review/admin-native/RECHECK-selector-c75be9e4.md",
+    "sha256": "8a66ff7459d3a2ec30927c40ae4d5ac9e759b50a963f2ed2bb76da3f92607e77"
+  },
+  {
+    "path": "native-admin-REVIEW-prep-c364616e.md",
+    "original_path": "/workspace/rct-pr3-review/admin-native/REVIEW-prep-c364616e.md",
+    "sha256": "bf45555fdc5c183668ff14ea44146b8b7be6ebab8be67ba8980841586c644f54"
+  },
+  {
+    "path": "fresh-role-home-RECHECK-756d412f1.md",
+    "original_path": "/workspace/rct-pr3-review/fresh-role-home/RECHECK-756d412f1.md",
+    "sha256": "5b117d80278522f9fef308404ea2af856fb927cd0b5c1c020fb0e56321d2fa1a"
+  },
+  {
+    "path": "fresh-role-home-REVIEW-22972df63.md",
+    "original_path": "/workspace/rct-pr3-review/fresh-role-home/REVIEW-22972df63.md",
+    "sha256": "fbb258eb279e743e4b7cdcfddc7432b2e1e8316624ac62cb2c587f22650f2c79"
+  },
+  {
+    "path": "fresh-role-home-REVIEW-actual-role-semester-0421.md",
+    "original_path": "/workspace/rct-pr3-review/fresh-role-home/REVIEW-actual-role-semester-0421.md",
+    "sha256": "d75800cea160e5a4455398d0806f58f278e4f0255f54a80b3b707ca377d3178f"
+  },
+  {
+    "path": "role-sem-publication-0421.md",
+    "original_path": "/workspace/rct-pr3-review/role-sem-publication-0421.md",
+    "sha256": "61fea067fbb771524f21d23a8e4b9742335dfacbfb5cf2ddeede966e7c005740"
+  },
+  {
+    "path": "role-sem-publication-0421-RECHECK.md",
+    "original_path": "/workspace/rct-pr3-review/role-sem-publication-0421-RECHECK.md",
+    "sha256": "93b93375e158abd5f946e9ad729d0dd2ee756d9ba049f583e78fe3ccb69ffc82"
   }
 ]

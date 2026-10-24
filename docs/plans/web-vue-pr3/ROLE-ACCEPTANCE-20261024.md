@@ -1,8 +1,8 @@
 # Приёмка ролей — 2026-10-24
 
 Промежуточный срез существующего PR3. Собранный frontend revision
-`c3c08a935c223f1964a9913e299ae9e4a8d13026`; исходный знаменатель117 active
-сохранён. **Implemented116/117 (99,15%); locally verified112/117 (95,73%).**
+`0421d344c9697d58efc8f039b74c5bdf594c6eb4`; исходный знаменатель117 active
+сохранён. **Implemented116/117 (99,15%); locally verified113/117 (96,58%).**
 Реализация означает принятый после независимого review исходный код.
 Локальная проверка означает достаточное подтверждение пользовательского действия
 на настоящем изолированном backend вместе с адресными проверками поведения.
@@ -15,7 +15,7 @@
 | STUDENT | 16 | 16/16 (100%) | 16/16 (100%) |
 | HEADMAN | 38 | 38/38 (100%) | 38/38 (100%) |
 | TEACHER | 8 | 8/8 (100%) | 8/8 (100%) |
-| ADMIN | 34 | 33/34 (97,06%) | 29/34 (85,29%) |
+| ADMIN | 34 | 33/34 (97,06%) | 30/34 (88,24%) |
 
 ## Что подтверждено
 
@@ -52,24 +52,32 @@ PDF через реальный LibreOffice. Старое воспроизвед
 TEACHER8 приняты ранее: назначенная группа **и** назначенный предмет, только
 разрешённые чтение/экспорт. Новых прав преподавателя не добавлено.
 
-ADMIN29 подтверждены на настоящем стенде: dashboard/activity, реестры и фильтры,
+ADMIN30 подтверждены на настоящем стенде: dashboard/activity, реестры и фильтры,
 создание/редактирование/роль/перевод/архивация/восстановление пользователя,
 recovery, группы/староста/история/архивация/восстановление, семестровые операции
-кроме активации, схемы кроме final delete, посещаемость и экспорты.
+включая активацию, схемы кроме final delete, посещаемость и экспорты.
 Проверены потерянный201 → явное продолжение того же create → volatile receipt,
 потерянное принятие export → тот же key/selector/job и GET-retry известного job
 после потери download; изменения фильтров не создают другое намерение.
 Переименование открытой группы использует актуальное имя при последующей
 архивации; восстановлено исходное имя и состояние own fixture.
 
-## Пять оставшихся action gates
+ACTIVATE подтверждён отдельно на настоящем Auth/Academic/Gateway с новыми
+синтетическими БД: create201, один activate200, uniqueactive2, предыдущий1
+сохранён кроме деактивации, outbox1+1. Raw composite postread exit1/false
+сохранён: отсутствует Attendance activity. Независимый source/evidence review
+принимает действие по JS-ADMIN-09, без общего health или async-delivery PASS.
+Fresh ADMIN selection после исправления0421 снова проходит canonical home;
+dashboard metrics этого небольшого realm частично недоступны и не приняты.
+[Новая приёмка и ограничения](../../validation/web-vue-pr3/checkpoints/role-semester-20261024/manifest.json).
+
+## Четыре оставшихся action gates
 
 | Action | Source | Недостающее подтверждение / зависимость |
 |---|---|---|
 | ACT-ADMIN-ACCESS | implemented | Настоящая запись/отзыв прав. Read-only USERS_VIEW-only lookup и cancel/draft проверены; попытка отдельного privileged fixture отклонена approval review и не выполнялась. |
-| ACT-ADMIN-SEMESTER-ACTIVATE | implemented | Готовится отдельный synthetic realAuth стенд, без изменения mainactive2/снимков основного стенда. |
 | ACT-ADMIN-REGENERATE-PASSWORD | implemented | FULL/self и unknown-result сценарий own8 ожидает ответ Q-ENV-003 после отказа approval review;8 заморожен. |
-| ACT-ADMIN-MAP-DELETE | implemented | Whole-version/BYTEA purge, nullable scope, API+WEB reviewed и объединённые сборки PASS. HTTP/PostgreSQL использует Auth stub; full actual Auth+WEB ещё NOT RUN. Основной Academic950 не обновлён. |
+| ACT-ADMIN-MAP-DELETE | implemented | Whole-version/BYTEA purge, nullable scope, API+WEB reviewed и объединённые сборки PASS. HTTP/PostgreSQL использует Auth stub; full actual Auth+WEB NOT RUN. Auto-review отклонил запуск до исполнения; Q-ENV-007 ожидает владельца. Основной Academic950 не обновлён. |
 | ACT-ADMIN-GROUP-FINAL-DELETE | blocked | Q-PROD-004: судьба membership и grants участников. Аккаунты не удаляются; решение владельца не выдумывается. |
 
 Проценты не включают глобальное завершение поставки: пока остаются активный

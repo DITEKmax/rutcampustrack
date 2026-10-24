@@ -264,6 +264,34 @@ SUCCEEDED и независимый postread подтвердили заверш
 API ровно собственной сессии и нормальные SIGTERM точному процессу.
 [Приёмка, исходные hashes и ограничения](../../validation/web-vue-pr3/checkpoints/promotion-map-20261024/promotion-acceptance.json).
 
-Текущие ответы владельца нужны только для Q-ENV-003 и Q-PROD-004. Q-ENV-002:
-разрешение обещано, в реально enforced policy revision11 www.figma.com всё ещё
+Текущие ответы владельца нужны для Q-ENV-003, Q-ENV-007 и Q-PROD-004. Q-ENV-002:
+разрешение обещано, в реально enforced policy revision14 www.figma.com всё ещё
 отсутствует; новая прямая попытка через inherited proxy CONNECT403/exit56. Новый запрос не нужен.
+
+
+## Q-ENV-007 — отдельный native whole-map UI после отказа auto-review
+
+**Тип:** точное разрешение подготовленной операции. **Статус:** waiting for owner.
+Автоматическая проверка отклонила команду **до исполнения**: согласие Q-ENV-004
+на Java HTTP/PostgreSQL checks сочла недостаточно явным для необратимого
+удаления всех версий PNG/SVG через UI. Browser/login/uploads/delete0, повторов
+и обходов нет. Ни схема основного стенда, ни production не затрагивались.
+
+Подготовлен reviewed `/tmp/native-admin-isolated-c3-case.cjs`, SHA256
+`c75be9e409843c20f87165f4ff8bb725f65cbff9fd6bfeeb1966db6f36cd5757`;
+контракт `/workspace/rct-pr3-runtime/admin-native-isolated-20261024/prep/PREP.md`.
+Вопрос: разрешить один обычный UI-case в отдельном искусственном
+`rct-pr3-admin-isolated`: создать только новую схему25001/1, две версии с четырьмя
+синтетическими PNG/SVG из harness; одним POST с настоящим текущим паролем
+удалить их полную историю и BYTEA. Building/floor/usage/high-water/receipt
+сохраняются; main inventory, пользователи, права и production не меняются.
+Unknown outcome сверяется по исходному operation, новая слепая запись запрещена.
+Тест wrong-password и completed-replay после новой загрузки в этот case не входят;
+они не будут объявлены нативно проверенными.
+
+Critical Auth/SQL/PKI proof и независимая матрица готовы. Общий health не PASS:
+Attendance activity отсутствует, прежний raw health FAIL сохраняется. Это
+не разрешение на изменение health, подключение main или фиктивные сервисы.
+Admission ограничен временем и revision; после ответа нужен актуальный допуск,
+а не повтор старой истёкшей команды. Ответ ожидается в текущем чате; молчание
+не разрешает запуск. Затронут ACT-ADMIN-MAP-DELETE.

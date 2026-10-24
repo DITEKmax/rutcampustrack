@@ -1,0 +1,114 @@
+{
+  "kind": "SEMESTER_ACTIVATE",
+  "phase": "NATIVE_UI_KNOWN_COMPLETE_AWAIT_INDEPENDENT_RUNTIME_POSTGUARD",
+  "rootRevision": "0421d344c9697d58efc8f039b74c5bdf594c6eb4",
+  "academicSource": "1fe1588dd1ed635df6a8735d5115d436151e8cec",
+  "academicSha256": "a433178685a4a9cf421ab949fc699b5efaf03fe91c50d3917c1655bfca24cbe2",
+  "admissionSha256": "1398bf029a8b022decdad6c5349dc4018a1a492193cf313f972177af620d2a75",
+  "startedAtUtc": "2026-10-24T10:31:12.326Z",
+  "domainRequests": [
+    {
+      "method": "POST",
+      "path": "/api/academic/semesters",
+      "kind": "EXACT_ARMED_NATIVE_UI_INTENT"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/academic/semesters/2/activate",
+      "kind": "EXACT_ARMED_NATIVE_UI_INTENT"
+    }
+  ],
+  "blockedCommands": [],
+  "pageErrors": [],
+  "screenshots": [
+    {
+      "path": "/workspace/rct-pr3-runtime/admin-native-isolated-20261024/semester_activate-2026-10-24T10-31-12-325Z/semester-activate-real-auth-light-1440.png",
+      "sha256": "f14a28ce7b880f1c3df7d80003b007e9d9e2ba428ba4010bd46628b1efe28bce",
+      "computed": {
+        "theme": "light",
+        "colorScheme": "light",
+        "width": 1440,
+        "documentWidth": 1440,
+        "fonts": "loaded"
+      },
+      "rootRevision": "0421d344c9697d58efc8f039b74c5bdf594c6eb4",
+      "capturedAtUtc": "2026-10-24T10:31:21.325Z"
+    }
+  ],
+  "limits": [
+    "Only isolated realm; retain new active semester and normal outbox; no main semester2/clock change. PATCH has no identity-operation key/status API; unknown read only exact semester/list, never retry PATCH."
+  ],
+  "sourceBefore": {
+    "revision": "0421d344c9697d58efc8f039b74c5bdf594c6eb4",
+    "dirtyFrontend": ""
+  },
+  "strictTlsPeerVerified": true,
+  "roleReadyObservations": [
+    {
+      "source": "actual-ui-protected-request",
+      "status": 200
+    },
+    {
+      "source": "actual-ui-protected-request",
+      "status": 200
+    },
+    {
+      "source": "actual-ui-protected-request",
+      "status": 200
+    },
+    {
+      "source": "actual-ui-protected-request",
+      "status": 200
+    },
+    {
+      "source": "actual-ui-protected-request",
+      "status": 200
+    }
+  ],
+  "realmPublicKeyHash": "5b5b407e119a2e60556ec110b7e1657324224c8d7ee2b94c3ab660f422b9fa3a",
+  "loginStatus": 200,
+  "explicitRoleButtonSelected": true,
+  "roleSelection": {
+    "status": 200,
+    "userId": 1,
+    "activeRole": "ADMIN",
+    "sameOwnSession": true
+  },
+  "roleReady": {
+    "source": "actual-ui-protected-request",
+    "path": "/api/academic/admin-access/me",
+    "method": "GET",
+    "status": 200,
+    "userId": 1,
+    "assigned": true,
+    "mode": "FULL",
+    "authorizationBoundInMemory": true,
+    "latePreRoleRequestsCannotOverwrite": true,
+    "sameOwnSession": true,
+    "currentActiveRole": "ADMIN"
+  },
+  "realActor": {
+    "userId": 1,
+    "mode": "FULL",
+    "authClock": "real",
+    "browserClock": "real",
+    "teachingInstant": "2029-09-01T09:00:00Z"
+  },
+  "priorActiveId": 1,
+  "activation": {
+    "createdId": 2,
+    "createStatus": 201,
+    "activateStatus": 200,
+    "active": true,
+    "scheduled": false,
+    "uniqueActiveCount": 1,
+    "priorActiveNowInactive": true
+  },
+  "sourceAfter": {
+    "revision": "0421d344c9697d58efc8f039b74c5bdf594c6eb4",
+    "dirtyFrontend": ""
+  },
+  "logoutStatus": 204,
+  "guestReadStatus": 401,
+  "completedAtUtc": "2026-10-24T10:31:21.615Z"
+}

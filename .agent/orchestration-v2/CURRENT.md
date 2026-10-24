@@ -1,75 +1,79 @@
-# CURRENT — existing PR3 Goal, 2026-10-24 08:05 UTC
+# CURRENT — existing PR3 Goal, 2026-10-24
 
-Existing owner GO continues; PR3/codex/web-vue-redesign only. Root HEAD8e280baef (release inputs integrated),
-last pusheda1e5c20b3 (MCP/API/Git confirmed); fetch actualremoteHEAD, no reset to snapshot. Root owns docs,
-coordination/Git/review, not productcode. Assignedchildren gpt-6.1-sol/high/fork:none,
-requestedmainSol6.1ultra; actualmodeltelemetry unavailable, no silentfallback.
-No newGoal/PR/mainwrites/merge/deploy/production. Four workflows manual/PAUSED,
-no dispatch; PAUSED notPASS.
+Owner GO continues; only PR3/codex/web-vue-redesign, Root0421d344c pushed.
+Fetch currentremoteHEAD; never reset to handoff snapshot. Root owns docs/Git/
+coordination/review, not product. Children explicitly gpt-6.1-sol/high/fork:none;
+requested mainSol6.1ultra, actual runtime telemetry unavailable; no fallback.
+No newGoal/PR/mainwrites/merge/deploy/production/global Docker cleanup.
+Four CI/Coverage/Security/OpenAPI workflows manual/PAUSED, no dispatch, notPASS.
 
-Implemented116/117(99.15%), locallyverified112/117(95.73%). AUTH6/6, SHARED15/15,
-STUDENT16/16, HEADMAN38/38, TEACHER8/8, ADMIN33source/29verified of34. Original117.
-QENV004 approved: backend0100+6839+1fe (nullableenumP2 corrected), APIa36 andWEB85
-integrated155/29da/b122/342/c3. Real HTTP/PostgreSQL3+legacy+scope4 PASS, Auth
-confirmation explicitlystubbed, client16+WEBstate12/source reviews PASS. Strict
-WEB/PWA/TMA combinedbuildc3 PASS. Final1feJAR a433 immutable, mainAcademicstill950,
-no rollout/mainmapsdelete. FullAuth+WEB wholemapruntime NOTRUN, notverifiedaction.
+Implemented116/117(99.15%), locallyverified113/117(96.58%); ADMIN33/30 of34.
+AUTH6/SHARED15/STUDENT16/HEADMAN38/TEACHER8 fully accepted in action map.
+Remaining ADMIN: ACCESSwrite, FULL/selfunknown QENV003, nativewholemap QENV007,
+groupfinal QPROD004 membership/grant policy. User8 frozen; no bypass/clone.
+Groupfinal accepted scope, only member/grant consequence decision missing.
 
-QENV006 approved/executed: exactly3owninputs committed, sem5SPRING2025/group6/
-managedcoverage, latestSpringNULL→5 permitted. ONEUI200PROMOTE, course1→2,
-originalSUCCEEDED, ledger1, secondpreviewALREADY_PROCESSED/no secondexecute.
-Root UIgatefixe8db permits DRAFT(empty/noheadman) asbackendeligibilityallows.
-Own6 archivedONEPUT200; initialharnessnameexpectationfailure resolved by original
-identity+independentpost11checks, canonical ОИАР-210 (выпуск 2026). Sem5/ledger/
-active2 retained. Natural pre-PROMOTE06:55LessonClosed Attendance differences,
-timer/dedup differences explicitlyqualified; no allDBequalityclaim. Protected53/
-own15Geo64 unchanged. Oldownheldsession revokedexactDELETE204, newownlogout204/
-guest401, other71identity/revocation/stateunchanged; oldexpirybaselineunavailable.
-Inspector automaticreviewdenied beforeexecution, NEVERopened; safeAuthAPIused.
-ExactheldNode closednormalSIGTERM twice/exit143, all9capturedchildrenclosed.
-No freeze now, no ownbrowser. Receipts in promotion-mapcheckpoint and external
-runtime dirs; originals/failures preserved. Sourcee8db frame separatelygallery.
+Map whole-history source155/29da/b122/342/c3 accepted; actual HTTP/PostgreSQL3+
+legacy and scope4 PASS (Auth password stubbed), client16/WEBstate12 reviewed,
+strict WEB/PWA/TMA combinedbuildc3 PASS. Academic1fe JARa433 immutable.
+Main Academic950 unchanged and unsupported scope disables wholedelete.
 
-Five remainingADMINgates: ACCESSwrite, semesterACTIVATE, FULL/selfpasswordunknown,
-fullUIwholemap, groupfinal. QENV003 user8FULL/self/unknown andQPROD004membership/
-grantpolicy awaitowner. User8FROZEN, no clone/bypass; users17readonly/18ordinary.
-QENV005 alsoapproved butGEOalreadyPASSnatural15/64, stop/privatecopy/import/clock
-NOTRUN/snapshotFALSE. Neverrepurpose exactGEOconsent forotherfixtures.
+Fresh-role-home original229+756 integrated90e/0421. Initial race P2 preserved,
+recheckPASS; Root strict WEBbuildPASS. Actual login200/ADMIN200/UImeread200→
+canonical /admin/dashboard, domain0/logout204/guest401/browserclosed. Before
+observer path error disclosed; full dashboard metrics not accepted by this case.
 
-runtime_stand PREPONLY freshpublicsynthetic3apprealAuth lane forACTIVATE+map,
-newsmallPG/Redis/Rabbit+TLSgateway, no main/clockdata/secretscopy/stop/attach.
-HardcodedSQLDBroles require freshPG; don't changeacceptedbootstrap guards just
-forlane. No starts/DBDML untilRootreviewsconcreteplan/technicalGO. Fresh1fe
-EducationalTime fixture isolation/control stillneeded; security/TLS/JWT real.
-OneHEAVY now runtime_stand for fresh infrastructure only. 16GiB/4CPU, about4–5GiBdiskfree;
-VFSfullcopyincident recorded, no newimagebuild/globalprune.
+Isolated native ACTIVATE on0421: one create201 and one PATCH200, ownsemester2
+AUTUMN2029 active; prior1 preserved except inactive. Independent SQL readonly
+uniqueactive/outbox1+1/unchangedauthority/main13clock5 PASS. Original rawpost751
+composite exit1/passedfalse remains: same7Healthyfalse, missing Attendance
+activity. Independent dependency review accepts JSADMIN09 command/currentstate
+and mandatory producer effects only; no asyncconsumer/provider/globalhealthPASS.
 
-Main13+ownclock5samehealthy lastobserved; immutableAuthf3/Academic950/Gateway3c02/
-qualified603services. ROOTVite14210/PWA15175/TMA15176/mainGateway18080 retained;
-14220/14240closed,14230absent,14250neverstarted. Clock5idle, no apps ever.
-Source Vuee2eedge/oracle/helpers/create/EXCUSE corrected and reviewed; no fullSUT
-campaign/CI. Foundationreview completed bounded remainingassessment; web_foundation writes exact3 release-input configs fromc3 inexistingWT, no deploy/runtime. Preserve deploy workflow_run+dispatch triggers; fourmanualCI workflows unchanged.
-Angular removal waits finalcapabilities, notready. Shippingimagesa813 exactold.
+MAP harnessc75 reviewed/frozen, pin0421. Critical dependencies3f5146 verified;
+case automaticapprovalreview rejected BEFOREEXECUTION, 0browser/login/upload/
+delete. QENV007 asks owner exact new realm25001/1 two versions/four assets→one
+password-confirmed ALL_VERSIONS deletion. QENV004 does not cover distinct UI
+map-data deletion per reviewer. No retry/bypass. Admissionexpires11:25:56UTC;
+new source/time admission after reply, never replayexpiredcommand. Wrongpassword
+and completedreplay-after-reupload are excluded from native case, not nativePASS.
 
-Gallery202 originals in portable snapshot imagepinac5, including PROMOTEe8db,
-noFigma/reference disguised. Reviews63 incl initialP2 and passingrechecks.
-FigmaMCP/originalauthbytes work; enforcedpolicy11current lackswww.figma.com,
-newactualcurlstillCONNECT403 onpolicy11; owneralreadywillallow. ZIPfullyverified422/388+34.
-Goalactive: don'tstopblockedwhileindependentlane/outerworkfeasible.
+QENV006 completed exact3historical inputs+PROMOTE200/oneledger/course1→2,
+secondpreviewALREADY_PROCESSED/no secondexecute; own6 archivedONEPUT200,
+sem5/ledger/mainactive2 retained. Archive-name expectation failure resolved via
+original receipt and readonlyproof, no repeat. Attendance natural close/timer/
+dedup differences qualified; no allDB equality. Exactownsession cleanup done,
+old expiry baseline missing disclosed; exactNodeSIGTERM2/exit143 and9children
+closed, inspector neveropened. QENV005 approved but GEOalreadyPASSnatural15/64;
+stop/snapshot/privatecopy/restore/clockapps NOTRUN, flagFALSE, neverrepurpose.
 
+New own rct-pr3-admin-isolated:7 containers Auth/Academic/Gateway/edge/PG/Redis/
+Rabbit, fresh own keys/TLS/DB/network/queues, no main/clockdata/secretscopied.
+One materialize727 and infraup0/verifier1(entrypointdefaultbug), rawFAILpreserved;
+readonly0b qualification3a616; ONEapps-up0b0, no rekey/retry. Academic teaching
+fixture2029 only; Auth/JWT/OS/browser clocks real, prodJARfixtureexcluded.
+CriticalAuth/SQL/PKI ready; globalReadyfalse due unsupportedAttendanceactivity,
+transientIDLEdoesnotprove absentservicehealthy. No healthweakening/mainfallback.
+Only dormant derivedclockruntime/{jars,exploded} removed exactreviewedmanifest,
+all7authoritativeJARs+allcontainers/volumes/data/keys retained; receipt2a0cb.
+Original memory3392MiB/1.65CPU caps; machine16GiB4CPU, >=2GiB remaining guard.
 
-Checkpoint override08:48UTC: release originals429+469 integrated7da729a7e/8e280baef,
-source3configs+devpubliccopy. Initial429P2/readability corrected, recheckPASS;
-actual static HTTP6 PASS with non-root nginx/readonlyhostmodes unchanged/exactown
-cleanup. Two prior probe-only logging failures retained, not application403 orPASS.
-Fullprodconfig remains limited by absent syntheticHMAC; fragment/devPASS only.
-No deploy/cutover/CI triggered, Angular remains. RootpublicdocscheckpointWIP.
+No heavy/browser runner now. Main13healthy and clock5idle same lastobserved;
+mainVite14210/PWA15175/TMA15176/Gateway18080 retained. Isolated strictTLS18443,
+Vite14250 live PID1453442/start4207810/session56656; don't terminate blindly.
+Root source0421 pinned; docs may advanceHEAD, then explicit harness oneconstant
+repin+review/newadmission needed before any later case. No domainunknownheld.
 
-Fresh admin realm sourcepackage727506cd reviewedPASS after initial24ec P2mode/env
-and e37P2timeout corrections; all initialreports immutable. MaterializeONE0/new
-ownkeys, TLS/config0, actual1feclasspath control retry0/prodguards retained; first
-missingcontrolenv1 preserved, no rekey. Main13/clock5 samehealthy, disk4.11GiB
-beforeinfra. RootGo infra-up ONLY f3966... expires09:27UTC; ONE phase ended: Composeup0, verifiernative1 because normalizedentrypointnull incorrectlycomparedtopinnedimage default. Readonly3healthy, rawFAILpreserved; no upretry/apps/frontend/browser. Disk2.74GiB blocksoriginalapps>=3 guard; reviewingONLYunboundclockderivedjars/explodedcopies~0.97GiB cleanup, no actionuntilmanifestreview. No stop/container/volume/key/data cleanup. Newproject
-rct-pr3-admin-isolated/publicinitialseed only, no main/clockdata/secretscopy.
-Native2caseharnessc364 reviewedPASS/PREP ONLY; strictc3pinmust explicitlyrepin to
-actualRootrevision beforecaseadmission. No nativewholemap/ACTIVATE acceptedyet.
+Release originals429+469 integrated7da/8e, source3configs pointVue; DEVpublic
+copy/nonrootworker actualHTTP6 PASS. Initialloggingfailures/P2 kept. Full prod
+source-model ONEreadonlyconfig1 missing ACADEMIC_GRPC_TLS_AUTHORITY, no dummy
+values/secretsearch/prod access; notPASS. Angular433 files remain until group
+capability replacement. Shippinga813 checks separate, no deploy/cutover/CI.
+
+PublicationWIP: public role-semester checkpoint +79reviews +204originalframes;
+portable currently202 pinac5, update only after newframes pushed. Metrics/map
+113; Root own docs still uncommitted. Actual role/semester review and publication recheck PASS; initial P2 digest omission preserved.
+External resume: /workspace/rct-pr3-runtime/ACTIVE-CHECKPOINT-20261024.json.
+FigmaMCP/originalauthbytes work; current/enforced policy14 lackswww.figma.com,
+lastactualCONNECT403, ownerwillallow, don'treask. ZIPverified422/388PNG+34.
+Finish authorized publication/PR before blockedGoal; don't claim fullready.

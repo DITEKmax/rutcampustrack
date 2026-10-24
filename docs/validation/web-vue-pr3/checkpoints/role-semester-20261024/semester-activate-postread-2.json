@@ -1,0 +1,85 @@
+{
+  "kind": "SEMESTER_ACTIVATE_READONLY_POST",
+  "targetSemesterId": 2,
+  "nativeReadOnlyExit": 0,
+  "passed": false,
+  "checks": {
+    "SQLReadOnly": true,
+    "canonicalMarkers": true,
+    "originalSemester1PreservedExceptActive": true,
+    "newSemesterExactActiveAUTUMN2029": true,
+    "exactTwoSemestersAndUniqueActive": true,
+    "AuthAuthorityUnchanged": true,
+    "AcademicProfilesCatalogUnchanged": true,
+    "oneCanonicalActivationOutbox": true,
+    "onePreviousDeactivationOutbox": true,
+    "mapTablesStillEmpty": true,
+    "remaining2GiB": true,
+    "same7Healthy": false,
+    "main13Clock5SameHealthy": true
+  },
+  "academic": {
+    "readOnly": "on",
+    "fixtureKey": "browser-v2-split-20261018-v1",
+    "profiles": 3,
+    "catalogVersion": 6,
+    "semesters": [
+      {
+        "id": 1,
+        "name": "Spring 2026",
+        "dateFrom": "2026-02-01",
+        "dateTo": "2026-06-30",
+        "active": false,
+        "semesterType": null,
+        "academicYear": null,
+        "scheduled": false,
+        "archived": false,
+        "transition": "NONE",
+        "releasePending": false
+      },
+      {
+        "id": 2,
+        "name": "Осенний 2029/2030",
+        "dateFrom": "2029-09-01",
+        "dateTo": "2030-01-31",
+        "active": true,
+        "semesterType": "AUTUMN",
+        "academicYear": 2029,
+        "scheduled": false,
+        "archived": false,
+        "transition": "NONE",
+        "releasePending": false
+      }
+    ],
+    "activeCount": 1,
+    "semesterEvents": [
+      {
+        "event_type": "semester.activated",
+        "semester_id": "2",
+        "actor_user_id": "1",
+        "status": "sent",
+        "count": 1
+      },
+      {
+        "event_type": "semester.archived",
+        "semester_id": "1",
+        "actor_user_id": null,
+        "status": "sent",
+        "count": 1
+      }
+    ],
+    "mapTables": {
+      "buildings": 0,
+      "floors": 0,
+      "versions": 0,
+      "assets": 0
+    }
+  },
+  "observedUtc": "2026-10-24T10:35:01.431137+00:00",
+  "sourceRoot": "0421d344c9697d58efc8f039b74c5bdf594c6eb4",
+  "academicSource": "1fe1588dd1ed635df6a8735d5115d436151e8cec",
+  "remainingDiskBytes": 2567106560,
+  "SQLWrites": 0,
+  "newAPISessionsOrCaseCalls": 0,
+  "outboxLimit": "Durable selected event rows/counts only; broker status may progress; no consumer/provider delivery claim"
+}

@@ -196,7 +196,11 @@ failure and initial nullable-enum P2 remain recorded alongside passing correctio
 Final immutable Academic1fe JAR SHA256
 `a433178685a4a9cf421ab949fc699b5efaf03fe91c50d3917c1655bfca24cbe2`.
 Main stand stays Academic950; no rollout, stand map deletion or production migration.
-Separate synthetic realAuth lane is in preparation for actual WEB acceptance.
+Separate synthetic realAuth lane is running. The reviewed native whole-map UI
+command was rejected by automatic approval review before execution: browser,
+login, uploads and deletion0. Q-ENV-007 awaits the owner's exact approval; no
+retry/bypass. Critical Auth/SQL/PKI readiness does not close runtime acceptance,
+and the absent Attendance activity remains an explicit whole-stand health limit.
 
 [Backend review](../../validation/web-vue-pr3/review/map-REVIEW-0100dd7c.md),
 [nullable recheck](../../validation/web-vue-pr3/review/map-RECHECK-1fe1588d.md),

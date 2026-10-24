@@ -400,5 +400,65 @@
     "path": "role-sem-publication-0421-RECHECK.md",
     "original_path": "/workspace/rct-pr3-review/role-sem-publication-0421-RECHECK.md",
     "sha256": "93b93375e158abd5f946e9ad729d0dd2ee756d9ba049f583e78fe3ccb69ffc82"
+  },
+  {
+    "path": "auth-map-QUALIFY-v4-guest-refusal.md",
+    "original_path": "/workspace/rct-pr3-review/auth-map-confirmation/QUALIFY-v4-guest-refusal.md",
+    "sha256": "eeec7a214648ae9d155de281734b73658cf264b87f66a2e3d4e8879701f855cb"
+  },
+  {
+    "path": "group-final-REVIEW-source-v3.md",
+    "original_path": "/workspace/rct-pr3-review/group-final-delete/REVIEW-source-v3.md",
+    "sha256": "1739ca11981d36c58c5fcca190d22c0133de26ee46d18a5b44769aedba51e309"
+  },
+  {
+    "path": "group-final-RECHECK-source-v5.md",
+    "original_path": "/workspace/rct-pr3-review/group-final-delete/RECHECK-source-v5.md",
+    "sha256": "6d53099b47c64814d86b57617304c63bfda5170113248798a373d4cb497dc42a"
+  },
+  {
+    "path": "group-final-RECHECK-source-v6.md",
+    "original_path": "/workspace/rct-pr3-review/group-final-delete/RECHECK-source-v6.md",
+    "sha256": "3a1a33945f68bbf225113c839b8c4b040df5ee2cf24951b42ea292cbe43305dc"
+  },
+  {
+    "path": "group-final-web-REVIEW-ffc986256-38aa0211.md",
+    "original_path": "/workspace/rct-pr3-review/group-final-web/REVIEW-ffc986256-38aa0211.md",
+    "sha256": "fcf9103778fd89529652266ab19b72aa5addc929ba3fcc7d41991a9675fc45fb"
+  },
+  {
+    "path": "group-final-web-RECHECK-3f7d4744a-a087458e5.md",
+    "original_path": "/workspace/rct-pr3-review/group-final-web/RECHECK-3f7d4744a-a087458e5.md",
+    "sha256": "b1f2c11dbf623967f49d780b3793c68dfbec28062a5ce7d2438c19623538f25e"
+  },
+  {
+    "path": "group-final-web-RECHECK-ae54606df-f67db1fac.md",
+    "original_path": "/workspace/rct-pr3-review/group-final-web/RECHECK-ae54606df-f67db1fac.md",
+    "sha256": "384b54b0e938558fd5edea00a38e1e876205cf5fb6fe3b79dc85783bdd2815ae"
+  },
+  {
+    "path": "admin-users-RECHECK-c5a5897b.md",
+    "original_path": "/workspace/rct-pr3-review/admin-users-unknown/RECHECK-c5a5897b.md",
+    "sha256": "b4b5f883146e96bf98378c44c577b51625ed593065ee08ec0ce89f2c373ce9d3"
+  },
+  {
+    "path": "admin-users-REVIEW-remaining-e70c8112.md",
+    "original_path": "/workspace/rct-pr3-review/admin-users-unknown/REVIEW-remaining-e70c8112.md",
+    "sha256": "db0b5cabfb62726e7d63959fb79a07596eda5540781571af09ddf8d112e36165"
+  },
+  {
+    "path": "admin-visual-publication-REVIEW-77f-staged.md",
+    "original_path": "/workspace/rct-pr3-review/admin-visual-publication/REVIEW-77f-staged.md",
+    "sha256": "755ac2f99b3bebc12bbf1712b70fbc27cecbad8fc51c67b8c00712f2dff741c1"
+  },
+  {
+    "path": "admin-visual-publication-RECHECK-77f-staged.md",
+    "original_path": "/workspace/rct-pr3-review/admin-visual-publication/RECHECK-77f-staged.md",
+    "sha256": "ce9a0c9a64d97e1e087b76432ff36b634ecc1a236a59e40f21ffd42b653088f7"
+  },
+  {
+    "path": "recovery-RECHECK-publication-projection.md",
+    "original_path": "/workspace/rct-pr3-runtime/restore-20261024/publication-projection-recheck.md",
+    "sha256": "e5378ecf56f968b781205656557e32c5a60d32fc960b29b6a38cd87e6a46f96b"
   }
 ]

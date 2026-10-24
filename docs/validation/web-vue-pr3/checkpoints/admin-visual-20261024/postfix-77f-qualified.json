@@ -1,0 +1,189 @@
+{
+  "sourceRevision": "77fbd7a5e79bcaf3185f60e4ee2f18c7a3e3896b",
+  "kind": "qualified post-fix changed-hypothesis results",
+  "functionalActionsAdded": 0,
+  "canonicalSurfaces": 83,
+  "finiteCriteria": 18,
+  "NOTIF-02": {
+    "status": "ready within four-arrival1440light representative",
+    "actualArrivals": [
+      {
+        "arrival": 1,
+        "ids": [
+          "VISUAL_POSTFIX_1"
+        ]
+      },
+      {
+        "arrival": 2,
+        "ids": [
+          "VISUAL_POSTFIX_1",
+          "VISUAL_POSTFIX_2"
+        ]
+      },
+      {
+        "arrival": 3,
+        "ids": [
+          "VISUAL_POSTFIX_1",
+          "VISUAL_POSTFIX_2",
+          "VISUAL_POSTFIX_3"
+        ]
+      },
+      {
+        "arrival": 4,
+        "ids": [
+          "VISUAL_POSTFIX_1",
+          "VISUAL_POSTFIX_2",
+          "VISUAL_POSTFIX_3",
+          "VISUAL_POSTFIX_4"
+        ]
+      }
+    ],
+    "individualObservedLifetimeMs": [
+      10127,
+      10089,
+      10176,
+      9987
+    ],
+    "historyCardsRetained": 4,
+    "bellPreviewItems": 3,
+    "syntheticBoundary": "browser-only inbox/preferences GET and syntheticfocus actualapp listener/store/parser; noSTOMP/backendevents claim"
+  },
+  "LOAD-01": {
+    "status": "ready initialloading representative for all3roles",
+    "cases": [
+      {
+        "role": "STUDENT",
+        "width": 425,
+        "theme": "light",
+        "realReadHits": 2,
+        "syntheticCause": "held GET",
+        "skeletonVisible": true
+      },
+      {
+        "role": "HEADMAN",
+        "width": 300,
+        "theme": "light",
+        "realReadHits": 1,
+        "syntheticCause": "held GET",
+        "skeletonVisible": true
+      },
+      {
+        "role": "TEACHER",
+        "width": 1440,
+        "theme": "dark",
+        "realReadHits": 1,
+        "syntheticCause": "held GET",
+        "skeletonVisible": true
+      }
+    ],
+    "syntheticBoundary": "actualGETdelay inbrowser; realapp skeleton rendering, nobackendfailureclaim"
+  },
+  "rawFailuresPreserved": {
+    "postfix-77f-recheck-receipt.json": "originalexit1 beforeHeadmancapture: skeletonappearedwhile earlierinitialreads active, targetlessonGETnotyethit. Toast/Student slicespassed; cleanup204+401×2. NotwholepacketPASS."
+  },
+  "remainingRecheck": "postfix-77f-loading-remaining-receipt.json actualhitwait→H/Tsuccessful; nativecleanup204+401×2",
+  "all7OriginalPngHashesMatch": true,
+  "all7PngPersonallyViewed": true,
+  "browser": "closed;live0",
+  "domainMutations": [],
+  "postfixSessionCleanupConfirmedCount": 4,
+  "privateHandles": "remainingH/TexactsessionIDs persisted0600 underprivate700; noBearer/passwordpersist; valuesexcludedpublic",
+  "earlierToast7CleanupFailure": "retained unchanged and notclaimed resolved",
+  "sourceUnchanged": true,
+  "wholeRowAllStateWidthReadyClaim": false,
+  "samples": [
+    {
+      "id": "WEB-SHARED-NOTIFICATIONS__postfix-synthetic-toast-4__light__1440__77fbd7a5e",
+      "screen": "WEB-SHARED-NOTIFICATIONS",
+      "state": "postfix-synthetic-toast-4",
+      "cause": "four fresh GET items via syntheticfocus actual app listener; all4 retained",
+      "theme": "light",
+      "width": 1440,
+      "height": 1280,
+      "scrollWidth": 1440,
+      "image": "WEB-SHARED-NOTIFICATIONS__postfix-synthetic-toast-4__light__1440__77fbd7a5e.png",
+      "sha256": "f5ab7dbbcf536d3abeeff372c950a1b728dc32d7cf5f26a218ba70f8e82367f4",
+      "provenance": "actual-app/synthetic-read-state"
+    },
+    {
+      "id": "WEB-SHARED-NOTIFICATIONS__postfix-first-individual-expiry__light__1440__77fbd7a5e",
+      "screen": "WEB-SHARED-NOTIFICATIONS",
+      "state": "postfix-first-individual-expiry",
+      "cause": "one toast reached ownTTL; later arrivals retained; browser-only synthetic inputs",
+      "theme": "light",
+      "width": 1440,
+      "height": 1280,
+      "scrollWidth": 1440,
+      "image": "WEB-SHARED-NOTIFICATIONS__postfix-first-individual-expiry__light__1440__77fbd7a5e.png",
+      "sha256": "3adbdb13d7949eddfb6b176aa214331c903cc785a51400359e18e1f16ec07dad",
+      "provenance": "actual-app/synthetic-read-state"
+    },
+    {
+      "id": "WEB-SHARED-NOTIFICATIONS__postfix-all-expired-history__light__1440__77fbd7a5e",
+      "screen": "WEB-SHARED-NOTIFICATIONS",
+      "state": "postfix-all-expired-history",
+      "cause": "all4 independently expired; four actual rendered historycards retained",
+      "theme": "light",
+      "width": 1440,
+      "height": 1280,
+      "scrollWidth": 1440,
+      "image": "WEB-SHARED-NOTIFICATIONS__postfix-all-expired-history__light__1440__77fbd7a5e.png",
+      "sha256": "dd98dc660aafce054f9502bd9caa66bf717a3dd9ebf98570252462ab46dd0e6a",
+      "provenance": "actual-app/synthetic-read-state"
+    },
+    {
+      "id": "WEB-SHARED-NOTIFICATIONS__postfix-bell-history__light__1440__77fbd7a5e",
+      "screen": "WEB-SHARED-NOTIFICATIONS",
+      "state": "postfix-bell-history",
+      "cause": "bell preview3 and fullhistory4 after independentTTL; separate policies",
+      "theme": "light",
+      "width": 1440,
+      "height": 1280,
+      "scrollWidth": 1440,
+      "image": "WEB-SHARED-NOTIFICATIONS__postfix-bell-history__light__1440__77fbd7a5e.png",
+      "sha256": "98ebe8aee28da375953d05a814745ef6681601d9df419d760b5b8452fbe49378",
+      "provenance": "actual-app/synthetic-read-state"
+    },
+    {
+      "id": "WEB-STUDENT-REQUESTS__postfix-synthetic-loading__light__425__77fbd7a5e",
+      "screen": "WEB-STUDENT-REQUESTS",
+      "state": "postfix-synthetic-loading",
+      "cause": "actual initial GET held in browser; skeleton rendering; no backend failure claim",
+      "theme": "light",
+      "width": 425,
+      "height": 900,
+      "scrollWidth": 425,
+      "image": "WEB-STUDENT-REQUESTS__postfix-synthetic-loading__light__425__77fbd7a5e.png",
+      "sha256": "1acf911883a90a2f9c9ce0e69d1d831c2f4fa9ccba61e43bbf1764188bbc2ee2",
+      "provenance": "actual-app/synthetic-read-state"
+    },
+    {
+      "id": "WEB-HEADMAN-JOURNAL__postfix-synthetic-loading__light__300__77fbd7a5e",
+      "screen": "WEB-HEADMAN-JOURNAL",
+      "state": "postfix-synthetic-loading",
+      "cause": "actual initial GET held in browser; skeleton rendering; no backend failure claim",
+      "theme": "light",
+      "width": 300,
+      "height": 900,
+      "scrollWidth": 300,
+      "image": "WEB-HEADMAN-JOURNAL__postfix-synthetic-loading__light__300__77fbd7a5e.png",
+      "sha256": "2914fd5dae773be0786efb2139b1f8e09f7c12c0c9fb6fb8e46dded086c559b5",
+      "provenance": "actual-app/synthetic-read-state"
+    },
+    {
+      "id": "WEB-TEACHER-HOME__postfix-synthetic-loading__dark__1440__77fbd7a5e",
+      "screen": "WEB-TEACHER-HOME",
+      "state": "postfix-synthetic-loading",
+      "cause": "actual initial GET held in browser; skeleton rendering; no backend failure claim",
+      "theme": "dark",
+      "width": 1440,
+      "height": 1080,
+      "scrollWidth": 1440,
+      "image": "WEB-TEACHER-HOME__postfix-synthetic-loading__dark__1440__77fbd7a5e.png",
+      "sha256": "947db3254fed2cb39c21e576b18ded49ce99d7db45115a28205f4cfd7ed89191",
+      "provenance": "actual-app/synthetic-read-state"
+    }
+  ],
+  "modelRequested": "Sol6.1/high",
+  "runtimeTelemetry": "unavailable"
+}

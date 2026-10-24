@@ -160,7 +160,7 @@ Directory history/filter uses archive lookup, create-user picker keeps default.
 PWA/TMA omitted flag stays active-only. No new mobile page or permission widening.
 
 
-## API-006 — whole-scheme map final deletion (source accepted, runtime pending)
+## API-006 — whole-scheme map final deletion (locally verified)
 
 Canonical owner decision2026-10-02 already authorizes all scheme versions and
 PNG/SVG bytes with preview/password proof. Source0100+6839+1fe and shared APIa36/
@@ -196,14 +196,58 @@ failure and initial nullable-enum P2 remain recorded alongside passing correctio
 Final immutable Academic1fe JAR SHA256
 `a433178685a4a9cf421ab949fc699b5efaf03fe91c50d3917c1655bfca24cbe2`.
 Main stand stays Academic950; no rollout, stand map deletion or production migration.
-Separate synthetic realAuth lane is running. The reviewed native whole-map UI
-command was rejected by automatic approval review before execution: browser,
-login, uploads and deletion0. Q-ENV-007 awaits the owner's exact approval; no
-retry/bypass. Critical Auth/SQL/PKI readiness does not close runtime acceptance,
-and the absent Attendance activity remains an explicit whole-stand health limit.
+Owner Q-ENV-007 approved the distinct synthetic realAuth UI case. One native
+whole-delete200 removed two versions/four assets; independent PostgreSQL21 checks
+confirmed retained building/floor/usage/high-water/receipt. Actual Auth confirmation
+correct204 then wrong403 CURRENT_PASSWORD_INVALID and24 independent postchecks
+close the real-password gap. Raw Auth helper native1/passedfalse is retained:
+its anonymous direct Auth session read403 is source-correct; it expected401 from
+the different browser/Gateway boundary. Its own session is independently revoked.
+No repeat deletion/confirmation or replay-after-reupload campaign was run; existing
+real PG replay/high-water/rollback results reused. Missing Attendance activity and
+whole-stand/downstream health remain explicit limits. Main Academic950 unchanged.
+[Qualified local acceptance](../../validation/web-vue-pr3/checkpoints/admin-visual-20261024/map-local-acceptance.json).
 
 [Backend review](../../validation/web-vue-pr3/review/map-REVIEW-0100dd7c.md),
 [nullable recheck](../../validation/web-vue-pr3/review/map-RECHECK-1fe1588d.md),
 [combined API/WEB review](../../validation/web-vue-pr3/review/map-web-REVIEW-a36ab626-85d801b9.md).
 Original detailed receipts remain in /tmp/map-whole-delete-* and /tmp/map-scope-null-*;
 [source/build checkpoint](../../validation/web-vue-pr3/checkpoints/promotion-map-20261024/combined-frontends-build.json).
+
+
+## API-007 — group final deletion (source/review ready, behavior pending)
+
+Additive current ADMIN GROUPS_MANAGE+DATA_DELETE endpoints:
+GET `/academic/groups/{groupId}/deletion-preview`, POST
+`/academic/groups/{groupId}/deletions` with UUID Idempotency-Key and
+`{password, previewDigest}`, GET `/academic/group-deletions/{operationId}`.
+Preview has exact group identity, digest and numeric counts for accounts affected,
+memberships/headman/helpers, Academic/Schedule/Attendance rows and Auth grants.
+Operation phases PREPARING/COMMITTING/COMPLETED/RELEASING/CANCELLED are durable;
+unknown requests retain original identity and are not retried with a fresh key.
+Current password proof and live original actor/session are checked before first
+irreversible Auth commit. Existing proofless legacy DELETE is rejected409.
+
+POST `/academic/groups/{groupId}/deletions/{operationId}/resolve` has no body or
+password. Current authorized same actor may recover after a new session. An
+accepted original is returned/resumed, never cancelled. If it was not accepted,
+a unique-key transaction stores immutable CANCELLED/NOT_ACCEPTED/counts0; the
+same key blocks any late original acceptance. GET404 alone is not zero-effect
+proof. This allows normal wrong-password/stale-preview validation recovery without
+blind deletion. Only authoritative terminal receipt unlocks a new preview.
+
+Q-PROD-004: delete target-group membership, headman/helper assignments and its
+specific authority/data; preserve accounts/credentials/other roles/other groups,
+without automatic archive/dropout/graduation. Open sessions lose target access.
+Auth/Academic/Schedule/Attendance participant changes are additive; existing
+Subject/Semester participants and PWA/TMA operations remain. No new mobile group
+final-delete UI. Shared generated contracts remain one canonical source.
+
+SOURCEv6 narrow independent review PASS and Java/test-source compile PASS.
+Actual HTTP/PG/Auth/Redis, restricted Schedule PG and Attendance Mongo behavior,
+and final four-service UI path are still pending; no runtime/API compatibility
+PASS inferred from compile or transport doubles. First Academic IT stopped on
+disk guard with no behavior verdict; resource retryr2 held the reserve, passed foreign-group threshold preservation,
+but12 cases stopped on test-helper header/hash assumptions. Test-onlyv7 corrects
+those helpers and retries only the12 failed invocations; no product guard changed.
+CI/OpenAPI Drift remains manual/PAUSED; no workflow was dispatched.

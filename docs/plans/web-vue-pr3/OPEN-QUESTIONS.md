@@ -71,10 +71,15 @@ proxy. MCP SVG export также работает. Повторно разреш
 
 ## Q-ENV-003 — конкретная проверка user8 после отказа approval review
 
-**Тип:** разрешение на ограниченную проверку стенда. **Статус:** waiting for owner.
-Automatic approval review отклонил сценарий, который временно выдаёт FULL,
+**Тип:** разрешение на ограниченную проверку стенда. **Статус:** APPROVED; три credential commands выполнены, UI receipt checks FAIL; mandatory cleanup VERIFIED.
+Прямой ответ владельца разрешает `/tmp/admin-users-unknown-review.cjs` только
+для собственной синтетической user8 на локальном стенде: временный FULL, генерацию
+пароля, потерянный ответ и отзыв сессий. Временное ADMIN назначение обязательно
+снять и подтвердить очистку, включая ошибку. Admin1/его пароль/права, другие
+пользователи и production не менять. Повторное разрешение не требуется.
+История до ответа: automatic approval review отклонил сценарий, который временно выдаёт FULL,
 меняет постоянные credentials и проверяет self-regeneration: объём разрешения
-на security mutations был недостаточно явным. До ответа не запускается.
+на security mutations был недостаточно явным. На том этапе до ответа сценарий не запускался.
 
 Подготовлен проверяемый `/tmp/admin-users-unknown-review.cjs` для исключительно
 синтетического user8, созданного самим UI в этом стенде. Guard проверяет marker,
@@ -87,19 +92,27 @@ admin1 credentials/profile не меняются. Сценарий провер�
 
 Владельцу отправлен конкретный вопрос с вариантами «Разрешить этот сценарий
 для user8 стенда» / «Не запускать». Молчание не разрешает выполнение.
-Затронут runtime gate ACT-ADMIN-REGENERATE-PASSWORD; user8 заморожен. Остальные
+Текущий runtime gate ACT-ADMIN-REGENERATE-PASSWORD не закрыт: native receipt UI FAIL, source diagnosis. Все временные права сняты/profile4; account/STUDENT сохранены, обе собственные user8 sessions и seed sessions отозваны, independent19post PASS. Остальные
 проверки продолжаются на собственных отдельных fixtures без расширения прав.
 
 ## Q-PROD-004 — участники окончательно удаляемой группы
 
-**Тип:** существенное продуктовое решение. **Статус:** waiting for owner.
+**Тип:** существенное продуктовое решение. **Статус:** RESOLVED, policy confirmed.
+Последний прямой ответ владельца: при final group delete удалить членство группы,
+назначения старосты/помощников и только относящиеся к ней полномочия; предварительный
+перевод не обязателен. Аккаунты/логины/пароли/другие роли и назначения/данные других
+групп сохранить. Автоматически не архивировать пользователей, не присваивать
+«отчислен»/«выпущен». Без иных назначений аккаунт остаётся без доступа к удалённой
+группе. Открытые сессии теряют соответствующий доступ. Перед текущим паролем
+администратора показать числовой preview данных и назначений. Архивация — отдельная
+обратимая операция. Это закрывает policy-вопрос, не подтверждает реализацию.
 Финальное удаление группы уже принято: canonical COMPONENT_REGISTRY.md:127,
 JS-ADMIN-18: числовой preview, текущий пароль, подтверждённый cascade. Сам scope
 не обсуждается повторно. Q-PROD-003 запрещает отдельное окончательное удаление
 пользователя. Current GroupService DELETE не реализует безопасный flow и
 блокирует managed history; прежний endpoint не задаёт новую policy.
 
-Не определены последствия для текущего membership и student/headman grants
+Историческая формулировка до ответа владельца (решена выше): не были определены последствия для текущего membership и student/headman grants
 участников удаляемой группы при сохранении accounts/остальных ролей. Нельзя
 удалить аккаунты, оставить authority со ссылкой на исчезнувшую группу или
 самовольно выбрать новый статус пользователя.
@@ -199,7 +212,7 @@ reviewer счёл действующим readiness STOP и не признал �
 Первый реальный прогон упал из-за неверного migration directory V64; новый файл
 перенесён в активный V13, второй прогон3+legacy PASS. Полный backend/client/WEB
 scope reviewed, nullable OpenAPI P2 исправлен отдельным recheck, JAR заморожен.
-[API-006](API-CHANGES.md#api-006--whole-scheme-map-final-deletion-source-accepted-runtime-pending).
+[API-006](API-CHANGES.md#api-006--whole-scheme-map-final-deletion-locally-verified).
 Основной Academic950 не обновлялся; настоящий Auth+WEB whole-delete ещё NOT RUN.
 Ответа владельца по Q-ENV-004 больше не требуется.
 
@@ -264,14 +277,19 @@ SUCCEEDED и независимый postread подтвердили заверш
 API ровно собственной сессии и нормальные SIGTERM точному процессу.
 [Приёмка, исходные hashes и ограничения](../../validation/web-vue-pr3/checkpoints/promotion-map-20261024/promotion-acceptance.json).
 
-Текущие ответы владельца нужны для Q-ENV-003, Q-ENV-007 и Q-PROD-004. Q-ENV-002:
+Исторический срез до последних ответов: тогда ожидались Q-ENV-003/008/PROD-004; теперь все отвечены. Q-ENV-002:
 разрешение обещано, в реально enforced policy revision14 www.figma.com всё ещё
-отсутствует; новая прямая попытка через inherited proxy CONNECT403/exit56. Новый запрос не нужен.
+отсутствует. Последняя прямая попытка при прежней revision11 дала через
+inherited proxy CONNECT403/exit56; при revision14 прямой запрос не повторялся.
+Новый запрос разрешения владельцу не нужен.
 
 
 ## Q-ENV-007 — отдельный native whole-map UI после отказа auto-review
 
-**Тип:** точное разрешение подготовленной операции. **Статус:** waiting for owner.
+**Тип:** точное разрешение подготовленной операции. **Статус:** APPROVED; native whole-map UI +SQL+Auth qualification COMPLETED.
+Прямой ответ владельца в этом чате: «да ращрешаю». Повторное разрешение не нужно.
+Последующий свежий допуск10d8 применён: один native200/две версии/четыре assets404 и21PG PASS. Actual Auth204/wrong403 +24PG приняты отдельно. Успешное удаление не повторять.
+Ниже сохранены исходный отказ и подготовленный scope до согласия.
 Автоматическая проверка отклонила команду **до исполнения**: согласие Q-ENV-004
 на Java HTTP/PostgreSQL checks сочла недостаточно явным для необратимого
 удаления всех версий PNG/SVG через UI. Browser/login/uploads/delete0, повторов
@@ -293,5 +311,58 @@ Critical Auth/SQL/PKI proof и независимая матрица готов�
 Attendance activity отсутствует, прежний raw health FAIL сохраняется. Это
 не разрешение на изменение health, подключение main или фиктивные сервисы.
 Admission ограничен временем и revision; после ответа нужен актуальный допуск,
-а не повтор старой истёкшей команды. Ответ ожидается в текущем чате; молчание
-не разрешает запуск. Затронут ACT-ADMIN-MAP-DELETE.
+а не повтор старой истёкшей команды. Прямое согласие уже получено; оно относится только к описанному positive-case.
+Затронут ACT-ADMIN-MAP-DELETE. Негативная Auth-проверка учитывается отдельно.
+
+
+## Q-ENV-008 — один LIMITED ACL-case в отдельном искусственном realm
+
+**Тип:** точное разрешение security mutations. **Статус:** APPROVED; original mutations COMPLETED, effective-access check pending.
+Прямой ответ владельца: «Разрешить LIMITED ACL-сценарий». Повторное разрешение
+не требуется; необходимы свежий технический допуск и исходный reviewed harness.
+Это отдельный прежний отказ auto-review на privileged fixture, не Q-ENV-003.
+Первый original3dd case выполнен: PUT200/PUT200/DELETE204, все original SUCCEEDED,24SQL PASS, target2 TEACHER сохранён/ADMIN archived; profile3/RV4/catalog12. Ниже — исходный scope.
+Последнее требование владельца требует отдельного фактического target-доступа и отзыва открытой страницы; новый узкий packet использует normal target login/read в том же изолированном scope, без FULL/паролей/main.
+
+Concrete target: существующий public synthetic teacher2 в отдельном
+`rct-pr3-admin-isolated`, actor1/FULL. Настоящий readonly baseline19boolean PASS:
+учитель ACTIVE, без ADMIN/grant/profile/pending, без группы, T00001; actor1
+не изменён. Один обычный UI-case: выдать ADMIN LIMITED `[USERS_VIEW]`, добавить
+`GROUPS_VIEW`, отозвать ADMIN, сохранив TEACHER/account. FULL, credentials, self,
+main8/17/18 и production не затрагиваются. Версии, архивный grant и audit
+сохраняются; byte-identical restoration не заявляется.
+
+При неизвестном результате — только чтение исходной операции, без слепого
+retry/newkey/finally-revoke. После известного частичного исхода допускается
+отдельный технический handoff обычного отзыва выданного доступа с текущим CAS.
+В исходном mutation-case новые аккаунты и target login не использовались; это не доказательство эффективного доступа. Результат требует
+независимого SQL postguard, обычного logout собственной сессии и guest401.
+
+PLAN `/workspace/rct-pr3-runtime/admin-access-native-20261024/prep/PLAN.md`.
+Frozen harness `/tmp/native-admin-access-isolated-case.cjs`, SHA256
+`3dd415086f2995f520c648be4ad84440ef275bace0fa47cc708f7f6c4e04c0d5`;
+independent PREP review PASS. Owner question передан в этом чате после review;
+прямое согласие получено. Исходный template ownerApprovalReceived:false сохраняется
+как PREP; actual запуск требует нового private admission + технического GO.
+Q-ENV-007 не переносится на этот сценарий. Затронут ACT-ADMIN-ACCESS.
+
+
+## Актуальное состояние после ответов и проверок
+
+Q-PROD-004 закрыт policy выше; source группы в работе, новые продуктовые решения
+не требуются. Q-ENV-003/007/008 разрешены. Q7 native whole-map и реальная Auth
+negative qualification завершены. Q8 original mutation+SQL завершён, эффективный
+доступ и отзыв страницы проверяются отдельным узким packet.
+
+Q3 выполнены ровно три исходно согласованные генерации только own8:2→3→4→5.
+Seed lostACK восстановлен чтением без повтора; self-known и self-lostACK UI checks
+не полностью прошли. После каждой части временный FULL отозван: finalprofile4
+unassigned, account/STUDENT/group1 сохранены. Независимый finalpost19PASS:
+RV6/Cred5, обе user8 sessions revoked, собственные seed sessions revoked,
+other users/roles/profiles unchanged. Raw nativeFAIL сохранён; fullaction не PASS.
+Идёт causal source diagnosis без новых credential writes. Это не новый вопрос
+владельцу и не разрешение на слепой повтор генерации.
+
+Ожидающих ответа существенных вопросов сейчас нет. Новые отсутствующие решения
+будут оформляться отдельно; независимая работа продолжается. CI/Coverage/
+Security/OpenAPI PAUSED; merge/deploy не разрешены. Существующий Goal активен.

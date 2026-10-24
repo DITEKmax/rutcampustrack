@@ -1,0 +1,31 @@
+{
+  "actionId": "ACT-ADMIN-MAP-DELETE",
+  "result": "LOCALLY_VERIFIED_WITH_EXPLICIT_BOUNDARIES",
+  "nativeSource": "10d8b908ae9801b22018881389f21ef5c0188583",
+  "academicSource": "1fe1588dd1ed635df6a8735d5115d436151e8cec",
+  "oneNativeWholeDelete200": true,
+  "versions2Assets4Gone404": true,
+  "independentGraphChecks": 21,
+  "actualAuthCorrect204": true,
+  "actualWrong403Code": "CURRENT_PASSWORD_INVALID",
+  "confirmationCalls": 2,
+  "ownProbeSessionRevoked": true,
+  "independentAuthPostChecks": 24,
+  "rawProbeNativeExit": 1,
+  "rawProbePassed": false,
+  "rawGuestStatus": 403,
+  "guestRefusalQualification": "DirectAuth anonymous403 is source-correct; browser Gateway missing-token401 is differentboundary. Rawresult is neverrewrittenPASS.",
+  "proofs": {
+    "nativeUiSha256": "5a5972a248e3fc3cc13003c63e69c4406414a8a627b639f42de9e9099006475d",
+    "graphPostSha256": "10cb02701c09ba1183a396ea30f0fb2eef624a951c02a6e4a3a36c380e0ff9d6",
+    "confirmationEvidenceSha256": "2aa1db8451ff65ebd3bb55e4cbe119c9b6f005fa27bcd0a918436087ecae8ba3",
+    "confirmationPostEvidenceSha256": "f0203c878fa3c358285b80faae571932af714c580284b4ecd7636fd6773cc509"
+  },
+  "limits": [
+    "Known absentAttendanceActivity/globalReadyfalse in isolatedrealm retained, notwhole-systemPASS",
+    "No new replay-after-reupload nativecase; existingrealPGreplay/highwater/rollbackcases reused",
+    "Priorownsession comparison limitedto counts/revocation, no per-ID snapshot existed",
+    "MainAcademic950 notrolled here; fixture/stand/provenance remain explicit"
+  ],
+  "identityServiceRevision": "f3c03bd81b3d44873abff2ad7126d9a000e51381"
+}

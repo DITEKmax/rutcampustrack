@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "kind": "admin-and-parallel-visual-checkpoint",
+  "sourceRevision": "10d8b908ae9801b22018881389f21ef5c0188583",
+  "counts": {
+    "implemented": 116,
+    "locallyVerified": 114,
+    "activeActions": 117,
+    "adminImplemented": 33,
+    "adminLocallyVerified": 31,
+    "adminActiveActions": 34
+  },
+  "readinessAxes": [
+    "user actions",
+    "locally verified behavior",
+    "visual screens/themes/responsive/states",
+    "Angular removal and assembled application"
+  ],
+  "visualScope": {
+    "canonicalWebViews": 33,
+    "mobileScreenComponents": 50,
+    "PwaTmaCoverageSeparate": true,
+    "criteria": 18,
+    "states": [
+      "ready",
+      "needs-fix",
+      "not-checked"
+    ],
+    "wholeRowsNewlyAccepted": 0,
+    "boundedCriteriaNowVerified": [
+      "NOTIF-02 accumulation/lifetime/history",
+      "LOAD-01 S425light/H300light/T1440dark skeleton"
+    ]
+  },
+  "map": "map-local-acceptance.json",
+  "limitedAccess": "limited-access-mutations.json",
+  "password": "password-known-partial.json",
+  "visual": "narrow-results-qualified.json",
+  "limits": [
+    "Screenshots and checks add no functional actions or readiness points.",
+    "Synthetic browser GET/focus states explicitly marked; real backend event/STOMP/auth success not inferred.",
+    "Toast7 normal logout was not confirmed; exact session handle was not retained, browser closed. Raw cleanup FAIL preserved.",
+    "Global isolated Attendance/downstream health not PASS.",
+    "CI/Coverage/Security/OpenAPI PAUSED/manual, not run; no merge/deploy/production."
+  ],
+  "postfixGallery": "../../runtime-gallery/visual-postfix-20261024/manifest.json",
+  "postfixSource": "77fbd7a5e79bcaf3185f60e4ee2f18c7a3e3896b"
+}

@@ -7,7 +7,7 @@ are prepared. Production/dev Compose and deploy build inputs now point to Vue,
 retaining identities/triggers. DEV copy/readability and6 static HTTP checks PASS;
 full prod config/outer cutover remain pending. Angular's433-file package and
 its dependencies/CSP/exclusions have not been removed: final group capability
-still awaits Q-PROD-004. [Current shipping facts](SHIPPING-CHECKPOINT-20261024.md).
+has resolved Q-PROD-004 policy; implementation/runtime acceptance remains. [Current shipping facts](SHIPPING-CHECKPOINT-20261024.md).
 
 
 Date: 2026-10-24. Read-only author inventory; no product changes, deletion, image build, CI run, deployment, browser enrollment, external push, or production configuration access.

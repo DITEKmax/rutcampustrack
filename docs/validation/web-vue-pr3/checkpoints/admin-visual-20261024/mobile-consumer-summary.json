@@ -1,0 +1,55 @@
+{
+  "sourceRevision": "77fbd7a5e79bcaf3185f60e4ee2f18c7a3e3896b",
+  "sourcePresenceNotRuntime": true,
+  "canonicalRows": 83,
+  "mobileRows": 50,
+  "sharedMobileScreens": 48,
+  "PwaOnlyAuthScreens": 2,
+  "retainedOriginalFrames": 140,
+  "retainedPwaRealApi": 138,
+  "retainedTmaControlledUnsigned": 2,
+  "originalHashIntegrity": "140/140 match retained manifest; noimagesmodified",
+  "mappedPwaBaselineScreens": 36,
+  "pwaVisualNotCheckedScreens": 14,
+  "tmaPostLoginScreens": 0,
+  "fullScreenAllStateWidthReadyClaim": false,
+  "newFunctionalActions": 0,
+  "sourceChangedPaths": {
+    "79e8fdce620af0493287469725e82bee511b2e8f": [
+      "frontends/mobile-core/src/api/generated/academic.types.ts",
+      "frontends/mobile-core/src/api/map-client.test.ts",
+      "frontends/mobile-core/src/api/map-client.ts",
+      "frontends/mobile-core/src/api/types.ts",
+      "frontends/mobile-core/src/features/headman-stats/headman-stats-mobile.pcss",
+      "frontends/mobile-core/src/shared/report-download-client.ts",
+      "frontends/pwa-vue/Dockerfile",
+      "frontends/pwa-vue/src/login-screen.pcss",
+      "frontends/shared/profile/avatar-presets.ts",
+      "frontends/tma-vue/Dockerfile"
+    ],
+    "1e7dca2f10e1c86a309bdb478a59f5057b9d1872": [
+      "frontends/mobile-core/src/api/generated/academic.types.ts",
+      "frontends/mobile-core/src/api/map-client.test.ts",
+      "frontends/mobile-core/src/api/map-client.ts",
+      "frontends/mobile-core/src/api/types.ts",
+      "frontends/pwa-vue/Dockerfile",
+      "frontends/shared/profile/avatar-presets.ts",
+      "frontends/tma-vue/Dockerfile"
+    ]
+  },
+  "acceptedCorrectiveManifest": "/workspace/rct-pr3-runtime/mobile-theme-p2-fix/PNG-MANIFEST.json",
+  "qualifications": [
+    "Original79 auth/semesterP2 frames superseded byaccepted1e7 corrective12",
+    "Retained140 cleanup notretrofitted; authorreported ownlogout failures are historical limitations",
+    "No signed nativeTMA auth evidence in2controlledunsigned gates",
+    "Sharedmobile/foundation/themeowner/source wrappers unchanged by77fWEB-onlyfix",
+    "Remainingmap-client/API/avatar deltas are explicitconsumerqualification, notglobalinvalidation"
+  ],
+  "personallyViewedRepresentativeOriginals": [
+    "student-home-light-300",
+    "student-home-dark-300",
+    "teacher-home-light-1440",
+    "tma-controlled-unsigned-gate-light-300",
+    "tma-controlled-unsigned-gate-dark-300"
+  ]
+}

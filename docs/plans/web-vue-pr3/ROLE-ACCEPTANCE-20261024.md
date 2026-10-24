@@ -2,7 +2,7 @@
 
 Промежуточный срез существующего PR3. Собранный frontend revision
 `0421d344c9697d58efc8f039b74c5bdf594c6eb4`; исходный знаменатель117 active
-сохранён. **Implemented116/117 (99,15%); locally verified113/117 (96,58%).**
+сохранён. **Implemented116/117 (99,15%); locally verified114/117 (97,44%).**
 Реализация означает принятый после независимого review исходный код.
 Локальная проверка означает достаточное подтверждение пользовательского действия
 на настоящем изолированном backend вместе с адресными проверками поведения.
@@ -15,7 +15,7 @@
 | STUDENT | 16 | 16/16 (100%) | 16/16 (100%) |
 | HEADMAN | 38 | 38/38 (100%) | 38/38 (100%) |
 | TEACHER | 8 | 8/8 (100%) | 8/8 (100%) |
-| ADMIN | 34 | 33/34 (97,06%) | 30/34 (88,24%) |
+| ADMIN | 34 | 33/34 (97,06%) | 31/34 (91,18%) |
 
 ## Что подтверждено
 
@@ -52,10 +52,10 @@ PDF через реальный LibreOffice. Старое воспроизвед
 TEACHER8 приняты ранее: назначенная группа **и** назначенный предмет, только
 разрешённые чтение/экспорт. Новых прав преподавателя не добавлено.
 
-ADMIN30 подтверждены на настоящем стенде: dashboard/activity, реестры и фильтры,
+ADMIN31 подтверждены на настоящем стенде: dashboard/activity, реестры и фильтры,
 создание/редактирование/роль/перевод/архивация/восстановление пользователя,
 recovery, группы/староста/история/архивация/восстановление, семестровые операции
-включая активацию, схемы кроме final delete, посещаемость и экспорты.
+включая активацию, схемы включая final delete, посещаемость и экспорты.
 Проверены потерянный201 → явное продолжение того же create → volatile receipt,
 потерянное принятие export → тот же key/selector/job и GET-retry известного job
 после потери download; изменения фильтров не создают другое намерение.
@@ -71,14 +71,19 @@ Fresh ADMIN selection после исправления0421 снова прох�
 dashboard metrics этого небольшого realm частично недоступны и не приняты.
 [Новая приёмка и ограничения](../../validation/web-vue-pr3/checkpoints/role-semester-20261024/manifest.json).
 
-## Четыре оставшихся action gates
+## Три оставшихся action gates поведения
 
 | Action | Source | Недостающее подтверждение / зависимость |
 |---|---|---|
-| ACT-ADMIN-ACCESS | implemented | Настоящая запись/отзыв прав. Read-only USERS_VIEW-only lookup и cancel/draft проверены; попытка отдельного privileged fixture отклонена approval review и не выполнялась. |
-| ACT-ADMIN-REGENERATE-PASSWORD | implemented | FULL/self и unknown-result сценарий own8 ожидает ответ Q-ENV-003 после отказа approval review;8 заморожен. |
-| ACT-ADMIN-MAP-DELETE | implemented | Whole-version/BYTEA purge, nullable scope, API+WEB reviewed и объединённые сборки PASS. HTTP/PostgreSQL использует Auth stub; full actual Auth+WEB NOT RUN. Auto-review отклонил запуск до исполнения; Q-ENV-007 ожидает владельца. Основной Academic950 не обновлён. |
-| ACT-ADMIN-GROUP-FINAL-DELETE | blocked | Q-PROD-004: судьба membership и grants участников. Аккаунты не удаляются; решение владельца не выдумывается. |
+| ACT-ADMIN-ACCESS | implemented | Первые LIMITED assign/change/revoke и SQL PASS; остаётся прямое подтверждение фактического target-доступа и его отзыва в открытой странице. |
+| ACT-ADMIN-REGENERATE-PASSWORD | implemented | Owner Q-ENV-003 разрешил собственный user8: allowed/self/lostACK, временный FULL с обязательным отзывом и cleanup. Три исходные генерации2→3→4→5 выполнены; native receipt UI checks FAILED, source diagnosis. Finalprofile4/noADMIN, обе сессии8 revoked, independent19PGpost PASS. |
+| ACT-ADMIN-GROUP-FINAL-DELETE | in progress | Q-PROD-004 решён. SOURCEv4 compile четырёх сервисов PASS, SOURCEv5 закрывает F1–F3. Клиент/Vue сохраняют original при UNKNOWN; добавляется атомарный resolve для normal validation recovery. Реальные IT/UI/access-revoke впереди. |
+
+ACT-ADMIN-MAP-DELETE принят: один whole-delete200 и21 SQL PASS в отдельном
+realm; actual Auth correct204/wrong403 CURRENT_PASSWORD_INVALID и24 независимых
+postchecks PASS. Raw native1 из-за guest403 сохранён и отдельно квалифицирован
+по настоящей Spring Security boundary. Повторного удаления нет. Main950 остаётся
+без нового scope; не заявляется обновление main runtime.
 
 Проценты не включают глобальное завершение поставки: пока остаются активный
 Angular, подготовка Vue image/static serving и переключение build/oracle wiring,
@@ -116,3 +121,7 @@ Shipping preparation original4445 → root820d8fe99 independently reviewed PASS:
 Actual shipping images/inner nginx checks now PASS atsourcea813; initialPNG403 и VFS/disk incident сохранены в [shipping checkpoint](SHIPPING-CHECKPOINT-20261024.md). Outer wiring/Angular removal остаются. Added ADMIN24 render gallery exact634cd и real canonical home FULL1→dashboard/USERS_VIEW17→users, no access writes.
 
 PROMOTE принят после явного Q-ENV-006: один UI200, курс1→2, ровно1ledger, повторный preview ALREADY_PROCESSED. Own6 архивирована обычным API, цикл5/ledger сохранены; активный2 не менялся. [Приёмка, квалификации фоновых изменений и cleanup](../../validation/web-vue-pr3/checkpoints/promotion-map-20261024/promotion-acceptance.json).
+
+Визуальный source77f и независимый boundedruntime закрывают преждевременный cap3
+и skeleton gaps S425light/H300light/T1440dark; остальные состояния/адаптив/темы
+в конечной матрице остаются отдельно. [Before/after checkpoint](../../validation/web-vue-pr3/checkpoints/admin-visual-20261024/manifest.json).

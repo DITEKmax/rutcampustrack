@@ -1,0 +1,398 @@
+{
+  "sourceRevision": "77fbd7a5e79bcaf3185f60e4ee2f18c7a3e3896b",
+  "startedAt": "2026-10-24T15:16:12.086Z",
+  "kind": "postfix bounded actual-app synthetic-read visual recheck",
+  "functionalActionsAdded": 0,
+  "samples": [
+    {
+      "id": "WEB-SHARED-NOTIFICATIONS__postfix-synthetic-toast-4__light__1440__77fbd7a5e",
+      "screen": "WEB-SHARED-NOTIFICATIONS",
+      "state": "postfix-synthetic-toast-4",
+      "cause": "four fresh GET items via syntheticfocus actual app listener; all4 retained",
+      "theme": "light",
+      "width": 1440,
+      "height": 1280,
+      "scrollWidth": 1440,
+      "image": "WEB-SHARED-NOTIFICATIONS__postfix-synthetic-toast-4__light__1440__77fbd7a5e.png",
+      "sha256": "f5ab7dbbcf536d3abeeff372c950a1b728dc32d7cf5f26a218ba70f8e82367f4",
+      "provenance": "actual-app/synthetic-read-state"
+    },
+    {
+      "id": "WEB-SHARED-NOTIFICATIONS__postfix-first-individual-expiry__light__1440__77fbd7a5e",
+      "screen": "WEB-SHARED-NOTIFICATIONS",
+      "state": "postfix-first-individual-expiry",
+      "cause": "one toast reached ownTTL; later arrivals retained; browser-only synthetic inputs",
+      "theme": "light",
+      "width": 1440,
+      "height": 1280,
+      "scrollWidth": 1440,
+      "image": "WEB-SHARED-NOTIFICATIONS__postfix-first-individual-expiry__light__1440__77fbd7a5e.png",
+      "sha256": "3adbdb13d7949eddfb6b176aa214331c903cc785a51400359e18e1f16ec07dad",
+      "provenance": "actual-app/synthetic-read-state"
+    },
+    {
+      "id": "WEB-SHARED-NOTIFICATIONS__postfix-all-expired-history__light__1440__77fbd7a5e",
+      "screen": "WEB-SHARED-NOTIFICATIONS",
+      "state": "postfix-all-expired-history",
+      "cause": "all4 independently expired; four actual rendered historycards retained",
+      "theme": "light",
+      "width": 1440,
+      "height": 1280,
+      "scrollWidth": 1440,
+      "image": "WEB-SHARED-NOTIFICATIONS__postfix-all-expired-history__light__1440__77fbd7a5e.png",
+      "sha256": "dd98dc660aafce054f9502bd9caa66bf717a3dd9ebf98570252462ab46dd0e6a",
+      "provenance": "actual-app/synthetic-read-state"
+    },
+    {
+      "id": "WEB-SHARED-NOTIFICATIONS__postfix-bell-history__light__1440__77fbd7a5e",
+      "screen": "WEB-SHARED-NOTIFICATIONS",
+      "state": "postfix-bell-history",
+      "cause": "bell preview3 and fullhistory4 after independentTTL; separate policies",
+      "theme": "light",
+      "width": 1440,
+      "height": 1280,
+      "scrollWidth": 1440,
+      "image": "WEB-SHARED-NOTIFICATIONS__postfix-bell-history__light__1440__77fbd7a5e.png",
+      "sha256": "98ebe8aee28da375953d05a814745ef6681601d9df419d760b5b8452fbe49378",
+      "provenance": "actual-app/synthetic-read-state"
+    },
+    {
+      "id": "WEB-STUDENT-REQUESTS__postfix-synthetic-loading__light__425__77fbd7a5e",
+      "screen": "WEB-STUDENT-REQUESTS",
+      "state": "postfix-synthetic-loading",
+      "cause": "actual initial GET held in browser; skeleton rendering; no backend failure claim",
+      "theme": "light",
+      "width": 425,
+      "height": 900,
+      "scrollWidth": 425,
+      "image": "WEB-STUDENT-REQUESTS__postfix-synthetic-loading__light__425__77fbd7a5e.png",
+      "sha256": "1acf911883a90a2f9c9ce0e69d1d831c2f4fa9ccba61e43bbf1764188bbc2ee2",
+      "provenance": "actual-app/synthetic-read-state"
+    }
+  ],
+  "routeHits": [
+    {
+      "case": "notifications",
+      "kind": "inbox",
+      "n": 1,
+      "role": "STUDENT",
+      "ids": [],
+      "at": 1792854975281
+    },
+    {
+      "case": "notifications",
+      "kind": "preferences",
+      "n": 1,
+      "typeCount": 32,
+      "appPush": true
+    },
+    {
+      "case": "notifications",
+      "kind": "inbox",
+      "n": 2,
+      "role": "STUDENT",
+      "ids": [],
+      "at": 1792854975423
+    },
+    {
+      "case": "notifications",
+      "kind": "preferences",
+      "n": 2,
+      "typeCount": 32,
+      "appPush": true
+    },
+    {
+      "case": "notifications",
+      "kind": "inbox",
+      "n": 3,
+      "role": "STUDENT",
+      "ids": [
+        "VISUAL_POSTFIX_1"
+      ],
+      "at": 1792854975516
+    },
+    {
+      "case": "notifications",
+      "kind": "preferences",
+      "n": 3,
+      "typeCount": 32,
+      "appPush": true
+    },
+    {
+      "case": "notifications",
+      "kind": "inbox",
+      "n": 4,
+      "role": "STUDENT",
+      "ids": [
+        "VISUAL_POSTFIX_2",
+        "VISUAL_POSTFIX_1"
+      ],
+      "at": 1792854976303
+    },
+    {
+      "case": "notifications",
+      "kind": "preferences",
+      "n": 4,
+      "typeCount": 32,
+      "appPush": true
+    },
+    {
+      "case": "notifications",
+      "kind": "inbox",
+      "n": 5,
+      "role": "STUDENT",
+      "ids": [
+        "VISUAL_POSTFIX_3",
+        "VISUAL_POSTFIX_2",
+        "VISUAL_POSTFIX_1"
+      ],
+      "at": 1792854977056
+    },
+    {
+      "case": "notifications",
+      "kind": "preferences",
+      "n": 5,
+      "typeCount": 32,
+      "appPush": true
+    },
+    {
+      "case": "notifications",
+      "kind": "inbox",
+      "n": 6,
+      "role": "STUDENT",
+      "ids": [
+        "VISUAL_POSTFIX_4",
+        "VISUAL_POSTFIX_3",
+        "VISUAL_POSTFIX_2",
+        "VISUAL_POSTFIX_1"
+      ],
+      "at": 1792854977853
+    },
+    {
+      "case": "notifications",
+      "kind": "preferences",
+      "n": 6,
+      "typeCount": 32,
+      "appPush": true
+    },
+    {
+      "case": "notifications",
+      "kind": "inbox",
+      "n": 7,
+      "role": "STUDENT",
+      "ids": [
+        "VISUAL_POSTFIX_4",
+        "VISUAL_POSTFIX_3",
+        "VISUAL_POSTFIX_2",
+        "VISUAL_POSTFIX_1"
+      ],
+      "at": 1792854989067
+    },
+    {
+      "case": "notifications",
+      "kind": "preferences",
+      "n": 7,
+      "typeCount": 32,
+      "appPush": true
+    },
+    {
+      "case": "STUDENT loading",
+      "path": "/api/v1/student/session",
+      "hit": 1,
+      "synthetic": "held GET"
+    },
+    {
+      "case": "STUDENT loading",
+      "path": "/api/v1/student/session",
+      "hit": 2,
+      "synthetic": "held GET"
+    },
+    {
+      "case": "notifications",
+      "kind": "inbox",
+      "n": 8,
+      "role": "STUDENT",
+      "ids": [
+        "VISUAL_POSTFIX_4",
+        "VISUAL_POSTFIX_3",
+        "VISUAL_POSTFIX_2",
+        "VISUAL_POSTFIX_1"
+      ],
+      "at": 1792854989204
+    },
+    {
+      "case": "notifications",
+      "kind": "preferences",
+      "n": 8,
+      "typeCount": 32,
+      "appPush": true
+    },
+    {
+      "case": "HEADMAN loading",
+      "path": "/api/schedule/groups/1/lessons",
+      "hit": 1,
+      "synthetic": "held GET"
+    }
+  ],
+  "arrivals": [
+    {
+      "arrival": 1,
+      "at": 1792854975645,
+      "elapsedMs": 222,
+      "rendered": [
+        {
+          "id": "VISUAL_POSTFIX_1",
+          "top": 16,
+          "bottom": 175.59375
+        }
+      ],
+      "inboxHits": 3,
+      "prefsHits": 3
+    },
+    {
+      "arrival": 2,
+      "at": 1792854976401,
+      "elapsedMs": 978,
+      "rendered": [
+        {
+          "id": "VISUAL_POSTFIX_1",
+          "top": 16,
+          "bottom": 175.59375
+        },
+        {
+          "id": "VISUAL_POSTFIX_2",
+          "top": 187.59375,
+          "bottom": 347.1875
+        }
+      ],
+      "inboxHits": 4,
+      "prefsHits": 4
+    },
+    {
+      "arrival": 3,
+      "at": 1792854977149,
+      "elapsedMs": 1726,
+      "rendered": [
+        {
+          "id": "VISUAL_POSTFIX_1",
+          "top": 16,
+          "bottom": 175.59375
+        },
+        {
+          "id": "VISUAL_POSTFIX_2",
+          "top": 187.59375,
+          "bottom": 347.1875
+        },
+        {
+          "id": "VISUAL_POSTFIX_3",
+          "top": 359.1875,
+          "bottom": 518.78125
+        }
+      ],
+      "inboxHits": 5,
+      "prefsHits": 5
+    },
+    {
+      "arrival": 4,
+      "at": 1792854978074,
+      "elapsedMs": 2651,
+      "rendered": [
+        {
+          "id": "VISUAL_POSTFIX_1",
+          "top": 16,
+          "bottom": 175.59375
+        },
+        {
+          "id": "VISUAL_POSTFIX_2",
+          "top": 187.59375,
+          "bottom": 347.1875
+        },
+        {
+          "id": "VISUAL_POSTFIX_3",
+          "top": 359.1875,
+          "bottom": 518.78125
+        },
+        {
+          "id": "VISUAL_POSTFIX_4",
+          "top": 530.78125,
+          "bottom": 690.375
+        }
+      ],
+      "inboxHits": 6,
+      "prefsHits": 6
+    }
+  ],
+  "ttlTransitions": [
+    {
+      "id": "VISUAL_POSTFIX_1",
+      "lastObservedAt": 1792854985672,
+      "firstAbsentAt": 1792854985772,
+      "observedLifetimeMs": 10127
+    },
+    {
+      "id": "VISUAL_POSTFIX_2",
+      "lastObservedAt": 1792854986390,
+      "firstAbsentAt": 1792854986490,
+      "observedLifetimeMs": 10089
+    },
+    {
+      "id": "VISUAL_POSTFIX_3",
+      "lastObservedAt": 1792854987225,
+      "firstAbsentAt": 1792854987325,
+      "observedLifetimeMs": 10176
+    },
+    {
+      "id": "VISUAL_POSTFIX_4",
+      "lastObservedAt": 1792854987961,
+      "firstAbsentAt": 1792854988061,
+      "observedLifetimeMs": 9987
+    }
+  ],
+  "loading": [
+    {
+      "role": "STUDENT",
+      "width": 425,
+      "theme": "light",
+      "realReadHits": 2,
+      "syntheticCause": "held GET",
+      "skeletonVisible": true
+    }
+  ],
+  "cleanup": [
+    {
+      "role": "STUDENT",
+      "exactOwnSessionHandleCaptured": true,
+      "nativeLogoutSent": true,
+      "fallbackUsed": false,
+      "httpStatus": 204,
+      "guestReadStatus": 401,
+      "confirmed": true
+    },
+    {
+      "role": "HEADMAN",
+      "exactOwnSessionHandleCaptured": true,
+      "nativeLogoutSent": true,
+      "fallbackUsed": false,
+      "httpStatus": 204,
+      "guestReadStatus": 401,
+      "confirmed": true
+    }
+  ],
+  "pageErrors": [],
+  "domainMutations": [],
+  "historyIds": [
+    "notification-VISUAL_POSTFIX_4",
+    "notification-VISUAL_POSTFIX_3",
+    "notification-VISUAL_POSTFIX_2",
+    "notification-VISUAL_POSTFIX_1"
+  ],
+  "reproductionPassed": false,
+  "failure": {
+    "stage": "HEADMAN initial synthetic loading",
+    "name": "Error",
+    "message": "skeleton without target GET hit"
+  },
+  "finishedAt": "2026-10-24T15:16:32.286Z",
+  "sourceUnchanged": true,
+  "completed": false
+}

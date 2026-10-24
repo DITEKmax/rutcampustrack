@@ -2,10 +2,10 @@
 
 Существующий draft [PR №3](https://github.com/DITEKmax/rutcampustrack/pull/3),
 ветка `codex/web-vue-redesign`. Goal запущен владельцем после readiness и
-продолжается. Текущий проверенный frontend source `0421d344c`, backend map source
+продолжается. Прежний собранный frontend source `0421d344c`; текущий frontend source `77fbd7a5e`, backend map source
 `1fe1588dd`, release-input source `8e280baef`. Всегда получать актуальный remote HEAD.
 
-**Implemented 116/117 (99,15%). Locally verified 113/117 (96,58%).**
+**Implemented 116/117 (99,15%). Locally verified 114/117 (97,44%).**
 Исходные117 active действий сохранены. Темы, ширины, кадры и assertions
 не считаются отдельными действиями. Полная замена Angular ещё не завершена.
 
@@ -16,7 +16,7 @@
 | STUDENT |16|16/16 (100%)|16/16 (100%)|
 | HEADMAN |38|38/38 (100%)|38/38 (100%)|
 | TEACHER |8|8/8 (100%)|8/8 (100%)|
-| ADMIN |34|33/34 (97,06%)|30/34 (88,24%)|
+| ADMIN |34|33/34 (97,06%)|31/34 (91,18%)|
 
 После явного разрешения Q-ENV-006 добавлены ровно три historical inputs:
 SPRING2025, собственная пустая группа6 и managed coverage. Один обычный UI
@@ -33,15 +33,19 @@ PROMOTE вернул200, исходная операция SUCCEEDED, курс1�
 расхождения сохранены и квалифицированы; равенство всех БД не заявляется.
 Protected53 и собственная GEO15/64 сохранились; main13 остались healthy.
 
-Полное удаление схемы реализовано в backend, общем клиенте и WEB: все версии,
-PNG/SVG и BYTEA, точный scope preview, rollback, high-water версии и безопасный
-replay исходного намерения. Реальные HTTP/PostgreSQL проверки3+legacy regression,
-четыре бизнес-проверки scope, OpenAPI snapshot/nullable corpus,16 client cases,
-12 WEB state cases и независимые reviews PASS. Строгие сборки WEB/PWA/TMA на
-`c3c08a935` PASS. В backend IT подтверждение пароля явно stubbed; настоящий полный
-Auth+WEB сценарий пока NOT RUN. Основной стенд сохраняет Academic950: новый UI
-без подтверждённого server scope отключает полное удаление.
-[Контракт и совместимость](API-CHANGES.md#api-006--whole-scheme-map-final-deletion-source-accepted-runtime-pending).
+Полное удаление схемы принято локально: один whole-delete200 на настоящем
+изолированном Auth/Academic/Gateway удалил две версии и четыре PNG/SVG;
+21 независимая SQL-проверка подтвердила очистку графа и сохранение корпуса,
+этажа, usage, high-water2 и receipt. Успешное удаление не повторялось.
+Дополнительная реальная проверка Auth дала correct204 и wrong403
+CURRENT_PASSWORD_INVALID, счётчик0→1 без блокировки; собственная сессия отозвана,
+24 независимые проверки authority/map/semester/session прошли. Raw probe
+native1/passedfalse сохранён: direct Auth guest403 вместо ожидавшегося401.
+Независимое source review квалифицирует403 как правильный отказ этого boundary;
+Gateway без Bearer отвечает401. Старые сессии сравнивались по counts/revocation,
+без отсутствовавшего per-ID snapshot. Основной Academic950 не заменялся:
+полное удаление там отключено до подтверждённого server scope.
+[Контракт и совместимость](API-CHANGES.md#api-006--whole-scheme-map-final-deletion-locally-verified).
 
 Ранее приняты native GEO15/64 и Late53→решение Headman12→PRESENT/late,
 STOMP/REST в двух вкладках без refresh и потери focus, отзыв открытого private
@@ -69,13 +73,22 @@ Teaching time2029 изменён только в Academic fixture; Auth/TLS/JWT/
 consumer/provider delivery и полный dashboard не объявлены PASS.
 [Приёмка и исходные receipts](../../validation/web-vue-pr3/checkpoints/role-semester-20261024/manifest.json).
 
-Остаются четыре ADMIN gates: запись прав, FULL/self-password unknown-result,
-whole-map full UI и group final delete. Q-ENV-003, Q-ENV-007 и Q-PROD-004 ожидают
-владельца; user8 заморожен. MAP UI automatic approval review отклонил **до
-исполнения**: Q-ENV-004 на HTTP/PostgreSQL checks сочтён недостаточным согласием
-на удаление всех новых PNG/SVG через UI. Браузер/login/uploads/delete0;
-повторов и обходов нет. Подготовленный reviewed case затрагивает только новую
-схему25001/1 в отдельном искусственном realm, не main inventory.
+Остаются три action gates поведения:
+
+| Действие | Подтверждено | Остаток |
+|---|---|---|
+| LIMITED ADMIN | Один assign/change/revoke через UI и24 SQL-проверки: профиль0→3, роли1→4, catalog6→12; TEACHER сохранён, ADMIN отозван | Фактические Users200/Groups403→Groups200 и запрет уже открытого доступа после отзыва |
+| Генерация пароля user8 | Источник и recovery приняты, исправленный узкий harness независимо проверен | Три исходные генерации own8 выполнены без повторов; seed lostACK readback принят. Self-known/lostACK receipt UI assertion не прошли; causal source diagnosis/fix, без новых credential writes. Final FULL отозван/profile4, обе сессии8 revoked, independent19post PASS |
+| Окончательное удаление группы | Backend/Vue source в отдельных worktrees; SOURCEv4 compile четырёх сервисов PASS; SOURCEv5 независимо закрывает F1–F3 | Реальные интеграционные и законченный UI-сценарий, в том числе отзыв доступа; разрешение original intent после неверного пароля/устаревшего preview |
+
+Q-PROD-004 и Q-ENV-003/007/008 отвечены; вопросов, ожидающих владельца,
+на этом срезе нет. Группа удаляет только своё членство, назначения старосты/
+помощников и полномочия. Аккаунты, пароли, прочие роли и другие группы сохраняются;
+автоматической архивации/отчисления/выпуска нет. Открытые сессии теряют доступ.
+Preview числовой, подтверждение текущим паролем администратора; архивация отдельно.
+Неизвестный результат разрешается по исходному намерению. GET404 сам по себе
+не разрешает новую команду: добавляется атомарный resolve исходного UUID,
+который возвращает принятый original или фиксирует CANCELLED до позднего принятия.
 
 Q-ENV-004 разрешён и выполнен в пределах tests/build. Q-ENV-005 разрешён, но
 stop/snapshot/copy/clock для GEO не понадобились и не выполнялись; разрешение
@@ -89,7 +102,7 @@ Vue e2e adapters/oracle и три release-input конфига прошли sour
 хоста и обычным worker. Это не runtime PASS всей поставки. Workflow CI/Coverage/Security/OpenAPI — только
 workflow_dispatch, **PAUSED**, не PASS. Без dispatch/merge/deploy/production.
 
-Галерея содержит204 настоящих runtime PNG, включая PROMOTE, fresh ADMIN home
+Общий gallery index содержит220 настоящих runtime PNG (portable204 пока исторический snapshot), включая PROMOTE, fresh ADMIN home
 и ACTIVATE. Каждый кадр имеет собственную revision и manifest;
 Figma/reference не выдаются за реализацию. [Галерея](../../validation/web-vue-pr3/runtime-gallery/index.html) ·
 [Review manifest](../../validation/web-vue-pr3/review/manifest.json) ·
@@ -104,3 +117,30 @@ Full production Compose source-model пока не PASS: один readonly confi
 остановился на отсутствующей `ACADEMIC_GRPC_TLS_AUTHORITY`. Production значения
 не искались, фиктивные bindings не подставлялись. DEV/full и изменённый prod
 WEB fragment подтверждены отдельно; deploy и cutover не выполнялись.
+
+
+## Готовность по отдельным измерениям
+
+- Действия: accepted source116/117; поведение114/117. Это доля действий, не процент всего PR.
+- Визуал: конечная матрица33 web-вью +50 мобильных Screen-компонентов, покрытие PWA/TMA отдельно; статусы готово/исправить/не проверено. Базовые пригодные кадры переиспользуются; полный visual PASS не заявлен. Исходный bare-loading и cap3 воспроизведены, затем исправлены77f. Runtime подтвердил четыре toast по10.127/10.089/10.176/9.987s и историю; Student425light/Headman300light/Teacher1440dark skeleton. Эти bounded criteria закрыты; исходные rawFAIL и cleanup limits сохранены, остальные темы/адаптив/состояния не объявлены PASS.
+- Angular/build: Angular остаётся активным; финальная очистка и общий Nginx deep-link/static/API/realtime/PWA/TMA/WebPush checkpoint впереди. Ранее проверенные внутренние shipping images и static serving повторно не запускаются без изменённой зависимости.
+
+[Ближайшие пакеты, зависимости и условия закрытия](CURRENT-PRIORITIES.md).
+
+[Новый checkpoint map/ACL/password/visual](../../validation/web-vue-pr3/checkpoints/admin-visual-20261024/manifest.json).
+Визуальные before/after имеют разные постоянные ID и revision. Старые204 кадра
+переиспользуются с прежними qualifications; новые16 не увеличивают action count.
+Academic SOURCEv6 Java/testClasses compile PASS; первый IT остановлен guard без
+XML/behavior verdict, не PASS. Повтор обоснован фактическим transient991MB и
+обратимым освобождением766MB чистых исторических копий docs в worker worktrees.
+БД/очереди/volumes/JAR/cache не очищались, >=2GiB reserve не снижен.
+
+Второй Academic IT сохранил резерв: foreign-group threshold preservation PASS,
+12 случаев остановлены на helper duplicate no-store/отсутствующем test pgcrypto.
+Только test helper исправлен вv7; повторяются12 failed invocations, успешный
+foreign-case переиспользован. Это не full group-action PASS.
+
+Shell восстановлен, source/WIP потерь не найдено. Сохранена переносимая копия165
+unpublished commits +11worktrees, без private runtime data. [Сохранность и правила
+возобновления](RECOVERY-CHECKPOINT-20261024.md). Три map metadata SHA matches
+классифицированы и устранены lossless field projection, staged Gitleaks PASS.

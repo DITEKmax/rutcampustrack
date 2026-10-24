@@ -2,7 +2,7 @@
 import ConfirmDialog from '../../shared/ConfirmDialog.vue';
 import { ref } from 'vue';
 import { onBeforeRouteLeave } from 'vue-router';
-import { AVATAR_PRESETS } from '../../../../web-panel/src/app/core/profile/preset-avatars';
+import { AVATAR_PRESETS } from '../../../../shared/profile/avatar-presets';
 import { webSession } from '../../auth/session';
 import { webAssistantAccess } from '../../app/assistant';
 import { roleHomeNotice } from '../../app/role-home';

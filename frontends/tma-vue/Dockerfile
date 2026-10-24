@@ -9,11 +9,13 @@ COPY tsconfig.foundation.json postcss.config.mjs dev-server.ts ./
 COPY mobile-core/package.json mobile-core/package.json
 COPY pwa-vue/package.json pwa-vue/package.json
 COPY tma-vue/package.json tma-vue/package.json
+COPY web-vue/package.json web-vue/package.json
 RUN npm ci
 
 COPY mobile-core mobile-core
 COPY pwa-vue pwa-vue
 COPY tma-vue tma-vue
+COPY shared shared
 
 ARG VITE_PUBLIC_BASE=/mini-app/
 ARG VITE_MOBILE_FIXTURE_MODE=false

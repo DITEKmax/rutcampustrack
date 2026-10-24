@@ -352,6 +352,9 @@ useWebLiveRefresh(
       <div
         v-if="page.items.length"
         class="admin-table-wrap"
+        role="region"
+        aria-label="Реестр групп"
+        tabindex="0"
       >
         <table class="admin-table">
           <caption class="web-sr-only">

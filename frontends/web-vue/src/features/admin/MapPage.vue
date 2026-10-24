@@ -445,6 +445,9 @@ useWebLiveRefresh(
       >{{ building.label }} · {{ building.code }}</option></select></label><div
         v-if="rows.length"
         class="admin-table-wrap"
+        role="region"
+        aria-label="Схемы корпусов и этажей"
+        tabindex="0"
       >
         <table class="admin-table">
           <caption class="web-sr-only">

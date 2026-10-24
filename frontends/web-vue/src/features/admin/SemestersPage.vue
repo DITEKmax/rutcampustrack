@@ -498,6 +498,9 @@ useWebLiveRefresh(
     <div
       v-if="visible.length && admin.can('SEMESTERS_VIEW')"
       class="admin-table-wrap"
+      role="region"
+      aria-label="Список семестров"
+      tabindex="0"
     >
       <table class="admin-table">
         <caption class="web-sr-only">

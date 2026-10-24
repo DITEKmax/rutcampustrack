@@ -5,7 +5,12 @@ defineProps<{ items: readonly AdminUser[]; disabled?: boolean; readOnly?: boolea
 defineEmits<{ open: [user: AdminUser] }>();
 </script>
 <template>
-  <div class="admin-table-wrap">
+  <div
+    class="admin-table-wrap"
+    role="region"
+    aria-label="Реестр пользователей"
+    tabindex="0"
+  >
     <table class="admin-table">
       <caption class="web-sr-only">
         Реестр пользователей

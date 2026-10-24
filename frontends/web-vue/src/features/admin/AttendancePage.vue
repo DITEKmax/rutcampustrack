@@ -121,6 +121,9 @@ useWebLiveRefresh(
       </p><div
         v-if="report.rows.length"
         class="admin-table-wrap"
+        role="region"
+        aria-label="Посещаемость групп"
+        tabindex="0"
       >
         <table class="admin-table">
           <caption class="web-sr-only">

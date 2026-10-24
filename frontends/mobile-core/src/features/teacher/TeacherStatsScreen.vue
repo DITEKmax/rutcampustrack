@@ -114,6 +114,7 @@ let contextRevision = 0;
 const contextReady = ref(false);
 const canChooseContext = computed(() => contextReady.value && authorizedGroups.value.length > 0);
 const error = ref<string | null>(null);
+const projectionError = ref<string | null>(null);
 const revision = ref(0);
 const sorts = computed({
   get: () => scopeMemory.value[scope.value].sorts,
@@ -291,6 +292,7 @@ function chooseDirectoryGroup(id: string): void {
 }
 
 async function loadContext(): Promise<void> {
+  projectionError.value = null;
   contextReady.value = false;
   const api = props.api;
   const semesterId = props.semesterId;
@@ -363,12 +365,11 @@ async function refreshProjection(): Promise<void> {
       statsQuery.value = null;
       return;
     }
+    projectionError.value = null;
     await loadStatsForRevision(++revision.value, true);
   } catch (cause) {
     if (!isCurrentContext(current) || cause instanceof StaleSessionGenerationError) return;
-    error.value =
-      cause instanceof Error ? cause.message : 'Не удалось получить назначения преподавателя.';
-    emit('error', cause);
+    failProjection(cause, 'Не удалось получить назначения преподавателя.');
   }
 }
 
@@ -381,7 +382,7 @@ async function loadStats(): Promise<void> {
 async function loadStatsForRevision(current: number, retainProjection = false): Promise<void> {
   const api = props.api;
   const semesterId = props.semesterId;
-  if (!retainProjection) { stats.value = null; statsQuery.value = null; }
+  if (!retainProjection) { stats.value = null; statsQuery.value = null; projectionError.value = null; }
   statsLoading.value = !retainProjection;
   error.value = null;
   try {
@@ -413,11 +414,28 @@ async function loadStatsForRevision(current: number, retainProjection = false): 
     statsQuery.value = query;
   } catch (cause) {
     if (!isCurrent(current) || cause instanceof StaleSessionGenerationError) return;
-    error.value =
-      cause instanceof TeacherApiError ? cause.message : 'Не удалось получить статистику.';
-    emit('error', cause);
+    if (retainProjection) failProjection(cause, 'Не удалось получить статистику.');
+    else {
+      error.value = cause instanceof TeacherApiError ? cause.message : 'Не удалось получить статистику.';
+      emit('error', cause);
+    }
   } finally {
     if (isCurrent(current)) statsLoading.value = false;
+  }
+}
+
+function failProjection(cause: unknown, fallback: string): void {
+  const message = cause instanceof Error ? cause.message : fallback;
+  if (cause instanceof TeacherApiError && [401, 403, 404].includes(cause.response.status)) {
+    // Confirmed authority/target loss still retires the inadmissible projection.
+    stats.value = null;
+    statsQuery.value = null;
+    error.value = message;
+    projectionError.value = null;
+    emit('error', cause);
+  } else {
+    // A transient read cannot cancel a pending/unknown export under the same query.
+    projectionError.value = message;
   }
 }
 
@@ -1034,12 +1052,12 @@ useProjectionRefresh(refreshProjection);
       </div>
     </form>
     <StudentWarningBlock
-      v-if="error"
+      v-if="error || projectionError"
       title="Статистика недоступна"
-      :message="error"
+      :message="error ?? projectionError ?? ''"
       severity="error"
       action-label="Повторить"
-      @action="loadContext"
+      @action="projectionError ? refreshProjection() : loadContext()"
     />
     <p
       v-else-if="loading"

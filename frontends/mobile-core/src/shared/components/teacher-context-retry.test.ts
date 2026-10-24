@@ -1,6 +1,7 @@
 import { createRenderer, h, markRaw, nextTick, shallowReactive, type App } from 'vue'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import TeacherFeatureOwner from './TeacherFeatureOwner.vue'
+import { ReportDownloadClient, type ReportDownloadPort } from '../report-download-client'
 import { TeacherApi, type TeacherJournalQuery } from '../../features/teacher/teacher-client'
 
 // The day emitter is a seam; the real owner, journal, query mapping and rendered type remain mounted.
@@ -51,6 +52,8 @@ class HostNode {
   getRootNode() {
     return document
   }
+  get options() { return this.children.filter(node => node.tag === 'option') }
+  get tagName() { return this.tag.toUpperCase() }
 }
 const renderer = createRenderer<HostNode, HostNode>({
   createElement: (tag) => new HostNode(tag),
@@ -135,6 +138,7 @@ function fixture(
     subjectName?: string
     catalogue?: (attempt: number, success: () => Response) => Promise<Response> | Response
     groupIds?: () => readonly string[]
+    failStats?: () => boolean
   } = {},
 ) {
   const requests: string[] = []
@@ -192,11 +196,17 @@ function fixture(
             serverNow: '2026-10-09T08:00:00Z',
           })
         }
+        if (path.endsWith('/stats/export/formats')) return json({ formats: [
+          ['docx', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'docx'],
+          ['pdf', 'application/pdf', 'pdf'], ['png', 'application/zip', 'zip'],
+          ['html', 'text/html', 'html'], ['xlsx', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'xlsx'],
+        ].map(([code, contentType, extension]) => ({ code, label: code, contentType, extension })) })
         if (path.endsWith('/formats'))
           return json({
             formats: [{ code: 'html', label: 'HTML', contentType: 'text/html', extension: 'html' }],
           })
         if (path.endsWith('/stats')) {
+          if (options.failStats?.()) return unavailable()
           const metric = { numerator: 0, denominator: 1, percent: 0 }
           return json({
             scope: 'groups',
@@ -232,7 +242,7 @@ function fixture(
     catalogues: () => catalogues,
   }
 }
-function mount(api: TeacherApi) {
+function mount(api: TeacherApi, reportDownload?: ReportDownloadPort) {
   const location = { href: 'https://fixture.test/app', search: '' }
   vi.stubGlobal('window', {
     location,
@@ -258,6 +268,7 @@ function mount(api: TeacherApi) {
     render: () =>
       h(TeacherFeatureOwner, {
         api: state.api,
+        reportDownload,
         semesterId: state.semesterId,
         realtimeRevision: state.realtimeRevision,
       }),
@@ -282,6 +293,68 @@ describe('teacher live projections', () => {
     expect(transport.journalQueries.at(-1)!.toString()).toBe(first)
     expect(transport.catalogues()).toBe(2)
   })
+  it('keeps the original pending statistics export and draft through catalog and stats read failures', async () => {
+    let failCatalog = false, failStats = false
+    const transport = fixture({ catalogue: (_attempt, success) => failCatalog ? unavailable() : success(), failStats: () => failStats })
+    const issued: Array<{ requestId: string; report: unknown }> = []
+    let accept!: () => void
+    const tickets: string[] = []
+    const jobId = '00000000-0000-4000-8000-000000000042'
+    const expiresAt = new Date(Date.now() + 60000).toISOString()
+    const client = new ReportDownloadClient({ accessToken: () => 'current', assertCurrent: () => undefined,
+      fetcher: async (input, init) => {
+        const path = String(input)
+        if (path === '/api/auth/export-jobs') {
+          issued.push(JSON.parse(String(init?.body)))
+          return new Promise<Response>(resolve => { accept = () => resolve(Response.json({
+            jobId, state: 'ready', expiresAt, suggestedFilename: 'stats.docx', errorCode: null,
+          })) })
+        }
+        tickets.push(path)
+        return Response.json({ downloadPath: `/api/report-download/${'a'.repeat(43)}`, expiresAt, suggestedFilename: 'stats.docx' })
+      },
+    })
+    const port: ReportDownloadPort = { carrier: 'browser', download: async (request, current, state) => {
+      await client.issueTicket(request, state, current)
+      return 'accepted'
+    } }
+    const view = mount(transport.api, markRaw(port))
+    await settle()
+    click(view.root, 'Итоги')
+    await settle()
+    await chooseStatsContext(view.root)
+    click(view.root, 'Выгрузка')
+    await settle()
+    click(view.root, 'Скачать')
+    await settle()
+    expect(issued).toHaveLength(1)
+    const originalId = issued[0]!.requestId
+    expect(originalId).toMatch(/^[0-9a-f-]{36}$/)
+    const control = find(view.root, node => node.tag === 'section' && node.props.class === 'rct-export')!
+    expect(control.props['aria-busy']).toBe(true)
+    const filter = find(view.root, node => node.props['data-teacher-action'] === 'stats-filters')!
+    ;(filter.props.onClick as () => void)()
+    await settle()
+    const draft = find(view.root, node => node.props.id === 'teacher-stats-present-min')!
+    ;(draft.props['onUpdate:modelValue'] as (value: string) => void)('37')
+    for (const failure of ['catalog', 'stats']) {
+      failCatalog = failure === 'catalog'; failStats = failure === 'stats'
+      view.state.realtimeRevision += 1
+      await settle()
+      expect(find(view.root, node => node === control)).toBe(control)
+      expect(control.props['aria-busy']).toBe(true)
+      expect(draft.value).toBe('37')
+      click(view.root, 'Скачать')
+      expect(issued.map(command => command.requestId)).toEqual([originalId])
+    }
+    accept()
+    await settle()
+    expect(tickets).toEqual([`/api/auth/export-jobs/${jobId}/ticket`])
+    expect(control.props['aria-busy']).toBe(false)
+    expect(text(control)).toContain('Файл готов')
+    expect(issued.map(command => command.requestId)).toEqual([originalId])
+  })
+
   it('withdraws the deleted group from the active statistics projection while retaining the other group', async () => {
     let removed = false
     const transport = fixture({ groupIds: () => removed ? ['102'] : ['101', '102'] })

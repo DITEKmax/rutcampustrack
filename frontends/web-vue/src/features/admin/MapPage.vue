@@ -75,8 +75,20 @@ const statuses = {
   failed: 'Ошибка обработки',
 };
 const objectUrls = new Set<string>();
-// Current server command only clears the pointer; all-version/file final deletion is not ready.
-const permanentDeletionAvailable = false;
+const permanentDeletionAvailable = computed(() => {
+  const preview = deletionPreview.value;
+  const row = selected.value;
+  if (!preview || !row || uploading.value || editKind.value) return false;
+  if (
+    preview.buildingCode !== row.building.code ||
+    preview.floorCode !== row.floor.code ||
+    preview.format !== (deleteFormat.value || null)
+  )
+    return false;
+  return preview.format === null
+    ? preview.deletionScope === 'ALL_VERSIONS'
+    : preview.deletionScope === 'CURRENT_FORMAT';
+});
 async function load() {
   const value = await client.listBuildings(admin.signal);
   admin.assertCurrent();
@@ -248,8 +260,11 @@ async function download(format: MapFormat) {
   }, 'CAMPUS_MAP_MANAGE');
 }
 async function previewDeletion() {
+  if (locked.value) return;
   await admin.run(async () => {
-    if (!selected.value) return;
+    if (!selected.value || !admin.can('CAMPUS_MAP_MANAGE')) return;
+    deletionPreview.value = null;
+    password.value = '';
     const value = await client.planDeletionPreview(
       selected.value.building.code,
       selected.value.floor.code,
@@ -261,66 +276,69 @@ async function previewDeletion() {
     password.value = '';
   }, 'DATA_DELETE');
 }
+async function confirmDeletion(reference: UnknownDeletion) {
+  // The client accepts only COMPLETED for this operation and target. The server checks
+  // the original digest against its receipt before considering any newer plan version.
+  try {
+    await client.deletePlanTarget({ ...reference, password: password.value });
+    admin.assertCurrent();
+  } finally {
+    password.value = '';
+  }
+  unknownDeletion.value = null;
+  deletionPreview.value = null;
+  selected.value = null;
+  plan.value = null;
+  notice.value = reference.format
+    ? 'Удаление выбранного формата текущей версии подтверждено.'
+    : 'Удаление всех версий схемы и файлов PNG/SVG подтверждено.';
+}
 async function removePlan() {
-  await admin.run(async () => {
-    if (!permanentDeletionAvailable)
-      throw new Error(
-        'Окончательное удаление всех версий и файлов пока не поддерживается сервером.',
-      );
-    const p = deletionPreview.value;
-    if (!p || !admin.can('CAMPUS_MAP_MANAGE')) throw new Error('Нужны права управления картой.');
-    const reference: UnknownDeletion = {
-      buildingCode: p.buildingCode,
-      floorCode: p.floorCode,
-      previewDigest: p.previewDigest,
-      operationId: crypto.randomUUID(),
-      ...(p.format ? { format: p.format } : {}),
-    };
-    try {
-      await client.deletePlanTarget({ ...reference, password: password.value });
-      admin.assertCurrent();
-      deletionPreview.value = null;
-      selected.value = null;
-      plan.value = null;
+  if (locked.value) return;
+  try {
+    await admin.run(async () => {
+      const p = deletionPreview.value;
+      if (!p || !permanentDeletionAvailable.value)
+        throw new Error('Сервер не подтвердил выбранный объём окончательного удаления.');
+      if (!admin.can('CAMPUS_MAP_MANAGE')) throw new Error('Нужны права управления картой.');
+      if (!password.value) throw new Error('Введи свой текущий пароль.');
+      const reference: UnknownDeletion = {
+        buildingCode: p.buildingCode,
+        floorCode: p.floorCode,
+        previewDigest: p.previewDigest,
+        operationId: crypto.randomUUID(),
+        ...(p.format ? { format: p.format } : {}),
+      };
+      try {
+        await confirmDeletion(reference);
+      } catch (cause) {
+        admin.assertCurrent();
+        if (!(cause instanceof MapApiError) || cause.response.status >= 500)
+          unknownDeletion.value = reference;
+        throw cause;
+      }
       await load();
-      notice.value = 'Выбранные файлы схемы удалены.';
-    } catch (cause) {
-      admin.assertCurrent();
-      if (!(cause instanceof MapApiError) || cause.response.status >= 500)
-        unknownDeletion.value = reference;
-      throw cause;
-    } finally {
-      password.value = '';
-    }
-  }, 'DATA_DELETE');
+    }, 'DATA_DELETE');
+  } finally {
+    password.value = '';
+  }
 }
 async function inspectDeletion() {
-  await admin.run(async () => {
-    const reference = unknownDeletion.value;
-    if (!reference) return;
-    const current = await client.resolvePlanTarget(
-      reference.buildingCode,
-      reference.floorCode,
-      admin.signal,
-    );
-    admin.assertCurrent();
-    const p = current.floor?.currentPlan;
-    const absent =
-      !p ||
-      (reference.format
-        ? p[reference.format].state === 'absent'
-        : p.png.state === 'absent' && p.svg.state === 'absent');
-    if (absent) {
-      unknownDeletion.value = null;
-      deletionPreview.value = null;
-      selected.value = null;
-      plan.value = null;
+  if (busy.value) return;
+  try {
+    await admin.run(async () => {
+      const reference = unknownDeletion.value;
+      if (!reference) return;
+      if (!admin.can('CAMPUS_MAP_MANAGE')) throw new Error('Нужны права управления картой.');
+      if (!password.value) throw new Error('Введи свой текущий пароль для сверки операции.');
+      // Explicit user reconciliation reuses the original command, never a new intent.
+      // Failure (including stale digest or lost permission) retains that reference.
+      await confirmDeletion(reference);
       await load();
-      notice.value = 'Выбранные файлы сейчас отсутствуют. Повторного удаления не было.';
-    } else
-      notice.value =
-        'Файлы пока существуют. Результат операции не подтверждён; повторное удаление заблокировано.';
-  });
+    }, 'DATA_DELETE');
+  } finally {
+    password.value = '';
+  }
 }
 onBeforeRouteLeave(() => {
   if (locked.value) {
@@ -626,18 +644,18 @@ useWebLiveRefresh(
           class="admin-form web-stack"
         >
           <h3>Окончательное удаление</h3><p
-            v-if="!permanentDeletionAvailable"
+            v-if="deletionPreview && !permanentDeletionAvailable"
             class="web-notice"
           >
-            Окончательное удаление недоступно: сервер пока не удаляет все версии и файлы схемы.
-            Предпросмотр показывает только текущие файлы.
+            Сервер не подтвердил выбранный объём удаления. Подтверждение недоступно.
+            Для удаления всей истории нужен предпросмотр всех версий и файлов.
           </p><label class="web-field">Удалить<select
             v-model="deleteFormat"
             :disabled="locked"
-            @change="deletionPreview = null"
-          ><option value="">Оба формата схемы</option><option value="png">Только PNG</option><option value="svg">Только SVG</option></select></label><button
+            @change="deletionPreview = null; password = ''"
+          ><option value="">Всю схему: все версии PNG и SVG</option><option value="png">PNG текущей версии</option><option value="svg">SVG текущей версии</option></select></label><button
             class="web-button web-button-danger"
-            :disabled="locked || !selected.floor.currentPlan"
+            :disabled="locked"
             @click="previewDeletion"
           >
             Показать последствия удаления
@@ -649,15 +667,20 @@ useWebLiveRefresh(
             <h3 class="admin-danger">
               Удалить {{ deletionPreview.label }}?
             </h3><p>
-              Файлов: {{ deletionPreview.files }} ·
-              {{ deletionPreview.bytes.toLocaleString('ru-RU') }} байт. Выбранные форматы исчезнут
-              из доступных схем у всех ролей. Восстановление удалённых файлов недоступно.
+              {{ deletionPreview.deletionScope === 'ALL_VERSIONS'
+                ? 'Все версии: файлы PNG и SVG, включая историю.'
+                : deletionPreview.deletionScope === 'CURRENT_FORMAT'
+                  ? 'Только выбранный формат текущей версии. История версий сохраняется.'
+                  : 'Объём удаления сервером не подтверждён.' }}
+              Файлов по предпросмотру сервера: {{ deletionPreview.files }} ·
+              {{ deletionPreview.bytes.toLocaleString('ru-RU') }} байт.
+              Восстановление удалённых файлов недоступно.
             </p><label class="web-field">Твой пароль<input
               v-model="password"
               type="password"
               autocomplete="current-password"
               required
-              :disabled="busy || !permanentDeletionAvailable"
+              :disabled="locked || !permanentDeletionAvailable"
             ></label><div class="admin-actions">
               <button
                 type="button"
@@ -668,7 +691,7 @@ useWebLiveRefresh(
                 Отмена
               </button><button
                 class="web-button web-button-danger"
-                :disabled="locked || !permanentDeletionAvailable"
+                :disabled="locked || !permanentDeletionAvailable || !password"
               >
                 Подтвердить удаление
               </button>
@@ -682,21 +705,38 @@ useWebLiveRefresh(
       class="web-notice"
       role="status"
     >
-      <p>Результат изменения неизвестен. Повторная запись заблокирована.</p><button
+      <p>Результат изменения неизвестен. Новые изменения заблокированы до сверки операции.</p><button
         v-if="unknownPublication"
         class="web-button"
         :disabled="busy"
         @click="inspectPublication"
       >
         Проверить опубликованные файлы
-      </button><button
+      </button><form
         v-if="unknownDeletion"
-        class="web-button"
-        :disabled="busy"
-        @click="inspectDeletion"
+        class="admin-form web-stack"
+        @submit.prevent="inspectDeletion"
       >
-        Проверить результат удаления
-      </button>
+        <p>
+          Операция {{ unknownDeletion.operationId }}: корпус {{ unknownDeletion.buildingCode }},
+          этаж {{ unknownDeletion.floorCode }} ·
+          {{ unknownDeletion.format ? `${unknownDeletion.format.toUpperCase()} текущей версии` : 'все версии PNG и SVG' }}.
+          Отсутствие текущей схемы не подтверждает удаление истории.
+          Сверка отправит исходную операцию с прежним ключом и объёмом; если она ещё не выполнена,
+          сервер может выполнить её после проверки исходного предпросмотра.
+        </p><label class="web-field">Твой текущий пароль для сверки<input
+          v-model="password"
+          type="password"
+          autocomplete="current-password"
+          required
+          :disabled="busy"
+        ></label><button
+          class="web-button"
+          :disabled="busy || !password || !admin.can('DATA_DELETE') || !admin.can('CAMPUS_MAP_MANAGE')"
+        >
+          Сверить исходную операцию удаления
+        </button>
+      </form>
     </div>
   </section>
 </template>

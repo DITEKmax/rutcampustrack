@@ -15,8 +15,10 @@ const dates = computed(() =>
 );
 watch(
   () => props.lessons,
-  () => {
-    selected.value = null;
+  (lessons) => {
+    selected.value = selected.value
+      ? (lessons.find((lesson) => lesson.id === selected.value?.id) ?? null)
+      : null;
   },
 );
 async function open(lesson: StudentAttendanceLesson, event: MouseEvent) {

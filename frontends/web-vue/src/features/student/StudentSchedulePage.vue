@@ -22,7 +22,7 @@ async function load() {
     scope.transport.assertCurrent();
     if (!response.data) throw Error('Расписание не получено. Повтори загрузку.');
     return response.data;
-  });
+  }, true);
   if (scope.current() && !date.value)
     date.value = serverDate(scope.session.value?.serverNow) ?? semester.startsOn;
 }

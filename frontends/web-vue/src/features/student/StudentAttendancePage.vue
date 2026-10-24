@@ -53,7 +53,7 @@ async function load() {
     return;
   }
   if (!date.value) date.value = serverDate(scope.session.value?.serverNow) ?? semester.startsOn;
-  await attendance.load(() => scope.api.getAttendance(semester.id));
+  await attendance.load(() => scope.api.getAttendance(semester.id), true);
   if (!scope.current() || !attendance.data.value) return;
   if (!date.value) date.value = serverDate(attendance.data.value.serverNow) ?? semester.startsOn;
   if (!attendance.data.value.subjects.some((s) => s.id === subject.value)) subject.value = '';
@@ -100,6 +100,7 @@ watch(scope.session, (value) => {
   }
 });
 watch(availableTypes, (value) => {
+  if (!attendance.data.value) return;
   if (!restoredTypes && subject.value && value.length) {
     const requested = Array.isArray(route.query.type) ? route.query.type : [route.query.type];
     types.value =

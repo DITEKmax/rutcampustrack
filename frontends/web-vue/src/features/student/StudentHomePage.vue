@@ -47,29 +47,31 @@ async function load() {
   if (!week.value)
     week.value = monday(serverDate(scope.session.value?.serverNow) ?? semester.startsOn);
   await Promise.all([
-    today.load(() => scope.api.getToday()),
-    attendance.load(() => scope.api.getAttendance(semester.id)),
-    options.load(() => scope.api.getRequestOptions()),
+    today.load(() => scope.api.getToday(), true),
+    attendance.load(() => scope.api.getAttendance(semester.id), true),
+    options.load(() => scope.api.getRequestOptions(), true),
   ]);
   scope.transport.assertCurrent();
   if (!scope.current()) return;
   if (!week.value && today.data.value) week.value = monday(today.data.value.date);
+  await loadSubject();
 }
 watch(scope.refreshed, load);
-watch(
-  () => hero.value?.schedule.id,
-  () => {
-    const lesson = hero.value;
-    const semester = scope.session.value?.semester;
-    if (lesson && semester)
-      void subject.load(() =>
+async function loadSubject() {
+  const lesson = hero.value;
+  const semester = scope.session.value?.semester;
+  if (lesson && semester)
+    await subject.load(
+      () =>
         scope.api.getStatisticsSubject(lesson.schedule.subject.id, semester.id, 'weeks', [
           lesson.schedule.subject.type,
         ]),
-      );
-    else subject.clear();
-  },
-);
+      String(subject.data.value?.subjectId) === lesson.schedule.subject.id &&
+        subject.data.value?.selectedTypes.length === 1 &&
+        subject.data.value.selectedTypes.includes(lesson.schedule.subject.type),
+    );
+  else subject.clear();
+}
 watch(scope.session, (value) => {
   if (!value) {
     today.clear();

@@ -1,4 +1,4 @@
-import { computed, onBeforeUnmount, onMounted, ref, shallowRef } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue'
 import { StudentApi, StudentApiError } from '../../../../mobile-core/src/api/student-client'
 import type { StudentSession } from '../../../../mobile-core/src/api/types'
 import { createWebTransport } from '../../app/api'
@@ -31,10 +31,22 @@ export function useStudentScope() {
   const loading = ref(false),
     error = ref(''),
     refreshed = ref(0)
-  const pointerWithin = ref(false),
-    focusWithin = ref(false),
-    dirty = ref(false)
-  const blocked = computed(() => pointerWithin.value || focusWithin.value || dirty.value)
+  const dirty = ref(false)
+  const blocked = computed(() => dirty.value)
+  const contextKey = computed(() => {
+    const value = session.value
+    return value
+      ? JSON.stringify([
+          value.user.id,
+          value.group?.id,
+          value.semester?.id,
+          value.sessionId,
+          value.sessionVersion,
+          value.rolesVersion,
+          value.readOnly,
+        ])
+      : null
+  })
   const readOnly = computed(() =>
     Boolean(webSession.snapshot.value?.readOnly || session.value?.readOnly),
   )
@@ -72,11 +84,8 @@ export function useStudentScope() {
     error,
     refreshed,
     readOnly,
-    pointerWithin,
-    focusWithin,
     dirty,
-    setPointerWithin: (value: boolean) => { pointerWithin.value = value },
-    setFocusWithin: (value: boolean) => { focusWithin.value = value },
+    contextKey,
     load,
   }
 }
@@ -112,5 +121,6 @@ export function useStudentResource<T>(scope: StudentScope) {
     }
   }
   onBeforeUnmount(clear)
+  watch(scope.contextKey, clear, { flush: 'sync' })
   return { data, loading, error, load, clear }
 }

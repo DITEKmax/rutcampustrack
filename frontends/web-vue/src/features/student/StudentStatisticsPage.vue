@@ -46,7 +46,7 @@ async function load() {
     stats.clear();
     return;
   }
-  await stats.load(() => scope.api.getStatistics(semester.id));
+  await stats.load(() => scope.api.getStatistics(semester.id), true);
 }
 watch(scope.refreshed, load);
 watch(scope.session, (s) => {

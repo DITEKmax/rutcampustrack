@@ -31,13 +31,12 @@ MOBILE-FOLLOWUPS и итог PR; PAUSED не объявляется PASS.
 
 Текущий пакет2026-10-24 после опубликованного checkpoint7ff:
 
-- Password fix c586 интегрирован7ad6; source review/10 mounted cases и Root WEB build PASS. Native повтор ограничен изменёнными self-known/lostACK; новый harness исправляет три независимых cleanup/proof findings до GO. Старые генерации и очистка не повторяются.
-- Group status endpoint и два дефекта fixtures исправлены: все13 Academic/Auth cases закрыты (8 новыхPASS+5 пригодныхPASS). Следующая зависимость — actual SchedulePG/AttendanceMongo, затем четыре сервиса и UI/open access.
+- Password fix c586 интегрирован7ad6; source review/10 mounted cases и Root WEB build PASS. Native self-known5→6 иlostACK6→7 PASS на5e6, independentpost9598 подтверждает cleanup/изоляцию следующего входа; пакет закрыт. Старые генерации и очистка не повторяются.
+- Group status endpoint и два дефекта fixtures исправлены: все13 Academic/Auth cases закрыты (8 новыхPASS+5 пригодныхPASS). Schedule3 также закрыт; Attendance4 actualMongo PASS after revised2GiB forecast/pre4.5GiB/guard2.5GiB, minfree3.24GB. Все20 boundary cases закрыты, source64f0ea готов; затем четыре исходникам соответствующих JARs и UI/open access.
 - LIMITED actual Users200/Groups403→200 и revoke deny подтверждены. Open-page withdrawal FAIL; четыре собственные сессии независимо revoked, временного ADMIN нет. Причина сужена до отсутствия invalidation: bounded visibleADMIN reconciliation в отдельном WT; повтор только combinedgrant/revoke.
 - Визуал параллельно:12 новых Today PWA кадров проверены, raw locator failure сохранён. Повтор только4 notification кадра после доказанной ошибки locator. Темы/адаптив/состояния не получают общего процента по количеству кадров.
 
-Критерий закрытия ADMIN-пакета: исправленный self-password native исход без утечки
-следующему входу, group preview/confirm/delete+withdrawal с сохранением чужих данных,
+Критерий закрытия ADMIN-пакета: self-password пакет уже закрыт; остаются group preview/confirm/delete+withdrawal с сохранением чужих данных,
 LIMITED open-page withdrawal с реальным изменением authority; успешные неизменённые
 части переиспользуются. После этих зависимостей начинается полный Angular cleanup
 и собранный common-Nginx сценарий. Ни один промежуточный PASS не включает эти gates.

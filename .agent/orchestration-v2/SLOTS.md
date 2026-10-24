@@ -5,13 +5,13 @@ telemetry unavailable. Root docs/Git only. OneHEAVY; browser windows coordinated
 
 | Owner | Ownership | Current result / next |
 |---|---|---|
-| root | rutcampustrack docs/map/gallery/Git/PR |7ad6 integrated c586; WEB buildPASS; publish completed subpackages |
-| group_v8 |group-final-delete services/proto/generated contracts/tests |13Academic/Auth cases closed; prepare SchedulePG/AttendanceMongo narrowv9 startupdelta, no HEAVYGO yet |
+| root | rutcampustrack docs/map/gallery/Git/PR |5e6 c586+2d integrated; combined20/WEBbuildPASS; passwordnative+PGaccepted; publish115/117 |
+| group_v8 |group-final-delete services/proto/generated contracts/tests |all20boundarycases closed/64f0ea48sourcecommitclean; oneHEAVY4bootJAR required runtimepackage |
 | limited_effective |admin-authority-reconcile separateWT frontend session/live +behavior tests |visibleADMIN authority reconciliation, no credential paths/backend |
-| password_native |external self-credential-native-after-fix prep |a132 threeP2 corrections; no native GO/privatecredentialread |
-| security_review |readonly review |c586 sourcePASS; a132 harnessCHANGESREQUIRED, await corrections |
-| visual_next |external visual-readiness artifacts |12PWA Today inspected+ownlogoutPASS; only notification4 retry afterlocatorcause |
-| runtime_restore |readonly actual runtime proofs |ACL independentpost12f33 PASS; no ownlive sessions, browserdriverclosed |
+| password_native |external self-credential-native-after-fix prep |d896 corrected/reviewed; actual2nativePASS+independentpost9598, closed |
+| security_review |readonly review |c586/d896/2d/v10 source/recheckPASS; awaitv3withdrawalprep |
+| visual_next |external visual-readiness artifacts |16PWA inspected+ownlogoutPASS; CSS7877integrated3after/controlPASS; controlledTMAoneAuthattemptPREPonly |
+| runtime_restore |readonly actual runtime proofs |ACLpost12f33+passwordpost9598PASS; allown sessionsrevoked; isolated group runtimePREP ready |
 
 Completed actors consume no active slot. No shared product writer, no implicit
 model fallback. Main13/admin7 retained; clock5 stopped intentionally. No production,

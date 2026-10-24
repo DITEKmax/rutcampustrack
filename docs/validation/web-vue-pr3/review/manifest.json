@@ -460,5 +460,35 @@
     "path": "recovery-RECHECK-publication-projection.md",
     "original_path": "/workspace/rct-pr3-runtime/restore-20261024/publication-projection-recheck.md",
     "sha256": "e5378ecf56f968b781205656557e32c5a60d32fc960b29b6a38cd87e6a46f96b"
+  },
+  {
+    "path": "self-credential-REVIEW-c586bd04.md",
+    "original_path": "/workspace/rct-pr3-review/self-credential-handoff/REVIEW-c586bd04.md",
+    "sha256": "ee384a33f9e3abfcc4d9cbfc077633c8ae9aa3048685efa0f5e6cdb26dec391a"
+  },
+  {
+    "path": "limited-v2-CAUSE-qualification.md",
+    "original_path": "/workspace/rct-pr3-review/admin-access-effective/QUALIFY-actual-v2-withdrawal.md",
+    "sha256": "d77f1934e5b4984da2c921843760110106aaf1d65ddafdcea085af0ebb8d437b"
+  },
+  {
+    "path": "self-credential-native-REVIEW-a1329d5a.md",
+    "original_path": "/workspace/rct-pr3-review/self-credential-handoff/REVIEW-native-a1329d5a.md",
+    "sha256": "73fd506ff30bb14166f7c1e85720e4a18a0f012f76edf2dcf735b7a419d3b759"
+  },
+  {
+    "path": "self-credential-native-RECHECK-d89694a6.md",
+    "original_path": "/workspace/rct-pr3-review/self-credential-handoff/RECHECK-native-d89694a6.md",
+    "sha256": "fd04e3268d1b704a03324f547e09fdebe382b42d21c507f415a22c40dd979018"
+  },
+  {
+    "path": "authority-REVIEW-2d339832.md",
+    "original_path": "/workspace/rct-pr3-review/admin-access-effective/REVIEW-authority-2d339832.md",
+    "sha256": "56f5316bb07caf747a4129b552b9e331758c8cbe64cd34cfae1ff9b0a7583d07"
+  },
+  {
+    "path": "group-final-RECHECK-source-v10.md",
+    "original_path": "/workspace/rct-pr3-review/group-final-delete/RECHECK-source-v10.md",
+    "sha256": "3e77756b682d745c298a5e0920b67b2e9e7a875ced0bb11957d2046ce1398dcb"
   }
 ]

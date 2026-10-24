@@ -243,11 +243,19 @@ Auth/Academic/Schedule/Attendance participant changes are additive; existing
 Subject/Semester participants and PWA/TMA operations remain. No new mobile group
 final-delete UI. Shared generated contracts remain one canonical source.
 
-SOURCEv6 narrow independent review PASS and Java/test-source compile PASS.
-Actual HTTP/PG/Auth/Redis, restricted Schedule PG and Attendance Mongo behavior,
-and final four-service UI path are still pending; no runtime/API compatibility
-PASS inferred from compile or transport doubles. First Academic IT stopped on
-disk guard with no behavior verdict; resource retryr2 held the reserve, passed foreign-group threshold preservation,
-but12 cases stopped on test-helper header/hash assumptions. Test-onlyv7 corrects
-those helpers and retries only the12 failed invocations; no product guard changed.
+SOURCEv10 (commit64f0ea2925287ec45bcaa1082118eb8aaa904943) has accepted narrow
+independent reviews and all20 meaningful integration cases closed:13 Academic/Auth
+HTTP/PG/Redis,3 restricted-role Schedule PG and4 actual Mongo replica transaction
+cases. Existing successful cases were reused across causal fixes. Explicit status
+@PathVariable binding fixes a real GET500; Schedule first RELEASE now returns the
+same lessons as durable replay. Test fixture/lifecycle fixes do not change product
+contracts. All target-only deletion, replay/resolve races, session/password/grant
+fences and foreign-role/account/group preservation are qualified at these boundaries.
+
+Academic cases use Schedule/Attendance transport doubles; real participant DB cases
+close those local protocols separately. Four-service assembled UI deletion and open
+access withdrawal are still pending, so whole runtime/API compatibility is not PASS.
+SOURCEv10 is frozen in its writer branch, Root integration and four source-matched
+bootJARs are the next necessary runtime step. Raw disk guard exits/no-XML UNKNOWN
+and the first RELEASE mismatch remain evidence; no successful delete was repeated.
 CI/OpenAPI Drift remains manual/PAUSED; no workflow was dispatched.

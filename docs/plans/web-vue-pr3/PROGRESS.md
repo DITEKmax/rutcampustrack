@@ -2,10 +2,10 @@
 
 Существующий draft [PR №3](https://github.com/DITEKmax/rutcampustrack/pull/3),
 ветка `codex/web-vue-redesign`. Goal запущен владельцем после readiness и
-продолжается. Прежний собранный frontend source `0421d344c`; текущий frontend source `7ad6e2935`, backend map source
+продолжается. Прежний собранный frontend source `0421d344c`; текущий frontend source `5e6a18433`, backend map source
 `1fe1588dd`, release-input source `8e280baef`. Всегда получать актуальный remote HEAD.
 
-**Implemented 116/117 (99,15%). Locally verified 114/117 (97,44%).**
+**Implemented 116/117 (99,15%). Locally verified 115/117 (98,29%).**
 Исходные117 active действий сохранены. Темы, ширины, кадры и assertions
 не считаются отдельными действиями. Полная замена Angular ещё не завершена.
 
@@ -16,7 +16,7 @@
 | STUDENT |16|16/16 (100%)|16/16 (100%)|
 | HEADMAN |38|38/38 (100%)|38/38 (100%)|
 | TEACHER |8|8/8 (100%)|8/8 (100%)|
-| ADMIN |34|33/34 (97,06%)|31/34 (91,18%)|
+| ADMIN |34|33/34 (97,06%)|32/34 (94,12%)|
 
 После явного разрешения Q-ENV-006 добавлены ровно три historical inputs:
 SPRING2025, собственная пустая группа6 и managed coverage. Один обычный UI
@@ -73,15 +73,15 @@ Teaching time2029 изменён только в Academic fixture; Auth/TLS/JWT/
 consumer/provider delivery и полный dashboard не объявлены PASS.
 [Приёмка и исходные receipts](../../validation/web-vue-pr3/checkpoints/role-semester-20261024/manifest.json).
 
-Остаются три action gates поведения:
+Остаются два action gates поведения; принятый password пакет показан отдельно:
 
 | Действие | Подтверждено | Остаток |
 |---|---|---|
 | LIMITED ADMIN | Original3dd + actualv2: Users200/Groups403→Groups200/rendered, revoke204/oldADMINdenied; profile6/RV7/catalog18/Aca7, Teacher/account preserved, four own sessions independently revoked | Open-page cached table withdrawal FAIL retained; bounded visibleADMIN reconciliation and only combinedgrant/revoke regression pending |
-| Генерация пароля user8 | Источник и recovery приняты, исправленный узкий harness независимо проверен | Три исходные генерации own8 выполнены без повторов; seed lostACK readback принят. Self-known/lostACK receipt UI assertion не прошли; c586 fix integrated7ad6, independent review/10 mounted cases/Root WEB build PASS; native harness threeP2 corrections pending, без новых credential writes. Final FULL отозван/profile4, обе сессии8 revoked, independent19post PASS |
-| Окончательное удаление группы | Backend/Vue source в отдельных worktrees; SOURCEv4 compile четырёх сервисов PASS; SOURCEv5 независимо закрывает F1–F3, SOURCEv8 closes13 Academic/Auth HTTP/PG/Redis cases (8 corrected+5 reused) | Actual SchedulePG/AttendanceMongo participant checks and законченный UI-сценарий, в том числе отзыв доступа; разрешение original intent после неверного пароля/устаревшего preview |
+| Генерация пароля user8 — локально принято | Sourcec586 integrated7ad6+authority2d integrated5e6: actual self-known5→6 receipt/login, next normal login clears receipt; lostACK6→7 unknown/nooutput/native401/noextraPOST. Independentpost9598 confirms Cred7/RV8/Aca8/profile6unassigned, STUDENTgroup1/other17/seedFULL preserved, all3own sessions revoked | Закрыто. Earlier raw FAIL и3original commands retained; no replay |
+| Окончательное удаление группы | Backend/Vue source в отдельных worktrees; SOURCEv4 compile четырёх сервисов PASS; SOURCEv5 независимо закрывает F1–F3, SOURCEv8 closes13 Academic/Auth HTTP/PG/Redis cases (8 corrected+5 reused); Schedule3 closed (2PASS reused+one v10RELEASE receipt fix) | Attendance4 actualMongo PASS after corrected resource admission; all20 boundary cases closed. Root integration/four source-matched JARs and законченный UI-сценарий, в том числе отзыв доступа; разрешение original intent после неверного пароля/устаревшего preview |
 
-[Latest qualified ADMIN partial results](../../validation/web-vue-pr3/checkpoints/remaining-admin-20261024/limited-v2-partial.json) · [Academic sourcev8 result](../../validation/web-vue-pr3/checkpoints/remaining-admin-20261024/academic-v8-qualification.md).
+[Self-password acceptance](../../validation/web-vue-pr3/checkpoints/remaining-admin-20261024/self-password-acceptance.json) · [Latest qualified ADMIN partial results](../../validation/web-vue-pr3/checkpoints/remaining-admin-20261024/limited-v2-partial.json) · [Academic sourcev8 result](../../validation/web-vue-pr3/checkpoints/remaining-admin-20261024/academic-v8-qualification.md).
 
 Q-PROD-004 и Q-ENV-003/007/008 отвечены; вопросов, ожидающих владельца,
 на этом срезе нет. Группа удаляет только своё членство, назначения старосты/
@@ -123,7 +123,7 @@ WEB fragment подтверждены отдельно; deploy и cutover не �
 
 ## Готовность по отдельным измерениям
 
-- Действия: accepted source116/117; поведение114/117. Это доля действий, не процент всего PR.
+- Действия: accepted source116/117; поведение115/117. Это доля действий, не процент всего PR.
 - Визуал: конечная матрица33 web-вью +50 мобильных Screen-компонентов, покрытие PWA/TMA отдельно; статусы готово/исправить/не проверено. Базовые пригодные кадры переиспользуются; полный visual PASS не заявлен. Исходный bare-loading и cap3 воспроизведены, затем исправлены77f. Runtime подтвердил четыре toast по10.127/10.089/10.176/9.987s и историю; Student425light/Headman300light/Teacher1440dark skeleton. Эти bounded criteria закрыты; исходные rawFAIL и cleanup limits сохранены, остальные темы/адаптив/состояния не объявлены PASS.
 - Angular/build: Angular остаётся активным; финальная очистка и общий Nginx deep-link/static/API/realtime/PWA/TMA/WebPush checkpoint впереди. Ранее проверенные внутренние shipping images и static serving повторно не запускаются без изменённой зависимости.
 
@@ -146,3 +146,5 @@ Shell восстановлен, source/WIP потерь не найдено. С�
 unpublished commits +11worktrees, без private runtime data. [Сохранность и правила
 возобновления](RECOVERY-CHECKPOINT-20261024.md). Три map metadata SHA matches
 классифицированы и устранены lossless field projection, staged Gitleaks PASS.
+
+PWA visual пакет:16 actual baseline PNG (Today12 +history4), реальныеAPI/ownlogout204/guest401. Колокольчик/назад/история подтверждены; первоначальный locatorFAIL сохранён. Narrow notification title исправленCSS7877:3actualafter/control5e6,300light/dark без orphan,1440light байтыPNG совпадают с before. [Before/after галерея](../../validation/web-vue-pr3/runtime-gallery/mobile-observed-20261024/index.html). Индекс239PNG/portable204 snapshot; это не доля visualготовности.

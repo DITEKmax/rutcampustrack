@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref, shallowRef } from 'vue';
 import { useRoute } from 'vue-router';
-import { message } from '../../auth/session';
+import { message, webSession } from '../../auth/session';
 import { useWebLiveRefresh } from '../../app/live';
 import type {
   HeadmanRequestDetail,
@@ -21,6 +21,7 @@ import {
   useHeadmanFeature,
   dateLabel,
   lessonTypes,
+  lessonTypeCode,
   markLabels,
   reasonLabel,
   saveBlob,
@@ -54,6 +55,20 @@ const statuses = {
 };
 const affected = computed(
   () => detail.value?.currentAffectedLessons ?? detail.value?.lessons ?? [],
+);
+const ownRequest = computed(
+  () => String(detail.value?.summary.studentId) === webSession.snapshot.value?.userId,
+);
+const decisionAvailable = computed(
+  () =>
+    !!detail.value &&
+    !ownRequest.value &&
+    detail.value.summary.status === 'PENDING' &&
+    feature.writable('MANAGE_EXCUSES') &&
+    (detail.value.summary.kind === 'LATE_CHECKIN' ||
+      (!!detail.value.decisionRevision &&
+        affected.value.length > 0 &&
+        affected.value.every((lesson) => !!lesson.occurrenceId && !!lesson.occurrenceRevision))),
 );
 let revision = 0;
 async function load() {
@@ -108,13 +123,7 @@ function exclude(id: string, checked: boolean) {
   }
 }
 async function decide() {
-  if (
-    !detail.value ||
-    !proposed.value ||
-    busy.value ||
-    pending.value ||
-    !feature.writable('MANAGE_EXCUSES')
-  )
+  if (!detail.value || !proposed.value || busy.value || pending.value || !decisionAvailable.value)
     return;
   try {
     pending.value = freezeRequestDecision(
@@ -324,7 +333,7 @@ useWebLiveRefresh(load, {
           ><thead
             ><tr
               ><th>Дата / пара</th><th>Предмет</th><th>Отметка</th
-              ><th v-if="detail.summary.kind === 'EXCUSE' && detail.summary.status === 'PENDING'"
+              ><th v-if="detail.summary.kind === 'EXCUSE' && decisionAvailable"
                 >Исключить из одобрения</th
               ></tr
             ></thead
@@ -335,11 +344,11 @@ useWebLiveRefresh(load, {
               ><td>{{ dateLabel(lesson.date) }} · {{ lesson.lessonNumber }}</td
               ><td
                 >{{ lesson.subjectName }} ·
-                {{ lessonTypes[lesson.subjectType ?? ''] ?? lesson.subjectType }}</td
+                {{ lessonTypes[lessonTypeCode(lesson.subjectType)] ?? 'Тип недоступен' }}</td
               ><td>{{
                 markLabels[lesson.attendanceStatus ?? ''] ?? lesson.attendanceStatus ?? '—'
               }}</td
-              ><td v-if="detail.summary.kind === 'EXCUSE' && detail.summary.status === 'PENDING'"
+              ><td v-if="detail.summary.kind === 'EXCUSE' && decisionAvailable"
                 ><label v-if="lesson.occurrenceId"
                   ><input
                     type="checkbox"
@@ -367,6 +376,22 @@ useWebLiveRefresh(load, {
         ></div
       >
       <p
+        v-if="detail.summary.status === 'PENDING' && !decisionAvailable"
+        class="web-notice"
+        >{{
+          ownRequest
+            ? 'Свою заявку обрабатывает другой уполномоченный участник группы.'
+            : 'Решение недоступно: сервер не подтвердил текущий состав и версию заявки.'
+        }}
+        <button
+          v-if="!ownRequest"
+          class="web-button"
+          :disabled="busy || !!pending"
+          @click="open(detail.summary.id)"
+          >Обновить заявку</button
+        >
+      </p>
+      <p
         v-if="pending"
         class="web-notice"
         >Результат проверяется по сохранённому решению.<button
@@ -377,7 +402,7 @@ useWebLiveRefresh(load, {
         ></p
       >
       <form
-        v-else-if="detail.summary.status === 'PENDING' && feature.writable('MANAGE_EXCUSES')"
+        v-else-if="decisionAvailable"
         class="web-stack"
         @submit.prevent="decide"
         ><label class="web-field"

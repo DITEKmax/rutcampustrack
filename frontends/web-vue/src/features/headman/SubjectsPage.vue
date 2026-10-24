@@ -283,7 +283,6 @@ async function removeTeacher(value: HeadmanSubjectAssignment) {
           requestKey: crypto.randomUUID(),
         },
       ],
-      closureOnly: true,
     })
   )
     await flow.send(true);

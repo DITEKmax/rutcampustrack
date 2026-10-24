@@ -390,10 +390,8 @@ export class AdminGroupsClient {
         throw new Error('Сервер не подтвердил результат операции удаления.')
       return result
     } catch {
-      if (status !== null && status >= 400 && status < 500 && status !== 408)
-        // Preserve denial/conflict/rate-limit status without retaining a password echo.
-        throw new AdminGroupsApiError(new Response(null, { status }), null)
-      // A transport/body/owner failure may happen after acceptance. Never expose its cause/body.
+      // No HTTP status proves non-admission after sending, including a late authority denial.
+      // Keep the original recovery key without exposing a password-bearing cause/body.
       throw new AdminGroupDeletionUnknownError(operationId, id, status)
     }
   }

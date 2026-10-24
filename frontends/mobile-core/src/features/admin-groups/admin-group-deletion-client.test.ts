@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
   AdminGroupDeletionUnknownError,
-  AdminGroupsApiError,
   AdminGroupsClient,
   type AdminGroupDeletionPhase,
 } from './admin-groups-client'
@@ -178,8 +177,8 @@ describe('password-bearing group deletion admission and recovery', () => {
     expect(erasedGroups).toBe(1)
   })
 
-  it('preserves denial/conflict/rate-limit status without echoing a password or automatically retrying POST', async () => {
-    for (const status of [401, 403, 409, 429]) {
+  it('retains the original key for ambiguous HTTP denials without echoing a password or retrying POST', async () => {
+    for (const status of [400, 401, 403, 404, 409, 429]) {
       const intent = input()
       let token = 'expired-owner'
       let erasedGroups = 0
@@ -205,15 +204,65 @@ describe('password-bearing group deletion admission and recovery', () => {
       } catch (cause) {
         failure = cause
       }
-      expect(failure).toBeInstanceOf(AdminGroupsApiError)
-      const error = failure as AdminGroupsApiError
-      expect(error.response.status).toBe(status)
-      expect(error.problem).toBeNull()
-      expect(await error.response.text()).toBe('')
+      expect(failure).toBeInstanceOf(AdminGroupDeletionUnknownError)
+      const error = failure as AdminGroupDeletionUnknownError
+      expect(error).toMatchObject({
+        state: 'UNKNOWN',
+        operationId: intent.operationId,
+        groupId,
+        status,
+      })
+      expect(error).not.toHaveProperty('response')
+      expect(error).not.toHaveProperty('problem')
       expect(String(error)).not.toContain(password)
       expect(JSON.stringify(error)).not.toContain(password)
       expect(erasedGroups).toBe(0)
     }
+  })
+
+  it('retains an accepted original operation through late403 and temporarily missing status', async () => {
+    const intent = input()
+    const accepted = operation(intent.operationId, 'COMMITTING')
+    let recorded: typeof accepted | null = null
+    let statusVisible = false
+    const client = new AdminGroupsClient({
+      accessToken: () => 'same-actor',
+      fetcher: async (path, init) => {
+        if (init?.method === 'POST') {
+          recorded = accepted
+          // Durable accept succeeded before the live authority check denied the response.
+          return Response.json({ detail: password }, { status: 403 })
+        }
+        expect(String(path)).toBe(`/api/academic/group-deletions/${intent.operationId}`)
+        if (!statusVisible) return new Response(null, { status: 404 })
+        return Response.json(recorded)
+      },
+    })
+    let unknown: unknown
+    try {
+      await client.confirmGroupDeletion(groupId, intent)
+    } catch (cause) {
+      unknown = cause
+    }
+    expect(unknown).toBeInstanceOf(AdminGroupDeletionUnknownError)
+    const reference = unknown as AdminGroupDeletionUnknownError
+    expect(reference).toMatchObject({
+      state: 'UNKNOWN',
+      operationId: intent.operationId,
+      groupId,
+      status: 403,
+    })
+    await expect(
+      client.getGroupDeletion(reference.operationId, reference.groupId),
+    ).rejects.toMatchObject({
+      response: { status: 404 },
+    })
+    // A missing read does not change the original reference or authorize another command.
+    expect(reference.operationId).toBe(intent.operationId)
+    statusVisible = true
+    await expect(
+      client.getGroupDeletion(reference.operationId, reference.groupId),
+    ).resolves.toEqual(accepted)
   })
 
   it('keeps the original recovery key for unavailable, malformed or contradictory ACKs', async () => {

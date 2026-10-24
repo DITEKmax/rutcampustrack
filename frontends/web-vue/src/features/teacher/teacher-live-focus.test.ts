@@ -103,7 +103,7 @@ const initialCatalog = {
   subjectOptions: [subject, { ...subject, groupId: '20', subjectId: '200' }],
   taughtSubjectOptions: [subject], serverNow: '2026-10-24T09:00:00Z',
 }
-async function mounted(screen: 'stats' | 'journal' = 'stats') {
+async function mounted(screen: 'stats' | 'journal' = 'stats', journalPages = 1) {
   document = new HostDocument()
   vi.stubGlobal('document', document); vi.stubGlobal('Document', HostDocument)
   vi.stubGlobal('ShadowRoot', class {}); vi.stubGlobal('HTMLElement', HostNode)
@@ -116,6 +116,7 @@ async function mounted(screen: 'stats' | 'journal' = 'stats') {
   let projection = 'Прежняя студентка контроля'
   const exports: Array<{ requestId: string; report: unknown }> = []
   const journalQueries: URLSearchParams[] = []
+  const journalHolds = new Map<number, Promise<void>>()
   vi.stubGlobal('fetch', async (input: RequestInfo | URL, init?: RequestInit) => {
     const url = new URL(String(input), 'http://fixture.test')
     if (url.pathname.endsWith('/login')) return Response.json({ accessToken: 'synthetic-bearer' })
@@ -138,10 +139,12 @@ async function mounted(screen: 'stats' | 'journal' = 'stats') {
     }
     if (url.pathname.endsWith('/journal')) {
       journalQueries.push(new URLSearchParams(url.search))
+      const page = Number(url.searchParams.get('page') ?? 0), size = journalPages > 1 ? 30 : 1
+      await journalHolds.get(page)
       return Response.json({
-        lessons: [{ id: '300', groupId: '10', groupName: 'Контрольная группа', subjectId: '100', subjectName: 'Предмет контроля', semesterId: '1', lessonType: 'lecture', date: '2026-10-20', lessonNumber: 1, status: 'CLOSED', oneOff: false, moved: false, cancelled: false }],
+        lessons: Array.from({ length: size }, (_, index) => ({ id: String(300 + page * size + index), groupId: '10', groupName: 'Контрольная группа', subjectId: '100', subjectName: 'Предмет контроля', semesterId: '1', lessonType: 'lecture', date: '2026-10-20', lessonNumber: index + 1, status: 'CLOSED', oneOff: false, moved: false, cancelled: false })),
         students: [{ studentId: '1000', displayName: projection, cells: [] }],
-        serverNow: '2026-10-24T09:00:00Z', page: 0, pageSize: 30, totalLessons: 1, hasMore: false,
+        serverNow: '2026-10-24T09:00:00Z', page, pageSize: 30, totalLessons: size * journalPages, hasMore: page + 1 < journalPages,
       })
     }
     if (url.pathname === '/api/auth/export-jobs') {
@@ -181,6 +184,7 @@ async function mounted(screen: 'stats' | 'journal' = 'stats') {
     denyStats: (status: number) => { statsFailure = status },
     holdCatalog: () => { let release!: () => void; catalogHold = new Promise<void>(resolve => { release = resolve }); return () => { catalogHold = null; release() } },
     holdStats: () => { let release!: () => void; statsHold = new Promise<void>(resolve => { release = resolve }); return () => { statsHold = null; release() } },
+    holdJournalPage: (page: number) => { let release!: () => void; journalHolds.set(page, new Promise<void>(resolve => { release = resolve })); return () => { journalHolds.delete(page); release() } },
   }
 }
 
@@ -278,5 +282,27 @@ describe('teacher live reads while a mounted filter is focused', () => {
     release(); await settle()
     expect(text(f.root)).not.toContain('Поздний приватный ответ')
     expect(text(f.root)).not.toContain('Прежняя студентка контроля')
+  })
+
+  it('refreshes the loaded journal window without removing a focused second-page lesson', async () => {
+    const f = await mounted('journal', 3)
+    click(f.root, 'Загрузить ещё пары'); await settle()
+    const lessonLinks = () => nodes(f.root).filter(n => n.tag === 'a' && /^\/teacher\/lessons\/\d+$/.test(String(n.props.href)))
+    const link = lessonLinks().find(n => n.props.href === '/teacher/lessons/330')!
+    expect(lessonLinks()).toHaveLength(60)
+    link.focus(); await nextTick()
+    const release = f.holdJournalPage(1)
+    f.removeOtherGroup(); f.projection('Обновлённая студентка контроля'); f.changed(); await settle()
+    expect(f.group().options.map(text)).not.toContain('Удаляемая группа')
+    expect(link.isConnected).toBe(true)
+    expect(document.activeElement).toBe(link)
+    expect(lessonLinks()).toHaveLength(60)
+    release(); await settle()
+    expect(text(f.root)).toContain('Обновлённая студентка контроля')
+    expect(lessonLinks()).toHaveLength(60)
+    expect(lessonLinks().some(node => node === link)).toBe(true)
+    expect(document.activeElement).toBe(link)
+    click(f.root, 'Загрузить ещё пары'); await settle()
+    expect(lessonLinks()).toHaveLength(90)
   })
 })

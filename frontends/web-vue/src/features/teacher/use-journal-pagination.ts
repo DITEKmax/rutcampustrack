@@ -13,6 +13,7 @@ export function useJournalPagination(
   const region = ref<HTMLElement | null>(null)
   const edge = ref<HTMLElement | null>(null)
   const loading = ref(false)
+  const refreshing = ref(false)
   const error = ref('')
   const automatic = typeof IntersectionObserver === 'function'
   let observer: IntersectionObserver | null = null
@@ -20,11 +21,44 @@ export function useJournalPagination(
   let alive = true
   let reloadRequired = false
 
-  watch(query, () => { revision++; loading.value = false; error.value = ''; reloadRequired = false }, { flush: 'sync' })
+  watch(query, () => { revision++; loading.value = false; refreshing.value = false; error.value = ''; reloadRequired = false }, { flush: 'sync' })
+
+  /** Replace only a complete refresh of the window already opened under this applied query. */
+  async function refreshWindow(requested: TeacherJournalQuery): Promise<TeacherJournalResponse> {
+    const lastPage = data.value?.page ?? 0
+    const run = ++revision
+    const current = () => alive && scope.current() && run === revision && query.value === requested
+    refreshing.value = true
+    loading.value = false
+    error.value = ''
+    reloadRequired = false
+    let merged: TeacherJournalResponse | null = null
+    try {
+      for (let page = 0; page <= lastPage; page++) {
+        if (!current()) throw new Error('Контекст журнала изменился. Обнови данные.')
+        const next = await scope.api.journal({ ...requested, page, includeMetrics: page === 0 })
+        scope.transport.assertCurrent()
+        if (!current()) throw new Error('Контекст журнала изменился. Обнови данные.')
+        const combined = mergeJournalPage(merged, next)
+        if (next.page !== page || (merged && next.totalLessons !== merged.totalLessons) ||
+          (next.hasMore && combined.lessons.length <= (merged?.lessons.length ?? 0)) ||
+          (!next.hasMore && combined.lessons.length !== next.totalLessons))
+          throw new Error('Список пар изменился. Обнови журнал, чтобы продолжить.')
+        merged = combined
+        if (!next.hasMore) break
+      }
+      return merged!
+    } catch (cause) {
+      if (run === revision) reloadRequired = true
+      throw cause
+    } finally {
+      if (run === revision) refreshing.value = false
+    }
+  }
 
   async function more(retry = false) {
     const requested = query.value, previous = data.value
-    if (!requested || !previous?.hasMore || initialLoading.value || loading.value || (error.value && !retry)) return
+    if (!requested || !previous?.hasMore || initialLoading.value || loading.value || refreshing.value || reloadRequired || (error.value && !retry)) return
     const run = ++revision
     const current = () => alive && scope.current() && run === revision && query.value === requested && data.value === previous
     loading.value = true
@@ -53,10 +87,10 @@ export function useJournalPagination(
     }
   }
 
-  watch([region, edge, data, query, loading, initialLoading], () => {
+  watch([region, edge, data, query, loading, refreshing, initialLoading], () => {
     observer?.disconnect()
     observer = null
-    if (!automatic || !region.value || !edge.value || !data.value?.hasMore || !query.value || loading.value || initialLoading.value || error.value) return
+    if (!automatic || !region.value || !edge.value || !data.value?.hasMore || !query.value || loading.value || refreshing.value || reloadRequired || initialLoading.value || error.value) return
     // IntersectionObserver accepts pixels; derive its eight-rem prefetch distance from the actual root font.
     const margin = Number.parseFloat(getComputedStyle(document.documentElement).fontSize) * 8
     const nextObserver = new IntersectionObserver(entries => {
@@ -73,5 +107,5 @@ export function useJournalPagination(
       await scope.load()
     } else await more(true)
   }
-  return { region, edge, loading, error, automatic, more: retry }
+  return { region, edge, loading, refreshing, error, automatic, more: retry, refreshWindow }
 }

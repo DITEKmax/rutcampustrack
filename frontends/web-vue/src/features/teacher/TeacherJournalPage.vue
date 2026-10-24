@@ -71,7 +71,7 @@ function load(background = false) {
     return;
   }
   void journal.load(async () => {
-    const data = await scope.api.journal(requested);
+    const data = retain ? await pagination.refreshWindow(requested) : await scope.api.journal(requested);
     scope.transport.assertCurrent();
     if (JSON.stringify(query.value) === JSON.stringify(requested)) loadedQuery.value = requested;
     return data;
@@ -289,7 +289,7 @@ function metric(studentId: number, column: 'present' | 'presentOrExcused' | 'exc
         </p><button
           v-if="journal.data.value.hasMore && !pagination.automatic && !pagination.error.value"
           class="web-button"
-          :disabled="pagination.loading.value"
+          :disabled="pagination.loading.value || pagination.refreshing.value"
           @click="pagination.more"
         >
           {{ pagination.loading.value ? 'Загружаем…' : 'Загрузить ещё пары' }}

@@ -22,6 +22,7 @@ import {
 } from '../../../../mobile-core/src/features/headman-subjects/subject-edit-intent';
 import { createSubjectSaveFlow } from '../../../../mobile-core/src/features/headman-subjects/subject-save-flow';
 import HeadmanPage from './HeadmanPage.vue';
+import { assertReplacementWire, replacementDraftInput } from './subject-replacement-state';
 import SubjectDeletion from './SubjectDeletion.vue';
 const feature = useHeadmanFeature(),
   session = webSession.snapshot.value!;
@@ -150,7 +151,21 @@ async function load() {
         if (!intent.value) throw new Error('Незавершённое изменение предмета повреждено.');
       }
       const stored = sessionStorage.getItem(replacementKey);
-      if (stored) replacement.value = JSON.parse(stored) as Replacement;
+      if (stored) {
+        const restored = JSON.parse(stored) as Replacement;
+        try {
+          assertReplacementWire(restored.input, restored.assignmentId);
+          replacement.value = restored;
+        } catch (cause) {
+          if (restored.receipt) {
+            replacement.value = restored;
+            throw cause;
+          }
+          sessionStorage.removeItem(replacementKey);
+          error.value =
+            'Неотправленная замена имела некорректные поля. Выбери назначение и дату заново.';
+        }
+      }
     }
     await read();
   } catch (cause) {
@@ -297,15 +312,29 @@ async function replace(recover = false) {
   if (busy.value || !writable.value || intent.value) return;
   let pending = replacement.value;
   if (!pending) {
-    if (!selected.value || !draft.replacingId || !draft.teacherId) return;
+    let input: AssignmentReplacementInput;
+    try {
+      const payload = replacementDraftInput(
+        selected.value,
+        semester.value,
+        feature.groupId,
+        draft.replacingId,
+        draft.teacherId,
+        teachers.value.map((teacher) => teacher.id),
+        draft.from,
+        today(),
+      );
+      input = { ...payload, requestKey: crypto.randomUUID() };
+      assertReplacementWire(input, draft.replacingId);
+    } catch (cause) {
+      error.value = message(cause);
+      return;
+    }
+    if (!selected.value) return;
     pending = {
       subjectId: selected.value.id,
       assignmentId: draft.replacingId,
-      input: {
-        replacementTeacherId: String(draft.teacherId),
-        effectiveFrom: draft.from,
-        requestKey: crypto.randomUUID(),
-      },
+      input,
       receipt: null,
     };
     if (

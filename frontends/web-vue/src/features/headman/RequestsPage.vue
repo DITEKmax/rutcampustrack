@@ -48,6 +48,7 @@ const excluded = ref<readonly string[]>([]),
   reason = ref(''),
   pending = shallowRef<FrozenRequestDecision | null>(null);
 const proposed = ref<'APPROVED' | 'REJECTED' | null>(null);
+const replayReady = shallowRef<FrozenRequestDecision | null>(null);
 const decisionStorage = `rct:web:headman:request-decision:${webSession.identity.value}`;
 let restored = false;
 function persistDecision(value: FrozenRequestDecision | null) {
@@ -55,6 +56,7 @@ function persistDecision(value: FrozenRequestDecision | null) {
   if (value) sessionStorage.setItem(decisionStorage, serializeRequestDecision(value));
   else sessionStorage.removeItem(decisionStorage);
   pending.value = value;
+  replayReady.value = null;
 }
 const statuses = {
   PENDING: 'На рассмотрении',
@@ -153,22 +155,28 @@ async function decide() {
     error.value = message(cause);
     return;
   }
+  await sendPending(false);
+}
+async function sendPending(replay: boolean) {
   const operation = pending.value;
   if (!operation) return;
+  if (busy.value || (replay && (replayReady.value !== operation || !operation.selection))) return;
   busy.value = true;
+  replayReady.value = null;
   error.value = null;
   try {
-    const outcome = await sendRequestDecision(operation, false, () =>
-      feature.writable('MANAGE_EXCUSES'),
-    );
+    const outcome = await sendRequestDecision(operation, replay, () => {
+      feature.assertCurrent();
+      return pending.value === operation && feature.writable('MANAGE_EXCUSES');
+    });
     feature.assertCurrent();
     if (outcome.status === 'done' || outcome.status === 'conflict') {
       detail.value = outcome.detail;
       persistDecision(null);
       proposed.value = null;
+      await load();
       if (outcome.status === 'conflict')
         error.value = 'Заявка уже обработана другим решением. Показано текущее состояние.';
-      await load();
     } else if (outcome.status === 'rejected') {
       persistDecision(null);
       error.value = message(outcome.cause);
@@ -183,19 +191,30 @@ async function decide() {
 }
 async function reconcile() {
   if (!pending.value || busy.value) return;
+  const operation = pending.value;
   busy.value = true;
+  replayReady.value = null;
   try {
-    const outcome = await reconcileRequestDecision(pending.value);
+    const observed = await feature.requests.get(operation.id);
+    feature.assertCurrent();
+    detail.value = observed;
+    excluded.value = operation.selection?.excludedOccurrenceIds ?? [];
+    reason.value = operation.reason ?? '';
+    proposed.value = operation.decision;
+    const outcome =
+      observed.summary.status === 'PENDING' ? null : await reconcileRequestDecision(operation);
     feature.assertCurrent();
     if (outcome?.status === 'done' || outcome?.status === 'conflict') {
       detail.value = outcome.detail;
       persistDecision(null);
       proposed.value = null;
-      error.value =
-        outcome.status === 'conflict'
-          ? 'Решение отличается от отправленного. Показан результат сервера.'
-          : null;
       await load();
+      if (outcome.status === 'conflict')
+        error.value = 'Решение отличается от отправленного. Показан результат сервера.';
+    } else if (outcome === null && operation.selection) {
+      replayReady.value = operation;
+      error.value =
+        'Заявка ещё ожидает решения. Можно явно продолжить исходное сохранение с прежним ключом.';
     } else
       error.value = 'Решение ещё не подтверждено. Можно повторить проверку без отправки решения.';
   } catch (cause) {
@@ -230,12 +249,22 @@ useWebLiveRefresh(load, {
     <p
       v-if="pending"
       class="web-notice"
-      >Сохранено исходное решение по заявке. Повторная отправка заблокирована.
+      >Сохранено исходное решение по заявке:
+      {{ pending.decision === 'APPROVED' ? 'одобрить' : 'отклонить'
+      }}{{ pending.reason ? ` · ${pending.reason}` : '' }}. Новая команда заблокирована до проверки
+      результата.
       <button
         class="web-button"
         :disabled="busy"
         @click="reconcile"
         >Проверить результат</button
+      >
+      <button
+        v-if="replayReady === pending"
+        class="web-button"
+        :disabled="busy || !feature.writable('MANAGE_EXCUSES')"
+        @click="sendPending(true)"
+        >Продолжить исходное сохранение</button
       >
     </p>
     <form

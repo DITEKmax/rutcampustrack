@@ -65,7 +65,14 @@ const owner = computed<RecurringOwner>(() => ({
   semesterId: semesterId.value,
 }));
 const locked = computed(() => busy.value || !!pending.value || !!createPending.value);
-const writable = computed(() => feature.writable() && !!semester.value?.active);
+const publishedSemester = ref(0);
+const writable = computed(
+  () =>
+    feature.writable() &&
+    !!semester.value?.active &&
+    !loading.value &&
+    publishedSemester.value === semesterId.value,
+);
 function canAdd(day: number, number: number) {
   const cell = rows.value.filter(
     (item) => item.active && item.dayOfWeek === day && item.lessonNumber === number,
@@ -76,16 +83,37 @@ function canAdd(day: number, number: number) {
   );
 }
 const days = ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'];
+let readRevision = 0;
 async function read() {
-  const result = await feature.schedule.listScheduleItems(feature.groupId, semesterId.value);
-  feature.assertCurrent();
-  rows.value = result;
+  const revision = ++readRevision,
+    query = semesterId.value;
+  loading.value = true;
+  try {
+    const result = await feature.schedule.listScheduleItems(feature.groupId, query);
+    feature.assertCurrent();
+    if (revision === readRevision && query === semesterId.value) {
+      rows.value = result;
+      publishedSemester.value = query;
+    }
+  } finally {
+    if (revision === readRevision && query === semesterId.value) loading.value = false;
+  }
 }
 async function load() {
+  const revision = ++readRevision;
+  let query = semesterId.value;
+  const current = () => revision === readRevision && query === semesterId.value;
   loading.value = true;
   error.value = null;
+  if (publishedSemester.value !== query) {
+    rows.value = [];
+    assignments.value = [];
+    selected.value = null;
+    preview.value = null;
+  }
   try {
     await feature.initialize();
+    if (!current()) return;
     if (!feature.isHeadman) throw new Error('Конструктор расписания доступен старосте.');
     if (!semesters.value.length) {
       const [periods, slots, weeks] = await Promise.all([
@@ -94,25 +122,30 @@ async function load() {
         feature.schedule.academicWeekPolicy(today()),
       ]);
       feature.assertCurrent();
+      if (!current()) return;
       semesters.value = periods;
-      semesterId.value = periods.find((item) => item.active)?.id ?? periods[0]?.id ?? 0;
+      query = periods.find((item) => item.active)?.id ?? periods[0]?.id ?? 0;
+      semesterId.value = query;
       catalog.value = slots;
       policy.value = weeks;
     }
-    if (!semesterId.value) throw new Error('Нет доступного семестра.');
+    if (!query) throw new Error('Нет доступного семестра.');
     const [items, teachers] = await Promise.all([
-      feature.schedule.listScheduleItems(feature.groupId, semesterId.value),
-      feature.schedule.listAssignments(feature.groupId, semesterId.value),
+      feature.schedule.listScheduleItems(feature.groupId, query),
+      feature.schedule.listAssignments(feature.groupId, query),
     ]);
     feature.assertCurrent();
+    if (!current()) return;
     rows.value = items;
     assignments.value = teachers;
-    pending.value = readRecurringIntent(sessionStorage, owner.value);
-    createPending.value = readRecurringCreate(sessionStorage, owner.value);
+    publishedSemester.value = query;
+    const queryOwner = { ...owner.value, semesterId: query };
+    pending.value = readRecurringIntent(sessionStorage, queryOwner);
+    createPending.value = readRecurringCreate(sessionStorage, queryOwner);
   } catch (cause) {
-    error.value = message(cause);
+    if (current()) error.value = message(cause);
   } finally {
-    loading.value = false;
+    if (current()) loading.value = false;
   }
 }
 function open(day: number, number: number, item: HeadmanScheduleItem | null = null) {
@@ -314,6 +347,7 @@ useWebLiveRefresh(load, { blocked: () => loading.value || locked.value || editor
         >Семестр<select
           v-model.number="semesterId"
           :disabled="locked || editor"
+          @change="load"
           ><option
             v-for="item in semesters"
             :key="item.id"

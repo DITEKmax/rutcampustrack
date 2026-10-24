@@ -1,4 +1,5 @@
 import { fileURLToPath } from 'node:url'
+import { realpathSync } from 'node:fs'
 import vue from '@vitejs/plugin-vue'
 import { defineConfig, loadEnv, searchForWorkspaceRoot } from 'vite'
 import { browserDependencyOptimization, developmentServer } from '../dev-server'
@@ -13,7 +14,10 @@ export default defineConfig(({ mode }) => {
     server: {
       ...developmentServer(env, 14210, target),
       fs: {
-        allow: [searchForWorkspaceRoot(fileURLToPath(new URL('.', import.meta.url)))],
+        allow: [
+          searchForWorkspaceRoot(fileURLToPath(new URL('.', import.meta.url))),
+          realpathSync(new URL('../node_modules', import.meta.url)),
+        ],
       },
     },
     preview: {

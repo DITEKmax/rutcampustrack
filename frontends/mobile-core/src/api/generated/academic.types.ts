@@ -3585,6 +3585,8 @@ export interface components {
             /** Format: int64 */
             id?: number;
             name?: string;
+            /** @description Группа архивирована */
+            archived: boolean;
         };
         /** @description Суточный прирост карточек масштаба к концу вчерашнего дня Europe/Moscow */
         DashboardDailyGrowthResponse: {
@@ -13528,6 +13530,7 @@ export interface operations {
                 search?: string;
                 page?: number;
                 size?: number;
+                includeArchived?: boolean;
             };
             header?: never;
             path?: never;

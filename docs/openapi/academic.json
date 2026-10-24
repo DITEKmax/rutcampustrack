@@ -12728,6 +12728,14 @@
             "format" : "int32",
             "default" : 20
           }
+        }, {
+          "name" : "includeArchived",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "boolean",
+            "default" : false
+          }
         } ],
         "responses" : {
           "200" : {
@@ -18517,8 +18525,13 @@
           },
           "name" : {
             "type" : "string"
+          },
+          "archived" : {
+            "type" : "boolean",
+            "description" : "Группа архивирована"
           }
-        }
+        },
+        "required" : [ "archived" ]
       },
       "DashboardDailyGrowthResponse" : {
         "type" : "object",

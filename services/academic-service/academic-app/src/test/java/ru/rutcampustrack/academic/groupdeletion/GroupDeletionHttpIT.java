@@ -309,7 +309,7 @@ class GroupDeletionHttpIT extends AbstractAcademicIntegrationTest {
                             Set<Long> actual = new HashSet<>();
                             ids.forEach(value -> actual.add(value.asLong()));
                             assertThat(actual).containsExactlyInAnyOrderElementsOf(affected);
-                            assertThat(ids.size()).isEqualTo(affected.size());
+                            assertThat(ids).hasSize(affected.size());
                         });
         assertThat(count("SELECT count(*) FROM groups WHERE id=" + group)).isZero();
         assertThat(count("SELECT count(*) FROM subjects WHERE group_id=" + group)).isZero();

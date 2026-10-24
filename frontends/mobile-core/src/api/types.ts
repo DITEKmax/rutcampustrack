@@ -118,6 +118,8 @@ export interface AdminMapPlanDeletionPreview {
   readonly buildingCode: string
   readonly floorCode: string
   readonly format: MapFormat | null
+  /** Omitted/null is unknown; whole-plan deletion needs explicit ALL_VERSIONS. */
+  readonly deletionScope?: 'ALL_VERSIONS' | 'CURRENT_FORMAT' | null
   readonly label: string
   readonly files: number
   readonly bytes: number

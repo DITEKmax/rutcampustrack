@@ -2,7 +2,7 @@
 
 Срез2026-10-24 Europe/Moscow. Существующий draft [PR3](https://github.com/DITEKmax/rutcampustrack/pull/3), ветка `codex/web-vue-redesign`.
 Goal запущен после readiness; [контракт](GOAL-CONTRACT.md) сохраняется.
-Собранный source revision `3f5852b9524245e98b16110b8fb4fde4bd68f389`.
+Текущий опубликованный checkpoint `a6c68a63974de3f14d78147a9c990a497ada22ee`; UI/shipping sourcea81394473. Функциональные role receipts сохраняют собственные точные revisions, включая assembled3f585; test-edge/oracle deltas3fc/485 source-reviewed отдельно.
 
 ## Функциональный прогресс Vue web
 
@@ -42,7 +42,7 @@ revoke удаляет и navigation, и уже открытые таблицы �
   group final deletion. Чтение/preview/cancel не засчитываются как эти записи.
 - Global delivery: удалить активный Angular после замены возможностей;
   закончить outer routing/build/oracle wiring, проверить изменённые
-  границы поставки и завершить доступную из PR runtime HTML-галерею.
+  границы поставки. Единая runtime HTML-галерея уже доступна из PR; новые принятые состояния добавляются по мере проверки.
 - Mobile themes: source24 families и существующие140 visual samples проверены
   отдельно. Два P2 исправлены09e7, независимый narrow recheck12 кадров PASS.
   Общий helper завершился exit1 при последующем cleanup; это не command PASS.
@@ -76,7 +76,7 @@ Q-PROD-004 ждёт решения о membership/grants при final group delet
 Q-ENV-003 ждёт разрешения конкретного own8 FULL/self/unknown-result сценария
 после отказа automatic approval review;8 заморожен.
 Q-ENV-004 ждёт разрешения scoped map formatter/HTTP PostgreSQL/regression/JAR
-после отказа review; эти команды не запускались. Независимая работа продолжается.
+после отказа review; эти команды не запускались. Q-ENV-005 stop/privateDBsnapshot и Q-ENV-006 три historicalPROMOTEinputs также ждут явных ответов; оба отказа были до execution, no bypass. Независимая работа продолжается.
 Точные причины и подготовленные сценарии — [OPEN-QUESTIONS](OPEN-QUESTIONS.md).
 
 CI/Coverage/Security/OpenAPI **PAUSED**, только workflow_dispatch, не PASS.

@@ -1,21 +1,44 @@
 # Передача в другую облачную среду — PR3
 
-> Актуальный срез 2026-10-24 после отдельного GO: машина работает, ZIP полностью
-> проверен, первый web/backend пакет интегрирован, runtime HTML-галерея создана.
-> Настоящие Schedule/Attendance/Notification добавлены; API Today200 получен,
-> полный новый web Today ещё не принят. Политика www.figma.com пока403 несмотря
-> на обещанное разрешение. Текущие факты/границы/прогресс — [PROGRESS](PROGRESS.md)
-> и [FIRST-PACKAGE-CHECKPOINT](FIRST-PACKAGE-CHECKPOINT.md). Ниже исторический
-> стартовый снимок; его pending/offline/STOP/old session не являются текущими.
+Актуальный checkpoint2026-10-24 05:07UTC: существующий Goal запущен владельцем,
+машина работает; PR3/codex/web-vue-redesign опубликован наa6c68a639. Это текущий
+срез; ниже явно сохранена история прежней машины/readiness, а не действующийSTOP.
+Всегда fetch актуальный remoteHEAD, не откатывать ветку к указанномуSHA.
 
-> Обновление 2026-10-24: новая машина реально работает; Figma context/screenshot,
-> GitHub MCP, shell Git fetch и gh/REST проверены, минимальный backend поднят,
-> login/данные/screenshot проверены. Полный «Сегодня» не подтверждён: отсутствует
-> Schedule и другие предметные сервисы. Актуальные подробности и ZIP-check:
-> [READINESS-CHECK-20261024.md](READINESS-CHECK-20261024.md).
-> Ниже сохранён исторический handoff прежней машины; его pending/offline и GO
-> не являются текущим состоянием или запуском Goal. До отдельной команды
-> владельца — только readiness, без реализации/commit/push.
+- Реально проверены shell/Git fetch/push, gh/GitHub API и MCP по отдельности.
+  Main13healthy: Auth/Academic/Gateway/BFF/Schedule/Attendance/Notification/
+  Renderer и инфраструктура. Настоящие login/Today/data/live updates/Renderer
+  и runtime screenshots подтверждены в [приёмке ролей](ROLE-ACCEPTANCE-20261024.md).
+- ZIP целиком восстановлен из3wrapperfiles:87568617bytes, ожидаемыйSHA256,
+  CRC/safe paths/manifest422entries,388PNG+34,33screens/8width и140 ожидаемых
+  узких light gaps PASS. Наличие только имени архива не использовалось как proof.
+- Figma read-only MCP design context/screenshot и originalauthbytes работают.
+  Owner обещалwww.figma.com; фактическая enforcedpolicy7 его пока не содержит,
+  настоящий curl через наследуемыйproxy даётCONNECT403. Это разные доступы.
+- Implemented115/117 и locallyverified110/117. Общий HTML200runtimeкадров
+  [доступен из PR](../../validation/web-vue-pr3/runtime-gallery/PORTABLE.md),
+  оригинальные PNG/IDs/hash/revision сохранены; это не200functionaltests.
+- SourceUIa813:3реальных images/innerstaticWEB12/PWA6/TMA4 PASS. Source-reviewed
+  Vue e2e rootedge и строгий artifactoracle интегрированы. Angular ещё активен:
+  outeredge/legacycontrols/окончательная замена остаются deliverygates.
+- Ownclock5infrahealthy после reviewedboundedкоррекций. Stop/privateDBsnapshot
+  отклонён automaticapproval ДО исполнения; main13 не останавливались,
+  dump/restore/apps/14250/browser отсутствуют. snapshotFALSE,QENV005pending.
+  HistoricalPROMOTE3inputsetup также отклонён доSQL,QENV006pending, attempts0.
+- QPROD004 membership/grants и QENV003/004 exactограниченные проверки ждут
+  владельца. Не обходить отказ/не запускать другимexecutor. NaturalmainGEO
+  допускает обычную проверку05:25..06:55UTC при actualACTIVE/allowed.
+- Root docs/coordination/Git; writers/worktrees/ports — [CURRENT/SLOTS](../../../.agent/orchestration-v2/CURRENT.md).
+  ОдинHEAVY,16GiB/4CPU. После VFSdiskfull exact30ownunusedcache recovery
+  сохраненыforeignstate/images/volumes; около5GiBfree послеclockprepare.
+
+Канон: [GOAL-CONTRACT](GOAL-CONTRACT.md), [PROGRESS](PROGRESS.md),
+[вопросы](OPEN-QUESTIONS.md), [shipping/инцидент](SHIPPING-CHECKPOINT-20261024.md).
+CI/Coverage/Security/OpenAPI PAUSED/workflow_dispatch, неPASS. Без main writes,
+merge/deploy/production/firewall/globalDockercleanup. Текущая работа не объявлена
+завершённой по результатам настройки среды.
+
+## Исторический handoff прежней машины и стартовой readiness
 
 Снимок: **2026-10-24 00:11:25 Europe/Moscow**. Это только подготовка переноса:
 новая среда/задача/Goal/PR не создавались, старые ресурсы не удалялись.

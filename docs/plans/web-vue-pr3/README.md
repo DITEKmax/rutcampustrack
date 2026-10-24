@@ -3,7 +3,7 @@
 > **Актуальный статус 2026-10-24:** владелец отдельно запустил существующий Goal. Автономная реализация, commit/push в существующую ветку и обновление PR №3 разрешены. Канон: [GOAL-CONTRACT.md](GOAL-CONTRACT.md). Readiness новой среды и архива: [READINESS-CHECK-20261024.md](READINESS-CHECK-20261024.md). CI/Coverage/Security/OpenAPI PAUSED; без main writes/merge/deploy/production.
 
 Дата решений: 2026-10-23. Ветка `codex/web-vue-redesign`, база main
-`aa98a6aabd1463ee72ce2ef09a3195fdeef7b74f`. Это подготовка, реализация не начата.
+`aa98a6aabd1463ee72ce2ef09a3195fdeef7b74f`. Текущий checkpointa6c68a639:115/117 implemented,110/117 locallyverified.
 Первоначальная подготовка ниже — исторический материал; существующий PR имеет №3.
 
 ## Читать по порядку
@@ -22,7 +22,7 @@
 В Git не добавлены PNG/бинарный архив, secrets, node_modules, runtime БД.
 Пути `handoff/`, `figma/`, `screens-manifest.*` в документах относятся к
 входному ZIP; не считать отсутствующий здесь архив автоматически переданным cloud.
-Получение архива в целевой среде нужно подтвердить чтением и сверкой manifest.
+Получение архива в текущей среде уже подтверждено чтением и полной сверкой manifest; см. READINESS-CHECK-20261024. Это описание reference ZIP, не runtimeгалереи.
 
 Во время разработки нужны адресные build/typecheck/runtime по изменению;
 новые хрупкие E2E, проверки текста/верстки и coverage ради процента не нужны.
@@ -30,6 +30,6 @@ GitHub-проверки пока PAUSED, это не PASS. Продуктовы�
 этим подготовительным commit не выдаются. Main и глобальные settings не менялись.
 
 Текущий промежуточный срез: implemented115/117 и locally verified110/117.
-Подробная [приёмка ролей](ROLE-ACCEPTANCE-20261024.md), [галереи настоящих PNG](../../validation/web-vue-pr3/runtime-gallery/index.html), [план удаления Angular](ANGULAR-REMOVAL-INVENTORY.md).
+Подробная [приёмка ролей](ROLE-ACCEPTANCE-20261024.md), [единый HTML200runtimeкадров](../../validation/web-vue-pr3/runtime-gallery/PORTABLE.md), [план удаления Angular](ANGULAR-REMOVAL-INVENTORY.md).
 
 Актуальное состояние после начала Goal: [PROGRESS](PROGRESS.md), [integration checkpoint](INTEGRATION-CHECKPOINT-20261024.md), [mobile followups](MOBILE-FOLLOWUPS.md).

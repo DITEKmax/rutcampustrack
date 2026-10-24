@@ -110,7 +110,9 @@ public class CampusMapDeletionTransaction {
                                                 slot.format() != removed
                                                         && slot.state()
                                                                 == CampusMapFormatState.READY);
-        if (!hasOther) {
+        if (removed == null) {
+            deletion.purgePlanGraph(confirmedFloorId);
+        } else if (!hasOther) {
             catalog.clearCurrentPlan(confirmedFloorId);
         } else {
             long version = catalog.highestPlanVersion(confirmedFloorId) + 1L;
@@ -168,6 +170,7 @@ public class CampusMapDeletionTransaction {
                                 () ->
                                         new ResourceNotFoundException(
                                                 "Схема", "floorCode", floorCode));
+        if (format == null) return wholePlanSnapshot(buildingCode, floorCode, floor);
         var plan =
                 catalog.findCurrentPlan(floor.id())
                         .filter(row -> row.publishedAt() != null)
@@ -241,6 +244,89 @@ public class CampusMapDeletionTransaction {
                         selected.stream().mapToLong(CampusMapAdminRepository.SlotRow::bytes).sum(),
                         digest(value));
         return new PlanSnapshot(floor, plan, slots, preview);
+    }
+
+    private PlanSnapshot wholePlanSnapshot(
+            String buildingCode, String floorCode, CampusMapAdminRepository.FloorRow floor) {
+        var plans = catalog.findPlans(floor.id());
+        if (plans.isEmpty()) throw new ResourceNotFoundException("Схема", "floorCode", floorCode);
+        var latest = plans.getLast();
+        var assets = deletion.planAssets(floor.id());
+        // A distinct domain prevents an old current-slot preview from authorising a whole purge.
+        var value =
+                new StringBuilder("PLAN_PURGE_ALL_V1:")
+                        .append(buildingCode.length())
+                        .append(':')
+                        .append(buildingCode)
+                        .append(':')
+                        .append(floorCode.length())
+                        .append(':')
+                        .append(floorCode)
+                        .append(':')
+                        .append(floor.id())
+                        .append(':')
+                        .append(floor.buildingId())
+                        .append(':')
+                        .append(floor.currentVersionId())
+                        .append(':')
+                        .append(catalog.highestPlanVersion(floor.id()))
+                        .append(':')
+                        .append(catalog.latestCatalogRevision());
+        for (var plan : plans) {
+            value.append(":P:")
+                    .append(plan.id())
+                    .append(':')
+                    .append(plan.version())
+                    .append(':')
+                    .append(plan.catalogRevisionId())
+                    .append(':')
+                    .append(plan.publishedAt())
+                    .append(':')
+                    .append(plan.label().length())
+                    .append(':')
+                    .append(plan.label());
+            for (var slot : catalog.findSlots(plan.id())) {
+                value.append(":S:")
+                        .append(slot.id())
+                        .append(':')
+                        .append(slot.format())
+                        .append(':')
+                        .append(slot.state())
+                        .append(':')
+                        .append(slot.assetId())
+                        .append(':')
+                        .append(slot.bytes())
+                        .append(':')
+                        .append(
+                                slot.sha256() == null
+                                        ? "null"
+                                        : HexFormat.of().formatHex(slot.sha256()));
+            }
+        }
+        for (var asset : assets) {
+            value.append(":A:")
+                    .append(asset.id())
+                    .append(':')
+                    .append(asset.planVersionId())
+                    .append(':')
+                    .append(asset.format())
+                    .append(':')
+                    .append(asset.bytes())
+                    .append(':')
+                    .append(HexFormat.of().formatHex(asset.sha256()));
+        }
+        var preview =
+                new PlanDeletionPreview(
+                        buildingCode,
+                        floorCode,
+                        null,
+                        latest.label(),
+                        assets.size(),
+                        assets.stream()
+                                .mapToLong(CampusMapDeletionRepository.PlanAsset::bytes)
+                                .sum(),
+                        digest(value.toString()));
+        return new PlanSnapshot(floor, latest, java.util.List.of(), preview);
     }
 
     private static void requirePlanReceipt(

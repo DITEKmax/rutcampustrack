@@ -13,6 +13,16 @@ const controls = [
   { route: '/admin/dashboard', paths: ['/api/academic/admin-access/me', '/api/academic/dashboard/stats', '/api/academic/dashboard/activity'], keys: ['authority', 'stats', 'activity'] },
   { route: '/teacher/journal', paths: ['/api/v1/teacher/semester', '/api/v1/teacher/catalog'], keys: ['teacherSemester', 'teacherCatalog'] },
   { route: '/teacher/statistics', paths: ['/api/v1/teacher/semester', '/api/v1/teacher/catalog'], keys: ['teacherSemester', 'teacherCatalog'] },
+  { route: '/student/schedule', paths: ['/api/v1/student/session', '/api/v1/student/schedule?semesterId=1'], keys: ['studentSession'], extra: ['studentSchedule'] },
+  { route: '/student/statistics', paths: ['/api/v1/student/session', '/api/v1/student/statistics?semesterId=1'], keys: ['studentSession'], extra: ['studentStats'] },
+  { route: '/student/requests', paths: ['/api/v1/student/session', '/api/v1/student/requests?bucket=OPEN&page=0&size=10', '/api/v1/student/requests/options'], keys: ['studentSession'], extra: ['studentRequests', 'studentOptions'] },
+  { route: '/headman', paths: ['/api/academic/semesters', '/api/schedule/groups/1/lessons', '/api/academic/subjects',
+    '/api/attendance/requests?bucket=OPEN&page=0&size=1&type=EXCUSE', '/api/attendance/requests?bucket=OPEN&page=0&size=1&type=LATE_CHECKIN'],
+    keys: ['semesters', 'headmanLessons', 'subjects', 'excuseCount', 'lateCount'] },
+  { route: '/headman/schedule', paths: ['/api/academic/semesters', '/api/schedule/lesson-slots', '/api/schedule/academic-week-policy', '/api/schedule/items', '/api/academic/assignments'],
+    keys: ['semesters', 'slots', 'policy'], extra: ['items', 'assignments'] },
+  { route: '/headman/requests?type=EXCUSE', paths: ['/api/attendance/requests?bucket=OPEN&page=0&size=20&type=EXCUSE'], keys: ['groupRequests'] },
+  { route: '/headman/requests?type=LATE_CHECKIN', paths: ['/api/attendance/requests?bucket=OPEN&page=0&size=20&type=LATE_CHECKIN'], keys: ['groupRequests'] },
 ];
 function fixture() {
   const page = new EventEmitter();
@@ -25,15 +35,20 @@ function response(path, { status = 200, finished = async () => null, json = asyn
     status: () => status, finished, json };
 }
 let positive = 0, rejected = 0;
-for (const { route, paths, keys } of controls) {
+async function settle(observer, extra = []) {
+  const values = await observer.initial();
+  for (const key of extra) await observer.read(key);
+  return values;
+}
+for (const { route, paths, keys, extra } of controls) {
   const page = fixture(), observer = observeWebPanelReads(page, route);
   for (const path of paths) page.emit('response', response(path));
-  assert.deepEqual(Object.keys(await observer.initial()), keys);
+  assert.deepEqual(Object.keys(await settle(observer, extra)), keys);
   observer.dispose(); assert.equal(page.listenerCount('response'), 0); positive++;
   for (const failed of paths) {
     const brokenPage = fixture(), broken = observeWebPanelReads(brokenPage, route);
     for (const path of paths) brokenPage.emit('response', response(path, { status: path === failed ? 500 : 200 }));
-    await assert.rejects(broken.initial()); broken.dispose(); rejected++;
+    await assert.rejects(settle(broken, extra)); broken.dispose(); rejected++;
   }
 }
 const { route, paths } = controls[0];
@@ -75,6 +90,27 @@ for (const failure of ['body', 'decode', 'scalar', 'foreign-origin', 'wrong-meth
   assert.deepEqual([...first.semesters.items, ...next.items].map(item => item.name), ['First semester', 'Next semester']);
   observer.dispose(); positive++;
 }
+{
+  const page = fixture(), observer = observeWebPanelReads(page, '/student/requests');
+  page.waitForResponse = predicate => new Promise(resolve => {
+    const listener = candidate => { if (predicate(candidate)) { page.off('response', listener); resolve(candidate); } };
+    page.on('response', listener);
+  });
+  const pending = [observer.read('studentDetail'), observer.read('studentDetail')];
+  page.emit('response', response('/api/v1/student/requests/owned-first', { json: async () => ({ summary: { id: 'owned-first' } }) }));
+  page.emit('response', response('/api/v1/student/requests/owned-next', { json: async () => ({ summary: { id: 'owned-next' } }) }));
+  assert.deepEqual((await Promise.all(pending)).map(detail => detail.summary.id), ['owned-first', 'owned-next']);
+  observer.dispose(); assert.equal(page.listenerCount('response'), 0); positive++;
+}
+for (const path of [
+  '/api/attendance/requests?bucket=OPEN&page=0&size=20&type=LATE_CHECKIN',
+  '/api/attendance/requests?bucket=ARCHIVE&page=0&size=20&type=EXCUSE',
+  '/api/attendance/requests?bucket=OPEN&page=0&size=1&type=EXCUSE',
+]) {
+  const page = fixture(), observer = observeWebPanelReads(page, '/headman/requests?type=EXCUSE');
+  page.emit('response', response(path));
+  await assert.rejects(observer.initial()); observer.dispose(); rejected++;
+}
 // Inject only the assertion adapter; the live function chooses the public rendered-value locators.
 const assertion = target => ({
   toHaveCount: async count => assert.equal(target.count, count),
@@ -86,8 +122,12 @@ await expectRenderedStat(owner(card('17')), 'Synthetic count', 17, assertion); p
 for (const candidate of [card(''), card('0'), { count: 0, locator: () => ({ text: '17' }) }]) {
   await assert.rejects(expectRenderedStat(owner(candidate), 'Synthetic count', 17, assertion)); rejected++;
 }
+for (const value of [-1, Infinity, NaN]) {
+  await assert.rejects(expectRenderedStat(owner(card(String(value))), 'Synthetic count', value, assertion)); rejected++;
+}
 for (const [expectedLandingPath, role, intended] of [
   ['/student/home', 'STUDENT', 'STUDENT'], ['/headman', 'STUDENT', 'HEADMAN'],
+  ['/headman', 'HEADMAN', 'HEADMAN'],
   ['/teacher/home', 'TEACHER', 'TEACHER'], ['/admin/dashboard', 'ADMIN', 'ADMIN'],
 ]) {
   assert.equal(webLoginIntent({ expectedLandingPath, role }).role, intended); positive++;

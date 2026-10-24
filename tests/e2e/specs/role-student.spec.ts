@@ -1,35 +1,39 @@
-import { expectWebPanelRoute } from '../fixtures/web-panel-route';
-import { test, expect } from '@playwright/test';
+import { expect, type Request } from '@playwright/test';
+import { test } from '../fixtures/artifact-privacy';
 import { TEST_USERS } from '../fixtures/users';
 import { loginAs } from '../fixtures/auth';
-
-/**
- * M08 Группа 5 (P2-8/5) — role-student golden paths.
- *
- * Student-only пути в web-panel (Angular). Для PWA-версии — отдельный
- * spec будет в v0.1 когда PWA routes стабилизируются.
- */
+import { expectWebPanelRoute } from '../fixtures/web-panel-route';
 
 test.describe('Role: STUDENT', () => {
   test.beforeEach(async ({ page }) => {
     await loginAs(page, TEST_USERS.student);
   });
 
-  test('can access student-only paths', async ({ page }) => {
-    const paths = ['/student/schedule', '/student/stats', '/student/excuses'];
-    for (const path of paths) {
+  test('can access current student paths with owned data', async ({ page }) => {
+    for (const path of ['/student/schedule', '/student/statistics', '/student/requests'])
       await expectWebPanelRoute(page, path);
-    }
   });
 
-  // M14 G7 (G26 категория E, path A): тесты `cannot access /headman/*`
-  // и `cannot access /admin/* or /teacher/*` удалены — seed-юзер
-  // `student` имеет `is_headman=true` (academic-service V2 seed) и
-  // landing page для него — `/headman/dashboard`. Отдельного
-  // non-headman student'а в seed нет. RBAC уже покрыт backend-уровневыми
-  // SecurityIdorIT (academic/schedule/attendance/notification) + WebPanel
-  // route guards тестируются отдельно в Karma unit-тестах роутов.
-  // E2E дублирование избыточно. Восстановить с path B (Flyway seed
-  // `student_plain` с is_headman=false) если реальный traffic покажет
-  // gap между unit + IT coverage.
+  test('inactive HEADMAN and foreign ADMIN/TEACHER routes never start their reads', async ({ page }) => {
+    for (const [path, foreign] of [
+      ['/headman', /^\/api\/(?:schedule\/groups\/|academic\/(?:subjects|homeworks)|attendance\/requests)/],
+      ['/admin/users', /^\/api\/academic\/(?:admin-access|users|groups)/],
+      ['/teacher/journal', /^\/api\/v1\/teacher\//],
+    ] as const) {
+      let foreignData = false;
+      const origin = new URL(page.url()).origin;
+      const observe = (request: Request) => {
+        const url = new URL(request.url());
+        if (url.origin === origin && foreign.test(url.pathname)) foreignData = true;
+      };
+      page.on('request', observe);
+      try {
+        await page.goto(path);
+        await expect(page).toHaveURL(url => url.pathname === '/student/home');
+        await expect(page.locator('main#main [data-screen-id="WEB-STUDENT-HOME"]')).toBeVisible();
+        await expect(page.locator('main#main .headman-page, main#main .admin-page, main#main .teacher-page')).toHaveCount(0);
+        expect(foreignData, 'Denied role navigation never starts foreign target data').toBe(false);
+      } finally { page.off('request', observe); }
+    }
+  });
 });

@@ -512,7 +512,7 @@ useWebLiveRefresh(
           >
             Назначить или заменить старосту
           </button><button
-            v-if="canManage && selected.status === 'ACTIVE'"
+            v-if="canManage && selected.status !== 'ARCHIVED'"
             class="web-button"
             :disabled="locked"
             @click="previewPromotion(selected!.id)"

@@ -614,6 +614,50 @@
   line-height: 1.2;
 }
 
+.profile-loading {
+  display: grid;
+  gap: var(--rct-space-3);
+}
+
+.profile-loading__status {
+  position: absolute;
+  inline-size: var(--rct-border-hairline);
+  block-size: var(--rct-border-hairline);
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.profile-loading__shape {
+  background: var(--rct-color-skeleton-fill);
+}
+
+.profile-loading__copy {
+  flex: 1;
+  gap: var(--rct-space-2);
+}
+
+.profile-loading__line {
+  display: block;
+  inline-size: 70%;
+  min-block-size: var(--rct-space-3);
+  border-radius: var(--rct-radius-full);
+}
+
+.profile-loading__line--name {
+  inline-size: 100%;
+  min-block-size: var(--rct-space-4);
+}
+
+.profile-loading__line--short {
+  inline-size: 50%;
+}
+
+.profile-loading__row {
+  pointer-events: none;
+  cursor: default;
+}
+
 .profile-state {
   display: grid;
   gap: var(--rct-space-2);

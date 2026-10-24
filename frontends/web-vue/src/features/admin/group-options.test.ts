@@ -33,5 +33,8 @@ describe('administrator directory group lookup', () => {
     await expect(
       setup({ id: 7, name: 'ПРТ-119' }).client.listGroups('', 0, undefined, true),
     ).rejects.toThrow('состояние группы')
+    await expect(
+      setup({ id: 7, name: 'ПРТ-119', archived: null }).client.listGroups(),
+    ).rejects.toThrow('состояние группы')
   })
 })

@@ -406,7 +406,7 @@ export class AdminUsersClient {
       items: value.items.map((item) => {
         const group = requiredRecord(item, 'group')
         // Older default-only servers return active options without this additive flag.
-        const archived = group.archived ?? (includeArchived ? undefined : false)
+        const archived = group.archived === undefined && !includeArchived ? false : group.archived
         if (typeof archived !== 'boolean')
           throw new Error('Не удалось подтвердить состояние группы.')
         if (!includeArchived && archived) throw new Error('Архивная группа недоступна для новой роли.')

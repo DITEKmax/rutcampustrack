@@ -1,12 +1,11 @@
 <script setup lang="ts">
-import { computed, nextTick, onMounted, ref, shallowRef } from 'vue';
-import { onBeforeRouteLeave } from 'vue-router';
+import { computed, nextTick, onMounted, ref, shallowRef, watch } from 'vue';
+import { onBeforeRouteLeave, onBeforeRouteUpdate, useRoute, useRouter } from 'vue-router';
 import { useWebLiveRefresh } from '../../app/live';
 import {
   AdminUsersClient,
   type AdminUser,
   type AdminUsersPage,
-  type AdminManagedRole,
   type AdminRoleStatus,
   type AdminUserArchivePreview,
   type CreateAdminUserInput,
@@ -18,10 +17,18 @@ import type {
 import { useAdmin, bindAdminRecovery, roleLabels, statusLabels } from './use-admin';
 import AdminState from './AdminState.vue';
 import GroupPicker from './GroupPicker.vue';
+import GroupFilter from './GroupFilter.vue';
+import UserRegistryTable from './UserRegistryTable.vue';
 import PermissionFields from './PermissionFields.vue';
 import UserAccess from './UserAccess.vue';
 import UserCredentials from './UserCredentials.vue';
 import ExportControl from './ExportControl.vue';
+import {
+  readUserRegistryQuery,
+  userRegistryLocation,
+  userRegistryExportSelector,
+  type UserRegistryFilters,
+} from './user-registry-query';
 import './admin.pcss';
 
 const admin = useAdmin();
@@ -30,16 +37,17 @@ const users = new AdminUsersClient(admin.options);
 bindAdminRecovery(admin.options, 'users', users);
 const page = shallowRef<AdminUsersPage | null>(null);
 const selected = shallowRef<AdminUser | null>(null);
-const search = ref('');
-const role = ref<AdminManagedRole | ''>('');
-const roleStatus = ref<AdminRoleStatus | ''>('');
-const sortDirection = ref<'asc' | 'desc'>('asc');
-const applied = shallowRef({
-  search: '',
-  role: '' as AdminManagedRole | '',
-  roleStatus: '' as AdminRoleStatus | '',
-  sortDirection: 'asc' as 'asc' | 'desc',
-});
+const route = useRoute(),
+  router = useRouter();
+const initialQuery = readUserRegistryQuery(route.query);
+const search = ref(initialQuery.filters.search);
+const role = ref(initialQuery.filters.role);
+const roleStatus = ref(initialQuery.filters.roleStatus);
+const accountStatus = ref(initialQuery.filters.status);
+const filterGroupId = ref(initialQuery.filters.groupId);
+const sortDirection = ref(initialQuery.filters.sortDirection);
+const applied = shallowRef<UserRegistryFilters>(initialQuery.filters);
+let navigating = false;
 const creating = ref(false);
 const editor = ref<HTMLElement | null>(null);
 const lastName = ref(''),
@@ -76,15 +84,7 @@ const activeGrant = computed(() =>
 const applicableStatuses = computed(
   () => activeGrant.value?.applicableStatuses ?? (['ACTIVE'] as const),
 );
-const exportSelector = computed(() => ({
-  search: applied.value.search,
-  ...(applied.value.role ? { role: applied.value.role } : {}),
-  ...(applied.value.roleStatus ? { roleStatus: applied.value.roleStatus } : {}),
-  sorts: ['lastName', 'firstName', 'middleName', 'id'].map((field) => ({
-    field,
-    descending: applied.value.sortDirection === 'desc',
-  })),
-}));
+const exportSelector = computed(() => userRegistryExportSelector(applied.value));
 
 async function load(number = 0) {
   const own = ++loadRevision;
@@ -92,15 +92,63 @@ async function load(number = 0) {
   admin.assertCurrent();
   if (own === loadRevision) page.value = value;
 }
-function apply() {
-  applied.value = {
+function draftQuery(): UserRegistryFilters {
+  return {
     search: search.value,
     role: role.value,
-    roleStatus: roleStatus.value,
+    roleStatus: role.value ? roleStatus.value : '',
+    status: accountStatus.value,
+    ...(filterGroupId.value ? { groupId: filterGroupId.value } : {}),
     sortDirection: sortDirection.value,
   };
-  void admin.run(() => load());
 }
+function clearSelection() {
+  selected.value = null;
+  creating.value = false;
+  archive.value = null;
+  initialReceipt.value = null;
+}
+async function navigate(number = 0, filters = applied.value) {
+  if (locked.value) return;
+  clearSelection();
+  navigating = true;
+  try {
+    const failure = await router.replace({ query: userRegistryLocation(filters, number) });
+    admin.assertCurrent();
+    if (failure) return;
+    applied.value = filters;
+  } catch (cause) {
+    try {
+      admin.assertCurrent();
+      error.value = cause instanceof Error ? cause.message : 'Не удалось применить фильтры.';
+    } catch {
+      /* The admitted session has ended. */
+    }
+    return;
+  } finally {
+    navigating = false;
+  }
+  await admin.run(() => load(number));
+}
+function apply() {
+  void navigate(0, draftQuery());
+}
+watch(
+  () => route.fullPath,
+  () => {
+    if (navigating) return;
+    const current = readUserRegistryQuery(route.query);
+    search.value = current.filters.search;
+    role.value = current.filters.role;
+    roleStatus.value = current.filters.roleStatus;
+    accountStatus.value = current.filters.status;
+    filterGroupId.value = current.filters.groupId;
+    sortDirection.value = current.filters.sortDirection;
+    applied.value = current.filters;
+    clearSelection();
+    void admin.run(() => load(current.page));
+  },
+);
 async function focusEditor() {
   await nextTick();
   admin.assertCurrent();
@@ -390,7 +438,8 @@ onBeforeRouteLeave(() => {
     return false;
   }
 });
-onMounted(() => admin.init('USERS_VIEW', () => load()));
+onBeforeRouteUpdate(() => !locked.value);
+onMounted(() => admin.init('USERS_VIEW', () => load(initialQuery.page)));
 useWebLiveRefresh(
   () =>
     admin.refresh(async () => {
@@ -429,6 +478,13 @@ useWebLiveRefresh(
       :notice="notice"
       @retry="admin.run(() => load())"
     />
+    <GroupFilter
+      v-if="admin.can('USERS_VIEW')"
+      v-model="filterGroupId"
+      :client="users"
+      :assert-current="admin.assertCurrent"
+      :disabled="locked"
+    />
     <form
       v-if="admin.can('USERS_VIEW')"
       class="admin-toolbar"
@@ -452,67 +508,22 @@ useWebLiveRefresh(
         v-for="(label, value) in statusLabels"
         :key="value"
         :value="value"
-      >{{ label }}</option></select></label><label class="web-field">ФИО<select v-model="sortDirection"><option value="asc">От А до Я</option><option value="desc">От Я до А</option></select></label><button
+      >{{ label }}</option></select></label><label class="web-field">Учётная запись<select v-model="accountStatus"><option value="">{{
+        roleStatus === 'ARCHIVED' ? 'Все состояния записи' : 'Без архивных записей'
+      }}</option><option value="ACTIVE">Активные</option><option value="EXPELLED">Отчисленные</option><option value="SUSPENDED">Приостановленные</option><option value="ARCHIVED">Архивные</option></select></label><label class="web-field">ФИО<select v-model="sortDirection"><option value="asc">От А до Я</option><option value="desc">От Я до А</option></select></label><button
         class="web-button"
-        :disabled="busy"
+        :disabled="locked"
       >
         Найти
       </button>
     </form>
-    <template v-if="page">
-      <div
+    <template v-if="page && admin.can('USERS_VIEW')">
+      <UserRegistryTable
         v-if="page.items.length"
-        class="admin-table-wrap"
-      >
-        <table class="admin-table">
-          <caption class="web-sr-only">
-            Реестр пользователей
-          </caption><thead>
-            <tr>
-              <th scope="col">
-                ФИО / логин
-              </th><th scope="col">
-                Текущие роли и группы
-              </th><th scope="col">
-                Табельный номер
-              </th><th scope="col">
-                Telegram ID
-              </th><th scope="col">
-                Действия
-              </th>
-            </tr>
-          </thead><tbody>
-            <tr
-              v-for="user in page.items"
-              :key="user.id"
-            >
-              <td>
-                {{ user.fullName }}<span class="admin-subtext">{{ user.login }}</span>
-              </td><td>
-                <div
-                  v-for="grant in user.roles"
-                  :key="grant.role"
-                >
-                  {{ roleLabels[grant.role] }} · {{ statusLabels[grant.status]
-                  }}<span
-                    v-if="grant.groupName"
-                    class="admin-subtext"
-                  >{{ grant.groupName }}</span>
-                </div>
-              </td><td>{{ user.employeeNumber ?? '—' }}</td><td>{{ user.telegramId ?? '—' }}</td><td>
-                <button
-                  class="web-button"
-                  :disabled="locked"
-                  :aria-label="`Открыть ${user.fullName}`"
-                  @click="open(user)"
-                >
-                  Открыть
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div><p
+        :items="page.items"
+        :disabled="locked"
+        @open="open"
+      /><p
         v-else
         role="status"
       >
@@ -522,14 +533,14 @@ useWebLiveRefresh(
         <div class="admin-actions">
           <button
             class="web-button"
-            :disabled="busy || page.number === 0"
-            @click="admin.run(() => load(page!.number - 1))"
+            :disabled="locked || page.number === 0"
+            @click="navigate(page!.number - 1)"
           >
             Назад
           </button><span v-if="page.totalPages">{{ page.number + 1 }} / {{ page.totalPages }}</span><button
             class="web-button"
-            :disabled="busy || page.number + 1 >= page.totalPages"
-            @click="admin.run(() => load(page!.number + 1))"
+            :disabled="locked || page.number + 1 >= page.totalPages"
+            @click="navigate(page!.number + 1)"
           >
             Дальше
           </button>
@@ -540,7 +551,7 @@ useWebLiveRefresh(
       </div>
     </template>
     <section
-      v-if="creating || selected"
+      v-if="(creating || selected) && admin.can('USERS_VIEW')"
       ref="editor"
       class="admin-panel"
       :inert="busy || (pending && !archiveRecovery)"
@@ -788,7 +799,7 @@ useWebLiveRefresh(
       </template>
     </section>
     <form
-      v-if="archiveRecovery && archive"
+      v-if="archiveRecovery && archive && canArchive"
       class="admin-panel admin-form"
       @submit.prevent="reconcileStoredArchive"
     >

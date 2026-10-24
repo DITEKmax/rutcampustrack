@@ -20,6 +20,12 @@ export const adminRoutes: RouteRecordRaw[] = [
     meta: { label: 'Группы', requiredRoles: ['ADMIN'] },
   },
   {
+    path: '/admin/groups/:id/history',
+    name: 'admin-group-history',
+    component: () => import('./GroupHistoryPage.vue'),
+    meta: { label: 'Сохранённые связи группы', requiredRoles: ['ADMIN'], navHidden: true },
+  },
+  {
     path: '/admin/semesters',
     name: 'admin-semesters',
     component: () => import('./SemestersPage.vue'),

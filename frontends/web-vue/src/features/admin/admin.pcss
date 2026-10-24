@@ -56,6 +56,13 @@
   display: grid;
   gap: var(--space-3);
 }
+.admin-picker summary {
+  cursor: pointer;
+  inline-size: fit-content;
+}
+.admin-picker[open] summary {
+  margin-block-end: var(--space-3);
+}
 .admin-page .web-field select,
 .admin-page .web-field textarea {
   inline-size: 100%;

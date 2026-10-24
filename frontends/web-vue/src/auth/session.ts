@@ -21,6 +21,7 @@ const error = ref<string | null>(null)
 const generation = ref(0)
 let refreshFlight: Promise<void> | null = null
 let refreshOwner: number | null = null
+let refreshAbort: AbortController | null = null
 let operation = 0
 const client = createAuthClient({ accessToken: () => token.value })
 
@@ -59,26 +60,44 @@ function acceptSession(value: ProfileSnapshot) {
   phase.value = 'ready'
 }
 
-async function refresh() {
+async function awaitRefresh(signal?: AbortSignal) {
+  const controller = refreshAbort
+  const abort = () => controller?.abort()
+  signal?.addEventListener('abort', abort, { once: true })
+  if (signal?.aborted) abort()
+  try {
+    await refreshFlight
+  } finally {
+    signal?.removeEventListener('abort', abort)
+  }
+}
+
+async function refresh(signal?: AbortSignal) {
   if (refreshFlight) {
-    if (refreshOwner === operation) return refreshFlight
+    if (refreshOwner === operation) return awaitRefresh(signal)
     const caller = operation
     try {
-      await refreshFlight
+      await awaitRefresh(signal)
     } catch {
       /* Reconcile the current operation after an obsolete refresh settles. */
     }
     if (caller !== operation) return
-    return refresh()
+    return refresh(signal)
   }
   const revision = operation
   refreshOwner = revision
+  const controller = new AbortController()
+  refreshAbort = controller
+  const requestClient = createAuthClient({
+    accessToken: () => token.value,
+    fetcher: (input, init) => fetch(input, { ...init, signal: controller.signal }),
+  })
   refreshFlight = (async () => {
     try {
-      const result = await client.refresh()
+      const result = await requestClient.refresh()
       if (revision !== operation) return
       token.value = result.accessToken
-      const current = await client.getSnapshot()
+      const current = await requestClient.getSnapshot()
       if (revision === operation) acceptSession(current)
     } catch (cause) {
       if (revision !== operation) return
@@ -93,8 +112,41 @@ async function refresh() {
     }
   })().finally(() => {
     refreshFlight = null
+    refreshAbort = null
   })
-  return refreshFlight
+  return awaitRefresh(signal)
+}
+
+/** A quiet authority read preserves mounted work unless its admitted owner changes. */
+async function reconcile() {
+  if (busy.value || phase.value !== 'ready' || !snapshot.value) return
+  const revision = operation
+  const owner = generation.value
+  const current = () => revision === operation && owner === generation.value
+  const controller = new AbortController()
+  const deadline = setTimeout(() => controller.abort(), 5000)
+  const requestClient = createAuthClient({
+    accessToken: () => token.value,
+    fetcher: (input, init) =>
+      fetch(input, { ...init, cache: 'no-store', signal: controller.signal }),
+  })
+  try {
+    const value = await requestClient.getSnapshot()
+    if (current()) acceptSession(value)
+  } catch (cause) {
+    if (!current()) return
+    if (cause instanceof AuthRequestError && cause.status === 401) {
+      await refresh(controller.signal)
+    } else {
+      snapshot.value = null
+      generation.value++
+      phase.value = 'error'
+      error.value = message(cause)
+      throw cause
+    }
+  } finally {
+    clearTimeout(deadline)
+  }
 }
 
 async function bootstrap() {
@@ -229,7 +281,8 @@ export const webSession = {
   ),
   accessToken: () => token.value,
   bootstrap,
-  refresh,
+  refresh: () => refresh(),
+  reconcile,
   login,
   loginOtp,
   authenticate,

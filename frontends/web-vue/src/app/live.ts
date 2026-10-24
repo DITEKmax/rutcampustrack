@@ -64,10 +64,42 @@ function connect() {
   })
 }
 
-// Only real transport and browser reconnect signals invalidate role projections.
+// Realtime/browser signals refresh projections; quiet ADMIN checks read authority only.
 watch(webSession.identity, connect, { flush: 'sync', immediate: true })
 window.addEventListener('online', () => notify())
 window.addEventListener('focus', () => notify())
+
+let authorityTimer: ReturnType<typeof setTimeout> | null = null
+let checkingAuthority = false
+function scheduleAuthorityCheck() {
+  if (authorityTimer !== null) clearTimeout(authorityTimer)
+  authorityTimer = null
+  if (
+    checkingAuthority ||
+    webSession.phase.value !== 'ready' ||
+    webSession.snapshot.value?.activeRole !== 'ADMIN' ||
+    (typeof document !== 'undefined' && document.visibilityState === 'hidden')
+  )
+    return
+  authorityTimer = setTimeout(async () => {
+    authorityTimer = null
+    checkingAuthority = true
+    try {
+      await webSession.reconcile()
+    } catch {
+      /* The session exposes unavailable authority; protected content is retired. */
+    } finally {
+      checkingAuthority = false
+      scheduleAuthorityCheck()
+    }
+  }, 5000)
+}
+watch([webSession.identity, webSession.phase], scheduleAuthorityCheck, {
+  flush: 'sync',
+  immediate: true,
+})
+if (typeof document !== 'undefined')
+  document.addEventListener('visibilitychange', scheduleAuthorityCheck)
 
 /** Dirty drafts retain one invalidation until the feature explicitly becomes safe to refresh. */
 export function useWebLiveRefresh(

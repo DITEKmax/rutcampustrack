@@ -1,0 +1,32 @@
+# Teacher Lesson / ManualExcuse — scoped PREP review
+
+**Final PASS по исходникам.** Blocking findings после narrow correction recheck отсутствуют. Root execution GO этим report не выдаётся; actual browser/visual/cleanup acceptance не заявляется.
+
+Reviewed final runner SHA256: `c4c7aba1ec185ec1154eca7fd9513c2625651d7f3f8f16bba7fd2cd480beba25`.
+Exact Root: `f32ff22baaa8d68de03d7606d0799f4586ca17f1`; product base: `d69ac9159e3bfff169c4b2bd25adbcc7d9def771`.
+Scope: external `teacher-lesson-manual-prep/{runner.cjs,PREP.json,QUALIFICATION.md}`; changed Teacher selection и критическое переиспользование Auth/write/cleanup guards из accepted Student lifecycle SHA256 `29afe6fec800057b447b4fe452dddcc40f234da7297706c782b7bd8abe30b8a2`. Полный review неизменного lifecycle и его actual browser case не повторялись.
+
+## Initial finding и correction
+
+**F1 / P2 — CLOSED.** В первоначальном runner `9c5ff89d056813facd7ded825cb3aefe0b5254f6955fbc1f2e51584ae4aad0be`, `runner.cjs:93`, `holdForRoot()` требовал `p.expectedActor === 3`, тогда как `out`, `scopeOf`, normal login qualification и cleanup уже требовали Teacher actor2. При неизвестном Auth/DELETE исходе корректный свежий Root proof для actor2 неизбежно отвергался бы как `ROOT_EXACT_RUN_SCOPE`, оставляя собственный браузер/context в HOLD; для прохождения потребовалась бы ложная actor3 metadata. Это нарушало согласованный exact-own terminal recovery.
+
+Автор сохранил исходный PREP в `prep-revisions/f32-9c5ff89d-before-F1/`. Независимая source-сверка подтвердила его hash9c5 и **единственный runner delta**: строка93 теперь требует actor2. Повторно проверены влияние на `scopeOf`, private scope digest, canonical Teacher2/SID, proof format/runId/revision/harness hash, actual cleanup/preservation assertions и freshness bounds: все согласованы; другие guards не ослаблены. PREP final hash и invocation обновлены согласованно. Дополнительных blocking findings в changed scope не выявлено.
+
+## Подтверждённый source contract
+
+- Normal UI flow совпадает с продуктом: accessible dock `Посещаемость` → первые существующие catalog group/subject через `HeadmanStatsSelect` → первый natural `lesson-open` → первый natural `manual-excuse-open` → native Back. Lesson/ManualExcuse surface IDs, labels и selectors соответствуют компонентам; manual screen сам повторно читает тот же lesson и проверяет existing manual/no-ticket entry. Нет deep-link, component injection, альтернативного lesson search, создания данных или подмены ответа.
+- Требуются real200 catalog/journal/lesson; manual screen дополнительно требует новый lesson200 и natural no-ticket explanation. Шесть PNG ограничены Lesson425light/300dark/768light keyboard Back focus и теми же тремя ManualExcuse представителями. OS media/viewport — единственная явно synthetic граница. Результат остаётся `personallyInspected:false` до отдельного просмотра PNG; OS-only кадры не расширяют manual preference/persistence qualification.
+- Один dedicated empty Chromium context, один normal Teacher selector из public `TEST_USERS` в RAM, максимум один prelogin startup refresh и одна native TEACHER role mutation. Canonical `/api/auth/session` обязан подтвердить actor2, exact SID и role. Сохранены single-invocation `wx` reservation, private0700/handles0600, RAM bearer, SID/owner mismatch HOLD, observer drain и запрет Auth retry/helper/fallback. Public receipt не содержит bearer/cookie/private SID/credential values.
+- Browser route guard разрешает только read methods, bounded normal Auth и ws-ticket; прочие nonread API (включая device preferences) блокируются. Дополнительно блокируются export/export-jobs/attachment/credential endpoint reads. Выбранный flow не нажимает mark/approve/export/download/upload. Existing direct request bypass используется только для canonical session GET и единственного exact-own self-session DELETE.
+- Cleanup сохраняет accepted Student contract с Teacher actor2: capture RAM bearer+SID → canonical exact same owner/SID и единственный наблюдённый SID → seal browser API traffic → durable one-shot intent → один `/api/auth/sessions/{capturedSid}` DELETE →204 → тот же captured old bearer `/api/auth/session` →401. Browser/context закрываются после известного исхода. Unknown outcome не повторяет DELETE/logout/Auth и удерживает sealed context для свежего exact Root proof. `nativeUiLogoutPass:false`, fallback отсутствует.
+- При отсутствии natural lesson/manual-entry packet завершается truthful incomplete STOP с одной exact-own cleanup. Уже созданные три Lesson PNG сохраняются, если manual-entry отсутствует; новый fixture, второй lesson search или новый Auth не появляются. Шесть кадров и completed не объявляются из неполного набора.
+
+## Binding и пределы результата
+
+Root `git rev-parse HEAD` подтвердил exactf32. `git diff d69... f32... -- frontends/mobile-core frontends/pwa-vue frontends/shared tests/e2e/fixtures/users.ts` пуст; tracked working status этих paths пуст. Все16 hashes PREP соответствуют текущим файлам и не изменились после F1. Accepted Student source hash29afe6 подтверждён. `run/private/own-session-and-run-scope.json` отсутствовал: reviewer его не создавал и старые reservation не удалял.
+
+Сохранённый `prep-revisions/85c-3bb49318/runner.cjs` имеет исходный hash `3bb493186d1fc2e27e46d6d7303193e4e1e954f56612cd4717ae78d86ec95005`. Docs-only binding85c→f32 сохраняет product base и source pins; final execution gate требует exactf32 и exactc4c7 hash, текущие tracked source bytes и отдельный Root GO marker до браузера/Auth. Иной HEAD/hash потребует новой явной qualification, а не обхода existing guard.
+
+Конкретный оставшийся риск: наличие manual/no-ticket row в первом natural lesson заранее неизвестно; допустим STOP с Lesson3 и unchecked Manual, а не фиктивный visual PASS. Все реальные PNG, real200, technical DELETE204/same-bearer401 и browser closure ещё требуют фактической проверки после отдельного Root GO. QENV010 для тяжёлого runtime12/one-delete остаётся независимым STOP; этот PREP описывает только один лёгкий browser case и не снимает тот blocker.
+
+Reviewer выполнял только public source reads, textual diffs, SHA256/hash comparisons и read-only Git queries. Runner/source-freeze/test/syntax execution, browser/Auth/API/application network/DB/Docker/build/fixtures — **0**; private values не читались/не выводились. Авторский syntax PASS учтён как авторское evidence, reviewer его не повторял. Создан только этот review report; repo/product/shared docs и runtime source не изменены. Requested `gpt-6.1-sol/high`; actual model telemetry unavailable. No children.

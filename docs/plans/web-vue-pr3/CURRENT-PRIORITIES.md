@@ -35,8 +35,9 @@ MOBILE-FOLLOWUPS и итог PR; PAUSED не объявляется PASS.
   отзыв собственных сессий/временных полномочий; успешные операции не повторять.
 - Group: status/fixtures исправлены,20 boundary cases закрыты. Live8e83 и matching
   Academic/Notification/BFF JAR приняты. Runtime12 v3180f и cohort a23logic review
-  PASS; final source binding57e2d8f8 pins Root85c/productd69/558frontend inputs,
-  узкий binding review PASS. Следующий результат — один UI delete с числовым
+  PASS; historical source binding57e2d8f8 Root85c/productd69/558inputs
+  прошёл узкий review. После source343 PWA stylesheet/import нужны fresh frontend
+  freeze/qualification на окончательном опубликованном HEAD; backend/JARs прежние. Следующий результат — один UI delete с числовым
   preview/паролем/original UUID, шестью заранее открытыми WEB/PWA/TMA views,
   естественным отзывом целевого доступа и сохранением чужих аккаунтов/ролей/групп.
   Auth может оставить SID для другой роли; проверять grants и версию сессии.
@@ -46,10 +47,13 @@ MOBILE-FOLLOWUPS и итог PR; PAUSED не объявляется PASS.
 - Визуал: Journal skeleton/error/retry и WEB Teacher focused live/pagination
   исправлены и независимо приняты наd69; all3 Vue build/strict PASS переиспользуется.
   Student selection→readonly draft6 actual frames на85c закрыли локальную валидацию,
-  пустой фильтр, выбор, focus и переход без отправки. Gallery267/portable267;
-  PWA40 bounded observed consumers и10 not visually checked из50, это не полная
-  готовность40 экранов. TMA controlled host/provider разделены. Следующий лёгкий
-  пакет — недостающие readonly Teacher views; сначала existing evidence, затем PREP.
+  пустой фильтр, выбор, focus и переход без отправки. Gallery273/portable273;
+  PWA41 bounded observed consumers и9 not visually checked из50, включая один
+  неактивный самостоятельный компонент. Это не полная готовность41 экрана. TMA controlled host/provider разделены. TeacherLesson3 принят для показанных состояний; ManualExcuse остался непроверенным
+  из-за отсутствующей строки в первой естественной паре, rawexit1 сохранён. Найден
+  PWA hostlogoutP3: source343 исправляет оформление, поведение побайтно прежнее;
+  after2 runtime ещё впереди. WEB theme lifecycle PREP0583 после F1/F2 correction
+  проверяет недостающий native UI результат; старые deviceHTTP6/PWAhost PASS reused.
 - После настоящего group gate: полное Angular removal по inventory и assembled
   common Nginx (deep links/refresh/static/API/realtime, /app/, /mini-app/,
   auth/updates/WebPush). Angular пока активен; build PASS этот gate не закрывает.

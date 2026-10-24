@@ -52,7 +52,7 @@
     "tma-controlled-unsigned-gate-light-300",
     "tma-controlled-unsigned-gate-dark-300"
   ],
-  "qualifiedAgainstSourceRevision": "85c068210262b611f6f98d18fb9d7bdd8cecea95",
+  "qualifiedAgainstSourceRevision": "f32ff22baaa8d68de03d7606d0799f4586ca17f1",
   "latestMobileSourceDiffFrom77f": [
     "frontends/mobile-core/src/features/admin-groups/admin-group-deletion-client.test.ts",
     "frontends/mobile-core/src/features/admin-groups/admin-groups-client.ts",
@@ -80,7 +80,7 @@
     "frontends/pwa-vue/src/group-live-readmission.test.ts",
     "frontends/tma-vue/src/App.vue"
   ],
-  "nextPacketState": "StudentNEXT6actual closed EXIT0/technicalexactselfDELETE204guest401/browserclosed; no furtherAuth/capture withoutRootGO",
+  "nextPacketState": "TeacherLesson/Manual one-shot closed exit1 naturalmissingmanual; Lesson3 boundedobserved, Manualunchecked; exactown technicalcleanup204/oldBearer401/browserclosed; no furtherAuth/capture withoutRootGO",
   "latestPwaTodayWidthPacket": {
     "qualifiedReceipt": "mobile-next-first-qualified.json",
     "actualState": "day-ended/two-lessons/no-checkin-action",
@@ -100,8 +100,8 @@
     "cleanup": "native204/guest401",
     "notificationConsumer": "notchecked:wronglocator/noinboxrequest"
   },
-  "currentPwaScreensWithObservedBaselines": 40,
-  "currentPwaNotVisuallyCheckedScreens": 10,
+  "currentPwaScreensWithObservedBaselines": 41,
+  "currentPwaNotVisuallyCheckedScreens": 9,
   "originalMappedPwaBaselineScreensUnchanged": 36,
   "latestNotificationConsumer": {
     "observedFrames": 4,
@@ -169,7 +169,7 @@
     "cleanup": "technicalexactownselfDELETE204/samebearer401/browserclosed; notnativeUIlogoutPASS",
     "limits": "No whole-screen/all-state/width/TMA runtime/provider/actioncount claim; localtable scroll interaction notchecked"
   },
-  "reconciliationQualification": "40/50 PWAconsumers have observed bounded baseline slices;10 visuallyunchecked. Historical36/14 mapped-original fields retained; no fullreadiness%/actioncount increase.",
+  "reconciliationQualification": "41/50 PWAconsumers have observed bounded baseline slices;9 visuallyunchecked. Historical36/14 original fields retained; no fullreadiness%/actioncount increase.",
   "studentRequestSelectionConsumer": {
     "revision": "85c068210262b611f6f98d18fb9d7bdd8cecea95",
     "qualifiedReceipt": "student-request-selection-run/qualified-85c.json",
@@ -182,5 +182,26 @@
     "cleanup": "one technicalexactselfDELETE204/samebearer401/browserclosed; NOTnativeUIlogoutPASS",
     "limits": "Realcachedoptions/noforcedloading; no submit/upload/commands/allstatewidth/TMAprovider claim"
   },
-  "currentSourceQualification": "Historical77f inventory remains; newer changed consumers qualified by individual source pins/reviews and current visual sidecars. Empty global mobile delta is not claimed."
+  "teacherLessonConsumer": {
+    "revision": "f32ff22baaa8d68de03d7606d0799f4586ca17f1",
+    "qualifiedReceipt": "teacher-lesson-manual-prep/run/qualified-f32.json",
+    "newFrames": 3,
+    "newPreviouslySourceOnlyConsumers": [
+      "MOBILE-TEACHERLESSON"
+    ],
+    "states": "populatedroster425light/300dark/Backkeyboardfocus768light",
+    "rawPacket": "EXIT1 incomplete due naturalmissingmanual; not productbug; rawpreserved",
+    "manualExcuse": "notchecked; no naturalrow in firstlesson; nofallback/search/fixture/newAuth",
+    "cleanup": "one technicalexactownselfDELETE204/sameoldbearer401/browserclosed; NOTnativeUIlogoutPASS",
+    "finding": "P3 sharedhost Выйти plainbrowserbutton at bottomleft, outside centeredcolumn768; nofixclaim"
+  },
+  "currentSourceQualification": "Historical77f inventory remains; newer changed consumers qualified individually by source pins/reviews/visual sidecars. No global empty mobile delta claim.",
+  "inactiveStandaloneSourceComponents": [
+    {
+      "screen": "MOBILE-TEACHERGROUPSUBJECTS",
+      "countedInInventory": true,
+      "nativeCaptureRequiredNow": false,
+      "qualification": "No emitting native route producer; no separate adopted action requirement found; Stats/Attendance provide group/subject flow."
+    }
+  ]
 }

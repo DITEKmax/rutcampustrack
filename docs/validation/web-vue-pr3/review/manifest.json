@@ -625,5 +625,30 @@
     "path": "group-final-cohort-bindings-RECHECK-57e2d8f8.md",
     "original_path": "/workspace/rct-pr3-review/group-final-cohort/RECHECK-57e2d8f8-bindings.md",
     "sha256": "738e744a0f0a04f0c6d73c1e69681e44a763dd91f97cb1ba490c3592f46dc907"
+  },
+  {
+    "path": "host-logout-source-REVIEW-fed1d627.md",
+    "original_path": "/workspace/rct-pr3-review/host-logout-polish/REVIEW-fed1d627.md",
+    "sha256": "2901e551f74721e57f14d352a71a53f2bc1b022b7e6022a02307938793a98858"
+  },
+  {
+    "path": "teacher-lesson-manual-REVIEW-c4c7aba1.md",
+    "original_path": "/workspace/rct-pr3-review/teacher-lesson-manual/REVIEW-c4c7aba1.md",
+    "sha256": "91e1732c24c10a441fcc7b3ad39e6abe3bed0a1e99189cb3b3b72be24e285311"
+  },
+  {
+    "path": "web-theme-lifecycle-REVIEW-e3063ba5.md",
+    "original_path": "/workspace/rct-pr3-review/web-theme-lifecycle/REVIEW-e3063ba5.md",
+    "sha256": "643b635a8b22b8597935a7adc6cc9209e456fc8bfb61e4963b1fe36899b35272"
+  },
+  {
+    "path": "web-theme-lifecycle-RECHECK-0583ee11.md",
+    "original_path": "/workspace/rct-pr3-review/web-theme-lifecycle/RECHECK-0583ee11.md",
+    "sha256": "5d2b9ed5134c91c972cb6b89e7ac13e49b1c8179c1a3927aa68200fe44404736"
+  },
+  {
+    "path": "web-theme-lifecycle-ASSESS-0583-actual-transport.md",
+    "original_path": "/workspace/rct-pr3-review/web-theme-lifecycle/ASSESS-0583-actual-transport.md",
+    "sha256": "4f29ad97bbdc95e8caaa9dc420111d2f4eb03d29779e646978f9c898076a2e70"
   }
 ]

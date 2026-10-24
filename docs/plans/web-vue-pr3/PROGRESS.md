@@ -271,3 +271,64 @@ byteequal принятомуa23. Binding-only review PASS, runtime STOP QENV010:
 actual5.38GB<7GiB; start/fixtures/UIdelete0. Следующий независимый пакет — readonly
 Teacher consumer gaps, сначала PREP по existing evidence. Angular/commonNginx
 по-прежнему ждут реальный group gate. CI manual/PAUSED, без merge/deploy.
+
+
+## Teacher Lesson — ограниченное наблюдение, Manual остаётся непроверенным
+
+Actualf32: обычная Attendance навигация открыла собственную существующую пару,
+реальные catalog/journal/lesson200. Три лично просмотренных Lesson PNG425light,
+300dark и768light с keyboard Backfocus приняты. Manual row отсутствует в первой
+паре: rawexit1/5.615s и incomplete сохраняются; не искали другую пару и не создавали
+fixtures. Technical exact ownselfDELETE204/sameBearer401, browserclosed, blocked0/
+pageerrors0/noHOLD. [Галерея](../../validation/web-vue-pr3/runtime-gallery/teacher-lesson-observed-20261024/index.html).
+
+PWA41 bounded observed/9not visually checked из50; одно source-only standalone
+TeacherGroupSubjects не имеет native emitting route и отдельного принятого action
+требования, оставлено в inventory с явным ограничением. Не создаём страницу ради
+кадра; реальные group/subject flows доступны через Stats/Attendance.117active и116
+принятых действий неизменны. Gallery273, не процент общей готовности.
+
+Найден PWA hostlogoutP3: buttonclass имелся, stylesheet отсутствовал. Sole writer
+fed1 интегрирован343 после независимого Root source review: только App import и
+36 строк внешнего PCSS/shared semantic tokens. Auth/видимость/handlers прежние.
+Strict+Vite build PASS для import/wiring; окончательный CSS-only hover отдельно
+компилирован actualVitePostCSS. After2 на300dark/root20 и768light ещё впереди;
+это единственная причина нового визуального прогона данного control.
+
+WEB lifecycle PREP потребовал коррекцию F1/F2 (TEST, не ошибка приложения):
+asyncAuthcapture не запирал dependent API, HOLD мог зависнуть на drain. Та же
+категория найдена у старого capture-шаблона PWAafter; вместо повторного копирования
+используется один принятый staged durable/barrier/quiesce pattern. Старые actual
+knowncleanup результаты не переигрываются.0583 WEB correction ждёт narrowreview,
+PWAafter адаптирует тот же pattern; actual новых сценариев пока0.
+
+Исторический binding57 прошёл review для85c/d69; после нового PWA presentation
+source343 нужен fresh frontend freeze/currentRootGO. Backend1530/JARs прежние,
+их проверки/build не повторяются. Runtime12start/fixtures/UIdelete0; QENV010 pending,
+actual5.378GB<7GiB. Angular/commonNginx остаются следующими gates.
+
+
+## WEB theme3 — наблюдения приняты, relogin остаётся отдельным критерием
+
+Actual0583/Root343 подтвердил native manual light при OSdark, system liveOS light→dark
+и manualdark при OSlight; real CAS200 revisions1/2/3. Three personally inspected
+1440 frames с явными initial-loading/skeleton ограничениями. Native logout204
+подтверждён, но общий TEST requestfailed classifier пометил transport failure как
+unknownAuth; точный failed endpoint/reason из raw не восстановить. Secondlogin0,
+helperAuth0. RawEXIT1 и исходный receipt сохранены.
+
+Fresh independent READONLY SQL подтвердил exactsoleOwnStudent3SIDrevoked и прежние
+global identity/grants/profile metadata. Preservation других sessions основан на
+строгом reviewed own-request ledger, не на выдуманном historical SQLdigestcomparison.
+Rootproof09ff/TTY8063 closedexit1/browserclosed. Нет pending cleanup или новогоAuth.
+[Theme3](../../validation/web-vue-pr3/runtime-gallery/web-theme-observed-20261024/index.html) ·
+[Rootpost](../../validation/web-vue-pr3/checkpoints/remaining-admin-20261024/web-theme0583-independent-terminal.json).
+
+Гипотеза изменена по новому факту: classifier должен отличать readonly/background
+и ACKterminal от unresolved mutations/issuance/canonical/fsync. Старый devicecontext
+после quiesce закрыт, хранится лишь необратимый cookiehash. Для недостающего
+пользовательского результата нужен один fresh-device suffix darkCAS1→logout204/
+oldbearer401→normalrelogin/actualGETdark same revision/noPUT→oneWT04/owncleanup;
+успешные light/system/liveOS и первые3 кадра не повторяются. PWA after2 наследует
+тот же исправленный pattern, не старый шаблон. Оба исполнения пока не разрешены.
+Gallery273/portable273, PWA41bounded/9unchecked inventory,117actions неизменны.

@@ -1,13 +1,13 @@
 {
   "kind": "portable-gallery-data-only-refresh",
   "result": "PASS local metadata/image hashes/paths only",
-  "imageCount": 267,
+  "imageCount": 273,
   "old204ImagePin": "08a3d1aa45b23967168589afa1c2d7ff083e1de9",
-  "new63ImageSource": "existing PR branch/permanent filenames/SHA256",
-  "artifactSha256": "6034963df9686db33f3a7898b501fad782355ecb0bf34b8577f80dbc583c673b",
+  "artifactSha256": "99fea4a0981bc74fc8b40fb6f2c3d2168b2aa96928d6622322a752990a36ab2c",
   "priorBrowserSmoke": "portable-check-200-51e46f715.json",
   "priorDataOnlyRefresh": "portable-check-204-historical.json",
   "renderLogicUnchanged": true,
-  "browserNotRerun": "Only data/count/text changed; renderer byte-equal to85c and previous browser smoke reused. No new267-browser or external HTTP availability claim.",
-  "functionalActionsAdded": 0
+  "browserNotRerun": "Only data/count/text changed; renderer byte-equal to85c and previous browser smoke reused. No new273-browser or external HTTP availability claim.",
+  "functionalActionsAdded": 0,
+  "new69ImageSource": "existing PR branch/permanent filenames/SHA256"
 }

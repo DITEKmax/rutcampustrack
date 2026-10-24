@@ -1,0 +1,63 @@
+{
+  "state": "COMMITTED_SOURCE_READY_WAIT_ROOT_INTEGRATION_AND_BOUNDED_VISUAL_GO",
+  "worktree": "/workspace/rct-worktrees/theme-foundation",
+  "branch": "codex/pr3-mobile-host-polish",
+  "commit": "fed1d627b0a6b09a1b4d66d6bbfacf1ccc35afa1",
+  "base": "2d6bbe2798df4039a85780e662da0cd7de2c7432",
+  "rootEquivalentBefore": "f32ff22baaa8d68de03d7606d0799f4586ca17f1 mobile/PWA/shared/TMA sources equal before edit",
+  "previousBranchpointPreserved": true,
+  "trackedClean": true,
+  "untrackedOnly": "Four preexisting owned node_modules symlinks retained",
+  "goal": "Existing PWA host logout is styled as an accessible semantic danger button aligned with centered mobile content at narrow/wide viewport; available role visibility and logout behavior retained",
+  "appDelta": "One stylesheet import only; complete prior App text including template/auth/visibility/handlers byte-equivalent when that line is removed",
+  "files": [
+    {
+      "path": "frontends/pwa-vue/src/App.vue",
+      "kind": "modified",
+      "sha256": "adb8bc300fdf820b8b78ee0a90d5253fc521977fa5dbf5f092bed080e785ec41"
+    },
+    {
+      "path": "frontends/pwa-vue/src/pwa-host.pcss",
+      "kind": "created",
+      "sha256": "eb9ec756acbe127d9258b3187a807139215dbcb11fda017e424e30f2061e2b69"
+    }
+  ],
+  "deleted": [],
+  "style": "Reuse existing content max/spacing/min44touch/fullradius/dangerfill/onfill/focus/disabled semantic tokens; calc widths align with innerTeacher/Profile column; remtoken sizes; bottom safearea+dockspace; hover insetoutline retains normalfill contrast; press hairline translation",
+  "verification": {
+    "strictAndBuild": {
+      "command": "npm run build --workspace @rct/pwa-vue",
+      "result": "PASS once: vue-tsc --noEmit and Vite production build",
+      "log": "/workspace/rct-pr3-runtime/visual-readiness-20261024/host-logout-polish/pwa-build.log",
+      "limit": "Build covers final App import/wiring and original new PCSS. One subsequent CSS-only hover change replaces lowcontrast danger-hover fill with inset semantic hairline; finalCSS separately passes actual Vite PostCSS processing, no second fullbuild needed."
+    },
+    "format": {
+      "result": "PASS final scoped App.vue+pwa-host.pcss",
+      "log": "/workspace/rct-pr3-runtime/visual-readiness-20261024/host-logout-polish/format-final-hover.log"
+    },
+    "postcss": {
+      "result": "PASS final Vite-resolved preprocessCSS import/mixin/nativefocus expansion",
+      "log": "/workspace/rct-pr3-runtime/visual-readiness-20261024/host-logout-polish/postcss-final.log"
+    },
+    "diffCheck": "PASS",
+    "byteGuard": "PASS entire App baseline restored by removing the one added import",
+    "testsAdded": 0,
+    "browserAuthRuns": 0
+  },
+  "retainedBeforeImages": [
+    "/workspace/rct-pr3-runtime/visual-readiness-20261024/teacher-lesson-manual-prep/run/PWA-MOBILE-TEACHERLESSON__MB-TLM-01-real-first-lesson-roster__light__425__f32ff22ba.png",
+    "/workspace/rct-pr3-runtime/visual-readiness-20261024/teacher-lesson-manual-prep/run/PWA-MOBILE-TEACHERLESSON__MB-TLM-02-same-real-lesson-roster__dark__300__f32ff22ba.png",
+    "/workspace/rct-pr3-runtime/visual-readiness-20261024/teacher-lesson-manual-prep/run/PWA-MOBILE-TEACHERLESSON__MB-TLM-03-same-real-lesson-back-keyboard-focus__light__768__f32ff22ba.png"
+  ],
+  "retainedBehaviorEvidence": "/workspace/rct-pr3-runtime/visual-readiness-20261024/teacher-lesson-manual-prep/run/qualified-f32.json",
+  "retainedBehaviorLimits": "Lesson3/readAPI200 and naturalmanualmissing/rawexit1+technicalexactowncleanup reused; not rerun",
+  "pending": "Separate Rootintegration, review if assigned, and bounded browserGO for changed hostcontrol visual/focus/disabled300/768 bothselectedthemes. No AFTERPNG/nativeAuth claim now.",
+  "risks": [
+    "Host logout remains outside feature-owned shell by existing architecture, but class controls centeredwidth and dock-safe bottomspacing.",
+    "No actual afterimage until separateRootGO; screen readiness not claimed."
+  ],
+  "skillDiscovery": "rutcampustrack-design unavailable in accessible .agent/.agents roots and executor skillscatalog empty; canonical frontend instructions, Themecontract, shared foundation and existing Profiledangerbutton pattern read directly; no installation",
+  "modelRequested": "gpt-6.1-sol/high",
+  "runtimeTelemetry": "unavailable",
+  "createdAtUtc": "2026-10-24T23:16:06.138151+00:00"
+}

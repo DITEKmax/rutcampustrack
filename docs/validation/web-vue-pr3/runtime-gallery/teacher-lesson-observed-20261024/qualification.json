@@ -1,0 +1,205 @@
+{
+  "revision": "f32ff22baaa8d68de03d7606d0799f4586ca17f1",
+  "sourceBase": "d69ac9159e3bfff169c4b2bd25adbcc7d9def771",
+  "runnerSha256": "c4c7aba1ec185ec1154eca7fd9513c2625651d7f3f8f16bba7fd2cd480beba25",
+  "rawReceipt": "receipt.json",
+  "rawReceiptSha256": "d7daba9d235de9175e42b3370d6c2e5dff1f680cc0b92873b69ad4e5147e4f64",
+  "rawOutcome": "EXIT1 completedfalse/captureCompletefalse preserved; expected natural missing manual entry, not product failure. personallyInspected:false raw values preserved; sidecar records actual personal inspection of all3 PNG.",
+  "errorCategory": "NATURAL_FIXTURE_PRECONDITION_ABSENT_NO_PRODUCT_BUG",
+  "elapsedSeconds": 5.615,
+  "criteria": {
+    "TEACHER-LESSON-READ": {
+      "status": "READY_BOUNDED_POPULATED_ROSTER_SELECTED_WIDTHS_THEMES",
+      "evidence": "Normal native Attendance → first authorized group/subject → first existing lesson; real catalog200/journal200/lesson200;3 original PNG personally inspected/hashmatched."
+    },
+    "TEACHER-LESSON-KEYBOARD": {
+      "status": "READY_BOUNDED_BACK_FOCUS_768_LIGHT",
+      "evidence": "Keyboard Shift+Tab/Tab returned visible focus to native Back. Back action from manual screen not reached."
+    },
+    "TEACHER-MANUAL-EXCUSE-READ": {
+      "status": "NOT_CHECKED_NATURAL_ENTRY_ABSENT",
+      "evidence": "First loaded natural roster contains no manual-excuse-open row; no alternate lesson/search/fixtures/APIwrites/newAuth attempted."
+    }
+  },
+  "cleanup": {
+    "method": "TECHNICAL_NORMAL_AUTH_API_SELF_SESSION_DELETE",
+    "nativeUiLogoutPass": false,
+    "expectedActorMatched": true,
+    "exactSidMatched": true,
+    "selfDeleteForwarded": 1,
+    "selfDeleteStatus": 204,
+    "guestBearerStatus": 401,
+    "confirmed": true,
+    "fallbackUsed": false,
+    "intent": "RETURNED",
+    "forwardStartedAtUtc": "2026-10-24T23:09:32.419Z"
+  },
+  "browserClosed": true,
+  "sourceUnchanged": true,
+  "sourcePins": [
+    {
+      "path": "frontends/mobile-core/src/features/teacher/TeacherAttendanceScreen.vue",
+      "sha256": "fd02be2694f582dc76401c9ee74bf9b6e1fae1b3ea236cc02b21594e47dd5b8e"
+    },
+    {
+      "path": "frontends/mobile-core/src/features/teacher/TeacherLessonScreen.vue",
+      "sha256": "8ec6ba68cbad2c1414492fdfbe28890bf25a0d9e6fd5f57e3b8dc5a2319466c5"
+    },
+    {
+      "path": "frontends/mobile-core/src/features/teacher/TeacherManualExcuseScreen.vue",
+      "sha256": "f8ff31d4cd5cd8bd7b8f9187e99ff8f46868381e5a0114ebcf8236be413da9b3"
+    },
+    {
+      "path": "frontends/mobile-core/src/features/teacher/TeacherRoster.vue",
+      "sha256": "5f25ef92940cbf7a33f7ab20e3bd8809fb7f9df8e45e66ec821910135362b59a"
+    },
+    {
+      "path": "frontends/mobile-core/src/features/teacher/TeacherLessonCard.vue",
+      "sha256": "df884dfc6e308f8591f4883b657c7102b1cfc0a17c36358943ff25b4311e72c0"
+    },
+    {
+      "path": "frontends/mobile-core/src/features/teacher/TeacherLessonExportControl.vue",
+      "sha256": "d0bc85bae45275c10167f61703a20e73adac3b57fa0e14d17794a60e03aaf87b"
+    },
+    {
+      "path": "frontends/mobile-core/src/features/teacher/teacher-manual-excuse.ts",
+      "sha256": "0bb56f8a8e69691b63a4298f95dccd60b7a8f87bb6ae8a8b561212de2ec63f8b"
+    },
+    {
+      "path": "frontends/mobile-core/src/features/teacher/teacher-client.ts",
+      "sha256": "98d397fa8c35b8c242e3f015884d71dd01c1ab9696ec8f1dd2f33a85952b8475"
+    },
+    {
+      "path": "frontends/mobile-core/src/features/teacher/teacher-screen.pcss",
+      "sha256": "374bb76e945449100f4af9afdef66dd785a7283501bd7b0e9f4ab7ded162f9b3"
+    },
+    {
+      "path": "frontends/mobile-core/src/features/teacher/teacher-lesson-r3.pcss",
+      "sha256": "da210e450482146d5f12138a938efc5a9cb6191172389b4a5b2e1d84c1147e65"
+    },
+    {
+      "path": "frontends/mobile-core/src/shared/components/TeacherFeatureOwner.vue",
+      "sha256": "5f2575335e5f90da9c40cc5de3c15bf1902a270c04f2c99ad4ae3b7be1cb756e"
+    },
+    {
+      "path": "frontends/mobile-core/src/shared/mobile-navigation-items.ts",
+      "sha256": "bfc9f914125777f1a4e333a4cf2537df9a0a840f961c75ecf424995fa8d31166"
+    },
+    {
+      "path": "frontends/pwa-vue/src/App.vue",
+      "sha256": "2b23659d00e5184392e439aa0b839c1c18f6a083d2973dbc7d044db0be740ae2"
+    },
+    {
+      "path": "frontends/pwa-vue/src/auth.ts",
+      "sha256": "03d12164cfeaaec68d3fc8e5410ebe7692ebed7f3ea8eeeace7c53239532abd2"
+    },
+    {
+      "path": "frontends/pwa-vue/src/auth-client.ts",
+      "sha256": "1c1a2902301c83ce1937e97ab3d2cb53e953faf5b91765f5b080effd6becf846"
+    },
+    {
+      "path": "tests/e2e/fixtures/users.ts",
+      "sha256": "34b26d13a614a6b60872fa1a007f2d3ead810733d610401b141f9b26ffd2cb2f"
+    }
+  ],
+  "samples": [
+    {
+      "id": "PWA-MOBILE-TEACHERLESSON__MB-TLM-01-real-first-lesson-roster__light__425__f32ff22ba",
+      "consumer": "PWA",
+      "screen": "MOBILE-TEACHERLESSON",
+      "state": "real-first-lesson-roster",
+      "file": "PWA-MOBILE-TEACHERLESSON__MB-TLM-01-real-first-lesson-roster__light__425__f32ff22ba.png",
+      "sha256": "a19b9913c1fa1f786e60a1c1210077e108c4b2a947e399f4f07ccad6b9deac28",
+      "theme": "light",
+      "width": 425,
+      "rootFont": "16px",
+      "scrollWidth": 425,
+      "focusVisible": false,
+      "revision": "f32ff22baaa8d68de03d7606d0799f4586ca17f1",
+      "personallyInspected": true,
+      "caseId": "MB-TLM-01",
+      "image": "PWA-MOBILE-TEACHERLESSON__MB-TLM-01-real-first-lesson-roster__light__425__f32ff22ba.png",
+      "height": 1000,
+      "pngWidth": 425,
+      "personallyViewed": true,
+      "inspection": "425light: complete lesson/date/time/type/group/room/status card and populated ten-row roster readable; long synthetic names wrap, status icons remain separate; scrollWidth425.",
+      "criterion": "TEACHER-LESSON-READ",
+      "captureKind": "new actual PWA read-only consumer slice",
+      "synthetic": true,
+      "syntheticCause": "Existing synthetic stand fixture data; OS media preference and viewport only. Real Auth/API unmodified; no manual device preference writes; no response mocks."
+    },
+    {
+      "id": "PWA-MOBILE-TEACHERLESSON__MB-TLM-02-same-real-lesson-roster__dark__300__f32ff22ba",
+      "consumer": "PWA",
+      "screen": "MOBILE-TEACHERLESSON",
+      "state": "same-real-lesson-roster",
+      "file": "PWA-MOBILE-TEACHERLESSON__MB-TLM-02-same-real-lesson-roster__dark__300__f32ff22ba.png",
+      "sha256": "3081d6870f8e63c159b477d41503c5a5782a504ff349d118ff69adb64f1681c8",
+      "theme": "dark",
+      "width": 300,
+      "rootFont": "16px",
+      "scrollWidth": 300,
+      "focusVisible": false,
+      "revision": "f32ff22baaa8d68de03d7606d0799f4586ca17f1",
+      "personallyInspected": true,
+      "caseId": "MB-TLM-02",
+      "image": "PWA-MOBILE-TEACHERLESSON__MB-TLM-02-same-real-lesson-roster__dark__300__f32ff22ba.png",
+      "height": 1128,
+      "pngWidth": 300,
+      "personallyViewed": true,
+      "inspection": "300dark: date/time wraps across lines but remains legible; lesson metadata and ten roster rows remain within viewport; status symbols remain distinct; scrollWidth300.",
+      "criterion": "TEACHER-LESSON-READ",
+      "captureKind": "new actual PWA read-only consumer slice",
+      "synthetic": true,
+      "syntheticCause": "Existing synthetic stand fixture data; OS media preference and viewport only. Real Auth/API unmodified; no manual device preference writes; no response mocks."
+    },
+    {
+      "id": "PWA-MOBILE-TEACHERLESSON__MB-TLM-03-same-real-lesson-back-keyboard-focus__light__768__f32ff22ba",
+      "consumer": "PWA",
+      "screen": "MOBILE-TEACHERLESSON",
+      "state": "same-real-lesson-back-keyboard-focus",
+      "file": "PWA-MOBILE-TEACHERLESSON__MB-TLM-03-same-real-lesson-back-keyboard-focus__light__768__f32ff22ba.png",
+      "sha256": "cb515ad6f48564c4f4ced9393e45b5490838a50379cf02e95cb8afde2f926a36",
+      "theme": "light",
+      "width": 768,
+      "rootFont": "16px",
+      "scrollWidth": 768,
+      "focusVisible": true,
+      "revision": "f32ff22baaa8d68de03d7606d0799f4586ca17f1",
+      "personallyInspected": true,
+      "caseId": "MB-TLM-03",
+      "image": "PWA-MOBILE-TEACHERLESSON__MB-TLM-03-same-real-lesson-back-keyboard-focus__light__768__f32ff22ba.png",
+      "height": 1000,
+      "pngWidth": 768,
+      "personallyViewed": true,
+      "inspection": "768light: centered bounded mobile content; long names wrap; Back has visible purple keyboard focus ring; scrollWidth768.",
+      "criterion": "TEACHER-LESSON-READ",
+      "captureKind": "new actual PWA read-only consumer slice",
+      "synthetic": true,
+      "syntheticCause": "Existing synthetic stand fixture data; OS media preference and viewport only. Real Auth/API unmodified; no manual device preference writes; no response mocks."
+    }
+  ],
+  "newImages": 3,
+  "newPreviouslySourceOnlyPwaConsumers": 1,
+  "functionalActionsAdded": 0,
+  "wholePacketComplete": false,
+  "newAuthAfterThisRunAllowed": false,
+  "syntheticApiResponses": false,
+  "blockedWrites": 0,
+  "pageErrors": 0,
+  "limits": [
+    "Only first existing lesson populated readonly roster; no empty/loading/error/retry/manual/ticket/export/attachment/marks variants.",
+    "No manual-excuse PNG or native Back from that missing screen.",
+    "OS-theme PNG do not expand manual choice/system/persistence qualification.",
+    "No TMA runtime/provider, whole-screen/all-state/width, root20, new functional action or overall PR readiness claim.",
+    "P3 observation: existing shared host Выйти appears as plain browser button at bottom-left of fullpage, outside centered content at768; source/ownership outside Lesson packet, not fixed here."
+  ],
+  "resource": {
+    "postRunDiskAvailableBytes": 5378248704,
+    "browserlightOnly": true,
+    "runtime12GateUnchanged": true
+  },
+  "modelRequested": "gpt-6.1-sol/high",
+  "runtimeTelemetry": "unavailable",
+  "qualifiedAtUtc": "2026-10-24T23:10:46.914781+00:00"
+}

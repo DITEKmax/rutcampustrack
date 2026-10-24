@@ -17,6 +17,7 @@ import {
   type FrozenRequestDecision,
 } from '../../../../mobile-core/src/features/headman-requests/request-decision';
 import HeadmanPage from './HeadmanPage.vue';
+import { restoreRequestDecision, serializeRequestDecision } from './request-decision-state';
 import {
   useHeadmanFeature,
   dateLabel,
@@ -47,6 +48,14 @@ const excluded = ref<readonly string[]>([]),
   reason = ref(''),
   pending = shallowRef<FrozenRequestDecision | null>(null);
 const proposed = ref<'APPROVED' | 'REJECTED' | null>(null);
+const decisionStorage = `rct:web:headman:request-decision:${webSession.identity.value}`;
+let restored = false;
+function persistDecision(value: FrozenRequestDecision | null) {
+  feature.assertCurrent();
+  if (value) sessionStorage.setItem(decisionStorage, serializeRequestDecision(value));
+  else sessionStorage.removeItem(decisionStorage);
+  pending.value = value;
+}
 const statuses = {
   PENDING: 'На рассмотрении',
   APPROVED: 'Одобрена',
@@ -78,6 +87,11 @@ async function load() {
   try {
     await feature.initialize();
     if (!feature.allowed('MANAGE_EXCUSES')) throw new Error('Нет права работы с заявками группы.');
+    if (!restored) {
+      const saved = sessionStorage.getItem(decisionStorage);
+      if (saved) pending.value = restoreRequestDecision(saved, feature.requests);
+      restored = true;
+    }
     const result = await feature.requests.list({
       bucket: filters.bucket,
       type: filters.type || null,
@@ -126,33 +140,37 @@ async function decide() {
   if (!detail.value || !proposed.value || busy.value || pending.value || !decisionAvailable.value)
     return;
   try {
-    pending.value = freezeRequestDecision(
-      feature.requests,
-      detail.value,
-      proposed.value,
-      reason.value,
-      proposed.value === 'APPROVED' ? excluded.value : [],
+    persistDecision(
+      freezeRequestDecision(
+        feature.requests,
+        detail.value,
+        proposed.value,
+        reason.value,
+        proposed.value === 'APPROVED' ? excluded.value : [],
+      ),
     );
   } catch (cause) {
     error.value = message(cause);
     return;
   }
+  const operation = pending.value;
+  if (!operation) return;
   busy.value = true;
   error.value = null;
   try {
-    const outcome = await sendRequestDecision(pending.value, false, () =>
+    const outcome = await sendRequestDecision(operation, false, () =>
       feature.writable('MANAGE_EXCUSES'),
     );
     feature.assertCurrent();
     if (outcome.status === 'done' || outcome.status === 'conflict') {
       detail.value = outcome.detail;
-      pending.value = null;
+      persistDecision(null);
       proposed.value = null;
       if (outcome.status === 'conflict')
         error.value = 'Заявка уже обработана другим решением. Показано текущее состояние.';
       await load();
     } else if (outcome.status === 'rejected') {
-      pending.value = null;
+      persistDecision(null);
       error.value = message(outcome.cause);
     } else
       error.value =
@@ -171,7 +189,7 @@ async function reconcile() {
     feature.assertCurrent();
     if (outcome?.status === 'done' || outcome?.status === 'conflict') {
       detail.value = outcome.detail;
-      pending.value = null;
+      persistDecision(null);
       proposed.value = null;
       error.value =
         outcome.status === 'conflict'
@@ -209,6 +227,17 @@ useWebLiveRefresh(load, {
     :error="error"
     @reload="load"
   >
+    <p
+      v-if="pending"
+      class="web-notice"
+      >Сохранено исходное решение по заявке. Повторная отправка заблокирована.
+      <button
+        class="web-button"
+        :disabled="busy"
+        @click="reconcile"
+        >Проверить результат</button
+      >
+    </p>
     <form
       class="headman-panel headman-toolbar"
       @submit.prevent="
@@ -391,18 +420,8 @@ useWebLiveRefresh(load, {
           >Обновить заявку</button
         >
       </p>
-      <p
-        v-if="pending"
-        class="web-notice"
-        >Результат проверяется по сохранённому решению.<button
-          class="web-button"
-          :disabled="busy"
-          @click="reconcile"
-          >Проверить результат</button
-        ></p
-      >
       <form
-        v-else-if="decisionAvailable"
+        v-if="decisionAvailable && !pending"
         class="web-stack"
         @submit.prevent="decide"
         ><label class="web-field"

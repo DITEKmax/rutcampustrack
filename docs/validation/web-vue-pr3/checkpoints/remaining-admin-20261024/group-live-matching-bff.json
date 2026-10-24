@@ -1,0 +1,30 @@
+{
+  "at": "2026-10-24T21:23:07.080888+00:00",
+  "nativeBuild": "BUILD SUCCESSFUL in34s; one Gradle build only",
+  "nativeBuildExit": 0,
+  "sourceCommit": "8e83a2d9105af75d015d6df7a8888eab330f43dc",
+  "backendRuntimeFiles": 1530,
+  "backendRuntimeFingerprintBeforeAfter": "31a5aa9bab8084b707d48652d9ab78bb019995de758667ab3efb907cca0b5028",
+  "rootEquivalentHeadAtStart": "cab3eed183d9453a6bfcc17ca12149d1894f39ba",
+  "rootInputsByteEqualAtStart": true,
+  "path": "/workspace/rct-pr3-runtime/group-live-delivery-20261024/boot-jar-mobile-bff-8e83/jars/mobile-bff/mobile-bff-app-0.1.0.jar",
+  "bytes": 57520376,
+  "sha256": "9d7677a5b522adbc37e41d9590a937dd16645bafa12daa021f76f1cf133104fc",
+  "startClass": "ru.rutcampustrack.mobilebff.MobileBffApplication",
+  "classNamesDerivedFromCommittedProtoJavaPackage": true,
+  "apiContractTeacherApiPresent": true,
+  "oldJarsAllPreserved": true,
+  "oldJarCount": 22,
+  "testsRun": 0,
+  "dockerCommands": 0,
+  "serviceOrDbActions": 0,
+  "installedOrStarted": false,
+  "freeAfter": 5438451712,
+  "resourceQualification": "Fresh admission and live250ms2.5GiB guard executed in original builder; native exit0/no guard-stop marker. Exact minimum/sample series unavailable: original external artifact verifier raised before persisting its in-memory samples. No build repeated to manufacture samples. pre.json + current free + cgroup noOOM preserved.",
+  "verifierCorrection": "TEST-only repeated stale-guessed FQN cause; first failure retained in wrapper-verifier-failure.json. Canonical generated FQN now derived from actual committed proto java_package/service declarations, not guessed packages; read-only verification then authorized existing-file atomic handoff, no Gradle retry.",
+  "rootIndependentEquality": {
+    "files": 1530,
+    "allEqual": true,
+    "rootProduct": "cab3eed183d9453a6bfcc17ca12149d1894f39ba"
+  }
+}

@@ -1,59 +1,68 @@
 # CURRENT — existing Goal PR3, 2026-10-24
 
-Owner GO active, only `codex/web-vue-redesign` / existing PR3. Root source a851d5cf7;
-published checkpoint888667e32. Root docs/map/gallery/Git only; product writers
-use separate worktrees. Children explicitly gpt-6.1-sol/high/fork:none; actual
-model telemetry unavailable. CI/Coverage/Security/OpenAPI manual/PAUSED, not PASS.
-No main/newPR/merge/deploy/production/global Docker cleanup.
+Owner GO active; only codex/web-vue-redesign / existing PR3. Root product d69ac9159,
+last remote verifiedcab3eed18. Root docs/Git; children explicit gpt-6.1-sol/high,
+actual model telemetry unavailable. No main/merge/deploy/production/globalcleanup.
+CI/Coverage/Security/OpenAPI manual/PAUSED, not PASS.
 
-Accepted actions implemented116/117, locally verified116/117; ADMIN33/34 both.
-Visual33 web views +50 mobile Screen components, themes/states/adaptive and
-Angular/build are separate axes, without an overall PR percentage.
-[Priorities](../../docs/plans/web-vue-pr3/CURRENT-PRIORITIES.md).
+Actions accepted116/117 implemented,116/117 locally verified; ADMIN33/34 both.
+Visual33web+50mobileScreen, themes/states/adaptive and Angular/build separate axes,
+no overall PR readiness percentage.117 active scope preserved.
 
-Password CLOSED: c586+2d integrated; native self-known5→6 and lostACK6→7 PASS,
-successor normal login isolates the old receipt. Independent post9598 confirms
-Cred7/RV8/Binding1/Aca8/profile6unassigned, ACTIVE/STUDENTgroup1, no pending;
-current2target+1seed own sessions revoked, other17/core/20grants preserved.
-NEVER replay obsolete Cred5/profile4 commands or cleanup.
+CLOSED password: self-known5→6/lostACK6→7/successor isolation; post9598 current
+Cred7/RV8/Aca8/profile6unassigned, ACTIVE/STUDENTgroup1, no pending, all3own sessions
+revoked, other17/core/20grants preserved. NEVER replay oldCred5/profile4 cleanup.
+CLOSED LIMITED: natural visiblepage withdrawal3708ms, oldADMIN/session403, normal
+Teacher/profile200. Rawdriverexit1=TESTenumgap retained. Postc7ee isolatedTeacher2
+profile8unassigned/RV9/catalog22/Aca9/Cred1/Binding1, all4ownSIDsrevoked/foreigndata
+unchanged. No more grants/passwords/cleanup needed. Map-delete/Auth gap also closed.
 
-LIMITED CLOSED: v3 original grant6→7 and revoke7→8 SUCCEEDED. Visible Groups
-page naturally withdrew private DOM in3708ms after revoke ACK; actual old-ADMIN
-GET/session403. Native driver exit1 retained: TEST expected401/200 enum gap,
-not a product failure. Teacher normal profile200. One-shot cleanup completed;
-independent postc7ee: profile8unassigned/RV9/catalog22/Aca9/Cred1/Binding1,
-TEACHER/account and other data preserved, all4 exact own sessions revoked.
-No further ACL commands, cleanup or password generation are needed.
+Group backend64f/clientae546/Vuef67/retirement3e174 integrated.20 boundary cases
+CLOSED(13AcademicAuth+3SchedulePG+4AttendanceMongo). Live8e83 integratedb039,
+55client/6Notificationunit/2realPG/1realMongo PASS; successful unchanged18 reused.
+Matching8e83 ACA829ce167/Notif97d9d177/BFF9d7677a5 ready; reuse64fAuth/Sched/Attend.
+Root1530 runtimeinputs31a5 byteequal, old artifacts preserved. Actualdelete0.
+Auth COMMIT unselects target-grant sessions/sessionVersion+1; it need not revoke
+entireSID. Other roles/accounts remain. Do not confuse oldJWT401 with SIDrevocation.
 
-Group64f integrated plus ae546 client/f67 UI and retirement3e174. All20 boundary
-cases CLOSED (13 Academic/Auth HTTP/PG/Redis,3 Schedule PG,4 Attendance MongoRS).
-Four matching64f bootJARs preserved. Whole UI delete/open access NOT verified.
-Confirmed APP live gap corrected by8e83, integratedb039:25files full review + F1
-recheck PASS;55 client cases,6 Notification units,2 real Academic PG/Auth and1
-real Mongo transaction PASS. Root WEB build at e715 PASS; integrated three-client
-build at a851 PASS (strict vue-tsc included), no workflow execution. Before runtime: qualify shared-schema packaging/old consumers,
-build matching artifacts, extend existing isolated realm with real Notification,
-review/admit one UI delete and natural open WEB/PWA/TMA withdrawal/preservation.
+Latest UI fixes independently reviewed/integrated: mobileJournal981+2d→ba3,
+WEBfocus58+fb→d69. Local403/503 no persistent hostduplicate; platform401/403 refresh
+rejection reaches existinghostclassifier. Journal-shaped skeleton. WEBbackground
+catalog refresh runs whilefocused/dirty, keepscontrolscope/draft37/unknownexport;
+loadedJournal60-window preserved atomically/cursor90, late-owner fences retained.
+Mobile15behaviorPASS, Web15distinct withcausalreuse; Root all3Vuebuild+strictPASS.
+Root11productfile byteequal authorfinals. No backendbuild/test repeated for UI.
 
-Visual: four notifications each~10s/history and three role skeleton slices accepted.
-Gallery249 PNG staged (portable204 historical snapshot). PWA12 Today+4 history,
-narrow notification title after3, controlled TMA5 and compact navigation after5
-qualified; own native logout204/guest401. Synthetic Telegram host/theme/CI signer
-explicit; native Telegram provider NOT verified. Profile300 natural caption-only
-loading confirmed; c35 skeleton reviewedPASS/integrateda851. Two bounded held-read
-after shots next. No mass E2E or overall visual PASS.
+Visual gallery261PNG +portable261 metadata (old204 retained pinned, new57 hashed).
+PWA300light/TMA300dark Profileloading+realrelease200 accepted. ProfilePWArawFAIL
+TESTBearer-vs-cookie gate preserved; ownhelper+post95d933+92079exit2 closed.
+TeacherJournal6beforeframes found bareloading/staleglobalwarning; rawcookiefilter
+FAIL preserved. Ownhelper+postf137+Rootproof closed64379exit1. No live heldbrowser.
+After4d69 actualPASS: skeleton425light/local503/realretry200425light+300dark, exact
+ownselfDELETE204/oldbearer401/browserclosed. This is technical session cleanup,
+not a repeated nativeUIlogout claim. NativeTelegram provider remains unknown;
+controlledSDK/host/HMAC labelled. NextStudent request-selection6 PREP only.
 
-Runtime: main13/admin7 preserved, clock5/shipping5 intentionally stopped;30 old
-containers retained. ONEHEAVY released;16GiB/4CPU. Keep2GiB hard disk floor,
-2.5GiB early guard/250ms and actual per-phase forecasts. Bitnami Mongo7 cached,
-explicit replica-set adapter/no pull. No snapshot/DB copy/global cleanup.
+READY runtimePREP12 v3-auth-handles hash180fecc3,31publicfiles/6JARs/1530source.
+FullreviewAAA2P2 corrected+narrowPASS. OwnedAuth/ACA/GW/TLSedge replacements only;
+main13/clock5/shipping5/PGRedisRabbit IDs/data/realmkeys preserved. Newscoped
+ScheduleDB/Mongo databases/principals and ownfixtures; no snapshot/DBcopy/reset.
+OwnTeachingFileClock2029→real2026/currentownsemester then knownrestoreoldclock/
+oldsem2 viaAPI; noOS/Auth/securityclock/main changes. OwnTMAconfiguredtestsigner
+RAM selector, onlynewownbindings; no productionsecrets/botmessages.
+Cohortlogic a23d3155 full5P2 corrected+narrowPASS, eightfiles76487B. Sixliveviews+
+Admin beforeoneUIdelete, originalUUID, naturalTMAHeadman successor accounted,
+causalposthintGET and exactowncleanup/restorebridge. Binding WAIT/null stillblocks
+beforeprivate/effects; finalbinding follows publishedRoot source. Runtimewrites0.
 
-Source recovery ZIP /workspace/rct-pr3-recovery/20261024T185650Z.zip,
-5552353bytes, SHA256 5f065b81185d995f039e0ebf79db1c325db41928853f96b3f0065dd9970d228f.
-168 unpublished commits/12WT patches/48 public source-prep files; bundle/CRC/path/
-manifest PASS. No private runtime data/secrets. Snapshot is historical, never a
-reason to replay old operations. No product/WIP source loss found.
+BLOCKER Q-ENV-010: actual≈5.43GB free <7GiB actual preflight. Owner askedminimum
++2GiB preservingworkspace/Dockerdata; pending, notapproval/notresource. No disk
+configtool here. Keep2GiB hard floor/2.5GiB earlyguard250ms; cgroup16GiB/4CPU,
+not hostMem18.9GB. OneHEAVYfree. Existing30containers retained sofar.
 
-After functions: remove active Angular by inventory, then assembled common-Nginx
-deep links/refresh/static/API/realtime; retain /app/, /mini-app/, auth/updates/
-WebPush. No unanswered owner product question. Figma/ZIP readiness already proved.
+Afterrealgroup UI/withdrawal/preservation: removeactiveAngular by inventory and
+verify assembledcommonNginx deep links/refresh/static/API/realtime with/app/,
+/mini-app/,auth/update/WebPush. Angularstillactive; buildPASS does not close gate.
+Freshsource-onlysnapshot223044Z.zip delivered:6482207B/SHA b4262299...,
+185commits/12WT/122publicsources; bundle/CRC/paths/manifestPASS. Olderbackupsretained. Old snapshots never authorize replay. Product-policy questions resolved;
+onlyQENV010 pending. [Priorities](../../docs/plans/web-vue-pr3/CURRENT-PRIORITIES.md).

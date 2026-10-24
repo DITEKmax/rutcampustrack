@@ -32,3 +32,28 @@ RV9/catalog22/Aca9/Cred1/Binding1, все4 own sessions revoked, чужие да
 Продолжается group final delete UI/open access и finite visual остаток; затем
 Angular removal/commonNginx. CI/Coverage/Security/OpenAPI PAUSED, без merge/deploy/
 production. [Актуальные приоритеты](CURRENT-PRIORITIES.md).
+
+
+## Свежий переносимый снимок22:30Z
+
+`/workspace/rct-pr3-recovery/20261024T223044Z.zip`,6482207bytes,
+SHA256 `b4262299dbb27220d12447c2d0a3d83293e59574ead89135e940bec7533f123d`.
+185commits относительно publishedcab3,12worktrees и122public source/prep files;
+source/WIP unchanged, bundleverify/ZIPCRC/safe paths/allSHA256manifest PASS.
+Включены новые UIветки и готовые runtime/cohort sourcepreps. Privatecredentials,
+Bearer/cookies/sessionhandles/generatedpasswords/DB/env/runtimekeys/JAR/deps/cache
+не включены. Старые185650Z/171044Z копии сохранены.
+
+Current-code scan cab3..d69 native0/0findings. Sourcepack DIR native1/25findings
+сохранён:24 прежних publicGit/AuthJAR/harnesshashes и1public phase label
+ACKNOWLEDGED_204. Все exact matched values проверены по исходникам/прежней
+independentclassification; siblingtemplate metadata updates отмечены отдельно,
+whole-file equality не предполагалась. SCAN-CLASSIFICATION.json иprior24report
+включены; rules/ignores/history не менялись, nativeFAIL не названPASS.
+
+Текущие ownvisualcleanup дополнительно закрыты: Mainactor3Profilepost95d933,
+MainTeacher2Journalpostf137 — exact2ownrevoked/foreignmetadata unchanged каждое;
+92079exit2/64379exit1 закрытыknownproof, rawFAIL сохранён. Journalafterd69technical
+ownselfDELETE204/samebearer401/browserclosed. Не повторять эти cleanup/логины.
+Runtime12 stillPREP/noactualwrites: QENV010 awaitsactual7GiB, минимум+2GiB requested.
+Новый снимок не является разрешением запускать старые one-shot скрипты.

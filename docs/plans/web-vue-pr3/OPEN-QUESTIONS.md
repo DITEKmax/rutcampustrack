@@ -349,20 +349,46 @@ Q-ENV-007 не переносится на этот сценарий. Затро
 
 ## Актуальное состояние после ответов и проверок
 
-Q-PROD-004 закрыт policy выше; source группы в работе, новые продуктовые решения
-не требуются. Q-ENV-003/007/008 разрешены. Q7 native whole-map и реальная Auth
-negative qualification завершены. Q8 original mutation+SQL завершён, эффективный
-доступ и отзыв страницы проверяются отдельным узким packet.
+Q-PROD-004 закрыт policy выше. Q-ENV-003/007/008 разрешены и выполнены в своих
+scopes. Map deletion/Auth negative, password self-known5→6/lostACK6→7/successor
+isolation и LIMITED natural withdrawal закрыты. Current password post9598:
+Cred7/RV8/Aca8/profile6unassigned, own3 sessions revoked; current LIMITED postc7ee:
+Teacher2profile8unassigned/RV9/catalog22/Aca9, own4 sessions revoked. Аккаунты,
+прочие роли/данные сохранены. Старые Cred5/profile4/ACLprofile6 baseline выше —
+исторические, не текущие команды повторной выдачи/генерации/очистки.
 
-Q3 выполнены ровно три исходно согласованные генерации только own8:2→3→4→5.
-Seed lostACK восстановлен чтением без повтора; self-known и self-lostACK UI checks
-не полностью прошли. После каждой части временный FULL отозван: finalprofile4
-unassigned, account/STUDENT/group1 сохранены. Независимый finalpost19PASS:
-RV6/Cred5, обе user8 sessions revoked, собственные seed sessions revoked,
-other users/roles/profiles unchanged. Raw nativeFAIL сохранён; fullaction не PASS.
-Идёт causal source diagnosis без новых credential writes. Это не новый вопрос
-владельцу и не разрешение на слепой повтор генерации.
+## Q-ENV-010 — свободное место для group UI/socket gate — ОЖИДАЕТ ОТВЕТА
 
-Ожидающих ответа существенных вопросов сейчас нет. Новые отсутствующие решения
-будут оформляться отдельно; независимая работа продолжается. CI/Coverage/
-Security/OpenAPI PAUSED; merge/deploy не разрешены. Существующий Goal активен.
+Контекст: два matching8e83 Academic/Notification JAR построены один раз offline,
+старые19 JAR сохранены. Actual свободно5537841152B; минимальный11-service backend
+preflight6GiB=6442450944B, дефицит904609792B. WEB/PWA/TMA browser/dev-cache budget
+требует6.5GiB; дефицит около1.44GB. Hard reserve2GiB/earlyguard2.5GiB сохраняются.
+Named duplicate scan нашёл максимум269MB, физический reclaim не доказан и даже
+теоретически недостаточен. Старые данные/стенды не удалялись. Новый host-JVM
+runner вместо Docker потребовал бы отдельного networking/consumer fencing,
+отклонён как расширение инфраструктуры ради бюджета.
+
+Вопрос отправлен владельцу в этом чате: добавить минимум2GiB свободного диска,
+сохранив /workspace и Docker-данные. Инструмента изменения disk config в чате нет.
+Затронуты ACT-ADMIN-GROUP-DELETE, real same-realm Notification/Attendance runtime,
+нативный WEB/PWA/TMA group withdrawal и зависящий Angular/commonNginx gate.
+Ответ/фактическое увеличение pending; elapsed time не является разрешением или
+ресурсом. PREP и независимая визуальная работа продолжаются.
+
+Root scope внутри действующего Goal: при reviewed actual GO допустима замена
+только собственных isolated Auth/Academic/Gateway/TLS-edge app containers/configs
+для matching JAR/WS, с явными old→new identity/rollback; main13/clock5/shipping5,
+PG/Redis/Rabbit data/realm keys/credentials сохраняются. All30 unchanged нельзя
+обещать для этих будущих app replacements; пока replacements0/start0/DBwrites0.
+Это необходимое расширение искусственного стенда по Goal, не изменениеproduction.
+
+CI/Coverage/Security/OpenAPI PAUSED; без merge/deploy/production. Goal существующий.
+
+Дополнение causal dependency: actual WEB/PWA/TMA Teacher reads идут через
+/api/v1/teacher/*→Mobile BFF. Он нужен в том же изолированном realm; borrowingmain
+или fake transport не допускаются. Minimum12services, полная forecast4.5GiB +
+earlyreserve2.5GiB => actual preflight7GiB=7516192768B послеmatchingBFFJAR.
+Старый BFF603 не совпадает с64f proto inputs, нужен один новый matching build.
+Запрошенные +2GiB пока математически достаточны при canonical BFF≈57.5MB и
+отсутствии новых duplicate outputs; owner ответа/фактического ресурса пока нет.
+Это уточнение бюджета того же Q-ENV-010, не новый запрос и не autoapproval.

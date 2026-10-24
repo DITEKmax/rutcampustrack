@@ -52,4 +52,20 @@ MOBILE-FOLLOWUPS и итог PR; PAUSED не объявляется PASS.
 
 После закрытия единственного оставшегося ADMIN action gate — полное Angular
 removal по inventory и assembled common-Nginx flow. Никакой промежуточный PASS
-не закрывает эти gates. Вопросов, ожидающих владельца, сейчас нет.
+не закрывает эти gates. Q-ENV-010 ожидает увеличения свободного диска минимум2GiB;
+actual5.54GB меньше уточнённого preflight7GiB
+для12-service same-realm BFF/Notification +WEB/PWA/TMA. PREP/visual независимы, start/delete не запускались.
+
+
+Последний законченный пакет d69: mobile Journal localerror/recovery/skeleton и
+WEB Teacher backgroundfocus/pagination independentlyreviewed; Rootall3Vuebuild
+PASS. Four actual Journalafterframes закрывают changedPWAcriterion; oldsixbefore
+и authcleanupFAIL сохранены и квалифицированы отдельно. OwnProfile/Teacher helper
+sessions revoked independently, held92079/64379 closed. No source/backend reruns
+ради нового отчёта. Gallery261/portable261; число кадров не равно готовности.
+
+RuntimePREP12v3180f и cohortlogica23 прошли independentrechecks. Перед execution
+нужны finalRootbinding+actual≥7GiB disk (QENV010pending) и scopedRootGO. Один realUI
+delete/6openviews+foreignpreservation; grants withdrawn does not mean entireSID
+revoked. Angular/commonNginx ждут этотactiongate. Независимый Student selection/
+readonlydraft6-frame packet PREP готов/qualityreviewPASS, ждёт checkpointHEAD+GO.

@@ -1,0 +1,48 @@
+{
+  "preservedAt": "2026-10-24T21:53:17.965409+00:00",
+  "tty": 64379,
+  "rawUnknownNotOverridden": true,
+  "files": [
+    {
+      "file": "receipt.json",
+      "sha256": "1a5595bafce1ac6c5afecc887bda746a714959c3e6f59e3e6fe5c417ed7a5b9e",
+      "mode": "0444"
+    },
+    {
+      "file": "teacher-journal-a851.cjs",
+      "sha256": "392cd0ce381ea659026c8e69cf21a5f374eac3259686577e1d8f468943c37755",
+      "mode": "0444"
+    },
+    {
+      "file": "PWA-MOBILE-TEACHERJOURNAL__MB-TJ-01-type-selection__light__425__cab3eed18.png",
+      "sha256": "894ad7903e5d7c8cd91fbc706f2c29cc39dabf7ba5db6e071afc2d039f18afee",
+      "mode": "0444"
+    },
+    {
+      "file": "PWA-MOBILE-TEACHERJOURNAL__MB-TJ-02-controlled-held-get-loading__light__425__cab3eed18.png",
+      "sha256": "d53126ddc807a8c33c2ca933eb9ed7d56ef8455a00dac12a4bf566f38051b8ee",
+      "mode": "0444"
+    },
+    {
+      "file": "PWA-MOBILE-TEACHERJOURNAL__MB-TJ-03-controlled-503-error__light__425__cab3eed18.png",
+      "sha256": "fadf10a7fc8207b708f7ad50871c354c3d6e48536925cb88b85bdee11109777a",
+      "mode": "0444"
+    },
+    {
+      "file": "PWA-MOBILE-TEACHERJOURNAL__MB-TJ-04-native-retry-settled__light__425__cab3eed18.png",
+      "sha256": "602ece172ce7c3e57e1f4150db8404571ac022cbd46023676d4ac93ec6313e2d",
+      "mode": "0444"
+    },
+    {
+      "file": "PWA-MOBILE-TEACHERJOURNAL__MB-TJ-05-same-query-settled__dark__300__cab3eed18.png",
+      "sha256": "260cdabbc40430501995135390bb7014124195c4205d0133f59e17215029caea",
+      "mode": "0444"
+    },
+    {
+      "file": "PWA-MOBILE-TEACHERJOURNAL__MB-TJ-06-same-query-keyboard-focus__light__768__cab3eed18.png",
+      "sha256": "001cc7a3fac7b2ca074361ba2c7ce289fdd403a23d780ff07b5103c67341bea2",
+      "mode": "0444"
+    }
+  ],
+  "privateInputAndOnceGuard": "samefile preservedprivate0400; byteequal; no values/digest public"
+}

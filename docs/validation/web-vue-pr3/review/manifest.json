@@ -535,5 +535,90 @@
     "path": "group-live-QUALIFY-old-jar-schema.md",
     "original_path": "/workspace/rct-pr3-runtime/group-live-delivery-20261024/QUALIFY-old-jar-group-event-schema.md",
     "sha256": "7b417bb04c8671b9f6b507f0d34f4985645bcd697b20dc79e1455981cae696be"
+  },
+  {
+    "path": "profile-after-REVIEW.md",
+    "original_path": "/workspace/rct-pr3-review/profile-loading/REVIEW-after-harness.md",
+    "sha256": "ee0e30bd2e64b409cdb69136e282c05561815477f265345288462546aeb0b775"
+  },
+  {
+    "path": "profile-after-RECHECK-8b38.md",
+    "original_path": "/workspace/rct-pr3-review/profile-loading/RECHECK-after-harness-8b38.md",
+    "sha256": "eb05220a705cd50b025abb3d3235e16033ff70fc60062b09c7a6732856282bba"
+  },
+  {
+    "path": "profile3-cleanup-REVIEW.md",
+    "original_path": "/workspace/rct-pr3-review/profile-loading/REVIEW-profile3-own-cleanup.md",
+    "sha256": "ff06a6a443d698f0844241234d7d6f1fed12b4c3efaf1c8dc8f5d5a45d04ee50"
+  },
+  {
+    "path": "profile3-cleanup-RECHECK-3f39.md",
+    "original_path": "/workspace/rct-pr3-review/profile-loading/RECHECK-profile3-own-cleanup-3f39.md",
+    "sha256": "4522ca3c0d36c9dc3d5fb0621cb11a84b8e4a5d48d0810b945f3b8b489c2e9ac"
+  },
+  {
+    "path": "teacher2-cleanup-RECHECK-2943.md",
+    "original_path": "/workspace/rct-pr3-review/profile-loading/RECHECK-teacher2-cleanup-2943.md",
+    "sha256": "a0837f983331ae1ba587c73044c26eefc6aa5d6e8e4f83ade01bcf6b0c1ac07c"
+  },
+  {
+    "path": "teacher-journal-harness-REVIEW-d4589d5f.md",
+    "original_path": "/workspace/rct-pr3-review/teacher-journal-visual/REVIEW-d4589d5f.md",
+    "sha256": "d1c5f14cbf1cc8f6a04fbe20f1f5a237195389c2f7213ef046130ec2e1f4ad52"
+  },
+  {
+    "path": "teacher-journal-harness-RECHECK-392cd0ce.md",
+    "original_path": "/workspace/rct-pr3-review/teacher-journal-visual/RECHECK-392cd0ce.md",
+    "sha256": "191f2e257c52f5f723b47c0247e8e257bf0d97c6bd6793d18b96fbac52f8861d"
+  },
+  {
+    "path": "group-runtime-REVIEW-aaa98662.md",
+    "original_path": "/workspace/rct-pr3-review/group-final-runtime/REVIEW-aaa98662.md",
+    "sha256": "e2dc2f5b3b65bdafc4f55ca38851033ea6997a44de7f6acd21e7711c63e26e08"
+  },
+  {
+    "path": "group-runtime-RECHECK-180fecc3.md",
+    "original_path": "/workspace/rct-pr3-review/group-final-runtime/RECHECK-180fecc3.md",
+    "sha256": "78f650b873080b15f6a8980225c4fdf918bfcd993c5077eefd8dc7506ceabfa8"
+  },
+  {
+    "path": "journal-state-REVIEW-98166cf7.md",
+    "original_path": "/workspace/rct-pr3-review/journal-state/REVIEW-98166cf7.md",
+    "sha256": "53ffdc0ea9204c581d234440553a7679fcf4f5d56dc57349c27d5c6d2f81d3e4"
+  },
+  {
+    "path": "teacher-live-REVIEW-58e7314f.md",
+    "original_path": "/workspace/rct-pr3-review/teacher-live-focus/REVIEW-58e7314f.md",
+    "sha256": "e68d73cbc1de9b4d5df041783ca16593ebe50a52ac0907ac7d4046fc7ce6dd36"
+  },
+  {
+    "path": "journal-state-RECHECK-2d6bbe27.md",
+    "original_path": "/workspace/rct-pr3-review/journal-state/RECHECK-2d6bbe27.md",
+    "sha256": "c5750b710848be3c58b42abfb0062cb20b85f646d3ecb60777a6703f7bb7b848"
+  },
+  {
+    "path": "teacher-journal-after4-REVIEW-6ff3233f.md",
+    "original_path": "/workspace/rct-pr3-review/teacher-journal-visual/REVIEW-after4-6ff3233f.md",
+    "sha256": "fe13c90466fac788e30ade45c4ce40996c0cfd4aa635b8c206a4d6e9229f90ab"
+  },
+  {
+    "path": "group-cohort-REVIEW-5c735363.md",
+    "original_path": "/workspace/rct-pr3-review/group-final-cohort/REVIEW-5c735363.md",
+    "sha256": "93a606c4eb9c65e3477527b21dc29f536ea1431a76c8bff16913eb492e6cae01"
+  },
+  {
+    "path": "group-cohort-RECHECK-a23d3155.md",
+    "original_path": "/workspace/rct-pr3-review/group-final-cohort/RECHECK-a23d3155.md",
+    "sha256": "fea5e9f8d6c1ec67e666370507d0319e5ee37cda9c8c57557392668540058b9a"
+  },
+  {
+    "path": "student-selection-REVIEW-9221b33a.md",
+    "original_path": "/workspace/rct-pr3-review/student-request-selection/REVIEW-9221b33a.md",
+    "sha256": "1614087028b6e0fd70be954c08354b6890ba8d1bca3d4fd8babbe1e0a574a71d"
+  },
+  {
+    "path": "teacher-live-RECHECK-fb458946.md",
+    "original_path": "/workspace/rct-pr3-review/teacher-live-focus/RECHECK-fb458946.md",
+    "sha256": "ccb806c0d4151d2425aa22bd5fef732aa6f2901e4d3026adcc706b1ae7dead49"
   }
 ]

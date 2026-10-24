@@ -41,3 +41,11 @@ export/drafts survive transient background refresh failure; revoked target priva
 projection is retired. Real same-realm socket flow remains a runtime gate. Profile
 loading skeletonc35 uses existing shared feature/tokens, with native Telegram
 provider distinct from controlled host evidence.
+
+
+Existing mobile Journal recovery/loading исправлены981+2d withoutnewbusinessUI:
+feature-owned read403/503 staylocal, platformAuthfailureforwarding retained. PWA
+actualafter4 qualified; TMAsharedsource15tests/typecheck, nativeTelegramprovider
+stillunknown. WEB Teacher livefocus/pagination fixed separately58+fb; newweb
+businessfunctions не перенесены. Remainingselection/editors проверяются сначала
+поexistingread-onlyflows, no newfixtures/mutations for screenshots.

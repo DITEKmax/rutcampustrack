@@ -2,7 +2,7 @@
 
 Существующий draft [PR №3](https://github.com/DITEKmax/rutcampustrack/pull/3),
 ветка `codex/web-vue-redesign`. Goal запущен владельцем после readiness и
-продолжается. Прежний собранный frontend source `0421d344c`; текущий интегрированный frontend source `a851d5cf7`, backend map source
+продолжается. Прежний собранный frontend source `0421d344c`; текущий интегрированный frontend source `d69ac9159`, backend map source
 `1fe1588dd`, release-input source `8e280baef`. Всегда получать актуальный remote HEAD.
 
 **Implemented 116/117 (99,15%). Locally verified 116/117 (99,15%).**
@@ -179,3 +179,72 @@ Native Telegram provider не проверен. Profile300 естественн�
 c35 loading skeleton reviewed/integrateda851, after2 held-read кадра ещё впереди.
 [Мобильные кадры](../../validation/web-vue-pr3/runtime-gallery/mobile-controlled-20261024/index.html).
 Число кадров не является процентом visual готовности.
+
+
+Matching live artifacts CLOSED: один offline build20.35s создал Academic102809764B
+(829ce167…) и Notification88503510B (97d9d177…), embedded8e83;1488 runtime inputs
+e335d8de byte-equal Rootcab3, expected classes/constants verified. Все19 старыхJAR
+сохранены, новых duplicate outputs0; тесты/Docker/DB/start не выполнялись.
+[Artifact provenance](../../validation/web-vue-pr3/checkpoints/remaining-admin-20261024/group-live-matching-jars.json).
+Q-ENV-010 pending: actual5.54GB free меньше6.5GiB preflight для group UI и3clients.
+Нужно минимум2GiB дополнительного свободного диска; безопасные дубликаты не
+закрывают дефицит. Источники/данные/стенды не очищаются, guard не ослаблен.
+Подготовка11-service same-realm runtime и независимый bounded visual продолжаются.
+Будущая замена только own isolated app containers будет явно записана old→new;
+main13/clock5/shipping5 и PG/Redis/Rabbit data/realm keys сохраняются. До reviewed
+GO/достаточного диска start/migration/group-delete не было.
+
+
+Mobile BFF matching artifact также CLOSED: один offline bootJar34s,57520376B,
+9d7677a5…, embedded8e83. Root независимо сверил1530 source inputs/fingerprint
+31a5aa9b и фактическийJAR hash; старые артефакты сохранены. Первый verifier ошибся
+в guessed generated FQN (повтор TEST-категории); подход изменён: имена берутся
+из committed proto java_package/service. Native build не повторялся. Exact minimum
+resource samples потеряны при verifier exception; pre/guard/noOOM/post сохранены,
+минимум не выдуман. [BFF provenance](../../validation/web-vue-pr3/checkpoints/remaining-admin-20261024/group-live-matching-bff.json).
+
+Minimum same-realm closure теперь12 services, включая BFF для teacher API;
+actual preflight7GiB послеJARs. Q-ENV-010 +2GiB остаётся pending, actual≈5.44GB.
+TMA будет controlled host с существующим configuredown test signer в RAM и только
+новыми собственными bindings, не native Telegram provider. Future-semester2029
+старого isolate — TESTfixture gap для current Teacher2026; PREP создаёт собственный
+current semester/control roster и восстанавливает прежние flags/teachingclock
+после known outcome. Auth/OS/main13/clock5 не меняются. Actualfixture/start/delete0.
+
+Profile after PWA300light получил skeleton и real held-GET release200/loaded.
+Native logout rawFAIL: TEST ошибочно требовал Bearer у cookie-onlyPWA и блокировал
+запрос до forward. ПовторногоPWA/Auth/capture не было. Отдельный ownactor3helper
+удалил только старую собственную сессию204, затем helperlogout204/guest401.
+Independentpost95d933 подтверждает обеownrevoked и неизменность всех identity/
+grants/profiles/прочих session revocations. Held92079 закрыт только после proof,
+exit2/rawUNKNOWN сохранён. RemainingTMA-only capture запущен отдельно; итог pending.
+
+
+## Journal recovery и focused Teacher live — закрытый source/visual пакет
+
+Source981+2d интегрированba3: staticJournal skeleton и локальные typed403/503;
+platformAuthRequestError/TmaAuthError из actual onUnauthorized path по-прежнему
+достигаютhostclassifier, oldowner/query fences сохранены. InitialsourceP2 и первые
+4 unrelatedformatfixture failures сохранены; targeted15PASS/strictPWA reused.
+WEB58+fb интегрированd69: catalog/admission читаются при focus/dirty, currentcontrol
+сохраняетdraft37/focus/unknownexportrequestId. Journalrefresh атомарно обновляет
+все60 ужеоткрытых пар, не обрезаетpage2; more90 сохраняется. FullreviewP2 pagination
+исправлен узко, 2freshJournalPASS+13unchangedPASS reused. Root11sourcefiles equal
+finalauthors; all3Vuebuild/strict PASS, повтор обусловлен изменённым frontend.
+
+SixactualPWAJournal beforeframes вывели двапробела; after4d69 закрывают только
+изменённый slice: loading425light skeleton, one local503 without globalduplicate,
+sameURLreal200425light и300dark without stalehostwarning. 768focus/type-selection
+reused; TMAsharedsource checked, nativeproviderunknown. TechnicalownselfDELETE204/
+sameBearer401/browserclosed. RawbeforecookiecleanupFAIL не превращён вnativePASS:
+MainTeacher2helperonce+PGpostf137 подтвердилиexact2ownrevoked/othermetadataunchanged,
+Rootcurrentrunproof закрыл64379exit1. Profileownhelper+post95d933/92079exit2 аналогично
+сохранены. No live heldbrowser. Gallery261 actualPNG и portable261metadata.
+[After](../../validation/web-vue-pr3/runtime-gallery/teacher-journal-after-20261024/index.html) ·
+[Rootsource/build](../../validation/web-vue-pr3/checkpoints/remaining-admin-20261024/journal-focus-integrated-acceptance.json).
+
+Runtime12v3180f ready/reviewPASS, cohorta23 logicready/reviewPASS. Actualgroupdelete0,
+нуженfinalbinding и actual7GiB. QENV010minimum+2GiB pending; этоединственныйвопрос
+владельцу. Неисправлялиcapacity за счёт чужих/старых данных. FreshStudentrequest
+selection→readonlyform6frames PREP/read-onlyreviewPASS, executionещёнет.
+Angularstillactive, commonNginx finalcheckpointвпереди. ОбщейготовностиPRв%нет.

@@ -1,0 +1,14 @@
+# Narrow recheck F1/F2 — 180fecc3
+
+**PASS: F1 и F2 из REVIEW-aaa98662.md закрыты по исходникам.** Дополнительных существенных P1/P2 в исправлении не обнаружено. Это source qualification, не runtime GO.
+
+Пакет `/workspace/rct-pr3-runtime/group-final-native-20261024/v3-auth-handles`: manifest SHA256 `180fecc3c66834c36ecbff44271742d1457d74964bfc0b41159fb7730d693d5c`. Независимо проверены все **31 файла / 169910 B**: hashes совпали, относительно AAA изменены ровно `calendar.cjs` и `fixture-api.cjs`. Остальные 29 входов, включая pins/runtime/compose/clock controller, byte-identical; прежняя квалификация шести JAR и 1530 backend-входов переиспользована. Рассмотрен только этот delta, полный infrastructure/product review не повторялся.
+
+- **F1:** actor регистрируется в общем inventory и private handle до Auth POST, контекст — до первого запроса. Каждый запрос предваряется fsynced intent; cookies сохраняются после headers, SID/token/session — до следующего запроса. Auth reply коррелируется с ожидаемым новым/собственным user, canonical GET проверяет SID, выбор роли — того же пользователя/сессию/роль. Fixture logins выполняются последовательно и регистрируются каждый отдельно. Ошибка login, последующего GET/PUT или business-фазы удерживает RAM/API contexts в явном HOLD, сохраняет доступные private handles и не выполняет logout/refresh/DELETE/компенсацию в finally. Calendar квалифицирует собственную Admin-сессию до изменения clock. Успешные fixture-сессии передаются через прежние storage/token/SID поля и добавленные private actor handles; закрытый control actor и переданные сессии отделены от HOLD.
+- **F2:** cfg и Root phase GO обязаны содержать один точный origin `http://127.0.0.1:14250`. Проверка выполняется до login и изменения clock; URL credentials/path/query/fragment в baseURL отклоняются. Каждый запрос ограничен тем же origin/API path; `maxRedirects: 0` задан в context и fetch. Неожиданный статус/redirect не приводит к запросу на другой адрес, а переводит фазу в HOLD. Discovery/fallback не добавлены.
+
+Публичные ошибки остаются фиксированными; приватные state/handle файлы создаются mode0600, с O_NOFOLLOW и атомарной записью/fsync. Сохранение неизвестного результата не разрешает новую попытку или дополнительные security-команды.
+
+Авторские 28 static и 4 локальных fault checks учтены как его evidence; reviewer их не запускал. Сети/API/браузеров/Docker/БД, чтения приватных inputs и runtime writes со стороны reviewer не было. Назначение модели — gpt-6.1-sol/high; runtime telemetry модели недоступна.
+
+**Admission остаётся закрытым по ресурсам:** QENV010 PENDING, текущие ~5.43 GB меньше 7 GiB. Реальные startup/migrations/isolation/calendar restoration и отдельный frozen six-view browser driver остаются дальнейшими критериями Root; WEB reference не считается трёхклиентской приёмкой. Исходный FAIL AAA сохранён без изменения; этим recheck закрыты только его F1/F2 для нового пакета.

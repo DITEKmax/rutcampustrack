@@ -292,3 +292,12 @@ Mongo transaction PASS. F1 original failure and test/environment setup failures
 retained; successful unchanged behavior was reused. Actual same-realm socket and
 one UI group deletion remain pending. No PWA/TMA endpoint removed or newly exposed;
 WebPush unchanged. CI/OpenAPI remain manual/PAUSED.
+
+
+API-007 readiness update: matchingAcademic/Notification/MobileBFF8e83 ready,
+Root1530 runtimeinputs equal31a5; Auth/Schedule/Attendance64f reused by closure.
+No endpoint/protobuf/backend delta for981+2d/58+fb UI fixes. Runtime12/callback/
+calendar fixture and six-view cohort reviewedsource, noactualstart/delete. Auth
+commit unselects matchinggrant/sessionVersion+1; entireSID neednot be revoked.
+NaturalTMAreadmission mayproducefreshsameactorSID, bothold/newownedSID cleanup
+mustbe accounted separately. ActualUI/WS compatibility remains gated bycapacity.

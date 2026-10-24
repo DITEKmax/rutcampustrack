@@ -1,0 +1,261 @@
+.student-page {
+  --student-chart-height: 15rem;
+  --student-metric-min-width: 8rem;
+  --student-lesson-time-width: 7rem;
+  --student-mark-size: 1.5rem;
+  --student-detail-width: 24rem;
+  min-inline-size: 0;
+}
+.student-dashboard-pair {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  gap: var(--space-6);
+}
+.student-dashboard-bottom {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-6);
+  align-items: start;
+}
+.student-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+.student-current {
+  padding: var(--space-6);
+  border: var(--web-border) solid var(--color-border-accent);
+  border-radius: var(--radius-2xl);
+  background: var(--color-surface-raised);
+}
+.student-current > .web-button {
+  inline-size: 100%;
+}
+.student-lesson {
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border-radius: var(--radius-xl);
+  font-size: var(--font-size-dense);
+}
+.student-lesson-main {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: start;
+  gap: var(--space-4);
+}
+.student-lesson-content {
+  flex: 1;
+  min-inline-size: min(100%, var(--student-metric-min-width));
+  gap: var(--space-1);
+}
+.student-lesson h3 {
+  font-size: inherit;
+}
+.student-lesson-time {
+  min-inline-size: var(--student-lesson-time-width);
+}
+.student-lesson.is-current {
+  background: var(--color-accent-now);
+  color: var(--color-accent-on-now);
+}
+.student-lesson.is-featured {
+  padding: var(--space-5);
+  font-size: var(--font-size-body);
+}
+.student-lesson.is-featured h3 {
+  font-size: var(--font-size-title-block);
+}
+.student-lesson.is-cancelled h3,
+.student-lesson.is-cancelled .student-lesson-time {
+  text-decoration: line-through;
+}
+.student-lesson-details {
+  border-block-start: var(--web-border) solid var(--color-border-subtle);
+  padding-block-start: var(--space-2);
+}
+.student-lesson-details summary {
+  cursor: pointer;
+}
+.student-lesson-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: var(--space-3);
+}
+.student-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-inline-size: var(--student-mark-size);
+  block-size: var(--student-mark-size);
+  border-radius: var(--radius-full);
+  background: var(--color-status-none-fill);
+  color: var(--color-status-none-text);
+}
+.student-mark[data-tone='present'] {
+  background: var(--color-status-present-fill);
+  color: var(--color-status-present-on-fill);
+}
+.student-mark[data-tone='excused'] {
+  background: var(--color-status-excused-fill);
+  color: var(--color-status-excused-on-fill);
+}
+.student-mark[data-tone='absent'] {
+  background: var(--color-status-absent-fill);
+  color: var(--color-status-absent-on-fill);
+}
+.student-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-4);
+  margin: 0;
+}
+.student-metrics.is-compact {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.student-metric {
+  padding: var(--space-4);
+  border: var(--web-border) solid var(--color-border-default);
+  border-radius: var(--radius-2xl);
+  background: var(--color-surface-raised);
+  gap: var(--space-2);
+}
+.student-metric dt {
+  order: 2;
+}
+.student-metric dd {
+  margin: 0;
+}
+.student-metric-value {
+  font-size: var(--font-size-display);
+  font-weight: var(--font-weight-bold);
+}
+.student-filter {
+  display: flex;
+  align-items: end;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+}
+.student-filter .web-field {
+  flex: 1;
+  min-inline-size: min(100%, var(--student-metric-min-width));
+}
+.student-period-context {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+.student-period-context > span {
+  margin-inline: auto;
+}
+.student-progress {
+  inline-size: 100%;
+  block-size: var(--space-2);
+  accent-color: var(--color-accent-now);
+}
+.student-trend {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-6);
+}
+.student-chart {
+  min-inline-size: 0;
+}
+.student-chart-plot {
+  inline-size: 100%;
+  block-size: auto;
+  min-block-size: var(--student-chart-height);
+  overflow: visible;
+}
+.student-chart-plot text {
+  fill: var(--color-text-muted);
+  font-size: var(--font-size-dense);
+}
+.student-chart-grid {
+  stroke: var(--color-border-subtle);
+  stroke-width: var(--web-border);
+  vector-effect: non-scaling-stroke;
+}
+.student-chart-line {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: var(--web-border);
+  vector-effect: non-scaling-stroke;
+}
+.student-chart-plot circle {
+  fill: currentColor;
+}
+.student-series-primary {
+  color: var(--color-status-present-text);
+}
+.student-series-secondary {
+  color: var(--color-status-excused-text);
+  stroke-dasharray: var(--space-2) var(--space-1);
+}
+.student-chart-selection {
+  stroke: var(--color-border-focus);
+  stroke-width: var(--web-border);
+  vector-effect: non-scaling-stroke;
+}
+.student-chart-legend {
+  display: flex;
+  gap: var(--space-4);
+  justify-content: center;
+  flex-wrap: wrap;
+  font-size: var(--font-size-caption);
+}
+.student-chart-data {
+  overflow: auto;
+  max-block-size: calc(var(--student-chart-height) * 1.5);
+}
+.student-table {
+  border-collapse: collapse;
+  inline-size: 100%;
+  font-size: var(--font-size-dense);
+}
+.student-table th,
+.student-table td {
+  padding: var(--space-3);
+  border-block-end: var(--web-border) solid var(--color-border-subtle);
+  text-align: start;
+}
+.student-table .is-selected {
+  background: var(--color-accent-soft);
+}
+.student-text-button {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  text-align: start;
+  text-decoration: underline;
+  text-underline-offset: var(--space-1);
+}
+@media (max-width: 64rem) {
+  .student-dashboard-pair {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .student-trend {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .student-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 40rem) {
+  .student-dashboard-pair,
+  .student-dashboard-bottom {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .student-current {
+    padding: var(--space-4);
+  }
+  .student-metric {
+    padding: var(--space-3);
+  }
+  .student-metric-value {
+    font-size: var(--font-size-title-screen);
+  }
+}

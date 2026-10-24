@@ -2,13 +2,16 @@
 
 Root+6children runtime ceiling. Children explicitly gpt-6.1-sol/high/fork:none;
 runtime model telemetry unavailable, no silent fallback. No leaf children.
-Main has no product writer. One HEAVY lease, currently runtime_stand clock STAGE1 fixture/control/prepare/isolation/infra only; map tests/build
-NOT RUN after automatic approval rejection. GEO f7 review PASS; snapshotFALSE, main pause/apps/browser not yet.
+Main has no product writer. One HEAVY lease, currently NONE. Clock0b own5
+infra allhealthy after bounded reviewed corrections. Phase2 stop/privateDBsnapshot
+automaticapproval rejected before execution; QENV005waiting, snapshotFALSE and
+logicalwindowCLOSED. No mainstop/dump/restore/apps/14250/browser.
+
 
 | Owner | Worktree | Sole ownership | Current package |
 |---|---|---|---|
 | root | /workspace/rutcampustrack | docs/map/progress/API/PR/Git integration; no product code |115/117 source,110/117 verified checkpoint/gallery/gates/push |
-| web_foundation | /workspace/rct-worktrees/web-foundation | commonweb/auth/shared/config/lock/app registry | common39 accepted; shipping-input4445 reviewed/integrated820; actual image/HTTP pending; no Angular deletion/prod switch yet |
+| web_foundation | /workspace/rct-worktrees/web-foundation | commonweb/auth/shared/config/lock/app registry | E2E rootwiring05e/3fc reviewed; common39 accepted; shipping-input4445 reviewed/integrated820; actual image/HTTP pending; no Angular deletion/prod switch yet |
 | headman_web | /workspace/rct-worktrees/headman-web | features/headman/**, routes |905 accepted38/38; native Late/guards/live done; fresh44 render gallery only |
 | admin_web | /workspace/rct-worktrees/admin-web | features/admin/**, routes |3d accepted32source/28verified; readonly eligible-promotion/activation planning |
 | teacher_web | /workspace/rct-worktrees/student-web | features/student/** only; teacher worktree frozen |3d6 accepted16source/15verified; native Late/live done; only positive GEO gate |
@@ -40,3 +43,11 @@ owner only. Root documentation only. No product writers share a worktree.
 No main writes/force/reset/clean/merge/deploy/production/workflow dispatch or
 global Docker cleanup. Pause denied tests until owner answers; do not route
 around through another executor or the isolated clock lane.
+
+Current port leases: ROOT14210, PWA15175/TMA15176 and mainGateway18080 live;
+old14220/14240 safely released afterPIDproof (129/276MiB RSS),14230 absent.
+Root holds no browser writer. Runtime3inputPROMOTE setup was denied beforeSQL,
+QENV006pending; no-writerwindowCLOSED and no seed/UI/COMMIT. ClockQENV005pending,
+no stop/copy/apps. Teacher prepares naturalGEO15/64 readonly for05:25..06:55UTC;
+root separate singlecaseGO required. These current states override historical
+package labels in the ownership table; no product writer is currently active.

@@ -68,7 +68,7 @@ recovery, группы/староста/история/архивация/вос
 |---|---|---|
 | ACT-STUDENT-CHECKIN | implemented | Реальная положительная геоотметка в допустимом окне.64 пока PLANNED/TOO_EARLY; основной стенд/clock не подменялись. |
 | ACT-ADMIN-ACCESS | implemented | Настоящая запись/отзыв прав. Read-only USERS_VIEW-only lookup и cancel/draft проверены; попытка отдельного privileged fixture отклонена approval review и не выполнялась. |
-| ACT-ADMIN-PROMOTE | implemented | Выполнение на подходящей собственной группе в текущем цикле; созданные после окончания цикла группы правильно пропускаются. |
+| ACT-ADMIN-PROMOTE | implemented | Actual latest completed SPRING отсутствует, own3 preview409; legacy1 typeNULL сохранён. Правило created-after-cutoff подтверждено source, положительного stand witness ещё нет. |
 | ACT-ADMIN-SEMESTER-ACTIVATE | implemented | Временная активация с восстановлением исходного active2 требует согласованного исключительного окна стенда. |
 | ACT-ADMIN-REGENERATE-PASSWORD | implemented | FULL/self и unknown-result сценарий own8 ожидает ответ Q-ENV-003 после отказа approval review;8 заморожен. |
 | ACT-ADMIN-MAP-DELETE | blocked | Whole-version/BYTEA purge подготовлен отдельно; formatter/HTTP PostgreSQL/regression/build не запускались после отказа approval review, Q-ENV-004. |
@@ -108,3 +108,12 @@ Figma/reference отдельно, не доказательство реализ
 Shipping preparation original4445 → root820d8fe99 independently reviewed PASS: exact avatar catalog moved into shared consumer, Vue image/static config added, PWA/TMA workspace COPY inputs corrected. Final assembled strict WEB build PASS at820. Actual image build/nginx HTTP and production-wiring replacement remain pending; Angular has not been removed. [Inventory](ANGULAR-REMOVAL-INVENTORY.md) documents exact remaining active references and unchanged PWA WebPush chain.
 
 Actual shipping images/inner nginx checks now PASS atsourcea813; initialPNG403 и VFS/disk incident сохранены в [shipping checkpoint](SHIPPING-CHECKPOINT-20261024.md). Outer wiring/Angular removal остаются. Added ADMIN24 render gallery exact634cd и real canonical home FULL1→dashboard/USERS_VIEW17→users, no access writes.
+
+Actual PROMOTE admission update: completedSPRING=null, own3preview409; legacy1(2026Feb-Jun) has typeNULL, active2AUTUMN and future4SPRING. The source created-after-cutoff rule is not an actual current stand witness. No valid seed/promotion emitted/executed; new synthetic prerequisite is being assessed with existing rows unchanged.
+
+
+PROMOTE input packetbf13b7aa independently source-reviewed PASS. Actual seed is
+NOT RUN: pre-code SyntaxError then automatic approval rejection before command
+execution; no SQL attempt/namespace/intent. Q-ENV-006 requests exact3 synthetic
+historical inputs and ordinary UI run. Existing rows remain unchanged. This does
+not close ACT-ADMIN-PROMOTE. Clock snapshot remains separately blocked Q-ENV-005.

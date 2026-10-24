@@ -68,3 +68,30 @@ CLI timeout при0.1CPU. Main13 остаются SAMECID/healthy/no-clock. Snap
 restore, apps и browser не запускались. Подготовляется bounded source correction
 и независимое review; это stage FAIL, не положительная GEO64 и не blocker,
 требующий нового продуктового решения.
+
+## Test edge source wiring
+
+Original05e08a2e3 → root3fc1ec247 adds internal Vue web-nginx to e2e Compose
+and proxies the origin root/full URI to it. Existing API/WS/upload/privacy/TLS
+and mobile prefix blocks are byte-identical. Actual compose config--quiet0
+and independent source review PASS; no imagebuild/up/CI/outeredge runtime was
+run for this delta. Legacy Angular browser controls and production wiring remain
+explicit global delivery gates.
+
+## Current clock readiness / permission boundary
+
+Own5 infra genuinely healthy at0b941667 after reviewed corrections. Fixture/control,
+prepare, official recursive isolation and actual Compose config native0. Final
+MongoCPU-only change retains the same CID/memory/env/healthtest/5s timeout; probes
+now1.0–1.6s. Main13 SAMECID/images/mountsets healthy and unmodified.
+Phase2 stop/privateDBsnapshot was rejected by automatic approval BEFORE execution;
+no main stop/dump/import/apps/browser. Q-ENV-005 asks explicit permission for the
+exact local script; snapshotflagFALSE, no alternate executor. This does not
+change115/117 implemented or110/117 verified.
+
+
+Served-artifact oracle original8b8f3c7ac→root4851387b7 now requires exact Vue
+#app and a single hashed root/assets module. Revision/image pin, status/MIME,
+HTML/module bytes and path bounds remain strict. Author8 unittest PASS;
+independent source review PASS. No new outeredge/container/deploy execution is
+claimed. Existing actual innerstatic12checks at UIa813 remain separate evidence.

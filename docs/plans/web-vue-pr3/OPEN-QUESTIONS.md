@@ -212,3 +212,61 @@ component case проверяет отображение с минимальны
 владельцу для этой уже выполненной альтернативы не требуется.
 
 Latest Q-ENV-002 probe2026-10-24 after owner response: connected/running, policy revision7 enforced, www.figma.com absent; actual curl through inherited proxy exit56 CONNECT403/http000/0bytes. No repeated permission request; no direct-network/TLS bypass. MCP/original-image read result remains valid separately.
+
+## Q-ENV-005 — точный локальный stop/snapshot сценарий после отказа approval review
+
+**Тип:** явное разрешение конкретной операции. **Статус:** waiting for owner.
+Automatic approval review отклонил phase2 driver **до начала выполнения**:
+временная остановка семи приложений и копирование приватных БД сочтены
+service disruption/sensitive-data side effects, прежнего разрешения оказалось
+недостаточно. Команда не началась: main13/test project `rct-pr3-setup` не
+останавливался, dump/snapshot/restore отсутствуют. Обходов/повторов нет.
+
+Проверяемый файл `/workspace/rct-pr3-runtime/clock-lane/private/quiet-window-driver.py`,
+SHA256 `7b83bbf9049f0d3822b08195c3aa0f0c937c893ee6b5c6d65a04965447b55e4a`.
+Уточняющий fail-closed guard требует snapshotTRUE до receipt/stop/capture;
+сейчас флаг FALSE, логическое окно закрыто. Sealed package0b941667 не изменён.
+
+Вопрос владельцу: разрешить exact локальный сценарий на искусственном
+`rct-pr3-setup`: gracefully pause только7 приложений (Auth/Academic/Schedule/
+Attendance/BFF/Gateway/Notification), локально сохранить3 Postgres DB и
+attendance Mongo в private0700, в finally запустить SAME7 CIDs/config и
+подтвердить13healthy. DB/Redis/Rabbit/Mongo/Renderer не останавливаются;
+production и Git main не меняются, наружу БД не передаются. Restore — только
+в новый `rct-pr3-clock` для одного native GEO15/64 с изолированным EducationalTime;
+security/Auth/TLS clock остаётся реальным. Dump timeout180s, health recovery240s;
+успех capture не подменяет восстановление основного стенда.
+
+Все предварительные markers/tools/roles/privileges реально проверены, own5infra
+healthy; actual snapshots/import/13apps/browser ещё NOT RUN. При отсутствии
+ответа операция не запускается. Альтернатива для GEO — естественное окно
+main64 с05:25UTC (либо05:30 при требовании ACTIVE) до06:55UTC без stop/copy/clock
+изменений. Независимая работа продолжается, scope прежних Q-ENV-003/004 не расширен.
+
+## Q-ENV-006 — три новых historical PROMOTE inputs после отказа auto-review
+
+**Тип:** явное разрешение конкретной fixture. **Статус:** waiting for owner.
+Проверяемый `PLAN.md` в `/workspace/rct-pr3-runtime/admin-promotion-three-insert-20261024/`,
+recursive package SHA256 `bf13b7aa4297674a9163b5b7f8f1628f340534c34568feeed895a63fd38e2bd8`;
+[independent source review](../../validation/web-vue-pr3/review/promotion-REVIEW-bf13b7aa.md)
+PASS. Старый prospective SQL истёк и не исполнялся.
+
+Подготовлены ровно3 новых synthetic inputs: inactive completed SPRING2025
+(2025-02-01..06-30), новая пустая owned cohort и её managed coverage. Публичный
+запрет создавать завершённый семестр через API остаётся; это historical test
+state, не PASS API create и не подделка результата promotion. Existing semester1
+typeNULL, active2 и все существующие строки/аккаунты/grants не меняются.
+Общий эффект явный: latest completed SPRING NULL→owned cycle. Все foreign
+cohorts созданы после cutoff и не становятся eligible. После обычного UI
+PROMOTE допускается обычный archive только own still-empty group; cycle и
+настоящие ledger/audit сохраняются. Нет stop/snapshot/clock/production.
+
+Первый local operational runner завершился Python SyntaxError до выполнения
+кода; SQL attempts0. Следующая combined syntax-fix+runner команда была
+отклонена automatic approval review ДО запуска: high-impact database-inserting
+setup, недостаточно явного trusted owner authorization для этих exact
+semester/group/coverage mutations. Исправление и SQL не начались, новой
+execution namespace/intent/COMMIT не было. Root no-writer window CLOSED;
+никаких retry/alternate executor. Владельцу отправлен Q-ENV-006 для exact3
+inputs и normal UI PROMOTE. Это отдельный вопрос от Q-ENV-005 stop/privatecopy.
+До ответа seed/PROMOTE NOT RUN, action остаётся implemented, не locallyverified.

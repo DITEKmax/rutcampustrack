@@ -86,3 +86,16 @@ Docker. Существующий PWA WebPush сохранён; web channel setti
 teacher grants и запрет отменённых функций сохранены.
 
 Три настоящих Vue images и inner static nginx checks прошли: [shipping checkpoint](SHIPPING-CHECKPOINT-20261024.md). Там же initial403/readability fix и disk/VFS incident с independently reviewed exact-ID recovery. Эти проверки не означают завершение outer production wiring или удаления Angular.
+
+Clock update: own5infra now genuinely healthy after reviewed public-file modes/Mongo key/Rabbit limits/MongoCPU corrections; existing healthcriteria retained. Phase2 stop/snapshot was rejected before execution by automatic approval review; main13 never stopped, no snapshots/import/apps/browser. Q-ENV-005 waits explicit answer; natural mainGEO window remains an alternative. CurrentPROMOTE preview409 reflects missing completedSPRING (legacy1typeNULL); no positive execution is claimed. Four fresh guest-auth render samples with original asset have been added separately.
+
+
+Checkpoint04:54UTC: root4851387b7 integrates source-reviewed Vue e2e root-edge
+wiring and strict served-module oracle (original05e08a2e3/8b8f3c7ac). Harness8
+unittest authorPASS/config0 are narrow source/harness evidence, not outer
+shipping acceptance. Current policy7 still lacks www.figma.com and curl returns
+CONNECT403 after owner's promise; MCP/original asset proof remains separate.
+PROMOTE3-input packetbf13 reviewed PASS, but automatic approval blocked the
+operational command before execution; SQLattempts0. Q-ENV-006waiting, no bypass,
+no-writerwindowCLOSED. Counts remain115/117 and110/117; gallery now200 retained
+real render samples including4 latest guest-auth forms, not200 actiontests.

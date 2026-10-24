@@ -5,7 +5,10 @@ import { canShowFeature, webFeatures } from '../app/features';
 import { webSession } from '../auth/session';
 import ThemeSelect from '../shared/ThemeSelect.vue';
 import RoleSwitcher from './RoleSwitcher.vue';
+import { useRoute } from 'vue-router';
+import AssistantRouteBoundary from './AssistantRouteBoundary.vue';
 
+const route = useRoute();
 const expanded = ref(false);
 const profile = ref(false);
 const initials = computed(
@@ -122,10 +125,12 @@ const navigation = computed(() => webFeatures.filter(canShowFeature));
       >
         Только чтение
       </p>
-      <RouterView
+      <AssistantRouteBoundary
         v-if="webSession.snapshot.value"
-        :key="webSession.generation.value"
-      />
+        :permission="route.meta.assistantPermission"
+      >
+        <RouterView :key="webSession.generation.value" />
+      </AssistantRouteBoundary>
     </main>
   </div>
 </template>

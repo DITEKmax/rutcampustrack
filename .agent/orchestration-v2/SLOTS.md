@@ -51,3 +51,9 @@ QENV006pending; no-writerwindowCLOSED and no seed/UI/COMMIT. ClockQENV005pending
 no stop/copy/apps. Teacher prepares naturalGEO15/64 readonly for05:25..06:55UTC;
 root separate singlecaseGO required. These current states override historical
 package labels in the ownership table; no product writer is currently active.
+
+
+Narrow source-only ownership override05:06Z: web_foundation owns ONLY
+ tests/e2e/fixtures/{auth.ts,axe.ts,web-panel-route.ts,web-panel-route.control.mjs}
+for currentVue helpers/finitecontrols. Runtime owner idle; no conflict. No browser,
+DBwrites/roles/config/workflows/lockfile or Angularremoval in that packet.

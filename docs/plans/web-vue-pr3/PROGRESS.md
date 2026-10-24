@@ -99,3 +99,13 @@ PROMOTE3-input packetbf13 reviewed PASS, but automatic approval blocked the
 operational command before execution; SQLattempts0. Q-ENV-006waiting, no bypass,
 no-writerwindowCLOSED. Counts remain115/117 and110/117; gallery now200 retained
 real render samples including4 latest guest-auth forms, not200 actiontests.
+
+
+Gallery delivery: [portable HTML and instructions](../../validation/web-vue-pr3/runtime-gallery/PORTABLE.md)
+contains200 searchable metadata records and lazy original PNG URLs pinned51e46f715.
+LocalHTTP browser filters/emptysearch/history and realPNG render PASS via TLS-verified
+sessionCA relay; directChromiumCA/file restrictions and prior helpercleanup failure
+are explicit in portable-check.json. All200 localPNG hashes/dimensions/IDs/safe
+paths independently matched manifests. No hosting/deploy/newGoal, no actioncount increase.
+[PROMOTE safe denied checkpoint](../../validation/web-vue-pr3/checkpoints/promotion-20261024/SAFE-DENIAL-CHECKPOINT.md)
+confirms SQLattempts0/main13healthy/foreignunchanged after automaticdenial.

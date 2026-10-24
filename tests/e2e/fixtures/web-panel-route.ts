@@ -207,7 +207,7 @@ async function renderedStudent(owner: Locator, path: string, data: Data, read: (
       ['presentOrExcused', 'Посещено и уважительная причина пропуска'], ['absent', 'Пропущено']]) {
       const value = record(metrics[key!]);
       expect(typeof value.count === 'number' && Number.isSafeInteger(value.count) && value.count >= 0 && value.count <= Number(metrics.held)).toBe(true);
-      const tile = owner.locator('.student-metrics > div').filter({ has: owner.getByText(label!, { exact: true }) });
+      const tile = owner.locator('.student-metrics > div').filter({ has: owner.page().getByText(label!, { exact: true }) });
       await expect(tile.locator('dd').nth(0)).toHaveText(format(value.percent));
       await expect(tile.locator('dd').nth(1)).toHaveText(`${value.count} / ${metrics.held}`);
     }
@@ -235,7 +235,7 @@ async function renderedStudent(owner: Locator, path: string, data: Data, read: (
     await expect(cards).toHaveCount(summaries.length);
     if (!summaries.length) await expect(owner.getByText('Нет заявок на рассмотрении.', { exact: true })).toBeVisible();
     for (const summary of summaries) {
-      const card = cards.filter({ has: owner.getByRole('heading', { name: 'Заявка ' + text(summary.id), exact: true }) });
+      const card = cards.filter({ has: owner.page().getByRole('heading', { name: 'Заявка ' + text(summary.id), exact: true }) });
       const detail = details.find(value => record(value.summary).id === summary.id)!;
       expect(record(detail.summary).kind).toBe(summary.kind);
       expect(record(detail.summary).status).toBe(summary.status);
@@ -310,10 +310,10 @@ async function renderedHeadman(owner: Locator, path: string, kind: string | null
   for (const [key, label] of [['excuseCount', 'Заявки на уважительную причину'], ['lateCount', 'Апелляции отметок']] as const) {
     const count = record(data[key]).totalElements;
     expect(typeof count === 'number' && Number.isSafeInteger(count) && count >= 0, 'Queue count is authoritative').toBe(true);
-    const panel = owner.locator('article.headman-panel').filter({ has: owner.getByRole('heading', { name: label, exact: true }) });
+    const panel = owner.locator('article.headman-panel').filter({ has: owner.page().getByRole('heading', { name: label, exact: true }) });
     await expect(panel.locator('.headman-metric')).toHaveText(String(count));
   }
-  const table = owner.getByRole('table').filter({ has: owner.getByRole('columnheader', { name: 'Пара', exact: true }) });
+  const table = owner.getByRole('table').filter({ has: owner.page().getByRole('columnheader', { name: 'Пара', exact: true }) });
   await expect(table.locator('tbody tr')).toHaveCount(lessons.length);
   if (!lessons.length) await expect(owner.getByText('Пар на эту дату нет.', { exact: true })).toBeVisible();
   for (let i = 0; i < lessons.length; i++) {
@@ -332,11 +332,11 @@ async function renderedHeadman(owner: Locator, path: string, kind: string | null
     const [report, actions] = await Promise.all([read('lessonAttendance').then(record), read('lessonActions').then(record)]);
     expect(report.lessonId).toBe(active.id);
     const entries = array(report.entries).sort((a, b) => text(a.displayName).localeCompare(text(b.displayName), 'ru'));
-    const roster = owner.getByRole('table').filter({ has: owner.getByRole('columnheader', { name: 'Студент', exact: true }) });
+    const roster = owner.getByRole('table').filter({ has: owner.page().getByRole('columnheader', { name: 'Студент', exact: true }) });
     await expect(roster.locator('tbody tr th')).toHaveText(entries.map(entry => text(entry.displayName)));
     for (const [status, label] of [['PRESENT', 'Присутствуют «+»'], ['EXCUSED', 'Уважительная причина «у»']]) {
       const count = entries.filter(entry => entry.status === status).length;
-      const metric = owner.locator('section.headman-panel').filter({ has: owner.getByRole('heading', { name: label, exact: true }) }).locator('.headman-metric');
+      const metric = owner.locator('section.headman-panel').filter({ has: owner.page().getByRole('heading', { name: label, exact: true }) }).locator('.headman-metric');
       await expect(metric).toHaveAttribute('aria-label', `${count} из ${entries.length}`);
       await expect(metric).toHaveText(new RegExp(`^${count}\\s*/\\s*${entries.length}$`));
     }
@@ -346,7 +346,7 @@ async function renderedHeadman(owner: Locator, path: string, kind: string | null
     const homeworks = await allPages(await read('homeworks'), 'homeworks', read);
     const date = await owner.getByLabel('Дата', { exact: true }).inputValue();
     const titles = homeworks.filter(homework => homework.lessonDate === date).map(homework => text(homework.title));
-    const panel = owner.locator('section.headman-panel').filter({ has: owner.getByRole('heading', { name: 'Домашнее задание на сегодня', exact: true }) });
+    const panel = owner.locator('section.headman-panel').filter({ has: owner.page().getByRole('heading', { name: 'Домашнее задание на сегодня', exact: true }) });
     await expect(panel.getByRole('heading', { level: 3 })).toHaveText(titles);
     if (!titles.length) await expect(panel.getByText('Заданий на сегодня нет.', { exact: true })).toBeVisible();
   }

@@ -1,24 +1,19 @@
-# SLOTS — существующий Goal PR3, 2026-10-24
+# SLOTS — existing PR3 Goal, 2026-10-24
 
-Root +до6 activechildren; явные gpt-6.1-sol/high/fork:none. Runtime telemetry
-недоступна. OneHEAVY через Root; lightweight browser также согласует lane.
-Root source77f/base0421; source116/117, behavior114/117 не общий% PR.
+Root plus up to6 activechildren, explicit gpt-6.1-sol/high/fork:none. Runtime model
+telemetry unavailable. Root docs/Git only. OneHEAVY; browser windows coordinated.
 
-| Owner | Worktree / ownership | Состояние |
+| Owner | Ownership | Current result / next |
 |---|---|---|
-| root | rutcampustrack; docs/map/gallery/Git/PR | Coherent publication/fresh Q3 admission/integration, no product writes |
-| group_final_backend | group-final-delete; services/proto/generated contracts +точный callback allowlist | v6 source review PASS/compileJava+testClasses PASS; Academic v7 retry12failedcases aftertesthelperfix; onecrossgroupPASS reused |
-| web_foundation | web-foundation; manual admin-groups-client +test | ae546 resolve frozen +85visual integrated77f; UserCredentials/receipt/client causal diagnosis |
-| group_final_web | teacher-web; GroupsPage/DeletionPanel/state/tests4files | f67 UI frozen; external effectiveACL harnessb800 needs2P2fix |
-| foundation_review | readonly source/evidence | 3f7+a087 old2P2closed, normal404lockP2 retained; STOP |
-| group_review_next | readonly backend | SOURCEv5 F1–F3 narrow recheck PASS; STOP |
-| runtime_stand | external runtime scripts/read-only proofs | Cacheproof2e8 done; freshMAIN8 baseline/admission support |
-| admin_web | external native harnesses, no shared source | Q3 threecommands done/UIreceiptFAIL; mandatorycleanup native+PGPASS; no newsecuritywrites |
-| visual_readiness_next | external visual receipts/staging | postfix77f7PNG boundedPASS; finite mobile readypacket queued, browserclosed |
-| backend_device | device-api/external helper | Auth map hostv4 coreproof done +post accepted; STOP |
+| root | rutcampustrack docs/map/gallery/Git/PR |7ad6 integrated c586; WEB buildPASS; publish completed subpackages |
+| group_v8 |group-final-delete services/proto/generated contracts/tests |13Academic/Auth cases closed; prepare SchedulePG/AttendanceMongo narrowv9 startupdelta, no HEAVYGO yet |
+| limited_effective |admin-authority-reconcile separateWT frontend session/live +behavior tests |visibleADMIN authority reconciliation, no credential paths/backend |
+| password_native |external self-credential-native-after-fix prep |a132 threeP2 corrections; no native GO/privatecredentialread |
+| security_review |readonly review |c586 sourcePASS; a132 harnessCHANGESREQUIRED, await corrections |
+| visual_next |external visual-readiness artifacts |12PWA Today inspected+ownlogoutPASS; only notification4 retry afterlocatorcause |
+| runtime_restore |readonly actual runtime proofs |ACL independentpost12f33 PASS; no ownlive sessions, browserdriverclosed |
 
-Source ownership never shared across writers. Completed actors consume noactive
-slot, followup requires available slot. No implicit model substitution. Main13,
-clock5idle/adminisolated7 retained, no global cleanup/stop/snapshot/privatecopy.
-No concurrent heavyweight JVM/browser/DB packages. Resources/cache limits and
-exact current next steps in CURRENT +external ACTIVE-CHECKPOINT.
+Completed actors consume no active slot. No shared product writer, no implicit
+model fallback. Main13/admin7 retained; clock5 stopped intentionally. No production,
+state snapshot/copy/globalcleanup. See CURRENT/ACTIVE-CHECKPOINT for known canonical
+security states; old checkpoints never authorize repeated cleanup or business writes.

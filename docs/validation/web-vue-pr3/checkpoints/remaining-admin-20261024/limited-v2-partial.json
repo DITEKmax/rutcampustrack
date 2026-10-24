@@ -1,0 +1,53 @@
+{
+  "passed": true,
+  "observedAtUtc": "2026-10-24T18:23:30.763258+00:00",
+  "profileVersion": 6,
+  "rolesVersion": 7,
+  "catalogVersion": 18,
+  "academicRevision": 7,
+  "assigned": false,
+  "teacherPreserved": true,
+  "accountActive": true,
+  "credentialsVersion": 1,
+  "telegramBindingVersion": 1,
+  "allOriginalIntentsQualified": true,
+  "allLoginAttemptsResolved": true,
+  "allCapturedOwnSessionsCleaned": true,
+  "noPending": true,
+  "capturedOriginalSessionCount": 2,
+  "capturedHelperSessionCount": 2,
+  "sqlOrApiMutations": 0,
+  "normalLogin": false,
+  "newBrowser": false,
+  "globalReady": false,
+  "nativeAcceptanceUnchanged": "Original case remains FAIL for old-open-page withdrawal; independent cleanup proof does not convert it to PASS.",
+  "comparisonQualification": "Exact accepted semantic actor/core grants/profiles/credential-binding versions/group/semester/map invariants. No historical secret-byte or per-session core digest equality is claimed. Own4 exact private selectors joined to PG and revocation checked; raw selectors omitted.",
+  "format": "PR3_ACL_V2_QUALIFIED_PARTIAL_RESULT",
+  "sourceRevision": "7ff97da6e1d557b7ec37471e9f5926007d59bf7d",
+  "independentPostSha256": "12f33b177489820ff1d93411a30f2ff83f35d2e3cdfed51f60dceaa07ffe434a",
+  "native": {
+    "usersOnly": {
+      "usersStatus": 200,
+      "groupsStatus": 403
+    },
+    "groupsAdded": {
+      "groupsStatus": 200,
+      "rendered": true
+    },
+    "revoke": {
+      "status": 204,
+      "oldAdminProtectedDenied": true,
+      "openPageWithdrawn": false
+    },
+    "result": "FAIL_RETAINED"
+  },
+  "cause": "Missing isolated realtime dependency and unqualified headless focus trigger; source separately lacks guaranteed idle authority reconciliation.",
+  "terminal": {
+    "phase": "ROOT_QUALIFIED_TERMINAL_CLEANUP_STOP",
+    "driverExitCode": 1,
+    "remainingTemporaryAdmin": false,
+    "browserClosed": true,
+    "terminalProofSha256": "e568c86a9a4a55bf45757ef82abed56a55c2ad11c4f586e79ce7a5571d8ec2ed"
+  },
+  "next": "Bounded visible ADMIN session reconciliation; only combined grant/revoke withdrawal regression after source fix. No repeat of Users-only/direct checks."
+}

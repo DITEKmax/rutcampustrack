@@ -28,3 +28,16 @@ CI/Coverage/Security/OpenAPI PAUSED/manual; без merge/deploy/production.
 не99% всего PR. Кадры, тесты и assertions не увеличивают готовность.
 Перед завершением обновляются галерея, карта, PROGRESS, API-CHANGES,
 MOBILE-FOLLOWUPS и итог PR; PAUSED не объявляется PASS.
+
+Текущий пакет2026-10-24 после опубликованного checkpoint7ff:
+
+- Password fix c586 интегрирован7ad6; source review/10 mounted cases и Root WEB build PASS. Native повтор ограничен изменёнными self-known/lostACK; новый harness исправляет три независимых cleanup/proof findings до GO. Старые генерации и очистка не повторяются.
+- Group status endpoint и два дефекта fixtures исправлены: все13 Academic/Auth cases закрыты (8 новыхPASS+5 пригодныхPASS). Следующая зависимость — actual SchedulePG/AttendanceMongo, затем четыре сервиса и UI/open access.
+- LIMITED actual Users200/Groups403→200 и revoke deny подтверждены. Open-page withdrawal FAIL; четыре собственные сессии независимо revoked, временного ADMIN нет. Причина сужена до отсутствия invalidation: bounded visibleADMIN reconciliation в отдельном WT; повтор только combinedgrant/revoke.
+- Визуал параллельно:12 новых Today PWA кадров проверены, raw locator failure сохранён. Повтор только4 notification кадра после доказанной ошибки locator. Темы/адаптив/состояния не получают общего процента по количеству кадров.
+
+Критерий закрытия ADMIN-пакета: исправленный self-password native исход без утечки
+следующему входу, group preview/confirm/delete+withdrawal с сохранением чужих данных,
+LIMITED open-page withdrawal с реальным изменением authority; успешные неизменённые
+части переиспользуются. После этих зависимостей начинается полный Angular cleanup
+и собранный common-Nginx сценарий. Ни один промежуточный PASS не включает эти gates.

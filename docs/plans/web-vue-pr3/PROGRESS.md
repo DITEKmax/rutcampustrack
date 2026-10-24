@@ -2,7 +2,7 @@
 
 Существующий draft [PR №3](https://github.com/DITEKmax/rutcampustrack/pull/3),
 ветка `codex/web-vue-redesign`. Goal запущен владельцем после readiness и
-продолжается. Прежний собранный frontend source `0421d344c`; текущий frontend source `77fbd7a5e`, backend map source
+продолжается. Прежний собранный frontend source `0421d344c`; текущий frontend source `7ad6e2935`, backend map source
 `1fe1588dd`, release-input source `8e280baef`. Всегда получать актуальный remote HEAD.
 
 **Implemented 116/117 (99,15%). Locally verified 114/117 (97,44%).**
@@ -77,9 +77,11 @@ consumer/provider delivery и полный dashboard не объявлены PAS
 
 | Действие | Подтверждено | Остаток |
 |---|---|---|
-| LIMITED ADMIN | Один assign/change/revoke через UI и24 SQL-проверки: профиль0→3, роли1→4, catalog6→12; TEACHER сохранён, ADMIN отозван | Фактические Users200/Groups403→Groups200 и запрет уже открытого доступа после отзыва |
-| Генерация пароля user8 | Источник и recovery приняты, исправленный узкий harness независимо проверен | Три исходные генерации own8 выполнены без повторов; seed lostACK readback принят. Self-known/lostACK receipt UI assertion не прошли; causal source diagnosis/fix, без новых credential writes. Final FULL отозван/profile4, обе сессии8 revoked, independent19post PASS |
-| Окончательное удаление группы | Backend/Vue source в отдельных worktrees; SOURCEv4 compile четырёх сервисов PASS; SOURCEv5 независимо закрывает F1–F3 | Реальные интеграционные и законченный UI-сценарий, в том числе отзыв доступа; разрешение original intent после неверного пароля/устаревшего preview |
+| LIMITED ADMIN | Original3dd + actualv2: Users200/Groups403→Groups200/rendered, revoke204/oldADMINdenied; profile6/RV7/catalog18/Aca7, Teacher/account preserved, four own sessions independently revoked | Open-page cached table withdrawal FAIL retained; bounded visibleADMIN reconciliation and only combinedgrant/revoke regression pending |
+| Генерация пароля user8 | Источник и recovery приняты, исправленный узкий harness независимо проверен | Три исходные генерации own8 выполнены без повторов; seed lostACK readback принят. Self-known/lostACK receipt UI assertion не прошли; c586 fix integrated7ad6, independent review/10 mounted cases/Root WEB build PASS; native harness threeP2 corrections pending, без новых credential writes. Final FULL отозван/profile4, обе сессии8 revoked, independent19post PASS |
+| Окончательное удаление группы | Backend/Vue source в отдельных worktrees; SOURCEv4 compile четырёх сервисов PASS; SOURCEv5 независимо закрывает F1–F3, SOURCEv8 closes13 Academic/Auth HTTP/PG/Redis cases (8 corrected+5 reused) | Actual SchedulePG/AttendanceMongo participant checks and законченный UI-сценарий, в том числе отзыв доступа; разрешение original intent после неверного пароля/устаревшего preview |
+
+[Latest qualified ADMIN partial results](../../validation/web-vue-pr3/checkpoints/remaining-admin-20261024/limited-v2-partial.json) · [Academic sourcev8 result](../../validation/web-vue-pr3/checkpoints/remaining-admin-20261024/academic-v8-qualification.md).
 
 Q-PROD-004 и Q-ENV-003/007/008 отвечены; вопросов, ожидающих владельца,
 на этом срезе нет. Группа удаляет только своё членство, назначения старосты/

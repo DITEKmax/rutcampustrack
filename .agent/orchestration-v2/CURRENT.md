@@ -1,72 +1,64 @@
-# CURRENT — существующий Goal PR3, 2026-10-24
+# CURRENT — existing Goal PR3, 2026-10-24
 
-Owner GO действителен; только codex/web-vue-redesign / PR3.
-Root HEAD77fbd7a5e79bcaf3185f60e4ee2f18c7a3e3896b (visual fixes), base0421; remote получать
-актуальный, handoff SHA не требование отката. Root владеет docs/map/gallery/Git,
-продукт пишут назначенные writers в отдельных worktrees.
-Дети явно gpt-6.1-sol/high/fork:none; main requested Sol6.1ultra,
-независимая runtime model telemetry недоступна, fallback не заявляется.
-CI/Coverage/Security/OpenAPI manual/PAUSED, не PASS. Без dispatch/main/newPR/
-merge/deploy/production/globalDockercleanup.
+Owner GO active, only codex/web-vue-redesign / PR3. Root7ad6e2935 includes
+published7ff checkpoint and reviewed self-password fix c586 (three exact paths).
+Root owns docs/map/gallery/Git; product writers use separate worktrees.
+Children explicit gpt-6.1-sol/high/fork:none; runtime model telemetry unavailable.
+CI/Coverage/Security/OpenAPI manual/PAUSED, not PASS. No main/newPR/merge/deploy/
+production/global Docker cleanup. [Priorities](../../docs/plans/web-vue-pr3/CURRENT-PRIORITIES.md).
 
-Действия: implemented116/117, locallyverified114/117; ADMIN33/31 of34.
-AUTH6/SHARED15/STUDENT16/HEADMAN38/TEACHER8 приняты по action scope.
-Это НЕ общий процент PR. Визуал/адаптив/темы/состояния и Angular/build отдельно.
-[Текущие приоритеты](../../docs/plans/web-vue-pr3/CURRENT-PRIORITIES.md).
+Actions implemented116/117, locally verified114/117; ADMIN33/31 of34.
+AUTH6/SHARED15/STUDENT16/HEADMAN38/TEACHER8 accepted by action scope.
+Visual33web+50mobileScreen/18criteria and Angular/build are separate axes.
 
-Owner Q-PROD-004 resolved: убрать target membership/headman/helpers/authority,
-сохранить accounts/creds/otherroles/groups без автоматических статусов;
-отозвать group-доступ открытых сессий; числовой preview+текущий admin password.
-Q-ENV-003/007/008 явно разрешены; ожидающих ответа вопросов сейчас нет.
+Password c586 source fix integrated7ad6: self known/unknown unlock+login handoff
+retains private owner fences, successor-login isolation. Ten mounted behavior
+tests/strictTS/scopedlint and independent review PASS reused; assembledRoot
+WEB typecheck+Vite build PASS (initial root-level ENOENT was command cwd, corrected
+frontends workspace; no product test failure). Actual new self8 native NOT RUN: new
+harness a132 independent review found three cleanup/terminal-correlation P2;
+sameauthor correcting before GO. Last executed password state remains Cred5/RV6/
+profile4unassigned, STUDENTgroup1 retained, final19SQL post498dcPASS. Never replay
+old three generations2->3->4->5 or cleanup from stale pendingFULL checkpoint.
 
-MAP whole native10d8 DONE одинdelete200/2versions/4assets404 +21PG;
-actual Auth correct204/wrong403 +24PG accepted. Raw guest403/native1 сохранён,
-отказ отдельно source-qualified. Успешное удаление/confirmation не повторять.
-LIMITED original3dd DONE assign/change/revoke +24PG, teacher2 сохранён;
-прямые target Users200/Groups403→200→revoked/openpage ещё не проверены.
-Q3 original three credential commands DONE2→3→4→5, no blindrepeat. Native UI receipt
-assertions FAILED; source diagnosis pending. Finalprofile4/noADMIN, account/STUDENT
-preserved; both own8sessions revoked +ownseed sessions revoked, independent19PG
-post498dcPASS. RawFAIL retained, fullaction NOTPASS; no newcredentialwrites for
-diagnosis. Relevant source owner web_foundation now UserCredentials/receipt/client.
+LIMITED v2 native three intents SUCCEEDED CAS3->4->5->6; actual Users200/Groups403
+then Groups200/rendered, revoke204/oldADMINdenied PASS. Open cached Groups page
+withdrawal FAIL retained. ENV isolated Notification absent + TEST focus unqualified;
+source separately has no guaranteed idle revoke invalidation. Separate writer
+admin-authority-reconcile adds bounded visibleADMIN existingGETsession check with
+same-authority draft/DOM retention and successor fencing. No business retry.
+Own cleanup complete: independent SQL12f33 profile6unassigned/RV7/catalog18/Aca7,
+Teacher/account/Cred1/Binding1/other actors/core/group/semester/map preserved;
+original2+helper2 exact own sessions revoked, liveActor1/2 zero. Driver Root proof
+qualified, browser closed, original exit1/FAIL retained. Do not replay v2/helper.
 
-Group deletion WT group-final-delete SOURCEv7; compileJava/testClasses v6 PASS,
-independent v5/v6 narrow reviews PASS. Clientae546/UI f67 consumerresolve PASS,
-atomic original resolve closes GET404validationlock. First AcademicIT diskguard
-exit143/noXMLbehavior preserved; owncontainers autoclosed. Measured991MB transient,
-additional766MB cleanhistoricaldocs sparse, revised1.25GiBforecast; Academic-only
-r2 finished: one foreignthreshold preservation PASS,12 failures stopped early on test
-helper no-store duplicate and absent pgcrypto. Test-only v7 fixes those helpers;
-r3 finished4PASS/8FAIL, accumulated5PASS withpriorforeigncase. ActualGETstatus
-binding andtwofixtureconstraints needv8; no v8editsyet. Reuse5PASS; only8failed
-invocations retry aftercausalfix/review, same2GiBfloor.
+Group SOURCEv8 immutable46files530257B/patch9984272, independently reviewed.
+Eight previously failed Academic/Auth cases now PASS: explicit status@PathVariable
+application fix + real logout lifecycle/valid eligibility fixtures. Five prior PASS
+reused =13 meaningful cases closed; actual HTTP/Auth/PG/Redis, Schedule/Attendance
+transport doubles. Actual SchedulePG/AttendanceMongo still pending, not fullUI PASS.
+Same writer prepares only cached-image startup test delta v9; RootHEAVY GO required.
+Clientae546/UI f67 frozen/reviewed, not integratedRoot until server package ready.
+QPROD004: remove target membership/headman/helper/authority only; preserve accounts/
+creds/other roles/groups, no autoarchive/status; open access withdrawn; numeric
+preview/currentadminpassword, archive separate. No unanswered product question.
 
-Визуал параллельно: finite33web+50mobileScreen, PWA/TMA отдельно; baseline204
-кадра переиспользуются с revision qualifications. Before narrowbrowserdelay/error/retry +toast4arrival reproduced actualgaps.
-Fix77f independentlyverified: all4toast10.127/10.089/10.176/9.987s+history,
-S425light/H300light/T1440dark skeleton; 7afterPNGs, all4ownlogouts204/guest401.
-Raw firstpostfixexit1 andoriginaltoast7unconfirmedlogout retained. Finitecriteria
-NOTIF-02/LOAD-01 boundedPASS, notwhole83rows. Mobile36qualifiedPWAbaselineslices,
-14source-only; TMApostloginunknown. Nextmobilepacket stagedno fakeSDK/initData.
-Все синтетически вызванные состояния помечаются; нет массовойE2Eкампании.
+Visual fix77f reused: four upper notifications each ~10s+history, three role skeleton
+frames PASS; NOTIF02/LOAD01 bounded scope, not all screens. Published index220,
+portable204 snapshot. First new PWA window12 Today realAPI light/dark PNG inspected,
+logout204/guest401/browserclosed; raw exit1 due wrong notification bell locator.
+Only four notification frames retried after source-qualified locator correction;
+Today not repeated. TMA postlogin/provider still qualified unknown.
 
-Main13 +clock5idle +adminisolated7 retained; no mainstop/snapshot/copy/import.
-Main14210/PWA15175/TMA15176/Gateway18080; isolated14250/TLS18443.
-16GiB4CPU, disk~3.65GiB afterreversiblesparse; oneHEAVY only, >=2GiBdisk afterphase. PG16/Redis7/
-Ryuk0.11 cached; mongo7 absent, Bitnami7 не drop-in. Никаких implicitpulls.
-Чистые historicaldocs в workerWT sparse исключены обратимо; WIP/source/JARs
-сохранены. Нет JARunlink/globalcleanup. Knownisolated Attendance activity missing,
-поэтому health summary не global backend PASS.
+Runtime actual restored main13+admin7 retained/healthy, clock5+shipping5 stopped
+intentionally;14JAR hashes/source proofs match. Main14210/PWA15175/TMA15176/GW18080;
+isolated14250/TLS18443, distinctrealmkeys unchanged.16GiB/4CPU, oneHEAVY, >=2GiB
+disk floor; cached PG16/Redis7/Ryuk0.11, mongo7 absent, Bitnami requires explicit
+adapter/no implicit pull. No data copy/recreate/globalcleanup. Source-only recovery
+ZIP6256924B/d3497684 includes165unpublished commits+11WT patches, no secrets.
+Two old /tmp native scripts lost at restart; product/WIP/receipts preserved; new
+harnesses underworkspace. External ACTIVE-CHECKPOINT is latest factual resume.
 
-После замены возможностей: Angular inventory cleanup +общий Nginx local Vue
-runtime deep links/refresh/static/API/realtime; сохранить /app/,/mini-app/,auth,
-updates/WebPush. Предыдущие shipping checks переиспользуются где неизменны.
-Figma readonly/ZIP422/388PNG+34 уже проверены; не повторять готовность безпричины.
-External resume: /workspace/rct-pr3-runtime/ACTIVE-CHECKPOINT-20261024.json.
-
-RESTORED: actualshell+cloudspec24 connected. All11WT/local77/63staged/sourceWIP
-preserved; source-only portablebackup165unpublishedcommits+patches verified,
-see RECOVERY-CHECKPOINT. Actual runtimehealth afterrestore NOTCHECKED yet.
-LatestQ3post498dc/profile4nocurrentADMIN supersedesolderpendingFULLcheckpoint;
-DO NOT repeatcleanup. Publishreadycheckpoint after3metadataSHAfieldrenames and
-stagedGitleaksPASS, thenresumeproductwriters. No newGoal/CI/merge/deploy.
+After functions: remove active Angular inventory and validate assembled Vue through
+common Nginx deep links/refresh/static/API/realtime; retain /app/,/mini-app/,auth,
+updates/WebPush. Figma read-only/reference ZIP already checked, no readiness rerun.

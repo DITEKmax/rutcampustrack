@@ -1,49 +1,42 @@
-# CURRENT — PR3 implementation GO, 2026-10-24 04:54 UTC
+# CURRENT — existing PR3 Goal, 2026-10-24 05:47 UTC
 
-Existing Goal continues after explicit owner GO, as saved in GOAL-CONTRACT.
-Only existing PR3/codex/web-vue-redesign. Root source576faf38b; latest published
-checkpointa6c68a639 (fetch actual remote, never reset to saved SHA). New source
-0d30/6ff adapter deltas and documentation wait scoped gates/normal push. No newGoal/PR,
-main writes/merge/deploy/production. CI/Coverage/Security/OpenAPI manual/PAUSED,
-not PASS. Root docs/coordination/Git only; sole product writers in SLOTS.
-Owner asks main Sol6.1 ultra; assigned children Sol6.1/high/fork:none; actual
-runtime model telemetry unavailable, no silent fallback claim.
+Existing owner GO continues; PR3/codex/web-vue-redesign only. Current source
+UI43b7f6451/testc19c8b733, last publishedcheckpoint1aeaab64b. Nativeaction1aea,
+currentreadonlyrender43b7; exact source/evidence revisions are separate. Fetch
+actualremoteHEAD; no reset to savedSHA. Root docs/coordination/Git/review only,
+sole productwriters in SLOTS. RequestedmainSol6.1ultra, assignedchildrenSol6.1/high/
+fork:none; actualmodeltelemetryunavailable, no silentfallback. No newGoal/PR,
+mainwrites/merge/deploy/production. CI/Coverage/Security/OpenAPI manual/PAUSED.
 
-Implemented115/117(98.29%), locallyverified110/117(94.02%): AUTH6/6,
-SHARED15/15, STUDENT16source/15verified, HEADMAN38/38, TEACHER8/8,
-ADMIN32source/28verified. Original117 denominator unchanged. Real Late53→
-Headman12APPROVE→own15PRESENT/late_checkin and two-tab live update PASS.
-Common39 delegated current-view revocation PASS. Evidence/limits in
-ROLE-ACCEPTANCE, role receipts and review manifest.
+Implemented115/117(98.29%), locallyverified111/117(94.87%). AUTH6/6,
+SHARED15/15, STUDENT16/16, HEADMAN38/38, TEACHER8/8, ADMIN32source/28verified
+of34. Original117 denominator unchanged. PositiveGEO64: ONEordinaryUI POST200
+PRESENT/STUDENT_GEO, Today/attendance+independentpostDB8checks PASS. Onlyown15
+mark0→1; foreign64marks0/protected53/occ45r1/geofence/main13samehealthy.
+Browser-nativeproviderSIMULATED, no physicalpresence claim. Normalownlogout204/
+closedcontexts. Onebadfuturelabel fixeda1→43b7 withindependentRootreview and
+readonlyrender0/noStudentPOST. PriornativeLate/live/delegatedcurrent-view cases
+accepted; allsafe receipts inROLE-ACCEPTANCE/native-geo checkpoint.
 
-Seven remaining action gates: GEO64 positive; ADMIN accesswrite, PROMOTE,
-semesterACTIVATE, FULL/self-reset, mapfinaldelete and groupfinaldelete.
-Global Angular removal, outeredge/legacycontrols and final combined delivery
-checks remain separate. Gallery200 original runtime render samples, not200tests.
+Six remainingADMINactiongates: accesswrite,PROMOTE,semesterACTIVATE,FULL/self
+passwordunknown,mapfinaldelete,groupfinaldelete. QPROD004 membership/grantpolicy
+andQENV003/004/006 exactdeniedactions awaitowner, no bypass. user8frozen;
+6mapWIP filespreserved inbackendWT/no checks/JAR. Existing17read-onlyADMIN,
+18ordinarySTUDENT. PROMOTEcompletedSPRINGnull/preview409, legacy1typeNULL stays,
+new3inputsetupSQLattempts0. QENV005 no longer needed forGEO: no permission,
+no stop/privatecopy/dump/import/clock/apps/14250. snapshotFALSE, own5infraidle.
 
-Machine16GiB/4CPU/oneHEAVY; currently noheavy. Main13healthy immutable source
-receipts, no clock fixture. Authf3/32bda, Academic950/fa360, Gateway3c02,
-Schedule/Attendance/BFF603 externally qualified. RootVite14210, PWA15175,
-TMA15176 and Gateway18080 live. Old14220/14240 safely released,14230 absent.
-CompiledWEB/PWA/TMA imagesa813 and innerstatic smoke12/6/4 PASS. VFS diskfull
-incident and exact30-owned-unused-cache recovery retained in SHIPPING checkpoint;
-currentfree after clockpreparation about5GiB, not old10GiB finalrecovery figure.
+Main13samehealthy, immutableAuthf3/Academic950/Gateway3c02/qualified603services;
+RendererrealPDF/HTML/XLSX.16GiB/4CPU, oneHEAVY currentlyNONE, about5GiBfree.
+ROOT14210/PWA15175/TMA15176/Gateway18080 live; old14220/14240released,14230absent.
+Imagesa813 andinnerstatic12/6/4 retainedhistoricalexactsource; onecopy43b7 not
+rebuiltintoimageyet. VFSdiskincident/exact30ownunusedcache recovery retained;
+no globalcleanup/foreignstate loss. Gallery201 originals, portableimagepin/count
+updatedafterPNGpublication; screenshotcounts not actioncounts.
 
-Ownclock5infra genuinely healthy after reviewed23d/0b corrections. Offline
-fixture/control, immutable preparation, recursive5-input isolation and actual
-Composeconfig native0. Phase2 stop/privateDBsnapshot REJECTED beforeexecution;
-QENV005waiting, snapshotFALSE/windowCLOSED. No mainstop/dump/restore/apps/14250/
-browser. NaturalmainGEO window05:25..06:55UTC remains; teacherpreparesreadonly.
-
-PROMOTE actual latestcompletedSPRINGnull/preview409; legacy1typeNULL untouched.
-New3historicalinputpacketbf13 reviewedPASS, but operation denied before SQL;
-first runnerSyntaxError also pre-code. SQLattempts0/nointent/noCOMMIT. QENV006
-waiting for exact3newinputs plusordinaryUIPROMOTE; no-writerwindowCLOSED.
-
-QPROD004 finalgroup membership/grants policy pending. QENV003 user8 FULL/selfreset
-pending;8frozen. QENV004 scopedmapchecks/JAR pending;6sourceWIP preserved,
-no formatter/tests/build. No deniedaction bypass/alternateexecutor. Existing17
-read-onlyADMIN;18ordinarySTUDENT, notLIMITEDADMIN. Owner promisedwww.figma.com;
-actualpolicy7 absent/CONNECT403, MCP reads work and originalauthbytes recovered
-exacthash. ZIP fullyverified422entries/388PNG+34/33screens/8width140expectedgaps.
-Accepted product decisions and rights in GOAL/OWNER docs remain unchanged.
+Source-reviewedtestedge/oracle05e/8b and4fixtures0d30/6ff accepted;9fileusers/
+roles/e7bb reviewPASS→rootc19. No browserproof/CI claimed forsourcepackets.
+Remaininglegacyadmincreate/studentexcuse testmigration separatelyownedweb.
+Angular deletion/outeredge/finalcombineddelivery stillpending. Owner product
+exclusions/rights unchanged. FigmaMCP/originalauthbytes valid, actualwwwproxy
+CONNECT403/policy7pendingapplication; ZIP fullyverified422entries/388PNG+34.

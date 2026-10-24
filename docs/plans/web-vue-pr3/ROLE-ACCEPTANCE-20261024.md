@@ -2,7 +2,7 @@
 
 Промежуточный срез существующего PR3. Собранный frontend revision
 `3f5852b9524245e98b16110b8fb4fde4bd68f389`; исходный знаменатель117 active
-сохранён. **Implemented115/117 (98,29%); locally verified110/117 (94,02%).**
+сохранён. **Implemented115/117 (98,29%); locally verified111/117 (94,87%).**
 Реализация означает принятый после независимого review исходный код.
 Локальная проверка означает достаточное подтверждение пользовательского действия
 на настоящем изолированном backend вместе с адресными проверками поведения.
@@ -12,7 +12,7 @@
 |---|---:|---:|---:|
 | AUTH | 6 | 6/6 (100%) | 6/6 (100%) |
 | SHARED | 15 | 15/15 (100%) | 15/15 (100%) |
-| STUDENT | 16 | 16/16 (100%) | 15/16 (93,75%) |
+| STUDENT | 16 | 16/16 (100%) | 16/16 (100%) |
 | HEADMAN | 38 | 38/38 (100%) | 38/38 (100%) |
 | TEACHER | 8 | 8/8 (100%) | 8/8 (100%) |
 | ADMIN | 34 | 32/34 (94,12%) | 28/34 (82,35%) |
@@ -62,11 +62,10 @@ recovery, группы/староста/история/архивация/вос
 Переименование открытой группы использует актуальное имя при последующей
 архивации; восстановлено исходное имя и состояние own fixture.
 
-## Семь оставшихся action gates
+## Шесть оставшихся action gates
 
 | Action | Source | Недостающее подтверждение / зависимость |
 |---|---|---|
-| ACT-STUDENT-CHECKIN | implemented | Реальная положительная геоотметка в допустимом окне.64 пока PLANNED/TOO_EARLY; основной стенд/clock не подменялись. |
 | ACT-ADMIN-ACCESS | implemented | Настоящая запись/отзыв прав. Read-only USERS_VIEW-only lookup и cancel/draft проверены; попытка отдельного privileged fixture отклонена approval review и не выполнялась. |
 | ACT-ADMIN-PROMOTE | implemented | Actual latest completed SPRING отсутствует, own3 preview409; legacy1 typeNULL сохранён. Правило created-after-cutoff подтверждено source, положительного stand witness ещё нет. |
 | ACT-ADMIN-SEMESTER-ACTIVATE | implemented | Временная активация с восстановлением исходного active2 требует согласованного исключительного окна стенда. |
@@ -117,3 +116,5 @@ NOT RUN: pre-code SyntaxError then automatic approval rejection before command
 execution; no SQL attempt/namespace/intent. Q-ENV-006 requests exact3 synthetic
 historical inputs and ordinary UI run. Existing rows remain unchanged. This does
 not close ACT-ADMIN-PROMOTE. Clock snapshot remains separately blocked Q-ENV-005.
+
+NativeGEO64 теперьlocallyverified: [пакет](../../validation/web-vue-pr3/checkpoints/native-geo-20261024/acceptance.json), source1aea/readonlycopy43b7. ONEPOST200→PRESENT/STUDENT_GEO; независимыйpostguard8/8 сохраняетprotected53/foreign64/occ45r1/main13. Тестовыйbrowserproviderявносимулирован. Student16/16; остаются6ADMINgates. QENV005не требуется, snapshotне запускался.

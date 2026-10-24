@@ -1,7 +1,7 @@
 # Передача в другую облачную среду — PR3
 
-Актуальный checkpoint2026-10-24 05:07UTC: существующий Goal запущен владельцем,
-машина работает; PR3/codex/web-vue-redesign опубликован наa6c68a639. Это текущий
+Актуальный checkpoint2026-10-24 05:49UTC: существующий Goal запущен владельцем,
+машина работает; PR3/codex/web-vue-redesign: actualremoteHEAD брать изfetch/PRbody. Это текущий
 срез; ниже явно сохранена история прежней машины/readiness, а не действующийSTOP.
 Всегда fetch актуальный remoteHEAD, не откатывать ветку к указанномуSHA.
 
@@ -15,7 +15,7 @@
 - Figma read-only MCP design context/screenshot и originalauthbytes работают.
   Owner обещалwww.figma.com; фактическая enforcedpolicy7 его пока не содержит,
   настоящий curl через наследуемыйproxy даётCONNECT403. Это разные доступы.
-- Implemented115/117 и locallyverified110/117. Общий HTML200runtimeкадров
+- Implemented115/117 и locallyverified111/117. Общий HTML201runtimeкадров
   [доступен из PR](../../validation/web-vue-pr3/runtime-gallery/PORTABLE.md),
   оригинальные PNG/IDs/hash/revision сохранены; это не200functionaltests.
 - SourceUIa813:3реальных images/innerstaticWEB12/PWA6/TMA4 PASS. Source-reviewed
@@ -23,7 +23,7 @@
   outeredge/legacycontrols/окончательная замена остаются deliverygates.
 - Ownclock5infrahealthy после reviewedboundedкоррекций. Stop/privateDBsnapshot
   отклонён automaticapproval ДО исполнения; main13 не останавливались,
-  dump/restore/apps/14250/browser отсутствуют. snapshotFALSE,QENV005pending.
+  dump/restore/apps/14250/browser отсутствуют. snapshotFALSE,QENV005больше не нужен послеnaturalGEO.
   HistoricalPROMOTE3inputsetup также отклонён доSQL,QENV006pending, attempts0.
 - QPROD004 membership/grants и QENV003/004 exactограниченные проверки ждут
   владельца. Не обходить отказ/не запускать другимexecutor. NaturalmainGEO
@@ -37,6 +37,8 @@
 CI/Coverage/Security/OpenAPI PAUSED/workflow_dispatch, неPASS. Без main writes,
 merge/deploy/production/firewall/globalDockercleanup. Текущая работа не объявлена
 завершённой по результатам настройки среды.
+
+NativeGEO64 принят: oneUI200/PRESENT/STUDENT_GEO +independentpostguard; onlyown15mark, protected53/foreign64/occ45r1 unchanged. ТекущийUI43b7/source-onlytestsc19, четыреownerquestionsQPROD004/QENV003/004/006.
 
 ## Исторический handoff прежней машины и стартовой readiness
 

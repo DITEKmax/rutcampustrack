@@ -1,0 +1,101 @@
+{
+  "capturedAtUtc": "2026-10-24T05:36:59.099163+00:00",
+  "scope": "ONE_READONLY_POST_KNOWN_UI_ACK_MAIN15_GEO64",
+  "rootHead": "1aeaab64bfa043fa8755ac6578cd27aa574d79b4",
+  "scriptSha256": "1987f8388376afdb1143af0059dae09934f96519a0af21ab23a45a09d02e0079",
+  "baselineReceiptSha256": "35e23f958c74e850690d15de9b5c1acc3e9b866acb574eb7f5d8f41b079bb80d",
+  "checks": {
+    "exact64MetadataUnchanged": true,
+    "exact45Revision1ScopeUnchanged": true,
+    "campusUnchanged": true,
+    "all64ExactlyOwn15": true,
+    "foreign64StillEmptyHash": true,
+    "own15PresentStudentGeo": true,
+    "fullProtected53Unchanged": true,
+    "own12And15Protected53Unchanged": true
+  },
+  "main13SameCIDImageMountsetsHealthyNoClock": true,
+  "selectedMetadata": {
+    "lesson64": {
+      "id": 64,
+      "date": "2026-10-24",
+      "status": "active",
+      "end_time": "09:50:00",
+      "group_id": 4,
+      "revision": 1,
+      "generation": 1,
+      "start_time": "08:30:00",
+      "subject_id": 4,
+      "semester_id": 2,
+      "assignment_id": 4,
+      "lesson_number": 1,
+      "occurrence_id": 45,
+      "is_geo_blocked": false,
+      "assigned_teacher_id": 2
+    },
+    "occurrence45": {
+      "id": 45,
+      "group_id": 4,
+      "revision": 1,
+      "generation": 1,
+      "subject_id": 4,
+      "semester_id": 2,
+      "assignment_id": 4,
+      "occurrence_date": "2026-10-24",
+      "current_lesson_id": 64,
+      "assigned_teacher_id": 2
+    }
+  },
+  "knownNonsecretCampus": {
+    "id": 1,
+    "lat": 55.788204,
+    "lng": 37.606762,
+    "radiusM": 200,
+    "updatedAt": "2026-10-23T21:29:26.377292+00:00"
+  },
+  "marksHashCountsSelectedOwnOnly": {
+    "lesson64": {
+      "count": 1,
+      "sha256": "534653bf46f1df3e3cdfd17a5b53bc3321cb702a79f20521ad0f7320fd59cec1",
+      "own15Count": 1,
+      "foreignExcluding15Count": 0,
+      "foreignExcluding15Sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "own15": [
+        {
+          "userId": 15,
+          "lessonId": 64,
+          "groupId": 4,
+          "subjectId": 4,
+          "semesterId": 2,
+          "status": "present",
+          "source": "student_geo",
+          "markRevision": "acb900a4-2af7-4f9a-8068-e5dfa0f01ae5",
+          "sha256": "50f1f29658f7511b37366db7f13a5e08a5cad5f65a4aabc9fe776e5cc90b06de"
+        }
+      ]
+    },
+    "lesson53": {
+      "count": 3,
+      "sha256": "47103dd98645cad5a332ad6f52b74d26d15212210b198bfc30a9216bdafccacc",
+      "protectedOwn12And15": [
+        {
+          "userId": 12,
+          "sha256": "80541e159e662af76951fa1d0b9e3067bc5516fbdf9cf447c64c17e299f14d43"
+        },
+        {
+          "userId": 15,
+          "sha256": "7fb23e480ec544b8855e6a330e155ad0252c67b3bfaf7d6b74ace420633547d9"
+        }
+      ]
+    }
+  },
+  "diff": {
+    "all64CountBefore": 0,
+    "all64CountAfter": 1,
+    "onlyExpectedOwn15NewPresentStudentGeo": true,
+    "protected53Unchanged": true
+  },
+  "sessionApiStudentCommandDMLClockStopCopyAppsOrRetry": false,
+  "rawMarkBackup": false,
+  "allChecksPass": true
+}

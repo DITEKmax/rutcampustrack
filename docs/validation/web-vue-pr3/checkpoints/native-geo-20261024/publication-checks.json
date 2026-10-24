@@ -1,0 +1,9 @@
+{
+  "initialGitleaks": "FAIL1 generic-api-key on commands.keySha256 line28, staged(no commit)",
+  "classification": "Independent producer-source review: SHA256 digest of privateoperationkey; no raw key/privatekeyfile read byreviewer",
+  "decision": "Structured typed public idempotencyDigest; inverse projection verified against producerJSON; no scanner/rule/ignore exceptions added",
+  "firstFailurePreserved": "private redacted first-failed report and hookreceipt retained",
+  "EOF": "Two producerJSON lack EOF LF; public canonical JSON normalized with source/public SHA256 separately",
+  "unmodifiedScanner": "Gitleaks8.22.1 generic-api-key and existing ignores unchanged",
+  "review": "../../review/security-REVIEW-native-geo-intent-digest.md"
+}

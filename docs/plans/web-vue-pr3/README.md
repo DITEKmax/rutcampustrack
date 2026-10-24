@@ -3,7 +3,7 @@
 > **Актуальный статус 2026-10-24:** владелец отдельно запустил существующий Goal. Автономная реализация, commit/push в существующую ветку и обновление PR №3 разрешены. Канон: [GOAL-CONTRACT.md](GOAL-CONTRACT.md). Readiness новой среды и архива: [READINESS-CHECK-20261024.md](READINESS-CHECK-20261024.md). CI/Coverage/Security/OpenAPI PAUSED; без main writes/merge/deploy/production.
 
 Дата решений: 2026-10-23. Ветка `codex/web-vue-redesign`, база main
-`aa98a6aabd1463ee72ce2ef09a3195fdeef7b74f`. Текущий checkpointa6c68a639:115/117 implemented,110/117 locallyverified.
+`aa98a6aabd1463ee72ce2ef09a3195fdeef7b74f`. Текущий sourceUI43b7/testc19c8b733:115/117 implemented,111/117 locallyverified.
 Первоначальная подготовка ниже — исторический материал; существующий PR имеет №3.
 
 ## Читать по порядку
@@ -29,7 +29,7 @@
 GitHub-проверки пока PAUSED, это не PASS. Продуктовый GO, merge и deploy
 этим подготовительным commit не выдаются. Main и глобальные settings не менялись.
 
-Текущий промежуточный срез: implemented115/117 и locally verified110/117.
-Подробная [приёмка ролей](ROLE-ACCEPTANCE-20261024.md), [единый HTML200runtimeкадров](../../validation/web-vue-pr3/runtime-gallery/PORTABLE.md), [план удаления Angular](ANGULAR-REMOVAL-INVENTORY.md).
+Текущий промежуточный срез: implemented115/117 и locally verified111/117.
+Подробная [приёмка ролей](ROLE-ACCEPTANCE-20261024.md), [единый runtime HTML](../../validation/web-vue-pr3/runtime-gallery/PORTABLE.md), [план удаления Angular](ANGULAR-REMOVAL-INVENTORY.md).
 
 Актуальное состояние после начала Goal: [PROGRESS](PROGRESS.md), [integration checkpoint](INTEGRATION-CHECKPOINT-20261024.md), [mobile followups](MOBILE-FOLLOWUPS.md).

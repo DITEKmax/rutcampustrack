@@ -215,7 +215,7 @@ Latest Q-ENV-002 probe2026-10-24 after owner response: connected/running, policy
 
 ## Q-ENV-005 — точный локальный stop/snapshot сценарий после отказа approval review
 
-**Тип:** явное разрешение конкретной операции. **Статус:** waiting for owner.
+**Тип:** явное разрешение конкретной операции. **Статус:** больше не требуется для GEO; разрешение не получено, операция NOT RUN.
 Automatic approval review отклонил phase2 driver **до начала выполнения**:
 временная остановка семи приложений и копирование приватных БД сочтены
 service disruption/sensitive-data side effects, прежнего разрешения оказалось
@@ -242,6 +242,9 @@ healthy; actual snapshots/import/13apps/browser ещё NOT RUN. При отсу�
 ответа операция не запускается. Альтернатива для GEO — естественное окно
 main64 с05:25UTC (либо05:30 при требовании ACTIVE) до06:55UTC без stop/copy/clock
 изменений. Независимая работа продолжается, scope прежних Q-ENV-003/004 не расширен.
+
+
+Обновление05:44UTC: naturalmainUI15/64 успешно выполнен послеactualACTIVE, независимо подтверждён postguard053659. Ниstop/privatecopy/restore/clock/apps не понадобились; flagFALSE. Ответ на QENV005 больше не требуется дляэтогоgate. Это не согласие/обход отказа и не закрытие QENV003/004/006.
 
 ## Q-ENV-006 — три новых historical PROMOTE inputs после отказа auto-review
 

@@ -1,0 +1,29 @@
+{
+  "scope": "ACT-STUDENT-CHECKIN",
+  "result": "locally verified",
+  "sourceRevision": "1aeaab64bfa043fa8755ac6578cd27aa574d79b4",
+  "nativeUiSummarySha256": "7189651b3570b7986310d610a5711c4fc05668b1edc245c04878e1aa6094cd8c",
+  "independentPostGuardSha256": "9ec0a10d54a72d1000e9237b65282f9ddce1ace9ed20f67111647bffbba3b2b4",
+  "readonlyLabelRenderSha256": "01528d62c20188acb7df3c219ca3cb8f70899920fc8ec367ffd2c4c9532ea8d5",
+  "commandCount": 1,
+  "outcome": "PRESENT/STUDENT_GEO",
+  "nativeExit": 0,
+  "postGuardExit": 0,
+  "protected53Unchanged": true,
+  "foreign64MarksRemainEmpty": true,
+  "occurrence": "45 revision1",
+  "geolocationSemantics": "SIMULATED browser-native provider at actual configured campus point; no physical-presence claim",
+  "cloneSnapshotStopClockChanges": false,
+  "cleanup": "only newly admitted own15 sessions logged out and browsers closed",
+  "functionalCounts": {
+    "implemented": 115,
+    "locallyVerified": 111,
+    "denominator": 117,
+    "studentVerified": 16,
+    "studentDenominator": 16
+  },
+  "originalNativeUiSummarySha256": "c6aff338fc4c6af6e9064a149b1f319e55aeb0f0ddde6a82b976f3a2f1f832dc",
+  "originalReadonlyLabelRenderSha256": "a60f36a6527cd4327200ff69c660be4599c07faae40e7b6d44a0c94708bf8e3b",
+  "publicationFormatting": "Original private bytes immutable; public JSON LF normalized; original and public SHA256 recorded separately.",
+  "nativeUiSummaryPublicProjection": "Canonical JSON; commands.keySha256 represented as structured idempotencyDigest {algorithm:SHA256,hex}; inverse mapping equals original producerJSON. Original private bytes and source SHA256 preserved; no raw key published."
+}

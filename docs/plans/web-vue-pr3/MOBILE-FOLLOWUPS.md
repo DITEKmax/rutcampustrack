@@ -25,3 +25,6 @@ Future mobile feature ideas or material web/mobile differences need their own
 owner question with Q-ID and affected tasks. Compatibility fixes above do not
 supply missing product decisions or imply functional acceptance of every mobile
 state. Source-only/unvisited cases remain listed in the immutable mobile review.
+
+
+2026-10-24: web StudentTrend FUTURE label теперь нейтральное «Пары ещё не завершены»: serverFUTURE включает незавершённый сегодняшний период. Мобильный attendance periodState уже различает unfinished/future; отдельный statistics-chart-geometry по-прежнему использует «Будущий период». Проверить его актуальную семантику позже; webcopyfix не переносился молча в PWA/TMA, API/темы/метрики не менялись.

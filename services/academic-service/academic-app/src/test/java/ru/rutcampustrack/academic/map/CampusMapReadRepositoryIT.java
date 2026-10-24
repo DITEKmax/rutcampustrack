@@ -545,6 +545,10 @@ VALUES (?,?,?,?,?,?,?,?)
                         ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.Format
                                 .png);
         assertThat(preview.files()).isEqualTo(1L);
+        assertThat(preview.deletionScope())
+                .isEqualTo(
+                        ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels
+                                .PlanDeletionScope.CURRENT_FORMAT);
         var request =
                 new ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels
                         .PlanDeleteRequest(
@@ -587,6 +591,10 @@ VALUES (?,?,?,?,?,?,?,?)
                                                 "synthetic")))
                 .isInstanceOf(ru.rutcampustrack.academic.exception.ConflictException.class);
         var allPreview = deletion.previewPlan("91", "2", null);
+        assertThat(allPreview.deletionScope())
+                .isEqualTo(
+                        ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels
+                                .PlanDeletionScope.ALL_VERSIONS);
         var clear =
                 new ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels
                         .PlanDeleteRequest(

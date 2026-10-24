@@ -3419,6 +3419,8 @@ export interface components {
             /** Format: int64 */
             bytes?: number;
             previewDigest?: string;
+            /** @enum {string|null} */
+            deletionScope?: "ALL_VERSIONS" | "CURRENT_FORMAT" | null;
         };
         DeletionPreview: {
             /** @enum {string} */

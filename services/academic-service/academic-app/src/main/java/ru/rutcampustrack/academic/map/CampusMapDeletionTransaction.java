@@ -242,7 +242,8 @@ public class CampusMapDeletionTransaction {
                         plan.label(),
                         selected.size(),
                         selected.stream().mapToLong(CampusMapAdminRepository.SlotRow::bytes).sum(),
-                        digest(value));
+                        digest(value),
+                        PlanDeletionScope.CURRENT_FORMAT);
         return new PlanSnapshot(floor, plan, slots, preview);
     }
 
@@ -325,7 +326,8 @@ public class CampusMapDeletionTransaction {
                         assets.stream()
                                 .mapToLong(CampusMapDeletionRepository.PlanAsset::bytes)
                                 .sum(),
-                        digest(value.toString()));
+                        digest(value.toString()),
+                        PlanDeletionScope.ALL_VERSIONS);
         return new PlanSnapshot(floor, latest, java.util.List.of(), preview);
     }
 

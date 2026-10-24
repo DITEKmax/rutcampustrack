@@ -61,6 +61,10 @@ class CampusMapWholeDeletionHttpIT extends AbstractAcademicIntegrationTest {
         seedUsage(building, floor);
         for (var plan : List.of(first, second, other)) assertAssets(plan, HttpStatus.OK);
 
+        var selectedFormat = get(previewUrl("1") + "&format=png");
+        assertThat(selectedFormat.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(mapper.readTree(selectedFormat.getBody()).path("deletionScope").asText())
+                .isEqualTo("CURRENT_FORMAT");
         var preview = preview("1");
         assertThat(preview.path("format").isNull()).isTrue();
         assertThat(preview.path("files").asLong()).isEqualTo(4);
@@ -291,7 +295,9 @@ class CampusMapWholeDeletionHttpIT extends AbstractAcademicIntegrationTest {
         var response = get(previewUrl(floor));
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getHeaders().getCacheControl()).isEqualTo("no-store");
-        return mapper.readTree(response.getBody());
+        var preview = mapper.readTree(response.getBody());
+        assertThat(preview.path("deletionScope").asText()).isEqualTo("ALL_VERSIONS");
+        return preview;
     }
 
     private String previewUrl(String floor) {

@@ -5,6 +5,7 @@ import { onBeforeRouteLeave } from 'vue-router';
 import { AVATAR_PRESETS } from '../../../../web-panel/src/app/core/profile/preset-avatars';
 import { webSession } from '../../auth/session';
 import { webAssistantAccess } from '../../app/assistant';
+import { roleHomeNotice } from '../../app/role-home';
 import ThemeSelect from '../../shared/ThemeSelect.vue';
 import { useWebProfile } from './use-profile';
 import AccountHistory from './AccountHistory.vue';
@@ -38,6 +39,19 @@ const permissionLabels = {
     data-screen-id="WEB-STUDENT-SETTINGS"
   >
     <h1>Настройки</h1>
+    <div
+      v-if="roleHomeNotice"
+      class="web-notice web-stack"
+      role="status"
+    >
+      <p>{{ roleHomeNotice }}</p>
+      <RouterLink
+        class="web-button"
+        :to="{ name: 'role-home' }"
+      >
+        Открыть главную роли
+      </RouterLink>
+    </div>
     <p
       v-if="p.notice.value"
       class="web-notice"

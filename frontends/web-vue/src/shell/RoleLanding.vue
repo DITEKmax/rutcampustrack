@@ -1,26 +1,22 @@
 <script setup lang="ts">
-import { computed } from 'vue';
 import { webSession } from '../auth/session';
-import { canShowFeature, webFeatures } from '../app/features';
-const features = computed(() => webFeatures.filter(canShowFeature));
 </script>
 
 <template>
   <section class="web-stack">
-    <h1>{{ webSession.snapshot.value?.activeRole ? 'Разделы' : 'Выбери роль' }}</h1>
+    <h1>{{ webSession.snapshot.value?.activeRole ? 'Страница недоступна' : 'Выбери роль' }}</h1>
     <RouterLink
-      v-for="feature in features"
-      :key="feature.path"
+      v-if="webSession.snapshot.value?.activeRole"
       class="web-button"
-      :to="feature.path"
+      :to="{ name: 'role-home' }"
     >
-      {{ feature.meta?.label }}
+      Открыть главную
     </RouterLink>
     <p
-      v-if="!features.length && webSession.snapshot.value?.activeRole"
+      v-if="webSession.snapshot.value?.activeRole"
       role="status"
     >
-      Разделы этой роли пока недоступны.
+      Проверь адрес или перейди на главную своей роли.
     </p>
   </section>
 </template>

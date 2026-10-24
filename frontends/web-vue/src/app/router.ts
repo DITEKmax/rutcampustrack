@@ -9,6 +9,9 @@ import AppShell from '../shell/AppShell.vue'
 import RoleLanding from '../shell/RoleLanding.vue'
 import { webFeatures } from './features'
 import { webAssistantAccess } from './assistant'
+import { AdminAccessClient } from '../../../mobile-core/src/features/admin-access/admin-access-client'
+import { createWebTransport } from './api'
+import { chooseRoleHome, internalReturnPath, roleHomeNotice } from './role-home'
 import type { HeadmanAssistantPermission } from '../../../mobile-core/src/features/headman-group/headman-group-client'
 
 declare module 'vue-router' {
@@ -49,13 +52,51 @@ export const router = createRouter({
 router.beforeEach(async (to) => {
   if (webSession.phase.value === 'starting') await webSession.bootstrap()
   const session = webSession.snapshot.value
-  if (!session) return to.meta.guest ? true : { name: 'login' }
-  if (to.meta.guest && to.name !== 'password-recovery') return { name: 'role-home' }
+  if (!session) return to.meta.guest ? true : { name: 'login', query: { redirect: to.fullPath } }
+  if (to.name !== 'settings') roleHomeNotice.value = ''
+  if (to.meta.guest && to.name !== 'password-recovery')
+    return { name: 'role-home', query: to.query, hash: to.hash }
+  if (to.name === 'role-home' && session.activeRole) {
+    const returning = internalReturnPath(to.query.redirect)
+    if (returning) {
+      const target = router.resolve(returning)
+      if (
+        target.matched.length &&
+        !target.meta.guest &&
+        target.name !== 'role-home' &&
+        target.name !== 'unavailable'
+      )
+        return returning
+    }
+    const query = { ...to.query }
+    delete query.redirect
+    const owner = webSession.identity.value
+    let admin = null
+    if (session.activeRole === 'ADMIN') {
+      const transport = createWebTransport()
+      try {
+        admin = await new AdminAccessClient(transport).getMe()
+        transport.assertCurrent()
+        if (String(admin.userId) !== session.userId) throw new Error('Владелец доступа изменился.')
+      } catch {
+        if (owner !== webSession.identity.value) return false
+        roleHomeNotice.value =
+          'Не удалось проверить административный доступ. Здесь доступны настройки твоего аккаунта. Попробуй открыть главную ещё раз.'
+        return { name: 'settings', query, hash: to.hash, replace: true }
+      }
+    }
+    if (owner !== webSession.identity.value) return false
+    const home = chooseRoleHome(session.activeRole, webFeatures, admin)
+    if (!home)
+      roleHomeNotice.value =
+        'Доступные разделы этой роли сейчас не найдены. Здесь доступны настройки твоего аккаунта.'
+    return { name: home?.name ?? 'settings', query, hash: to.hash, replace: true }
+  }
   if (
     to.meta.requiredRoles &&
     (!session.activeRole || !to.meta.requiredRoles.includes(session.activeRole))
   )
-    return { name: 'role-home' }
+    return { name: 'role-home', query: to.query, hash: to.hash }
   if (session.activeRole === 'STUDENT' && to.meta.assistantPermission) {
     try {
       if (!(await webAssistantAccess.load()).includes(to.meta.assistantPermission))

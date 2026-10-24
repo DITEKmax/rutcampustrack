@@ -356,3 +356,142 @@ describe('password-bearing group deletion admission and recovery', () => {
     })
   })
 })
+
+describe('explicit original group deletion resolution', () => {
+  it('admits an absent-intent CANCELLED receipt using a bodyless original-ID request', async () => {
+    const key = crypto.randomUUID()
+    const cancelled = {
+      ...operation(key, 'CANCELLED'),
+      counts: Object.fromEntries(Object.keys(counts()).map((name) => [name, 0])),
+      failure: 'NOT_ACCEPTED',
+    }
+    const client = new AdminGroupsClient({
+      accessToken: () => 'current-owner',
+      fetcher: async (path, init) => {
+        expect(String(path)).toBe(`/api/academic/groups/${groupId}/deletions/${key}/resolve`)
+        expect(init?.method).toBe('POST')
+        expect(init).not.toHaveProperty('body')
+        const headers = new Headers(init?.headers)
+        expect(headers.has('Idempotency-Key')).toBe(false)
+        expect(headers.has('Content-Type')).toBe(false)
+        expect(headers.get('Authorization')).toBe('Bearer current-owner')
+        expect(init?.credentials).toBe('include')
+        expect(init?.cache).toBe('no-store')
+        return Response.json(cancelled)
+      },
+    })
+    await expect(client.resolveGroupDeletion(key, groupId)).resolves.toEqual(cancelled)
+  })
+
+  it('resolves a lost accepted command to its existing pending receipt without cancelling or repeating it', async () => {
+    const intent = input()
+    const accepted = operation(intent.operationId, 'COMMITTING')
+    let recorded: typeof accepted | null = null
+    let acceptedCommands = 0
+    const client = new AdminGroupsClient({
+      accessToken: () => 'same-actor-current-session',
+      fetcher: async (path, init) => {
+        if (String(path).endsWith('/resolve')) {
+          expect(init).not.toHaveProperty('body')
+          return Response.json(recorded)
+        }
+        acceptedCommands++
+        recorded = accepted
+        throw new TypeError('Lost acceptance response')
+      },
+    })
+    await expect(client.confirmGroupDeletion(groupId, intent)).rejects.toMatchObject({
+      state: 'UNKNOWN',
+      operationId: intent.operationId,
+      groupId,
+    })
+    await expect(client.resolveGroupDeletion(intent.operationId, groupId)).resolves.toEqual(
+      accepted,
+    )
+    expect(acceptedCommands).toBe(1)
+    expect(recorded).toEqual(accepted)
+  })
+
+  it('recovers a lost resolve reply with the same original GET and no automatic resolve retry', async () => {
+    const key = crypto.randomUUID()
+    const cancelled = {
+      ...operation(key, 'CANCELLED'),
+      counts: Object.fromEntries(Object.keys(counts()).map((name) => [name, 0])),
+      failure: 'NOT_ACCEPTED',
+    }
+    let recorded: typeof cancelled | null = null
+    const client = new AdminGroupsClient({
+      accessToken: () => 'current-owner',
+      fetcher: async (path, init) => {
+        if (init?.method === 'POST') {
+          recorded = cancelled
+          throw new TypeError('Lost resolve response')
+        }
+        expect(String(path)).toBe(`/api/academic/group-deletions/${key}`)
+        return Response.json(recorded)
+      },
+    })
+    await expect(client.resolveGroupDeletion(key, groupId)).rejects.toMatchObject({
+      state: 'UNKNOWN',
+      operationId: key,
+      groupId,
+      status: null,
+    })
+    await expect(client.getGroupDeletion(key, groupId)).resolves.toEqual(cancelled)
+  })
+
+  it('retains UNKNOWN on denied, mismatched, malformed or unsupported-status resolve replies', async () => {
+    for (const { status, patch } of [
+      { status: 401, patch: {} },
+      { status: 403, patch: {} },
+      { status: 404, patch: {} },
+      { status: 409, patch: {} },
+      { status: 503, patch: {} },
+      { status: 202, patch: {} },
+      { status: 200, patch: { groupId: '1' } },
+      { status: 200, patch: { operationId: crypto.randomUUID() } },
+      { status: 200, patch: { phase: 'UNKNOWN' } },
+      { status: 200, patch: { counts: {} } },
+    ]) {
+      const key = crypto.randomUUID()
+      let token = 'original-session'
+      const client = new AdminGroupsClient({
+        accessToken: () => token,
+        onUnauthorized: async () => {
+          token = 'new-session'
+        },
+        fetcher: async () => {
+          if (token === 'new-session') return Response.json(operation(key))
+          return Response.json({ ...operation(key), ...patch }, { status })
+        },
+      })
+      await expect(client.resolveGroupDeletion(key, groupId)).rejects.toMatchObject({
+        state: 'UNKNOWN',
+        operationId: key,
+        groupId,
+        status,
+      })
+    }
+  })
+
+  it('rejects an otherwise valid resolved receipt after its captured owner changed', async () => {
+    const key = crypto.randomUUID()
+    let current = true
+    const client = new AdminGroupsClient({
+      accessToken: () => 'old-owner',
+      assertCurrent: () => {
+        if (!current) throw new Error('Authority changed')
+      },
+      fetcher: async () => {
+        current = false
+        return Response.json(operation(key, 'CANCELLED'))
+      },
+    })
+    await expect(client.resolveGroupDeletion(key, groupId)).rejects.toMatchObject({
+      state: 'UNKNOWN',
+      operationId: key,
+      groupId,
+      status: 200,
+    })
+  })
+})

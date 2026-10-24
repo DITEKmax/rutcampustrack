@@ -413,6 +413,42 @@ export class AdminGroupsClient {
     return normalizeDeletionOperation(value, key, groupId)
   }
 
+  /** Explicitly resolve the original intent; never resend its password-bearing command. */
+  async resolveGroupDeletion(
+    operationId: string,
+    expectedGroupId: string,
+    signal?: AbortSignal,
+  ): Promise<AdminGroupDeletionOperation> {
+    const key = deletionOperationId(operationId)
+    const groupId = deletionGroupId(expectedGroupId)
+    this.options.assertCurrent?.()
+    const headers = new Headers({ Accept: 'application/json' })
+    const token = this.options.accessToken()
+    if (token) headers.set('Authorization', `Bearer ${token}`)
+    let status: number | null = null
+    try {
+      const response = await this.fetcher(
+        `/api/academic/groups/${encodeURIComponent(groupId)}/deletions/${key}/resolve`,
+        {
+          method: 'POST',
+          headers,
+          credentials: 'include',
+          cache: 'no-store',
+          ...(signal ? { signal } : {}),
+        },
+      )
+      status = response.status
+      this.options.assertCurrent?.()
+      if (status !== 200) throw new Error('Сервер не подтвердил разрешение исходной операции.')
+      const value: unknown = await response.json()
+      this.options.assertCurrent?.()
+      return normalizeDeletionOperation(value, key, groupId)
+    } catch {
+      // Even a denied or lost resolve reply cannot release the original reference.
+      throw new AdminGroupDeletionUnknownError(key, groupId, status)
+    }
+  }
+
   createGroup(input: CreateAdminGroupInput, signal?: AbortSignal): Promise<AdminGroup> {
     const payload = normalizeCreateInput(input)
     return this.request<unknown>(AdminGroupsClient.basePath, {

@@ -1,4 +1,7 @@
 .student-page {
+  --student-table-min-width: 32rem;
+  --student-subject-table-min-width: 44rem;
+  --student-subject-name-width: 14rem;
   --student-current-min-height: 21.875rem;
   --student-metric-min-height: 9.1875rem;
   --student-metric-narrow-min-height: 10.1875rem;
@@ -410,7 +413,14 @@
 .student-table {
   border-collapse: collapse;
   inline-size: 100%;
+  min-inline-size: var(--student-table-min-width);
   font-size: var(--font-size-dense);
+}
+.student-subjects-table {
+  min-inline-size: var(--student-subject-table-min-width);
+}
+.student-subjects-table > :is(thead, tbody) > tr > th:first-child {
+  min-inline-size: var(--student-subject-name-width);
 }
 .student-table th,
 .student-table td {

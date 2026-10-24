@@ -122,7 +122,7 @@ function toggle(id: string) {
           tabindex="0"
           aria-label="Статистика по предметам"
         >
-          <table class="student-table">
+          <table class="student-table student-subjects-table">
             <thead>
               <tr>
                 <th

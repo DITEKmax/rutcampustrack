@@ -6,6 +6,11 @@ const props = defineProps<{ points: readonly StudentStatisticsSeriesPoint[]; com
 const group = ref(false),
   selected = ref<string | null>(null);
 const chosen = computed(() => props.points.find((p) => p.id === selected.value));
+function periodLabel(point: StudentStatisticsSeriesPoint) {
+  return point.dateFrom === point.dateTo
+    ? shortDate(point.dateFrom)
+    : `${shortDate(point.dateFrom)} — ${shortDate(point.dateTo)}`;
+}
 watch(
   () => props.points,
   (points) => {
@@ -178,7 +183,7 @@ function paths(key: 'present' | 'presentOrExcused' | 'group') {
         v-if="chosen"
         role="status"
       >
-        {{ chosen.label }}: {{ percent(value(chosen, 'present')) }} ·
+        {{ periodLabel(chosen) }}: {{ percent(value(chosen, 'present')) }} ·
         {{ chosen.metrics.present.count }} из {{ chosen.metrics.held }} пар<template v-if="group">
           · группа {{ percent(value(chosen, 'group')) }}
         </template>
@@ -216,7 +221,7 @@ function paths(key: 'present' | 'presentOrExcused' | 'group') {
                 :aria-pressed="selected === point.id"
                 @click="selected = point.id"
               >
-                {{ point.label || `${shortDate(point.dateFrom)} — ${shortDate(point.dateTo)}` }}
+                {{ periodLabel(point) }}
               </button>
             </th><td>{{ percent(value(point, 'present')) }}</td><td>{{ percent(value(point, group ? 'group' : 'presentOrExcused')) }}</td><td>
               {{ point.metrics.held

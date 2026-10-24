@@ -227,7 +227,7 @@ class GroupDeletionHttpIT extends AbstractAcademicIntegrationTest {
                 semester);
         jdbc.update(
                 "INSERT INTO teacher_subject_groups(teacher_id,subject_id,group_id,semester_id)"
-                    + " VALUES(?,?,?,?)",
+                        + " VALUES(?,?,?,?)",
                 legacyTeacher,
                 subject,
                 group,
@@ -906,8 +906,9 @@ class GroupDeletionHttpIT extends AbstractAcademicIntegrationTest {
             assertThat(
                             count(
                                     "SELECT count(*) FROM academic_outbox WHERE"
-                                        + " event_type='group.updated' AND payload #>>"
-                                        + " '{payload,group_id}'='"
+                                        + " event_type='group.updated' AND payload #>"
+                                        + " '{payload,affected_user_ids}' IS NOT NULL AND payload"
+                                        + " #>> '{payload,group_id}'='"
                                             + group
                                             + "'"))
                     .isZero();
@@ -953,7 +954,8 @@ class GroupDeletionHttpIT extends AbstractAcademicIntegrationTest {
         var hints =
                 jdbc.queryForList(
                         "SELECT payload::text FROM academic_outbox WHERE event_type='group.updated'"
-                            + " AND payload #>> '{payload,group_id}'=?",
+                            + " AND payload #> '{payload,affected_user_ids}' IS NOT NULL AND"
+                            + " payload #>> '{payload,group_id}'=?",
                         String.class,
                         Long.toString(group));
         assertThat(hints).hasSize(1);

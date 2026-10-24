@@ -126,11 +126,13 @@ async function authenticate(
       if (!(cause instanceof AuthRequestError) || cause.status === undefined) {
         try {
           await refresh()
+          if (revision !== operation || !isCurrent()) return
           if (phase.value === 'ready') return
         } catch {
           /* Keep original login failure. */
         }
       }
+      if (revision !== operation || !isCurrent()) return
       error.value = message(cause)
       if (token.value) phase.value = 'error'
     }

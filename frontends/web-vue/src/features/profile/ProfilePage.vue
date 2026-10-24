@@ -114,11 +114,11 @@ const permissionLabels = {
     </div>
     <AccountHistory
       :items="view.history"
-      :loading="view.historyStatus === 'loading'"
+      :loading="view.historyStatus === 'loading' || p.historyBusy.value"
       :error="view.historyError?.message"
       :next="view.historyNextCursor"
-      @retry="act(() => p.state.loadHistory())"
-      @more="act(() => p.state.loadHistory({ cursor: view.historyNextCursor! }))"
+      @retry="act(() => p.loadHistory())"
+      @more="act(() => p.loadHistory(true))"
     />
     <SessionList
       :items="view.sessions"

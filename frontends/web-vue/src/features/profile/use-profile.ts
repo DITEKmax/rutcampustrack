@@ -28,6 +28,9 @@ export function useWebProfile(dirty: () => boolean) {
   const notice = ref('')
   const uncertain = ref(false)
   const avatarBusy = ref(false)
+  const historyBusy = ref(false)
+  let historyTail: Promise<unknown> = Promise.resolve()
+  let historyReads = 0
   let readRevision = 0
   async function read<T>(operation: () => Promise<T>): Promise<T> {
     try {
@@ -74,12 +77,14 @@ export function useWebProfile(dirty: () => boolean) {
           try {
             const all = await state.loadAllSessions()
             transport.assertCurrent()
-            if (!all.items.some(item => item.sessionId === targetSessionId)) {
+            if (!all.items.some((item) => item.sessionId === targetSessionId)) {
               uncertain.value = false
               notice.value = 'Вход завершён.'
               return
             }
-          } catch { /* Keep the unknown result if readback is unavailable. */ }
+          } catch {
+            /* Keep the unknown result if readback is unavailable. */
+          }
         }
         throw new ProfileRequestError('NETWORK', notice.value)
       }
@@ -112,6 +117,23 @@ export function useWebProfile(dirty: () => boolean) {
       isOnline: () => navigator.onLine,
     }),
   )
+  function loadHistory(more = false) {
+    historyReads++
+    historyBusy.value = true
+    const task = historyTail
+      .catch(() => undefined)
+      .then(() => {
+        transport.assertCurrent()
+        const cursor = state.view.historyNextCursor
+        if (more && !cursor) return
+        return state.loadHistory(more ? { cursor: cursor! } : undefined)
+      })
+    historyTail = task.catch(() => undefined)
+    return task.finally(() => {
+      historyReads--
+      historyBusy.value = historyReads > 0
+    })
+  }
   async function loadOwn() {
     const revision = ++readRevision
     ownError.value = ''
@@ -149,7 +171,7 @@ export function useWebProfile(dirty: () => boolean) {
     }
     await Promise.allSettled([
       state.loadSessions(),
-      state.loadHistory(),
+      loadHistory(),
       loadOwn(),
       owner.activeRole === 'STUDENT' ? webAssistantAccess.load(true) : Promise.resolve(),
     ])
@@ -165,7 +187,13 @@ export function useWebProfile(dirty: () => boolean) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ avatarId }),
       })
-      if (!response.ok) { ownError.value = response.status === 403 ? 'Изменение аватара недоступно для текущего контекста.' : 'Аватар не сохранён. Проверь данные и повтори действие.'; return }
+      if (!response.ok) {
+        ownError.value =
+          response.status === 403
+            ? 'Изменение аватара недоступно для текущего контекста.'
+            : 'Аватар не сохранён. Проверь данные и повтори действие.'
+        return
+      }
       await loadOwn()
       if (own.value?.avatarId === (avatarId || null) || (!own.value?.avatarId && !avatarId))
         notice.value = 'Аватар сохранён.'
@@ -174,14 +202,30 @@ export function useWebProfile(dirty: () => boolean) {
       if (!(cause instanceof WebAuthorityChangedError)) {
         await loadOwn()
         if (own.value?.avatarId === (avatarId || null)) notice.value = 'Аватар сохранён.'
-        else ownError.value = 'Результат сохранения неизвестен. Проверь профиль перед новой попыткой.'
+        else
+          ownError.value = 'Результат сохранения неизвестен. Проверь профиль перед новой попыткой.'
       }
     } finally {
       avatarBusy.value = false
     }
   }
   const busy = computed(() => state.view.mutationBusy !== null || avatarBusy.value)
-  useWebLiveRefresh(load, { blocked: computed(() => dirty() || busy.value || uncertain.value) })
+  useWebLiveRefresh(load, {
+    blocked: computed(() => dirty() || busy.value || uncertain.value || historyBusy.value),
+  })
   void load()
-  return { state, own, ownError, notice, uncertain, avatarBusy, busy, load, loadOwn, saveAvatar }
+  return {
+    state,
+    own,
+    ownError,
+    notice,
+    uncertain,
+    avatarBusy,
+    busy,
+    historyBusy,
+    loadHistory,
+    load,
+    loadOwn,
+    saveAvatar,
+  }
 }

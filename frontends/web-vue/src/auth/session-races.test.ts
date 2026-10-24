@@ -118,3 +118,54 @@ describe('guest authentication lifetime', () => {
     expect(webSession.phase.value).toBe('ready')
   })
 })
+
+describe('unknown login recovery ownership', () => {
+  it.each(['resolve', 'reject'] as const)(
+    'keeps successor login intact when obsolete recovery %ss',
+    async (outcome) => {
+      let resolveRefresh!: (response: Response) => void
+      let rejectRefresh!: (cause: Error) => void
+      const slowRefresh = new Promise<Response>((resolve, reject) => {
+        resolveRefresh = resolve
+        rejectRefresh = reject
+      })
+      const recoveryStarted = deferred<void>()
+      const successorAuthorityStarted = deferred<void>()
+      const successorAuthority = deferred<Response>()
+      vi.stubGlobal('fetch', async (input: RequestInfo | URL, init?: RequestInit) => {
+        const path = String(input)
+        if (path.endsWith('/login')) {
+          if (JSON.parse(String(init?.body)).login === 'anna')
+            throw new TypeError('A response lost')
+          return Response.json({ accessToken: 'B-token' })
+        }
+        if (path.endsWith('/refresh')) {
+          recoveryStarted.resolve()
+          return slowRefresh
+        }
+        if (path.endsWith('/session')) {
+          successorAuthorityStarted.resolve()
+          return successorAuthority.promise
+        }
+        throw new Error(path)
+      })
+      const { webSession } = await import('./session')
+      const obsolete = webSession.login('anna', 'password')
+      await recoveryStarted.promise
+      webSession.cancelAuthentication()
+      const successor = webSession.login('boris', 'password')
+      await successorAuthorityStarted.promise
+      if (outcome === 'resolve') resolveRefresh(Response.json({ accessToken: 'obsolete-token' }))
+      else rejectRefresh(new TypeError('Obsolete recovery failed'))
+      await obsolete
+      expect(webSession.phase.value).toBe('guest')
+      expect(webSession.accessToken()).toBe('B-token')
+      expect(webSession.error.value).toBeNull()
+      successorAuthority.resolve(Response.json({ ...session('1'), userId: '43' }))
+      await successor
+      expect(webSession.phase.value).toBe('ready')
+      expect(webSession.snapshot.value?.userId).toBe('43')
+      expect(webSession.error.value).toBeNull()
+    },
+  )
+})

@@ -129,10 +129,10 @@ render200 with changed/missing selectors403 passed. Independent immutable report
 [group selector review](../../validation/web-vue-pr3/review/group-filter-REVIEW-f3c03bd81.md),
 [async correction recheck](../../validation/web-vue-pr3/review/group-filter-RECHECK-b32d47b0e.md).
 
-## API-004 — conditional existing assistant permissions (in progress)
+## API-004 — conditional existing assistant permissions (accepted, actual rollout PASS)
 
 Source072486ca4 integrated; real HTTP3/snapshot/types/JAR PASS. Independent
-review pending; not deployed. Contract: Existing PATCH assistant permissions
+combined review950 PASS; immutable950 actually deployed. Contract: Existing PATCH assistant permissions
 adds optional expectedPermissions set. It compares authoritative rights under
 existing group/headman then assistant locks; mismatch409
 ASSISTANT_PERMISSIONS_CONFLICT without mutation/outbox. Null/unknown enum400.
@@ -145,9 +145,9 @@ new helper assignment behavior is unchanged. No new mobile feature/UI is added.
 
 Targeted real PostgreSQL/HTTP concurrent stale add versus revoke, conflict rollback,
 conditional last-right revoke and legacy/invalid/forbidden cases PASS3tests;
-source/schema/independent review950 PASS; actual stand CAS/lookup rollout gate pending.
+source/schema/independent review950 PASS; actual stand950 CAS assign/revoke/stale409/last-right inactive and names-only archive lookup PASS.
 
-## API-005 — names-only group options lookup (source accepted, rollout pending)
+## API-005 — names-only group options lookup (accepted, actual rollout PASS)
 
 Source950e621b0 and real HTTP2/snapshot/types/JAR PASS, independent combined
 CAS/lookup review PASS. Reuse GET /api/academic/groups/options; allow USERS_VIEW in that endpoint's existing
@@ -180,3 +180,5 @@ Real HTTP/PostgreSQL multi-version/equal-hash other-floor, stale/replay/reupload
 forced rollback cases plus independent review are required before acceptance.
 No production migration/deletion; synthetic resources only. Web final-scheme
 operation must send format=null, not substitute floor inventory deletion.
+
+Current runtime checkpoint2026-10-24: immutable Authf3c03bd81 and Academic950e621b0 supersede earlier build artifacts above. Actual USERS_VIEW-only17 sees safe archived option id/name/archived, while protected group profile remains403. Web admin source independently accepted32/34; FULL/self credential-generation runtime remains Q-ENV-003, not complete. Map whole-delete work remains separate uncommitted WIP: scoped formatter/tests/JAR NOT RUN after automatic approval rejection, Q-ENV-004.

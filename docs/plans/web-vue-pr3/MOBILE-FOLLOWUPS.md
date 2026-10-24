@@ -1,8 +1,12 @@
 # Mobile followups and compatibility — PR3
 
 Web functions are not automatically added to PWA/TMA. Shared light/dark/system
-foundation and device persistence are required across existing mobile screens;
-full screen/state verification and actual signed Telegram admission remain open.
+foundation and device persistence are required across existing mobile screens.
+Independent source review covers24 families;140 retained render samples and60
+state IDs are evidence of appearance/state coverage, not140 functional tests.
+Two theme P2 fixes09e7 passed independent narrow recheck with12 targeted PNG.
+The subsequent harness cleanup exited1; actual signed native Telegram admission
+and external Push delivery are not claimed verified by that visual work.
 
 | Change | Mobile treatment |
 |---|---|
@@ -14,7 +18,10 @@ full screen/state verification and actual signed Telegram admission remain open.
 | names-only archived-group lookup | Existing pickers default active-only; web filter/history opts into archives; no mobile page change |
 | web notification bell/history/overlay | Web scope only; existing mobile preferences and Web Push preserved; no web channel settings |
 | student own attendance export | Owner deferred Q-PROD-002; do not add to mobile or web |
+| shared preset-avatar catalog | Exact pure data copy removes Vue's Angular-source import; IDs/labels/metadata unchanged, no new mobile operation |
+| future Angular removal | Existing PWA WebPush registration/binding/API/worker/click/logout chain remains; Angular has no active WebPush worker to migrate |
 
 Future mobile feature ideas or material web/mobile differences need their own
 owner question with Q-ID and affected tasks. Compatibility fixes above do not
-supply missing product decisions or imply completion of the full mobile matrix.
+supply missing product decisions or imply functional acceptance of every mobile
+state. Source-only/unvisited cases remain listed in the immutable mobile review.

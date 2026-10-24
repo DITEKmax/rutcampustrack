@@ -1,4 +1,4 @@
-# Подготовка новой Vue web-панели — будущий PR №3
+# Vue web-панель — существующий PR №3
 
 > **Актуальный статус 2026-10-24:** владелец отдельно запустил существующий Goal. Автономная реализация, commit/push в существующую ветку и обновление PR №3 разрешены. Канон: [GOAL-CONTRACT.md](GOAL-CONTRACT.md). Readiness новой среды и архива: [READINESS-CHECK-20261024.md](READINESS-CHECK-20261024.md). CI/Coverage/Security/OpenAPI PAUSED; без main writes/merge/deploy/production.
 
@@ -28,5 +28,8 @@
 новые хрупкие E2E, проверки текста/верстки и coverage ради процента не нужны.
 GitHub-проверки пока PAUSED, это не PASS. Продуктовый GO, merge и deploy
 этим подготовительным commit не выдаются. Main и глобальные settings не менялись.
+
+Текущий промежуточный срез: implemented115/117 и locally verified110/117.
+Подробная [приёмка ролей](ROLE-ACCEPTANCE-20261024.md), [галереи настоящих PNG](../../validation/web-vue-pr3/runtime-gallery/index.html), [план удаления Angular](ANGULAR-REMOVAL-INVENTORY.md).
 
 Актуальное состояние после начала Goal: [PROGRESS](PROGRESS.md), [integration checkpoint](INTEGRATION-CHECKPOINT-20261024.md), [mobile followups](MOBILE-FOLLOWUPS.md).

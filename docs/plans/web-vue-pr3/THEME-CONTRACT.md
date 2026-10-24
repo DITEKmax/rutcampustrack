@@ -1,7 +1,14 @@
 # Theme foundation и device persistence — технический контракт
 
-**Статус: proposal для реализации по новому GO, API ещё не существует.**
-Исследован подготовительный HEAD4ae4e69e, продуктовых изменений/проверок нет.
+**Актуальный статус2026-10-24: реализовано, API существует и проверен.**
+Независимые foundation/theme/device reviews и actual cookie/CAS/device/
+logout-login smoke доступны в API-CHANGES и review manifest. Mobile source24
+families,140 retained visual samples и narrow09e7 recheck12 кадров не равны
+функциональной проверке каждого состояния; signed native Telegram не заявлен.
+
+Ниже сохранён технический proposal, исследованный на4ae4e69e; его формулировки
+«сейчас lockedMode/API ещё не существует» описывают исторический baseline,
+а не состояние текущего checkout. Поведение/границы остаются контрактом.
 Поведение уже принято владельцем: light/dark/system; manual приоритетнее;
 browser device preference переживает logout/login; TMA system=Telegram,
 web/PWA system=ОС; live system change без reload. Без fingerprinting.

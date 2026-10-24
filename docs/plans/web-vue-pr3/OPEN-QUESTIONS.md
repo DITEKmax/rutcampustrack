@@ -184,3 +184,31 @@ UserApi DELETE /users/{id} означает archiveUser, а не distinct final 
   включает группу, legacy DELETE не реализует принятый preview/proof protocol.
 - Admin password regeneration прямо подтверждена JS-ADMIN-20 и RecoveryLinkPanel;
   отсутствие нового адаптера/API не отменяет эту принятую операцию.
+
+
+## Q-ENV-004 — изолированные map final-delete проверки после отказа auto-review
+
+**Тип:** конкретное разрешение на локальные проверки. **Статус:** waiting for owner.
+Подготовлены6 source/test/migration файлов в `/workspace/rct-worktrees/device-api`,
+reviewable contract `/tmp/map-final-delete-contract-assessment-20261024.md`.
+Scope: локальный formatter5Java,3 CampusMapWholeDeletionHttpIT плюс один затронутый
+selected-format regression, отдельная synthetic PostgreSQL и Academic bootJar.
+Никаких удалений схем рабочего стенда/production, dispatch CI или нового Goal.
+
+Automatic approval review дважды отклонил точную команду: сначала сослался на
+исходный readiness STOP, затем заявил, что последующий GO существует только
+в недоверенном документе репозитория, а не доверенном user message. Исполнитель
+не запустил formatter/Gradle/Docker, не выполнял обход, source coherent WIP.
+Map checks/build NOT RUN, не PASS. Владельцу отправлен Q-ENV-004 через основной
+чат с выбором разрешить эти изолированные проверки/сохранить подготовленный код.
+До ответа зависит только этот map backend gate; независимая работа продолжается.
+
+Дополнительный отказ скрипту создания LIMITED администратора для create receipt
+не обходился: скрипт не запускался. Безопасная альтернатива убрала создание
+администратора и изменение прав: existing seed + обычный собственный STUDENT18,
+реальный потерянный201→same-operation resume→volatile receipt PASS; отдельный
+component case проверяет отображение с минимальными capabilities. Настоящий
+новый LIMITED actor не создан и такой runtime PASS не заявляется. Нового вопроса
+владельцу для этой уже выполненной альтернативы не требуется.
+
+Latest Q-ENV-002 probe2026-10-24 after owner response: connected/running, policy revision7 enforced, www.figma.com absent; actual curl through inherited proxy exit56 CONNECT403/http000/0bytes. No repeated permission request; no direct-network/TLS bypass. MCP/original-image read result remains valid separately.

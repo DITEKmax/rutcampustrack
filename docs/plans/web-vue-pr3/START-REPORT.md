@@ -1,12 +1,10 @@
 # Старт — Vue web redesign
 
-> Актуальный срез 2026-10-24 после отдельного GO: машина работает, ZIP полностью
-> проверен, первый web/backend пакет интегрирован, runtime HTML-галерея создана.
-> Настоящие Schedule/Attendance/Notification добавлены; API Today200 получен,
-> полный новый web Today ещё не принят. Политика www.figma.com пока403 несмотря
-> на обещанное разрешение. Текущие факты/границы/прогресс — [PROGRESS](PROGRESS.md)
-> и [FIRST-PACKAGE-CHECKPOINT](FIRST-PACKAGE-CHECKPOINT.md). Ниже исторический
-> стартовый снимок; его pending/offline/STOP/old session не являются текущими.
+> Актуальный срез2026-10-24:117 active сохранены; implemented115/117,
+> locally verified110/117. Today/расписание/заявки и cross-client Late decision
+> подтверждены; положительная GEO64 и шесть ADMIN actions остаются.
+> [PROGRESS](PROGRESS.md), [ROLE-ACCEPTANCE](ROLE-ACCEPTANCE-20261024.md).
+> Ниже исторический старт: pending/offline/STOP/old session не являются текущими.
 
 Дата решений: 2026-10-23 (Europe/Moscow).
 Рабочий PR: https://github.com/DITEKmax/rutcampustrack/pull/3 (draft).

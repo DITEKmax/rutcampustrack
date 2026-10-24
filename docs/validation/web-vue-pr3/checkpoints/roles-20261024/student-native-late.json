@@ -1,0 +1,194 @@
+{
+  "evidenceKind": "real-runtime-safe-projection",
+  "originalPath": "/tmp/student-web-native-late53/summary.json",
+  "originalSha256": "889e4c9f087e37d6f408aa66effd2c711283647e3b01577d8bc521340a0e9948",
+  "scopeNote": "Native UI single late submission200. Plaintext operation key/commands/session omitted.",
+  "capturedAt": "2026-10-24T02:16:31.001Z",
+  "studentSourceRevision": "3d6cf10a88a9e3b9d54474a7b28a5d3484a5f3ab",
+  "assembledRootRevision": "3f5852b9524245e98b16110b8fb4fde4bd68f389",
+  "actorId": 15,
+  "groupId": 4,
+  "lessonId": 53,
+  "requestId": "6adc14fea6849215f823a07f",
+  "checks": [
+    "actual user15/group4 authority admitted",
+    "preflight actual own53 closed absent and late eligible",
+    "normal late form selects only own53",
+    "one normal late request accepted HTTP200",
+    "server request is pending native late for own53 only",
+    "accepted native late card receives focus",
+    "authoritative own ticket readback is pending late53",
+    "late submission uses one budget attempt",
+    "own attendance remains absent pending independent decision",
+    "late53 option lists only the accepted pending command",
+    "lesson64 eligibility and projection stay untouched",
+    "only one student command was sent",
+    "no browser runtime errors"
+  ],
+  "errors": [],
+  "http": [
+    {
+      "path": "/api/v1/student/session",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/student/session",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/student/today",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/student/requests/options",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/student/homework",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/student/session",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/student/requests/options",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/student/attendance",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/student/homework",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/student/requests/options",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/student/today",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/student/attendance",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/student/statistics/subjects/4",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/student/statistics/subjects/4",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/student/attendance",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/student/session",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/student/requests",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/student/requests/options",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/student/requests/late-checkin",
+      "method": "POST",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/student/requests",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/student/requests/6adc14fea6849215f823a07f",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/student/session",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/student/requests/options",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/student/requests",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/student/requests/6adc14fea6849215f823a07f",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/student/requests/options",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/student/session",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/student/requests/options",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/student/attendance",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/student/requests/6adc14fea6849215f823a07f",
+      "method": "GET",
+      "status": 200
+    }
+  ],
+  "beforeBudget": {
+    "semesterId": "2",
+    "limit": 5,
+    "used": 0,
+    "remaining": 5
+  },
+  "afterBudget": {
+    "semesterId": "2",
+    "limit": 5,
+    "used": 1,
+    "remaining": 4
+  },
+  "studentPostCount": 1
+}

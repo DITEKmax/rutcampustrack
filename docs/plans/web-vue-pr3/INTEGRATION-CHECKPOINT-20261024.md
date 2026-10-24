@@ -1,3 +1,10 @@
+# Актуальный срез ролей
+
+После исторического26/117 пакета приняты новые роли/common corrections.
+Текущие115/117 implemented и110/117 locally verified, revisions и семь
+оставшихся gates: [ROLE-ACCEPTANCE-20261024.md](ROLE-ACCEPTANCE-20261024.md).
+Ниже сохранён предыдущий checkpoint; его in-progress статусы исторические.
+
 # Integration checkpoint — 2026-10-24 Europe/Moscow
 
 Existing Goal GO; PR3/codex/web-vue-redesign. Source through root176f6614f,

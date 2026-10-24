@@ -1,88 +1,86 @@
 # PROGRESS — Vue web redesign
 
-Срез 2026-10-24 Europe/Moscow. Существующий draft [PR3](https://github.com/DITEKmax/rutcampustrack/pull/3), ветка `codex/web-vue-redesign`.
-Владелец отдельно запустил Goal после readiness; [контракт](GOAL-CONTRACT.md) сохраняется.
+Срез2026-10-24 Europe/Moscow. Существующий draft [PR3](https://github.com/DITEKmax/rutcampustrack/pull/3), ветка `codex/web-vue-redesign`.
+Goal запущен после readiness; [контракт](GOAL-CONTRACT.md) сохраняется.
+Собранный source revision `3f5852b9524245e98b16110b8fb4fde4bd68f389`.
 
 ## Функциональный прогресс Vue web
 
-**Implemented 26/117 (22,22%). Locally verified 26/117 (22,22%).**
-Знаменатель 117 active не уменьшен. Counts относятся к принятым действиям,
-а не к ширинам, темам, screenshots или числу компонентов. Source implementation
-и достаточное локальное подтверждение показаны отдельно. Это промежуточный
-пакет; полная замена Angular и новая реализация целиком ещё не готовы.
+**Implemented115/117 (98,29%). Locally verified110/117 (94,02%).**
+Исходные117 active действий сохранены. Ширины, темы, assertions и screenshots
+не являются отдельными действиями. Это промежуточная приёмка ролей, а не
+завершение полной замены Angular/поставки.
 
 | Роль | Active | Implemented | Locally verified |
 |---|---:|---:|---:|
 | AUTH | 6 | 6/6 (100%) | 6/6 (100%) |
-| SHARED | 15 | 10/15 (66,67%) | 10/15 (66,67%) |
-| STUDENT | 16 | 2/16 (12,50%) | 2/16 (12,50%) |
-| HEADMAN | 38 | 0/38 (0%) | 0/38 (0%) |
+| SHARED | 15 | 15/15 (100%) | 15/15 (100%) |
+| STUDENT | 16 | 16/16 (100%) | 15/16 (93,75%) |
+| HEADMAN | 38 | 38/38 (100%) | 38/38 (100%) |
 | TEACHER | 8 | 8/8 (100%) | 8/8 (100%) |
-| ADMIN | 34 | 0/34 (0%) | 0/34 (0%) |
+| ADMIN | 34 | 32/34 (94,12%) | 28/34 (82,35%) |
 
-Учтены AUTH6, роль/logout/тема, профиль/история/аватар/пароль/сессии7,
-просмотр/собственная отметка ДЗ и TEACHER8. Просмотр ДЗ
-дополнительно подтверждён для дня/недели/месяца, навигации, ссылки, клавиатуры
-и root20. Реальная публикация STOMP появляется при hover и сохранённом focus.
-AUTH/shared приняты после независимого af00 recheck; TEACHER8 — полного
-review и узких210/840 rechecks. Root combined strict build PASS.
-HEADMAN/ADMIN ещё проходят оставшиеся gates. Актуальные revisions,
-evidence и оставшиеся gates — [checkpoint](INTEGRATION-CHECKPOINT-20261024.md).
+[Приёмка ролей и семь оставшихся action gates](ROLE-ACCEPTANCE-20261024.md)
+содержит точный scope, revisions, ограничения и ссылки на независимое review.
+[Карта](SCREEN-ACTION-MAP.csv) и [безопасные runtime receipts](../../validation/web-vue-pr3/checkpoints/roles-20261024/manifest.json)
+обновлены вместе с этим срезом. Предыдущие26/117 остаются историей первого
+пакета в [integration checkpoint](INTEGRATION-CHECKPOINT-20261024.md).
 
-## Текущая работа
+Подтверждён сквозной native Late: STUDENT15 отправляет одну заявку200,
+HEADMAN12 одобряет одной командой200, сервер меняет ABSENT на PRESENT с
+late_checkin. В двух открытых студентских представлениях реальные STOMP/REST
+показывают решение и отметку без refresh; focused/hovered DOM сохранён.
+Metadata53, весь64 и остальные участники не изменены. Исправленный common
+revoke удаляет и navigation, и уже открытые таблицы после отзыва grant.
 
-Первый shared foundation/password/session/homework пакет интегрирован,
-независимые source findings исправлены и recheck PASS. Общая
-light/dark/system основа PWA/TMA и Auth device mirror интегрированы. Настоящий
-PWA app подтвердил сохранение темы между logout/login и сменой аккаунта.
-Полная матрица состояний существующих мобильных экранов и signed Telegram
-admission пока не подтверждены; это не скрывается под общим PASS.
+## Оставшаяся работа
 
-Далее: оставшиеся SHARED — web_foundation; HEADMAN38 — headman_web;
-ADMIN34 — admin_web; оставшиеся STUDENT14 — teacher_web в новом student-web worktree. Отдельные worktrees, ownership в
-[SLOTS](../../../.agent/orchestration-v2/SLOTS.md). Common registry/config/lock —
-web owner; tokens/mobile — theme owner; API/generated — backend owner; docs — root.
-Новые source-ready role пакеты не засчитываются до достаточной приёмки.
+- STUDENT: положительная геоотметка64 в допустимом окне. Сейчас настоящие
+  PLANNED/TOO_EARLY, основной стенд и browser clock не подменялись.
+- ADMIN: запись прав, выполнение promotion, реальная активация семестра,
+  FULL/self password generation unknown result, whole-map final deletion,
+  group final deletion. Чтение/preview/cancel не засчитываются как эти записи.
+- Global delivery: удалить активный Angular после замены возможностей;
+  закончить Vue image/static routing/build/oracle wiring, проверить изменённые
+  границы поставки и завершить доступную из PR runtime HTML-галерею.
+- Mobile themes: source24 families и существующие140 visual samples проверены
+  отдельно. Два P2 исправлены09e7, независимый narrow recheck12 кадров PASS.
+  Общий helper завершился exit1 при последующем cleanup; это не command PASS.
+  Signed native Telegram и внешняя Push delivery не заявлены подтверждёнными.
 
-## Настоящий стенд и галерея
+## Настоящий стенд и материалы
 
-В изолированный стенд добавлены настоящие Schedule, Attendance, Notification
-с нужными synthetic DB/queue зависимостями; 13 контейнеров healthy. Auth,
-Academic, Gateway, Mobile BFF сохранены. Реальные login/session/homework write/
-readback, schedule/Today/unread API теперь отвечают успешно. API Today200 не
-означает подтверждение полного нового web экрана «Сегодня». Renderer с настоящим
-LibreOffice/Poppler выдаёт PDF, HTML и XLSX; bytes и содержимое проверены.
+13healthy контейнеров изолированного `rct-pr3-setup`: Auth/Academic/Gateway/BFF,
+Schedule/Attendance/Notification/Renderer и PostgreSQL/Redis/RabbitMQ/MongoDB.
+Настоящий LibreOffice выдаёт PDF/HTML/XLSX; bytes и содержимое проверены.
+Auth f3c03bd81 и Academic950 immutable artifacts сопоставлены исходникам;
+CAS/GroupOptions950 реально развернуты. Map usage204/replay204 даёт0→1→1.
+Нет mocks для отсутствующих сервисов или фиктивного успеха.
 
-[HTML-галерея](../../validation/web-vue-pr3/runtime-gallery/index.html) содержит
-20 runtime samples с точными revisions: auth, homework populated/completed,
-8 ширин и обе темы. [2 targeted hover samples](../../validation/web-vue-pr3/runtime-gallery/hover-a2ef210623/index.html)
-добавлены отдельно после исправления контраста, старые изображения сохранены.
-[Преподаватель:14runtime samples](../../validation/web-vue-pr3/runtime-gallery/teacher-20261024/index.html)
-содержит8 исправленных кадров журнала/пары и6 адресных кадров review corrections.
-В каждой записи ID, screen/state/theme/width/revision/описание; рядом portable
-ZIP для открытия HTML со всеми PNG без deploy. Reference/Figma не выдаётся за runtime.
+[HTML-галерея](../../validation/web-vue-pr3/runtime-gallery/index.html) сохраняет
+исторические20 auth/homework,2 hover и14 teacher samples с точными revisions.
+Добавлены80 STUDENT,44 свежих HEADMAN и12 адресных mobile theme кадров
+с отдельными IDs/source/state/theme/width и оригинальными PNG. Старый отсутствовавший auth asset отмечен только у
+исторических кадров; настоящий оригинал теперь восстановлен через read-only
+Figma bytes/hash. Reference/Figma не выдаётся за runtime.
 
-## Блокеры и вопросы
+ZIP87568617bytes/SHA256/CRC/safe paths/422 entries/388PNG manifests полностью
+проверен. GitHub MCP, gh/API и Git доступны независимо. Figma MCP context и
+screenshot работают; `www.figma.com` пока отсутствует в фактической policyrev7,
+повторный curl CONNECT403. Ответ владельца «Разрешу» получен, повторного
+разрешения не требуется; сетевое применение ещё не подтверждено.
 
-- Q-ENV-002: владелец ответил «Разрешу www.figma.com». В последнем фактическом
-  probe policy revision7 host ещё отсутствует; proxy CONNECT403. Figma MCP
-  context/screenshot работает. Original auth PNG получен read-only через
-  Figma image bytes, SHA1 совпадает с image hash; auth asset больше не блокер.
-- Q-PROD-004: окончательное удаление группы — судьба участников и групповых
-  STUDENT/HEADMAN grants. Ответ ожидается; независимые действия продолжаются.
-- Q-ENV-003: ожидается отдельный ответ на конкретный проверяемый сценарий user8
-  после отказа automatic approval review. До ответа временный FULL/self-reset
-  и неизвестный результат генерации в этом сценарии не запускаются.
-- Admin password generation backend прошёл независимое review; web UI ещё
-  не принят целиком. Group final deletion остаётся implementation gap.
-- Server groupId/status filter и async export исправление интегрированы и
-  независимо проверены; immutable rollout и настоящий filtered async export PASS. Helper CAS
-  и минимальное lookup дополнение без расширения GROUPS_VIEW в работе.
-- Полное удаление схемы требует проверки cascade всех версий и GC файлов;
-  опубликование ABSENT не считается окончательным удалением.
+## Вопросы и границы
 
-Figma read-only; ZIP полностью проверен; MCP/gh/API/Git доступны. Старые
-pending/offline сведения не относятся к этой машине. CI/Coverage/Security/
-OpenAPI **PAUSED**, только workflow_dispatch, не PASS. Нет main writes, merge,
-deploy, production или глобальной очистки Docker. Angular остаётся до полной
-замены возможностей и будет удалён из активной поставки после неё.
+Q-PROD-004 ждёт решения о membership/grants при final group deletion.
+Q-ENV-003 ждёт разрешения конкретного own8 FULL/self/unknown-result сценария
+после отказа automatic approval review;8 заморожен.
+Q-ENV-004 ждёт разрешения scoped map formatter/HTTP PostgreSQL/regression/JAR
+после отказа review; эти команды не запускались. Независимая работа продолжается.
+Точные причины и подготовленные сценарии — [OPEN-QUESTIONS](OPEN-QUESTIONS.md).
+
+CI/Coverage/Security/OpenAPI **PAUSED**, только workflow_dispatch, не PASS.
+Нет main writes, merge, deploy, production, firewall или глобальной очистки
+Docker. Существующий PWA WebPush сохранён; web channel settings не возвращены.
+Собственный student export отложен; пользователей окончательно не удаляем;
+teacher grants и запрет отменённых функций сохранены.

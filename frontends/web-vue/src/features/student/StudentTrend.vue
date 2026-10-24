@@ -90,77 +90,77 @@ function paths(key: 'present' | 'presentOrExcused' | 'group') {
           С группой
         </button>
       </div>
-      <svg
+      <div
         v-if="points.length"
-        class="student-chart-plot"
-        viewBox="0 0 1000 210"
-        role="img"
-        aria-label="Динамика посещаемости, шкала от 0 до 100 процентов"
+        class="student-chart-frame"
       >
-        <g
-          v-for="tick in [0, 25, 50, 75, 100]"
-          :key="tick"
+        <div
+          class="student-chart-y-axis"
+          aria-hidden="true"
         >
-          <line
-            x1="50"
-            x2="950"
-            :y1="180 - tick * 1.6"
-            :y2="180 - tick * 1.6"
-            class="student-chart-grid"
-          />
-          <text
-            x="40"
-            :y="184 - tick * 1.6"
-            text-anchor="end"
-          >
-            {{ tick }}
-          </text>
-        </g>
-        <g
-          v-for="(line, index) in series"
-          :key="line.key"
-          :class="index ? 'student-series-secondary' : 'student-series-primary'"
+          <span
+            v-for="tick in [100, 75, 50, 25, 0]"
+            :key="tick"
+          >{{ tick }}</span>
+        </div>
+        <svg
+          class="student-chart-plot"
+          viewBox="0 0 1000 210"
+          preserveAspectRatio="none"
+          role="img"
+          aria-label="Динамика посещаемости, шкала от 0 до 100 процентов"
         >
-          <path
-            v-for="(path, n) in paths(line.key)"
-            :key="n"
-            :d="path"
-            class="student-chart-line"
-          />
-          <template
-            v-for="point in points"
-            :key="point.id"
+          <g
+            v-for="tick in [0, 25, 50, 75, 100]"
+            :key="tick"
           >
-            <circle
-              v-if="value(point, line.key) !== null"
-              :cx="x(point)"
-              :cy="180 - (value(point, line.key) ?? 0) * 1.6"
-              r="3"
+            <line
+              x1="50"
+              x2="950"
+              :y1="180 - tick * 1.6"
+              :y2="180 - tick * 1.6"
+              class="student-chart-grid"
             />
-          </template>
-        </g>
-        <line
-          v-if="chosen"
-          :x1="x(chosen)"
-          :x2="x(chosen)"
-          y1="20"
-          y2="180"
-          class="student-chart-selection"
-        />
-        <text
-          x="50"
-          y="205"
+          </g>
+          <g
+            v-for="(line, index) in series"
+            :key="line.key"
+            :class="index ? 'student-series-secondary' : 'student-series-primary'"
+          >
+            <path
+              v-for="(path, n) in paths(line.key)"
+              :key="n"
+              :d="path"
+              class="student-chart-line"
+            />
+            <template
+              v-for="point in points"
+              :key="point.id"
+            >
+              <circle
+                v-if="value(point, line.key) !== null"
+                :cx="x(point)"
+                :cy="180 - (value(point, line.key) ?? 0) * 1.6"
+                r="3"
+              />
+            </template>
+          </g>
+          <line
+            v-if="chosen"
+            :x1="x(chosen)"
+            :x2="x(chosen)"
+            y1="20"
+            y2="180"
+            class="student-chart-selection"
+          />
+        </svg>
+        <div
+          class="student-chart-x-axis"
+          aria-hidden="true"
         >
-          {{ points[0] ? shortDate(points[0].dateFrom) : '' }}
-        </text>
-        <text
-          x="950"
-          y="205"
-          text-anchor="end"
-        >
-          {{ points.at(-1) ? shortDate(points.at(-1)!.dateTo) : '' }}
-        </text>
-      </svg>
+          <span>{{ points[0] ? shortDate(points[0].dateFrom) : '' }}</span><span>{{ points.at(-1) ? shortDate(points.at(-1)!.dateTo) : '' }}</span>
+        </div>
+      </div>
       <p
         v-else
         class="web-caption"
@@ -216,9 +216,7 @@ function paths(key: 'present' | 'presentOrExcused' | 'group') {
                 :aria-pressed="selected === point.id"
                 @click="selected = point.id"
               >
-                {{
-                  point.label || `${shortDate(point.dateFrom)} — ${shortDate(point.dateTo)}`
-                }}
+                {{ point.label || `${shortDate(point.dateFrom)} — ${shortDate(point.dateTo)}` }}
               </button>
             </th><td>{{ percent(value(point, 'present')) }}</td><td>{{ percent(value(point, group ? 'group' : 'presentOrExcused')) }}</td><td>
               {{ point.metrics.held

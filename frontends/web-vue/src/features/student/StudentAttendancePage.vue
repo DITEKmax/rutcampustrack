@@ -44,6 +44,7 @@ async function load() {
     subjectStats.clear();
     return;
   }
+  if (!date.value) date.value = serverDate(scope.session.value?.serverNow) ?? semester.startsOn;
   await attendance.load(() => scope.api.getAttendance(semester.id));
   if (!scope.current() || !attendance.data.value) return;
   if (!date.value) date.value = serverDate(attendance.data.value.serverNow) ?? semester.startsOn;

@@ -319,9 +319,30 @@
 }
 .student-chart-plot {
   inline-size: 100%;
-  block-size: auto;
-  min-block-size: var(--student-chart-height);
+  block-size: var(--student-chart-height);
   overflow: visible;
+}
+.student-chart-frame {
+  position: relative;
+  padding-inline-start: var(--space-8);
+}
+.student-chart-y-axis {
+  position: absolute;
+  inset-block: 9.5% 14.3%;
+  inset-inline-start: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  font-size: var(--font-size-micro);
+  color: var(--color-text-muted);
+}
+.student-chart-x-axis {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding-inline: var(--space-4);
+  font-size: var(--font-size-micro);
+  color: var(--color-text-muted);
 }
 .student-chart-plot text {
   fill: var(--color-text-muted);

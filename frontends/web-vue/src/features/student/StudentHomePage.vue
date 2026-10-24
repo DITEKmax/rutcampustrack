@@ -8,7 +8,7 @@ import type {
 } from '../../../../mobile-core/src/api/types';
 import { useStudentResource, useStudentScope } from './student-state';
 import { useStudentCheckin } from './use-student-checkin';
-import { formatLessonDate, lessonTypeLabel, monday, shiftDate } from './student-format';
+import { formatLessonDate, lessonTypeLabel, monday, serverDate, shiftDate } from './student-format';
 import StudentRegion from './StudentRegion.vue';
 import StudentNotice from './StudentNotice.vue';
 import StudentLesson from './StudentLesson.vue';
@@ -44,6 +44,8 @@ async function load() {
     options.clear();
     return;
   }
+  if (!week.value)
+    week.value = monday(serverDate(scope.session.value?.serverNow) ?? semester.startsOn);
   await Promise.all([
     today.load(() => scope.api.getToday()),
     attendance.load(() => scope.api.getAttendance(semester.id)),
@@ -79,9 +81,11 @@ const checkin = useStudentCheckin(scope, load);
 const graph = computed(() =>
   range.value === 'semester'
     ? (attendance.data.value?.graph.weeks ?? [])
-    : (attendance.data.value?.graph.days.filter(
-        (p) => p.dateFrom >= week.value && p.dateFrom <= shiftDate(week.value, 6),
-      ) ?? []),
+    : !week.value
+      ? []
+      : (attendance.data.value?.graph.days.filter(
+          (p) => p.dateFrom >= week.value && p.dateFrom <= shiftDate(week.value, 6),
+        ) ?? []),
 );
 const progress = computed(() => {
   const lesson = hero.value?.schedule,

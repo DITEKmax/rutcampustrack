@@ -1,34 +1,34 @@
-# Восстановление shell и сохранность PR3
+# Восстановление shell и переносимая копия PR3
 
-Проверены существующая ветка и local77fbd7a5e, все11 worktrees,63 staged
-файла Root и source WIP. Потерь не обнаружено. Все46 файлов group SOURCEv7
-совпали с immutable manifest; credential handoff3файла и ACL-v2 сохранены.
-Worker absent paths соответствуют sparse skip-worktree, это не потеря файлов.
-Последний unit after-navigation.log содержит только RUN; PASS не заявляется.
+Сохранность local77fbd7a5e, всех11 исходных worktrees,63 staged файлов Root,
+source WIP и новых файлов проверена: потерь продуктовых исходников не найдено.
+Sparse skip-worktree paths не являются потерей. Два старых /tmp native scripts
+не пережили restart; product/source/receipts сохранены, новые harnesses в /workspace.
 
-Переносимая source-only копия: /workspace/rct-pr3-recovery/20261024T171044Z.zip,
-6256924bytes, SHA256 d349768413f03487fcf7e1a18133191dc43b9d0c1b9561394bcb331fba8bdd43.
-Git bundle165 unpublished commits verifyPASS, раздельные staged/unstaged patches
-и новые исходники11worktrees,13 внешних source/prep files, manifest/hashes,
-ZIP CRC и безопасные пути PASS. Секреты/private runtime receipts/DB/keys/env,
-JAR/dependencies/caches не включены. Четыре historical scan matches — UUID
-константы unit-test запросов, не credentials; история и правила не переписаны.
+Последняя переданная source-only копия:
+`/workspace/rct-pr3-recovery/20261024T185650Z.zip`,5552353bytes,
+SHA256 `5f065b81185d995f039e0ebf79db1c325db41928853f96b3f0065dd9970d228f`.
+168 unpublished commits относительно888,12 worktrees staged/unstaged/new source,
+48 public source/prep files. Git bundle verify, ZIP CRC/safe paths/SHA manifest,
+неизменность исходного WIP PASS. Секреты/private runtime receipts/DB/keys/env,
+JAR/dependencies/cache исключены. Это снимок18:56Z; более поздние интегрированные
+коммиты публикуются в существующую ветку PR3, архив не является latest HEAD.
 
-Три staged Gitleaks matches в map metadata — public Git revision и два
-evidence SHA256. Значения сверены с Git object/реальными файлами. Поля
-losslessly renamed в публичной проекции; inverse mapping равен исходному
-receipt. Raw original сохранён; scanner rules/ignores не менялись. Новый
-staged scan PASS. [Проекция](../../validation/web-vue-pr3/checkpoints/admin-visual-20261024/publication-provenance.json).
+Первый архив171044Z (6256924B/d3497684,165commits/11WT) сохранён. Три staged
+Gitleaks map matches классифицированы как публичные Git/evidence hashes;
+lossless metadata projection и staged scan PASS, правила/ignores не менялись.
+В новой source pack native scan exit1 с24 matches сохранён:11 public Git IDs,
+11 AuthJAR checksums и2 public harness hashes независимо сверены как nonsecret.
+SCAN-CLASSIFICATION.md включён в архив; native scanner PASS не заявляется,
+история/источники/правила не переписаны для зелёного результата.
 
-Последняя подтверждённая очистка Q3 — independent19PASS, proof498dc5e7:
-user8 ACTIVE/STUDENT/group1, RV6/Cred5/profile4unassigned, обе его сессии
-и собственные seed-сессии revoked, остальные17actors/20grants не менялись.
-Старый external checkpoint сохранён отдельно; по его pendingFULL операции
-повторять нельзя. Новая проверка очистки без изменившейся причины не запускалась.
+Security состояние принимать из последних независимых postread, не из архива:
+password post9598 — Cred7/RV8/Aca8/profile6unassigned, STUDENTgroup1 preserved,
+все3 текущие own sessions revoked; LIMITED postc7ee — Teacher2profile8unassigned,
+RV9/catalog22/Aca9/Cred1/Binding1, все4 own sessions revoked, чужие данные целы.
+Пакеты закрыты. Старые Cred5/profile4/profile6 ACL baseline и pending cleanup
+исторические. Ни генерацию, ни выдачу прав, ни cleanup по ним не повторять.
 
-Следующие пакеты после публикации: закончить self-credential handoff и
-изоляцию successor login; исправить group status binding и две test fixtures,
-повторить8failed случаев с переиспользованием5PASS; закончить LIMITED target
-access/openpage withdrawal. Визуальный finite mobile/theme/state список
-идёт параллельно. Затем Angular removal и assembled commonNginx runtime.
-CI/Coverage/Security/OpenAPI PAUSED, без merge/deploy/production.
+Продолжается group final delete UI/open access и finite visual остаток; затем
+Angular removal/commonNginx. CI/Coverage/Security/OpenAPI PAUSED, без merge/deploy/
+production. [Актуальные приоритеты](CURRENT-PRIORITIES.md).

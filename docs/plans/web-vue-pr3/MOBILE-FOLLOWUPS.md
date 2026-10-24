@@ -32,3 +32,12 @@ state. Source-only/unvisited cases remain listed in the immutable mobile review.
 2026-10-24: в переиспользованной 68B PNG-константе web/mobile тестов найден некорректный IDAT CRC. Оба конкретных literals исправлены с сохранением пикселей и assertions; Root независимо проверил mobile4042/eca7. Мобильный продукт, API, тема и сценарии не менялись, новую функцию в мобильные клиенты не переносили.
 
 2026-10-24: API-006 adds optional nullable map-preview deletionScope; existing PWA/TMA AdminMapScreen uses explicitformat and keeps selected-format semantics. WEB whole-graph deletion is not added to mobile. Shared adapter tests and strict builds of all three clients PASS on c3c08a935; native mobile whole-delete is not claimed.
+
+
+Group final deletion8e83: mobile changes only refresh existing active reads and
+normal session admission after target access withdrawal. No administrator delete
+screen or other new web business function is transferred to PWA/TMA. Pending
+export/drafts survive transient background refresh failure; revoked target private
+projection is retired. Real same-realm socket flow remains a runtime gate. Profile
+loading skeletonc35 uses existing shared feature/tokens, with native Telegram
+provider distinct from controlled host evidence.

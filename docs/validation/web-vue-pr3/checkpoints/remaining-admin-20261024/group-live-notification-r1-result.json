@@ -1,0 +1,21 @@
+{
+  "at": "2026-10-24T20:42:36.407146+00:00",
+  "sourceBefore": {
+    "commit": "8e83a2d9105af75d015d6df7a8888eab330f43dc",
+    "manifestSha256": "732d4c02bcc1288aa21535ea07b6d0a9852b7d4ff0b63c175a9e2d1bbe82e651",
+    "files": 25
+  },
+  "sourceAfter": {
+    "commit": "8e83a2d9105af75d015d6df7a8888eab330f43dc",
+    "manifestSha256": "732d4c02bcc1288aa21535ea07b6d0a9852b7d4ff0b63c175a9e2d1bbe82e651",
+    "files": 25
+  },
+  "exit": 0,
+  "durationSeconds": 50.55,
+  "minimumFreeBytes": 3906777088,
+  "guardStopped": false,
+  "memoryEventsAfter": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\n",
+  "nativeCases": 1,
+  "passed": 1,
+  "logSha256": "e0ab8a7d2a3ec53aee5961414f8cafec2b190f7a94c7648f05db6b6023c6cbee"
+}

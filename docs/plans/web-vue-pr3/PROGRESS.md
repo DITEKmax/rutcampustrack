@@ -2,10 +2,10 @@
 
 Существующий draft [PR №3](https://github.com/DITEKmax/rutcampustrack/pull/3),
 ветка `codex/web-vue-redesign`. Goal запущен владельцем после readiness и
-продолжается. Прежний собранный frontend source `0421d344c`; текущий frontend source `5e6a18433`, backend map source
+продолжается. Прежний собранный frontend source `0421d344c`; текущий интегрированный frontend source `a851d5cf7`, backend map source
 `1fe1588dd`, release-input source `8e280baef`. Всегда получать актуальный remote HEAD.
 
-**Implemented 116/117 (99,15%). Locally verified 115/117 (98,29%).**
+**Implemented 116/117 (99,15%). Locally verified 116/117 (99,15%).**
 Исходные117 active действий сохранены. Темы, ширины, кадры и assertions
 не считаются отдельными действиями. Полная замена Angular ещё не завершена.
 
@@ -16,7 +16,7 @@
 | STUDENT |16|16/16 (100%)|16/16 (100%)|
 | HEADMAN |38|38/38 (100%)|38/38 (100%)|
 | TEACHER |8|8/8 (100%)|8/8 (100%)|
-| ADMIN |34|33/34 (97,06%)|32/34 (94,12%)|
+| ADMIN |34|33/34 (97,06%)|33/34 (97,06%)|
 
 После явного разрешения Q-ENV-006 добавлены ровно три historical inputs:
 SPRING2025, собственная пустая группа6 и managed coverage. Один обычный UI
@@ -73,11 +73,11 @@ Teaching time2029 изменён только в Academic fixture; Auth/TLS/JWT/
 consumer/provider delivery и полный dashboard не объявлены PASS.
 [Приёмка и исходные receipts](../../validation/web-vue-pr3/checkpoints/role-semester-20261024/manifest.json).
 
-Остаются два action gates поведения; принятый password пакет показан отдельно:
+Остаётся group action gate поведения; закрытые пакеты показаны отдельно:
 
 | Действие | Подтверждено | Остаток |
 |---|---|---|
-| LIMITED ADMIN | Original3dd + actualv2: Users200/Groups403→Groups200/rendered, revoke204/oldADMINdenied; profile6/RV7/catalog18/Aca7, Teacher/account preserved, four own sessions independently revoked | Open-page cached table withdrawal FAIL retained; bounded visibleADMIN reconciliation and only combinedgrant/revoke regression pending |
+| LIMITED ADMIN — локально принято | v2 Users200/Groups403→Groups200; v3 original grant/revoke, idle withdrawal3708ms, actual oldADMIN/session403, Teacher/profile200. Independentpostc7ee profile8unassigned/RV9/Aca9, все4 own sessions revoked, чужие данные сохранены | Закрыто. Raw driver exit1 сохранён и квалифицирован как TEST enum gap; ACL/cleanup не повторять |
 | Генерация пароля user8 — локально принято | Sourcec586 integrated7ad6+authority2d integrated5e6: actual self-known5→6 receipt/login, next normal login clears receipt; lostACK6→7 unknown/nooutput/native401/noextraPOST. Independentpost9598 confirms Cred7/RV8/Aca8/profile6unassigned, STUDENTgroup1/other17/seedFULL preserved, all3own sessions revoked | Закрыто. Earlier raw FAIL и3original commands retained; no replay |
 | Окончательное удаление группы | Backend/Vue source в отдельных worktrees; SOURCEv4 compile четырёх сервисов PASS; SOURCEv5 независимо закрывает F1–F3, SOURCEv8 closes13 Academic/Auth HTTP/PG/Redis cases (8 corrected+5 reused); Schedule3 closed (2PASS reused+one v10RELEASE receipt fix) | Attendance4 actualMongo PASS after corrected resource admission; all20 boundary cases closed. Root integration/four source-matched JARs and законченный UI-сценарий, в том числе отзыв доступа; разрешение original intent после неверного пароля/устаревшего preview |
 
@@ -104,7 +104,7 @@ Vue e2e adapters/oracle и три release-input конфига прошли sour
 хоста и обычным worker. Это не runtime PASS всей поставки. Workflow CI/Coverage/Security/OpenAPI — только
 workflow_dispatch, **PAUSED**, не PASS. Без dispatch/merge/deploy/production.
 
-Общий gallery index содержит220 настоящих runtime PNG (portable204 пока исторический snapshot), включая PROMOTE, fresh ADMIN home
+Общий gallery index содержит249 настоящих runtime PNG (portable204 пока исторический snapshot), включая PROMOTE, fresh ADMIN home
 и ACTIVATE. Каждый кадр имеет собственную revision и manifest;
 Figma/reference не выдаются за реализацию. [Галерея](../../validation/web-vue-pr3/runtime-gallery/index.html) ·
 [Review manifest](../../validation/web-vue-pr3/review/manifest.json) ·
@@ -123,7 +123,7 @@ WEB fragment подтверждены отдельно; deploy и cutover не �
 
 ## Готовность по отдельным измерениям
 
-- Действия: accepted source116/117; поведение115/117. Это доля действий, не процент всего PR.
+- Действия: accepted source116/117; поведение116/117. Это доля действий, не процент всего PR.
 - Визуал: конечная матрица33 web-вью +50 мобильных Screen-компонентов, покрытие PWA/TMA отдельно; статусы готово/исправить/не проверено. Базовые пригодные кадры переиспользуются; полный visual PASS не заявлен. Исходный bare-loading и cap3 воспроизведены, затем исправлены77f. Runtime подтвердил четыре toast по10.127/10.089/10.176/9.987s и историю; Student425light/Headman300light/Teacher1440dark skeleton. Эти bounded criteria закрыты; исходные rawFAIL и cleanup limits сохранены, остальные темы/адаптив/состояния не объявлены PASS.
 - Angular/build: Angular остаётся активным; финальная очистка и общий Nginx deep-link/static/API/realtime/PWA/TMA/WebPush checkpoint впереди. Ранее проверенные внутренние shipping images и static serving повторно не запускаются без изменённой зависимости.
 
@@ -148,3 +148,34 @@ unpublished commits +11worktrees, без private runtime data. [Сохранно
 классифицированы и устранены lossless field projection, staged Gitleaks PASS.
 
 PWA visual пакет:16 actual baseline PNG (Today12 +history4), реальныеAPI/ownlogout204/guest401. Колокольчик/назад/история подтверждены; первоначальный locatorFAIL сохранён. Narrow notification title исправленCSS7877:3actualafter/control5e6,300light/dark без orphan,1440light байтыPNG совпадают с before. [Before/after галерея](../../validation/web-vue-pr3/runtime-gallery/mobile-observed-20261024/index.html). Индекс239PNG/portable204 snapshot; это не доля visualготовности.
+
+
+## Последний завершённый пакет: LIMITED, live-source и мобильный визуал
+
+LIMITED принят по [qualified v3 receipt](../../validation/web-vue-pr3/checkpoints/remaining-admin-20261024/limited-v3-acceptance.json).
+Raw FAIL не превращён в raw PASS: драйвер ожидал401/200, фактический authority
+endpoint вернул403. Продукт естественно убрал private таблицу за3708ms без focus/
+reload; новый TEACHER получил профиль200. Postc7ee подтвердил профиль8unassigned,
+RV9/catalog22/Aca9, неизменённые account/TEACHER/Cred1/Binding1/чужие данные и отзыв
+четырёх собственных сессий. Прежние v2/profile6 и helper checkpoints исторические.
+Повторять привилегии/очистку не требуется.
+
+Group64f backend +ae546 client +f67 Vue +3e174 retirement интегрированы. Все20
+boundary cases переиспользованы, четыре64f JAR сохранены. Root assembled WEB build
+наe715 PASS; затем из-за изменённых shared/App зависимостей все3 Vue build
+наa851 PASS (strict vue-tsc включён). Подтверждён APP gap natural live delivery: корректный API deny сам по
+себе не убирал private projection у idle клиентов.8e83 (интегрированb039) добавляет
+точный frozen audience в outbox и скрытый personal hint, active PWA/TMA refresh,
+reconnect admission; F1 review обнаружил потерю pending export при transient503,
+исправление сохраняет исходный requestId и draft. Полный review +narrow recheck,
+55 client cases,6 Notification units,2 actual Academic HTTP/PG/Auth и1 actual Mongo
+transaction PASS. Успешные неизменённые18 boundary cases не повторялись.
+Дальше matching JARs/real same-realm Notification и один UI delete/open-access flow;
+whole group action ещё не принят,117/117 не заявляется.
+
+Gallery249 includes5 controlled TMA +5 compact-nav after shots; actual Auth/data
+и logout204/guest401, synthetic Telegram host/theme/signature явно обозначены.
+Native Telegram provider не проверен. Profile300 естественно показал bare loading;
+c35 loading skeleton reviewed/integrateda851, after2 held-read кадра ещё впереди.
+[Мобильные кадры](../../validation/web-vue-pr3/runtime-gallery/mobile-controlled-20261024/index.html).
+Число кадров не является процентом visual готовности.

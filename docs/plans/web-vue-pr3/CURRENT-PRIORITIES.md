@@ -29,14 +29,27 @@ CI/Coverage/Security/OpenAPI PAUSED/manual; без merge/deploy/production.
 Перед завершением обновляются галерея, карта, PROGRESS, API-CHANGES,
 MOBILE-FOLLOWUPS и итог PR; PAUSED не объявляется PASS.
 
-Текущий пакет2026-10-24 после опубликованного checkpoint7ff:
+Текущие пакеты после опубликованного888 checkpoint:
 
-- Password fix c586 интегрирован7ad6; source review/10 mounted cases и Root WEB build PASS. Native self-known5→6 иlostACK6→7 PASS на5e6, independentpost9598 подтверждает cleanup/изоляцию следующего входа; пакет закрыт. Старые генерации и очистка не повторяются.
-- Group status endpoint и два дефекта fixtures исправлены: все13 Academic/Auth cases закрыты (8 новыхPASS+5 пригодныхPASS). Schedule3 также закрыт; Attendance4 actualMongo PASS after revised2GiB forecast/pre4.5GiB/guard2.5GiB, minfree3.24GB. Все20 boundary cases закрыты, source64f0ea готов; затем четыре исходникам соответствующих JARs и UI/open access.
-- LIMITED actual Users200/Groups403→200 и revoke deny подтверждены. Open-page withdrawal FAIL; четыре собственные сессии независимо revoked, временного ADMIN нет. Причина сужена до отсутствия invalidation: bounded visibleADMIN reconciliation в отдельном WT; повтор только combinedgrant/revoke.
-- Визуал параллельно:12 новых Today PWA кадров проверены, raw locator failure сохранён. Повтор только4 notification кадра после доказанной ошибки locator. Темы/адаптив/состояния не получают общего процента по количеству кадров.
+- Password CLOSED: native self-known5→6 /lostACK6→7 и successor isolation PASS;
+  independentpost9598 подтверждает cleanup. Не повторять генерацию/старую очистку.
+- LIMITED CLOSED: natural visible-page withdrawal3708ms, oldADMIN/session403,
+  Teacher/profile200. Raw driver exit1 сохранён как TEST enum gap. Independent
+  postc7ee: profile8unassigned, все4 собственные сессии revoked, чужие данные целы.
+- Group status и fixtures исправлены,20 boundary cases CLOSED.64f/backend,
+  ae546/client, f67/UI и authority-retirement3e174 интегрированы. Найден APP gap
+  адресной доставки удаления на открытые WEB/PWA/TMA;8e83 исправляет hidden hint
+  и active projection refresh, review/F1recheck/55client/6unit/2PG/1Mongo PASS,
+  интегрированb039. Следующий результат: matching JARs + real same-realm Notification
+  и один UI delete с числовым preview/паролем/original receipt, отзывом открытого
+  доступа и независимым сохранением чужих аккаунтов/ролей/групп. До запуска —
+  qualification shared schema/JAR consumers и ресурсный admission.20PASS не повторять.
+- Визуал параллельно:249 actual gallery PNG с отдельными qualifications, TMA
+  controlled host отделён от native provider. Compact navigation исправлена и
+  проверена300/root16/root20 +widecontrol. Profile loading skeletonc35 reviewed
+  и integrateda851;2 held-read after кадра next, loaded1440 reuse если пригоден.
+  Остальные экран/тема/адаптив/состояния — конечный список, без общего процента.
 
-Критерий закрытия ADMIN-пакета: self-password пакет уже закрыт; остаются group preview/confirm/delete+withdrawal с сохранением чужих данных,
-LIMITED open-page withdrawal с реальным изменением authority; успешные неизменённые
-части переиспользуются. После этих зависимостей начинается полный Angular cleanup
-и собранный common-Nginx сценарий. Ни один промежуточный PASS не включает эти gates.
+После закрытия единственного оставшегося ADMIN action gate — полное Angular
+removal по inventory и assembled common-Nginx flow. Никакой промежуточный PASS
+не закрывает эти gates. Вопросов, ожидающих владельца, сейчас нет.

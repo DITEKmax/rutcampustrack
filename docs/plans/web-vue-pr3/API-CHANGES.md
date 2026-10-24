@@ -255,7 +255,40 @@ fences and foreign-role/account/group preservation are qualified at these bounda
 Academic cases use Schedule/Attendance transport doubles; real participant DB cases
 close those local protocols separately. Four-service assembled UI deletion and open
 access withdrawal are still pending, so whole runtime/API compatibility is not PASS.
-SOURCEv10 is frozen in its writer branch, Root integration and four source-matched
-bootJARs are the next necessary runtime step. Raw disk guard exits/no-XML UNKNOWN
+SOURCEv10, client and Vue UI are integrated; four source-matched64f bootJARs
+are preserved. Live-delivery changes below require new Academic/Notification JARs. Raw disk guard exits/no-XML UNKNOWN
 and the first RELEASE mismatch remain evidence; no successful delete was repeated.
 CI/OpenAPI Drift remains manual/PAUSED; no workflow was dispatched.
+
+
+### API-007 live invalidation — source accepted, socket runtime pending
+
+Existing Academic v1 `group.updated` adds optional `payload.affected_user_ids`
+only for canonical completed deletion. Producer freezes the exact membership,
+headman/helper and current/legacy teacher-assignment union before erase in the
+same transactional outbox. Other callers omit the optional list. Existing schema
+permits unknown properties; schemas/validators are test resources, not embedded
+runtime validators. Auth/Schedule/Attendance/shared/proto code unchanged from64f;
+existing matched Auth/Schedule/Attendance JARs remain usable. Academic and
+Notification production code changed, so both require matching new JARs.
+
+Existing fanout exchange `rut-uit.events`, empty routing key and envelope type
+`group.updated`, existing realm-scoped
+Notification web events queue/consumer and Mongo idempotency remain. Consumer
+validates source/version/positive long IDs, claims in the Mongo transaction,
+and sends hidden personal `/topic/user/{uid}` hints only after commit. Socket
+payload contains only group_id as decimal string; recipient lists never leave
+Notification. No notification history/toast/push or new mobile business operation.
+Per-recipient socket failure does not suppress the next recipient. Durable outbox/
+claim/replay rules remain; real socket delivery is a separate runtime gate.
+
+WEB reuses live refresh; PWA/TMA active reads now refresh without remounting the
+same owner or losing drafts/unknown export requestId. Typed existing WS-ticket
+WRONG_ROLE403 enters normal bounded admission; generic close adds no Auth POST
+or blind retry. Known lost scope retires private projections, transient503 keeps
+pending export ownership. Source8e83 integratedb039, full review +F1 recheck PASS;
+55 client behavior cases,6 Notification units,2 actual Academic PG/Auth and1 actual
+Mongo transaction PASS. F1 original failure and test/environment setup failures
+retained; successful unchanged behavior was reused. Actual same-realm socket and
+one UI group deletion remain pending. No PWA/TMA endpoint removed or newly exposed;
+WebPush unchanged. CI/OpenAPI remain manual/PAUSED.

@@ -1,0 +1,60 @@
+{
+  "passed": true,
+  "observedAtUtc": "2026-10-24T19:12:18.089655+00:00",
+  "rootRevision": "888667e32f9ae0503fc3004fa280a96c72c2861a",
+  "project": "rct-pr3-admin-isolated",
+  "targetId": 2,
+  "profileVersion": 8,
+  "rolesVersion": 9,
+  "catalogVersion": 22,
+  "academicRevision": 9,
+  "assigned": false,
+  "accountActive": true,
+  "credentialsVersion": 1,
+  "allOriginalIntentsQualified": true,
+  "allLoginAttemptsResolved": true,
+  "allCapturedOwnSessionsCleaned": true,
+  "noPending": true,
+  "newBrowser": false,
+  "globalReady": false,
+  "kind": "LIMITED_LOCAL_USER_OUTCOME_ACCEPTED",
+  "independentPostSha256": "c7ee5c25e512fe2ec0afea8f3a13cd8c765e71cdb19bf693a465c169c6e74d73",
+  "nativeDriverExit": 1,
+  "nativeDriverErrorRetained": "ENV_AUTHORITY_NETWORK_UNQUALIFIED",
+  "qualifiedCause": "TEST enum omitted the valid HTTP403 role-admission denial; no transport failure observed",
+  "idleWithdrawal": {
+    "nativeAckUtc": "2026-10-24T19:03:58.456Z",
+    "appSessionRequestUtc": "2026-10-24T19:04:02.064Z",
+    "appSessionResponseUtc": "2026-10-24T19:04:02.081Z",
+    "appSessionHttpStatus": 403,
+    "firstPrivateDomWithdrawalUtc": "2026-10-24T19:04:02.164Z",
+    "elapsedMs": 3708,
+    "focusEvents": 0,
+    "onlineEvents": 0,
+    "visibilityChanges": 0,
+    "documentVisible": true,
+    "manualNavigationOrReloadBeforeWithdrawal": false,
+    "wireProblemCodeRecorded": false
+  },
+  "retainedTeacher": {
+    "normalOwnSessionRole": "TEACHER",
+    "actualOwnAcademicProfileStatus": 200,
+    "temporaryAdminAssigned": false
+  },
+  "ownCleanup": {
+    "nativeCaptured": 2,
+    "helperCaptured": 2,
+    "allFourExactSessionsRevoked": true,
+    "newOwnLogoutsStatus": 204,
+    "newOwnGuestReadsStatus": 401,
+    "browserClosedByCorrelatedRootProof": true,
+    "terminalProofSha256": "89d432822bb848fe9a3375c3f00a05fbf73fe857f82ae40384093d530d34007c"
+  },
+  "scope": {
+    "combinedGrantOriginal": "SUCCEEDED CAS6->7",
+    "revokeOriginal": "SUCCEEDED CAS7->8",
+    "repeatedAclIntents": 0,
+    "directV3OldBearerGroupsGetExecuted": false,
+    "oldAuthorityDenialQualification": "Actual app GET/session403 uses shared Gateway admission; earlier v2 Groups deny reused. No new runtime request invented."
+  }
+}

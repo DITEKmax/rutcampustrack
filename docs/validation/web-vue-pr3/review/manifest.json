@@ -490,5 +490,50 @@
     "path": "group-final-RECHECK-source-v10.md",
     "original_path": "/workspace/rct-pr3-review/group-final-delete/RECHECK-source-v10.md",
     "sha256": "3e77756b682d745c298a5e0920b67b2e9e7a875ced0bb11957d2046ce1398dcb"
+  },
+  {
+    "path": "limited-v3-QUALIFY-c653.md",
+    "original_path": "/workspace/rct-pr3-review/admin-access-effective/QUALIFY-actual-v3-c653.md",
+    "sha256": "b53f172c756b9d8aeb23bafc81e1582531c829b3cdefce95954b74ba3ce460e1"
+  },
+  {
+    "path": "limited-v3-REVIEW-1fb560dc.md",
+    "original_path": "/workspace/rct-pr3-review/admin-access-effective/REVIEW-v3-1fb560dc.md",
+    "sha256": "ee681cd45aafce2ba55d1ce4cb01cf90c306c183be51a1f65d426bb247dd6abf"
+  },
+  {
+    "path": "limited-v3-RECHECK-c65322d6.md",
+    "original_path": "/workspace/rct-pr3-review/admin-access-effective/RECHECK-v3-c65322d6.md",
+    "sha256": "e3cb7452a8b41c52ce1495e5aaee68246b83f952977c7f5b9c2fce5ab90b32fa"
+  },
+  {
+    "path": "group-web-retirement-REVIEW-3e174d37.md",
+    "original_path": "/workspace/rct-pr3-review/group-final-web/REVIEW-retirement-3e174d37.md",
+    "sha256": "1ed9afaa649158becb8ae8344b7c9daaaf55cab3d01203070d1d0cceb9822257"
+  },
+  {
+    "path": "group-live-GAP-e715.md",
+    "original_path": "/workspace/rct-pr3-review/group-final-web/QUALIFY-group-idle-withdrawal-e715.md",
+    "sha256": "b7bb1b46a6d3ad90f43fe4740c1a4146b6728cfffe22661693265986b3fe3603"
+  },
+  {
+    "path": "group-live-REVIEW-84b66187.md",
+    "original_path": "/workspace/rct-pr3-review/group-live-delivery/REVIEW-84b66187.md",
+    "sha256": "2ecd7856f49dc0217a17cbecf47ba22b568a41b7a0c0767094a7977bc80178e1"
+  },
+  {
+    "path": "group-live-RECHECK-8e83a2d9.md",
+    "original_path": "/workspace/rct-pr3-review/group-live-delivery/RECHECK-8e83a2d9.md",
+    "sha256": "a02c5214bd7ecc7fd2bdbf8c46d277e884dc52ef7f2c3af086b89eb95935551a"
+  },
+  {
+    "path": "profile-loading-REVIEW-c35c5d11.md",
+    "original_path": "/workspace/rct-pr3-review/profile-loading/REVIEW-c35c5d11.md",
+    "sha256": "2ccef8123b0ea4c749fc72bb733cfeb1378a68e5f2665b02290a8b0f70382b40"
+  },
+  {
+    "path": "group-live-QUALIFY-old-jar-schema.md",
+    "original_path": "/workspace/rct-pr3-runtime/group-live-delivery-20261024/QUALIFY-old-jar-group-event-schema.md",
+    "sha256": "7b417bb04c8671b9f6b507f0d34f4985645bcd697b20dc79e1455981cae696be"
   }
 ]

@@ -1,0 +1,120 @@
+{
+  "sourceRevision": "e715bab97106c6f3b9d24f78d96c1cbc2d4b70ba",
+  "productCommit": "4a96de4c29656e425b49b1daff54b7c64befc18c integratedRoote715bab97",
+  "rawReceipt": "changed-nav-e715-receipt.json",
+  "command": "env -u DEBUG -u PWDEBUG -u NODE_OPTIONS node /workspace/rct-pr3-runtime/visual-readiness-20261024/changed-nav-e715.cjs execute-once",
+  "producer": "visual_next RootGO reviewedrunner8c4049, singleTTY27692 exit0",
+  "runnerSha256": "8c4049d7ccb11fdb914717f7a03225e64a75d4c3f665e02f14e9e72e251d679b",
+  "startedAt": "2026-10-24T19:54:35.799Z",
+  "finishedAt": "2026-10-24T19:54:42.947Z",
+  "elapsedSeconds": 7.148,
+  "personallyViewedAll5OriginalPng": true,
+  "originalHashIntegrity": "5/5 retained originalSHA256match; no imagesmodified",
+  "criteria": {
+    "V-MOBILE-NAV-300": {
+      "status": "CLOSED boundedchanged-nav five-slot StudentToday consumers",
+      "observedCases": "PWA300light root16/root20; controlledsignedTMA300dark root16/root20; PWA1440light root16widecontrol",
+      "observations": [
+        "Allfive navigationlabels remainwhole singlewords, nonehidden/truncated; no nav/contenthorizontalclipping in5frames.",
+        "300root16 minactualtarget54.203125×60CSSpx;300root20 min46×75CSSpx, all>=44.",
+        "Root20 keyboardTab movesfocus fromToday toHomework; complete focusring visible inPWAandTMA root20images, no activation or businesscommand.",
+        "Wide1440light nav retains fiveequal65.1875+CSSpx slots/60pxheight andcenteredmobilecanvas; all labelswhole.",
+        "Navbarposition/labels confirmedbyactualPNG, bbox/focusdiagnostics supplementinspection, no visualDOM/CSS/textunit tests."
+      ],
+      "narrowTargetGeometry": {
+        "16": {
+          "minimumWidth": 54.203125,
+          "minimumHeight": 60
+        },
+        "20": {
+          "minimumWidth": 46,
+          "minimumHeight": 75
+        }
+      },
+      "sourceLiteralQualification": "Currentproduction student/teacher/headman/adminbuilders return5items; public3/4slotgridunchanged. No newrolelogin or runtimeclaim for3/4variants/otherroles.",
+      "limits": [
+        "Only changednavigation/regression accepted, not wholeToday/allstates/allrolesready.",
+        "Root20 is explicitlybrowser-only inline rootfontsize stress; arbitrarylargertext/scales notproved.",
+        "LowerTodaycards can require normalscroll; packetdoesnotclaim wholedata/keyboardjourney."
+      ]
+    },
+    "ACTUAL-TODAY-CONSUMER": {
+      "status": "reused normalactual day-ended baseline, not newfunctionalaction",
+      "PWA": "actor3 twoendedlesson cards withНstatuses/unread94, existingactualAPI",
+      "TMA": "ownedactor4 twoendedcardsУ/Н and existingpendingrequest/unread97; no checkin/requestmutation performed",
+      "realAPI": "Bothnormaladmissions200+canonicalownsession+Today200; APIsunmodified",
+      "profile": "Notrecaptured; previous888Profile300naturalLoading remainsnotloadedbaseline,1440lightoverview reused"
+    },
+    "AUTH-BUDGET-AND-CLEANUP": {
+      "status": "ready exacttwoownnormalsessions",
+      "cases": [
+        {
+          "consumer": "PWA",
+          "expectedActor": 3,
+          "loginPosts": 1,
+          "tmaPosts": 0,
+          "refreshPosts": 1,
+          "authOutcome": 200,
+          "cleanup": {
+            "exactOwnHandleCaptured": true,
+            "nativeLogoutSent": true,
+            "logoutStatus": 204,
+            "guestReadStatus": 401,
+            "fallbackUsed": false,
+            "confirmed": true
+          },
+          "blockedWrites": [],
+          "pageErrors": [],
+          "unknownHold": false,
+          "contextClosed": true
+        },
+        {
+          "consumer": "TMA",
+          "expectedActor": 4,
+          "loginPosts": 0,
+          "tmaPosts": 1,
+          "refreshPosts": 0,
+          "authOutcome": 200,
+          "cleanup": {
+            "exactOwnHandleCaptured": true,
+            "nativeLogoutSent": true,
+            "logoutStatus": 204,
+            "guestReadStatus": 401,
+            "fallbackUsed": false,
+            "confirmed": true
+          },
+          "blockedWrites": [],
+          "pageErrors": [],
+          "unknownHold": false,
+          "contextClosed": true
+        }
+      ],
+      "privateSIDModes": {
+        "PWA": "0o600",
+        "TMA": "0o600"
+      },
+      "oldFirstTmaAttemptGuard": "PRESERVED; neitherreusednorremoved",
+      "browserClosed": true,
+      "unknownHold": false,
+      "sourceUnchanged": true,
+      "noAutomaticLogoutFallback": true
+    },
+    "SYNTHETIC-BOUNDARY": {
+      "PWA": "browserOSlight preference; root20inlineCSSonly",
+      "TMA": "existingpublicCI HMAC+injectedTelegramSDKhost, initialhostdarksystempreference; realAuth/session/domainAPI. Root20inlineCSSonly.",
+      "nativeTelegramProvider": "NOTCHECKED; no realSDK/provider/mobilehostclaim"
+    }
+  },
+  "readinessAccounting": {
+    "newFunctionalActions": 0,
+    "currentPwaObservedBaselineScreens": 37,
+    "currentPwaNotVisuallyCheckedScreens": 13,
+    "controlledTmaObservedConsumerSlices": 2,
+    "sharedTmaScreens": 48,
+    "fullTmaAllStatesWidthsReady": 0,
+    "nativeTelegramProviderPostLoginScreens": 0,
+    "overallPercent": null
+  },
+  "modelRequested": "gpt-6.1-sol/high",
+  "independentRuntimeTelemetry": "unavailable"
+}

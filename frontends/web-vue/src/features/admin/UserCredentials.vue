@@ -1,8 +1,11 @@
 <script setup lang="ts">
-import { computed, ref, shallowRef, watch } from 'vue';
+import { computed, onBeforeUnmount, ref, shallowRef, watch } from 'vue';
 import { onBeforeRouteLeave } from 'vue-router';
 import { webSession } from '../../auth/session';
-import { reauthenticationReceipt } from '../../auth/reauthentication-receipt';
+import {
+  beginSelfCredentialHandoff,
+  type SelfCredentialHandoff,
+} from '../../auth/reauthentication-receipt';
 import {
   AdminUsersClient,
   type AdminUser,
@@ -25,12 +28,24 @@ const credentials = shallowRef<GeneratedCredentials | null>(null);
 const link = shallowRef<AdminRecoveryLink | null>(null);
 const confirming = ref(false);
 const unknownVersion = ref<string | null>(null);
+const handingOff = ref(false);
+let selfHandoff: SelfCredentialHandoff | null = null;
+function releaseSelfHandoff() {
+  handingOff.value = true;
+  confirming.value = false;
+  unknownVersion.value = null;
+  credentials.value = null;
+  link.value = null;
+  // Only the admitted self intent calls this before retiring its original session.
+  emit('locked', false);
+}
+onBeforeUnmount(() => selfHandoff?.cancel());
 watch(
-  () => busy.value || !!unknownVersion.value,
+  () => !handingOff.value && (busy.value || !!unknownVersion.value),
   (locked) => emit('locked', locked),
   { immediate: true },
 );
-admin.guardUnfinished(() => busy.value || !!unknownVersion.value);
+admin.guardUnfinished(() => !handingOff.value && (busy.value || !!unknownVersion.value));
 const selfTarget = String(props.user.id) === webSession.snapshot.value?.userId;
 const self = computed(() => String(props.user.id) === webSession.snapshot.value?.userId);
 const allowed = computed(
@@ -49,12 +64,10 @@ async function read() {
           cause instanceof CredentialsError &&
           cause.status === 401
         ) {
-          reauthenticationReceipt.show({
-            kind: 'credential-outcome-unknown',
-            targetLabel: props.user.fullName,
-          });
-          webSession.invalidate();
-          return;
+          if (selfHandoff?.unknown()) {
+            webSession.invalidate();
+            return;
+          }
         }
         throw cause;
       }
@@ -68,6 +81,8 @@ async function read() {
         // A read showing the old version cannot prove that an in-flight mutation has stopped.
         if (BigInt(value.credentialsVersion) > BigInt(unknownVersion.value)) {
           unknownVersion.value = null;
+          selfHandoff?.cancel();
+          selfHandoff = null;
         }
       }
     },
@@ -80,21 +95,26 @@ async function generate() {
   await admin.run(async () => {
     if (!allowed.value)
       throw new Error('Для пароля действующего администратора нужен полный доступ.');
+    selfHandoff?.cancel();
+    selfHandoff = null;
+    if (self.value)
+      selfHandoff = beginSelfCredentialHandoff(
+        String(props.user.id),
+        props.user.fullName,
+        releaseSelfHandoff,
+      );
     try {
       const result = await client.generate(props.user.id, version);
       admin.assertCurrent();
-      credentials.value = result;
       confirming.value = false;
-      if (self.value) {
-        if (!result.password) throw new Error('Новый пароль не подтверждён.');
-        reauthenticationReceipt.show({
-          kind: 'generated-password',
-          targetLabel: props.user.fullName,
-          password: result.password,
-        });
+      if (selfHandoff) {
+        if (!result.password || !selfHandoff.confirmed(result.password))
+          throw new Error('Новый пароль не подтверждён.');
         webSession.invalidate();
         return;
-      } else notice.value = 'Новый пароль сгенерирован. Предыдущие сессии пользователя отозваны.';
+      }
+      credentials.value = result;
+      notice.value = 'Новый пароль сгенерирован. Предыдущие сессии пользователя отозваны.';
     } catch (cause) {
       admin.assertCurrent();
       if (!(cause instanceof CredentialsError) || cause.status === null || cause.status >= 500) {
@@ -104,6 +124,8 @@ async function generate() {
           : 'Результат генерации неизвестен. Проверь текущую версию пароля перед новым действием.';
         confirming.value = false;
       } else {
+        selfHandoff?.cancel();
+        selfHandoff = null;
         throw cause;
       }
     }
@@ -127,7 +149,7 @@ async function copy(value: string) {
   });
 }
 onBeforeRouteLeave(() => {
-  if (unknownVersion.value || busy.value) {
+  if (!handingOff.value && (unknownVersion.value || busy.value)) {
     error.value = 'Сначала проверь результат генерации пароля.';
     return false;
   }

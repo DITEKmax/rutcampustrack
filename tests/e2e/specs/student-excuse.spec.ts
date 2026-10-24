@@ -9,7 +9,7 @@ import type { StudentRequestOptions } from '../../../frontends/mobile-core/src/a
 test.describe('Student excuse + file upload', () => {
   test('current EXCUSE form submits one owned eligible lesson and exact small attachment', async ({ page, dataset }) => {
     const marker = `synthetic-upload-${randomUUID()}`;
-    const bytes = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jF5kAAAAASUVORK5CYII=', 'base64');
+    const bytes = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+ip1sAAAAASUVORK5CYII=', 'base64');
     const file = { name: `${marker}.png`, mimeType: 'image/png', buffer: bytes };
     const student = { ...dataset.student, expectedLandingPath: '/student/home' };
     const yesterday = new Date(Date.parse(`${dataset.today}T12:00:00Z`) - 86400000).toISOString().slice(0, 10);

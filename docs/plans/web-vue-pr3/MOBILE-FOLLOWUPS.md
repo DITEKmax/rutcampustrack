@@ -28,3 +28,5 @@ state. Source-only/unvisited cases remain listed in the immutable mobile review.
 
 
 2026-10-24: web StudentTrend FUTURE label теперь нейтральное «Пары ещё не завершены»: serverFUTURE включает незавершённый сегодняшний период. Мобильный attendance periodState уже различает unfinished/future; отдельный statistics-chart-geometry по-прежнему использует «Будущий период». Проверить его актуальную семантику позже; webcopyfix не переносился молча в PWA/TMA, API/темы/метрики не менялись.
+
+2026-10-24: в переиспользованной 68B PNG-константе web/mobile тестов найден некорректный IDAT CRC. Оба конкретных literals исправлены с сохранением пикселей и assertions; Root независимо проверил mobile4042/eca7. Мобильный продукт, API, тема и сценарии не менялись, новую функцию в мобильные клиенты не переносили.

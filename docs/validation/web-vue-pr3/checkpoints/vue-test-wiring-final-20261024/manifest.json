@@ -1,0 +1,43 @@
+{
+  "scope": "existing Vue browser test wiring only",
+  "sourceOriginals": [
+    "bb7074fac",
+    "c1ec3de72",
+    "eb6826904",
+    "4042d1878"
+  ],
+  "rootCommits": [
+    "03759c3f8",
+    "adbecd208",
+    "3068e142f",
+    "eca7d06f4"
+  ],
+  "sourceReview": "PASS after PNG P2 correction; seven has scopes corrected; mobile CRC independentlyRootverified",
+  "checks": "scoped strictTS and existingfinitecontrol19positive47rejected; staticDOM7 old0/newowned1/foreign0, zero network/Auth/Vue; PNG allCRC/structure/inflate",
+  "limits": "Neither actual admin-create-user nor EXCUSE SUT scenario executed in this sourcepacket; no CI/build/domainwrites. Existing exactmultipart410IT gap disclosed, plainPOST410 is not multipart coverage. Staticprobe launch/fixture diagnostic failures retained inauthorreport.",
+  "functionalCounts": {
+    "implemented": 115,
+    "locallyVerified": 111,
+    "denominator": 117
+  },
+  "files": [
+    {
+      "path": "author-paired-report.md",
+      "sha256": "9484ea84b1a528be1eb01e6b476d7a93c62626af4276189c7050f6c1b1430b7f"
+    },
+    {
+      "path": "author-png-correction.md",
+      "sha256": "9e0b92faf537e48fec815fed58f61b4a41cba3a8ffb75642de578867f6743bc9"
+    },
+    {
+      "path": "author-mobile-png.md",
+      "sha256": "93f0c408429ad9edede65e6a187bc81978bc77e7d4656ab0e2789f2201213029"
+    },
+    {
+      "path": "static-dom-result.json",
+      "sha256": "b672f133a8875580cf2536cbfa7663bac1dc15501d9f21aa7a10aa8e829adff8",
+      "originalSha256": "c39b113cfd27b5434b1ffa7f1a367bedfbbaab9aac3a8045e01e50f6443bfb8e",
+      "formatting": "Public LF normalized; original private bytes unchanged, JSON semantically equal"
+    }
+  ]
+}

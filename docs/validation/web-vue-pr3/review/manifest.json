@@ -263,5 +263,20 @@
     "path": "security-REVIEW-native-geo-intent-digest.md",
     "original_path": "/workspace/rct-pr3-review/security/REVIEW-native-geo-intent-digest.md",
     "sha256": "197be2619ea80f456afe641bfce9c483cc9bd6daedfa6856adecf27355362816"
+  },
+  {
+    "path": "shipping-REVIEW-bb7074fac-paired.md",
+    "original_path": "/workspace/rct-pr3-review/shipping/REVIEW-bb7074fac-paired.md",
+    "sha256": "fd96f688c93c0f082b0bfbffb666e1f5836428aef75e6bca65a36d4ad27aca9c"
+  },
+  {
+    "path": "shipping-RECHECK-eb6826904.md",
+    "original_path": "/workspace/rct-pr3-review/shipping/RECHECK-eb6826904.md",
+    "sha256": "eefe6d7be319a73e27a829592b0f97aa3198a2cfbcd74f13d0c0cf77baafef5f"
+  },
+  {
+    "path": "mobile-png-ROOT-REVIEW-4042d1878.md",
+    "original_path": "Root independent frozen-blob standard-library CRC verification",
+    "sha256": "2950316c65f4e635cca85ff1bb592db6ee21997141270b59cc3480de23cd3e4b"
   }
 ]

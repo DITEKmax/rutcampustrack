@@ -273,3 +273,5 @@ execution namespace/intent/COMMIT не было. Root no-writer window CLOSED;
 никаких retry/alternate executor. Владельцу отправлен Q-ENV-006 для exact3
 inputs и normal UI PROMOTE. Это отдельный вопрос от Q-ENV-005 stop/privatecopy.
 До ответа seed/PROMOTE NOT RUN, action остаётся implemented, не locallyverified.
+
+Финальный сетевой probe2026-10-24 06:14UTC: current observations, running/enforced policy revision7, www.figma.com отсутствует, настоящийcurl через inheritedproxy exit56/CONNECT403. QENV002 ждёт применения настройки, нового разрешения не запрашиваем. QPROD004/QENV003/004/006 остаются без ответа; QENV005 больше не нужен.

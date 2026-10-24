@@ -3,7 +3,7 @@
 Существующий draft [PR №3](https://github.com/DITEKmax/rutcampustrack/pull/3),
 ветка `codex/web-vue-redesign`. Goal запущен владельцем после readiness.
 Опубликован checkpoint e48b56984; source настоящего GEO — 1aea, текущего
-исправления подписи — 43b7, тестовых адаптеров — c19. Образы a813 сохраняют
+исправления подписи — 43b7, тестовых адаптеров — eca7d06f4. Образы a813 сохраняют
 свои прежние точные revisions. Всегда получать актуальный remote HEAD.
 
 **Implemented 115/117 (98,29%). Locally verified 111/117 (94,87%).**
@@ -51,11 +51,13 @@ stop/snapshot/copy/restore/clock/apps не выполнялись, snapshotFALSE
 завершить outer edge/production source wiring и достаточные итоговые проверки.
 Vue e2e edge и строгий served-artifact oracle прошли source review;
 config0 и восемь harness cases не являются outer-runtime PASS.
-Четыре helper-файла исправлены после двух P2; девять auth/role/config-файлов
-прошли source review и интегрированы. В последней адаптации найден лишний
-owner-prefix внутри has-локаторов; отдельное исправление и оставшиеся
-admin-create-user/student-excuse specs готовятся. Browser proof этих пакетов
-не заявлен. [Shipping](SHIPPING-CHECKPOINT-20261024.md) · [Angular inventory](ANGULAR-REMOVAL-INVENTORY.md).
+Четыре helper-файла исправлены после двух P2; auth/role/config и оставшиеся
+create-user/EXCUSE сценарии перенесены на текущие Vue/API-контракты.
+Отдельно исправлены семь has-локаторов и CRC тестового PNG; source review и
+narrow recheck прошли. Статический DOM probe подтвердил owned/foreign границы,
+но не является Vue/SUT browser PASS. Actual private-runner сценарии остаются
+итоговым runtime gate. [Source receipts](../../validation/web-vue-pr3/checkpoints/vue-test-wiring-final-20261024/manifest.json).
+[Shipping](SHIPPING-CHECKPOINT-20261024.md) · [Angular inventory](ANGULAR-REMOVAL-INVENTORY.md).
 
 [Галереи](../../validation/web-vue-pr3/runtime-gallery/index.html) содержат
 201 исходный runtime-кадр. [Единый HTML](../../validation/web-vue-pr3/runtime-gallery/PORTABLE.md)

@@ -117,3 +117,15 @@ Users/role/auth9filepacket e7bb→rootc19 reviewedPASS: nonemptyprivateconfig
 selection only3testMatchchanges, wrappers/privacyguards retained; finitecontrol
 19positive/47rejected andscopedTS0. --list collection isnotbrowserPASS. No runtime/
 backendwrites. Remainingadmincreate/studentexcuselegacy testmigration separate.
+
+
+Final source-only adapter checkpoint: bb7074+c1ec+eb682→root03759/adbec/3068
+passed independent paired review after a PNG CRC finding. Two current specs
+preserve private/disposable guards, exactownedcreate201/ephemeralcredential
+admission and currentEXCUSE200/PENDING/file/readback. Seven relative has scopes
+retain ownedouter boundaries. Finite19/47 and scopedTS PASS; staticaboutblank
+probe7 old0/newowned1/foreign0/network0 is explicitlynotSUT/Vueproof. Diagnostic
+sandbox/temporarytablefixture failures retained. Borrowed identicalmobilePNG CRC
+fixed4042→eca7, independentlyRootverified allchunks/pixels. No mobilefeature/API
+change. Actual2scenario runtime andexactlegacyMultipart410IT remain unclaimed.
+See final source receipt; all115/111actioncounts unchanged by test migration.

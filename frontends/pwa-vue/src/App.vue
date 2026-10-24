@@ -120,6 +120,7 @@ import InstallOffer from './features/install/InstallOffer.vue';
 import type { InstallPromptController } from './features/install/install-prompt';
 import { createPushController } from './features/push/push-controller';
 import { createBrowserPushPort } from './features/push/browser-push';
+import './pwa-host.pcss';
 
 const props = defineProps<{ installPrompt: InstallPromptController }>();
 const installPrompt = props.installPrompt;

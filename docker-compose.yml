@@ -333,8 +333,18 @@ services:
     container_name: rct-web-panel-nginx
     ports:
       - '4200:80'
+    # Normalize only the container's public copy; the host build remains read-only.
+    command:
+      - sh
+      - -ec
+      - |
+        rm -rf /usr/share/nginx/html
+        mkdir -p /usr/share/nginx/html
+        cp -R /opt/rct-web-dist/. /usr/share/nginx/html/
+        chmod -R a+rX /usr/share/nginx/html
+        exec nginx -g 'daemon off;'
     volumes:
-      - ./frontends/web-vue/dist:/usr/share/nginx/html:ro
+      - ./frontends/web-vue/dist:/opt/rct-web-dist:ro
       - ./frontends/web-vue/nginx.conf:/etc/nginx/conf.d/default.conf:ro
     networks:
       - private_net

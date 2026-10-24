@@ -431,7 +431,7 @@ useWebLiveRefresh(
       </div>
     </template>
     <section
-      v-if="creating || selected"
+      v-if="(creating || selected) && admin.can('GROUPS_VIEW')"
       class="admin-panel"
     >
       <header class="admin-heading">
@@ -611,7 +611,7 @@ useWebLiveRefresh(
       </template>
     </section>
     <section
-      v-if="promotion"
+      v-if="promotion && canManage"
       class="admin-panel"
     >
       <header class="admin-heading">

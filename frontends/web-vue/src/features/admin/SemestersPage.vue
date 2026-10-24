@@ -556,7 +556,7 @@ useWebLiveRefresh(
       В этом разделе нет семестров.
     </p>
     <section
-      v-if="editing"
+      v-if="editing && canManage"
       class="admin-panel admin-form"
     >
       <h2>{{ selected ? 'Изменить семестр' : 'Новый семестр' }}</h2><form
@@ -613,7 +613,7 @@ useWebLiveRefresh(
       </form>
     </section>
     <section
-      v-else-if="selected"
+      v-else-if="selected && admin.can('SEMESTERS_VIEW')"
       class="admin-panel"
     >
       <header class="admin-heading">

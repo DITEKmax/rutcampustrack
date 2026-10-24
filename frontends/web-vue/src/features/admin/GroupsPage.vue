@@ -115,8 +115,19 @@ async function save() {
         selected.value = value;
         creating.value = false;
         name.value = value.name;
-      } else if (selected.value)
+      } else if (selected.value) {
+        const id = selected.value.id;
         await client.renameGroup(selected.value, name.value, duration.value, admin.signal);
+        admin.assertCurrent();
+        acknowledged = true;
+        selected.value = null;
+        const confirmed = await client.resolveNotificationGroup(id);
+        admin.assertCurrent();
+        if (!confirmed) throw new Error('Сохранённая группа не найдена. Обнови реестр.');
+        selected.value = confirmed;
+        name.value = confirmed.name;
+        duration.value = confirmed.trainingDurationYears ?? '';
+      }
       admin.assertCurrent();
       acknowledged = true;
       await load();

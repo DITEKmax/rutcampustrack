@@ -367,6 +367,11 @@ async function resume() {
       if (result.user) {
         selected.value = result.user;
         creating.value = false;
+        if (result.created && result.user.initialPassword)
+          initialReceipt.value = {
+            login: result.user.login,
+            password: result.user.initialPassword,
+          };
       }
       await load();
       notice.value = 'Результат операции подтверждён.';

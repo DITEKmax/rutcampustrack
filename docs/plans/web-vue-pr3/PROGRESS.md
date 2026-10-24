@@ -66,8 +66,8 @@ Vue e2e adapters и served-artifact oracle прошли source review; это н
 PASS всей поставки. Workflow CI/Coverage/Security/OpenAPI — только
 workflow_dispatch, **PAUSED**, не PASS. Без dispatch/merge/deploy/production.
 
-Галерея содержит202 настоящих runtime PNG:201 в опубликованном portable snapshot
-и отдельный новый PROMOTE. Каждый кадр имеет собственную revision и manifest;
+Галерея содержит202 настоящих runtime PNG в едином portable HTML, включая новый
+PROMOTE. Каждый кадр имеет собственную revision и manifest;
 Figma/reference не выдаются за реализацию. [Галерея](../../validation/web-vue-pr3/runtime-gallery/index.html) ·
 [Review manifest](../../validation/web-vue-pr3/review/manifest.json) ·
 [Shipping](SHIPPING-CHECKPOINT-20261024.md) · [Angular inventory](ANGULAR-REMOVAL-INVENTORY.md).

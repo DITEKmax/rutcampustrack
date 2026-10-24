@@ -1,13 +1,20 @@
 {
   "kind": "portable-gallery-data-only-refresh",
-  "result": "PASS for metadata/hash/path validation only",
-  "imageCount": 201,
-  "imagePin": "e48b569846a536c94b62ca2319de6c2c7228d75c",
-  "artifactSha256": "23e3028cf760684ff0977fb278f930b19a299d7afd5588a9699a5c1eec687b1f",
-  "renderLogicSha256": "3ed5f9c841d201e93facb4c9d7bd6074e1fe9b857e4edf4da7a91f1ed0e8dc83",
+  "result": "PASS metadata/hash/path only",
+  "imageCount": 202,
+  "imagePin": "ac5c37ab21eb4bf2a784e31857132c0aae862d27",
+  "artifactSha256": "3311aab33b552a979f6995769068e29c167842f39315f587425e367400a10ad8",
+  "renderLogicSha256": "55b934e96a7a39113c74bbbcbb193f2e91ed464080b59f860e3b35d4ed3d4d48",
   "renderLogicUnchanged": true,
   "priorBrowserSmoke": "portable-check-200-51e46f715.json",
-  "browserNotRerun": "Onlymetadata/pin/count updated; unchanged render/filterlogic retains prior200-frame smoke, not a new201browserPASS",
+  "priorDataOnlyRefresh": "portable-check-201-e48b56984.json",
+  "browserNotRerun": "Only metadata/pin/count updated; unchanged rendering retains prior200-frame smoke, not a new202-browser PASS",
   "functionalActionCount": 0,
-  "originalNativeGeo": "../checkpoints/native-geo-20261024/acceptance.json"
+  "newPngHttpsRead": {
+    "httpStatus": 200,
+    "bytes": 143998,
+    "sha256": "ff96ce9ab623deced5bacfbd9fb496bd889acfd9e2ab12a9b2d835bcc0d3d1cf",
+    "TLSVerification": true
+  },
+  "promotionAcceptance": "../checkpoints/promotion-map-20261024/promotion-acceptance.json"
 }

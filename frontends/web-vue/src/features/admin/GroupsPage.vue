@@ -2,6 +2,7 @@
 import { computed, onMounted, ref, shallowRef, watch } from 'vue';
 import { onBeforeRouteLeave, RouterLink } from 'vue-router';
 import { useWebLiveRefresh } from '../../app/live';
+import { webSession } from '../../auth/session';
 import {
   AdminGroupsClient,
   AdminGroupsApiError,
@@ -23,6 +24,13 @@ import ExportControl from './ExportControl.vue';
 import GroupDeletionPanel from './GroupDeletionPanel.vue';
 import './admin.pcss';
 const admin = useAdmin();
+const owner = webSession.identity.value;
+const currentOwner = computed(
+  () =>
+    webSession.phase.value === 'ready' &&
+    webSession.identity.value === owner &&
+    webSession.snapshot.value?.activeRole === 'ADMIN',
+);
 const { loading, busy, error, notice } = admin;
 const client = new AdminGroupsClient(admin.options);
 const page = shallowRef<AdminGroupsPage | null>(null);
@@ -46,14 +54,17 @@ const roster = shallowRef<HeadmanRoster | null>(null),
   headmanPreview = shallowRef<HeadmanAssignmentPreview | null>(null);
 const candidateId = ref<number>(),
   promotion = shallowRef<PromotionSummary | null>(null);
-const canManage = computed(() => admin.can('GROUPS_MANAGE'));
+const canView = computed(() => currentOwner.value && admin.can('GROUPS_VIEW'));
+const canManage = computed(() => canView.value && admin.can('GROUPS_MANAGE'));
 const deletionLocked = ref(false);
 const locked = computed(
   () => busy.value || pending.value || unknownWrite.value || deletionLocked.value,
 );
-admin.guardUnfinished(() => locked.value);
+// A durable recovery key blocks writes, never retirement of its admitted authority.
+const guardNavigation = computed(() => canView.value && locked.value);
+admin.guardUnfinished(() => guardNavigation.value);
 watch(
-  () => [admin.can('GROUPS_VIEW'), canManage.value],
+  () => [canView.value, canManage.value],
   ([canView, manage]) => {
     if (!canView) {
       page.value = null;
@@ -327,12 +338,14 @@ async function finishDeletion(operation: AdminGroupDeletionOperation) {
   await load();
 }
 onBeforeRouteLeave(() => {
-  if (locked.value) {
+  if (guardNavigation.value) {
     error.value = 'Сначала проверь результат операции с группой.';
     return false;
   }
 });
-onMounted(() => admin.init('GROUPS_VIEW', () => load()));
+onMounted(() => {
+  if (currentOwner.value) void admin.init('GROUPS_VIEW', () => load());
+});
 const refreshDeferred = ref(false);
 const refreshAvailable = computed(
   () =>
@@ -404,7 +417,7 @@ useWebLiveRefresh(
       @retry="admin.run(() => load())"
     />
     <form
-      v-if="admin.can('GROUPS_VIEW')"
+      v-if="canView"
       class="admin-toolbar"
       @submit.prevent="apply"
     >
@@ -423,7 +436,7 @@ useWebLiveRefresh(
         Найти
       </button>
     </form>
-    <template v-if="page && admin.can('GROUPS_VIEW')">
+    <template v-if="page && canView">
       <div
         v-if="page.items.length"
         class="admin-table-wrap"
@@ -509,7 +522,7 @@ useWebLiveRefresh(
       </div>
     </template>
     <section
-      v-if="(creating || selected) && admin.can('GROUPS_VIEW')"
+      v-if="(creating || selected) && canView"
       class="admin-panel"
     >
       <header class="admin-heading">
@@ -675,7 +688,7 @@ useWebLiveRefresh(
       </template>
     </section>
     <GroupDeletionPanel
-      :group="admin.can('GROUPS_VIEW') ? selected : null"
+      :group="canView ? selected : null"
       :admin="admin"
       :client="client"
       :blocked="pending || unknownWrite"

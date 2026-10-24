@@ -116,6 +116,13 @@ function snapshot(userId = '2', rolesVersion = '5', activeRole: string | null = 
 }
 let app: App | undefined
 let invalidate: (() => void) | undefined
+const deletionKey = 'rct:web:group-deletion:v1:2'
+const deletionReference = JSON.stringify({
+  userId: '2',
+  groupId: '900042',
+  operationId: 'd16d6bf8-f57b-4ab5-aa43-05f3c1d7e9c0',
+  previewDigest: 'a'.repeat(64),
+})
 afterEach(() => {
   app?.unmount()
   app = undefined
@@ -133,13 +140,22 @@ async function settle() {
     await nextTick()
   }
 }
-async function mounted() {
+async function mounted(options: { savedDeletion?: boolean; unavailableStorage?: boolean } = {}) {
   vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] })
   document = new HostDocument()
   vi.stubGlobal('document', document)
   vi.stubGlobal('Document', HostDocument)
   vi.stubGlobal('ShadowRoot', class {})
   vi.stubGlobal('window', new EventTarget())
+  const storage = new Map(options.savedDeletion ? [[deletionKey, deletionReference]] : [])
+  vi.stubGlobal('sessionStorage', {
+    getItem: (key: string) => {
+      if (options.unavailableStorage) throw new Error('Storage unavailable')
+      return storage.get(key) ?? null
+    },
+    setItem: (key: string, value: string) => storage.set(key, value),
+    removeItem: (key: string) => storage.delete(key),
+  })
   let server = snapshot()
   let permissions = ['USERS_VIEW', 'GROUPS_VIEW']
   let probe: ((init?: RequestInit) => Promise<Response>) | null = null
@@ -212,6 +228,8 @@ async function mounted() {
   expect(controls()).toHaveLength(1)
   return {
     webSession,
+    router,
+    savedDeletion: () => storage.get(deletionKey),
     root,
     requests,
     controls,
@@ -293,7 +311,7 @@ describe('idle authority on a mounted ADMIN page', () => {
   })
 
   it('reconciles a revoked old ADMIN bearer through normal refresh without navigation or a focus signal', async () => {
-    const f = await mounted()
+    const f = await mounted({ unavailableStorage: true })
     f.change('7', [], null)
     let stale = true
     f.probe(async () => {
@@ -311,10 +329,54 @@ describe('idle authority on a mounted ADMIN page', () => {
       f.webSession.snapshot.value?.roles.some((r) => r.role === 'TEACHER' && r.selectable),
     ).toBe(true)
     expect(f.controls()).toHaveLength(0)
+    expect(f.router.currentRoute.value.name).toBe('role-home')
     expect(text(f.root)).toContain('Выбери роль')
     expect(f.requests.filter((r) => r.method !== 'GET').map((r) => r.path)).toEqual([
       '/api/auth/login',
       '/api/auth/refresh',
+    ])
+  })
+
+  it('guards an original deletion under its owner but releases retirement without losing its recovery key', async () => {
+    const f = await mounted({ savedDeletion: true })
+    expect(text(f.root)).toContain('900042')
+    await f.router.push('/')
+    await settle()
+    expect(f.router.currentRoute.value.path).toBe('/admin/groups')
+    expect(f.savedDeletion()).toBe(deletionReference)
+
+    f.change('6', [], null)
+    await vi.advanceTimersByTimeAsync(5000)
+    await settle()
+    expect(f.router.currentRoute.value.name).toBe('role-home')
+    expect(f.controls()).toHaveLength(0)
+    expect(text(f.root)).not.toContain('900042')
+    expect(f.savedDeletion()).toBe(deletionReference)
+    expect(f.requests.filter((r) => r.method !== 'GET').map((r) => r.path)).toEqual([
+      '/api/auth/login',
+    ])
+  })
+
+  it('keeps the retired actor deletion key private after a successor login', async () => {
+    const f = await mounted({ savedDeletion: true })
+    expect(text(f.root)).toContain('900042')
+    f.webSession.invalidate()
+    f.successor()
+    await f.webSession.login('successor', 'fixture')
+    await settle()
+    await f.router.push('/admin/groups')
+    await settle()
+    expect(f.webSession.snapshot.value?.userId).toBe('43')
+    expect(f.controls()).toHaveLength(1)
+    expect(text(f.root)).not.toContain('900042')
+    expect(f.savedDeletion()).toBe(deletionReference)
+    // A successor may leave normally; the old actor's unresolved operation cannot trap them.
+    await f.router.push('/')
+    await settle()
+    expect(f.router.currentRoute.value.name).toBe('role-home')
+    expect(f.requests.filter((r) => r.method !== 'GET').map((r) => r.path)).toEqual([
+      '/api/auth/login',
+      '/api/auth/login',
     ])
   })
 

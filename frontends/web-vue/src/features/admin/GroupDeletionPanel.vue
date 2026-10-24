@@ -26,6 +26,14 @@ const props = defineProps<{
 }>();
 const emit = defineEmits<{ locked: [value: boolean] }>();
 const busy = props.admin.busy;
+const owner = webSession.identity.value;
+const canInspect = computed(
+  () =>
+    webSession.phase.value === 'ready' &&
+    webSession.identity.value === owner &&
+    webSession.snapshot.value?.activeRole === 'ADMIN' &&
+    props.admin.can('GROUPS_VIEW'),
+);
 const userId = webSession.snapshot.value!.userId;
 const storageKey = `rct:web:group-deletion:v1:${userId}`;
 const recovery = bindGroupDeletionRecovery(
@@ -47,7 +55,7 @@ const state = shallowRef<GroupDeletionState>({
 const password = ref('');
 const failure = ref('');
 const canDelete = computed(
-  () => props.admin.can('GROUPS_MANAGE') && props.admin.can('DATA_DELETE'),
+  () => canInspect.value && props.admin.can('GROUPS_MANAGE') && props.admin.can('DATA_DELETE'),
 );
 const flow = createGroupDeletionFlow({
   userId,
@@ -65,7 +73,9 @@ const flow = createGroupDeletionFlow({
 });
 state.value = flow.state;
 watch(
-  () => !!state.value.reference || !!state.value.preview || state.value.recoveryUnavailable,
+  () =>
+    canInspect.value &&
+    (!!state.value.reference || !!state.value.preview || state.value.recoveryUnavailable),
   (value) => emit('locked', value),
   {
     immediate: true,
@@ -308,13 +318,14 @@ async function inspectOriginal(resolveUnaccepted: boolean) {
     </button>
   </section>
   <p
-    v-if="failure && !state.preview"
+    v-if="canInspect && failure && !state.preview"
     class="web-notice admin-feedback-error"
     role="alert"
   >
     {{ failure }}
   </p>
   <ConfirmDialog
+    v-if="canInspect"
     :open="!!state.preview && canDelete"
     :title="`Удалить ${state.preview?.groupName ?? ''} окончательно?`"
     confirm-label="Удалить окончательно"
@@ -376,7 +387,7 @@ async function inspectOriginal(resolveUnaccepted: boolean) {
     </div>
   </ConfirmDialog>
   <section
-    v-if="state.reference || state.recoveryUnavailable"
+    v-if="canInspect && (state.reference || state.recoveryUnavailable)"
     class="web-notice web-stack"
     role="status"
     :aria-busy="busy"

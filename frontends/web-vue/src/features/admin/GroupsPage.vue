@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, shallowRef } from 'vue';
+import { computed, onMounted, ref, shallowRef, watch } from 'vue';
 import { onBeforeRouteLeave, RouterLink } from 'vue-router';
 import { useWebLiveRefresh } from '../../app/live';
 import {
@@ -15,10 +15,12 @@ import {
   type HeadmanRoster,
   type HeadmanAssignmentPreview,
   type PromotionSummary,
+  type AdminGroupDeletionOperation,
 } from '../../../../mobile-core/src/features/admin-groups/admin-groups-client';
 import { useAdmin } from './use-admin';
 import AdminState from './AdminState.vue';
 import ExportControl from './ExportControl.vue';
+import GroupDeletionPanel from './GroupDeletionPanel.vue';
 import './admin.pcss';
 const admin = useAdmin();
 const { loading, busy, error, notice } = admin;
@@ -45,8 +47,28 @@ const roster = shallowRef<HeadmanRoster | null>(null),
 const candidateId = ref<number>(),
   promotion = shallowRef<PromotionSummary | null>(null);
 const canManage = computed(() => admin.can('GROUPS_MANAGE'));
-const locked = computed(() => busy.value || pending.value || unknownWrite.value);
+const deletionLocked = ref(false);
+const locked = computed(
+  () => busy.value || pending.value || unknownWrite.value || deletionLocked.value,
+);
 admin.guardUnfinished(() => locked.value);
+watch(
+  () => [admin.can('GROUPS_VIEW'), canManage.value],
+  ([canView, manage]) => {
+    if (!canView) {
+      page.value = null;
+      selected.value = null;
+    }
+    if (!canView || !manage) {
+      creating.value = false;
+      roster.value = null;
+      headmanPreview.value = null;
+      promotion.value = null;
+      confirmArchive.value = false;
+    }
+  },
+  { flush: 'sync' },
+);
 const exportSelector = computed(() => {
   const { sort: appliedSort, ...filters } = applied.value;
   const [field, direction] = appliedSort[0]!.split(',');
@@ -68,6 +90,7 @@ async function load(number = 0) {
   page.value = value;
 }
 function apply() {
+  if (locked.value) return;
   applied.value = query();
   selected.value = null;
   roster.value = null;
@@ -75,6 +98,7 @@ function apply() {
   void admin.run(() => load());
 }
 function open(group: AdminGroup) {
+  if (locked.value) return;
   selected.value = group;
   creating.value = false;
   name.value = group.name;
@@ -85,6 +109,7 @@ function open(group: AdminGroup) {
   promotion.value = null;
 }
 function beginCreate() {
+  if (locked.value) return;
   selected.value = null;
   creating.value = true;
   alphabeticCode.value = '';
@@ -92,6 +117,7 @@ function beginCreate() {
   duration.value = 4;
 }
 async function save() {
+  if (deletionLocked.value) return;
   await admin.run(async () => {
     if (
       duration.value === '' ||
@@ -283,6 +309,21 @@ async function resume() {
     }),
   );
 }
+async function finishDeletion(operation: AdminGroupDeletionOperation) {
+  admin.assertCurrent();
+  selected.value = null;
+  roster.value = null;
+  headmanPreview.value = null;
+  promotion.value = null;
+  confirmArchive.value = false;
+  notice.value =
+    operation.phase === 'COMPLETED'
+      ? 'Группа и её данные удалены. Аккаунты и другие назначения сохранены.'
+      : 'Удаление отменено. Получи новый предпросмотр перед следующей попыткой.';
+  // Clear the private view before a refresh that may itself fail after completion.
+  page.value = null;
+  await load();
+}
 onBeforeRouteLeave(() => {
   if (locked.value) {
     error.value = 'Сначала проверь результат операции с группой.';
@@ -290,13 +331,34 @@ onBeforeRouteLeave(() => {
   }
 });
 onMounted(() => admin.init('GROUPS_VIEW', () => load()));
+const refreshDeferred = ref(false);
+const refreshAvailable = computed(
+  () =>
+    !pending.value &&
+    !unknownWrite.value &&
+    !deletionLocked.value &&
+    !selected.value &&
+    !creating.value &&
+    !promotion.value,
+);
+const canRefresh = computed(() => !busy.value && refreshAvailable.value);
+async function refreshGroups() {
+  if (!refreshDeferred.value || !refreshAvailable.value || !admin.can('GROUPS_VIEW')) return;
+  refreshDeferred.value = false;
+  await load(page.value?.number ?? 0);
+}
+watch(canRefresh, (ready) => {
+  if (ready && refreshDeferred.value) void admin.refresh(refreshGroups);
+});
 useWebLiveRefresh(
   () =>
     admin.refresh(async () => {
       await admin.requirePermission('GROUPS_VIEW');
-      await load(page.value?.number ?? 0);
+      refreshDeferred.value = true;
+      await refreshGroups();
     }),
-  { blocked: () => locked.value || !!selected.value || creating.value || !!promotion.value },
+  // Privilege invalidation must run even while a preview or an unknown operation is open.
+  { blocked: busy },
 );
 </script>
 <template>
@@ -608,22 +670,16 @@ useWebLiveRefresh(
             </button>
           </div>
         </section>
-        <div
-          v-if="admin.can('DATA_DELETE')"
-          class="web-notice"
-        >
-          <h3>Окончательное удаление группы</h3><p>
-            Недоступно: серверный контракт точного предпросмотра, подтверждения паролем и сохранения
-            учётных записей ещё не готов. Архивация доступна выше.
-          </p><button
-            class="web-button web-button-danger"
-            disabled
-          >
-            Удалить окончательно
-          </button>
-        </div>
       </template>
     </section>
+    <GroupDeletionPanel
+      :group="admin.can('GROUPS_VIEW') ? selected : null"
+      :admin="admin"
+      :client="client"
+      :blocked="pending || unknownWrite"
+      :on-settled="finishDeletion"
+      @locked="deletionLocked = $event"
+    />
     <section
       v-if="promotion && canManage"
       class="admin-panel"

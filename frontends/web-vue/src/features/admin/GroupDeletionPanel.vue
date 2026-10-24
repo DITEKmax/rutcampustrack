@@ -200,7 +200,7 @@ function showFailure(cause: unknown) {
           : status === 401
             ? 'Подтверди вход, затем проверь сохранённую операцию.'
             : status === 404
-              ? 'Сервер пока не нашёл исходную операцию. Повтори проверку позже.'
+              ? 'Сервер пока не нашёл исходную операцию. Можно отдельно закрыть непринятый запрос.'
               : 'Не удалось проверить состояние операции. Повтори проверку позже.';
     return;
   }
@@ -268,7 +268,7 @@ async function submit() {
     }
   });
 }
-async function recover() {
+async function inspectOriginal(resolveUnaccepted: boolean) {
   if (busy.value || (!state.value.reference && !state.value.recoveryUnavailable)) return;
   failure.value = '';
   password.value = '';
@@ -280,7 +280,11 @@ async function recover() {
         flow.restoreRecovery(reference);
       }
       await authorize();
-      await settle(await flow.recover(props.admin.signal));
+      await settle(
+        await (resolveUnaccepted
+          ? flow.resolve(props.admin.signal)
+          : flow.recover(props.admin.signal)),
+      );
     } catch (cause) {
       showFailure(cause);
       throw cause;
@@ -394,11 +398,21 @@ async function recover() {
       v-if="canDelete"
       class="web-button"
       :disabled="busy"
-      @click="recover"
+      @click="inspectOriginal(false)"
     >
       {{ busy ? 'Проверяем…' : 'Проверить исходную операцию' }}
     </button>
-    <p v-else>
+    <template v-if="canDelete && state.reference">
+      <p>Отдельная проверка закроет запрос, если сервер его не принял. Принятое удаление продолжится.</p>
+      <button
+        class="web-button"
+        :disabled="busy"
+        @click="inspectOriginal(true)"
+      >
+        Проверить и закрыть непринятый запрос
+      </button>
+    </template>
+    <p v-if="!canDelete">
       Право удаления недоступно. Исходная операция сохранена для проверки после восстановления
       доступа.
     </p>

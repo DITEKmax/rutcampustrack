@@ -319,7 +319,9 @@ async function finishDeletion(operation: AdminGroupDeletionOperation) {
   notice.value =
     operation.phase === 'COMPLETED'
       ? 'Группа и её данные удалены. Аккаунты и другие назначения сохранены.'
-      : 'Удаление отменено. Получи новый предпросмотр перед следующей попыткой.';
+      : operation.failure === 'NOT_ACCEPTED'
+        ? 'Запрос не был принят. Данные группы сохранены, можно получить новый предпросмотр.'
+        : 'Удаление отменено. Получи новый предпросмотр перед следующей попыткой.';
   // Clear the private view before a refresh that may itself fail after completion.
   page.value = null;
   await load();

@@ -93,7 +93,10 @@ export function restoreGroupDeletion(
 
 export function createGroupDeletionFlow(options: {
   userId: string
-  client: Pick<AdminGroupsClient, 'confirmGroupDeletion' | 'getGroupDeletion'>
+  client: Pick<
+    AdminGroupsClient,
+    'confirmGroupDeletion' | 'getGroupDeletion' | 'resolveGroupDeletion'
+  >
   assertCurrent(): void
   persist(reference: GroupDeletionReference | null): void
   changed(state: GroupDeletionState): void
@@ -195,6 +198,19 @@ export function createGroupDeletionFlow(options: {
       const reference = state.reference
       if (!reference) throw new Error('Нет незавершённой операции удаления.')
       const operation = await options.client.getGroupDeletion(
+        reference.operationId,
+        reference.groupId,
+        signal,
+      )
+      return accept(operation, reference)
+    },
+    async resolve(signal?: AbortSignal) {
+      options.assertCurrent()
+      const reference = state.reference
+      if (!reference) throw new Error('Нет незавершённой операции удаления.')
+      // Explicitly close only a server-proven absent attempt, using its ORIGINAL key.
+      // Existing accepted operations keep their phase; failures keep the reference.
+      const operation = await options.client.resolveGroupDeletion(
         reference.operationId,
         reference.groupId,
         signal,

@@ -45,7 +45,8 @@ const reference: GroupDeletionReference = {
   previewDigest: preview.previewDigest,
 }
 function fixture(
-  client: Pick<AdminGroupsClient, 'confirmGroupDeletion' | 'getGroupDeletion'>,
+  client: Pick<AdminGroupsClient, 'confirmGroupDeletion' | 'getGroupDeletion'> &
+    Partial<Pick<AdminGroupsClient, 'resolveGroupDeletion'>>,
   saved: GroupDeletionReference | null = null,
   persist?: (value: GroupDeletionReference | null) => void,
   recoveryUnavailable = false,
@@ -54,7 +55,7 @@ function fixture(
   let durable = saved
   const flow = createGroupDeletionFlow({
     userId: '1',
-    client,
+    client: { resolveGroupDeletion: unused, ...client },
     saved,
     recoveryUnavailable,
     newOperationId: () => key,
@@ -209,6 +210,84 @@ describe('final group deletion recovery', () => {
     expect(model.flow.state.reference).toEqual(reference)
     expect(() => model.flow.prepare(preview)).toThrow()
     await expect(model.flow.submit('another-password')).rejects.toThrow()
+  })
+
+  it('unlocks a fresh preview after wrong password, missing receipt and explicit authoritative closure', async () => {
+    const data = { groupExists: true }
+    const cancelled: AdminGroupDeletionOperation = {
+      ...completed,
+      phase: 'CANCELLED',
+      failure: 'NOT_ACCEPTED',
+      counts: Object.fromEntries(
+        Object.keys(preview.counts).map((name) => [name, 0]),
+      ) as typeof preview.counts,
+    }
+    const model = fixture({
+      async confirmGroupDeletion(groupId, input) {
+        throw new AdminGroupDeletionUnknownError(input.operationId, groupId, 403)
+      },
+      async getGroupDeletion() {
+        throw new AdminGroupsApiError(new Response(null, { status: 404 }), null)
+      },
+      async resolveGroupDeletion(operationId, groupId) {
+        if (operationId !== key || groupId !== reference.groupId) throw new Error('unknown attempt')
+        return cancelled
+      },
+    })
+    model.flow.prepare(preview)
+    await expect(model.flow.submit('synthetic-wrong-password')).rejects.toThrow()
+    await expect(model.flow.recover()).rejects.toThrow()
+    expect(model.durable).toEqual(reference)
+    await expect(model.flow.resolve()).resolves.toEqual(cancelled)
+    expect(data.groupExists).toBe(true)
+    expect(model.durable).toBeNull()
+    expect(model.flow.state.reference).toBeNull()
+    const freshPreview = { ...preview, previewDigest: 'b'.repeat(64) }
+    model.flow.prepare(freshPreview)
+    expect(model.flow.state.preview).toEqual(freshPreview)
+  })
+
+  it('preserves an already accepted operation when explicit resolution returns COMMITTING', async () => {
+    const operation = { ...completed, phase: 'COMMITTING' as const }
+    const model = fixture({
+      async confirmGroupDeletion(groupId, input) {
+        throw new AdminGroupDeletionUnknownError(input.operationId, groupId, 503)
+      },
+      async getGroupDeletion() {
+        return completed
+      },
+      async resolveGroupDeletion(operationId, groupId) {
+        if (operationId !== key || groupId !== reference.groupId) throw new Error('unknown attempt')
+        return operation
+      },
+    })
+    model.flow.prepare(preview)
+    await expect(model.flow.submit('synthetic-password')).rejects.toThrow()
+    await expect(model.flow.resolve()).resolves.toEqual(operation)
+    expect(model.durable).toEqual(reference)
+    expect(model.flow.state.reference).toEqual(reference)
+    expect(() => model.flow.prepare(preview)).toThrow()
+    await expect(model.flow.submit('another-password')).rejects.toThrow()
+    await model.flow.recover()
+    expect(model.durable).toBeNull()
+  })
+
+  it('retains the original intent after failed explicit resolution', async () => {
+    const model = fixture(
+      {
+        confirmGroupDeletion: unused,
+        getGroupDeletion: unused,
+        async resolveGroupDeletion(operationId, groupId) {
+          throw new AdminGroupDeletionUnknownError(operationId, groupId, 503)
+        },
+      },
+      reference,
+    )
+    await expect(model.flow.resolve()).rejects.toThrow()
+    expect(model.flow.state.reference).toEqual(reference)
+    expect(model.durable).toEqual(reference)
+    expect(() => model.flow.prepare(preview)).toThrow()
+    await expect(model.flow.submit('synthetic-password')).rejects.toThrow()
   })
 
   it('discards private preview and progress on permission withdrawal but preserves the recovery key', async () => {

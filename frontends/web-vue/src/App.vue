@@ -7,7 +7,7 @@ import './app/live';
 let lastRole = webSession.snapshot.value?.activeRole ?? null;
 
 watch(
-  () => [webSession.phase.value, webSession.snapshot.value?.activeRole] as const,
+  [webSession.phase, () => webSession.snapshot.value?.activeRole],
   ([phase], [previousPhase]) => {
     if (phase === 'guest' && previousPhase !== 'starting' && !router.currentRoute.value.meta.guest)
       void router.replace({ name: 'login' });
@@ -23,7 +23,12 @@ watch(
         (route.meta.guest && route.name !== 'password-recovery') ||
         (route.meta.requiredRoles && (!role || !route.meta.requiredRoles.includes(role)))
       )
-        void router.replace({ name: 'role-home', query: route.query, hash: route.hash });
+        void router.replace({
+          name: 'role-home',
+          query: route.query,
+          hash: route.hash,
+          force: route.name === 'role-home',
+        });
     }
     if (phase === 'guest') lastRole = null;
   },

@@ -38,4 +38,5 @@ RUN npm run build --workspace @rct/pwa-vue
 FROM nginx:1.27-alpine
 
 COPY --from=builder /workspace/pwa-vue/dist /usr/share/nginx/html
+RUN chmod -R a+rX /usr/share/nginx/html
 COPY pwa-vue/nginx.conf /etc/nginx/conf.d/default.conf

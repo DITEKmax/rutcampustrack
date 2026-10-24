@@ -28,6 +28,7 @@ RUN npm run build --workspace @rct/web-vue
 FROM nginx:1.27-alpine
 
 COPY --from=builder /workspace/web-vue/dist /usr/share/nginx/html
+RUN chmod -R a+rX /usr/share/nginx/html
 COPY web-vue/nginx.conf /etc/nginx/conf.d/default.conf
 
 EXPOSE 80

@@ -32,4 +32,5 @@ RUN npm run build --workspace @rct/tma-vue
 FROM nginx:1.27-alpine
 
 COPY --from=builder /workspace/tma-vue/dist /usr/share/nginx/html
+RUN chmod -R a+rX /usr/share/nginx/html
 COPY tma-vue/nginx.conf /etc/nginx/conf.d/default.conf

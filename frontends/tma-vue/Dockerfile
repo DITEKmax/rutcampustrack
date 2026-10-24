@@ -10,7 +10,12 @@ COPY mobile-core/package.json mobile-core/package.json
 COPY pwa-vue/package.json pwa-vue/package.json
 COPY tma-vue/package.json tma-vue/package.json
 COPY web-vue/package.json web-vue/package.json
-RUN npm ci
+RUN --mount=type=secret,id=proxy_ca,required=false \
+    if [ -f /run/secrets/proxy_ca ]; then \
+        NODE_EXTRA_CA_CERTS=/run/secrets/proxy_ca npm ci --strict-ssl=true; \
+    else \
+        npm ci --strict-ssl=true; \
+    fi
 
 COPY mobile-core mobile-core
 COPY pwa-vue pwa-vue

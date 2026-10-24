@@ -18120,7 +18120,7 @@
           },
           "deletionScope" : {
             "type" : [ "string", "null" ],
-            "enum" : [ "ALL_VERSIONS", "CURRENT_FORMAT" ]
+            "enum" : [ "ALL_VERSIONS", "CURRENT_FORMAT", null ]
           }
         }
       },

@@ -257,15 +257,9 @@ describe('role withdrawal readmission', () => {
     expect(fetcher).toHaveBeenCalledOnce()
     lifecycle.dispose()
   })
-  it('coalesces close readmission, preserves ordinary forbidden retries, and ignores a late successor', async () => {
+  it('keeps generic close and forbidden retries free of auth writes and ignores a late successor', async () => {
     let generation = 1
-    let finish!: () => void
-    const refresh = vi.fn(
-      () =>
-        new Promise<void>((resolve) => {
-          finish = resolve
-        }),
-    )
+    const refresh = vi.fn(async () => undefined)
     const fetcher = vi.fn(async () => Response.json({ code: 'OUT_OF_SCOPE' }, { status: 403 }))
     let config!: StompConfig
     const fake = { activate: vi.fn(), deactivate: vi.fn(async () => undefined), subscribe: vi.fn() }
@@ -285,15 +279,12 @@ describe('role withdrawal readmission', () => {
       },
     })
     await config.beforeConnect?.(fake as unknown as Client)
+    config.onWebSocketClose?.({} as never)
+    config.onWebSocketClose?.({} as never)
     expect(refresh).not.toHaveBeenCalled()
-    config.onWebSocketClose?.({} as never)
-    config.onWebSocketClose?.({} as never)
-    expect(refresh).toHaveBeenCalledOnce()
-    const reconnect = config.beforeConnect?.(fake as unknown as Client)
     expect(fetcher).toHaveBeenCalledOnce()
     generation += 1
-    finish()
-    await reconnect
+    await config.beforeConnect?.(fake as unknown as Client)
     expect(fetcher).toHaveBeenCalledOnce()
     expect(changed).not.toHaveBeenCalled()
     lifecycle.dispose()

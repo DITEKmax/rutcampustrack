@@ -91,8 +91,13 @@ for (const platform of ['PWA', 'TMA'] as const)
           },
         })
         removed = true
-        if (signal === 'close') config.onWebSocketClose?.({} as never)
-        else await config.beforeConnect?.(fake as unknown as Client)
+        if (signal === 'close') {
+          const beforeClose = paths.length
+          config.onWebSocketClose?.({} as never)
+          expect(paths).toHaveLength(beforeClose)
+        }
+        // The existing STOMP reconnect requests one new ticket after the close.
+        await config.beforeConnect?.(fake as unknown as Client)
         await vi.waitFor(() => expect(auth.currentGeneration()).toBe(initial + 1))
         expect(retire).toHaveBeenCalledOnce()
         const requests = paths.length

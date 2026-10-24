@@ -287,6 +287,9 @@ async function transfer() {
         );
         admin.assertCurrent();
         selected.value = value;
+        const grant = value.roles.find((item) => item.role === roleToUpdate.value);
+        targetGroupId.value = grant?.groupId ?? undefined;
+        targetStatus.value = grant?.status ?? 'ACTIVE';
         await load(page.value?.number ?? 0);
         notice.value = 'Студент переведён. Предыдущая история сохранена.';
       }),

@@ -1,16 +1,15 @@
 package ru.rutcampustrack.auth.support;
 
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.datasource.DataSourceTransactionManager;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
-import org.springframework.transaction.support.TransactionTemplate;
-
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.UUID;
 import java.util.function.Supplier;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.datasource.DataSourceTransactionManager;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
+import org.springframework.transaction.support.TransactionTemplate;
 
 /** Synthetic fixtures for the Auth-only migration chain; no Academic tables or bridge. */
 public final class AuthDatabaseFixture {
@@ -46,8 +45,8 @@ public final class AuthDatabaseFixture {
                         + " TO rct_auth_runtime");
         jdbc.execute(
                 "GRANT DELETE ON"
-                    + " auth_outbox,password_reset_tokens,qr_login_challenges,qr_login_issuers TO"
-                    + " rct_auth_runtime");
+                        + " auth_outbox,password_reset_tokens,qr_login_challenges,qr_login_issuers,auth_device_preferences TO"
+                        + " rct_auth_runtime");
     }
 
     public static long identity(JdbcTemplate jdbc, String login, Instant time) {

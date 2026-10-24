@@ -1,5 +1,13 @@
 package ru.rutcampustrack.academic.user;
 
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
@@ -17,7 +25,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
-
 import ru.rutcampustrack.academic.contract.dto.user.CreateUserRequest;
 import ru.rutcampustrack.academic.contract.dto.user.PatchUserRequest;
 import ru.rutcampustrack.academic.contract.dto.user.RoleGrantUpdateRequest;
@@ -47,15 +54,6 @@ import ru.rutcampustrack.academic.repository.UserRepository;
 import ru.rutcampustrack.academic.repository.UserRoleGrantReader;
 import ru.rutcampustrack.academic.repository.UserRoleGrantWriter;
 import ru.rutcampustrack.academic.security.RequestContext;
-
-import java.time.LocalDate;
-import java.time.OffsetDateTime;
-import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
 
 /**
  * Academic profile, eligibility and membership operations; Auth allocates identity and credentials.
@@ -203,8 +201,26 @@ public class UserService {
                     AccountStatus statusFilter,
                     String roleStatusFilter,
                     Pageable pageable) {
+        return listUserRegistry(search, roleFilter, statusFilter, roleStatusFilter, null, pageable);
+    }
+
+    public ru.rutcampustrack.academic.identitycatalog.IdentityRegistryQueryBarrier.Result
+            listUserRegistry(
+                    String search,
+                    String roleFilter,
+                    AccountStatus statusFilter,
+                    String roleStatusFilter,
+                    Long groupId,
+                    Pageable pageable) {
         return registryBarrier.read(
-                () -> listUsersLocal(search, roleFilter, statusFilter, roleStatusFilter, pageable));
+                () ->
+                        listUsersLocal(
+                                search,
+                                roleFilter,
+                                statusFilter,
+                                roleStatusFilter,
+                                groupId,
+                                pageable));
     }
 
     public ru.rutcampustrack.academic.identitycatalog.IdentityRegistryQueryBarrier.Result
@@ -221,6 +237,7 @@ public class UserService {
                                 query.role(),
                                 query.status(),
                                 query.roleStatus(),
+                                query.groupId(),
                                 pageable),
                 reportScope);
     }
@@ -248,23 +265,28 @@ public class UserService {
             String roleFilter,
             AccountStatus statusFilter,
             String roleStatusFilter,
+            Long groupId,
             Pageable pageable) {
+        if (groupId != null && groupId <= 0)
+            throw new BadRequestException(
+                    "groupId", "Идентификатор группы должен быть положительным");
         validateRoleFilter(roleFilter, roleStatusFilter);
         Specification<User> spec =
                 Specification.where(UserSpecifications.matchesSearch(search))
-                        .and(UserSpecifications.matchesGrant(roleFilter, roleStatusFilter))
+                        .and(UserSpecifications.matchesGrant(roleFilter, roleStatusFilter, groupId))
                         .and(
                                 roleStatusFilter == null
                                         ? UserSpecifications.matchesStatus(statusFilter)
                                         : null);
-        Pageable effective =
+        Sort sort =
                 pageable.getSort().isSorted()
-                        ? pageable
-                        : org.springframework.data.domain.PageRequest.of(
-                                pageable.getPageNumber(),
-                                pageable.getPageSize(),
-                                org.springframework.data.domain.Sort.by(
-                                        "lastName", "firstName", "middleName"));
+                        ? pageable.getSort()
+                        : Sort.by("lastName", "firstName", "middleName");
+        if (sort.getOrderFor("id") == null) sort = sort.and(Sort.by("id"));
+        Pageable effective =
+                pageable.isPaged()
+                        ? PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sort)
+                        : Pageable.unpaged(sort);
         boolean archivedRole =
                 roleStatusFilter != null && "ARCHIVED".equalsIgnoreCase(roleStatusFilter.trim());
         if (archivedRole || (roleStatusFilter == null && statusFilter == AccountStatus.ARCHIVED)) {
@@ -315,6 +337,7 @@ public class UserService {
                     roleStatusFilter == null && statusFilter != null
                             ? statusFilter.name().toLowerCase(Locale.ROOT)
                             : null,
+                    groupId,
                     archivedPage);
         }
         return userRepository.findAll(spec, effective);

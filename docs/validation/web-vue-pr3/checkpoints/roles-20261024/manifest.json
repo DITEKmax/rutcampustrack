@@ -1,0 +1,104 @@
+{
+  "sourceRevision": "3f5852b9524245e98b16110b8fb4fde4bd68f389",
+  "implemented": 115,
+  "locallyVerified": 110,
+  "denominator": 117,
+  "CI": "PAUSED/workflow_dispatch",
+  "projections": [
+    {
+      "path": "student-today-schedule.json",
+      "sha256": "2707a3b4afd04c287efe98f50bf3847371e4a6b716713f6156e653d92b9c7da8",
+      "originalPath": "/tmp/student-web-first-flow/summary.json",
+      "originalSha256": "707ebc9aed6ebc44973333833a93c2285a6a520354a393ae9fb16acd2b662e36"
+    },
+    {
+      "path": "student-requests.json",
+      "sha256": "710a89f4f1b12a83bbaf79b06c3edd01780ed5f54336d9fea164d38ca0ad1c0a",
+      "originalPath": "/tmp/student-web-request-flow/summary.json",
+      "originalSha256": "267f47b4a13adc31f1825e66d50fc04aace6ec5c2546684fa9c13fa8b6ab9f76"
+    },
+    {
+      "path": "student-attendance-stats.json",
+      "sha256": "5362f77560808f02538d8da12546095fd31208eab57c69ad9abd8342a1024e75",
+      "originalPath": "/tmp/student-web-read-flows/summary.json",
+      "originalSha256": "208110cdb8637ccd2d0d65f540f303e07a3e067bfc5c5ce0883199b7ff32b8f5"
+    },
+    {
+      "path": "student-pagination.json",
+      "sha256": "b6b92694d611cc9792300515a788ee4eceb4921c7d000a8bdee5f180e3b73011",
+      "originalPath": "/tmp/student-web-pagination-ui/summary.json",
+      "originalSha256": "36d97506f7401bf09c96666ae295180f8a9c0c575f3a82710e032fb4b7296fc7"
+    },
+    {
+      "path": "student-live-refresh.json",
+      "sha256": "330d8bea126b361f1beb436c43e3a76b24a4ff284b19386f0286347bc72f6115",
+      "originalPath": "/tmp/student-web-refresh-actual/summary.json",
+      "originalSha256": "1ed25f570438eab102d3698f6680e70a1aac2c5e37f70814c72b5306176ddb1d"
+    },
+    {
+      "path": "student-native-late.json",
+      "sha256": "adfc2fe498850e59b379f92b9f17b2b31d48f33f9641ecd0eca0ae79691d4984",
+      "originalPath": "/tmp/student-web-native-late53/summary.json",
+      "originalSha256": "889e4c9f087e37d6f408aa66effd2c711283647e3b01577d8bc521340a0e9948"
+    },
+    {
+      "path": "student-native-late-live.json",
+      "sha256": "ccdae779a108d5e4868a172c8ce968f75aa44960e951789e3c8cdd59f3be00fb",
+      "originalPath": "/tmp/student-web-native-late53-watch/summary.json",
+      "originalSha256": "7f3b291b64fda8d537934c489fe52284f7ad6abf50ddf1501918144f6ba55687"
+    },
+    {
+      "path": "headman-native-late-approve.json",
+      "sha256": "16a6ba7747f04c4f164d5ca71aeb8788de7e8d49bed073f9c93418da624cad5a",
+      "originalPath": "/tmp/rct-headman/late53-approve-root-summary.json",
+      "originalSha256": "5f8a6a930e4294a4c066ae1021d58250518a31e269679706c2e442bcc4f815b1"
+    },
+    {
+      "path": "delegated-live-revoke.json",
+      "sha256": "7c2263ca9272911557a031ceebf4cbde44ece989facd2300972430d95d73d19d",
+      "originalPath": "/tmp/rct-headman/delegated-root3f585-results.json",
+      "originalSha256": "1ea7272ec223b351b537d17aa76b67a7341d86963af33cd12980f8a69e6596f5"
+    },
+    {
+      "path": "admin-create-recovery.json",
+      "sha256": "801d0115d94c2d94bc6842fc1903c16196113317f18e5a8124a1fb1736c4c3f8",
+      "originalPath": "/workspace/rct-pr3-runtime/admin-web/create-recovery-ordinary.json",
+      "originalSha256": "393244d410ddf28b5dd8c2f0afe11616523e88478f30f2117ecf410f51cc8112"
+    },
+    {
+      "path": "admin-export-recovery.json",
+      "sha256": "48f0d4d6e5b9f2a38f306a303526d16b59a5303f335e07d3cc327994db95b05d",
+      "originalPath": "/workspace/rct-pr3-runtime/admin-web/export-recovery.json",
+      "originalSha256": "4645bb9749830e93e459163f509584be53dabdcb4a28cafce8439e001c41bbb2"
+    },
+    {
+      "path": "admin-group-rename-archive.json",
+      "sha256": "792a5bb31673e07ae48987e92ce434df65f5e6d0f4e3a28e1c96549e5569ae44",
+      "originalPath": "/workspace/rct-pr3-runtime/admin-web/group-rename-archive.json",
+      "originalSha256": "df2631c9e2037f333515aa98a51f54bff19548f0bec113d571253e4cd290202c"
+    },
+    {
+      "path": "admin-recovery-link.json",
+      "sha256": "e1105cdc145a97480c2055033f9eb7077785e994fdaf398c103637aec42172e2",
+      "originalPath": "/workspace/rct-pr3-runtime/admin-web/recovery-link.json",
+      "originalSha256": "135d75e945c2fd8a9ed0fcc1886bcd2cabf486522b8c2687a2645ef4ef7f0ffb"
+    },
+    {
+      "path": "admin-access-lookup-readonly.json",
+      "sha256": "0e50f14882734e33ce734538c97ac18859774183697c00f252315225c0bd77be",
+      "originalPath": "/workspace/rct-pr3-runtime/admin-web/access-lookup-readonly.json",
+      "originalSha256": "599560a9cae93b6a54d0d621b333edbaa1932299aa078e727e770932aab848f6"
+    },
+    {
+      "path": "map-usage-runtime.json",
+      "sha256": "689a0a1a69c0a87a042f1367b18af64a0d6a206555e803eb02d7ab456f8d2552",
+      "originalPath": "/workspace/rct-pr3-runtime/map-usage-reload-receipt-20261024.json",
+      "originalSha256": "0084b79360811325173a738f05aae4095c6a93e3e4cb42ad134aa46be13681fd"
+    }
+  ],
+  "limits": [
+    "Safe selected receipts; original public summaries retained at the recorded paths/hashes.",
+    "No credentials, sessions, recovery fragments, capability URLs or plaintext operation keys.",
+    "Positive GEO64 and six administrator actions remain incomplete; see ROLE-ACCEPTANCE-20261024.md."
+  ]
+}

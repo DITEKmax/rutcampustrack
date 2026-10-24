@@ -1,0 +1,10 @@
+{
+  "evidenceKind": "real-runtime-safe-projection",
+  "originalPath": "/workspace/rct-pr3-runtime/admin-web/export-recovery.json",
+  "originalSha256": "4645bb9749830e93e459163f509584be53dabdcb4a28cafce8439e001c41bbb2",
+  "scopeNote": "Lost accepted enqueue resolved with original key/selector/job; no third enqueue. Raw operation keys and report bodies omitted.",
+  "checks": [
+    "lost accepted enqueue keeps original request and locks new format",
+    "explicit same-key enqueue replay survives changed page filters; known-job retry after blob loss has no new enqueue; actual HTML retains original selector"
+  ]
+}

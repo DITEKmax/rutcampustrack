@@ -1,0 +1,11 @@
+# Narrow semester control-selector recheck
+
+**PASS for the single-selector correction — no confirmed P1/P2.** No actual create/activate/delete action acceptance is inferred.
+
+Immutable0444 original00a hash `00a74bde6b688144e99d8b65b75c949083ee4f43744f8b05bf22a7af4aae55dd` and current hash `c75be9e409843c20f87165f4ff8bb725f65cbff9fd6bfeeb1966db6f36cd5757` independently match. Exactly one replacement reproduces the complete current script: semester `getByLabel("Тип", {exact:true})` → `getByRole("combobox", {name:"Тип", exact:true})`, retaining `.selectOption("AUTUMN")`. Saved exact diff and manifest agree. `node --check` PASS.
+
+The semantic locator targets the actual labelled native select in0421 SemestersPage rather than widening to arbitrary text or injecting state. All other bytes, including map's existing semantic delete selector, login/real-UI bearer binding, source pin, one-shot domain admission, payload/response/ownership checks, unknown outcome hold and cleanup, are identical to accepted00a.
+
+Read safe `controls-preflight-2026-10-24T10-26-21-145Z.json`: exact0421 clean source, real UI role-ready200/user1/FULL,14 observed controls with count/tag/type/enabled metadata, zero domain requests/blocked commands, logout204/guest401. The semester Type combobox is exactly one enabled select-one. The Publish button is honestly disabled before file selection; not every observed control is asserted enabled. Replace/delete/password controls requiring an owned published target/preview remain explicitly conditional, unvisited and source-only; no fabricated map inventory or confirmation is claimed. Receipt contains metadata/statuses, no entered passwords/bearers/session/operation IDs. This reviewer did not rerun that preflight.
+
+The reported prior SEM attempt's successful role admission followed by selector failure and zero domain writes remains a failed attempt; it is not reclassified as action PASS. Fresh admission4 and separate root write-caseGO remain required. No browser/network/API/login, DML/DB, build or suite execution by this reviewer; no repository/product/private-original edit/read. Only read/pure hash/syntax checks and this immutable external report. Explicit assignment remains GPT-6.1 Sol/high; runtime model telemetry is unavailable.

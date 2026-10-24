@@ -1,0 +1,11 @@
+{
+  "evidenceKind": "real-runtime-safe-projection",
+  "originalPath": "/workspace/rct-pr3-runtime/admin-web/create-recovery-ordinary.json",
+  "originalSha256": "393244d410ddf28b5dd8c2f0afe11616523e88478f30f2117ecf410f51cc8112",
+  "scopeNote": "Existing seed administrator creates ordinary STUDENT18. No new LIMITED administrator was created.",
+  "checks": [
+    "one ordinary201 with lostACK -> explicit same-key resume -> nonempty volatile initial login/password receipt"
+  ],
+  "actor": "existing public seed session only; real LIMITED actor creation was not executed",
+  "childId": 18
+}

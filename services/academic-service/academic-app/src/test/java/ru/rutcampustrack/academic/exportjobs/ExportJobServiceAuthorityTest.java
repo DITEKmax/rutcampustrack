@@ -11,21 +11,17 @@ import io.grpc.Deadline;
 import io.grpc.MethodDescriptor;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
-
 import jakarta.validation.Validator;
-
-import org.junit.jupiter.api.Test;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.server.ResponseStatusException;
-
-import ru.rutcampustrack.auth.dto.*;
-import ru.rutcampustrack.authsecurity.grpc.AuthSecurityCapabilityServiceGrpc;
-import ru.rutcampustrack.shared.security.InternalJwtClaims;
-
 import java.time.Instant;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
+import org.junit.jupiter.api.Test;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
+import ru.rutcampustrack.auth.dto.*;
+import ru.rutcampustrack.authsecurity.grpc.AuthSecurityCapabilityServiceGrpc;
+import ru.rutcampustrack.shared.security.InternalJwtClaims;
 
 class ExportJobServiceAuthorityTest {
     private final ExportJobRepository repository = mock(ExportJobRepository.class);
@@ -72,6 +68,64 @@ class ExportJobServiceAuthorityTest {
     private ReportSecurityAuthority.Admission admitted(boolean full) {
         return new ReportSecurityAuthority.Admission(
                 actor, "transient-only-token", Instant.now().plusSeconds(30), full);
+    }
+
+    @Test
+    void storedUserRegistryScopeCannotBroadenOrChangeGroupSelector() {
+        var groupSelector =
+                new IssueReportDownloadTicketRequest(
+                        ReportDownloadKind.ADMIN_USERS,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        new IssueReportDownloadTicketRequest.AdminUsersParameters(
+                                null,
+                                "STUDENT",
+                                null,
+                                "ACTIVE",
+                                11L,
+                                null,
+                                ReportDownloadFormat.HTML),
+                        null);
+        var groupIdentity =
+                new StoredReportIdentity(actor, groupSelector, identity.expiresAt(), 3, null, null);
+        var job =
+                new ExportJobRepository.Job(
+                        UUID.randomUUID(),
+                        UUID.randomUUID(),
+                        groupIdentity,
+                        "preparing",
+                        1,
+                        UUID.randomUUID(),
+                        Instant.now().plusSeconds(90),
+                        false,
+                        "text/html",
+                        null,
+                        Instant.now());
+        var scope = service.userRegistryReadScope(job);
+        scope.requireSelector(
+                new ru.rutcampustrack.academic.contract.dto.export.RegistryExportModels.Users(
+                        null, "STUDENT", null, "ACTIVE", 11L, null, "html"));
+        for (Long group : java.util.Arrays.asList(null, 12L)) {
+            assertThatThrownBy(
+                            () ->
+                                    scope.requireSelector(
+                                            new ru.rutcampustrack.academic.contract.dto.export
+                                                    .RegistryExportModels.Users(
+                                                    null, "STUDENT", null, "ACTIVE", group, null,
+                                                    "html")))
+                    .isInstanceOfSatisfying(
+                            ResponseStatusException.class,
+                            error ->
+                                    assertThat(error.getStatusCode())
+                                            .isEqualTo(HttpStatus.FORBIDDEN));
+        }
+        assertThat(groupSelector.bindingHash()).isNotEqualTo(selector.bindingHash());
     }
 
     @Test

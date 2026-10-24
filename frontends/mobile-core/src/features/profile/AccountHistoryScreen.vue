@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import SvgIcon from '../../../../shared/foundation/SvgIcon.vue';
 import type {
   ProfileHistoryEvent,
   ProfileRequestError,
@@ -27,13 +28,13 @@ const props = withDefaults(
     onBack: undefined,
     onRetry: undefined,
     onLoadMore: undefined,
-    theme: 'dark',
   },
 );
 
 function authMethodLabel(method: ProfileHistoryEvent['authMethod']): string | null {
   if (method === 'PASSWORD') return 'вход по паролю';
   if (method === 'OTP') return 'вход по одноразовому коду';
+  if (method === 'QR') return 'вход по QR-коду';
   if (method === 'TMA') return 'вход через Telegram';
   return null;
 }
@@ -65,11 +66,10 @@ function loadMore(): void {
           aria-label="Назад"
           @click="onBack?.()"
         >
-          <img
+          <SvgIcon
             :src="historyPrevious"
-            alt=""
             aria-hidden="true"
-          >
+          />
         </button>
         <h1
           id="profile-history-title"

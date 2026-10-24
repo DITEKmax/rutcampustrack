@@ -66,6 +66,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
         String authHeader = request.getHeader("Authorization");
+        if (("/auth/device-preferences".equals(request.getRequestURI())
+                        || request.getRequestURI()
+                                .matches(
+                                        "/auth/admin/users/[^/]+/(initial-password|generated-password)"))
+                && (authHeader == null
+                        || !authHeader.startsWith("Bearer ")
+                        || authHeader.substring(7).isBlank())) {
+            writeSessionFailure(request, response, AuthSessionException.Code.INVALID_SESSION);
+            return;
+        }
 
         if (authHeader != null
                 && authHeader.startsWith("Bearer ")
@@ -308,7 +318,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private static boolean isBootstrapPathAllowed(HttpServletRequest request) {
         String method = request.getMethod();
         String path = request.getRequestURI();
-        return ("GET".equalsIgnoreCase(method)
+        return (("GET".equalsIgnoreCase(method) || "PUT".equalsIgnoreCase(method))
+                        && "/auth/device-preferences".equals(path))
+                || ("GET".equalsIgnoreCase(method)
                         && ("/auth/session".equals(path) || "/auth/sessions".equals(path)))
                 || ("DELETE".equalsIgnoreCase(method) && path.matches("/auth/sessions/[^/]+"))
                 || ("PUT".equalsIgnoreCase(method) && "/auth/session/active-role".equals(path))

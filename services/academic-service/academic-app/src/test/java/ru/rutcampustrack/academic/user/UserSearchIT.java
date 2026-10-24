@@ -6,13 +6,14 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.time.Instant;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-
 import ru.rutcampustrack.academic.contract.dto.user.CreateUserRequest;
 import ru.rutcampustrack.academic.contract.dto.user.PatchUserRequest;
 import ru.rutcampustrack.academic.contract.dto.user.RoleGrantUpdateRequest;
@@ -25,9 +26,6 @@ import ru.rutcampustrack.academic.integration.AbstractAcademicIntegrationTest;
 import ru.rutcampustrack.academic.integration.AcademicIdentityIntegrationFixture;
 import ru.rutcampustrack.attendance.grpc.UserImpactSnapshot;
 import ru.rutcampustrack.auth.session.model.AuthRole;
-
-import java.time.Instant;
-import java.util.UUID;
 
 /**
  * End-to-end тест BUG-006-1: GET /academic/users?search=... case-insensitive фильтрация по
@@ -45,6 +43,7 @@ class UserSearchIT extends AbstractAcademicIntegrationTest {
     @Autowired com.fasterxml.jackson.databind.ObjectMapper mapper;
 
     @Autowired UserService users;
+    @Autowired org.springframework.jdbc.core.JdbcTemplate jdbc;
     @Autowired UserArchiveService archives;
     @MockitoBean AttendanceUserImpactGrpcClient attendance;
 
@@ -320,6 +319,301 @@ class UserSearchIT extends AbstractAcademicIntegrationTest {
                         suspendedTeacher.userId(),
                         archived.userId(),
                         restored.userId());
+    }
+
+    @Test
+    void groupFilterCouplesStudentGrantAndPagesMixedRoleAccountsBeforeCounting() throws Exception {
+        long group = identityFixture.canonical().groupId();
+        long otherGroup = newGroup();
+        var mixed =
+                seedUser(
+                        "Groupfilter-Mixed",
+                        "Одинаковый",
+                        "Пользователь",
+                        null,
+                        UserRole.STUDENT,
+                        null,
+                        611000004001L);
+        var transferred =
+                seedUser(
+                        "Groupfilter-Transferred",
+                        "Одинаковый",
+                        "Пользователь",
+                        null,
+                        UserRole.STUDENT,
+                        null,
+                        611000004002L);
+        var suspended =
+                seedUser(
+                        "Groupfilter-Suspended",
+                        "Одинаковый",
+                        "Пользователь",
+                        null,
+                        UserRole.STUDENT,
+                        null,
+                        611000004003L);
+        asAdmin(
+                () ->
+                        users.patchUser(
+                                mixed.userId(),
+                                new PatchUserRequest(
+                                        null, null, null, true, null, null, null, null)));
+        asAdmin(
+                () ->
+                        users.updateRoleGrant(
+                                mixed.userId(),
+                                "TEACHER",
+                                new RoleGrantUpdateRequest(
+                                        RoleGrantStatus.ACTIVE, null, "GF-MIXED", null)));
+        asAdmin(
+                () ->
+                        users.updateRoleGrant(
+                                transferred.userId(),
+                                "TEACHER",
+                                new RoleGrantUpdateRequest(
+                                        RoleGrantStatus.ACTIVE, null, "GF-TRANSFER", null)));
+        asAdmin(
+                () ->
+                        users.transferStudent(
+                                transferred.userId(),
+                                new ru.rutcampustrack.academic.contract.dto.user
+                                        .TransferStudentRequest(
+                                        otherGroup, "Проверка актуального фильтра")));
+        asAdmin(
+                () ->
+                        users.updateRoleGrant(
+                                suspended.userId(),
+                                "STUDENT",
+                                new RoleGrantUpdateRequest(
+                                        RoleGrantStatus.SUSPENDED, null, null, null)));
+        asAdmin(
+                () ->
+                        users.updateRoleGrant(
+                                suspended.userId(),
+                                "TEACHER",
+                                new RoleGrantUpdateRequest(
+                                        RoleGrantStatus.ACTIVE, null, "GF-SUSPENDED", null)));
+        // The old group remains in dated history; it must not satisfy this registry selector.
+        org.assertj.core.api.Assertions.assertThat(
+                        jdbc.queryForObject(
+                                "SELECT count(*) FROM student_group_history WHERE user_id=? AND"
+                                        + " group_id=?",
+                                Long.class,
+                                transferred.userId(),
+                                group))
+                .isPositive();
+        org.assertj.core.api.Assertions.assertThat(
+                        rowIds(
+                                groupGet(
+                                        adminActor,
+                                        "search=Groupfilter&groupId="
+                                                + group
+                                                + "&role=HEADMAN&roleStatus=ACTIVE")))
+                .containsExactly(mixed.userId());
+        var active =
+                groupGet(
+                        adminActor,
+                        "search=Groupfilter&groupId=" + group + "&role=STUDENT&roleStatus=ACTIVE");
+        org.assertj.core.api.Assertions.assertThat(rowIds(active)).containsExactly(mixed.userId());
+        org.assertj.core.api.Assertions.assertThat(
+                        rowIds(
+                                groupGet(
+                                        adminActor,
+                                        "search=Groupfilter&groupId="
+                                                + group
+                                                + "&role=TEACHER&roleStatus=ACTIVE")))
+                .containsExactly(mixed.userId(), suspended.userId());
+        org.assertj.core.api.Assertions.assertThat(
+                        rowIds(
+                                groupGet(
+                                        adminActor,
+                                        "search=Groupfilter&groupId="
+                                                + otherGroup
+                                                + "&role=STUDENT&roleStatus=ACTIVE")))
+                .containsExactly(transferred.userId());
+        for (int page = 0; page < 2; page++) {
+            var json =
+                    groupGet(
+                            adminActor,
+                            "search=Groupfilter&groupId=" + group + "&size=1&page=" + page);
+            org.assertj.core.api.Assertions.assertThat(
+                            json.path("page").path("totalElements").asLong())
+                    .isEqualTo(2);
+            org.assertj.core.api.Assertions.assertThat(json.path("page").path("totalPages").asInt())
+                    .isEqualTo(2);
+            org.assertj.core.api.Assertions.assertThat(rowIds(json))
+                    .containsExactly(page == 0 ? mixed.userId() : suspended.userId());
+        }
+        var headers = new org.springframework.http.HttpHeaders();
+        headers.set("X-Internal-Token", adminActor.internalToken());
+        headers.setContentType(org.springframework.http.MediaType.APPLICATION_JSON);
+        var exported =
+                http.exchange(
+                        "/academic/registry-exports/users",
+                        org.springframework.http.HttpMethod.POST,
+                        new org.springframework.http.HttpEntity<>(
+                                "{\"search\":\"Groupfilter\",\"groupId\":"
+                                        + group
+                                        + ",\"role\":\"STUDENT\",\"roleStatus\":\"ACTIVE\",\"format\":\"html\"}",
+                                headers),
+                        String.class);
+        org.assertj.core.api.Assertions.assertThat(exported.getStatusCode())
+                .isEqualTo(org.springframework.http.HttpStatus.OK);
+        org.assertj.core.api.Assertions.assertThat(
+                        exported.getHeaders().getFirst("X-Export-Row-Count"))
+                .isEqualTo("1");
+        org.assertj.core.api.Assertions.assertThat(exported.getBody())
+                .contains(mixed.login())
+                .doesNotContain(transferred.login(), suspended.login());
+    }
+
+    @Test
+    void groupFilterRetainsArchivedLinksWithSameGrantStatusAndAccountStatus() throws Exception {
+        long group = identityFixture.canonical().groupId();
+        var archived =
+                seedUser(
+                        "Groupretain-Archived",
+                        "Архив",
+                        "Связь",
+                        null,
+                        UserRole.STUDENT,
+                        null,
+                        611000004004L);
+        var restored =
+                seedUser(
+                        "Groupretain-Restored",
+                        "Архив",
+                        "Связь",
+                        null,
+                        UserRole.STUDENT,
+                        null,
+                        611000004005L);
+        archive(archived.userId());
+        archive(restored.userId());
+        var request = new RestoreRequest(UUID.randomUUID());
+        try (var ignored = identityFixture.request(adminActor, request.operationId())) {
+            archives.restore(restored.userId(), request);
+        }
+        org.assertj.core.api.Assertions.assertThat(
+                        rowIds(
+                                groupGet(
+                                        adminActor,
+                                        "search=Groupretain&groupId="
+                                                + group
+                                                + "&role=STUDENT&roleStatus=ARCHIVED&sort=id,asc")))
+                .containsExactly(archived.userId(), restored.userId());
+        org.assertj.core.api.Assertions.assertThat(
+                        rowIds(
+                                groupGet(
+                                        adminActor,
+                                        "search=Groupretain&groupId="
+                                                + group
+                                                + "&status=ARCHIVED")))
+                .containsExactly(archived.userId());
+        org.assertj.core.api.Assertions.assertThat(
+                        rowIds(
+                                groupGet(
+                                        adminActor,
+                                        "search=Groupretain&groupId="
+                                                + newGroup()
+                                                + "&role=STUDENT&roleStatus=ARCHIVED")))
+                .isEmpty();
+    }
+
+    @Test
+    void groupFilterRejectsInvalidIdsAndPreservesPermissionAndExistingRoleStatusGuard()
+            throws Exception {
+        for (String query :
+                java.util.List.of(
+                        "groupId=0",
+                        "groupId=-1",
+                        "groupId=1.5",
+                        "groupId=nope",
+                        "groupId=1&roleStatus=ACTIVE")) {
+            org.assertj.core.api.Assertions.assertThat(
+                            groupResponse(adminActor, query).getStatusCode())
+                    .isEqualTo(org.springframework.http.HttpStatus.BAD_REQUEST);
+        }
+        var unknown = groupGet(adminActor, "groupId=9223372036854775807");
+        org.assertj.core.api.Assertions.assertThat(
+                        unknown.path("page").path("totalElements").asLong())
+                .isZero();
+        var limitedId =
+                identityFixture
+                        .seedUser(
+                                new CreateUserRequest(
+                                        "Groupfilter",
+                                        "Limited",
+                                        null,
+                                        UserRole.ADMIN,
+                                        null,
+                                        null,
+                                        null,
+                                        new ru.rutcampustrack.academic.contract.dto.user
+                                                .AdminAccessInput(
+                                                "LIMITED", java.util.List.of("GROUPS_VIEW"))),
+                                adminActor)
+                        .userId();
+        var limited = identityFixture.select(limitedId, AuthRole.ADMIN);
+        org.assertj.core.api.Assertions.assertThat(
+                        groupResponse(limited, "groupId=" + identityFixture.canonical().groupId())
+                                .getStatusCode())
+                .isEqualTo(org.springframework.http.HttpStatus.FORBIDDEN);
+        var student =
+                identityFixture.select(identityFixture.canonical().studentId(), AuthRole.STUDENT);
+        org.assertj.core.api.Assertions.assertThat(
+                        groupResponse(student, "groupId=" + identityFixture.canonical().groupId())
+                                .getStatusCode())
+                .isEqualTo(org.springframework.http.HttpStatus.FORBIDDEN);
+    }
+
+    private void asAdmin(Runnable command) {
+        try (var ignored = identityFixture.request(adminActor)) {
+            command.run();
+        }
+    }
+
+    private long newGroup() {
+        long group =
+                jdbc.queryForObject(
+                        "INSERT INTO"
+                                + " groups(name,is_active,alphabetic_code,numeric_code,current_course,training_duration_years,duration_status)"
+                                + " VALUES('ФЛТ-211',TRUE,'ФЛТ','211',2,4,'KNOWN') RETURNING id",
+                        Long.class);
+        jdbc.update(
+                "INSERT INTO"
+                        + " group_history_coverage(group_id,coverage_from,writer_version,created_at)"
+                        + " VALUES(?,'2026-02-01',?,NOW())",
+                group,
+                ru.rutcampustrack.academic.history.HistoricalMembershipService.WRITER_VERSION);
+        return group;
+    }
+
+    private org.springframework.http.ResponseEntity<String> groupResponse(
+            AcademicIdentityIntegrationFixture.SelectedActor actor, String query) {
+        var headers = new org.springframework.http.HttpHeaders();
+        headers.set("X-Internal-Token", actor.internalToken());
+        return http.exchange(
+                "/academic/users?" + query,
+                org.springframework.http.HttpMethod.GET,
+                new org.springframework.http.HttpEntity<>(headers),
+                String.class);
+    }
+
+    private com.fasterxml.jackson.databind.JsonNode groupGet(
+            AcademicIdentityIntegrationFixture.SelectedActor actor, String query) throws Exception {
+        var response = groupResponse(actor, query);
+        org.assertj.core.api.Assertions.assertThat(response.getStatusCode())
+                .isEqualTo(org.springframework.http.HttpStatus.OK);
+        return mapper.readTree(response.getBody());
+    }
+
+    private java.util.List<Long> rowIds(com.fasterxml.jackson.databind.JsonNode json) {
+        var result = new java.util.ArrayList<Long>();
+        json.path("_embedded")
+                .path("userResponseList")
+                .forEach(row -> result.add(row.path("id").asLong()));
+        return result;
     }
 
     @Test

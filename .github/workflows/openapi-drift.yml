@@ -1,24 +1,10 @@
 name: OpenAPI Drift Guard
 
+# Temporary owner-authorized pause for codex/web-vue-redesign.
+# Restore automatic triggers before merge after explicit owner GO.
+# See docs/plans/web-vue-pr3/CI-DEVELOPMENT-POLICY.md.
 on:
-  push:
-    branches: ['**']
-    paths:
-      - 'docs/openapi/**'
-      - 'frontends/mobile-core/src/api/generated/**'
-      - 'frontends/mobile-core/scripts/generate-*.mjs'
-      - 'frontends/package.json'
-      - 'frontends/package-lock.json'
-      - '.github/workflows/openapi-drift.yml'
-  pull_request:
-    branches: ['**']
-    paths:
-      - 'docs/openapi/**'
-      - 'frontends/mobile-core/src/api/generated/**'
-      - 'frontends/mobile-core/scripts/generate-*.mjs'
-      - 'frontends/package.json'
-      - 'frontends/package-lock.json'
-      - '.github/workflows/openapi-drift.yml'
+  workflow_dispatch:
 
 jobs:
   drift-check:

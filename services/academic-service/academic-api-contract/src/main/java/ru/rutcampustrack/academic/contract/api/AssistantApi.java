@@ -1,6 +1,8 @@
 package ru.rutcampustrack.academic.contract.api;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -21,6 +23,7 @@ import ru.rutcampustrack.academic.contract.dto.assistant.AssignAssistantRequest;
 import ru.rutcampustrack.academic.contract.dto.assistant.AssistantPermissionOption;
 import ru.rutcampustrack.academic.contract.dto.assistant.AssistantResponse;
 import ru.rutcampustrack.academic.contract.dto.assistant.UpdateAssistantPermissionsRequest;
+import ru.rutcampustrack.shared.web.api.exception.ErrorResponse;
 
 /** REST API contract for headman assistant management. */
 @Tag(name = "Assistants", description = "Управление помощниками старосты")
@@ -57,12 +60,23 @@ public interface AssistantApi {
     @GetMapping("/me/permissions")
     ResponseEntity<List<AssistantPermissionOption>> listMyPermissionCatalog();
 
-    @Operation(summary = "Обновить права помощника (HEADMAN/ADMIN)")
+    @Operation(
+            summary = "Обновить права помощника (HEADMAN/ADMIN)",
+            description =
+                    "expectedPermissions задаёт условное сравнение набора прав под блокировкой. Пустые permissions со снимком отзывают помощника и возвращают active=false; без снимка пустой набор запрещён.")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Права обновлены"),
         @ApiResponse(responseCode = "400", description = "Ошибка валидации"),
         @ApiResponse(responseCode = "403", description = "Нет прав доступа"),
-        @ApiResponse(responseCode = "404", description = "Помощник не найден")
+        @ApiResponse(responseCode = "404", description = "Помощник не найден"),
+        @ApiResponse(
+                responseCode = "409",
+                description =
+                        "Помощник отозван или права изменились; extras.code=ASSISTANT_PERMISSIONS_CONFLICT при несовпадении снимка",
+                content =
+                        @Content(
+                                mediaType = "application/problem+json",
+                                schema = @Schema(implementation = ErrorResponse.class)))
     })
     @PatchMapping("/{id}/permissions")
     ResponseEntity<EntityModel<AssistantResponse>> updatePermissions(

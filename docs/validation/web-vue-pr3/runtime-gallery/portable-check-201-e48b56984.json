@@ -1,0 +1,13 @@
+{
+  "kind": "portable-gallery-data-only-refresh",
+  "result": "PASS for metadata/hash/path validation only",
+  "imageCount": 201,
+  "imagePin": "e48b569846a536c94b62ca2319de6c2c7228d75c",
+  "artifactSha256": "23e3028cf760684ff0977fb278f930b19a299d7afd5588a9699a5c1eec687b1f",
+  "renderLogicSha256": "3ed5f9c841d201e93facb4c9d7bd6074e1fe9b857e4edf4da7a91f1ed0e8dc83",
+  "renderLogicUnchanged": true,
+  "priorBrowserSmoke": "portable-check-200-51e46f715.json",
+  "browserNotRerun": "Onlymetadata/pin/count updated; unchanged render/filterlogic retains prior200-frame smoke, not a new201browserPASS",
+  "functionalActionCount": 0,
+  "originalNativeGeo": "../checkpoints/native-geo-20261024/acceptance.json"
+}

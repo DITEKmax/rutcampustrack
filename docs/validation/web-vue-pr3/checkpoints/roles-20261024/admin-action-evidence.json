@@ -1,0 +1,415 @@
+{
+  "schemaVersion": 1,
+  "generatedAtUtc": "2026-10-24T02:35:02.075043+00:00",
+  "acceptedAdminSourceRevision": "3d0a30225cda7cee22f2652367390001d8ec96f8",
+  "rootIntegrationReference": "3f585 (parent-reported accepted root source)",
+  "scope": "34 accepted active ADMIN actions; final user deletion excluded by owner",
+  "counts": {
+    "activeActions": 34,
+    "implementedExecutable": 32,
+    "locallyVerifiedPositiveJourneys": 28,
+    "explicitPartialOrBlocked": 6
+  },
+  "limits": [
+    "These counts are action journeys, not a claim of every state/negative/interleaving or complete delivery acceptance.",
+    "No new fixtures, semester activation, rights writes, promotion execution or rejected security scripts were run to assemble this manifest.",
+    "Some historical initial group command trace was overwritten; the exact evidence limit is attached to those two actions.",
+    "Public PNG publication must use public-capture-manifest.json whitelist only; no private artifacts or capability values are copied here."
+  ],
+  "implementedActionIds": [
+    "ACT-ADMIN-DASHBOARD",
+    "ACT-ADMIN-ACTIVITY",
+    "ACT-ADMIN-USERS-BROWSE",
+    "ACT-ADMIN-USER-CREATE",
+    "ACT-ADMIN-USER-PROFILE",
+    "ACT-ADMIN-USER-ROLE",
+    "ACT-ADMIN-USER-TRANSFER",
+    "ACT-ADMIN-USER-ARCHIVE",
+    "ACT-ADMIN-USER-RESTORE",
+    "ACT-ADMIN-USER-RECOVERY",
+    "ACT-ADMIN-ACCESS",
+    "ACT-ADMIN-USERS-EXPORT",
+    "ACT-ADMIN-GROUPS-BROWSE",
+    "ACT-ADMIN-GROUP-CREATE",
+    "ACT-ADMIN-GROUP-EDIT",
+    "ACT-ADMIN-HEADMAN-REPLACE",
+    "ACT-ADMIN-GROUP-ARCHIVE",
+    "ACT-ADMIN-GROUP-RESTORE",
+    "ACT-ADMIN-GROUP-HISTORY",
+    "ACT-ADMIN-PROMOTE",
+    "ACT-ADMIN-GROUPS-EXPORT",
+    "ACT-ADMIN-SEMESTERS-BROWSE",
+    "ACT-ADMIN-SEMESTER-SAVE",
+    "ACT-ADMIN-SEMESTER-ACTIVATE",
+    "ACT-ADMIN-SEMESTER-ARCHIVE",
+    "ACT-ADMIN-SEMESTER-DELETE",
+    "ACT-ADMIN-MAP-INVENTORY",
+    "ACT-ADMIN-MAP-PUBLISH",
+    "ACT-ADMIN-MAP-EDIT",
+    "ACT-ADMIN-ATTENDANCE-REPORT",
+    "ACT-ADMIN-ATTENDANCE-EXPORT",
+    "ACT-ADMIN-REGENERATE-PASSWORD"
+  ],
+  "verifiedPositiveActionIds": [
+    "ACT-ADMIN-DASHBOARD",
+    "ACT-ADMIN-ACTIVITY",
+    "ACT-ADMIN-USERS-BROWSE",
+    "ACT-ADMIN-USER-CREATE",
+    "ACT-ADMIN-USER-PROFILE",
+    "ACT-ADMIN-USER-ROLE",
+    "ACT-ADMIN-USER-TRANSFER",
+    "ACT-ADMIN-USER-ARCHIVE",
+    "ACT-ADMIN-USER-RESTORE",
+    "ACT-ADMIN-USER-RECOVERY",
+    "ACT-ADMIN-USERS-EXPORT",
+    "ACT-ADMIN-GROUPS-BROWSE",
+    "ACT-ADMIN-GROUP-CREATE",
+    "ACT-ADMIN-GROUP-EDIT",
+    "ACT-ADMIN-HEADMAN-REPLACE",
+    "ACT-ADMIN-GROUP-ARCHIVE",
+    "ACT-ADMIN-GROUP-RESTORE",
+    "ACT-ADMIN-GROUP-HISTORY",
+    "ACT-ADMIN-GROUPS-EXPORT",
+    "ACT-ADMIN-SEMESTERS-BROWSE",
+    "ACT-ADMIN-SEMESTER-SAVE",
+    "ACT-ADMIN-SEMESTER-ARCHIVE",
+    "ACT-ADMIN-SEMESTER-DELETE",
+    "ACT-ADMIN-MAP-INVENTORY",
+    "ACT-ADMIN-MAP-PUBLISH",
+    "ACT-ADMIN-MAP-EDIT",
+    "ACT-ADMIN-ATTENDANCE-REPORT",
+    "ACT-ADMIN-ATTENDANCE-EXPORT"
+  ],
+  "explicitPendingActionIds": [
+    "ACT-ADMIN-ACCESS",
+    "ACT-ADMIN-PROMOTE",
+    "ACT-ADMIN-SEMESTER-ACTIVATE",
+    "ACT-ADMIN-REGENERATE-PASSWORD",
+    "ACT-ADMIN-MAP-DELETE",
+    "ACT-ADMIN-GROUP-FINAL-DELETE"
+  ],
+  "actions": [
+    {
+      "actionId": "ACT-ADMIN-DASHBOARD",
+      "title": "Просмотреть реальные ролевые количества и суточный прирост",
+      "state": "locally_verified_positive_journey",
+      "implemented": true,
+      "evidence": [
+        "admin-reads.json"
+      ]
+    },
+    {
+      "actionId": "ACT-ADMIN-ACTIVITY",
+      "title": "Просмотреть реальные показатели активности выбранного периода",
+      "state": "locally_verified_positive_journey",
+      "implemented": true,
+      "evidence": [
+        "dashboard-controls.json"
+      ]
+    },
+    {
+      "actionId": "ACT-ADMIN-USERS-BROWSE",
+      "title": "Найти пользователя с фильтрами ролей статусов и групп",
+      "state": "locally_verified_positive_journey",
+      "implemented": true,
+      "evidence": [
+        "group-filter.json",
+        "access-lookup-readonly.json"
+      ]
+    },
+    {
+      "actionId": "ACT-ADMIN-USER-CREATE",
+      "title": "Создать одну учётную запись с начальным доступом",
+      "state": "locally_verified_positive_journey",
+      "implemented": true,
+      "evidence": [
+        "users-actions.json",
+        "create-recovery-ordinary.json"
+      ]
+    },
+    {
+      "actionId": "ACT-ADMIN-USER-PROFILE",
+      "title": "Изменить данные существующего пользователя",
+      "state": "locally_verified_positive_journey",
+      "implemented": true,
+      "evidence": [
+        "users-actions.json"
+      ]
+    },
+    {
+      "actionId": "ACT-ADMIN-USER-ROLE",
+      "title": "Добавить роль или изменить её текущий статус",
+      "state": "locally_verified_positive_journey",
+      "implemented": true,
+      "evidence": [
+        "user-lifecycle.json",
+        "transfer-form.json"
+      ]
+    },
+    {
+      "actionId": "ACT-ADMIN-USER-TRANSFER",
+      "title": "Перевести студента с сохранением истории",
+      "state": "locally_verified_positive_journey",
+      "implemented": true,
+      "evidence": [
+        "user-lifecycle.json",
+        "transfer-form.json"
+      ]
+    },
+    {
+      "actionId": "ACT-ADMIN-USER-ARCHIVE",
+      "title": "Архивировать пользователя после предпросмотра последствий",
+      "state": "locally_verified_positive_journey",
+      "implemented": true,
+      "evidence": [
+        "user-lifecycle.json"
+      ]
+    },
+    {
+      "actionId": "ACT-ADMIN-USER-RESTORE",
+      "title": "Восстановить пользователя без автоматического возврата старых прав",
+      "state": "locally_verified_positive_journey",
+      "implemented": true,
+      "evidence": [
+        "user-lifecycle.json"
+      ]
+    },
+    {
+      "actionId": "ACT-ADMIN-USER-RECOVERY",
+      "title": "Выдать допустимому пользователю recovery link",
+      "state": "locally_verified_positive_journey",
+      "implemented": true,
+      "evidence": [
+        "recovery-link.json"
+      ]
+    },
+    {
+      "actionId": "ACT-ADMIN-ACCESS",
+      "title": "Назначить изменить или отозвать административные права",
+      "state": "partial",
+      "implemented": true,
+      "reason": "Read-only profile/catalog/draft/cancel verified; actual grant/edit/revoke writes NOT_RUN; no privileged-fixture workaround",
+      "evidence": [
+        "access-lookup-readonly.json"
+      ]
+    },
+    {
+      "actionId": "ACT-ADMIN-USERS-EXPORT",
+      "title": "Выгрузить текущий разрешённый реестр пользователей",
+      "state": "locally_verified_positive_journey",
+      "implemented": true,
+      "evidence": [
+        "exports.json",
+        "group-filter.json",
+        "export-recovery.json"
+      ]
+    },
+    {
+      "actionId": "ACT-ADMIN-GROUPS-BROWSE",
+      "title": "Просмотреть активные черновые и архивные группы",
+      "state": "locally_verified_positive_journey",
+      "implemented": true,
+      "evidence": [
+        "admin-reads.json",
+        "group-rename-archive.json"
+      ]
+    },
+    {
+      "actionId": "ACT-ADMIN-GROUP-CREATE",
+      "title": "Создать группу с кодами и сроком обучения",
+      "state": "locally_verified_positive_journey",
+      "implemented": true,
+      "evidence": [
+        "group-rename-archive.json"
+      ],
+      "evidenceLimit": "Initial UI201 create / headmanPUT200 were recorded in earlier agent/parent acceptance checkpoints; their original partial trace was overwritten by the later semester harness. The retained current JSON proves own group3/head9 state, not a new repetition of those commands."
+    },
+    {
+      "actionId": "ACT-ADMIN-GROUP-EDIT",
+      "title": "Изменить название или параметры разрешённой группы",
+      "state": "locally_verified_positive_journey",
+      "implemented": true,
+      "evidence": [
+        "group-rename-archive.json"
+      ]
+    },
+    {
+      "actionId": "ACT-ADMIN-HEADMAN-REPLACE",
+      "title": "Назначить или заменить старосту после предпросмотра",
+      "state": "locally_verified_positive_journey",
+      "implemented": true,
+      "evidence": [
+        "group-rename-archive.json"
+      ],
+      "evidenceLimit": "Initial UI201 create / headmanPUT200 were recorded in earlier agent/parent acceptance checkpoints; their original partial trace was overwritten by the later semester harness. The retained current JSON proves own group3/head9 state, not a new repetition of those commands."
+    },
+    {
+      "actionId": "ACT-ADMIN-GROUP-ARCHIVE",
+      "title": "Обратимо архивировать группу с сохранением данных",
+      "state": "locally_verified_positive_journey",
+      "implemented": true,
+      "evidence": [
+        "group-rename-archive.json"
+      ]
+    },
+    {
+      "actionId": "ACT-ADMIN-GROUP-RESTORE",
+      "title": "Восстановить архивную группу",
+      "state": "locally_verified_positive_journey",
+      "implemented": true,
+      "evidence": [
+        "group-rename-archive.json"
+      ]
+    },
+    {
+      "actionId": "ACT-ADMIN-GROUP-HISTORY",
+      "title": "Открыть архивную группу и её сохранённый состав",
+      "state": "locally_verified_positive_journey",
+      "implemented": true,
+      "evidence": [
+        "group-filter.json",
+        "access-lookup-readonly.json"
+      ]
+    },
+    {
+      "actionId": "ACT-ADMIN-PROMOTE",
+      "title": "Предпросмотреть и выполнить перевод всех или выбранной группы в текущем цикле",
+      "state": "partial",
+      "implemented": true,
+      "reason": "Execution needs a separately admitted eligible historical owned cohort; ordinary newgroups are created after current cycle cutoff",
+      "evidence": []
+    },
+    {
+      "actionId": "ACT-ADMIN-GROUPS-EXPORT",
+      "title": "Выгрузить текущий разрешённый реестр групп",
+      "state": "locally_verified_positive_journey",
+      "implemented": true,
+      "evidence": [
+        "exports.json"
+      ]
+    },
+    {
+      "actionId": "ACT-ADMIN-SEMESTERS-BROWSE",
+      "title": "Просмотреть активные и архивные семестры",
+      "state": "locally_verified_positive_journey",
+      "implemented": true,
+      "evidence": [
+        "admin-reads.json"
+      ]
+    },
+    {
+      "actionId": "ACT-ADMIN-SEMESTER-SAVE",
+      "title": "Создать или изменить семестр с проверкой пересечений",
+      "state": "locally_verified_positive_journey",
+      "implemented": true,
+      "evidence": [
+        "semester-operations-final-status.json"
+      ]
+    },
+    {
+      "actionId": "ACT-ADMIN-SEMESTER-ACTIVATE",
+      "title": "Атомарно активировать выбранный семестр",
+      "state": "not_run",
+      "implemented": true,
+      "reason": "Exclusive global-context window not granted/executed; ownsemester4 is future and ordinary PATCH would only schedule",
+      "evidence": [
+        "semester-operations-final-status.json"
+      ]
+    },
+    {
+      "actionId": "ACT-ADMIN-SEMESTER-ARCHIVE",
+      "title": "Архивировать или восстановить семестр с durable completion",
+      "state": "locally_verified_positive_journey",
+      "implemented": true,
+      "evidence": [
+        "semester-operations-final-status.json",
+        "semester-final-status.json"
+      ]
+    },
+    {
+      "actionId": "ACT-ADMIN-SEMESTER-DELETE",
+      "title": "Окончательно удалить семестр после точного preview и password proof",
+      "state": "locally_verified_positive_journey",
+      "implemented": true,
+      "evidence": [
+        "semester-final-status.json"
+      ]
+    },
+    {
+      "actionId": "ACT-ADMIN-MAP-INVENTORY",
+      "title": "Просмотреть корпуса этажи и состояние файлов схем",
+      "state": "locally_verified_positive_journey",
+      "implemented": true,
+      "evidence": [
+        "map-actions.json"
+      ]
+    },
+    {
+      "actionId": "ACT-ADMIN-MAP-PUBLISH",
+      "title": "Загрузить или заменить схему по корпусу и этажу",
+      "state": "locally_verified_positive_journey",
+      "implemented": true,
+      "evidence": [
+        "map-actions.json"
+      ]
+    },
+    {
+      "actionId": "ACT-ADMIN-MAP-EDIT",
+      "title": "Изменить разрешённые подписи корпуса или этажа",
+      "state": "locally_verified_positive_journey",
+      "implemented": true,
+      "evidence": [
+        "map-actions.json"
+      ]
+    },
+    {
+      "actionId": "ACT-ADMIN-MAP-DELETE",
+      "title": "Окончательно удалить выбранную схему после preview и proof",
+      "state": "blocked",
+      "implemented": false,
+      "reason": "Whole-version/byte purge contract/runtime validation pending; UI disabled honestly; Q-ENV-004",
+      "evidence": []
+    },
+    {
+      "actionId": "ACT-ADMIN-ATTENDANCE-REPORT",
+      "title": "Просмотреть посещаемость групп выбранного семестра",
+      "state": "locally_verified_positive_journey",
+      "implemented": true,
+      "evidence": [
+        "admin-reads.json"
+      ]
+    },
+    {
+      "actionId": "ACT-ADMIN-ATTENDANCE-EXPORT",
+      "title": "Выгрузить текущий административный отчёт посещаемости",
+      "state": "locally_verified_positive_journey",
+      "implemented": true,
+      "evidence": [
+        "exports.json"
+      ]
+    },
+    {
+      "actionId": "ACT-ADMIN-GROUP-FINAL-DELETE",
+      "title": "Окончательно удалить группу с exact preview и proof",
+      "state": "blocked",
+      "implemented": false,
+      "reason": "Q-PROD-004 membership/grant fate and exact proof/durable protocol not yet accepted",
+      "evidence": []
+    },
+    {
+      "actionId": "ACT-ADMIN-REGENERATE-PASSWORD",
+      "title": "Сгенерировать новый пароль допустимому пользователю",
+      "state": "partial",
+      "implemented": true,
+      "reason": "Known nonself generation verified; FULL/self and lostACK401 fixture8 scenario still held by Q-ENV-003",
+      "evidence": [
+        "users-actions.json"
+      ]
+    }
+  ],
+  "captureManifest": "public-capture-manifest.json",
+  "parentAcceptanceReference": "/workspace/rutcampustrack/docs/plans/web-vue-pr3/ROLE-ACCEPTANCE-20261024.md",
+  "publicCopyNote": "JSON normalized with terminal newline; original safe manifest otherwise unchanged",
+  "originalPath": "/workspace/rct-pr3-runtime/admin-web/public-safe-evidence-manifest.json",
+  "originalSha256": "5ec6060ab11292e3b121307d334d77cd3ac6f4a904de545319333646c6546ebe"
+}

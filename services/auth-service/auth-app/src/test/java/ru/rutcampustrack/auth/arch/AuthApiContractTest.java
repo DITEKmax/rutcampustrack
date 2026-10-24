@@ -8,7 +8,6 @@ import com.tngtech.archunit.core.importer.ImportOption;
 import com.tngtech.archunit.junit.AnalyzeClasses;
 import com.tngtech.archunit.junit.ArchTest;
 import com.tngtech.archunit.lang.ArchRule;
-
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -74,6 +73,8 @@ class AuthApiContractTest {
                     .implement(ru.rutcampustrack.auth.api.AuthApi.class)
                     .orShould()
                     .implement(ru.rutcampustrack.auth.api.AuthSessionApi.class)
+                    .orShould()
+                    .implement(ru.rutcampustrack.auth.api.DevicePreferencesApi.class)
                     .orShould()
                     .implement(ru.rutcampustrack.auth.api.QrLoginApi.class)
                     .orShould()

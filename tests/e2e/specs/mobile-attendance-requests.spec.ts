@@ -230,7 +230,7 @@ test('exhausted manual budget still permits a failed-geo AUTO request that the h
   };
   await assertOpenCount(openBeforeExcuse.totalElements);
   const png = Buffer.from(
-    'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jF5kAAAAASUVORK5CYII=',
+    'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+ip1sAAAAASUVORK5CYII=',
     'base64',
   );
   const file = { name: 'request-form.png', mimeType: 'image/png', buffer: png };

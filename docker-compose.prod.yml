@@ -1594,8 +1594,8 @@ services:
 
   web-panel-nginx:
     build:
-      context: ./frontends/web-panel
-      dockerfile: Dockerfile
+      context: ./frontends
+      dockerfile: web-vue/Dockerfile
     image: ghcr.io/ditekmax/rutcampustrack/web-panel-nginx:${IMAGE_TAG:-latest}
     container_name: rct-web-panel-nginx
     logging: *bounded-logs

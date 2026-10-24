@@ -1,0 +1,12 @@
+{
+  "evidenceKind": "real-runtime-safe-projection",
+  "originalPath": "/workspace/rct-pr3-runtime/admin-web/access-lookup-readonly.json",
+  "originalSha256": "599560a9cae93b6a54d0d621b333edbaa1932299aa078e727e770932aab848f6",
+  "scopeNote": "Read-only existing USERS_VIEW-only17; not proof of ACCESS mutation.",
+  "checks": [
+    "real profile/catalog read, local LIMITED checkbox draft and revoke-confirm cancel, reopen discards draft; version/rights unchanged, no access command",
+    "actual archived empty group5 history resolves with protected group read and serverfiltered users",
+    "existing real USERS_VIEW-only17 selects archived group5 via exact options endpoint and serverusers200, no unrelated registry/group reads"
+  ],
+  "accessWrites": 0
+}

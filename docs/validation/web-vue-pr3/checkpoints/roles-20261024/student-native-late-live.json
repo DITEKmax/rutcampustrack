@@ -1,0 +1,31 @@
+{
+  "evidenceKind": "real-runtime-safe-projection",
+  "originalPath": "/tmp/student-web-native-late53-watch/summary.json",
+  "originalSha256": "7f3b291b64fda8d537934c489fe52284f7ad6abf50ddf1501918144f6ba55687",
+  "scopeNote": "Actual STOMP followed by REST, APPROVED/PRESENT without manual refresh; detailed event/body material omitted.",
+  "capturedAt": "2026-10-24T02:23:35.940Z",
+  "ready": {
+    "readyAt": "2026-10-24T02:22:56.306Z",
+    "requestId": "6adc14fea6849215f823a07f",
+    "requestStatus": "PENDING",
+    "attendanceStatus": "ABSENT",
+    "visibility": {
+      "request": "visible",
+      "attendance": "visible"
+    },
+    "studentPosts": 0
+  },
+  "requestId": "6adc14fea6849215f823a07f",
+  "sourceRevision": "3d6cf10a88a9e3b9d54474a7b28a5d3484a5f3ab",
+  "checks": [
+    "actual pending native late request initially mounted",
+    "own53 initially ABSENT and ordinary mark focused/hovered",
+    "without manual refresh native request became approved",
+    "without manual refresh own53 became present",
+    "student command count stays zero",
+    "focused ordinary mark DOM retained"
+  ],
+  "stableFocus": true,
+  "studentPosts": 0,
+  "errors": []
+}

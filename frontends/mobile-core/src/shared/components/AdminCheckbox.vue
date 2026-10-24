@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import SvgIcon from '../../../../shared/foundation/SvgIcon.vue';
 import { useId } from 'vue';
 import checkIcon from '../../assets/admin/check.svg';
 import './admin-checkbox.pcss';
@@ -37,11 +38,10 @@ function change(event: Event): void {
       class="admin-checkbox__control"
       aria-hidden="true"
     >
-      <img
+      <SvgIcon
         v-if="modelValue"
         :src="checkIcon"
-        alt=""
-      >
+      />
     </span>
     <span class="admin-checkbox__label">{{ label }}</span>
   </label>

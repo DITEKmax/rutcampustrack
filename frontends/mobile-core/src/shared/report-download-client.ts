@@ -100,6 +100,7 @@ export interface RegistryReportSort {
   readonly descending: boolean
 }
 export interface AdminUsersReportSelector {
+  readonly groupId?: number
   readonly search?: string
   readonly role?: AdminManagedRole
   readonly status?: AdminUser['status']
@@ -284,6 +285,8 @@ export interface ReportDownloadClientOptions {
   /** A durable user/session/role identity, never a bearer or refresh token. */
   readonly recoveryScope?: () => string | null
   readonly recoveryStorage?: Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>
+  /** Opt-in ADMIN registry/report recovery under the supplied captured identity scope. */
+  readonly recoverAdminExports?: boolean
 }
 
 export interface ReportDownloadGenerationOwner {
@@ -316,6 +319,13 @@ interface PendingExport {
 function isWeeklyReport(request: ReportDownloadTicketRequest): boolean {
   return request.kind === 'HEADMAN_WEEKLY_CURRENT' || request.kind === 'HEADMAN_WEEKLY_SELECTED'
 }
+function isAdminReport(request: ReportDownloadTicketRequest): boolean {
+  return (
+    request.kind === 'ADMIN_USERS' ||
+    request.kind === 'ADMIN_GROUPS' ||
+    request.kind === 'ADMIN_GROUP_ATTENDANCE'
+  )
+}
 
 function sameReport(
   left: ReportDownloadTicketRequest,
@@ -343,7 +353,7 @@ function isPendingExport(value: unknown): value is PendingExport {
   try {
     const request = value.request as unknown as ReportDownloadTicketRequest
     validateTicketRequest(request)
-    return isWeeklyReport(request)
+    return isWeeklyReport(request) || isAdminReport(request)
   } catch {
     return false
   }
@@ -393,7 +403,9 @@ export class ReportDownloadClient implements ReportDownloadTicketIssuer {
       if (raw) {
         const values: unknown = JSON.parse(raw)
         if (Array.isArray(values) && values.length <= 20) {
-          const entries = values.filter(isPendingExport)
+          const entries = values
+            .filter(isPendingExport)
+            .filter((entry) => this.recoverableReport(entry.request))
           this.pending.set(key, entries)
           return entries
         }
@@ -419,6 +431,12 @@ export class ReportDownloadClient implements ReportDownloadTicketIssuer {
   private removePending(request: ReportDownloadTicketRequest): void {
     this.writePending(this.readPending().filter((entry) => !sameReport(entry.request, request)))
   }
+  private recoverableReport(request: ReportDownloadTicketRequest): boolean {
+    return (
+      isWeeklyReport(request) ||
+      (this.options.recoverAdminExports === true && isAdminReport(request))
+    )
+  }
 
   async issueTicket(
     request: ReportDownloadTicketRequest,
@@ -434,7 +452,7 @@ export class ReportDownloadClient implements ReportDownloadTicketIssuer {
     current()
     request = structuredClone(request)
     validateTicketRequest(request)
-    const recoverable = isWeeklyReport(request) && this.recoveryKey() !== null
+    const recoverable = this.recoverableReport(request) && this.recoveryKey() !== null
     let saved = recoverable
       ? this.readPending().find((entry) => sameReport(entry.request, request))
       : undefined
@@ -746,7 +764,7 @@ export function validateTicketRequest(request: ReportDownloadTicketRequest): voi
     ],
     HEADMAN_GROUP_COMPOSITION: ['format'],
     HEADMAN_SUBJECT_JOURNAL: ['subjectId', 'lessonTypes', 'weekStarts', 'format'],
-    ADMIN_USERS: ['search', 'role', 'status', 'roleStatus', 'sorts', 'format'],
+    ADMIN_USERS: ['search', 'role', 'status', 'roleStatus', 'groupId', 'sorts', 'format'],
     ADMIN_GROUPS: ['status', 'search', 'course', 'studyMode', 'educationLevel', 'sorts', 'format'],
     ADMIN_GROUP_ATTENDANCE: ['semesterId', 'search', 'sort', 'direction', 'format'],
   }
@@ -846,6 +864,7 @@ export function validateTicketRequest(request: ReportDownloadTicketRequest): voi
           (!Array.isArray(selector.sorts) ||
             selector.sorts.length > 8 ||
             !isHeadmanStatsSortList(selector.sorts))) ||
+        (selector.groupId !== undefined && !isPositiveInteger(selector.groupId)) ||
         (selector.course !== undefined &&
           (!isPositiveInteger(selector.course) || selector.course > 5))
       )

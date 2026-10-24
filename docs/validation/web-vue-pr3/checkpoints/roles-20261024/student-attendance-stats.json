@@ -1,0 +1,127 @@
+{
+  "evidenceKind": "real-runtime-safe-projection",
+  "originalPath": "/tmp/student-web-read-flows/summary.json",
+  "originalSha256": "208110cdb8637ccd2d0d65f540f303e07a3e067bfc5c5ce0883199b7ff32b8f5",
+  "scopeNote": "Actual attendance/subject/ranking reads; no generated ranking position.",
+  "checks": [
+    "own attendance mark details keyboard Escape returns original cell focus",
+    "week uses real own semester projection",
+    "selected subject statistics use actual server aggregate",
+    "deselecting all types shows no attendance table",
+    "subject and empty type selection survive URL reload",
+    "semester metrics come from real server counts",
+    "ranking starts on server own-position page and renders own cohort",
+    "subject graph switches to real daily server series",
+    "graph period selection exposes actual metrics and group comparison",
+    "graph type filter keeps all detailed type rows visible",
+    "foreign subject statistics are denied by real API",
+    "failed own attendance read exposes retry without fabricated rows",
+    "explicit retry restores actual own attendance",
+    "no runtime errors"
+  ],
+  "errors": [],
+  "http": [
+    {
+      "path": "/api/v1/student/session",
+      "query": "",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/student/session",
+      "query": "",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/student/attendance",
+      "query": "?semesterId=2",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/student/statistics/subjects/4",
+      "query": "?semesterId=2&range=weeks&types=LECTURE",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/student/session",
+      "query": "",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/student/session",
+      "query": "",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/student/attendance",
+      "query": "?semesterId=2",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/student/attendance",
+      "query": "?semesterId=2",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/student/session",
+      "query": "",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/student/session",
+      "query": "",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/student/statistics",
+      "query": "?semesterId=2",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/student/statistics/ranking",
+      "query": "?semesterId=2&size=20",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/student/statistics/subjects/4",
+      "query": "?semesterId=2&range=weeks",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/student/statistics/subjects/4",
+      "query": "?semesterId=2&range=days&types=LECTURE",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/student/statistics/subjects/4",
+      "query": "?semesterId=2&range=days&types=LECTURE",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/student/statistics/subjects/1",
+      "query": "?semesterId=2&range=weeks",
+      "status": 403
+    },
+    {
+      "path": "/api/v1/student/session",
+      "query": "",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/student/session",
+      "query": "",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/student/session",
+      "query": "",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/student/attendance",
+      "query": "?semesterId=2",
+      "status": 200
+    }
+  ],
+  "ownPosition": 2,
+  "rankingTotal": 3
+}

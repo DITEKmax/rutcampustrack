@@ -1,7 +1,12 @@
 package ru.rutcampustrack.academic.export;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
@@ -11,7 +16,6 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.server.ResponseStatusException;
-
 import ru.rutcampustrack.academic.admin.AcademicAdminAccess;
 import ru.rutcampustrack.academic.contract.dto.export.RegistryExportModels;
 import ru.rutcampustrack.academic.entity.User;
@@ -24,13 +28,6 @@ import ru.rutcampustrack.academic.security.RequestContext;
 import ru.rutcampustrack.academic.user.UserService;
 import ru.rutcampustrack.shared.web.audit.AuditLogEntry;
 import ru.rutcampustrack.shared.web.audit.AuditLogStorage;
-
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
 
 @Service
 public class AdminRegistryExportService {
@@ -187,6 +184,7 @@ public class AdminRegistryExportService {
                                 query.role(),
                                 query.status(),
                                 query.roleStatus(),
+                                query.groupId(),
                                 PageRequest.of(0, MAX_ROWS + 1, sort))
                         : users.listUserRegistryForReport(
                                 query, PageRequest.of(0, MAX_ROWS + 1, sort), reportScope);
@@ -253,6 +251,7 @@ public class AdminRegistryExportService {
                                 "Роль: " + text(query.role()),
                                 "Статус: " + text(query.status()),
                                 "Статус роли: " + text(query.roleStatus()),
+                                "Группа (сохранённая ролевая связь): " + text(query.groupId()),
                                 "Порядок: " + sort,
                                 "Количество строк: " + rows.size(),
                                 "Сформировано: " + Instant.now()),
@@ -297,10 +296,10 @@ public class AdminRegistryExportService {
         var rows =
                 jdbc.query(
                         "SELECT identity->'report'->? AS selector FROM academic_export_jobs WHERE"
-                            + " user_id=? AND identity->'actor'->>'rolesVersion'=? AND session_id=?"
-                            + " AND identity->'actor'->>'sessionVersion'=? AND job_id=? AND"
-                            + " lease_id=? AND identity->'report'->>'kind'=? AND state='preparing'"
-                            + " AND lease_until>NOW() AND expires_at>NOW()",
+                                + " user_id=? AND identity->'actor'->>'rolesVersion'=? AND session_id=?"
+                                + " AND identity->'actor'->>'sessionVersion'=? AND job_id=? AND"
+                                + " lease_id=? AND identity->'report'->>'kind'=? AND state='preparing'"
+                                + " AND lease_until>NOW() AND expires_at>NOW()",
                         (rs, n) -> rs.getString("selector"),
                         selector,
                         claims.userId(),
@@ -311,8 +310,10 @@ public class AdminRegistryExportService {
                         leaseId,
                         kind);
         try {
+            // Parse both wire representations to normalize IntNode/LongNode for small IDs.
             if (rows.size() != 1
-                    || !mapper.readTree(rows.getFirst()).equals(mapper.valueToTree(query))) {
+                    || !mapper.readTree(rows.getFirst())
+                            .equals(mapper.readTree(mapper.writeValueAsString(query)))) {
                 throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Разрез задания изменился");
             }
         } catch (com.fasterxml.jackson.core.JsonProcessingException invalid) {

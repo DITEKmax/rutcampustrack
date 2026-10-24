@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "PR3 actual runtime screenshot manifest",
+  "type": "object",
+  "required": ["schemaVersion", "generatedAt", "source", "runtime", "entries"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "generatedAt": { "type": "string", "format": "date-time" },
+    "source": {
+      "type": "object",
+      "required": ["root", "revision", "paths"],
+      "properties": {
+        "root": { "type": "string" },
+        "revision": { "$ref": "#/$defs/revision" },
+        "paths": { "type": "array", "minItems": 1, "items": { "type": "string" } }
+      }
+    },
+    "runtime": {
+      "type": "object",
+      "required": ["provenance", "synthetic", "backendSourceRevision", "backendScope"],
+      "properties": {
+        "provenance": { "const": "real-runtime" },
+        "synthetic": { "const": true },
+        "backendSourceRevision": { "$ref": "#/$defs/revision" },
+        "backendScope": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+        "limitations": { "$ref": "#/$defs/strings" }
+      }
+    },
+    "entries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "screenId", "stateId", "theme", "width", "title", "description", "sourceRevision", "status"],
+        "properties": {
+          "id": { "type": "string", "description": "screenId/stateId/theme/width" },
+          "screenId": { "type": "string", "pattern": "^[A-Z0-9_-]+$" },
+          "stateId": { "type": "string", "pattern": "^[a-z0-9_-]+$" },
+          "theme": { "enum": ["dark", "light", "system"] },
+          "width": { "type": "integer", "minimum": 1 },
+          "title": { "type": "string", "minLength": 1 },
+          "description": { "type": "string", "minLength": 1 },
+          "sourceRevision": { "$ref": "#/$defs/revision" },
+          "status": { "enum": ["captured", "unknown", "blocked"] },
+          "reason": { "type": "string", "minLength": 1 },
+          "screenshot": { "type": "string", "description": "Relative separate PNG path inside gallery directory" },
+          "imageHeight": { "type": "integer", "minimum": 1 },
+          "imageWidth": { "type": "integer", "minimum": 1 },
+          "bytes": { "type": "integer", "minimum": 1 },
+          "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+          "provenance": { "const": "real-runtime" },
+          "capturedAt": { "type": "string", "format": "date-time" },
+          "url": { "type": "string", "format": "uri" },
+          "limitations": { "$ref": "#/$defs/strings" },
+          "horizontalOverflow": { "type": "boolean" },
+          "http": { "type": "array", "description": "Only API method/path/status; no headers, tokens or response bodies" },
+          "javascriptErrors": { "$ref": "#/$defs/strings" }
+        },
+        "allOf": [{
+          "if": { "properties": { "status": { "const": "captured" } } },
+          "then": { "required": ["screenshot", "imageWidth", "imageHeight", "bytes", "sha256", "provenance", "capturedAt", "url"] },
+          "else": { "required": ["reason"], "not": { "required": ["screenshot"] } }
+        }]
+      }
+    }
+  },
+  "$defs": {
+    "revision": { "type": "string", "pattern": "^[a-f0-9]{40}$" },
+    "strings": { "type": "array", "items": { "type": "string" } }
+  }
+}

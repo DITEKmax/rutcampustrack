@@ -258,6 +258,39 @@ describe('generation-bound report ticket session', () => {
     )
   })
 
+  it('decodes browser QR logins in the same account session and history pages', async () => {
+    const fetcher = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(Response.json({ accessToken: 'profile-token' }))
+      .mockResolvedValueOnce(
+        Response.json({
+          items: [
+            {
+              sessionId: '00000000-0000-4000-8000-000000000077',
+              authMethod: 'QR',
+              current: false,
+              createdAt: '2026-10-24T08:00:00Z',
+              lastSeenAt: '2026-10-24T09:00:00Z',
+            },
+          ],
+          nextCursor: null,
+        }),
+      )
+      .mockResolvedValueOnce(
+        Response.json({
+          items: [
+            { id: 'qr-login', type: 'LOGIN', authMethod: 'QR', occurredAt: '2026-10-24T08:00:00Z' },
+          ],
+          nextCursor: null,
+        }),
+      )
+    const session = useTmaSession({ fetcher, getInitData: () => INIT_DATA })
+    await session.authenticate()
+    const port = session.createProfilePort()
+    expect((await port.listSessions()).items[0]?.authMethod).toBe('QR')
+    expect((await port.listHistory()).items[0]?.authMethod).toBe('QR')
+  })
+
   it('rejects a profile page body that completes after the TMA session generation is cleared', async () => {
     let resolvePage!: (value: unknown) => void
     const delayedResponse = {

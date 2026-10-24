@@ -1,0 +1,72 @@
+{
+  "evidenceKind": "real-runtime-safe-projection",
+  "originalPath": "/tmp/rct-headman/delegated-root3f585-results.json",
+  "originalSha256": "1ea7272ec223b351b537d17aa76b67a7341d86963af33cd12980f8a69e6596f5",
+  "scopeNote": "Corrected actual root repeat: nav and old tables removed. No credential material copied.",
+  "source": "3f5852b95",
+  "actualRootRevision": "3f5852b9524245e98b16110b8fb4fde4bd68f389",
+  "scope": "VIEW_STATS live revocation current-view correction only",
+  "network": [
+    {
+      "method": "GET",
+      "path": "/api/academic/assistants/me/permissions",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/academic/assistants/me/permissions",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/attendance/reports/headman/stats/semesters",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/attendance/reports/headman/stats/overview",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/attendance/reports/headman/stats/trend",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/attendance/reports/headman/stats/query",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/academic/assistants/me/permissions",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/attendance/reports/headman/stats/overview",
+      "status": 403
+    }
+  ],
+  "beforeEffectivePermissions": [],
+  "assignStatus": 201,
+  "navGranted": true,
+  "protectedReadBefore": 200,
+  "statsTablesBefore": 2,
+  "revokeStatus": 200,
+  "live": {
+    "eventMessages": 1,
+    "ownPermissionReads": 1,
+    "navRemoved": true,
+    "manualReload": false
+  },
+  "protectedReadAfter": 403,
+  "final": {
+    "inactive": true,
+    "effectivePermissions": []
+  },
+  "currentViewRemoved": true,
+  "result": "PASS",
+  "logoutStudent": 204,
+  "logoutHeadman": 204
+}

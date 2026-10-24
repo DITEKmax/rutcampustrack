@@ -208,7 +208,7 @@
   background: var(--rct-color-text-muted);
 }
 
-.attendance-lesson-row__metadata img {
+.attendance-lesson-row__metadata :is(img, .rct-svg-icon) {
   inline-size: var(--rct-lesson-meta-icon-size);
   block-size: var(--rct-lesson-meta-icon-size);
   flex: 0 0 auto;
@@ -247,7 +247,9 @@
   block-size: var(--rct-control-min-touch);
 }
 
-.attendance-subject-list__trigger[aria-expanded='true'] .attendance-subject-list__disclosure img {
+.attendance-subject-list__trigger[aria-expanded='true']
+  .attendance-subject-list__disclosure
+  :is(img, .rct-svg-icon) {
   transform: rotate(180deg);
 }
 
@@ -358,7 +360,7 @@
   transform: rotate(90deg);
 }
 
-.attendance-back-button img {
+.attendance-back-button :is(img, .rct-svg-icon) {
   inline-size: var(--rct-space-4);
   block-size: var(--rct-space-4);
 }
@@ -450,7 +452,7 @@
   block-size: var(--rct-space-5);
 }
 
-.attendance-dock__icon img {
+.attendance-dock__icon :is(img, .rct-svg-icon) {
   inline-size: var(--rct-space-4);
   block-size: var(--rct-space-4);
 }
@@ -475,7 +477,7 @@
     animation: none;
   }
 
-  .attendance-subject-list__disclosure img {
+  .attendance-subject-list__disclosure :is(img, .rct-svg-icon) {
     transition: none;
   }
 }
@@ -511,7 +513,7 @@
 
 .attendance-metric__symbol {
   @mixin rct-type-status;
-  color: var(--rct-color-accent-on-now);
+  color: var(--rct-color-status-on-fill);
   border-radius: var(--rct-radius-full);
   flex: 0 0 auto;
   place-items: center;
@@ -700,7 +702,7 @@ button.attendance-status-badge::after {
   min-inline-size: 0;
 }
 
-.attendance-subject-list__disclosure img {
+.attendance-subject-list__disclosure :is(img, .rct-svg-icon) {
   block-size: var(--rct-icon-size);
   inline-size: var(--rct-icon-size);
   transform: rotate(-90deg);
@@ -902,15 +904,15 @@ button.attendance-status-badge::after {
 }
 
 .attendance-graph__detail-percentage--present {
-  color: var(--rct-color-status-present-fill);
+  color: var(--rct-color-status-present-text);
 }
 
 .attendance-graph__detail-percentage--excused {
-  color: var(--rct-color-status-excused-fill);
+  color: var(--rct-color-status-excused-text);
 }
 
 .attendance-graph__detail-percentage--absent {
-  color: var(--rct-color-status-absent-fill);
+  color: var(--rct-color-status-absent-text);
 }
 
 .attendance-graph__columns {

@@ -1,0 +1,77 @@
+{
+  "kind": "owned-tiny-nginx-static-http",
+  "imageId": "sha256:6769dc3a703c719c1d2756bda113659be28ae16cf0da58dd5fd823d6b9a050ea",
+  "containerName": "rct-web-dev-readable-probe-429",
+  "port": 18445,
+  "resources": {
+    "memory": "64m",
+    "cpus": 0.5,
+    "pidsLimit": 64
+  },
+  "command": [
+    "sh",
+    "-ec",
+    "rm -rf /usr/share/nginx/html\nmkdir -p /usr/share/nginx/html\ncp -R /opt/rct-web-dist/. /usr/share/nginx/html/\nchmod -R a+rX /usr/share/nginx/html\nexec nginx -g 'daemon off;'\n"
+  ],
+  "publicReferenceFiles": 49,
+  "publicReferenceBytes": 3971325,
+  "beforeModes": {
+    ".": "0o700",
+    "index.html": "0o600",
+    "assets/auth-background-original.png": "0o600"
+  },
+  "checks": [
+    {
+      "path": "/login",
+      "status": 200,
+      "sha256": "829eb692dd39b87681ca66723bd5fbe467862052a2c2d1c38cd410a1cd0bff79",
+      "noStore": true
+    },
+    {
+      "path": "/student/homework?from=readability-check",
+      "status": 200,
+      "sha256": "829eb692dd39b87681ca66723bd5fbe467862052a2c2d1c38cd410a1cd0bff79",
+      "noStore": true
+    },
+    {
+      "path": "/index.html",
+      "status": 200,
+      "sha256": "829eb692dd39b87681ca66723bd5fbe467862052a2c2d1c38cd410a1cd0bff79",
+      "noStore": true
+    },
+    {
+      "path": "/assets/index-BGjjpufD.js",
+      "status": 200,
+      "mime": "application/javascript",
+      "sha256": "b9ff06c56cf9b91bf4097c6dc63e9ea86803b82474d7a3112f7e48fcfe417329",
+      "bytes": 543354
+    },
+    {
+      "path": "/assets/auth-background-original.png",
+      "status": 200,
+      "mime": "image/png",
+      "sha256": "5ecad9bf5b38ddf9fe2114c5ab422cec78ea81c746fc2ee0b2ab5d9b3b6fff16",
+      "bytes": 937127
+    },
+    {
+      "path": "/assets/__rct_missing_readability_429.js",
+      "status": 404,
+      "noSpaFallback": true
+    }
+  ],
+  "containerRemoved": true,
+  "fixtureRemoved": true,
+  "outcome": "PASS",
+  "containerId": "c8e0dcfa694379d1f12cec3e360b289fada2086e49af81ae48346fc468e1cd94",
+  "workerUsers": [
+    "nginx"
+  ],
+  "runtimeModes": [
+    "755 /usr/share/nginx/html",
+    "644 /usr/share/nginx/html/index.html",
+    "644 /usr/share/nginx/html/assets/auth-background-original.png"
+  ],
+  "hostModesAndBytesUnchanged": true,
+  "fixtureModesAndBytesUnchanged": true,
+  "hostReferenceUnchangedAfterCleanup": true
+}

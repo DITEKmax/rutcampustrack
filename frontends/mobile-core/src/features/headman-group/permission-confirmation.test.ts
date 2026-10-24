@@ -4,6 +4,7 @@ import {
   type PermissionConfirmationContext,
 } from './permission-confirmation'
 import type { HeadmanPermissionOption } from './headman-group-client'
+import { HeadmanGroupApi, HeadmanGroupApiError } from './headman-group-client'
 
 const catalog: readonly HeadmanPermissionOption[] = [
   { code: 'MARK_ATTENDANCE', label: 'Посещаемость' },
@@ -93,5 +94,75 @@ describe('frozen permission confirmation sequence', () => {
     mutable.after.pop()
     expect(state.snapshot.after).toEqual(context.after)
     expect(flow.confirm(mutable).kind).toBe('invalid')
+  })
+})
+
+describe('conditional assistant permissions transport', () => {
+  const assistant = {
+    id: 11,
+    studentId: 2,
+    groupId: 4,
+    permissions: ['MANAGE_HOMEWORK'],
+    active: true,
+  }
+  it('submits the frozen before-set and preserves a conflict without replaying the stale grant', async () => {
+    const flow = new PermissionConfirmationFlow()
+    const draft = {
+      ...context,
+      before: ['MANAGE_HOMEWORK' as const],
+      after: ['MANAGE_HOMEWORK' as const, 'VIEW_STATS' as const],
+    }
+    flow.start(draft, catalog)
+    const approved = flow.confirm(draft)
+    if (approved.kind !== 'commit') throw new Error('Expected explicit grant')
+    let writes = 0
+    const api = new HeadmanGroupApi({
+      accessToken: () => null,
+      fetcher: async (_path, init) => {
+        writes++
+        expect(JSON.parse(String(init?.body))).toEqual({
+          permissions: approved.snapshot.after,
+          expectedPermissions: approved.snapshot.before,
+        })
+        return Response.json(
+          { detail: 'Права уже изменились', code: 'ASSISTANT_PERMISSIONS_CONFLICT' },
+          { status: 409 },
+        )
+      },
+    })
+    await expect(
+      api.updatePermissions(11, approved.snapshot.after, approved.snapshot.before),
+    ).rejects.toBeInstanceOf(HeadmanGroupApiError)
+    expect(writes).toBe(1)
+  })
+  it('uses conditional empty PATCH for last-right revoke and retains the inactive historical response', async () => {
+    const api = new HeadmanGroupApi({
+      accessToken: () => null,
+      fetcher: async (_path, init) => {
+        expect(init?.method).toBe('PATCH')
+        expect(JSON.parse(String(init?.body))).toEqual({
+          permissions: [],
+          expectedPermissions: ['MANAGE_HOMEWORK'],
+        })
+        return Response.json({ ...assistant, active: false })
+      },
+    })
+    const result = await api.updatePermissions(11, [], ['MANAGE_HOMEWORK'])
+    expect(result.active).toBe(false)
+    expect(result.permissions).toEqual(['MANAGE_HOMEWORK'])
+  })
+  it('preserves the legacy nonempty body and rejects legacy empty changes before transport', async () => {
+    let writes = 0
+    const api = new HeadmanGroupApi({
+      accessToken: () => null,
+      fetcher: async (_path, init) => {
+        writes++
+        expect(JSON.parse(String(init?.body))).toEqual({ permissions: ['VIEW_STATS'] })
+        return Response.json({ ...assistant, permissions: ['VIEW_STATS'] })
+      },
+    })
+    await api.updatePermissions(11, ['VIEW_STATS'])
+    await expect(api.updatePermissions(11, [])).rejects.toThrow('expected snapshot')
+    expect(writes).toBe(1)
   })
 })

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import SvgIcon from '../../../../shared/foundation/SvgIcon.vue';
 import ExportButton from '../../shared/components/ExportButton.vue';
 import type {
   ReportDownloadPort,
@@ -57,7 +58,6 @@ const props = withDefaults(
     theme?: 'dark' | 'light';
   }>(),
   {
-    theme: 'dark',
     reportDownload: null,
     accessClient: null,
     authority: null,
@@ -2536,11 +2536,10 @@ onBeforeUnmount(() => {
           aria-label="Скопировать логин"
           @click="copyCredential(selectedUser.login)"
         >
-          <span><small>Логин</small><strong>{{ selectedUser.login }}</strong></span><img
+          <span><small>Логин</small><strong>{{ selectedUser.login }}</strong></span><SvgIcon
             :src="copyIcon"
-            alt=""
             aria-hidden="true"
-          >
+          />
         </button><button
           v-if="selectedUser.initialPassword"
           class="admin-users-credential"
@@ -2548,11 +2547,10 @@ onBeforeUnmount(() => {
           aria-label="Скопировать начальный пароль"
           @click="copyCredential(selectedUser.initialPassword!)"
         >
-          <span><small>Начальный пароль</small><strong>{{ selectedUser.initialPassword }}</strong></span><img
+          <span><small>Начальный пароль</small><strong>{{ selectedUser.initialPassword }}</strong></span><SvgIcon
             :src="copyIcon"
-            alt=""
             aria-hidden="true"
-          >
+          />
         </button>
       </div><p
         v-if="copied"
@@ -2620,11 +2618,10 @@ onBeforeUnmount(() => {
           aria-label="Скопировать логин"
           @click="copyCredential(selectedUser.login)"
         >
-          <span><small>Логин</small><strong>{{ selectedUser.login }}</strong></span><img
+          <span><small>Логин</small><strong>{{ selectedUser.login }}</strong></span><SvgIcon
             :src="copyIcon"
-            alt=""
             aria-hidden="true"
-          >
+          />
         </button><button
           class="admin-users-credential"
           type="button"

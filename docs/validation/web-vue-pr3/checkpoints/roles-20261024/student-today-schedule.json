@@ -1,0 +1,99 @@
+{
+  "evidenceKind": "real-runtime-safe-projection",
+  "originalPath": "/tmp/student-web-first-flow/summary.json",
+  "originalSha256": "707ebc9aed6ebc44973333833a93c2285a6a520354a393ae9fb16acd2b662e36",
+  "scopeNote": "Original first Today/schedule/PWA reads; later source corrections reviewed separately. No positive geolocation claim.",
+  "checks": [
+    "actual own student15 group4 admitted",
+    "actual owned lesson64 is planned and TOO_EARLY",
+    "premature checkin disabled with reason",
+    "subject metrics and independent homework render",
+    "PWA dismissal persisted for own profile",
+    "day schedule includes owned lesson room",
+    "lesson details available from keyboard",
+    "no browser runtime errors"
+  ],
+  "errors": [],
+  "responses": [
+    {
+      "path": "/api/v1/student/session",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/student/session",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/student/requests/options",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/student/today",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/student/homework",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/student/homework",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/student/attendance",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/student/statistics/subjects/4",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/student/session",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/student/today",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/student/session",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/student/session",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/student/requests/options",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/student/today",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/student/homework",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/student/attendance",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/student/homework",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/student/statistics/subjects/4",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/student/session",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/student/schedule",
+      "status": 200
+    }
+  ]
+}

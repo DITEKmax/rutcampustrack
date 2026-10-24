@@ -1,0 +1,39 @@
+{
+  "sourceRevision": "9b8d87c80a0076b204804b0cb5dc61ccb9034e1f",
+  "scope": "79e8fdce6..HEAD plus staged documentation/gallery",
+  "fileCount": 260,
+  "checks": [
+    {
+      "name": "check-json",
+      "exitCode": 0
+    },
+    {
+      "name": "check-yaml",
+      "exitCode": 0
+    },
+    {
+      "name": "check-added-large-files",
+      "exitCode": 0
+    },
+    {
+      "name": "end-of-file-fixer",
+      "exitCode": 0
+    },
+    {
+      "name": "trailing-whitespace-fixer",
+      "exitCode": 0
+    },
+    {
+      "name": "gitleaks-commits",
+      "exitCode": 0
+    },
+    {
+      "name": "gitleaks-staged",
+      "exitCode": 0
+    }
+  ],
+  "actualInstalledHook": "not installed; pinned equivalent executables run directly",
+  "pinnedGitleaks": "8.22.1",
+  "falsePositiveTriage": "two exact3e58 fixture fingerprints, independent review in review/security-REVIEW-3e58-test-fixtures.md; firstfailed receipt retained separately",
+  "CI": "PAUSED/workflow_dispatch"
+}

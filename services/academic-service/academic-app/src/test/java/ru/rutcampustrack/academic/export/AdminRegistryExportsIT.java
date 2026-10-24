@@ -6,14 +6,16 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
+import java.util.zip.*;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-
 import ru.rutcampustrack.academic.contract.dto.user.AdminAccessInput;
 import ru.rutcampustrack.academic.contract.dto.user.CreateUserRequest;
 import ru.rutcampustrack.academic.contract.enums.UserRole;
@@ -24,11 +26,6 @@ import ru.rutcampustrack.academic.identityoperation.AcademicUserIdentityOperatio
 import ru.rutcampustrack.academic.integration.AbstractAcademicIntegrationTest;
 import ru.rutcampustrack.academic.integration.AcademicIdentityIntegrationFixture.SelectedActor;
 import ru.rutcampustrack.auth.session.model.AuthRole;
-
-import java.io.*;
-import java.nio.charset.StandardCharsets;
-import java.util.*;
-import java.util.zip.*;
 
 /**
  * Canonical HTTP + service/JPA/JDBC query; complete filtered rows, explicit safe schema, live
@@ -97,15 +94,15 @@ class AdminRegistryExportsIT extends AbstractAcademicIntegrationTest {
         for (int i = 0; i < 23; i++)
             jdbc.update(
                     "INSERT INTO"
-                        + " groups(name,alphabetic_code,numeric_code,current_course,training_duration_years,duration_status,is_active)"
-                        + " VALUES (?,?,?,1,4,'KNOWN',true)",
+                            + " groups(name,alphabetic_code,numeric_code,current_course,training_duration_years,duration_status,is_active)"
+                            + " VALUES (?,?,?,1,4,'KNOWN',true)",
                     "ЭК" + (char) ('А' + i) + "-110",
                     "ЭК" + (char) ('А' + i),
                     "110");
         jdbc.update(
                 "INSERT INTO"
-                    + " groups(name,alphabetic_code,numeric_code,current_course,training_duration_years,duration_status,is_active)"
-                    + " VALUES ('ЭКЩ-220','ЭКЩ','220',2,4,'KNOWN',true)");
+                        + " groups(name,alphabetic_code,numeric_code,current_course,training_duration_years,duration_status,is_active)"
+                        + " VALUES ('ЭКЩ-220','ЭКЩ','220',2,4,'KNOWN',true)");
         String request =
                 "{\"status\":\"DRAFT\",\"search\":\"ЭК\",\"course\":1,\"studyMode\":\"FULL_TIME\",\"educationLevel\":\"BACHELOR\",\"sorts\":[{\"field\":\"name\",\"descending\":true}],\"format\":\"html\"}";
         String html =
@@ -269,9 +266,9 @@ class AdminRegistryExportsIT extends AbstractAcademicIntegrationTest {
                 "{\"search\":null,\"role\":null,\"status\":null,\"roleStatus\":null,\"sorts\":null,\"format\":\"html\"}";
         jdbc.update(
                 "INSERT INTO"
-                    + " academic_export_jobs(job_id,user_id,session_id,request_id,binding_hash,identity,state,attempts,lease_id,lease_until,expires_at)"
-                    + " VALUES (?,?,?,?,?,?::jsonb,'preparing',1,?,NOW()+interval '90"
-                    + " seconds',NOW()+interval '5 minutes')",
+                        + " academic_export_jobs(job_id,user_id,session_id,request_id,binding_hash,identity,state,attempts,lease_id,lease_until,expires_at)"
+                        + " VALUES (?,?,?,?,?,?::jsonb,'preparing',1,?,NOW()+interval '90"
+                        + " seconds',NOW()+interval '5 minutes')",
                 job,
                 admin,
                 sid,
@@ -366,7 +363,84 @@ class AdminRegistryExportsIT extends AbstractAcademicIntegrationTest {
                 .isEqualTo(org.springframework.http.HttpStatus.FORBIDDEN);
     }
 
+    @Test
+    void filteredAsyncUsersRenderNormalizesNumericIdsButRejectsChangedOrMissingGroup()
+            throws Exception {
+        long group = identityFixture.canonical().groupId();
+        assertThat(group).isBetween(1L, (long) Integer.MAX_VALUE);
+        var target =
+                identityFixture.seedUser(
+                        new CreateUserRequest(
+                                "AsyncGroup",
+                                "Included",
+                                null,
+                                UserRole.STUDENT,
+                                group,
+                                null,
+                                730000000002L),
+                        actor);
+        var job =
+                enqueueUserReport(
+                        Map.of(
+                                "search",
+                                target.login(),
+                                "role",
+                                "STUDENT",
+                                "roleStatus",
+                                "ACTIVE",
+                                "groupId",
+                                group,
+                                "format",
+                                "html"));
+        String reportToken = exportJobs.renderAdmission(job).token();
+        String rendered = renderUserReport(job, reportToken);
+        assertThat(rendered).contains(target.login());
+
+        // The same private lease cannot be reused for another or broader selector.
+        for (Map<String, Object> query :
+                List.<Map<String, Object>>of(
+                        Map.of(
+                                "search",
+                                target.login(),
+                                "role",
+                                "STUDENT",
+                                "roleStatus",
+                                "ACTIVE",
+                                "groupId",
+                                group + 1,
+                                "format",
+                                "html"),
+                        Map.of(
+                                "search",
+                                target.login(),
+                                "role",
+                                "STUDENT",
+                                "roleStatus",
+                                "ACTIVE",
+                                "format",
+                                "html"))) {
+            var headers = new org.springframework.http.HttpHeaders();
+            headers.set("X-Internal-Token", token);
+            headers.set("X-Export-Job-Id", job.id().toString());
+            headers.set("X-Export-Job-Lease", job.leaseId().toString());
+            headers.setContentType(APPLICATION_JSON);
+            var rejected =
+                    http.exchange(
+                            "/academic/registry-exports/users",
+                            org.springframework.http.HttpMethod.POST,
+                            new org.springframework.http.HttpEntity<>(query, headers),
+                            String.class);
+            assertThat(rejected.getStatusCode())
+                    .isEqualTo(org.springframework.http.HttpStatus.FORBIDDEN);
+        }
+    }
+
     private ExportJobRepository.Job enqueueUserReport(String search) throws Exception {
+        return enqueueUserReport(Map.of("search", search, "format", "html"));
+    }
+
+    private ExportJobRepository.Job enqueueUserReport(Map<String, Object> selector)
+            throws Exception {
         var headers = new org.springframework.http.HttpHeaders();
         headers.set("X-Internal-Token", token);
         headers.setContentType(APPLICATION_JSON);
@@ -379,11 +453,7 @@ class AdminRegistryExportsIT extends AbstractAcademicIntegrationTest {
                                         "requestId",
                                         UUID.randomUUID(),
                                         "report",
-                                        Map.of(
-                                                "kind",
-                                                "ADMIN_USERS",
-                                                "adminUsers",
-                                                Map.of("search", search, "format", "html"))),
+                                        Map.of("kind", "ADMIN_USERS", "adminUsers", selector)),
                                 headers),
                         String.class);
         assertThat(response.getStatusCode())

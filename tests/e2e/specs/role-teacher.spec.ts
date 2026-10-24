@@ -1,36 +1,32 @@
-import { expectWebPanelRoute } from '../fixtures/web-panel-route';
-import { test, expect } from '@playwright/test';
+import { expect, type Request } from '@playwright/test';
+import { test } from '../fixtures/artifact-privacy';
 import { TEST_USERS } from '../fixtures/users';
 import { loginAs } from '../fixtures/auth';
-
-/**
- * M08 Группа 5 (P2-8/5) — role-teacher golden paths.
- *
- * Teacher — read-only режим для журнала + статистика. Нет Telegram.
- */
+import { expectWebPanelRoute } from '../fixtures/web-panel-route';
 
 test.describe('Role: TEACHER', () => {
   test.beforeEach(async ({ page }) => {
     await loginAs(page, TEST_USERS.teacher);
   });
 
-  test('can access teacher-only paths', async ({ page }) => {
-    // M14 G7 (G26 категория B): `/teacher/schedule` route не существует —
-    // в TEACHER_ROUTES только dashboard/journal/stats. Заменено на /journal.
-    const paths = ['/teacher/journal', '/teacher/stats'];
-    for (const path of paths) {
-      await expectWebPanelRoute(page, path);
-    }
+  test('journal and statistics render current assigned group AND subject scope', async ({ page }) => {
+    for (const path of ['/teacher/journal', '/teacher/statistics']) await expectWebPanelRoute(page, path);
   });
 
-  test('cannot access /admin/* — redirected', async ({ page }) => {
-    await page.goto('/admin/users');
-    await expect(page).toHaveURL(/\/teacher\//, { timeout: 5_000 });
+  test('foreign ADMIN route retains TEACHER and never starts target reads', async ({ page }) => {
+    let foreignData = false;
+    const origin = new URL(page.url()).origin;
+    const observe = (request: Request) => {
+      const url = new URL(request.url());
+      if (url.origin === origin && /^\/api\/academic\/(?:admin-access|users|groups)/.test(url.pathname)) foreignData = true;
+    };
+    page.on('request', observe);
+    try {
+      await page.goto('/admin/users');
+      await expect(page).toHaveURL(url => url.pathname === '/teacher/home');
+      await expect(page.locator('main#main [data-screen-id="WEB-TEACHER-HOME"]')).toBeVisible();
+      await expect(page.locator('main#main .admin-page')).toHaveCount(0);
+      expect(foreignData, 'Denied target never starts administrative reads').toBe(false);
+    } finally { page.off('request', observe); }
   });
-
-  // M14 G7 (G26 категория A): тест `journal shows red-zone indicator`
-  // удалён. Текущий `teacher/stats/stats-page.component.html` рендерит
-  // `app-overall-stat-card` + `app-subject-chart` — индикатора красной
-  // зоны нет. Восстановить когда фича будет реализована (планируется в
-  // v0.1 после job-stories ревью teacher dashboard UX).
 });

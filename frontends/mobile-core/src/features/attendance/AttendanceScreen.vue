@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import SvgIcon from '../../../../shared/foundation/SvgIcon.vue';
 import { computed, nextTick, ref, watch } from 'vue';
 import attendanceTab from '../../assets/attendance-tab.svg';
 import chevronDown from '../../assets/chevron-down.svg';
@@ -63,7 +64,6 @@ const props = withDefaults(
     focusedLessonId: null,
     requestLessonId: null,
     requestOptionId: null,
-    theme: 'dark',
     terminal: false,
     showDock: false,
   },
@@ -269,11 +269,10 @@ function dateLabel(date: string): string {
           aria-label="Назад к посещаемости"
           @click="emit('back')"
         >
-          <img
+          <SvgIcon
             :src="chevronDown"
-            alt=""
             aria-hidden="true"
-          >
+          />
         </button>
         <h1 id="attendance-title">
           {{ selectedRequestOption?.label ?? 'Форма заявки' }}
@@ -533,55 +532,50 @@ function dateLabel(date: string): string {
         class="attendance-dock__item"
         aria-label="Сегодня"
       >
-        <span class="attendance-dock__icon"><img
+        <span class="attendance-dock__icon"><SvgIcon
           :src="scheduleTab"
-          alt=""
           aria-hidden="true"
-        ></span>
+        /></span>
         <span>Сегодня</span>
       </span>
       <span
         class="attendance-dock__item"
         aria-label="Задания"
       >
-        <span class="attendance-dock__icon"><img
+        <span class="attendance-dock__icon"><SvgIcon
           :src="moreTab"
-          alt=""
           aria-hidden="true"
-        ></span>
+        /></span>
         <span>Задания</span>
       </span>
       <span
         class="attendance-dock__item attendance-dock__item--active"
         aria-current="page"
       >
-        <span class="attendance-dock__icon"><img
+        <span class="attendance-dock__icon"><SvgIcon
           :src="attendanceTab"
-          alt=""
           aria-hidden="true"
-        ></span>
+        /></span>
         <span>Учёт</span>
       </span>
       <span
         class="attendance-dock__item"
         aria-label="Ещё"
       >
-        <span class="attendance-dock__icon"><img
+        <span class="attendance-dock__icon"><SvgIcon
           :src="moreTab"
-          alt=""
           aria-hidden="true"
-        ></span>
+        /></span>
         <span>Ещё</span>
       </span>
       <span
         class="attendance-dock__item"
         aria-label="Профиль"
       >
-        <span class="attendance-dock__icon"><img
+        <span class="attendance-dock__icon"><SvgIcon
           :src="profileTab"
-          alt=""
           aria-hidden="true"
-        ></span>
+        /></span>
         <span>Профиль</span>
       </span>
     </nav>

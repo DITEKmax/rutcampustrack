@@ -1,0 +1,20 @@
+{
+  "kind": "portable-gallery-data-only-refresh",
+  "result": "PASS metadata/hash/path only",
+  "imageCount": 202,
+  "imagePin": "ac5c37ab21eb4bf2a784e31857132c0aae862d27",
+  "artifactSha256": "3311aab33b552a979f6995769068e29c167842f39315f587425e367400a10ad8",
+  "renderLogicSha256": "55b934e96a7a39113c74bbbcbb193f2e91ed464080b59f860e3b35d4ed3d4d48",
+  "renderLogicUnchanged": true,
+  "priorBrowserSmoke": "portable-check-200-51e46f715.json",
+  "priorDataOnlyRefresh": "portable-check-201-e48b56984.json",
+  "browserNotRerun": "Only metadata/pin/count updated; unchanged rendering retains prior200-frame smoke, not a new202-browser PASS",
+  "functionalActionCount": 0,
+  "newPngHttpsRead": {
+    "httpStatus": 200,
+    "bytes": 143998,
+    "sha256": "ff96ce9ab623deced5bacfbd9fb496bd889acfd9e2ab12a9b2d835bcc0d3d1cf",
+    "TLSVerification": true
+  },
+  "promotionAcceptance": "../checkpoints/promotion-map-20261024/promotion-acceptance.json"
+}

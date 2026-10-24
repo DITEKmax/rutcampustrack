@@ -1,0 +1,10 @@
+{
+  "evidenceKind": "real-runtime-safe-projection",
+  "originalPath": "/workspace/rct-pr3-runtime/admin-web/recovery-link.json",
+  "originalSha256": "135d75e945c2fd8a9ed0fcc1886bcd2cabf486522b8c2687a2645ef4ef7f0ffb",
+  "scopeNote": "Actual201 recovery URL shown only volatile, closed before public capture. No fragment URL published.",
+  "checks": [
+    "guarded own ordinary18 protected recovery-link201; nonempty expiring fragment link rendered only in volatile panel",
+    "secret panel closed before public screenshot; no URL/token persisted or printed, no reset consumption"
+  ]
+}

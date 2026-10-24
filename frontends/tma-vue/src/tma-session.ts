@@ -915,7 +915,7 @@ function adaptNextCursor(value: unknown, operation: string): string | null {
 }
 
 function profileAuthMethod(value: unknown): ProfileAuthMethod {
-  if (value === 'PASSWORD' || value === 'OTP' || value === 'TMA') return value
+  if (value === 'PASSWORD' || value === 'OTP' || value === 'TMA' || value === 'QR') return value
   throw new ProfileRequestError('UNKNOWN', 'Сервер вернул неизвестный способ входа')
 }
 

@@ -290,8 +290,8 @@ async function load(retainProjection = false): Promise<void> {
         : cause instanceof Error
           ? cause.message
           : 'Не удалось открыть журнал.';
-    // The journal owns this recoverable read error; only session denial belongs to the host.
-    if (cause instanceof TeacherApiError && cause.response.status === 401) emit('error', cause);
+    // Endpoint failures stay local; refresh/re-auth errors retain the host's authority handling.
+    if (!(cause instanceof TeacherApiError) || cause.response.status === 401) emit('error', cause);
   } finally {
     if (active()) loading.value = false;
   }

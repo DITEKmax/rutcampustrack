@@ -1,7 +1,7 @@
 # CURRENT — PR3 implementation GO, 2026-10-24 Europe/Moscow
 
 Existing Goal launched after readiness; full scope continues. PR3 and
-codex/web-vue-redesign only. Assembled source9b8d87c80 (functional acceptance/captures frozen3f585; shipping820/9d99); last pushed79e8fdce6.
+codex/web-vue-redesign only. Assembled sourcea81394473 (functional acceptance/captures frozen3f585; shipping820/9d99); last pushed79e8fdce6.
 New local role/common corrections wait checkpoint gates/normal push.
 No new Goal/PR/main/merge/deploy/production. CI/Coverage/Security/OpenAPI manual
 and PAUSED, never PASS. Root docs/coordination/Git only; sole writers in SLOTS.
@@ -22,7 +22,7 @@ Activation own4 is future2029 and schedules rather than activates now; no
 baseline2 date workaround. Angular deletion/shipping wiring/gallery/final
 combined checks are separate global delivery gates, not hidden by percentages.
 
-Real16GiB/4CPU; root+6children ceiling, one HEAVY lease, currently root shipping-image builds/static HTTP.
+Real16GiB/4CPU; root+6children ceiling, one HEAVY lease, currently runtime_stand clock STAGE1 fixture/prepare/isolation/infra only; snapshotFALSE.
 Main13healthy; immutable Authf3/32bda, Academic950/fa360, Gateway3c02,
 Schedule/Attendance/BFF603 qualified external receipts. Renderer real PDF.
 CAS950 and names-only USERS_VIEW archive lookup deployed/actualPASS. Map
@@ -38,3 +38,11 @@ Figma owner promisedwww, actualpolicy7stillCONNECT403; MCP reads work,
 originalauthasset recovered exactFigmaimagebytes/hash. ZIP fullyverified.
 Web bell/history10stoasts/nochannels, ownstudentexportdeferred, usersarchive/
 restore without rights auto-return, teacherassignedgroupANDsubject preserved.
+
+Shipping3realimages/inner nginx PASS. InitialPNG403 fixedpublicoutputreadability; VFSdiskfull0B caused4unhealthy then13healthywithoutrestart. Exact30ownedunusedcacheIDs recovery, foreigncache/images/volumes/WIP preserved; free10.12GiB. See SHIPPING-CHECKPOINT. ADMIN24 fresh634cd gallery/canonicalhomes1/17 accepted.
+
+Clock stage1 actual: offline fixture/control0, prepare0, official5inputisolation0,
+composeconfig0; owninfra startup1/partial. PG init0600permissiondenied; Mongo
+earlyfatalUNPROVEN+invalidRSkeyconfirmed; Rabbit healthtimeout0.1CPU. Source-only
+bounded permissions/RSkey/log/RabbitCPUcorrection in progress, no retry before
+review/newGO. Main13SAMECIDhealthy, no snapshot/apps/browser.

@@ -106,3 +106,5 @@ command keys не публикуются. Галерея содержит ори
 Figma/reference отдельно, не доказательство реализации.
 
 Shipping preparation original4445 → root820d8fe99 independently reviewed PASS: exact avatar catalog moved into shared consumer, Vue image/static config added, PWA/TMA workspace COPY inputs corrected. Final assembled strict WEB build PASS at820. Actual image build/nginx HTTP and production-wiring replacement remain pending; Angular has not been removed. [Inventory](ANGULAR-REMOVAL-INVENTORY.md) documents exact remaining active references and unchanged PWA WebPush chain.
+
+Actual shipping images/inner nginx checks now PASS atsourcea813; initialPNG403 и VFS/disk incident сохранены в [shipping checkpoint](SHIPPING-CHECKPOINT-20261024.md). Outer wiring/Angular removal остаются. Added ADMIN24 render gallery exact634cd и real canonical home FULL1→dashboard/USERS_VIEW17→users, no access writes.

@@ -1,0 +1,96 @@
+[
+  {
+    "client": "pwa",
+    "imageId": "sha256:e7b7f2d0060802f217c95e9d7c5c3d1d2fdfe341f1f39a4b9e86984edde926bd",
+    "sourceRevision": "a81394473a19a72cca574d7d63ce79b053aaaa11",
+    "buildVersion": "0.1.0-pr3.a81394473",
+    "base": "/app/",
+    "nginxTest": "PASS",
+    "checks": [
+      {
+        "path": "/",
+        "status": 200,
+        "noStoreShell": true
+      },
+      {
+        "path": "/assets/index-CsZp1v31.js",
+        "status": 200,
+        "byteIdentity": true,
+        "contentType": "application/javascript",
+        "sha256": "0c0f5df81ab5de7972c09bd63ef92acfea0dea7e107faffe978afdb2b16a80c2"
+      },
+      {
+        "path": "/assets/index-BCUY9oYY.css",
+        "status": 200,
+        "byteIdentity": true,
+        "contentType": "text/css",
+        "sha256": "2272783286050e106eb44cbae969356c609025eadf0bf65ecbc8daa21e8bfeb0"
+      },
+      {
+        "path": "/sw.js",
+        "status": 200,
+        "noStore": true,
+        "byteIdentity": true,
+        "sha256": "4413610456c3060fbb54633082bb05fb9b106ec9c806b8ca1d6678f007952b00"
+      },
+      {
+        "path": "/sw-assets.js",
+        "status": 200,
+        "noStore": true,
+        "byteIdentity": true,
+        "sha256": "d38ecd370fcd8956c33c5f0510f073b9b1ced7d5674c170dffe7c698611da01d"
+      },
+      {
+        "path": "/version.json",
+        "status": 200,
+        "noStore": true,
+        "byteIdentity": true,
+        "sha256": "801fa7c94641181b83e7a3de4c5da7ce6681ac5bab3e41dc9548404b21dd3abf"
+      }
+    ],
+    "result": "PASS",
+    "limits": [
+      "Inner standalone static serving only; existing outer edge prefix stripping not changed here.",
+      "No browser worker enrollment/external Push delivery/signed Telegram admission performed."
+    ]
+  },
+  {
+    "client": "tma",
+    "imageId": "sha256:fb9883d5ce5f631c03e6191455156803f76d10843605df046fb697a39ec2e9ac",
+    "sourceRevision": "a81394473a19a72cca574d7d63ce79b053aaaa11",
+    "buildVersion": "unchanged existing TMA Dockerfile version inputs; source pinned externally",
+    "base": "/mini-app/",
+    "nginxTest": "PASS",
+    "checks": [
+      {
+        "path": "/",
+        "status": 200,
+        "noStoreShell": true
+      },
+      {
+        "path": "/assets/index-ebSHj_fM.js",
+        "status": 200,
+        "byteIdentity": true,
+        "contentType": "application/javascript",
+        "sha256": "5a2491cb4cbdd3e176206c134fb7c4b89816f5127d015a05508f2f236aa8e402"
+      },
+      {
+        "path": "/assets/index-D4BnZQHJ.css",
+        "status": 200,
+        "byteIdentity": true,
+        "contentType": "text/css",
+        "sha256": "243447c8c184d974b1af65522c4c1b5343fbf50dbb038223f1851c5e07d8079d"
+      },
+      {
+        "path": "/sw.js",
+        "status": 404,
+        "noWorkerAdded": true
+      }
+    ],
+    "result": "PASS",
+    "limits": [
+      "Inner standalone static serving only; existing outer edge prefix stripping not changed here.",
+      "No browser worker enrollment/external Push delivery/signed Telegram admission performed."
+    ]
+  }
+]

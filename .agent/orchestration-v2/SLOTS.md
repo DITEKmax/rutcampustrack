@@ -2,8 +2,8 @@
 
 Root+6children runtime ceiling. Children explicitly gpt-6.1-sol/high/fork:none;
 runtime model telemetry unavailable, no silent fallback. No leaf children.
-Main has no product writer. One HEAVY lease, currently root shipping-image builds/static HTTP; map tests/build
-NOT RUN after automatic approval rejection. GEO clock lane PREP/review only.
+Main has no product writer. One HEAVY lease, currently runtime_stand clock STAGE1 fixture/control/prepare/isolation/infra only; map tests/build
+NOT RUN after automatic approval rejection. GEO f7 review PASS; snapshotFALSE, main pause/apps/browser not yet.
 
 | Owner | Worktree | Sole ownership | Current package |
 |---|---|---|---|
@@ -13,7 +13,7 @@ NOT RUN after automatic approval rejection. GEO clock lane PREP/review only.
 | admin_web | /workspace/rct-worktrees/admin-web | features/admin/**, routes |3d accepted32source/28verified; readonly eligible-promotion/activation planning |
 | teacher_web | /workspace/rct-worktrees/student-web | features/student/** only; teacher worktree frozen |3d6 accepted16source/15verified; native Late/live done; only positive GEO gate |
 | backend_device | /workspace/rct-worktrees/device-api | Auth/Academic/proto/OpenAPI/generated contracts |950 accepted/deployed; six map WIP files preserved, QENV004 waiting, no commands |
-| runtime_stand | /workspace/rct-worktrees/runtime-stand | tests/e2e/infra/pr3-* and external stand/harness/fixtures | main13 healthy; GEO-only clock package849f PREP only, no launch |
+| runtime_stand | /workspace/rct-worktrees/runtime-stand | tests/e2e/infra/pr3-* and external stand/harness/fixtures | main13 healthy; GEO f7 actual stage1 partialFAIL, bounded correction/review before retry |
 | device_api_review | read-only frozen source/evidence | independent backend/clock review | GEO-only849f package review; no execution |
 | foundation_review | read-only frozen source/evidence | independent source review | shipping4445 review PASS; no execution |
 | theme_foundation | /workspace/rct-worktrees/theme-foundation | shared foundation/mobile theme |09e7 two-PCSS fixes integrated;12 targeted assertions done, cleanup exit1 explicit |

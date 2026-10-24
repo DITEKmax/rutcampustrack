@@ -1,0 +1,85 @@
+{
+  "kind": "real-static-image-verification",
+  "applicationSourceRevision": "a81394473a19a72cca574d7d63ce79b053aaaa11",
+  "imageId": "sha256:8248ac4ad82932eca4e4e889bb949d3e5a6ec4b7057948b1feb2b11074bd3266",
+  "containerId": "1b36daba4260cdc2cfe3c09f7b910e2a845d77ca9948e20a4881e53f6febd881",
+  "network": "rct-pr3-shipping-a81394473",
+  "boundOrigin": "http://127.0.0.1:14260",
+  "checks": [
+    {
+      "path": "/",
+      "status": 200,
+      "sameVueShell": true,
+      "cacheControl": "no-store, no-cache, must-revalidate, max-age=0"
+    },
+    {
+      "path": "/student/home",
+      "status": 200,
+      "sameVueShell": true,
+      "cacheControl": "no-store, no-cache, must-revalidate, max-age=0"
+    },
+    {
+      "path": "/headman/attendance",
+      "status": 200,
+      "sameVueShell": true,
+      "cacheControl": "no-store, no-cache, must-revalidate, max-age=0"
+    },
+    {
+      "path": "/admin/users",
+      "status": 200,
+      "sameVueShell": true,
+      "cacheControl": "no-store, no-cache, must-revalidate, max-age=0"
+    },
+    {
+      "path": "/teacher/journal",
+      "status": 200,
+      "sameVueShell": true,
+      "cacheControl": "no-store, no-cache, must-revalidate, max-age=0"
+    },
+    {
+      "path": "/password-reset",
+      "status": 200,
+      "sameVueShell": true,
+      "cacheControl": "no-store, no-cache, must-revalidate, max-age=0"
+    },
+    {
+      "path": "/assets/missing-pr3-9b8d.js",
+      "status": 404,
+      "SPAFallback": false
+    },
+    {
+      "path": "/assets/missing-pr3-9b8d.css",
+      "status": 404,
+      "SPAFallback": false
+    },
+    {
+      "path": "/missing-pr3-9b8d.js",
+      "status": 404,
+      "SPAFallback": false
+    },
+    {
+      "path": "/sw.js",
+      "status": 404,
+      "SPAFallback": false
+    },
+    {
+      "path": "/assets/index-CV7QzRQD.js",
+      "status": 200,
+      "contentType": "application/javascript",
+      "servedContainerBuildBytesIdentical": true,
+      "sha256": "8b3fcd6c43d566f9e71bd0a50d0667692eb8d866a743b5637e806c1380f2adba"
+    },
+    {
+      "path": "/assets/auth-background-original.png",
+      "status": 200,
+      "canonicalOriginalHashMatches": true
+    }
+  ],
+  "nginxConfigTest": "PASS",
+  "result": "PASS",
+  "limits": [
+    "Only disposable standalone WEB static image; outer API/PWA/TMA edge/prod wiring not switched.",
+    "No backend/session/role/credential mutation or browser Push enrollment.",
+    "TLS stays at outer edge; localhost static image serves HTTP as existing deployment topology."
+  ]
+}

@@ -41,7 +41,7 @@ revoke удаляет и navigation, и уже открытые таблицы �
   FULL/self password generation unknown result, whole-map final deletion,
   group final deletion. Чтение/preview/cancel не засчитываются как эти записи.
 - Global delivery: удалить активный Angular после замены возможностей;
-  закончить Vue image/static routing/build/oracle wiring, проверить изменённые
+  закончить outer routing/build/oracle wiring, проверить изменённые
   границы поставки и завершить доступную из PR runtime HTML-галерею.
 - Mobile themes: source24 families и существующие140 visual samples проверены
   отдельно. Два P2 исправлены09e7, независимый narrow recheck12 кадров PASS.
@@ -59,7 +59,7 @@ CAS/GroupOptions950 реально развернуты. Map usage204/replay204 
 
 [HTML-галерея](../../validation/web-vue-pr3/runtime-gallery/index.html) сохраняет
 исторические20 auth/homework,2 hover и14 teacher samples с точными revisions.
-Добавлены80 STUDENT,44 свежих HEADMAN и12 адресных mobile theme кадров
+Добавлены80 STUDENT,44 свежих HEADMAN,24 ADMIN и12 адресных mobile theme кадров
 с отдельными IDs/source/state/theme/width и оригинальными PNG. Старый отсутствовавший auth asset отмечен только у
 исторических кадров; настоящий оригинал теперь восстановлен через read-only
 Figma bytes/hash. Reference/Figma не выдаётся за runtime.
@@ -84,3 +84,5 @@ CI/Coverage/Security/OpenAPI **PAUSED**, только workflow_dispatch, не PA
 Docker. Существующий PWA WebPush сохранён; web channel settings не возвращены.
 Собственный student export отложен; пользователей окончательно не удаляем;
 teacher grants и запрет отменённых функций сохранены.
+
+Три настоящих Vue images и inner static nginx checks прошли: [shipping checkpoint](SHIPPING-CHECKPOINT-20261024.md). Там же initial403/readability fix и disk/VFS incident с independently reviewed exact-ID recovery. Эти проверки не означают завершение outer production wiring или удаления Angular.

@@ -129,3 +129,32 @@ sandbox/temporarytablefixture failures retained. Borrowed identicalmobilePNG CRC
 fixed4042→eca7, independentlyRootverified allchunks/pixels. No mobilefeature/API
 change. Actual2scenario runtime andexactlegacyMultipart410IT remain unclaimed.
 See final source receipt; all115/111actioncounts unchanged by test migration.
+
+## Vue release inputs — current source8e280baef
+
+Original429+469 integrated7da729a7e/8e280baef. Production/dev Compose and existing
+deploy workflow now consume Vue workspace/static inputs, retaining service/image/
+container/DNS/ports/limits/network identity. Deploy's existing workflow_run(CI)
+plus workflow_dispatch triggers are unchanged; the four paused workflows were
+not edited or invoked. This is source preparation, not runtime cutover/deploy.
+
+Independent429 review found one P2: current managed dist0700/index+PNG0600 cannot
+be read by a direct nginx worker bind. Correction469 copies readonly public input
+to the container's own public root, normalizes only that copy and runs the normal
+nginx worker. DEV serves a startup snapshot; a new dist requires that static
+service restart. Host/private file modes are not changed.
+
+Actual corrected static HTTP6 PASS: login/deep/index exact/no-store, hashed JS
+MIME+bytes/immutable, original PNG exact hash, missing asset404. Normal worker
+nginx and full readonly-input mode/hash preservation confirmed, exact own container
+and temp copy removed. Two earlier probe-only logging-driver failures happened
+before HTTP and are retained, not counted as application failures or PASS.
+DEV Compose and changed-prod WEB/network fragment PASS; full prod configuration
+still NOT PASS with the older synthetic env lacking its required HMAC binding.
+No fake binding, full build repeat, browser/auth/domain/DB action, production
+access, CI or deploy occurred. [Receipts and limits](../../validation/web-vue-pr3/checkpoints/release-inputs-20261024/manifest.json),
+[initial review](../../validation/web-vue-pr3/review/release-inputs-REVIEW-429a3a270.md),
+[passing recheck](../../validation/web-vue-pr3/review/release-inputs-RECHECK-469ec5eca.md).
+
+Angular source/dependencies/CSP remain until capability replacement; this source
+packet does not close group-final-delete, full outer-edge or final delivery gates.

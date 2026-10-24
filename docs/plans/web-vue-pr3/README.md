@@ -3,7 +3,7 @@
 > **Актуальный статус 2026-10-24:** владелец отдельно запустил существующий Goal. Автономная реализация, commit/push в существующую ветку и обновление PR №3 разрешены. Канон: [GOAL-CONTRACT.md](GOAL-CONTRACT.md). Readiness новой среды и архива: [READINESS-CHECK-20261024.md](READINESS-CHECK-20261024.md). CI/Coverage/Security/OpenAPI PAUSED; без main writes/merge/deploy/production.
 
 Дата решений: 2026-10-23. Ветка `codex/web-vue-redesign`, база main
-`aa98a6aabd1463ee72ce2ef09a3195fdeef7b74f`. Текущий source c3c08a935:116/117 implemented,112/117 locally verified.
+`aa98a6aabd1463ee72ce2ef09a3195fdeef7b74f`. Feature source c3c08a935, release inputs8e280baef:116/117 implemented,112/117 locally verified.
 Первоначальная подготовка ниже — исторический материал; существующий PR имеет №3.
 
 ## Читать по порядку

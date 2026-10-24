@@ -1,0 +1,9 @@
+{
+  "kind": "owned-tiny-nginx-static-http",
+  "outcome": "FAIL",
+  "checks": [],
+  "containerRemoved": true,
+  "fixtureRemoved": true,
+  "hostReferenceUnchangedAfterCleanup": true,
+  "qualification": "Before HTTP: probe-only local logging-driver compression/max-file incompatibility. Original stderr is retained privately for attempt2; no application403 or HTTP PASS claimed."
+}

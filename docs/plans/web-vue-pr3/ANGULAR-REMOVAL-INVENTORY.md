@@ -1,5 +1,15 @@
 # Angular → Vue removal and WebPush preservation inventory
 
+**Current override, source8e280baef:** the inventory below records historical3f585.
+The pure avatar catalog has since moved unchanged into shared; Vue no longer
+imports Angular source. Vue image/test oracle/edge wiring and release build inputs
+are prepared. Production/dev Compose and deploy build inputs now point to Vue,
+retaining identities/triggers. DEV copy/readability and6 static HTTP checks PASS;
+full prod config/outer cutover remain pending. Angular's433-file package and
+its dependencies/CSP/exclusions have not been removed: final group capability
+still awaits Q-PROD-004. [Current shipping facts](SHIPPING-CHECKPOINT-20261024.md).
+
+
 Date: 2026-10-24. Read-only author inventory; no product changes, deletion, image build, CI run, deployment, browser enrollment, external push, or production configuration access.
 
 Source reviewed: assembled root commit `3f5852b9524245e98b16110b8fb4fde4bd68f389` in `/workspace/rutcampustrack`. Root has unrelated documentation work in progress; the inspected product paths match that commit. Author worktree `/workspace/rct-worktrees/web-foundation` remains clean. Preservation comparison baseline: `37a15451c` (cloud handoff); implementation GO reference `60346b26b`. Requested author model remains Sol6.1/high; no runtime-model telemetry claim.

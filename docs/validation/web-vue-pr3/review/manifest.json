@@ -308,5 +308,17 @@
     "original_path": "/workspace/rct-pr3-review/publication/REVIEW-promotion-map-c3c08.md",
     "sha256": "7a862bc60f395afd78614557d1281937458887988f922e99bcabc8b0b54d8add",
     "originalSha256": "7a862bc60f395afd78614557d1281937458887988f922e99bcabc8b0b54d8add"
+  },
+  {
+    "path": "release-inputs-REVIEW-429a3a270.md",
+    "original_path": "/workspace/rct-pr3-review/release-inputs/REVIEW-429a3a270.md",
+    "sha256": "7e8fdf3ae925896a869358c9caf2534a3f8000f4424e52dd753ca5f8b5c4adab",
+    "originalSha256": "7e8fdf3ae925896a869358c9caf2534a3f8000f4424e52dd753ca5f8b5c4adab"
+  },
+  {
+    "path": "release-inputs-RECHECK-469ec5eca.md",
+    "original_path": "/workspace/rct-pr3-review/release-inputs/RECHECK-469ec5eca.md",
+    "sha256": "bd70c44a2d178cc54710139b3cb70c6974c48448030bc655f2d41b2b59c104c8",
+    "originalSha256": "bd70c44a2d178cc54710139b3cb70c6974c48448030bc655f2d41b2b59c104c8"
   }
 ]

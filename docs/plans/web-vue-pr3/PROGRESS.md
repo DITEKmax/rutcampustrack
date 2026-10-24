@@ -2,8 +2,8 @@
 
 Существующий draft [PR №3](https://github.com/DITEKmax/rutcampustrack/pull/3),
 ветка `codex/web-vue-redesign`. Goal запущен владельцем после readiness и
-продолжается. Объединённый source `c3c08a935`; последний опубликованный до
-этого пакета checkpoint `5876b9769`. Всегда получать актуальный remote HEAD.
+продолжается. Объединённый feature source `c3c08a935`, release-input source `8e280baef`;
+последний опубликованный до этого пакета checkpoint `a1e5c20b3`. Всегда получать актуальный remote HEAD.
 
 **Implemented 116/117 (99,15%). Locally verified 112/117 (95,73%).**
 Исходные117 active действий сохранены. Темы, ширины, кадры и assertions
@@ -62,8 +62,9 @@ unknown-result, whole-map full UI и group final delete. Q-ENV-003 и Q-PROD-004
 
 Глобальные delivery gates: убрать активный Angular после замены возможностей,
 завершить outer edge/source wiring и достаточные проверки изменённых границ.
-Vue e2e adapters и served-artifact oracle прошли source review; это не runtime
-PASS всей поставки. Workflow CI/Coverage/Security/OpenAPI — только
+Vue e2e adapters/oracle и три release-input конфига прошли source review;
+исправленный dev static nginx подтвердил6 HTTP-проверок с неизменными правами
+хоста и обычным worker. Это не runtime PASS всей поставки. Workflow CI/Coverage/Security/OpenAPI — только
 workflow_dispatch, **PAUSED**, не PASS. Без dispatch/merge/deploy/production.
 
 Галерея содержит202 настоящих runtime PNG в едином portable HTML, включая новый

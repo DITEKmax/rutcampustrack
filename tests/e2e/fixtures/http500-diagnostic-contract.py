@@ -518,6 +518,53 @@ class SharedDiagnosticControls(unittest.TestCase):
                 self.assertFalse(diag.is_target_failure(mismatch, stage))
         self.assertEqual(counts, {'DATASET_HTTP': 2, 'FRAMEWORK': 4})
 
+    def test_local_inventory_requires_exact_owned_cohort(self):
+        local_spec = importlib.util.spec_from_file_location('local_inventory_control', source_root / 'scripts/local_e2e_async.py')
+        local = importlib.util.module_from_spec(local_spec);local_spec.loader.exec_module(local)
+        nonce = 'a' * 24
+        project = 'rct-local-stage17-' + nonce[:12]
+        services = ('auth-service', 'academic-service', 'schedule-service', 'attendance-service',
+                    'document-renderer-service', 'mobile-bff', 'api-gateway', 'notification-web',
+                    'postgres-academic', 'postgres-schedule', 'mongo-attendance', 'redis',
+                    'rabbitmq', 'web-nginx', 'pwa-nginx', 'mini-app-nginx', 'nginx')
+        expected = [{'Config': {'Labels': {local.LABEL: nonce, 'com.docker.compose.project': project,
+                                          'com.docker.compose.service': name}}, 'State': {'Running': True}}
+                    for name in services]
+        for mutation in (None, 'missing', 'extra', 'duplicate', 'nonce', 'project', 'stopped'):
+            with self.subTest(mutation=mutation):
+                rows = copy.deepcopy(expected)
+                code = 'FOREIGN_CONTAINER'
+                if mutation == 'missing':
+                    rows = [row for row in rows if row['Config']['Labels']['com.docker.compose.service'] != 'web-nginx']
+                    code = 'COHORT_NOT_COMPLETE'
+                elif mutation == 'extra':
+                    rows.append(copy.deepcopy(rows[-1]))
+                    rows[-1]['Config']['Labels']['com.docker.compose.service'] = 'unknown-service'
+                elif mutation == 'duplicate':
+                    rows.append(copy.deepcopy(rows[-1]))
+                elif mutation in ('nonce', 'project'):
+                    label = local.LABEL if mutation == 'nonce' else 'com.docker.compose.project'
+                    rows[0]['Config']['Labels'][label] = 'foreign'
+                elif mutation == 'stopped':
+                    rows[0]['State']['Running'] = False
+                    code = 'COHORT_NOT_RUNNING'
+                ids = ['synthetic-container-' + str(index) for index in range(len(rows))]
+                # Only synthetic metadata is returned; no Docker command or signal is invoked.
+                def capture(argv):
+                    if argv[:2] == ['docker', 'ps']:
+                        self.assertEqual(argv, ['docker', 'ps', '-aq', '--no-trunc', '--filter',
+                                                'label=com.docker.compose.project=' + project])
+                        return '\n'.join(ids)
+                    self.assertEqual(argv, ['docker', 'inspect', *ids])
+                    return json.dumps(rows)
+                with patch.object(local, 'capture', side_effect=capture):
+                    if mutation:
+                        with self.assertRaises(local.AdmissionError) as caught:
+                            local.inventory(project, nonce, complete=True)
+                        self.assertEqual(str(caught.exception), code)
+                    else:
+                        self.assertEqual(local.inventory(project, nonce, complete=True), expected)
+
     def test_local_diagnostic_terminates_own_group_on_cancel_and_timeout(self):
         local_spec = importlib.util.spec_from_file_location('local_diagnostic_control', source_root / 'scripts/local_e2e_async.py')
         local = importlib.util.module_from_spec(local_spec);local_spec.loader.exec_module(local)

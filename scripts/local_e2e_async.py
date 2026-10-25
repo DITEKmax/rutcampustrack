@@ -34,7 +34,7 @@ BASELINE = "browser-v2-split-20261018-v1"
 APPS = {"auth-service", "academic-service", "schedule-service", "attendance-service",
         "document-renderer-service", "mobile-bff", "api-gateway", "notification-web"}
 SERVICES = APPS | {"postgres-academic", "postgres-schedule", "mongo-attendance", "redis",
-                   "rabbitmq", "pwa-nginx", "mini-app-nginx", "nginx"}
+                   "rabbitmq", "web-nginx", "pwa-nginx", "mini-app-nginx", "nginx"}
 TOKEN_NAMES = {"ACADEMIC_TO_ATTENDANCE_SERVICE_TOKEN", "SCHEDULE_TO_ACADEMIC_SERVICE_TOKEN",
                "ATTENDANCE_TO_ACADEMIC_SERVICE_TOKEN"}
 COMPOSE = ["docker-compose.e2e.yml", "tests/e2e/infra/docker-compose.clock-fixture.yml",
@@ -184,12 +184,13 @@ def inventory(project, nonce, *, complete=False):
     for row in rows:
         labels = row["Config"].get("Labels", {})
         name = labels.get("com.docker.compose.service")
-        require(labels.get(LABEL) == nonce and name in SERVICES and name not in names, "FOREIGN_CONTAINER")
+        require(labels.get(LABEL) == nonce and labels.get("com.docker.compose.project") == project
+                and name in SERVICES and name not in names, "FOREIGN_CONTAINER")
         names.add(name)
         if complete:
             require(row["State"]["Running"] is True, "COHORT_NOT_RUNNING")
     if complete:
-        require(names == SERVICES and len(rows) == 16, "COHORT_NOT_COMPLETE")
+        require(names == SERVICES and len(rows) == len(SERVICES), "COHORT_NOT_COMPLETE")
     return rows
 
 
@@ -404,7 +405,7 @@ class Runner:
             if name in APPS:
                 service["environment"].update(DEPLOYMENT_ENVIRONMENT="synthetic", SERVICE_VERSION=sha,
                                              MANAGEMENT_METRICS_TAGS_ENVIRONMENT="synthetic", MANAGEMENT_METRICS_TAGS_VERSION=sha)
-                # Explicit per-JVM bounds on the 16-container local cohort.
+                # Explicit per-JVM bounds on the 17-container local cohort.
                 service["environment"]["JAVA_TOOL_OPTIONS"] = "-Djava.security.egd=file:/dev/./urandom -Xms64m -Xmx512m -XX:+UseG1GC"
                 service["mem_limit"] = "850m"
                 service["cpus"] = 2.0

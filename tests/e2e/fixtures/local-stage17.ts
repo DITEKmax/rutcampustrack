@@ -1,7 +1,7 @@
 import { execFileSync } from 'node:child_process';
 import { resolve } from 'node:path';
 
-/** Prove the launcher's live 16-container cohort before any local seed change. */
+/** Prove the launcher's live 17-container cohort before any local seed change. */
 export function requireLocalStage17(): boolean {
   return requireLocalLane('full') !== undefined;
 }

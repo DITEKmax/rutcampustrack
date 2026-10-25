@@ -9,8 +9,11 @@
 Первый structural review `7f85860ef` дал **CHANGES REQUIRED**: существующий private
 каталог мешал входу в case, operational inputs не были полностью связаны с freeze,
 а ошибка detached readiness оставляла сервисы работающими. Эти три finding исправлены
-одним пакетом; [точное сопоставление и ограничения](CORRECTIONS.md). Исправление
-не является фактическим запуском локального gate.
+одним пакетом. Recheck `4b9c0867` закрыл private/freeze и оставил один P2 по parent
+SIGTERM/generic poll exception. Следующая узкая правка устанавливает termination
+handler до launch и всегда reap своих child groups, включая launch window;
+[точное сопоставление и ограничения](CORRECTIONS.md). Это source corrections,
+а не фактический запуск локального gate.
 
 Рабочая директория строго `~/rutcampustrack-pr3`, Docker namespace строго
 `rct-pr3-local`. Пакет не читает и не запускает `~/rutcampustrack-ci-diagnosis`
@@ -123,6 +126,11 @@ docker --host=unix:///var/run/docker.sock pull nginx:1.27-alpine
 docker --host=unix:///var/run/docker.sock pull bitnamilegacy/mongodb:7.0@sha256:16a57fa081f18e7acd1b4de1cd74f3e294cc6de861007e6fe3a418eb61db8a54
 /usr/bin/python3 tests/e2e/pr3-local/check_handoff.py
 ```
+
+Публичный control entrypoint также запускает три коротких isolated Python
+signal/exception controls. SIGTERM получают только их свежие synthetic worker/
+sleep-child process groups; Docker, Auth, БД, browser и настоящие сервисы не
+запускаются. Old local checkout/activate в этих controls не используются.
 
 Теги с major version здесь соответствуют существующему stand input. Локальный
 immutable pin — записанный **image ID после pull**, а не обещание одинакового
@@ -263,9 +271,13 @@ delete, global prune, DB drop, чужой stop, rekey/reset и изменени�
 ## Что передать Root и что остаётся отдельно
 
 Пришли вывод **`summary`**, exit коды actual команд и сообщение о версии Docker/
-JDK/Node/npm. Summary содержит SHA/package hash/original UUID/phase/checks/cleanup/
+JDK/Node/npm. Summary содержит SHA/package hash/original UUID+digest/восемь numeric
+preview counts/phase/checks/cleanup/
 browserClosed и сохраняет FAIL/UNKNOWN. Не присылай `.pr3-local`, env/config,
 storage-state/Auth handles, passwords, cookies, keys, raw logs или дампы БД.
+Exact original UUID также остаётся в durable private receipt до POST; summary
+содержит этот безопасный ID и его digest. Для original-status recovery используй
+локальный `inspect`; его session handles/полный вывод публиковать не нужно.
 PNG из private directory можно передавать только после личного просмотра, что
 на них нет credentials/personal data. До проверки owner output gate остаётся NOT_RUN.
 

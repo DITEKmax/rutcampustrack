@@ -1,24 +1,27 @@
 {
   "state": "SOURCE_PREP_ONLY_LOCAL_NOT_RUN",
   "command": "python3 tests/e2e/pr3-local/check_handoff.py",
-  "runs": 6,
+  "runs": 7,
   "outcomes": [
     "PASS: Python AST6, Node syntax5, compose12, initial7 ownership cases",
     "PASS after source changes: syntax and expanded9 ownership cases",
     "FAIL while adding interrupt guard check: TEST fake subprocess omitted STDOUT; AttributeError: 'types.SimpleNamespace' object has no attribute 'STDOUT'",
     "PASS after correcting only that fake: Python AST6, Node syntax5, compose12, ownership9 and interrupt1",
     "After independent CHANGES REQUIRED and one correction batch: FAIL in new TEST timeout clock fake (StopIteration); no runtime command",
-    "PASS after correcting only that fake: Python AST6, Node syntax7, compose12, ownership11, private-directory4, private-input1, freeze2, childguards3, lifecycle6"
+    "PASS after correcting only that fake: Python AST6, Node syntax7, compose12, ownership11, private-directory4, private-input1, freeze2, childguards3, lifecycle6",
+    "After remaining SIGTERM recheck: changed public control entrypoint PASS Python AST7/Node syntax7 and three actual isolated Python SIGTERM/launch-window/poll-exception controls; Docker/Auth/DB/browser0"
   ],
   "repeatReasons": [
     "New nonce volume/network checks, sanitized child environment and Vite private-state deny changed the source",
     "An interrupted parent must terminate its exact owned child group; added one adversarial fake-only case",
     "Corrected the incomplete subprocess fake; no actual runtime command was repeated",
     "Independent P1/P2 findings required private-directory, frozen input/actual mount, startup/readiness/partial stop corrections and targeted fake controls",
-    "Corrected the finite timeout fake to supply a stable monotonic observation; no application/runtime case was run"
+    "Corrected the finite timeout fake to supply a stable monotonic observation; no application/runtime case was run",
+    "Remaining source P2 required actual installed-SIGTERM-handler verification, launch-window registration and generic poll-exception child reaping; no backend or owner-local execution",
+    "Ran the changed documented public control entrypoint once to verify integration of the new signal controls; unchanged source review outcomes reused"
   ],
   "finalChecks": {
-    "pythonSyntax": 6,
+    "pythonSyntax": 7,
     "nodeSyntax": 7,
     "typescriptWrapperSyntax": 1,
     "composeServices": 12,
@@ -27,14 +30,24 @@
     "privateInputTamperCases": 1,
     "startupFreezeCases": 2,
     "ownedChildProcessGuardCases": 3,
-    "startupAndPartialStopCases": 6
+    "startupAndPartialStopCases": 6,
+    "actualIsolatedSignalAndExceptionCases": 3
   },
   "backendTestsBuilds": 0,
   "cloudGroupRuntimeActions": 0,
   "dockerAuthApiDbBrowserActions": 0,
-  "realProcessSignals": 0,
+  "signalOnlyControllerRuns": 3,
+  "diagnosticSignalWorkerRuns": 1,
+  "signalOnlyOutcomes": [
+    "FAIL TEST fixture omitted ports_free mock; sandbox socket.bind PermissionError before guarded child or any Docker/Auth/DB/browser action",
+    "Diagnostic worker confirmed PermissionError; no guarded child/service started",
+    "PASS after mock correction: actual SIGTERM after registration, actual launch-window SIGTERM, generic resources-poll exception; exact child reap and fake qualified startup closure",
+    "PASS targeted repeat after critical reap/receipt source boundary changed; then changed full public entrypoint integration PASS"
+  ],
+  "realSignalsPerSuccessfulSyntheticControlRun": 5,
+  "realServiceProcessSignals": 0,
   "ownerLocalGate": "NOT_RUN_UNTIL_OWNER_OUTPUT_REVIEWED",
-  "structuralReview": "FIRST_CHANGES_REQUIRED_1P1_2P2; CORRECTION_PREPARED; INDEPENDENT_RECHECK_PENDING",
+  "structuralReview": "FIRST_CHANGES_REQUIRED_1P1_2P2; RECHECK4B9_CLOSED_PRIVATE_AND_FREEZE_REMAINING_SIGTERM_P2; SIGNAL_CORRECTION_PREPARED_INDEPENDENT_RECHECK_PENDING",
   "gitDiffCheck": "Initial FAIL: one inherited trailing space in adapter; corrected. Final PASS required before commit.",
   "providerOrProductionClaims": false
 }

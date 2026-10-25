@@ -9,6 +9,49 @@ PROJECT='rct-pr3-local';DOCKER=['docker','--host=unix:///var/run/docker.sock']
 PORTS=[14250,14251,14252,18443]
 APP_MODULES={'auth':'auth-service/auth-app','academic':'academic-service/academic-app','schedule':'schedule-service/schedule-app','attendance':'attendance-service/attendance-app','notification':'notification-service/notification-app','mobile-bff':'mobile-bff/mobile-bff-app','api-gateway':'api-gateway'}
 ENV={k:v for k,v in os.environ.items() if k in {'PATH','HOME','USER','LOGNAME','LANG','LC_ALL','TERM','TMPDIR','JAVA_HOME'}}
+_OWNERSHIP_TRANSITION=False
+_STOP_PENDING=False
+
+def _stop_signal(signum,frame):
+ global _STOP_PENDING
+ if _OWNERSHIP_TRANSITION:_STOP_PENDING=True;return
+ raise KeyboardInterrupt()
+def install_handlers():
+ signal.signal(signal.SIGTERM,_stop_signal);signal.signal(signal.SIGINT,_stop_signal)
+def consume_pending_stop():
+ global _STOP_PENDING
+ result=_STOP_PENDING;_STOP_PENDING=False;return result
+def spawn_owned(args,children,**kwargs):
+ # Defer an orderly signal until the exact newly spawned process is registered.
+ global _OWNERSHIP_TRANSITION
+ _OWNERSHIP_TRANSITION=True
+ try:
+  child=subprocess.Popen(args,start_new_session=True,**kwargs);children.append(child)
+ finally:_OWNERSHIP_TRANSITION=False
+ if consume_pending_stop():raise KeyboardInterrupt()
+ return child
+def reap_owned(children):
+ global _OWNERSHIP_TRANSITION
+ records=[];previous=_OWNERSHIP_TRANSITION;_OWNERSHIP_TRANSITION=True
+ try:
+  for child in children:
+   record={'pid':child.pid,'exit':None,'reaped':False}
+   try:
+    try:running=child.poll() is None
+    except Exception:running=True
+    if running:
+     try:os.killpg(child.pid,signal.SIGTERM)
+     except ProcessLookupError:pass
+    try:record['exit']=child.wait(timeout=10)
+    except subprocess.TimeoutExpired:
+     try:os.killpg(child.pid,signal.SIGKILL)
+     except ProcessLookupError:pass
+     record['exit']=child.wait(timeout=5)
+    record['reaped']=True
+   except Exception as error:record['error']=type(error).__name__
+   records.append(record)
+ finally:_OWNERSHIP_TRANSITION=previous
+ return records
 
 def sha(p):return hashlib.sha256(pathlib.Path(p).read_bytes()).hexdigest()
 def run(args,input=None,timeout=60):
@@ -185,22 +228,30 @@ def go(runtime,phase):
  value={'approved':True,'phase':phase,'rootHead':runtime.S['sourceSha'],'sourceCommit':runtime.S['sourceSha'],'packageSha256':runtime.package_hash(),'driverPackageSha256':runtime.package_hash(),'cohort':'ONE_DELETE_SIX_LIVE_VIEWS','ownOrigin':'http://127.0.0.1:14250','telegramContext':'CONTROLLED_OWN_ISOLATED_SIGNER','telegramSignerSource':str(PRIVATE/'local.env'),'telegramSignerSelector':'TMA_BOT_TOKEN','allowObservedTmaHeadmanSuccessorCleanup':True,'capacityQENV010Applied':(PRIVATE/'fresh-runtime-preflight.json').exists()}
  file=PRIVATE/(phase+'-owner-command.json');write(file,value);return file
 def guarded(runtime,args,phase,timeout=300):
- log=PRIVATE/(phase+'-'+str(time.time_ns())+'.log');samples=[];stopped=False;interrupted=False
+ global _OWNERSHIP_TRANSITION
+ log=PRIVATE/(phase+'-'+str(time.time_ns())+'.log');samples=[];stopped=False;interrupted=False;failure=None;children=[];records=[]
  with log.open('x') as out:
-  os.chmod(log,0o600);proc=subprocess.Popen(args,cwd=ROOT,env=runtime.ENV,stdout=out,stderr=subprocess.STDOUT,start_new_session=True);start=time.monotonic()
+  os.chmod(log,0o600)
   try:
+   proc=spawn_owned(args,children,cwd=ROOT,env=runtime.ENV,stdout=out,stderr=subprocess.STDOUT);start=time.monotonic()
+   write(PRIVATE/(phase+'-process-'+str(time.time_ns())+'.json'),{'phase':phase,'pid':proc.pid,'state':'OWNED_CHILD_REGISTERED'})
    while proc.poll() is None:
     budget=runtime.resources();samples.append({'seconds':round(time.monotonic()-start,2),**budget})
     if budget['diskAvailable']<2684354560 or time.monotonic()-start>timeout:
-     stopped=True;os.killpg(proc.pid,signal.SIGTERM);break
+     stopped=True;break
     time.sleep(.25)
-  except KeyboardInterrupt:
-   interrupted=True;stopped=True
-   if proc.poll() is None:os.killpg(proc.pid,signal.SIGTERM)
-  try:rc=proc.wait(timeout=10)
-  except subprocess.TimeoutExpired:os.killpg(proc.pid,signal.SIGKILL);rc=proc.wait(timeout=5)
- write(PRIVATE/(phase+'-receipt-'+str(time.time_ns())+'.json'),{'exit':rc,'guardStopped':stopped,'interrupted':interrupted,'samples':samples,'privateLog':str(log)})
- if interrupted:raise KeyboardInterrupt()
+  except BaseException as error:failure=error;interrupted=isinstance(error,KeyboardInterrupt);stopped=True
+  finally:
+   _OWNERSHIP_TRANSITION=True
+   try:
+    records=reap_owned(children)
+    if consume_pending_stop():interrupted=True;stopped=True;failure=failure or KeyboardInterrupt()
+    rc=records[0]['exit'] if records else None
+    write(PRIVATE/(phase+'-receipt-'+str(time.time_ns())+'.json'),{'exit':rc,'guardStopped':stopped,'interrupted':interrupted,'error':type(failure).__name__ if failure else None,'children':records,'samples':samples,'privateLog':str(log)})
+   finally:_OWNERSHIP_TRANSITION=False
+ if consume_pending_stop():failure=failure or KeyboardInterrupt()
+ if failure:raise failure
+ assert records and all(r['reaped'] for r in records),'Owned child closure unknown; preserve handles'
  assert rc==0 and not stopped,'Scoped process failed/guarded; preserve original intent and inspect; no blind retry'
 def close_startup(runtime,reason):
  # Metadata qualification is mandatory even on failure: never stop an unknown ID.
@@ -228,27 +279,29 @@ def start(runtime):
  except BaseException as error:
   close_startup(runtime,'INTERRUPTED' if isinstance(error,KeyboardInterrupt) else 'STARTUP_NOT_READY');raise
 def frontends(runtime):
- runtime.source();runtime.ready();children=[]
+ global _OWNERSHIP_TRANSITION
+ runtime.source();runtime.ready();children=[];logs=[]
  write(PRIVATE/'frontend-intent.json',{'clients':['web','pwa','tma'],'fixtureMode':False})
  try:
   for client in ['web','pwa','tma']:
    env=runtime.ENV.copy();env.update(RCT_LOCAL_CLIENT=client,VITE_MOBILE_FIXTURE_MODE='false',VITE_API_PROXY_TARGET='https://127.0.0.1:18443',VITE_PUBLIC_BASE='/',NODE_EXTRA_CA_CERTS=str(PRIVATE/'tls/ca.crt'),NODE_OPTIONS='--max-old-space-size=512')
-   log=(PRIVATE/('frontend-'+client+'.log')).open('x');os.chmod(log.name,0o600)
-   proc=subprocess.Popen(['node',str(REPO/'frontends/node_modules/vite/bin/vite.js'),'--config',str(ROOT/'frontend-config.ts'),'--mode','development'],cwd=REPO/'frontends'/(client+'-vue'),env=env,stdout=log,stderr=subprocess.STDOUT,start_new_session=True);children.append((proc,log))
+   log=(PRIVATE/('frontend-'+client+'.log')).open('x');os.chmod(log.name,0o600);logs.append(log)
+   spawn_owned(['node',str(REPO/'frontends/node_modules/vite/bin/vite.js'),'--config',str(ROOT/'frontend-config.ts'),'--mode','development'],children,cwd=REPO/'frontends'/(client+'-vue'),env=env,stdout=log,stderr=subprocess.STDOUT)
   print('Three own source servers running in this terminal; use a second terminal for fixture/case. Ctrl-C closes only these child groups.')
   deadline=time.monotonic()+1800
   while time.monotonic()<deadline:
-   assert all(p.poll() is None for p,_ in children),'Own frontend exited; no automatic restart'
+   assert all(p.poll() is None for p in children),'Own frontend exited; no automatic restart'
    assert runtime.resources()['diskAvailable']>=2684354560,'Early disk reserve; owned frontends stop, data preserved'
    time.sleep(.25)
  finally:
-  for proc,log in children:
-   if proc.poll() is None:
-    os.killpg(proc.pid,signal.SIGTERM)
-    try:proc.wait(timeout=10)
-    except subprocess.TimeoutExpired:os.killpg(proc.pid,signal.SIGKILL);proc.wait(timeout=5)
-   log.close()
-  write(PRIVATE/('frontend-closed-'+str(time.time_ns())+'.json'),{'ownedPids':[p.pid for p,_ in children],'otherProcessesTouched':False})
+  _OWNERSHIP_TRANSITION=True
+  try:
+   records=reap_owned(children)
+   for log in logs:log.close()
+   write(PRIVATE/('frontend-closed-'+str(time.time_ns())+'.json'),{'children':records,'otherProcessesTouched':False})
+  finally:_OWNERSHIP_TRANSITION=False
+  if consume_pending_stop():raise KeyboardInterrupt()
+ assert all(r['reaped'] for r in records),'Owned frontend closure unknown; preserve handles'
 def stop_owned(runtime):
  # Partial known startup has no domain/Auth attempt and needs no ready milestone.
  business=any((PRIVATE/name).exists() for name in ['calendar-setup-owner-command.json','fixture-api-owner-command.json','fixture-rows-owner-command.json','native-case-owner-command.json','intent.json'])
@@ -263,6 +316,7 @@ def stop_owned(runtime):
  if ids:run(DOCKER+['stop','--time','20',*ids],timeout=300)
  runtime.ownership();print('Stopped exact nonce-owned containers only; volumes/DB/keys/evidence retained. No down/prune/remove.')
 def main():
+ install_handlers()
  p=argparse.ArgumentParser(description=__doc__);p.add_argument('action',choices=['prepare','start','frontends','fixture','case','inspect','summary','stop']);p.add_argument('--source-sha');args=p.parse_args()
  if args.action=='prepare':
   if not args.source_sha:p.error('prepare requires --source-sha with the exact published40-character SHA')
@@ -296,7 +350,9 @@ def main():
   output={'sourceSha':runtime.S['sourceSha'],'driverPackageSha256':runtime.package_hash(),'gate':'NOT_RUN','cloudGroupGate':'NOT_RUN_BY_OWNER_DECISION','nativeTelegramProvider':'NOT_PROVEN','assembledCommonNginx':'SEPARATE_GATE'}
   file=PRIVATE/'receipt.json'
   if file.exists():
-   r=json.loads(file.read_text());output.update(gate='OWNER_OUTPUT_AWAITING_REVIEW',state=r.get('state'),originalOperationId=r.get('operationId'),originalPhase=r.get('phase'),confirmRequests=r.get('confirmRequests'),checks=r.get('checks'),allPassed=r.get('allPassed',False),cleanupComplete=r.get('cleanupComplete',False),browserClosed=r.get('browserClosed',False),error=r.get('error'),blockedWrites=len(r.get('blockedWrites',[])))
+   r=json.loads(file.read_text());operation=r.get('operationId');preview=r.get('previewCounts') or {}
+   counts={key:preview[key] for key in ['accountsAffected','memberships','headmanAssignments','assistantAssignments','academicRows','scheduleRows','attendanceRows','authGrants'] if type(preview.get(key)) is int and preview[key]>=0}
+   output.update(gate='OWNER_OUTPUT_AWAITING_REVIEW',state=r.get('state'),originalOperationId=operation,originalOperationSha256=hashlib.sha256(operation.encode()).hexdigest() if operation else None,originalPhase=r.get('phase'),numericPreviewCounts=counts,confirmRequests=r.get('confirmRequests'),checks=r.get('checks'),allPassed=r.get('allPassed',False),cleanupComplete=r.get('cleanupComplete',False),browserClosed=r.get('browserClosed',False),error=r.get('error'),blockedWrites=len(r.get('blockedWrites',[])))
   print(json.dumps(output,indent=2))
  elif args.action=='stop':
   stop_owned(runtime)

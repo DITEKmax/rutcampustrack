@@ -39,7 +39,7 @@ def main():
    else:raise AssertionError(label+' was incorrectly admitted')
  # An interrupted parent must stop its exact child group even though it started
  # a new session. No signal or real subprocess is used in this adversarial case.
- tree=ast.parse((HERE/'local.py').read_text());guard=next(x for x in tree.body if isinstance(x,ast.FunctionDef) and x.name=='guarded')
+ tree=ast.parse((HERE/'local.py').read_text());guard_names=['guarded','spawn_owned','reap_owned','consume_pending_stop'];guards=[x for x in tree.body if isinstance(x,ast.FunctionDef) and x.name in guard_names]
  process_cases=[]
  with tempfile.TemporaryDirectory(prefix='pr3-handoff-interrupt-') as tmp:
   for number,label in enumerate(['interrupt','disk-early-reserve','timeout']):
@@ -51,12 +51,13 @@ def main():
     return {'diskAvailable':2147483648 if label=='disk-early-reserve' else 7516192768}
    fake_proc=types.SimpleNamespace(pid=987654,poll=lambda:None,wait=lambda timeout:2)
    fake_runtime=types.SimpleNamespace(ENV={},resources=observed_resources)
-   env={'PRIVATE':pathlib.Path(tmp),'ROOT':pathlib.Path(tmp),'time':types.SimpleNamespace(time_ns=lambda:number,monotonic=monotonic,sleep=lambda _:None),'os':types.SimpleNamespace(chmod=os.chmod,killpg=lambda pid,sig:signals.append((pid,sig))),'subprocess':types.SimpleNamespace(Popen=lambda *a,**kw:fake_proc,TimeoutExpired=subprocess.TimeoutExpired,STDOUT=subprocess.STDOUT),'signal':signal,'write':lambda p,v:receipts.append(v)}
-   exec(compile(ast.Module(body=[guard],type_ignores=[]),'<guarded-only>','exec'),env)
+   env={'PRIVATE':pathlib.Path(tmp),'ROOT':pathlib.Path(tmp),'_OWNERSHIP_TRANSITION':False,'_STOP_PENDING':False,'time':types.SimpleNamespace(time_ns=lambda:number,monotonic=monotonic,sleep=lambda _:None),'os':types.SimpleNamespace(chmod=os.chmod,killpg=lambda pid,sig:signals.append((pid,sig))),'subprocess':types.SimpleNamespace(Popen=lambda *a,**kw:fake_proc,TimeoutExpired=subprocess.TimeoutExpired,STDOUT=subprocess.STDOUT),'signal':signal,'write':lambda p,v:receipts.append(v)}
+   exec(compile(ast.Module(body=guards,type_ignores=[]),'<guarded-only>','exec'),env)
    try:env['guarded'](fake_runtime,['synthetic-child'],'native-case')
    except (KeyboardInterrupt,AssertionError):pass
    else:raise AssertionError('Guard did not propagate after exact child closure')
-   assert signals==[(987654,signal.SIGTERM)] and receipts[0]['guardStopped'] and receipts[0]['exit']==2 and receipts[0]['interrupted']==(label=='interrupt')
+   receipt=receipts[-1]
+   assert signals==[(987654,signal.SIGTERM)] and receipt['guardStopped'] and receipt['exit']==2 and receipt['interrupted']==(label=='interrupt') and receipt['children'][0]['reaped']
    process_cases.append(label+'-stops-exact-owned-child')
  # Private env/config bindings are checked by digest without exporting values.
  runtime_tree=ast.parse((HERE/'runtime/runtime.py').read_text());inputs=next(x for x in runtime_tree.body if isinstance(x,ast.FunctionDef) and x.name=='inputs')
@@ -109,6 +110,8 @@ def main():
   except FileNotFoundError:pass
   else:raise AssertionError('Unknown business case permitted stop')
   assert not commands;lifecycle_cases.extend(['partial-known-startup-stop-without-ready','unknown-original-case-stop-HOLD'])
- print(json.dumps({'pythonSyntax':len(py),'nodeSyntax':len(js),'composeServices':12,'ownershipCases':cases,'preparedDirectoryCases':4,'privateInputTamperCases':1,'startupFreezeCases':2,'processGuardCases':process_cases,'lifecycleCases':lifecycle_cases,'runtimeDockerAuthApiDbBrowserActions':0,'realProcessSignals':0,'localGate':'NOT_RUN'},indent=2))
+ from check_signal_guard import run_controls
+ signals=run_controls()
+ print(json.dumps({'pythonSyntax':len(py),'nodeSyntax':len(js),'composeServices':12,'ownershipCases':cases,'preparedDirectoryCases':4,'privateInputTamperCases':1,'startupFreezeCases':2,'processGuardCases':process_cases,'lifecycleCases':lifecycle_cases,'signalAndExceptionControls':signals['signalAndExceptionControls'],'runtimeDockerAuthApiDbBrowserActions':0,'realSignalsToSyntheticProcesses':signals['realSignalsToSyntheticProcesses'],'realServiceSignals':0,'localGate':'NOT_RUN'},indent=2))
 
 if __name__=='__main__':main()

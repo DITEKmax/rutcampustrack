@@ -34,7 +34,8 @@
     "Local Linux/WSL memory observation replaces fixed cloud16GiB cgroup identity; >=12GiB total and >=2GiB available for browser, same2GiB hard/2.5GiB early250ms disk guards.",
     "After first CHANGES REQUIRED review: existing prepared-private admission with exclusive original intent, package/private-input hash freeze and actual service image/full mount pins.",
     "Whole startup compose/readiness/isolation guarded lifetime; qualified partial startup stop without ready milestone; unknown metadata/domain intent remains HOLD.",
-    "Finite accepted180f Schedule/Mongo rollback/abort isolation controls before all12ready API admission; these controls are NOT_RUN locally until owner output."
+    "Finite accepted180f Schedule/Mongo rollback/abort isolation controls before all12ready API admission; these controls are NOT_RUN locally until owner output.",
+    "Orderly parent SIGTERM/SIGINT is handled before launch; exact owned children register before interruption and are reaped on poll exceptions/termination before existing startup closure. Public summary contains the safe original operation UUID/digest and eight numeric preview counts, never credential/session/row dumps."
   ],
   "mustPreserve": [
     "one original UI-generated operation UUID; numeric preview/current password/status",

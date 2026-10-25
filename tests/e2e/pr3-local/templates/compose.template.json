@@ -382,7 +382,7 @@
         "INTERNAL_ISSUER_SECRET": "${INTERNAL_ISSUER_SECRET}",
         "GATEWAY_TRUSTED_PROXY_ADDRESSES": "172.31.35.10",
         "JAVA_TOOL_OPTIONS": "-Djava.security.egd=file:/dev/./urandom -Xms64m -Xmx256m",
-        "SPRING_APPLICATION_JSON": "{\"spring.cloud.gateway.server.webflux.globalcors.cors-configurations.[/**].allowed-origins\":[\"http://127.0.0.1:14250\",\"http://127.0.0.1:14251\",\"http://127.0.0.1:14252\"]}"
+        "SPRING_APPLICATION_JSON": "{\"spring.cloud.gateway.server.webflux.globalcors.cors-configurations.[/**].allowed-origins\":[\"http://127.0.0.1:14250\",\"http://127.0.0.1:14251\",\"http://127.0.0.1:14252\",\"http://127.0.0.1:14240\",\"https://127.0.0.1:14443\"]}"
       },
       "expose": [
         "8080"
@@ -713,7 +713,7 @@
         "SPRING_CONFIG_IMPORT": "configtree:/run/rct-notification/",
         "INTERNAL_ISSUER_SECRET": "${INTERNAL_ISSUER_SECRET}",
         "JWT_PUBLIC_KEY_PATH": "/run/rct-jwt/public.key",
-        "NOTIFICATION_WS_ALLOWED_ORIGINS": "http://127.0.0.1:14250,http://127.0.0.1:14251,http://127.0.0.1:14252"
+        "NOTIFICATION_WS_ALLOWED_ORIGINS": "http://127.0.0.1:14250,http://127.0.0.1:14251,http://127.0.0.1:14252,http://127.0.0.1:14240,https://127.0.0.1:14443"
       },
       "volumes": [
         "${GROUP_NOTIFICATION_JAR}:/app/app.jar:ro",

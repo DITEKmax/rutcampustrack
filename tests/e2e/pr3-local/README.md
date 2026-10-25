@@ -171,6 +171,15 @@ Academic, Schedule, Attendance, Notification, Mobile BFF, Gateway и TLS edge.
 выключен. Это source-server acceptance; production image/common-Nginx acceptance
 проверяется отдельно.
 
+Optional common Nginx запускается позднее на HTTP14240/HTTPS14443. Эти два exact
+origin (`http://127.0.0.1:14240`, `https://127.0.0.1:14443`) заранее добавлены только
+в **новые generated local** Gateway/Notification allowlists перед prepare/freeze;
+dev14250–52 сохранены. Group preflight проверяет свои четыре порта и не резервирует
+14240/14443: занятость optional Nginx проверяет его отдельный пакет. Trusted proxy
+остаётся только `172.31.35.10`, без `.11`, wildcard, static-IP profile или изменений
+Main/облака. Forwarded external HTTPS identity semantics остаются отдельным
+owner-local **NOT_RUN**; добавление origins не считается доказательством login/STOMP.
+
 `start` запускается один раз, ждёт healthy в bounded срок и сохраняет exact IDs.
 До действий сохранён foreign container snapshot; every phase проверяет чужие
 ID/image/mount/running state и nonce ownership собственных containers/networks/

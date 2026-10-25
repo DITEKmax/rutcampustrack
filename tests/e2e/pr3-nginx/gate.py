@@ -10,6 +10,7 @@ import shutil
 import ssl
 import subprocess
 import sys
+import uuid
 from pathlib import Path
 from urllib.parse import urljoin, urlsplit
 
@@ -19,6 +20,8 @@ APPS = {"web": "web-vue", "pwa": "pwa-vue", "tma": "tma-vue"}
 BASES = {"web": "/", "pwa": "/app/", "tma": "/mini-app/"}
 EARLY = 5 * 1024**3 // 2
 HARD = 2 * 1024**3
+PACKAGE = "tests/e2e/pr3-nginx"
+RUN_LABEL = "rct.pr3-nginx.run"
 
 
 def require(condition, message):
@@ -65,12 +68,12 @@ def app_inputs(app, commit):
 def checkout(commit):
     revision(commit)
     require(git("rev-parse", "HEAD").decode().strip() == commit, "Checkout HEAD differs from source pin")
-    require(not git("diff", "--name-only", "HEAD", "--", "frontends", "nginx",
-                    "scripts/verify-served-web-panel.py").strip(), "Tracked frontend/Nginx inputs changed")
+    paths = ["frontends", "nginx", "scripts/verify-served-web-panel.py", PACKAGE]
+    require(not git("diff", "--name-only", "HEAD", "--", *paths).strip(), "Tracked frontend/Nginx/gate inputs changed")
     # Preserve worktree dependency links; reject additional untracked source inputs.
-    untracked = git("ls-files", "--others", "--exclude-standard", "-z", "--", "frontends", "nginx")
-    require(all({"node_modules", "dist"} & set(p.decode().split("/"))
-                for p in untracked.split(b"\0") if p), "Untracked frontend/Nginx source inputs")
+    untracked = git("ls-files", "--others", "--exclude-standard", "-z", "--", *paths)
+    require(all(p.decode().startswith("frontends/") and {"node_modules", "dist"} & set(p.decode().split("/"))
+                for p in untracked.split(b"\0") if p), "Untracked frontend/Nginx/gate source inputs")
 
 
 def inventory(directory):
@@ -87,6 +90,47 @@ def inventory(directory):
     return result
 
 
+def producer_config(app):
+    return {"VITE_PUBLIC_BASE": BASES[app], "VITE_MOBILE_FIXTURE_MODE": "false",
+            "VITE_APP_VERSION": "0.0.0", "VITE_MIN_SUPPORTED_VERSION": "",
+            "VITE_FORCE_UPDATE": "true"}
+
+
+def served_oracle():
+    spec = importlib.util.spec_from_file_location("served_vue", REPO / "scripts/verify-served-web-panel.py")
+    oracle = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(oracle)
+    return oracle
+
+
+def artifact_contract(app, directory):
+    """Source equivalence alone cannot establish Vite's producer environment."""
+    directory = Path(directory)
+    prefix = BASES[app]
+    html = (directory / "index.html").read_bytes()
+    normalized = html.replace((prefix + "assets/").encode(), b"/assets/") if prefix != "/" else html
+    oracle = served_oracle()
+    entry = oracle.entry_asset(normalized)
+    parsed = oracle.Entrypoint()
+    parsed.feed(html.decode("utf-8"))
+    expected_entry = prefix.rstrip("/") + entry
+    require(parsed.modules == [expected_entry], "Artifact public base differs: " + app)
+    require((directory / entry.lstrip("/")).is_file(), "Artifact entry module is missing: " + app)
+    for url in re.findall(r'''(?:src|href)\s*=\s*["'](/[^"']*)["']''', html.decode("utf-8")):
+        require(not url.startswith("//") and url.startswith(prefix), "Artifact root-relative URL escapes its public base: " + app)
+    policy_hash = None
+    if app == "pwa":
+        policy = (directory / "version.json").read_bytes()
+        value = json.loads(policy)
+        require(value["latest"] == value["minimumSupported"] == "0.0.0" and value["force"] is True,
+                "PWA artifact version policy differs from the explicit Docker defaults")
+        policy_hash = sha(policy)
+    config = producer_config(app)
+    return {"publicBase": prefix, "entryPath": expected_entry, "producerConfig": config,
+            "producerConfigSha256": sha(json.dumps(config, sort_keys=True).encode()),
+            "versionPolicySha256": policy_hash}
+
+
 def save(path, value):
     with Path(path).open("x", encoding="utf-8") as handle:
         json.dump(value, handle, ensure_ascii=False, indent=2)
@@ -94,10 +138,15 @@ def save(path, value):
 
 
 def pin(args):
+    checkout(args.expected_sha)
+    require(args.fixture_mode == "false", "External accepted producer must explicitly attest fixture mode false")
     revision(args.source_sha)
     save(args.out, {"app": args.app, "sourceSha": args.source_sha,
+                   "gateSourceSha": args.expected_sha,
                    "sourceInputsSha256": app_inputs(args.app, args.source_sha),
                    "files": inventory(args.dist), "buildEvidenceSha256": sha(Path(args.build_log).read_bytes()),
+                   "artifactContract": artifact_contract(args.app, args.dist),
+                   "producerConfigEvidence": "ACCEPTED_EXTERNAL_BUILD_ASSERTION_FIXTURE_FALSE",
                    "provenance": "EXTERNAL_ACCEPTED_BUILD_EVIDENCE"})
 
 
@@ -131,6 +180,7 @@ def prepare(args):
         revision(receipt["sourceSha"])
         require(receipt["sourceInputsSha256"] == app_inputs(app, args.expected_sha), "Artifact inputs do not match: " + app)
         require(receipt["files"] == inventory(dist), "Artifact bytes changed: " + app)
+        require(receipt["artifactContract"] == artifact_contract(app, dist), "Artifact producer contract changed: " + app)
         dists[app], receipts[app] = dist, receipt
     landing = Path(args.landing_dist).resolve(strict=True)
     require((landing / "index.html").is_file(), "Missing existing landing artifact")
@@ -163,21 +213,24 @@ def prepare(args):
               {"type": "bind", "source": str(output / "tls/dhparam.pem"), "target": "/etc/nginx/dhparam.pem", "read_only": True}]
     mounts += [{"type": "bind", "source": str(path), "target": "/srv/" + app, "read_only": True}
                for app, path in {**dists, "landing": landing}.items()]
+    nonce = str(uuid.uuid4())
     compose = {"name": "rct-pr3-nginx-gate", "services": {"edge": {
+        "labels": {RUN_LABEL: nonce},
         "image": args.image_id, "pull_policy": "never", "entrypoint": ["nginx"],
         "command": ["-g", "daemon off;"], "read_only": True,
         "ports": ["127.0.0.1:" + str(args.port) + ":" + str(args.port)], "volumes": mounts,
         "tmpfs": ["/var/cache/nginx:size=16m", "/var/run:size=1m", "/var/log/nginx:size=8m", "/tmp:size=1m"],
-        "mem_limit": "128m", "cpus": 0.5, "pids_limit": 32,
+        "mem_limit": "128m", "memswap_limit": "128m", "cpus": 0.5, "pids_limit": 32,
         "cap_drop": ["ALL"], "cap_add": ["NET_BIND_SERVICE", "SETUID", "SETGID", "CHOWN"],
         "security_opt": ["no-new-privileges:true"], "networks": ["main"]}},
         "networks": {"main": {"external": True, "name": args.network}}}
     save(output / "compose.json", compose)
     save(output / "pins.json", {"sourceSha": args.expected_sha, "imageId": args.image_id,
+        "runNonce": nonce,
         "availableBefore": free, "forecastMaxAdditionalBytes": 512 * 1024**2,
         "apps": receipts, "dists": {app: str(path) for app, path in dists.items()},
         "configs": {str(p.relative_to(output)): sha(p.read_bytes())
-                    for p in [output / "nginx.conf", *sorted((output / "conf.d").iterdir())]},
+                    for p in [output / "compose.json", output / "nginx.conf", *sorted((output / "conf.d").iterdir())]},
         "localAdaptations": ["one worker", "matching external/local TLS port", "fresh local certificate paths", "explicit gateway DNS",
                              "four loopback inner upstreams/listeners and read-only artifact roots"],
         "productionTLSAndDeployment": "NOT_RUN"})
@@ -206,32 +259,73 @@ def fetch(base, path, context):
         connection.close()
 
 
+def admit_container(pins, compose, container, base):
+    """Only the one prepared frontend container may supply HTTP evidence."""
+    require(compose["name"] == "rct-pr3-nginx-gate" and set(compose["services"]) == {"edge"}, "Unexpected prepared namespace")
+    service = compose["services"]["edge"]
+    port_match = re.fullmatch(r"127\.0\.0\.1:([0-9]+):\1", service["ports"][0])
+    require(port_match and len(service["ports"]) == 1, "Expected one matching loopback TLS publication")
+    port = port_match[1]
+    requested = origin(base)
+    require(requested.scheme == "https" and requested.port == int(port), "Requested origin differs from prepared publication")
+    require(container["project"] == compose["name"] and container["service"] == "edge" and
+            container["nonce"] == pins["runNonce"] == service["labels"][RUN_LABEL], "Container ownership labels differ")
+    require(container["running"] and container["image"] == pins["imageId"] == service["image"], "Owned Nginx image differs from its pin")
+    require(container["entrypoint"] == service["entrypoint"] == ["nginx"] and
+            container["command"] == service["command"] == ["-g", "daemon off;"], "Unexpected Nginx entrypoint")
+    network = compose["networks"]["main"]["name"]
+    require(service["networks"] == ["main"] and set(container["networks"]) == {network} and
+            container["networkMode"] == network, "Container is outside the selected existing network")
+    publication = {port + "/tcp": [{"HostIp": "127.0.0.1", "HostPort": port}]}
+    require({key: value for key, value in container["ports"].items() if value} == publication,
+            "Container publishes a foreign port or interface")
+    require(container["readonly"] and not container["privileged"] and container["memory"] == 128 * 1024**2 and
+            container["memorySwap"] == 128 * 1024**2 and container["nanoCpus"] == 500_000_000 and
+            container["pids"] == 32, "Container resource/root bounds differ")
+    tmpfs = {"/var/cache/nginx": "size=16m", "/var/run": "size=1m", "/var/log/nginx": "size=8m", "/tmp": "size=1m"}
+    require(container["tmpfs"] == tmpfs, "Container tmpfs bounds differ")
+    require({value.removeprefix("CAP_") for value in container["capAdd"]} == set(service["cap_add"]) and
+            container["capDrop"] == ["ALL"] and container["securityOpt"] == ["no-new-privileges:true"],
+            "Container capabilities/security options differ")
+    expected = {item["target"]: item for item in service["volumes"]}
+    binds = [item for item in container["mounts"] if item["Type"] == "bind"]
+    require(len(binds) == len(expected) and {item["Destination"] for item in binds} == set(expected),
+            "Unexpected additional or missing bind mount")
+    require(all(item["Source"] == expected[item["Destination"]]["source"] and not item["RW"]
+                for item in binds), "Prepared bind paths or read-only flags differ")
+    # Engines may report HostConfig tmpfs mounts separately or also in Mounts.
+    require(all(item["Type"] == "bind" or (item["Type"] == "tmpfs" and item["Destination"] in tmpfs)
+                for item in container["mounts"]), "Unexpected non-bind mount")
+
+
 def check(args):
     pins = json.loads((Path(args.run_dir) / "pins.json").read_text())
     checkout(args.expected_sha)
     require(pins["sourceSha"] == args.expected_sha, "Prepared source pin differs")
     budget(args.run_dir)
+    require("compose.json" in pins["configs"], "Prepared Compose has no source receipt hash")
     for relative, digest in pins["configs"].items():
         require(sha((Path(args.run_dir) / relative).read_bytes()) == digest, "Prepared Nginx bytes changed")
     docker_env = {key: value for key, value in os.environ.items()
                   if key not in {"DOCKER_HOST", "DOCKER_CONTEXT", "DOCKER_TLS", "DOCKER_TLS_VERIFY", "DOCKER_CERT_PATH"}}
     template = ('{"image":{{json .Image}},"running":{{json .State.Running}},'
-                '"mounts":{{json .Mounts}},"entrypoint":{{json .Config.Entrypoint}},"command":{{json .Config.Cmd}}}')
+                '"mounts":{{json .Mounts}},"entrypoint":{{json .Config.Entrypoint}},"command":{{json .Config.Cmd}},'
+                '"project":{{json (index .Config.Labels "com.docker.compose.project")}},'
+                '"service":{{json (index .Config.Labels "com.docker.compose.service")}},'
+                '"nonce":{{json (index .Config.Labels "rct.pr3-nginx.run")}},'
+                '"networks":{{json .NetworkSettings.Networks}},"ports":{{json .NetworkSettings.Ports}},'
+                '"networkMode":{{json .HostConfig.NetworkMode}},"readonly":{{json .HostConfig.ReadonlyRootfs}},'
+                '"memory":{{json .HostConfig.Memory}},"memorySwap":{{json .HostConfig.MemorySwap}},'
+                '"nanoCpus":{{json .HostConfig.NanoCpus}},"pids":{{json .HostConfig.PidsLimit}},'
+                '"tmpfs":{{json .HostConfig.Tmpfs}},"privileged":{{json .HostConfig.Privileged}},'
+                '"capAdd":{{json .HostConfig.CapAdd}},"capDrop":{{json .HostConfig.CapDrop}},'
+                '"securityOpt":{{json .HostConfig.SecurityOpt}}}')
     container = json.loads(subprocess.check_output(["docker", "--host=unix:///var/run/docker.sock", "inspect", "--format",
                                                    template, "rct-pr3-nginx-gate-edge-1"], env=docker_env, timeout=10))
-    require(container["running"] and container["image"] == pins["imageId"], "Owned running Nginx image differs from its pin")
-    require(container["entrypoint"] == ["nginx"] and container["command"] == ["-g", "daemon off;"], "Unexpected Nginx entrypoint")
-    mounts = {item["Destination"]: item for item in container["mounts"]}
-    expected_mounts = {"/etc/nginx/nginx.conf": str(Path(args.run_dir).resolve() / "nginx.conf"),
-                       "/etc/nginx/conf.d": str(Path(args.run_dir).resolve() / "conf.d")}
-    expected_mounts.update({"/srv/" + app: path for app, path in pins["dists"].items()})
-    require(all(destination in mounts and mounts[destination]["Source"] == source and not mounts[destination]["RW"]
-                for destination, source in expected_mounts.items()), "Running Nginx mounts do not match prepared configuration/artifacts")
+    compose = json.loads((Path(args.run_dir) / "compose.json").read_text())
+    admit_container(pins, compose, container, args.base)
     context = ssl.create_default_context(cafile=str(Path(args.run_dir) / "tls/fullchain.pem"))
-    require(origin(args.base).scheme == "https", "Use the local TLS common entry")
-    spec = importlib.util.spec_from_file_location("served_vue", REPO / "scripts/verify-served-web-panel.py")
-    oracle = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(oracle)
+    oracle = served_oracle()
     results = {"sourceSha": args.expected_sha, "artifactBytes": {}, "commonNginxStatic": "FAIL",
                "apiForwarding": "NOT_RUN", "realtimeAuthenticatedTransport": "NOT_RUN",
                "webAuthLifecycle": "NOT_RUN", "pwaAuthAndUpdates": "NOT_RUN",
@@ -239,6 +333,7 @@ def check(args):
     for app, prefix in BASES.items():
         dist = Path(pins["dists"][app])
         require(inventory(dist) == pins["apps"][app]["files"], "Pinned artifact bytes changed")
+        require(artifact_contract(app, dist) == pins["apps"][app]["artifactContract"], "Pinned artifact producer contract changed")
         expected_index = (dist / "index.html").read_bytes()
         # Adapt only the public base for the existing root-only served Vue oracle.
         normalized = expected_index.replace((prefix + "assets/").encode(), b"/assets/") if prefix != "/" else expected_index
@@ -306,9 +401,11 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     commands = parser.add_subparsers(dest="command", required=True)
     record = commands.add_parser("pin", help="Record explicitly accepted external build evidence, without building")
-    for name in ["source-sha", "dist", "build-log", "out"]:
+    for name in ["expected-sha", "source-sha", "dist", "build-log", "out"]:
         record.add_argument("--" + name, required=True)
     record.add_argument("--app", choices=APPS, required=True)
+    record.add_argument("--fixture-mode", choices=["false"], required=True,
+                        help="Explicit accepted producer assertion; pin never infers this flag from arbitrary bytes")
     record.set_defaults(action=pin)
     prepare_parser = commands.add_parser("prepare", help="Write isolated configuration; never start containers")
     for name in ["expected-sha", "image-id", "gateway", "network", "landing-dist", "out"]:

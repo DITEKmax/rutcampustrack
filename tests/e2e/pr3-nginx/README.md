@@ -7,8 +7,8 @@
 ## Предварительные условия и границы
 
 - Нужны Python3.10+, Node/npm, установленные locked frontend dependencies, Docker Compose, OpenSSL и уже имеющийся Nginx image. Скрипты ничего не устанавливают и не скачивают.
-- Передай полный опубликованный SHA текущего coherent source. После изменения frontend/Nginx source или SHA подготовку выполняют заново в новом каталоге.
-- Облачные build/start допускаются только после текущего Root GO и проверки source/review. Сборки строго по одной. Прогноз дополнительного места ≤512MiB, ранняя остановка при свободном месте <2.5GiB, жёсткий резерв2GiB не снижается. `build.py` проверяет место каждые250ms, останавливает только свой process group при раннем пороге/росте512MiB/тайм-ауте180s и сохраняет исходный лог.
+- Передай полный опубликованный SHA текущего coherent source, включая сам пакет `tests/e2e/pr3-nginx`. Dirty или untracked executable gate source не допускается до любых outputs/build effects. После изменения frontend/Nginx source или SHA подготовку выполняют заново в новом каталоге.
+- Облачные build/start допускаются только после текущего Root GO и проверки source/review. Сборки строго по одной, Node old-space ограничен1536MiB до первой попытки. Прогноз дополнительного места ≤512MiB, ранняя остановка при свободном месте <2.5GiB, жёсткий резерв2GiB не снижается. `build.py` проверяет место каждые250ms, останавливает только свой process group при раннем пороге/росте512MiB/тайм-ауте180s и сохраняет исходный лог. SIGTERM/SIGINT monitor получает через установленный до запуска ребёнка handler; остановка и bounded cleanup сохраняются также в launch window.
 - Nginx ограничен128MiB RAM,0.5CPU,32PID, read-only root и ограниченными tmpfs. Не запускай его одновременно с другой тяжёлой операцией; действующий guard свободного места сохраняют на время проверки.
 - Ни исходники, ни старые evidence/artifacts не очищаются. Все новые outputs лежат отдельно от frontend source; существующие outputs скрипты не перезаписывают.
 - `pin` записывает **принятое внешнее доказательство сборки**, а не доказывает сам факт сборки по произвольному логу. Применяй его только к уже принятому Root artifact. При несовпадении source inputs или artifact bytes reuse запрещён.
@@ -35,12 +35,15 @@ python3 tests/e2e/pr3-nginx/build.py --expected-sha "$SOURCE_SHA" \
 PWA_SOURCE_SHA='<полный SHA принятой PWA сборки>'
 PWA_DIST='<локальный каталог принятого PWA dist>'
 PWA_BUILD_LOG='<локальный исходный лог принятой PWA сборки>'
-python3 tests/e2e/pr3-nginx/gate.py pin --app pwa \
+python3 tests/e2e/pr3-nginx/gate.py pin --expected-sha "$SOURCE_SHA" --app pwa \
+  --fixture-mode false \
   --source-sha "$PWA_SOURCE_SHA" --dist "$PWA_DIST" \
   --build-log "$PWA_BUILD_LOG" --out "$GATE_STATE/pwa.pin.json"
 ```
 
-Artifact receipt содержит Git blob fingerprint входов и SHA256 всех файлов. WEB fingerprint включает импортируемую PWA auth/recovery реализацию. `prepare` проверяет fingerprint принятой старой revision против текущей, полный file inventory и отсутствие source изменений; один файл `index.html` не считается достаточным доказательством.
+Artifact receipt содержит Git blob fingerprint входов, SHA256 всех файлов, actual entry public base, producer config/hash и PWA version-policy hash. WEB fingerprint включает импортируемую PWA auth/recovery реализацию. `prepare` проверяет fingerprint принятой старой revision против текущей, полный file inventory, отсутствие source изменений и actual HTML prefixes: `/`, `/app/`, `/mini-app/`. Совпадающий source при собранном default-root PWA/TMA не подходит; такой artifact отвергается до подготовки outputs.
+
+`build.py` явно задаёт app base и `VITE_MOBILE_FIXTURE_MODE=false`, удалив унаследованные `VITE_*` overrides. Version defaults совпадают с Dockerfiles: `0.0.0`, minimum fallback `0.0.0`, force=true; actual PWA `version.json` проверяется и хешируется. Для external `pin --fixture-mode false` — явное утверждение принятого producer evidence, а не извлечение compiler flag из произвольного JavaScript. Используй его только при доказанном normal-production build. WEB artifact с правильным `/` можно переиспользовать; PWA/TMA default `/assets/` требуют новой prefix-сборки. Existing strict результаты сохраняются отдельно; `build.py` вызывает штатный полный strict script, не выдавая старую strict проверку за проверку новых prefix bytes.
 
 ## Подготовка одного общего Nginx
 
@@ -96,7 +99,7 @@ docker_local compose -f "$RUN/compose.json" down
 
 ## Что означает результат
 
-`commonNginxStatic=PASS` означает: точные bytes всех трёх distributions прошли через общий Nginx; script/CSS MIME, shell/asset cache, CSP presence, deep links и refresh, missing-asset404 и PWA worker/version/manifest bytes проверены. Для WEB применяется существующий [served Vue oracle](../../../scripts/verify-served-web-panel.py). Image ID и prepared configuration bytes привязаны к source receipt. Это не подтверждение поведения самого браузера или backend сценариев.
+`commonNginxStatic=PASS` означает: точные bytes всех трёх distributions прошли через общий Nginx; script/CSS MIME, shell/asset cache, CSP presence, deep links и refresh, missing-asset404 и PWA worker/version/manifest bytes проверены. Для WEB применяется существующий [served Vue oracle](../../../scripts/verify-served-web-panel.py). Image ID, весь prepared Compose и configuration bytes привязаны к source receipt. До HTTP проверяются project/service/run-nonce labels, одна выбранная external network, точный loopback port/base, весь набор read-only binds без лишних mounts, read-only root и128MiB RAM/без дополнительного swap/0.5CPU/32PID/tmpfs bounds. Это не подтверждение поведения самого браузера или backend сценариев.
 
 `apiForwarding=OBSERVED_ANONYMOUS_ONLY` содержит реальные сравнения статусов/MIME `/api/auth/session` и SockJS `/api/ws/info` через Nginx и напрямую.401/403 не означают успешный login или realtime connection;502 и несовпадение показываются как FAIL. Никакие bearer/cookie/ticket не записываются. Production Vue использует SockJS: base `/api/ws?ticket=...` превращается в `/info` и transport subpaths; upgrade на одном exact `/api/ws` не является доказательством работы или регрессии клиента.
 

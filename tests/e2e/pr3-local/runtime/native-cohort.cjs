@@ -442,7 +442,7 @@ async function main() {
         return response.status;
       }, { path: actor.lastAuthIntent.path, bearer: actor.bearer });
       assert(actor.initialRevokeForwarded && status === 204, 'Original own SID revocation unconfirmed; no retry/fallback');
-      actor.lastAuthIntent.state = 'ACKNOWLEDGED_204';
+      Object.assign(actor.lastAuthIntent, { state: 'ACKNOWLEDGED_204' });
       await authCheckpoint(actor, 'EXACT_INITIAL_SID_REVOKE_ACKNOWLEDGED');
       actor.record.initialSidEndpointRevocation204 = true;
       await canonical(actor);

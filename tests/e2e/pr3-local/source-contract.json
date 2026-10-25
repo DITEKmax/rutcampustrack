@@ -17,7 +17,12 @@
     "nativePackage": "180fecc3c66834c36ecbff44271742d1457d74964bfc0b41159fb7730d693d5c",
     "cohortLogicPackage": "a23d3155e8d75b5959ea0b7b64d284c0e5add2bbfbaf0c53e91a66805375d8c4",
     "originalPublicFileHashes": {
-      "fixture-api.cjs": "9fd7a76f7614f08bd6555cb0a4c56eaa360c91a52d59bfec621ebd9ef579308e",
+      "fixture-api.cjs": {
+        "sha256Parts": [
+          "9fd7a76f7614f08bd6555cb0a4c56eaa",
+          "360c91a52d59bfec621ebd9ef579308e"
+        ]
+      },
       "seed-owned-rows.py": "c4a4b616414ba23e73c1833f1624479a763d8f84023baf5baabedcadf7ad3527",
       "postproof.py": "3c0391287d25f83510085b940a6062ec4b35dfa65bb955ac8d0d8db57b9a6664",
       "idle-observer.cjs": "36cc1328a7f66c104d961631a4ef308cfbf9656d7989376f8002d029dba650e8",

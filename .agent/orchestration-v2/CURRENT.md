@@ -17,7 +17,7 @@ Angular433 tracked files удалены, source audit117/117 без утраты
 независимый review PASS, Root WEB/TMA strict+Vite PASS. Прежний group action accepted
 116/117, ADMIN33/34 до фактического six-view UI результата; source117 не overallPASS.
 WEB artifact `/` переиспользуется; PWA/TMA default-base артефакты непригодны для
-/app/,/mini-app/, поэтому только prefix builds повторяются. Общий Nginx source
+/app/,/mini-app/, поэтому только prefix builds повторены PASS524f (34.688/32.731s). Общий Nginx source
 review PASS; actual runtime впереди. Отдельный budget512MiB/128MiB container,
 early2.5GiB/hard2GiB; group7GiB не применяется к лёгкому gate. ONEHEAVY Root.
 
@@ -45,7 +45,9 @@ Whole-map/Authcorrect204wrong403 CLOSED. Их/старую cleanup не replay �
 Group20backend +live55client/6unit/2PG/1Mongo PASS reused, новый groupUI NOT_RUN.
 Main13/admin7 running, clock5/shipping5 stopped; group app replacements0/fixture0/delete0.
 
-Следующий пакет: matching prefix builds → один commonNginx static/API runtime →
+Source localpackage e8/9fa: publicSHA+enum Gitleaks matches qualified; finalsource0,
+rules/ignore/history unchanged. Sourcebuilds prepublication exact524 willpublishancestry.
+Следующий пакет: один commonNginx static/API runtime →
 reviewed serial native Auth/WS, если current Origin/CSP допускают. HTTPSAuth/WSS,
 TMA provider, real WebPush и недостающие activation/update остаются отдельными local gates.
 После source integration/publish обновить PR и дать владельцу точный полный SHA/команды.

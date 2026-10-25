@@ -548,3 +548,21 @@ Q-ENV-010 о clouddisk закрыт как superseded ownerlocal решение�
 
 [Source cleanup/audit/build receipts](../../validation/web-vue-pr3/checkpoints/angular-removal-20261025/README.md).
 [Conditional visuals: actual roster/0PNG](../../validation/web-vue-pr3/checkpoints/conditional-visual-20261025/README.md).
+
+
+### Prefix builds и source metadata — завершённый пакет
+
+PWA `/app/` и TMA `/mini-app/` strict+Vite PASS на source524f44a5, serial34.688/32.731s,
+production/fixturefalse/heap1536MiB; actualavailable6494081024B. WEBddf `/` reused.
+[Receipts и границы Nginx-пакета](../../validation/web-vue-pr3/checkpoints/assembled-nginx-20261025/README.md).
+Source builds выполнены перед публикацией checkpoint; точный SHA станет доступен
+в опубликованной ancestry, последующие metadata/docs не меняют frontend fingerprints.
+Nginx runtime ещёNOT_RUN, адресные builds не PASS всей поставки.
+
+Два Gitleaks history match нового localpackage классифицированы как public provenanceSHA
+и fixed lifecycle enum, значение/поведение сохранены losslessprojection e8→9fa550781.
+Independent currentpackage source scanEXIT0/findings0, rules/ignore/history unchanged;
+[review](../../validation/web-vue-pr3/review/local-group-handoff-RECHECK-e8bcbd49.md).
+Исторические два match остаются квалифицированными falsepositive, history scan не выдаётся
+за zero. Ownerlocal gate NOT_RUN. Уточняются только два переносимых input gap для
+будущего localNginx: exactOrigins нового realm и отдельный trustCA directAPI18443.

@@ -12,7 +12,7 @@ CI/Coverage/Security/OpenAPI PAUSED/workflow_dispatch; без merge/deploy/produ
 | Angular |433 tracked files и active dependencies/config/security/build references удалены; useful recovery перенесён в Vue, independentreviewPASS |
 | Сборка/поставка |Root WEB/TMA strict+VitePASS; prefixPWA/TMA нужны отдельно; assembledcommonNginx/runtime пока не PASS |
 
-1. **В облаке:** PWA `/app/` и TMA `/mini-app/` prefix builds строго по одному.
+1. **В облаке:** PWA `/app/` и TMA `/mini-app/` prefix builds завершены PASS строго по одному.
    Причина повтора: старые default-root bytes непригодны для согласованных URL.
    WEB matching `/` artifact переиспользовать. До запуска actualdisk/RAM/process
    admission: дополнительный forecast512MiB, early2.5GiB/hard2GiB, не group7GiB.

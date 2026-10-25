@@ -1,5 +1,7 @@
 # Vue web-панель — существующий PR №3
 
+Актуально25октября2026: source implementation117/117; accepted behavior116/117, owner Ubuntu group gate NOT_RUN. Angular433-file cleanup выполнен, independent source review PASS; общий Nginx/остальные browser/provider gates учитываются отдельно. Исторические численные срезы ниже не являются текущей готовностью. [Текущий план](CURRENT-PRIORITIES.md) · [Локальная передача](../../../tests/e2e/pr3-local/README.md).
+
 > **Актуальный статус 2026-10-24:** владелец отдельно запустил существующий Goal. Автономная реализация, commit/push в существующую ветку и обновление PR №3 разрешены. Канон: [GOAL-CONTRACT.md](GOAL-CONTRACT.md). Readiness новой среды и архива: [READINESS-CHECK-20261024.md](READINESS-CHECK-20261024.md). CI/Coverage/Security/OpenAPI PAUSED; без main writes/merge/deploy/production.
 
 Дата решений: 2026-10-23. Ветка `codex/web-vue-redesign`, база main

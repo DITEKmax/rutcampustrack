@@ -301,3 +301,14 @@ calendar fixture and six-view cohort reviewedsource, noactualstart/delete. Auth
 commit unselects matchinggrant/sessionVersion+1; entireSID neednot be revoked.
 NaturalTMAreadmission mayproducefreshsameactorSID, bothold/newownedSID cleanup
 mustbe accounted separately. ActualUI/WS compatibility remains gated bycapacity.
+
+
+## 2026-10-25 — Angular retirement / execution placement
+
+Angular source/dependency/build cleanup и WEB lazy-module recovery не меняют backend
+endpoints, payloads, grants или API compatibility PWA/TMA. Current1530 backend inputs
+и matching JARs сохраняются;20 group boundary/live checks переиспользованы. Полный
+numeric-preview/password/originalUUID/result/passive6 withdrawal/foreign-preservation
+UI gate перенесён на отдельную Ubuntu владельца и остаётся NOT RUN до его вывода.
+Никаких cloud group grants/delete ради закрытия gate. Portable launchers и fresh
+synthetic local config проверяются отдельно; cloud DB/secrets/keys не экспортируются.

@@ -1,52 +1,39 @@
 # Ближайшие пакеты существующего Goal PR3
 
-25 октября2026. Ветка `codex/web-vue-redesign`, PR №3. CI/Coverage/Security/OpenAPI
-остаются PAUSED/workflow_dispatch; без merge, deploy, production и новой среды.
+25 октября2026. Ветка codex/web-vue-redesign, PR3. Последнее решение владельца:
+полный group UI — на его Ubuntu, в облаке его start/grants/delete запрещены.
+CI/Coverage/Security/OpenAPI PAUSED/workflow_dispatch; без merge/deploy/production.
 
-| Ось готовности | Фактическое состояние |
+| Ось | Факты и условие завершения |
 |---|---|
-| Реализация действий |116/117 active, ADMIN33/34; финальный group UI gate остаётся |
-| Проверенное поведение |116/117; пройденные backend и закрытые административные пакеты переиспользуются |
-| Визуальная часть |33 web-вью и50 mobile source consumers.45 mobile имеют ограниченные наблюдения,5 не проверены; это не45 полностью готовых экранов. Галерея289 PNG; PWA/TMA, темы, размеры и состояния квалифицируются отдельно |
-| Angular / сборка |Angular433-file package активен; итоговый assembled commonNginx gate не пройден. Адресные Vue build его не заменяют |
+| Реализация |117/117 source implementations сопоставлены Vue/API, принятой функции не потеряно; group строка остаётся in progress до UI evidence |
+| Поведение |116/117 accepted (ADMIN33/34); backend/group/password/LIMITED/map результаты переиспользованы; ownerlocal group0/1 NOT_RUN |
+| Визуал |289 реальных PNG;33 web-вью +50 mobile consumers;45 mobile boundedobserved/5unchecked, без общего процента. Темы/ширины/состояния отдельно |
+| Angular |433 tracked files и active dependencies/config/security/build references удалены; useful recovery перенесён в Vue, independentreviewPASS |
+| Сборка/поставка |Root WEB/TMA strict+VitePASS; prefixPWA/TMA нужны отдельно; assembledcommonNginx/runtime пока не PASS |
 
-## Текущая зависимость — место на диске
+1. **В облаке:** PWA `/app/` и TMA `/mini-app/` prefix builds строго по одному.
+   Причина повтора: старые default-root bytes непригодны для согласованных URL.
+   WEB matching `/` artifact переиспользовать. До запуска actualdisk/RAM/process
+   admission: дополнительный forecast512MiB, early2.5GiB/hard2GiB, не group7GiB.
+2. **В облаке:** один source-derived commonNginx с retained image,128MiB/0.5CPU,
+   read-only/privateTLS. Подтвердить deep links/refresh/static MIME/cache/CSP/404,
+   actual API forwarding; затем reviewed nativeWEB/PWA auth/catalog/SockJS если
+   реальный Origin/CSP допускает. StaticTLS и HTTPAuth/WS не смешивать. Ни CORS/CSP,
+   ни Main Gateway/Notification не ослаблять/перезапускать. Отсутствующее — local NOT_RUN.
+3. **Передать владельцу:** [tests/e2e/pr3-local](../../../tests/e2e/pr3-local/README.md) и [pr3-nginx](../../../tests/e2e/pr3-nginx/README.md) с exactpublishedSHA,
+   prerequisites, commands, ports/DB/queues/volumes, отдельными generated secrets.
+   Новый ~/rutcampustrack-pr3/Compose namespace; старый проект/activate не трогать.
+   Group: numericpreview/password/originalUUID/result;6 заранее открытых WEB/PWA/TMA,
+   naturalwithdrawal и сохранность чужихaccounts/credentials/roles/groups.
+   Unknown→status исходногоUUID, без нового delete. До owner output gate NOT_RUN.
+4. **Визуал:** доступный Manual реестр7/ordinaryticket1/manual0,0PNG; boundedabsence,
+   не globalabsence. Helper grant/credentials не квалифицированы, HeadmanGroup
+   автоматически показывает passwords; orphan без новой страницы. Обе темы и
+   conditional widths остаются unchecked с конкретными причинами; не fakeprops/права.
+5. Публиковать законченные пакеты в существующий PR, карту117 и API/Mobile/галерею.
+   Не повышать readiness кадрами/assertions; никакой общий99% из116/117.
 
-Разрешённая адресная очистка завершена:109 точных путей в3 пакетах. Реальный
-available вырос5244747776→6531416064B, net+1286668288B (~1.20GiB). Это меньше
-allocated1.64GB из инвентаризации. Source/12WT/Git/archives/results,25 protectedJARs
-и3 legacysetupJARs, shared dependencies и все Docker/data ресурсы сохранены.
-[Список, замеры и независимый postproof](../../validation/web-vue-pr3/checkpoints/disk-cleanup-20261025/README.md).
-
-Сейчас~6.08GiB, минимум7GiB. Остаточный дефицит~0.92GiB без дополнительного запаса;
-практически нужен ещё объём1.5–2GiB с сохранением workspace/Dockerdata. Безопасный
-набор исчерпан, cleanup остановлена. Q-ENV-010 pending; hard2GiB/early2.5GiB/250ms
-и preflight7GiB не менялись. Group start/fixtures/UIdelete0, это не resource PASS.
-
-## Ближайшие результаты
-
-1. **Удаление группы через UI.** Fresh source qualification559inputs/47eccb79 готова,
-   backend1530 и matching JARs неизменны. После этого doccheckpoint — новый public
-   cohort snapshot/exactHEAD binding и независимый review. ExecutionGO остаётся false
-   до actualresourceREADY. Один originalUUID, numeric preview, текущий пароль,
-   status исходной операции,6 открытых WEB/PWA/TMA views, естественный отзыв целевого
-   доступа и сохранение других accounts/credentials/roles/groups. При unknown —
-   только выяснение исходного результата, без нового удаления.
-2. **Доступный визуальный остаток.** TeacherManual conditional PREP structuralPASS:
-   один nativeTeacher2/Main lesson1/date24 roster; реальная manual строка даёт2кадра,
-   её отсутствие — честный bounded outcome/0PNG, не globalabsence. FinalHEAD/recheck/
-   RootGO впереди. HelperActions/Homework пока без доказанных existing helper
-   credentials/grants; HeadmanGroup автоматически показывает passwords. Не выдавать
-   права, не создавать данные и не подменять props/ответы ради картинки.
-3. **После подтверждённого group gate** удалить активный Angular source/deps/lock/
-   config/build и специфичные obsolete checks, сохранив полезные гарантии.
-4. **Общий Nginx:** assembled Vue deep links/refresh/static/API/realtime; PWA`/app/`,
-   TMA`/mini-app/`, auth/updates/WebPush. Это локальный gate, без deploy.
-5. После пакетов обновлять карту117 active действий, PROGRESS, API-CHANGES,
-   MOBILE-FOLLOWUPS, gallery и PR; исходники и уникальные результаты сохранять.
-
-Пароль, LIMITED и whole-map deletion закрыты; старые cleanup/операции не replay.
-До каждого пакета фиксируется пользовательский результат и достаточное подтверждение.
-После PASS повторять только при изменённой зависимости/поведении, ошибке, существенном
-непроверенном риске или обязательном финальном gate; причину повтора записывать.
-Продуктовых вопросов нет, остаётся внешний ресурс Q-ENV-010.
+Q-ENV-010 о clouddisk закрыт как superseded ownerlocal решением, дополнительный
+объём для cloudgroup сейчас не требуется. Новых ответов владельца не нужно.
+Закрытые password/LIMITED/wholemap не повторять без конкретного changedrisk.

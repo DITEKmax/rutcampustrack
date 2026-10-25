@@ -2,12 +2,15 @@
 
 Существующий draft [PR №3](https://github.com/DITEKmax/rutcampustrack/pull/3),
 ветка `codex/web-vue-redesign`. Goal запущен владельцем после readiness и
-продолжается. Прежний собранный frontend source `0421d344c`; текущий интегрированный frontend source `d69ac9159`, backend map source
-`1fe1588dd`, release-input source `8e280baef`. Всегда получать актуальный remote HEAD.
+продолжается. Angular source integration `ddfca53015`, bounded Nginx source `610393e2b5`,
+portable local handoff `cfceb67e1`. Backend/password/LIMITED/map evidence переиспользуется
+на собственных revision. Всегда получать актуальный remote HEAD.
 
-**Implemented 116/117 (99,15%). Locally verified 116/117 (99,15%).**
-Исходные117 active действий сохранены. Темы, ширины, кадры и assertions
-не считаются отдельными действиями. Полная замена Angular ещё не завершена.
+**Source implementation117/117; accepted behavior116/117.** Полный group UI —
+**owner Ubuntu NOT_RUN0/1**, cloud выполнение отменено. Исходные117 active ID сохранены,
+исторический group status in progress не превращён в PASS. Это не процент готовности PR.
+Angular433 tracked files удалены; Root WEB/TMA strict+Vite PASS. Общий Nginx runtime
+и остальные локальные gates учитываются отдельно. Старые записи ниже — история.
 
 | Роль | Active | Implemented | Locally verified |
 |---|---:|---:|---:|
@@ -16,7 +19,7 @@
 | STUDENT |16|16/16 (100%)|16/16 (100%)|
 | HEADMAN |38|38/38 (100%)|38/38 (100%)|
 | TEACHER |8|8/8 (100%)|8/8 (100%)|
-| ADMIN |34|33/34 (97,06%)|33/34 (97,06%)|
+| ADMIN |34|34/34 source (100%)|33/34 accepted (97,06%)|
 
 После явного разрешения Q-ENV-006 добавлены ровно три historical inputs:
 SPRING2025, собственная пустая группа6 и managed coverage. Один обычный UI
@@ -501,3 +504,47 @@ bounded outcome, не globalabsence. Helper/group nativepublic states пока �
 новых прав ради кадра.116/117 обеих осей/ADMIN33/34, gallery289, mobile45bounded/
 5unchecked сохраняются. Angular/Nginx pending. CI/manualPAUSED/dispatch0;
 без merge/deploy/production.
+
+
+## 25 октября2026 — Angular source cleanup и перенос group gate
+
+25 октября2026. Ветка codex/web-vue-redesign, PR3. Последнее решение владельца:
+полный group UI — на его Ubuntu, в облаке его start/grants/delete запрещены.
+CI/Coverage/Security/OpenAPI PAUSED/workflow_dispatch; без merge/deploy/production.
+
+| Ось | Факты и условие завершения |
+|---|---|
+| Реализация |117/117 source implementations сопоставлены Vue/API, принятой функции не потеряно; group строка остаётся in progress до UI evidence |
+| Поведение |116/117 accepted (ADMIN33/34); backend/group/password/LIMITED/map результаты переиспользованы; ownerlocal group0/1 NOT_RUN |
+| Визуал |289 реальных PNG;33 web-вью +50 mobile consumers;45 mobile boundedobserved/5unchecked, без общего процента. Темы/ширины/состояния отдельно |
+| Angular |433 tracked files и active dependencies/config/security/build references удалены; useful recovery перенесён в Vue, independentreviewPASS |
+| Сборка/поставка |Root WEB/TMA strict+VitePASS; prefixPWA/TMA нужны отдельно; assembledcommonNginx/runtime пока не PASS |
+
+1. **В облаке:** PWA `/app/` и TMA `/mini-app/` prefix builds строго по одному.
+   Причина повтора: старые default-root bytes непригодны для согласованных URL.
+   WEB matching `/` artifact переиспользовать. До запуска actualdisk/RAM/process
+   admission: дополнительный forecast512MiB, early2.5GiB/hard2GiB, не group7GiB.
+2. **В облаке:** один source-derived commonNginx с retained image,128MiB/0.5CPU,
+   read-only/privateTLS. Подтвердить deep links/refresh/static MIME/cache/CSP/404,
+   actual API forwarding; затем reviewed nativeWEB/PWA auth/catalog/SockJS если
+   реальный Origin/CSP допускает. StaticTLS и HTTPAuth/WS не смешивать. Ни CORS/CSP,
+   ни Main Gateway/Notification не ослаблять/перезапускать. Отсутствующее — local NOT_RUN.
+3. **Передать владельцу:** tests/e2e/pr3-local и pr3-nginx с exactpublishedSHA,
+   prerequisites, commands, ports/DB/queues/volumes, отдельными generated secrets.
+   Новый ~/rutcampustrack-pr3/Compose namespace; старый проект/activate не трогать.
+   Group: numericpreview/password/originalUUID/result;6 заранее открытых WEB/PWA/TMA,
+   naturalwithdrawal и сохранность чужихaccounts/credentials/roles/groups.
+   Unknown→status исходногоUUID, без нового delete. До owner output gate NOT_RUN.
+4. **Визуал:** доступный Manual реестр7/ordinaryticket1/manual0,0PNG; boundedabsence,
+   не globalabsence. Helper grant/credentials не квалифицированы, HeadmanGroup
+   автоматически показывает passwords; orphan без новой страницы. Обе темы и
+   conditional widths остаются unchecked с конкретными причинами; не fakeprops/права.
+5. Публиковать законченные пакеты в существующий PR, карту117 и API/Mobile/галерею.
+   Не повышать readiness кадрами/assertions; никакой общий99% из116/117.
+
+Q-ENV-010 о clouddisk закрыт как superseded ownerlocal решением, дополнительный
+объём для cloudgroup сейчас не требуется. Новых ответов владельца не нужно.
+Закрытые password/LIMITED/wholemap не повторять без конкретного changedrisk.
+
+[Source cleanup/audit/build receipts](../../validation/web-vue-pr3/checkpoints/angular-removal-20261025/README.md).
+[Conditional visuals: actual roster/0PNG](../../validation/web-vue-pr3/checkpoints/conditional-visual-20261025/README.md).

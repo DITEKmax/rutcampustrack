@@ -4,7 +4,6 @@
 
 ![Java 21](https://img.shields.io/badge/Java-21-orange)
 ![Spring Boot 3.4](https://img.shields.io/badge/Spring%20Boot-3.4-green)
-![Angular 19](https://img.shields.io/badge/Angular-19-DD0031)
 ![Vue 3](https://img.shields.io/badge/Vue-3-42B883)
 ![Python 3.12](https://img.shields.io/badge/Python-3.12-blue)
 ![Docker Compose](https://img.shields.io/badge/Docker-Compose-2496ED)
@@ -40,7 +39,7 @@
 
 **RutCampusTrack** — учётная система посещаемости вуза. Студент отмечается на паре геолокацией с телефона (PWA или Telegram Mini App), преподаватель видит журнал в браузере, староста управляет excuse-тикетами и порогами «красной зоны», админ ведёт пользователей и расписание. Уведомления приходят в Telegram-бот и в PWA через Web Push.
 
-Проект построен как **monorepo** с 5 Java-микросервисами + API Gateway + 2 контейнерами Notification (Java WebSocket + Python Telegram bot) + 4 фронтенда (Angular SPA, Vue PWA, Vue Mini App, статичный лендинг). Один внешний порт — nginx `:443` в проде, `:8080` в dev.
+Проект построен как **monorepo** с Java-микросервисами + API Gateway + 2 контейнерами Notification (Java WebSocket + Python Telegram bot) + 4 фронтенда (Vue WEB, Vue PWA, Vue Mini App, статичный лендинг). Один внешний порт — nginx `:443` в проде, `:8080` в dev.
 
 Бизнес-правила и пользовательские сценарии: [`docs/product/job-stories.md`](docs/product/job-stories.md). Подробная архитектура: [`docs/architecture/architecture.md`](docs/architecture/architecture.md).
 
@@ -84,7 +83,7 @@
 | Кэш / OTP | Redis 7 |
 | Контейнеризация | Docker + Docker Compose v2 |
 | CI/CD | GitHub Actions + GHCR + cosign keyless |
-| Web Panel | Angular 19 (single SPA, lazy-loaded role features) |
+| Web Panel | Vue 3 / strict TypeScript / PCSS, lazy role routes |
 | PWA «RutTrack» | Vue + Vite + TypeScript + service worker |
 | Mini App (Telegram) | Vue + Vite + TypeScript |
 | Landing | Static HTML/CSS (no bundler) |
@@ -202,7 +201,7 @@ rutcampustrack/
 │   └── notification-bot/             ← Python Aiogram 3 (Telegram)
 │
 ├── frontends/
-│   ├── web-panel/                    ← Angular 19 (admin/teacher/student/headman, single SPA, v9.0)
+│   ├── web-vue/                      ← Vue WEB (admin/teacher/student/headman)
 │   ├── mobile-core/                  ← общие Vue features, API contracts и mobile UI
 │   ├── pwa-vue/                      ← Vue PWA «RutTrack» (/app/)
 │   ├── tma-vue/                      ← Vue Telegram Mini App (/mini-app/)
@@ -235,7 +234,7 @@ rutcampustrack/
 
 - **Java 21** (Microsoft OpenJDK или Temurin). На Windows экспортируй `JAVA_HOME` перед `gradlew`.
 - **Docker** + Docker Compose v2.
-- **Node.js 20+** (для фронтендов).
+- **Node.js 24.14+ и npm 11.9+** (для фронтендов).
 - **Python 3.12+** (только если запускаешь `notification-bot` локально — иначе только в Docker).
 
 ### Поднять
@@ -262,10 +261,8 @@ npm ci
 npm run dev:pwa                # http://localhost:5175
 # npm run dev:tma              # http://localhost:5176
 
-# 6. Запустить web-panel
-cd frontends/web-panel
-npm install
-npm start                      # http://localhost:4200
+# 6. WEB из того же frontend workspace
+npm run dev:web                # http://localhost:14210
 ```
 
 Подробный dev-setup: [`docs/operations/runbooks/dev-setup.md`](docs/operations/runbooks/dev-setup.md).
@@ -280,7 +277,7 @@ npm start                      # http://localhost:4200
 | Schedule Service | 9092 | внутренний |
 | Attendance Service | 9093 | внутренний |
 | Notification Web | 9094 | внутренний (STOMP через Gateway) |
-| Web Panel | 4200 | dev (Angular CLI) |
+| Web Panel | 14210 | dev (Vue/Vite) |
 | PWA | 5175 | dev (Vite) |
 | Mini App | 5176 | dev (Vite) |
 | RabbitMQ Management | 15672 | dev only |
@@ -298,11 +295,11 @@ Production reverse-proxy nginx на `https://ruttrack.site`:
 | Путь | Обслуживает | Назначение |
 |------|-------------|------------|
 | `/` | 301 → `/login` | единая точка входа (INFRA-v9-01) |
-| `/login` | web-panel (Angular SPA, `baseHref=/`) | AUTH-v9-01 |
-| `/admin/*` | web-panel lazy feature | роль `ADMIN` |
-| `/teacher/*` | web-panel lazy feature | роль `TEACHER` |
-| `/student/*` | web-panel lazy feature | роль `STUDENT` (вкл. headman) |
-| `/headman/*` | web-panel lazy feature | `STUDENT` + `is_headman=true` |
+| `/login` | Vue WEB (root SPA) | AUTH-v9-01 |
+| `/admin/*` | Vue WEB role route | роль `ADMIN` |
+| `/teacher/*` | Vue WEB role route | роль `TEACHER` |
+| `/student/*` | Vue WEB role route | роль `STUDENT` (вкл. headman) |
+| `/headman/*` | Vue WEB role route | действующий grant `HEADMAN` |
 | `/app/` | PWA (Vue + Vite) | мобильный клиент |
 | `/presentation/` | Landing (static) | описание проекта |
 | `/api/*` | API Gateway (proxy_pass) | backend REST + STOMP WebSocket |
@@ -327,8 +324,8 @@ python -m pytest tests/ -v --cov
 # Frontend
 cd frontends && npm run test:contract # shared mobile contracts
 node --test pwa-vue/tests/*.test.mjs  # PWA worker/version migration
-npm run build                       # PWA + TMA Vue types and bundles
-cd frontends/web-panel && npm test   # Karma/Jasmine
+npm run build                       # WEB + PWA + TMA strict types and bundles
+npm run test:web                    # WEB behavior tests
 
 # E2E (Playwright + axe a11y)
 cd tests/e2e
@@ -545,3 +542,9 @@ AI-агенты (Claude Code) — см. [`CLAUDE.md`](CLAUDE.md) и [`docs/meta/
 ## Лицензия
 
 Файл лицензии пока не добавлен. Планируется MIT (после `v0.1`).
+
+PR3: активный Angular удалён после сверки117 принятых действий. Это не означает
+завершение всех runtime gates: полный group UI gate выполняет владелец локально
+и до его вывода остаётся NOT RUN. Текущие статусы и точный опубликованный SHA —
+в PR №3 и [CURRENT-PRIORITIES](docs/plans/web-vue-pr3/CURRENT-PRIORITIES.md).
+CI/Coverage/Security/OpenAPI для этого Goal остаются PAUSED, без merge/deploy.

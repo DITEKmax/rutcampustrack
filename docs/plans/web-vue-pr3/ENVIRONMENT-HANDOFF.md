@@ -1,5 +1,7 @@
 # Передача в другую облачную среду — PR3
 
+Актуально25октября2026: машина работает, Angular source удалён, WEB/TMA strict builds PASS. Общий Nginx runtime проверяется отдельным bounded пакетом. Полный group UI перенесён владельцем на Ubuntu; в облаке start/grants/delete запрещены, local NOT_RUN. Старые pending/offline/resource записи ниже исторические. Канон текущего состояния — [CURRENT-PRIORITIES](CURRENT-PRIORITIES.md), [PROGRESS](PROGRESS.md), [локальный launcher](../../../tests/e2e/pr3-local/README.md).
+
 Актуальный checkpoint2026-10-24 05:49UTC: существующий Goal запущен владельцем,
 машина работает; PR3/codex/web-vue-redesign: actualremoteHEAD брать изfetch/PRbody. Это текущий
 срез; ниже явно сохранена история прежней машины/readiness, а не действующийSTOP.

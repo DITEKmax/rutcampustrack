@@ -184,3 +184,19 @@ Angular/build. После замены функций убрать активн�
 через общий Nginx с /app/,/mini-app/,auth/updates/WebPush. CI/Coverage/Security/
 OpenAPI PAUSED, без merge/deploy/production. План и зависимости определяет Root;
 вопросы задавать только для реально недостающего существенного решения.
+
+
+## 25 октября2026 — локальный group gate и source cleanup
+
+Владелец перенёс полный group six-view UI на свою WSL Ubuntu24.04. Cloud start,
+повторная выдача прав и новое удаление ради этого gate запрещены; local NOT_RUN
+до фактического owner output. Старый barrier ожидания именно cloudgroup не должен
+блокировать Angular cleanup. Сначала сверить accepted map/Vue/API, не удалить
+единственную реализацию принятой функции; затем убрать active Angular полностью.
+CommonNginx gate имеет собственный resourcebudget;7GiB другого group пакета не
+требовать для лёгких действий. Не ослаблять аварийный резерв/CSP/права/изоляцию.
+Portable launchers/templates в PR/source-only пакете, новый ~/rutcampustrack-pr3
+и Compose namespace, не трогать старые ~/rutcampustrack-ci-diagnosis/activate.
+Ubuntu host commands +Docker services, без экспорта cloudDB/secrets/keys.
+Агенты ничего на owner машине не запускают. CI/Coverage/Security/OpenAPI PAUSED,
+без merge/deploy/production/новогоGoal/PR/среды.

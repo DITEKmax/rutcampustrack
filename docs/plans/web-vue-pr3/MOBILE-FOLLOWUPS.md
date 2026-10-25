@@ -19,7 +19,7 @@ and external Push delivery are not claimed verified by that visual work.
 | web notification bell/history/overlay | Web scope only; existing mobile preferences and Web Push preserved; no web channel settings |
 | student own attendance export | Owner deferred Q-PROD-002; do not add to mobile or web |
 | shared preset-avatar catalog | Exact pure data copy removes Vue's Angular-source import; IDs/labels/metadata unchanged, no new mobile operation |
-| future Angular removal | Existing PWA WebPush registration/binding/API/worker/click/logout chain remains; Angular has no active WebPush worker to migrate |
+| Angular source removal completed | Existing PWA WebPush registration/binding/API/worker/click/logout chain remains; Angular has no active WebPush worker to migrate |
 
 Future mobile feature ideas or material web/mobile differences need their own
 owner question with Q-ID and affected tasks. Compatibility fixes above do not
@@ -49,3 +49,22 @@ actualafter4 qualified; TMAsharedsource15tests/typecheck, nativeTelegramprovider
 stillunknown. WEB Teacher livefocus/pagination fixed separately58+fb; newweb
 businessfunctions не перенесены. Remainingselection/editors проверяются сначала
 поexistingread-onlyflows, no newfixtures/mutations for screenshots.
+
+
+## 2026-10-25 — source removal / remaining visual conditions
+
+Удалён только Angular WEB package. WEB user-controlled lazy-module recovery не
+переносится молча в PWA/TMA; их существующие worker/version/Auth/reconnect policies
+сохранены. Shared source и production prefixes`/app/`,`/mini-app/` остаются обязательными.
+Root-base dev artifacts не выдаются за пригодные для общего production Nginx.
+
+TeacherManual native current lesson1/date24 roster:7records/1ordinaryticket/0manual,
+новыхPNG0, rawEXIT1/completedfalse сохранён. Это bounded fixture absence, не global
+absence и не PASS двух тем. HelperActions/Homework не имеют квалифицированных
+доступных existingcredentials/grants; HeadmanGroup автоматически раскрывает passwords,
+безопасный public native PNG path не подтверждён. Права/данные ради кадров не менялись,
+props/ответы не подменялись; orphanTeacherGroupSubjects не становится новой страницей.
+
+Gallery289 сохраняет реальные revisions/limits;45/50 bounded observed не означает
+45 полностью готовых экранов. TMA controlled host и native provider различаются.
+Local group six-view gate — NOT RUN; cloud fullgroup execution отменён владельцем.

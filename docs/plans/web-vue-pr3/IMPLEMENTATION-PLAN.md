@@ -1,5 +1,7 @@
 # План новой Vue web-панели и светлых тем PWA/TMA
 
+Обновление25октября2026: текущие пакеты и зависимости — [CURRENT-PRIORITIES](CURRENT-PRIORITIES.md). Cloud group UI отменён; владелец запускает его в отдельном Ubuntu checkout. Это больше не барьер Angular cleanup, который выполнен после117-action source audit. Backend/password/LIMITED/whole-map accepted evidence не повторять без changed risk. План ниже сохраняет историю этапов.
+
 > **Текущие приоритеты владельца:** [ближайшие пакеты и условия завершения](CURRENT-PRIORITIES.md).
 > Визуальная проверка идёт параллельно ADMIN; готовность действий, поведения,
 > визуала и Angular/build учитывается раздельно. Ниже сохраняется исходный контракт.

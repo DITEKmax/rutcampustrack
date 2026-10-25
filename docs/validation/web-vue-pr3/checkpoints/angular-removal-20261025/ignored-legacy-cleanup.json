@@ -1,0 +1,17 @@
+{
+  "integratedSource": "ddfca53015cb952ffd65e96689a2cba8574084f8",
+  "authorSource": "ba8cde5aa360c5658398d4cd5936682d542ca7e2",
+  "reason": "owner-approved completeAngularreplacementcleanup after117actionaudit/sourceindependentreview",
+  "deletedPaths": [
+    "/workspace/rutcampustrack/frontends/web-panel/.angular",
+    "/workspace/rutcampustrack/frontends/web-panel/node_modules"
+  ],
+  "trackedPackageFilesDeleted": 433,
+  "remainingLegacyPath": false,
+  "sharedVueDependencies": "versionmetadataSHAunchanged",
+  "beforeFreeBytes": 6529019904,
+  "afterFreeBytes": 6529024000,
+  "actualFreeIncreaseBytes": 4096,
+  "oldGitHistoryRollbackImagesRecoveryArchives": "retained",
+  "atUnix": 1792911764.9588492
+}

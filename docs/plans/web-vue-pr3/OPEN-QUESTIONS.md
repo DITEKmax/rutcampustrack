@@ -357,7 +357,7 @@ Teacher2profile8unassigned/RV9/catalog22/Aca9, own4 sessions revoked. Аккау
 прочие роли/данные сохранены. Старые Cred5/profile4/ACLprofile6 baseline выше —
 исторические, не текущие команды повторной выдачи/генерации/очистки.
 
-## Q-ENV-010 — свободное место для group UI/socket gate — ОЖИДАЕТ ОТВЕТА
+## Q-ENV-010 — облачный group budget — SUPERSEDED решением владельца25октября
 
 Контекст: два matching8e83 Academic/Notification JAR построены один раз offline,
 старые19 JAR сохранены. Actual свободно5537841152B; минимальный11-service backend
@@ -419,3 +419,11 @@ Current~6.08GiB<7GiB=7516192768B; residualdeficit~0.92GiB бездополнит
 files required/shared/rollback/source/unknown; cleanupостановлена, guardsunchanged.
 Этообновление тогожересурсноговопроса, не новыйproductdecision илиповторныйGOзапрос.
 Пароль/LIMITED/wholemap CLOSED reused. Actualgroupstart/fixtures/delete0.
+
+
+Q-ENV-010 CLOSED/SUPERSEDED25October2026: владелец перенёс полный group UI на свою Ubuntu.
+Cloud group start/grants/delete запрещены; новый объём для этого пакета не запрашивается.
+Предыдущие бюджетные факты/guards сохранены как история, локальный gate NOT_RUN.
+Angular source cleanup явно разрешён независимо от этого gate. CommonNginx облачный
+пакет имеет отдельный512MiB budget/early2.5GiB, не требует7GiB по умолчанию.
+Новых продуктовых вопросов нет; ожидается только фактический ownerlocal запуск/output.

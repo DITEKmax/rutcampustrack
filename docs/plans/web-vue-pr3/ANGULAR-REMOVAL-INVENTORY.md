@@ -1,5 +1,10 @@
 # Angular → Vue removal and WebPush preservation inventory
 
+**Актуально25октября2026:** inventory выполнен, source433files удалены commit ddfca530.
+[Audit/review/build](../../validation/web-vue-pr3/checkpoints/angular-removal-20261025/README.md).
+Прежний barrier cloudgroup superseded решением владельца; ownerlocal gate NOT_RUN.
+Остальное ниже — исходная инвентаризация, не действующий запрет cleanup.
+
 **Current override, source8e280baef:** the inventory below records historical3f585.
 The pure avatar catalog has since moved unchanged into shared; Vue no longer
 imports Angular source. Vue image/test oracle/edge wiring and release build inputs

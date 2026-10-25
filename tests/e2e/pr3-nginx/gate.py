@@ -24,6 +24,7 @@ PACKAGE = "tests/e2e/pr3-nginx"
 RUN_LABEL = "rct.pr3-nginx.run"
 TLS_STATIC_PORT = 14443
 HTTP_AUTH_PORT = 14240
+RUNTIME_NGINX_INPUTS = frozenset("frontends/" + folder + "/nginx.conf" for folder in APPS.values())
 
 
 def require(condition, message):
@@ -61,7 +62,10 @@ def app_inputs(app, commit):
         paths.append("frontends/pwa-vue")
     entries = git("ls-tree", "-r", "-z", commit, "--", *paths).split(b"\0")
     # Distribution files and installed dependencies cannot establish source equivalence.
-    entries = [item for item in entries if item and not
+    # These exact three server configs are consumed only by runtime Nginx, not
+    # vue-tsc/Vite. prepare() separately hashes their generated runtime copies.
+    entries = [item for item in entries if item and
+               item.split(b"\t", 1)[1].decode() not in RUNTIME_NGINX_INPUTS and not
                ({"dist", "node_modules"} & set(item.split(b"\t", 1)[1].decode().split("/")))]
     require(entries, "No frontend source inputs")
     return sha(b"\0".join(sorted(entries)))
@@ -392,11 +396,13 @@ def check(args):
         for relative, expected in pins["apps"][app]["files"].items():
             file_status, file_headers, file_body = fetch(args.base, prefix + relative, context)
             require(file_status == 200 and sha(file_body) == expected["sha256"], "Served artifact mismatch: " + app + "/" + relative)
+            mime = file_headers.get("content-type", "").split(";")[0].strip().lower()
+            safe_mime = mime if re.fullmatch(r"[a-z0-9.+-]+/[a-z0-9.+-]+", mime) else "missing-or-invalid"
             if relative.endswith((".js", ".mjs")):
-                require(file_headers.get("content-type", "").split(";")[0] in
-                        {"application/javascript", "text/javascript"}, "Script MIME: " + app)
+                require(mime in {"application/javascript", "text/javascript"},
+                        "Script MIME: " + app + "/" + relative + " [" + safe_mime + "]")
             if relative.endswith(".css"):
-                require(file_headers.get("content-type", "").split(";")[0] == "text/css", "CSS MIME: " + app)
+                require(mime == "text/css", "CSS MIME: " + app + "/" + relative + " [" + safe_mime + "]")
         require("no-store" in headers.get("cache-control", ""), "Shell cache policy: " + app)
         require("immutable" in asset_headers.get("cache-control", ""), "Asset cache policy: " + app)
         require("default-src 'self'" in headers.get("content-security-policy", ""), "Missing common-entry CSP")

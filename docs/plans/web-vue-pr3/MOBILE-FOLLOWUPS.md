@@ -76,3 +76,5 @@ Source deliveryfix0664fecbf/106aefbb9 исправляетPWA/TMA Nginx так �
 не менялись; accepteddevPDFfirst-page не выдаётсязаproductionprovider/runtimePASS.
 LocalfreshOrigin14240/14443 +separatepinnedAPI-CA18443 source-reviewed, noMainpolicychange.
 Localgroup/combinedNginx/HTTPSAuthWSS/SWupdate/nativeTelegram/WebPush remainNOT_RUN.
+
+Cloud240a1b2a: prefix-built PWA actual HTTP Auth/catalog/STOMP/owncleanup PASS через common Nginx; TMA static bytes/MIME/deeplinks PASS. Новых mobile функций нет. SW activation/update/offline, nativeTelegram и WebPushdelivery остаются NOT_RUN; детали и локальные критерии в LOCAL-EXECUTION.md.

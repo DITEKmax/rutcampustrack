@@ -68,3 +68,7 @@ Eightnewframes areobservations, not8functionalactions orreadinesspercentage.83ca
 See POSTFIX-77f-REPORT.md/postfix-77f-manifest.json: sevenoriginalafterframes, checkedhashes, exactsourcefilehashes, syntheticcauses, cleanup. Notification4retain4/eachown≈10s/fullhistory4/bell3 andall3roleinitialskeletonrepresentatives confirmed. Firstpostfixrawexit1 remains: HeadmancaptureguardranbeforetargetlessonGEThit; successfulToast/Student slicesqualified separately. RemainingH/Trechecktarget-hitwait passes. All4ownpostfixsessions native204+guest401, context/browserclosed; oldtoast7cleanupFAILretained. No functionalactioncount oroverallready% added.
 
 Mobileconsumerreconciliation isseparatefromwhole-row83status:36qualifiedretainedrealPWA baseline slices/14notvisuallychecked; actualTMApostloginunknown. NEXT-mobile-packet.md selects12missingTodaybreakpointframes+16notificationconsumerbaselineframes+max2actualTMAentry, notall50×allstates. No newbrowser untilRootresourceGO.
+
+
+Актуальный конечныйсрез25октября: [VISUAL-REMAINDER](../../../../plans/web-vue-pr3/VISUAL-REMAINDER.md).
+Таблица выше сохраняет исторические стадии; gallery289 и conditionalmanual0 квалифицированы отдельно.

@@ -56,3 +56,33 @@ HTTPgate проверяетimmutableworker иmissingjs/mjs404. [Независи
 Root заново pin accepted старые3артефакта/log/sourceSHA новымfingerprintalgorithm,
 сохраняя старыеreceipts; **никакой app rebuild**. Actualconfig-only повтор впереди,
 не sourcePASS→runtimePASS автоматически.
+
+
+## Итог source240a1b2a — пакет закрыт в указанных границах
+
+**[CommonNginx static PASS](http-result.json)**: WEB `/`, PWA `/app/`, TMA `/mini-app/`,
+все exactartifactbytes, JS/mjs/CSS MIME, immutableassets, no-store shell/worker/policy,
+CSP, deep links/refresh, missingjs/mjs404. Истинный anonymousAPI черезedge иdirect:
+session401/401, SockJSinfo200/200. Исходный MIMEFAIL сохранён выше.
+
+**[PWA HTTP Auth/API/STOMP PASS](pwa-native-outcome.json)**: normalTeacher2login,
+canonicalcurrentownsession, реальныйcatalog200/верхняяschema иknownscope (counts2/2/3),
+onephysicalSockJS/CONNECTED1/SUBSCRIBE1/errors0. СобственнаяselfDELETE204/oldBearer401,
+browserclosed/HOLDfalse. Это не проверка notificationdelivery/reconnect или всего payload.
+
+**[WEB bounded result](web-native-outcome.json)**: login/session/catalog200, current
+canonicalactor/bearer, top-level3arraysJSONschema, physicalSockJS/CONNECTED1/SUBSCRIBE1,
+exactowncleanup204/401 закрыты. RawEXIT1/completedfalse/apiProofnull сохранены: harness
+сравнил wireStringIDs сnumbers1. [Qualification](WEB-c069-BOUNDED-ACCEPTANCE.md);
+knownIDs по старомуWEBraw НЕдоказаны. WEB не повторялся. Узкая исправленнаяPWA-only
+проверка [source-reviewed](RECHECK-dfb4c17f-PWA-ONLY.md); продукт не менялся.
+
+[Runtime lifecycle](runtime-lifecycle.json): один ownNginx после обоихknownterminal
+закрыт; all30original fullID/image/state/mountsets unchanged. Guardnull, before6489534464B,
+minimum6383026176B, after6487257088B; extrapeak≈102MiB<512MiB budget, floor2.5GiB intact.
+Сборки не повторялись. New PNG0, gallery289. [Independent final review](FINAL-EVIDENCE-240a1b2a.md).
+
+Отдельно **NOT_RUN**: HTTPSAuth/WSS/forwardedexternalidentity, TMApostlogin/nativeprovider,
+SWactivation/update/offline/install, realWebPushdelivery/reconnect. Staticbytes и HTTP
+не превращают их в PASS. Полный group UI ownerlocalNOT_RUN. Source WebPush/auth/update
+wiring сохранены, deploy/production/CI не выполнялись. Новых обязательных cloudreplays нет.

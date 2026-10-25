@@ -1,39 +1,52 @@
-# Ближайшие пакеты существующего Goal PR3
+# Приоритеты существующего Goal PR3
 
-25 октября2026. Ветка codex/web-vue-redesign, PR3. Последнее решение владельца:
-полный group UI — на его Ubuntu, в облаке его start/grants/delete запрещены.
-CI/Coverage/Security/OpenAPI PAUSED/workflow_dispatch; без merge/deploy/production.
+25 октября2026. Ветка `codex/web-vue-redesign`, PR №3. CI/Coverage/Security/OpenAPI
+остаются PAUSED и только workflow_dispatch. Без merge, deploy и production.
 
-| Ось | Факты и условие завершения |
+| Ось | Фактический результат |
 |---|---|
-| Реализация |117/117 source implementations сопоставлены Vue/API, принятой функции не потеряно; group строка остаётся in progress до UI evidence |
-| Поведение |116/117 accepted (ADMIN33/34); backend/group/password/LIMITED/map результаты переиспользованы; ownerlocal group0/1 NOT_RUN |
-| Визуал |289 реальных PNG;33 web-вью +50 mobile consumers;45 mobile boundedobserved/5unchecked, без общего процента. Темы/ширины/состояния отдельно |
-| Angular |433 tracked files и active dependencies/config/security/build references удалены; useful recovery перенесён в Vue, independentreviewPASS |
-| Сборка/поставка |Root WEB/TMA strict+VitePASS; prefixPWA/TMA нужны отдельно; assembledcommonNginx firststaticFAIL mjs MIME; fix/recheck впереди |
+| Реализация |117/117 source implementations сверены с accepted map и Vue/API. Все117 active ID сохранены |
+| Поведение |116/117 accepted; ADMIN33/34. Полный group UI — Ubuntu владельца, NOT_RUN0/1 |
+| Визуал |289 реальных PNG.33 WEB views и50 mobile consumers;45 mobile имеют bounded observations,5 unchecked. Общего процента нет |
+| Angular |433 tracked файла удалены вместе с активными зависимостями и привязками; полезные гарантии сохранены, source review PASS |
+| Сборка |WEB/TMA strict+Vite PASS; PWA `/app/` и TMA `/mini-app/` prefix builds PASS. После config-only MIME исправления приложения не пересобирались |
+| Общий Nginx |Actual static/deep links/refresh/MIME/cache/CSP/404 PASS для3приложений; реальный anonymous API. PWA HTTP Auth/API/STOMP PASS; WEB bounded result с сохранённым raw FAIL теста ID |
 
-1. **В облаке:** PWA `/app/` и TMA `/mini-app/` prefix builds завершены PASS строго по одному.
-   Причина повтора: старые default-root bytes непригодны для согласованных URL.
-   WEB matching `/` artifact переиспользовать. До запуска actualdisk/RAM/process
-   admission: дополнительный forecast512MiB, early2.5GiB/hard2GiB, не group7GiB.
-2. **В облаке:** исправить подтверждённый moduleworker MIME config-only, повторить затронутый HTTP gate без Vite rebuild. Затем один source-derived commonNginx с retained image,128MiB/0.5CPU,
-   read-only/privateTLS. Подтвердить deep links/refresh/static MIME/cache/CSP/404,
-   actual API forwarding; затем reviewed nativeWEB/PWA auth/catalog/SockJS если
-   реальный Origin/CSP допускает. StaticTLS и HTTPAuth/WS не смешивать. Ни CORS/CSP,
-   ни Main Gateway/Notification не ослаблять/перезапускать. Отсутствующее — local NOT_RUN.
-3. **Передать владельцу:** [tests/e2e/pr3-local](../../../tests/e2e/pr3-local/README.md) и [pr3-nginx](../../../tests/e2e/pr3-nginx/README.md) с exactpublishedSHA,
-   prerequisites, commands, ports/DB/queues/volumes, отдельными generated secrets.
-   Новый ~/rutcampustrack-pr3/Compose namespace; старый проект/activate не трогать.
-   Group: numericpreview/password/originalUUID/result;6 заранее открытых WEB/PWA/TMA,
-   naturalwithdrawal и сохранность чужихaccounts/credentials/roles/groups.
-   Unknown→status исходногоUUID, без нового delete. До owner output gate NOT_RUN.
-4. **Визуал:** доступный Manual реестр7/ordinaryticket1/manual0,0PNG; boundedabsence,
-   не globalabsence. Helper grant/credentials не квалифицированы, HeadmanGroup
-   автоматически показывает passwords; orphan без новой страницы. Обе темы и
-   conditional widths остаются unchecked с конкретными причинами; не fakeprops/права.
-5. Публиковать законченные пакеты в существующий PR, карту117 и API/Mobile/галерею.
-   Не повышать readiness кадрами/assertions; никакой общий99% из116/117.
+## Облачные пакеты закрыты в указанных границах
 
-Q-ENV-010 о clouddisk закрыт как superseded ownerlocal решением, дополнительный
-объём для cloudgroup сейчас не требуется. Новых ответов владельца не нужно.
-Закрытые password/LIMITED/wholemap не повторять без конкретного changedrisk.
+Исправлен подтверждённый MIME PDF worker `.mjs` во всех3приложениях; отсутствующий
+asset возвращает404, стандартная MIME table и кэш сохранены. Повтор HTTP gate был
+обоснован этим config change. Source/runtime evidence на
+`240a1b2a86a2b2ba0cbb89647a9ed8b151007007`:
+[Nginx](../../validation/web-vue-pr3/checkpoints/assembled-nginx-20261025/README.md).
+
+WEB native Auth/current canonical/schema/STOMP и own cleanup подтверждены отдельно.
+Raw EXIT1/completedfalse сохранён: проверка сравнила String ID BFF с number1.
+WEB не повторяли. Исправленная проверка использована только для отдельного PWA
+клиента: PASS, exact own DELETE204/old Bearer401, browser closed, HOLDfalse.
+Один свой Nginx остановлен; все30 исходных container ID/image/state/mountsets
+сохранены, после6487257088B свободно. Early2.5GiB/hard2GiB/512MiB budget сохранены.
+Пароль, LIMITED, whole-map и backend group checks не повторялись.
+
+## Следующие результаты выполняет владелец локально
+
+1. [LOCAL-EXECUTION](LOCAL-EXECUTION.md) и публичный launcher
+   [pr3-local](../../../tests/e2e/pr3-local/README.md): новый Ubuntu checkout
+   `~/rutcampustrack-pr3`, namespace `rct-pr3-local`. Старый проект/activate не трогать.
+   Group preview/password/original UUID/result;6 заранее открытых WEB/PWA/TMA,
+   естественный отзыв доступа и сохранность чужих accounts/credentials/roles/groups.
+   Unknown → статус исходной операции, без нового удаления. До output **NOT_RUN**.
+2. Remaining combined runtime gates: HTTPS Auth/WSS/forwarded identity,
+   PWA service-worker install/activation/update/offline, native TMA provider и
+   WebPush delivery. Static/HTTP доказательства их не заменяют. Portable Nginx
+   [scripts](../../../tests/e2e/pr3-nginx/README.md) учитывают отдельный API CA,
+   prefixes и два exact Origin свежего локального realm; cloud Main не менялся.
+3. [Конечный визуальный список](VISUAL-REMAINDER.md): conditional helper/group/manual
+   в обеих темах и применимых размерах остаются unchecked с конкретными причинами.
+   Один допустимый Manual roster:7records/ticket1/manual0, PNG0; это bounded absence.
+   Не выдавать права и не создавать данные/страницы ради картинки или orphan.
+
+Облачные group start/grants/delete запрещены решением владельца. Q-ENV-010 о
+добавлении места для cloud group закрыт как superseded; новый объём не требуется.
+Новых продуктовых вопросов нет. Ждём фактический локальный output, не новое согласие
+на уже выполненные облачные работы. Успешное неизменённое evidence переиспользуется.

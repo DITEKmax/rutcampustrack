@@ -1,56 +1,62 @@
-# CURRENT — существующий Goal PR3, 25 октября2026
+# CURRENT — существующий Goal PR3,25октября2026
 
-Ветка codex/web-vue-redesign, PR3; published4f48f169da10caf111b6a3b2a82c6880079e23d4. Root — docs/Git/интеграция; sole writers в сохранённых
-worktrees. Children gpt-6.1-sol/high, telemetry недоступна, fallback не заявлен.
-CI/Coverage/Security/OpenAPI workflow_dispatch/PAUSED. Без merge/deploy/production,
-main/reset/clean/forcepush/globalprune/новой среды/Goal/PR.
+Ветка codex/web-vue-redesign, PR3; runtime-qualified source240a1b2a86a2b2ba0cbb89647a9ed8b151007007.
+Root docs/Git/интеграция; sole writers в сохранённых worktrees. Children explicit
+gpt-6.1-sol/high, telemetry unavailable, no fallback. CI/Coverage/Security/OpenAPI
+workflow_dispatch/PAUSED. Без merge/deploy/production/main/reset/clean/forcepush/
+globalprune/новой среды/Goal/PR. ONEHEAVYfree; все browser cases knownterminal.
 
-## Актуальное решение владельца
+## Актуальная точка
 
-Полный group UI gate перенесён на локальную Ubuntu владельца. В облаке запрещены
-его запуск, повторная выдача прав и новое удаление ради gate. Локальный результат
-NOT_RUN до выполнения владельцем; Q-ENV-010 о расширении облачного диска superseded.
-Angular source cleanup явно разрешён без ожидания этого gate. Старые записи о cloud
-group/disk barrier ниже в исторических отчётах не являются действующими командами.
+117/117 source implementations audited, accepted116/117 (ADMIN33/34); group строка
+in progress. Полный group UI перенесён владельцем на свою Ubuntu: local NOT_RUN0/1,
+cloud start/grants/delete запрещены. QENV010 cloudspace superseded, больше не blocker
+Angular. Angular433tracked files +active deps/config/build refs удалены; reviewPASS.
+Useful stalechunk recovery перенесён в WEB,4behavior testsPASS. Root WEB/TMA strict/Vite
+PASS, prefix PWA/app +TMA/mini-app PASS. Config-only MIME fix не требовал rebuild.
 
-Angular433 tracked files удалены, source audit117/117 без утраты принятой функции,
-независимый review PASS, Root WEB/TMA strict+Vite PASS. Прежний group action accepted
-116/117, ADMIN33/34 до фактического six-view UI результата; source117 не overallPASS.
-WEB artifact `/` переиспользуется; PWA/TMA default-base артефакты непригодны для
-/app/,/mini-app/, поэтому только prefix builds повторены PASS524f (34.688/32.731s). Общий Nginx source
-review PASS; actualfirststart/nginx-tPASS, staticFAIL mjsPDFworker MIMEoctetstream
-вWEB/PWA/TMA. Config-onlyfix source-reviewed/integrated0664fecbf/106aefbb9; actualrechecknext, Vitebuilds не повторять. Owncontainerdown,
-Auth0, rawFAIL сохранён. Canonical fullID/image/state/mountsets всех30 unchanged. Отдельный budget512MiB/128MiB container,
-early2.5GiB/hard2GiB; group7GiB не применяется к лёгкому gate. ONEHEAVY Root.
+ActualcommonNginx240a: all3static/deeplinks/refresh/MIME/cache/CSP/missing404 PASS,
+anonymousAPI401200 matchesdirect. PWA HTTP normalAuth/currentTeacher2/catalog2/2/3/
+knownscope +SockJS/STOMPCONNECTED1/SUBSCRIBE1/errors0 PASS. WEB bounded sameAuth/schema/
+STOMP/cleanup accepted; rawEXIT1/false retained String-vs-number ID TESTbug, knownIDs
+NOTPROVEN. WEBreplay0, PWAonly correctedhelper source-reviewed. Own2SID DELETE204/
+oldBearer401/browserclosed/HOLDfalse/PREFdomainwrites0. HTTPSAuthWSS/externalidentity/
+SWactivationupdateoffline/nativeTMA/WebPushprovider NOT_RUN, not implied bystatic/HTTP.
 
-Локальный handoff tests/e2e/pr3-local: отдельные ~/rutcampustrack-pr3 и namespace,
-Ubuntu24/JDK21/Gradle8.12/Node24.14.0/npm11.9.0, Docker12 services +3 host Vites.
-Старые ~/rutcampustrack-ci-diagnosis и ~/.local/share/rct-stand/activate не трогать.
-Новые synthetic credentials/TLS/PKI локально, cloud DB/secrets/keys не экспортировать.
-SIGTERM child-reap correction independentPASS; launchers опубликованы в PR.
-Localinputfix exact2Origin +separatepinnedAPI-CA sourcePASS/Rootintegrated, localNOT_RUN.
+OwnNginx stopped;30original ID/image/state/mountsets unchanged. Guardnull250ms,
+before6489534464/min6383026176/after6487257088B. Main13/admin7 running, clock5/shipping5
+stopped, no group replacements/fixtures/delete. All private rawNginxlogs retained,
+never export (may contain WS query capabilities). Public projections/review in
+checkpoints/assembled-nginx-20261025. OldMIMEFAIL +comparison-order/shortID TESTerrors
+retained/qualified, not erased. source Gitleaks0 latestrange; older2publicmetadata
+matches qualified e8, rules/ignore/history unchanged.
 
-TeacherManual conditional actual source7ef/b0fb: один реестр7/ordinary1/manual0,
-PNG0, rawEXIT1/false сохранён, ownDELETE204/oldBearer401/browserclosed/HOLDfalse.
-Нет globalabsence и visualPASS. Helper credentials/grants не квалифицированы;
-HeadmanGroup раскрывает credentials; orphan без новой страницы. Галерея289, mobile
-45 boundedobserved/5unchecked, не45полностьюготовых. Новых продуктовых вопросов нет.
+## Владелец выполняет локально
 
-Cleanup109paths/3batches real+1286668288B (~1.20GiB), available6.08GiB до новых
-сборок. Cleanup остановлена, source12WT/Git/archives/results/25JAR+3setupJAR,
-30original containers/images/volumes/DB/keys сохранены. Recovery ZIP8784846B,
-SHA00fb9f0158468e18acd134b7542c03906fd1e5daf10354f266a03e3a0fa58bd0 сохранён.
+Docs/plans/web-vue-pr3/LOCAL-EXECUTION.md +tests/e2e/pr3-local/README.md. New
+~/rutcampustrack-pr3 namespace rct-pr3-local; neveroldci-diagnosis/activate. Ubuntu24,
+JDK21/Gradle8.12/Node24.14.0/npm11.9.0.7freshmatchingJAR,12Docker services+3hostVites,
+ownports14250–52/18443/privateDBqueuesvolumes. Generatedsecrets/PKI local only,
+no clouddata/keys/config export. Group preview8counts/password/originalUUID/result,
+6openWEBPWATMA naturalwithdrawal/foreignpreservation; unknown→originalstatusonly.
+Public launchers reviewed inclSIGTERMreap/packageprivatefreeze, local NOT_RUN until
+actualowner output. Ngx localAPI18443 strictseparateCA +exactOrigins14240/14443
+sourcePASS, no extraIP/profile/proxytrust. Owner locallyrunscommands, agents0.
 
-ПарольCLOSED post9598 MAINuser8 Cred7/RV8/Aca8/profile6unassigned, own3SID revoked.
-LIMITEDCLOSED postc7ee ISOLATEDTeacher2 profile8unassigned/RV9/catalog22/Aca9,
-own4SID revoked; naturalwithdraw3708ms oldADMIN403/Teacher200. MAINTeacher2 инойrealm.
-Whole-map/Authcorrect204wrong403 CLOSED. Их/старую cleanup не replay без changedrisk.
-Group20backend +live55client/6unit/2PG/1Mongo PASS reused, новый groupUI NOT_RUN.
-Main13/admin7 running, clock5/shipping5 stopped; group app replacements0/fixture0/delete0.
+## Визуал и закрытые пакеты
 
-Source localpackage e8/9fa: publicSHA+enum Gitleaks matches qualified; finalsource0,
-rules/ignore/history unchanged. Sourcebuilds prepublication exact524 willpublishancestry.
-Следующий пакет: один commonNginx static/API runtime →
-reviewed serial native Auth/WS, если current Origin/CSP допускают. HTTPSAuth/WSS,
-TMA provider, real WebPush и недостающие activation/update остаются отдельными local gates.
-После source integration/publish обновить PR и дать владельцу точный полный SHA/команды.
+Gallery289/portable289.33WEB+50mobile,45boundedobserved/5unchecked, not45fullyready.
+Finite VISUAL-REMAINDER.md: helper grant/credentials unqualified; Group autoexposes
+passwords; Manual oneactualroster7/ticket1/manual0/PNG0/rawEXIT1; no globalabsence.
+Orphan no newpage. Bothconditionalthemes/widths unchecked withreasons, no fakeprops.
+
+Password CLOSED post9598 MAINuser8 Cred7/RV8/Aca8/profile6unassigned,3ownSIDsrevoked.
+LIMITED CLOSED postc7ee ISOLATEDTeacher2 profile8unassigned/RV9/catalog22/Aca9,
+4ownSIDsrevoked/naturalwithdraw3708ms/oldADMIN403/Teacher200. MAINTeacher2 otherrealm.
+Wholemap/Authcorrect204wrong403 CLOSED. Backendgroup20+live55/6unit/2PG/1Mongo PASS.
+Never replay oldCred5/profile4/ACLcleanup; only changedrisk permits newchecks.
+Cleanup109paths real+1286668288B (~1.20GiB), source12WT/Git/archives/results/JARs/data
+preserved. RecoveryZIP8784846B SHA00fb9f0158468e18acd134b7542c03906fd1e5daf10354f266a03e3a0fa58bd0 unchanged.
+
+NextRoot: finalpublish/docs/source-onlyarchive; waitownerlocalactualoutput, no newGoal.
+No productquestions/extra permissions needed. Don't mark local/provider gatesPASS.

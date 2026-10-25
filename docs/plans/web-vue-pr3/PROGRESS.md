@@ -3,14 +3,15 @@
 Существующий draft [PR №3](https://github.com/DITEKmax/rutcampustrack/pull/3),
 ветка `codex/web-vue-redesign`. Goal запущен владельцем после readiness и
 продолжается. Angular source integration `ddfca53015`, bounded Nginx source `610393e2b5`,
-portable local handoff `cfceb67e1`. Backend/password/LIMITED/map evidence переиспользуется
+portable local handoff `eb0be7795`, runtime MIME integration `106aefbb9`. Backend/password/LIMITED/map evidence переиспользуется
 на собственных revision. Всегда получать актуальный remote HEAD.
 
 **Source implementation117/117; accepted behavior116/117.** Полный group UI —
 **owner Ubuntu NOT_RUN0/1**, cloud выполнение отменено. Исходные117 active ID сохранены,
 исторический group status in progress не превращён в PASS. Это не процент готовности PR.
-Angular433 tracked files удалены; Root WEB/TMA strict+Vite PASS. Общий Nginx runtime
-и остальные локальные gates учитываются отдельно. Старые записи ниже — история.
+Angular433 tracked files удалены; Root WEB/TMA strict+Vite и prefix PWA/TMA PASS.
+Общий Nginx static PASS, PWA HTTP Auth/API/STOMP PASS, WEB bounded qualification
+с raw test FAIL; HTTPS/provider/SW lifecycle учитываются отдельно. Старые записи ниже — история.
 
 | Роль | Active | Implemented | Locally verified |
 |---|---:|---:|---:|
@@ -577,3 +578,33 @@ Independent currentpackage source scanEXIT0/findings0, rules/ignore/history unch
 после исправления order/shortID ошибки comparison. [Доказательства](../../validation/web-vue-pr3/checkpoints/assembled-nginx-20261025/README.md).
 Два переносимых localNginx inputfix/API-CA+exactOrigin source-reviewedPASS;
 реальный ownerlocal runtime NOT_RUN.
+
+
+## 25 октября2026 — облачный Nginx пакет закрыт; локальная передача
+
+Source/runtime `240a1b2a86a2b2ba0cbb89647a9ed8b151007007`. Config-only `.mjs` defect
+исправлен во всех3inner Nginx, standard MIME table сохранена, mobile cache/404
+дополнены. Recheck actual common Nginx PASS: exact3dist bytes, deep links/refresh,
+JS/mjs/CSS MIME, cache/CSP, missingjs/mjs404; anonymous session401 и SockJSinfo200
+совпали с direct API. Новых app builds после config change не было.
+
+PWA native HTTP Auth/API/STOMP PASS: current Teacher2/canonical session, каталог
+2groups/2options/3taught, known scope,1physicalSockJS/CONNECTED/SUBSCRIBE, errors0.
+WEB прошёл Auth/canonical/top-level schema/STOMP/cleanup slices; raw EXIT1/false
+сохранены из-за String-vs-number test bug. Known IDs по WEB raw не доказаны.
+WEB replay0; только отдельный PWA использовал исправленную source-reviewed проверку.
+Обе собственные сессии DELETE204/oldBearer401, browsersclosed/HOLDfalse, PREF/domainwrites0.
+
+Own Nginx остановлен после known terminal. All30 original fullID/image/state/mountsets
+сохранены; guardnull, available before6489534464/min6383026176/after6487257088B.
+PNG0, gallery289. [Independent review и safe receipts](../../validation/web-vue-pr3/checkpoints/assembled-nginx-20261025/README.md).
+
+[Локальный запуск и критерии](LOCAL-EXECUTION.md) — public scripts/config в PR,
+fresh Ubuntu checkout/namespace, new local secrets/PKI,7matching JAR,12Docker services
+и3host Vites. Не экспортируются cloud DB/credentials/keys/private configs.
+Полный group six-view gate **owner-local NOT_RUN0/1**; cloud execution запрещён.
+HTTPSAuthWSS/forwardedidentity/SW lifecycle/nativeTMA/WebPush delivery также NOT_RUN.
+Conditional visual список конечный: [VISUAL-REMAINDER](VISUAL-REMAINDER.md);
+helper credentials/grants не квалифицированы, group password privacy, manual row0,
+orphan без новой страницы. Source117, accepted116 и visual/runtime оси раздельны.
+Новых обязательных cloud повторов и продуктовых вопросов нет. CI-family PAUSED.

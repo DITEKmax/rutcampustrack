@@ -318,3 +318,5 @@ synthetic local config проверяются отдельно; cloud DB/secrets
 вWEB/PWA/TMA исправлен config-only0664fecbf/106aefbb9. Standard MIMEtable сохранена,
 mjs JavaScript +immutable/404; существующие API/payload/grants не меняются.
 AppJS/workerbytes не пересобираются; actualservedHTTPrecheck ведётся отдельно.
+
+Actual serving recheck240a1b2a: MIME/cache/404 PASS WEB/PWA/TMA; native PWA HTTP Auth/API/STOMP PASS, WEB bounded qualification с raw test FAIL сохранена. Endpoint/payload/grants изменений в этом пакете нет. HTTPS/provider/SW lifecycle не засчитаны.

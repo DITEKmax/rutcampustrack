@@ -1,18 +1,18 @@
-# SLOTS — PR3, 25 октября2026
+# SLOTS — PR3,25октября2026
 
-Root+6children максимум. Children explicit gpt-6.1-sol/high, no telemetry/fallback.
-ONEHEAVY Root: serialprefixbuilds→one128MiB commonNginx→serialbrowser only.
+Root+6children capacity, gpt-6.1-sol/high requested, no telemetry/fallback.
+ONEHEAVYfree; runtime finished, browsersclosed, ownNginxdown; original30unchanged.
 
-| Owner | Scope / separate preserved worktree | State |
+| Owner | Preserved ownership | State |
 |---|---|---|
-| root | docs/contracts/Git/PR/runtime integration | published4f; prefixPASS, actualNgxMIMEFAIL/Auth0/owncontainerdown |
-| angular_remove | web-map Angular sole writer; independent AuthPREP reviewer | Angular done; d57 auth structural PASS, final binding pending |
-| angular_review | independent Angular/local handoff review | Angular PASS; final4d42 child-reap targeted review |
-| disk_files | headman-web sole writer tests/e2e/pr3-nginx |MIME82/sourcePASS/integrated; runtime configs3 +exactclosure, actualRootrechecknext |
-| disk_docker | independent Nginx/cleanup review |28e/e8/MIME82 sourcePASS; no revieweractualruntime |
-| group_resume | group-final-delete sole writer tests/e2e/pr3-local |d464 exact2Origin integrated/sourcePASS; ownerlocalNOT_RUN, cloudforbidden |
-| visual_conditional | external Manual/AuthPREP | Manual roster manual0/PNG0 knownclosed; Auth final source/origin binding pending |
+| root | docs/Git/PR/archive integration | source240 runtimeclosed; finalpublish/handoff |
+| angular_remove | web-map Angular; independent Auth/handoff review | Angularformatter664 PASS; finalAuth receipts boundedPASS |
+| angular_review | independentAngular/localgroup review | ba8/664/4d42 PASS |
+| disk_files | headman-web solewriter Ngx package+3innerconfigs | f81/d7/82 integrated034/066/106; actualMIMEclosed |
+| disk_docker | independentcleanup/Ngx/source-scanreview |28e/e8/MIME82 PASS; no execution |
+| group_resume | group-final-delete solewriter pr3-local | e8/d464 integrated9fa/eb0, ownerlocalNOT_RUN |
+| visual_conditional | externalManual/AuthPREP | Manualrow0 knownclosed; WEBrawFAILretained/PWAactualPASS; no replay |
 
-No competingheavy, grants/delete0, original30containers/data unchanged. Own Nginx alone
-may start after Root admission; no Main restart/Origin policy change. Hard2/early2.5GiB;
-512MiB forecast, cloudgroup7GiB not applied. No owner-local execution by agents.
+Allsource/worktrees/WIP preserved. Main13/admin7running, clock5/shipping5stopped.
+Groupstart/grants/delete cloudFORBIDDEN, ownerlocal pending. No competingDBtests,
+CI/manualPAUSED, no main/merge/deploy/production/newGoal/PR/environment/globalprune.

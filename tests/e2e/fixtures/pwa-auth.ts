@@ -122,11 +122,14 @@ export async function logoutPwa(page: Page): Promise<void> {
       : page
           .locator('button.pwa-logout')
           .and(page.getByRole('button', { name: 'Выйти', exact: true }));
+  // Allow 10s device cleanup + 10s logout HTTP + 5s response delivery margin.
+  const logoutResponseTimeoutMs = 25_000;
   const [response] = await Promise.all([
     page.waitForResponse(
       (response) =>
         new URL(response.url()).pathname === '/api/auth/logout' &&
         response.request().method() === 'POST',
+      { timeout: logoutResponseTimeoutMs },
     ),
     logoutButton.click(),
   ]);

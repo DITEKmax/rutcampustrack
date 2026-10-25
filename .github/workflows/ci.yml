@@ -3366,6 +3366,11 @@ jobs:
           node fixtures/semester-health-diagnostic.control.mjs
           python3 -B fixtures/lesson-transfer-diagnostic.control.py
 
+      - name: Validate diagnostic producer reporter and shared consumer contract
+        if: ${{ matrix.group == 'client' }}
+        timeout-minutes: 3
+        run: node tests/e2e/fixtures/diagnostic-events.control.mjs --with-consumer
+
       - name: Validate the existing safe artifact privacy contract for client scenarios
         id: artifact-privacy-controls
         if: ${{ matrix.group == 'client' }}

@@ -6,6 +6,13 @@ import { dirname, join, resolve } from 'node:path'
 import { randomBytes } from 'node:crypto'
 import { spawnSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
+const flags = process.argv.slice(2)
+assert.equal(
+  flags.length <= 1 && flags.every((flag) => flag === '--with-consumer'),
+  true,
+  'Unsupported control option',
+)
+const withConsumer = flags.includes('--with-consumer')
 const here = dirname(fileURLToPath(import.meta.url))
 const out = mkdtempSync(join(tmpdir(), 'rct-diagnostic-controls-'))
 const e2e = resolve(here, '..')
@@ -143,6 +150,34 @@ for (const forbidden of [
   'RCT_PRIVATE_DIAGNOSTIC_RUN_KEY',
 ])
   assert.equal((publicArtifacts + child.stdout + child.stderr).includes(forbidden), false)
+if (withConsumer) {
+  const consumer = spawnSync(
+    'python3',
+    [
+      '-B',
+      join(here, 'http500-diagnostic-contract.py'),
+      '--producer-report',
+      join(out, 'artifacts/safe-results.json'),
+    ],
+    { cwd: resolve(e2e, '../..'), encoding: 'utf8', timeout: 45000, maxBuffer: 1024 * 1024 },
+  )
+  const privateOutput = (consumer.stdout ?? '') + (consumer.stderr ?? '')
+  writeFileSync(join(out, 'consumer-output.txt'), privateOutput, { mode: 0o600 })
+  // Nonzero/timeout stays a failure; never include the captured Python output in assertions.
+  assert.equal(consumer.error === undefined, true, 'Consumer subprocess did not complete')
+  assert.equal(consumer.status, 0, 'Consumer contract rejected the actual producer report')
+  for (const forbidden of [
+    canary,
+    '__rctDiagnosticProof',
+    'rct-diagnostic-proof.v1',
+    'RCT_PRIVATE_DIAGNOSTIC_RUN_KEY',
+  ])
+    assert.equal(
+      privateOutput.includes(forbidden),
+      false,
+      'Consumer output contained private control data',
+    )
+}
 console.log(
   JSON.stringify({
     schema: 'rct-diagnostic-controls.v1',
@@ -150,6 +185,7 @@ console.log(
     deliberateChildExit: child.status,
     rows: 7,
     finiteNegatives: 20,
+    ...(withConsumer ? { consumerPassed: true } : {}),
     report: join(out, 'artifacts/safe-results.json'),
   }),
 )

@@ -52,7 +52,7 @@
     "tma-controlled-unsigned-gate-light-300",
     "tma-controlled-unsigned-gate-dark-300"
   ],
-  "qualifiedAgainstSourceRevision": "f32ff22baaa8d68de03d7606d0799f4586ca17f1",
+  "qualifiedAgainstSourceRevision": "1057de27b70c37b5916013d7c9207e31d8493ce8",
   "latestMobileSourceDiffFrom77f": [
     "frontends/mobile-core/src/features/admin-groups/admin-group-deletion-client.test.ts",
     "frontends/mobile-core/src/features/admin-groups/admin-groups-client.ts",
@@ -78,9 +78,10 @@
     "frontends/mobile-core/src/shared/projection-refresh.ts",
     "frontends/pwa-vue/src/App.vue",
     "frontends/pwa-vue/src/group-live-readmission.test.ts",
+    "frontends/pwa-vue/src/pwa-host.pcss",
     "frontends/tma-vue/src/App.vue"
   ],
-  "nextPacketState": "TeacherLesson/Manual one-shot closed exit1 naturalmissingmanual; Lesson3 boundedobserved, Manualunchecked; exactown technicalcleanup204/oldBearer401/browserclosed; no furtherAuth/capture withoutRootGO",
+  "nextPacketState": "AdminMore mapping corrected by reusedold79e2PNG/sourcequalification; no newAuth/runner/PNG. Remaining8active/orphan/source/retained qualification only; no PREP/runtime withoutRoot nextcontract.",
   "latestPwaTodayWidthPacket": {
     "qualifiedReceipt": "mobile-next-first-qualified.json",
     "actualState": "day-ended/two-lessons/no-checkin-action",
@@ -100,8 +101,8 @@
     "cleanup": "native204/guest401",
     "notificationConsumer": "notchecked:wronglocator/noinboxrequest"
   },
-  "currentPwaScreensWithObservedBaselines": 41,
-  "currentPwaNotVisuallyCheckedScreens": 9,
+  "currentPwaScreensWithObservedBaselines": 42,
+  "currentPwaNotVisuallyCheckedScreens": 8,
   "originalMappedPwaBaselineScreensUnchanged": 36,
   "latestNotificationConsumer": {
     "observedFrames": 4,
@@ -169,7 +170,7 @@
     "cleanup": "technicalexactownselfDELETE204/samebearer401/browserclosed; notnativeUIlogoutPASS",
     "limits": "No whole-screen/all-state/width/TMA runtime/provider/actioncount claim; localtable scroll interaction notchecked"
   },
-  "reconciliationQualification": "41/50 PWAconsumers have observed bounded baseline slices;9 visuallyunchecked. Historical36/14 original fields retained; no fullreadiness%/actioncount increase.",
+  "reconciliationQualification": "42/50 PWAconsumers have bounded observed baseline slices (including newly reconciled oldAdminMore2);8visuallyunchecked. Historicaloriginal36/14 fields preserved; reconciled originalmapped37 is additive correction. No fullreadiness percentage/actioncount increase.",
   "studentRequestSelectionConsumer": {
     "revision": "85c068210262b611f6f98d18fb9d7bdd8cecea95",
     "qualifiedReceipt": "student-request-selection-run/qualified-85c.json",
@@ -195,13 +196,29 @@
     "cleanup": "one technicalexactownselfDELETE204/sameoldbearer401/browserclosed; NOTnativeUIlogoutPASS",
     "finding": "P3 sharedhost Выйти plainbrowserbutton at bottomleft, outside centeredcolumn768; nofixclaim"
   },
-  "currentSourceQualification": "Historical77f inventory remains; newer changed consumers qualified individually by source pins/reviews/visual sidecars. No global empty mobile delta claim.",
+  "reconciledOriginalMappedPwaBaselineScreens": 37,
+  "originalAdminMoreMappingCorrection": {
+    "retainedOriginalState": "admin-root-3",
+    "canonicalScreen": "MOBILE-ADMINMORE",
+    "originalFrames": 2,
+    "newFrames": 0,
+    "newAuth": 0,
+    "qualifiedReceipt": "admin-more-prep/REUSE-QUALIFICATION.json",
+    "sourceQualifiedAgainst": "1057de27b70c37b5916013d7c9207e31d8493ce8",
+    "historicalOriginalMapped36Preserved": true,
+    "deltaOriginalMappedScreens": 1,
+    "commonNavChangedSinceOriginal": "accepted e715 sourceinfluence, not currentAdminMore runtime"
+  },
+  "remainingVisualInventoryQualification": {
+    "qualifiedReceipt": "admin-more-prep/REMAINING-8-SOURCE-QUALIFICATION.json",
+    "inventoryUnchecked": 8,
+    "activeConditionalUnchecked": 7,
+    "orphanSourceOnly": 1,
+    "actualNewNeeds": "ReadonlyHeadmanlessonhistory and naturallyavailableStudentLatePreview/TeacherTicketPreview; assistant2 require preexistingpermission, HeadmanGroup privacydecision, manualrow absent; no PREP/Auth started",
+    "sourceOnlyOrphansDoNotAuthorizeNewFeatures": true
+  },
+  "currentSourceQualification": "Individual consumer/source qualifications apply. PWA host logout presentation343 has two accepted after frames; no empty global mobile source delta claimed.",
   "inactiveStandaloneSourceComponents": [
-    {
-      "screen": "MOBILE-TEACHERGROUPSUBJECTS",
-      "countedInInventory": true,
-      "nativeCaptureRequiredNow": false,
-      "qualification": "No emitting native route producer; no separate adopted action requirement found; Stats/Attendance provide group/subject flow."
-    }
+    "MOBILE-TEACHERGROUPSUBJECTS"
   ]
 }

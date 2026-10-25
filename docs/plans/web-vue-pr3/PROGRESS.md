@@ -332,3 +332,31 @@ oldbearer401→normalrelogin/actualGETdark same revision/noPUT→oneWT04/ownclea
 успешные light/system/liveOS и первые3 кадра не повторяются. PWA after2 наследует
 тот же исправленный pattern, не старый шаблон. Оба исполнения пока не разрешены.
 Gallery273/portable273, PWA41bounded/9unchecked inventory,117actions неизменны.
+
+
+## Закрытые визуальные пакеты и Student ownerloss — checkpoint2026-10-25
+
+PWA hostlogoutP3 закрыт source343 + actual2 (300dark/root20 keyboardfocus,768light
+hover), EXIT0/errors0/ownDELETE204+sameBearer401/browserclosed. Plainbrowserbutton
+больше не стоит у края страницы. Native UI logout/pressed/disabled не пересдавались.
+WEB native device persistence подтверждён новым WT04: darkCAS1→native204/401→normal
+relogin→fresh request-bound GETdarkrev1/samecookie/noPUT→exactownDELETE204/401.
+Первые3light/system/liveOS кадра reused. Rawe38exit1/2WebAuthorityChangedError сохранён;
+обаownSIDterminal, browserclosed. Gallery278:3новых actual +2повторно размещённых
+AdminMore79e оригинала. AdminMoreошибка была вmapping, не в отсутствии реализации;
+новых Auth/capture для него0. Finite42bounded/8unchecked,7active+1inactive component.
+
+ОшибкиWEB получили causal source repro: realfrozen transport +deferred Home read
+послеownerchange/unmount и queuedAttendancefilter давали2 baselineFAIL. Sourcea7→
+1057 добавляет3guard edits, transportfence/currenterror handling сохранены.
+Final6PASS/strictWEBbuild/independentreview. Actualfe795 отправил originalToday200
+послеnativeLogout204/401 и наблюдалpageResponse200/errors0, но тест ожидал только
+requestfinished6s и не дошёл до guestoracle/PNG. Exactbody/abortcauseunknown, rawFAIL
+не переименован вPASS; soleownSIDterminal/pending0/browserclosed. V2 меняет только
+transport observation/fullbody/terminaldiagnostics, затем guest/private/noerror oracle.
+Product source,6unitchecks и прежниеtheme4 не повторяются. HeadmanhistoryPREP only.
+
+Все новые productфайлы Root побайтно совпали сauthorfinals; source Gitleaks native0,
+правила/игноры прежние. API/backend/JARs не менялись. Actions116/117 в обеих осях,
+Angular активен/commonNginx pending. ResourceQENV010 требует≥7GiB actualfree;
+сейчас≈5.36GB, разумный прирост3GiB, workspace/Dockerdata не очищаются.

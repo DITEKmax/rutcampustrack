@@ -1,0 +1,97 @@
+{
+  "state": "SOURCE_AND_RETAINED_QUALIFICATION_ONLY_NO_RUNTIME_PREP",
+  "remainingInventoryConsumers": 8,
+  "activeConditionalConsumersWithoutPublicVisualBaseline": 7,
+  "sourceOnlyOrphanWithoutNewAdoptedScreenRequirement": 1,
+  "items": [
+    {
+      "screen": "MOBILE-ASSISTANTACTIONS",
+      "sourcePath": "frontends/mobile-core/src/features/headman-group/AssistantActionsScreen.vue",
+      "currentSourceSha256": "87c71e647e0ca10683ae812c237d64ed44fde6aba5e42244a2a141cb2409c5b4",
+      "productionQualification": "active conditional permission-gated production UI",
+      "nativeEntryAndRequiredContext": "StudentFeatureOwner.vue more/assistant via MoreScreen assistant-enabled when existing assistantPermissions nonempty; AssistantActionsScreen presents only current allowed destinations.",
+      "retainedEvidenceQualification": "No original published canonical PNG identified in scoped40public manifests; no currenthelper grant proof supplied.",
+      "actualNewNeed": "Identify an already-authorized existing assistant; readonly menu can be observed without any delegation/mark/request action. Do not create rights merely for screenshot.",
+      "verdict": "permission precondition missing; no newAuth/prep"
+    },
+    {
+      "screen": "MOBILE-HEADMANGROUP",
+      "sourcePath": "frontends/mobile-core/src/features/headman-group/HeadmanGroupScreen.vue",
+      "currentSourceSha256": "2c947fa5fb461078fcea1b9fa41b23e0a6e1712d709ab9107d9389b899314a49",
+      "productionQualification": "active production UI; public-image privacy limitation",
+      "nativeEntryAndRequiredContext": "HeadmanScheduleScreen groupRouteId renders actual HeadmanGroupScreen; legitimate group roster/account helper management existing.",
+      "retainedEvidenceQualification": "Previous real read existed, but credential-exposing PNG were excluded; no publishable retained frame. Current source credentialLabel renders initial/reset password in list for authorizedHeadman and useHeadmanCredentials auto-refreshes.",
+      "actualNewNeed": "A future publicvisual plan must keep actual credentials out of artifacts through legitimate existing context/capture scope; do not reopen credential endpoints, grant/role changes, fixture resets or blur/edit originals to force baseline.",
+      "verdict": "privacy-safe public capture decision needed; no newAuth/prep"
+    },
+    {
+      "screen": "MOBILE-HEADMANLESSONACTIONS",
+      "sourcePath": "frontends/mobile-core/src/features/headman-journal/HeadmanLessonActionsScreen.vue",
+      "currentSourceSha256": "3450bec7ecb3720d978fbaa62f602ea977544c29dcf98bc2f0803012c8934f2b",
+      "productionQualification": "active production readonly UI",
+      "nativeEntryAndRequiredContext": "HeadmanScheduleScreen actionLogRouteId headman-today/actions and HeadmanLessonManagementScreen log view render this component; native lesson event opens it. GET /api/attendance/reports/lesson/{existingLessonId}/actions.",
+      "retainedEvidenceQualification": "No matching published canonical PWA frame in scoped40public manifests; original HeadmanJournal/Management frames are different screens.",
+      "actualNewNeed": "Best next bounded readonly candidate: already-owned Headman lesson→existing history; populated or truthful empty list without marks/room/cancel/homework mutations or newfixtures.",
+      "verdict": "new actualreadonly consumer baseline genuinely missing; no PREP started"
+    },
+    {
+      "screen": "MOBILE-ASSISTANTHOMEWORK",
+      "sourcePath": "frontends/mobile-core/src/features/homework/AssistantHomeworkScreen.vue",
+      "currentSourceSha256": "151185b049140a2de6b346d0ba679d9b55f023ab6814d0bcc18cfc8174ac094d",
+      "productionQualification": "active conditional permission-gated production UI",
+      "nativeEntryAndRequiredContext": "AssistantActionsScreen home→homework only for existing MANAGE_HOMEWORK and group/homeworkApi/journalApi; wrapper renders AssistantHomeworkScreen.",
+      "retainedEvidenceQualification": "Original headman homework overview is HeadmanHomeworkScreen, not this assistant wrapper; no exact remainingconsumer PNG in scoped manifests.",
+      "actualNewNeed": "Needs existing authorized helper first. Future bounded readonly day/lesson/homework list only; no publish/edit/archive/material upload/draft save.",
+      "verdict": "permission precondition missing; no newAuth/prep"
+    },
+    {
+      "screen": "MOBILE-LATECHECKINREQUEST",
+      "sourcePath": "frontends/mobile-core/src/features/requests/LateCheckinRequestScreen.vue",
+      "currentSourceSha256": "d2d0a67550c269c390079dd21cb9b5e19c0ff4744d177cd660f5e3c11a9d00ee",
+      "productionQualification": "active production UI",
+      "nativeEntryAndRequiredContext": "StudentFeatureOwner Today/Attendance late task and more/requests/late render component; existing RequestType→selection Continue can reach late draft.",
+      "retainedEvidenceQualification": "Accepted requestselection6 covers ExcuseDraft, not LateCheckinDraft; dev/review-only LateCheckin fixtures are not actual PWA evidence. No published exactconsumer frame identified.",
+      "actualNewNeed": "Future normal available late-checkin option→existing eligible lesson→readonly form preview; no submit or forced access/budget/time/clock/fixtures. Natural unavailable case stays truthful STOP.",
+      "verdict": "newactualreadonly preview missing; natural eligibility unconfirmed; no PREP started"
+    },
+    {
+      "screen": "MOBILE-TEACHEREXCUSE",
+      "sourcePath": "frontends/mobile-core/src/features/teacher/TeacherExcuseScreen.vue",
+      "currentSourceSha256": "6c5aadf3f1808c96a2fc0a456dbdc91a33ed7f80361cb0c48351342c813a60f8",
+      "productionQualification": "active production readonly UI",
+      "nativeEntryAndRequiredContext": "TeacherLesson/Journal roster ticket link→TeacherFeatureOwner openExcuse→/excuse→TeacherExcuseScreen; requestId is an existing accessible roster ticket.",
+      "retainedEvidenceQualification": "Backend teacher-attachments-summary positive200 is historical attachment API evidence, not TeacherExcuse PWA PNG; no exactconsumer frame found.",
+      "actualNewNeed": "Needs natural existing readable ticket in an authorized lesson. Future readonly ticket metadata/filtered lesson view; no approve, request creation or attachment download/upload.",
+      "verdict": "newactualreadonly ticket baseline missing; natural entry unconfirmed; no PREP started"
+    },
+    {
+      "screen": "MOBILE-TEACHERGROUPSUBJECTS",
+      "sourcePath": "frontends/mobile-core/src/features/teacher/TeacherGroupSubjectsScreen.vue",
+      "currentSourceSha256": "16fc8bbbb99f1f93768cfe81677d3a85358776623de115ca8ed69b6364482aa6",
+      "productionQualification": "orphan conditional route; no normal UI emitter; no separate adopted screen requirement found",
+      "nativeEntryAndRequiredContext": "TeacherFeatureOwner contains route/listener open-group, but TeacherStatsScreen declares open-group without emitting it; local openGroup changes students scope. Existing catalog capability works in Stats/Attendance.",
+      "retainedEvidenceQualification": "Source-only visual status retained. No frame is needed merely to satisfy50component inventory when a user capability is already available through adopted routes.",
+      "actualNewNeed": "Do not inject route or create newpage/function for PNG. Root may label inventory source-only orphan separately; no productbug or missing mandatory capability inferred.",
+      "verdict": "no actualnewscreen need established; no PREP"
+    },
+    {
+      "screen": "MOBILE-TEACHERMANUALEXCUSE",
+      "sourcePath": "frontends/mobile-core/src/features/teacher/TeacherManualExcuseScreen.vue",
+      "currentSourceSha256": "f8ff31d4cd5cd8bd7b8f9187e99ff8f46868381e5a0114ebcf8236be413da9b3",
+      "productionQualification": "active conditional production readonly UI",
+      "nativeEntryAndRequiredContext": "TeacherRoster manual-excuse-open for existing excused record with no ticket→TeacherFeatureOwner /manual-excuse; component rereads same real lesson and validates manual record.",
+      "retainedEvidenceQualification": "Actual c4/f32 first authorized lesson had no natural manualrow; threeLesson PNG kept/rawexit1 and exactselfcleanup qualified. No manualframe was fabricated.",
+      "actualNewNeed": "Only future legitimate natural manual row can supply newreadonly baseline; do not replay Lesson3, iterate fixtures/lessons blindly, create mark/excuse or modify approvals merely for PNG.",
+      "verdict": "natural fixture prerequisite absent in observed lesson; no newAuth/prep"
+    }
+  ],
+  "retainedSearchScope": "40 public manifestJSON under docs/validation/web-vue-pr3/runtime-gallery and externalvisual-readiness; private dirs and bodies/credentials excluded. Exactcanonical/component image tags had0matches; known historical notes and originalmapping checked separately. This scoped absence is not a universal search assertion.",
+  "recommendedNextBoundedUserRead": "Headman existinglesson action history has a production readonly GET/nativeentry and no credential/payment/approval/draft command requirement; wait Root nextcontract and existing actor/context facts. LateCheckin or TeacherExcuse preview only after natural eligibility/ticket precondition is known.",
+  "noRunnerCreated": true,
+  "noAuthBrowserOrApi": true,
+  "noFixturesRightsCredentialsProductEdits": true,
+  "noNewFunctionalActions": true,
+  "qualifiedAtUtc": "2026-10-25T00:04:16.143397+00:00",
+  "sourceQualifiedAgainst": "1057de27b70c37b5916013d7c9207e31d8493ce8",
+  "pwaSourceUnchangedFrom7d": true
+}

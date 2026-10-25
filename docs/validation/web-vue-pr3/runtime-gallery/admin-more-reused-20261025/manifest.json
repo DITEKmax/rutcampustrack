@@ -1,0 +1,47 @@
+{
+  "entries": [
+    {
+      "id": "PWA-MOBILE-ADMINMORE__retained-native-baseline__dark__300__79e8fdce6",
+      "screen": "MOBILE-ADMINMORE",
+      "state": "retained-native-baseline",
+      "file": "admin-root-3-dark-300.png",
+      "image": "admin-root-3-dark-300.png",
+      "sha256": "279d12cb929f921a916ef1571ed6d2739e511d6851927f2a78d5f227a66fb3a8",
+      "revision": "79e8fdce620af0493287469725e82bee511b2e8f",
+      "theme": "dark",
+      "width": 300,
+      "rootFont": "16px",
+      "title": "Администратор · Ещё · retained dark · 300",
+      "description": "Actual retained300/root16 original shows More title, Academic/Semesters and Campus/buildings+mapstatistics readonly navigation rows; readable boththemes. This is old79e render, not currentAuth/runtime proof.",
+      "historical": true,
+      "personallyInspected": true,
+      "captureKind": "retained original source-qualified; no new Auth/capture"
+    },
+    {
+      "id": "PWA-MOBILE-ADMINMORE__retained-native-baseline__light__300__79e8fdce6",
+      "screen": "MOBILE-ADMINMORE",
+      "state": "retained-native-baseline",
+      "file": "admin-root-3-light-300.png",
+      "image": "admin-root-3-light-300.png",
+      "sha256": "9d0059e803fbf15bf91d3916d5889a354493a47184d6387631de6bdbe3aedd47",
+      "revision": "79e8fdce620af0493287469725e82bee511b2e8f",
+      "theme": "light",
+      "width": 300,
+      "rootFont": "16px",
+      "title": "Администратор · Ещё · retained light · 300",
+      "description": "Actual retained300/root16 original shows More title, Academic/Semesters and Campus/buildings+mapstatistics readonly navigation rows; readable boththemes. This is old79e render, not currentAuth/runtime proof.",
+      "historical": true,
+      "personallyInspected": true,
+      "captureKind": "retained original source-qualified; no new Auth/capture"
+    }
+  ],
+  "limits": [
+    "Original79e real PWA render; historical original Auth/cleanup limits retained. This is not a new current-runtime PASS.",
+    "Admin More core/template branch unchanged; changed common navigation explicitly qualified by source only.",
+    "Root20/focus/768 and full screen state/width readiness not claimed."
+  ],
+  "sourceQualificationRevision": "1057de27b70c37b5916013d7c9207e31d8493ce8",
+  "newRuntimeImages": 0,
+  "newPublishedOriginalImages": 2,
+  "newAuth": 0
+}

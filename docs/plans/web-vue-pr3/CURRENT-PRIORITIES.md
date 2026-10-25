@@ -31,34 +31,29 @@ MOBILE-FOLLOWUPS и итог PR; PAUSED не объявляется PASS.
 
 Текущие пакеты и зависимости:
 
-- Пароль, LIMITED и whole-map delete/Auth — закрыты. Посты9598/c7ee подтверждают
-  отзыв собственных сессий/временных полномочий; успешные операции не повторять.
-- Group: status/fixtures исправлены,20 boundary cases закрыты. Live8e83 и matching
-  Academic/Notification/BFF JAR приняты. Runtime12 v3180f и cohort a23logic review
-  PASS; historical source binding57e2d8f8 Root85c/productd69/558inputs
-  прошёл узкий review. После source343 PWA stylesheet/import нужны fresh frontend
-  freeze/qualification на окончательном опубликованном HEAD; backend/JARs прежние. Следующий результат — один UI delete с числовым
-  preview/паролем/original UUID, шестью заранее открытыми WEB/PWA/TMA views,
-  естественным отзывом целевого доступа и сохранением чужих аккаунтов/ролей/групп.
-  Auth может оставить SID для другой роли; проверять grants и версию сессии.
-- Q-ENV-010 pending: фактически5.38GB, нужен preflight7GiB и свежий Root GO.
-  Запрошено минимум+2GiB с сохранением workspace/Docker-данных. До этого start,
-  fixtures и delete0; ограничения и guards не ослабляются.
-- Визуал: Journal skeleton/error/retry и WEB Teacher focused live/pagination
-  исправлены и независимо приняты наd69; all3 Vue build/strict PASS переиспользуется.
-  Student selection→readonly draft6 actual frames на85c закрыли локальную валидацию,
-  пустой фильтр, выбор, focus и переход без отправки. Gallery273/portable273;
-  PWA41 bounded observed consumers и9 not visually checked из50, включая один
-  неактивный самостоятельный компонент. Это не полная готовность41 экрана. TMA controlled host/provider разделены. TeacherLesson3 принят для показанных состояний; ManualExcuse остался непроверенным
-  из-за отсутствующей строки в первой естественной паре, rawexit1 сохранён. Найден
-  PWA hostlogoutP3: source343 исправляет оформление, поведение побайтно прежнее;
-  after2 runtime ещё впереди. WEB theme lifecycle PREP0583 после F1/F2 correction
-  проверяет недостающий native UI результат; старые deviceHTTP6/PWAhost PASS reused.
-- После настоящего group gate: полное Angular removal по inventory и assembled
-  common Nginx (deep links/refresh/static/API/realtime, /app/, /mini-app/,
-  auth/updates/WebPush). Angular пока активен; build PASS этот gate не закрывает.
+- Пароль, LIMITED и whole-map delete/Auth закрыты; последние independent posts9598/
+  c7ee подтверждают cleanup. Не повторять генерацию, выдачу прав или удаление.
+- Group: status/fixtures исправлены,20 boundary cases и live8e83 закрыты. Matching
+  JARs/1530 backend inputs прежние. Runtime12v3180f и cohorta23logic reviewed;
+  historical57binding требует fresh frontend freeze/currentRootGO после1057.
+  Следующий результат — один UI delete с числовым preview/current password/original
+  UUID, шестью открытыми WEB/PWA/TMA views, естественным отзывом целевого доступа
+  и сохранением чужих аккаунтов/ролей/групп. Полный SID может остаться для другой роли.
+- Q-ENV-010 pending:≈5.36GB free против7GiB preflight. Прежние+2GiB уже впритык/
+  недостаточны; практично добавить3GiB или обеспечить≥7GiB свободного с запасом.
+  Источники/БД/Dockerданные сохраняются, guards не ослабляются. Start/fixtures/delete0.
+- PWA hostlogout visualP3 закрыт: source343+actualafter2; gallery278 включает3 новых
+  actual кадра (after2/WT04) и2 переиспользованных оригиналаAdminMore79e. Карта42
+  bounded observed/8unchecked из50 (7activeconditional+1orphan); не процент готовности.
+- WEB theme native device persistence подтверждён, oldrawFAIL/pageerrors сохранены.
+  Реальный ownerloss bug reproduced/fixed1057/review+6tests+strictbuild PASS. Actual
+  runtimefe795 показал native204/401/errors0, но testwait остановил guestoracle.
+  Минимальный v2 исправляет наблюдение terminal/body, не повторяет theme4. Затем
+  один ownHeadman history readonly packet; никакого нового grant/fixture/command.
+- После group gate — полное удаление Angular по inventory и assembled commonNginx:
+  deep links/refresh/static/API/realtime,/app/,/mini-app/,auth/updates/WebPush.
+  Angular пока активен; предыдущие Vue build это gate не закрывают.
 
-Новых продуктовых вопросов нет; ответ владельца нужен только по ресурсу Q-ENV-010.
-Source-only recovery223044Z.zip:6482207B, SHA256b4262299…, snapshot источников/WIP
-с manifest/CRC/bundle проверкой; секреты/DB/runtime исключены. Это точка во времени,
-а актуальные продуктовые исправления уже опубликованы в существующей ветке PR3.
+Новых продуктовых вопросов нет. Owner нужен только для ресурса Q-ENV-010.
+Recovery snapshot223044Z сохраняется неизменным; новые source changes также
+сохранены в Git/verified incremental bundles, без секретов/данных стенда.

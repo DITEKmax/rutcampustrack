@@ -1,84 +1,80 @@
-# CURRENT — existing Goal PR3, 2026-10-24
+# CURRENT — existing Goal PR3, 2026-10-25
 
-Owner GO active; only codex/web-vue-redesign / existing PR3. Root product343245083 (PWA presentation only afterd69),
-last published checkpointf32ff22ba. Root docs/Git; children explicit gpt-6.1-sol/high,
+Owner GO active, existing codex/web-vue-redesign/PR3 only. Product1057de27b,
+last remote verified7d664ce89. Root docs/Git; children gpt-6.1-sol/high requested,
 actual model telemetry unavailable. No main/merge/deploy/production/globalcleanup.
-CI/Coverage/Security/OpenAPI manual/PAUSED, not PASS.
+CI/Coverage/Security/OpenAPI workflow_dispatch/PAUSED, not PASS.
 
 Actions accepted116/117 implemented,116/117 locally verified; ADMIN33/34 both.
-Visual33web+50mobileScreen, themes/states/adaptive and Angular/build separate axes,
-no overall PR readiness percentage.117 active scope preserved.
+Visual33web+50mobile source inventory, PWA/TMA separately, and Angular/build are
+separate axes. No overall PR percentage.117active scope preserved.
 
 CLOSED password: self-known5→6/lostACK6→7/successor isolation; post9598 current
-Cred7/RV8/Aca8/profile6unassigned, ACTIVE/STUDENTgroup1, no pending, all3own sessions
-revoked, other17/core/20grants preserved. NEVER replay oldCred5/profile4 cleanup.
-CLOSED LIMITED: natural visiblepage withdrawal3708ms, oldADMIN/session403, normal
-Teacher/profile200. Rawdriverexit1=TESTenumgap retained. Postc7ee isolatedTeacher2
-profile8unassigned/RV9/catalog22/Aca9/Cred1/Binding1, all4ownSIDsrevoked/foreigndata
-unchanged. No more grants/passwords/cleanup needed. Map-delete/Auth gap also closed.
+Cred7/RV8/Aca8/profile6unassigned, ACTIVE/STUDENTgroup1, all3ownSIDsrevoked,
+no pending; other17/core/20grants preserved. NEVER replay oldCred5/profile4 cleanup.
+CLOSED LIMITED: natural visiblepage withdrawal3708ms, oldADMIN/session403,
+Teacher/profile200. Rawdriverexit1 TESTenumgap retained. Postc7ee ISOLATEDTeacher2
+profile8unassigned/RV9/catalog22/Aca9/Cred1/Binding1, all4ownSIDsrevoked, others
+unchanged. No new grant/password/cleanup. MainTeacher2 is a different realm.
+Map-delete/Auth gap closed; no repeat successful deletion.
 
-Group backend64f/clientae546/Vuef67/retirement3e174 integrated.20 boundary cases
-CLOSED(13AcademicAuth+3SchedulePG+4AttendanceMongo). Live8e83 integratedb039,
-55client/6Notificationunit/2realPG/1realMongo PASS; successful unchanged18 reused.
-Matching8e83 ACA829ce167/Notif97d9d177/BFF9d7677a5 ready; reuse64fAuth/Sched/Attend.
-Root1530 runtimeinputs31a5 byteequal, old artifacts preserved. Actualdelete0.
-Auth COMMIT unselects target-grant sessions/sessionVersion+1; it need not revoke
-entireSID. Other roles/accounts remain. Do not confuse oldJWT401 with SIDrevocation.
+Group64f/backend+ae546/client+f67Vue+3e174 retirement integrated.20 meaningful
+boundary cases CLOSED (13AcademicAuth+3SchedulePG+4AttendanceMongo). Live8e83
+integratedb039;55client/6unit/2actualPG/1Mongo PASS; unchanged successful cases reused.
+Matching8e83 ACA829ce167/Notif97d9d177/BFF9d7677a5 ready,64fAuth/Sched/Attend reused.
+1530backend inputs31a5 unchanged after latest frontend fixes; no rebuild needed.
+Auth COMMIT clears target selectedgrant/increments sessionVersion; fullSID may
+remain for other roles. Do not confuse oldJWT401 with entireSIDrevocation.
+Actual UIdelete0. Runtime12v3180f reviewed ready. Historical cohorta23logic and
+binding57e2/Root85c/d69/558inputs passed review; current frontend1057 adds PWA CSS
+and Student cancellation guards. Fresh frontend freeze/qualification/currentRootGO
+required before effects. Backend/JAR pins unchanged. No oldbinding authorizes start.
 
-Latest UI fixes independently reviewed/integrated: mobileJournal981+2d→ba3,
-WEBfocus58+fb→d69. Local403/503 no persistent hostduplicate; platform401/403 refresh
-rejection reaches existinghostclassifier. Journal-shaped skeleton. WEBbackground
-catalog refresh runs whilefocused/dirty, keepscontrolscope/draft37/unknownexport;
-loadedJournal60-window preserved atomically/cursor90, late-owner fences retained.
-Mobile15behaviorPASS, Web15distinct withcausalreuse; Root all3Vuebuild+strictPASS.
-Root11productfile byteequal authorfinals. No backendbuild/test repeated for UI.
+BLOCKER Q-ENV-010: actual≈5.36GB free<7GiB preflight (7.516GB). Prior minimum+2GiB
+is now marginally insufficient; add about3GiB or provide at least7GiB actualfree
+with margin, preserving workspace/Dockerdata. No diskconfiguration tool here.
+2GiB hardfloor/2.5GiB earlyguard250ms unchanged; cgroup16GiB/4CPU, ONEHEAVYfree.
+OwnedfutureAuth/ACA/GW/TLSedge replacements scoped; main13/clock5/shipping5 and
+PG/Redis/Rabbit IDs/data/realmkeys preserved. New scoped Schedule/Mongo databases,
+own currentsemester/teachingfileclock and controlled own TMA signer RAM only;
+no OS/Auth/securityclock/production/snapshot copy. Runtimewrites/start0.
 
-Visual gallery273PNG +portable273 metadata (old204 retained pinned, new69 hashed).
-PWA300light/TMA300dark Profileloading+realrelease200 accepted. ProfilePWArawFAIL
-TESTBearer-vs-cookie gate preserved; ownhelper+post95d933+92079exit2 closed.
-TeacherJournal6beforeframes found bareloading/staleglobalwarning; rawcookiefilter
-FAIL preserved. Ownhelper+postf137+Rootproof closed64379exit1. No live heldbrowser.
-After4d69 actualPASS: skeleton425light/local503/realretry200425light+300dark, exact
-ownselfDELETE204/oldbearer401/browserclosed. This is technical session cleanup,
-not a repeated nativeUIlogout claim. NativeTelegram provider remains unknown;
-controlledSDK/host/HMAC labelled. Student request-selection6 actualEXIT0: realAPI200,
-local validation/empty/focus/readonlydraft; no submit/domain writes. Technicalexact
-ownselfDELETE204/oldBearer401/browserclosed. PWA41boundedobserved/9unchecked of50 (includes1inactive standalone component),
-not41 fullyready screens. TeacherLesson3 actualreadonlyframes accepted; manual
-entry naturallyabsent/rawexit1 preserved, exactowncleanup204/oldBearer401 known.
-App PWA hostlogoutP3 sourcefed1→343 accepted: stylesheetimportonly+36PCSSlines;
-Auth/visibility/handlers bytepreserved. Strict+build and finalPostCSS PASS; after2
-PREP safetycorrection pending, no newAuthyet. WEBtheme0583 actual3PNG: manual/system/liveOS and CAS1/2/3 observed. RunEXIT1
-afterknownnativeLogout204 due overlybroadTESTrequestfailedclassifier; exactfailed
-request unknown. Independent SQLposta219 exactownStudent3SIDrevoked andglobal
-identity/grants/profiles unchanged. Rootproof09ff closedTTY8063exit1, browserclosed,
-secondlogin0; rawFAIL retained. Freshdevice minimal dark→logout→relogin suffix
-PREPneeded (oldbrowserdevicehash cannotrestorecookie). First3states notrecaptured.
-PWAafter7bb noGO untilsameclassifiercorrection; no heldbrowser/cleanup pending.
+Gallery278 actual PNG metadata/portable278: original204 pinned, newer74 hashed;
+among latest5 published images,2 are reused unchanged79e AdminMore originals.
+Mobile finite map42bounded observed/8unchecked of50:7activeconditional+1inactive
+TeacherGroupSubjects standalone source component, not a new page requirement.
+Not42 fullyready screens. TMA controlled host separated; nativeprovider unknown.
+AdminMore2 reused/sourcequalified, originalAuthcleanup limits retained, no newAuth.
+PWA TeacherLesson3 accepted bounded; manual row absent in observedfirstlesson,
+rawexit1 retained/technicalownDELETE204+401/browserclosed. No repeat/searchfixtures.
+PWA hostlogoutP3 CLOSED: fed1→343 App stylesheetimport+36PCSSlines, Auth/visibility
+handlers bytepreserved; source review/strictbuild/finalPostCSS and actualafter2
+300darkroot20 keyboardfocus/768light hover PASS, rawexit0/errors0/owncleanup204+401.
 
-READY runtimePREP12 v3-auth-handles hash180fecc3,31publicfiles/6JARs/1530source.
-FullreviewAAA2P2 corrected+narrowPASS. OwnedAuth/ACA/GW/TLSedge replacements only;
-main13/clock5/shipping5/PGRedisRabbit IDs/data/realmkeys preserved. Newscoped
-ScheduleDB/Mongo databases/principals and ownfixtures; no snapshot/DBcopy/reset.
-OwnTeachingFileClock2029→real2026/currentownsemester then knownrestoreoldclock/
-oldsem2 viaAPI; noOS/Auth/securityclock/main changes. OwnTMAconfiguredtestsigner
-RAM selector, onlynewownbindings; no productionsecrets/botmessages.
-Cohortlogic a23d3155 full5P2 corrected+narrowPASS, eightfiles76487B. Sixliveviews+
-Admin beforeoneUIdelete, originalUUID, naturalTMAHeadman successor accounted,
-causalposthintGET and exactowncleanup/restorebridge. Historicalbinding57e2d8f8 pins Root85c/productd69/558inputs2df2 and passed narrow
-review, logicbyteequala23. CurrentPWA343 adds acceptedAppimport/newCSS: afterclosed
-visualpackage/publishedHEAD a fresh frontend sourcefreeze/qualification is required;
-backend1530/JARs unchanged. No oldbinding authorizesexecution. Freshcapacity and
-matchingRootGO stillrequired beforeprivate/effects. Runtimewrites0.
+WEB theme native manual/system/liveOS3 plus fresh-device dark→logout→login WT04
+persistence criterion confirmed: realCAS1/GETdarkrev1/samecookie/noPUTphase2,
+logout204/401 and finalselfDELETE204/401, bothownSIDsterminal. Original0583 TEST
+requestfailed classifier rawFAIL retained; RootSQLposta219/proof09ff closed8063.
+Suffixe38 rawexit1 retained:2WebAuthorityChangedError names-only; no unique runtime
+callsite claimed. No heldbrowser/owncleanup pending. Older profile/journal helper
+post95d933/f137 and held92079/64379 knownclosed; never replay old checkpoints.
 
-BLOCKER Q-ENV-010: actual≈5.378GB free <7GiB actual preflight. Owner askedminimum
-+2GiB preservingworkspace/Dockerdata; pending, notapproval/notresource. No disk
-configtool here. Keep2GiB hard floor/2.5GiB earlyguard250ms; cgroup16GiB/4CPU,
-not hostMem18.9GB. OneHEAVYfree. Existing30containers retained sofar.
+Student ownerloss bug causally reproduced with real frozen transport: baseline
+2FAIL(Homeawait continuation, queuedAttendancefilter)→6PASS incl4unchanged cases.
+a7f9→1057 adds3currentguards in2SFCs +behavior tests; transport/current error fences
+preserved; independent review+strictWEBbuild PASS. Actualfe795: originalToday200
+held→nativeLogout204/oldBearer401→fulfill/pageResponse200, errors0; overly strict
+requestfinished wait timedout before guestoracle/PNG. KnownownSIDterminal/browser
+closed/pending0; exactbody/abortreason unknown, no full runtimePASS. Minimalv2
+uses full actualbody beforehold, finishedORfailed diagnostics, then guest/private/
+noerror oracle. PREP only, finalpublishedHEAD binding/selectedreview/GO pending.
+Oldtheme4/PWAafter2/6unitchecks not repeated. Headman ownlesson history next PREP
+only (existingStudent3HEADMAN/group1), no rolegrants/commands/credential reads.
 
-Afterrealgroup UI/withdrawal/preservation: removeactiveAngular by inventory and
-verify assembledcommonNginx deep links/refresh/static/API/realtime with/app/,
-/mini-app/,auth/update/WebPush. Angularstillactive; buildPASS does not close gate.
-Freshsource-onlysnapshot223044Z.zip delivered:6482207B/SHA b4262299...,
-185commits/12WT/122publicsources; bundle/CRC/paths/manifestPASS. Olderbackupsretained. Old snapshots never authorize replay. Product-policy questions resolved;
-onlyQENV010 pending. [Priorities](../../docs/plans/web-vue-pr3/CURRENT-PRIORITIES.md).
+After actualgroup gate: full activeAngular433-file cleanup by inventory and assembled
+commonNginx deep links/refresh/static/API/realtime, /app/, /mini-app/,auth/update/
+WebPush. Angular stillactive, finalNginx not accepted. No deploy.
+Source-only223044Z.zip6482207B/SHA b4262299… delivered,185commits/12WT/122public
+sources; bundle/CRC/paths/manifestPASS, private/DB/env/keys/JAR/deps excluded.
+New unpublished source also preserved in tiny verified fed1/a7 incremental bundles.
+Product-policy questions resolved; only resourceQENV010 requires owner action.

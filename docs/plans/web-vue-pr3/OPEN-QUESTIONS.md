@@ -392,3 +392,10 @@ earlyreserve2.5GiB => actual preflight7GiB=7516192768B послеmatchingBFFJAR.
 Запрошенные +2GiB пока математически достаточны при canonical BFF≈57.5MB и
 отсутствии новых duplicate outputs; owner ответа/фактического ресурса пока нет.
 Это уточнение бюджета того же Q-ENV-010, не новый запрос и не autoapproval.
+
+
+Q-ENV-010, factual update2026-10-25: actualfree≈5.36GB. Preflight runtime12 remains
+7GiB=7,516,192,768B; exact+2GiB no longer leaves sufficient actualfree. Please add
+about3GiB or provide≥7GiB free with margin while preserving workspace/Dockerdata.
+No resizing tool is available here; no cleanup/guard weakening/start performed.
+This updates the same pending resource question, not a new product approval.

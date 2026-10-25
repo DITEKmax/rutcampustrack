@@ -15,6 +15,8 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
+import org.springframework.test.util.AopTestUtils;
 
 import ru.rutcampustrack.academic.grpc.GroupMembersResponse;
 import ru.rutcampustrack.academic.grpc.StudentInfo;
@@ -56,6 +58,8 @@ class EventConsumerIT extends AbstractAttendanceIntegrationTest {
     @Autowired private AmqpAdmin amqpAdmin;
 
     @Autowired private AttendanceAttachmentService attendanceAttachmentService;
+
+    @MockitoSpyBean(name = "mongoTemplate") private MongoTemplate mongoTemplateSpy;
 
     @BeforeEach
     void setUp() {
@@ -295,6 +299,7 @@ class EventConsumerIT extends AbstractAttendanceIntegrationTest {
 
     @Test
     void lessonCancelled_existingDocs_updatesStatusToCancelled() {
+        mockGrpcForLesson(1L, 10L, 5L, "2026-04-01", 1, 100L, 101L, 102L);
         Instant before = Instant.now();
 
         mongoTemplate.save(
@@ -368,6 +373,7 @@ class EventConsumerIT extends AbstractAttendanceIntegrationTest {
 
     @Test
     void lessonCancelled_noDocs_noError() {
+        mockGrpcForLesson(999L, 10L, 5L, "2026-04-01", 1);
         var envelope = buildEnvelope("lesson.cancelled", Map.of("lesson_id", 999, "group_id", 10));
         publishEvent(envelope);
         awaitEffect(envelope, 1);
@@ -404,6 +410,7 @@ class EventConsumerIT extends AbstractAttendanceIntegrationTest {
     void duplicateCancelledEventRequeuesAckFromExactStoredReceipt() {
         String eventId = UUID.randomUUID().toString();
         long lessonId = 9091L;
+        mockGrpcForLesson(lessonId, 10L, 5L, "2026-04-01", 1);
         Map<String, Object> envelope =
                 new java.util.LinkedHashMap<>(
                         buildEnvelope(
@@ -459,11 +466,11 @@ class EventConsumerIT extends AbstractAttendanceIntegrationTest {
 
     @Test
     void lessonCancelled_beforeClose_preventsRetrospectiveMaterialization() {
+        mockGrpcForLesson(1001L, 10L, 5L, "2026-04-01", 1, 100L, 101L);
         var cancelled =
                 buildEnvelope("lesson.cancelled", Map.of("lesson_id", 1001, "group_id", 10));
         publishEvent(cancelled);
         awaitEffect(cancelled, 1);
-        mockGrpcForLesson(1001L, 10L, 5L, "2026-04-01", 1, 100L, 101L);
         var close = buildEnvelope("lesson.closed", Map.of("lesson_id", 1001, "group_id", 10));
         publishEvent(close);
         awaitEffect(close, 1);
@@ -581,13 +588,12 @@ class EventConsumerIT extends AbstractAttendanceIntegrationTest {
         CountDownLatch closePrecheckReached = new CountDownLatch(1);
         CountDownLatch allowCloseInsert = new CountDownLatch(1);
         AtomicBoolean pauseFirstMarkerCheck = new AtomicBoolean();
-        MongoTemplate barrierTemplate = Mockito.spy(mongoTemplate);
+        MongoTemplate barrierTarget = AopTestUtils.getUltimateTargetObject(mongoTemplateSpy);
+        assertThat(org.springframework.aop.support.AopUtils.isAopProxy(mongoTemplate)).isTrue();
+        assertThat(Mockito.mockingDetails(barrierTarget).isSpy()).isTrue();
         Mockito.doAnswer(
                         invocation -> {
-                            Query markerQuery = invocation.getArgument(0);
-                            boolean markerExists =
-                                    mongoTemplate.exists(
-                                            markerQuery, LessonCancellationMarker.class);
+                            boolean markerExists = (boolean) invocation.callRealMethod();
                             if (pauseFirstMarkerCheck.compareAndSet(false, true)) {
                                 closePrecheckReached.countDown();
                                 if (!allowCloseInsert.await(10, TimeUnit.SECONDS)) {
@@ -597,12 +603,12 @@ class EventConsumerIT extends AbstractAttendanceIntegrationTest {
                             }
                             return markerExists;
                         })
-                .when(barrierTemplate)
+                .when(barrierTarget)
                 .exists(Mockito.any(Query.class), Mockito.eq(LessonCancellationMarker.class));
 
         LessonEventService raceService =
                 new LessonEventService(
-                        barrierTemplate,
+                        mongoTemplate,
                         scheduleGrpcClient,
                         academicGrpcClient,
                         semesterCacheService,
@@ -755,6 +761,12 @@ class EventConsumerIT extends AbstractAttendanceIntegrationTest {
         cancellation.setLessonId(cancelledId);
         cancellation.setSemesterId(semester);
         cancellation.setMarkedAt(Instant.now());
+        // The typed marker write resolves its owner from the same local lesson-scope schema.
+        mongoTemplate.insert(
+                new org.bson.Document("_id", Long.toString(cancelledId))
+                        .append("semester_id", semester)
+                        .append("group_id", group),
+                "group_deletion_lesson_scopes");
         mongoTemplate.save(cancellation);
         var request = initialMembershipEnvelope(semester, group, late);
         String eventId = (String) request.get("event_id");

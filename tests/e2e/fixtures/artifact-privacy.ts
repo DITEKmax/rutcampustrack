@@ -1,3 +1,4 @@
+import { beginDiagnosticCase, captureDiagnosticFailure } from './diagnostic-events';
 import { test as base, type TestInfo, type WorkerInfo } from '@playwright/test';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
@@ -15,6 +16,7 @@ export const test = base.extend<{ privateArtifacts: void }>({
   privateArtifacts: [
     async ({}, use, info) => {
       try {
+        beginDiagnosticCase(info);
         requirePrivateArtifacts(info);
         await use();
       } catch (error) {
@@ -187,6 +189,7 @@ function reportedSpecLocation(error: unknown, info: Pick<TestInfo, 'file' | 'lin
 /** Run before Playwright writes automatic error-context.md, which otherwise includes raw call logs. */
 export function sanitizeTestErrors(info: TestInfo): void {
   for (const error of info.errors) {
+    captureDiagnosticFailure(info, error, () => {
     // The generic rewritten message adds no new cause on repeated sanitizer passes.
     const message = Object.getOwnPropertyDescriptor(error, 'message');
     if (
@@ -215,6 +218,7 @@ export function sanitizeTestErrors(info: TestInfo): void {
         configurable: true,
       },
       location: { value: location, writable: true, enumerable: true, configurable: true },
+    });
     });
   }
 }

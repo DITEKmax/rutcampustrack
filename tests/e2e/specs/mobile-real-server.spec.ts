@@ -1,3 +1,4 @@
+import { diagnosticCase } from '../fixtures/diagnostic-events';
 import { randomBytes, randomUUID, timingSafeEqual } from 'node:crypto';
 import { isDeepStrictEqual } from 'node:util';
 import { createServer } from 'node:http';
@@ -2235,7 +2236,7 @@ test.describe('Current Vue roles with real synthetic domain @real-mobile', () =>
     expect(assistantPermissionCodes(await stale.json())).toEqual([]);
   });
 
-  test('LIMITED ADMIN views accounts while creation is denied by UI and server', async ({
+  test('LIMITED ADMIN views accounts while creation is denied by UI and server', { annotation: diagnosticCase('LIMITED_ADMIN_ACCOUNTS') }, async ({
     page,
     dataset,
   }) => {
@@ -2262,7 +2263,7 @@ test.describe('Current Vue roles with real synthetic domain @real-mobile', () =>
     expect(denied.status()).toBe(403);
   });
 
-  test('empty foreign-group homework and transport failure provide a real retry path', async ({
+  test('empty foreign-group homework and transport failure provide a real retry path', { annotation: diagnosticCase('HOMEWORK_FOREIGN_RETRY') }, async ({
     page,
     dataset,
   }) => {
@@ -2309,7 +2310,7 @@ test.describe('Current Vue roles with real synthetic domain @real-mobile', () =>
     await expect(page.getByText(dataset.marker, { exact: true }).first()).toBeVisible();
   });
 
-  test('another live session revokes the browser session and recovery exposes login only', async ({
+  test('another live session revokes the browser session and recovery exposes login only', { annotation: diagnosticCase('SESSION_REVOKE_RECOVERY') }, async ({
     page,
     dataset,
   }) => {
@@ -2327,7 +2328,7 @@ test.describe('Current Vue roles with real synthetic domain @real-mobile', () =>
     expect(denied.status()).toBe(401);
   });
 
-  it('D003 reuse admits twice; suspended grant yields neutral bootstrap and protected denials', async ({
+  it('D003 reuse admits twice; suspended grant yields neutral bootstrap and protected denials', { annotation: diagnosticCase('D003_DEVICE_REUSE_SUSPENDED_GRANT') }, async ({
     page,
     dataset,
     teacherGroupsSeed: secondGroup,
@@ -2706,7 +2707,7 @@ test.describe('Current Vue roles with real synthetic domain @real-mobile', () =>
 });
 
 test.describe('Signed HEADMAN Telegram entry @real-mobile', () => {
-  test('D003 signed HEADMAN TMA marks an isolated own-group roster row', async ({
+  test('D003 signed HEADMAN TMA marks an isolated own-group roster row', { annotation: diagnosticCase('D003_HEADMAN_TMA_MARK') }, async ({
     page,
     request: issuer,
     activeHeadmanDataset: dataset,
@@ -3507,7 +3508,7 @@ test.describe('Production PWA service worker D002 @real-mobile', () => {
     }
   });
 
-  test('warm offline reload remains read-only; revoked session reconnect clears the cached user', async ({
+  test('warm offline reload remains read-only; revoked session reconnect clears the cached user', { annotation: diagnosticCase('D002_WARM_OFFLINE_REVOKED') }, async ({
     page,
     context,
     dataset,
@@ -3955,7 +3956,7 @@ test.describe('Production PWA service worker D002 @real-mobile', () => {
     }
   });
 
-  test('D002 reconnect rechecks changed grants and a late old feed cannot replace the new account', async ({
+  test('D002 reconnect rechecks changed grants and a late old feed cannot replace the new account', { annotation: diagnosticCase('D002_RECONNECT_ACCOUNT_AUTHORITY') }, async ({
     page,
     context,
     dataset,
@@ -4467,7 +4468,7 @@ test.describe('Production PWA service worker D002 @real-mobile', () => {
     }
   });
 
-  test('D002 TMA stays online-only beside a warm PWA snapshot', async ({
+  test('D002 TMA stays online-only beside a warm PWA snapshot', { annotation: diagnosticCase('D002_TMA_ONLINE_ONLY') }, async ({
     page,
     context,
     dataset,
@@ -5701,7 +5702,7 @@ asyncExportTest.describe('stage17 durable weekly export', () => {
     'Explicit disposable async report lane only',
   );
   asyncExportTest(
-    'HEADMAN resumes real eighteen-week DOCX after navigation and lost acceptance @stage17-async',
+    'HEADMAN resumes real eighteen-week DOCX after navigation and lost acceptance @stage17-async', { annotation: diagnosticCase('ASYNC_DOCX_RESUME') },
     async ({ page, dataset, weeklyExportSeed }, info) => {
       requirePrivateArtifacts(info);
       const { weeks } = weeklyExportSeed;
@@ -5940,7 +5941,7 @@ asyncExportTest.describe('stage17 durable weekly export', () => {
 
 // Native bot acceptance uses the same owned services and genuine dataset commands as the clients.
 // Only the fixture holds user/admin bearers; the Python process receives two directed bot capabilities.
-test('actual private bot menu roster and teacher Today use hosted current authority', async ({
+test('actual private bot menu roster and teacher Today use hosted current authority', { annotation: diagnosticCase('HOSTED_PRIVATE_BOT_AUTHORITY') }, async ({
   activeHeadmanDataset: dataset,
 }, info) => {
   const run = process.env.GITHUB_RUN_ID;
@@ -6343,7 +6344,7 @@ test('actual private bot menu roster and teacher Today use hosted current author
 });
 
 for (const suspended of [false, true]) {
-  test(`N2 retained Student shell recovers through current-only retry (${suspended ? 'suspended' : 'active'})`, async ({
+  test(`N2 retained Student shell recovers through current-only retry (${suspended ? 'suspended' : 'active'})`, { annotation: diagnosticCase(suspended ? 'N2_STUDENT_RETRY_SUSPENDED' : 'N2_STUDENT_RETRY_ACTIVE') }, async ({
     page,
     dataset,
   }) => {

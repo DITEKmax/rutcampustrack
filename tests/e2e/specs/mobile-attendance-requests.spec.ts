@@ -1,3 +1,4 @@
+import { diagnosticCase } from '../fixtures/diagnostic-events';
 import type { Request, Response, Route } from '@playwright/test';
 import { randomUUID } from 'node:crypto';
 import { test, expect, admit, selectPwaRole } from '../fixtures/mobile-dataset';
@@ -6,7 +7,7 @@ import { sanitizeTestErrors } from '../fixtures/artifact-privacy';
 
 test.afterEach(async () => sanitizeTestErrors(test.info()));
 
-test('exhausted manual budget still permits a failed-geo AUTO request that the headman approves', async ({
+test('exhausted manual budget still permits a failed-geo AUTO request that the headman approves', { annotation: diagnosticCase('STUDENT_MANUAL_BUDGET_AUTO_APPROVAL') }, async ({
   page,
   context,
   dataset,

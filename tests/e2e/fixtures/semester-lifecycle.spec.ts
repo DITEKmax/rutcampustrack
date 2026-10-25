@@ -1,3 +1,4 @@
+import { diagnosticCase } from './diagnostic-events';
 import { terminal as observeTerminal, assertOwnedSemesterUi } from './semester-lifecycle-observers';
 import { createHash, randomUUID } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
@@ -1582,7 +1583,7 @@ async function ownedSemesterMetadataAndDeletion(
   if (cleanupFailure) throw cleanupFailure.error;
 }
 
-test('FULL admin archives and restores the disposable CI semester through real participants', async ({
+test('FULL admin archives and restores the disposable CI semester through real participants', { annotation: diagnosticCase('SEMESTER_ARCHIVE_RESTORE') }, async ({
   playwright,
   page,
 }, info) => {

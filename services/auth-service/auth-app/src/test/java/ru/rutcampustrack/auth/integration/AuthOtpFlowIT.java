@@ -10,6 +10,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
+import org.junit.jupiter.api.parallel.Isolated;
 import org.springframework.amqp.core.AmqpAdmin;
 import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;
@@ -79,6 +80,7 @@ import java.util.concurrent.TimeUnit;
  * <p>Uses the isolated Auth-only integration fixture plus Redis, and adds RabbitMQ for the real OTP
  * and password-change event assertions.
  */
+@Isolated("Uses the shared Auth fixture's entire outbox")
 @TestPropertySource(
         properties = {
             // Перекрываем exclude из application-test.yml — нужен RabbitTemplate.
@@ -132,9 +134,9 @@ class AuthOtpFlowIT extends AbstractIntegrationTest {
         Long userId =
                 jdbc.queryForObject(
                         "SELECT id FROM auth_identities WHERE login = 'student'", Long.class);
-        jdbc.update(
-                "DELETE FROM auth_outbox WHERE payload -> 'payload' ->> 'telegram_id' = ?",
-                Long.toString(TELEGRAM_ID));
+        // This non-reused Auth test database is shared across integration classes.
+        // The publisher and exact row-count assertions consume its entire outbox.
+        jdbc.update("DELETE FROM auth_outbox");
         jdbc.update(
                 "UPDATE auth_sessions SET revoked_at = NOW(), revoke_reason = 'SECURITY_REVOKED' "
                         + "WHERE user_id = ? AND revoked_at IS NULL",

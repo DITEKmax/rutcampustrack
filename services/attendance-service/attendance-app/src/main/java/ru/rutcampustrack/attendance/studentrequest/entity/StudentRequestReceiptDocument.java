@@ -22,6 +22,9 @@ public class StudentRequestReceiptDocument {
     @Field("student_id")
     private Long studentId;
 
+    @Field("group_id")
+    private Long groupId;
+
     @Field("command_kind")
     private String commandKind;
 

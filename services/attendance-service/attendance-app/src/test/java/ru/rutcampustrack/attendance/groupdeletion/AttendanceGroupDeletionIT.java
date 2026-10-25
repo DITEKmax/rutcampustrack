@@ -20,6 +20,8 @@ import org.testcontainers.containers.MongoDBContainer;
 import org.testcontainers.junit.jupiter.*;
 import org.testcontainers.utility.DockerImageName;
 
+import ru.rutcampustrack.attendance.exception.ConflictException;
+import ru.rutcampustrack.attendance.studentrequest.entity.StudentRequestReceiptDocument;
 import ru.rutcampustrack.groupdeletion.grpc.*;
 
 import java.util.*;
@@ -193,6 +195,59 @@ class AttendanceGroupDeletionIT {
     }
 
     @Test
+    void requestReceiptsUseGroupScopeWithoutLessonFieldsAndStayFencedThroughDeletion() {
+        var excuse = requestReceipt("own-excuse", 10, "EXCUSE");
+        var late = requestReceipt("own-late", 10, "LATE_CHECKIN");
+        var foreign = requestReceipt("foreign-excuse", 11, "EXCUSE");
+        mongo.save(excuse);
+        mongo.save(late);
+        mongo.save(foreign);
+        var stored = mongo.findById(excuse.getId(), Document.class, "student_request_receipts");
+        assertThat(stored).containsEntry("group_id", 10L);
+        assertThat(stored).doesNotContainKeys("lesson_id", "semester_id");
+
+        var c = prepare();
+        var preview =
+                participant.apply(c.toBuilder().setAction(GroupDeletionAction.PREVIEW).build());
+        assertThat(preview.getCountsOrDefault("student_request_receipts", 0)).isEqualTo(2);
+        for (var action : List.of(GroupDeletionAction.PREPARE, GroupDeletionAction.SEAL)) {
+            var prepared = participant.apply(c.toBuilder().setAction(action).build());
+            assertThat(prepared.getCountsOrDefault("student_request_receipts", 0)).isEqualTo(2);
+            assertThatThrownBy(
+                            () -> mongo.save(requestReceipt("late-" + action, 10, "EXCUSE")))
+                    .isInstanceOf(ConflictException.class);
+            assertThatThrownBy(
+                            () ->
+                                    mongo.updateFirst(
+                                            Query.query(Criteria.where("_id").is(excuse.getId())),
+                                            new Update().set("payload_hash", "changed"),
+                                            "student_request_receipts"))
+                    .isInstanceOf(ConflictException.class);
+            foreign.setPayloadHash("allowed-" + action);
+            mongo.save(foreign);
+        }
+
+        var committed =
+                participant.apply(c.toBuilder().setAction(GroupDeletionAction.COMMIT).build());
+        assertThat(committed.getCountsOrDefault("student_request_receipts", 0)).isEqualTo(2);
+        assertThat(mongo.findById(excuse.getId(), StudentRequestReceiptDocument.class)).isNull();
+        assertThat(mongo.findById(late.getId(), StudentRequestReceiptDocument.class)).isNull();
+        assertThat(mongo.findAll(StudentRequestReceiptDocument.class))
+                .singleElement()
+                .satisfies(
+                        receipt -> {
+                            assertThat(receipt.getGroupId()).isEqualTo(11L);
+                            assertThat(receipt.getPayloadHash()).isEqualTo(foreign.getPayloadHash());
+                        });
+        assertThatThrownBy(() -> mongo.save(requestReceipt("resurrection-receipt", 10, "EXCUSE")))
+                .isInstanceOf(ConflictException.class);
+        foreign.setPayloadHash("allowed-after-commit");
+        mongo.save(foreign);
+        assertThat(mongo.findById(foreign.getId(), StudentRequestReceiptDocument.class))
+                .isEqualTo(foreign);
+    }
+
+    @Test
     void staleSnapshotAndReleasedEpochCannotEraseRowsOrFenceAnotherOperation() {
         var stale = prepare();
         mongo.updateFirst(
@@ -280,6 +335,19 @@ class AttendanceGroupDeletionIT {
                 .setAction(GroupDeletionAction.PREPARE)
                 .setPreviewDigest("a".repeat(64))
                 .setParticipantDigest(participant.apply(preview).getParticipantDigest())
+                .build();
+    }
+
+    private StudentRequestReceiptDocument requestReceipt(String id, long group, String kind) {
+        return StudentRequestReceiptDocument.builder()
+                .id(id)
+                .studentId(7L)
+                .groupId(group)
+                .commandKind(kind)
+                .idempotencyKey("receipt-key-" + id)
+                .payloadHash("payload-" + id)
+                .requestId("request-" + id)
+                .createdAt(java.time.Instant.parse("2026-10-26T00:00:00Z"))
                 .build();
     }
 

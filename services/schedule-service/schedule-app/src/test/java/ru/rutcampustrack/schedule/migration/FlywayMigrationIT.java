@@ -249,7 +249,7 @@ SELECT jsonb_build_object('origin',to_jsonb(origin),'occurrence',to_jsonb(occurr
                 jdbc.queryForList(
                         "SELECT installed_rank,version,checksum FROM flyway_schema_history ORDER BY"
                                 + " installed_rank");
-        var upgraded = flyway(schema, null);
+        var upgraded = flyway(schema, "32");
         assertThat(upgraded.migrate().migrationsExecuted).isEqualTo(1);
         upgraded.validate();
         var original =
@@ -592,8 +592,8 @@ RETURNING binding_id
                                         String.class)
                                 .equals(before))
                 .isTrue();
-        assertThat(flyway(schema, null).migrate().migrationsExecuted).isEqualTo(1);
-        flyway(schema, null).validate();
+        assertThat(flyway(schema, "32").migrate().migrationsExecuted).isEqualTo(1);
+        flyway(schema, "32").validate();
     }
 
     private String newSchema() {

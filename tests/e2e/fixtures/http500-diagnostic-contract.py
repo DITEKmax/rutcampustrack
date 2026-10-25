@@ -400,6 +400,29 @@ class SharedDiagnosticControls(unittest.TestCase):
         legacy['results'][0]['diagnostics'] = [{'stage': 'DATASET_HTTP', 'cause': 'DATASET_ATTENDANCE_MARK_HTTP', 'httpStatus': 500}]
         self.assertFalse(diag.is_target_failure(legacy, config))
 
+    def test_current_ten_case_client_cohort_and_foreign_rejections(self):
+        stage = diag.STAGES['HOMEWORK_CREATE503']
+        rows = [row(case, 'DATASET_HOMEWORK_CREATE_HTTP', 503, failed=index == 0)
+                for index, case in enumerate(sorted(diag.CLIENT_CASES))]
+        self.assertEqual(len(rows), 10)
+        self.assertTrue(diag.is_target_failure(receipt(rows), stage))
+        for mutation in ('duplicate', 'foreign-async', 'oversized', 'unknown-row', 'unknown-event'):
+            with self.subTest(mutation=mutation):
+                changed = copy.deepcopy(rows)
+                if mutation == 'duplicate':changed[-1] = copy.deepcopy(changed[-2])
+                elif mutation == 'foreign-async':changed[-1] = row('ASYNC_DOCX_RESUME', failed=False)
+                elif mutation == 'oversized':changed.append(copy.deepcopy(changed[-1]))
+                elif mutation == 'unknown-row':changed[-1]['raw'] = private
+                else:changed[0]['diagnosticEvents'][0]['private'] = private
+                self.assertFalse(diag.is_target_failure(receipt(changed), stage))
+        async_setup = row('ASYNC_DOCX_RESUME', 'DATASET_HOMEWORK_CREATE_HTTP', 503)
+        self.assertTrue(diag.closed_case_row(async_setup))  # Valid producer event, outside this caller's cohort.
+        self.assertFalse(diag.is_target_failure(receipt([async_setup]), stage))
+        local_first = receipt([rows[0]]);local_first['diagnosticScope'] = 'LOCAL_CLIENT_FIRST_FAILURE'
+        self.assertTrue(diag.is_target_failure(local_first, stage))
+        local_first['results'] = rows
+        self.assertFalse(diag.is_target_failure(local_first, stage))
+
     def test_stats_companions_d002_and_async_identity(self):
         rows = [row(case, 'STUDENT_STATS_HTTP503', 503, failed=case == 'HEADMAN_RECURRING_SLOT_HISTORY')
                 for case in sorted(diag.STATS_CASES)]

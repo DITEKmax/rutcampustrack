@@ -221,8 +221,14 @@ def load_catalog():
 
 
 CATALOG = load_catalog()
-CLIENT_CASES = {case for case, item in CATALOG.items() if
-                {'stageId': 'DATASET_HTTP', 'eventCode': 'DATASET_HOMEWORK_CREATE_HTTP', 'httpStatus': 503} in item['events']}
+# The remaining5 caller selects this finite cohort. ASYNC_DOCX_RESUME has the
+# same setup event permission, but belongs to its separate async consumer.
+CLIENT_CASES = {
+    'LIMITED_ADMIN_ACCOUNTS', 'HOMEWORK_FOREIGN_RETRY', 'SESSION_REVOKE_RECOVERY',
+    'D003_DEVICE_REUSE_SUSPENDED_GRANT', 'D003_HEADMAN_TMA_MARK',
+    'D002_WARM_OFFLINE_REVOKED', 'D002_RECONNECT_ACCOUNT_AUTHORITY', 'D002_TMA_ONLINE_ONLY',
+    'N2_STUDENT_RETRY_ACTIVE', 'N2_STUDENT_RETRY_SUSPENDED',
+}
 STATS_CASES = {'STUDENT_MANUAL_BUDGET_AUTO_APPROVAL', 'HEADMAN_LESSON_CANCEL_RESTORE',
                'HEADMAN_RECURRING_SLOT_HISTORY', 'STUDENT_SEMESTER_ROOM_REFRESH'}
 TARGET_CASES = {'HOMEWORK_CREATE503': CLIENT_CASES, 'STUDENT_STATS503': STATS_CASES,
@@ -814,7 +820,7 @@ def is_target_failure(value, config):
     if not all(closed_case_row(row) and row['caseId'] in TARGET_CASES[stage] for row in rows):
         return False
     if stage == 'HOMEWORK_CREATE503':
-        return 1 <= len(rows) <= 8 and is_homework_failure(value)
+        return 1 <= len(rows) <= len(CLIENT_CASES) and is_homework_failure(value)
     if stage == 'STUDENT_STATS503':
         return is_student_stats_failure(value)
     if len(rows) != 1:

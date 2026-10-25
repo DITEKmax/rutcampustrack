@@ -1,0 +1,31 @@
+{
+  "state": "SOURCE_PREP_ONLY_LOCAL_NOT_RUN",
+  "command": "python3 tests/e2e/pr3-local/check_handoff.py",
+  "runs": 4,
+  "outcomes": [
+    "PASS: Python AST6, Node syntax5, compose12, initial7 ownership cases",
+    "PASS after source changes: syntax and expanded9 ownership cases",
+    "FAIL while adding interrupt guard check: TEST fake subprocess omitted STDOUT; AttributeError: 'types.SimpleNamespace' object has no attribute 'STDOUT'",
+    "PASS after correcting only that fake: Python AST6, Node syntax5, compose12, ownership9 and interrupt1"
+  ],
+  "repeatReasons": [
+    "New nonce volume/network checks, sanitized child environment and Vite private-state deny changed the source",
+    "An interrupted parent must terminate its exact owned child group; added one adversarial fake-only case",
+    "Corrected the incomplete subprocess fake; no actual runtime command was repeated"
+  ],
+  "finalChecks": {
+    "pythonSyntax": 6,
+    "nodeSyntax": 5,
+    "composeServices": 12,
+    "ownershipCases": 9,
+    "ownedChildInterruptCases": 1
+  },
+  "backendTestsBuilds": 0,
+  "cloudGroupRuntimeActions": 0,
+  "dockerAuthApiDbBrowserActions": 0,
+  "realProcessSignals": 0,
+  "ownerLocalGate": "NOT_RUN_UNTIL_OWNER_OUTPUT_REVIEWED",
+  "structuralReview": "PENDING_INDEPENDENT_ROOT_REVIEW",
+  "gitDiffCheck": "Initial FAIL: one inherited trailing space in adapter; corrected. Final PASS required before commit.",
+  "providerOrProductionClaims": false
+}

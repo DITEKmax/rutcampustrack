@@ -1,0 +1,947 @@
+{
+  "name": "rct-pr3-local",
+  "services": {
+    "postgres-academic": {
+      "image": "postgres:16",
+      "environment": {
+        "POSTGRES_DB": "academic_db",
+        "POSTGRES_USER": "rct_user",
+        "POSTGRES_PASSWORD": "${POSTGRES_ACADEMIC_PASSWORD}"
+      },
+      "volumes": [
+        "${LANE_ROOT}/init-roles.sh:/docker-entrypoint-initdb.d/10-rct-roles.sh:ro",
+        "pg-academic:/var/lib/postgresql/data"
+      ],
+      "secrets": [
+        {
+          "source": "e2e-pg-legacy-runtime-password",
+          "target": "rct-runtime-password"
+        },
+        {
+          "source": "e2e-pg-migration-password",
+          "target": "rct-migration-password"
+        },
+        {
+          "source": "e2e-pg-monitor-password",
+          "target": "rct-monitor-password"
+        },
+        {
+          "source": "e2e-pg-auth-runtime-password",
+          "target": "rct-auth-runtime-password"
+        },
+        {
+          "source": "e2e-pg-academic-runtime-password",
+          "target": "rct-academic-runtime-password"
+        },
+        {
+          "source": "e2e-pg-auth-migration-password",
+          "target": "rct-auth-migration-password"
+        }
+      ],
+      "expose": [
+        "5432"
+      ],
+      "networks": [
+        "private_net"
+      ],
+      "healthcheck": {
+        "test": [
+          "CMD-SHELL",
+          "pg_isready -U rct_user -d academic_db"
+        ],
+        "interval": "10s",
+        "timeout": "5s",
+        "retries": 5
+      },
+      "labels": {
+        "rct.synthetic.lane": "pr3-local-v1",
+        "rct.clock.role": "real"
+      },
+      "mem_limit": "384m",
+      "cpus": 0.25,
+      "pull_policy": "never"
+    },
+    "redis": {
+      "image": "redis:7-alpine",
+      "command": "redis-server --requirepass \"${REDIS_PASSWORD}\"",
+      "expose": [
+        "6379"
+      ],
+      "networks": [
+        "private_net"
+      ],
+      "healthcheck": {
+        "test": [
+          "CMD",
+          "redis-cli",
+          "-a",
+          "${REDIS_PASSWORD}",
+          "ping"
+        ],
+        "interval": "10s",
+        "timeout": "5s",
+        "retries": 5
+      },
+      "labels": {
+        "rct.synthetic.lane": "pr3-local-v1",
+        "rct.clock.role": "real"
+      },
+      "mem_limit": "128m",
+      "cpus": 0.05,
+      "volumes": [
+        "redis:/data"
+      ],
+      "pull_policy": "never"
+    },
+    "rabbitmq": {
+      "image": "rabbitmq:3.13-management-alpine",
+      "environment": {
+        "RABBITMQ_DEFAULT_USER": "${RABBITMQ_USER}",
+        "RABBITMQ_DEFAULT_PASS": "${RABBITMQ_PASSWORD}",
+        "RABBITMQ_DEFAULT_VHOST": "rct-pr3-local"
+      },
+      "expose": [
+        "5672"
+      ],
+      "networks": [
+        "private_net"
+      ],
+      "healthcheck": {
+        "test": [
+          "CMD",
+          "rabbitmq-diagnostics",
+          "-q",
+          "ping"
+        ],
+        "interval": "10s",
+        "timeout": "5s",
+        "retries": 5
+      },
+      "labels": {
+        "rct.synthetic.lane": "pr3-local-v1",
+        "rct.clock.role": "real"
+      },
+      "mem_limit": "768m",
+      "cpus": 0.25,
+      "volumes": [
+        "rabbit:/var/lib/rabbitmq"
+      ],
+      "pull_policy": "never"
+    },
+    "auth-service": {
+      "image": "eclipse-temurin:21-jre-alpine",
+      "environment": {
+        "SPRING_CONFIG_IMPORT": "configtree:/run/rct-db/,configtree:/run/rct-auth/,configtree:/run/rct-directed/",
+        "SPRING_PROFILES_ACTIVE": "prod",
+        "SPRING_DATASOURCE_USERNAME": "rct_auth_runtime",
+        "SPRING_DATASOURCE_URL": "jdbc:postgresql://postgres-academic:5432/auth_db",
+        "SPRING_FLYWAY_USER": "rct_auth_migrator",
+        "SPRING_FLYWAY_LOCATIONS": "classpath:db/auth-migration,filesystem:/run/rct-e2e-baseline",
+        "REDIS_PASSWORD": "${REDIS_PASSWORD}",
+        "SPRING_RABBITMQ_HOST": "rabbitmq",
+        "SPRING_RABBITMQ_PORT": "5672",
+        "SPRING_RABBITMQ_USERNAME": "${RABBITMQ_USER}",
+        "SPRING_RABBITMQ_PASSWORD": "${RABBITMQ_PASSWORD}",
+        "JWT_KEY_DIR": "/keys",
+        "GRPC_SECRET": "${GRPC_SECRET:?GRPC_SECRET must be set}",
+        "AUTH_GRPC_PORT": "19090",
+        "AUTH_GRPC_CERTIFICATE_CHAIN": "file:/run/rct-auth-tls/auth-server.crt",
+        "AUTH_GRPC_PRIVATE_KEY": "file:/run/rct-auth-tls/auth-server.key",
+        "ACADEMIC_GRPC_TRUST_CERT_COLLECTION": "file:/run/rct-academic-tls/academic-server.crt",
+        "ACADEMIC_GRPC_TLS_AUTHORITY": "academic-service",
+        "TMA_BOT_TOKEN": "${TMA_BOT_TOKEN}",
+        "INTERNAL_ISSUER_SECRET": "${INTERNAL_ISSUER_SECRET}",
+        "JAVA_TOOL_OPTIONS": "-Djava.security.egd=file:/dev/./urandom -Xms64m -Xmx384m",
+        "AUTH_PASSWORD_RESET_URL": "http://127.0.0.1:14250/password-reset",
+        "SPRING_FLYWAY_INIT_SQLS": "SET rct.e2e.synthetic_baseline = 'browser-v2-split-20261018-v1'",
+        "SPRING_RABBITMQ_VIRTUAL_HOST": "rct-pr3-local"
+      },
+      "secrets": [
+        {
+          "source": "mobile-bff-to-auth-service-token",
+          "target": "/run/rct-directed/grpc.service-identity.mobile-bff-to-auth-token"
+        },
+        {
+          "source": "academic-to-auth-service-token",
+          "target": "/run/rct-directed/grpc.service-identity.academic-to-auth-token"
+        },
+        {
+          "source": "attendance-to-auth-service-token",
+          "target": "/run/rct-directed/grpc.service-identity.attendance-to-auth-token"
+        },
+        {
+          "source": "auth-to-academic-presentation-service-token",
+          "target": "/run/rct-directed/grpc.service-identity.auth-to-academic-presentation-token"
+        },
+        {
+          "source": "e2e-pg-auth-runtime-password",
+          "target": "/run/rct-db/POSTGRES_AUTH_PASSWORD"
+        },
+        {
+          "source": "bot-to-auth-service-token",
+          "target": "/run/rct-auth/BOT_TO_AUTH_SERVICE_TOKEN"
+        },
+        {
+          "source": "e2e-pg-auth-migration-password",
+          "target": "/run/rct-db/SPRING_FLYWAY_PASSWORD"
+        }
+      ],
+      "volumes": [
+        "${LANE_PRIVATE}/tls/auth-server.crt:/run/rct-auth-tls/auth-server.crt:ro",
+        "${LANE_PRIVATE}/tls/auth-server.key:/run/rct-auth-tls/auth-server.key:ro",
+        "${LANE_PRIVATE}/tls/academic-server.crt:/run/rct-academic-tls/academic-server.crt:ro",
+        "${LANE_PRIVATE}/keys:/keys",
+        "${LANE_ROOT}/baseline/auth:/run/rct-e2e-baseline:ro",
+        "${GROUP_AUTH_JAR}:/app/app.jar:ro"
+      ],
+      "expose": [
+        "9090",
+        "19090"
+      ],
+      "networks": [
+        "private_net"
+      ],
+      "depends_on": {
+        "postgres-academic": {
+          "condition": "service_healthy"
+        },
+        "redis": {
+          "condition": "service_healthy"
+        },
+        "rabbitmq": {
+          "condition": "service_healthy"
+        },
+        "academic-service": {
+          "condition": "service_started"
+        }
+      },
+      "healthcheck": {
+        "test": [
+          "CMD-SHELL",
+          "wget -Y off -qO- http://127.0.0.1:9090/actuator/health || exit 1"
+        ],
+        "interval": "10s",
+        "timeout": "5s",
+        "retries": 24,
+        "start_period": "120s"
+      },
+      "labels": {
+        "rct.synthetic.lane": "pr3-local-v1",
+        "rct.clock.role": "real"
+      },
+      "mem_limit": "768m",
+      "cpus": 0.4,
+      "user": "${LOCAL_UID}:${LOCAL_GID}",
+      "entrypoint": [
+        "java",
+        "-jar",
+        "/app/app.jar"
+      ],
+      "pull_policy": "never"
+    },
+    "academic-service": {
+      "image": "eclipse-temurin:21-jre-alpine",
+      "environment": {
+        "AUTH_GRPC_TRUST_CERT_COLLECTION": "file:/run/rct-auth-tls/auth-server.crt",
+        "AUTH_GRPC_TLS_AUTHORITY": "auth-service",
+        "SPRING_CONFIG_IMPORT": "configtree:/run/rct-db/,configtree:/run/rct-directed/,configtree:/run/rct-group-directed/",
+        "SPRING_FLYWAY_USER": "rct_migrator",
+        "SPRING_FLYWAY_LOCATIONS": "classpath:db/academic-migration,filesystem:/run/rct-e2e-baseline",
+        "SPRING_PROFILES_ACTIVE": "prod",
+        "SPRING_DATASOURCE_USERNAME": "rct_academic_runtime",
+        "REDIS_PASSWORD": "${REDIS_PASSWORD}",
+        "RABBITMQ_USER": "${RABBITMQ_USER}",
+        "RABBITMQ_PASSWORD": "${RABBITMQ_PASSWORD}",
+        "GRPC_SECRET": "${GRPC_SECRET}",
+        "INTERNAL_ISSUER_SECRET": "${INTERNAL_ISSUER_SECRET}",
+        "ACADEMIC_GRPC_CERTIFICATE_CHAIN": "file:/run/rct-academic-tls/academic-server.crt",
+        "ACADEMIC_GRPC_PRIVATE_KEY": "file:/run/rct-academic-tls/academic-server.key",
+        "SCHEDULE_GRPC_TRUST_CERT_COLLECTION": "file:/run/rct-schedule-tls/schedule-server.crt",
+        "JAVA_TOOL_OPTIONS": "-Djava.security.egd=file:/dev/./urandom -Xms64m -Xmx384m",
+        "ATTENDANCE_GRPC_TRUST_CERT_COLLECTION": "file:/run/rct-attendance-tls/attendance-server.crt",
+        "ATTENDANCE_GRPC_TLS_AUTHORITY": "attendance-service",
+        "SPRING_FLYWAY_INIT_SQLS": "SET rct.e2e.synthetic_baseline = 'browser-v2-split-20261018-v1'",
+        "SPRING_RABBITMQ_VIRTUAL_HOST": "rct-pr3-local",
+        "SPRING_APPLICATION_NAME": "academic-service",
+        "SPRING_APPLICATION_JSON": "${ACADEMIC_EXTRA_JSON}",
+        "SCHEDULE_GRPC_TLS_AUTHORITY": "schedule-service"
+      },
+      "secrets": [
+        {
+          "source": "academic-to-auth-service-token",
+          "target": "/run/rct-directed/grpc.service-identity.academic-to-auth-token"
+        },
+        {
+          "source": "auth-to-academic-presentation-service-token",
+          "target": "/run/rct-directed/grpc.service-identity.auth-to-academic-presentation-token"
+        },
+        {
+          "source": "mobile-bff-to-academic-service-token",
+          "target": "/run/rct-directed/grpc.service-identity.mobile-bff-to-academic-token"
+        },
+        {
+          "source": "attendance-bot-read-to-academic-service-token",
+          "target": "/run/rct-directed/grpc.service-identity.attendance-bot-read-to-academic-token"
+        },
+        {
+          "source": "academic-report-to-attendance-service-token",
+          "target": "/run/rct-directed/grpc.service-identity.academic-report-to-attendance-token"
+        },
+        {
+          "source": "academic-report-to-schedule-service-token",
+          "target": "/run/rct-directed/grpc.service-identity.academic-report-to-schedule-token"
+        },
+        {
+          "source": "notification-to-academic-service-token",
+          "target": "/run/rct-directed/grpc.service-identity.notification-to-academic-token"
+        },
+        {
+          "source": "e2e-pg-academic-runtime-password",
+          "target": "/run/rct-db/POSTGRES_ACADEMIC_PASSWORD"
+        },
+        {
+          "source": "e2e-pg-migration-password",
+          "target": "/run/rct-db/spring.flyway.password"
+        },
+        {
+          "source": "group-academic_to_schedule_service_token",
+          "target": "/run/rct-group-directed/ACADEMIC_TO_SCHEDULE_SERVICE_TOKEN"
+        },
+        {
+          "source": "group-schedule_to_academic_service_token",
+          "target": "/run/rct-group-directed/SCHEDULE_TO_ACADEMIC_SERVICE_TOKEN"
+        },
+        {
+          "source": "group-academic_to_attendance_service_token",
+          "target": "/run/rct-group-directed/ACADEMIC_TO_ATTENDANCE_SERVICE_TOKEN"
+        },
+        {
+          "source": "group-attendance_to_academic_service_token",
+          "target": "/run/rct-group-directed/ATTENDANCE_TO_ACADEMIC_SERVICE_TOKEN"
+        }
+      ],
+      "volumes": [
+        "${LANE_PRIVATE}/tls/auth-server.crt:/run/rct-auth-tls/auth-server.crt:ro",
+        "${LANE_PRIVATE}/tls/schedule-server.crt:/run/rct-schedule-tls/schedule-server.crt:ro",
+        "${LANE_PRIVATE}/tls/academic-server.crt:/run/rct-academic-tls/academic-server.crt:ro",
+        "${LANE_PRIVATE}/tls/academic-server.key:/run/rct-academic-tls/academic-server.key:ro",
+        "${LANE_PRIVATE}/tls/attendance-server.crt:/run/rct-attendance-tls/attendance-server.crt:ro",
+        "${LANE_ROOT}/baseline/academic:/run/rct-e2e-baseline:ro",
+        "${GROUP_ACADEMIC_JAR}:/app/app.jar:ro"
+      ],
+      "expose": [
+        "9091"
+      ],
+      "networks": [
+        "private_net"
+      ],
+      "depends_on": {
+        "postgres-academic": {
+          "condition": "service_healthy"
+        },
+        "redis": {
+          "condition": "service_healthy"
+        },
+        "rabbitmq": {
+          "condition": "service_healthy"
+        }
+      },
+      "healthcheck": {
+        "test": [
+          "CMD-SHELL",
+          "wget -Y off -qO- http://127.0.0.1:9091/actuator/health || exit 1"
+        ],
+        "interval": "10s",
+        "timeout": "5s",
+        "retries": 24,
+        "start_period": "120s"
+      },
+      "labels": {
+        "rct.synthetic.lane": "pr3-local-v1",
+        "rct.clock.role": "educational"
+      },
+      "mem_limit": "768m",
+      "cpus": 0.4,
+      "user": "${LOCAL_UID}:${LOCAL_GID}",
+      "entrypoint": [
+        "java",
+        "-jar",
+        "/app/app.jar"
+      ],
+      "pull_policy": "never"
+    },
+    "api-gateway": {
+      "image": "eclipse-temurin:21-jre-alpine",
+      "environment": {
+        "SPRING_PROFILES_ACTIVE": "prod",
+        "AUTH_SERVICE_URL": "http://auth-service:9090",
+        "CORS_ALLOWED_ORIGIN": "${CORS_ALLOWED_ORIGIN}",
+        "REDIS_HOST": "redis",
+        "REDIS_PORT": "6379",
+        "REDIS_PASSWORD": "${REDIS_PASSWORD}",
+        "INTERNAL_ISSUER_SECRET": "${INTERNAL_ISSUER_SECRET}",
+        "GATEWAY_TRUSTED_PROXY_ADDRESSES": "172.31.35.10",
+        "JAVA_TOOL_OPTIONS": "-Djava.security.egd=file:/dev/./urandom -Xms64m -Xmx256m",
+        "SPRING_APPLICATION_JSON": "{\"spring.cloud.gateway.server.webflux.globalcors.cors-configurations.[/**].allowed-origins\":[\"http://127.0.0.1:14250\",\"http://127.0.0.1:14251\",\"http://127.0.0.1:14252\"]}"
+      },
+      "expose": [
+        "8080"
+      ],
+      "networks": [
+        "private_net"
+      ],
+      "depends_on": {
+        "redis": {
+          "condition": "service_healthy"
+        },
+        "auth-service": {
+          "condition": "service_healthy"
+        },
+        "academic-service": {
+          "condition": "service_healthy"
+        }
+      },
+      "healthcheck": {
+        "test": [
+          "CMD-SHELL",
+          "wget -Y off -qO- http://127.0.0.1:8080/actuator/health || exit 1"
+        ],
+        "interval": "10s",
+        "timeout": "5s",
+        "retries": 24,
+        "start_period": "120s"
+      },
+      "labels": {
+        "rct.synthetic.lane": "pr3-local-v1",
+        "rct.clock.role": "real"
+      },
+      "mem_limit": "512m",
+      "cpus": 0.25,
+      "user": "${LOCAL_UID}:${LOCAL_GID}",
+      "entrypoint": [
+        "java",
+        "-jar",
+        "/app/app.jar"
+      ],
+      "volumes": [
+        "${LANE_ROOT}/runtime/jars/api-gateway.jar:/app/app.jar:ro"
+      ],
+      "pull_policy": "never"
+    },
+    "tls-edge": {
+      "image": "nginx:1.27-alpine",
+      "pull_policy": "never",
+      "mem_limit": "64m",
+      "cpus": 0.05,
+      "labels": {
+        "rct.synthetic.lane": "pr3-local-v1",
+        "rct.clock.role": "real"
+      },
+      "ports": [
+        "127.0.0.1:18443:8443"
+      ],
+      "volumes": [
+        "${GROUP_ROOT}/nginx.conf:/etc/nginx/conf.d/default.conf:ro",
+        "${LANE_PRIVATE}/tls/server.crt:/run/tls/server.crt:ro",
+        "${LANE_PRIVATE}/tls/server.key:/run/tls/server.key:ro"
+      ],
+      "networks": {
+        "private_net": {
+          "ipv4_address": "172.31.35.10"
+        }
+      },
+      "depends_on": {
+        "api-gateway": {
+          "condition": "service_healthy"
+        }
+      },
+      "healthcheck": {
+        "test": [
+          "CMD-SHELL",
+          "wget -Y off -qO- http://127.0.0.1:8081/edge-ready || exit 1"
+        ],
+        "interval": "10s",
+        "timeout": "5s",
+        "retries": 12
+      }
+    },
+    "schedule-service": {
+      "image": "eclipse-temurin:21-jre-alpine",
+      "pull_policy": "never",
+      "user": "${LOCAL_UID}:${LOCAL_GID}",
+      "entrypoint": [
+        "java",
+        "-jar",
+        "/app/app.jar"
+      ],
+      "environment": {
+        "SPRING_PROFILES_ACTIVE": "prod",
+        "SPRING_CONFIG_IMPORT": "configtree:/run/rct-db/,configtree:/run/rct-directed/",
+        "AUTH_SERVICE_URL": "http://auth-service:9090",
+        "RABBITMQ_USER": "${RABBITMQ_USER}",
+        "RABBITMQ_PASSWORD": "${RABBITMQ_PASSWORD}",
+        "SPRING_RABBITMQ_VIRTUAL_HOST": "rct-pr3-local",
+        "REDIS_PASSWORD": "${REDIS_PASSWORD}",
+        "GRPC_SECRET": "${GRPC_SECRET}",
+        "JAVA_TOOL_OPTIONS": "-Djava.security.egd=file:/dev/./urandom -Xms64m -Xmx384m",
+        "SCHEDULE_GRPC_CERTIFICATE_CHAIN": "file:/run/rct-schedule-tls/schedule-server.crt",
+        "SCHEDULE_GRPC_PRIVATE_KEY": "file:/run/rct-schedule-tls/schedule-server.key",
+        "ACADEMIC_GRPC_TRUST_CERT_COLLECTION": "file:/run/rct-academic-tls/academic-server.crt",
+        "ACADEMIC_GRPC_TLS_AUTHORITY": "academic-service",
+        "SPRING_DATASOURCE_URL": "jdbc:postgresql://postgres-academic:5432/schedule_db",
+        "SPRING_DATASOURCE_USERNAME": "rct_group_schedule_runtime",
+        "SPRING_FLYWAY_USER": "rct_migrator",
+        "SPRING_FLYWAY_LOCATIONS": "classpath:db/migration,filesystem:/run/rct-group-callback",
+        "SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE": "2",
+        "SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE": "1"
+      },
+      "volumes": [
+        "${GROUP_SCHEDULE_JAR}:/app/app.jar:ro",
+        "${LANE_PRIVATE}/tls/schedule-server.crt:/run/rct-schedule-tls/schedule-server.crt:ro",
+        "${LANE_PRIVATE}/tls/schedule-server.key:/run/rct-schedule-tls/schedule-server.key:ro",
+        "${LANE_PRIVATE}/tls/academic-server.crt:/run/rct-academic-tls/academic-server.crt:ro",
+        "${LANE_PRIVATE}/tls/auth-server.crt:/run/rct-auth-tls/auth-server.crt:ro",
+        "${GROUP_ROOT}/callbacks:/run/rct-group-callback:ro"
+      ],
+      "secrets": [
+        {
+          "source": "group-academic_to_schedule_service_token",
+          "target": "/run/rct-directed/ACADEMIC_TO_SCHEDULE_SERVICE_TOKEN"
+        },
+        {
+          "source": "group-schedule_to_academic_service_token",
+          "target": "/run/rct-directed/SCHEDULE_TO_ACADEMIC_SERVICE_TOKEN"
+        },
+        {
+          "source": "group-schedule-runtime-password",
+          "target": "/run/rct-db/POSTGRES_SCHEDULE_PASSWORD"
+        },
+        {
+          "source": "group-existing-migration-password",
+          "target": "/run/rct-db/SPRING_FLYWAY_PASSWORD"
+        },
+        {
+          "source": "group-bind-attendance_bot_read_to_schedule_service_token",
+          "target": "/run/rct-directed/ATTENDANCE_BOT_READ_TO_SCHEDULE_SERVICE_TOKEN"
+        },
+        {
+          "source": "group-bind-academic_report_to_schedule_service_token",
+          "target": "/run/rct-directed/ACADEMIC_REPORT_TO_SCHEDULE_SERVICE_TOKEN"
+        }
+      ],
+      "expose": [
+        "9092",
+        "19092"
+      ],
+      "networks": [
+        "private_net"
+      ],
+      "labels": {
+        "rct.synthetic.lane": "pr3-local-v1",
+        "rct.group.package": "8e83-live-v2",
+        "rct.clock.role": "real"
+      },
+      "mem_limit": "768m",
+      "cpus": 0.4,
+      "healthcheck": {
+        "test": [
+          "CMD-SHELL",
+          "wget -Y off -qO- http://127.0.0.1:9092/actuator/health || exit 1"
+        ],
+        "interval": "10s",
+        "timeout": "5s",
+        "retries": 24,
+        "start_period": "120s"
+      }
+    },
+    "attendance-service": {
+      "image": "eclipse-temurin:21-jre-alpine",
+      "pull_policy": "never",
+      "user": "${LOCAL_UID}:${LOCAL_GID}",
+      "entrypoint": [
+        "java",
+        "-jar",
+        "/app/app.jar"
+      ],
+      "environment": {
+        "SPRING_PROFILES_ACTIVE": "prod",
+        "SPRING_CONFIG_IMPORT": "configtree:/run/rct-db/,configtree:/run/rct-directed/",
+        "AUTH_SERVICE_URL": "http://auth-service:9090",
+        "RABBITMQ_USER": "${RABBITMQ_USER}",
+        "RABBITMQ_PASSWORD": "${RABBITMQ_PASSWORD}",
+        "SPRING_RABBITMQ_VIRTUAL_HOST": "rct-pr3-local",
+        "REDIS_PASSWORD": "${REDIS_PASSWORD}",
+        "GRPC_SECRET": "${GRPC_SECRET}",
+        "JAVA_TOOL_OPTIONS": "-Djava.security.egd=file:/dev/./urandom -Xms64m -Xmx384m",
+        "ATTENDANCE_GRPC_CERTIFICATE_CHAIN": "file:/run/rct-attendance-tls/attendance-server.crt",
+        "ATTENDANCE_GRPC_PRIVATE_KEY": "file:/run/rct-attendance-tls/attendance-server.key",
+        "ACADEMIC_GRPC_TRUST_CERT_COLLECTION": "file:/run/rct-academic-tls/academic-server.crt",
+        "ACADEMIC_GRPC_TLS_AUTHORITY": "academic-service",
+        "SCHEDULE_GRPC_TRUST_CERT_COLLECTION": "file:/run/rct-schedule-tls/schedule-server.crt",
+        "SCHEDULE_GRPC_TLS_AUTHORITY": "schedule-service",
+        "ATTENDANCE_BOT_READ_AUTH_GRPC_CA_PATH": "file:/run/rct-auth-tls/auth-server.crt",
+        "ATTENDANCE_BOT_READ_ACADEMIC_GRPC_CA_PATH": "file:/run/rct-academic-tls/academic-server.crt",
+        "ATTENDANCE_BOT_READ_SCHEDULE_GRPC_CA_PATH": "file:/run/rct-schedule-tls/schedule-server.crt"
+      },
+      "volumes": [
+        "${GROUP_ATTENDANCE_JAR}:/app/app.jar:ro",
+        "${LANE_PRIVATE}/tls/attendance-server.crt:/run/rct-attendance-tls/attendance-server.crt:ro",
+        "${LANE_PRIVATE}/tls/attendance-server.key:/run/rct-attendance-tls/attendance-server.key:ro",
+        "${LANE_PRIVATE}/tls/academic-server.crt:/run/rct-academic-tls/academic-server.crt:ro",
+        "${LANE_PRIVATE}/tls/auth-server.crt:/run/rct-auth-tls/auth-server.crt:ro",
+        "${LANE_PRIVATE}/tls/schedule-server.crt:/run/rct-schedule-tls/schedule-server.crt:ro"
+      ],
+      "secrets": [
+        {
+          "source": "group-academic_to_attendance_service_token",
+          "target": "/run/rct-directed/ACADEMIC_TO_ATTENDANCE_SERVICE_TOKEN"
+        },
+        {
+          "source": "group-attendance_to_academic_service_token",
+          "target": "/run/rct-directed/ATTENDANCE_TO_ACADEMIC_SERVICE_TOKEN"
+        },
+        {
+          "source": "group-mongo-uri",
+          "target": "/run/rct-db/SPRING_DATA_MONGODB_URI"
+        },
+        {
+          "source": "group-bind-attendance_bot_read_to_schedule_service_token",
+          "target": "/run/rct-directed/ATTENDANCE_BOT_READ_TO_SCHEDULE_SERVICE_TOKEN"
+        },
+        {
+          "source": "group-bind-attendance_bot_read_to_academic_service_token",
+          "target": "/run/rct-directed/ATTENDANCE_BOT_READ_TO_ACADEMIC_SERVICE_TOKEN"
+        },
+        {
+          "source": "group-bind-attendance_to_auth_service_token",
+          "target": "/run/rct-directed/ATTENDANCE_TO_AUTH_SERVICE_TOKEN"
+        },
+        {
+          "source": "group-report-attendance",
+          "target": "/run/rct-directed/grpc.service-identity.academic-report-to-attendance-token"
+        }
+      ],
+      "expose": [
+        "9093",
+        "19093"
+      ],
+      "networks": [
+        "private_net"
+      ],
+      "labels": {
+        "rct.synthetic.lane": "pr3-local-v1",
+        "rct.group.package": "8e83-live-v2",
+        "rct.clock.role": "real"
+      },
+      "mem_limit": "768m",
+      "cpus": 0.4,
+      "healthcheck": {
+        "test": [
+          "CMD-SHELL",
+          "wget -Y off -qO- http://127.0.0.1:9093/actuator/health || exit 1"
+        ],
+        "interval": "10s",
+        "timeout": "5s",
+        "retries": 24,
+        "start_period": "120s"
+      }
+    },
+    "mongo-attendance": {
+      "image": "bitnamilegacy/mongodb:7.0@sha256:16a57fa081f18e7acd1b4de1cd74f3e294cc6de861007e6fe3a418eb61db8a54",
+      "pull_policy": "never",
+      "environment": {
+        "MONGODB_REPLICA_SET_MODE": "primary",
+        "MONGODB_REPLICA_SET_NAME": "rs0",
+        "MONGODB_REPLICA_SET_KEY": "${GROUP_MONGO_RS_KEY}",
+        "MONGODB_ROOT_USER": "rct_group_root",
+        "MONGODB_ROOT_PASSWORD": "${GROUP_MONGO_ROOT_PASSWORD}",
+        "MONGODB_USERNAME": "rct_group_attendance",
+        "MONGODB_PASSWORD": "${GROUP_MONGO_ATTENDANCE_PASSWORD}",
+        "MONGODB_DATABASE": "attendance_db",
+        "MONGODB_ADVERTISED_HOSTNAME": "mongo-attendance",
+        "MONGODB_EXTRA_FLAGS": "--wiredTigerCacheSizeGB 0.25 --logpath /bitnami/mongodb/startup.log",
+        "GROUP_MONGO_NOTIFICATION_PASSWORD": "${GROUP_MONGO_NOTIFICATION_PASSWORD}"
+      },
+      "volumes": [
+        "group-mongo-local:/bitnami/mongodb",
+        "${GROUP_ROOT}/init-group-mongo.js:/docker-entrypoint-initdb.d/20-rct-group-controls.js:ro"
+      ],
+      "expose": [
+        "27017"
+      ],
+      "networks": [
+        "private_net"
+      ],
+      "labels": {
+        "rct.synthetic.lane": "pr3-local-v1",
+        "rct.group.package": "8e83-live-v2",
+        "rct.clock.role": "real"
+      },
+      "mem_limit": "512m",
+      "cpus": 0.5,
+      "healthcheck": {
+        "test": [
+          "CMD-SHELL",
+          "mongosh --quiet -u \"$${MONGODB_ROOT_USER}\" -p \"$${MONGODB_ROOT_PASSWORD}\" --authenticationDatabase admin --eval \"if (!db.hello().isWritablePrimary) quit(2)\""
+        ],
+        "interval": "10s",
+        "timeout": "5s",
+        "retries": 24,
+        "start_period": "120s"
+      }
+    },
+    "notification-web": {
+      "image": "eclipse-temurin:21-jre-alpine",
+      "pull_policy": "never",
+      "user": "${LOCAL_UID}:${LOCAL_GID}",
+      "entrypoint": [
+        "java",
+        "-jar",
+        "/app/app.jar"
+      ],
+      "environment": {
+        "SPRING_PROFILES_ACTIVE": "prod",
+        "AUTH_SERVICE_URL": "http://auth-service:9090",
+        "RABBITMQ_USER": "${RABBITMQ_USER}",
+        "RABBITMQ_PASSWORD": "${RABBITMQ_PASSWORD}",
+        "SPRING_RABBITMQ_VIRTUAL_HOST": "rct-pr3-local",
+        "REDIS_PASSWORD": "${REDIS_PASSWORD}",
+        "GRPC_SECRET": "${GRPC_SECRET}",
+        "JAVA_TOOL_OPTIONS": "-Djava.security.egd=file:/dev/./urandom -Xms64m -Xmx384m",
+        "ACADEMIC_GRPC_TRUST_CERT_COLLECTION": "file:/run/rct-academic-tls/academic-server.crt",
+        "ACADEMIC_GRPC_TLS_AUTHORITY": "academic-service",
+        "SPRING_CONFIG_IMPORT": "configtree:/run/rct-notification/",
+        "INTERNAL_ISSUER_SECRET": "${INTERNAL_ISSUER_SECRET}",
+        "JWT_PUBLIC_KEY_PATH": "/run/rct-jwt/public.key",
+        "NOTIFICATION_WS_ALLOWED_ORIGINS": "http://127.0.0.1:14250,http://127.0.0.1:14251,http://127.0.0.1:14252"
+      },
+      "volumes": [
+        "${GROUP_NOTIFICATION_JAR}:/app/app.jar:ro",
+        "${LANE_PRIVATE}/keys/public.key:/run/rct-jwt/public.key:ro",
+        "${LANE_PRIVATE}/tls/academic-server.crt:/run/rct-academic-tls/academic-server.crt:ro"
+      ],
+      "secrets": [
+        {
+          "source": "group-notification-spring_data_mongodb_uri",
+          "target": "/run/rct-notification/SPRING_DATA_MONGODB_URI"
+        },
+        {
+          "source": "group-notification-bot_to_notification_service_token",
+          "target": "/run/rct-notification/BOT_TO_NOTIFICATION_SERVICE_TOKEN"
+        },
+        {
+          "source": "group-notification-alert_webhook_secret",
+          "target": "/run/rct-notification/ALERT_WEBHOOK_SECRET"
+        },
+        {
+          "source": "group-notification-vapid_public_key",
+          "target": "/run/rct-notification/VAPID_PUBLIC_KEY"
+        },
+        {
+          "source": "group-notification-vapid_private_key",
+          "target": "/run/rct-notification/VAPID_PRIVATE_KEY"
+        },
+        {
+          "source": "notification-to-academic-service-token",
+          "target": "/run/rct-notification/grpc.service-identity.notification-to-academic-token"
+        }
+      ],
+      "expose": [
+        "9094"
+      ],
+      "networks": [
+        "private_net"
+      ],
+      "labels": {
+        "rct.synthetic.lane": "pr3-local-v1",
+        "rct.group.package": "8e83-live-v2",
+        "rct.clock.role": "real"
+      },
+      "mem_limit": "768m",
+      "cpus": 0.4,
+      "healthcheck": {
+        "test": [
+          "CMD-SHELL",
+          "wget -Y off -qO- http://127.0.0.1:9094/actuator/health || exit 1"
+        ],
+        "interval": "10s",
+        "timeout": "5s",
+        "retries": 24,
+        "start_period": "120s"
+      }
+    },
+    "mobile-bff": {
+      "image": "eclipse-temurin:21-jre-alpine",
+      "pull_policy": "never",
+      "user": "${LOCAL_UID}:${LOCAL_GID}",
+      "entrypoint": [
+        "java",
+        "-jar",
+        "/app/app.jar"
+      ],
+      "environment": {
+        "SPRING_PROFILES_ACTIVE": "prod",
+        "AUTH_SERVICE_URL": "http://auth-service:9090",
+        "GRPC_SECRET": "${GRPC_SECRET}",
+        "JAVA_TOOL_OPTIONS": "-Djava.security.egd=file:/dev/./urandom -Xms64m -Xmx384m",
+        "ACADEMIC_GRPC_TRUST_CERT_COLLECTION": "file:/run/rct-academic-tls/academic-server.crt",
+        "ACADEMIC_GRPC_TLS_AUTHORITY": "academic-service",
+        "SCHEDULE_GRPC_TRUST_CERT_COLLECTION": "file:/run/rct-schedule-tls/schedule-server.crt",
+        "SCHEDULE_GRPC_TLS_AUTHORITY": "schedule-service",
+        "ATTENDANCE_GRPC_TRUST_CERT_COLLECTION": "file:/run/rct-attendance-tls/attendance-server.crt",
+        "ATTENDANCE_GRPC_TLS_AUTHORITY": "attendance-service",
+        "MOBILE_BFF_BOT_GRPC_PORT": "-1",
+        "MOBILE_BFF_TO_AUTH_SERVICE_TOKEN": "${MOBILE_BFF_TO_AUTH_SERVICE_TOKEN}",
+        "MOBILE_BFF_TO_ACADEMIC_SERVICE_TOKEN": "${MOBILE_BFF_TO_ACADEMIC_SERVICE_TOKEN}"
+      },
+      "volumes": [
+        "${GROUP_MOBILE_BFF_JAR}:/app/app.jar:ro",
+        "${LANE_PRIVATE}/tls/academic-server.crt:/run/rct-academic-tls/academic-server.crt:ro",
+        "${LANE_PRIVATE}/tls/schedule-server.crt:/run/rct-schedule-tls/schedule-server.crt:ro",
+        "${LANE_PRIVATE}/tls/attendance-server.crt:/run/rct-attendance-tls/attendance-server.crt:ro"
+      ],
+      "secrets": [],
+      "expose": [
+        "9080"
+      ],
+      "networks": [
+        "private_net"
+      ],
+      "labels": {
+        "rct.synthetic.lane": "pr3-local-v1",
+        "rct.group.package": "8e83-live-v2",
+        "rct.clock.role": "real"
+      },
+      "mem_limit": "768m",
+      "cpus": 0.4,
+      "healthcheck": {
+        "test": [
+          "CMD-SHELL",
+          "wget -Y off -qO- http://127.0.0.1:9080/actuator/health || exit 1"
+        ],
+        "interval": "10s",
+        "timeout": "5s",
+        "retries": 24,
+        "start_period": "120s"
+      }
+    }
+  },
+  "networks": {
+    "private_net": {
+      "ipam": {
+        "config": [
+          {
+            "subnet": "172.31.35.0/24"
+          }
+        ]
+      }
+    }
+  },
+  "volumes": {
+    "pg-academic": {},
+    "redis": {},
+    "rabbit": {},
+    "group-mongo-local": {}
+  },
+  "secrets": {
+    "bot-to-auth-service-token": {
+      "file": "${LANE_PRIVATE}/auth-secrets/bot-to-auth-service-token"
+    },
+    "e2e-pg-legacy-runtime-password": {
+      "file": "${LANE_PRIVATE}/auth-secrets/e2e-pg-legacy-runtime-password"
+    },
+    "e2e-pg-migration-password": {
+      "file": "${LANE_PRIVATE}/auth-secrets/e2e-pg-migration-password"
+    },
+    "e2e-pg-monitor-password": {
+      "file": "${LANE_PRIVATE}/auth-secrets/e2e-pg-monitor-password"
+    },
+    "e2e-pg-auth-runtime-password": {
+      "file": "${LANE_PRIVATE}/auth-secrets/e2e-pg-auth-runtime-password"
+    },
+    "e2e-pg-academic-runtime-password": {
+      "file": "${LANE_PRIVATE}/auth-secrets/e2e-pg-academic-runtime-password"
+    },
+    "e2e-pg-auth-migration-password": {
+      "file": "${LANE_PRIVATE}/auth-secrets/e2e-pg-auth-migration-password"
+    },
+    "mobile-bff-to-auth-service-token": {
+      "file": "${LANE_PRIVATE}/auth-secrets/mobile-bff-to-auth-service-token"
+    },
+    "academic-to-auth-service-token": {
+      "file": "${LANE_PRIVATE}/auth-secrets/academic-to-auth-service-token"
+    },
+    "attendance-to-auth-service-token": {
+      "file": "${LANE_PRIVATE}/auth-secrets/attendance-to-auth-service-token"
+    },
+    "auth-to-academic-presentation-service-token": {
+      "file": "${LANE_PRIVATE}/auth-secrets/auth-to-academic-presentation-service-token"
+    },
+    "mobile-bff-to-academic-service-token": {
+      "file": "${LANE_PRIVATE}/auth-secrets/mobile-bff-to-academic-service-token"
+    },
+    "attendance-bot-read-to-academic-service-token": {
+      "file": "${LANE_PRIVATE}/auth-secrets/attendance-bot-read-to-academic-service-token"
+    },
+    "academic-report-to-attendance-service-token": {
+      "file": "${LANE_PRIVATE}/auth-secrets/academic-report-to-attendance-service-token"
+    },
+    "academic-report-to-schedule-service-token": {
+      "file": "${LANE_PRIVATE}/auth-secrets/academic-report-to-schedule-service-token"
+    },
+    "notification-to-academic-service-token": {
+      "file": "${LANE_PRIVATE}/auth-secrets/notification-to-academic-service-token"
+    },
+    "group-academic_to_schedule_service_token": {
+      "file": "${GROUP_PRIVATE}/ACADEMIC_TO_SCHEDULE_SERVICE_TOKEN"
+    },
+    "group-schedule_to_academic_service_token": {
+      "file": "${GROUP_PRIVATE}/SCHEDULE_TO_ACADEMIC_SERVICE_TOKEN"
+    },
+    "group-academic_to_attendance_service_token": {
+      "file": "${GROUP_PRIVATE}/ACADEMIC_TO_ATTENDANCE_SERVICE_TOKEN"
+    },
+    "group-attendance_to_academic_service_token": {
+      "file": "${GROUP_PRIVATE}/ATTENDANCE_TO_ACADEMIC_SERVICE_TOKEN"
+    },
+    "group-schedule-runtime-password": {
+      "file": "${GROUP_PRIVATE}/POSTGRES_SCHEDULE_PASSWORD"
+    },
+    "group-existing-migration-password": {
+      "file": "${LANE_PRIVATE}/auth-secrets/e2e-pg-migration-password"
+    },
+    "group-mongo-uri": {
+      "file": "${GROUP_PRIVATE}/SPRING_DATA_MONGODB_URI"
+    },
+    "group-bind-attendance_bot_read_to_schedule_service_token": {
+      "file": "${GROUP_PRIVATE}/ATTENDANCE_BOT_READ_TO_SCHEDULE_SERVICE_TOKEN"
+    },
+    "group-bind-academic_report_to_schedule_service_token": {
+      "file": "${LANE_PRIVATE}/auth-secrets/academic-report-to-schedule-service-token"
+    },
+    "group-bind-attendance_bot_read_to_academic_service_token": {
+      "file": "${LANE_PRIVATE}/auth-secrets/attendance-bot-read-to-academic-service-token"
+    },
+    "group-bind-attendance_to_auth_service_token": {
+      "file": "${LANE_PRIVATE}/auth-secrets/attendance-to-auth-service-token"
+    },
+    "group-report-attendance": {
+      "file": "${LANE_PRIVATE}/auth-secrets/academic-report-to-attendance-service-token"
+    },
+    "group-notification-spring_data_mongodb_uri": {
+      "file": "${GROUP_PRIVATE}/NOTIFICATION_SPRING_DATA_MONGODB_URI"
+    },
+    "group-notification-bot_to_notification_service_token": {
+      "file": "${GROUP_PRIVATE}/NOTIFICATION_BOT_TO_NOTIFICATION_SERVICE_TOKEN"
+    },
+    "group-notification-alert_webhook_secret": {
+      "file": "${GROUP_PRIVATE}/NOTIFICATION_ALERT_WEBHOOK_SECRET"
+    },
+    "group-notification-vapid_public_key": {
+      "file": "${GROUP_PRIVATE}/NOTIFICATION_VAPID_PUBLIC_KEY"
+    },
+    "group-notification-vapid_private_key": {
+      "file": "${GROUP_PRIVATE}/NOTIFICATION_VAPID_PRIVATE_KEY"
+    }
+  }
+}

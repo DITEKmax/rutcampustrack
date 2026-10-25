@@ -1,0 +1,61 @@
+{
+  "schema": 1,
+  "state": "NOT_RUN",
+  "sourceArgument": "--source-sha exact owner-pinned published Git commit required; final freeze after Angular integration",
+  "referenceAuditCommit": "7ef451a6c",
+  "productReferenceCommit": "6219ca60a322d29921575535eccbf12efa76e304",
+  "namespace": "rct-pr3-local",
+  "platform": "Ubuntu24.04 / WSL2; services on local Docker Engine unix socket; host JDK/Node/commands",
+  "versions": {
+    "java": "21",
+    "gradle": "8.12",
+    "node": "24.14.0",
+    "npm": "11.9.0",
+    "springBoot": "3.5.16"
+  },
+  "upstreamSemanticSources": {
+    "nativePackage": "180fecc3c66834c36ecbff44271742d1457d74964bfc0b41159fb7730d693d5c",
+    "cohortLogicPackage": "a23d3155e8d75b5959ea0b7b64d284c0e5add2bbfbaf0c53e91a66805375d8c4",
+    "originalPublicFileHashes": {
+      "fixture-api.cjs": "9fd7a76f7614f08bd6555cb0a4c56eaa360c91a52d59bfec621ebd9ef579308e",
+      "seed-owned-rows.py": "c4a4b616414ba23e73c1833f1624479a763d8f84023baf5baabedcadf7ad3527",
+      "postproof.py": "3c0391287d25f83510085b940a6062ec4b35dfa65bb955ac8d0d8db57b9a6664",
+      "idle-observer.cjs": "36cc1328a7f66c104d961631a4ef308cfbf9656d7989376f8002d029dba650e8",
+      "telegram-owned-adapter.cjs": "2c66ca0f2b3f57cbba353e5e9b64f9bfaf78740233514558d2e6630a8d32ebd7",
+      "native-cohort.cjs": "3cc0c7028d1aa942a95113b41c9f27330385eeb6cbf8e81d9fb8ed88b2a2c2b4",
+      "cohort-proof.py": "11bab842057aca89a8c06a1bb86b76223093adc142effd749590db75064c559e"
+    }
+  },
+  "localAdaptations": [
+    "All source and credential paths are local generated settings; no cloud credentials/config/data imported.",
+    "Fresh empty Auth/Academic first-volume baseline with locally selected Admin password, own local keys and TLS.",
+    "Live teaching clock; new own current semester via normal API; no OS/Auth/cloud clock manipulation or old semester2 restoration.",
+    "Seven local matching JARs built from exact --source-sha, fresh source manifests and generated package hash.",
+    "Local Linux/WSL memory observation replaces fixed cloud16GiB cgroup identity; >=12GiB total and >=2GiB available for browser, same2GiB hard/2.5GiB early250ms disk guards."
+  ],
+  "mustPreserve": [
+    "one original UI-generated operation UUID; numeric preview/current password/status",
+    "six pre-opened independent WEB/PWA/TMA Headman/retainedTeacher natural views",
+    "exact personal hint/request-start causal boundary and original applied control query",
+    "Auth COMMIT clears target selected grant/increments sessionVersion; other roles may keep SID alive",
+    "durable intent/own Auth handles before effects; unknown HOLD, no re-confirm/login/refresh/logout retries",
+    "foreign accounts/credentials/roles/group1/control rows/session core preserved",
+    "separate TMA original/single natural successor handles and exact own cleanup"
+  ],
+  "cloudGate": "CANCELLED_BY_OWNER_STEERING; never execute cloud runtime from this handoff",
+  "localGate": "NOT_RUN until owner supplies actual runtime/browser/postproof output",
+  "minimumServices": [
+    "postgres-academic",
+    "redis",
+    "rabbitmq",
+    "auth-service",
+    "academic-service",
+    "api-gateway",
+    "tls-edge",
+    "schedule-service",
+    "attendance-service",
+    "mongo-attendance",
+    "notification-web",
+    "mobile-bff"
+  ]
+}

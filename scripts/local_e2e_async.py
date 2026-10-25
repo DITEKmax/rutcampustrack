@@ -317,6 +317,8 @@ class Runner:
                         RCT_E2E_TEACHING_CLOCK_DIR=str(self.run / "clock"), RCT_REMAINING5_RUN=str(self.run),
                         RCT_LOCAL_STAGE17_MANIFEST=str(self.run / "owner.json"), RCT_LOCAL_STAGE17_NONCE=self.nonce,
                         RCT_LOCAL_STAGE17_MODE=mode,
+                        RCT_DIAGNOSTIC_CONTEXT="local", RCT_DIAGNOSTIC_RUN_DIR=str(self.run),
+                        RCT_DIAGNOSTIC_CHECKOUT_ROOT=str(ROOT),
                         RCT_LOCAL_CLIENT_STARTUP_DIAGNOSTIC="true" if startup_diagnostic else "false",
                         PLAYWRIGHT_NO_COPY_PROMPT="1", NODE_OPTIONS="--max-old-space-size=512",
                         COMPOSE_PARALLEL_LIMIT="1", BUILDKIT_MAX_PARALLELISM="1")
@@ -565,6 +567,49 @@ class Runner:
         write(self.run / "artifacts/openapi-followup.safe.json", json.dumps(result, indent=2) + "\n")
         emit("OPENAPI_FOLLOWUP", **result)
 
+    def diagnose_http_failure(self):
+        """Same closed CI implementation, before existing log retention and cleanup."""
+        stage = {"client": "HOMEWORK_CREATE503", "lesson-lifecycle": "STUDENT_STATS503"}.get(self.mode)
+        if stage is None:
+            return
+        args = [sys.executable, "-B", str(ROOT / "tests/e2e/fixtures/http500_diagnostic.py"),
+                "--context", "local", "--stage", stage, "--root", str(ROOT), "--run-dir", str(self.run)]
+        cancelled = False
+        def cancel(*_):
+            nonlocal cancelled
+            cancelled = True
+        previous = {kind: signal.signal(kind, cancel) for kind in (signal.SIGTERM, signal.SIGINT)}
+        child = None
+        try:
+            with (self.run / "http500-diagnostic.safe.log").open("xb") as log:
+                # Install non-raising handlers before spawn: a signal cannot orphan a new session.
+                child = subprocess.Popen(args, cwd=ROOT, env=self.env, stdout=log, stderr=subprocess.STDOUT,
+                                         stdin=subprocess.DEVNULL, start_new_session=True)
+                deadline = time.monotonic() + 30
+                while child.poll() is None:
+                    if cancelled:
+                        raise KeyboardInterrupt()
+                    remaining = deadline - time.monotonic()
+                    if remaining <= 0:
+                        raise subprocess.TimeoutExpired(args, 30)
+                    try:
+                        child.wait(timeout=min(0.2, remaining))
+                    except subprocess.TimeoutExpired:
+                        pass
+                emit("HTTP_DIAGNOSTIC", stage=stage, child_returncode=child.returncode)
+        finally:
+            try:
+                if child is not None and child.poll() is None:
+                    os.killpg(child.pid, signal.SIGTERM)
+                    try:
+                        child.wait(timeout=5)
+                    except subprocess.TimeoutExpired:
+                        os.killpg(child.pid, signal.SIGKILL)
+                        child.wait(timeout=5)
+            finally:
+                for kind, handler in previous.items():
+                    signal.signal(kind, handler)
+
     def image_identity(self, tag):
         if not capture(["docker", "image", "ls", "--quiet", "--no-trunc", tag]).strip():
             return None
@@ -661,6 +706,12 @@ def main():
             primary = sys.exc_info()[1]
             cleanup_error, logs_error, logs_complete = None, None, True
             if runner.run.exists():
+                if primary is not None:
+                    try:
+                        runner.diagnose_http_failure()
+                    except BaseException:
+                        # This follow-up cannot replace the original failure or skip cleanup.
+                        emit("HTTP_DIAGNOSTIC", state="UNAVAILABLE")
                 try:
                     logs_complete = runner.preserve_logs() is not False
                 except BaseException as error:

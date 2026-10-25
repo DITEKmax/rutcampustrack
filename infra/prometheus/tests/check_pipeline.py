@@ -1098,12 +1098,10 @@ def e2e_async_browser():
                 assert browser.returncode == 0
             result_path = run / "artifacts/safe-results.json"
             assert result_path.is_file() and not result_path.is_symlink() and result_path.stat().st_size <= 1024 * 1024
-            outcome = json.loads(result_path.read_text())
-            assert outcome["status"] == "passed" and outcome["runnerErrors"] == 0 and outcome["unsafeArtifact"] is False
-            assert len(outcome["results"]) == 1
-            case = outcome["results"][0]
-            assert case["file"] == "mobile-real-server.spec.ts" and case["project"] == "chromium"
-            assert case["status"] == case["expectedStatus"] == "passed" and case["errorCount"] == 0
+            sys.path.insert(0, str(ROOT / "tests/e2e/fixtures"))
+            from http500_diagnostic import decode, is_async_success
+            outcome = decode(result_path.read_bytes())
+            assert is_async_success(outcome)
             safe["phase"] = "POST_DOWNLOAD_METRIC_DELTAS"
 
             def observed_deltas():

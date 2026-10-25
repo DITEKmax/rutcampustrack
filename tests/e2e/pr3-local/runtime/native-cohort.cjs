@@ -118,7 +118,7 @@ async function main() {
   const pre = resources();
   assert(pre.memoryMaximum >= 12884901888 && pre.memoryAvailable >= 2147483648, 'Actual cgroup budget/headroom required');
   assert(pre.diskAvailable >= 2684354560 && go.capacityQENV010Applied === true, 'Root capacity gate remains required');
-  fs.mkdirSync(PRIVATE, { mode: 0o700 }); fs.chmodSync(PRIVATE, 0o700);
+  require('./prepared-private.cjs').admitPreparedPrivate(PRIVATE);
   save('intent.json', { state: 'RESERVED_NOT_SENT', packageSha, rootHead: go.rootHead, at: new Date().toISOString() }, true);
   assert.equal(fs.realpathSync(configFile), path.join(V8, 'private/native-config.json'), 'Only exact owned fixture credential config is admitted');
   assert(!fs.lstatSync(configFile).isSymbolicLink());

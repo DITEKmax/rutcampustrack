@@ -25,11 +25,11 @@ def docker(*args,input=None,expected=0):return call(DOCKER+list(args),input,expe
 def compose(*args):return DOCKER+['compose','--project-name',PROJECT,'--env-file',str(PRIVATE/'local.env'),'-f',str(ROOT/'compose.json'),*args]
 def pg(sql,db='postgres',user='rct_user',password=None,expected=0):
  # Only the exact owned PostgreSQL container. Secrets are input, never command output.
- ownership();args=['exec','-i']
- if password is not None:args+=['-e','PGPASSWORD='+password]
- args += [PROJECT+'-postgres-academic-1','psql','-X','-A','-t','-q','-U',user,'-d',db,'-v','ON_ERROR_STOP=1']
- if password is not None:args+=['-h','127.0.0.1']
- return docker(*args,input=sql,expected=expected)
+ ownership();psql=['-X','-A','-t','-q','-U',user,'-d',db,'-v','ON_ERROR_STOP=1']
+ if password is None:return docker('exec','-i',PROJECT+'-postgres-academic-1','psql',*psql,input=sql,expected=expected)
+ assert re.fullmatch(r'[A-Za-z0-9_-]{43}',password)
+ # The DB password is one stdin line, never a Docker CLI argument/environment dump.
+ return docker('exec','-i',PROJECT+'-postgres-academic-1','sh','-c','IFS= read -r PGPASSWORD; export PGPASSWORD; exec psql "$@"','rct-pr3-local-psql',*psql,'-h','127.0.0.1',input=password+'\n'+sql,expected=expected)
 def snapshot():
  ids=docker('ps','-aq').stdout.splitlines()
  if not ids:return []
@@ -44,6 +44,15 @@ def ownership():
  for row in now:
   if row['Project']==PROJECT:
    assert row['Owner']==S['ownerNonce'] and row['Service'] in S['services'],'Unknown namespace owner; never stop or adopt it'
+   assert row['Name']=='/'+PROJECT+'-'+row['Service']+'-1','Owned service name changed'
+   pin=S['servicePins'][row['Service']]
+   assert row['Image']==S['images'][pin['image']],'Owned container image differs from frozen image ID'
+   mounts=[]
+   for m in row['Mounts']:
+    assert m['Type'] in ['bind','volume'],'Unqualified mount type'
+    key='Source' if m['Type']=='bind' else 'Name'
+    mounts.append({'Type':m['Type'],key:m[key],'Destination':m['Destination'],'RW':m['RW']})
+   assert sorted(mounts,key=lambda m:json.dumps(m,sort_keys=True))==pin['mounts'],'Owned mount set differs from exact frozen state/JAR/volume pins'
  for kind in ['volume','network']:
   ids=docker(kind,'ls','-q','--filter','name='+PROJECT).stdout.splitlines()
   if ids:
@@ -56,7 +65,14 @@ def package_hash():
   digest,name=line.split('  ',1);assert not pathlib.Path(name).is_absolute() and '..' not in pathlib.Path(name).parts
   assert sha(ROOT/name)==digest,'Local frozen driver/config changed'
  value=sha(manifest);assert value==(ROOT/'PACKAGE-SHA256').read_text().strip();return value
+def inputs():
+ file=PRIVATE/'input-bindings.json';assert not file.is_symlink() and sha(file)==(ROOT/'PRIVATE-INPUTS-SHA256').read_text().strip(),'Private input bindings changed'
+ bindings=json.loads(file.read_text());assert bindings['sourceSha']==S['sourceSha'] and bindings['ownerNonce']==S['ownerNonce']
+ for name,digest in bindings['files'].items():
+  assert not pathlib.Path(name).is_absolute() and '..' not in pathlib.Path(name).parts
+  p=PRIVATE/name;assert p.is_file() and not p.is_symlink() and sha(p)==digest,'Prepared private input changed; no value emitted'
 def source():
+ package_hash();inputs()
  assert call(['git','-C',str(REPO),'rev-parse','HEAD']).stdout.strip()==S['sourceSha'],'Pinned source changed'
  assert not call(['git','-C',str(REPO),'diff','--name-only','HEAD']).stdout.strip(),'Tracked source edits; freeze a clean published checkout'
  for line in (ROOT/'source-inputs.SHA256SUMS').read_text().splitlines():
@@ -69,12 +85,50 @@ def resources():
  if (cg/'memory.max').exists() and (cg/'memory.max').read_text().strip()!='max':
   bound=int((cg/'memory.max').read_text());current=int((cg/'memory.current').read_text());maximum=min(maximum,bound);available=min(available,bound-current)
  return {'memoryMaximum':maximum,'memoryAvailable':available,'memoryCurrent':maximum-available,'diskAvailable':shutil.disk_usage(ROOT).free,'cpuCount':os.cpu_count()}
+def ready():
+ rows=[r for r in ownership() if r['Project']==PROJECT]
+ assert len(rows)==len(S['services']) and {r['Service'] for r in rows}==set(S['services']) and all(r['Running'] for r in rows),'All exact owned services required before API'
+ receipt=json.loads((PRIVATE/'services-ready.json').read_text());proof=json.loads((PRIVATE/'isolation-proof.json').read_text())
+ assert receipt['sourceSha']==S['sourceSha'] and receipt['ownerNonce']==S['ownerNonce'] and set(receipt['ids'])=={r['Id'] for r in rows},'Ready IDs/source/nonce changed'
+ assert proof['allPassed'] and proof['sourceSha']==S['sourceSha'] and proof['ownerNonce']==S['ownerNonce']
+ states=[json.loads(x) for x in docker('inspect','--format','{{json .State.Health.Status}}',*[r['Id'] for r in rows]).stdout.splitlines()]
+ assert len(states)==len(rows) and all(x=='healthy' for x in states),'Owned services are not currently healthy'
+def wait_healthy():
+ # The parent guarded process samples resources every250ms while this detached
+ # health poll waits on Docker. A timeout/interrupt stops only its child group.
+ deadline=time.monotonic()+350
+ while time.monotonic()<deadline:
+  own=[r for r in ownership() if r['Project']==PROJECT]
+  if len(own)==len(S['services']):
+   states=[json.loads(x) for x in docker('inspect','--format','{{json .State}}',*[r['Id'] for r in own]).stdout.splitlines()]
+   assert len(states)==len(own),'Own health metadata unavailable'
+   assert not any(x['Status'] in ['exited','dead'] for x in states),'Own service exited; no automatic restart'
+   if all(x.get('Health',{}).get('Status')=='healthy' for x in states):return
+  time.sleep(.25)
+ raise RuntimeError('Bounded readiness expired; no retry')
 def pending():
  assert pg("BEGIN READ ONLY; SELECT count(*) FROM group_deletion_operations WHERE phase NOT IN ('COMPLETED','CANCELLED'); ROLLBACK;",'academic_db').stdout.strip()=='0','Nonterminal original operation; inspect status only'
+def isolation():
+ """Same finite rolled-back own CRUD/cross-DB denial controls as accepted180f."""
+ source();ownership();assert resources()['diskAvailable']>=2684354560
+ password=(PRIVATE/'POSTGRES_SCHEDULE_PASSWORD').read_text();user='rct_group_schedule_runtime'
+ own=pg("BEGIN; INSERT INTO shedlock(name,lock_until,locked_at,locked_by) VALUES('pr3-local-probe',now(),now(),'own'); UPDATE shedlock SET locked_by='own2' WHERE name='pr3-local-probe'; SELECT count(*) FROM shedlock WHERE name='pr3-local-probe'; DELETE FROM shedlock WHERE name='pr3-local-probe'; ROLLBACK;",'schedule_db',user,password).stdout
+ assert own.strip()=='1';checks={'ownScheduleCrudRolledBack':True}
+ for db in ['auth_db','academic_db']:
+  result=pg('SELECT 1;',db,user,password,expected=None)
+  assert result.returncode!=0 and 'permission denied for database' in result.stderr;checks[db+'ConnectDenied']=True
+ for name,sql in [('ddl',"BEGIN; CREATE TABLE public.pr3_local_forbidden_probe(id integer); ROLLBACK;"),('truncate',"BEGIN; TRUNCATE group_deletion_participants; ROLLBACK;")]:
+  result=pg(sql,'schedule_db',user,password,expected=None);assert result.returncode!=0 and 'permission denied' in result.stderr;checks[name+'Denied']=True
+ role=json.loads(pg("BEGIN READ ONLY; SELECT json_build_object('noMembership',NOT EXISTS(SELECT 1 FROM pg_auth_members WHERE member=(SELECT oid FROM pg_roles WHERE rolname='rct_group_schedule_runtime')),'noCreate',NOT has_schema_privilege('rct_group_schedule_runtime','public','CREATE'),'noTruncate',NOT has_table_privilege('rct_group_schedule_runtime','group_deletion_participants','TRUNCATE')); ROLLBACK;",'schedule_db').stdout);assert all(role.values());checks.update(role)
+ for own,other,user,file in [('attendance_db','notification_db','rct_group_attendance','SPRING_DATA_MONGODB_URI'),('notification_db','attendance_db','rct_group_notification','NOTIFICATION_SPRING_DATA_MONGODB_URI')]:
+  password=re.search(r':([^:@]+)@',(PRIVATE/file).read_text()).group(1)
+  script="const d=db.getSiblingDB("+json.dumps(own)+");if(!d.auth("+json.dumps(user)+","+json.dumps(password)+"))throw Error('Own principal denied');let denied=false;try{d.getSiblingDB("+json.dumps(other)+").getCollectionNames()}catch(e){denied=e.code===13;}if(!denied)throw Error('Cross database accessible');const s=d.getMongo().startSession();const c=s.getDatabase("+json.dumps(own)+").event_consumer_processed;s.startTransaction();try{c.insertOne({_id:'pr3-local-isolation-probe'});if(c.countDocuments({_id:'pr3-local-isolation-probe'})!==1)throw Error('Own read denied');c.updateOne({_id:'pr3-local-isolation-probe'},{$set:{owned:true}});c.deleteOne({_id:'pr3-local-isolation-probe'});}finally{s.abortTransaction();s.endSession();}print(JSON.stringify({crossDatabaseDenied:true,ownCrudAborted:true}));"
+  proof=json.loads(docker('exec','-i',PROJECT+'-mongo-attendance-1','mongosh','--quiet','--host','127.0.0.1',input=script).stdout.strip());assert all(proof.values());checks[own]=proof
+ private_write(PRIVATE/'isolation-proof.json',{'allPassed':True,'sourceSha':S['sourceSha'],'ownerNonce':S['ownerNonce'],'checks':checks,'fixtureTargetWrites':0});print('Own isolated principal controls passed; probe transactions rolled back/aborted.')
 def admission(phase,go,continuation=False):
  g=json.loads(pathlib.Path(go).read_text());assert g.get('approved') is True and g['phase']==phase and g['rootHead']==S['sourceSha'] and g['sourceCommit']==S['sourceSha']
  assert g['packageSha256']==package_hash() and g['ownOrigin']=='http://127.0.0.1:14250'
- source();ownership();r=resources();assert r['diskAvailable']>=2684354560,'Early disk reserve; HOLD, no retry'
+ source();ready();r=resources();assert r['diskAvailable']>=2684354560,'Early disk reserve; HOLD, no retry'
  assert r['memoryMaximum']>=12884901888 and r['memoryAvailable']>=1073741824,'Local memory budget insufficient'
  if phase=='native-case':assert g.get('capacityQENV010Applied') is True and (PRIVATE/'fresh-runtime-preflight.json').exists()
  return g

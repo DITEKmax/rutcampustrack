@@ -42,6 +42,25 @@ def source_check(source_sha):
  assert not run(['git','ls-files','--others','--exclude-standard','--','services','frontends','proto','tests/e2e/pr3-local']).strip(),'Untracked executable/source inputs are not admitted'
 def load_runtime():
  sys.path.insert(0,str(ROOT));import runtime;return runtime
+def mount_pins(compose,values,jars):
+ def expand(value):
+  return re.sub(r'\$\{([A-Z_][A-Z0-9_]*)(?::\?[^}]*)?\}',lambda m:values[m[1]],value)
+ result={};jar_paths={a['path'] for a in jars}
+ for name,service in compose['services'].items():
+  mounts=[]
+  for value in service.get('volumes',[]):
+   source,dest,*mode=expand(value).split(':');rw=mode!=['ro']
+   if source in compose['volumes']:mounts.append({'Type':'volume','Name':PROJECT+'_'+source,'Destination':dest,'RW':rw})
+   else:
+    p=pathlib.Path(source);assert p.is_absolute() and (ROOT in p.parents or source in jar_paths),'Mount source outside exact new local state/JARs'
+    mounts.append({'Type':'bind','Source':source,'Destination':dest,'RW':rw})
+  for entry in service.get('secrets',[]):
+   key=entry['source'] if isinstance(entry,dict) else entry;target=entry.get('target',key) if isinstance(entry,dict) else key
+   target=target if target.startswith('/') else '/run/secrets/'+target
+   source=expand(compose['secrets'][key]['file']);assert ROOT in pathlib.Path(source).parents
+   mounts.append({'Type':'bind','Source':source,'Destination':target,'RW':False})
+  result[name]={'image':service['image'],'mounts':sorted(mounts,key=lambda m:json.dumps(m,sort_keys=True))}
+ return result
 def available():
  info={k:int(v.split()[0])*1024 for k,v in (line.split(':',1) for line in pathlib.Path('/proc/meminfo').read_text().splitlines())}
  maxmem=info['MemTotal'];mem=info['MemAvailable'];cg=pathlib.Path('/sys/fs/cgroup')
@@ -73,6 +92,7 @@ def prepare(args):
  images={tag:json.loads(run(DOCKER+['image','inspect','--format','{{json .Id}}',tag])) for tag in sorted(image_tags)}
  try:import bcrypt
  except ImportError:raise RuntimeError('Install Ubuntu python3-bcrypt; use /usr/bin/python3')
+ assert sys.stdin.isatty() and sys.stderr.isatty(),'Interactive TTY required; no echoing getpass fallback or password pipe'
  password=getpass.getpass('Новый текущий пароль Admin1 только этого локального стенда: ')
  assert len(password)>=12 and password==getpass.getpass('Повтори пароль: '),'Choose and confirm at least12characters'
  assert len(password.encode())<=72,'bcrypt input must be at most72UTF8bytes'
@@ -85,9 +105,8 @@ def prepare(args):
  write(PRIVATE/'foreign-baseline.json',baseline)
  contract=json.loads((HERE/'source-contract.json').read_text());services=contract['minimumServices'];nonce=secrets.token_hex(16)
  settings={'repo':str(REPO),'sourceSha':args.source_sha,'ownerNonce':nonce,'services':services,'images':images,'localGate':'NOT_RUN','referenceContractSha256':sha(HERE/'source-contract.json')}
- write(ROOT/'settings.json',settings)
  write(ROOT/'pins.json',{'sourceCommit':args.source_sha,'artifacts':jars,'project':PROJECT,'preflight':{'minimumFreshFreeBytes':7516192768,'earlyStopBytes':2684354560,'hardReserveBytes':2147483648,'sampleIntervalSeconds':.25}})
- names=run(['git','ls-files','--','services','proto','frontends','gradle','build.gradle.kts','settings.gradle.kts','tests/e2e/pr3-local']).splitlines()
+ names=run(['git','ls-files','--','services','proto','frontends','gradle','build.gradle.kts','settings.gradle.kts','infra/postgres/init-roles.sh','tests/e2e/infra/baseline','tests/e2e/pr3-local']).splitlines()
  names=sorted(n for n in names if '/build/' not in n and '/node_modules/' not in n and '/dist/' not in n)
  write(ROOT/'source-inputs.SHA256SUMS',''.join(sha(REPO/n)+'  '+n+'\n' for n in names))
  frontend=sorted(n for n in names if any(n.startswith(x) for x in ['frontends/web-vue/src/','frontends/pwa-vue/src/','frontends/tma-vue/src/','frontends/mobile-core/src/','frontends/shared/']) and '/dev/' not in n and '.test.' not in n and '/__fixtures__/' not in n)
@@ -150,6 +169,11 @@ def prepare(args):
  os.chmod(ROOT/'init-group-mongo.js',0o444)
  config={'baseURL':'http://127.0.0.1:14250','groupName':'ГДЛ-199','controlGroupName':'ГДЛ-198','admin':{'login':'admin','password':password}}
  write(PRIVATE/'native-config.json',config);password=None;password_hash=None
+ settings['servicePins']=mount_pins(compose,values,jars)
+ write(ROOT/'settings.json',settings)
+ private_inputs=sorted(p for p in PRIVATE.rglob('*') if p.is_file())
+ write(PRIVATE/'input-bindings.json',{'sourceSha':args.source_sha,'ownerNonce':nonce,'files':{str(p.relative_to(PRIVATE)):sha(p) for p in private_inputs}})
+ write(ROOT/'PRIVATE-INPUTS-SHA256',sha(PRIVATE/'input-bindings.json')+'\n')
  frontend_config=(HERE/'templates/frontend-config.ts').read_text().replace('__REPO__',str(REPO)).replace('__STATE__',str(ROOT))
  write(ROOT/'frontend-config.ts',frontend_config)
  inputs=sorted(p for p in ROOT.rglob('*') if p.is_file() and PRIVATE not in p.parents and p.name not in ['SOURCE.SHA256SUMS','PACKAGE-SHA256'])
@@ -176,32 +200,35 @@ def guarded(runtime,args,phase,timeout=300):
   try:rc=proc.wait(timeout=10)
   except subprocess.TimeoutExpired:os.killpg(proc.pid,signal.SIGKILL);rc=proc.wait(timeout=5)
  write(PRIVATE/(phase+'-receipt-'+str(time.time_ns())+'.json'),{'exit':rc,'guardStopped':stopped,'interrupted':interrupted,'samples':samples,'privateLog':str(log)})
- if stopped and phase=='start':
-  rows=runtime.ownership();ids=[x['Id'] for x in rows if x['Project']==PROJECT]
-  if ids:run(DOCKER+['stop','--time','2',*ids],timeout=60)
-  write(PRIVATE/('startup-guard-closure-'+str(time.time_ns())+'.json'),{'exactOwnedIdsStopped':ids,'volumesDeleted':False,'foreignResourcesChanged':False})
  if interrupted:raise KeyboardInterrupt()
  assert rc==0 and not stopped,'Scoped process failed/guarded; preserve original intent and inspect; no blind retry'
+def close_startup(runtime,reason):
+ # Metadata qualification is mandatory even on failure: never stop an unknown ID.
+ try:rows=runtime.ownership()
+ except Exception:
+  write(PRIVATE/('startup-closure-HOLD-'+str(time.time_ns())+'.json'),{'reason':reason,'state':'UNQUALIFIED_HOLD','stoppedIds':[],'volumesDeleted':False});raise
+ ids=[x['Id'] for x in rows if x['Project']==PROJECT]
+ write(PRIVATE/('startup-stop-intent-'+str(time.time_ns())+'.json'),{'reason':reason,'exactOwnedIds':ids,'state':'INTENT_BEFORE_STOP','volumesDeleted':False})
+ if ids:run(DOCKER+['stop','--time','2',*ids],timeout=120)
+ write(PRIVATE/('startup-guard-closure-'+str(time.time_ns())+'.json'),{'reason':reason,'exactOwnedIdsStopped':ids,'volumesDeleted':False,'foreignResourcesChanged':False})
 def start(runtime):
  runtime.source();runtime.ownership();ports_free();assert not (PRIVATE/'start-intent.json').exists(),'Start was already attempted; inspect retained owned services'
  budget=runtime.resources();assert budget['diskAvailable']>=7516192768 and budget['memoryAvailable']>=5368709120,'Fresh after-JAR7GiB disk/5GiB available RAM required'
  for image in {x['image'] for x in json.loads((ROOT/'compose.json').read_text())['services'].values()}:run(DOCKER+['image','inspect',image])
  write(PRIVATE/'fresh-runtime-preflight.json',{'at':datetime.datetime.now(datetime.timezone.utc).isoformat(),'sourceSha':runtime.S['sourceSha'],**budget})
  write(PRIVATE/'start-intent.json',{'state':'INTENT','sourceSha':runtime.S['sourceSha']})
- guarded(runtime,runtime.compose('up','-d','--pull','never'),'start',300)
- deadline=time.monotonic()+360
- while time.monotonic()<deadline:
-  rows=runtime.ownership();own=[r for r in rows if r['Project']==PROJECT]
-  if len(own)==12:
-   states=[json.loads(run(DOCKER+['inspect','--format','{{json .State}}',x['Id']])) for x in own]
-   assert not any(x['Status'] in ['exited','dead'] for x in states),'Own service exited; no automatic restart/retry'
-   if all(x.get('Health',{}).get('Status')=='healthy' for x in states):
-    write(PRIVATE/'services-ready.json',{'state':'SERVICES_READY_UI_NOT_RUN','sourceSha':runtime.S['sourceSha'],'ids':[x['Id'] for x in own]});print('Own12services healthy; fixture/UI delete NOT_RUN.');return
-  assert runtime.resources()['diskAvailable']>=2684354560,'Early reserve; preserve data, no further startup'
-  time.sleep(.25)
- raise RuntimeError('Bounded readiness expired; preserve state, do not repeat start')
+ try:
+  guarded(runtime,runtime.compose('up','-d','--pull','never'),'start',300)
+  guarded(runtime,[sys.executable,'-c','import runtime; runtime.wait_healthy()'],'readiness',360)
+  own=[r for r in runtime.ownership() if r['Project']==PROJECT]
+  guarded(runtime,[sys.executable,'-c','import runtime; runtime.isolation()'],'isolation',120)
+  assert runtime.resources()['diskAvailable']>=2684354560,'Early reserve after isolation'
+  write(PRIVATE/'services-ready.json',{'state':'SERVICES_READY_UI_NOT_RUN','sourceSha':runtime.S['sourceSha'],'ownerNonce':runtime.S['ownerNonce'],'ids':[x['Id'] for x in own]})
+  runtime.ready();print('Own12services healthy and isolated; fixture/UI delete NOT_RUN.')
+ except BaseException as error:
+  close_startup(runtime,'INTERRUPTED' if isinstance(error,KeyboardInterrupt) else 'STARTUP_NOT_READY');raise
 def frontends(runtime):
- runtime.source();runtime.ownership();assert (PRIVATE/'services-ready.json').exists();children=[]
+ runtime.source();runtime.ready();children=[]
  write(PRIVATE/'frontend-intent.json',{'clients':['web','pwa','tma'],'fixtureMode':False})
  try:
   for client in ['web','pwa','tma']:
@@ -222,6 +249,19 @@ def frontends(runtime):
     except subprocess.TimeoutExpired:os.killpg(proc.pid,signal.SIGKILL);proc.wait(timeout=5)
    log.close()
   write(PRIVATE/('frontend-closed-'+str(time.time_ns())+'.json'),{'ownedPids':[p.pid for p,_ in children],'otherProcessesTouched':False})
+def stop_owned(runtime):
+ # Partial known startup has no domain/Auth attempt and needs no ready milestone.
+ business=any((PRIVATE/name).exists() for name in ['calendar-setup-owner-command.json','fixture-api-owner-command.json','fixture-rows-owner-command.json','native-case-owner-command.json','intent.json'])
+ if business:
+  if (PRIVATE/'intent.json').exists():
+   receipt=json.loads((PRIVATE/'native-case-result.json').read_text());assert receipt['allPassed'] and receipt['cleanupComplete'],'Unknown original case; HOLD before stop'
+  else:
+   state=json.loads((PRIVATE/'fixture-state.json').read_text());assert state['step']=='owned-fixture-ready' and (PRIVATE/'fixture-rows-receipt.json').exists(),'Partial/unknown fixture; HOLD before stop'
+  runtime.pending()
+ rows=runtime.ownership();ids=[x['Id'] for x in rows if x['Project']==PROJECT]
+ write(PRIVATE/('stop-intent-'+str(time.time_ns())+'.json'),{'ownedIds':ids,'volumesDeleted':False})
+ if ids:run(DOCKER+['stop','--time','20',*ids],timeout=300)
+ runtime.ownership();print('Stopped exact nonce-owned containers only; volumes/DB/keys/evidence retained. No down/prune/remove.')
 def main():
  p=argparse.ArgumentParser(description=__doc__);p.add_argument('action',choices=['prepare','start','frontends','fixture','case','inspect','summary','stop']);p.add_argument('--source-sha');args=p.parse_args()
  if args.action=='prepare':
@@ -231,6 +271,7 @@ def main():
  if args.action=='start':start(runtime)
  elif args.action=='frontends':frontends(runtime)
  elif args.action=='fixture':
+  runtime.ready()
   for port in PORTS[:3]:
    with socket.socket() as s:assert s.connect_ex(('127.0.0.1',port))==0,'All3source servers required'
   g=go(runtime,'calendar-setup');guarded(runtime,['node','calendar-local.cjs',str(g),str(PRIVATE/'native-config.json')],'calendar-setup',120)
@@ -258,11 +299,7 @@ def main():
    r=json.loads(file.read_text());output.update(gate='OWNER_OUTPUT_AWAITING_REVIEW',state=r.get('state'),originalOperationId=r.get('operationId'),originalPhase=r.get('phase'),confirmRequests=r.get('confirmRequests'),checks=r.get('checks'),allPassed=r.get('allPassed',False),cleanupComplete=r.get('cleanupComplete',False),browserClosed=r.get('browserClosed',False),error=r.get('error'),blockedWrites=len(r.get('blockedWrites',[])))
   print(json.dumps(output,indent=2))
  elif args.action=='stop':
-  assert (PRIVATE/'services-ready.json').exists(),'Incomplete startup: inspect exact owned IDs before further action'
-  runtime.pending();rows=runtime.ownership();ids=[x['Id'] for x in rows if x['Project']==PROJECT]
-  write(PRIVATE/('stop-intent-'+str(time.time_ns())+'.json'),{'ownedIds':ids,'volumesDeleted':False})
-  if ids:run(DOCKER+['stop','--time','20',*ids],timeout=300)
-  runtime.ownership();print('Stopped exact nonce-owned containers only; volumes/DB/keys/evidence retained. No down/prune/remove.')
+  stop_owned(runtime)
 if __name__=='__main__':
  try:main()
  except KeyboardInterrupt:print('Own foreground operation interrupted; preserve state and inspect original handles.',file=sys.stderr);sys.exit(130)

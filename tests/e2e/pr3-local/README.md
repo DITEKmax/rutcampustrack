@@ -6,6 +6,12 @@
 55client/6Notification/2PG/1Mongo результаты не повторяются и не превращаются
 в результат этого нового стенда.
 
+Первый structural review `7f85860ef` дал **CHANGES REQUIRED**: существующий private
+каталог мешал входу в case, operational inputs не были полностью связаны с freeze,
+а ошибка detached readiness оставляла сервисы работающими. Эти три finding исправлены
+одним пакетом; [точное сопоставление и ограничения](CORRECTIONS.md). Исправление
+не является фактическим запуском локального gate.
+
 Рабочая директория строго `~/rutcampustrack-pr3`, Docker namespace строго
 `rct-pr3-local`. Пакет не читает и не запускает `~/rutcampustrack-ci-diagnosis`
 или `~/.local/share/rct-stand/activate`. Здесь нет экспорта облачных БД, секретов,
@@ -136,6 +142,7 @@ Auth baseline получает bcrypt hash; private config сохраняет п
 только для нормального login и UI current-password confirmation. Никакого reset
 или изменения существующего аккаунта нет. Остальные baseline identities также
 синтетические и принадлежат этому новому realm.
+Для ввода обязателен интерактивный TTY: echoing fallback и password pipes запрещены.
 
 Создаются независимые PostgreSQL databases `auth_db`, `academic_db`, `schedule_db`
 с разными runtime principals/ACL, Mongo `attendance_db` и `notification_db` с
@@ -159,8 +166,18 @@ Academic, Schedule, Attendance, Notification, Mobile BFF, Gateway и TLS edge.
 `start` запускается один раз, ждёт healthy в bounded срок и сохраняет exact IDs.
 До действий сохранён foreign container snapshot; every phase проверяет чужие
 ID/image/mount/running state и nonce ownership собственных containers/networks/
-volumes. Ошибка не приводит к restart/force-recreate/adoption. Startup guard
-останавливает только собственные nonce-qualified IDs, сохраняя volumes.
+volumes. До start/frontends проверяются generated package и source/JAR hashes,
+а также private input hashes, включая `local.env`, credentials, TLS и keys.
+Секретные значения не выводятся; actual image ID и полный mount set каждого своего
+сервиса должны совпасть с prepared pins. Перед API нужны все12 exact ready IDs.
+
+После healthy выполняется узкий existing isolation control: Schedule CRUD в
+rollback, запрет cross-DB CONNECT/DDL/TRUNCATE и Mongo own CRUD в abort с запретом
+доступа к другой БД. Это только собственный новый realm. Ошибка не приводит к
+restart/force-recreate/adoption. Compose, detached readiness и isolation проверяются
+одним startup lifetime: 250ms guard, timeout или Ctrl-C закрывают только
+metadata-qualified nonce-owned IDs и сохраняют volumes. Неизвестная ownership
+остаётся HOLD, а не разрешением остановить чужой ресурс.
 
 `frontends` остаётся в первом терминале, максимум 30 минут. Во **втором терминале**
 с тем же новым Node/JDK PATH и новым checkout выполни последовательно:
@@ -226,6 +243,10 @@ Headman successor; original и successor квалифицируются и оч�
 в собственной Academic DB и сохраняет metadata. Pending/unknown не считается
 PASS. При startup STOP с ещё неготовой БД достаточно сохранённых private logs и
 exact owned IDs; недоступный read-only proof не разрешает повтор.
+Для **частичного known-owned startup без Auth/domain attempt** команда `stop`
+доступна и без `services-ready.json`/работающей БД. Она снова проверяет nonce,
+image/mount pins и чужой baseline. Partial/unknown fixture или original case
+сохраняются в HOLD; ослабления их admission ради stop нет.
 
 После known terminal result останови первый foreground terminal через Ctrl-C,
 затем:

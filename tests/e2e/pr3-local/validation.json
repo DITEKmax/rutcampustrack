@@ -1,31 +1,40 @@
 {
   "state": "SOURCE_PREP_ONLY_LOCAL_NOT_RUN",
   "command": "python3 tests/e2e/pr3-local/check_handoff.py",
-  "runs": 4,
+  "runs": 6,
   "outcomes": [
     "PASS: Python AST6, Node syntax5, compose12, initial7 ownership cases",
     "PASS after source changes: syntax and expanded9 ownership cases",
     "FAIL while adding interrupt guard check: TEST fake subprocess omitted STDOUT; AttributeError: 'types.SimpleNamespace' object has no attribute 'STDOUT'",
-    "PASS after correcting only that fake: Python AST6, Node syntax5, compose12, ownership9 and interrupt1"
+    "PASS after correcting only that fake: Python AST6, Node syntax5, compose12, ownership9 and interrupt1",
+    "After independent CHANGES REQUIRED and one correction batch: FAIL in new TEST timeout clock fake (StopIteration); no runtime command",
+    "PASS after correcting only that fake: Python AST6, Node syntax7, compose12, ownership11, private-directory4, private-input1, freeze2, childguards3, lifecycle6"
   ],
   "repeatReasons": [
     "New nonce volume/network checks, sanitized child environment and Vite private-state deny changed the source",
     "An interrupted parent must terminate its exact owned child group; added one adversarial fake-only case",
-    "Corrected the incomplete subprocess fake; no actual runtime command was repeated"
+    "Corrected the incomplete subprocess fake; no actual runtime command was repeated",
+    "Independent P1/P2 findings required private-directory, frozen input/actual mount, startup/readiness/partial stop corrections and targeted fake controls",
+    "Corrected the finite timeout fake to supply a stable monotonic observation; no application/runtime case was run"
   ],
   "finalChecks": {
     "pythonSyntax": 6,
-    "nodeSyntax": 5,
+    "nodeSyntax": 7,
+    "typescriptWrapperSyntax": 1,
     "composeServices": 12,
-    "ownershipCases": 9,
-    "ownedChildInterruptCases": 1
+    "ownershipCases": 11,
+    "preparedDirectoryCases": 4,
+    "privateInputTamperCases": 1,
+    "startupFreezeCases": 2,
+    "ownedChildProcessGuardCases": 3,
+    "startupAndPartialStopCases": 6
   },
   "backendTestsBuilds": 0,
   "cloudGroupRuntimeActions": 0,
   "dockerAuthApiDbBrowserActions": 0,
   "realProcessSignals": 0,
   "ownerLocalGate": "NOT_RUN_UNTIL_OWNER_OUTPUT_REVIEWED",
-  "structuralReview": "PENDING_INDEPENDENT_ROOT_REVIEW",
+  "structuralReview": "FIRST_CHANGES_REQUIRED_1P1_2P2; CORRECTION_PREPARED; INDEPENDENT_RECHECK_PENDING",
   "gitDiffCheck": "Initial FAIL: one inherited trailing space in adapter; corrected. Final PASS required before commit.",
   "providerOrProductionClaims": false
 }

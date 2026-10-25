@@ -31,7 +31,10 @@
     "Fresh empty Auth/Academic first-volume baseline with locally selected Admin password, own local keys and TLS.",
     "Live teaching clock; new own current semester via normal API; no OS/Auth/cloud clock manipulation or old semester2 restoration.",
     "Seven local matching JARs built from exact --source-sha, fresh source manifests and generated package hash.",
-    "Local Linux/WSL memory observation replaces fixed cloud16GiB cgroup identity; >=12GiB total and >=2GiB available for browser, same2GiB hard/2.5GiB early250ms disk guards."
+    "Local Linux/WSL memory observation replaces fixed cloud16GiB cgroup identity; >=12GiB total and >=2GiB available for browser, same2GiB hard/2.5GiB early250ms disk guards.",
+    "After first CHANGES REQUIRED review: existing prepared-private admission with exclusive original intent, package/private-input hash freeze and actual service image/full mount pins.",
+    "Whole startup compose/readiness/isolation guarded lifetime; qualified partial startup stop without ready milestone; unknown metadata/domain intent remains HOLD.",
+    "Finite accepted180f Schedule/Mongo rollback/abort isolation controls before all12ready API admission; these controls are NOT_RUN locally until owner output."
   ],
   "mustPreserve": [
     "one original UI-generated operation UUID; numeric preview/current password/status",

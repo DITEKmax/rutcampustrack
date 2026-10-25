@@ -2991,15 +2991,9 @@ test('FULL admin reconciles one exact stranded close before archive completion',
     readinessFailureLog: null as ReadinessLog | null,
     archiveReadinessLastRead: null as {
       httpStatus: number | null;
-      transport:
-        | 'TLS_CERTIFICATE'
-        | 'TLS_HANDSHAKE'
-        | 'ECONNRESET'
-        | 'ECONNREFUSED'
-        | 'REQUEST_CONTEXT_DISPOSED'
-        | 'REQUEST_TIMEOUT'
-        | 'UNKNOWN'
-        | null;
+      transport: NonNullable<
+        ReturnType<typeof safeNativePrimaryFailures>[number]['transportHint']
+      > | null;
       semesterMatches: boolean | null;
       priorStateActive: boolean | null;
       stateVersionMatches: boolean | null;

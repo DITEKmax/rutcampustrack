@@ -1,4 +1,4 @@
-import type { components } from './generated/mobile-bff'
+import type { components } from './generated/mobile-bff.js'
 
 export type StudentSession = components['schemas']['StudentSession']
 export type StudentToday = components['schemas']['StudentToday']

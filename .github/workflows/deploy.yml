@@ -21,6 +21,11 @@ on:
         description: 'Commit SHA для emergency deploy (обязателен, audit trail)'
         required: true
         type: string
+      bootstrap_initial_admin:
+        description: 'Однократно создать первого FULL администратора из INITIAL_ADMIN_REQUEST'
+        required: false
+        default: false
+        type: boolean
       reason:
         description: 'Почему emergency deploy без CI'
         required: true
@@ -360,6 +365,8 @@ jobs:
 
       - name: Deliver exact revision and private inputs through pinned SSH
         env:
+          BOOTSTRAP_INITIAL_ADMIN: ${{ github.event_name == 'workflow_dispatch' && inputs.bootstrap_initial_admin == true && 'true' || 'false' }}
+          INITIAL_ADMIN_REQUEST: ${{ github.event_name == 'workflow_dispatch' && inputs.bootstrap_initial_admin == true && secrets.INITIAL_ADMIN_REQUEST || '' }}
           PROD_ENV: ${{ secrets.PROD_ENV }}
           PROD_SECRET_FILES_B64: ${{ secrets.PROD_SECRET_FILES_B64 }}
           SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
@@ -367,4 +374,10 @@ jobs:
           VPS_HOST: ${{ secrets.VPS_HOST }}
           VPS_USER: ${{ secrets.VPS_USER }}
           GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
-        run: bash scripts/deliver-release.sh
+        run: |
+          export -n INITIAL_ADMIN_REQUEST
+          # Fail before executing an older selected revision which ignores new inputs.
+          if [[ "$BOOTSTRAP_INITIAL_ADMIN" == true ]]; then
+            grep -qx '# RCT_INITIAL_ADMIN_DELIVERY_V1' scripts/deliver-release.sh || exit 2
+          fi
+          INITIAL_ADMIN_REQUEST="${INITIAL_ADMIN_REQUEST:-}" bash scripts/deliver-release.sh

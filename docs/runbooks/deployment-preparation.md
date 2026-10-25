@@ -412,3 +412,7 @@ Pyroscope использует filesystem volumes `..._pyroscope-data`, `..._pyr
 `..._pyroscope-metastore`, не ClickHouse и не отдельный SQL endpoint. Homepage читает
 репозиторные config-файлы и использует временный cache; своей persistent БД нет. Valkey
 в текущем GlitchTip config отключён и отдельного Redis для него не создаётся.
+
+## Первый FULL администратор
+
+Для отдельного default-off ручного шага Deploy см. [runbook первого администратора](initial-administrator-deploy.md). Подготовка запроса не создаёт аккаунт и не запускает выпуск.

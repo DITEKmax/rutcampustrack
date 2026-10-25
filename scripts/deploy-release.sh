@@ -1,13 +1,20 @@
 #!/usr/bin/env bash
+# RCT_INITIAL_ADMIN_DEPLOY_V1
 # Called only by the gated workflow, from its exact-SHA source checkout.
 set -euo pipefail
 umask 077
+unset INITIAL_ADMIN_REQUEST
 sha="${1:?exact SHA required}"
 incoming="${2:?private incoming directory required}"
+bootstrap="${3:-false}"
+[[ "$bootstrap" == true || "$bootstrap" == false ]] || exit 2
 [[ "$sha" =~ ^[0-9a-f]{40}$ ]] || exit 2
 [[ "$incoming" =~ ^/opt/rutcampustrack/incoming/[0-9]+-[0-9]+$ ]] || exit 2
 [[ "$(cat "$incoming/REVISION")" == "$sha" ]] || exit 2
-trap 'rm -f "$incoming/PROD_ENV" "$incoming/PROD_SECRET_FILES_B64" "$incoming/GHCR_TOKEN"' EXIT
+trap 'rm -f "$incoming/PROD_ENV" "$incoming/PROD_SECRET_FILES_B64" "$incoming/GHCR_TOKEN" "$incoming/INITIAL_ADMIN_REQUEST"' EXIT
+if [[ "$bootstrap" == true ]]; then
+  python3 scripts/bootstrap-initial-admin.py --request-file "$incoming/INITIAL_ADMIN_REQUEST" --validate-only
+fi
 export IMAGE_TAG="$sha"
 secrets_root=/opt/rutcampustrack-secrets/active
 # Refuse adopting existing data with a newly generated credential set.
@@ -35,7 +42,7 @@ fi
 # Private GHCR login uses stdin and an ephemeral config; no shared login mutation.
 export DOCKER_CONFIG="$incoming/docker-auth"
 mkdir -m 700 "$DOCKER_CONFIG"
-trap 'rm -f "$incoming/PROD_ENV" "$incoming/PROD_SECRET_FILES_B64" "$incoming/GHCR_TOKEN"; rm -rf -- "$DOCKER_CONFIG" "$incoming/jwt-candidate"' EXIT
+trap 'rm -f "$incoming/PROD_ENV" "$incoming/PROD_SECRET_FILES_B64" "$incoming/GHCR_TOKEN" "$incoming/INITIAL_ADMIN_REQUEST"; rm -rf -- "$DOCKER_CONFIG" "$incoming/jwt-candidate"' EXIT
 docker login ghcr.io -u ditekmax --password-stdin < "$incoming/GHCR_TOKEN" >/dev/null 2>&1
 "${compose[@]}" pull --quiet
 # Named JWT volume is never replaced. Its initializer refuses partial keysets.
@@ -74,4 +81,9 @@ cmp -s "$incoming/jwt-candidate/derived-public.key" "$incoming/jwt-candidate/ins
 docker exec rct-nginx nginx -t
 docker exec rct-nginx nginx -s reload
 python3 scripts/verify-served-web-panel.py https://ruttrack.site "$sha"
+if [[ "$bootstrap" == true ]]; then
+  python3 scripts/bootstrap-initial-admin.py --request-file "$incoming/INITIAL_ADMIN_REQUEST" \
+    --project-name rutcampustrack --env-file .env.prod --image-tag "$sha" \
+    --compose-file docker-compose.prod.yml --compose-file docker-compose.operator.yml
+fi
 printf '%s\n' "$sha" > /opt/rutcampustrack/.deployed-sha

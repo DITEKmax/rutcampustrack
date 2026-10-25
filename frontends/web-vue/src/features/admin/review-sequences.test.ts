@@ -1,6 +1,7 @@
 import { createSSRApp, unref, type Component, type Ref, type VNodeChild } from 'vue'
 import { renderToString } from '@vue/server-renderer'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import type { ProfileSnapshot } from '../../auth/session'
 import UsersPage from './UsersPage.vue'
 import GroupsPage from './GroupsPage.vue'
 import {
@@ -13,13 +14,35 @@ import {
 } from '../../../../mobile-core/src/features/admin-groups/admin-groups-client'
 const owner = vi.hoisted(() => ({ retired: false, mode: 'users' }))
 vi.mock('../../app/live', () => ({ useWebLiveRefresh: () => {} }))
-vi.mock('../../auth/session', () => ({
-  webSession: {
-    snapshot: { value: null },
-    identity: { value: 'test-owner' },
-    phase: { value: 'ready' },
-  },
-}))
+vi.mock('../../auth/session', async () => {
+  const { ref, shallowRef } = await import('vue')
+  return {
+    webSession: {
+      snapshot: shallowRef<ProfileSnapshot>({
+        sessionId: '00000000-0000-4000-8000-000000000002',
+        userId: '2',
+        displayName: 'Синтетический администратор',
+        sessionVersion: '1',
+        rolesVersion: '1',
+        activeRole: 'ADMIN',
+        readOnly: false,
+        roles: [
+          { grantId: '1', role: 'ADMIN', status: 'ACTIVE', selectable: true, readOnly: false },
+        ],
+        passwordPolicy: {
+          minCodePoints: 12,
+          maxUtf8Bytes: 72,
+          requiresDecimalDigit: true,
+          specialCategories: ['P', 'S'],
+          normalization: 'NONE',
+        },
+      }),
+      identity: ref('test-owner'),
+      phase: ref('ready'),
+      busy: ref(false),
+    },
+  }
+})
 vi.mock('vue-router', () => ({
   useRoute: () => ({ query: {}, params: {}, fullPath: '/admin/users' }),
   useRouter: () => ({ replace: async () => undefined }),
@@ -119,9 +142,18 @@ async function runPage(page: TestPage, run: (state: PageState) => Promise<void>)
   return { html: await renderToString(app), state }
 }
 beforeEach(() => {
-  vi.restoreAllMocks()
   owner.retired = false
   owner.mode = 'users'
+  const storage = new Map<string, string>()
+  vi.stubGlobal('sessionStorage', {
+    getItem: (key: string) => storage.get(key) ?? null,
+    setItem: (key: string, value: string) => storage.set(key, value),
+    removeItem: (key: string) => storage.delete(key),
+  })
+})
+afterEach(() => {
+  vi.restoreAllMocks()
+  vi.unstubAllGlobals()
 })
 describe('reviewed ADMIN causal sequences', () => {
   it('renders a resumed create receipt for USERS_MANAGE without credential-disclosure authority, before acknowledgement', async () => {

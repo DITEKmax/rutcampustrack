@@ -56,11 +56,11 @@ describe('web homework concurrency', () => {
     })
     let holdNextRead = false
     let completed = false
-    vi.stubGlobal('window', {
-      addEventListener: () => undefined,
-      removeEventListener: () => undefined,
-    })
-    vi.stubGlobal('document', { hidden: false })
+    vi.stubGlobal('window', new EventTarget())
+    vi.stubGlobal(
+      'document',
+      Object.assign(new EventTarget(), { hidden: false, visibilityState: 'visible' }),
+    )
     vi.stubGlobal('fetch', async (input: RequestInfo | URL) => {
       if (String(input).endsWith('/completion')) {
         completed = true

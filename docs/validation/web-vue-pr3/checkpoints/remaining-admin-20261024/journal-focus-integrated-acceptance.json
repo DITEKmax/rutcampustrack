@@ -1,0 +1,68 @@
+{
+  "at": "2026-10-24T22:15:05.485846+00:00",
+  "root": "d69ac9159e3bfff169c4b2bd25adbcc7d9def771",
+  "sourceEqualAuthorFinals": true,
+  "files": [
+    {
+      "path": "frontends/web-vue/src/features/teacher/TeacherExcusePanel.vue",
+      "authorCommit": "fb45894662db261cc1e1935bd11e77be136c5beb",
+      "sha256": "471d3c259f3b1ddcd786ac17fca5ffb7abd995359a8d1056acad3dc92df743b2"
+    },
+    {
+      "path": "frontends/web-vue/src/features/teacher/TeacherHomePage.vue",
+      "authorCommit": "fb45894662db261cc1e1935bd11e77be136c5beb",
+      "sha256": "3f7e9a44e83dec755efc6fb7f13115e4fc803bb7d4980debba2ea20a987c0047"
+    },
+    {
+      "path": "frontends/web-vue/src/features/teacher/TeacherJournalPage.vue",
+      "authorCommit": "fb45894662db261cc1e1935bd11e77be136c5beb",
+      "sha256": "1eb2a3db17b7fde2f7a978b7ccdfb798c16b3a28c1ee38e54db6a13380d733dc"
+    },
+    {
+      "path": "frontends/web-vue/src/features/teacher/TeacherLessonPage.vue",
+      "authorCommit": "fb45894662db261cc1e1935bd11e77be136c5beb",
+      "sha256": "6aa2cb37d8a3bef6e3db616945b43d5eb2827b457f8ac759e520eadfe2451c38"
+    },
+    {
+      "path": "frontends/web-vue/src/features/teacher/TeacherStatsPage.vue",
+      "authorCommit": "fb45894662db261cc1e1935bd11e77be136c5beb",
+      "sha256": "753c4435d2c77c9ce4e91e9fc730b5db439a1b9edecf2548fb9dc3ad2010242f"
+    },
+    {
+      "path": "frontends/web-vue/src/features/teacher/teacher-live-focus.test.ts",
+      "authorCommit": "fb45894662db261cc1e1935bd11e77be136c5beb",
+      "sha256": "b5e6d5ea88934de8f0f6099002ca7c9aef8d62c7ecef3616552ad7552b13f60b"
+    },
+    {
+      "path": "frontends/web-vue/src/features/teacher/teacher-state.ts",
+      "authorCommit": "fb45894662db261cc1e1935bd11e77be136c5beb",
+      "sha256": "89b5949c330a01c3846d06f36605925f131114b91fbfe7a05f2f9365ff0d88b1"
+    },
+    {
+      "path": "frontends/web-vue/src/features/teacher/use-journal-pagination.ts",
+      "authorCommit": "fb45894662db261cc1e1935bd11e77be136c5beb",
+      "sha256": "5e5615bc2f8437bda266c572b43e6894ee3678cddd6a09b24fe993d3a517f031"
+    },
+    {
+      "path": "frontends/mobile-core/src/features/teacher/TeacherJournalScreen.vue",
+      "authorCommit": "2d6bbe2798df4039a85780e662da0cd7de2c7432",
+      "sha256": "775344af3e98cbb1b93d3384cf0d4ee5cf69eec0a290af6f7869916f2d804ed5"
+    },
+    {
+      "path": "frontends/mobile-core/src/features/teacher/teacher-journal-pagination.test.ts",
+      "authorCommit": "2d6bbe2798df4039a85780e662da0cd7de2c7432",
+      "sha256": "2f3ca96a43c2e42efa0b9e587476b34f7d4cdec064389ec96c67ef7287d6072e"
+    },
+    {
+      "path": "frontends/mobile-core/src/features/teacher/teacher-journal-screen.pcss",
+      "authorCommit": "2d6bbe2798df4039a85780e662da0cd7de2c7432",
+      "sha256": "4d9da0cea0aeb4902ffa01ee4f8742805fbf026ddc6850a23d3ccb1ecb485e2f"
+    }
+  ],
+  "all3VueBuildWithStrictTypecheck": "PASS",
+  "log": "/workspace/rct-pr3-runtime/group-final-integration-20261024/root-journal-focus-assembled-build.log",
+  "logSha256": "d156d94f96590cdabbd18728160380a24333d2e798693bbdf16497c2f25f8c3b",
+  "reasonForBuild": "Changed Teacher background-read lifecycle and shared Journal read/error/loading states; previous a851 build reused only for unchanged behavior, new integrated source built once.",
+  "testsReused": "MobileJournal15PASS + Web15distinct including2freshJournal/reused13, no passing fullsuite rerun",
+  "runtime": "No newbackend/UIdelete/start/CI; addressed4visualafter pending separately."
+}

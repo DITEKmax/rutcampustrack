@@ -1,0 +1,40 @@
+{
+  "evidenceKind": "real-runtime-safe-projection",
+  "originalPath": "/workspace/rct-pr3-runtime/map-usage-reload-receipt-20261024.json",
+  "originalSha256": "0084b79360811325173a738f05aae4095c6a93e3e4cb42ad134aa46be13681fd",
+  "scopeNote": "Dedicated external private HMAC config; no secret value, no map assets deleted. Actual204 replay counts0/1/1.",
+  "timeUtc": "2026-10-24T00:43:22.080653+00:00",
+  "onlyRecreated": "academic-service",
+  "jarSource": "950e621b074affdda7063b343cf3c6f3a079279b",
+  "property": "campus-map.usage.hmac-key",
+  "assetsAndInventory": "preserved; only own real floor-open usage intent written",
+  "canonicalPropertyConfigured": true,
+  "healthyServices": [
+    "academic-service",
+    "api-gateway",
+    "attendance-service",
+    "auth-service",
+    "document-renderer-service",
+    "mobile-bff",
+    "mongo-attendance",
+    "notification-web",
+    "postgres-academic",
+    "postgres-schedule",
+    "rabbitmq",
+    "redis",
+    "schedule-service"
+  ],
+  "actualSmoke": {
+    "actorId": 15,
+    "buildingId": "1",
+    "buildingCode": "9091",
+    "floorId": "1",
+    "floorCode": "1",
+    "intentId": "ab72685b-34c1-4080-8bcf-d82eae6cf78f",
+    "countBefore": 0,
+    "countAfterFirst": 1,
+    "countAfterReplay": 1,
+    "firstOpen": 204,
+    "replayOpen": 204
+  }
+}

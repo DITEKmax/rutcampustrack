@@ -1,0 +1,132 @@
+{
+  "schemaVersion": 1,
+  "kind": "real-runtime-gallery",
+  "title": "Авторизация — 4 актуальных runtime кадра",
+  "functionalTestCount": 0,
+  "scope": "Original unedited PNG render samples; functional action receipts and review are separate.",
+  "limits": [
+    "Sourceabc8f3dd0/UIa813, password1440 иOTP300, обе темы.",
+    "Сняты только пустые формы; login/OTPsend/QR/recovery/devicePUT не выполнялись.",
+    "Оригинальный asset HTTP200 с canonical Figma hash; это реализация, не Figma screenshot.",
+    "Только обычный guest refresh401, pageerrors0; backend pins из ранее проверенного receipt, не новый independent backend admission."
+  ],
+  "backend": {
+    "source": "artifacts-current-20261024.json (existing receipt, not independently revalidated)",
+    "artifacts": [
+      {
+        "service": "Auth",
+        "sourceRevision": "f3c03bd81b3d44873abff2ad7126d9a000e51381",
+        "sha256": "32bda499a73a5368d64126fbcba49e378d5e81ea349a4b20f7f671c1357c4035"
+      },
+      {
+        "service": "API Gateway",
+        "sourceRevision": "3c02a3241c3ac228f887fdd7b5af9e20c2bf4753",
+        "sha256": "593f47f69a6ad4fcb7399f50ad31775a93a1a0ceaa7fd4ae58c12cd25d7491e3"
+      },
+      {
+        "service": "Academic",
+        "sourceRevision": "950e621b074affdda7063b343cf3c6f3a079279b",
+        "sha256": "fa360caa53e5710da9225e3a6a328da7e613992e97bbc49b8b78256a3e54db6c"
+      },
+      {
+        "service": "Mobile BFF",
+        "sourceRevision": "60346b26bf471a5838b0023f07076e808b876dd3",
+        "sha256": "854793e346fb36bd2ae49985e97f286f010fb43bffb2b479f9f28b2f86d81c0c"
+      },
+      {
+        "service": "Schedule",
+        "sourceRevision": "60346b26bf471a5838b0023f07076e808b876dd3",
+        "sha256": "b937ac602f591bf01381b6a22c5273d0bebb035d3308e23551195c57d9dbbd1f"
+      },
+      {
+        "service": "Attendance",
+        "sourceRevision": "60346b26bf471a5838b0023f07076e808b876dd3",
+        "sha256": "52c628b2e04ec220c261abada49acfe65e1eac35f74fc1bb47076b467a7d6137"
+      },
+      {
+        "service": "Notification",
+        "sourceRevision": "60346b26bf471a5838b0023f07076e808b876dd3",
+        "sha256": "c57f270340f24c15c094e12f8eccaac0a4698801b7547a72baaef49f6a97b86c"
+      },
+      {
+        "service": "Document Renderer",
+        "sourceRevision": "60346b26bf471a5838b0023f07076e808b876dd3",
+        "sha256": "52c4873c372eaed34c20294a77334a81936474021688f24558386e7282c0ace3"
+      }
+    ]
+  },
+  "screenshots": [
+    {
+      "id": "WEB-AUTH-PASSWORD__empty-original-asset__light__1440__abc8f3dd0",
+      "screen": "WEB-AUTH-PASSWORD",
+      "state": "empty-original-asset",
+      "theme": "light",
+      "width": 1440,
+      "revision": "abc8f3dd0b67d1d84378f350f05a33994bc8311e",
+      "title": "Вход по паролю",
+      "description": "Гостевая форма с пустыми полями, Onest и оригинальным auth asset; отправка не выполнялась.",
+      "image": "screenshots/WEB-AUTH-PASSWORD__empty-original-asset__light__1440__abc8f3dd0.png",
+      "pixelWidth": 1440,
+      "pixelHeight": 1080,
+      "bytes": 552008,
+      "sha256": "adf7e757997a56c871eef17f7cca2f8fcb41aefa45ccf7c91713caff74673da4",
+      "originalPath": "/workspace/rct-pr3-runtime/auth-gallery-current/WEB-AUTH-PASSWORD__empty__light__1440.png",
+      "provenance": "real-runtime",
+      "syntheticFixtureData": true
+    },
+    {
+      "id": "WEB-AUTH-PASSWORD__empty-original-asset__dark__1440__abc8f3dd0",
+      "screen": "WEB-AUTH-PASSWORD",
+      "state": "empty-original-asset",
+      "theme": "dark",
+      "width": 1440,
+      "revision": "abc8f3dd0b67d1d84378f350f05a33994bc8311e",
+      "title": "Вход по паролю",
+      "description": "Гостевая форма с пустыми полями, Onest и оригинальным auth asset; отправка не выполнялась.",
+      "image": "screenshots/WEB-AUTH-PASSWORD__empty-original-asset__dark__1440__abc8f3dd0.png",
+      "pixelWidth": 1440,
+      "pixelHeight": 1080,
+      "bytes": 31256,
+      "sha256": "183e87c78e87b2f1fdd00518278b11edc7fb1f914fb79a1844002d13eb129c42",
+      "originalPath": "/workspace/rct-pr3-runtime/auth-gallery-current/WEB-AUTH-PASSWORD__empty__dark__1440.png",
+      "provenance": "real-runtime",
+      "syntheticFixtureData": true
+    },
+    {
+      "id": "WEB-AUTH-OTP__empty-original-asset__light__300__abc8f3dd0",
+      "screen": "WEB-AUTH-OTP",
+      "state": "empty-original-asset",
+      "theme": "light",
+      "width": 300,
+      "revision": "abc8f3dd0b67d1d84378f350f05a33994bc8311e",
+      "title": "Вход по коду",
+      "description": "Гостевая форма с пустыми полями, Onest и оригинальным auth asset; отправка не выполнялась.",
+      "image": "screenshots/WEB-AUTH-OTP__empty-original-asset__light__300__abc8f3dd0.png",
+      "pixelWidth": 300,
+      "pixelHeight": 1080,
+      "bytes": 127618,
+      "sha256": "6068a05d43f229823f39ba6314ac3a5aeabccd255b02e1b161965408456e1b34",
+      "originalPath": "/workspace/rct-pr3-runtime/auth-gallery-current/WEB-AUTH-OTP__empty__light__300.png",
+      "provenance": "real-runtime",
+      "syntheticFixtureData": true
+    },
+    {
+      "id": "WEB-AUTH-OTP__empty-original-asset__dark__300__abc8f3dd0",
+      "screen": "WEB-AUTH-OTP",
+      "state": "empty-original-asset",
+      "theme": "dark",
+      "width": 300,
+      "revision": "abc8f3dd0b67d1d84378f350f05a33994bc8311e",
+      "title": "Вход по коду",
+      "description": "Гостевая форма с пустыми полями, Onest и оригинальным auth asset; отправка не выполнялась.",
+      "image": "screenshots/WEB-AUTH-OTP__empty-original-asset__dark__300__abc8f3dd0.png",
+      "pixelWidth": 300,
+      "pixelHeight": 1080,
+      "bytes": 25849,
+      "sha256": "61f060922b6e7763b8899728e42c552d6984333f7ca1fb1664615507db0758f1",
+      "originalPath": "/workspace/rct-pr3-runtime/auth-gallery-current/WEB-AUTH-OTP__empty__dark__300.png",
+      "provenance": "real-runtime",
+      "syntheticFixtureData": true
+    }
+  ]
+}

@@ -1,55 +1,32 @@
-/**
- * Тестовые пользователи для Playwright e2e (M08 Группа 5).
- *
- * Логины и пароли соответствуют seed'у из
- * `services/academic-service/academic-app/src/main/resources/db/migration/V2__seed_test_data.sql`:
- * - admin   / password — ADMIN role
- * - teacher / password — TEACHER role
- * - student / password — STUDENT + is_headman=true (старостa в группе ИВТ-211)
- *
- * Все BCrypt хеши в seed — для пароля "password" (cost 10).
- * Если seed обновляется — синхронизировать эти константы.
- *
- * Note: seed создаёт student-старосту (is_headman=true) под логином `student`,
- * отдельного `headman` пользователя нет. Headman-flow тесты используют
- * того же `student` пользователя.
- */
-
+/** Existing synthetic seed credentials. The server session/grants remain authoritative. */
 export interface TestUser {
   login: string;
   password: string;
-  role: 'ADMIN' | 'TEACHER' | 'STUDENT';
+  /** Requested active role, selected only through an actually granted UI choice. */
+  role: 'ADMIN' | 'TEACHER' | 'STUDENT' | 'HEADMAN';
+  /** Academic fixture metadata only; never an admitted role or authorization decision. */
   isHeadman?: boolean;
   expectedLandingPath: string;
 }
 
-// Web-panel post-login navigation (login.component.ts:55):
-//   ADMIN  → /admin/dashboard
-//   TEACHER → /teacher/dashboard
-//   STUDENT + isHeadman=true → /headman/dashboard
-//   STUDENT + isHeadman=false → /student/dashboard
-//
-// Seed-юзер `student` имеет is_headman=true → попадает на /headman/dashboard.
-// Отдельного non-headman student'а в seed нет.
-//
-// M14 G8 (G26 F03): отдельная запись `headman` удалена — она дублировала
-// `student` 1-в-1 (один и тот же seed user). Все headman-flow тесты
-// используют `TEST_USERS.student` напрямую — это явнее, что староста
-// и студент это один и тот же seed account.
+// HEADMAN scenarios reuse this student's identity with explicit role HEADMAN and
+// canonical /headman intent. They must prove the server offers that grant; the
+// academic seed's is_headman value cannot bypass role selection or route guards.
 export const TEST_USERS: Record<string, TestUser> = {
   student: {
     login: 'student',
     password: 'password',
     role: 'STUDENT',
-    isHeadman: true,
-    expectedLandingPath: '/headman/dashboard',
+    expectedLandingPath: '/student/home',
   },
   teacher: {
     login: 'teacher',
     password: 'password',
     role: 'TEACHER',
-    expectedLandingPath: '/teacher/dashboard',
+    expectedLandingPath: '/teacher/home',
   },
+  // These ADMIN scenarios require the fixture's real current dashboard/registry
+  // permissions. Missing grants fail; this fixture never assigns them.
   admin: {
     login: 'admin',
     password: 'password',

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useProjectionRefresh } from '../../shared/projection-refresh';
 import {
   exportStateLabel,
   reportDownloadAcceptedMessage,
@@ -252,19 +253,21 @@ function changeSubject(raw: string): void {
     pageSize: 100,
   });
 }
-async function load(): Promise<void> {
+async function load(retainProjection = false): Promise<void> {
   const api = props.api;
   const value = effectiveQuery.value;
   const current = ++revision;
-  chartRevision += 1;
-  chartMetrics.value = null;
-  chartError.value = null;
-  chartLoading.value = false;
-  studentId.value = null;
+  if (!retainProjection) {
+    chartRevision += 1;
+    chartMetrics.value = null;
+    chartError.value = null;
+    chartLoading.value = false;
+    studentId.value = null;
+  }
   if (!api || !value || !teacherJournalTypes(value).length) return;
-  loading.value = true;
+  loading.value = !retainProjection;
   error.value = null;
-  state.value = null;
+  if (!retainProjection) state.value = null;
   const context = journalContextKey(value);
   const active = () =>
     !disposed &&
@@ -279,13 +282,16 @@ async function load(): Promise<void> {
     }
   } catch (cause) {
     if (!active() || cause instanceof StaleSessionGenerationError) return;
+    state.value = null;
+    chartMetrics.value = null;
     error.value =
       cause instanceof TeacherApiError
         ? cause.message
         : cause instanceof Error
           ? cause.message
           : 'Не удалось открыть журнал.';
-    emit('error', cause);
+    // Endpoint failures stay local; refresh/re-auth errors retain the host's authority handling.
+    if (!(cause instanceof TeacherApiError) || cause.response.status === 401) emit('error', cause);
   } finally {
     if (active()) loading.value = false;
   }
@@ -452,6 +458,13 @@ async function loadChartMetrics(): Promise<void> {
     if (active()) chartLoading.value = false;
   }
 }
+useProjectionRefresh(
+  async () => {
+    await load(true);
+    if (chart.value) await loadChartMetrics();
+  },
+  { blocked: () => !props.active || exportLoading.value },
+);
 </script>
 <template>
   <component
@@ -483,8 +496,8 @@ async function loadChartMetrics(): Promise<void> {
         aria-label="Назад"
         @click="emit('back')"
       >
-        <MobileIcon name="back" />
-      </button><h1 id="teacher-journal-title">
+        <MobileIcon name="back" /> </button
+      ><h1 id="teacher-journal-title">
         Журнал<small v-if="groupName">{{ groupName }}</small>
       </h1>
     </header>
@@ -524,8 +537,8 @@ async function loadChartMetrics(): Promise<void> {
           @click="toggleType(type)"
         >
           {{ teacherLessonTypeLabel(type) }}
-        </button>
-      </div><button
+        </button> </div
+      ><button
         type="button"
         class="teacher-journal__icon"
         :aria-label="chart ? 'Показать таблицу' : 'Показать график'"
@@ -549,20 +562,34 @@ async function loadChartMetrics(): Promise<void> {
     >
       Выбери один или несколько типов занятий.
     </p>
-    <p
+    <div
       v-else-if="loading"
-      class="teacher-journal__state"
+      class="teacher-journal__loading"
       role="status"
+      aria-live="polite"
     >
-      Загружаем журнал за прошедший период…
-    </p>
+      <span class="teacher-journal__sr">Загружаем журнал за прошедший период…</span>
+      <div aria-hidden="true">
+        <div
+          v-for="row in 7"
+          :key="row"
+          class="teacher-journal__loading-row"
+        >
+          <span
+            v-for="column in 4"
+            :key="column"
+            class="teacher-journal__loading-line"
+          />
+        </div>
+      </div>
+    </div>
     <StudentWarningBlock
       v-else-if="error"
       title="Журнал недоступен"
       :message="error"
       severity="error"
       action-label="Повторить"
-      @action="load"
+      @action="load()"
     />
     <p
       v-else-if="!completedJournal?.lessons.length"
@@ -633,8 +660,8 @@ async function loadChartMetrics(): Promise<void> {
           :options="formats.map((format) => ({ value: format.code, label: format.label }))"
           :disabled="formatsLoading || exportLoading || !formats.length"
           @update:model-value="changeFormat"
-        />
-      </div><button
+        /> </div
+      ><button
         class="teacher-journal__icon teacher-journal__download"
         type="button"
         data-teacher-action="export-download"

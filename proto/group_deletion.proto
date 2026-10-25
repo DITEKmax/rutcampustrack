@@ -1,0 +1,27 @@
+syntax = "proto3";
+package rutcampustrack.groupdeletion;
+option java_package = "ru.rutcampustrack.groupdeletion.grpc";
+option java_multiple_files = true;
+service GroupDeletionParticipant { rpc Apply(GroupDeletionCommand) returns (GroupDeletionReceipt); }
+enum GroupDeletionAction { GROUP_DELETION_ACTION_UNSPECIFIED = 0; PREVIEW = 1; PREPARE = 2; SEAL = 3; COMMIT = 4; RELEASE = 5; }
+message GroupDeletionCommand {
+ string operation_id = 1;
+ int64 group_id = 2;
+ int64 actor_id = 3;
+ string participant_digest = 4;
+ string preview_digest = 5;
+ GroupDeletionAction action = 6;
+ repeated GroupDeletionLesson lessons = 7;
+ bytes password_receipt = 8; // Auth-only exact persisted step-up proof; never a password/token
+}
+message GroupDeletionReceipt {
+ GroupDeletionCommand command = 1;
+ string participant_digest = 2;
+ map<string,int64> counts = 3;
+ repeated GroupDeletionLesson lessons = 4;
+ bool commit_rejected = 5; // Auth durable zero-effect refusal; COMMIT replay returns the same refusal
+}
+
+message GroupDeletionManifest { repeated GroupDeletionReceipt participants = 1; }
+
+message GroupDeletionLesson { int64 lesson_id = 1; int64 semester_id = 2; }

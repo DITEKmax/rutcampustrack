@@ -1,0 +1,192 @@
+{
+  "case": "WEB_NGINX_TEACHER_AUTH_API_STOMP_READONLY",
+  "revision": "240a1b2a86a2b2ba0cbb89647a9ed8b151007007",
+  "productBase": "240a1b2a86a2b2ba0cbb89647a9ed8b151007007",
+  "harnessSha256": "c0695b760d6a7a964ce4acd0e2fb47757819623f09e849bcaf0ca5d8a4eff647",
+  "startedAtUtc": "2026-10-25T08:59:12.836Z",
+  "finishedAtUtc": "2026-10-25T08:59:15.203Z",
+  "platform": "WEB",
+  "origin": "http://127.0.0.1:14240",
+  "phase": "KNOWN_STOP_CLEANUP_QUALIFIED",
+  "api": [
+    {
+      "path": "/api/auth/refresh",
+      "method": "POST",
+      "status": 401,
+      "phase": "BOOTSTRAP",
+      "loginIndex": 0
+    },
+    {
+      "path": "/api/auth/login",
+      "method": "POST",
+      "status": 200,
+      "phase": "LOGIN_0",
+      "loginIndex": 0
+    },
+    {
+      "path": "/api/auth/session",
+      "method": "GET",
+      "status": 200,
+      "phase": "LOGIN_0",
+      "loginIndex": 0
+    },
+    {
+      "path": "/api/auth/ws-ticket",
+      "method": "POST",
+      "status": 200,
+      "phase": "LOGIN_0",
+      "loginIndex": 0
+    },
+    {
+      "pathHash": "1ac431db2bc18d7440f21b1cd2a7a83f741e1bf52b56a1234e926d065de3d88a",
+      "method": "GET",
+      "status": 200,
+      "phase": "LOGIN_0",
+      "loginIndex": 0
+    },
+    {
+      "path": "/api/auth/device-preferences",
+      "method": "GET",
+      "status": 200,
+      "phase": "LOGIN_0",
+      "loginIndex": 0
+    },
+    {
+      "path": "/api/ws/info",
+      "method": "GET",
+      "status": 200,
+      "phase": "LOGIN_0",
+      "loginIndex": 0
+    },
+    {
+      "path": "/api/v1/teacher/semester",
+      "method": "GET",
+      "status": 200,
+      "phase": "LOGIN_0",
+      "loginIndex": 0
+    },
+    {
+      "pathHash": "f0320a899084e1ad76c16312486dcce0184101b4b7b77c886228015245584536",
+      "method": "GET",
+      "status": 200,
+      "phase": "LOGIN_0",
+      "loginIndex": 0
+    },
+    {
+      "path": "/api/v1/teacher/semester",
+      "method": "GET",
+      "status": 200,
+      "phase": "LOGIN_0",
+      "loginIndex": 0
+    },
+    {
+      "pathHash": "1ac431db2bc18d7440f21b1cd2a7a83f741e1bf52b56a1234e926d065de3d88a",
+      "method": "GET",
+      "status": 200,
+      "phase": "LOGIN_0",
+      "loginIndex": 0
+    },
+    {
+      "pathHash": "66be5879ef3a006f97cdf3d9fb658d6b9ab244113bbbad159c733f0fee4efb32",
+      "method": "GET",
+      "status": 200,
+      "phase": "LOGIN_0",
+      "loginIndex": 0
+    },
+    {
+      "pathHash": "f0320a899084e1ad76c16312486dcce0184101b4b7b77c886228015245584536",
+      "method": "GET",
+      "status": 200,
+      "phase": "LOGIN_0",
+      "loginIndex": 0
+    },
+    {
+      "pathHash": "66be5879ef3a006f97cdf3d9fb658d6b9ab244113bbbad159c733f0fee4efb32",
+      "method": "GET",
+      "status": 200,
+      "phase": "OBSERVE_NATIVE_NGINX_CANONICAL_CATALOG_AND_STOMP",
+      "loginIndex": 0
+    },
+    {
+      "path": "/api/v1/teacher/catalog",
+      "method": "GET",
+      "status": 200,
+      "phase": "LOGIN_0",
+      "loginIndex": 0
+    },
+    {
+      "path": "/api/v1/teacher/catalog",
+      "method": "GET",
+      "status": 200,
+      "phase": "OBSERVE_NATIVE_NGINX_CANONICAL_CATALOG_AND_STOMP",
+      "loginIndex": 0
+    },
+    {
+      "path": "/api/v1/teacher/assignments",
+      "method": "GET",
+      "status": 200,
+      "phase": "OBSERVE_NATIVE_NGINX_CANONICAL_CATALOG_AND_STOMP",
+      "loginIndex": 0
+    },
+    {
+      "path": "/api/v1/teacher/day",
+      "method": "GET",
+      "status": 200,
+      "phase": "OBSERVE_NATIVE_NGINX_CANONICAL_CATALOG_AND_STOMP",
+      "loginIndex": 0
+    }
+  ],
+  "realtime": {
+    "socketCount": 1,
+    "expectedTransportPathOnly": true,
+    "connected": true,
+    "receivedVerbs": {
+      "CONNECTED": 1
+    },
+    "sentVerbs": {
+      "CONNECT": 1,
+      "SUBSCRIBE": 1
+    },
+    "sockJsOpenCount": 1,
+    "socketErrors": 0,
+    "socketCloses": 0
+  },
+  "apiProof": null,
+  "cleanup": {
+    "method": "TECHNICAL_EXACT_CURRENT_OWN_SELF_SESSION_DELETE",
+    "nativeUiLogoutPass": false,
+    "selfDeleteForwarded": 1,
+    "status": 204,
+    "sameOldBearerStatus": 401,
+    "confirmed": true,
+    "fallbackUsed": false,
+    "intent": "RETURNED"
+  },
+  "captureComplete": false,
+  "completed": false,
+  "unknownHold": false,
+  "failure": {
+    "code": "NATIVE_KNOWN_TEACHER_CATALOG_SCOPE_ABSENT",
+    "name": "Error",
+    "phase": "OBSERVE_NATIVE_NGINX_CANONICAL_CATALOG_AND_STOMP"
+  },
+  "browserClosed": true,
+  "sourceUnchanged": true,
+  "applicationDataWrites": 0,
+  "wsTicketForwarded": 1,
+  "httpsAuthWssClaimed": false,
+  "syntheticApiResponses": false,
+  "device": {
+    "readsObserved": 1,
+    "putsForwarded": 0
+  },
+  "rawExit": 1,
+  "rawReceiptSha256": "34f00f3d1b02c922407fa111f4aaa037886cbf93f9dbf0167187d0ad23c1b2fe",
+  "screenshots": 0,
+  "blockedCount": 0,
+  "pageErrorCount": 0,
+  "requestFailureCount": 0,
+  "readIncompleteCount": 0,
+  "qualification": "WEB_BOUNDED_AUTH_SCHEMA_STOMP_CLEANUP_ACCEPTED_RAW_TEST_FAILURE_RETAINED",
+  "knownCatalogIdsProved": false
+}

@@ -1,0 +1,308 @@
+{
+  "revision": "481512e93575070a1f471c65af54df5b4e31cd61",
+  "productBase": "343245083694b85298e18b578ad8a51b54af88c9",
+  "runnerSha256": "558073fd5c04a712f974f5566a719ee7d5dded9bb65b4953747b779aa7ad98f8",
+  "rawReceipt": "receipt.json",
+  "rawReceiptSha256": "d49ce1bb7bd95ddc437b745cf68a6a72d7d473cd210ebb6873cccbe46c655393",
+  "rawOutcome": "EXIT0 completedtrue/captureCompletetrue; original personallyInspected:false/raw metadata retained; sidecar records actual personal originalPNG inspection and visible P3 findings.",
+  "elapsedSeconds": 6.606,
+  "criteria": {
+    "HEADMAN-OWN-HISTORY-READ": {
+      "status": "BOUNDED_OBSERVED_ACTUAL_POPULATED_BASELINE",
+      "evidence": "Normal existingStudent3→oneHEADMAN active-rolePUT200→freshcanonicalHEADMAN/group1; native More→ManageLessons→readyweek19–25Oct→23Oct→firstexistingownlesson3→actionsGET200;15 actualrowsloaded; nativeBack tosame detail succeeded."
+    },
+    "HISTORY-NARROW-PRESENTATION": {
+      "status": "FIX_NEEDED_P3_FILTER_LABEL_AND_LOCALIZATION",
+      "evidence": "Personal view of300light/root20 plus768dark/root16, adjacent finding IDs; no wholepresentationPASS."
+    },
+    "HISTORY-BACK-KEYBOARD": {
+      "status": "READY_BOUNDED_768_DARK_ROOT16",
+      "evidence": "Actual Tab/ShiftTab Backfocus visiblypurple; actualBack returned tosame detail."
+    },
+    "V2-READINESS-GATE": {
+      "status": "OBSERVED_SOURCE_LOADING_TO_READY",
+      "evidence": "Beforecount initialbusytrue/no dates→267ms later actualreadyweek19–25October includes23; afterdayclick busytrue→206ms later ready selected23. Confirms need for source readiness wait; old3bbc raw0PNG FAIL remains immutable/unqualified for dataabsence."
+    }
+  },
+  "findings": [
+    {
+      "id": "V-HLA-FILTER-300-R20",
+      "severity": "P3",
+      "status": "OPEN",
+      "observed": "300light/root20: filter label Отметки is partly obscured/clipped; neighboring Пара pill follows before full label is visible.",
+      "source": "frontends/mobile-core/src/features/headman-journal/headman-lesson-actions-screen.pcss:37",
+      "sourceInfluence": "Four equal minmax(0,1fr) columns plus buttonpadding constrain the longer label at narrow enlarged font. Documentoverflow300 does not prove absence of local text loss.",
+      "evidence": "PWA-MOBILE-HEADMANLESSONACTIONS__MB-HLA-01-real-history-root20__light__300__root20__481512e93.png"
+    },
+    {
+      "id": "V-HLA-LESSONTYPE-RU",
+      "severity": "P3",
+      "status": "OPEN",
+      "observed": "Both actual frames display raw lecture instead of Лекция in lesson context.",
+      "source": "frontends/mobile-core/src/features/headman-journal/HeadmanLessonActionsScreen.vue:85",
+      "sourceInfluence": "Local formatter recognizes uppercase LECTURE/PRACTICE/LAB only and falls back to raw string; actualvalid lesson value is lowercase.",
+      "evidence": [
+        "PWA-MOBILE-HEADMANLESSONACTIONS__MB-HLA-01-real-history-root20__light__300__root20__481512e93.png",
+        "PWA-MOBILE-HEADMANLESSONACTIONS__MB-HLA-02-same-real-history-back-keyboard-focus__dark__768__root16__481512e93.png"
+      ]
+    }
+  ],
+  "samples": [
+    {
+      "id": "PWA-MOBILE-HEADMANLESSONACTIONS__MB-HLA-01-real-history-root20__light__300__root20__481512e93",
+      "consumer": "PWA",
+      "screen": "MOBILE-HEADMANLESSONACTIONS",
+      "state": "real-history-root20",
+      "file": "PWA-MOBILE-HEADMANLESSONACTIONS__MB-HLA-01-real-history-root20__light__300__root20__481512e93.png",
+      "sha256": "7a8e991c8e8d06e010f42a974dd0c9b71caae87685aa10e1c56de65e46af57c9",
+      "theme": "light",
+      "width": 300,
+      "height": 900,
+      "rootFont": "20px",
+      "scrollWidth": 300,
+      "lessonId": "3",
+      "busy": "false",
+      "errorVisible": false,
+      "eventRows": 15,
+      "focusVisible": false,
+      "activeLabel": null,
+      "revision": "481512e93575070a1f471c65af54df5b4e31cd61",
+      "personallyInspected": true,
+      "caseId": "MB-HLA-01",
+      "image": "PWA-MOBILE-HEADMANLESSONACTIONS__MB-HLA-01-real-history-root20__light__300__root20__481512e93.png",
+      "pngWidth": 300,
+      "pngHeight": 900,
+      "personallyViewed": true,
+      "inspection": "Original300light/root20 personally viewed: header/context/date/history transition cards readable, long synthetic names wrap; first viewport shows real populated events. Filter Отметки is partly obscured/clipped by adjacent pill at enlarged narrow width. Lesson kind is raw English lecture, requiring localization.",
+      "criterion": "HEADMAN-LESSON-ACTIONS-READ",
+      "title": "История пары · light · 300 · 20px",
+      "synthetic": true,
+      "syntheticCause": "Existing synthetic Main stand data; browser OS media theme/viewport/root20 font stress only. Real normalAuth, existingrolechoice, readonlypublished-date selection and historyGET200; no body/status mocks, fixture or data command writes.",
+      "captureKind": "new original actualPWA viewport baseline with bounded P3 findings"
+    },
+    {
+      "id": "PWA-MOBILE-HEADMANLESSONACTIONS__MB-HLA-02-same-real-history-back-keyboard-focus__dark__768__root16__481512e93",
+      "consumer": "PWA",
+      "screen": "MOBILE-HEADMANLESSONACTIONS",
+      "state": "same-real-history-back-keyboard-focus",
+      "file": "PWA-MOBILE-HEADMANLESSONACTIONS__MB-HLA-02-same-real-history-back-keyboard-focus__dark__768__root16__481512e93.png",
+      "sha256": "6bed2a9b0d4d132d66b8cf06f80615b1413dba4c11b84c5ce0786c3a97080044",
+      "theme": "dark",
+      "width": 768,
+      "height": 900,
+      "rootFont": "16px",
+      "scrollWidth": 768,
+      "lessonId": "3",
+      "busy": "false",
+      "errorVisible": false,
+      "eventRows": 15,
+      "focusVisible": true,
+      "activeLabel": "Назад",
+      "revision": "481512e93575070a1f471c65af54df5b4e31cd61",
+      "personallyInspected": true,
+      "caseId": "MB-HLA-02",
+      "image": "PWA-MOBILE-HEADMANLESSONACTIONS__MB-HLA-02-same-real-history-back-keyboard-focus__dark__768__root16__481512e93.png",
+      "pngWidth": 768,
+      "pngHeight": 900,
+      "personallyViewed": true,
+      "inspection": "Original768dark/root16 personally viewed: centered readable history/context and event cards; nativeBack has visible purple keyboardfocus ring. Raw English lecture remains. This viewport shows a subset of15 loaded rows, not an inspection of every row.",
+      "criterion": "HEADMAN-LESSON-ACTIONS-READ",
+      "title": "История пары · dark · 768 · 16px",
+      "synthetic": true,
+      "syntheticCause": "Existing synthetic Main stand data; browser OS media theme/viewport/root20 font stress only. Real normalAuth, existingrolechoice, readonlypublished-date selection and historyGET200; no body/status mocks, fixture or data command writes.",
+      "captureKind": "new original actualPWA viewport baseline with bounded P3 findings"
+    }
+  ],
+  "newImages": 2,
+  "newPreviouslySourceOnlyPwaConsumers": 1,
+  "functionalActionsAdded": 0,
+  "roleAndDataTruth": {
+    "expectedActor": 3,
+    "targetRole": "HEADMAN",
+    "canonicalTargetGroup": "1",
+    "selectedExistingLessonId": 3,
+    "historyApi200": true,
+    "loadedEventRows": 15,
+    "nativeBackToSameLessonDetail": true,
+    "nativeRolePut200Count": 1,
+    "historicalOwnReadonlyCount": 0,
+    "historicalRaceActualClaim": false
+  },
+  "readinessSnapshots": [
+    {
+      "observedAtUtc": "2026-10-25T01:12:01.519Z",
+      "stage": "BEFORE_KNOWN_DAY_COUNT",
+      "busy": "true",
+      "visibleWeekText": null,
+      "dateLabels": [],
+      "selectedDateLabels": [],
+      "displayedError": false,
+      "classification": "LOADING",
+      "wantedSelectedLabel": null,
+      "selectedDateMatched": true
+    },
+    {
+      "observedAtUtc": "2026-10-25T01:12:01.786Z",
+      "stage": "BEFORE_KNOWN_DAY_COUNT",
+      "busy": "false",
+      "visibleWeekText": "неделя 2 · №119–25 октября",
+      "dateLabels": [
+        "понедельник, 19 октября",
+        "вторник, 20 октября",
+        "среда, 21 октября",
+        "четверг, 22 октября",
+        "пятница, 23 октября",
+        "суббота, 24 октября",
+        "воскресенье, 25 октября"
+      ],
+      "selectedDateLabels": [
+        "воскресенье, 25 октября"
+      ],
+      "displayedError": false,
+      "classification": "POLICY_AND_AGENDA_READY",
+      "wantedSelectedLabel": null,
+      "selectedDateMatched": true
+    },
+    {
+      "observedAtUtc": "2026-10-25T01:12:01.919Z",
+      "stage": "AFTER_KNOWN_DAY_SELECTION",
+      "busy": "true",
+      "visibleWeekText": null,
+      "dateLabels": [],
+      "selectedDateLabels": [],
+      "displayedError": false,
+      "classification": "LOADING",
+      "wantedSelectedLabel": "пятница, 23 октября",
+      "selectedDateMatched": false
+    },
+    {
+      "observedAtUtc": "2026-10-25T01:12:02.125Z",
+      "stage": "AFTER_KNOWN_DAY_SELECTION",
+      "busy": "false",
+      "visibleWeekText": "неделя 2 · №119–25 октября",
+      "dateLabels": [
+        "понедельник, 19 октября",
+        "вторник, 20 октября",
+        "среда, 21 октября",
+        "четверг, 22 октября",
+        "пятница, 23 октября",
+        "суббота, 24 октября",
+        "воскресенье, 25 октября"
+      ],
+      "selectedDateLabels": [
+        "пятница, 23 октября"
+      ],
+      "displayedError": false,
+      "classification": "POLICY_AND_AGENDA_READY",
+      "wantedSelectedLabel": "пятница, 23 октября",
+      "selectedDateMatched": true
+    }
+  ],
+  "safeRoleMilestones": [
+    {
+      "atUtc": "2026-10-25T01:12:01.467Z",
+      "phase": "NATIVE_READONLY_MANAGEMENT_HISTORY",
+      "initialOwnCaptured": true,
+      "targetRoleCaptured": true,
+      "roleCaptured": true,
+      "localRolePutEpoch": 1,
+      "targetAdmitted": true,
+      "actualTargetGroupConfirmed": "1"
+    }
+  ],
+  "httpDiagnostics": {
+    "knownGuestStartup401": true,
+    "transientRoleSelection409": [
+      {
+        "path": null,
+        "pathHash": "66be5879ef3a006f97cdf3d9fb658d6b9ab244113bbbad159c733f0fee4efb32",
+        "method": "GET",
+        "requestStartedAtUtc": "2026-10-25T01:12:00.742Z",
+        "responseHeadersAtUtc": "2026-10-25T01:12:00.894Z",
+        "requestStartedPhase": "EXISTING_TARGET_ROLE_SELECTION",
+        "roleAtRequestStart": {
+          "localRolePutEpoch": 1,
+          "initialOwnCaptured": true,
+          "targetRoleCaptured": false,
+          "targetAdmitted": false
+        },
+        "roleAtResponseHeaders": {
+          "localRolePutEpoch": 1,
+          "initialOwnCaptured": true,
+          "targetRoleCaptured": true,
+          "targetAdmitted": false
+        },
+        "capturedBearerMatchedAtForward": false,
+        "selfDeleteForwardedAtHeaders": 0,
+        "cleanupStatusAtHeaders": null
+      },
+      {
+        "path": "/api/auth/ws-ticket",
+        "pathHash": null,
+        "method": "POST",
+        "requestStartedAtUtc": "2026-10-25T01:12:00.747Z",
+        "responseHeadersAtUtc": "2026-10-25T01:12:00.898Z",
+        "requestStartedPhase": "EXISTING_TARGET_ROLE_SELECTION",
+        "roleAtRequestStart": {
+          "localRolePutEpoch": 1,
+          "initialOwnCaptured": true,
+          "targetRoleCaptured": false,
+          "targetAdmitted": false
+        },
+        "roleAtResponseHeaders": {
+          "localRolePutEpoch": 1,
+          "initialOwnCaptured": true,
+          "targetRoleCaptured": true,
+          "targetAdmitted": false
+        },
+        "capturedBearerMatchedAtForward": false,
+        "selfDeleteForwardedAtHeaders": 0,
+        "cleanupStatusAtHeaders": null
+      }
+    ],
+    "qualification": "TransientGET409/ws-ticket409 occurred before targetAdmitted, bearerMatchedAtForwardfalse. Kept as request-bound evidence; no unsupported assertion of exact server cause, liveprovider PASS or global HTTP-error-free result. Actualownedhistory200 and finalcanonical/admission gates succeeded.",
+    "pageErrors": [],
+    "blocked": [],
+    "requestFailures": [],
+    "readIncomplete": []
+  },
+  "cleanup": {
+    "method": "TECHNICAL_EXACT_CURRENT_OWN_SELF_SESSION_DELETE",
+    "nativeUiLogoutPass": false,
+    "selfDeleteForwarded": 1,
+    "status": 204,
+    "sameOldBearerStatus": 401,
+    "confirmed": true,
+    "fallbackUsed": false,
+    "intent": "RETURNED"
+  },
+  "browserClosed": true,
+  "sourceUnchanged": true,
+  "sourcePinsMatching": 20,
+  "noUnknownHold": true,
+  "errorCategory": "NONE_MACHINE_RUN; PRESENTATION_P3_FIX_NEEDED",
+  "limits": [
+    "Actualpopulatedhistory selectedrepresentatives only. Empty/loading/error/retry/filterinteractions/pagination/furtherrows/425/TMA/provider notchecked.",
+    "ViewportPNG show visible subset of15 loaded rows. Numeric DOMfacts only qualify actualcause; no exactCSSoracle used.",
+    "No marks/cancel/room/transfer/create/homework/approve/upload/credentials/export/prefs/grants/password actions. Active-rolePUT is existing same-session choice, not permissionediting.",
+    "TechnicalexactownselfDELETE204/currentHEADMANoldbearer401; nativeUiLogoutPassfalse; no helper/fallback/Rootproof/replay.",
+    "Old3bbc first TESTstop/sourceRole+cleanup positives retained and not relabeledPASS. Newv2 setup necessary for unobservedhistory, not extra functionalactions.",
+    "Presentation findings remainopen; productfix requires Root appointedwriter/newcontract. No productsource/doc changes in this run."
+  ],
+  "resources": {
+    "atUtc": "2026-10-25T01:17:07.004473+00:00",
+    "diskAvailableBytes": 5318995968,
+    "cgroupMemoryCurrentBytes": 10064625664,
+    "cgroupMemoryLimitBytes": 17179869184,
+    "ownRunnerLiveCount": 0,
+    "observedLivingChromiumCount": 0,
+    "ownBrowserClosedByReceipt": true,
+    "mainBrowserLeaseReleased": true,
+    "runtime12GateUnchanged": true
+  },
+  "noFurtherAuthOrTasksWithoutRootContract": true,
+  "privateExcludedFromRecovery": true,
+  "modelRequested": "gpt-6.1-sol/high",
+  "runtimeTelemetry": "unavailable",
+  "qualifiedAtUtc": "2026-10-25T01:17:07.004735+00:00"
+}

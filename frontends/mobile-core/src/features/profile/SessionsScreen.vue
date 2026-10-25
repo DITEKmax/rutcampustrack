@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import SvgIcon from '../../../../shared/foundation/SvgIcon.vue';
 import type {
   ProfileRequestError,
   ProfileResolvedTheme,
@@ -35,13 +36,13 @@ const props = withDefaults(
     onBack: undefined,
     onRetry: undefined,
     onLogoutAll: undefined,
-    theme: 'dark',
   },
 );
 
 function authMethodLabel(method: ProfileSessionSummary['authMethod']): string | null {
   if (method === 'PASSWORD') return 'пароль';
   if (method === 'OTP') return 'одноразовый код';
+  if (method === 'QR') return 'вход по QR-коду';
   if (method === 'TMA') return 'Telegram';
   return null;
 }
@@ -87,11 +88,10 @@ async function terminate(sessionId: string): Promise<void> {
           aria-label="Назад"
           @click="onBack?.()"
         >
-          <img
+          <SvgIcon
             :src="sessionsPrevious"
-            alt=""
             aria-hidden="true"
-          >
+          />
         </button>
         <h1
           id="profile-sessions-title"

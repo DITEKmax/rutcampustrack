@@ -1,0 +1,175 @@
+{
+  "revision": "63d97497eba26577a8af5fa1428fcc3c959c8992",
+  "productBase": "3371d6438b0144976cb338f0fa1bb14cc5c051bd",
+  "runnerSha256": "0f841e26845415da2edba5a3082271763f763ec8143f1c543bc4fa129cae47b4",
+  "rawReceipt": "receipt.json",
+  "rawReceiptSha256": "16da65fcfd0ff52a5c1101b2e6faaec3d1778475640b75c5277d12b9f6ac2eb5",
+  "rawOutcome": "EXIT0 completedtrue/captureCompletetrue; raw personallyInspectedfalse retained; this sidecar records personaloriginalPNGinspection.",
+  "elapsedSeconds": 4.947,
+  "criteria": {
+    "LATE-CHECKIN-NATIVE-READONLY-FORM": {
+      "status": "READY_BOUNDED_ACTUAL_SELECTED_ELIGIBLE_FORM",
+      "evidence": "One MainStudent3/STUDENT normalnative login→More→Заявки→Подать→availableЗабылотметиться→firsteligible ownlesson3→Continue→existingform. Freshnative ownoptions200/canonicalforward/bearermatch:42options/3lateeligible/5of5budget."
+    },
+    "LATE-CHECKIN-NARROW-READABILITY": {
+      "status": "PASS_BOUNDED_300_LIGHT_ROOT20",
+      "evidence": "Personally viewed original300light/root20: wrapped heading Забыл отметиться, ownlesson summary/date/time/type/status, Изменить пару, remaining5of5budget, confirmation text and both enabled actionbuttons are readable in viewport. No visible clipping/overlap in selected form. Submit and Cancel not activated."
+    },
+    "LATE-CHECKIN-KEYBOARD-FOCUS": {
+      "status": "PASS_BOUNDED_768_DARK_ROOT16",
+      "evidence": "Personally viewed original768dark/root16: centered form, lesson summary, remaining5of5budget and confirmation readable; Cancel has visible purple keyboard focus ring. Same eligibleform, no submit/cancel activation or requestcreation."
+    },
+    "PRESELECTION-VALIDATION": {
+      "status": "OBSERVED_NATIVE_CONTINUE_DISABLED_WITHOUT_SELECTION",
+      "evidence": "No invented formvalidation input or submit attempt. Only actual unselectedContinue-disabled cause guard, then localeligible selection enablesContinue."
+    }
+  },
+  "samples": [
+    {
+      "id": "PWA-MOBILE-LATECHECKINREQUEST__MB-LC-01-eligible-form-readonly-preview__light__300__root20__63d97497e",
+      "consumer": "PWA",
+      "screen": "MOBILE-LATECHECKINREQUEST",
+      "state": "eligible-form-readonly-preview",
+      "file": "PWA-MOBILE-LATECHECKINREQUEST__MB-LC-01-eligible-form-readonly-preview__light__300__root20__63d97497e.png",
+      "sha256": "a4c9e37a84a63002c758383804556c37424097498cf8879e3d0d88d7f065e537",
+      "theme": "light",
+      "width": 300,
+      "height": 900,
+      "rootFont": "20px",
+      "scrollWidth": 300,
+      "busy": "false",
+      "errorVisible": false,
+      "selectedSummaryPresent": true,
+      "submitEnabled": true,
+      "cancelFocusVisible": false,
+      "cancelIsActive": false,
+      "revision": "63d97497eba26577a8af5fa1428fcc3c959c8992",
+      "personallyInspected": true,
+      "caseId": "MB-LC-01",
+      "image": "PWA-MOBILE-LATECHECKINREQUEST__MB-LC-01-eligible-form-readonly-preview__light__300__root20__63d97497e.png",
+      "pngWidth": 300,
+      "pngHeight": 900,
+      "personallyViewed": true,
+      "inspection": "Personally viewed original300light/root20: wrapped heading Забыл отметиться, ownlesson summary/date/time/type/status, Изменить пару, remaining5of5budget, confirmation text and both enabled actionbuttons are readable in viewport. No visible clipping/overlap in selected form. Submit and Cancel not activated.",
+      "criterion": "LATE-CHECKIN-READONLY-FORM-PREVIEW",
+      "title": "Забыл отметиться · light · 300 · 20px",
+      "synthetic": true,
+      "syntheticCause": "Existing synthetic Main standdata; browser OSmedia theme/viewport/rootfont stress only. Actual nativeAuth/ownoptionsGET200/localdraftlessonselection; no API body/status mock or domain fixture/mutation.",
+      "captureKind": "new original actualPWA viewport bounded formbaseline",
+      "rootPersonallyViewed": true
+    },
+    {
+      "id": "PWA-MOBILE-LATECHECKINREQUEST__MB-LC-02-same-form-cancel-keyboard-focus__dark__768__root16__63d97497e",
+      "consumer": "PWA",
+      "screen": "MOBILE-LATECHECKINREQUEST",
+      "state": "same-form-cancel-keyboard-focus",
+      "file": "PWA-MOBILE-LATECHECKINREQUEST__MB-LC-02-same-form-cancel-keyboard-focus__dark__768__root16__63d97497e.png",
+      "sha256": "bc07f309b31f74cb3899cc535d9e9dc03b624eb5993c041c24c449eac8234cd2",
+      "theme": "dark",
+      "width": 768,
+      "height": 900,
+      "rootFont": "16px",
+      "scrollWidth": 768,
+      "busy": "false",
+      "errorVisible": false,
+      "selectedSummaryPresent": true,
+      "submitEnabled": true,
+      "cancelFocusVisible": true,
+      "cancelIsActive": true,
+      "revision": "63d97497eba26577a8af5fa1428fcc3c959c8992",
+      "personallyInspected": true,
+      "caseId": "MB-LC-02",
+      "image": "PWA-MOBILE-LATECHECKINREQUEST__MB-LC-02-same-form-cancel-keyboard-focus__dark__768__root16__63d97497e.png",
+      "pngWidth": 768,
+      "pngHeight": 900,
+      "personallyViewed": true,
+      "inspection": "Personally viewed original768dark/root16: centered form, lesson summary, remaining5of5budget and confirmation readable; Cancel has visible purple keyboard focus ring. Same eligibleform, no submit/cancel activation or requestcreation.",
+      "criterion": "LATE-CHECKIN-READONLY-FORM-PREVIEW",
+      "title": "Забыл отметиться · dark · 768 · 16px",
+      "synthetic": true,
+      "syntheticCause": "Existing synthetic Main standdata; browser OSmedia theme/viewport/rootfont stress only. Actual nativeAuth/ownoptionsGET200/localdraftlessonselection; no API body/status mock or domain fixture/mutation.",
+      "captureKind": "new original actualPWA viewport bounded formbaseline",
+      "rootPersonallyViewed": true
+    }
+  ],
+  "findings": [],
+  "freshOptions": {
+    "status": 200,
+    "currentOwnBearerMatched": true,
+    "totalLessonOptions": 42,
+    "lateEligibleCount": 3,
+    "remaining": 5,
+    "limit": 5,
+    "readAtUtc": "2026-10-25T01:55:02.636Z"
+  },
+  "freshOptionsHeaders": {
+    "path": "/api/v1/student/requests/options",
+    "method": "GET",
+    "status": 200,
+    "observedAtUtc": "2026-10-25T01:55:02.582Z",
+    "requestId": "9ea97d00-cc76-40ad-95c3-26a89e107d86",
+    "requestStartedPhase": "LOGIN_0",
+    "canonicalAtForward": true,
+    "loginIndex": 0
+  },
+  "setup": {
+    "expectedActor": 3,
+    "role": "STUDENT",
+    "selectedOwnLessonId": "3",
+    "optionsGet200": true,
+    "initialNativeRoleSelectionCountUpperBound": 1
+  },
+  "readonlyBehavior": {
+    "submitEnabledNaturally": true,
+    "submitActivated": false,
+    "cancelActivated": false,
+    "newRequestSubmitted": false,
+    "devicePreferencePuts": 0,
+    "functionalActionsAdded": 0,
+    "qualification": "Readonly describes packet operations; real form is enabled and capable of submitting. No productreadOnlyprop forced."
+  },
+  "errors": {
+    "pageErrors": [],
+    "requestFailures": [],
+    "readIncomplete": [],
+    "blocked": [],
+    "non2xxObserved": [
+      {
+        "path": "/api/auth/refresh",
+        "method": "POST",
+        "status": 401,
+        "phase": "BOOTSTRAP",
+        "loginIndex": 0
+      }
+    ],
+    "qualification": "Only expected guestbootstraprefresh401 observed; no new API error category."
+  },
+  "cleanup": {
+    "method": "TECHNICAL_EXACT_CURRENT_OWN_SELF_SESSION_DELETE",
+    "nativeUiLogoutPass": false,
+    "selfDeleteForwarded": 1,
+    "status": 204,
+    "sameOldBearerStatus": 401,
+    "confirmed": true,
+    "fallbackUsed": false,
+    "intent": "RETURNED"
+  },
+  "browserClosed": true,
+  "sourcePins25VerifiedAfter": true,
+  "processResource": "process-resource-after.json",
+  "reuse": "StudentRequest6 old85c choices/Excuseselection/draft and old43observedbaselines unchanged; new Late form only. No source/build/backend/oldPASS repeats.",
+  "limits": [
+    "Two selected PWA viewport/theme/fontstates only; no whole-screen/all-state/width claim.",
+    "OS-media theme emulation does not prove manualchoice/system persistence.",
+    "No submit/newrequest/cancel mutation/budgetconsumption/validationerror/success/conflict/unknown/retry/provider outcome claimed.",
+    "No TMA/nativeTelegram runtime or all eligibility combinations claim.",
+    "Technical exactown selfsessionDELETE204/currentoldbearer401; not nativeUIlogout PASS."
+  ],
+  "qualifiedAtUtc": "2026-10-25T01:56:09.092240+00:00",
+  "rootPersonalInspectionComplete": true,
+  "rootPersonalInspection": {
+    "reportedVia": "Root message2026-10-25",
+    "qualification": "Root personallyviewed bothoriginalLatePNGs: readable300light/root20 header/lesson/date/time/budget5of5/confirmation/actions with no observed overlap/clipping;768darkCancelkeyboardfocus clear. No newfinding in selectedcriteria.",
+    "recordedAtUtc": "2026-10-25T01:57:20.254171+00:00"
+  }
+}

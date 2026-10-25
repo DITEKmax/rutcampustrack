@@ -1,9 +1,83 @@
-# CURRENT — 2026-10-11
+# CURRENT — существующий Goal PR3,25октября2026
 
-ACCEPTED: GitHub CI/Coverage/Security repair task, main source dd50cd088fadf92f6fc9879ad7379e0e619200e1. Real CI38154842678 SUCCESS18jobs/browser9of9PASS15.4s; Coverage38154842675 SUCCESS8jobs; Security38154842677 SUCCESS3scanners. All10E2Ebuilds/startup/ownrunnercleanupPASS. Web-panel deferred; coverage diagnostic/no numeric floor; Europe/Moscow educational dates/time independent of server/JVM UTC. No product work remains in this repair scope.
+Ветка codex/web-vue-redesign, PR3; runtime-qualified source240a1b2a86a2b2ba0cbb89647a9ed8b151007007.
+Root docs/Git/интеграция; sole writers в сохранённых worktrees. Children explicit
+gpt-6.1-sol/high, telemetry unavailable, no fallback. CI/Coverage/Security/OpenAPI
+workflow_dispatch/PAUSED. Без merge/deploy/production/main/reset/clean/forcepush/
+globalprune/новой среды/Goal/PR. ONEHEAVYfree; все browser cases knownterminal.
 
-Root sole MAIN/docs/Git integrator. All eight assigned authors/reviewers RELEASED; no children/heavy processes. Final receipt changes only report/process metadata; accepted product/config/dependency/test sources unchanged. Exact209path inventory docs/operations/ci-repair-20261011-files.json; causes/rules/checks/remoteURLs/known limits docs/operations/ci-repair-20261011.md; immutable primarylogs .agent/evidence/ci-repair-20261011/. Next product work only on owner assignment; full frontend/Figma/manual acceptance and publiclaunch separate.
+## Актуальная точка
 
-New tasks Sol6.1/xhigh by explicit owner11Oct; explicit flags confirmed/runtime metadataUNKNOWN. RULES SHAa208aa4380b64376a4ead645aa0731c9f574077107dc9c44356f5c04d80f28fa; frozen contractSHA7a005a4183221e09399535b94d5869f9b8b0303df3be56137c633e2a68a05ee4; SLOTS.md resource owners.
+117/117 source implementations audited, accepted116/117 (ADMIN33/34); group строка
+in progress. Полный group UI перенесён владельцем на свою Ubuntu: local NOT_RUN0/1,
+cloud start/grants/delete запрещены. QENV010 cloudspace superseded, больше не blocker
+Angular. Angular433tracked files +active deps/config/build refs удалены; reviewPASS.
+Useful stalechunk recovery перенесён в WEB,4behavior testsPASS. Root WEB/TMA strict/Vite
+PASS, prefix PWA/app +TMA/mini-app PASS. Config-only MIME fix не требовал rebuild.
 
-Ordinary main integration/push authorized; automatic Deploy explicitly kept, separate from passed three workflows. No manualdeploy/productionmigration/secret changes. Existing18514/privateenv/certs/backups/6KEEP/1757rollbackrefs untouched; BotOFF/tunnelOFF. Prior external Telegram/WebPush acceptance preserved; current TMA CI uses synthetichost/realHMAC. Known nginx M15root exception/V27online-index debt preserved, no newCVEignore. Successful tests are not a production readiness percentage.
+ActualcommonNginx240a: all3static/deeplinks/refresh/MIME/cache/CSP/missing404 PASS,
+anonymousAPI401200 matchesdirect. PWA HTTP normalAuth/currentTeacher2/catalog2/2/3/
+knownscope +SockJS/STOMPCONNECTED1/SUBSCRIBE1/errors0 PASS. WEB bounded sameAuth/schema/
+STOMP/cleanup accepted; rawEXIT1/false retained String-vs-number ID TESTbug, knownIDs
+NOTPROVEN. WEBreplay0, PWAonly correctedhelper source-reviewed. Own2SID DELETE204/
+oldBearer401/browserclosed/HOLDfalse/PREFdomainwrites0. HTTPSAuthWSS/externalidentity/
+SWactivationupdateoffline/nativeTMA/WebPushprovider NOT_RUN, not implied bystatic/HTTP.
+
+OwnNginx stopped;30original ID/image/state/mountsets unchanged. Guardnull250ms,
+before6489534464/min6383026176/after6487257088B. Main13/admin7 running, clock5/shipping5
+stopped, no group replacements/fixtures/delete. All private rawNginxlogs retained,
+never export (may contain WS query capabilities). Public projections/review in
+checkpoints/assembled-nginx-20261025. OldMIMEFAIL +comparison-order/shortID TESTerrors
+retained/qualified, not erased. source Gitleaks0 latestrange; older2publicmetadata
+matches qualified e8, rules/ignore/history unchanged.
+
+## Владелец выполняет локально
+
+Docs/plans/web-vue-pr3/LOCAL-EXECUTION.md +tests/e2e/pr3-local/README.md. New
+~/rutcampustrack-pr3 namespace rct-pr3-local; neveroldci-diagnosis/activate. Ubuntu24,
+JDK21/Gradle8.12/Node24.14.0/npm11.9.0.7freshmatchingJAR,12Docker services+3hostVites,
+ownports14250–52/18443/privateDBqueuesvolumes. Generatedsecrets/PKI local only,
+no clouddata/keys/config export. Group preview8counts/password/originalUUID/result,
+6openWEBPWATMA naturalwithdrawal/foreignpreservation; unknown→originalstatusonly.
+Public launchers reviewed inclSIGTERMreap/packageprivatefreeze, local NOT_RUN until
+actualowner output. Ngx localAPI18443 strictseparateCA +exactOrigins14240/14443
+sourcePASS, no extraIP/profile/proxytrust. Owner locallyrunscommands, agents0.
+
+## Визуал и закрытые пакеты
+
+Gallery289/portable289.33WEB+50mobile,45boundedobserved/5unchecked, not45fullyready.
+Finite VISUAL-REMAINDER.md: helper grant/credentials unqualified; Group autoexposes
+passwords; Manual oneactualroster7/ticket1/manual0/PNG0/rawEXIT1; no globalabsence.
+Orphan no newpage. Bothconditionalthemes/widths unchecked withreasons, no fakeprops.
+
+Password CLOSED post9598 MAINuser8 Cred7/RV8/Aca8/profile6unassigned,3ownSIDsrevoked.
+LIMITED CLOSED postc7ee ISOLATEDTeacher2 profile8unassigned/RV9/catalog22/Aca9,
+4ownSIDsrevoked/naturalwithdraw3708ms/oldADMIN403/Teacher200. MAINTeacher2 otherrealm.
+Wholemap/Authcorrect204wrong403 CLOSED. Backendgroup20+live55/6unit/2PG/1Mongo PASS.
+Never replay oldCred5/profile4/ACLcleanup; only changedrisk permits newchecks.
+Cleanup109paths real+1286668288B (~1.20GiB), source12WT/Git/archives/results/JARs/data
+preserved. RecoveryZIP8784846B SHA00fb9f0158468e18acd134b7542c03906fd1e5daf10354f266a03e3a0fa58bd0 unchanged.
+
+Source-only snapshot08e08aedc ZIP11130527B/caa5b614... CRC/all3666GitbytesPASS;
+fullnative12publicnonsecret qualified/unresolved0, rawEXIT1 retained, policyunchanged.
+На checkpoint2b source/config/launchers совпадали с runtime240; последующий пакет ниже меняет только diagnostic harness, не продуктовую поставку.
+Новый прямой scope владельца: PR3comment6396083761, ordinary diagnostic harness.
+Baseline2b297a preservedlocalref; authorbranches from2b, no reset/clean.
+Root docs/Git; disk_files sole Python/sharedcatalog/CI/localconsumer writer in
+headman-web/codex/pr3-diagnostic-consumer; group_resume soleTSproducer/reporter/spec
+writer in group-final-delete/codex/pr3-diagnostic-producer. angular_review readonly
+linked audit DONE; independentprivacy review завершён PASS. Publicclosedv1
+case/stage/event/status, preregistrationbeforefixtures/perruntrustedbinding.
+Remove4sourcehashmaps+relatedownframepins/fileline/titleidentity andYAML ASTextraction;
+sharedCLI CI/Ubuntu withrealownernonce paths, pipelinebasenameconsumer migrated.
+Keepdynamiclocalmanifest/CA/Compose/source-restoration/build/runtime/downloadintegrity.
+No containers/Auth/DB/browser/fullE2E/ownerlocalchecks needed; model/effort unchanged.
+See docs/plans/web-vue-pr3/DIAGNOSTIC-HARNESS-CONTRACT.md.
+Source integration e0dcb3496: common Node producer/reporter +Python consumer PASS,
+7rows/20finite negatives/19Python controls, deliberate childEXIT1 retained.
+IndependentTS/Python/fixture/shared-wiring reviews PASS after2P2corrections.
+Helper strictTS PASS; wider touched-spec retains baseline semesterTS2322/EXIT2.
+CI/Ubuntu service runtime collector NOT_RUN; no Docker/Auth/DB/browser/fullE2E.
+Root final docs/publish; no further unblocked product mutations in this packet.
+Old product117source/116accepted andownerlocalgroupNOT_RUN unchanged. No newGoal.
+No productquestions/extra permissions needed. Don't mark local/provider gatesPASS.

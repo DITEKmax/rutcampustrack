@@ -1,0 +1,44 @@
+{
+  "kind": "READONLY_POSTSEMESTER_HEALTH_CLASSIFICATION",
+  "rawPostReadPassed": false,
+  "rawPostReadSha256": "751f165bd517a363f51137513c7b973edf749bb2417fdf0015c64a040f759ad3",
+  "domainCriteria": {
+    "SQLReadOnly": true,
+    "canonicalMarkers": true,
+    "originalSemester1PreservedExceptActive": true,
+    "newSemesterExactActiveAUTUMN2029": true,
+    "exactTwoSemestersAndUniqueActive": true,
+    "AuthAuthorityUnchanged": true,
+    "AcademicProfilesCatalogUnchanged": true,
+    "oneCanonicalActivationOutbox": true,
+    "onePreviousDeactivationOutbox": true,
+    "mapTablesStillEmpty": true,
+    "remaining2GiB": true,
+    "main13Clock5SameHealthy": true
+  },
+  "actualAcademicHealth": "OUT_OF_SERVICE",
+  "actualComponentStatuses": {
+    "db": "UP",
+    "diskSpace": "UP",
+    "grpcChannel": "OUT_OF_SERVICE",
+    "livenessState": "UP",
+    "ping": "UP",
+    "rabbit": "UP",
+    "readinessState": "UP",
+    "redis": "UP",
+    "ssl": "UP"
+  },
+  "actualGrpcChannelStates": {
+    "report-render-attendance": "IDLE",
+    "auth-service": "READY",
+    "schedule-service": "IDLE",
+    "document-renderer-service": "IDLE",
+    "attendance-service": "TRANSIENT_FAILURE"
+  },
+  "plannedAttendanceServiceContainerPresent": false,
+  "causeLimit": "Observed OUT_OF_SERVICE is grpcChannel, only TRANSIENT_FAILURE attendance-service (absent from minimal7). Trigger chronology / relation to activation not proven. No health configuration/status disabled or rebased.",
+  "remainingDiskBytes": 2567106560,
+  "originalRawFAILPreserved": true,
+  "helperOrSQLRetried": false,
+  "sourceOrRuntimeMutation": false
+}

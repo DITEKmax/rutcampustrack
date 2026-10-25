@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import SvgIcon from '../../../../shared/foundation/SvgIcon.vue';
 import { computed, ref, watch } from 'vue';
 import chevronDown from '../../assets/chevron-down.svg';
 import {
@@ -107,10 +108,9 @@ const hasSubjects = computed(() => props.subjects.length > 0);
             class="attendance-subject-list__disclosure"
             aria-hidden="true"
           >
-            <img
+            <SvgIcon
               :src="chevronDown"
-              alt=""
-            >
+            />
           </span>
         </button>
         <div

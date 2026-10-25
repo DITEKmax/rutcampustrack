@@ -1,0 +1,23 @@
+{
+  "sourceSha": "240a1b2a86a2b2ba0cbb89647a9ed8b151007007",
+  "httpOrigin": "http://127.0.0.1:14240",
+  "nginxListenerReady": true,
+  "renderedConfigSha256": "9205556a76354374fe8c484c16eb229f65ff99036aeda21df01c1d432921af24",
+  "configMatchesPreparedPin": true,
+  "observations": [
+    {
+      "path": "/login",
+      "status": 200,
+      "bodySha256": "a9c10c36d677af873cc47e83fdb4371896fa23f35d5a3d0dcda1351db35b3dd5",
+      "matchesPinnedIndex": true,
+      "cspPresent": true
+    },
+    {
+      "path": "/app/",
+      "status": 200,
+      "bodySha256": "efb27c2354bbf9f39ada24650659af36cd54dddb50396286d091091e9a1fa298",
+      "matchesPinnedIndex": true,
+      "cspPresent": true
+    }
+  ]
+}

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import SvgIcon from '../../../../shared/foundation/SvgIcon.vue';
 import MobileIcon from './MobileIcon.vue';
 import checkIcon from '../../assets/admin/check.svg';
 import './admin-notice.pcss';
@@ -17,11 +18,10 @@ defineProps<{ tone: 'success' | 'warning' | 'danger'; title: string }>();
         class="admin-notice__icon"
         aria-hidden="true"
       >
-        <img
+        <SvgIcon
           v-if="tone === 'success'"
           :src="checkIcon"
-          alt=""
-        >
+        />
         <MobileIcon
           v-else
           name="warning"

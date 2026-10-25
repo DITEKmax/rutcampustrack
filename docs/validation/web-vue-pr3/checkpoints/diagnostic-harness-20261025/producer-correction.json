@@ -1,0 +1,24 @@
+{
+  "schema": "rct-diagnostic-controls.v1",
+  "source": "50f723e6bb28707ab2f77502868c013d3c503672",
+  "passed": true,
+  "command": [
+    "node",
+    "tests/e2e/fixtures/diagnostic-events.control.mjs"
+  ],
+  "node": "24.19.0",
+  "playwright": "1.59.1",
+  "deliberateChildExit": 1,
+  "rows": 7,
+  "finiteNegatives": 20,
+  "exactClone": "FRAMEWORK0",
+  "nativeBody": "HTTP503",
+  "nativeWorkerFixture": "HTTP503",
+  "globalSetup": false,
+  "browser": false,
+  "API": false,
+  "Docker": false,
+  "Auth": false,
+  "DB": false,
+  "reportSha256": "f57f42de5a4af16b4e273e59b714144acc5dada9a6f24a35294da0607fa66e72"
+}

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { createDeviceThemeMirror, createDeviceThemeTransport } from '../../shared/foundation';
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue';
 import {
   AdminAccessApiError,
@@ -88,7 +89,11 @@ import {
   NotificationLaunchOwner,
   type NotificationTargetIntent,
 } from '@rct/mobile-core';
-import { installFixtureTelegramHost, TelegramHost } from './telegram';
+import {
+  installFixtureTelegramHost,
+  TelegramHost,
+  createTelegramSystemThemeSource,
+} from './telegram';
 import { useTmaSession } from './tma-session';
 import { createTelegramReportDownloadPort } from './report-download-adapter';
 import { TmaAuthError } from './tma-auth';
@@ -112,8 +117,21 @@ const themePreference = createMobileThemePreference(() =>
 const theme =
   typeof document === 'undefined'
     ? null
-    : createMobileTheme({ mode: themePreference.read() ?? 'dark', lockedMode: 'dark' });
-const stopThemePreference = theme?.subscribe(({ mode }) => themePreference.write(mode));
+    : createMobileTheme({
+        mode: themePreference.read() ?? 'system',
+        systemSource: createTelegramSystemThemeSource(host.app),
+      });
+const resolvedTheme = ref(theme?.resolvedMode ?? 'light');
+const stopThemeSnapshot = theme?.subscribe((snapshot) => {
+  resolvedTheme.value = snapshot.resolvedMode;
+});
+const themeMirror = theme
+  ? createDeviceThemeMirror({
+      theme,
+      preference: themePreference,
+      transport: createDeviceThemeTransport(fixtureTransport ?? nativeFetcher),
+    })
+  : null;
 const mapClient = new CampusMapClient({
   accessToken: () => sessionOwner.accessToken.value,
   currentGeneration: () => sessionOwner.currentGeneration(),
@@ -205,6 +223,24 @@ const teacherNotificationOwner = ref<{
 const session = shallowRef<StudentSession | null>(null);
 const scope = shallowRef<StudentFeatureScope | null>(null);
 const profile = shallowRef<ProfileSnapshot | null>(null);
+watch(
+  () =>
+    [
+      sessionOwner.accessToken.value,
+      profile.value?.userId,
+      profile.value?.sessionId,
+      sessionOwner.resetGeneration.value,
+    ] as const,
+  ([accessToken, userId, sessionId, generation]) => {
+    themeMirror?.setSession(
+      accessToken && userId && sessionId
+        ? { accessToken, key: `${generation}:${userId}:${sessionId}` }
+        : null,
+    );
+  },
+  { immediate: true },
+);
+
 const profilePort = shallowRef<ProfilePort | null>(null);
 const headmanGroupId = ref<number | null>(null);
 const ready = ref(false);
@@ -715,7 +751,14 @@ watch(
           if (!sessionOwner.isCurrent(generation)) throw new StaleSessionGenerationError();
           return sessionOwner.accessToken.value;
         },
-        refreshFor: (generation) => sessionOwner.authenticateFor(generation),
+        refreshFor: async (generation) => {
+          try {
+            await sessionOwner.authenticateFor(generation);
+          } catch (cause) {
+            if (sessionOwner.isCurrent(generation) && isAuthDenied(cause)) onOwnerError(cause);
+            throw cause;
+          }
+        },
       },
       scope: {
         userId,
@@ -1344,6 +1387,7 @@ function offlineNow(): void {
 }
 
 function onlineNow(): void {
+  themeMirror?.reconcile();
   if (authView.value === 'signed-out') return;
   // Browser online is only a transport hint. Keep the owner read-only until
   // Telegram authentication and the session identity have been checked.
@@ -1382,7 +1426,9 @@ onBeforeUnmount(() => {
   window.removeEventListener('offline', offlineNow);
   window.removeEventListener('online', onlineNow);
   document.removeEventListener('visibilitychange', onAssistantForeground);
-  stopThemePreference?.();
+  stopThemeSnapshot?.();
+  themeMirror?.dispose();
+  themePreference.dispose();
   theme?.dispose();
 });
 </script>
@@ -1404,10 +1450,10 @@ onBeforeUnmount(() => {
   <NotificationsEntryButton
     v-if="
       notificationsEntryVisible &&
-        !studentViewVisible &&
-        !headmanViewVisible &&
-        !teacherViewVisible &&
-        !adminHomeViewVisible
+      !studentViewVisible &&
+      !headmanViewVisible &&
+      !teacherViewVisible &&
+      !adminHomeViewVisible
     "
     floating
     :count="notificationUnread.count"
@@ -1430,6 +1476,7 @@ onBeforeUnmount(() => {
     />
   </Teleport>
   <RoleSwitchScreen
+    :theme="resolvedTheme"
     v-if="authView === 'role' && profile"
     :snapshot="profile"
     :pending-role="pendingRole"
@@ -1469,6 +1516,7 @@ onBeforeUnmount(() => {
   />
   <TeacherFeatureOwner
     v-else-if="teacherViewVisible"
+    :realtime-revision="notificationRealtimeRevision"
     ref="teacherNotificationOwner"
     :key="`teacher-${ownerRevision}`"
     :on-notifications="openNotifications"
@@ -1488,7 +1536,7 @@ onBeforeUnmount(() => {
   <MapScreen
     v-else-if="mapViewVisible"
     :client="mapClient"
-    theme="dark"
+    :theme="resolvedTheme"
   />
   <AdminShell
     v-else-if="adminMoreViewVisible"
@@ -1517,7 +1565,7 @@ onBeforeUnmount(() => {
       :unread-count="notificationUnread.count"
       :client="adminDashboardApi"
       :invalidation-revision="adminDashboardRevision"
-      theme="dark"
+      :theme="resolvedTheme"
       @owner-error="onOwnerError"
       @open-role-switch="openAdminRoleSwitch"
       @open-attendance="navigateAdmin('attendance')"
@@ -1556,7 +1604,7 @@ onBeforeUnmount(() => {
       :authority="adminAuthority"
       :client="adminMapClient"
       :show-back="false"
-      theme="dark"
+      :theme="resolvedTheme"
       @back="navigateAdmin('more')"
       @owner-error="onOwnerError"
     />
@@ -1574,7 +1622,7 @@ onBeforeUnmount(() => {
       :authority="adminAuthority"
       :client="adminMapClient"
       :show-back="false"
-      theme="dark"
+      :theme="resolvedTheme"
       @back="navigateAdmin('more')"
       @owner-error="onOwnerError"
     />
@@ -1592,7 +1640,7 @@ onBeforeUnmount(() => {
       ref="adminTaskOwner"
       :authority="adminAuthority"
       :client="adminSemesterApi"
-      theme="dark"
+      :theme="resolvedTheme"
       @navigation-visibility="adminNavigationVisible = $event"
       @back="navigateAdmin('more')"
       @owner-error="onOwnerError"
@@ -1613,7 +1661,7 @@ onBeforeUnmount(() => {
       :access-client="adminAccessActionsApi"
       :authority="adminAuthority"
       :client="adminUsersApi"
-      theme="dark"
+      :theme="resolvedTheme"
       @navigation-visibility="adminNavigationVisible = $event"
       @owner-error="onOwnerError"
     />
@@ -1632,7 +1680,7 @@ onBeforeUnmount(() => {
       :report-download="reportDownload"
       :authority="adminAuthority"
       :client="adminGroupsApi"
-      theme="dark"
+      :theme="resolvedTheme"
       @navigation-visibility="adminNavigationVisible = $event"
       @owner-error="onOwnerError"
     />
@@ -1696,6 +1744,7 @@ onBeforeUnmount(() => {
     @back="closeAdminRoleSwitch"
   >
     <RoleSwitchScreen
+      :theme="resolvedTheme"
       compact
       :snapshot="profile"
       :pending-role="pendingRole"
@@ -1709,6 +1758,7 @@ onBeforeUnmount(() => {
   </AdminShell>
   <StudentFeatureOwner
     v-else-if="studentViewVisible"
+    :realtime-revision="notificationRealtimeRevision"
     ref="studentNotificationOwner"
     :key="ownerKey"
     :owner-key="ownerKey"
@@ -1783,9 +1833,7 @@ onBeforeUnmount(() => {
       class="today-state__spinner"
       aria-hidden="true"
     />
-    <h2 v-if="error">
-      Не удалось открыть приложение
-    </h2>
+    <h2 v-if="error"> Не удалось открыть приложение </h2>
     <p>{{ error ?? 'Подключаемся к Telegram…' }}</p>
     <button
       v-if="error && !offline"

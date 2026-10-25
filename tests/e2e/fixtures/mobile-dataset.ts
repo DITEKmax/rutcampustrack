@@ -1,3 +1,4 @@
+import { currentDiagnosticCase } from './diagnostic-events';
 import { randomBytes, randomUUID } from 'node:crypto';
 import { setTimeout } from 'node:timers/promises';
 import {
@@ -49,15 +50,12 @@ function retainMarkRequestId(
       return;
     if (process.env.RCT_E2E_BOT_ROLE_MENU === 'true') {
       const info = base.info();
-      const workspace = process.env.GITHUB_WORKSPACE;
+      const workspace = process.env.RCT_DIAGNOSTIC_CHECKOUT_ROOT ?? process.env.GITHUB_WORKSPACE;
       if (
-        resolve(info.file) ===
-          join(workspace ?? '', 'tests/e2e/specs/mobile-real-server.spec.ts') &&
-        info.title ===
-          'actual private bot menu roster and teacher Today use hosted current authority'
+        currentDiagnosticCase() === 'HOSTED_PRIVATE_BOT_AUTHORITY'
       ) {
         const temporary = process.env.RUNNER_TEMP;
-        const run = process.env.RCT_REMAINING5_RUN;
+        const run = process.env.RCT_DIAGNOSTIC_RUN_DIR ?? process.env.RCT_REMAINING5_RUN;
         const clock = process.env.RCT_E2E_TEACHING_CLOCK_DIR;
         const runId = process.env.GITHUB_RUN_ID ?? '';
         const attempt = process.env.GITHUB_RUN_ATTEMPT ?? '';
@@ -79,7 +77,6 @@ function retainMarkRequestId(
           attempt.trim() !== attempt ||
           run !== join(temporary, `rct-u20-bot-${runId}-${attempt}`) ||
           clock !== join(temporary, `rct-first3-clock-${runId}-${attempt}`) ||
-          info.line !== 5943 ||
           info.project.name !== 'chromium' ||
           info.project.outputDir !== join(run, 'artifacts') ||
           Object.getOwnPropertyDescriptor(session ?? {}, 'activeRole')?.value !== 'HEADMAN'
@@ -131,9 +128,9 @@ function retainMarkRequestId(
         return;
       }
     }
-    const run = process.env.RCT_SEMESTER_LIFECYCLE_RUN;
+    const run = process.env.RCT_DIAGNOSTIC_RUN_DIR ?? process.env.RCT_SEMESTER_LIFECYCLE_RUN;
     const temporary = process.env.RUNNER_TEMP;
-    const workspace = process.env.GITHUB_WORKSPACE;
+    const workspace = process.env.RCT_DIAGNOSTIC_CHECKOUT_ROOT ?? process.env.GITHUB_WORKSPACE;
     const runId = process.env.GITHUB_RUN_ID ?? '';
     const attempt = process.env.GITHUB_RUN_ATTEMPT ?? '';
     if (
@@ -142,6 +139,7 @@ function retainMarkRequestId(
       !workspace ||
       !isAbsolute(temporary) ||
       !isAbsolute(workspace) ||
+      resolve(__dirname, '../../..') !== workspace ||
       !/^[1-9][0-9]{0,19}$/.test(runId) ||
       !/^[1-9][0-9]{0,5}$/.test(attempt) ||
       run !== join(temporary, `rct-semester-lifecycle-${runId}-${attempt}`)
@@ -149,9 +147,7 @@ function retainMarkRequestId(
       return;
     const info = base.info();
     if (
-      resolve(info.file) !== join(workspace, 'tests/e2e/fixtures/semester-lifecycle.spec.ts') ||
-      info.title !==
-        'FULL admin archives and restores the disposable CI semester through real participants' ||
+      currentDiagnosticCase() !== 'SEMESTER_ARCHIVE_RESTORE' ||
       info.project.name !== 'chromium' ||
       info.project.outputDir !== join(run, 'artifacts')
     )

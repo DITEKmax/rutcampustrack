@@ -1,0 +1,240 @@
+{
+  "revision": "7d664ce89cff5813772d1923e310ad74c2706c87",
+  "sourceBase": "343245083694b85298e18b578ad8a51b54af88c9",
+  "productFixAuthor": "fed1d627b0a6b09a1b4d66d6bbfacf1ccc35afa1",
+  "productFixIntegrated": "343245083694b85298e18b578ad8a51b54af88c9",
+  "runnerSha256": "d26db17f7dfa1862d3bdeb30371a207e6699cd8ca5230e770d5e67657606b63c",
+  "rawReceipt": "receipt.json",
+  "rawReceiptSha256": "ac90f774d79b750790fc810de90a45dfd2b4c2c58aaea535b7dc6b30c201d474",
+  "rawOutcome": "EXIT0 completedtrue/captureCompletetrue; raw personallyInspected:false retained unchanged; this sidecar records actual personal inspection of both originalPNG.",
+  "elapsedSeconds": 4.035,
+  "criterion": {
+    "id": "PWA-HOST-LOGOUT-PRESENTATION",
+    "status": "CLOSED_BOUNDED_300_DARK_ROOT20_FOCUS_AND_768_LIGHT_ROOT16_HOVER",
+    "userResult": "Existing PWA logout control appears as a legible semantic dangerbutton within the centered mobile content column; keyboard focus and hover feedback visible; control stays above dock.",
+    "basis": "Personal view_image inspection of both unmodified originalviewportPNG; numeric geometry/computedCSS retained only as supporting metadata, not exactCSS acceptance oracle."
+  },
+  "samples": [
+    {
+      "id": "PWA-HOST-LOGOUT__PWA-HL-AF01-after-control-keyboard-focus__dark__300__root20__7d664ce89",
+      "consumer": "PWA",
+      "screen": "PWA-HOST-LOGOUT",
+      "state": "after-control-keyboard-focus",
+      "file": "PWA-HOST-LOGOUT__PWA-HL-AF01-after-control-keyboard-focus__dark__300__root20__7d664ce89.png",
+      "sha256": "5a5226f8cf8ac9a08a2f308c52419444cf95023c394c1d38ef281cc705a08063",
+      "theme": "dark",
+      "width": 300,
+      "height": 900,
+      "rootFont": "20px",
+      "scrollWidth": 300,
+      "scrollY": 655,
+      "control": {
+        "x": 20,
+        "y": 710.375,
+        "width": 260,
+        "height": 55,
+        "enabled": true,
+        "focusVisible": true,
+        "hovered": false,
+        "centerUnobscured": true,
+        "background": "rgb(214, 53, 53)",
+        "color": "rgb(255, 255, 255)",
+        "fontSize": "17.5px",
+        "borderRadius": "1248.75px",
+        "outlineStyle": "solid",
+        "outlineWidth": "2px",
+        "boxShadow": "none"
+      },
+      "content": {
+        "outerX": 0,
+        "outerWidth": 300,
+        "innerLeft": 20,
+        "innerRight": 280
+      },
+      "revision": "7d664ce89cff5813772d1923e310ad74c2706c87",
+      "personallyInspected": true,
+      "caseId": "PWA-HL-AF01",
+      "image": "PWA-HOST-LOGOUT__PWA-HL-AF01-after-control-keyboard-focus__dark__300__root20__7d664ce89.png",
+      "pngWidth": 300,
+      "pngHeight": 900,
+      "personallyViewed": true,
+      "inspection": "Personally viewed original300×900 dark/root20: red logout control aligns with assignment-card column; label remains legible, purple keyboardfocus outline clearly visible; control fits within narrow viewport and stays above fixed dock without obstruction.",
+      "title": "PWA logout · dark · 300 · 20px",
+      "criterion": "PWA-HOST-LOGOUT-PRESENTATION",
+      "synthetic": true,
+      "syntheticCause": "Existing synthetic stand data; browser OS media theme/viewport; browser-only root20 accessibility stress removed for root16. Real Auth/API unmodified. No manual preference writes, API mocks, logout activation or forced disabled state.",
+      "captureKind": "new original Chromium viewport PNG of changed shared PWA hostcontrol"
+    },
+    {
+      "id": "PWA-HOST-LOGOUT__PWA-HL-AF02-after-control-hover__light__768__root16__7d664ce89",
+      "consumer": "PWA",
+      "screen": "PWA-HOST-LOGOUT",
+      "state": "after-control-hover",
+      "file": "PWA-HOST-LOGOUT__PWA-HL-AF02-after-control-hover__light__768__root16__7d664ce89.png",
+      "sha256": "76ddcc0f393385380d230a3a046031223444844a0c6e44a8604269cb61ef752e",
+      "theme": "light",
+      "width": 768,
+      "height": 900,
+      "rootFont": "16px",
+      "scrollWidth": 768,
+      "scrollY": 143,
+      "control": {
+        "x": 187,
+        "y": 748.328125,
+        "width": 394,
+        "height": 44,
+        "enabled": true,
+        "focusVisible": false,
+        "hovered": true,
+        "centerUnobscured": true,
+        "background": "rgb(179, 38, 38)",
+        "color": "rgb(255, 255, 255)",
+        "fontSize": "14px",
+        "borderRadius": "999px",
+        "outlineStyle": "none",
+        "outlineWidth": "3px",
+        "boxShadow": "rgb(255, 255, 255) 0px 0px 0px 1px inset"
+      },
+      "content": {
+        "outerX": 171,
+        "outerWidth": 426,
+        "innerLeft": 187,
+        "innerRight": 581
+      },
+      "revision": "7d664ce89cff5813772d1923e310ad74c2706c87",
+      "personallyInspected": true,
+      "caseId": "PWA-HL-AF02",
+      "image": "PWA-HOST-LOGOUT__PWA-HL-AF02-after-control-hover__light__768__root16__7d664ce89.png",
+      "pngWidth": 768,
+      "pngHeight": 900,
+      "personallyViewed": true,
+      "inspection": "Personally viewed original768×900 light/root16: logout control centered in the same bounded mobile column as cards; clear rounded dangerbutton/white label; white inset hoverhairline visible, without keyboardfocus outline; no clipping or dock obstruction.",
+      "title": "PWA logout · light · 768 · 16px",
+      "criterion": "PWA-HOST-LOGOUT-PRESENTATION",
+      "synthetic": true,
+      "syntheticCause": "Existing synthetic stand data; browser OS media theme/viewport; browser-only root20 accessibility stress removed for root16. Real Auth/API unmodified. No manual preference writes, API mocks, logout activation or forced disabled state.",
+      "captureKind": "new original Chromium viewport PNG of changed shared PWA hostcontrol"
+    }
+  ],
+  "newImages": 2,
+  "newCanonicalMobileConsumers": 0,
+  "functionalActionsAdded": 0,
+  "cleanup": {
+    "method": "TECHNICAL_EXACT_CURRENT_OWN_SELF_SESSION_DELETE",
+    "nativeUiLogoutPass": false,
+    "selfDeleteForwarded": 1,
+    "status": 204,
+    "sameOldBearerStatus": 401,
+    "confirmed": true,
+    "fallbackUsed": false,
+    "intent": "RETURNED"
+  },
+  "browserClosed": true,
+  "sourceUnchanged": true,
+  "sourcePins": [
+    {
+      "path": "frontends/pwa-vue/src/App.vue",
+      "sha256": "adb8bc300fdf820b8b78ee0a90d5253fc521977fa5dbf5f092bed080e785ec41"
+    },
+    {
+      "path": "frontends/pwa-vue/src/pwa-host.pcss",
+      "sha256": "eb9ec756acbe127d9258b3187a807139215dbcb11fda017e424e30f2061e2b69"
+    },
+    {
+      "path": "frontends/pwa-vue/src/auth.ts",
+      "sha256": "03d12164cfeaaec68d3fc8e5410ebe7692ebed7f3ea8eeeace7c53239532abd2"
+    },
+    {
+      "path": "frontends/pwa-vue/src/auth-client.ts",
+      "sha256": "1c1a2902301c83ce1937e97ab3d2cb53e953faf5b91765f5b080effd6becf846"
+    },
+    {
+      "path": "frontends/mobile-core/src/shared/components/TeacherFeatureOwner.vue",
+      "sha256": "5f2575335e5f90da9c40cc5de3c15bf1902a270c04f2c99ad4ae3b7be1cb756e"
+    },
+    {
+      "path": "frontends/mobile-core/src/features/teacher/TeacherHomeScreen.vue",
+      "sha256": "f6502003e8f6df7a29ed9c4262896a9ebff3a3d7e248e81e45131c46020f436d"
+    },
+    {
+      "path": "frontends/mobile-core/src/shared/components/MobileShell.vue",
+      "sha256": "67c1d82b033f0d6c2cae8c12b79ee47ac6f7320aa6ad437a8df9fc25404bc14b"
+    },
+    {
+      "path": "frontends/mobile-core/src/styles/base.pcss",
+      "sha256": "f9b5a71242a22b2ddf61d217dddc80fffd8af7019a0cbd7b3b7860e8dd4595d7"
+    },
+    {
+      "path": "frontends/mobile-core/src/styles/tokens.pcss",
+      "sha256": "5e2cc37157dbe2c1d8e2f335a972ea94963f2ec0e5da15df908504aee0faece8"
+    },
+    {
+      "path": "frontends/shared/foundation/base.pcss",
+      "sha256": "2b7edc7e0d657451e5697a57a85037638f52ea36526c385b8eb6f4db3374a692"
+    },
+    {
+      "path": "frontends/shared/foundation/tokens.pcss",
+      "sha256": "1ad8740220aa155f3dbd6961d0ad8639be2da9362db755a00bac5d1f36e83717"
+    },
+    {
+      "path": "frontends/shared/foundation/mixins.pcss",
+      "sha256": "d23791e441450eeb3bc59bc90f5f7f82d4243e4d7b2c35adef52ce60a3ed04c6"
+    },
+    {
+      "path": "frontends/shared/foundation/theme.ts",
+      "sha256": "6a88658ff18edaa7f9b3ae6c893a7059015e02e00eb42e484f892fbf255d5a3a"
+    },
+    {
+      "path": "frontends/shared/foundation/theme-preference.ts",
+      "sha256": "ba69328b793205d6c53b3af54ec4aa4820736979f16c03ed9bbd6cbd07c6a6ae"
+    },
+    {
+      "path": "frontends/shared/foundation/device-theme.ts",
+      "sha256": "7eeb9ea07170ecdb47989346e447c3386290934518b7cb083f67044e3cccd06d"
+    },
+    {
+      "path": "tests/e2e/fixtures/users.ts",
+      "sha256": "34b26d13a614a6b60872fa1a007f2d3ead810733d610401b141f9b26ffd2cb2f"
+    }
+  ],
+  "noUnknownHold": true,
+  "blockedWrites": 0,
+  "pageErrors": 0,
+  "requestFailures": [],
+  "readIncomplete": [],
+  "errorCategory": "NONE",
+  "normalAuthFacts": {
+    "login200Count": 1,
+    "canonical200Count": 1,
+    "nativeRolePutCount": 0,
+    "nativeLogoutPostCount": 0,
+    "devicePreferencePutCount": 0
+  },
+  "sourceFixBehavior": "App.vue differs only by stylesheet import; existing logout visibility/authLoading-disabled/handler unchanged. PCSS scope .pwa-logout only. No additional product edits after343.",
+  "beforeEvidence": "../../../teacher-lesson-manual-prep/run/qualified-f32.json and gallery-f32.html: existing hostbutton plain at left edge on actualLesson3; rawexit1 naturalmissingmanual preserved. After2 uses existingTeacherHome because changed class is global; no repeatedLesson/manual APIcase.",
+  "reusedChecks": "Author strict+PWA build once and finalPostCSS/format accepted via sourceHANDOFF+independentREVIEW-fed1d627; accepted Lesson realAPI/technicalcleanup and THEME-01 policy not rerun.",
+  "limits": [
+    "Only existing commonPWA hostcontrol presentation at two selected representatives; not wholeTeacherHome/Lesson/allroles/allstates/fullwidth readiness.",
+    "Current settled enabled control only; native disabled/pressed/logout behavior unchanged by source but not exercised. No logout click, Enter/Space/mousedown, nativeUIlogout test or forceddisabled attribute.",
+    "OS-only media samples and root20 browser stress do not prove manual theme choice/system priority/device persistence.",
+    "TeacherLesson/manualmissing source/runtime results reused; manualExcuse remainsnotchecked. No TMA/nativeTelegram/provider claim.",
+    "Canonical PWA finite counts remain41boundedobserved/9visuallyunchecked of50; images/metadata are not additional actions.",
+    "Technical exact self-session DELETE204+sameoldbearer401 is cleanup; nativeUiLogoutPassfalse. No helper/fallback/retry/Rootproof required."
+  ],
+  "resources": {
+    "postRunAtUtc": "2026-10-24T23:54:34.287539+00:00",
+    "diskAvailableBytes": 5367390208,
+    "cgroupMemoryCurrentBytes": 9920032768,
+    "cgroupMemoryLimitBytes": 17179869184,
+    "ownRunnerLiveCount": 0,
+    "observedLivingChromiumCount": 0,
+    "ownBrowserClosedByReceipt": true,
+    "browserLeaseReleased": true,
+    "runtime12GateUnchanged": true
+  },
+  "newAuthAfterThisRunAllowed": false,
+  "privateExcludedFromRecovery": true,
+  "modelRequested": "gpt-6.1-sol/high",
+  "runtimeTelemetry": "unavailable",
+  "qualifiedAtUtc": "2026-10-24T23:54:34.287702+00:00"
+}

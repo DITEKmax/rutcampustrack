@@ -120,7 +120,14 @@ public class PairWriteCoordinator {
         lockLessonFences(lessonIds, groupId, now);
     }
 
+    @org.springframework.beans.factory.annotation.Autowired
+    private org.springframework.beans.factory.ObjectProvider<
+                    ru.rutcampustrack.attendance.groupdeletion.GroupDeletionMongoFence>
+            groupDeletion;
+
     private void lockLessonFences(Collection<Long> lessonIds, Long groupId, Instant now) {
+        if (groupId != null && groupDeletion != null && groupDeletion.getIfAvailable() != null)
+            groupDeletion.getObject().write(groupId);
         if (lessonIds == null || lessonIds.isEmpty()) {
             return;
         }
@@ -130,6 +137,14 @@ public class PairWriteCoordinator {
                 .sorted(Comparator.naturalOrder())
                 .forEach(
                         lessonId -> {
+                            Long owner = groupId;
+                            if (groupDeletion != null && groupDeletion.getIfAvailable() != null) {
+                                owner =
+                                        groupDeletion
+                                                .getObject()
+                                                .lessonGroup(lessonId, null, groupId);
+                                groupDeletion.getObject().write(owner);
+                            }
                             Query query =
                                     Query.query(Criteria.where("_id").is(lessonFenceId(lessonId)));
                             Update update =
@@ -138,7 +153,7 @@ public class PairWriteCoordinator {
                                             .set("updated_at", now)
                                             .setOnInsert("student_id", 0L)
                                             .setOnInsert("lesson_id", lessonId)
-                                            .setOnInsert("group_id", groupId);
+                                            .setOnInsert("group_id", owner);
                             mongoTemplate.findAndModify(
                                     query,
                                     update,
@@ -159,6 +174,10 @@ public class PairWriteCoordinator {
 
     /** Only a committed, exact lesson tombstone can turn a delayed Schedule effect into a no-op. */
     public boolean isSubjectDeleted(long lessonId, long semesterId, Long groupId) {
+        if (groupDeletion != null
+                && groupDeletion.getIfAvailable() != null
+                && groupDeletion.getObject().deletedLesson(lessonId, semesterId, groupId))
+            return true;
         org.bson.Document row =
                 mongoTemplate.findById(
                         lessonFenceId(lessonId), org.bson.Document.class, "student_checkin_pairs");

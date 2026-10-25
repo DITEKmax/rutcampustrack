@@ -3,15 +3,17 @@ package ru.rutcampustrack.notification.event;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import java.util.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+
 import ru.rutcampustrack.notification.history.*;
 import ru.rutcampustrack.notification.preferences.NotificationPreferencesService;
 import ru.rutcampustrack.notification.push.*;
 import ru.rutcampustrack.notification.reminder.ReminderAttendanceStateService;
 import ru.rutcampustrack.shared.events.IdempotencyGuard;
+
+import java.util.*;
 
 class EventConsumerTest {
     final SimpMessagingTemplate messaging = mock(SimpMessagingTemplate.class);
@@ -30,6 +32,53 @@ class EventConsumerTest {
         when(guard.tryClaim(anyString(), anyMap())).thenReturn(true);
         when(provider.shouldPush(anyString())).thenReturn(true);
         when(prefs.isEnabledForUser(anyLong(), anyString(), anyMap())).thenReturn(true);
+    }
+
+    @Test
+    void retiredSocketFailureDoesNotSuppressTheRetainedTeacherHint() {
+        var envelope =
+                new HashMap<String, Object>(
+                        event(
+                                "group.updated",
+                                Map.of(
+                                        "group_id",
+                                        9007199254740993L,
+                                        "affected_user_ids",
+                                        List.of(12L, 13L))));
+        envelope.put("source", "academic-service");
+        envelope.put("event_version", 1);
+        var signal =
+                Map.of("type", "group.updated", "payload", Map.of("group_id", "9007199254740993"));
+        doThrow(
+                        new org.springframework.messaging.MessageDeliveryException(
+                                "synthetic denied old socket"))
+                .when(messaging)
+                .convertAndSend("/topic/user/12", signal);
+        assertThatCode(() -> consumer.onEvent(envelope)).doesNotThrowAnyException();
+        verify(messaging).convertAndSend("/topic/user/13", signal);
+        verifyNoInteractions(audience, history, intents, provider, prefs);
+    }
+
+    @Test
+    void hiddenGroupInvalidationRejectsForeignSourcesAndMalformedRecipientsBeforeClaim() {
+        var envelope =
+                new HashMap<String, Object>(
+                        event(
+                                "group.updated",
+                                Map.of("group_id", 7L, "affected_user_ids", List.of(12L))));
+        envelope.put("event_version", 1);
+        envelope.put("source", "auth-service");
+        consumer.onEvent(envelope);
+        verifyNoInteractions(guard, messaging, audience, history, intents, provider, prefs);
+        envelope.put("source", "academic-service");
+        envelope.put("payload", Map.of("group_id", 7L, "affected_user_ids", List.of(12L, -1L)));
+        assertThatThrownBy(() -> consumer.onEvent(envelope))
+                .isInstanceOf(IllegalArgumentException.class);
+        verifyNoInteractions(guard, messaging, audience, history, intents, provider, prefs);
+        envelope.put("payload", Map.of("group_id", 7L, "affected_user_ids", List.of(12L)));
+        when(guard.tryClaim(anyString(), anyMap())).thenReturn(false);
+        consumer.onEvent(envelope);
+        verifyNoInteractions(messaging, audience, history, intents, provider, prefs);
     }
 
     @Test

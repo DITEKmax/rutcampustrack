@@ -1,0 +1,49 @@
+{
+  "qualification": "RAW_FAILURE_KNOWN_OWN_TERMINAL_TARGET_FINISH_UNOBSERVED",
+  "case": "WEB_STUDENT_OWNERLOSS_AFTER",
+  "revision": "1057de27b70c37b5916013d7c9207e31d8493ce8",
+  "harnessSha256": "fe795293ea91f2cd385abc19159918c4c135c95d6d858f5baf26c41a58a2b41c",
+  "rawExitCode": 1,
+  "rawReceipt": "/workspace/rct-pr3-runtime/visual-readiness-20261024/student-ownerloss-after-prep/run/raw-final-fe795293.json",
+  "rawReceiptSha256": "a8d8aa35f6ec41fc86653e7e6874bb9aad74cecb729d3113f04e26b9db0e5bf2",
+  "actualObserved": {
+    "realTodayRequestCount": 1,
+    "receivedOriginalRealStatus": 200,
+    "nativeLogoutWasForwardedWhileOriginalDeliveryHeld": true,
+    "nativeLogout": {
+      "forwarded": true,
+      "status": 204,
+      "sameOldBearerStatus": 401,
+      "confirmed": true,
+      "fallbackUsed": false
+    },
+    "original200FulfillResolvedAfterKnownNativeLogout": true,
+    "pageTodayResponseObserved200": true,
+    "pageErrors": [],
+    "blocked": []
+  },
+  "notObserved": [
+    "Today client requestfinished terminal event",
+    "post-release two-frame guest/profile observation (driver stopped before it)",
+    "WT-OWNER-AF01 PNG and personal inspection"
+  ],
+  "failure": {
+    "code": "RELEASED_TODAY_CLIENT_REQUEST_NOT_FINISHED",
+    "name": "Error",
+    "phase": "RELEASE_OLD_TODAY_AFTER_NATIVE_LOGOUT"
+  },
+  "causeQualification": "Real200 fetch and route.fulfill(originalAPIResponse) both resolved; page response200 observed, but requestfinished did not appear within6s. This runner did not record non-Auth Today requestfailed category; the exact reason/client body completion is unknown. No product defect or final afterPASS can be inferred. No followup Auth/browser/retry performed.",
+  "cleanup": {
+    "soleOwnSessionTerminal": "Native logout204 plus exact same oldBearer401 confirmed",
+    "noLiveOwnSessionConfirmed": true,
+    "newSelfDELETEOrHelper": false,
+    "browserClosed": true,
+    "noUnknownHold": true,
+    "sourceUnchanged": true,
+    "forwardedMutationIntents": "guestrefresh401/login200/nativeLogout204 all durableACK; no prefs/domain writes",
+    "remainingPendingAuthPreferencesBodiesRoutes": 0
+  },
+  "samples": [],
+  "sourceAndScopeLimits": "Root1057 same21pins/frozenfe795; old deterministic2FAIL→6PASS/strictbuild/independentreview acceptance preserved. Old e38 errors raw retained. NativeTheme4/device6 not repeated; no claims full readiness/changedownerloss runtimePASS.",
+  "functionalActionsAdded": 0
+}

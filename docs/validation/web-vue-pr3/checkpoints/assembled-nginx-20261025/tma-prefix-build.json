@@ -1,0 +1,64 @@
+{
+  "app": "tma",
+  "sourceSha": "524f44a5a4f27491b3abe73417a004b62e7dad18",
+  "gateSourceSha": "524f44a5a4f27491b3abe73417a004b62e7dad18",
+  "sourceInputsSha256": "1e7f3c3676dbe9bf040b7c5b3484223b412b0ac64f362f4c8edba15a98a7ce82",
+  "files": {
+    "assets/AttachmentPdfPreview-CiDybREK.js": {
+      "bytes": 497226,
+      "sha256": "bd23539266f8bef18f4d05dd91d142f913db6996346061a4bad1261d2162d470"
+    },
+    "assets/AttachmentPdfPreview-CzqUjaac.css": {
+      "bytes": 5449,
+      "sha256": "a5da77f8de0fe765cda6ba5fb192f6808b5fd9ce4ab187fc9b513fd35fc729b6"
+    },
+    "assets/index-Bn_GzQ1Z.css": {
+      "bytes": 497856,
+      "sha256": "3d14998c37a58351dc5273d9b0aa80596a448c8545252c728dbdbbe1a908e1b0"
+    },
+    "assets/index-CNWNMDPC.js": {
+      "bytes": 1737623,
+      "sha256": "7fb5e1b78f3b3f3d40eed55b477bd49c947529f3f9a00eb36abef2a7591787b6"
+    },
+    "assets/onest-cyrillic-wght-normal-DXI_y_WF.woff2": {
+      "bytes": 14228,
+      "sha256": "37bc16874135c16134679b1db25b87fe80eb9fcd4ef3666af7c531bfde204fe2"
+    },
+    "assets/onest-latin-ext-wght-normal-CnNj8hVb.woff2": {
+      "bytes": 15992,
+      "sha256": "391a9b24b5c46ebff5d21f53cdb2edaa31c3446da3b722f038ab07d75d02a82d"
+    },
+    "assets/onest-latin-wght-normal-CUIqqgP9.woff2": {
+      "bytes": 32236,
+      "sha256": "67849bcc11e02177442da14ad954bfe1cc709553dad137b5003449b303e83fc3"
+    },
+    "assets/pdf.worker.min-Dkey6ZUl.mjs": {
+      "bytes": 1321307,
+      "sha256": "145d2dd3ab0c86151011dba95acfa2d5336e2accd59388ea43dbee0efddaaec6"
+    },
+    "index.html": {
+      "bytes": 486,
+      "sha256": "1f6c3ca87bafdebc30bd169f2f86c183650e0c1a05776c7199cf44e8b52bdee0"
+    }
+  },
+  "buildEvidenceSha256": "61b21e59b318a7423d77e121d405b6920d51a6df8077c5a1a964e309a07d515d",
+  "artifactContract": {
+    "publicBase": "/mini-app/",
+    "entryPath": "/mini-app/assets/index-CNWNMDPC.js",
+    "producerConfig": {
+      "NODE_ENV": "production",
+      "VITE_PUBLIC_BASE": "/mini-app/",
+      "VITE_MOBILE_FIXTURE_MODE": "false",
+      "VITE_APP_VERSION": "0.0.0",
+      "VITE_MIN_SUPPORTED_VERSION": "",
+      "VITE_FORCE_UPDATE": "true"
+    },
+    "producerConfigSha256": "f841e623945570d667ae8c3c5b7f64da9cdccfb711a049b028427ce9bbff032b",
+    "versionPolicySha256": null
+  },
+  "producerConfigEvidence": "ENFORCED_BUILD_ENV",
+  "provenance": "FRESH_STRICT_WORKSPACE_BUILD",
+  "elapsedSeconds": 32.731,
+  "availableBefore": 6498328576,
+  "availableAfter": 6494081024
+}

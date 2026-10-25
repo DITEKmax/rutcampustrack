@@ -1,6 +1,9 @@
 package ru.rutcampustrack.academic.event;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import java.util.List;
 
 /**
  * Published when group composition changes: student transferred, group updated (name/code/active),
@@ -11,9 +14,21 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 public class GroupUpdatedEvent extends DomainEvent {
 
-    public record Payload(@JsonProperty("group_id") Long groupId) {}
+    public record Payload(
+            @JsonProperty("group_id") Long groupId,
+            @JsonProperty("affected_user_ids") @JsonInclude(JsonInclude.Include.NON_NULL)
+                    List<Long> affectedUserIds) {}
 
     public GroupUpdatedEvent(Object source, Long groupId) {
-        super(source, "group.updated", new Payload(groupId));
+        this(source, groupId, null);
+    }
+
+    /** Frozen before deletion; no consumer may resolve these recipients from erased joins. */
+    public GroupUpdatedEvent(Object source, Long groupId, List<Long> affectedUserIds) {
+        super(
+                source,
+                "group.updated",
+                new Payload(
+                        groupId, affectedUserIds == null ? null : List.copyOf(affectedUserIds)));
     }
 }

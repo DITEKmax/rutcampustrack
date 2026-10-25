@@ -83,9 +83,6 @@ const exactSourceRegistries = new Set([
 ])
 
 export function classify(path) {
-  // Owner decision D010 preserves the entire Angular frontend unchanged.
-  if (path.startsWith('frontends/web-panel/'))
-    return { path, reason: 'Angular frontend excluded by owner decision D010; preserve bytes' }
   if (exactReceiptCopies.has(path))
     return { path, reason: 'immutable verification evidence/source copy; preserve exact bytes' }
   if (exactSourceRegistries.has(path))
@@ -154,7 +151,7 @@ export function classify(path) {
   }
   if (
     extension === '.json' &&
-    /(?:^|\/)(?:package|tsconfig[^/]*|angular|manifest[^/]*)\.json$/.test(path)
+    /(?:^|\/)(?:package|tsconfig[^/]*|manifest[^/]*)\.json$/.test(path)
   ) {
     return { path, tool: 'prettier' }
   }
@@ -265,6 +262,7 @@ function run(command, args, { capture = false } = {}) {
   const result = spawnSync(command, args, {
     cwd: root,
     encoding: 'utf8',
+    maxBuffer: 16 * 1024 * 1024,
     stdio: capture ? 'pipe' : 'inherit',
   })
   if (result.error) throw result.error

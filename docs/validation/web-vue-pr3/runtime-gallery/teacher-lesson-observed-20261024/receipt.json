@@ -1,0 +1,285 @@
+{
+  "case": "PWA_TEACHER_LESSON_MANUAL_SIX_FRAMES",
+  "runHash": "907abd043320bf56cf66bf6de31a7723e205c06cabf921b2e302182f12a0d4a3",
+  "expectedActor": 2,
+  "expectedRole": "TEACHER",
+  "revision": "f32ff22baaa8d68de03d7606d0799f4586ca17f1",
+  "productBase": "d69ac9159e3bfff169c4b2bd25adbcc7d9def771",
+  "harnessSha256": "c4c7aba1ec185ec1154eca7fd9513c2625651d7f3f8f16bba7fd2cd480beba25",
+  "startedAtUtc": "2026-10-24T23:09:27.027Z",
+  "phase": "KNOWN_STOP_CLEANUP_QUALIFIED",
+  "api": [
+    {
+      "path": "/api/auth/refresh",
+      "method": "POST",
+      "status": 401,
+      "phase": "BOOTSTRAP",
+      "atUtc": "2026-10-24T23:09:28.596Z"
+    },
+    {
+      "path": "/api/auth/login",
+      "method": "POST",
+      "status": 200,
+      "phase": "LOGIN",
+      "atUtc": "2026-10-24T23:09:28.837Z"
+    },
+    {
+      "path": "/api/auth/session",
+      "method": "GET",
+      "status": 200,
+      "phase": "LOGIN",
+      "atUtc": "2026-10-24T23:09:28.889Z"
+    },
+    {
+      "path": "/api/auth/ws-ticket",
+      "method": "POST",
+      "status": 200,
+      "phase": "LOGIN",
+      "atUtc": "2026-10-24T23:09:28.944Z"
+    },
+    {
+      "pathHash": "73210131bba23497370aaac45ad599d4e906cc1adb9bf61670a62a7fe244fdb6",
+      "method": "GET",
+      "status": 200,
+      "phase": "LOGIN",
+      "atUtc": "2026-10-24T23:09:28.959Z"
+    },
+    {
+      "pathHash": "66be5879ef3a006f97cdf3d9fb658d6b9ab244113bbbad159c733f0fee4efb32",
+      "method": "GET",
+      "status": 200,
+      "phase": "LOGIN",
+      "atUtc": "2026-10-24T23:09:28.969Z"
+    },
+    {
+      "pathHash": "6a3ed7c33ca04a6a7e68847f792e314468b713dea9c4ece627c242271898ae23",
+      "method": "GET",
+      "status": 200,
+      "phase": "LOGIN",
+      "atUtc": "2026-10-24T23:09:28.977Z"
+    },
+    {
+      "path": "/api/v1/teacher/semester",
+      "method": "GET",
+      "status": 200,
+      "phase": "LOGIN",
+      "atUtc": "2026-10-24T23:09:28.987Z"
+    },
+    {
+      "path": "/api/schedule/lesson-slots",
+      "method": "GET",
+      "status": 200,
+      "phase": "LOGIN",
+      "atUtc": "2026-10-24T23:09:29.093Z"
+    },
+    {
+      "path": "/api/v1/teacher/semester",
+      "method": "GET",
+      "status": 200,
+      "phase": "LOGIN",
+      "atUtc": "2026-10-24T23:09:29.112Z"
+    },
+    {
+      "pathHash": "66be5879ef3a006f97cdf3d9fb658d6b9ab244113bbbad159c733f0fee4efb32",
+      "method": "GET",
+      "status": 200,
+      "phase": "LOGIN",
+      "atUtc": "2026-10-24T23:09:29.145Z"
+    },
+    {
+      "path": "/api/v1/teacher/assignments",
+      "method": "GET",
+      "status": 200,
+      "phase": "LOGIN",
+      "atUtc": "2026-10-24T23:09:29.148Z"
+    },
+    {
+      "path": "/api/v1/teacher/day",
+      "method": "GET",
+      "status": 200,
+      "phase": "LOGIN",
+      "atUtc": "2026-10-24T23:09:29.172Z"
+    },
+    {
+      "path": "/api/v1/teacher/semester",
+      "method": "GET",
+      "status": 200,
+      "phase": "LOGIN",
+      "atUtc": "2026-10-24T23:09:29.177Z"
+    },
+    {
+      "path": "/api/schedule/lesson-slots",
+      "method": "GET",
+      "status": 200,
+      "phase": "NATIVE_TEACHER_ATTENDANCE_ENTRY",
+      "atUtc": "2026-10-24T23:09:29.263Z"
+    },
+    {
+      "path": "/api/v1/teacher/catalog",
+      "method": "GET",
+      "status": 200,
+      "phase": "NATIVE_TEACHER_ATTENDANCE_ENTRY",
+      "atUtc": "2026-10-24T23:09:29.265Z"
+    },
+    {
+      "path": "/api/v1/teacher/assignments",
+      "method": "GET",
+      "status": 200,
+      "phase": "NATIVE_TEACHER_ATTENDANCE_ENTRY",
+      "atUtc": "2026-10-24T23:09:29.276Z"
+    },
+    {
+      "path": "/api/v1/teacher/catalog",
+      "method": "GET",
+      "status": 200,
+      "phase": "NATIVE_TEACHER_ATTENDANCE_ENTRY",
+      "atUtc": "2026-10-24T23:09:29.305Z"
+    },
+    {
+      "path": "/api/v1/teacher/day",
+      "method": "GET",
+      "status": 200,
+      "phase": "NATIVE_TEACHER_ATTENDANCE_ENTRY",
+      "atUtc": "2026-10-24T23:09:29.320Z"
+    },
+    {
+      "path": "/api/v1/teacher/semester",
+      "method": "GET",
+      "status": 200,
+      "phase": "NATIVE_TEACHER_ATTENDANCE_ENTRY",
+      "atUtc": "2026-10-24T23:09:29.345Z"
+    },
+    {
+      "path": "/api/v1/teacher/catalog",
+      "method": "GET",
+      "status": 200,
+      "phase": "NATIVE_TEACHER_ATTENDANCE_ENTRY",
+      "atUtc": "2026-10-24T23:09:29.451Z"
+    },
+    {
+      "path": "/api/v1/teacher/journal",
+      "method": "GET",
+      "status": 200,
+      "phase": "NATIVE_TEACHER_ATTENDANCE_ENTRY",
+      "atUtc": "2026-10-24T23:09:31.710Z"
+    },
+    {
+      "path": "/api/v1/teacher/lessons/:id",
+      "method": "GET",
+      "status": 200,
+      "phase": "NATIVE_TEACHER_ATTENDANCE_ENTRY",
+      "atUtc": "2026-10-24T23:09:31.912Z"
+    }
+  ],
+  "samples": [
+    {
+      "id": "MB-TLM-01",
+      "consumer": "PWA",
+      "screen": "MOBILE-TEACHERLESSON",
+      "state": "real-first-lesson-roster",
+      "file": "PWA-MOBILE-TEACHERLESSON__MB-TLM-01-real-first-lesson-roster__light__425__f32ff22ba.png",
+      "sha256": "a19b9913c1fa1f786e60a1c1210077e108c4b2a947e399f4f07ccad6b9deac28",
+      "theme": "light",
+      "width": 425,
+      "rootFont": "16px",
+      "scrollWidth": 425,
+      "focusVisible": false,
+      "revision": "f32ff22baaa8d68de03d7606d0799f4586ca17f1",
+      "personallyInspected": false
+    },
+    {
+      "id": "MB-TLM-02",
+      "consumer": "PWA",
+      "screen": "MOBILE-TEACHERLESSON",
+      "state": "same-real-lesson-roster",
+      "file": "PWA-MOBILE-TEACHERLESSON__MB-TLM-02-same-real-lesson-roster__dark__300__f32ff22ba.png",
+      "sha256": "3081d6870f8e63c159b477d41503c5a5782a504ff349d118ff69adb64f1681c8",
+      "theme": "dark",
+      "width": 300,
+      "rootFont": "16px",
+      "scrollWidth": 300,
+      "focusVisible": false,
+      "revision": "f32ff22baaa8d68de03d7606d0799f4586ca17f1",
+      "personallyInspected": false
+    },
+    {
+      "id": "MB-TLM-03",
+      "consumer": "PWA",
+      "screen": "MOBILE-TEACHERLESSON",
+      "state": "same-real-lesson-back-keyboard-focus",
+      "file": "PWA-MOBILE-TEACHERLESSON__MB-TLM-03-same-real-lesson-back-keyboard-focus__light__768__f32ff22ba.png",
+      "sha256": "cb515ad6f48564c4f4ced9393e45b5490838a50379cf02e95cb8afde2f926a36",
+      "theme": "light",
+      "width": 768,
+      "rootFont": "16px",
+      "scrollWidth": 768,
+      "focusVisible": true,
+      "revision": "f32ff22baaa8d68de03d7606d0799f4586ca17f1",
+      "personallyInspected": false
+    }
+  ],
+  "captureAttempts": [
+    {
+      "id": "MB-TLM-01",
+      "file": "PWA-MOBILE-TEACHERLESSON__MB-TLM-01-real-first-lesson-roster__light__425__f32ff22ba.png",
+      "state": "CAUSE_QUALIFIED_INSPECTION_PENDING",
+      "startedAtUtc": "2026-10-24T23:09:31.954Z",
+      "finishedAtUtc": "2026-10-24T23:09:32.089Z"
+    },
+    {
+      "id": "MB-TLM-02",
+      "file": "PWA-MOBILE-TEACHERLESSON__MB-TLM-02-same-real-lesson-roster__dark__300__f32ff22ba.png",
+      "state": "CAUSE_QUALIFIED_INSPECTION_PENDING",
+      "startedAtUtc": "2026-10-24T23:09:32.090Z",
+      "finishedAtUtc": "2026-10-24T23:09:32.220Z"
+    },
+    {
+      "id": "MB-TLM-03",
+      "file": "PWA-MOBILE-TEACHERLESSON__MB-TLM-03-same-real-lesson-back-keyboard-focus__light__768__f32ff22ba.png",
+      "state": "CAUSE_QUALIFIED_INSPECTION_PENDING",
+      "startedAtUtc": "2026-10-24T23:09:32.222Z",
+      "finishedAtUtc": "2026-10-24T23:09:32.380Z"
+    }
+  ],
+  "blocked": [],
+  "pageErrors": [],
+  "auth": {
+    "loginForwarded": 1,
+    "startupRefreshForwarded": 1,
+    "roleForwarded": 0,
+    "loginStatus": 200,
+    "startupRefreshStatus": 401
+  },
+  "syntheticApiResponses": false,
+  "cleanup": {
+    "method": "TECHNICAL_NORMAL_AUTH_API_SELF_SESSION_DELETE",
+    "nativeUiLogoutPass": false,
+    "expectedActorMatched": true,
+    "exactSidMatched": true,
+    "selfDeleteForwarded": 1,
+    "selfDeleteStatus": 204,
+    "guestBearerStatus": 401,
+    "confirmed": true,
+    "fallbackUsed": false,
+    "intent": "RETURNED",
+    "forwardStartedAtUtc": "2026-10-24T23:09:32.419Z"
+  },
+  "captureComplete": false,
+  "completed": false,
+  "functionalActionsAdded": 0,
+  "exactOwnHandleCaptured": true,
+  "actualOwnerMatchesExpected": true,
+  "unknownHold": false,
+  "lastObservedRole": "TEACHER",
+  "actualTeacherSessionConfirmed": true,
+  "actualLessonLoaded": true,
+  "naturalManualEntryAvailable": false,
+  "failure": {
+    "code": "NATURAL_NO_MANUAL_EXCUSE_STOP_NO_FIXTURE_CHANGE",
+    "name": "Error",
+    "phase": "NATIVE_TEACHER_ATTENDANCE_ENTRY"
+  },
+  "browserClosed": true,
+  "sourceUnchanged": true,
+  "finishedAtUtc": "2026-10-24T23:09:32.642Z"
+}

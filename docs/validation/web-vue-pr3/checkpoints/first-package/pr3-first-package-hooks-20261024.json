@@ -1,0 +1,41 @@
+{
+  "time": "2026-10-23T22:58:43.904969+00:00",
+  "file_count": 164,
+  "checks": [
+    {
+      "check": "check-yaml",
+      "result": "N/A no changedYAML"
+    },
+    {
+      "check": "check-json",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "check": "check-added-large-files",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "check": "end-of-file-fixer",
+      "exit_code": 1,
+      "stdout": "Fixing docs/validation/web-vue-pr3/runtime-gallery/hover-a2ef210623/index.html\nFixing docs/validation/web-vue-pr3/runtime-gallery/index.html\n",
+      "stderr": ""
+    }
+  ],
+  "correction": "gallery HTML final newline normalized, ZIP HTML updated; no PNG/manifest change",
+  "recheck": [
+    {
+      "check": "end-of-file-fixer",
+      "exit_code": 0,
+      "stdout": ""
+    },
+    {
+      "check": "trailing-whitespace-fixer",
+      "exit_code": 0,
+      "stdout": ""
+    }
+  ]
+}

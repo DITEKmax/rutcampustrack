@@ -1,7 +1,9 @@
 package ru.rutcampustrack.academic.config;
 
 import com.fasterxml.jackson.databind.MapperFeature;
+import io.swagger.v3.oas.models.media.Schema;
 import java.util.Locale;
+import org.springdoc.core.customizers.OpenApiCustomizer;
 import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -17,6 +19,26 @@ public class WebConfig implements WebMvcConfigurer {
     @Bean
     public Jackson2ObjectMapperBuilderCustomizer jacksonCaseInsensitiveEnums() {
         return builder -> builder.featuresToEnable(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS);
+    }
+
+    @Bean
+    public OpenApiCustomizer nullablePlanDeletionScopeSchema() {
+        return openApi -> {
+            if (openApi.getComponents() == null || openApi.getComponents().getSchemas() == null)
+                return;
+            Schema<?> preview = openApi.getComponents().getSchemas().get("PlanDeletionPreview");
+            if (preview == null || preview.getProperties() == null) return;
+            Schema<?> scope = preview.getProperties().get("deletionScope");
+            // OAS3.1 type and enum constraints both apply. Schema annotations cannot express a
+            // literal null enum member; include it only for this explicitly nullable capability.
+            if (scope != null
+                    && scope.getTypes() != null
+                    && scope.getTypes().contains("null")
+                    && scope.getEnum() != null
+                    && !scope.getEnum().contains(null)) {
+                scope.addEnumItemObject(null);
+            }
+        };
     }
 
     @Override

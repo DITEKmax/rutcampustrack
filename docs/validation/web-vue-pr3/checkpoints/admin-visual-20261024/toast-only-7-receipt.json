@@ -1,0 +1,318 @@
+{
+  "sourceRevision": "10d8b908ae9801b22018881389f21ef5c0188583",
+  "startedAt": "2026-10-24T14:51:02.208Z",
+  "kind": "actual-app synthetic-read/synthetic-focus-lifecycle toast reproduction",
+  "functionalActions": 0,
+  "samples": [
+    {
+      "id": "WEB-SHARED-NOTIFICATIONS__synthetic-focus-toast-3__light__1440__10d8b908a",
+      "screen": "WEB-SHARED-NOTIFICATIONS",
+      "state": "synthetic-focus-toast-3",
+      "cause": "synthetic inbox GET; browser synthetic focus triggered actual app listener; no STOMP/backend event claim",
+      "theme": "light",
+      "width": 1440,
+      "height": 1280,
+      "scrollWidth": 1440,
+      "image": "WEB-SHARED-NOTIFICATIONS__synthetic-focus-toast-3__light__1440__10d8b908a.png",
+      "sha256": "0331f0e34299a1b018c43c698a58335dde08847f00d4a4763405774bc895e64f",
+      "provenance": "actual-app/synthetic-read-state",
+      "functionalActions": 0
+    },
+    {
+      "id": "WEB-SHARED-NOTIFICATIONS__synthetic-focus-toast-4__light__1440__10d8b908a",
+      "screen": "WEB-SHARED-NOTIFICATIONS",
+      "state": "synthetic-focus-toast-4",
+      "cause": "synthetic inbox GET; browser synthetic focus triggered actual app listener; no STOMP/backend event claim",
+      "theme": "light",
+      "width": 1440,
+      "height": 1280,
+      "scrollWidth": 1440,
+      "image": "WEB-SHARED-NOTIFICATIONS__synthetic-focus-toast-4__light__1440__10d8b908a.png",
+      "sha256": "d627730d0bd64dfc96ded9c552f02bd8f5b66c80d453af26d73c33239acdf319",
+      "provenance": "actual-app/synthetic-read-state",
+      "functionalActions": 0
+    },
+    {
+      "id": "WEB-SHARED-NOTIFICATIONS__synthetic-focus-expiry-history__light__1440__10d8b908a",
+      "screen": "WEB-SHARED-NOTIFICATIONS",
+      "state": "synthetic-focus-expiry-history",
+      "cause": "same synthetic GET cards retained after elapsed TTL",
+      "theme": "light",
+      "width": 1440,
+      "height": 1280,
+      "scrollWidth": 1440,
+      "image": "WEB-SHARED-NOTIFICATIONS__synthetic-focus-expiry-history__light__1440__10d8b908a.png",
+      "sha256": "7c7cb234c61fbd3021ff2b0dafa884b7f8319854ae7e759168fefe2db41b1bee",
+      "provenance": "actual-app/synthetic-read-state",
+      "functionalActions": 0
+    },
+    {
+      "id": "WEB-SHARED-NOTIFICATIONS__synthetic-focus-bell-history__light__1440__10d8b908a",
+      "screen": "WEB-SHARED-NOTIFICATIONS",
+      "state": "synthetic-focus-bell-history",
+      "cause": "actual bell preview after synthetic GET arrivals; preview limit3 separate from toast lifetime",
+      "theme": "light",
+      "width": 1440,
+      "height": 1280,
+      "scrollWidth": 1440,
+      "image": "WEB-SHARED-NOTIFICATIONS__synthetic-focus-bell-history__light__1440__10d8b908a.png",
+      "sha256": "4d066fb5c816bd2b05c6b04cc1e49d23d05971a3547ab08b2dfdeaa2ea18e6b0",
+      "provenance": "actual-app/synthetic-read-state",
+      "functionalActions": 0
+    }
+  ],
+  "routeHits": [
+    {
+      "kind": "inbox",
+      "n": 1,
+      "role": "STUDENT",
+      "items": [],
+      "at": 1792853464411
+    },
+    {
+      "kind": "preferences",
+      "n": 1,
+      "at": 1792853464473,
+      "typeCount": 32,
+      "appPush": true,
+      "mutedUntil": null,
+      "splitChannels": false
+    },
+    {
+      "kind": "inbox",
+      "n": 2,
+      "role": "STUDENT",
+      "items": [],
+      "at": 1792853464519
+    },
+    {
+      "kind": "preferences",
+      "n": 2,
+      "at": 1792853464562,
+      "typeCount": 32,
+      "appPush": true,
+      "mutedUntil": null,
+      "splitChannels": false
+    },
+    {
+      "kind": "inbox",
+      "n": 3,
+      "role": "STUDENT",
+      "items": [
+        "VISUAL_NATIVE_FOCUS_1"
+      ],
+      "at": 1792853464634
+    },
+    {
+      "kind": "preferences",
+      "n": 3,
+      "at": 1792853464684,
+      "typeCount": 32,
+      "appPush": true,
+      "mutedUntil": null,
+      "splitChannels": false
+    },
+    {
+      "kind": "inbox",
+      "n": 4,
+      "role": "STUDENT",
+      "items": [
+        "VISUAL_NATIVE_FOCUS_2",
+        "VISUAL_NATIVE_FOCUS_1"
+      ],
+      "at": 1792853464995
+    },
+    {
+      "kind": "preferences",
+      "n": 4,
+      "at": 1792853465027,
+      "typeCount": 32,
+      "appPush": true,
+      "mutedUntil": null,
+      "splitChannels": false
+    },
+    {
+      "kind": "inbox",
+      "n": 5,
+      "role": "STUDENT",
+      "items": [
+        "VISUAL_NATIVE_FOCUS_3",
+        "VISUAL_NATIVE_FOCUS_2",
+        "VISUAL_NATIVE_FOCUS_1"
+      ],
+      "at": 1792853465320
+    },
+    {
+      "kind": "preferences",
+      "n": 5,
+      "at": 1792853465357,
+      "typeCount": 32,
+      "appPush": true,
+      "mutedUntil": null,
+      "splitChannels": false
+    },
+    {
+      "kind": "inbox",
+      "n": 6,
+      "role": "STUDENT",
+      "items": [
+        "VISUAL_NATIVE_FOCUS_4",
+        "VISUAL_NATIVE_FOCUS_3",
+        "VISUAL_NATIVE_FOCUS_2",
+        "VISUAL_NATIVE_FOCUS_1"
+      ],
+      "at": 1792853466805
+    },
+    {
+      "kind": "preferences",
+      "n": 6,
+      "at": 1792853466864,
+      "typeCount": 32,
+      "appPush": true,
+      "mutedUntil": null,
+      "splitChannels": false
+    }
+  ],
+  "arrivals": [
+    {
+      "arrival": 1,
+      "at": 1792853464784,
+      "elapsedMs": 155,
+      "inboxHits": 3,
+      "prefsHits": 3,
+      "toasts": [
+        {
+          "id": "VISUAL_NATIVE_FOCUS_1",
+          "top": 16,
+          "bottom": 175.59375
+        }
+      ],
+      "historyVisible": true,
+      "errors": []
+    },
+    {
+      "arrival": 2,
+      "at": 1792853465112,
+      "elapsedMs": 483,
+      "inboxHits": 4,
+      "prefsHits": 4,
+      "toasts": [
+        {
+          "id": "VISUAL_NATIVE_FOCUS_1",
+          "top": 16,
+          "bottom": 175.59375
+        },
+        {
+          "id": "VISUAL_NATIVE_FOCUS_2",
+          "top": 187.59375,
+          "bottom": 347.1875
+        }
+      ],
+      "historyVisible": true,
+      "errors": []
+    },
+    {
+      "arrival": 3,
+      "at": 1792853465480,
+      "elapsedMs": 851,
+      "inboxHits": 5,
+      "prefsHits": 5,
+      "toasts": [
+        {
+          "id": "VISUAL_NATIVE_FOCUS_1",
+          "top": 16,
+          "bottom": 175.59375
+        },
+        {
+          "id": "VISUAL_NATIVE_FOCUS_2",
+          "top": 187.59375,
+          "bottom": 347.1875
+        },
+        {
+          "id": "VISUAL_NATIVE_FOCUS_3",
+          "top": 359.1875,
+          "bottom": 518.78125
+        }
+      ],
+      "historyVisible": true,
+      "errors": []
+    },
+    {
+      "arrival": 4,
+      "at": 1792853466995,
+      "elapsedMs": 2366,
+      "inboxHits": 6,
+      "prefsHits": 6,
+      "toasts": [
+        {
+          "id": "VISUAL_NATIVE_FOCUS_2",
+          "top": 16,
+          "bottom": 175.59375
+        },
+        {
+          "id": "VISUAL_NATIVE_FOCUS_3",
+          "top": 187.59375,
+          "bottom": 347.1875
+        },
+        {
+          "id": "VISUAL_NATIVE_FOCUS_4",
+          "top": 359.1875,
+          "bottom": 518.78125
+        }
+      ],
+      "historyVisible": true,
+      "errors": []
+    }
+  ],
+  "domainMutations": [],
+  "cleanup": [
+    {
+      "httpStatus": null,
+      "confirmed": false,
+      "error": "TimeoutError"
+    }
+  ],
+  "pageErrors": [],
+  "actualSelectedRole": "STUDENT",
+  "actualSelectedRoleLabel": "Студент",
+  "initial": {
+    "inboxHits": 2,
+    "prefsHits": 2,
+    "errors": [],
+    "emptyVisible": true
+  },
+  "ttl": {
+    "elapsedMs": 10548,
+    "toastIds": [
+      "VISUAL_NATIVE_FOCUS_3",
+      "VISUAL_NATIVE_FOCUS_4"
+    ],
+    "syntheticHistoryIds": [
+      "notification-VISUAL_NATIVE_FOCUS_4",
+      "notification-VISUAL_NATIVE_FOCUS_3",
+      "notification-VISUAL_NATIVE_FOCUS_2",
+      "notification-VISUAL_NATIVE_FOCUS_1"
+    ],
+    "focusEvents": [
+      {
+        "at": 1792853464631,
+        "trusted": false
+      },
+      {
+        "at": 1792853464991,
+        "trusted": false
+      },
+      {
+        "at": 1792853465316,
+        "trusted": false
+      },
+      {
+        "at": 1792853466801,
+        "trusted": false
+      }
+    ]
+  },
+  "completed": true,
+  "finishedAt": "2026-10-24T14:51:23.799Z",
+  "sourceUnchanged": true
+}

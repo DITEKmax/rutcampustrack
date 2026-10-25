@@ -1,0 +1,133 @@
+{
+  "sourceRevision": "10d8b908ae9801b22018881389f21ef5c0188583",
+  "kind": "qualified narrow visual observations",
+  "functionalActionsAdded": 0,
+  "wholeCanonicalRowsReadyAdded": 0,
+  "canonicalSurfaceCount": 83,
+  "finiteCriteriaCount": 18,
+  "modelRequested": "gpt-6.1-sol/high",
+  "runtimeModelTelemetry": "unavailable; not independently confirmed",
+  "loading": {
+    "receipt": "loading-only-4-receipt.json",
+    "harnessCompleted": true,
+    "observations": "Headman300light and Teacher1440dark render only loading text, no skeleton/progress; all4 PNG personally viewed. Student not exercised.",
+    "headmanErrorRetry": "actual aborted read shows Failed to fetch; restored GET + UI retry recovered populated journal",
+    "cleanup": "own normal logout HTTP204 twice; login visible; guest401 not requested; browser/context closed"
+  },
+  "notifications": {
+    "receipt": "toast-only-7-receipt.json",
+    "reproductionConfirmed": true,
+    "criterion": "NOTIF-02",
+    "finding": "toast1 appears afterarrival1, remains after3, removed onarrival4 about2.2s later despite10sTTL and adequate viewport",
+    "causalSource": "frontends/web-vue/src/features/notifications/notifications.ts:100 slice(-3)",
+    "selectedRole": "STUDENT",
+    "inboxBodyRole": "STUDENT",
+    "preferencesTypeCount": 32,
+    "preferencesAppPush": true,
+    "routeHits": {
+      "inbox": 6,
+      "preferences": 6
+    },
+    "arrivals": [
+      {
+        "arrival": 1,
+        "at": 1792853464784,
+        "elapsedMs": 155,
+        "inboxHits": 3,
+        "prefsHits": 3,
+        "toasts": [
+          {
+            "id": "VISUAL_NATIVE_FOCUS_1",
+            "top": 16,
+            "bottom": 175.59375
+          }
+        ],
+        "historyVisible": true,
+        "errors": []
+      },
+      {
+        "arrival": 2,
+        "at": 1792853465112,
+        "elapsedMs": 483,
+        "inboxHits": 4,
+        "prefsHits": 4,
+        "toasts": [
+          {
+            "id": "VISUAL_NATIVE_FOCUS_1",
+            "top": 16,
+            "bottom": 175.59375
+          },
+          {
+            "id": "VISUAL_NATIVE_FOCUS_2",
+            "top": 187.59375,
+            "bottom": 347.1875
+          }
+        ],
+        "historyVisible": true,
+        "errors": []
+      },
+      {
+        "arrival": 3,
+        "at": 1792853465480,
+        "elapsedMs": 851,
+        "inboxHits": 5,
+        "prefsHits": 5,
+        "toasts": [
+          {
+            "id": "VISUAL_NATIVE_FOCUS_1",
+            "top": 16,
+            "bottom": 175.59375
+          },
+          {
+            "id": "VISUAL_NATIVE_FOCUS_2",
+            "top": 187.59375,
+            "bottom": 347.1875
+          },
+          {
+            "id": "VISUAL_NATIVE_FOCUS_3",
+            "top": 359.1875,
+            "bottom": 518.78125
+          }
+        ],
+        "historyVisible": true,
+        "errors": []
+      },
+      {
+        "arrival": 4,
+        "at": 1792853466995,
+        "elapsedMs": 2366,
+        "inboxHits": 6,
+        "prefsHits": 6,
+        "toasts": [
+          {
+            "id": "VISUAL_NATIVE_FOCUS_2",
+            "top": 16,
+            "bottom": 175.59375
+          },
+          {
+            "id": "VISUAL_NATIVE_FOCUS_3",
+            "top": 187.59375,
+            "bottom": 347.1875
+          },
+          {
+            "id": "VISUAL_NATIVE_FOCUS_4",
+            "top": 359.1875,
+            "bottom": 518.78125
+          }
+        ],
+        "historyVisible": true,
+        "errors": []
+      }
+    ],
+    "syntheticBoundary": "browser-only inbox/prefs GET changes + window.dispatchEvent(focus), trustedfalse; actual application listener/store/parser/UI. No backend/STOMP/auth correctness claim.",
+    "ttlQualification": "frameat10.548s fromfirst retains toast3/4 consistentwith staggered arrivals; not an all-expired proof. All4 historycards retained. Bell preview3 is a separate policy.",
+    "cleanup": "FAILED: UIlogout timeout after bell popover; HTTPstatusnull. Ownsession normal logout unconfirmed. Context/browser closed, livebrowser0. Exactsession identifier not retained; no session cleanup claim.",
+    "all4PngViewed": true
+  },
+  "limits": [
+    "No backend/domain writes",
+    "All original failed scripts/receipts/PNGs preserved",
+    "No readiness percent derived from frames",
+    "No product source or repository documents changed"
+  ]
+}

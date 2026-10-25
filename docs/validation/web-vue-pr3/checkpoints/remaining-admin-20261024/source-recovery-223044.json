@@ -1,0 +1,13 @@
+{
+  "archive": "/workspace/rct-pr3-recovery/20261024T223044Z.zip",
+  "bytes": 6482207,
+  "sha256": "b4262299dbb27220d12447c2d0a3d83293e59574ead89135e940bec7533f123d",
+  "unpublishedCommits": 185,
+  "worktrees": 12,
+  "externalPublicSources": 122,
+  "bundleCRCPathsManifest": "PASS",
+  "sourcePackNativeExit": 1,
+  "classifiedNonsecret": 25,
+  "unresolved": 0,
+  "privateSecretsIncluded": false
+}

@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-
 import static ru.rutcampustrack.academic.map.CampusMapReadException.Code.NOT_FOUND;
 import static ru.rutcampustrack.academic.map.CampusMapReadException.Code.UNAVAILABLE;
 import static ru.rutcampustrack.academic.map.CampusMapReadModels.Asset;
@@ -15,33 +14,6 @@ import static ru.rutcampustrack.academic.map.CampusMapReadModels.ManifestPlan;
 import static ru.rutcampustrack.academic.map.CampusMapReadModels.ManifestResult;
 import static ru.rutcampustrack.academic.map.CampusMapReadModels.Plan;
 import static ru.rutcampustrack.academic.map.CampusMapReadModels.PlanResult;
-
-import org.flywaydb.core.Flyway;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
-import org.junit.jupiter.api.parallel.Execution;
-import org.junit.jupiter.api.parallel.ExecutionMode;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
-import org.springframework.aop.framework.ProxyFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.datasource.DataSourceTransactionManager;
-import org.springframework.jdbc.datasource.DriverManagerDataSource;
-import org.springframework.transaction.annotation.AnnotationTransactionAttributeSource;
-import org.springframework.transaction.interceptor.TransactionInterceptor;
-import org.testcontainers.containers.PostgreSQLContainer;
-
-import ru.rutcampustrack.academic.entity.User;
-import ru.rutcampustrack.academic.integration.AbstractAcademicIntegrationTest;
-import ru.rutcampustrack.academic.integration.AcademicIdentityIntegrationFixture;
-import ru.rutcampustrack.academic.repository.UserRepository;
-import ru.rutcampustrack.auth.session.model.AuthRole;
-import ru.rutcampustrack.shared.security.InternalJwtClaims;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
@@ -69,8 +41,32 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
-
 import javax.sql.DataSource;
+import org.flywaydb.core.Flyway;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+import org.springframework.aop.framework.ProxyFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.datasource.DataSourceTransactionManager;
+import org.springframework.jdbc.datasource.DriverManagerDataSource;
+import org.springframework.transaction.annotation.AnnotationTransactionAttributeSource;
+import org.springframework.transaction.interceptor.TransactionInterceptor;
+import org.testcontainers.containers.PostgreSQLContainer;
+import ru.rutcampustrack.academic.entity.User;
+import ru.rutcampustrack.academic.integration.AbstractAcademicIntegrationTest;
+import ru.rutcampustrack.academic.integration.AcademicIdentityIntegrationFixture;
+import ru.rutcampustrack.academic.repository.UserRepository;
+import ru.rutcampustrack.auth.session.model.AuthRole;
+import ru.rutcampustrack.shared.security.InternalJwtClaims;
 
 /**
  * Real PostgreSQL proof for the campus-map JDBC read path.
@@ -317,8 +313,8 @@ class CampusMapReadRepositoryIT extends AbstractAcademicIntegrationTest {
                         jdbc(schema)
                                 .queryForObject(
                                         "SELECT SUM(open_count) FROM"
-                                            + " campus_map_floor_hourly_activity WHERE floor_id ="
-                                            + " ?",
+                                                + " campus_map_floor_hourly_activity WHERE floor_id ="
+                                                + " ?",
                                         Long.class,
                                         floorId))
                 .isEqualTo(1L);
@@ -503,7 +499,7 @@ VALUES (?,?,?,?,?,?,?,?)
     }
 
     @Test
-    void planTargetClearPreservesHistoryUsageAndReplaysAgainstOriginalIdentity() {
+    void selectedFormatRetainsHistoryThenWholePurgePreservesUsageAndReplayIdentity() {
         String schema = newSchema();
         migrateDeletion(schema);
         long ownerId = identityFixture.canonical().adminId();
@@ -549,6 +545,10 @@ VALUES (?,?,?,?,?,?,?,?)
                         ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.Format
                                 .png);
         assertThat(preview.files()).isEqualTo(1L);
+        assertThat(preview.deletionScope())
+                .isEqualTo(
+                        ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels
+                                .PlanDeletionScope.CURRENT_FORMAT);
         var request =
                 new ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels
                         .PlanDeleteRequest(
@@ -591,6 +591,10 @@ VALUES (?,?,?,?,?,?,?,?)
                                                 "synthetic")))
                 .isInstanceOf(ru.rutcampustrack.academic.exception.ConflictException.class);
         var allPreview = deletion.previewPlan("91", "2", null);
+        assertThat(allPreview.deletionScope())
+                .isEqualTo(
+                        ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels
+                                .PlanDeletionScope.ALL_VERSIONS);
         var clear =
                 new ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels
                         .PlanDeleteRequest(
@@ -613,7 +617,7 @@ VALUES (?,?,?,?,?,?,?,?)
                                 "SELECT COUNT(*) FROM campus_map_plan_version WHERE floor_id=?",
                                 Long.class,
                                 floorId))
-                .isEqualTo(2L);
+                .isZero();
         var replaced = admin.uploadPlan("91", "2", "После снятия", png, null).plan();
         assertThat(replaced.version()).isEqualTo("3");
         assertThat(deletion.deletePlan(confirmed, ownerId, clear).status()).isEqualTo("COMPLETED");

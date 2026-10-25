@@ -1,29 +1,14 @@
 name: Security
 
+# Temporary owner-authorized pause for codex/web-vue-redesign.
+# Restore automatic triggers before merge after explicit owner GO.
+# See docs/plans/web-vue-pr3/CI-DEVELOPMENT-POLICY.md.
 on:
-  push:
-    branches: [main]
-    paths-ignore:
-      - 'docs/**'
-      - '.planning/**'
-      - '*.md'
-  pull_request:
-    branches: [main]
-    paths-ignore:
-      - 'docs/**'
-      - '.planning/**'
-      - '*.md'
-  schedule:
-    # Weekly Monday 03:00 UTC — свежие CVE могут появиться после build'а.
-    - cron: '0 3 * * 1'
+  workflow_dispatch:
 
 permissions:
   contents: read
   security-events: write # for uploading SARIF results to GitHub Security tab
-
-# Owner 2026-10-11: web-panel is deferred from the current release scope.
-# Scan the accepted backend, PWA/TMA and bot; web-panel security debt remains
-# and must be resolved before returning that client to the release gates.
 
 jobs:
   trivy-repo:
@@ -42,7 +27,7 @@ jobs:
           exit-code: '1'
           ignore-unfixed: true
           format: table
-          skip-dirs: 'docs,.planning,.github,frontends/web-panel,frontends/**/node_modules,**/build,**/dist'
+          skip-dirs: 'docs,.planning,.github,frontends/**/node_modules,**/build,**/dist'
 
       - name: Trivy fs scan (SARIF for GitHub Security)
         uses: aquasecurity/trivy-action@a9c7b0f06e461e9d4b4d1711f154ee024b8d7ab8 # v0.36.0 — M08 G11 SHA-pin
@@ -55,7 +40,7 @@ jobs:
           ignore-unfixed: true
           format: sarif
           output: trivy-fs.sarif
-          skip-dirs: 'docs,.planning,.github,frontends/web-panel,frontends/**/node_modules,**/build,**/dist'
+          skip-dirs: 'docs,.planning,.github,frontends/**/node_modules,**/build,**/dist'
 
       - name: Upload SARIF
         uses: github/codeql-action/upload-sarif@ce64ddcb0d8d890d2df4a9d1c04ff297367dea2a # v3
@@ -79,7 +64,7 @@ jobs:
           severity: HIGH,CRITICAL
           exit-code: '1'
           format: table
-          skip-dirs: 'docs,.planning,frontends/web-panel'
+          skip-dirs: 'docs,.planning'
           # M15 — structured ignore keeps the nginx exception path-specific.
           # YAML ignores require an explicit input; plain CVE ignores remain
           # auto-discovered by the filesystem scan.
@@ -1090,6 +1075,7 @@ jobs:
           - api-gateway
           - pwa-nginx
           - mini-app-nginx
+          - web-panel-nginx
           - landing-nginx
     steps:
       - name: Log in to GHCR

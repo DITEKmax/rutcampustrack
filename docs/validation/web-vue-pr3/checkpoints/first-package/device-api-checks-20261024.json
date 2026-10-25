@@ -1,0 +1,19 @@
+{
+  "revision": "3c02a3241c3ac228f887fdd7b5af9e20c2bf4753",
+  "source_commits": [
+    "f92cf2ba5",
+    "3c02a3241"
+  ],
+  "worktree": "/workspace/rct-worktrees/device-api",
+  "risk": "S3 auth/data/CAS/transaction",
+  "result": "PASS source and targeted local checks; root narrow review/integration pending",
+  "logs": [
+    "/tmp/device-api-checks-20261024-3.log",
+    "/tmp/device-api-openapi-20261024-correction.log",
+    "/tmp/device-api-final-artifacts-20261024.log",
+    "/tmp/device-api-generated-20261024.log"
+  ],
+  "artifact": "/workspace/rct-worktrees/device-api/services/auth-service/auth-app/build/libs/auth-app-0.1.0.jar",
+  "artifact_sha256": "1a802a0d6e9870dbcdc06179d884858170ae366ddbc7d25e5b3c584237321e92",
+  "environment": "isolated Auth Flyway/PostgreSQL16+Redis7 Testcontainers; Java21; max-workers2; existing stand untouched"
+}

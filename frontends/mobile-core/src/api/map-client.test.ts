@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 import { StaleSessionGenerationError } from '../shared/session-owner'
 import { AdminMapClient, CampusMapClient, MapApiError } from './map-client'
+import type { AdminMapPlanDeletionPreview, MapFormat } from './types'
 
 describe('CampusMapClient generation boundary', () => {
   it('rejects PNG bytes completed after the session changed', async () => {
@@ -140,6 +141,74 @@ describe('AdminMapClient destructive operation boundary', () => {
     })
     await expect(client.listBuildings()).rejects.toBeInstanceOf(StaleSessionGenerationError)
     expect(fetcher).toHaveBeenCalledTimes(1)
+  })
+})
+
+describe('AdminMapClient plan deletion preview scope', () => {
+  const preview = (format?: MapFormat): AdminMapPlanDeletionPreview => ({
+    buildingCode: '20',
+    floorCode: '200',
+    format: format ?? null,
+    label: 'Схема этажа',
+    files: 2,
+    bytes: 1024,
+    previewDigest: 'a'.repeat(64),
+  })
+
+  it('retains omitted/null legacy reads without claiming a confirmed deletion scope', async () => {
+    for (const format of [undefined, 'png', 'svg'] as const) {
+      for (const legacy of [preview(format), { ...preview(format), deletionScope: null }]) {
+        const client = new AdminMapClient({
+          accessToken: () => null,
+          fetcher: async () => Response.json(legacy),
+        })
+        const result = await client.planDeletionPreview('20', '200', format)
+        expect(result).toEqual(legacy)
+        expect(result.deletionScope == null).toBe(true)
+        expect(result.deletionScope).not.toBe('ALL_VERSIONS')
+      }
+    }
+  })
+
+  it('exposes only the confirmed scope matching the captured whole-plan or format intent', async () => {
+    for (const [format, deletionScope] of [
+      [undefined, 'ALL_VERSIONS'],
+      ['png', 'CURRENT_FORMAT'],
+      ['svg', 'CURRENT_FORMAT'],
+    ] as const) {
+      const confirmed: AdminMapPlanDeletionPreview = { ...preview(format), deletionScope }
+      const client = new AdminMapClient({
+        accessToken: () => null,
+        fetcher: async () => Response.json(confirmed),
+      })
+      await expect(client.planDeletionPreview('20', '200', format)).resolves.toEqual(confirmed)
+    }
+  })
+
+  it('rejects a valid scope belonging to a different deletion intent', async () => {
+    for (const [format, deletionScope] of [
+      [undefined, 'CURRENT_FORMAT'],
+      ['png', 'ALL_VERSIONS'],
+      ['svg', 'ALL_VERSIONS'],
+    ] as const) {
+      const client = new AdminMapClient({
+        accessToken: () => null,
+        fetcher: async () => Response.json({ ...preview(format), deletionScope }),
+      })
+      await expect(client.planDeletionPreview('20', '200', format)).rejects.toBeInstanceOf(TypeError)
+    }
+  })
+
+  it('rejects present malformed capabilities instead of treating them as legacy absence', async () => {
+    for (const format of [undefined, 'png', 'svg'] as const) {
+      for (const deletionScope of ['all_versions', 'ALL_VERSIONS ', true, {}, []]) {
+        const client = new AdminMapClient({
+          accessToken: () => null,
+          fetcher: async () => Response.json({ ...preview(format), deletionScope }),
+        })
+        await expect(client.planDeletionPreview('20', '200', format)).rejects.toBeInstanceOf(TypeError)
+      }
+    }
   })
 })
 

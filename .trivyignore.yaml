@@ -19,7 +19,7 @@ misconfigurations:
       - 'frontends/landing/Dockerfile'
       - 'frontends/tma-vue/Dockerfile'
       - 'frontends/pwa-vue/Dockerfile'
-      - 'frontends/web-panel/Dockerfile'
+      - 'frontends/web-vue/Dockerfile'
     statement: >-
       Retained during CI maintenance 2026-10-11 under the existing M15
       exception; current Vue nginx root and port 80 runtime is unchanged.

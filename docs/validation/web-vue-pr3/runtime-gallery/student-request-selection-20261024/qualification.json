@@ -1,0 +1,294 @@
+{
+  "revision": "85c068210262b611f6f98d18fb9d7bdd8cecea95",
+  "sourceBase": "d69ac9159e3bfff169c4b2bd25adbcc7d9def771",
+  "runnerSha256": "29afe6fec800057b447b4fe452dddcc40f234da7297706c782b7bd8abe30b8a2",
+  "rawReceipt": "receipt.json",
+  "rawReceiptSha256": "9acfbc467779e8f95547f581e42812df9db73e5e54e8382a3b509d63fdb00646",
+  "rawOutcome": "EXIT0 completedtrue; raw personallyInspected:false retained, sidecar records actual personalinspection all6",
+  "elapsedSeconds": 5.025,
+  "sourcePins": [
+    {
+      "path": "frontends/mobile-core/src/features/requests/RequestTypeScreen.vue",
+      "sha256": "2cd4d9e7d6a40b7f9a269098a39636e1f68bef3dba322d488079b95905a20851"
+    },
+    {
+      "path": "frontends/mobile-core/src/features/requests/RequestLessonSelectionScreen.vue",
+      "sha256": "bd3cc4772a670950fd7043fc0145e27205bda11f57b76aa7445aabb558090be6"
+    },
+    {
+      "path": "frontends/mobile-core/src/features/requests/RequestLessonSelector.vue",
+      "sha256": "e484f77d9609a40d704c8da52e3d70db1a7c1674c297c405a0ad16daf47dde01"
+    },
+    {
+      "path": "frontends/mobile-core/src/features/requests/ExcuseRequestScreen.vue",
+      "sha256": "30b3f3c04ba8d1f6c08c10bdf6d5f678ff0933cbcbe49a7986ffed9286ea28c2"
+    },
+    {
+      "path": "frontends/mobile-core/src/features/requests/requests.pcss",
+      "sha256": "546e405ce9755cd9e0483c7a1714998bae94982b71d41479d75c634b700adf8b"
+    },
+    {
+      "path": "frontends/mobile-core/src/features/requests/requests-today.pcss",
+      "sha256": "e197dcf7dc7416b8b4757e79747e12cb6200f916efa8c4d954c60336831424ff"
+    },
+    {
+      "path": "frontends/mobile-core/src/features/requests/state.ts",
+      "sha256": "5749242c410fd32a96544fa9f976b431a9024df3cb670901343c57ef1de64853"
+    },
+    {
+      "path": "frontends/mobile-core/src/shared/components/StudentFeatureOwner.vue",
+      "sha256": "f261a2d02212146413b8ae8985d3476614a8181cb9211d18d88b0a795f3ef8c1"
+    },
+    {
+      "path": "frontends/mobile-core/src/api/student-client.ts",
+      "sha256": "90d01fcd65f778306fc3c003d43433d849a603dd5306e916809d7c668d46b1c9"
+    },
+    {
+      "path": "frontends/pwa-vue/src/App.vue",
+      "sha256": "2b23659d00e5184392e439aa0b839c1c18f6a083d2973dbc7d044db0be740ae2"
+    },
+    {
+      "path": "frontends/pwa-vue/src/auth.ts",
+      "sha256": "03d12164cfeaaec68d3fc8e5410ebe7692ebed7f3ea8eeeace7c53239532abd2"
+    },
+    {
+      "path": "frontends/pwa-vue/src/auth-client.ts",
+      "sha256": "1c1a2902301c83ce1937e97ab3d2cb53e953faf5b91765f5b080effd6becf846"
+    },
+    {
+      "path": "tests/e2e/fixtures/users.ts",
+      "sha256": "34b26d13a614a6b60872fa1a007f2d3ead810733d610401b141f9b26ffd2cb2f"
+    }
+  ],
+  "criteria": {
+    "REQUEST-TYPE-READ": {
+      "status": "READY_BOUNDED_425_LIGHT",
+      "evidence": "NormalUI More→Requests→Подать; actual ownrequests/options200; actual choices inspected. Old300light/dark type baseline reused context only."
+    },
+    "REQUEST-LESSON-SELECTION": {
+      "status": "READY_BOUNDED_SELECTED_STATES",
+      "evidence": "425light own real grouped options/unselected disabled; selecting one eligible owncheckbox enablesContinue; only local draftstate changed."
+    },
+    "REQUEST-RANGE-VALIDATION-EMPTY": {
+      "status": "READY_BOUNDED_300_DARK",
+      "evidence": "Invalid dates alert/disabled; valid2099filter gives truthful localempty/disabled; reset restores options. No API response replacement or forcedloading."
+    },
+    "REQUEST-SELECTION-FOCUS": {
+      "status": "READY_BOUNDED_768_LIGHT",
+      "evidence": "Selected1; keyboard focus-visible Continue personally inspected. Internal list scrolled by keyboardfocus. Full list/scroll reachability not claimed."
+    },
+    "REQUEST-DRAFT-PREVIEW": {
+      "status": "READY_BOUNDED_425_LIGHT_READ_ONLY_ACTIVITY",
+      "evidence": "Ordinary Continue opens normal ExcuseRequest form with correct selectedlesson summary; reason empty/submitdisabled. No reason change/typing/file/upload/submit/cancel command."
+    },
+    "SESSION-RESOURCE-CLEANUP": {
+      "status": "TECHNICAL_OWN_SESSION_CLEANUP_PASS",
+      "evidence": "Canonical actor3/exactSID; browserAPIsealed; one exactselfSIDDELETE204→samebearerGETsession401. No nativeUIlogouttest/helperlogin/fallback. Browserclosed."
+    },
+    "LIMITS": {
+      "status": "NOT_FULL_SCREEN_STATE_WIDTH_OR_TMA_READINESS",
+      "evidence": "OnlyPWAselected300/425/768 root16 slices. Cached realoptions: loading not forcibly reproduced/claimed. No submission/upload/cancellation/attachments/latecheckin flow validation. TMA runtime/provider unchanged; no new actioncount."
+    }
+  },
+  "actualAuth": {
+    "loginForwarded": 1,
+    "startupRefreshForwarded": 1,
+    "roleForwarded": 0,
+    "loginStatus": 200,
+    "startupRefreshStatus": 401
+  },
+  "observedRealReads": [
+    {
+      "path": "/api/v1/student/requests",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/student/requests/options",
+      "status": 200
+    }
+  ],
+  "syntheticApiResponses": false,
+  "cleanup": {
+    "method": "TECHNICAL_NORMAL_AUTH_API_SELF_SESSION_DELETE",
+    "nativeUiLogoutPass": false,
+    "expectedActorMatched": true,
+    "exactSidMatched": true,
+    "selfDeleteForwarded": 1,
+    "selfDeleteStatus": 204,
+    "guestBearerStatus": 401,
+    "confirmed": true,
+    "fallbackUsed": false,
+    "intent": "RETURNED",
+    "forwardStartedAtUtc": "2026-10-24T22:51:47.348Z"
+  },
+  "privateHandle": "private/own-session-and-run-scope.json0600; SID private/no bearer persisted",
+  "browserClosed": true,
+  "sourceUnchanged": true,
+  "blockedWrites": [],
+  "pageErrors": [],
+  "samples": [
+    {
+      "id": "PWA-MOBILE-REQUESTTYPE__MB-RQ-01-resolved-real-choices__light__425__85c068210",
+      "consumer": "PWA",
+      "screen": "MOBILE-REQUESTTYPE",
+      "state": "resolved-real-choices",
+      "file": "PWA-MOBILE-REQUESTTYPE__MB-RQ-01-resolved-real-choices__light__425__85c068210.png",
+      "sha256": "1fd0d81674e0754dfe646e539e1386551725cf9e442c4e35322eee3d736cc367",
+      "theme": "light",
+      "width": 425,
+      "rootFont": "16px",
+      "scrollWidth": 425,
+      "focusVisible": false,
+      "revision": "85c068210262b611f6f98d18fb9d7bdd8cecea95",
+      "personallyInspected": true,
+      "caseId": "MB-RQ-01",
+      "title": "Новая заявка · реальные варианты · light · 425",
+      "description": "Обычный MainStudent3 Auth и реальный GET /requests/options. Оба типа доступны; нажата только «Уважительная причина». Без отправки/смены данных.",
+      "image": "PWA-MOBILE-REQUESTTYPE__MB-RQ-01-resolved-real-choices__light__425__85c068210.png",
+      "height": 900,
+      "personallyViewed": true,
+      "inspection": "Оба варианта/названия помещаются; header/back читаемы.",
+      "criterion": "REQUEST-TYPE-READ",
+      "synthetic": true,
+      "syntheticCause": "Owned public synthetic stand data; OS media preference; ordinary local date filters and checkbox selection. Auth/API responses unmodified; no heldloading/fakeAPI/provider.",
+      "captureKind": "new actual PWA read-only consumer slice"
+    },
+    {
+      "id": "PWA-MOBILE-REQUESTLESSONSELECTION__MB-RQ-02-real-lessons-unselected__light__425__85c068210",
+      "consumer": "PWA",
+      "screen": "MOBILE-REQUESTLESSONSELECTION",
+      "state": "real-lessons-unselected",
+      "file": "PWA-MOBILE-REQUESTLESSONSELECTION__MB-RQ-02-real-lessons-unselected__light__425__85c068210.png",
+      "sha256": "86b4dedffc43717eb3cd22b179118368d2a6e52daac18d5dc26ce601a38fea93",
+      "theme": "light",
+      "width": 425,
+      "rootFont": "16px",
+      "scrollWidth": 425,
+      "focusVisible": false,
+      "revision": "85c068210262b611f6f98d18fb9d7bdd8cecea95",
+      "personallyInspected": true,
+      "caseId": "MB-RQ-02",
+      "title": "Выбор пар · без выбора · light · 425",
+      "description": "Реальные собственные пары, сгруппированные по датам; выбор пуст, «Продолжить» выключена. No fakeAPI/loading.",
+      "image": "PWA-MOBILE-REQUESTLESSONSELECTION__MB-RQ-02-real-lessons-unselected__light__425__85c068210.png",
+      "height": 900,
+      "personallyViewed": true,
+      "inspection": "Даты, названия, время, checkbox и статусы читаемы; footer показывает0/disabled.",
+      "criterion": "REQUEST-LESSON-SELECTION",
+      "synthetic": true,
+      "syntheticCause": "Owned public synthetic stand data; OS media preference; ordinary local date filters and checkbox selection. Auth/API responses unmodified; no heldloading/fakeAPI/provider.",
+      "captureKind": "new actual PWA read-only consumer slice"
+    },
+    {
+      "id": "PWA-MOBILE-REQUESTLESSONSELECTION__MB-RQ-03-local-invalid-date-range__dark__300__85c068210",
+      "consumer": "PWA",
+      "screen": "MOBILE-REQUESTLESSONSELECTION",
+      "state": "local-invalid-date-range",
+      "file": "PWA-MOBILE-REQUESTLESSONSELECTION__MB-RQ-03-local-invalid-date-range__dark__300__85c068210.png",
+      "sha256": "d69f7f58476c9b65904f11d24040ae16635cb0bfdff6e31257554accb91743fd",
+      "theme": "dark",
+      "width": 300,
+      "rootFont": "16px",
+      "scrollWidth": 300,
+      "focusVisible": true,
+      "revision": "85c068210262b611f6f98d18fb9d7bdd8cecea95",
+      "personallyInspected": true,
+      "caseId": "MB-RQ-03",
+      "title": "Выбор пар · неверный период · dark · 300",
+      "description": "Локально введены даты2026-10-25→2026-10-24: inline validation/aria-alert; продолжение выключено. API-ответы не заменены.",
+      "image": "PWA-MOBILE-REQUESTLESSONSELECTION__MB-RQ-03-local-invalid-date-range__dark__300__85c068210.png",
+      "height": 900,
+      "personallyViewed": true,
+      "inspection": "Сообщение про порядок дат и оба поля видны без горизонтального переполнения; также штатный filtered-empty caption.",
+      "criterion": "REQUEST-RANGE-VALIDATION",
+      "synthetic": true,
+      "syntheticCause": "Owned public synthetic stand data; OS media preference; ordinary local date filters and checkbox selection. Auth/API responses unmodified; no heldloading/fakeAPI/provider.",
+      "captureKind": "new actual PWA read-only consumer slice"
+    },
+    {
+      "id": "PWA-MOBILE-REQUESTLESSONSELECTION__MB-RQ-04-real-options-future-filter-empty__dark__300__85c068210",
+      "consumer": "PWA",
+      "screen": "MOBILE-REQUESTLESSONSELECTION",
+      "state": "real-options-future-filter-empty",
+      "file": "PWA-MOBILE-REQUESTLESSONSELECTION__MB-RQ-04-real-options-future-filter-empty__dark__300__85c068210.png",
+      "sha256": "4db177d5c8810c73e73ef383718a381b3160b5cea884e7df145e449896ddc604",
+      "theme": "dark",
+      "width": 300,
+      "rootFont": "16px",
+      "scrollWidth": 300,
+      "focusVisible": true,
+      "revision": "85c068210262b611f6f98d18fb9d7bdd8cecea95",
+      "personallyInspected": true,
+      "caseId": "MB-RQ-04",
+      "title": "Выбор пар · пустой фильтр · dark · 300",
+      "description": "Локальный валидный период2099-01-01→2099-01-02 фильтрует те же реальные options до пустого списка. Ошибки порядка дат нет; продолжение выключено.",
+      "image": "PWA-MOBILE-REQUESTLESSONSELECTION__MB-RQ-04-real-options-future-filter-empty__dark__300__85c068210.png",
+      "height": 900,
+      "personallyViewed": true,
+      "inspection": "Читаемое empty-состояние; 0 selected/disabled footer. Это пустой local filter, не отсутствие backend-данных.",
+      "criterion": "REQUEST-RANGE-EMPTY",
+      "synthetic": true,
+      "syntheticCause": "Owned public synthetic stand data; OS media preference; ordinary local date filters and checkbox selection. Auth/API responses unmodified; no heldloading/fakeAPI/provider.",
+      "captureKind": "new actual PWA read-only consumer slice"
+    },
+    {
+      "id": "PWA-MOBILE-REQUESTLESSONSELECTION__MB-RQ-05-one-local-selection-keyboard-focus__light__768__85c068210",
+      "consumer": "PWA",
+      "screen": "MOBILE-REQUESTLESSONSELECTION",
+      "state": "one-local-selection-keyboard-focus",
+      "file": "PWA-MOBILE-REQUESTLESSONSELECTION__MB-RQ-05-one-local-selection-keyboard-focus__light__768__85c068210.png",
+      "sha256": "e8d3886f42ef9f2eb94a4643f1def5f72dc130b7075b1294d5bd8d6eac178788",
+      "theme": "light",
+      "width": 768,
+      "rootFont": "16px",
+      "scrollWidth": 768,
+      "focusVisible": true,
+      "revision": "85c068210262b611f6f98d18fb9d7bdd8cecea95",
+      "personallyInspected": true,
+      "caseId": "MB-RQ-05",
+      "title": "Выбор пары · keyboard focus · light · 768",
+      "description": "Фильтр сброшен, выбран первый доступный собственный checkbox, selected1 и «Продолжить» включена. Keyboard Shift+Tab/Tab вернул focus на Continue.",
+      "image": "PWA-MOBILE-REQUESTLESSONSELECTION__MB-RQ-05-one-local-selection-keyboard-focus__light__768__85c068210.png",
+      "height": 900,
+      "personallyViewed": true,
+      "inspection": "Видимая focus ring у Continue; длинный локальный список прокручен к footer при keyboard focus, поэтому исходная выбранная строка вне кадра. Disabled поздние options пояснены. Full scroll traversal не проверялся.",
+      "criterion": "REQUEST-SELECTION-FOCUS",
+      "synthetic": true,
+      "syntheticCause": "Owned public synthetic stand data; OS media preference; ordinary local date filters and checkbox selection. Auth/API responses unmodified; no heldloading/fakeAPI/provider.",
+      "captureKind": "new actual PWA read-only consumer slice"
+    },
+    {
+      "id": "PWA-MOBILE-EXCUSEREQUEST__MB-RQ-06-selected-lesson-draft-preview-no-submit__light__425__85c068210",
+      "consumer": "PWA",
+      "screen": "MOBILE-EXCUSEREQUEST",
+      "state": "selected-lesson-draft-preview-no-submit",
+      "file": "PWA-MOBILE-EXCUSEREQUEST__MB-RQ-06-selected-lesson-draft-preview-no-submit__light__425__85c068210.png",
+      "sha256": "01b61258496c933a1c51c7df5c195e57e5c6ed69c5866437d3e8633d9055b762",
+      "theme": "light",
+      "width": 425,
+      "rootFont": "16px",
+      "scrollWidth": 425,
+      "focusVisible": false,
+      "revision": "85c068210262b611f6f98d18fb9d7bdd8cecea95",
+      "personallyInspected": true,
+      "caseId": "MB-RQ-06",
+      "title": "Уважительная причина · просмотр черновика · light · 425",
+      "description": "Обычная «Продолжить» открыла нормальную форму с выбранной парой23октября08:30–09:50. Причина/комментарий/файлы не заполнены, submit выключен; отправки/upload нет.",
+      "image": "PWA-MOBILE-EXCUSEREQUEST__MB-RQ-06-selected-lesson-draft-preview-no-submit__light__425__85c068210.png",
+      "height": 900,
+      "personallyViewed": true,
+      "inspection": "Summary выбранной пары, причина, комментарий, file placeholder и disabled-submit читаемы. Normal editable form inspected only; readOnly prop не подменялся.",
+      "criterion": "REQUEST-DRAFT-PREVIEW",
+      "synthetic": true,
+      "syntheticCause": "Owned public synthetic stand data; OS media preference; ordinary local date filters and checkbox selection. Auth/API responses unmodified; no heldloading/fakeAPI/provider.",
+      "captureKind": "new actual PWA read-only consumer slice"
+    }
+  ],
+  "newImages": 6,
+  "newPreviouslySourceOnlyPwaConsumers": 2,
+  "functionalActionsAdded": 0,
+  "newAuthAfterThisRunAllowed": false,
+  "modelRequested": "gpt-6.1-sol/high",
+  "runtimeTelemetry": "unavailable",
+  "qualifiedAt": "2026-10-24T22:53:15.065461+00:00"
+}

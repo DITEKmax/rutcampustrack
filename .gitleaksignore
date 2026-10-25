@@ -50,3 +50,10 @@ docs/validation/cloud-20261011/attempts.ndjson:generic-api-key:2479
 857841889860f3e943c8a02119f05ca270a06395:docs/validation/cloud-20261011/test-audit-files-20261020.csv:generic-api-key:288
 857841889860f3e943c8a02119f05ca270a06395:docs/validation/cloud-20261011/test-audit-files-20261020.csv:generic-api-key:289
 857841889860f3e943c8a02119f05ca270a06395:docs/validation/cloud-20261011/test-audit-files-20261020.csv:generic-api-key:290
+
+# Synthetic requestKey test UUID (accessToken:null), independently reviewed in REVIEW-f45b-fixture-uuid.md.
+f45b754ac6769525e503692e49ddaaff15a3bd6e:frontends/web-vue/src/features/headman/request-decision-state.test.ts:generic-api-key:9
+
+# Fixed pending-operation test fixtures, independently reviewed in REVIEW-3e58-test-fixtures.md.
+3e58d981fc41f802368daf9f4fe0f92694cc78c3:frontends/web-vue/src/features/headman/recovery-flows.test.ts:generic-api-key:403
+3e58d981fc41f802368daf9f4fe0f92694cc78c3:frontends/web-vue/src/features/headman/recovery-flows.test.ts:generic-api-key:425

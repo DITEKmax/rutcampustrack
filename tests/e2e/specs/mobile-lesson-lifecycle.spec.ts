@@ -1,3 +1,4 @@
+import { diagnosticCase } from '../fixtures/diagnostic-events';
 import { randomUUID } from 'node:crypto';
 import { type Page, type Request, type Response } from '@playwright/test';
 import { test, expect, admit, selectPwaRole } from '../fixtures/mobile-dataset';
@@ -17,7 +18,7 @@ function response(page: Page, path: string, method: string) {
 
 // BOUNDARY-23 / JS-HEADMAN-42: one current one-off lesson, unchanged assignment and clock.
 // Separate PG/Mongo race and replay proofs remain separate from this actual Vue journey.
-test('HEADMAN cancels a marked lesson and restores its journal without reviving homework @real-mobile', async ({
+test('HEADMAN cancels a marked lesson and restores its journal without reviving homework @real-mobile', { annotation: diagnosticCase('HEADMAN_LESSON_CANCEL_RESTORE') }, async ({
   page,
   dataset,
 }) => {

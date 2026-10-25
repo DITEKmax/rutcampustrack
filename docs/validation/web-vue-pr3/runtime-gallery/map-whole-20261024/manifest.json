@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "kind": "runtime-gallery",
+  "title": "Полное удаление собственной схемы",
+  "functionalTestCount": 0,
+  "limits": [
+    "Настоящий Auth/Academic/Gateway, искусственная схема25001/1.",
+    "Один delete200, две версии/четыре assets404; корпус/этаж/usage/high-water/receipt сохранены.",
+    "Успешное удаление не повторялось; main950 не обновлялся, общий health не PASS."
+  ],
+  "screenshots": [
+    {
+      "id": "WEB-ADMIN-MAPS__whole-history-deleted__light__1440__10d8b908a",
+      "screen": "WEB-ADMIN-MAPS",
+      "state": "whole-history-deleted",
+      "theme": "light",
+      "width": 1440,
+      "revision": "10d8b908ae9801b22018881389f21ef5c0188583",
+      "title": "Полная история схемы удалена",
+      "description": "Один реальный POST завершён; обе версии и четыре PNG/SVG больше не доступны. Корпус и этаж сохранены.",
+      "provenance": "real-runtime",
+      "syntheticFixtureData": true,
+      "image": "screenshots/WEB-ADMIN-MAPS__whole-history-deleted__light__1440__10d8b908a.png",
+      "pixelWidth": 1440,
+      "pixelHeight": 1080,
+      "bytes": 94762,
+      "sha256": "89b38e225eebc8a32958eacc755bb34674ab3bf9202cf7aad9b0b92ffb6cd045"
+    }
+  ]
+}

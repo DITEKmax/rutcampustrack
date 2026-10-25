@@ -1,14 +1,13 @@
 package ru.rutcampustrack.academic.exportjobs;
 
 import io.grpc.StatusRuntimeException;
-
 import jakarta.validation.Validator;
-
+import java.time.*;
+import java.util.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
-
 import ru.rutcampustrack.academic.contract.dto.export.RegistryExportModels;
 import ru.rutcampustrack.academic.contract.dto.exportjobs.AcademicExportJobModels.Create;
 import ru.rutcampustrack.academic.scheduling.SingleInstanceScheduled;
@@ -16,9 +15,6 @@ import ru.rutcampustrack.auth.dto.*;
 import ru.rutcampustrack.authauthority.grpc.AuthorityAdminProfile;
 import ru.rutcampustrack.authauthority.grpc.CheckAdminAccessResponse;
 import ru.rutcampustrack.shared.security.InternalJwtClaims;
-
-import java.time.*;
-import java.util.*;
 
 /** Owner orchestration; every remote check runs outside the repository's short transactions. */
 @Service
@@ -101,6 +97,7 @@ public class ExportJobService {
                             selected.status(),
                             query.status() == null ? null : query.status().name())
                     || !Objects.equals(selected.roleStatus(), query.roleStatus())
+                    || !Objects.equals(selected.groupId(), query.groupId())
                     || !Objects.equals(sorts, query.sorts())
                     || !selected.format().code().equals(query.format()))
                 throw ExportJobRepository.error(HttpStatus.FORBIDDEN);

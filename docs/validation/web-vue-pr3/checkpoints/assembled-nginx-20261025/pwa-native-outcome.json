@@ -1,0 +1,214 @@
+{
+  "case": "PWA_NGINX_TEACHER_AUTH_API_STOMP_READONLY",
+  "revision": "240a1b2a86a2b2ba0cbb89647a9ed8b151007007",
+  "productBase": "240a1b2a86a2b2ba0cbb89647a9ed8b151007007",
+  "harnessSha256": "dfb4c17f43719dcea69fb5a02c395e91d6063f8b507797b156e31a8fc39852b5",
+  "startedAtUtc": "2026-10-25T09:03:49.987Z",
+  "finishedAtUtc": "2026-10-25T09:03:52.032Z",
+  "platform": "PWA",
+  "origin": "http://127.0.0.1:14240",
+  "phase": "AUTH_API_STOMP_COMPLETE_CLEANUP_CONFIRMED_NO_SCREENSHOT",
+  "api": [
+    {
+      "path": "/api/auth/refresh",
+      "method": "POST",
+      "status": 401,
+      "phase": "BOOTSTRAP",
+      "loginIndex": 0
+    },
+    {
+      "path": "/api/auth/login",
+      "method": "POST",
+      "status": 200,
+      "phase": "LOGIN_0",
+      "loginIndex": 0
+    },
+    {
+      "path": "/api/auth/session",
+      "method": "GET",
+      "status": 200,
+      "phase": "LOGIN_0",
+      "loginIndex": 0
+    },
+    {
+      "path": "/api/auth/ws-ticket",
+      "method": "POST",
+      "status": 200,
+      "phase": "LOGIN_0",
+      "loginIndex": 0
+    },
+    {
+      "path": "/api/auth/device-preferences",
+      "method": "GET",
+      "status": 200,
+      "phase": "LOGIN_0",
+      "loginIndex": 0
+    },
+    {
+      "pathHash": "66be5879ef3a006f97cdf3d9fb658d6b9ab244113bbbad159c733f0fee4efb32",
+      "method": "GET",
+      "status": 200,
+      "phase": "LOGIN_0",
+      "loginIndex": 0
+    },
+    {
+      "path": "/api/ws/info",
+      "method": "GET",
+      "status": 200,
+      "phase": "LOGIN_0",
+      "loginIndex": 0
+    },
+    {
+      "path": "/api/v1/teacher/semester",
+      "method": "GET",
+      "status": 200,
+      "phase": "LOGIN_0",
+      "loginIndex": 0
+    },
+    {
+      "path": "/api/v1/teacher/semester",
+      "method": "GET",
+      "status": 200,
+      "phase": "LOGIN_0",
+      "loginIndex": 0
+    },
+    {
+      "path": "/api/v1/teacher/assignments",
+      "method": "GET",
+      "status": 200,
+      "phase": "LOGIN_0",
+      "loginIndex": 0
+    },
+    {
+      "pathHash": "b05fd2eb20115510c259a188067bd51de03fb6d2c5d82ad0a85e398b9c28694f",
+      "method": "GET",
+      "status": 200,
+      "phase": "LOGIN_0",
+      "loginIndex": 0
+    },
+    {
+      "path": "/api/v1/teacher/day",
+      "method": "GET",
+      "status": 200,
+      "phase": "LOGIN_0",
+      "loginIndex": 0
+    },
+    {
+      "pathHash": "66be5879ef3a006f97cdf3d9fb658d6b9ab244113bbbad159c733f0fee4efb32",
+      "method": "GET",
+      "status": 200,
+      "phase": "LOGIN_0",
+      "loginIndex": 0
+    },
+    {
+      "pathHash": "b05fd2eb20115510c259a188067bd51de03fb6d2c5d82ad0a85e398b9c28694f",
+      "method": "GET",
+      "status": 200,
+      "phase": "LOGIN_0",
+      "loginIndex": 0
+    },
+    {
+      "path": "/api/v1/teacher/semester",
+      "method": "GET",
+      "status": 200,
+      "phase": "LOGIN_0",
+      "loginIndex": 0
+    },
+    {
+      "path": "/api/v1/teacher/catalog",
+      "method": "GET",
+      "status": 200,
+      "phase": "LOGIN_0",
+      "loginIndex": 0
+    },
+    {
+      "path": "/api/v1/teacher/assignments",
+      "method": "GET",
+      "status": 200,
+      "phase": "LOGIN_0",
+      "loginIndex": 0
+    },
+    {
+      "path": "/api/v1/teacher/day",
+      "method": "GET",
+      "status": 200,
+      "phase": "LOGIN_0",
+      "loginIndex": 0
+    },
+    {
+      "path": "/api/v1/teacher/catalog",
+      "method": "GET",
+      "status": 200,
+      "phase": "LOGIN_0",
+      "loginIndex": 0
+    }
+  ],
+  "realtime": {
+    "socketCount": 1,
+    "expectedTransportPathOnly": true,
+    "connected": true,
+    "receivedVerbs": {
+      "CONNECTED": 1
+    },
+    "sentVerbs": {
+      "CONNECT": 1,
+      "SUBSCRIBE": 1
+    },
+    "sockJsOpenCount": 1,
+    "socketErrors": 0,
+    "socketCloses": 0
+  },
+  "apiProof": {
+    "canonicalTeacher2CurrentOwnBearerConfirmed": true,
+    "nativeBrowserCanonicalGet200": true,
+    "nativeBrowserCatalogGet200": true,
+    "originalCatalogBodyObserved": true,
+    "safeCatalogProjection": {
+      "groupCount": 2,
+      "subjectOptionCount": 2,
+      "taughtSubjectOptionCount": 3,
+      "ownKnownGroupPresent": true,
+      "ownKnownSubjectPresent": true
+    },
+    "stompConnectedReceived": true,
+    "applicationProtocol": "http",
+    "socketProtocol": "ws",
+    "sourceAndOriginProofSha256": "c33bb4168e256c5e4e9b5e0a8f7d21aeb473d3c06760e63fdc57e925fdfa59f9",
+    "screenshots": 0,
+    "syntheticResponse": false,
+    "originRewritten": false,
+    "httpsAuthWssClaimed": false
+  },
+  "cleanup": {
+    "method": "TECHNICAL_EXACT_CURRENT_OWN_SELF_SESSION_DELETE",
+    "nativeUiLogoutPass": false,
+    "selfDeleteForwarded": 1,
+    "status": 204,
+    "sameOldBearerStatus": 401,
+    "confirmed": true,
+    "fallbackUsed": false,
+    "intent": "RETURNED"
+  },
+  "captureComplete": true,
+  "completed": true,
+  "unknownHold": false,
+  "browserClosed": true,
+  "sourceUnchanged": true,
+  "applicationDataWrites": 0,
+  "wsTicketForwarded": 1,
+  "httpsAuthWssClaimed": false,
+  "syntheticApiResponses": false,
+  "device": {
+    "readsObserved": 1,
+    "putsForwarded": 0
+  },
+  "rawExit": 0,
+  "rawReceiptSha256": "3834df9f115c4441f4138ad35be5c25210273386ec0ba3c1664f9a013988288b",
+  "screenshots": 0,
+  "blockedCount": 0,
+  "pageErrorCount": 0,
+  "requestFailureCount": 0,
+  "readIncompleteCount": 0,
+  "qualification": "PWA_BOUNDED_HTTP_AUTH_API_STOMP_PASS",
+  "knownCatalogIdsProved": true
+}

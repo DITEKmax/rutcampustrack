@@ -1,3 +1,4 @@
+import { diagnosticCase } from './diagnostic-events';
 import { randomUUID } from 'node:crypto';
 import { existsSync, lstatSync, readFileSync, writeFileSync } from 'node:fs';
 import { isAbsolute, join } from 'node:path';
@@ -1011,7 +1012,7 @@ async function assignmentReportReady(
   }
 }
 
-test('assignment lifecycle API phase', async ({ playwright }, info) => {
+test('assignment lifecycle API phase', { annotation: diagnosticCase('ASSIGNMENT_LIFECYCLE_API') }, async ({ playwright }, info) => {
   requirePrivateArtifacts(info);
   requireValue(phase && phases.includes(phase), 'Assignment phase must be explicit');
   test.setTimeout(phase === 'prepare' ? 300000 : 120000);

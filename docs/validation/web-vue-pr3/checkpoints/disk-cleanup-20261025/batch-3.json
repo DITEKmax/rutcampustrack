@@ -1,0 +1,19 @@
+{
+  "batch": 3,
+  "beforeFreeBytes": 6356258816,
+  "afterFreeBytes": 6531416064,
+  "actualFreeIncreaseBytes": 175157248,
+  "deletedPaths": [
+    "/workspace/rct-pr3-setup/inputs/handoff-20261023-validated/web-vue-handoff-20261023.zip.part001",
+    "/workspace/rct-pr3-setup/inputs/handoff-20261023-validated/web-vue-handoff-20261023.zip.part002",
+    "/workspace/rct-pr3-setup/inputs/handoff-20261023-validated/web-vue-handoff-20261023.zip.part003",
+    "/workspace/attachments/e153a824-4a73-4b30-bb44-b24d82a2f84c/web-vue-handoff-20261023-transfer-01-of-03.zip",
+    "/workspace/attachments/467760d5-0103-45e1-a574-b8baca008f75/web-vue-handoff-20261023-transfer-02-of-03.zip",
+    "/workspace/attachments/aa01f13b-94b9-4af4-9bf2-91327290e37f/web-vue-handoff-20261023-transfer-03-of-03.zip"
+  ],
+  "count": 6,
+  "originalHandoffZipSHAEntriesCRC": "preserved87568617B/SHA0f851394/422CRCpass",
+  "extractedManifestsEvidence": "preserved",
+  "minimumMet": false,
+  "atUnix": 1792909897.7172415
+}

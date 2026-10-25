@@ -1,4 +1,4 @@
-"""Exact served web-panel artifact oracle. Reads the already deployed revision; never deploys."""
+"""Exact served Vue WEB artifact oracle. Reads the deployed revision; never deploys."""
 import hashlib
 import json
 import re
@@ -21,14 +21,27 @@ def require(value):
 class Entrypoint(HTMLParser):
     def __init__(self):
         super().__init__()
-        self.scripts = []
-        self.angular = False
+        self.modules = []
+        self.roots = 0
 
     def handle_starttag(self, tag, attrs):
         attributes = dict(attrs)
-        self.angular |= tag == 'app-root'
-        if tag == 'script' and attributes.get('src'):
-            self.scripts.append(attributes['src'])
+        self.roots += attributes.get('id') == 'app'
+        if tag == 'script' and attributes.get('type', '').lower() == 'module':
+            self.modules.append(attributes.get('src', ''))
+
+
+def entry_asset(html):
+    parser = Entrypoint()
+    try:
+        parser.feed(html.decode('utf-8'))
+    except UnicodeDecodeError as error:
+        raise OracleFailure() from error
+    require(parser.roots == 1 and len(parser.modules) == 1)
+    asset = parser.modules[0]
+    # Root Vite output only: no remote URL, query, fragment or nested/traversal path.
+    require(re.fullmatch(r'/assets/[A-Za-z0-9_][A-Za-z0-9_.-]*-[A-Za-z0-9_-]{8,}\.js', asset))
+    return asset
 
 
 def verify(expected_index, expected_asset, served_index, served_asset):
@@ -36,15 +49,11 @@ def verify(expected_index, expected_asset, served_index, served_asset):
     status, mime, html = served_index
     require(status == 200 and mime.split(';')[0].strip().lower() == 'text/html')
     require(hashlib.sha256(html).digest() == hashlib.sha256(expected_index).digest())
-    parser = Entrypoint()
-    parser.feed(html.decode('utf-8'))
-    require(parser.angular)
-    scripts = [path for path in parser.scripts if re.fullmatch(r'/?main[-.][A-Za-z0-9_-]+\.js', path)]
-    require(len(scripts) == 1)
+    asset_path = entry_asset(html)
     status, mime, asset = served_asset
     require(status == 200 and mime.split(';')[0].strip().lower() in ('application/javascript', 'text/javascript'))
     require(bool(asset) and hashlib.sha256(asset).digest() == hashlib.sha256(expected_asset).digest())
-    return scripts[0]
+    return asset_path
 
 
 def command(*args):
@@ -64,14 +73,11 @@ def main(base, revision):
     require(re.fullmatch(r'[0-9a-f]{40}', revision))
     parsed = urllib.parse.urlsplit(base)
     require(parsed.scheme in ('http', 'https') and parsed.netloc and not parsed.username and not parsed.password)
+    require(parsed.path in ('', '/') and not parsed.query and not parsed.fragment)
     image = command('docker', 'inspect', '--format', '{{.Config.Image}}', 'rct-web-panel-nginx').decode().strip()
     require(image == 'ghcr.io/ditekmax/rutcampustrack/web-panel-nginx:' + revision)
     expected_index = command('docker', 'exec', 'rct-web-panel-nginx', 'cat', '/usr/share/nginx/html/index.html')
-    parser = Entrypoint()
-    parser.feed(expected_index.decode('utf-8'))
-    assets = [src for src in parser.scripts if re.fullmatch(r'/?main[-.][A-Za-z0-9_-]+\.js', src)]
-    require(len(assets) == 1)
-    asset = assets[0].lstrip('/')
+    asset = entry_asset(expected_index).lstrip('/')
     expected_asset = command('docker', 'exec', 'rct-web-panel-nginx', 'cat', '/usr/share/nginx/html/' + asset)
     verify(expected_index, expected_asset, fetch(base.rstrip('/') + '/login'), fetch(base.rstrip('/') + '/' + asset))
 

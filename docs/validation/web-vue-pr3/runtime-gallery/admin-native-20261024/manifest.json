@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "kind": "real-runtime-gallery",
+  "title": "Настоящий вход ADMIN и активация семестра",
+  "functionalTestCount": 0,
+  "scope": "Two original frames from separately assessed native cases; screenshots do not add actions.",
+  "limits": [
+    "Own isolated real Auth/Academic/Gateway realm, no reference/Figma images.",
+    "Academic-only teaching fixture2029; security/browser clocks real.",
+    "Global stand health/Attendance activity and downstream async delivery NOT verified."
+  ],
+  "screenshots": [
+    {
+      "id": "WEB-ADMIN-DASHBOARD__fresh-role-home__light__1440__0421d344c",
+      "screen": "WEB-ADMIN-DASHBOARD",
+      "state": "fresh-role-home",
+      "theme": "light",
+      "width": 1440,
+      "revision": "0421d344c9697d58efc8f039b74c5bdf594c6eb4",
+      "title": "Свежий вход администратора",
+      "description": "После выбора ADMIN открыт canonical home. Часть метрик недоступна: этот кадр подтверждает вход и навигацию, без приёмки данных dashboard.",
+      "image": "screenshots/WEB-ADMIN-DASHBOARD__fresh-role-home__light__1440__0421d344c.png",
+      "pixelWidth": 1440,
+      "pixelHeight": 1038,
+      "bytes": 78425,
+      "sha256": "8021bf3ffe36b0636424b5b1204fe7cb03ec4239f3be9cacf09d7251eb322c1e",
+      "provenance": "real-runtime",
+      "syntheticFixtureData": true
+    },
+    {
+      "id": "WEB-ADMIN-SEMESTERS__active-semester-changed__light__1440__0421d344c",
+      "screen": "WEB-ADMIN-SEMESTERS",
+      "state": "active-semester-changed",
+      "theme": "light",
+      "width": 1440,
+      "revision": "0421d344c9697d58efc8f039b74c5bdf594c6eb4",
+      "title": "Семестр активирован",
+      "description": "Один настоящий activate200: новый семестр активен, предыдущий деактивирован. Независимый SQL и outbox подтверждены; общий health/async delivery не приняты.",
+      "image": "screenshots/WEB-ADMIN-SEMESTERS__active-semester-changed__light__1440__0421d344c.png",
+      "pixelWidth": 1440,
+      "pixelHeight": 1080,
+      "bytes": 71738,
+      "sha256": "f14a28ce7b880f1c3df7d80003b007e9d9e2ba428ba4010bd46628b1efe28bce",
+      "provenance": "real-runtime",
+      "syntheticFixtureData": true
+    }
+  ]
+}

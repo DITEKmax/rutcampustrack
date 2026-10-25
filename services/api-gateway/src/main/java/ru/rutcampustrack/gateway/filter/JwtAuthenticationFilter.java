@@ -367,7 +367,9 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
     }
 
     private static boolean isBootstrapAllowed(HttpMethod method, String path) {
-        return (HttpMethod.GET.equals(method) && "/api/auth/session".equals(path))
+        return ((HttpMethod.GET.equals(method) || HttpMethod.PUT.equals(method))
+                        && "/api/auth/device-preferences".equals(path))
+                || (HttpMethod.GET.equals(method) && "/api/auth/session".equals(path))
                 || (HttpMethod.PUT.equals(method) && "/api/auth/session/active-role".equals(path))
                 || (HttpMethod.GET.equals(method) && "/api/auth/sessions".equals(path))
                 || (HttpMethod.DELETE.equals(method) && path.matches("/api/auth/sessions/[^/]+"))

@@ -1,9 +1,11 @@
+import { DiagnosticRun, diagnosticHttpFailure, retainDiagnosticObservation, type DiagnosticEvent } from './diagnostic-events';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { basename, dirname, isAbsolute, relative, resolve } from 'node:path';
 import { isIP } from 'node:net';
 import type {
   FullConfig,
   FullResult,
+  Suite,
   Reporter,
   TestCase,
   TestError,
@@ -1205,7 +1207,7 @@ export function datasetHttpFailure(method: unknown, path: unknown, httpStatus: u
     return new Error('Synthetic dataset request failed');
   for (const [cause, operation] of Object.entries(datasetHttpOperations)) {
     if (method === operation.method && operation.path.test(path))
-      return new Error(`Reported synthetic dataset ${cause}: HTTP ${httpStatus}`);
+      return diagnosticHttpFailure(new Error(`Reported synthetic dataset ${cause}: HTTP ${httpStatus}`), cause, httpStatus);
   }
   return new Error('Synthetic dataset request failed');
 }
@@ -1766,8 +1768,6 @@ export function retainHeadmanCleanupFailure(
 }
 
 export const d002ReconnectObservationAnnotation = 'rct-d002-reconnect-v1';
-const d002ReconnectTitle =
-  'D002 reconnect rechecks changed grants and a late old feed cannot replace the new account';
 type D002NativeState = {
   phase: 'NOT_CALLED' | 'PENDING' | 'FULFILLED' | 'REJECTED';
   multiple: boolean;
@@ -1896,6 +1896,7 @@ export function retainD002ReconnectObservation(
   const description = JSON.stringify(closed);
   if (description.length > 2048) return;
   annotations.push({ type: d002ReconnectObservationAnnotation, description });
+  retainDiagnosticObservation();
 }
 
 const startupFixtureStages = {
@@ -2050,6 +2051,8 @@ function safeReportedFrameworkError(annotations: unknown): ReportedFrameworkErro
 }
 
 interface SafeResult {
+  caseId?: string;
+  diagnosticEvents?: DiagnosticEvent[];
   reportedFrameworkError?: ReportedFrameworkError;
   file: string;
   line: number;
@@ -2069,6 +2072,7 @@ interface SafeResult {
 
 /** Allowlist output only. Raw step titles, errors, attachments and worker output are never serialized. */
 export default class SafeReporter implements Reporter {
+  private diagnosticRun = new DiagnosticRun();
   private outputDir = '';
   private results: SafeResult[] = [];
   private runnerErrors = 0;
@@ -2085,7 +2089,8 @@ export default class SafeReporter implements Reporter {
   printsToStdio() {
     return true;
   }
-  onBegin(config: FullConfig) {
+  onBegin(config: FullConfig, suite: Suite) {
+    this.diagnosticRun.begin(suite);
     this.outputDir = config.projects[0].outputDir;
     mkdirSync(this.outputDir, { recursive: true });
   }
@@ -2124,6 +2129,10 @@ export default class SafeReporter implements Reporter {
         error.location ? [{ file: basename(error.location.file), line: error.location.line }] : [],
       ),
     };
+    const caseId = this.diagnosticRun.caseId(test);
+    const events = this.diagnosticRun.read(test, result);
+    if (caseId) { row.caseId = caseId; row.diagnosticEvents = events; }
+    if (this.diagnosticRun.invalid) this.unsafeArtifact = true;
     const transferObservation = safeTransferObservation(result.annotations);
     if (transferObservation) row.transferObservation = transferObservation;
     const identityFailure = safeOwnedContainerIdentityFailure(result.annotations);
@@ -2137,14 +2146,15 @@ export default class SafeReporter implements Reporter {
     }
     if (startupFailure && result.status !== 'passed' && result.status !== 'skipped') row.startupFailure = startupFailure;
     if (
-      test.location.file === resolve(__dirname, '../specs/mobile-real-server.spec.ts') &&
-      test.title === d002ReconnectTitle &&
+      caseId === 'D002_RECONNECT_ACCOUNT_AUTHORITY' &&
+      events.some(event => event.stageId === 'D002_RECONNECT' && event.eventCode === 'OBSERVATION') &&
       test.expectedStatus === 'passed' &&
       result.status === 'failed' &&
       result.errors.length > 0
     ) {
       const reconnect = safeD002ReconnectObservation(result.annotations);
       if (reconnect) row.d002ReconnectObservation = reconnect;
+      else this.unsafeArtifact = true;
     }
     this.results.push(row);
     // Automatic error contexts are created during worker teardown, after afterEach.
@@ -2167,6 +2177,8 @@ export default class SafeReporter implements Reporter {
   }
   async onEnd(result: FullResult) {
     if (!this.outputDir) return { status: 'failed' as const };
+    this.diagnosticRun.close();
+    if (this.diagnosticRun.invalid) this.unsafeArtifact = true;
     const status = this.unsafeArtifact ? 'failed' : result.status;
     writeFileSync(
       resolve(this.outputDir, 'safe-results.json'),

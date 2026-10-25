@@ -1,0 +1,60 @@
+{
+  "case": "PWA_TEACHER_MANUAL_CONDITIONAL_READONLY",
+  "revision": "7ef451a6cfd7f0e0134816eb4ea90ca290829668",
+  "productBase": "6219ca60a322d29921575535eccbf12efa76e304",
+  "harnessSha256": "b0fb96d1e54abb8520c1944e42ede2dddc45445fd52f15bfb0aa423825603aa0",
+  "startedAtUtc": "2026-10-25T06:58:34.309Z",
+  "finishedAtUtc": "2026-10-25T06:58:39.296Z",
+  "captureComplete": false,
+  "completed": false,
+  "syntheticApiResponses": false,
+  "boundedRosterObservation": {
+    "busy": "false",
+    "error": false,
+    "loaded": true,
+    "lessonId": 1,
+    "date": "2026-10-24",
+    "groupId": 1,
+    "subjectId": 1,
+    "lessonMatches": true,
+    "rosterCount": 7,
+    "recordPresentCount": 7,
+    "ordinaryTicketRowCount": 1,
+    "manualRowCount": 0,
+    "manualStudentIds": []
+  },
+  "investigation": {
+    "outcome": "NO_MANUAL_ROW_IN_ONE_CURRENT_KNOWN_ROSTER",
+    "candidate": {
+      "teacherId": 2,
+      "groupId": 1,
+      "subjectId": 1,
+      "assignmentId": 1,
+      "semesterId": 2,
+      "lessonId": 1,
+      "date": "2026-10-24"
+    },
+    "globalAbsenceClaimed": false,
+    "screenshots": 0,
+    "ordinaryTicketOpened": false
+  },
+  "cleanup": {
+    "method": "TECHNICAL_EXACT_CURRENT_OWN_SELF_SESSION_DELETE",
+    "nativeUiLogoutPass": false,
+    "selfDeleteForwarded": 1,
+    "status": 204,
+    "sameOldBearerStatus": 401,
+    "confirmed": true,
+    "fallbackUsed": false,
+    "intent": "RETURNED"
+  },
+  "browserClosed": true,
+  "sourceUnchanged": true,
+  "unknownHold": false,
+  "rawExit": 1,
+  "rawReceiptSha256": "ae3ea2359090d254b20a75261e95350574cff74b1511bc4adb324b2af0028ce8",
+  "pngCount": 0,
+  "pageErrorsCount": 0,
+  "blockedCount": 0,
+  "visualAccepted": false
+}

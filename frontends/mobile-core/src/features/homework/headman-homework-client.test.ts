@@ -229,7 +229,7 @@ describe('Headman Homework r2 additive boundary', () => {
           groupId: 7,
           subjectId: 88,
           semesterId: 12,
-          lessonType: 'LECTURE',
+          lessonType: 'lecture',
           date: '2026-09-29',
           lessonNumber: 2,
           startTime: '10:00',
@@ -242,6 +242,7 @@ describe('Headman Homework r2 additive boundary', () => {
     }
     const api = new HeadmanHomeworkApi({ accessToken: () => null, fetcher })
     const next = await api.nextHomeworkLesson(7, 12, 88, 'LECTURE', '2026-09-02')
+    expect(next?.lessonType).toBe('LECTURE')
     expect(next?.occurrenceRevision).toBe('9007199254740993')
     const input = {
       title: 'Задание',
@@ -263,6 +264,35 @@ describe('Headman Homework r2 additive boundary', () => {
       selectedOccurrenceId: '71',
       selectedOccurrenceRevision: '9007199254740993',
     })
+  })
+  it.each([
+    { lessonType: 'practice' },
+    { lessonType: 'seminar' },
+    { groupId: 8 },
+    { subjectId: 89 },
+    { semesterId: 13 },
+    { occurrenceId: null },
+    { occurrenceRevision: null },
+  ])('rejects a wrong type, scope or incomplete next occurrence: %j', async (override) => {
+    const api = new HeadmanHomeworkApi({
+      accessToken: () => null,
+      fetcher: async () =>
+        Response.json({
+          lessonId: 30,
+          occurrenceId: '71',
+          occurrenceRevision: '9',
+          groupId: 7,
+          subjectId: 88,
+          semesterId: 12,
+          lessonType: 'lecture',
+          date: '2026-09-29',
+          lessonNumber: 2,
+          ...override,
+        }),
+    })
+    await expect(api.nextHomeworkLesson(7, 12, 88, 'LECTURE', '2026-09-02')).rejects.toThrow(
+      'Некорректная ближайшая пара',
+    )
   })
   it('forbids DATE occurrence guards and rejects invalid or incomplete placement before transport', async () => {
     const fetcher = vi.fn()

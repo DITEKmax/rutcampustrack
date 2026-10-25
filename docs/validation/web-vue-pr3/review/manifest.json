@@ -1,0 +1,739 @@
+[
+  {
+    "path": "foundation-review-4c020f332.md",
+    "original_path": "/workspace/rct-pr3-review/foundation/review-4c020f332.md",
+    "sha256": "64739ab8a1eed898140a50abd3567631bb73f9485fad5006c96144ede269a1d8"
+  },
+  {
+    "path": "theme-mobile-review-6de6fcbca-00fc23d91.md",
+    "original_path": "/workspace/rct-pr3-review/theme-mobile/review-6de6fcbca-00fc23d91.md",
+    "sha256": "4d0da1559d7312ec84a2ed03b445c12d24ccd847e16d53cd5f4be6dc84884a35"
+  },
+  {
+    "path": "device-api-REVIEW-f92cf2ba5.md",
+    "original_path": "/workspace/rct-pr3-review/device-api/REVIEW-f92cf2ba5.md",
+    "sha256": "5fd4a0246449e5e130d4fd8b4eab4105c1cb4dfdbfa78b4e5cd319c10e2fc34e"
+  },
+  {
+    "path": "device-api-RECHECK-3c02a3241.md",
+    "original_path": "/workspace/rct-pr3-review/device-api/RECHECK-3c02a3241.md",
+    "sha256": "bad12ef0c313a7d48c6f3daa072cf1aa9b78d846604f24c7a9d2c06f351a7122"
+  },
+  {
+    "path": "web-foundation-REVIEW-36815621.md",
+    "original_path": "/workspace/rct-pr3-review/web-foundation/REVIEW-36815621.md",
+    "sha256": "842c80496ae20bb2f7c795b67984db73a5984a71e3b79f3d1614b77d8b46faae"
+  },
+  {
+    "path": "web-foundation-RECHECK-5ab473df.md",
+    "original_path": "/workspace/rct-pr3-review/web-foundation/RECHECK-5ab473df.md",
+    "sha256": "b84d4a8825447ebcf7fa02a05de98e646bec072733e885d0ac00c8ab74ed0fe5"
+  },
+  {
+    "path": "web-foundation-RECHECK-cab5b8a2.md",
+    "original_path": "/workspace/rct-pr3-review/web-foundation/RECHECK-cab5b8a2.md",
+    "sha256": "c2bc0094b17228ab41ff7ece11df21bc3460e9f40066bc18a3e102953090d568"
+  },
+  {
+    "path": "web-foundation-RECHECK-a2ef210623.md",
+    "original_path": "/workspace/rct-pr3-review/web-foundation/RECHECK-a2ef210623.md",
+    "sha256": "98487c7c1b9bbaacad82301795e8c994f0f6185185478c08c1343b462ef2b67a"
+  },
+  {
+    "path": "admin-generation-REVIEW-52eb8520.md",
+    "original_path": "/workspace/rct-pr3-review/admin-generation/REVIEW-52eb8520.md",
+    "sha256": "bc9bd08d7d84c7f72931d3cac85f34d49e66df94ef54f12cb0940a1f7d4b19d0"
+  },
+  {
+    "path": "headman-REVIEW-124334c54.md",
+    "original_path": "/workspace/rct-pr3-review/headman/REVIEW-124334c54.md",
+    "sha256": "4c2331dff74a209834cae5978950ace379c703568e423b91325d47811e3a4cfa"
+  },
+  {
+    "path": "headman-RECHECK-f0a762523.md",
+    "original_path": "/workspace/rct-pr3-review/headman/RECHECK-f0a762523.md",
+    "sha256": "d1cc5b876d4a05224949c90186a05e9e230d075bce6a2cf0bed506fed3c40a97"
+  },
+  {
+    "path": "headman-REVIEW-a6b16f3bd.md",
+    "original_path": "/workspace/rct-pr3-review/headman/REVIEW-a6b16f3bd.md",
+    "sha256": "c79d7438d38540c4799c46ea5b2b2f0c0f67fbe6ac9c6f016b4d9dd6e2025bb5"
+  },
+  {
+    "path": "teacher-REVIEW-ecdc2cec1.md",
+    "original_path": "/workspace/rct-pr3-review/teacher/REVIEW-ecdc2cec1.md",
+    "sha256": "07736815c14f4eee064d9ccb9edb1473dc5c16089d4b5a3bc969f9d5e4eb874d"
+  },
+  {
+    "path": "teacher-RECHECK-210c98202.md",
+    "original_path": "/workspace/rct-pr3-review/teacher/RECHECK-210c98202.md",
+    "sha256": "4dd19114ea52d36ea7a903ab641d25cff8d4dd5107f907a27112c49e7973f55c"
+  },
+  {
+    "path": "group-filter-REVIEW-f3c03bd81.md",
+    "original_path": "/workspace/rct-pr3-review/group-filter/REVIEW-f3c03bd81.md",
+    "sha256": "cd627bff6e1f9bc34e420f7ced5b5bc2b16aa739dbedb6070bea74ca145b016e"
+  },
+  {
+    "path": "group-filter-RECHECK-b32d47b0e.md",
+    "original_path": "/workspace/rct-pr3-review/group-filter/RECHECK-b32d47b0e.md",
+    "sha256": "05633769f6c2a6b162aebf2b90685b3a82d653e4d155f4a5aa21eb5be7d96d25"
+  },
+  {
+    "path": "teacher-RECHECK-8401bd1b9.md",
+    "original_path": "/workspace/rct-pr3-review/teacher/RECHECK-8401bd1b9.md",
+    "sha256": "9e90dfaaa0217bad2a85618da22f5b9fe59ecd2ff4fc0658344feb8d3559e252"
+  },
+  {
+    "path": "auth-shared-REVIEW-84bd6f3f7.md",
+    "original_path": "/workspace/rct-pr3-review/auth-shared/REVIEW-84bd6f3f7.md",
+    "sha256": "1928893366d9da96079816eb4987d4012f44db32eef3c0ecdadcd6353ca945cb"
+  },
+  {
+    "path": "auth-shared-RECHECK-af00bbe16.md",
+    "original_path": "/workspace/rct-pr3-review/auth-shared/RECHECK-af00bbe16.md",
+    "sha256": "45e0578683f4a26101cc6da10b6ec2c5256cb74c1ae30011e8c6206faef586cf"
+  },
+  {
+    "path": "assistant-lookup-REVIEW-950e621b0.md",
+    "original_path": "/workspace/rct-pr3-review/assistant-lookup/REVIEW-950e621b0.md",
+    "sha256": "fe43fdf6a19ae2f2b01f601c505548c5b2da2c55b040d417dc8eeffe759453dd"
+  },
+  {
+    "path": "security-REVIEW-f45b-fixture-uuid.md",
+    "original_path": "/workspace/rct-pr3-review/security/REVIEW-f45b-fixture-uuid.md",
+    "sha256": "694e684c67ca9c12b76bea4c09b83d5d5d8dfc30f2c081f074d9b4b0419b3cbe"
+  },
+  {
+    "path": "headman-REVIEW-3ffb3792f.md",
+    "original_path": "/workspace/rct-pr3-review/headman/REVIEW-3ffb3792f.md",
+    "sha256": "eb705fffff797b79da2eb61be01502db1bbbcb5b0bc517947326b88dfa7db6dc"
+  },
+  {
+    "path": "headman-RECHECK-e4cbce048.md",
+    "original_path": "/workspace/rct-pr3-review/headman/RECHECK-e4cbce048.md",
+    "sha256": "e063665ce2bf4d9a16b7307e12e4ce727e4a3c93a9e4b63002bd853129851d6c"
+  },
+  {
+    "path": "headman-RECHECK-9059d1de7.md",
+    "original_path": "/workspace/rct-pr3-review/headman/RECHECK-9059d1de7.md",
+    "sha256": "7af4db71b9e4f8a177d7a1fdaae942f75778632bed454931d9ea924e92f22fa8"
+  },
+  {
+    "path": "admin-web-REVIEW-6ddcad986.md",
+    "original_path": "/workspace/rct-pr3-review/admin-web/REVIEW-6ddcad986.md",
+    "sha256": "4e527f99badbd3993f371a6aa076208ccb36a37238f867a84e553a3af7dc4fb0"
+  },
+  {
+    "path": "admin-web-RECHECK-3d0a30225.md",
+    "original_path": "/workspace/rct-pr3-review/admin-web/RECHECK-3d0a30225.md",
+    "sha256": "5632992f8c3a0330974c53c06ef738a93d4793f4b03eff2b6088aae091d19ded"
+  },
+  {
+    "path": "notifications-map-REVIEW-5c547ccf9.md",
+    "original_path": "/workspace/rct-pr3-review/notifications-map/REVIEW-5c547ccf9.md",
+    "sha256": "fc40e77f077d3d3a16fde699ba5b22e21f232f45b0e93d863cc9c7ae76f09372"
+  },
+  {
+    "path": "notifications-map-RECHECK-85799cc5a.md",
+    "original_path": "/workspace/rct-pr3-review/notifications-map/RECHECK-85799cc5a.md",
+    "sha256": "7d106d52da1cf63d47cfa0e34d994e03d75eda4b6e5e3a50687878f44a767a19"
+  },
+  {
+    "path": "student-REVIEW-324916123.md",
+    "original_path": "/workspace/rct-pr3-review/student/REVIEW-324916123.md",
+    "sha256": "71a5e446764c8dec3dfc1cb0ab80f083138b338e25c3ca4aa929485980213af7"
+  },
+  {
+    "path": "mobile-theme-final-REVIEW-79e8fdce6.md",
+    "original_path": "/workspace/rct-pr3-review/mobile-theme-final/REVIEW-79e8fdce6.md",
+    "sha256": "52a54a7aca084666df760e1a30e0a5456209da583e0a6ef2e805287fd5c2e294"
+  },
+  {
+    "path": "student-RECHECK-757b35bdd.md",
+    "original_path": "/workspace/rct-pr3-review/student/RECHECK-757b35bdd.md",
+    "sha256": "091e2fe7ca44f4128612de9e84beadc63b879da1a867a540dd4d1bfcf61a4b6e"
+  },
+  {
+    "path": "web-foundation-REVIEW-a075cc874.md",
+    "original_path": "/workspace/rct-pr3-review/web-foundation/REVIEW-a075cc874.md",
+    "sha256": "ec81db55038d2541c806f9bb97dcb367e34ac15eaa235b7ab6aedc40433b25a7"
+  },
+  {
+    "path": "web-foundation-REVIEW-39bf0ec4d.md",
+    "original_path": "/workspace/rct-pr3-review/web-foundation/REVIEW-39bf0ec4d.md",
+    "sha256": "7a31969ff80f89a1ccaa5c6cdba27031dda00a9b85289962e790e6815bc11d52"
+  },
+  {
+    "path": "mobile-theme-final-RECHECK-09e7d20b9-1e7dca2f1.md",
+    "original_path": "/workspace/rct-pr3-review/mobile-theme-final/RECHECK-09e7d20b9-1e7dca2f1.md",
+    "sha256": "4e1980bbec5a95256797bf0a89170dcc0fefdf0b3e044a9ef393c593f44a829d"
+  },
+  {
+    "path": "student-RECHECK-3d6cf10a8.md",
+    "original_path": "/workspace/rct-pr3-review/student/RECHECK-3d6cf10a8.md",
+    "sha256": "565bc288cb0e25f279b20aa2e1561d3028bad26441bd9af779417ce3de840a1b"
+  },
+  {
+    "path": "shipping-REVIEW-4445a2082.md",
+    "original_path": "/workspace/rct-pr3-review/shipping/REVIEW-4445a2082.md",
+    "sha256": "f9080b6bb2f0d5f361768c08e0d67750b559c9258e39d3a3240c94631586e3cb"
+  },
+  {
+    "path": "security-REVIEW-3e58-test-fixtures.md",
+    "original_path": "/workspace/rct-pr3-review/security/REVIEW-3e58-test-fixtures.md",
+    "sha256": "149d7741f81d101e07e152826f7a5a0e5428218f35c6aa199386a85bd44fd99d"
+  },
+  {
+    "path": "shipping-RECHECK-947ee6dd6.md",
+    "original_path": "/workspace/rct-pr3-review/shipping/RECHECK-947ee6dd6.md",
+    "sha256": "a3e046d3d864d724b108e5f82db1614948891ee1a8ee97a7621de7475b489916"
+  },
+  {
+    "path": "shipping-RECHECK-f8239f166.md",
+    "original_path": "/workspace/rct-pr3-review/shipping/RECHECK-f8239f166.md",
+    "sha256": "b4866bdc2365c751bfcd36b5a6f8d38defa4b0f9e62a144956e6515fb20dad9c"
+  },
+  {
+    "path": "admin-web-RECHECK-eb467a329.md",
+    "original_path": "/workspace/rct-pr3-review/admin-web/RECHECK-eb467a329.md",
+    "sha256": "cd29836c77e4b8bfdf37c103430b91bdecc35a43f11550d962cf3f198dff2d26"
+  },
+  {
+    "path": "clock-lane-REVIEW-849f149b.md",
+    "original_path": "/workspace/rct-pr3-review/clock-lane/REVIEW-849f149b.md",
+    "sha256": "ed005ddc2833ce1040cc5fae52bb773e315a859b6a675b7ecf9427fc057e0a87"
+  },
+  {
+    "path": "clock-lane-RECHECK-f7ecfc35.md",
+    "original_path": "/workspace/rct-pr3-review/clock-lane/RECHECK-f7ecfc35.md",
+    "sha256": "7fbdc8af206589c11d2a6dfa506648346a3e5a2f6651ad20ad4eb8b09d166db1"
+  },
+  {
+    "path": "shipping-REVIEW-05e08a2e3.md",
+    "original_path": "/workspace/rct-pr3-review/shipping/REVIEW-05e08a2e3.md",
+    "sha256": "e36fa197eb705ccc0009f1dadc994a24eb3c070db79089e47c2a52f766b89012"
+  },
+  {
+    "path": "clock-lane-REVIEW-23d81195.md",
+    "original_path": "/workspace/rct-pr3-review/clock-lane/REVIEW-23d81195.md",
+    "sha256": "bcbe3b0707a467b006101747137127d78ba2eb57fdbb033dd2860194ac8d3cc2"
+  },
+  {
+    "path": "clock-lane-RECHECK-0b941667.md",
+    "original_path": "/workspace/rct-pr3-review/clock-lane/RECHECK-0b941667.md",
+    "sha256": "5ed1777d0a2ab57cdecaec486eb962cd32f832be4e0713270423c899e4081b6e"
+  },
+  {
+    "path": "promotion-REVIEW-ca976dad.md",
+    "original_path": "/workspace/rct-pr3-review/promotion/REVIEW-ca976dad.md",
+    "sha256": "4229df3e668db637f7d7bfca635c33529da92bb825614e93ef690aafa9e11a28"
+  },
+  {
+    "path": "shipping-REVIEW-8b8f3c7ac.md",
+    "original_path": "/workspace/rct-pr3-review/shipping/REVIEW-8b8f3c7ac.md",
+    "sha256": "c35dfc2b210fd8e4c0eccd2ebaf6528fdedc997d0a22c7989104f62b08ffc934"
+  },
+  {
+    "path": "promotion-REVIEW-bf13b7aa.md",
+    "original_path": "/workspace/rct-pr3-review/promotion/REVIEW-bf13b7aa.md",
+    "sha256": "feed0365ead699c7b2754ebe90986be9bb3ed2c45bc20d869a7f6c7acad2b050"
+  },
+  {
+    "path": "shipping-REVIEW-0d30f35ce.md",
+    "original_path": "/workspace/rct-pr3-review/shipping/REVIEW-0d30f35ce.md",
+    "sha256": "f16937614a973ffe7e95345f1fa6f7c7b2d9fd604a37a2f68bb2943778548dcd"
+  },
+  {
+    "path": "shipping-RECHECK-6ff8874ad.md",
+    "original_path": "/workspace/rct-pr3-review/shipping/RECHECK-6ff8874ad.md",
+    "sha256": "81452314d8325d0ffbb2d0454a4be098c16b2303fc9bbaf4b16cb689f7645899"
+  },
+  {
+    "path": "shipping-REVIEW-e7bb0a7fd.md",
+    "original_path": "/workspace/rct-pr3-review/shipping/REVIEW-e7bb0a7fd.md",
+    "sha256": "b1b06876b0f48a32291228cd227e784fa53beb797f6d7fab189946e2f8aae561"
+  },
+  {
+    "path": "student-trend-ROOT-REVIEW-a1a6bd944.md",
+    "original_path": "Root independent diff and image review, product author teacher_web",
+    "sha256": "7dae2cb1a281247febe37d53b3b20620a04bb225b5edc28d14eafc688ea68a5c"
+  },
+  {
+    "path": "security-REVIEW-native-geo-intent-digest.md",
+    "original_path": "/workspace/rct-pr3-review/security/REVIEW-native-geo-intent-digest.md",
+    "sha256": "197be2619ea80f456afe641bfce9c483cc9bd6daedfa6856adecf27355362816"
+  },
+  {
+    "path": "shipping-REVIEW-bb7074fac-paired.md",
+    "original_path": "/workspace/rct-pr3-review/shipping/REVIEW-bb7074fac-paired.md",
+    "sha256": "fd96f688c93c0f082b0bfbffb666e1f5836428aef75e6bca65a36d4ad27aca9c"
+  },
+  {
+    "path": "shipping-RECHECK-eb6826904.md",
+    "original_path": "/workspace/rct-pr3-review/shipping/RECHECK-eb6826904.md",
+    "sha256": "eefe6d7be319a73e27a829592b0f97aa3198a2cfbcd74f13d0c0cf77baafef5f"
+  },
+  {
+    "path": "mobile-png-ROOT-REVIEW-4042d1878.md",
+    "original_path": "Root independent frozen-blob standard-library CRC verification",
+    "sha256": "2950316c65f4e635cca85ff1bb592db6ee21997141270b59cc3480de23cd3e4b"
+  },
+  {
+    "path": "map-REVIEW-0100dd7c.md",
+    "original_path": "/workspace/rct-pr3-review/map-whole-delete/REVIEW-0100dd7c.md",
+    "sha256": "d6ff36891975d2aa7c45ac6ee451c92ea6d8bef161de13ce41c9ad1ec2491ed9",
+    "originalSha256": "d6ff36891975d2aa7c45ac6ee451c92ea6d8bef161de13ce41c9ad1ec2491ed9"
+  },
+  {
+    "path": "map-RECHECK-6839fa54c.md",
+    "original_path": "/workspace/rct-pr3-review/map-whole-delete/RECHECK-6839fa54c.md",
+    "sha256": "ac97f47cec5f3b31d3646bf799d3c69d393e02c282cdbabbf3f21ef671949f48",
+    "originalSha256": "ac97f47cec5f3b31d3646bf799d3c69d393e02c282cdbabbf3f21ef671949f48"
+  },
+  {
+    "path": "map-RECHECK-1fe1588d.md",
+    "original_path": "/workspace/rct-pr3-review/map-whole-delete/RECHECK-1fe1588d.md",
+    "sha256": "204f0bc276f854520aa91fe71d00a75b245ee0d42fa065a551e939cc2d950aff",
+    "originalSha256": "204f0bc276f854520aa91fe71d00a75b245ee0d42fa065a551e939cc2d950aff"
+  },
+  {
+    "path": "map-web-REVIEW-a36ab626-85d801b9.md",
+    "original_path": "/workspace/rct-pr3-review/web-map/REVIEW-a36ab626-85d801b9.md",
+    "sha256": "22181e607e43a0e1118a57baf0164a02829dcc652c81971bf777447ff74d40f0",
+    "originalSha256": "22181e607e43a0e1118a57baf0164a02829dcc652c81971bf777447ff74d40f0"
+  },
+  {
+    "path": "publication-REVIEW-promotion-map-c3c08.md",
+    "original_path": "/workspace/rct-pr3-review/publication/REVIEW-promotion-map-c3c08.md",
+    "sha256": "7a862bc60f395afd78614557d1281937458887988f922e99bcabc8b0b54d8add",
+    "originalSha256": "7a862bc60f395afd78614557d1281937458887988f922e99bcabc8b0b54d8add"
+  },
+  {
+    "path": "release-inputs-REVIEW-429a3a270.md",
+    "original_path": "/workspace/rct-pr3-review/release-inputs/REVIEW-429a3a270.md",
+    "sha256": "7e8fdf3ae925896a869358c9caf2534a3f8000f4424e52dd753ca5f8b5c4adab",
+    "originalSha256": "7e8fdf3ae925896a869358c9caf2534a3f8000f4424e52dd753ca5f8b5c4adab"
+  },
+  {
+    "path": "release-inputs-RECHECK-469ec5eca.md",
+    "original_path": "/workspace/rct-pr3-review/release-inputs/RECHECK-469ec5eca.md",
+    "sha256": "bd70c44a2d178cc54710139b3cb70c6974c48448030bc655f2d41b2b59c104c8",
+    "originalSha256": "bd70c44a2d178cc54710139b3cb70c6974c48448030bc655f2d41b2b59c104c8"
+  },
+  {
+    "path": "isolated-admin-RECHECK-727506cd.md",
+    "original_path": "/workspace/rct-pr3-review/admin-isolated/RECHECK-727506cd.md",
+    "sha256": "e57e3e654aac56978d8638c617a1a76608b8a1fc1aea8122426ba3e8e31f0946"
+  },
+  {
+    "path": "isolated-admin-RECHECK-e37cf79d.md",
+    "original_path": "/workspace/rct-pr3-review/admin-isolated/RECHECK-e37cf79d.md",
+    "sha256": "4df0d43a22ccc1f718ee311844eb3abc69e6f9d9fb221e446c218cb4db5d1a58"
+  },
+  {
+    "path": "isolated-admin-REVIEW-case-dependency-qualification-20261024.md",
+    "original_path": "/workspace/rct-pr3-review/admin-isolated/REVIEW-case-dependency-qualification-20261024.md",
+    "sha256": "62f4a52d227c0a6d264ecf5e51e3ce8b5bdbb1a7de5ce6996d839b0bcfbedfeb"
+  },
+  {
+    "path": "isolated-admin-REVIEW-derived-clock-cleanup-c291e82b.md",
+    "original_path": "/workspace/rct-pr3-review/admin-isolated/REVIEW-derived-clock-cleanup-c291e82b.md",
+    "sha256": "92585245c7d132fd6c841405f28fc672106e949385b06b29d34a016c982e3998"
+  },
+  {
+    "path": "isolated-admin-REVIEW-prep-24ec16aa.md",
+    "original_path": "/workspace/rct-pr3-review/admin-isolated/REVIEW-prep-24ec16aa.md",
+    "sha256": "f42695938282c9f800d1624d0e09620b2bf9fe10660244ee00eaf589099def46"
+  },
+  {
+    "path": "isolated-admin-REVIEW-transition-0b098c61.md",
+    "original_path": "/workspace/rct-pr3-review/admin-isolated/REVIEW-transition-0b098c61.md",
+    "sha256": "f307d04738ede8678509ebeeb7ec3c849b5e597a2b38bc4697f7a5e0d25b603b"
+  },
+  {
+    "path": "native-admin-RECHECK-repin-00a74bde.md",
+    "original_path": "/workspace/rct-pr3-review/admin-native/RECHECK-repin-00a74bde.md",
+    "sha256": "8be47dd560817690f4a6c613ef7eec671084e7e90df7e43cf2bb07be812f69e2"
+  },
+  {
+    "path": "native-admin-RECHECK-repin-6e89b6c8.md",
+    "original_path": "/workspace/rct-pr3-review/admin-native/RECHECK-repin-6e89b6c8.md",
+    "sha256": "a5d41ecbe0af29a57612feb9cfb1dc25181ea78cdaa55ad4a9337783ae719117"
+  },
+  {
+    "path": "native-admin-RECHECK-role-binding-4d8ab400.md",
+    "original_path": "/workspace/rct-pr3-review/admin-native/RECHECK-role-binding-4d8ab400.md",
+    "sha256": "b9e6bc9d7d858ee7cfd99546afe7d7d562d5ec61967c4262f8f59b0d1379f4ff"
+  },
+  {
+    "path": "native-admin-RECHECK-selector-c75be9e4.md",
+    "original_path": "/workspace/rct-pr3-review/admin-native/RECHECK-selector-c75be9e4.md",
+    "sha256": "8a66ff7459d3a2ec30927c40ae4d5ac9e759b50a963f2ed2bb76da3f92607e77"
+  },
+  {
+    "path": "native-admin-REVIEW-prep-c364616e.md",
+    "original_path": "/workspace/rct-pr3-review/admin-native/REVIEW-prep-c364616e.md",
+    "sha256": "bf45555fdc5c183668ff14ea44146b8b7be6ebab8be67ba8980841586c644f54"
+  },
+  {
+    "path": "fresh-role-home-RECHECK-756d412f1.md",
+    "original_path": "/workspace/rct-pr3-review/fresh-role-home/RECHECK-756d412f1.md",
+    "sha256": "5b117d80278522f9fef308404ea2af856fb927cd0b5c1c020fb0e56321d2fa1a"
+  },
+  {
+    "path": "fresh-role-home-REVIEW-22972df63.md",
+    "original_path": "/workspace/rct-pr3-review/fresh-role-home/REVIEW-22972df63.md",
+    "sha256": "fbb258eb279e743e4b7cdcfddc7432b2e1e8316624ac62cb2c587f22650f2c79"
+  },
+  {
+    "path": "fresh-role-home-REVIEW-actual-role-semester-0421.md",
+    "original_path": "/workspace/rct-pr3-review/fresh-role-home/REVIEW-actual-role-semester-0421.md",
+    "sha256": "d75800cea160e5a4455398d0806f58f278e4f0255f54a80b3b707ca377d3178f"
+  },
+  {
+    "path": "role-sem-publication-0421.md",
+    "original_path": "/workspace/rct-pr3-review/role-sem-publication-0421.md",
+    "sha256": "61fea067fbb771524f21d23a8e4b9742335dfacbfb5cf2ddeede966e7c005740"
+  },
+  {
+    "path": "role-sem-publication-0421-RECHECK.md",
+    "original_path": "/workspace/rct-pr3-review/role-sem-publication-0421-RECHECK.md",
+    "sha256": "93b93375e158abd5f946e9ad729d0dd2ee756d9ba049f583e78fe3ccb69ffc82"
+  },
+  {
+    "path": "auth-map-QUALIFY-v4-guest-refusal.md",
+    "original_path": "/workspace/rct-pr3-review/auth-map-confirmation/QUALIFY-v4-guest-refusal.md",
+    "sha256": "eeec7a214648ae9d155de281734b73658cf264b87f66a2e3d4e8879701f855cb"
+  },
+  {
+    "path": "group-final-REVIEW-source-v3.md",
+    "original_path": "/workspace/rct-pr3-review/group-final-delete/REVIEW-source-v3.md",
+    "sha256": "1739ca11981d36c58c5fcca190d22c0133de26ee46d18a5b44769aedba51e309"
+  },
+  {
+    "path": "group-final-RECHECK-source-v5.md",
+    "original_path": "/workspace/rct-pr3-review/group-final-delete/RECHECK-source-v5.md",
+    "sha256": "6d53099b47c64814d86b57617304c63bfda5170113248798a373d4cb497dc42a"
+  },
+  {
+    "path": "group-final-RECHECK-source-v6.md",
+    "original_path": "/workspace/rct-pr3-review/group-final-delete/RECHECK-source-v6.md",
+    "sha256": "3a1a33945f68bbf225113c839b8c4b040df5ee2cf24951b42ea292cbe43305dc"
+  },
+  {
+    "path": "group-final-web-REVIEW-ffc986256-38aa0211.md",
+    "original_path": "/workspace/rct-pr3-review/group-final-web/REVIEW-ffc986256-38aa0211.md",
+    "sha256": "fcf9103778fd89529652266ab19b72aa5addc929ba3fcc7d41991a9675fc45fb"
+  },
+  {
+    "path": "group-final-web-RECHECK-3f7d4744a-a087458e5.md",
+    "original_path": "/workspace/rct-pr3-review/group-final-web/RECHECK-3f7d4744a-a087458e5.md",
+    "sha256": "b1f2c11dbf623967f49d780b3793c68dfbec28062a5ce7d2438c19623538f25e"
+  },
+  {
+    "path": "group-final-web-RECHECK-ae54606df-f67db1fac.md",
+    "original_path": "/workspace/rct-pr3-review/group-final-web/RECHECK-ae54606df-f67db1fac.md",
+    "sha256": "384b54b0e938558fd5edea00a38e1e876205cf5fb6fe3b79dc85783bdd2815ae"
+  },
+  {
+    "path": "admin-users-RECHECK-c5a5897b.md",
+    "original_path": "/workspace/rct-pr3-review/admin-users-unknown/RECHECK-c5a5897b.md",
+    "sha256": "b4b5f883146e96bf98378c44c577b51625ed593065ee08ec0ce89f2c373ce9d3"
+  },
+  {
+    "path": "admin-users-REVIEW-remaining-e70c8112.md",
+    "original_path": "/workspace/rct-pr3-review/admin-users-unknown/REVIEW-remaining-e70c8112.md",
+    "sha256": "db0b5cabfb62726e7d63959fb79a07596eda5540781571af09ddf8d112e36165"
+  },
+  {
+    "path": "admin-visual-publication-REVIEW-77f-staged.md",
+    "original_path": "/workspace/rct-pr3-review/admin-visual-publication/REVIEW-77f-staged.md",
+    "sha256": "755ac2f99b3bebc12bbf1712b70fbc27cecbad8fc51c67b8c00712f2dff741c1"
+  },
+  {
+    "path": "admin-visual-publication-RECHECK-77f-staged.md",
+    "original_path": "/workspace/rct-pr3-review/admin-visual-publication/RECHECK-77f-staged.md",
+    "sha256": "ce9a0c9a64d97e1e087b76432ff36b634ecc1a236a59e40f21ffd42b653088f7"
+  },
+  {
+    "path": "recovery-RECHECK-publication-projection.md",
+    "original_path": "/workspace/rct-pr3-runtime/restore-20261024/publication-projection-recheck.md",
+    "sha256": "e5378ecf56f968b781205656557e32c5a60d32fc960b29b6a38cd87e6a46f96b"
+  },
+  {
+    "path": "self-credential-REVIEW-c586bd04.md",
+    "original_path": "/workspace/rct-pr3-review/self-credential-handoff/REVIEW-c586bd04.md",
+    "sha256": "ee384a33f9e3abfcc4d9cbfc077633c8ae9aa3048685efa0f5e6cdb26dec391a"
+  },
+  {
+    "path": "limited-v2-CAUSE-qualification.md",
+    "original_path": "/workspace/rct-pr3-review/admin-access-effective/QUALIFY-actual-v2-withdrawal.md",
+    "sha256": "d77f1934e5b4984da2c921843760110106aaf1d65ddafdcea085af0ebb8d437b"
+  },
+  {
+    "path": "self-credential-native-REVIEW-a1329d5a.md",
+    "original_path": "/workspace/rct-pr3-review/self-credential-handoff/REVIEW-native-a1329d5a.md",
+    "sha256": "73fd506ff30bb14166f7c1e85720e4a18a0f012f76edf2dcf735b7a419d3b759"
+  },
+  {
+    "path": "self-credential-native-RECHECK-d89694a6.md",
+    "original_path": "/workspace/rct-pr3-review/self-credential-handoff/RECHECK-native-d89694a6.md",
+    "sha256": "fd04e3268d1b704a03324f547e09fdebe382b42d21c507f415a22c40dd979018"
+  },
+  {
+    "path": "authority-REVIEW-2d339832.md",
+    "original_path": "/workspace/rct-pr3-review/admin-access-effective/REVIEW-authority-2d339832.md",
+    "sha256": "56f5316bb07caf747a4129b552b9e331758c8cbe64cd34cfae1ff9b0a7583d07"
+  },
+  {
+    "path": "group-final-RECHECK-source-v10.md",
+    "original_path": "/workspace/rct-pr3-review/group-final-delete/RECHECK-source-v10.md",
+    "sha256": "3e77756b682d745c298a5e0920b67b2e9e7a875ced0bb11957d2046ce1398dcb"
+  },
+  {
+    "path": "limited-v3-QUALIFY-c653.md",
+    "original_path": "/workspace/rct-pr3-review/admin-access-effective/QUALIFY-actual-v3-c653.md",
+    "sha256": "b53f172c756b9d8aeb23bafc81e1582531c829b3cdefce95954b74ba3ce460e1"
+  },
+  {
+    "path": "limited-v3-REVIEW-1fb560dc.md",
+    "original_path": "/workspace/rct-pr3-review/admin-access-effective/REVIEW-v3-1fb560dc.md",
+    "sha256": "ee681cd45aafce2ba55d1ce4cb01cf90c306c183be51a1f65d426bb247dd6abf"
+  },
+  {
+    "path": "limited-v3-RECHECK-c65322d6.md",
+    "original_path": "/workspace/rct-pr3-review/admin-access-effective/RECHECK-v3-c65322d6.md",
+    "sha256": "e3cb7452a8b41c52ce1495e5aaee68246b83f952977c7f5b9c2fce5ab90b32fa"
+  },
+  {
+    "path": "group-web-retirement-REVIEW-3e174d37.md",
+    "original_path": "/workspace/rct-pr3-review/group-final-web/REVIEW-retirement-3e174d37.md",
+    "sha256": "1ed9afaa649158becb8ae8344b7c9daaaf55cab3d01203070d1d0cceb9822257"
+  },
+  {
+    "path": "group-live-GAP-e715.md",
+    "original_path": "/workspace/rct-pr3-review/group-final-web/QUALIFY-group-idle-withdrawal-e715.md",
+    "sha256": "b7bb1b46a6d3ad90f43fe4740c1a4146b6728cfffe22661693265986b3fe3603"
+  },
+  {
+    "path": "group-live-REVIEW-84b66187.md",
+    "original_path": "/workspace/rct-pr3-review/group-live-delivery/REVIEW-84b66187.md",
+    "sha256": "2ecd7856f49dc0217a17cbecf47ba22b568a41b7a0c0767094a7977bc80178e1"
+  },
+  {
+    "path": "group-live-RECHECK-8e83a2d9.md",
+    "original_path": "/workspace/rct-pr3-review/group-live-delivery/RECHECK-8e83a2d9.md",
+    "sha256": "a02c5214bd7ecc7fd2bdbf8c46d277e884dc52ef7f2c3af086b89eb95935551a"
+  },
+  {
+    "path": "profile-loading-REVIEW-c35c5d11.md",
+    "original_path": "/workspace/rct-pr3-review/profile-loading/REVIEW-c35c5d11.md",
+    "sha256": "2ccef8123b0ea4c749fc72bb733cfeb1378a68e5f2665b02290a8b0f70382b40"
+  },
+  {
+    "path": "group-live-QUALIFY-old-jar-schema.md",
+    "original_path": "/workspace/rct-pr3-runtime/group-live-delivery-20261024/QUALIFY-old-jar-group-event-schema.md",
+    "sha256": "7b417bb04c8671b9f6b507f0d34f4985645bcd697b20dc79e1455981cae696be"
+  },
+  {
+    "path": "profile-after-REVIEW.md",
+    "original_path": "/workspace/rct-pr3-review/profile-loading/REVIEW-after-harness.md",
+    "sha256": "ee0e30bd2e64b409cdb69136e282c05561815477f265345288462546aeb0b775"
+  },
+  {
+    "path": "profile-after-RECHECK-8b38.md",
+    "original_path": "/workspace/rct-pr3-review/profile-loading/RECHECK-after-harness-8b38.md",
+    "sha256": "eb05220a705cd50b025abb3d3235e16033ff70fc60062b09c7a6732856282bba"
+  },
+  {
+    "path": "profile3-cleanup-REVIEW.md",
+    "original_path": "/workspace/rct-pr3-review/profile-loading/REVIEW-profile3-own-cleanup.md",
+    "sha256": "ff06a6a443d698f0844241234d7d6f1fed12b4c3efaf1c8dc8f5d5a45d04ee50"
+  },
+  {
+    "path": "profile3-cleanup-RECHECK-3f39.md",
+    "original_path": "/workspace/rct-pr3-review/profile-loading/RECHECK-profile3-own-cleanup-3f39.md",
+    "sha256": "4522ca3c0d36c9dc3d5fb0621cb11a84b8e4a5d48d0810b945f3b8b489c2e9ac"
+  },
+  {
+    "path": "teacher2-cleanup-RECHECK-2943.md",
+    "original_path": "/workspace/rct-pr3-review/profile-loading/RECHECK-teacher2-cleanup-2943.md",
+    "sha256": "a0837f983331ae1ba587c73044c26eefc6aa5d6e8e4f83ade01bcf6b0c1ac07c"
+  },
+  {
+    "path": "teacher-journal-harness-REVIEW-d4589d5f.md",
+    "original_path": "/workspace/rct-pr3-review/teacher-journal-visual/REVIEW-d4589d5f.md",
+    "sha256": "d1c5f14cbf1cc8f6a04fbe20f1f5a237195389c2f7213ef046130ec2e1f4ad52"
+  },
+  {
+    "path": "teacher-journal-harness-RECHECK-392cd0ce.md",
+    "original_path": "/workspace/rct-pr3-review/teacher-journal-visual/RECHECK-392cd0ce.md",
+    "sha256": "191f2e257c52f5f723b47c0247e8e257bf0d97c6bd6793d18b96fbac52f8861d"
+  },
+  {
+    "path": "group-runtime-REVIEW-aaa98662.md",
+    "original_path": "/workspace/rct-pr3-review/group-final-runtime/REVIEW-aaa98662.md",
+    "sha256": "e2dc2f5b3b65bdafc4f55ca38851033ea6997a44de7f6acd21e7711c63e26e08"
+  },
+  {
+    "path": "group-runtime-RECHECK-180fecc3.md",
+    "original_path": "/workspace/rct-pr3-review/group-final-runtime/RECHECK-180fecc3.md",
+    "sha256": "78f650b873080b15f6a8980225c4fdf918bfcd993c5077eefd8dc7506ceabfa8"
+  },
+  {
+    "path": "journal-state-REVIEW-98166cf7.md",
+    "original_path": "/workspace/rct-pr3-review/journal-state/REVIEW-98166cf7.md",
+    "sha256": "53ffdc0ea9204c581d234440553a7679fcf4f5d56dc57349c27d5c6d2f81d3e4"
+  },
+  {
+    "path": "teacher-live-REVIEW-58e7314f.md",
+    "original_path": "/workspace/rct-pr3-review/teacher-live-focus/REVIEW-58e7314f.md",
+    "sha256": "e68d73cbc1de9b4d5df041783ca16593ebe50a52ac0907ac7d4046fc7ce6dd36"
+  },
+  {
+    "path": "journal-state-RECHECK-2d6bbe27.md",
+    "original_path": "/workspace/rct-pr3-review/journal-state/RECHECK-2d6bbe27.md",
+    "sha256": "c5750b710848be3c58b42abfb0062cb20b85f646d3ecb60777a6703f7bb7b848"
+  },
+  {
+    "path": "teacher-journal-after4-REVIEW-6ff3233f.md",
+    "original_path": "/workspace/rct-pr3-review/teacher-journal-visual/REVIEW-after4-6ff3233f.md",
+    "sha256": "fe13c90466fac788e30ade45c4ce40996c0cfd4aa635b8c206a4d6e9229f90ab"
+  },
+  {
+    "path": "group-cohort-REVIEW-5c735363.md",
+    "original_path": "/workspace/rct-pr3-review/group-final-cohort/REVIEW-5c735363.md",
+    "sha256": "93a606c4eb9c65e3477527b21dc29f536ea1431a76c8bff16913eb492e6cae01"
+  },
+  {
+    "path": "group-cohort-RECHECK-a23d3155.md",
+    "original_path": "/workspace/rct-pr3-review/group-final-cohort/RECHECK-a23d3155.md",
+    "sha256": "fea5e9f8d6c1ec67e666370507d0319e5ee37cda9c8c57557392668540058b9a"
+  },
+  {
+    "path": "student-selection-REVIEW-9221b33a.md",
+    "original_path": "/workspace/rct-pr3-review/student-request-selection/REVIEW-9221b33a.md",
+    "sha256": "1614087028b6e0fd70be954c08354b6890ba8d1bca3d4fd8babbe1e0a574a71d"
+  },
+  {
+    "path": "teacher-live-RECHECK-fb458946.md",
+    "original_path": "/workspace/rct-pr3-review/teacher-live-focus/RECHECK-fb458946.md",
+    "sha256": "ccb806c0d4151d2425aa22bd5fef732aa6f2901e4d3026adcc706b1ae7dead49"
+  },
+  {
+    "path": "group-final-cohort-bindings-RECHECK-57e2d8f8.md",
+    "original_path": "/workspace/rct-pr3-review/group-final-cohort/RECHECK-57e2d8f8-bindings.md",
+    "sha256": "738e744a0f0a04f0c6d73c1e69681e44a763dd91f97cb1ba490c3592f46dc907"
+  },
+  {
+    "path": "host-logout-source-REVIEW-fed1d627.md",
+    "original_path": "/workspace/rct-pr3-review/host-logout-polish/REVIEW-fed1d627.md",
+    "sha256": "2901e551f74721e57f14d352a71a53f2bc1b022b7e6022a02307938793a98858"
+  },
+  {
+    "path": "teacher-lesson-manual-REVIEW-c4c7aba1.md",
+    "original_path": "/workspace/rct-pr3-review/teacher-lesson-manual/REVIEW-c4c7aba1.md",
+    "sha256": "91e1732c24c10a441fcc7b3ad39e6abe3bed0a1e99189cb3b3b72be24e285311"
+  },
+  {
+    "path": "web-theme-lifecycle-REVIEW-e3063ba5.md",
+    "original_path": "/workspace/rct-pr3-review/web-theme-lifecycle/REVIEW-e3063ba5.md",
+    "sha256": "643b635a8b22b8597935a7adc6cc9209e456fc8bfb61e4963b1fe36899b35272"
+  },
+  {
+    "path": "web-theme-lifecycle-RECHECK-0583ee11.md",
+    "original_path": "/workspace/rct-pr3-review/web-theme-lifecycle/RECHECK-0583ee11.md",
+    "sha256": "5d2b9ed5134c91c972cb6b89e7ac13e49b1c8179c1a3927aa68200fe44404736"
+  },
+  {
+    "path": "web-theme-lifecycle-ASSESS-0583-actual-transport.md",
+    "original_path": "/workspace/rct-pr3-review/web-theme-lifecycle/ASSESS-0583-actual-transport.md",
+    "sha256": "4f29ad97bbdc95e8caaa9dc420111d2f4eb03d29779e646978f9c898076a2e70"
+  },
+  {
+    "path": "web-theme-suffix-RECHECK-6b82cd37.md",
+    "original_path": "/workspace/rct-pr3-review/web-theme-lifecycle/RECHECK-SUFFIX-6b82cd37.md",
+    "sha256": "883226eb958d815190d39a6ff0ec9844e4dbd812c275b35952397da5872c6bb0"
+  },
+  {
+    "path": "web-theme-suffix-RECHECK-e38e5e34.md",
+    "original_path": "/workspace/rct-pr3-review/web-theme-lifecycle/RECHECK-SUFFIX-e38e5e34.md",
+    "sha256": "4cdd3a8ee18a9e260bdcb70e8be427c896586fea2d295c1da044b4f824bafac1"
+  },
+  {
+    "path": "student-owner-source-REVIEW-a7f9d936.md",
+    "original_path": "/workspace/rct-pr3-review/student-owner-cancellation/REVIEW-a7f9d936.md",
+    "sha256": "539e7e9974bfd57645de1e213f6905158461c5cf2e238f8556b1808432672dc7"
+  },
+  {
+    "path": "student-owner-after-PREP-REVIEW-fe795293.md",
+    "original_path": "/workspace/rct-pr3-review/student-owner-cancellation/AFTER-PREP-REVIEW-fe795293.md",
+    "sha256": "d3c6909514dc038d7fc8ccdcd98da4abdfdfcb7cd709f880382bc25f6122a08a"
+  },
+  {
+    "path": "student-owner-after-ASSESS-fe795.md",
+    "original_path": "/workspace/rct-pr3-review/student-owner-cancellation/ASSESS-fe795-terminal-observation.md",
+    "sha256": "1b626baa514907f79b69a02222648df7a0f098c78de8c7776b2ab51f56087824"
+  },
+  {
+    "path": "student-owner-v2-PREP-RECHECK-b8c93953.md",
+    "original_path": "/workspace/rct-pr3-review/student-owner-cancellation/AFTER-PREP-RECHECK-v2-b8c93953.md",
+    "sha256": "94c4d49fb8e33d5e79a5494b6a5aa176862071404d94adac8f2534bbc75d1020"
+  },
+  {
+    "path": "headman-history-PREP-REVIEW-3bbc9cd5.md",
+    "original_path": "/workspace/rct-pr3-review/headman-lesson-actions/PREP-REVIEW-3bbc9cd5.md",
+    "sha256": "8c289f3ab89fada65f83986d4f05e5cb190aacb718625db7a9290e394c9e0c8c"
+  },
+  {
+    "path": "headman-history-v2-ROOT-RECHECK-558073fd.json",
+    "original_path": "/workspace/rct-pr3-review/headman-lesson-actions/PREP-v2-ROOT-RECHECK-558073fd.json",
+    "sha256": "3076937fccdafe6c613a2d904d2e253cbcf28e409e38af0ee0820c01949863bc"
+  },
+  {
+    "path": "headman-history-source-REVIEW-c6b9e43f.md",
+    "original_path": "/workspace/rct-pr3-review/headman-history-polish/REVIEW-c6b9e43f.md",
+    "sha256": "8c5123ae3c6d6221856c32c9fa7424f9350d070755036a5e23f4dc64dac7f485"
+  },
+  {
+    "path": "headman-history-AFTER-ROOT-RECHECK-92184719.json",
+    "original_path": "/workspace/rct-pr3-review/headman-history-polish/AFTER-PREP-ROOT-RECHECK-92184719.json",
+    "sha256": "a2bab3cc7bd137facc3e215bc12e42a450bfbf9152b615c4020d958f4e26ced3"
+  },
+  {
+    "path": "teacher-excuse-STRUCTURAL-b34db64f.md",
+    "original_path": "/workspace/rct-pr3-review/teacher-excuse-readonly/STRUCTURAL-REVIEW-b34db64f.md",
+    "sha256": "6fe7aafd85518e0707fb4f21487ea1c98f8bd1949a0feefd959bf5b45834f452"
+  },
+  {
+    "path": "teacher-excuse-BINDING-00f3f39d.md",
+    "original_path": "/workspace/rct-pr3-review/teacher-excuse-readonly/RECHECK-BINDING-00f3f39d.md",
+    "sha256": "4ba155c81cfc8ddf45b3ab9d8413d6e5cd61753e4c9761579639e65ef2fa654e"
+  },
+  {
+    "path": "late-checkin-PREP-REVIEW-0f841e26.md",
+    "original_path": "/workspace/rct-pr3-review/late-checkin-readonly/PREP-REVIEW-0f841e26.md",
+    "sha256": "3cfe79f6b8a4093611f76a2461e9ffa4ee64f8495a9324128f55050c7e6a2819"
+  },
+  {
+    "path": "teacher-meta-REVIEW-9e547115.md",
+    "original_path": "/workspace/rct-pr3-review/teacher-lesson-meta-polish/REVIEW-9e547115.md",
+    "sha256": "445ae901093f712aac57633344d31837ae3765283869ce59209d45b66368ef52"
+  },
+  {
+    "path": "teacher-meta-AFTER-STRUCTURAL-aa874849.md",
+    "original_path": "/workspace/rct-pr3-review/teacher-lesson-meta-polish/AFTER-PREP-STRUCTURAL-aa874849.md",
+    "sha256": "32b496c8a2da4fc6965521a373b8f6cb246768b3e5b814a4d6d80c526bb80f23"
+  },
+  {
+    "path": "teacher-meta-AFTER-BINDING-ae05199b.md",
+    "original_path": "/workspace/rct-pr3-review/teacher-lesson-meta-polish/AFTER-PREP-RECHECK-ae05199b.md",
+    "sha256": "a5a19bd80cf0dc344981984322cf19beadd8f2f6548bd012cd2427af7e70c4ae"
+  },
+  {
+    "path": "teacher-meta-AFTER-NOBACK-da0d114c.md",
+    "original_path": "/workspace/rct-pr3-review/teacher-lesson-meta-polish/AFTER-PREP-RECHECK-da0d114c.md",
+    "sha256": "d707c1631572944958a11c7ccfd636398f49ec4da34acb4aa27c7505d84d38d1"
+  }
+]

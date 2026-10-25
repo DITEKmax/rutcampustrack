@@ -46,8 +46,8 @@ public final class AuthDatabaseFixture {
                         + " TO rct_auth_runtime");
         jdbc.execute(
                 "GRANT DELETE ON"
-                    + " auth_outbox,password_reset_tokens,qr_login_challenges,qr_login_issuers TO"
-                    + " rct_auth_runtime");
+                    + " auth_outbox,password_reset_tokens,qr_login_challenges,qr_login_issuers,auth_device_preferences,user_role_grants"
+                    + " TO rct_auth_runtime");
     }
 
     public static long identity(JdbcTemplate jdbc, String login, Instant time) {

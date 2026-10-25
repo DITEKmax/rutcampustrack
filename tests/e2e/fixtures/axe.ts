@@ -1,4 +1,4 @@
-import { Page } from '@playwright/test';
+import { Page, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 
 /**
@@ -9,11 +9,11 @@ import AxeBuilder from '@axe-core/playwright';
  * NEW-110 baseline установлена в M07). MODERATE/MINOR не блокируют
  * CI — фиксируются в `docs/product/a11y-checklist.md` для следующего pass'а.
  *
- * Scope per call site: page.locator('main') — избегаем axe-scan
- * на Angular router-outlet'ы, которые ведут себя странно (false
- * positives на aria-hidden элементах).
+ * Scope is the current Vue main landmark, shared by guest and admitted shells.
+ * A missing/ambiguous landmark must fail instead of silently auditing another SPA.
  */
-export async function assertNoA11yCriticalOrSerious(page: Page, scope = 'main'): Promise<void> {
+export async function assertNoA11yCriticalOrSerious(page: Page, scope = 'main#main'): Promise<void> {
+  await expect(page.locator(scope)).toHaveCount(1);
   const results = await new AxeBuilder({ page })
     .include(scope)
     .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])

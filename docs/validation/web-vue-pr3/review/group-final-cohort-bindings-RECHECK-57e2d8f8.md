@@ -1,0 +1,25 @@
+# Narrow SOURCE-BINDING recheck — 57e2d8f8
+
+**PASS в scope source-binding-only delta. Blocking findings не обнаружены.** Принятый logic review [RECHECK-a23d3155.md](RECHECK-a23d3155.md) переиспользован; full review, logic tests и actual runtime acceptance не повторялись и не заявляются.
+
+Проверены публичные источники `/workspace/rct-pr3-runtime/group-final-native-cohort-20261024` против сохранённого `reviewed-a23d3155/`, точный Root `85c068210262b611f6f98d18fb9d7bdd8cecea95` и унаследованные публичные pins v3. Наблюдаемый результат этого review — финальный driver связан с принятыми исходниками; UI-delete ещё не выполнен.
+
+| Критерий | Независимо подтверждённый результат |
+| --- | --- |
+| Final freeze | SHA256 `SOURCE.SHA256SUMS` и `PACKAGE-SHA256` = `57e2d8f8777534563691f8426cfec72ba41a1babf37434a9bfdc50d024e58813`; все 9 файлов / 149461 B совпадают; FREEZE receipt согласован. |
+| Preserved accepted package | SHA256 `a23d3155e8d75b5959ea0b7b64d284c0e5add2bbfbaf0c53e91a66805375d8c4`; все 8 файлов / 76487 B совпадают. |
+| Unchanged logic/checks | `native-cohort.cjs`, `cohort-proof.py`, `freeze.py`, `correction-checks.json` byte-equal accepted a23. Из старого inventory изменены только `bindings.json`, `root-go.example.json`, `README.md`, `CORRECTIONS.md`; добавлен `frontend-inputs.SHA256SUMS`. |
+| Exact Root/product | `git rev-parse HEAD` = `85c068210262b611f6f98d18fb9d7bdd8cecea95`, `git status --short` пуст. `git diff d69ac9159e3bfff169c4b2bd25adbcc7d9def771 85c068210262b611f6f98d18fb9d7bdd8cecea95 -- frontends services proto` пуст. |
+| Frontend source closure | 558 entries, SHA256 manifest `2df2d40eb54dc19ac2a776881a9d86400cd978a750f55d2a2ea2ce1cb37281d7`; каждый file hash совпадает с рабочим Root и blob точного commit85c. Inventory точно соответствует tracked runtime paths/filter в неизменном `freeze.py`; пропусков/лишних entries относительно этого inventory нет. |
+| Inherited v3 | `PACKAGE-SOURCE.SHA256SUMS`/`PACKAGE-SHA256` = `180fecc3c66834c36ecbff44271742d1457d74964bfc0b41159fb7730d693d5c`; все 31 файла / 169910 B совпадают. |
+| Backend/JAR pins | Все 1530 backend source entries совпадают с Root; SHA256 manifest `31a5aa9bab8084b707d48652d9ab78bb019995de758667ab3efb907cca0b5028`. Все шесть файлов JAR (Auth/Schedule/Attendance/Academic/Notification/MobileBFF) прочитаны только для hash-сверки и совпадают с `v3/pins.json`. |
+
+`binding-delta.json` и FREEZE рассмотрены как receipts: их утверждения сверены с фактическими manifests/files, а не использованы вместо проверки. Принятые три strict frontend build PASS переиспользуются из Root evidence; builds не запускались.
+
+GO safety сохранена в неизменном коде. `native-cohort.cjs:99` сначала сверяет final driver hash; строки105–118 требуют source-ready binding, frontend manifest/file hashes и точный `bindings.frontendRootHead == go.rootHead == actual HEAD`. Затем `native-cohort.cjs:120` вызывает унаследованный v3 admission: `runtime.py:78` требует `approved:true`, `phase:native-case`, sourceCommit и package hash, а строка80 повторяет actual HEAD. Ни смена состояния WAIT→SOURCE_READY, ни documentation-only rebind procedure не ослабляют эти проверки. Старый HEAD/GO блокируется до чтения config/fixture и browser launch; source equality повторяется перед единственным confirm и успешным receipt. Существующие runtime/source/JAR admission guards не изменены.
+
+Пример GO остаётся явно `approved:false`, с placeholder final driver hash, `capacityQENV010Applied:false` и `allowObservedTmaHeadmanSuccessorCleanup:false`. Его единственная diff-правка — точный rootHead. Он не даёт разрешения на запуск. Для будущего docs-only HEAD требуется сохранение прежнего snapshot, доказательство отсутствия product/runtime delta, тот же frontend fingerprint и новый exact HEAD/package GO с narrow qualification; этот PASS не распространяется автоматически на иной HEAD или package.
+
+**Конкретный оставшийся риск / STOP:** статический source PASS не доказывает actual capacity и не разрешает one-delete. Read-only `statvfs('/workspace')` при сверке показал **5380976640 B (~5.381 GB)** доступных при fresh preparation floor **7516192768 B (7 GiB)**: **QENV010 остаётся PENDING/STOP**. Более низкий phase-specific native-case floor2.5GiB и example capacity flag не заменяют отдельную Root admission fresh7GiB preparation и новый matching runtime/browser GO. До них runtime/browser/Auth/API/DB/fixtures не выполнять. Шесть natural views, original UUID, причинный post-hint refresh, preservation, exact own cleanup и restore bridge остаются будущими фактическими критериями accepted a23 logic.
+
+Выполнены только public file/source/hash reads, `git rev-parse/status/diff/ls-files/show`, read-only filesystem capacity stat и проверка порядка существующих guards по тексту. Runtime imports/execution, browser, Auth/API, DB, fixtures, Docker, credentials/private reads, product tests/builds — **0**. Создан только этот review report; Root repo/product/docs и runtime package не изменялись. CI/Coverage/Security/OpenAPI manual/PAUSED; no merge/deploy/cleanup. Requested `gpt-6.1-sol/high`; actual model telemetry недоступна.

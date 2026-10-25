@@ -1,0 +1,51 @@
+{
+  "kind": "PUBLIC_NONCREDENTIAL_FALSE_POSITIVE_QUALIFICATION",
+  "sourceHistory": "Original two redacted history findings remain unchanged; no history rewrite",
+  "ruleChanges": false,
+  "ignoreOrAllowlistChanges": false,
+  "rawFindingsOrCandidateValuesExported": false,
+  "items": [
+    {
+      "rule": "generic-api-key",
+      "sourcePath": "tests/e2e/pr3-local/source-contract.json",
+      "historicalSourceLine": 20,
+      "historyCommit": "642affa6443ec9c32b62da4dc8e812fb73cd6828",
+      "candidateValueDigestSha256": "d1a41b0ead37efdbed5921d1354fea1f48e43f4dc642aa022b9085674bf0367e",
+      "classification": "Public reviewed helper source-file SHA256, not a credential",
+      "proof": {
+        "upstreamPackageSha256": "180fecc3c66834c36ecbff44271742d1457d74964bfc0b41159fb7730d693d5c",
+        "publicRelativeFile": "fixture-api.cjs",
+        "actualSourceHashEqualsRecordedDigest": true
+      },
+      "projection": "Explicit sha256Parts metadata; joining two strings reconstructs exactly the former SHA256; filename and all digest bytes preserved",
+      "losslessReconstruction": true
+    },
+    {
+      "rule": "generic-api-key",
+      "sourcePath": "tests/e2e/pr3-local/runtime/native-cohort.cjs",
+      "historicalSourceLine": 445,
+      "historyCommit": "642affa6443ec9c32b62da4dc8e812fb73cd6828",
+      "candidateValueDigestSha256": "a8d0b2c34268f86ca05b99fe4941bf7527a432481be1eb3ff7a5aab417fe784e",
+      "classification": "Fixed uppercase lifecycle acknowledgement enum literal in public source, not a credential",
+      "proof": {
+        "upstreamPackageSha256": "a23d3155e8d75b5959ea0b7b64d284c0e5add2bbfbaf0c53e91a66805375d8c4",
+        "publicRelativeFile": "native-cohort.cjs",
+        "sameLiteralExistsInAcceptedPublicSource": true,
+        "literalClass": "UPPERCASE_STATIC_LIFECYCLE_STATE",
+        "privateInputOrRandomCredential": false
+      },
+      "projection": "Object.assign on the same actor.lastAuthIntent object, same state key, same literal; metadata-only syntactic projection",
+      "runtimeFieldTypeValuePreserved": true
+    }
+  ],
+  "ownerLocalGate": "NOT_RUN",
+  "DockerAuthApiDbBrowserActions": 0,
+  "finalSourceScan": {
+    "scanner": "Gitleaks8.22.1",
+    "mode": "native no-git assigned-package source",
+    "exit": 0,
+    "findings": 0,
+    "unchangedConfigDigestSha256": "d9d402888344e6cc1a2e94e0558d31cbee8d42a46c70d892bec6433e8265edfa",
+    "unchangedIgnoreDigestSha256": "972f3010f69c01d4b12492ba56a0fdb4bb70e5b99f6ba6473bd610a8c317265f"
+  }
+}

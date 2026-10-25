@@ -1,0 +1,39 @@
+{
+  "entries": [
+    {
+      "id": "WEB-OWNERLOSS__WT-OWNER-AF01-v2-guest-after-old-real-today-release__light__1440__481512e93",
+      "state": "v2-guest-after-old-real-today-release",
+      "file": "WEB-OWNERLOSS__WT-OWNER-AF01-v2-guest-after-old-real-today-release__light__1440__481512e93.png",
+      "sha256": "aeefcfa3787ae131d1b1627600daece9d4ed0d6ca35e380581c268115c9bc5cd",
+      "revision": "481512e93575070a1f471c65af54df5b4e31cd61",
+      "theme": "light",
+      "width": 1440,
+      "height": 1000,
+      "rootFont": "16px",
+      "scrollWidth": 1440,
+      "personallyInspected": true,
+      "pngWidth": 1440,
+      "pngHeight": 1000,
+      "bytes": 527822,
+      "inspectedAtUtc": "2026-10-25T00:46:26.525637+00:00",
+      "inspection": "Guest native login form readable with blank credential fields, no authenticated Profile/nav/private StudentHome visible; no horizontal overflow at1440/root16. This observes final guest UI only; target read completion/body delivery remain unproved.",
+      "provenance": "One real own Student3 login/native204-oldBearer401; original full real Today200 buffer held and released with unchanged bytes/status/MIME and only transfer-encoding framing removal. No API JSON/status fabrication or second backend read.",
+      "caseId": "WT-OWNER-AF01",
+      "image": "WEB-OWNERLOSS__WT-OWNER-AF01-v2-guest-after-old-real-today-release__light__1440__481512e93.png",
+      "description": "Guest native login form readable with blank credential fields, no authenticated Profile/nav/private StudentHome visible; no horizontal overflow at1440/root16. This observes final guest UI only; target read completion/body delivery remain unproved.",
+      "screen": "WEB-STUDENT-OWNERLOSS",
+      "title": "После выхода остаётся форма входа без данных прежней сессии",
+      "synthetic": true,
+      "syntheticCause": "Original actual Today200 buffered before hold; unchanged bytes/status/MIME released after native logout. Transport framing removal only; client body completion not proven."
+    }
+  ],
+  "originalManifestSha256": "85488c6896a5463be8db47303cc421fd1c915680f234a5648b780103062abbf1",
+  "limits": [
+    "Raw EXIT1/completedfalse/changedOwnerLossObservedfalse/clientBodyCompletedfalse retained. Full client body delivery and exact network completion not proven.",
+    "Guest login visible, private StudentHome/Profile absent, page errors0. Native logout204/oldBearer401, own session terminal, browser closed. No raw driver PASS.",
+    "Three Student current guards source1057; six behavior checks and strict WEB build reused."
+  ],
+  "sourceRevision": "481512e93575070a1f471c65af54df5b4e31cd61",
+  "newImages": 1,
+  "functionalActionsAdded": 0
+}

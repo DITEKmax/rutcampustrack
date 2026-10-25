@@ -1,0 +1,68 @@
+{
+  "sourceRevision": "7ad6e29353b78f7f7087360ef8a5e107a3cf5873",
+  "frontendMobileDeltaFrom7ff": [],
+  "authArtifactBaseline": "0421",
+  "rawReceipt": "mobile-next-notification-first4-receipt.json",
+  "command": "timeout --signal=TERM --kill-after=5s 60s node mobile-next.cjs notification-first4",
+  "exitCode": 0,
+  "elapsedSeconds": 5.983,
+  "repeatReason": "Firstpacket wrongbelllocator; source-confirmed correct accessiblelabel. RetainedToday12 not repeated.",
+  "hashIntegrity": "4/4 original SHA256 match",
+  "personallyViewedAll4": true,
+  "criteria": {
+    "MB-NOTIF-ENTRY-BACK": {
+      "status": "ready bounded normalUI",
+      "observed": "Clicked actual Открыть уведомления button; actualinbox200 and nonbusy history rendered. Back button clicked after1440dark; profile navigation and native logout completed.",
+      "limits": "No mark-read/filter command or keyboard focus traversal performed."
+    },
+    "MB-NOTIF-BASE": {
+      "status": "fix minor300 title; ready1440 initialhistory baseline",
+      "states": "actual populated history, initial visible portion of inner scroll container; not everyrecord",
+      "themes": [
+        "light",
+        "dark"
+      ],
+      "widths": [
+        300,
+        1440
+      ],
+      "observations": [
+        "Cards show actual notification headings/times/read-indicators; controls/filter/back/settings visible and separated.",
+        "1440 both themes: title whole, no header/content clipping; populated lists readable.",
+        "300 both themes: title wraps Уведомлени + я, caused by flex squeezed title + overflow-wrap:anywhere; card text otherwise wraps coherently.",
+        "scrollWidth equalsviewport in4; no horizontal loss."
+      ],
+      "finding": "V-MOB-NOTIF-300 (P3 visual typography; no user action blocked)",
+      "limits": [
+        "Other6 agreed widths notchecked; no empty/error/loading/settings/expandedcard/reconnect/focus state claim.",
+        "Fullpage screenshot captures viewport of fixed dialog; inner list requires scrolling, not shown wholehistory."
+      ]
+    },
+    "MB-CLEAN": {
+      "status": "ready",
+      "cleanup": [
+        {
+          "consumer": "PWA",
+          "exactOwnHandleCaptured": true,
+          "nativeLogoutSent": true,
+          "fallbackUsed": false,
+          "httpStatus": 204,
+          "guestReadStatus": 401,
+          "confirmed": true
+        }
+      ],
+      "domainMutations": [],
+      "pageErrors": [],
+      "privateSID": "mode0600 confirmed; noSID/token inpublic artifacts",
+      "browser": "own context/browser closed in finally; existing rootbrowser untouched"
+    },
+    "TMA": {
+      "status": "notchecked",
+      "reason": "No TMA inthiswindow"
+    }
+  },
+  "newFunctionalActions": 0,
+  "fullScreenAllStatesReady": false,
+  "modelRequested": "gpt-6.1-sol/high",
+  "runtimeTelemetry": "unavailable"
+}

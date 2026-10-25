@@ -8,25 +8,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import io.jsonwebtoken.Jwts;
-
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
-import org.mockito.ArgumentCaptor;
-import org.springframework.cloud.gateway.filter.GatewayFilterChain;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
-import org.springframework.mock.web.server.MockServerWebExchange;
-
-import reactor.core.publisher.Mono;
-
-import ru.rutcampustrack.gateway.config.PublicKeyConfig;
-
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyPair;
@@ -40,6 +22,19 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.ArgumentCaptor;
+import org.springframework.cloud.gateway.filter.GatewayFilterChain;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
+import org.springframework.mock.web.server.MockServerWebExchange;
+import reactor.core.publisher.Mono;
+import ru.rutcampustrack.gateway.config.PublicKeyConfig;
 
 class JwtAuthenticationFilterTest {
 
@@ -307,6 +302,71 @@ class JwtAuthenticationFilterTest {
                                 exchange.getAttribute(
                                         JwtAuthenticationFilter.ORIGINAL_ACCESS_TOKEN_ATTRIBUTE))
                 .isNull();
+    }
+
+    @Test
+    void devicePreferencesAreBearerOnlyWithExactBootstrapGetPutScope() {
+        String token = generateBootstrapToken();
+        for (var method :
+                java.util.List.of(
+                        org.springframework.http.HttpMethod.GET,
+                        org.springframework.http.HttpMethod.PUT)) {
+            var allowed =
+                    exchange(
+                            MockServerHttpRequest.method(method, "/api/auth/device-preferences")
+                                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                                    .build());
+            var chain = acceptingChain();
+            filter.filter(allowed, chain).block();
+            verify(chain).filter(any());
+            var anonymous =
+                    exchange(
+                            MockServerHttpRequest.method(method, "/api/auth/device-preferences")
+                                    .header(HttpHeaders.COOKIE, "__Host-rct_device=opaque-selector")
+                                    .build());
+            var deniedChain = mock(GatewayFilterChain.class);
+            filter.filter(anonymous, deniedChain).block();
+            assertThat(anonymous.getResponse().getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+            verify(deniedChain, never()).filter(any());
+        }
+        for (String path :
+                java.util.List.of(
+                        "/api/auth/device-preferences",
+                        "/api/auth/device-preferences/",
+                        "/api/auth/device-preferences/child")) {
+            for (var method :
+                    java.util.List.of(
+                            org.springframework.http.HttpMethod.POST,
+                            org.springframework.http.HttpMethod.DELETE)) {
+                var denied =
+                        exchange(
+                                MockServerHttpRequest.method(method, path)
+                                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                                        .build());
+                var chain = mock(GatewayFilterChain.class);
+                filter.filter(denied, chain).block();
+                assertThat(denied.getResponse().getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+                verify(chain, never()).filter(any());
+            }
+        }
+        for (String path :
+                java.util.List.of(
+                        "/api/auth/device-preferences/", "/api/auth/device-preferences/child")) {
+            for (var method :
+                    java.util.List.of(
+                            org.springframework.http.HttpMethod.GET,
+                            org.springframework.http.HttpMethod.PUT)) {
+                var denied =
+                        exchange(
+                                MockServerHttpRequest.method(method, path)
+                                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                                        .build());
+                var chain = mock(GatewayFilterChain.class);
+                filter.filter(denied, chain).block();
+                assertThat(denied.getResponse().getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+                verify(chain, never()).filter(any());
+            }
+        }
     }
 
     @Test

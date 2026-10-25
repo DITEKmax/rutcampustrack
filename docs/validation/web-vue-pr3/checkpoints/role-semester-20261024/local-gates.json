@@ -1,0 +1,41 @@
+{
+  "scope": "b84cc19e6..HEAD plus staged documentation/gallery",
+  "sourceRevision": "0421d344c9697d58efc8f039b74c5bdf594c6eb4",
+  "fileCount": 45,
+  "textFileCount": 43,
+  "formatChecks": "temporary byte-exact copies, product files not modified by root",
+  "checks": [
+    {
+      "name": "check-json",
+      "exit": 0
+    },
+    {
+      "name": "check-yaml",
+      "exit": 0
+    },
+    {
+      "name": "check-added-large-files",
+      "exit": 0
+    },
+    {
+      "name": "end-of-file-fixer",
+      "exit": 0
+    },
+    {
+      "name": "trailing-whitespace-fixer",
+      "exit": 0
+    },
+    {
+      "name": "gitleaks-commits",
+      "exit": 0
+    },
+    {
+      "name": "gitleaks-staged",
+      "exit": 0
+    }
+  ],
+  "actualInstalledHook": "not installed; pinned equivalent executables run directly",
+  "CI": "PAUSED/workflow_dispatch",
+  "originalReceiptSha256": "76412d075e0579776d4e02829148d71970ab8d900d57ae79a94334f3a4296694",
+  "limits": "Final staging checks include public privacy correction and both immutable publication reviews. Commit scan reused unchanged b84..0421 PASS; no CI."
+}

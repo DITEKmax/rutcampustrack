@@ -1,0 +1,39 @@
+{
+  "sourceSha": "240a1b2a86a2b2ba0cbb89647a9ed8b151007007",
+  "artifactBytes": {
+    "web": "PASS",
+    "pwa": "PASS",
+    "tma": "PASS"
+  },
+  "commonNginxStatic": "PASS",
+  "directApiCaSha256": null,
+  "forwardedExternalHttpsIdentity": "NOT_RUN_OWNER_LOCAL",
+  "apiForwarding": "OBSERVED_ANONYMOUS_ONLY",
+  "realtimeAuthenticatedTransport": "NOT_RUN",
+  "webAuthLifecycle": "NOT_RUN",
+  "pwaAuthAndUpdates": "NOT_RUN",
+  "httpAuthRealtime": "NOT_RUN",
+  "tlsAuthWss": "NOT_RUN_OWNER_LOCAL",
+  "tmaPostLogin": "NOT_RUN",
+  "webPushProvider": "NOT_RUN",
+  "productionTLSAndDeployment": "NOT_RUN",
+  "apiObservations": [
+    {
+      "path": "/api/auth/session",
+      "edgeStatus": 401,
+      "directStatus": 401,
+      "sameStatus": true,
+      "edgeMime": "application/problem+json",
+      "directMime": "application/problem+json"
+    },
+    {
+      "path": "/api/ws/info",
+      "edgeStatus": 200,
+      "directStatus": 200,
+      "sameStatus": true,
+      "edgeMime": "application/json;charset=UTF-8",
+      "directMime": "application/json;charset=UTF-8"
+    }
+  ],
+  "state": "STATIC_CRITERIA_ONLY_OTHER_CRITERIA_NOT_RUN"
+}

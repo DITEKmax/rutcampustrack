@@ -34,6 +34,15 @@
   --rct-mobile-nav-slots: 5;
 }
 
+@media (max-width: 22.5rem) {
+  .mobile-bottom-nav--slots-5 {
+    inset-inline: var(--rct-space-half);
+    grid-template-columns: repeat(5, minmax(15%, auto));
+    column-gap: 0;
+    padding-inline: var(--rct-space-half);
+  }
+}
+
 .mobile-bottom-nav__item {
   position: relative;
   display: grid;
@@ -89,8 +98,8 @@
 .mobile-bottom-nav__label {
   min-inline-size: 0;
   max-inline-size: 100%;
-  overflow-wrap: anywhere;
-  white-space: normal;
+  overflow-wrap: normal;
+  white-space: nowrap;
 }
 
 .mobile-bottom-nav__badge {

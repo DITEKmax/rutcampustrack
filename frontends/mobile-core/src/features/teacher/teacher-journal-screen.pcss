@@ -106,6 +106,32 @@
   color: var(--rct-color-text-secondary);
   text-align: center;
 }
+.teacher-journal__loading {
+  min-inline-size: 0;
+  overflow: hidden;
+  border-radius: var(--rct-radius-lg);
+  background: var(--rct-color-surface-raised);
+}
+.teacher-journal__loading-row {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) repeat(3, minmax(0, 1fr));
+  align-items: center;
+  gap: var(--rct-space-3);
+  min-block-size: var(--rct-control-min-touch);
+  padding: var(--rct-space-2);
+  border-block-end: var(--rct-border-hairline) solid var(--rct-color-border-default);
+}
+.teacher-journal__loading-row:last-child {
+  border-block-end: 0;
+}
+.teacher-journal__loading-line {
+  block-size: var(--rct-space-3);
+  border-radius: var(--rct-radius-full);
+  background: var(--rct-color-skeleton-fill);
+}
+.teacher-journal__loading-row:first-child .teacher-journal__loading-line {
+  inline-size: 70%;
+}
 .teacher-journal__table-scroll {
   position: relative;
   min-inline-size: 0;

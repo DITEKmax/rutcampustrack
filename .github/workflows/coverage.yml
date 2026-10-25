@@ -1,25 +1,11 @@
 name: Coverage
 
 # Diagnostic coverage: test failures and report-generation errors remain blocking.
+# Temporary owner-authorized pause for codex/web-vue-redesign.
+# Restore automatic triggers before merge after explicit owner GO.
+# See docs/plans/web-vue-pr3/CI-DEVELOPMENT-POLICY.md.
 on:
-  pull_request:
-    branches: ['**']
-    paths-ignore:
-      - 'docs/**'
-      - '.planning/**'
-      - '*.md'
-      - 'SECURITY.md'
-      - 'renovate.json'
-      - '.pre-commit-config.yaml'
-  push:
-    branches: ['main', 'dev']
-    paths-ignore:
-      - 'docs/**'
-      - '.planning/**'
-      - '*.md'
-      - 'SECURITY.md'
-      - 'renovate.json'
-      - '.pre-commit-config.yaml'
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -138,7 +124,7 @@ jobs:
           retention-days: 7
 
   frontend-coverage:
-    name: Mobile Vue coverage — PWA, TMA, mobile-core
+    name: Vue coverage — WEB, PWA, TMA, mobile-core, shared
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
@@ -147,7 +133,7 @@ jobs:
           node-version: '24.14.0'
           cache: 'npm'
           cache-dependency-path: frontends/package-lock.json
-      - name: Install mobile Vue workspace
+      - name: Install Vue workspace
         working-directory: frontends
         run: npm ci
       - name: Run existing Vue tests with coverage
@@ -163,12 +149,12 @@ jobs:
           const lcov = readFileSync('coverage/lcov.info', 'utf8').replace(/^SF:(.+)$/gm, (_, source) =>
             `SF:${relative(process.env.GITHUB_WORKSPACE, resolve(source)).split(sep).join('/')}`)
           writeFileSync('coverage/lcov.info', lcov)
-          appendFileSync(process.env.GITHUB_STEP_SUMMARY, `### Mobile Vue\n\nLines: ${total.lines.covered}/${total.lines.total} (${total.lines.pct}%). Diagnostic coverage; no numeric gate.\n`)
+          appendFileSync(process.env.GITHUB_STEP_SUMMARY, `### Vue workspace\n\nLines: ${total.lines.covered}/${total.lines.total} (${total.lines.pct}%). Diagnostic coverage; no numeric gate.\n`)
           JS
       - name: Upload Vue coverage
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: vitest-lcov-mobile-vue
+          name: vitest-lcov-vue
           path: frontends/coverage/
           if-no-files-found: error
           retention-days: 7

@@ -1,0 +1,18 @@
+{
+  ".github/workflows/ci.yml": {
+    "original_event_block": "on:\n  push:\n    branches: ['**']\n    paths-ignore:\n      - 'docs/**'\n      - '.planning/**'\n      - '*.md'\n      - 'SECURITY.md'\n      - 'renovate.json'\n      - '.pre-commit-config.yaml'\n  pull_request:\n    branches: ['**']\n    paths-ignore:\n      - 'docs/**'\n      - '.planning/**'\n      - '*.md'\n      - 'SECURITY.md'\n      - 'renovate.json'\n      - '.pre-commit-config.yaml'\n\n",
+    "base_sha": "aa98a6aabd1463ee72ce2ef09a3195fdeef7b74f"
+  },
+  ".github/workflows/coverage.yml": {
+    "original_event_block": "on:\n  pull_request:\n    branches: ['**']\n    paths-ignore:\n      - 'docs/**'\n      - '.planning/**'\n      - '*.md'\n      - 'SECURITY.md'\n      - 'renovate.json'\n      - '.pre-commit-config.yaml'\n  push:\n    branches: ['main', 'dev']\n    paths-ignore:\n      - 'docs/**'\n      - '.planning/**'\n      - '*.md'\n      - 'SECURITY.md'\n      - 'renovate.json'\n      - '.pre-commit-config.yaml'\n\n",
+    "base_sha": "aa98a6aabd1463ee72ce2ef09a3195fdeef7b74f"
+  },
+  ".github/workflows/security.yml": {
+    "original_event_block": "on:\n  push:\n    branches: [main]\n    paths-ignore:\n      - 'docs/**'\n      - '.planning/**'\n      - '*.md'\n  pull_request:\n    branches: [main]\n    paths-ignore:\n      - 'docs/**'\n      - '.planning/**'\n      - '*.md'\n  schedule:\n    # Weekly Monday 03:00 UTC — свежие CVE могут появиться после build'а.\n    - cron: '0 3 * * 1'\n\n",
+    "base_sha": "aa98a6aabd1463ee72ce2ef09a3195fdeef7b74f"
+  },
+  ".github/workflows/openapi-drift.yml": {
+    "original_event_block": "on:\n  push:\n    branches: ['**']\n    paths:\n      - 'docs/openapi/**'\n      - 'frontends/mobile-core/src/api/generated/**'\n      - 'frontends/mobile-core/scripts/generate-*.mjs'\n      - 'frontends/package.json'\n      - 'frontends/package-lock.json'\n      - '.github/workflows/openapi-drift.yml'\n  pull_request:\n    branches: ['**']\n    paths:\n      - 'docs/openapi/**'\n      - 'frontends/mobile-core/src/api/generated/**'\n      - 'frontends/mobile-core/scripts/generate-*.mjs'\n      - 'frontends/package.json'\n      - 'frontends/package-lock.json'\n      - '.github/workflows/openapi-drift.yml'\n\n",
+    "base_sha": "aa98a6aabd1463ee72ce2ef09a3195fdeef7b74f"
+  }
+}

@@ -1,0 +1,306 @@
+{
+  "case": "PWA_STUDENT_REQUEST_SELECTION_SIX_FRAMES",
+  "runHash": "f8d890657e501ea766fd03f224d2bd9ce9317f3c2f115c4c7ecf3eb9b1b8926a",
+  "expectedActor": 3,
+  "expectedRole": "STUDENT",
+  "revision": "85c068210262b611f6f98d18fb9d7bdd8cecea95",
+  "productBase": "d69ac9159e3bfff169c4b2bd25adbcc7d9def771",
+  "harnessSha256": "29afe6fec800057b447b4fe452dddcc40f234da7297706c782b7bd8abe30b8a2",
+  "startedAtUtc": "2026-10-24T22:51:42.491Z",
+  "phase": "CAPTURE_COMPLETE_CLEANUP_CONFIRMED_INSPECTION_PENDING",
+  "api": [
+    {
+      "path": "/api/auth/refresh",
+      "method": "POST",
+      "status": 401,
+      "phase": "BOOTSTRAP",
+      "atUtc": "2026-10-24T22:51:44.707Z"
+    },
+    {
+      "path": "/api/auth/login",
+      "method": "POST",
+      "status": 200,
+      "phase": "LOGIN",
+      "atUtc": "2026-10-24T22:51:44.999Z"
+    },
+    {
+      "path": "/api/auth/session",
+      "method": "GET",
+      "status": 200,
+      "phase": "LOGIN",
+      "atUtc": "2026-10-24T22:51:45.088Z"
+    },
+    {
+      "pathHash": "73210131bba23497370aaac45ad599d4e906cc1adb9bf61670a62a7fe244fdb6",
+      "method": "GET",
+      "status": 200,
+      "phase": "LOGIN",
+      "atUtc": "2026-10-24T22:51:45.149Z"
+    },
+    {
+      "pathHash": "66be5879ef3a006f97cdf3d9fb658d6b9ab244113bbbad159c733f0fee4efb32",
+      "method": "GET",
+      "status": 200,
+      "phase": "LOGIN",
+      "atUtc": "2026-10-24T22:51:45.183Z"
+    },
+    {
+      "pathHash": "61e6038f2d3a6dfcdc1b123b37cd7efa3c98f1c6b3dd0aa7d2c060f38f8ed3f2",
+      "method": "GET",
+      "status": 200,
+      "phase": "LOGIN",
+      "atUtc": "2026-10-24T22:51:45.246Z"
+    },
+    {
+      "pathHash": "6cb55e97fef19735195b0020d5dd6545645efc7bc46a1d989e5cdbbf8b251030",
+      "method": "GET",
+      "status": 200,
+      "phase": "LOGIN",
+      "atUtc": "2026-10-24T22:51:45.317Z"
+    },
+    {
+      "pathHash": "8523bff54cc369633b19fc3d5d401c2750a6a0f69ad7844d9eb5045c1769e1cf",
+      "method": "GET",
+      "status": 200,
+      "phase": "LOGIN",
+      "atUtc": "2026-10-24T22:51:45.470Z"
+    },
+    {
+      "path": "/api/auth/ws-ticket",
+      "method": "POST",
+      "status": 200,
+      "phase": "LOGIN",
+      "atUtc": "2026-10-24T22:51:45.600Z"
+    },
+    {
+      "pathHash": "f3c86055724948219ffaedb2ba9d52d644c538d765a16899418a3476b860c86c",
+      "method": "GET",
+      "status": 200,
+      "phase": "LOGIN",
+      "atUtc": "2026-10-24T22:51:45.620Z"
+    },
+    {
+      "pathHash": "6a3ed7c33ca04a6a7e68847f792e314468b713dea9c4ece627c242271898ae23",
+      "method": "GET",
+      "status": 200,
+      "phase": "LOGIN",
+      "atUtc": "2026-10-24T22:51:45.656Z"
+    },
+    {
+      "path": "/api/v1/student/today",
+      "method": "GET",
+      "status": 200,
+      "phase": "NATIVE_MORE_REQUESTS_ENTRY",
+      "atUtc": "2026-10-24T22:51:45.812Z"
+    },
+    {
+      "pathHash": "66be5879ef3a006f97cdf3d9fb658d6b9ab244113bbbad159c733f0fee4efb32",
+      "method": "GET",
+      "status": 200,
+      "phase": "NATIVE_MORE_REQUESTS_ENTRY",
+      "atUtc": "2026-10-24T22:51:45.863Z"
+    },
+    {
+      "path": "/api/v1/student/requests",
+      "method": "GET",
+      "status": 200,
+      "phase": "NATIVE_MORE_REQUESTS_ENTRY",
+      "atUtc": "2026-10-24T22:51:46.004Z"
+    },
+    {
+      "path": "/api/v1/student/requests/options",
+      "method": "GET",
+      "status": 200,
+      "phase": "NATIVE_MORE_REQUESTS_ENTRY",
+      "atUtc": "2026-10-24T22:51:46.033Z"
+    },
+    {
+      "pathHash": "bba9abf800ba68da4d32a6f5d51ea74d9c0834a339a04afa3cee3d231af58292",
+      "method": "GET",
+      "status": 200,
+      "phase": "NATIVE_MORE_REQUESTS_ENTRY",
+      "atUtc": "2026-10-24T22:51:46.178Z"
+    },
+    {
+      "pathHash": "348ca1e77d2a6d2ce796f712240178c32249592998c418b61a79c2525e71190a",
+      "method": "GET",
+      "status": 200,
+      "phase": "NATIVE_MORE_REQUESTS_ENTRY",
+      "atUtc": "2026-10-24T22:51:46.190Z"
+    }
+  ],
+  "samples": [
+    {
+      "id": "MB-RQ-01",
+      "consumer": "PWA",
+      "screen": "MOBILE-REQUESTTYPE",
+      "state": "resolved-real-choices",
+      "file": "PWA-MOBILE-REQUESTTYPE__MB-RQ-01-resolved-real-choices__light__425__85c068210.png",
+      "sha256": "1fd0d81674e0754dfe646e539e1386551725cf9e442c4e35322eee3d736cc367",
+      "theme": "light",
+      "width": 425,
+      "rootFont": "16px",
+      "scrollWidth": 425,
+      "focusVisible": false,
+      "revision": "85c068210262b611f6f98d18fb9d7bdd8cecea95",
+      "personallyInspected": false
+    },
+    {
+      "id": "MB-RQ-02",
+      "consumer": "PWA",
+      "screen": "MOBILE-REQUESTLESSONSELECTION",
+      "state": "real-lessons-unselected",
+      "file": "PWA-MOBILE-REQUESTLESSONSELECTION__MB-RQ-02-real-lessons-unselected__light__425__85c068210.png",
+      "sha256": "86b4dedffc43717eb3cd22b179118368d2a6e52daac18d5dc26ce601a38fea93",
+      "theme": "light",
+      "width": 425,
+      "rootFont": "16px",
+      "scrollWidth": 425,
+      "focusVisible": false,
+      "revision": "85c068210262b611f6f98d18fb9d7bdd8cecea95",
+      "personallyInspected": false
+    },
+    {
+      "id": "MB-RQ-03",
+      "consumer": "PWA",
+      "screen": "MOBILE-REQUESTLESSONSELECTION",
+      "state": "local-invalid-date-range",
+      "file": "PWA-MOBILE-REQUESTLESSONSELECTION__MB-RQ-03-local-invalid-date-range__dark__300__85c068210.png",
+      "sha256": "d69f7f58476c9b65904f11d24040ae16635cb0bfdff6e31257554accb91743fd",
+      "theme": "dark",
+      "width": 300,
+      "rootFont": "16px",
+      "scrollWidth": 300,
+      "focusVisible": true,
+      "revision": "85c068210262b611f6f98d18fb9d7bdd8cecea95",
+      "personallyInspected": false
+    },
+    {
+      "id": "MB-RQ-04",
+      "consumer": "PWA",
+      "screen": "MOBILE-REQUESTLESSONSELECTION",
+      "state": "real-options-future-filter-empty",
+      "file": "PWA-MOBILE-REQUESTLESSONSELECTION__MB-RQ-04-real-options-future-filter-empty__dark__300__85c068210.png",
+      "sha256": "4db177d5c8810c73e73ef383718a381b3160b5cea884e7df145e449896ddc604",
+      "theme": "dark",
+      "width": 300,
+      "rootFont": "16px",
+      "scrollWidth": 300,
+      "focusVisible": true,
+      "revision": "85c068210262b611f6f98d18fb9d7bdd8cecea95",
+      "personallyInspected": false
+    },
+    {
+      "id": "MB-RQ-05",
+      "consumer": "PWA",
+      "screen": "MOBILE-REQUESTLESSONSELECTION",
+      "state": "one-local-selection-keyboard-focus",
+      "file": "PWA-MOBILE-REQUESTLESSONSELECTION__MB-RQ-05-one-local-selection-keyboard-focus__light__768__85c068210.png",
+      "sha256": "e8d3886f42ef9f2eb94a4643f1def5f72dc130b7075b1294d5bd8d6eac178788",
+      "theme": "light",
+      "width": 768,
+      "rootFont": "16px",
+      "scrollWidth": 768,
+      "focusVisible": true,
+      "revision": "85c068210262b611f6f98d18fb9d7bdd8cecea95",
+      "personallyInspected": false
+    },
+    {
+      "id": "MB-RQ-06",
+      "consumer": "PWA",
+      "screen": "MOBILE-EXCUSEREQUEST",
+      "state": "selected-lesson-draft-preview-no-submit",
+      "file": "PWA-MOBILE-EXCUSEREQUEST__MB-RQ-06-selected-lesson-draft-preview-no-submit__light__425__85c068210.png",
+      "sha256": "01b61258496c933a1c51c7df5c195e57e5c6ed69c5866437d3e8633d9055b762",
+      "theme": "light",
+      "width": 425,
+      "rootFont": "16px",
+      "scrollWidth": 425,
+      "focusVisible": false,
+      "revision": "85c068210262b611f6f98d18fb9d7bdd8cecea95",
+      "personallyInspected": false
+    }
+  ],
+  "captureAttempts": [
+    {
+      "id": "MB-RQ-01",
+      "file": "PWA-MOBILE-REQUESTTYPE__MB-RQ-01-resolved-real-choices__light__425__85c068210.png",
+      "state": "CAUSE_QUALIFIED_INSPECTION_PENDING",
+      "startedAtUtc": "2026-10-24T22:51:46.102Z",
+      "finishedAtUtc": "2026-10-24T22:51:46.247Z"
+    },
+    {
+      "id": "MB-RQ-02",
+      "file": "PWA-MOBILE-REQUESTLESSONSELECTION__MB-RQ-02-real-lessons-unselected__light__425__85c068210.png",
+      "state": "CAUSE_QUALIFIED_INSPECTION_PENDING",
+      "startedAtUtc": "2026-10-24T22:51:46.379Z",
+      "finishedAtUtc": "2026-10-24T22:51:46.491Z"
+    },
+    {
+      "id": "MB-RQ-03",
+      "file": "PWA-MOBILE-REQUESTLESSONSELECTION__MB-RQ-03-local-invalid-date-range__dark__300__85c068210.png",
+      "state": "CAUSE_QUALIFIED_INSPECTION_PENDING",
+      "startedAtUtc": "2026-10-24T22:51:46.548Z",
+      "finishedAtUtc": "2026-10-24T22:51:46.678Z"
+    },
+    {
+      "id": "MB-RQ-04",
+      "file": "PWA-MOBILE-REQUESTLESSONSELECTION__MB-RQ-04-real-options-future-filter-empty__dark__300__85c068210.png",
+      "state": "CAUSE_QUALIFIED_INSPECTION_PENDING",
+      "startedAtUtc": "2026-10-24T22:51:46.703Z",
+      "finishedAtUtc": "2026-10-24T22:51:46.803Z"
+    },
+    {
+      "id": "MB-RQ-05",
+      "file": "PWA-MOBILE-REQUESTLESSONSELECTION__MB-RQ-05-one-local-selection-keyboard-focus__light__768__85c068210.png",
+      "state": "CAUSE_QUALIFIED_INSPECTION_PENDING",
+      "startedAtUtc": "2026-10-24T22:51:46.905Z",
+      "finishedAtUtc": "2026-10-24T22:51:47.115Z"
+    },
+    {
+      "id": "MB-RQ-06",
+      "file": "PWA-MOBILE-EXCUSEREQUEST__MB-RQ-06-selected-lesson-draft-preview-no-submit__light__425__85c068210.png",
+      "state": "CAUSE_QUALIFIED_INSPECTION_PENDING",
+      "startedAtUtc": "2026-10-24T22:51:47.188Z",
+      "finishedAtUtc": "2026-10-24T22:51:47.312Z"
+    }
+  ],
+  "blocked": [],
+  "pageErrors": [],
+  "auth": {
+    "loginForwarded": 1,
+    "startupRefreshForwarded": 1,
+    "roleForwarded": 0,
+    "loginStatus": 200,
+    "startupRefreshStatus": 401
+  },
+  "syntheticApiResponses": false,
+  "cleanup": {
+    "method": "TECHNICAL_NORMAL_AUTH_API_SELF_SESSION_DELETE",
+    "nativeUiLogoutPass": false,
+    "expectedActorMatched": true,
+    "exactSidMatched": true,
+    "selfDeleteForwarded": 1,
+    "selfDeleteStatus": 204,
+    "guestBearerStatus": 401,
+    "confirmed": true,
+    "fallbackUsed": false,
+    "intent": "RETURNED",
+    "forwardStartedAtUtc": "2026-10-24T22:51:47.348Z"
+  },
+  "captureComplete": true,
+  "completed": true,
+  "functionalActionsAdded": 0,
+  "exactOwnHandleCaptured": true,
+  "actualOwnerMatchesExpected": true,
+  "unknownHold": false,
+  "lastObservedRole": "STUDENT",
+  "actualStudentSessionConfirmed": true,
+  "localInvalidRangeObserved": true,
+  "localValidFilterEmptyObserved": true,
+  "localSingleLessonSelectionObserved": true,
+  "readOnlyDraftPreviewObserved": true,
+  "browserClosed": true,
+  "sourceUnchanged": true,
+  "finishedAtUtc": "2026-10-24T22:51:47.516Z"
+}

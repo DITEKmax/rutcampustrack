@@ -1,0 +1,400 @@
+{
+  "case": "WEB_NATIVE_THEME_LIFECYCLE",
+  "revision": "343245083694b85298e18b578ad8a51b54af88c9",
+  "productBase": "d69ac9159e3bfff169c4b2bd25adbcc7d9def771",
+  "harnessSha256": "0583ee119c273d545dfe50ff12fc96bc4bb50678e04b974397cc83d5c4288351",
+  "startedAtUtc": "2026-10-24T23:27:55.238Z",
+  "expectedActor": 3,
+  "expectedRole": "STUDENT",
+  "phase": "ROOT_TERMINAL_CLOSED_ORIGINAL_RESULT_RETAINED",
+  "api": [
+    {
+      "path": "/api/auth/refresh",
+      "method": "POST",
+      "status": 401,
+      "phase": "BOOTSTRAP",
+      "loginIndex": 0
+    },
+    {
+      "path": "/api/auth/login",
+      "method": "POST",
+      "status": 200,
+      "phase": "LOGIN_0",
+      "loginIndex": 0
+    },
+    {
+      "path": "/api/auth/session",
+      "method": "GET",
+      "status": 200,
+      "phase": "LOGIN_0",
+      "loginIndex": 0
+    },
+    {
+      "path": "/api/auth/device-preferences",
+      "method": "GET",
+      "status": 200,
+      "phase": "LOGIN_0",
+      "loginIndex": 0
+    },
+    {
+      "path": "/api/auth/ws-ticket",
+      "method": "POST",
+      "status": 200,
+      "phase": "LOGIN_0",
+      "loginIndex": 0
+    },
+    {
+      "pathHash": "6cb55e97fef19735195b0020d5dd6545645efc7bc46a1d989e5cdbbf8b251030",
+      "method": "GET",
+      "status": 200,
+      "phase": "LOGIN_0",
+      "loginIndex": 0
+    },
+    {
+      "pathHash": "1ac431db2bc18d7440f21b1cd2a7a83f741e1bf52b56a1234e926d065de3d88a",
+      "method": "GET",
+      "status": 200,
+      "phase": "LOGIN_0",
+      "loginIndex": 0
+    },
+    {
+      "pathHash": "6a3ed7c33ca04a6a7e68847f792e314468b713dea9c4ece627c242271898ae23",
+      "method": "GET",
+      "status": 200,
+      "phase": "LOGIN_0",
+      "loginIndex": 0
+    },
+    {
+      "pathHash": "f0320a899084e1ad76c16312486dcce0184101b4b7b77c886228015245584536",
+      "method": "GET",
+      "status": 200,
+      "phase": "LOGIN_0",
+      "loginIndex": 0
+    },
+    {
+      "pathHash": "66be5879ef3a006f97cdf3d9fb658d6b9ab244113bbbad159c733f0fee4efb32",
+      "method": "GET",
+      "status": 200,
+      "phase": "LOGIN_0",
+      "loginIndex": 0
+    },
+    {
+      "pathHash": "61e6038f2d3a6dfcdc1b123b37cd7efa3c98f1c6b3dd0aa7d2c060f38f8ed3f2",
+      "method": "GET",
+      "status": 200,
+      "phase": "STUDENT_ADMITTED_0",
+      "loginIndex": 0
+    },
+    {
+      "pathHash": "1ac431db2bc18d7440f21b1cd2a7a83f741e1bf52b56a1234e926d065de3d88a",
+      "method": "GET",
+      "status": 200,
+      "phase": "MANUAL_LIGHT",
+      "loginIndex": 0
+    },
+    {
+      "pathHash": "6cb55e97fef19735195b0020d5dd6545645efc7bc46a1d989e5cdbbf8b251030",
+      "method": "GET",
+      "status": 200,
+      "phase": "MANUAL_LIGHT",
+      "loginIndex": 0
+    },
+    {
+      "pathHash": "f0320a899084e1ad76c16312486dcce0184101b4b7b77c886228015245584536",
+      "method": "GET",
+      "status": 200,
+      "phase": "MANUAL_LIGHT",
+      "loginIndex": 0
+    },
+    {
+      "pathHash": "61e6038f2d3a6dfcdc1b123b37cd7efa3c98f1c6b3dd0aa7d2c060f38f8ed3f2",
+      "method": "GET",
+      "status": 200,
+      "phase": "MANUAL_LIGHT",
+      "loginIndex": 0
+    },
+    {
+      "path": "/api/auth/device-preferences",
+      "method": "GET",
+      "status": 200,
+      "phase": "MANUAL_LIGHT",
+      "loginIndex": 0
+    },
+    {
+      "pathHash": "66be5879ef3a006f97cdf3d9fb658d6b9ab244113bbbad159c733f0fee4efb32",
+      "method": "GET",
+      "status": 200,
+      "phase": "MANUAL_LIGHT",
+      "loginIndex": 0
+    },
+    {
+      "path": "/api/auth/device-preferences",
+      "method": "PUT",
+      "status": 200,
+      "phase": "MANUAL_LIGHT",
+      "loginIndex": 0
+    },
+    {
+      "pathHash": "4d1d330e1b27d01a8987f9f6545abad0d8974bcda7dfe864a5c5575d67e1871a",
+      "method": "GET",
+      "status": 200,
+      "phase": "MANUAL_LIGHT",
+      "loginIndex": 0
+    },
+    {
+      "pathHash": "a199efda1ba605e3869a7a8cf1051f597e455b2a0c519486f387bc64eeb5869a",
+      "method": "GET",
+      "status": 200,
+      "phase": "MANUAL_LIGHT",
+      "loginIndex": 0
+    },
+    {
+      "pathHash": "f3c86055724948219ffaedb2ba9d52d644c538d765a16899418a3476b860c86c",
+      "method": "GET",
+      "status": 200,
+      "phase": "MANUAL_LIGHT",
+      "loginIndex": 0
+    },
+    {
+      "pathHash": "f3c86055724948219ffaedb2ba9d52d644c538d765a16899418a3476b860c86c",
+      "method": "GET",
+      "status": 200,
+      "phase": "MANUAL_LIGHT",
+      "loginIndex": 0
+    },
+    {
+      "pathHash": "348ca1e77d2a6d2ce796f712240178c32249592998c418b61a79c2525e71190a",
+      "method": "GET",
+      "status": 200,
+      "phase": "SELECT_SYSTEM",
+      "loginIndex": 0
+    },
+    {
+      "path": "/api/auth/device-preferences",
+      "method": "GET",
+      "status": 200,
+      "phase": "SELECT_SYSTEM",
+      "loginIndex": 0
+    },
+    {
+      "path": "/api/auth/device-preferences",
+      "method": "PUT",
+      "status": 200,
+      "phase": "SELECT_SYSTEM",
+      "loginIndex": 0
+    },
+    {
+      "pathHash": "7f0535e63c22d48b32f13de7f8550ae1a7571d49b09e36cbfd20a7a2a91d4e9c",
+      "method": "GET",
+      "status": 200,
+      "phase": "LIVE_OS_SYSTEM",
+      "loginIndex": 0
+    },
+    {
+      "path": "/api/auth/device-preferences",
+      "method": "GET",
+      "status": 200,
+      "phase": "MANUAL_DARK",
+      "loginIndex": 0
+    },
+    {
+      "path": "/api/auth/device-preferences",
+      "method": "PUT",
+      "status": 200,
+      "phase": "MANUAL_DARK",
+      "loginIndex": 0
+    },
+    {
+      "path": "/api/auth/logout",
+      "method": "POST",
+      "status": 204,
+      "phase": "NATIVE_MIDDLE_LOGOUT",
+      "loginIndex": 0
+    }
+  ],
+  "samples": [
+    {
+      "id": "WT-01",
+      "state": "manual-light-over-os-dark",
+      "file": "WEB-THEME__WT-01-manual-light-over-os-dark__light__1440__343245083.png",
+      "sha256": "fe96f2e0725f579dbad061cd55fdafe2cbd3534c66e1a25d9ef2a95d2d206294",
+      "revision": "343245083694b85298e18b578ad8a51b54af88c9",
+      "theme": "light",
+      "width": 1440,
+      "height": 1000,
+      "rootFont": "16px",
+      "scrollWidth": 1440,
+      "personallyInspected": false
+    },
+    {
+      "id": "WT-02",
+      "state": "system-follows-live-os",
+      "file": "WEB-THEME__WT-02-system-follows-live-os__dark__1440__343245083.png",
+      "sha256": "81b20f6249bff27cbe3fac8abc8d8052c045945cd91b177ef2af5879d9bb7d3c",
+      "revision": "343245083694b85298e18b578ad8a51b54af88c9",
+      "theme": "dark",
+      "width": 1440,
+      "height": 1000,
+      "rootFont": "16px",
+      "scrollWidth": 1440,
+      "personallyInspected": false
+    },
+    {
+      "id": "WT-03",
+      "state": "manual-dark-over-os-light",
+      "file": "WEB-THEME__WT-03-manual-dark-over-os-light__dark__1440__343245083.png",
+      "sha256": "74c7908ae0ad116d92d5d5b953f91c43244ef71c5ead90add28750ebc187ef05",
+      "revision": "343245083694b85298e18b578ad8a51b54af88c9",
+      "theme": "dark",
+      "width": 1440,
+      "height": 1000,
+      "rootFont": "16px",
+      "scrollWidth": 1440,
+      "personallyInspected": false
+    }
+  ],
+  "captureAttempts": [
+    {
+      "id": "WT-01",
+      "state": "manual-light-over-os-dark",
+      "status": "CAPTURED_INSPECTION_PENDING",
+      "file": "WEB-THEME__WT-01-manual-light-over-os-dark__light__1440__343245083.png"
+    },
+    {
+      "id": "WT-02",
+      "state": "system-follows-live-os",
+      "status": "CAPTURED_INSPECTION_PENDING",
+      "file": "WEB-THEME__WT-02-system-follows-live-os__dark__1440__343245083.png"
+    },
+    {
+      "id": "WT-03",
+      "state": "manual-dark-over-os-light",
+      "status": "CAPTURED_INSPECTION_PENDING",
+      "file": "WEB-THEME__WT-03-manual-dark-over-os-light__dark__1440__343245083.png"
+    }
+  ],
+  "blocked": [],
+  "pageErrors": [],
+  "themeSteps": [
+    {
+      "label": "manual-light-retained-after-live-os-dark",
+      "mode": "light",
+      "resolved": "light",
+      "preference": "light",
+      "osDark": true,
+      "loginIndex": 0
+    },
+    {
+      "label": "system-adopts-current-os-dark",
+      "mode": "system",
+      "resolved": "dark",
+      "preference": "system",
+      "osDark": true,
+      "loginIndex": 0
+    },
+    {
+      "label": "system-live-os-light",
+      "mode": "system",
+      "resolved": "light",
+      "preference": "system",
+      "osDark": false,
+      "loginIndex": 0
+    },
+    {
+      "label": "system-live-os-dark",
+      "mode": "system",
+      "resolved": "dark",
+      "preference": "system",
+      "osDark": true,
+      "loginIndex": 0
+    },
+    {
+      "label": "manual-dark-retained-after-live-os-light",
+      "mode": "dark",
+      "resolved": "dark",
+      "preference": "dark",
+      "osDark": false,
+      "loginIndex": 0
+    }
+  ],
+  "device": {
+    "initial": {
+      "theme": null,
+      "revision": "0"
+    },
+    "putsForwarded": 3,
+    "writes": [
+      {
+        "theme": "light",
+        "revision": "1",
+        "phase": "MANUAL_LIGHT",
+        "loginIndex": 0
+      },
+      {
+        "theme": "system",
+        "revision": "2",
+        "phase": "SELECT_SYSTEM",
+        "loginIndex": 0
+      },
+      {
+        "theme": "dark",
+        "revision": "3",
+        "phase": "MANUAL_DARK",
+        "loginIndex": 0
+      }
+    ],
+    "cookiePreservedAcrossLogout": false,
+    "cookiePreservedAcrossLogin": false,
+    "last": {
+      "theme": "dark",
+      "revision": "3"
+    },
+    "forwardedPhases": [
+      "MANUAL_LIGHT",
+      "SELECT_SYSTEM",
+      "MANUAL_DARK"
+    ]
+  },
+  "nativeLogout": {
+    "forwarded": true,
+    "status": 204,
+    "sameOldBearerStatus": null,
+    "confirmed": false,
+    "fallbackUsed": false
+  },
+  "cleanup": null,
+  "captureComplete": false,
+  "completed": false,
+  "syntheticApiResponses": false,
+  "functionalActionsAdded": 0,
+  "exactOwnHandlesCaptured": [
+    true,
+    false
+  ],
+  "unknownHold": false,
+  "captureBarrierFailure": {
+    "code": "AUTH_OR_PREF_TRANSPORT_FAILED",
+    "name": "Error",
+    "phase": "NATIVE_MIDDLE_LOGOUT"
+  },
+  "failure": {
+    "code": "AUTH_CAPTURE_FAILED",
+    "name": "Error",
+    "phase": "NATIVE_MIDDLE_LOGOUT"
+  },
+  "cleanupFailure": {
+    "code": "AUTH_CAPTURE_FAILED",
+    "name": "Error",
+    "phase": "NATIVE_MIDDLE_LOGOUT"
+  },
+  "quiesce": {
+    "startedAtUtc": "2026-10-24T23:27:59.271Z",
+    "browserTransportClosed": true,
+    "noApiContinuation": true,
+    "finishedAtUtc": "2026-10-24T23:27:59.344Z"
+  },
+  "browserClosed": true,
+  "rootTerminalProofSha256": "09ff04399ce1beaea378fb06803b264e6927506df768ee647de27a611957b205",
+  "sourceUnchanged": true,
+  "finishedAtUtc": "2026-10-24T23:33:28.038Z"
+}

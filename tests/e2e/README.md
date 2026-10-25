@@ -24,12 +24,25 @@ student/admin selection, forbidden role selection, refresh rotation, session
 recovery and server-confirmed logout. `mini-app.spec.ts` checks valid and tampered
 Telegram proofs, the teacher session, profile navigation and host Back.
 
-The older `auth.spec.ts`, `role-*.spec.ts`, `headman-mark.spec.ts`,
-`student-excuse.spec.ts` and `admin-create-user.spec.ts` target the deferred
-Angular web-panel. They are retained for that client and are excluded from the
-current CI smoke. Their `fixtures/auth.ts` and legacy paths do not describe the
-Vue entry. The auth smoke blocks service workers for deterministic online auth;
-the PWA worker/offline checks remain in the mobile Vue CI job.
+The root WEB lane uses Vue: `auth.spec.ts`, `role-*.spec.ts`,
+`headman-mark.spec.ts`, `student-excuse.spec.ts` and `admin-create-user.spec.ts`.
+`fixtures/auth.ts` selects the exact server-granted role before accepting its
+canonical landing. `fixtures/web-panel-route.ts` binds each supported route to
+completed, decoded API reads and rendered feature values, including forbidden
+navigation that must never start foreign-role reads. Its browser-free controls
+run as `node fixtures/web-panel-route.control.mjs`; they do not establish a
+real browser or backend PASS.
+
+The default config still includes those WEB specs. Run them only against an
+explicitly prepared Vue root edge and their owned synthetic dataset. The isolated
+Compose command above supplies the mobile auth smoke; its root is not a WEB
+acceptance surface. Current WEB runtime acceptance and conditional cases are
+recorded in `docs/validation/web-vue-pr3/`; do not infer completion from test
+selection or recreate accepted destructive operations merely to fill this lane.
+
+The auth smoke blocks service workers for deterministic online auth; the PWA
+worker/offline checks remain in the Vue workspace CI job. Shared/mobile fixture
+helpers and artifact privacy controls remain in use.
 
 Requirements: Node 24.14+, Docker Compose v2 with `up --wait`, and an available
 isolated runtime lease when running alongside the shared development stand.

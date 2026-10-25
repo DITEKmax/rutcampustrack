@@ -66,7 +66,6 @@ export function createGenerationBoundNotificationsRealtime(
   let lastDashboardInvalidationAt = 0
   let client: StompClientHandle | null = null
   let subscriptions: StompSubscription[] = []
-
   const isCurrent = (): boolean => active && options.owner.currentGeneration() === generation
 
   const destinations = [
@@ -98,7 +97,9 @@ export function createGenerationBoundNotificationsRealtime(
     }
     assertCurrent()
 
-    if (response.status === 401 && !retried) {
+    const roleDenied = response.status === 403 && (await isRoleDenial(response))
+    assertCurrent()
+    if ((response.status === 401 || roleDenied) && !retried) {
       await options.owner.refreshFor(generation)
       assertCurrent()
       return requestTicket(true)
@@ -296,5 +297,18 @@ function exportHint(body: string): string | null {
       : null
   } catch {
     return null
+  }
+}
+
+async function isRoleDenial(response: Response): Promise<boolean> {
+  try {
+    const problem = asRecord(await response.clone().json())
+    return (
+      problem?.code === 'WRONG_ROLE' ||
+      problem?.code === 'ROLE_NOT_GRANTED' ||
+      problem?.code === 'ROLE_NOT_SELECTABLE'
+    )
+  } catch {
+    return false
   }
 }

@@ -1,0 +1,117 @@
+{
+  "evidenceKind": "real-runtime-safe-projection",
+  "originalPath": "/tmp/student-web-request-flow/summary.json",
+  "originalSha256": "267f47b4a13adc31f1825e66d50fc04aace6ec5c2546684fa9c13fa8b6ab9f76",
+  "scopeNote": "Actual EXCUSE/lost-ACK recovery/cancel/attachment/foreign denial. Plaintext operation keys and commands omitted.",
+  "checks": [
+    "actual first POST committed own excuse before lost response",
+    "unknown submission retains and locks original form",
+    "explicit reconciliation repeats original idempotency key once",
+    "successful request receives focus on actual saved card",
+    "own ticket and attachment saved by actual backend",
+    "authorized attachment download matches original bytes",
+    "Onest font is loaded from allowed dependency path",
+    "actual cancellation commits before lost receipt",
+    "unknown cancellation is reconciled by read and archive shows Cancelled",
+    "foreign student request is denied without body or attachment",
+    "no runtime errors"
+  ],
+  "errors": [],
+  "http": [
+    {
+      "path": "/api/v1/student/session",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/student/requests",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/student/requests/options",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/student/requests/excuse",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/student/requests",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/student/requests/6adbfda1a6849215f8239fca",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/student/requests/options",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/student/requests/6adbfda1a6849215f8239fca",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/student/requests/6adbfda1a6849215f8239fca/attachments/6adbfda1a6849215f8239fcb",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/student/requests/6adbfda1a6849215f8239fca",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/student/requests",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/student/session",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/student/requests/6adbfda1a6849215f8239fca",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/student/requests",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/student/requests/options",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/student/requests",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/student/requests",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/student/requests/6adbfd3aa6849215f8239fba",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/student/requests/6adbfda1a6849215f8239fca",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/student/session",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/student/requests",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/student/requests/6adbe91ba6849215f8239c44",
+      "status": 403
+    }
+  ],
+  "requestId": "6adbfda1a6849215f8239fca",
+  "attachmentId": "6adbfda1a6849215f8239fcb",
+  "attachmentSha256": "441ca0b48ac19808d7e771b86a8fe6f00a4e7fc6e327fe9d02008f9afd743852",
+  "fonts": {
+    "family": "\"Onest Variable\", Onest, sans-serif",
+    "onest": true
+  }
+}

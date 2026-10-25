@@ -1,0 +1,13 @@
+# Journal denial correction — narrow source recheck: PASS
+
+Exact revision `2d6bbe2798df4039a85780e662da0cd7de2c7432`, parent `98166cf77975a34be82e465e30e66ae1f8d64e93`, worktree `/workspace/rct-worktrees/theme-foundation`. **Единственный P2 из [исходного review](REVIEW-98166cf7.md) закрыт. Новых существенных findings в correction/influence scope нет.**
+
+Production delta — один predicate в `TeacherJournalScreen.vue:294`: `!(cause instanceof TeacherApiError) || cause.response.status === 401`. Current `AuthRequestError401` и `TmaAuthError401/403`, вышедшие из реального `TeacherApi.response` через rejected `onUnauthorized`, снова передаются без преобразования существующему host classifier. Таким образом correction сохраняет штатный путь retirement; она не меняет сам classifier или authority contract. Typed endpoint `TeacherApiError403/503` остаются локальными, поэтому исходная причина stale host warning после успешного local retry не возвращается.
+
+До emit сохраняются без изменений active revision/API/context/disposal guards и отдельный `StaleSessionGenerationError` fence. Success/finally и local projection clearing также не изменены. PCSS, static skeleton и весь прочий принятый scope98166 byte-unchanged относительно parent; production platform imports, App/transport/common contracts не добавлены. Commit меняет ровно screen и существующий test.
+
+Прочитан весь двухфайловый diff и адресный реальный transport path. Новые случаи используют настоящий `TeacherApi`: journal401 → одна попытка `onUnauthorized` → actual platform error; проверяют identity переданного cause, один journal read и отсутствие автоматического retry после отказа. PWA401 и TMA401/403 представлены отдельно. Deferred refresh denial старого query после смены subject не доходит до host. Existing typed403/503 same-query recovery cases сохранены. `showExport:false` ограничивает новые authority cases journal boundary; остальные tests по умолчанию сохраняют export behavior. Первоначальный invalid-format fixture failure отражён в handoff и raw log, итоговый PASS его не скрывает.
+
+Переиспользованы author evidence: `denial-correction-unit.log` — **15/15 PASS**, `denial-correction-format.log` — scoped Prettier PASS; strict PWA VueTS и diff-check PASS заявлены в `DENIAL-CORRECTION-HANDOFF.json` (VueTS log пуст, соответствует reported exit0). Новых tests/typecheck/browser/API/runtime/private-value reads и product edits reviewer не выполнял. HEAD совпал с указанным commit; untracked node_modules не являются product delta. After visuals этим source review не квалифицированы; before actual392 и исходный98166 review сохранены отдельно.
+
+Requested model: gpt-6.1-sol/high; served-model telemetry недоступна.

@@ -1,0 +1,106 @@
+{
+  "sourceCommit": "9e547115125ddf8cdf4f4431331923e652d75843",
+  "integratedSource": "6219ca60a322d29921575535eccbf12efa76e304",
+  "scope": "one flex-wrap:wrap line in TeacherLessonCard PCSS; other product bytes preserved",
+  "sourceFileSha256": "e73537a2b110c74db2dbeea18e08256dedfcee0f38352f7494e33b6bf622a257",
+  "sourceReview": "teacher-meta-REVIEW-9e547115.md",
+  "matchingPwaBuild": {
+    "exit": 0,
+    "runs": 1,
+    "command": "npm --prefix frontends run build --workspace @rct/pwa-vue -- --outDir <fresh-root-matching-pwa-build>/dist",
+    "includesStrictTypecheck": true,
+    "logSha256": "1a1454c9e6d6dee4b8e28b35ef60c0097cdd17cb00ed98ad8d108fcfcd60ff1d",
+    "assets": [
+      {
+        "path": "apple-touch-icon.png",
+        "bytes": 5948,
+        "sha256": "14fbaba63e8e98d36b514b0c9dc948367928493be5550ef2c10213d42cc320fa"
+      },
+      {
+        "path": "assets/AttachmentPdfPreview-CzqUjaac.css",
+        "bytes": 5449,
+        "sha256": "a5da77f8de0fe765cda6ba5fb192f6808b5fd9ce4ab187fc9b513fd35fc729b6"
+      },
+      {
+        "path": "assets/AttachmentPdfPreview-D9_7feX3.js",
+        "bytes": 497217,
+        "sha256": "3402c8849cd94f03ac7aac299373fbf958da436c02a9bdaa189f1fa4ee528854"
+      },
+      {
+        "path": "assets/index-B8NGpc2l.js",
+        "bytes": 1801492,
+        "sha256": "dd3b269004557d4d5a92c27b3661864f93bcd45ba7c3901b137f4d2897461456"
+      },
+      {
+        "path": "assets/index-CGDvq0Jr.css",
+        "bytes": 505350,
+        "sha256": "549f348fd7290ec1c5f0db98aaad414bbf2500498764a3100ab5dbdcb9b896bc"
+      },
+      {
+        "path": "assets/onest-cyrillic-wght-normal-DXI_y_WF.woff2",
+        "bytes": 14228,
+        "sha256": "37bc16874135c16134679b1db25b87fe80eb9fcd4ef3666af7c531bfde204fe2"
+      },
+      {
+        "path": "assets/onest-latin-ext-wght-normal-CnNj8hVb.woff2",
+        "bytes": 15992,
+        "sha256": "391a9b24b5c46ebff5d21f53cdb2edaa31c3446da3b722f038ab07d75d02a82d"
+      },
+      {
+        "path": "assets/onest-latin-wght-normal-CUIqqgP9.woff2",
+        "bytes": 32236,
+        "sha256": "67849bcc11e02177442da14ad954bfe1cc709553dad137b5003449b303e83fc3"
+      },
+      {
+        "path": "assets/pdf.worker.min-Dkey6ZUl.mjs",
+        "bytes": 1321307,
+        "sha256": "145d2dd3ab0c86151011dba95acfa2d5336e2accd59388ea43dbee0efddaaec6"
+      },
+      {
+        "path": "favicon.svg",
+        "bytes": 664,
+        "sha256": "85223ceb39a2ebb25dcc77ddb5287ea27b982c2ce5d2cf444a6e3507e573b9e8"
+      },
+      {
+        "path": "icon-192.png",
+        "bytes": 6336,
+        "sha256": "0abcc4bf0d8a8e4846400da1735978044ad44e7b922fb4e62f041a84e88bd39c"
+      },
+      {
+        "path": "icon-512.png",
+        "bytes": 25658,
+        "sha256": "28bf8a67bba67c6b573a52e708387e53c1c359aed8c49327efc2f18ca6b62242"
+      },
+      {
+        "path": "index.html",
+        "bytes": 748,
+        "sha256": "13c0d9426b49c0036c68f7a44d0c6f5470c378078a60073f277e354032660aca"
+      },
+      {
+        "path": "manifest.webmanifest",
+        "bytes": 442,
+        "sha256": "68fb36b82a10fbf5eb3ec576be1f6b9164ec8bb1542938b47514eec71cbb32fb"
+      },
+      {
+        "path": "sw-assets.js",
+        "bytes": 408,
+        "sha256": "d6090bcfe2f568201653c0959628c397dca8270e4187e9a68f2c2008bdfb9a9a"
+      },
+      {
+        "path": "sw.js",
+        "bytes": 8394,
+        "sha256": "436d4b5dfe423a0282de73de33ca9e2a0b1fa39f681f172185874c62b636ab8c"
+      },
+      {
+        "path": "version.json",
+        "bytes": 207,
+        "sha256": "429b1f8721e9fa3bcd6067c40ceb338443b9a842f635aefae021b68303538764"
+      }
+    ],
+    "warning": "Existing chunk >500kB; limits unchanged"
+  },
+  "tma": "Shared CSS import unchanged; previous strict/build reused, no new TMA runtime claim",
+  "backendJarInputs": "unchanged1530/31a5; no rebuild or suite replay",
+  "runtimeAfter": "PENDING; source/build do not close visualP3 or final assembledNginx gate",
+  "newTests": 0
+}

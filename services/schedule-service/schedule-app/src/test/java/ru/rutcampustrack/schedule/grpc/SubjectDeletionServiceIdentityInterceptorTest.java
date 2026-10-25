@@ -27,13 +27,18 @@ class SubjectDeletionServiceIdentityInterceptorTest {
     private static final String METHOD =
             SubjectDeletionParticipantGrpc.getApplyMethod().getFullMethodName();
 
-    @Test
-    void exactMutationOverTlsBindsOnlyAcademicPrincipal() {
+    @org.junit.jupiter.params.ParameterizedTest
+    @org.junit.jupiter.params.provider.ValueSource(
+            strings = {
+                "rutcampustrack.subjectdeletion.SubjectDeletionParticipant/Apply",
+                "rutcampustrack.groupdeletion.GroupDeletionParticipant/Apply"
+            })
+    void exactMutationOverTlsBindsOnlyAcademicPrincipal(String method) {
         var interceptor = new SubjectDeletionServiceIdentityInterceptor(TOKEN);
         var called = new AtomicBoolean();
         var principal = new AtomicReference<ServicePrincipal>();
         interceptor.interceptCall(
-                call(METHOD, true),
+                call(method, true),
                 headers(TOKEN),
                 throughLegacy(
                         (c, h) -> {
@@ -45,8 +50,13 @@ class SubjectDeletionServiceIdentityInterceptorTest {
         assertThat(principal.get()).isEqualTo(ServicePrincipal.ACADEMIC_SERVICE);
     }
 
-    @Test
-    void missingWrongDuplicateOrPlaintextIdentityCannotReachMutation() {
+    @org.junit.jupiter.params.ParameterizedTest
+    @org.junit.jupiter.params.provider.ValueSource(
+            strings = {
+                "rutcampustrack.subjectdeletion.SubjectDeletionParticipant/Apply",
+                "rutcampustrack.groupdeletion.GroupDeletionParticipant/Apply"
+            })
+    void missingWrongDuplicateOrPlaintextIdentityCannotReachMutation(String method) {
         var interceptor = new SubjectDeletionServiceIdentityInterceptor(TOKEN);
         var other = new byte[32];
         Arrays.fill(other, (byte) 1);
@@ -55,7 +65,7 @@ class SubjectDeletionServiceIdentityInterceptorTest {
         duplicate.put(DirectedServiceCredential.TOKEN_METADATA_KEY, TOKEN);
         for (var metadata : List.of(new Metadata(), wrong, duplicate)) {
             metadata.put(legacyKey(), "legacy-secret");
-            var c = call(METHOD, true);
+            var c = call(method, true);
             var bypass = new AtomicBoolean();
             interceptor.interceptCall(
                     c,
@@ -71,7 +81,7 @@ class SubjectDeletionServiceIdentityInterceptorTest {
                             argThat(s -> s.getCode() == Status.Code.UNAUTHENTICATED),
                             any(Metadata.class));
         }
-        var plain = call(METHOD, false);
+        var plain = call(method, false);
         var plainHeaders = headers(TOKEN);
         plainHeaders.put(legacyKey(), "legacy-secret");
         var bypass = new AtomicBoolean();

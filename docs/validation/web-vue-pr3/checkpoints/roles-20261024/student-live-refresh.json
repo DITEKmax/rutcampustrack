@@ -1,0 +1,119 @@
+{
+  "evidenceKind": "real-runtime-safe-projection",
+  "originalPath": "/tmp/student-web-refresh-actual/summary.json",
+  "originalSha256": "1ed25f570438eab102d3698f6680e70a1aac2c5e37f70814c72b5306176ddb1d",
+  "scopeNote": "Actual ordinary hover/focus/filters and dirty-draft deferral at757.",
+  "revision": "757b35bddf54c0e0361393ccd81d5fc0d495cc8f",
+  "checks": [
+    "ordinary hover and keyboard focus permit an actual REST refresh",
+    "same-query live refresh keeps selected lecture and real subject filter",
+    "focused mark remains the same connected DOM node",
+    "live read retains focused expanded mark detail",
+    "detail Escape returns to original mark after refresh",
+    "deliberately empty type selection stays empty after live refresh",
+    "real request form draft defers the invalidated head read",
+    "draft text and focus stay intact while replacement is deferred",
+    "closing the draft releases the pending actual REST read",
+    "targeted checks created no student mutations",
+    "no runtime errors"
+  ],
+  "errors": [],
+  "reads": [
+    {
+      "path": "/api/v1/student/session",
+      "query": "",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/student/session",
+      "query": "",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/student/attendance",
+      "query": "?semesterId=2",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/student/statistics/subjects/4",
+      "query": "?semesterId=2&range=weeks&types=LECTURE",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/student/session",
+      "query": "",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/student/attendance",
+      "query": "?semesterId=2",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/student/statistics/subjects/4",
+      "query": "?semesterId=2&range=weeks&types=LECTURE",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/student/session",
+      "query": "",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/student/attendance",
+      "query": "?semesterId=2",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/student/statistics/subjects/4",
+      "query": "?semesterId=2&range=weeks&types=LECTURE",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/student/session",
+      "query": "",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/student/attendance",
+      "query": "?semesterId=2",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/student/statistics/subjects/4",
+      "query": "?semesterId=2&range=weeks&types=LECTURE",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/student/session",
+      "query": "",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/student/requests",
+      "query": "?bucket=OPEN&page=0&size=10",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/student/requests/options",
+      "query": "",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/student/session",
+      "query": "",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/student/requests",
+      "query": "?bucket=OPEN&page=0&size=10",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/student/requests/options",
+      "query": "",
+      "status": 200
+    }
+  ],
+  "posts": 0
+}

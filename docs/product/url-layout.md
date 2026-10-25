@@ -1,74 +1,39 @@
-# URL Layout — RutCampusTrack Frontends
+# URL layout — текущие Vue-клиенты
 
-Decided: Phase 33 (v7.0 Infrastructure)
+Общий внешний Nginx обслуживает WEB, PWA, TMA, landing и Gateway. История решений
+v7/v9 сохранена в Git и milestone-документах; активный Angular package удалён в PR3.
 
-## Port Assignments
+| Клиент | Source | Dev по умолчанию | Production path |
+|---|---|---:|---|
+| WEB |`frontends/web-vue`|14210|`/login`, role routes от`/`|
+| PWA |`frontends/pwa-vue`|5175|`/app/`|
+| TMA |`frontends/tma-vue`|5176|`/mini-app/`|
+| Landing |`frontends/landing`|согласно dev Compose|`/presentation/`|
 
-| Frontend    | Container port | Host port | Dev port | Technology    |
-|-------------|---------------|-----------|----------|---------------|
-| PWA         | 80            | 80        | 5173     | Vue + Vite    |
-| Mini App    | 80            | 3000      | 5174     | Vue + Vite    |
-| Web Panel   | 80            | 4200      | 4200     | Angular CLI   |
-| Landing     | 80            | 8081      | n/a      | Static HTML   |
+В production внутренние static-контейнеры слушают80 в private network, наружу
+выходит общий Nginx. Идентичность `web-panel-nginx`/`rct-web-panel-nginx` сохранена
+для совместимого DNS/image wiring; её Dockerfile теперь `web-vue/Dockerfile`,
+это не Angular. Остальные frontend Dockerfile и nginx.conf находятся в соответствующих
+Vue/landing каталогах.
 
-## Container Names
+`/api/*` проксируется в Gateway. Notifications используют SockJS/STOMP: source base
+`/api/ws`, реальные transport URLs включают`/api/ws/info` и session suffix, которые
+обслуживает существующий`/api/ws/` proxy. Test createSocket seam не является
+доказательством недоступности production SockJS.
 
-| Frontend    | Container name          | nginx config path                    |
-|-------------|------------------------|--------------------------------------|
-| PWA         | rct-pwa-nginx          | frontends/pwa-vue/nginx.conf          |
-| Mini App    | rct-mini-app-nginx     | frontends/tma-vue/nginx.conf          |
-| Web Panel   | rct-web-panel-nginx    | frontends/web-panel/nginx.conf       |
-| Landing     | rct-landing-nginx      | frontends/landing/nginx.conf         |
+После входа route выбирают [role-home](../../frontends/web-vue/src/app/role-home.ts)
+и [router guards](../../frontends/web-vue/src/app/router.ts) по текущему selected grant,
+readOnly/assignment/admin permissions. Старый `is_headman` shortcut и исторические
+`*/dashboard` адреса не описывают новый контракт. Deep links и refresh должны проходить
+через общий Nginx; отсутствие hashed asset должно давать404, не HTML fallback.
 
-## Gateway CORS Origins (dev)
+PWA/TMA production build задаёт `VITE_PUBLIC_BASE=/app/` или`/mini-app/`, fixture mode
+выключен. Default root-base dev artifact не подходит для этих production prefixes.
+Version policy, service worker scope и существующий WebPush остаются частью PWA.
+Dev origin/CORS зависит от явно выбранного порта и backend-конфигурации; не подменять
+Origin и не выключать проверки ради runtime PASS.
 
-- `http://localhost:5173` -- PWA dev (Vite)
-- `http://localhost:80` -- PWA prod (pwa-nginx)
-- `http://localhost:5174` -- Mini App dev (Vite)
-- `http://localhost:3000` -- Mini App prod (mini-app-nginx)
-- `http://localhost:4200` -- Web Panel dev/prod (Angular CLI / web-panel-nginx)
-
-Landing does not make API calls -- no CORS origin needed.
-
-## Notes
-
-- All containers listen on port 80 internally; host port differs per container.
-- Production domains TBD -- only localhost origins configured in Phase 33.
-- Mini App Vite port (5174) is one above PWA (5173) to avoid conflict.
-- Angular CLI defaults to 4200; web-panel-nginx uses the same port for consistency.
-
----
-
-## Production Path Routing (v9.0)
-
-Decided: Phase 49-50 (v9.0). Nginx reverse proxy at `https://ruttrack.site`.
-
-| Path | Served By | Requirement | Notes |
-|------|-----------|-------------|-------|
-| `/` | 301 redirect → `/login` | INFRA-v9-01 | Единая точка входа. Корень больше не отдаёт PWA. |
-| `/login` | web-panel SPA (Angular, baseHref `/`) | AUTH-v9-01, INFRA-v9-04 | Login form для всех ролей. |
-| `/admin/*` | web-panel SPA (lazy feature) | — | Роль ADMIN после login. |
-| `/teacher/*` | web-panel SPA (lazy feature) | — | Роль TEACHER. |
-| `/student/*` | web-panel SPA (lazy feature) | AUTH-v9-05 | Роль STUDENT (headman тоже проходит studentGuard). |
-| `/headman/*` | web-panel SPA (lazy feature) | AUTH-v9-04 | STUDENT + is_headman=true (headmanGuard). |
-| `/app/` | PWA (React + Vite, rct-pwa-nginx) | INFRA-v9-03 | Мобильный клиент RutTrack. |
-| `/mini-app/` | Telegram Mini App (React + Vite, rct-mini-app-nginx) | M19 | Telegram WebApp-клиент, открывается из бота без login/password. |
-| `/presentation/` | Landing (static HTML, rct-landing-nginx) | INFRA-v9-02, LAND-v9-01 | Описание проекта; доступ только по прямой ссылке. |
-| `/api/*` | API Gateway (localhost:8080 внутри сети) | — | REST + gRPC (обратный прокси из backend). |
-| `/api/ws` | Notification Web (notification-web:9094) | — | STOMP WebSocket endpoint. |
-
-### Пост-login routing
-
-| Роль | Landing dashboard | Guard |
-|------|-------------------|-------|
-| ADMIN | `/admin/dashboard` | roleGuard(['ADMIN']) |
-| TEACHER | `/teacher/dashboard` | roleGuard(['TEACHER']) |
-| STUDENT (is_headman=false) | `/student/dashboard` | studentGuard |
-| STUDENT (is_headman=true) | `/headman/dashboard` | headmanGuard (+ passes studentGuard) |
-
-Реализация: `AuthService.resolveDashboardFor()` — single source of truth (Phase 50).
-
-### Deprecated paths
-
-- `/landing/` — удалён в Phase 49 (INFRA-v9-02), перенесён в `/presentation/`.
-- Корень `/` больше не отдаёт PWA — PWA теперь на `/app/` (INFRA-v9-01, INFRA-v9-03).
+PR3 локальные standalone namespaces/ports задаются переносимыми launchers и не
+заменяют старый проект владельца. Все фактические gate статусы — в
+[CURRENT-PRIORITIES](../plans/web-vue-pr3/CURRENT-PRIORITIES.md) и PR; source/build
+не означают deploy или owner-local group PASS.

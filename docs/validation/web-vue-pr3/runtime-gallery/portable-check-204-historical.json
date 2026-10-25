@@ -1,0 +1,32 @@
+{
+  "kind": "portable-gallery-data-only-refresh",
+  "result": "PASS metadata/hash/path only",
+  "imageCount": 204,
+  "imagePin": "08a3d1aa45b23967168589afa1c2d7ff083e1de9",
+  "artifactSha256": "c5c6b5a0fcb850afb594fe76d03e3481cadf31620301afef3a65b979eae683cb",
+  "renderLogicSha256": "3ed5f9c841d201e93facb4c9d7bd6074e1fe9b857e4edf4da7a91f1ed0e8dc83",
+  "renderLogicUnchanged": true,
+  "renderHashDefinition": "UTF-8 contents between standalone script tags, excluding tags. Byte equality against Git a6c68a639 HTML whose full hash matches the prior200 browser smoke. Prior reported render hash is retained separately and not reused.",
+  "preMutationDiagnostic": "Metadata helper initially expected prior reported render hash; stopped before files/HTTP. Wrong image-pin Git lookup also stopped before files/HTTP. Correct publication a6 hash matches smoke and renderer byte-equality passes.",
+  "priorBrowserSmoke": "portable-check-200-51e46f715.json",
+  "priorDataOnlyRefresh": "portable-check-202-ac5c37ab2.json",
+  "browserNotRerun": "Only metadata/pin/count updated; unchanged rendering retains prior200-frame smoke, not a new204-browser PASS",
+  "functionalActionCount": 0,
+  "newPngHttpsReads": [
+    {
+      "id": "WEB-ADMIN-DASHBOARD__fresh-role-home__light__1440__0421d344c",
+      "httpStatus": 200,
+      "bytes": 78425,
+      "sha256": "8021bf3ffe36b0636424b5b1204fe7cb03ec4239f3be9cacf09d7251eb322c1e",
+      "TLSVerification": true
+    },
+    {
+      "id": "WEB-ADMIN-SEMESTERS__active-semester-changed__light__1440__0421d344c",
+      "httpStatus": 200,
+      "bytes": 71738,
+      "sha256": "f14a28ce7b880f1c3df7d80003b007e9d9e2ba428ba4010bd46628b1efe28bce",
+      "TLSVerification": true
+    }
+  ],
+  "roleSemesterAcceptance": "../checkpoints/role-semester-20261024/manifest.json"
+}

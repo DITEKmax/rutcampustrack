@@ -1,0 +1,23 @@
+{
+  "measuredAtMoscow": "2026-10-25T09:35:37.970930+03:00",
+  "scope": "owner-authorized exact reproducible/surplus cleanup; no product changes",
+  "planSha256": "56a6c98c4cabad9fa2810d55d53e5d99befa4d268eb31c7d3db75c79385612d5",
+  "beforeBatch1FreeBytes": 5244747776,
+  "afterBatch3FreeBytes": 6531416064,
+  "netObservedFreeIncreaseBytes": 1286668288,
+  "sumOfInBatchAvailabilityDeltas": 1287118848,
+  "currentFreeBytes": 6530658304,
+  "minimumGroupFreeBytes": 7516192768,
+  "gapToMinimumBytes": 985534464,
+  "currentFreeGiB": 6.082149505615234,
+  "groupResourceReady": false,
+  "cleanupState": "STOP_SAFE_CANDIDATES_EXHAUSTED; do not broaden onto dependencies/rollback/source/data",
+  "deletedCount": 109,
+  "batchCounts": [
+    98,
+    5,
+    6
+  ],
+  "retained": "all12WT/Git/sourceWIP, allrecoveryZIPs, originalhandoffZIP/extracted/manifests/evidence,25protectedJARs+3legacysetupJARs, allnode_modules/mainnpm/modules2/wrapper, allDockerimages/containers/volumes/queues/keys/config/data",
+  "groupRuntimeFixturesDelete": "0; 7GiB preflight and2GiB hard/2.5GiB early guards unchanged"
+}

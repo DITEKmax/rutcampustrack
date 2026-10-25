@@ -610,7 +610,17 @@ services:
       retries: 5
       start_period: 75s
 
-  # Current mobile Vue frontends; no external Telegram bot is started.
+  # Current Vue frontends; no external Telegram bot is started.
+
+  web-nginx:
+    build:
+      context: ./frontends
+      dockerfile: web-vue/Dockerfile
+    image: rct/web-nginx:${IMAGE_TAG:-e2e-local}
+    expose:
+      - '80'
+    networks:
+      - private_net
 
   pwa-nginx:
     build:
@@ -636,7 +646,7 @@ services:
     networks:
       - private_net
 
-  # TLS reverse proxy for the current mobile clients and backend.
+  # TLS reverse proxy for the current Vue clients and backend.
 
   nginx:
     image: nginx:1.27-alpine
@@ -653,6 +663,8 @@ services:
     depends_on:
       api-gateway:
         condition: service_healthy
+      web-nginx:
+        condition: service_started
       pwa-nginx:
         condition: service_started
       mini-app-nginx:

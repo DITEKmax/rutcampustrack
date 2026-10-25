@@ -33,12 +33,18 @@ public class SubjectDeletionServiceIdentityInterceptor implements ServerIntercep
         delegate =
                 new ServiceIdentityServerInterceptor(
                         ServicePrincipal.SCHEDULE_SERVICE,
-                        Map.of(METHOD, ServicePrincipal.ACADEMIC_SERVICE),
+                        Map.of(
+                                METHOD,
+                                ServicePrincipal.ACADEMIC_SERVICE,
+                                "rutcampustrack.groupdeletion.GroupDeletionParticipant/Apply",
+                                ServicePrincipal.ACADEMIC_SERVICE),
                         credentials);
     }
 
     static boolean admitted(ServerCall<?, ?> call) {
-        return METHOD.equals(call.getMethodDescriptor().getFullMethodName())
+        return (METHOD.equals(call.getMethodDescriptor().getFullMethodName())
+                        || "rutcampustrack.groupdeletion.GroupDeletionParticipant/Apply"
+                                .equals(call.getMethodDescriptor().getFullMethodName()))
                 && ServicePrincipal.ACADEMIC_SERVICE.equals(ServicePrincipal.CONTEXT_KEY.get());
     }
 

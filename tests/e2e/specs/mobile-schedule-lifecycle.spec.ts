@@ -1,3 +1,4 @@
+import { diagnosticCase, diagnosticHttpFailure } from '../fixtures/diagnostic-events';
 import { createHash, randomUUID } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
 import type { Page, Response, TestInfo } from '@playwright/test';
@@ -408,7 +409,7 @@ async function fillSlot(page: Page, dataset: MobileDataset, labels: string[], ro
 // JS-HEADMAN-40 / DF-PWA-BUILDER-REMOVE-001. Actual Vue DELETE/return and parity
 // changes; the already accepted real-PG elapsed-gap/no-backfill rule is reused.
 // No clock advance or claim of an elapsed absence interval in this browser case.
-test('HEADMAN removes and returns a recurring slot without losing past identity or marks @real-mobile', async ({
+test('HEADMAN removes and returns a recurring slot without losing past identity or marks @real-mobile', { annotation: diagnosticCase('HEADMAN_RECURRING_SLOT_HISTORY') }, async ({
   page,
   scenario: dataset,
   teachingInstant,
@@ -1468,7 +1469,7 @@ test('HEADMAN removes and returns a recurring slot without losing past identity 
     if (overviewResponse.status() === 429) throw new Error('Student statistics HTTP 429');
     if (overviewResponse.status() === 500) throw new Error('Student statistics HTTP 500');
     if (overviewResponse.status() === 502) throw new Error('Student statistics HTTP 502');
-    if (overviewResponse.status() === 503) throw new Error('Student statistics HTTP 503');
+    if (overviewResponse.status() === 503) throw diagnosticHttpFailure(new Error('Student statistics HTTP 503'), 'STUDENT_STATS_HTTP503', 503);
     if (overviewResponse.status() === 504) throw new Error('Student statistics HTTP 504');
     expect(overviewResponse.status()).toBe(200);
     const overview = await overviewResponse.json();
@@ -1940,7 +1941,7 @@ test('HEADMAN removes and returns a recurring slot without losing past identity 
 
 // The ready conditional route is the semester BFF. Today is the existing Vue
 // room consumer; a scoped HTTP PATCH is the accepted cache-invalidation trigger.
-test('STUDENT warm semester ETag stays scoped and refreshes the same physical room in Today @real-mobile', async ({
+test('STUDENT warm semester ETag stays scoped and refreshes the same physical room in Today @real-mobile', { annotation: diagnosticCase('STUDENT_SEMESTER_ROOM_REFRESH') }, async ({
   page,
   scenario: dataset,
 }, info) => {

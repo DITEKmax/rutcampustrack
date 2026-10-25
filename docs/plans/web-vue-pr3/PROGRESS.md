@@ -608,3 +608,17 @@ Conditional visual список конечный: [VISUAL-REMAINDER](VISUAL-REMA
 helper credentials/grants не квалифицированы, group password privacy, manual row0,
 orphan без новой страницы. Source117, accepted116 и visual/runtime оси раздельны.
 Новых обязательных cloud повторов и продуктовых вопросов нет. CI-family PAUSED.
+
+
+### Source-only передача завершена
+
+Snapshot08e08aedc: ZIP11130527B, SHA256caa5b61406f5bd6a37f78169159fef73cf512b58c1e8cadd8ed1245e66d8f82c,
+3666sourcefiles/3668entries; CRC/safe paths/allSHA/mode/exactGitbytes independentPASS.
+Public sourceassets/Gradlewrapper/canonicallanding входят, private/cloud/data/keys/
+deps/builds/screenshots не входят. Source-only snapshot требуетfreshGitclone для guards;
+это не offlineGit/standbackup. Старый WIPZIP8784846B/00fb сохранён без изменения.
+Полный native scanrawEXIT1/12 сохранён; все12 public UUID/typeannotations/mockpublicVAPID
+независимо квалифицированы, unresolved0, правила/source не ослаблены ради сканера.
+[Проверка и safe qualification](../../validation/web-vue-pr3/checkpoints/source-only-20261025/README.md).
+Этот последний пакет — только docs/archive receipt; runtime-qualifiedsource240 и
+всеproduct/config/launcherbytes08e остаются неизменными. Нет причины повторять закрытые проверки.

@@ -1,0 +1,268 @@
+{
+  "kind": "MANUAL_QUALIFICATION_OF_REUSED_NATIVE_ARCHIVE_SOURCE_SCAN",
+  "observedAtUtc": "2026-10-25T09:27:02.738520+00:00",
+  "sourceSha": "08e08aedc00dd7a6eae173a9766dbfcc55c1ba8c",
+  "nativeScanner": "Gitleaks8.22.1",
+  "nativeExit": 1,
+  "nativeFindings": 12,
+  "nativeReportSha256": "d72ccd8caf07b13c1d9edf78e5268d9a35436fb9189a6f1dd0cd807262dde61d",
+  "scannerReruns": 0,
+  "manuallyQualifiedPublicNonsecretFindings": 12,
+  "unresolvedFindings": 0,
+  "genuinePrivateOrCloudSecretsIdentified": 0,
+  "rawCandidateValuesOrMatchSnippetsExported": false,
+  "sourceOrRuleOrIgnoreOrHistoryChanges": false,
+  "sourceBehaviorExecution": 0,
+  "findings": [
+    {
+      "nativeFindingIndex": 1,
+      "ruleId": "generic-api-key",
+      "sourcePath": "frontends/mobile-core/src/features/admin-semester/admin-semester-client.test.ts",
+      "startLine": 252,
+      "endLine": 252,
+      "actualSourceCandidateSha256": "8e3dd49cf77db83fee89e37b07156ea3eacdaa2d7c1a21c657b7598db197f663",
+      "sourceCandidateShape": "FIXED_UUID_LITERAL",
+      "classification": "PUBLIC_TEST_IDEMPOTENCY_UUID",
+      "reason": "Fixed expected administrative semester request idempotency UUID in mocked unit-test requests; not authentication material.",
+      "qualifiedPublicNonsecret": true,
+      "sourceBlob": "4809ab734f40266e855ecda4b85a81105b4585f9",
+      "exactSourceBytesMatchArchiveAndPublishedGit": true,
+      "sourceBlobUnchangedFromRuntime240": true,
+      "redactedPlaceholderNotUsedAsCandidate": true,
+      "evidence": {
+        "testFile": true,
+        "operationIdentityFieldNotAccessToken": true
+      }
+    },
+    {
+      "nativeFindingIndex": 2,
+      "ruleId": "generic-api-key",
+      "sourcePath": "frontends/mobile-core/src/dev/NotificationsReview.vue",
+      "startLine": 175,
+      "endLine": 175,
+      "actualSourceCandidateSha256": "4beaf4bf3fa4a27bbed49ce0ca33cd66843b9b4ae56a05f97885f1ffe0fd1202",
+      "sourceCandidateShape": "UNQUOTED_TYPESCRIPT_TYPE_IDENTIFIER",
+      "classification": "PUBLIC_TYPESCRIPT_API_TYPE_SYMBOL",
+      "reason": "Unquoted static TypeScript API type annotation on a local review object; public type definitions exist; no credential literal or secret assignment.",
+      "qualifiedPublicNonsecret": true,
+      "sourceBlob": "c4c9b3036b7550f18286a2f79fdeae0f6d300520",
+      "exactSourceBytesMatchArchiveAndPublishedGit": true,
+      "sourceBlobUnchangedFromRuntime240": true,
+      "redactedPlaceholderNotUsedAsCandidate": true,
+      "evidence": {
+        "quotedLiteralInMatchedSource": false,
+        "publicTypeDefinitionFiles": [
+          "frontends/mobile-core/src/features/notifications/notifications-v2-client.ts",
+          "frontends/mobile-core/src/features/notifications/notifications-v2-models.ts"
+        ]
+      }
+    },
+    {
+      "nativeFindingIndex": 3,
+      "ruleId": "generic-api-key",
+      "sourcePath": "frontends/mobile-core/src/features/headman-journal/headman-journal-client.test.ts",
+      "startLine": 166,
+      "endLine": 166,
+      "actualSourceCandidateSha256": "02bc96294e3aef8e4fe68e1f9a4b05beb38ba90866365d7912df949db653e1df",
+      "sourceCandidateShape": "FIXED_UUID_LITERAL",
+      "classification": "PUBLIC_TEST_REQUEST_UUID",
+      "reason": "Fixed UUID asserted as lesson-transfer requestKey in a mocked client unit test.",
+      "qualifiedPublicNonsecret": true,
+      "sourceBlob": "dde223fcc3195a90a227daa6e07317889d561725",
+      "exactSourceBytesMatchArchiveAndPublishedGit": true,
+      "sourceBlobUnchangedFromRuntime240": true,
+      "redactedPlaceholderNotUsedAsCandidate": true,
+      "evidence": {
+        "testFile": true,
+        "operationIdentityFieldNotAccessToken": true
+      }
+    },
+    {
+      "nativeFindingIndex": 4,
+      "ruleId": "generic-api-key",
+      "sourcePath": "frontends/mobile-core/src/features/headman-journal/headman-journal-client.test.ts",
+      "startLine": 252,
+      "endLine": 252,
+      "actualSourceCandidateSha256": "02bc96294e3aef8e4fe68e1f9a4b05beb38ba90866365d7912df949db653e1df",
+      "sourceCandidateShape": "FIXED_UUID_LITERAL",
+      "classification": "PUBLIC_TEST_REQUEST_UUID",
+      "reason": "Same fixed test UUID asserted in an exact replay request body; operation metadata, not an access credential.",
+      "qualifiedPublicNonsecret": true,
+      "sourceBlob": "dde223fcc3195a90a227daa6e07317889d561725",
+      "exactSourceBytesMatchArchiveAndPublishedGit": true,
+      "sourceBlobUnchangedFromRuntime240": true,
+      "redactedPlaceholderNotUsedAsCandidate": true,
+      "evidence": {
+        "testFile": true,
+        "operationIdentityFieldNotAccessToken": true
+      }
+    },
+    {
+      "nativeFindingIndex": 5,
+      "ruleId": "generic-api-key",
+      "sourcePath": "frontends/mobile-core/src/features/homework/headman-homework-client.test.ts",
+      "startLine": 13,
+      "endLine": 13,
+      "actualSourceCandidateSha256": "c8881b9773b21ab4a7a11315808215090a696c3dded9ebb889afec2972fff67a",
+      "sourceCandidateShape": "FIXED_UUID_LITERAL",
+      "classification": "PUBLIC_TEST_REQUEST_UUID",
+      "reason": "File-local homework fixture requestKey UUID used in mocked unit-test fixtures.",
+      "qualifiedPublicNonsecret": true,
+      "sourceBlob": "8d26675f63d02b9e0057c51c7fa2322fa125ffa4",
+      "exactSourceBytesMatchArchiveAndPublishedGit": true,
+      "sourceBlobUnchangedFromRuntime240": true,
+      "redactedPlaceholderNotUsedAsCandidate": true,
+      "evidence": {
+        "testFile": true,
+        "operationIdentityFieldNotAccessToken": true
+      }
+    },
+    {
+      "nativeFindingIndex": 6,
+      "ruleId": "generic-api-key",
+      "sourcePath": "frontends/mobile-core/src/features/homework/headman-homework-client.test.ts",
+      "startLine": 501,
+      "endLine": 501,
+      "actualSourceCandidateSha256": "fd319003f7ae3d111b56cdecd2057135abf1691a71eee9cb5a4cfb73eb4711af",
+      "sourceCandidateShape": "FIXED_UUID_LITERAL",
+      "classification": "PUBLIC_NEGATIVE_TEST_REQUEST_UUID",
+      "reason": "Deliberately different fixed request UUID used to reject a mismatched mocked publication receipt.",
+      "qualifiedPublicNonsecret": true,
+      "sourceBlob": "8d26675f63d02b9e0057c51c7fa2322fa125ffa4",
+      "exactSourceBytesMatchArchiveAndPublishedGit": true,
+      "sourceBlobUnchangedFromRuntime240": true,
+      "redactedPlaceholderNotUsedAsCandidate": true,
+      "evidence": {
+        "testFile": true,
+        "operationIdentityFieldNotAccessToken": true
+      }
+    },
+    {
+      "nativeFindingIndex": 7,
+      "ruleId": "generic-api-key",
+      "sourcePath": "frontends/mobile-core/src/features/notifications/NotificationsScreen.vue",
+      "startLine": 27,
+      "endLine": 27,
+      "actualSourceCandidateSha256": "4beaf4bf3fa4a27bbed49ce0ca33cd66843b9b4ae56a05f97885f1ffe0fd1202",
+      "sourceCandidateShape": "UNQUOTED_TYPESCRIPT_TYPE_IDENTIFIER",
+      "classification": "PUBLIC_TYPESCRIPT_API_TYPE_SYMBOL",
+      "reason": "Unquoted static TypeScript API prop/member type annotation; no credential literal or secret assignment.",
+      "qualifiedPublicNonsecret": true,
+      "sourceBlob": "69a97f46444f8139dcf3d51d1cadc8bfbefcd748",
+      "exactSourceBytesMatchArchiveAndPublishedGit": true,
+      "sourceBlobUnchangedFromRuntime240": true,
+      "redactedPlaceholderNotUsedAsCandidate": true,
+      "evidence": {
+        "quotedLiteralInMatchedSource": false,
+        "publicTypeDefinitionFiles": [
+          "frontends/mobile-core/src/features/notifications/notifications-v2-client.ts",
+          "frontends/mobile-core/src/features/notifications/notifications-v2-models.ts"
+        ]
+      }
+    },
+    {
+      "nativeFindingIndex": 8,
+      "ruleId": "generic-api-key",
+      "sourcePath": "frontends/web-vue/src/features/headman/request-decision-state.test.ts",
+      "startLine": 9,
+      "endLine": 9,
+      "actualSourceCandidateSha256": "d1c4b481f5f7b646040d78f5275c3a4577c586fc3cbcff657db046738f4f92df",
+      "sourceCandidateShape": "FIXED_UUID_LITERAL",
+      "classification": "PUBLIC_TEST_REQUEST_UUID",
+      "reason": "Fixed request-decision recovery idempotency UUID in a test whose client access-token callback returns null.",
+      "qualifiedPublicNonsecret": true,
+      "sourceBlob": "c318ef72f5465b391c3e42ef1f8abc06ba1905e8",
+      "exactSourceBytesMatchArchiveAndPublishedGit": true,
+      "sourceBlobUnchangedFromRuntime240": true,
+      "redactedPlaceholderNotUsedAsCandidate": true,
+      "evidence": {
+        "testFile": true,
+        "operationIdentityFieldNotAccessToken": true
+      }
+    },
+    {
+      "nativeFindingIndex": 9,
+      "ruleId": "generic-api-key",
+      "sourcePath": "frontends/web-vue/src/features/headman/recovery-flows.test.ts",
+      "startLine": 454,
+      "endLine": 454,
+      "actualSourceCandidateSha256": "6c577dfc1a45a06cccbad4bdacba9f94ad1406acf2e7e3ef14607de9da6a98ab",
+      "sourceCandidateShape": "FIXED_UUID_LITERAL",
+      "classification": "PUBLIC_TEST_RECOVERY_UUID",
+      "reason": "Fixed requestKey in serialized recovery-test storage input; test expects the mocked fetcher not to run.",
+      "qualifiedPublicNonsecret": true,
+      "sourceBlob": "5a550b6cc7c14c1a9123fd44f1afc50fb6dd3a57",
+      "exactSourceBytesMatchArchiveAndPublishedGit": true,
+      "sourceBlobUnchangedFromRuntime240": true,
+      "redactedPlaceholderNotUsedAsCandidate": true,
+      "evidence": {
+        "testFile": true,
+        "operationIdentityFieldNotAccessToken": true
+      }
+    },
+    {
+      "nativeFindingIndex": 10,
+      "ruleId": "generic-api-key",
+      "sourcePath": "frontends/web-vue/src/features/headman/recovery-flows.test.ts",
+      "startLine": 476,
+      "endLine": 476,
+      "actualSourceCandidateSha256": "6c577dfc1a45a06cccbad4bdacba9f94ad1406acf2e7e3ef14607de9da6a98ab",
+      "sourceCandidateShape": "FIXED_UUID_LITERAL",
+      "classification": "PUBLIC_TEST_RECOVERY_UUID",
+      "reason": "Same fixed requestKey in another recovery-test storage fixture; not an account/session/provider credential.",
+      "qualifiedPublicNonsecret": true,
+      "sourceBlob": "5a550b6cc7c14c1a9123fd44f1afc50fb6dd3a57",
+      "exactSourceBytesMatchArchiveAndPublishedGit": true,
+      "sourceBlobUnchangedFromRuntime240": true,
+      "redactedPlaceholderNotUsedAsCandidate": true,
+      "evidence": {
+        "testFile": true,
+        "operationIdentityFieldNotAccessToken": true
+      }
+    },
+    {
+      "nativeFindingIndex": 11,
+      "ruleId": "generic-api-key",
+      "sourcePath": "frontends/web-vue/src/features/admin/group-deletion-state.test.ts",
+      "startLine": 17,
+      "endLine": 17,
+      "actualSourceCandidateSha256": "164187aabc9a58f2c8b66f4babff39ee62ea1841bd69ab076dd8c9f7e66f232a",
+      "sourceCandidateShape": "FIXED_UUID_LITERAL",
+      "classification": "PUBLIC_TEST_REQUEST_UUID",
+      "reason": "Fixed group-deletion flow test idempotency UUID with synthetic preview and mocked API state.",
+      "qualifiedPublicNonsecret": true,
+      "sourceBlob": "cf7e1cccc3239559f2f47268cebe8c8ffe89f9c4",
+      "exactSourceBytesMatchArchiveAndPublishedGit": true,
+      "sourceBlobUnchangedFromRuntime240": true,
+      "redactedPlaceholderNotUsedAsCandidate": true,
+      "evidence": {
+        "testFile": true,
+        "operationIdentityFieldNotAccessToken": true
+      }
+    },
+    {
+      "nativeFindingIndex": 12,
+      "ruleId": "generic-api-key",
+      "sourcePath": "services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/push/PushControllerTest.java",
+      "startLine": 32,
+      "endLine": 32,
+      "actualSourceCandidateSha256": "633d846750c7ca0e495d294a1e98c8d9465d8637970971bb99636d07aac48af1",
+      "sourceCandidateShape": "FIXED_TEST_PUBLIC_ENDPOINT_STUB",
+      "classification": "PUBLIC_TEST_PUBLIC_KEY_RESPONSE_STUB",
+      "reason": "Fixed test-only public-key endpoint response stub, injected into a controller with mocked repository/context; not a private key or live provider secret.",
+      "qualifiedPublicNonsecret": true,
+      "sourceBlob": "50676802c8d518bea0d825ef3c2a865f1159d369",
+      "exactSourceBytesMatchArchiveAndPublishedGit": true,
+      "sourceBlobUnchangedFromRuntime240": true,
+      "redactedPlaceholderNotUsedAsCandidate": true,
+      "evidence": {
+        "srcTestOnly": true,
+        "mockRepository": true,
+        "mockRequestContext": true,
+        "testConstantPassedToController": true,
+        "publicKeyEndpointTest": true,
+        "shorterThanNormalP256VapidPublicEncoding": true
+      }
+    }
+  ]
+}

@@ -401,6 +401,8 @@ def check(args):
             if relative.endswith((".js", ".mjs")):
                 require(mime in {"application/javascript", "text/javascript"},
                         "Script MIME: " + app + "/" + relative + " [" + safe_mime + "]")
+            if relative.startswith("assets/") and relative.endswith(".mjs"):
+                require("immutable" in file_headers.get("cache-control", ""), "Module worker cache: " + app + "/" + relative)
             if relative.endswith(".css"):
                 require(mime == "text/css", "CSS MIME: " + app + "/" + relative + " [" + safe_mime + "]")
         require("no-store" in headers.get("cache-control", ""), "Shell cache policy: " + app)
@@ -412,8 +414,9 @@ def check(args):
                 deep_status, deep_headers, deep_body = fetch(args.base, deep, context)
                 require(deep_status == 200 and deep_body == expected_index and
                         "no-store" in deep_headers.get("cache-control", ""), "Deep link/refresh: " + app)
-        missing, _, missing_body = fetch(args.base, prefix + "assets/pr3-owned-missing.js", context)
-        require(missing == 404 and missing_body != expected_index, "Missing asset becomes a SPA shell: " + app)
+        for extension in ("js", "mjs"):
+            missing, _, missing_body = fetch(args.base, prefix + "assets/pr3-owned-missing." + extension, context)
+            require(missing == 404 and missing_body != expected_index, "Missing asset becomes a SPA shell: " + app + "/" + extension)
         results["artifactBytes"][app] = "PASS"
     root_status, root_headers, _ = fetch(args.base, "/", context)
     redirected = urlsplit(urljoin(args.base, root_headers.get("location", "")))

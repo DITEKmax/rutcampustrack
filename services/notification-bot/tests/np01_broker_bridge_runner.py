@@ -41,6 +41,8 @@ from bot.services.send_queue import TelegramSendQueue
 
 logging.disable(logging.CRITICAL)
 _phase = "setup"
+_failure_detail = None
+_control_failure_detail = None
 _checks = 0
 _worker_restarts = 0
 _worker_starts = 0
@@ -69,6 +71,27 @@ _WORKER_INPUTS = (
 
 class BridgeFailure(RuntimeError):
     pass
+
+
+class ControlFailure(BridgeFailure):
+    def __init__(self, cause, action="NONE"):
+        super().__init__("own fixture control failed")
+        self.cause = cause
+        self.action = action
+
+
+def bridge_cause(failure):
+    if isinstance(failure, ControlFailure):
+        return failure.cause
+    if isinstance(failure, BridgeFailure):
+        return "CHECK_FAILED"
+    if isinstance(failure, AssertionError):
+        return "ASSERTION"
+    if isinstance(failure, TimeoutError):
+        return "TIMEOUT"
+    if isinstance(failure, aiohttp.ClientError):
+        return "HTTP_TRANSPORT"
+    return "OTHER"
 
 
 def check(condition):
@@ -259,7 +282,7 @@ class Provider:
 
 
 async def supervisor():
-    global _phase, _worker_restarts, _worker_starts, _worker_reaps
+    global _phase, _worker_restarts, _worker_starts, _worker_reaps, _failure_detail
     global _held_lease_expiry, _held_lease_initial_pttl, _held_lease_elapsed_ms, _held_lease_redeliveries
     fixtures = json.loads(os.environ["NP01_FIXTURES"])
     own, foreign = fixtures["own"], fixtures["foreign"]
@@ -284,11 +307,46 @@ async def supervisor():
     async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=5)) as http:
 
         async def control(action):
+            global _control_failure_detail
             async with http.post(
                 control_url + "/control/" + action, headers={"x-np01-control": control_token}
             ) as response:
                 if response.status != 200:
-                    raise BridgeFailure("own fixture control failed")
+                    cause = "CONTROL_HTTP_STATUS"
+                    try:
+                        facts = await response.json()
+                        value = facts.get("controlCause") if isinstance(facts, dict) else None
+                        if value in (
+                            "ASSERTION",
+                            "DATA_INTEGRITY",
+                            "DATA_ACCESS",
+                            "AUTH_SESSION",
+                            "ARGUMENT",
+                            "STATE",
+                            "OTHER",
+                        ):
+                            cause = "CONTROL_" + value
+                    except (ValueError, aiohttp.ClientError):
+                        pass  # The non-200 response still fails with a closed category.
+                    name = action.partition("?")[0]
+                    if name not in (
+                        "change",
+                        "reset",
+                        "publish",
+                        "replay",
+                        "unknown_version",
+                        "new_initial",
+                        "rebind",
+                        "restore_binding",
+                        "worker_started",
+                        "worker_reaped",
+                        "facts",
+                        "verify",
+                    ):
+                        name = "OTHER"
+                    if _control_failure_detail is None:
+                        _control_failure_detail = (_phase, cause, name)
+                    raise ControlFailure(cause, name)
                 return await response.json()
 
         async def queue_facts(name=QUEUE_NAME):
@@ -660,20 +718,42 @@ async def supervisor():
             finally:
                 await channel.close()
             _phase = "completed"
+        except BaseException as failure:
+            _failure_detail = _control_failure_detail or (
+                _phase,
+                bridge_cause(failure),
+                failure.action if isinstance(failure, ControlFailure) else "NONE",
+            )
+            raise
         finally:
-            await stop_worker(force=True)
-            if provider_runner is not None and provider.delete_gate is not None:
-                provider.delete_gate.set()
+            primary = sys.exc_info()[1]
+            cleanup_failure = None
+
+            async def release_delete_gate():
+                if provider_runner is not None and provider.delete_gate is not None:
+                    provider.delete_gate.set()
+
+            cleanups = [lambda: stop_worker(force=True), release_delete_gate]
             if observer is not None:
-                await observer.close()
-            await menu.close()
-            await generic.close()
-            await protected.close()
-            await redis.aclose()
+                cleanups.append(observer.close)
+            cleanups.extend((menu.close, generic.close, protected.close, redis.aclose))
             if bot is not None:
-                await bot.session.close()
+                cleanups.append(bot.session.close)
             if provider_runner is not None:
-                await provider_runner.cleanup()
+                cleanups.append(provider_runner.cleanup)
+            for cleanup in cleanups:
+                try:
+                    await cleanup()
+                except BaseException as failure:
+                    if primary is None and cleanup_failure is None:
+                        cleanup_failure = failure
+                        _failure_detail = _control_failure_detail or (
+                            "cleanup",
+                            bridge_cause(failure),
+                            failure.action if isinstance(failure, ControlFailure) else "NONE",
+                        )
+            if primary is None and cleanup_failure is not None:
+                raise cleanup_failure
 
 
 async def run_supervisor():
@@ -704,14 +784,18 @@ if __name__ == "__main__":
     else:
         try:
             asyncio.run(run_supervisor())
-        except BaseException:
+        except BaseException as failure:
+            if _failure_detail is None:
+                _failure_detail = _control_failure_detail or (_phase, bridge_cause(failure), "NONE")
             print(
                 json.dumps(
                     {
                         "qualified": False,
                         "failures": 1,
                         "checks": _checks,
-                        "phase": _phase,
+                        "phase": _failure_detail[0] if _failure_detail else _phase,
+                        "failure_cause": _failure_detail[1] if _failure_detail else "OTHER",
+                        "control_action": _failure_detail[2] if _failure_detail else "NONE",
                         "workers_reaped": _worker_starts == _worker_reaps,
                     }
                 )

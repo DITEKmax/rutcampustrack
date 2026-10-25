@@ -97,7 +97,21 @@ python3 tests/e2e/pr3-nginx/gate.py check --expected-sha "$SOURCE_SHA" \
 docker_local compose -f "$RUN/compose.json" down
 ```
 
-Для local Ubuntu замени `--api-base` своим реальным опубликованным loopback gateway. Проверяющий HTTP клиент доверяет ровно созданному локальному certificate; TLS verification не отключается. Shared Main CORS/Origin policy не меняется и Origin не подменяется.
+Для cloud HTTP API команда выше остаётся прежней. HTTPS static клиент доверяет созданному Nginx certificate. Отдельный direct HTTPS API требует собственного public CA и явного SHA256; Nginx leaf certificate для него не переиспользуется, TLS verification не отключается.
+
+Для owner-local стенда из [pr3-local](../pr3-local/README.md) prerequisite — существующие network `rct-pr3-local_private_net`, gateway `api-gateway:8080` и direct API `https://127.0.0.1:18443`. Перед `prepare` задай `MAIN_NETWORK=rct-pr3-local_private_net` и `MAIN_GATEWAY=api-gateway:8080` в команде выше. Public CA локального API находится в выбранном local-state каталоге `runtime/private/tls/ca.crt`; private keys, credentials и cloud sessions сюда не переносятся. Новая локальная конфигурация должна отдельно допускать оба common origins `http://127.0.0.1:14240` и `https://127.0.0.1:14443`; Main allowlist не меняется.
+
+```bash
+LOCAL_STATE="$PWD/.pr3-local" # Тот же каталог, который выбран при подготовке pr3-local.
+API_CA="$LOCAL_STATE/runtime/private/tls/ca.crt"
+API_CA_SHA="$(sha256sum "$API_CA" | cut -d ' ' -f 1)"
+python3 tests/e2e/pr3-nginx/gate.py check --expected-sha "$SOURCE_SHA" \
+  --run-dir "$RUN" --base https://127.0.0.1:14443 \
+  --api-base https://127.0.0.1:18443 --api-ca "$API_CA" --api-ca-sha256 "$API_CA_SHA" \
+  --out "$RUN/local-http-result.json"
+```
+
+Checker читает CA один раз, сверяет pin и создаёт отдельный verified SSLContext из этих bytes; результат записывает `directApiCaSha256`. Нет static IP/profile, расширения trusted-proxy subnet или изменения CORS/Origin. Forwarded external HTTPS identity/proxy semantics остаются owner-local `NOT_RUN`: успешная проверка TLS цепочки и anonymous API статусов их не доказывает.
 
 ## Что означает результат
 

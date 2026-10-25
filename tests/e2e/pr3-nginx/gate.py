@@ -277,6 +277,22 @@ def fetch(base, path, context):
         connection.close()
 
 
+def direct_api_trust(base, ca_path, expected_sha):
+    """Pin the direct API's separate local CA; never reuse the Nginx leaf trust."""
+    if not base:
+        require(not ca_path and not expected_sha, "API CA requires --api-base")
+        return None, None
+    if origin(base).scheme == "http":
+        require(not ca_path and not expected_sha, "HTTP API does not use a TLS CA")
+        return None, None
+    require(ca_path and re.fullmatch(r"[0-9a-f]{64}", expected_sha or ""),
+            "HTTPS API requires --api-ca and its explicit --api-ca-sha256")
+    data = Path(ca_path).read_bytes()
+    require(sha(data) == expected_sha, "Direct API CA differs from its pin")
+    # Use the pinned snapshot itself, avoiding a second file read or TLS bypass.
+    return ssl.create_default_context(cadata=data.decode("ascii")), expected_sha
+
+
 def admit_container(pins, compose, container, base):
     """Only the one prepared frontend container may supply HTTP evidence."""
     require(compose["name"] == "rct-pr3-nginx-gate" and set(compose["services"]) == {"edge"}, "Unexpected prepared namespace")
@@ -328,6 +344,7 @@ def check(args):
     require("compose.json" in pins["configs"], "Prepared Compose has no source receipt hash")
     for relative, digest in pins["configs"].items():
         require(sha((Path(args.run_dir) / relative).read_bytes()) == digest, "Prepared Nginx bytes changed")
+    api_context, api_ca_sha = direct_api_trust(args.api_base, args.api_ca, args.api_ca_sha256)
     docker_env = {key: value for key, value in os.environ.items()
                   if key not in {"DOCKER_HOST", "DOCKER_CONTEXT", "DOCKER_TLS", "DOCKER_TLS_VERIFY", "DOCKER_CERT_PATH"}}
     template = ('{"image":{{json .Image}},"running":{{json .State.Running}},'
@@ -350,6 +367,7 @@ def check(args):
     context = ssl.create_default_context(cafile=str(Path(args.run_dir) / "tls/fullchain.pem"))
     oracle = served_oracle()
     results = {"sourceSha": args.expected_sha, "artifactBytes": {}, "commonNginxStatic": "FAIL",
+               "directApiCaSha256": api_ca_sha, "forwardedExternalHttpsIdentity": "NOT_RUN_OWNER_LOCAL",
                "apiForwarding": "NOT_RUN", "realtimeAuthenticatedTransport": "NOT_RUN",
                "webAuthLifecycle": "NOT_RUN", "pwaAuthAndUpdates": "NOT_RUN",
                "httpAuthRealtime": "NOT_RUN", "tlsAuthWss": "NOT_RUN_OWNER_LOCAL",
@@ -407,7 +425,7 @@ def check(args):
         results["apiObservations"] = []
         for path in ["/api/auth/session", "/api/ws/info"]:
             edge_status, edge_headers, _ = fetch(args.base, path, context)
-            direct_status, direct_headers, _ = fetch(args.api_base, path, context)
+            direct_status, direct_headers, _ = fetch(args.api_base, path, api_context)
             results["apiObservations"].append({"path": path, "edgeStatus": edge_status,
                 "directStatus": direct_status, "sameStatus": edge_status == direct_status,
                 "edgeMime": edge_headers.get("content-type", ""), "directMime": direct_headers.get("content-type", "")})
@@ -443,6 +461,8 @@ def main():
     for name in ["expected-sha", "run-dir", "base", "out"]:
         check_parser.add_argument("--" + name, required=True)
     check_parser.add_argument("--api-base")
+    check_parser.add_argument("--api-ca", help="Read-only public CA certificate for the separate direct HTTPS API")
+    check_parser.add_argument("--api-ca-sha256", help="Expected SHA256 of the direct API CA bytes")
     check_parser.set_defaults(action=check)
     args = parser.parse_args()
     args.action(args)

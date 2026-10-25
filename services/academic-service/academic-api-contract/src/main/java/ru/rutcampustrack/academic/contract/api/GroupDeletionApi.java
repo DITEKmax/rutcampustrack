@@ -14,9 +14,11 @@ import java.util.UUID;
         description = "Окончательное удаление одной группы с сохранением аккаунтов")
 @RequestMapping("/academic")
 public interface GroupDeletionApi {
+    @io.swagger.v3.oas.annotations.Operation(operationId = "previewGroupDeletion")
     @GetMapping("/groups/{id}/deletion-preview")
     ResponseEntity<Preview> preview(@PathVariable long id);
 
+    @io.swagger.v3.oas.annotations.Operation(operationId = "confirmGroupDeletion")
     @PostMapping("/groups/{id}/deletions")
     ResponseEntity<Operation> confirm(
             @PathVariable long id,
@@ -24,6 +26,7 @@ public interface GroupDeletionApi {
             @Valid @RequestBody ConfirmRequest request);
 
     @io.swagger.v3.oas.annotations.Operation(
+            operationId = "resolveGroupDeletion",
             summary = "Разрешить исход удаления по исходному UUID",
             description =
                     "Возвращает исходную принятую операцию. Если приём ещё не состоялся, атомарно"
@@ -33,6 +36,7 @@ public interface GroupDeletionApi {
     @PostMapping("/groups/{id}/deletions/{operationId}/resolve")
     ResponseEntity<Operation> resolve(@PathVariable long id, @PathVariable UUID operationId);
 
+    @io.swagger.v3.oas.annotations.Operation(operationId = "getGroupDeletionStatus")
     @GetMapping("/group-deletions/{operationId}")
     ResponseEntity<Operation> status(@PathVariable("operationId") UUID operationId);
 }

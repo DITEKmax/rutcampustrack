@@ -1,5 +1,8 @@
 # API changes — PR3
 
+2026-10-25 ordinary diagnostic harness: только тестовая/CI/local обвязка; business
+endpoints/OpenAPI/DB/contracts клиентов не менялись. [Scope/evidence](../../validation/web-vue-pr3/checkpoints/diagnostic-harness-20261025/README.md).
+
 ## API-001 — device theme preference mirror
 
 Status: implemented and integrated; affected Auth/PostgreSQL/Gateway checks

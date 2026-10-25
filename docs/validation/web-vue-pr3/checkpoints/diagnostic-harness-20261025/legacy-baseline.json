@@ -1,0 +1,24 @@
+{
+  "sourceRevision": "6317c834b12567ba8abd6a5429ed6ff359eaf66b",
+  "baselineProductCheckpoint": "2b297a50656617cb224f4d58aa605cbe92ab6992",
+  "results": [
+    {
+      "name": "baseline",
+      "returncode": 1,
+      "stdout": "{\"status\": \"RED\", \"currentSourceBindingsAccepted\": false, \"currentSignatureAccepted\": true}"
+    },
+    {
+      "name": "comment-only-source",
+      "returncode": 1,
+      "stdout": "{\"status\": \"RED\", \"currentSourceBindingsAccepted\": false, \"currentSignatureAccepted\": true}"
+    },
+    {
+      "name": "restored-exact",
+      "returncode": 1,
+      "stdout": "{\"status\": \"RED\", \"currentSourceBindingsAccepted\": false, \"currentSignatureAccepted\": true}"
+    }
+  ],
+  "temporarySourceRestoredExact": true,
+  "repositorySourcesMutated": false,
+  "dockerDbBrowserCalls": 0
+}

@@ -16,3 +16,19 @@ ONEHEAVYfree; runtime finished, browsersclosed, ownNginxdown; original30unchange
 Allsource/worktrees/WIP preserved. Main13/admin7running, clock5/shipping5stopped.
 Groupstart/grants/delete cloudFORBIDDEN, ownerlocal pending. No competingDBtests,
 CI/manualPAUSED, no main/merge/deploy/production/newGoal/PR/environment/globalprune.
+
+
+## Закрытый source пакет: ordinary diagnostic contract
+
+| Owner | Scope | Состояние |
+|---|---|---|
+| root | docs/Git/PR | source e0dcb3496 интегрирован; docs/final publish |
+| disk_files | sharedcatalog/Pythonvalidator+CI/local/pipeline | final4b9f6197 integrated; controls19 PASS |
+| group_resume | TSproducer/reporter/connectedspecs | final1ab878c integrated; combined7/20 PASS |
+| angular_review | linked portability audit readonly | DONE, findings переданы |
+
+До6children capacity прежняя, новые модели не назначались. ONEHEAVYfree; только
+лёгкие contract/TS/syntheticfilesystem controls. Docker/Auth/DB/browser/CI0.
+
+angular_remove: independent privacy/security +targeted corrections/shared-wiring review PASS; no repeats.
+Shared source checks passed; real service collector/owner-local NOT_RUN.

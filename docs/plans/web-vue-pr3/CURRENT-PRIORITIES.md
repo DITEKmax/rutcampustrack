@@ -12,7 +12,21 @@
 | Сборка |WEB/TMA strict+Vite PASS; PWA `/app/` и TMA `/mini-app/` prefix builds PASS. После config-only MIME исправления приложения не пересобирались |
 | Общий Nginx |Actual static/deep links/refresh/MIME/cache/CSP/404 PASS для3приложений; реальный anonymous API. PWA HTTP Auth/API/STOMP PASS; WEB bounded result с сохранённым raw FAIL теста ID |
 
-## Облачные пакеты закрыты в указанных границах
+## Завершённый пакет: ordinary diagnostic harness
+
+Прямое [задание владельца](https://github.com/DITEKmax/rutcampustrack/pull/3#issuecomment-6396083761)
+выполнено: [scope/приёмка](DIAGNOSTIC-HARNESS-CONTRACT.md).
+Source SHA/номера строк/AST carrier заменяются case/stage ID, закрытыми событиями
+и общим CLI CI/Ubuntu. Dynamic per-run integrity/ownership/cleanup/privacy сохраняются.
+Общий Node-only producer → reporter → Python consumer PASS: 7 строк/20 негативных
+вариантов +19 Python controls; независимый privacy/security review PASS. Два найденных
+P2 закрыты: actual raw Error association и конечный client cohort10. Узкий helper
+strict tsc PASS; широкий touched-spec tsc сохраняет прежний semester TS2322/EXIT2.
+[Evidence/команды/границы](../../validation/web-vue-pr3/checkpoints/diagnostic-harness-20261025/README.md).
+CI/Ubuntu service runtime collector не запускался; checkpoint2b и исторические
+receipts сохранены. Продуктовые счётчики выше не меняются.
+
+## Предыдущие облачные пакеты закрыты в указанных границах
 
 Исправлен подтверждённый MIME PDF worker `.mjs` во всех3приложениях; отсутствующий
 asset возвращает404, стандартная MIME table и кэш сохранены. Повтор HTTP gate был

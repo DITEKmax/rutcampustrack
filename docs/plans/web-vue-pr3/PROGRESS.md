@@ -13,6 +13,20 @@ Angular433 tracked files удалены; Root WEB/TMA strict+Vite и prefix PWA/
 Общий Nginx static PASS, PWA HTTP Auth/API/STOMP PASS, WEB bounded qualification
 с raw test FAIL; HTTPS/provider/SW lifecycle учитываются отдельно. Старые записи ниже — история.
 
+## 25 октября — ordinary diagnostic harness закрыт в offline scope
+
+Выполнен [прямой contract владельца](https://github.com/DITEKmax/rutcampustrack/pull/3#issuecomment-6396083761):
+case/stage ID, закрытые v1 events, единый JSON catalog и импортируемый/запускаемый
+Python consumer CI/Ubuntu вместо ручных source pins, line gates и YAML extraction.
+Actual Error/run binding, ownership/nonce, dynamic manifests, restoration, original
+exit/cleanup/privacy и byte/time limits сохранены. Общий Node/Python запуск PASS
+(7 строк/20 негативных вариантов,19 Python controls); независимый review PASS после
+двух P2 corrections. Helper/reporter strict tsc PASS; широкий touched-spec tsc имеет
+тот же прежний semester TS2322, EXIT2. Это не полный compile/runtime PASS.
+[Evidence, воспроизводимые команды и неуспешные исходные receipts](../../validation/web-vue-pr3/checkpoints/diagnostic-harness-20261025/README.md).
+Ни CI, ни Docker/Auth/DB/browser, ни owner-local stand не запускались. Baseline2b
+сохранён. Продуктовые результаты и owner-local NOT_RUN не меняются.
+
 | Роль | Active | Implemented | Locally verified |
 |---|---:|---:|---:|
 | AUTH |6|6/6 (100%)|6/6 (100%)|
@@ -622,3 +636,14 @@ deps/builds/screenshots не входят. Source-only snapshot требуетfr
 [Проверка и safe qualification](../../validation/web-vue-pr3/checkpoints/source-only-20261025/README.md).
 Этот последний пакет — только docs/archive receipt; runtime-qualifiedsource240 и
 всеproduct/config/launcherbytes08e остаются неизменными. Нет причины повторять закрытые проверки.
+
+
+## Новый пакет25октября: ordinary diagnostic harness — IN PROGRESS
+
+Owner comment6396083761 поручает реализовать прежнюю договорённость PR2. Baseline2b297a
+сохранён ref/архивами; [contract/scope](DIAGNOSTIC-HARNESS-CONTRACT.md). Подтверждены
+sourcehash/line gates, ASTcarrier, hosted-only collector и basename pipeline consumer.
+Dynamic local manifests/root guards корректны и сохраняются. Два solewriter scopes
+TSproducer и Pythonconsumer/sharedschema, независимый linked audit завершён.
+Реализация начата; никакие новые product/ownerlocal gates не запускались.
+Счётчики117source/116accepted не повышаются этим техническим пакетом. CI-familyPAUSED.

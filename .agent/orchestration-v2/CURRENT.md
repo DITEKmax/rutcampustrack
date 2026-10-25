@@ -60,6 +60,24 @@ preserved. RecoveryZIP8784846B SHA00fb9f0158468e18acd134b7542c03906fd1e5daf10354
 
 Source-only snapshot08e08aedc ZIP11130527B/caa5b614... CRC/all3666GitbytesPASS;
 fullnative12publicnonsecret qualified/unresolved0, rawEXIT1 retained, policyunchanged.
-Source/config/launchers unchanged since runtime240; latercommitdocs/archivereceipt only.
-Next: waitownerlocalactualoutput, no newGoal/cloudgroup/replays. Finalreports/PR published.
+На checkpoint2b source/config/launchers совпадали с runtime240; последующий пакет ниже меняет только diagnostic harness, не продуктовую поставку.
+Новый прямой scope владельца: PR3comment6396083761, ordinary diagnostic harness.
+Baseline2b297a preservedlocalref; authorbranches from2b, no reset/clean.
+Root docs/Git; disk_files sole Python/sharedcatalog/CI/localconsumer writer in
+headman-web/codex/pr3-diagnostic-consumer; group_resume soleTSproducer/reporter/spec
+writer in group-final-delete/codex/pr3-diagnostic-producer. angular_review readonly
+linked audit DONE; independentprivacy review завершён PASS. Publicclosedv1
+case/stage/event/status, preregistrationbeforefixtures/perruntrustedbinding.
+Remove4sourcehashmaps+relatedownframepins/fileline/titleidentity andYAML ASTextraction;
+sharedCLI CI/Ubuntu withrealownernonce paths, pipelinebasenameconsumer migrated.
+Keepdynamiclocalmanifest/CA/Compose/source-restoration/build/runtime/downloadintegrity.
+No containers/Auth/DB/browser/fullE2E/ownerlocalchecks needed; model/effort unchanged.
+See docs/plans/web-vue-pr3/DIAGNOSTIC-HARNESS-CONTRACT.md.
+Source integration e0dcb3496: common Node producer/reporter +Python consumer PASS,
+7rows/20finite negatives/19Python controls, deliberate childEXIT1 retained.
+IndependentTS/Python/fixture/shared-wiring reviews PASS after2P2corrections.
+Helper strictTS PASS; wider touched-spec retains baseline semesterTS2322/EXIT2.
+CI/Ubuntu service runtime collector NOT_RUN; no Docker/Auth/DB/browser/fullE2E.
+Root final docs/publish; no further unblocked product mutations in this packet.
+Old product117source/116accepted andownerlocalgroupNOT_RUN unchanged. No newGoal.
 No productquestions/extra permissions needed. Don't mark local/provider gatesPASS.

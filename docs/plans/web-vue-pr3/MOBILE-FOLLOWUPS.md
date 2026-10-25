@@ -1,5 +1,9 @@
 # Mobile followups and compatibility — PR3
 
+2026-10-25 ordinary diagnostic harness: stable cases/events меняют только общую
+проверочную цепочку; новые web-функции в PWA/TMA не добавлены, mobile runtime/темы/
+WebPush не менялись. Прежний визуальный остаток и owner-local gates сохранены.
+
 Web functions are not automatically added to PWA/TMA. Shared light/dark/system
 foundation and device persistence are required across existing mobile screens.
 Independent source review covers24 families;140 retained render samples and60

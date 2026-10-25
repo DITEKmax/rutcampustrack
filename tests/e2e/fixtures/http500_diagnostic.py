@@ -809,6 +809,8 @@ def is_target_failure(value, config):
         return False
     stage = next(key for key, selected in STAGES.items() if selected == config)
     rows = value['results']
+    if 'diagnosticScope' in value and (stage != 'HOMEWORK_CREATE503' or len(rows) != 1):
+        return False
     if not all(closed_case_row(row) and row['caseId'] in TARGET_CASES[stage] for row in rows):
         return False
     if stage == 'HOMEWORK_CREATE503':

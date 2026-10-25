@@ -377,6 +377,7 @@ class SharedDiagnosticControls(unittest.TestCase):
             ('row', 'caseId', 'FORGED_CASE'), ('row', 'project', 'firefox'),
             ('row', 'status', 'passed'), ('row', 'errorCount', 0), ('row', 'raw', private),
             ('top', 'unsafeArtifact', True), ('top', 'suppressedStderrBytes', 1), ('top', 'raw', private),
+            ('top', 'diagnosticScope', 'LOCAL_CLIENT_FIRST_FAILURE'),
             ('event', 'schema', 'rct-diagnostic-event.v99'), ('event', 'stageId', 'UNKNOWN'),
             ('event', 'eventCode', 'DATASET_LESSON_CREATE_HTTP'), ('event', 'httpStatus', True),
             ('event', 'httpStatus', 503), ('event', 'private', private),
@@ -406,6 +407,10 @@ class SharedDiagnosticControls(unittest.TestCase):
         duplicate = copy.deepcopy(rows);duplicate[0] = copy.deepcopy(duplicate[1])
         self.assertFalse(diag.is_target_failure(receipt(duplicate), diag.STAGES['STUDENT_STATS503']))
         homework = row('LIMITED_ADMIN_ACCOUNTS', 'DATASET_HOMEWORK_CREATE_HTTP', 503)
+        scoped = receipt([homework]);scoped['diagnosticScope'] = 'LOCAL_CLIENT_FIRST_FAILURE'
+        self.assertTrue(diag.is_target_failure(scoped, diag.STAGES['HOMEWORK_CREATE503']))
+        scoped['results'].append(copy.deepcopy(homework))
+        self.assertFalse(diag.is_target_failure(scoped, diag.STAGES['HOMEWORK_CREATE503']))
         reconnect = row('D002_RECONNECT_ACCOUNT_AUTHORITY', 'REPORTED_FRAMEWORK_ERROR', 0)
         reconnect['diagnosticEvents'] = [event(reconnect['caseId'], 'REPORTED_FRAMEWORK_ERROR', 0, 'FRAMEWORK'),
                                          event(reconnect['caseId'], 'OBSERVATION', 0, 'D002_RECONNECT')]

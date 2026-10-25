@@ -1,6 +1,6 @@
 # CURRENT — существующий Goal PR3, 25 октября2026
 
-Ветка codex/web-vue-redesign, PR3. Root — docs/Git/интеграция; sole writers в сохранённых
+Ветка codex/web-vue-redesign, PR3; published4f48f169da10caf111b6a3b2a82c6880079e23d4. Root — docs/Git/интеграция; sole writers в сохранённых
 worktrees. Children gpt-6.1-sol/high, telemetry недоступна, fallback не заявлен.
 CI/Coverage/Security/OpenAPI workflow_dispatch/PAUSED. Без merge/deploy/production,
 main/reset/clean/forcepush/globalprune/новой среды/Goal/PR.
@@ -18,14 +18,17 @@ Angular433 tracked files удалены, source audit117/117 без утраты
 116/117, ADMIN33/34 до фактического six-view UI результата; source117 не overallPASS.
 WEB artifact `/` переиспользуется; PWA/TMA default-base артефакты непригодны для
 /app/,/mini-app/, поэтому только prefix builds повторены PASS524f (34.688/32.731s). Общий Nginx source
-review PASS; actual runtime впереди. Отдельный budget512MiB/128MiB container,
+review PASS; actualfirststart/nginx-tPASS, staticFAIL mjsPDFworker MIMEoctetstream
+вWEB/PWA/TMA. Config-onlyfix source-reviewed/integrated0664fecbf/106aefbb9; actualrechecknext, Vitebuilds не повторять. Owncontainerdown,
+Auth0, rawFAIL сохранён. Canonical fullID/image/state/mountsets всех30 unchanged. Отдельный budget512MiB/128MiB container,
 early2.5GiB/hard2GiB; group7GiB не применяется к лёгкому gate. ONEHEAVY Root.
 
 Локальный handoff tests/e2e/pr3-local: отдельные ~/rutcampustrack-pr3 и namespace,
 Ubuntu24/JDK21/Gradle8.12/Node24.14.0/npm11.9.0, Docker12 services +3 host Vites.
 Старые ~/rutcampustrack-ci-diagnosis и ~/.local/share/rct-stand/activate не трогать.
 Новые synthetic credentials/TLS/PKI локально, cloud DB/secrets/keys не экспортировать.
-Final SIGTERM child-reap correction independent review; launchers публикуются в PR.
+SIGTERM child-reap correction independentPASS; launchers опубликованы в PR.
+Localinputfix exact2Origin +separatepinnedAPI-CA sourcePASS/Rootintegrated, localNOT_RUN.
 
 TeacherManual conditional actual source7ef/b0fb: один реестр7/ordinary1/manual0,
 PNG0, rawEXIT1/false сохранён, ownDELETE204/oldBearer401/browserclosed/HOLDfalse.

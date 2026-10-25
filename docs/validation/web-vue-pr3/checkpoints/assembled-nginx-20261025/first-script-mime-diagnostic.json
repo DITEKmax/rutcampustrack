@@ -1,0 +1,329 @@
+{
+  "purpose": "Diagnostic only: identify actual module MIME failure; no Auth/browser",
+  "standardMimeHasMjs": false,
+  "observed": [
+    {
+      "app": "web",
+      "file": "assets/AttachmentPdfPreview-Ck39sutP.js",
+      "status": 200,
+      "contentType": "application/javascript",
+      "shaMatches": true
+    },
+    {
+      "app": "web",
+      "file": "assets/AttendancePage-B7kqP8JW.js",
+      "status": 200,
+      "contentType": "application/javascript",
+      "shaMatches": true
+    },
+    {
+      "app": "web",
+      "file": "assets/DashboardPage-CGAGm31i.js",
+      "status": 200,
+      "contentType": "application/javascript",
+      "shaMatches": true
+    },
+    {
+      "app": "web",
+      "file": "assets/ExportControl.vue_vue_type_script_setup_true_lang-CWCnDQGH.js",
+      "status": 200,
+      "contentType": "application/javascript",
+      "shaMatches": true
+    },
+    {
+      "app": "web",
+      "file": "assets/GroupHistoryPage-BaahPwvz.js",
+      "status": 200,
+      "contentType": "application/javascript",
+      "shaMatches": true
+    },
+    {
+      "app": "web",
+      "file": "assets/GroupPage-BYON00GF.js",
+      "status": 200,
+      "contentType": "application/javascript",
+      "shaMatches": true
+    },
+    {
+      "app": "web",
+      "file": "assets/GroupsPage-CQmVMkAi.js",
+      "status": 200,
+      "contentType": "application/javascript",
+      "shaMatches": true
+    },
+    {
+      "app": "web",
+      "file": "assets/HeadmanPage.vue_vue_type_script_setup_true_lang-BZ7ZCaAe.js",
+      "status": 200,
+      "contentType": "application/javascript",
+      "shaMatches": true
+    },
+    {
+      "app": "web",
+      "file": "assets/HomePage-BRZxXyGc.js",
+      "status": 200,
+      "contentType": "application/javascript",
+      "shaMatches": true
+    },
+    {
+      "app": "web",
+      "file": "assets/HomeworkPage-pV1_ztIG.js",
+      "status": 200,
+      "contentType": "application/javascript",
+      "shaMatches": true
+    },
+    {
+      "app": "web",
+      "file": "assets/JournalPage-C8fsq4s-.js",
+      "status": 200,
+      "contentType": "application/javascript",
+      "shaMatches": true
+    },
+    {
+      "app": "web",
+      "file": "assets/LessonsPage-B3GuZIoW.js",
+      "status": 200,
+      "contentType": "application/javascript",
+      "shaMatches": true
+    },
+    {
+      "app": "web",
+      "file": "assets/MapPage-D0jrDMkK.js",
+      "status": 200,
+      "contentType": "application/javascript",
+      "shaMatches": true
+    },
+    {
+      "app": "web",
+      "file": "assets/ReportExport.vue_vue_type_script_setup_true_lang-GV-IizUS.js",
+      "status": 200,
+      "contentType": "application/javascript",
+      "shaMatches": true
+    },
+    {
+      "app": "web",
+      "file": "assets/RequestsPage-CgiQKAzt.js",
+      "status": 200,
+      "contentType": "application/javascript",
+      "shaMatches": true
+    },
+    {
+      "app": "web",
+      "file": "assets/SchedulePage-B1ymgWlp.js",
+      "status": 200,
+      "contentType": "application/javascript",
+      "shaMatches": true
+    },
+    {
+      "app": "web",
+      "file": "assets/SemestersPage-DegA1OC1.js",
+      "status": 200,
+      "contentType": "application/javascript",
+      "shaMatches": true
+    },
+    {
+      "app": "web",
+      "file": "assets/StatisticsPage-BV0k1q1w.js",
+      "status": 200,
+      "contentType": "application/javascript",
+      "shaMatches": true
+    },
+    {
+      "app": "web",
+      "file": "assets/StudentAttendancePage-BBIKt4fQ.js",
+      "status": 200,
+      "contentType": "application/javascript",
+      "shaMatches": true
+    },
+    {
+      "app": "web",
+      "file": "assets/StudentDetail.vue_vue_type_script_setup_true_lang-DqCUK8qC.js",
+      "status": 200,
+      "contentType": "application/javascript",
+      "shaMatches": true
+    },
+    {
+      "app": "web",
+      "file": "assets/StudentHomePage-BtHcxkEY.js",
+      "status": 200,
+      "contentType": "application/javascript",
+      "shaMatches": true
+    },
+    {
+      "app": "web",
+      "file": "assets/StudentLesson.vue_vue_type_script_setup_true_lang-D2Ta5ika.js",
+      "status": 200,
+      "contentType": "application/javascript",
+      "shaMatches": true
+    },
+    {
+      "app": "web",
+      "file": "assets/StudentMetrics.vue_vue_type_script_setup_true_lang-B68Y23j0.js",
+      "status": 200,
+      "contentType": "application/javascript",
+      "shaMatches": true
+    },
+    {
+      "app": "web",
+      "file": "assets/StudentNotice.vue_vue_type_script_setup_true_lang-CzWMbNMg.js",
+      "status": 200,
+      "contentType": "application/javascript",
+      "shaMatches": true
+    },
+    {
+      "app": "web",
+      "file": "assets/StudentPeriodPager.vue_vue_type_script_setup_true_lang-CyhYY65f.js",
+      "status": 200,
+      "contentType": "application/javascript",
+      "shaMatches": true
+    },
+    {
+      "app": "web",
+      "file": "assets/StudentRequestsPage-D8Bh4-RM.js",
+      "status": 200,
+      "contentType": "application/javascript",
+      "shaMatches": true
+    },
+    {
+      "app": "web",
+      "file": "assets/StudentSchedulePage-BoIknrpS.js",
+      "status": 200,
+      "contentType": "application/javascript",
+      "shaMatches": true
+    },
+    {
+      "app": "web",
+      "file": "assets/StudentStatisticsPage-BfkNZlI_.js",
+      "status": 200,
+      "contentType": "application/javascript",
+      "shaMatches": true
+    },
+    {
+      "app": "web",
+      "file": "assets/StudentTrend.vue_vue_type_script_setup_true_lang-tjQjTZng.js",
+      "status": 200,
+      "contentType": "application/javascript",
+      "shaMatches": true
+    },
+    {
+      "app": "web",
+      "file": "assets/SubjectsPage-BmE8aKjq.js",
+      "status": 200,
+      "contentType": "application/javascript",
+      "shaMatches": true
+    },
+    {
+      "app": "web",
+      "file": "assets/UsersPage-Cgpagld3.js",
+      "status": 200,
+      "contentType": "application/javascript",
+      "shaMatches": true
+    },
+    {
+      "app": "web",
+      "file": "assets/admin-DKBnv2eD.js",
+      "status": 200,
+      "contentType": "application/javascript",
+      "shaMatches": true
+    },
+    {
+      "app": "web",
+      "file": "assets/admin-dashboard-client-DCS17LaN.js",
+      "status": 200,
+      "contentType": "application/javascript",
+      "shaMatches": true
+    },
+    {
+      "app": "web",
+      "file": "assets/index-D7PYP4Yo.js",
+      "status": 200,
+      "contentType": "application/javascript",
+      "shaMatches": true
+    },
+    {
+      "app": "web",
+      "file": "assets/pdf.worker.min-Dkey6ZUl.mjs",
+      "status": 200,
+      "contentType": "application/octet-stream",
+      "shaMatches": true
+    },
+    {
+      "app": "web",
+      "file": "assets/student-format-necli-MQ.js",
+      "status": 200,
+      "contentType": "application/javascript",
+      "shaMatches": true
+    },
+    {
+      "app": "web",
+      "file": "assets/use-student-auto-page-BZFz1CQv.js",
+      "status": 200,
+      "contentType": "application/javascript",
+      "shaMatches": true
+    },
+    {
+      "app": "web",
+      "file": "assets/user-registry-query-i_tgRndw.js",
+      "status": 200,
+      "contentType": "application/javascript",
+      "shaMatches": true
+    },
+    {
+      "app": "pwa",
+      "file": "assets/AttachmentPdfPreview-DxN8Eubv.js",
+      "status": 200,
+      "contentType": "application/javascript",
+      "shaMatches": true
+    },
+    {
+      "app": "pwa",
+      "file": "assets/index-D9LXJq9H.js",
+      "status": 200,
+      "contentType": "application/javascript",
+      "shaMatches": true
+    },
+    {
+      "app": "pwa",
+      "file": "assets/pdf.worker.min-Dkey6ZUl.mjs",
+      "status": 200,
+      "contentType": "application/octet-stream",
+      "shaMatches": true
+    },
+    {
+      "app": "pwa",
+      "file": "sw-assets.js",
+      "status": 200,
+      "contentType": "application/javascript",
+      "shaMatches": true
+    },
+    {
+      "app": "pwa",
+      "file": "sw.js",
+      "status": 200,
+      "contentType": "application/javascript",
+      "shaMatches": true
+    },
+    {
+      "app": "tma",
+      "file": "assets/AttachmentPdfPreview-CiDybREK.js",
+      "status": 200,
+      "contentType": "application/javascript",
+      "shaMatches": true
+    },
+    {
+      "app": "tma",
+      "file": "assets/index-CNWNMDPC.js",
+      "status": 200,
+      "contentType": "application/javascript",
+      "shaMatches": true
+    },
+    {
+      "app": "tma",
+      "file": "assets/pdf.worker.min-Dkey6ZUl.mjs",
+      "status": 200,
+      "contentType": "application/octet-stream",
+      "shaMatches": true
+    }
+  ],
+  "authAttempts": 0
+}

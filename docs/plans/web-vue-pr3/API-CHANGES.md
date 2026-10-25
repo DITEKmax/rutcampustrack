@@ -312,3 +312,9 @@ numeric-preview/password/originalUUID/result/passive6 withdrawal/foreign-preserv
 UI gate перенесён на отдельную Ubuntu владельца и остаётся NOT RUN до его вывода.
 Никаких cloud group grants/delete ради закрытия gate. Portable launchers и fresh
 synthetic local config проверяются отдельно; cloud DB/secrets/keys не экспортируются.
+
+
+25октября2026, доставка без нового endpoint: confirmedcommonNginx MIME PDFmoduleworker
+вWEB/PWA/TMA исправлен config-only0664fecbf/106aefbb9. Standard MIMEtable сохранена,
+mjs JavaScript +immutable/404; существующие API/payload/grants не меняются.
+AppJS/workerbytes не пересобираются; actualservedHTTPrecheck ведётся отдельно.

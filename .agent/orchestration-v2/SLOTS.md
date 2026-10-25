@@ -5,12 +5,12 @@ ONEHEAVY Root: serialprefixbuilds→one128MiB commonNginx→serialbrowser only.
 
 | Owner | Scope / separate preserved worktree | State |
 |---|---|---|
-| root | docs/contracts/Git/PR/runtime integration | Angular integrated, docs/publish + prefix/Nginx next |
+| root | docs/contracts/Git/PR/runtime integration | published4f; prefixPASS, actualNgxMIMEFAIL/Auth0/owncontainerdown |
 | angular_remove | web-map Angular sole writer; independent AuthPREP reviewer | Angular done; d57 auth structural PASS, final binding pending |
 | angular_review | independent Angular/local handoff review | Angular PASS; final4d42 child-reap targeted review |
-| disk_files | headman-web sole writer tests/e2e/pr3-nginx |28e source freeze, integrated; no Docker/Auth by author |
-| disk_docker | independent Nginx/cleanup review |28e PASS; runtime permissions pending Root |
-| group_resume | group-final-delete sole writer tests/e2e/pr3-local |4d42 freeze, ownerlocal NOT_RUN; cloud execution forbidden |
+| disk_files | headman-web sole writer tests/e2e/pr3-nginx |MIME82/sourcePASS/integrated; runtime configs3 +exactclosure, actualRootrechecknext |
+| disk_docker | independent Nginx/cleanup review |28e/e8/MIME82 sourcePASS; no revieweractualruntime |
+| group_resume | group-final-delete sole writer tests/e2e/pr3-local |d464 exact2Origin integrated/sourcePASS; ownerlocalNOT_RUN, cloudforbidden |
 | visual_conditional | external Manual/AuthPREP | Manual roster manual0/PNG0 knownclosed; Auth final source/origin binding pending |
 
 No competingheavy, grants/delete0, original30containers/data unchanged. Own Nginx alone

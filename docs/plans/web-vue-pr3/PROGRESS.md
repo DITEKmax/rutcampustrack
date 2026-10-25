@@ -566,3 +566,14 @@ Independent currentpackage source scanEXIT0/findings0, rules/ignore/history unch
 Исторические два match остаются квалифицированными falsepositive, history scan не выдаётся
 за zero. Ownerlocal gate NOT_RUN. Уточняются только два переносимых input gap для
 будущего localNginx: exactOrigins нового realm и отдельный trustCA directAPI18443.
+
+
+### Nginx: первый runtime выявил MIME дефект
+
+Настоящий Nginx4f48f169 запустился/nginx-tPASS, HTTP gateFAIL доAuth: mjsPDFworker
+во всех3дистрибутивах octet-stream при точныхbytes, остальные43JS правильные.
+Нужна config-only коррекция, без новыхVite builds. RawFAIL сохранён, owncontainer
+закрыт, guard intact; canonical fullID/image/state/mountsets всех30original PASS
+после исправления order/shortID ошибки comparison. [Доказательства](../../validation/web-vue-pr3/checkpoints/assembled-nginx-20261025/README.md).
+Два переносимых localNginx inputfix/API-CA+exactOrigin source-reviewedPASS;
+реальный ownerlocal runtime NOT_RUN.

@@ -68,3 +68,11 @@ props/ответы не подменялись; orphanTeacherGroupSubjects не 
 Gallery289 сохраняет реальные revisions/limits;45/50 bounded observed не означает
 45 полностью готовых экранов. TMA controlled host и native provider различаются.
 Local group six-view gate — NOT RUN; cloud fullgroup execution отменён владельцем.
+
+
+25октября2026: общий runtime обнаружилMIME defect PDFworker.mjsво всех3apps.
+Source deliveryfix0664fecbf/106aefbb9 исправляетPWA/TMA Nginx так же какWEB,
+это сохранение существующегоpreview, не перенос новойwebфункции. JS/workerbytes
+не менялись; accepteddevPDFfirst-page не выдаётсязаproductionprovider/runtimePASS.
+LocalfreshOrigin14240/14443 +separatepinnedAPI-CA18443 source-reviewed, noMainpolicychange.
+Localgroup/combinedNginx/HTTPSAuthWSS/SWupdate/nativeTelegram/WebPush remainNOT_RUN.

@@ -10,13 +10,13 @@ CI/Coverage/Security/OpenAPI PAUSED/workflow_dispatch; без merge/deploy/produ
 | Поведение |116/117 accepted (ADMIN33/34); backend/group/password/LIMITED/map результаты переиспользованы; ownerlocal group0/1 NOT_RUN |
 | Визуал |289 реальных PNG;33 web-вью +50 mobile consumers;45 mobile boundedobserved/5unchecked, без общего процента. Темы/ширины/состояния отдельно |
 | Angular |433 tracked files и active dependencies/config/security/build references удалены; useful recovery перенесён в Vue, independentreviewPASS |
-| Сборка/поставка |Root WEB/TMA strict+VitePASS; prefixPWA/TMA нужны отдельно; assembledcommonNginx/runtime пока не PASS |
+| Сборка/поставка |Root WEB/TMA strict+VitePASS; prefixPWA/TMA нужны отдельно; assembledcommonNginx firststaticFAIL mjs MIME; fix/recheck впереди |
 
 1. **В облаке:** PWA `/app/` и TMA `/mini-app/` prefix builds завершены PASS строго по одному.
    Причина повтора: старые default-root bytes непригодны для согласованных URL.
    WEB matching `/` artifact переиспользовать. До запуска actualdisk/RAM/process
    admission: дополнительный forecast512MiB, early2.5GiB/hard2GiB, не group7GiB.
-2. **В облаке:** один source-derived commonNginx с retained image,128MiB/0.5CPU,
+2. **В облаке:** исправить подтверждённый moduleworker MIME config-only, повторить затронутый HTTP gate без Vite rebuild. Затем один source-derived commonNginx с retained image,128MiB/0.5CPU,
    read-only/privateTLS. Подтвердить deep links/refresh/static MIME/cache/CSP/404,
    actual API forwarding; затем reviewed nativeWEB/PWA auth/catalog/SockJS если
    реальный Origin/CSP допускает. StaticTLS и HTTPAuth/WS не смешивать. Ни CORS/CSP,

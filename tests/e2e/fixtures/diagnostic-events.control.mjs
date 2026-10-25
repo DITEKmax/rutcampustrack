@@ -13,7 +13,6 @@ const canary = randomBytes(18).toString('hex')
 const source = String.raw`
 import assert from 'node:assert/strict';
 import {test as base} from ${JSON.stringify(join(e2e, 'node_modules/@playwright/test'))};
-const {serializeError}=require(${JSON.stringify(join(e2e, 'node_modules/playwright/lib/util.js'))});
 import {test} from ${JSON.stringify(join(here, 'artifact-privacy.ts'))};
 import {datasetHttpFailure} from ${JSON.stringify(join(here, 'safe-reporter.ts'))};
 import {diagnosticCase, DiagnosticRun, captureDiagnosticFailure} from ${JSON.stringify(join(here, 'diagnostic-events.ts'))};
@@ -22,8 +21,10 @@ test('native body', {annotation:diagnosticCase('LIMITED_ADMIN_ACCOUNTS')}, async
 setup('native fixture', {annotation:diagnosticCase('HOMEWORK_FOREIGN_RETRY')}, async({syntheticSetup})=>{});
 test('plain known text', {annotation:diagnosticCase('SESSION_REVOKE_RECOVERY')}, async()=>{throw new Error('Reported synthetic dataset DATASET_HOMEWORK_CREATE_HTTP: HTTP 503');});
 test('different throwable', {annotation:diagnosticCase('ASYNC_DOCX_RESUME')}, async()=>{const caught=datasetHttpFailure('POST','/api/academic/homeworks',503); throw new Error(caught.message);});
+test('exact message and stack clone is a different raw Error', {annotation:diagnosticCase('N2_STUDENT_RETRY_SUSPENDED')}, async()=>{const original=datasetHttpFailure('POST','/api/academic/homeworks',503);const foreign=new Error(original.message);foreign.stack=original.stack;throw foreign;});
 test('valid proof replay on foreign raw Error', {annotation:diagnosticCase('N2_STUDENT_RETRY_ACTIVE')}, async()=>{
- const original=datasetHttpFailure('POST','/api/academic/homeworks',503); const serialized=serializeError(original);
+ const original=datasetHttpFailure('POST','/api/academic/homeworks',503); const info:any=test.info();
+ info._failWithError(original); const serialized=info.errors.pop();
  captureDiagnosticFailure(test.info(),serialized,()=>{serialized.message='safe';serialized.stack='Error: safe';});
  assert.equal(serialized.__rctDiagnosticProof[0].event.stageId,'DATASET_HTTP');
  const foreign:any=new Error(original.message);foreign.__rctDiagnosticProof=serialized.__rctDiagnosticProof;throw foreign;
@@ -33,7 +34,7 @@ base('finite private verifier controls', async()=>{
  const make=()=>{
   const item:any={id:'framework-id',annotations:[diagnosticCase('LIMITED_ADMIN_ACCOUNTS')],parent:{project:()=>({name:'synthetic'})}};
   const run=new DiagnosticRun();run.begin({allTests:()=>[item]} as any);
-  const info:any={testId:item.id,annotations:[diagnosticCase('LIMITED_ADMIN_ACCOUNTS')],project:{name:'synthetic'},retry:0};
+  const info:any={testId:item.id,annotations:[diagnosticCase('LIMITED_ADMIN_ACCOUNTS')],project:{name:'synthetic'},retry:0,errors:[],_failWithError(error:any){this.errors.push({message:error.message,stack:error.stack});}};
   const error:any={message:'private '+${JSON.stringify(canary)},stack:'Error: private '+${JSON.stringify(canary)}};
   captureDiagnosticFailure(info,error,()=>{error.message='safe';error.stack='Error: safe';});
   return {item,run,error,info,result:{errors:[error],retry:0} as any};
@@ -99,7 +100,7 @@ const report = JSON.parse(text)
 assert.equal(report.status, 'failed')
 assert.equal(report.unsafeArtifact, false)
 assert.equal(report.runnerErrors, 0)
-assert.equal(report.results.length, 6)
+assert.equal(report.results.length, 7)
 for (const id of ['LIMITED_ADMIN_ACCOUNTS', 'HOMEWORK_FOREIGN_RETRY']) {
   const row = report.results.find((r) => r.caseId === id)
   assert.equal(row.status, 'failed')
@@ -113,7 +114,12 @@ for (const id of ['LIMITED_ADMIN_ACCOUNTS', 'HOMEWORK_FOREIGN_RETRY']) {
     true,
   )
 }
-for (const id of ['SESSION_REVOKE_RECOVERY', 'ASYNC_DOCX_RESUME', 'N2_STUDENT_RETRY_ACTIVE']) {
+for (const id of [
+  'SESSION_REVOKE_RECOVERY',
+  'ASYNC_DOCX_RESUME',
+  'N2_STUDENT_RETRY_ACTIVE',
+  'N2_STUDENT_RETRY_SUSPENDED',
+]) {
   const row = report.results.find((r) => r.caseId === id)
   assert.equal(row.status, 'failed')
   assert.deepEqual(
@@ -142,7 +148,7 @@ console.log(
     schema: 'rct-diagnostic-controls.v1',
     passed: true,
     deliberateChildExit: child.status,
-    rows: 6,
+    rows: 7,
     finiteNegatives: 20,
     report: join(out, 'artifacts/safe-results.json'),
   }),

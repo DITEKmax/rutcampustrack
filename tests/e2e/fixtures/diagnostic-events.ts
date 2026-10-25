@@ -1,6 +1,6 @@
 import { createHash, createHmac, randomBytes, timingSafeEqual } from 'node:crypto';
 import { readFileSync } from 'node:fs';
-import { dirname, resolve } from 'node:path';
+import { resolve } from 'node:path';
 import { test, type TestInfo } from '@playwright/test';
 import type { Suite, TestCase, TestError, TestResult } from '@playwright/test/reporter';
 
@@ -32,7 +32,9 @@ interface Proof {
 }
 interface Context {
   binding: Binding;
-  pending: Map<string, DiagnosticEvent>;
+  native: WeakMap<object, DiagnosticEvent>;
+  serialized: WeakMap<object, DiagnosticEvent>;
+  nativeCount: number;
   observation?: DiagnosticEvent;
   captured: WeakSet<object>;
 }
@@ -119,10 +121,31 @@ function context(info: TestInfo): Context | null {
   if (!caseId) return null;
   const value: Context = {
     binding: { caseId, testId: info.testId, project: info.project.name, retry: info.retry },
-    pending: new Map(),
+    native: new WeakMap(),
+    serialized: new WeakMap(),
+    nativeCount: 0,
     captured: new WeakSet(),
   };
   if (!validBinding(value.binding)) throw new Error('Invalid diagnostic execution context');
+  // Associate the actual raw object at the existing framework serialization boundary.
+  // Equal message/stack bytes on a different Error never acquire its native brand.
+  const boundary = info as TestInfo & { _failWithError?: (error: unknown) => unknown };
+  const original = boundary._failWithError;
+  if (typeof original !== 'function') throw new Error('Diagnostic failure boundary unavailable');
+  Object.defineProperty(info, '_failWithError', {
+    configurable: true,
+    writable: true,
+    value: function (this: TestInfo, raw: unknown) {
+      const before = info.errors.length;
+      const event = raw && typeof raw === 'object' ? value.native.get(raw) : undefined;
+      const result = Reflect.apply(original, this, [raw]);
+      if (this === info && event && info.errors.length === before + 1) {
+        const serialized = info.errors[before];
+        if (serialized && typeof serialized === 'object') value.serialized.set(serialized, event);
+      }
+      return result;
+    },
+  });
   contexts.set(info, value);
   return value;
 }
@@ -136,10 +159,6 @@ export function currentDiagnosticCase(): string | null {
     return null;
   }
 }
-// Use the installed framework's own serializer, so native Errors match actual TestInfo.errors.
-const serializeError: (error: Error) => TestError = require(
-  resolve(dirname(require.resolve('playwright/package.json')), 'lib/util.js'),
-).serializeError;
 export function diagnosticHttpFailure(error: Error, eventCode: string, httpStatus: number): Error {
   try {
     const state = context(test.info());
@@ -151,9 +170,10 @@ export function diagnosticHttpFailure(error: Error, eventCode: string, httpStatu
       eventCode,
       httpStatus,
     };
-    const fingerprint = errorDigest(serializeError(error));
-    if (allowed(event) && fingerprint && state.pending.size < 8)
-      state.pending.set(fingerprint, event);
+    if (allowed(event) && !state.native.has(error) && state.nativeCount < 8) {
+      state.native.set(error, event);
+      state.nativeCount++;
+    }
   } catch {
     /* Optional diagnostics must preserve the original failure. */
   }
@@ -214,7 +234,7 @@ export function captureDiagnosticFailure(
   }
   state.captured.add(error);
   const before = errorDigest(error);
-  const event = (before && state.pending.get(before)) || {
+  const event = state.serialized.get(error) || {
     schema: 'rct-diagnostic-event.v1' as const,
     caseId: state.binding.caseId,
     stageId: 'FRAMEWORK',

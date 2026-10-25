@@ -164,8 +164,18 @@ def upstream(text, name, value):
     return text
 
 
+def runtime_tmpfs(user):
+    require(re.fullmatch(r"[1-9][0-9]*:[0-9]+", user), "Runtime UID must be nonroot with an explicit GID")
+    uid, gid = user.split(":")
+    return {path: "size=" + size + ",uid=" + uid + ",gid=" + gid + ",mode=0700"
+            for path, size in [("/var/cache/nginx", "16m"), ("/var/run", "1m"),
+                               ("/var/log/nginx", "8m"), ("/tmp", "1m")]}
+
+
 def prepare(args):
     checkout(args.expected_sha)
+    require(os.getuid() != 0, "Prepare must run as the nonroot artifact/TLS owner")
+    runtime_user = str(os.getuid()) + ":" + str(os.getgid())
     require(re.fullmatch(r"sha256:[0-9a-f]{64}", args.image_id), "Pin the retained Nginx image by full image ID")
     require(re.fullmatch(r"[a-zA-Z0-9_.-]+:[0-9]{2,5}", args.gateway), "Use one explicit Docker gateway host:port")
     require(re.fullmatch(r"[a-zA-Z0-9_.-]+", args.network), "Invalid existing network name")
@@ -193,6 +203,8 @@ def prepare(args):
     config = replace_once(config, "worker_processes auto;", "worker_processes 1;")
     (output / "nginx.conf").write_text(config)
     edge = (REPO / "nginx/conf.d/default.conf").read_text()
+    # This redirect listener is not published, but must also be capless/nonroot.
+    edge = replace_once(edge, "listen 80;", "listen 8080;")
     # Match the external loopback TLS port so redirects and forwarded port stay truthful.
     edge = replace_once(edge, "listen 443 ssl;", "listen " + str(args.port) + " ssl;\n    listen " + str(HTTP_AUTH_PORT) + ";")
     edge = replace_once(edge, "/etc/letsencrypt/live/ruttrack.site/fullchain.pem", "/etc/nginx/certs/fullchain.pem")
@@ -217,19 +229,19 @@ def prepare(args):
                for app, path in {**dists, "landing": landing}.items()]
     nonce = str(uuid.uuid4())
     compose = {"name": "rct-pr3-nginx-gate", "services": {"edge": {
-        "labels": {RUN_LABEL: nonce},
+        "labels": {RUN_LABEL: nonce}, "user": runtime_user,
         "image": args.image_id, "pull_policy": "never", "entrypoint": ["nginx"],
         "command": ["-g", "daemon off;"], "read_only": True,
         "ports": ["127.0.0.1:" + str(args.port) + ":" + str(args.port),
                   "127.0.0.1:" + str(HTTP_AUTH_PORT) + ":" + str(HTTP_AUTH_PORT)], "volumes": mounts,
-        "tmpfs": ["/var/cache/nginx:size=16m", "/var/run:size=1m", "/var/log/nginx:size=8m", "/tmp:size=1m"],
+        "tmpfs": [path + ":" + options for path, options in runtime_tmpfs(runtime_user).items()],
         "mem_limit": "128m", "memswap_limit": "128m", "cpus": 0.5, "pids_limit": 32,
-        "cap_drop": ["ALL"], "cap_add": ["NET_BIND_SERVICE", "SETUID", "SETGID", "CHOWN"],
+        "cap_drop": ["ALL"],
         "security_opt": ["no-new-privileges:true"], "networks": ["main"]}},
         "networks": {"main": {"external": True, "name": args.network}}}
     save(output / "compose.json", compose)
     save(output / "pins.json", {"sourceSha": args.expected_sha, "imageId": args.image_id,
-        "runNonce": nonce,
+        "runNonce": nonce, "runtimeUser": runtime_user,
         "availableBefore": free, "forecastMaxAdditionalBytes": 512 * 1024**2,
         "apps": receipts, "dists": {app: str(path) for app, path in dists.items()},
         "configs": {str(p.relative_to(output)): sha(p.read_bytes())
@@ -237,7 +249,7 @@ def prepare(args):
         "verificationOrigins": {"httpsStaticAnonymous": "https://127.0.0.1:" + str(TLS_STATIC_PORT),
                                 "httpAuthRealtime": "http://127.0.0.1:" + str(HTTP_AUTH_PORT)},
         "tlsAuthWss": "NOT_RUN_OWNER_LOCAL",
-        "localAdaptations": ["one worker", "matching external/local TLS port", "same-server HTTP14240 listener", "fresh local certificate paths", "explicit gateway DNS",
+        "localAdaptations": ["one worker", "host nonroot UID:GID without added capabilities", "unpublished redirect listener8080", "matching external/local TLS port", "same-server HTTP14240 listener", "fresh local certificate paths", "explicit gateway DNS",
                              "four loopback inner upstreams/listeners and read-only artifact roots"],
         "productionTLSAndDeployment": "NOT_RUN"})
     print(json.dumps({"state": "PREPARED_NOT_STARTED", "sourceSha": args.expected_sha}))
@@ -269,6 +281,10 @@ def admit_container(pins, compose, container, base):
     """Only the one prepared frontend container may supply HTTP evidence."""
     require(compose["name"] == "rct-pr3-nginx-gate" and set(compose["services"]) == {"edge"}, "Unexpected prepared namespace")
     service = compose["services"]["edge"]
+    runtime_user = pins["runtimeUser"]
+    tmpfs = runtime_tmpfs(runtime_user)
+    require(container["user"] == service["user"] == runtime_user and not container["groupAdd"],
+            "Runtime UID:GID or supplementary groups differ")
     expected_ports = ["127.0.0.1:" + str(port) + ":" + str(port) for port in (TLS_STATIC_PORT, HTTP_AUTH_PORT)]
     require(service["ports"] == expected_ports, "Expected exactly the reviewed loopback TLS14443/HTTP14240 publications")
     port = str(TLS_STATIC_PORT)
@@ -289,9 +305,8 @@ def admit_container(pins, compose, container, base):
     require(container["readonly"] and not container["privileged"] and container["memory"] == 128 * 1024**2 and
             container["memorySwap"] == 128 * 1024**2 and container["nanoCpus"] == 500_000_000 and
             container["pids"] == 32, "Container resource/root bounds differ")
-    tmpfs = {"/var/cache/nginx": "size=16m", "/var/run": "size=1m", "/var/log/nginx": "size=8m", "/tmp": "size=1m"}
     require(container["tmpfs"] == tmpfs, "Container tmpfs bounds differ")
-    require({value.removeprefix("CAP_") for value in container["capAdd"]} == set(service["cap_add"]) and
+    require(not container["capAdd"] and not service.get("cap_add") and
             container["capDrop"] == ["ALL"] and container["securityOpt"] == ["no-new-privileges:true"],
             "Container capabilities/security options differ")
     expected = {item["target"]: item for item in service["volumes"]}
@@ -317,6 +332,7 @@ def check(args):
                   if key not in {"DOCKER_HOST", "DOCKER_CONTEXT", "DOCKER_TLS", "DOCKER_TLS_VERIFY", "DOCKER_CERT_PATH"}}
     template = ('{"image":{{json .Image}},"running":{{json .State.Running}},'
                 '"mounts":{{json .Mounts}},"entrypoint":{{json .Config.Entrypoint}},"command":{{json .Config.Cmd}},'
+                '"user":{{json .Config.User}},"groupAdd":{{json .HostConfig.GroupAdd}},'
                 '"project":{{json (index .Config.Labels "com.docker.compose.project")}},'
                 '"service":{{json (index .Config.Labels "com.docker.compose.service")}},'
                 '"nonce":{{json (index .Config.Labels "rct.pr3-nginx.run")}},'

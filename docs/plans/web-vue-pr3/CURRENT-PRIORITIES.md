@@ -29,13 +29,13 @@ CI/Coverage/Security/OpenAPI PAUSED/manual; без merge/deploy/production.
 Перед завершением обновляются галерея, карта, PROGRESS, API-CHANGES,
 MOBILE-FOLLOWUPS и итог PR; PAUSED не объявляется PASS.
 
-Текущие пакеты и зависимости — checkpoint2026-10-25, product3371:
+Текущие пакеты и зависимости — checkpoint2026-10-25, product6219:
 
 - Пароль, LIMITED и whole-map delete/Auth закрыты; independent posts9598/c7ee
   подтверждают cleanup. Не повторять generation/grants/delete по старымcheckpoint.
 - Group status/fixtures и20boundary cases закрыты, live8e83 принят. MatchingJARs и
   1530backendinputs прежние. Runtime12v3180f/cohorta23logic reviewed; historical57
-  binding требует freshfrontendfreeze после3371/currentRootGO. Следующий результат:
+  binding требует freshfrontendfreeze после6219/currentRootGO. Следующий результат:
   один UIdelete/originalUUID, numericpreview/password/status и шесть заранееоткрытых
   WEB/PWA/TMA views, naturalwithdrawal/foreignpreservation. SID может жить для другойроли.
 - Q-ENV-010: actual5,313,261,568B против7GiB preflight. Требуется около+3GiB или≥7GiB
@@ -48,14 +48,23 @@ MOBILE-FOLLOWUPS и итог PR; PAUSED не объявляется PASS.
 - Headmanhistory actual15events/Back/before2 закрыт. Source3371 исправляет только
   filterwrap/typeformatter; PWA/TMAstrictbuild/review и AFTER2PASS. ОбаP3закрыты
   при300light/root20 и768darkfocus. Новыефункциональныедействия0.
-- Gallery283/portable283, finite43boundedobserved/7unchecked из50:6activeconditional+
-  1orphan. Это не43fullyreadyscreens и неготовностьPR%. Original36/corrected37 preserved.
+- Gallery287/portable287, finite45boundedobserved/5unchecked из50:4activeconditional+
+  1orphan. Это не45fullyreadyscreens и неготовностьPR%. Original36/corrected37 preserved.
   [Before/after](../../validation/web-vue-pr3/runtime-gallery/headman-history-after-20261025/index.html).
-- Параллельный остаток: nativeTeacherExcuse existingapproved/possiblyexpiredrecord,
-  затем existingStudent3LateCheckinreadonlyform. PREP/review/sourcebinding, поодному
-  browserlease; свежаяeligibleentry обязательна, иначе honestSTOP. Безsubmit/newfixtures/
-  grants/passwords/prefs/clock, безинъекции отсутствующихstates. Helper2views пока
-  ждут provencredential/scope; неугадывать и не читатьprivatesecrets.
+- Завершён просмотр существующей одобренной справки преподавателем: обычный UI,
+  настоящий GET вложения и возврат, twoPNG/EXIT0/errors0/owncleanup204+401. Готовая
+  первая страница PDF не наблюдалась; loading/metadata не выдаются за previewPASS.
+  На300/root20 найден узкий перенос даты/времени. TeacherCard CSS fix9e→6219
+  прошёл независимый review/format/PostCSS и один matching PWA strict/build. Остался
+  AFTER2 только для изменённого отображения. Допустимо одно bounded≤7s ожидание естественного PDFready
+  для существенного ещё не проверенного риска; без retry/newAPI/newAuthloop.
+- Завершён просмотр формы «Забыл отметиться»: fresh options200, ownlesson3, budget5/5,
+  Continue disabled до выбора, два читаемых кадра с keyboardfocus. Submit/newrequest0,
+  EXIT0/errors0/owncleanup204+401/browserclosed. Старый выбор типа и Excuse draft reused.
+- Оставшиеся4activeconditional: два helper consumer без доказанных owncredentials,
+  HeadmanGroup содержит секреты и не публикуется, TeacherManualExcuse отсутствовал
+  в первой наблюдённой паре (не доказано глобальное отсутствие). Orphan отдельно.
+  Не придумывать новые страницы, не подменять props/data и не менять права ради кадра.
 - Послеgroupgate — полноеудалениеAngularпоinventory, затемassembledcommonNginx:
   deep links/refresh/static/API/realtime,/app/,/mini-app/,auth/updates/WebPush.
   Angularактивен; адресныеVuebuild этотgate незакрывают.

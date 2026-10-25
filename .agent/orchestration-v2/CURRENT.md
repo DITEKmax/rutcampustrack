@@ -1,15 +1,15 @@
 # CURRENT — existing Goal PR3, 2026-10-25
 
-Owner GO active: existing `codex/web-vue-redesign` / PR3 only. Product3371d6438;
-previous published checkpoint481512e93. Root docs/Git/integration; sole product
+Owner GO active: existing `codex/web-vue-redesign` / PR3 only. Product6219ca60a;
+previous published checkpoint63d97497e. Root docs/Git/integration; sole product
 writers in preserved worktrees. Children requested gpt-6.1-sol/high; runtime model
 telemetry unavailable, no fallback claimed. CI/Coverage/Security/OpenAPI manual/
 PAUSED, dispatch0. No main/reset/clean/forcepush/merge/deploy/production/globalcleanup.
 
 Actions implemented116/117 and locallyverified116/117; ADMIN33/34. Not overallPR%.
 Visual inventory33WEB+50mobile, PWA/TMA separately; Angular/build is a fourth axis.
-Gallery283 PNG/portable283, first204 immutable +newer79 hashed. Mobile43 bounded
-observed/7unchecked:6activeconditional+1orphan TeacherGroupSubjects. Not43 fully
+Gallery287 PNG/portable287, first204 immutable +newer83 hashed. Mobile45 bounded
+observed/5unchecked:4activeconditional+1orphan TeacherGroupSubjects. Not45 fully
 ready screens. Historicaloriginal36 and corrected originalmapped37 preserved.
 
 CLOSED password: known5→6/lostACK6→7/successor isolation. Independentpost9598:
@@ -45,11 +45,11 @@ observations retained without inventedcause. No fullmatrix/TMAprovider claim.
 Group64f/ae546/f67/3e174 +live8e83 integrated.20 meaningful boundary cases CLOSED;
 55client/6unit/2actualPG/1Mongo live checks PASS, unchanged results reused. Matching
 ACA829ce167/Notif97d9d177/BFF9d7677a5 JARs and1530backendinputs31a5 unchanged by
-frontend3371; Auth/Sched/Attend64f reused. No backend rebuild/suite for this checkpoint.
+frontend6219; Auth/Sched/Attend64f reused. No backend rebuild/suite for this checkpoint.
 Auth COMMIT clears selected targetgrant/increments sessionVersion; SID may remain
 for other roles. OldJWT401 is not entireSIDrevocation.
 Runtime12v3180f and cohorta23logic reviewed. Historical57binding was85c/d69/558inputs;
-frontend3371 requires fresh sourcefreeze/qualification/currentRootGO before effects.
+frontend6219 requires fresh sourcefreeze/qualification/currentRootGO before effects.
 Actual start/fixturewrites/UIdelete0. PlannedoneoriginalUUID/numericpreview/password,
 sixopenWEB/PWA/TMA target+retainedTeacher views, naturalwithdrawal/foreignpreservation.
 
@@ -61,12 +61,24 @@ OwnedfutureAuth/ACA/GW/TLSedge replacements only; PG/Redis/Rabbit data/realmkeys
 preserved. OwnSchedule/Mongo/Rabbitrealm/currentsemester/teachingfileclock only;
 no OS/Auth/Mainclock. No cleanup to manufacturecapacity.
 
-Next independent readonlyvisual: TeacherExcuse existingTeacher2/lesson1/date24/
-Student4approved ticket, then existingStudent3LateCheckin form. PREP/review first,
-finalpublishedHEAD binding once. No fixtures/submit/grants/prefs/password/clock.
-Teacher nativeexpired preview is a valid observedstate, not forcedGET or loadedfile
-PASS; exactautopreviewGET if naturallyattempted uses boundedno-redirect realforward.
-Remaininghelper credentials notpubliclyproved; no guessing/reset/privatesecretreads.
+CLOSED bounded TeacherExcuse: real existingTeacher2→lesson1/date24/group1/subject1/
+Student4approved ticket, normal UI/nativeBack, exactautoPreviewGET200/pdf46025
+forwardedoriginalAPIResponse/maxRedirects0. EXIT0/errors0/ownDELETE204+401/browser
+closed,2author+Root personallyviewedPNG. Actual300x1580fullpage/viewport300x900,
+768x900. PDFfirstpage not observedready (loadingcaption), no download/previewPASS.
+P3 V-TE-LESSONMETA-300-R20: date/time compressed vertically atroot20; solewriter
+one-lineTeacherCardCSS9e→6219 independentreview/actualPostCSS/formatPASS,
+one matchingRootPWAproductionbuild (includesstrict) PASS; boundedAFTER2 pending.
+Unchanged Back/authority/read checks reused; optionalone7sPDFready observation
+addresses unverified display risk withoutretry/APIrepeat/fakebody/newAuthloop.
+CLOSED bounded LateCheckin: currentownStudent3 options200/42options/3eligible,
+5of5budget, nativeContinue disabledbeforeselection, ownlesson3/form300lightroot20
+and768darkCancelkeyboardfocus. EXIT0/errors0/noSubmit/noCancelactivation/newrequest0,
+noPREF/fixturewrites, ownDELETE204+401/browserclosed. No allstates/TMA claim.
+Only4activeconditional consumer gaps remain: helperActions/helperHomework require
+provenownfixturecredentials, HeadmanGroup exposescredentials (no publication),
+TeacherManualExcuse absent in first observedlesson/not globallyabsent. Keepone
+orphan source-only component ininventory; no forcedprops/grants/passwordreset/clock.
 
 After actualgroup gate: remove activeAngular433-file inventory/source/deps/build/
 config/obsoletechecks and verify assembled commonNginx deep links/refresh/static/

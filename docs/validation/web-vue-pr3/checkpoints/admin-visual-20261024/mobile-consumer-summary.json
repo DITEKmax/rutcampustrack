@@ -52,7 +52,7 @@
     "tma-controlled-unsigned-gate-light-300",
     "tma-controlled-unsigned-gate-dark-300"
   ],
-  "qualifiedAgainstSourceRevision": "3371d6438b0144976cb338f0fa1bb14cc5c051bd",
+  "qualifiedAgainstSourceRevision": "63d97497eba26577a8af5fa1428fcc3c959c8992",
   "latestMobileSourceDiffFrom77f": [
     "frontends/mobile-core/src/features/admin-groups/admin-group-deletion-client.test.ts",
     "frontends/mobile-core/src/features/admin-groups/admin-groups-client.ts",
@@ -83,7 +83,7 @@
     "frontends/pwa-vue/src/pwa-host.pcss",
     "frontends/tma-vue/src/App.vue"
   ],
-  "nextPacketState": "Headmanhistory P3 sourcefix+AFTER2 completed; knownowncleanup/noLiveBrowser; no morepolish/datafixtureextensions without Rootnewcontract.",
+  "nextPacketState": "LateCheckin2 complete/knowncleanup/rootpersonalinspection; TeacherExcuse2 boundedobservedwithP3open/PDFvisualNOTQUALIFIED. AppointedTeacherproductfix separate, no automatic furtherAuth/runtime.",
   "latestPwaTodayWidthPacket": {
     "qualifiedReceipt": "mobile-next-first-qualified.json",
     "actualState": "day-ended/two-lessons/no-checkin-action",
@@ -103,8 +103,8 @@
     "cleanup": "native204/guest401",
     "notificationConsumer": "notchecked:wronglocator/noinboxrequest"
   },
-  "currentPwaScreensWithObservedBaselines": 43,
-  "currentPwaNotVisuallyCheckedScreens": 7,
+  "currentPwaScreensWithObservedBaselines": 45,
+  "currentPwaNotVisuallyCheckedScreens": 5,
   "originalMappedPwaBaselineScreensUnchanged": 36,
   "latestNotificationConsumer": {
     "observedFrames": 4,
@@ -172,7 +172,7 @@
     "cleanup": "technicalexactownselfDELETE204/samebearer401/browserclosed; notnativeUIlogoutPASS",
     "limits": "No whole-screen/all-state/width/TMA runtime/provider/actioncount claim; localtable scroll interaction notchecked"
   },
-  "reconciliationQualification": "43/50 PWAconsumers have bounded observed baselines;7visuallyunchecked. Headmanhistory2P3 closed in boundedAFTER2; not whole-screen readiness. Historicaloriginal36/14 and reconciledoriginal37 preserved; no overallreadiness percentage/actioncount increase.",
+  "reconciliationQualification": "45/50 PWAconsumers have bounded observed baselines;5visuallyunchecked (4activeconditional+1sourceonlyorphan). LateCheckin selectedform observed/rootpersonallyviewed; TeacherExcuse approvedticket observed withOPEN P3 lessonmetadata300root20 and PDFvisualNOTQUALIFIED. Historicaloriginal36/14 and reconciledoriginal37 preserved. No whole-screen readiness percentage/actioncount increase.",
   "studentRequestSelectionConsumer": {
     "revision": "85c068210262b611f6f98d18fb9d7bdd8cecea95",
     "qualifiedReceipt": "student-request-selection-run/qualified-85c.json",
@@ -212,11 +212,17 @@
     "commonNavChangedSinceOriginal": "accepted e715 sourceinfluence, not currentAdminMore runtime"
   },
   "remainingVisualInventoryQualification": {
-    "priorSourceQualification": "admin-more-prep/REMAINING-8-SOURCE-QUALIFICATION.json retained historical8; HeadmanLessonActions now observed withP3",
-    "inventoryUnchecked": 7,
-    "activeConditionalUnchecked": 6,
+    "priorSourceQualification": "admin-more-prep/REMAINING-8-SOURCE-QUALIFICATION.json retained historical8; HeadmanLessonActions now observed withP3; LateCheckin form nowboundedobserved at63d, otherrows qualification unaffected.; TeacherExcuse nowboundedobservedwithP3/PDFvisualNOTQUALIFIED at63d; remaining4activeconditional+1orphan.",
+    "inventoryUnchecked": 5,
+    "activeConditionalUnchecked": 4,
     "orphanSourceOnly": 1,
-    "sourceOnlyOrphansDoNotAuthorizeNewFeatures": true
+    "sourceOnlyOrphansDoNotAuthorizeNewFeatures": true,
+    "remainingActiveConsumers": [
+      "MOBILE-ASSISTANTACTIONS",
+      "MOBILE-HEADMANGROUP",
+      "MOBILE-ASSISTANTHOMEWORK",
+      "MOBILE-TEACHERMANUALEXCUSE"
+    ]
   },
   "headmanLessonHistoryConsumer": {
     "revision": "481512e93575070a1f471c65af54df5b4e31cd61",
@@ -247,8 +253,47 @@
       "noLiveBrowser": true
     }
   },
-  "currentSourceQualification": "Individual source/runtime qualifications apply. Headman history presentation3371 has two accepted after frames; no empty global mobile source delta claimed.",
-  "inactiveStandaloneSourceComponents": [
-    "MOBILE-TEACHERGROUPSUBJECTS"
-  ]
+  "lateCheckinRequestConsumer": {
+    "revision": "63d97497eba26577a8af5fa1428fcc3c959c8992",
+    "productBase": "3371d6438b0144976cb338f0fa1bb14cc5c051bd",
+    "qualifiedReceipt": "late-checkin-readonly-prep/run/qualified-63d.json",
+    "manifest": "late-checkin-readonly-prep/run/manifest-63d.json",
+    "newFrames": 2,
+    "newPreviouslySourceOnlyConsumers": [
+      "MOBILE-LATECHECKINREQUEST"
+    ],
+    "status": "bounded observed eligibleform/readability/focus; no submit",
+    "freshOptions": "realGET200/42options/3lateeligible/remaining5of5/currentownStudent3bearer/canonical matched",
+    "selectedOwnLessonId": "3",
+    "states": "300lightroot20formpreview;768darkroot16Cancelkeyboardfocus;nativeunselectedContinue-disabled beforeselection",
+    "cleanup": "technicalexactownselfDELETE204/samecurrentbearer401/browserclosed/noHOLD; NOTnativeUIlogoutPASS",
+    "domainOrPreferenceWrites": 0,
+    "functionalActionsAdded": 0,
+    "limits": "No submit/budgetconsumption/validationerror/allstates/widths/TMAnativeprovider/manualtheme outcome claim.",
+    "rootPersonalInspectionComplete": true
+  },
+  "teacherExcuseConsumer": {
+    "revision": "63d97497eba26577a8af5fa1428fcc3c959c8992",
+    "productBase": "3371d6438b0144976cb338f0fa1bb14cc5c051bd",
+    "runnerSha256": "00f3f39dd4146c007e48075002ad5a5e709023d13cf4eb12fab5d39f12b37105",
+    "qualifiedReceipt": "teacher-excuse-readonly-prep/run/qualified-63d.json",
+    "manifest": "teacher-excuse-readonly-prep/run/manifest.json",
+    "newFrames": 2,
+    "newPreviouslySourceOnlyConsumers": [
+      "MOBILE-TEACHEREXCUSE"
+    ],
+    "status": "bounded observed approvedticket;P3needsfix/PDFvisualNOTQUALIFIED",
+    "rootPersonalInspectionComplete": true,
+    "finding": {
+      "id": "V-TE-LESSONMETA-300-R20",
+      "severity": "P3",
+      "status": "OPEN_NEEDS_FIX_SOURCE_AND_AFTER_NOT_ACCEPTED"
+    },
+    "PDFvisual": "NOT_QUALIFIED firstpage notobservedready; loadingcaption/metadata only; nativeoriginalGET200 is transportread only, filePreviewPassfalse",
+    "independentFullClientBodyCompletion": false,
+    "cleanup": "technicalexactownselfDELETE204/samecurrentbearer401/browserclosed/noHOLD; NOTnativeUIlogoutPASS",
+    "functionalActionsAdded": 0,
+    "wholeScreenReady": false
+  },
+  "currentSourceQualification": "Per-consumer source/runtime qualifications; TeacherExcuse narrow lessonmeta P3 open; PDF visual not ready. LateCheckin bounded form observed, not submit PASS."
 }

@@ -700,5 +700,25 @@
     "path": "headman-history-AFTER-ROOT-RECHECK-92184719.json",
     "original_path": "/workspace/rct-pr3-review/headman-history-polish/AFTER-PREP-ROOT-RECHECK-92184719.json",
     "sha256": "a2bab3cc7bd137facc3e215bc12e42a450bfbf9152b615c4020d958f4e26ced3"
+  },
+  {
+    "path": "teacher-excuse-STRUCTURAL-b34db64f.md",
+    "original_path": "/workspace/rct-pr3-review/teacher-excuse-readonly/STRUCTURAL-REVIEW-b34db64f.md",
+    "sha256": "6fe7aafd85518e0707fb4f21487ea1c98f8bd1949a0feefd959bf5b45834f452"
+  },
+  {
+    "path": "teacher-excuse-BINDING-00f3f39d.md",
+    "original_path": "/workspace/rct-pr3-review/teacher-excuse-readonly/RECHECK-BINDING-00f3f39d.md",
+    "sha256": "4ba155c81cfc8ddf45b3ab9d8413d6e5cd61753e4c9761579639e65ef2fa654e"
+  },
+  {
+    "path": "late-checkin-PREP-REVIEW-0f841e26.md",
+    "original_path": "/workspace/rct-pr3-review/late-checkin-readonly/PREP-REVIEW-0f841e26.md",
+    "sha256": "3cfe79f6b8a4093611f76a2461e9ffa4ee64f8495a9324128f55050c7e6a2819"
+  },
+  {
+    "path": "teacher-meta-REVIEW-9e547115.md",
+    "original_path": "/workspace/rct-pr3-review/teacher-lesson-meta-polish/REVIEW-9e547115.md",
+    "sha256": "445ae901093f712aac57633344d31837ae3765283869ce59209d45b66368ef52"
   }
 ]

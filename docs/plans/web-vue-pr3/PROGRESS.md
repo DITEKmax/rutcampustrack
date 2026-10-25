@@ -397,3 +397,37 @@ Freshsource-only004652Z.zip7,456,675B/SHA2560fdf5c3a2312352ecf3cb8c01acefaed6280
 sourcebytechecksPASS. DIRnative1/25/historynative1/4 publicnonsecretclassified,
 unresolved0/rulesunchanged. PIDobservationalhold неsourcefailure/runtimePASS.
 Источникsnapshot481; последующий3371 сохранён вGit. CImanual/PAUSED/dispatch0, no merge/deploy.
+
+
+## Существующая справка преподавателя и форма LateCheckin —2026-10-25
+
+TeacherExcuse: normalTeacher2/nativeAttendance lesson1/date24/group1/subject1/
+Student4approvedticket; nativeBacksameLesson/EXIT0/errors0. ExactnativepreviewGET200/
+applicationpdf46025 forwardedoriginalAPIResponse/maxRedirects0. Два PNG лично
+просмотрены автором и Root; syntheticcontent/no credentials. Первыйfullpage300x1580
+приviewport300x900, второй768x900. PDFfirstpage не наблюдалась готовой; metadata/
+loadingcaption неpreview/downloadPASS. P3 V-TE-LESSONMETA-300-R20 confirmed:
+дата/время сжаты вертикально. Минимальный CSSfix вreview; послеmatchingRootPWAbuild
+проверяется только изменённое отображение. Rawreceiptedd737d8 сохранён.
+[Исходные кадры](../../validation/web-vue-pr3/runtime-gallery/teacher-excuse-before-20261025/index.html).
+
+LateCheckin: currentownStudent3 freshoptions200/42options/3eligible/5of5budget,
+nativeContinue disabledbeforeselection, ownlesson3 and nativeform. Два лично
+просмотренных viewportPNG300light/root20 и768dark/Cancelkeyboardfocus читаемы,
+EXIT0/errors0; submit/Cancelactivation/newrequest/PREF/fixtures0. Raw16da65fc сохранён.
+[Форма](../../validation/web-vue-pr3/runtime-gallery/late-checkin-readonly-20261025/index.html).
+
+ОбеoneAuth сессии закончились exactowntechnicalDELETE204/sameBearer401/browserclosed/
+HOLD0. NativeUIlogout не пересдавался. Никаких passwords/ACL/groupdelete/oldcleanup
+повторов. Gallery287/portable287; finite45boundedobserved/5unchecked (4active+1orphan),
+не45готовыхscreens. Actions116/117 в обеихосях/ADMIN33/34 неизменны. Group runtime12
+остаётся STOPQENV010:5.31GB<7GiB. Успешные backend/sourcecases/JARs прежние;
+Angular/commonNginx gate впереди. CImanual/PAUSED/dispatch0, без merge/deploy.
+
+TeacherCard source9e547115→Root6219ca60a: ровно одна строка `flex-wrap: wrap` в
+`teacher-lesson-r3.pcss`. Independentreview/format/actualVitePostCSS PASS; один
+matching assembledRoot PWA build со strictTypeScript PASS. TMA общая PCSS wiring
+и предыдущий strict/build reused; API/Auth/PDF/template не менялись. AFTER2 ещё
+не выполнялся, P3 не объявлен закрытым. Причина повтора — изменённое отображение;
+один boundedPDFreadywait отдельно проверит существенный незакрытый риск безAPIretry.
+[Source/build](../../validation/web-vue-pr3/checkpoints/remaining-admin-20261024/teacher-meta-root-build.json).

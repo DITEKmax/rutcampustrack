@@ -410,3 +410,12 @@ Q-ENV-010, final independent-light-packets checkpoint2026-10-25: actualfree
 about+3GiB or≥7GiB free with margin, preserving workspace/Dockerdata. All light
 browser cases knownterminal/closed; no group runtime/fixtures/delete or Angular
 cutover attempted. No new product question/confirmation is required.
+
+
+Q-ENV-010 update25October2026 послеразрешённойадреснойcleanup:109pathsremoved,
+available5244747776→6531416064B net+1286668288B, independentpost/source/data/JARpreservationPASS.
+Current~6.08GiB<7GiB=7516192768B; residualdeficit~0.92GiB бездополнительногозапаса.
+Практически нужен ещёобъём1.5–2GiB, сохраняявсеworkspace/Dockerdata. Большиеоставшиеся
+files required/shared/rollback/source/unknown; cleanupостановлена, guardsunchanged.
+Этообновление тогожересурсноговопроса, не новыйproductdecision илиповторныйGOзапрос.
+Пароль/LIMITED/wholemap CLOSED reused. Actualgroupstart/fixtures/delete0.

@@ -1,104 +1,79 @@
-# CURRENT — existing Goal PR3, 2026-10-25
+# CURRENT — существующий Goal PR3, 25 октября2026
 
-Owner GO active: existing `codex/web-vue-redesign` / PR3 only. Product6219ca60a;
-previous published checkpoint7bbef7252. Root docs/Git/integration; sole product
-writers in preserved worktrees. Children requested gpt-6.1-sol/high; runtime model
-telemetry unavailable, no fallback claimed. CI/Coverage/Security/OpenAPI manual/
-PAUSED, dispatch0. No main/reset/clean/forcepush/merge/deploy/production/globalcleanup.
+Ветка `codex/web-vue-redesign`, PR3; последний опубликованныйf0c0015df,
+product source6219ca60a. Root — документация/Git/интеграция; продукт пишут только
+назначенные developers в отдельных сохранённых worktrees. Children requested
+`gpt-6.1-sol/high`, telemetry недоступна; fallback не заявлен.
+CI/Coverage/Security/OpenAPI workflow_dispatch/PAUSED, dispatch0. Без main/reset/
+clean/forcepush/merge/deploy/production/новой среды/Goal/PR/globalDockercleanup.
 
-Actions implemented116/117 and locallyverified116/117; ADMIN33/34. Not overallPR%.
-Visual inventory33WEB+50mobile, PWA/TMA separately; Angular/build is a fourth axis.
-Gallery289 PNG/portable289, first204 immutable +newer85 hashed. Mobile45 bounded
-observed/5unchecked:4activeconditional+1orphan TeacherGroupSubjects. Not45 fully
-ready screens. Historicaloriginal36 and corrected originalmapped37 preserved.
+## Активная точка
 
-CLOSED password: known5→6/lostACK6→7/successor isolation. Independentpost9598:
-MAINuser8 Cred7/RV8/Aca8/profile6unassigned, ACTIVE/STUDENTgroup1, own3SIDsrevoked,
-no pending; other17/core/20grants preserved. NEVER replay oldCred5/profile4cleanup.
-CLOSED LIMITED: natural openpage withdrawal3708ms, oldADMIN/session403, Teacher/
-profile200. Rawexit1 TESTenumgap retained. Independentpostc7ee: ISOLATEDTeacher2
-profile8unassigned/RV9/catalog22/Aca9/Cred1/Binding1, own4SIDsrevoked, others preserved.
-MainTeacher2 is a different realm. Wholemapdelete/Auth correct204/wrong403 CLOSED;
-no new grant/password/delete solely for a new report. All historical helper/session
-cleanup checkpoints remain knownterminal, no heldbrowser or pendingowncleanup.
+По новому разрешению владельца завершена адресная cleanup:109 exactpaths,
+3пакета98/5/6. Available5244747776→6531416064B, реально net+1286668288B (~1.20GiB),
+последний замер~6.08GiB. Source/12WT/Git/archives/results,25protected JARs+3legacy
+setupJAR, mountedartifacts/ACAexploded, sharednode_modules/mainnpm/Gradlemodules/
+wrapper, все30containers/images/volumes/DB/queues/keys/configs сохранены.
+ОчисткаSTOP: безопасный набор исчерпан; нельзя расширять на ценные/unknown файлы.
+[Факты](../../docs/validation/web-vue-pr3/checkpoints/disk-cleanup-20261025/README.md).
 
-CLOSED Student ownerloss source1057: baseline2FAIL→6realtransport behaviorPASS,
-strictWEBbuild/source independentreviewPASS. Runtimev2 originalToday200 held,
-nativeLogout204/oldBearer401, then release unchanged608B/status/MIME with only
-transfer-framing removal. Guest loginvisible/privateHome+Profileabsent/errors0,
-one personallyviewed1440PNG; ownSIDterminal/browserclosed. Exactrequestfinished/
-failed did not arrive in6s: rawEXIT1/completedfalse/bodyCompletedfalse retained,
-full clientbodydelivery NOT_PROVEN. Root bounded product-slice acceptance combines
-behaviorchecks and actualguest outcome; no third replay/CDP/Auth/headerexperiment.
-WEB native theme4 manual/system/liveOS/device-relogin criterion closed earlier;
-rawerrors retained, no broader claim. PWA hostlogout343/after2 P3 closed.
+Q-ENV-010 остаётся BLOCKED: до7GiB=7516192768B не хватает~0.92GiB, ещёбеззапаса.
+Практически нужен дополнительный объём1.5–2GiB с сохранением workspace/Dockerdata.
+Runtime12 preflight7GiB, hard2GiB/early2.5GiB/250ms без изменений. 16GiB/4CPU,
+ONEHEAVYfree. Group start/fixtures/UIdelete0. Новое разрешение cleanup не является
+resourceREADY и не разрешает ослаблятьguards.
 
-CLOSED Headmanhistory: actualStudent3→existingHEADMAN/group1, nativehistorylesson3
-GET200/15events/Back, before2 EXIT0. First3bbc TEST earlydatecountFAIL retained;
-v2 waits actualagenda/policy. Sourcec6→3371 only2presentationfiles: intrinsicwrap
-and existing Russian lessonkind formatter. PWA/TMA strictbuild/source reviewPASS.
-AFTER2 EXIT0/errors0:300light/root20 fullfilters and Лекция,768dark keyboardBack
-focus. BothP3 closed; functionalBack/15rows reused, no actioncount increase.
-Before/after ownexactDELETE204/sameBearer401/browserclosed. Bootstrap/role409
-observations retained without inventedcause. No fullmatrix/TMAprovider claim.
+## Следующие пакеты
 
-Group64f/ae546/f67/3e174 +live8e83 integrated.20 meaningful boundary cases CLOSED;
-55client/6unit/2actualPG/1Mongo live checks PASS, unchanged results reused. Matching
-ACA829ce167/Notif97d9d177/BFF9d7677a5 JARs and1530backendinputs31a5 unchanged by
-frontend6219; Auth/Sched/Attend64f reused. No backend rebuild/suite for this checkpoint.
-Auth COMMIT clears selected targetgrant/increments sessionVersion; SID may remain
-for other roles. OldJWT401 is not entireSIDrevocation.
-Runtime12v3180f and cohorta23logic reviewed. Historical57binding was85c/d69/558inputs;
-frontend6219 requires fresh sourcefreeze/qualification/currentRootGO before effects.
-Actual start/fixturewrites/UIdelete0. PlannedoneoriginalUUID/numericpreview/password,
-sixopenWEB/PWA/TMA target+retainedTeacher views, naturalwithdrawal/foreignpreservation.
+1. Group current source qualification готова во внешнем
+`/workspace/rct-pr3-runtime/group-current-source-qualification-20261025`.
+559frontend inputs SHA47eccb795cb366bffeeb34ca8fadb602124c2a6ebb441288488de04a8c570155;
+1530backend/31a5 и6matchingJAR+19historical verified. Fourlogic/checks byteequal a23.
+Нужен fresh public cohort snapshot/exactRootbinding послеэтого doccheckpoint и
+independentreview; executionGO approvedfalse до actualresourceREADY. Исторические
+57/a23/runtimev3180f сохранять. ActualUI: одинUUID/numericpreview/password/status,
+6заранееоткрытых WEB/PWA/TMA target+retainedTeacherviews, naturalwithdrawal и
+сохранность другихaccounts/credentials/roles/groups. Unknown — originalstatusonly.
+COMMIT clears selectedtargetgrant/sessionVersion++; wholeSID может сохранить другие роли.
 
-BLOCKER Q-ENV-010: observed5,299,769,344B free<7GiB (7,516,192,768B) preflight.
-Need about+3GiB or≥7GiB actualfree with margin, preserving workspace/Dockerdata.
-No diskconfiguration tool here; 2GiB hard/2.5GiB early250ms guards unchanged.
-16GiB cgroup/4CPU, ONEHEAVYfree. Main13/admin7 retained; clock5/shipping5 stopped.
-OwnedfutureAuth/ACA/GW/TLSedge replacements only; PG/Redis/Rabbit data/realmkeys
-preserved. OwnSchedule/Mongo/Rabbitrealm/currentsemester/teachingfileclock only;
-no OS/Auth/Mainclock. No cleanup to manufacturecapacity.
+2. Независимый TeacherManual conditional PREP — external
+`/workspace/rct-pr3-runtime/visual-readiness-20261025/teacher-manual-conditional`.
+Structuralreview eec968ad PASS; source32pins, lifecycleda0d reused. FinalHEADfreeze/
+recheck/RootGO впереди. Один реальный Teacher2/Main lesson1/date24 roster: natural
+manual row→2frames; absence→0PNG/rawEXIT1/честныйboundedoutcome, не globalabsence.
+Никаких новыхfixtures/прав/password/PREF/clock/forcedprops ради картинки.
+HelperActions/Homework: нет квалифицированныхexistinghelpercredentials/grants;
+Group автоматически показываетpasswords, безопасныйnativepublicPNGpath покаотсутствует.
 
-CLOSED bounded TeacherExcuse: real existingTeacher2→lesson1/date24/group1/subject1/
-Student4approved ticket, normal UI/nativeBack, exactautoPreviewGET200/pdf46025
-forwardedoriginalAPIResponse/maxRedirects0. EXIT0/errors0/ownDELETE204+401/browser
-closed,2author+Root personallyviewedPNG. Actual300x1580fullpage/viewport300x900,
-768x900. Before63d PDFfirstpage not observedready (loadingcaption); AFTER result follows.
-P3 V-TE-LESSONMETA-300-R20 CLOSED_BOUNDED: source9e→6219 onePCSSwrapline,
-independentreview/actualPostCSS/format +one matchingRootPWAstrict/build PASS.
-AFTERda actualEXIT0/errors0, ownDELETE204401/browserclosed/noHOLD. Two author+Root
-personallyviewed originalPNG300x1651/768x1214 fullpage (viewportheight900): date/time
-readable300root20/chipswrap, wide768keyboardfocus preserved. Oneoptional≤7s natural
-PDF observer reachedreadycanvas369x261; firstpage visiblyrendered inbothoriginals,
-syntheticjournal/no credentials. No Open/download/allpages/zoom/provider claim.
-Raw436ec95a unchanged; oldrawPDFvisualflagfalse retained with separatevisualproof.
-BeforeBackPASS reused, noBackactivation/rawfalse NOT_RECHECKED. EarlieraeGO withdrawn
-beforeAuth because retainedBackstep conflictedwithRootno-repeat scope; onlycapture
-suffix corrected/reviewed, then oneactualda. No product/test weakening or thirdcase.
-CLOSED bounded LateCheckin: currentownStudent3 options200/42options/3eligible,
-5of5budget, nativeContinue disabledbeforeselection, ownlesson3/form300lightroot20
-and768darkCancelkeyboardfocus. EXIT0/errors0/noSubmit/noCancelactivation/newrequest0,
-noPREF/fixturewrites, ownDELETE204+401/browserclosed. No allstates/TMA claim.
-Only4activeconditional consumer gaps remain: helperActions/helperHomework require
-provenownfixturecredentials, HeadmanGroup exposescredentials (no publication),
-TeacherManualExcuse absent in first observedlesson/not globallyabsent. Keepone
-orphan source-only component ininventory; no forcedprops/grants/passwordreset/clock.
+3. Послеactualgroupgate — удалить активныйAngular433-file inventory/source/deps/
+lock/config/build/obsoletechecks; assembledVue через commonNginx deep links/refresh/
+static/API/realtime,/app/,/mini-app/,auth/updates/WebPush. Пока НЕ завершено; безdeploy.
 
-After actualgroup gate: remove activeAngular433-file inventory/source/deps/build/
-config/obsoletechecks and verify assembled commonNginx deep links/refresh/static/
-API/realtime,/app/,/mini-app/,auth/updates/WebPush. Stillpending, no deploy.
+## Готовность и неизменённые закрытые результаты
 
-Source-only recovery004652Z.zip7,456,675B SHA256
-0fdf5c3a2312352ecf3cb8c01acefaed6280a66f851a6cdea4725d6408aeda35 delivered.
-193commits relativecab3 (not193unpublished),12WT/133publicsources/199entries;
-bundle/CRC/safepaths/manifest/sourcebytechecksPASS. No looseprivate/secrets/DB/
-env/keys/JAR/deps; publicsynthetictestfixtures qualified. NativeDIR1/25 andhistory1/4
-allpublicnonsecret/unresolved0, rawtruth retained/rulesunchanged. PIDobservational
-hold is not sourceinvalidity or runtimePASS. Snapshot481 plus new3371publishedsource.
-Final self-contained source-only recovery package for this published checkpoint is
-provided in the main chat; final filename/SHA/receipt are also in PR body. Immutable
-004652 base remains preserved inside the package with incremental public-source
-bundles; no private runtime handles/data. Product-policy questions resolved; only
-resourceQENV010 needs owner action. All writers/browsers idle, source WIP0.
+Implemented116/117, locallyverified116/117, ADMIN33/34. Это не overallPR%.
+Visualinventory33WEB+50mobile,289originalPNG/portable289. Mobile45boundedobserved/
+5unchecked (4activeconditional+1orphanTeacherGroupSubjects), не45готовыхэкранов.
+PWA/TMA/provider/states/widths квалифицированы отдельно. Angular/build — четвёртаяось.
+Studentownerloss1057 boundedaccepted:6causalchecks/build/review +actualguest/no private/
+errors0; rawbodycompletionNOTPROVEN/EXIT1 retained, no thirdreplay. Headmanhistory3371
+иTeacherCard6219 P3closedafter2; boundedPDFfirstpage observed, noDownload/OpenPASS.
+
+ПарольCLOSED: post9598 MAINuser8 Cred7/RV8/Aca8/profile6unassigned ACTIVE/STUDENTgroup1,
+3ownSIDsrevoked/no pending, other17/core/20grants preserved. Никогданеreplay oldCred5/
+profile4cleanup. LIMITEDCLOSED: postc7ee ISOLATEDTeacher2 profile8unassigned/RV9/catalog22/
+Aca9/Cred1/Binding1,4ownSIDsrevoked; naturalwithdrawal3708ms, oldADMIN403/Teacher200.
+MAINTeacher2 — другойrealm. Whole-map delete/Authcorrect204/wrong403 CLOSED.
+Не повторять этипакеты без изменённой зависимости/существенного нового риска.
+
+Group20boundarycases и live8e83 55client/6unit/2PG/1Mongo PASS reused, JARrebuild0.
+ACA829ce167/Notif97d9d177/BFF9d7677a5 current; Auth/Sched/Attend64f reused.
+Main13/admin7 running; clock5/shipping5 stopped. Exact future ownapp replacements only;
+PG/Redis/Rabbit/Mongo data/realmkeys сохранять; noOS/Auth/Mainclock изменения.
+
+Source recovery `/workspace/rct-pr3-recovery/pr3-source-recovery-20261025-final.zip`
+8784846B/SHA00fb9f0158468e18acd134b7542c03906fd1e5daf10354f266a03e3a0fa58bd0 сохранён.
+Один ZIP с immutable004652base +3incremental bundles/17publicsources/12WTmetadata;
+требуетсяpublishedcab3+ancestry из отдельногоclone, неfull offlineRepo. Historical
+63d/7bbPREPs неreplay. Cleanup postproof подтвердил SHA/CRC/sourcepreservation.
+Продуктовых вопросов нет; внешний ресурс QENV010 ещё нужен.

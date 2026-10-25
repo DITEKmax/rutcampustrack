@@ -463,3 +463,41 @@ assembledcommonNginx. CImanual/PAUSED/dispatch0; без merge/deploy/production.
 передаются в главномчате/описанииPR: exactimmutable004652base +incremental public-source
 bundles/allowlist. Все12WT сохранены, sourceWIP0, privatehandles/DB/env/keys/deps/JAR
 не включаются. Source backup не является runtime/product readiness.
+
+
+## Адресная cleanup — завершена, ресурсного PASS нет (25 октября2026)
+
+По новому разрешению владельца выполнена broad read-only инвентаризация Docker
+cache/images/RW/mounts и Gradle/npm/build/dist/dependencies. Docker402.6MBlogical
+cache имел828Bunshared и не очищался. Shared dependencies,25protected+3legacysetup
+JARs, rollback/source/results/data защищены. Независимый review109 exactpaths — PASS.
+
+Три пакета98/5/6 удалили производные Gradle caches и app classes/proto/tmp,
+четыре SHA-equal JAR-копии и duplicate own npm cache, три parts и три ZIP wrappers.
+Original87568617B/SHA0f851394/422CRC, extracted и transfer metadata сохранены.
+Реальный available5244747776→6531416064B: net+1286668288B (~1.20GiB), не сумма
+allocated1636708352B. На overlay часть логического расхода не превратилась в reclaim.
+
+Независимый postproof:12WT HEAD/branch/status совпали с sourceZIP metadata;
+25protected/4canonical JAR, originalhandoff/recoveryZIP SHA/CRC сохранены;
+30 initial IDs/names/images/states совпали,20running/10stopped. Полная machine
+comparison134mounts не заявлена: immutable baseline отсутствовал. До удаления
+проверены134actualmounts/22runtimepins без overlap. /procFD была частичной,
+живого hostGradle нет,11liveJava принадлежат контейнерам. Service/Auth/DB/Docker
+изменений в cleanup не выполняли.
+[Единый список, замеры, postproof](../../validation/web-vue-pr3/checkpoints/disk-cleanup-20261025/README.md).
+
+Последний замер~6.08GiB<7GiB, дефицит~0.92GiB без запаса. CleanupSTOP: безопасный
+набор исчерпан. Нужен ещё объём1.5–2GiB с сохранением workspace/Dockerdata.
+Preflight7GiB/hard2GiB/early2.5GiB не менялись; group runtime/fixtures/UIdelete0,
+это не PASS удаления группы. Fresh source559/47eccb79 квалифицирована, backend1530/
+JARs прежние; final cohort binding/review после docpublication. Пройденные20boundary/
+live и пароль/LIMITED/wholemap checks переиспользованы.
+
+Независимый остаток: TeacherManual existinglesson1/date24 conditionalread PREP
+structuralPASS; exactHEAD/recheck/RootGO впереди. Manualнет→0PNG/rawEXIT1 с честным
+bounded outcome, не globalabsence. Helper/group nativepublic states пока не
+подтверждены из-за credential/grant и auto-password границ; никаких fakeprops или
+новых прав ради кадра.116/117 обеих осей/ADMIN33/34, gallery289, mobile45bounded/
+5unchecked сохраняются. Angular/Nginx pending. CI/manualPAUSED/dispatch0;
+без merge/deploy/production.

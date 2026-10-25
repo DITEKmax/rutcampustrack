@@ -312,6 +312,20 @@ public class AttendanceStudentGrpcServiceImpl
                             requireRequestService().submitExcuse(identity, submission)));
             observer.onCompleted();
         } catch (RuntimeException error) {
+            if (error instanceof ru.rutcampustrack.attendance.exception.ConflictException) {
+                StackTraceElement origin = null;
+                for (StackTraceElement frame : error.getStackTrace()) {
+                    if (frame.getClassName().startsWith("ru.rutcampustrack.attendance.")) {
+                        origin = frame;
+                        break;
+                    }
+                }
+                log.warn(
+                        "operation=submitExcuse category=CONFLICT originClass={} originMethod={} originLine={}",
+                        origin == null ? "UNKNOWN" : origin.getClassName(),
+                        origin == null ? "UNKNOWN" : origin.getMethodName(),
+                        origin == null ? "UNKNOWN" : Integer.toString(origin.getLineNumber()));
+            }
             observer.onError(StudentRequestGrpcErrors.toStatus(error));
         }
     }

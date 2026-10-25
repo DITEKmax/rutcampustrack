@@ -90,7 +90,7 @@ def main():
     receipt = output.parent / (args.app + ".pin.json")
     gate.require(not log.exists() and not receipt.exists(), "Do not overwrite previous build evidence")
     environment = {key: value for key, value in os.environ.items() if not key.startswith("VITE_")}
-    environment.update(gate.producer_config(args.app))
+    environment.update(gate.producer_config(args.app))  # Also overrides inherited NODE_ENV with production.
     environment["CI"] = "true"
     environment["NODE_OPTIONS"] = "--max-old-space-size=1536"
     command = ["npm", "run", "build", "--workspace", "@rct/" + app, "--", "--outDir", str(output)]

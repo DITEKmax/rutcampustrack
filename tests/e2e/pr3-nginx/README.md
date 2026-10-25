@@ -2,7 +2,7 @@
 
 Этот ограниченный gate проверяет WEB `/`, PWA `/app/`, TMA `/mini-app/` через общий вход из текущего `nginx/`. Он использует один отдельный Nginx-контейнер с четырьмя внутренними static listeners, существующий API Gateway и готовые Vue distributions. Backend, базы, очереди, роли, пароли и данные gate не меняет. Это локальная проверка; deploy и production TLS не проверяются.
 
-Полный групповой сценарий и подготовка своего Ubuntu-стенда описаны отдельно в [pr3-local](../pr3-local/README.md). Имя проекта этого gate — `rct-pr3-nginx-gate`, единственный опубликованный адрес — `127.0.0.1:14443`; он не занимает порты группового стенда.
+Полный групповой сценарий и подготовка своего Ubuntu-стенда описаны отдельно в [pr3-local](../pr3-local/README.md). Имя проекта этого gate — `rct-pr3-nginx-gate`. Ровно два опубликованных loopback адреса одного common server: HTTPS `127.0.0.1:14443` для static/anonymous API и HTTP `127.0.0.1:14240` для отдельно квалифицированных native Auth/SockJS сценариев. Они не занимают порты группового стенда. Main allowlist для HTTP14240 подтверждается отдельно по публичной конфигурации; HTTPS Auth/WSS остаётся owner-local `NOT_RUN`.
 
 ## Предварительные условия и границы
 
@@ -43,7 +43,7 @@ python3 tests/e2e/pr3-nginx/gate.py pin --expected-sha "$SOURCE_SHA" --app pwa \
 
 Artifact receipt содержит Git blob fingerprint входов, SHA256 всех файлов, actual entry public base, producer config/hash и PWA version-policy hash. WEB fingerprint включает импортируемую PWA auth/recovery реализацию. `prepare` проверяет fingerprint принятой старой revision против текущей, полный file inventory, отсутствие source изменений и actual HTML prefixes: `/`, `/app/`, `/mini-app/`. Совпадающий source при собранном default-root PWA/TMA не подходит; такой artifact отвергается до подготовки outputs.
 
-`build.py` явно задаёт app base и `VITE_MOBILE_FIXTURE_MODE=false`, удалив унаследованные `VITE_*` overrides. Version defaults совпадают с Dockerfiles: `0.0.0`, minimum fallback `0.0.0`, force=true; actual PWA `version.json` проверяется и хешируется. Для external `pin --fixture-mode false` — явное утверждение принятого producer evidence, а не извлечение compiler flag из произвольного JavaScript. Используй его только при доказанном normal-production build. WEB artifact с правильным `/` можно переиспользовать; PWA/TMA default `/assets/` требуют новой prefix-сборки. Existing strict результаты сохраняются отдельно; `build.py` вызывает штатный полный strict script, не выдавая старую strict проверку за проверку новых prefix bytes.
+`build.py` явно задаёт `NODE_ENV=production`, app base и `VITE_MOBILE_FIXTURE_MODE=false`, удалив унаследованные `VITE_*` overrides. Version defaults совпадают с Dockerfiles: `0.0.0`, minimum fallback `0.0.0`, force=true; actual PWA `version.json` проверяется и хешируется. Для external `pin --fixture-mode false` — явное утверждение принятого producer evidence, а не извлечение compiler flag из произвольного JavaScript. Используй его только при доказанном normal-production build. WEB artifact с правильным `/` можно переиспользовать; PWA/TMA default `/assets/` требуют новой prefix-сборки. Existing strict результаты сохраняются отдельно; `build.py` вызывает штатный полный strict script, не выдавая старую strict проверку за проверку новых prefix bytes.
 
 ## Подготовка одного общего Nginx
 
@@ -80,10 +80,12 @@ openssl genpkey -genparam -algorithm DH -pkeyopt group:ffdhe2048 \
   -out "$RUN/tls/dhparam.pem"
 ```
 
-`prepare` не запускает Docker. Он берёт source `nginx/nginx.conf`, `nginx/conf.d/default.conf` и inner configs WEB/PWA/TMA/landing. Единственные локальные адаптации: один worker; TLS listen port совпадает с опубликованным14443, чтобы absolute redirects и forwarded port оставались верными; новая certificate path; явный gateway DNS; четыре loopback upstream/listener/static roots. Production routes, prefix rewrites, CSP и API/WS headers остаются source-derived. Недоступный downstream должен давать настоящий502; здесь нет response stubs или fake healthy endpoints.
+`prepare` не запускает Docker. Он берёт source `nginx/nginx.conf`, `nginx/conf.d/default.conf` и inner configs WEB/PWA/TMA/landing. Единственные локальные адаптации: один worker; TLS listen port совпадает с опубликованным14443, чтобы absolute redirects и forwarded port оставались верными; дополнительный plain HTTP14240 listener внутри того же common server; новая certificate path; явный gateway DNS; четыре loopback upstream/listener/static roots. Production routes, prefix rewrites, CSP и API/WS headers остаются source-derived. Недоступный downstream должен давать настоящий502; здесь нет response stubs или fake healthy endpoints.
 
 ```bash
 # Только после текущего разрешения на лёгкий runtime и проверки ресурса:
+# Если14240 или14443 занят — STOP, не выбирай другой Origin автоматически.
+ss -ltn '( sport = :14240 or sport = :14443 )'
 docker_local compose -f "$RUN/compose.json" up -d --pull never --no-build
 docker_local compose -f "$RUN/compose.json" exec -T edge nginx -t
 
@@ -99,10 +101,12 @@ docker_local compose -f "$RUN/compose.json" down
 
 ## Что означает результат
 
-`commonNginxStatic=PASS` означает: точные bytes всех трёх distributions прошли через общий Nginx; script/CSS MIME, shell/asset cache, CSP presence, deep links и refresh, missing-asset404 и PWA worker/version/manifest bytes проверены. Для WEB применяется существующий [served Vue oracle](../../../scripts/verify-served-web-panel.py). Image ID, весь prepared Compose и configuration bytes привязаны к source receipt. До HTTP проверяются project/service/run-nonce labels, одна выбранная external network, точный loopback port/base, весь набор read-only binds без лишних mounts, read-only root и128MiB RAM/без дополнительного swap/0.5CPU/32PID/tmpfs bounds. Это не подтверждение поведения самого браузера или backend сценариев.
+`commonNginxStatic=PASS` означает: точные bytes всех трёх distributions прошли через общий Nginx; script/CSS MIME, shell/asset cache, CSP presence, deep links и refresh, missing-asset404 и PWA worker/version/manifest bytes проверены. Для WEB применяется существующий [served Vue oracle](../../../scripts/verify-served-web-panel.py). Image ID, весь prepared Compose и configuration bytes привязаны к source receipt. До HTTP проверяются project/service/run-nonce labels, одна выбранная external network, ровно два loopback port14240/14443 и HTTPS check base, весь набор read-only binds без лишних mounts, read-only root и128MiB RAM/без дополнительного swap/0.5CPU/32PID/tmpfs bounds. Это не подтверждение поведения самого браузера или backend сценариев.
 
 `apiForwarding=OBSERVED_ANONYMOUS_ONLY` содержит реальные сравнения статусов/MIME `/api/auth/session` и SockJS `/api/ws/info` через Nginx и напрямую.401/403 не означают успешный login или realtime connection;502 и несовпадение показываются как FAIL. Никакие bearer/cookie/ticket не записываются. Production Vue использует SockJS: base `/api/ws?ticket=...` превращается в `/info` и transport subpaths; upgrade на одном exact `/api/ws` не является доказательством работы или регрессии клиента.
 
 Отдельные критерии по умолчанию `NOT_RUN`: WEB native auth lifecycle, PWA auth/service-worker activation/update/offline, authenticated SockJS/STOMP, TMA post-login и реальный WebPush provider. HTTP bytes `sw.js` не доказывают install/activation/update; `/mini-app/` shell не доказывает Telegram authentication. Не превращай их в общий PASS.
+
+HTTP14240 использует те же source routes/CSP/Origin forwarding, что HTTPS14443; Main Gateway/Notification не перезапускаются и их allowlist не меняется. Возможная успешная HTTP native Auth/SockJS проверка не доказывает HTTPS Auth/WSS. Если неизменённый CSP или provider блокирует browser path, фиксируй отдельный `NOT_RUN`; не отключай CSP/CORS, не подменяй Origin и не переноси HTTP результат на TLS критерий.
 
 Для browser/auth используй уже принятые public auth fixtures/lifecycle и свои существующие synthetic accounts после квалификации точной identity/roles/realm. Не выдавай новые права, не меняй passwords/PREF, не экспортируй cloud credentials или host sessions в Ubuntu. TMA signer/binding допустим только при доказанном существующем предназначении; иначе оставь `NOT_RUN`. Локальный сертификат должен быть доверенным выбранным browser profile: отключение CORS, подмена Origin или глобальное отключение TLS проверки сюда не входят. Если resource, fixture identity, trusted browser TLS или provider отсутствуют, передай этот независимый критерий владельцу как `NOT_RUN` с конкретным пробелом.

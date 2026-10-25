@@ -22,6 +22,8 @@ EARLY = 5 * 1024**3 // 2
 HARD = 2 * 1024**3
 PACKAGE = "tests/e2e/pr3-nginx"
 RUN_LABEL = "rct.pr3-nginx.run"
+TLS_STATIC_PORT = 14443
+HTTP_AUTH_PORT = 14240
 
 
 def require(condition, message):
@@ -91,7 +93,7 @@ def inventory(directory):
 
 
 def producer_config(app):
-    return {"VITE_PUBLIC_BASE": BASES[app], "VITE_MOBILE_FIXTURE_MODE": "false",
+    return {"NODE_ENV": "production", "VITE_PUBLIC_BASE": BASES[app], "VITE_MOBILE_FIXTURE_MODE": "false",
             "VITE_APP_VERSION": "0.0.0", "VITE_MIN_SUPPORTED_VERSION": "",
             "VITE_FORCE_UPDATE": "true"}
 
@@ -167,7 +169,7 @@ def prepare(args):
     require(re.fullmatch(r"sha256:[0-9a-f]{64}", args.image_id), "Pin the retained Nginx image by full image ID")
     require(re.fullmatch(r"[a-zA-Z0-9_.-]+:[0-9]{2,5}", args.gateway), "Use one explicit Docker gateway host:port")
     require(re.fullmatch(r"[a-zA-Z0-9_.-]+", args.network), "Invalid existing network name")
-    require(1024 <= args.port <= 65535, "Use a nonprivileged loopback port")
+    require(args.port == TLS_STATIC_PORT, "Only the reviewed TLS14443/HTTP14240 pair is admitted")
     output = Path(args.out).resolve()
     require(output.parent.is_dir() and not output.exists(), "Output must be a fresh directory with an existing parent")
     free = budget(output.parent)
@@ -192,7 +194,7 @@ def prepare(args):
     (output / "nginx.conf").write_text(config)
     edge = (REPO / "nginx/conf.d/default.conf").read_text()
     # Match the external loopback TLS port so redirects and forwarded port stay truthful.
-    edge = replace_once(edge, "listen 443 ssl;", "listen " + str(args.port) + " ssl;")
+    edge = replace_once(edge, "listen 443 ssl;", "listen " + str(args.port) + " ssl;\n    listen " + str(HTTP_AUTH_PORT) + ";")
     edge = replace_once(edge, "/etc/letsencrypt/live/ruttrack.site/fullchain.pem", "/etc/nginx/certs/fullchain.pem")
     edge = replace_once(edge, "/etc/letsencrypt/live/ruttrack.site/privkey.pem", "/etc/nginx/certs/privkey.pem")
     edge = upstream(edge, "upstream_gateway", args.gateway)
@@ -218,7 +220,8 @@ def prepare(args):
         "labels": {RUN_LABEL: nonce},
         "image": args.image_id, "pull_policy": "never", "entrypoint": ["nginx"],
         "command": ["-g", "daemon off;"], "read_only": True,
-        "ports": ["127.0.0.1:" + str(args.port) + ":" + str(args.port)], "volumes": mounts,
+        "ports": ["127.0.0.1:" + str(args.port) + ":" + str(args.port),
+                  "127.0.0.1:" + str(HTTP_AUTH_PORT) + ":" + str(HTTP_AUTH_PORT)], "volumes": mounts,
         "tmpfs": ["/var/cache/nginx:size=16m", "/var/run:size=1m", "/var/log/nginx:size=8m", "/tmp:size=1m"],
         "mem_limit": "128m", "memswap_limit": "128m", "cpus": 0.5, "pids_limit": 32,
         "cap_drop": ["ALL"], "cap_add": ["NET_BIND_SERVICE", "SETUID", "SETGID", "CHOWN"],
@@ -231,7 +234,10 @@ def prepare(args):
         "apps": receipts, "dists": {app: str(path) for app, path in dists.items()},
         "configs": {str(p.relative_to(output)): sha(p.read_bytes())
                     for p in [output / "compose.json", output / "nginx.conf", *sorted((output / "conf.d").iterdir())]},
-        "localAdaptations": ["one worker", "matching external/local TLS port", "fresh local certificate paths", "explicit gateway DNS",
+        "verificationOrigins": {"httpsStaticAnonymous": "https://127.0.0.1:" + str(TLS_STATIC_PORT),
+                                "httpAuthRealtime": "http://127.0.0.1:" + str(HTTP_AUTH_PORT)},
+        "tlsAuthWss": "NOT_RUN_OWNER_LOCAL",
+        "localAdaptations": ["one worker", "matching external/local TLS port", "same-server HTTP14240 listener", "fresh local certificate paths", "explicit gateway DNS",
                              "four loopback inner upstreams/listeners and read-only artifact roots"],
         "productionTLSAndDeployment": "NOT_RUN"})
     print(json.dumps({"state": "PREPARED_NOT_STARTED", "sourceSha": args.expected_sha}))
@@ -263,9 +269,9 @@ def admit_container(pins, compose, container, base):
     """Only the one prepared frontend container may supply HTTP evidence."""
     require(compose["name"] == "rct-pr3-nginx-gate" and set(compose["services"]) == {"edge"}, "Unexpected prepared namespace")
     service = compose["services"]["edge"]
-    port_match = re.fullmatch(r"127\.0\.0\.1:([0-9]+):\1", service["ports"][0])
-    require(port_match and len(service["ports"]) == 1, "Expected one matching loopback TLS publication")
-    port = port_match[1]
+    expected_ports = ["127.0.0.1:" + str(port) + ":" + str(port) for port in (TLS_STATIC_PORT, HTTP_AUTH_PORT)]
+    require(service["ports"] == expected_ports, "Expected exactly the reviewed loopback TLS14443/HTTP14240 publications")
+    port = str(TLS_STATIC_PORT)
     requested = origin(base)
     require(requested.scheme == "https" and requested.port == int(port), "Requested origin differs from prepared publication")
     require(container["project"] == compose["name"] and container["service"] == "edge" and
@@ -276,7 +282,8 @@ def admit_container(pins, compose, container, base):
     network = compose["networks"]["main"]["name"]
     require(service["networks"] == ["main"] and set(container["networks"]) == {network} and
             container["networkMode"] == network, "Container is outside the selected existing network")
-    publication = {port + "/tcp": [{"HostIp": "127.0.0.1", "HostPort": port}]}
+    publication = {str(value) + "/tcp": [{"HostIp": "127.0.0.1", "HostPort": str(value)}]
+                   for value in (TLS_STATIC_PORT, HTTP_AUTH_PORT)}
     require({key: value for key, value in container["ports"].items() if value} == publication,
             "Container publishes a foreign port or interface")
     require(container["readonly"] and not container["privileged"] and container["memory"] == 128 * 1024**2 and
@@ -329,6 +336,7 @@ def check(args):
     results = {"sourceSha": args.expected_sha, "artifactBytes": {}, "commonNginxStatic": "FAIL",
                "apiForwarding": "NOT_RUN", "realtimeAuthenticatedTransport": "NOT_RUN",
                "webAuthLifecycle": "NOT_RUN", "pwaAuthAndUpdates": "NOT_RUN",
+               "httpAuthRealtime": "NOT_RUN", "tlsAuthWss": "NOT_RUN_OWNER_LOCAL",
                "tmaPostLogin": "NOT_RUN", "webPushProvider": "NOT_RUN", "productionTLSAndDeployment": "NOT_RUN"}
     for app, prefix in BASES.items():
         dist = Path(pins["dists"][app])
@@ -413,7 +421,7 @@ def main():
     for app in APPS:
         prepare_parser.add_argument("--" + app + "-dist", required=True)
         prepare_parser.add_argument("--" + app + "-pin", required=True)
-    prepare_parser.add_argument("--port", type=int, default=14443)
+    prepare_parser.add_argument("--port", type=int, choices=[TLS_STATIC_PORT], default=TLS_STATIC_PORT)
     prepare_parser.set_defaults(action=prepare)
     check_parser = commands.add_parser("check", help="Read only the owned local common Nginx and optional real API gateway")
     for name in ["expected-sha", "run-dir", "base", "out"]:

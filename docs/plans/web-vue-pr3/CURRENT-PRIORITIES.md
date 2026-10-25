@@ -29,31 +29,41 @@ CI/Coverage/Security/OpenAPI PAUSED/manual; без merge/deploy/production.
 Перед завершением обновляются галерея, карта, PROGRESS, API-CHANGES,
 MOBILE-FOLLOWUPS и итог PR; PAUSED не объявляется PASS.
 
-Текущие пакеты и зависимости:
+Текущие пакеты и зависимости — checkpoint2026-10-25, product3371:
 
-- Пароль, LIMITED и whole-map delete/Auth закрыты; последние independent posts9598/
-  c7ee подтверждают cleanup. Не повторять генерацию, выдачу прав или удаление.
-- Group: status/fixtures исправлены,20 boundary cases и live8e83 закрыты. Matching
-  JARs/1530 backend inputs прежние. Runtime12v3180f и cohorta23logic reviewed;
-  historical57binding требует fresh frontend freeze/currentRootGO после1057.
-  Следующий результат — один UI delete с числовым preview/current password/original
-  UUID, шестью открытыми WEB/PWA/TMA views, естественным отзывом целевого доступа
-  и сохранением чужих аккаунтов/ролей/групп. Полный SID может остаться для другой роли.
-- Q-ENV-010 pending:≈5.36GB free против7GiB preflight. Прежние+2GiB уже впритык/
-  недостаточны; практично добавить3GiB или обеспечить≥7GiB свободного с запасом.
-  Источники/БД/Dockerданные сохраняются, guards не ослабляются. Start/fixtures/delete0.
-- PWA hostlogout visualP3 закрыт: source343+actualafter2; gallery278 включает3 новых
-  actual кадра (after2/WT04) и2 переиспользованных оригиналаAdminMore79e. Карта42
-  bounded observed/8unchecked из50 (7activeconditional+1orphan); не процент готовности.
-- WEB theme native device persistence подтверждён, oldrawFAIL/pageerrors сохранены.
-  Реальный ownerloss bug reproduced/fixed1057/review+6tests+strictbuild PASS. Actual
-  runtimefe795 показал native204/401/errors0, но testwait остановил guestoracle.
-  Минимальный v2 исправляет наблюдение terminal/body, не повторяет theme4. Затем
-  один ownHeadman history readonly packet; никакого нового grant/fixture/command.
-- После group gate — полное удаление Angular по inventory и assembled commonNginx:
+- Пароль, LIMITED и whole-map delete/Auth закрыты; independent posts9598/c7ee
+  подтверждают cleanup. Не повторять generation/grants/delete по старымcheckpoint.
+- Group status/fixtures и20boundary cases закрыты, live8e83 принят. MatchingJARs и
+  1530backendinputs прежние. Runtime12v3180f/cohorta23logic reviewed; historical57
+  binding требует freshfrontendfreeze после3371/currentRootGO. Следующий результат:
+  один UIdelete/originalUUID, numericpreview/password/status и шесть заранееоткрытых
+  WEB/PWA/TMA views, naturalwithdrawal/foreignpreservation. SID может жить для другойроли.
+- Q-ENV-010: actual5,313,261,568B против7GiB preflight. Требуется около+3GiB или≥7GiB
+  actualfree с запасом, сохранив workspace/Dockerdata. Guards неослаблены; start/
+  fixtures/delete0. Этоединственный вопрос владельцу, не новыйпродуктовыйдопуск.
+- Закрыты PWAhostlogout343/after2, WEBtheme4 и Studentownercancellation1057:
+  6behaviorchecks/build/review плюс actualguest/privateabsent/errors0. Rawv2EXIT1/
+  bodycompletionNOT_PROVEN сохранены; product-slice boundedaccepted, третийповтор
+  не нужен. [Критерии](../../validation/web-vue-pr3/runtime-gallery/student-ownerloss-bounded-20261025/product-slice-accepted.json).
+- Headmanhistory actual15events/Back/before2 закрыт. Source3371 исправляет только
+  filterwrap/typeformatter; PWA/TMAstrictbuild/review и AFTER2PASS. ОбаP3закрыты
+  при300light/root20 и768darkfocus. Новыефункциональныедействия0.
+- Gallery283/portable283, finite43boundedobserved/7unchecked из50:6activeconditional+
+  1orphan. Это не43fullyreadyscreens и неготовностьPR%. Original36/corrected37 preserved.
+  [Before/after](../../validation/web-vue-pr3/runtime-gallery/headman-history-after-20261025/index.html).
+- Параллельный остаток: nativeTeacherExcuse existingapproved/possiblyexpiredrecord,
+  затем existingStudent3LateCheckinreadonlyform. PREP/review/sourcebinding, поодному
+  browserlease; свежаяeligibleentry обязательна, иначе honestSTOP. Безsubmit/newfixtures/
+  grants/passwords/prefs/clock, безинъекции отсутствующихstates. Helper2views пока
+  ждут provencredential/scope; неугадывать и не читатьprivatesecrets.
+- Послеgroupgate — полноеудалениеAngularпоinventory, затемassembledcommonNginx:
   deep links/refresh/static/API/realtime,/app/,/mini-app/,auth/updates/WebPush.
-  Angular пока активен; предыдущие Vue build это gate не закрывают.
+  Angularактивен; адресныеVuebuild этотgate незакрывают.
 
-Новых продуктовых вопросов нет. Owner нужен только для ресурса Q-ENV-010.
-Recovery snapshot223044Z сохраняется неизменным; новые source changes также
-сохранены в Git/verified incremental bundles, без секретов/данных стенда.
+Source-only recovery004652Z.zip7,456,675B/SHA256
+`0fdf5c3a2312352ecf3cb8c01acefaed6280a66f851a6cdea4725d6408aeda35`
+доступен вчате.193commitsrelativecab3/12WT/133publicsources/199entries;
+bundle/CRC/safepaths/manifest/sourcebytechecksPASS.193 — нечислоunpublishedcommits.
+Private/secrets/DB/env/keys/JAR/deps исключены; nativeDIR1/25/history1/4 public
+nonsecret findings классифицированы, unresolved0, rulesunchanged. СтарыйZIP сохранён.
+[Receipt](../../validation/web-vue-pr3/checkpoints/remaining-admin-20261024/source-recovery-004652-final.json).

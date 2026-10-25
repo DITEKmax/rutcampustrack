@@ -399,3 +399,8 @@ Q-ENV-010, factual update2026-10-25: actualfree≈5.36GB. Preflight runtime12 re
 about3GiB or provide≥7GiB free with margin while preserving workspace/Dockerdata.
 No resizing tool is available here; no cleanup/guard weakening/start performed.
 This updates the same pending resource question, not a new product approval.
+
+Q-ENV-010, latest factual checkpoint2026-10-25: actualfree5,313,261,568B<7,516,192,768B
+preflight after matching JARs. Same request: approximately+3GiB or≥7GiB free with
+margin, preserving workspace/Dockerdata. No new product question, no new start/
+fixture/delete, no cleanup or guard weakening. Independent lightvisual work continues.

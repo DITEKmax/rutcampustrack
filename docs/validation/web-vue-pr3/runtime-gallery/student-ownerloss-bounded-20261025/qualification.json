@@ -1,0 +1,141 @@
+{
+  "qualification": "GUEST_AFTER_RELEASE_OBSERVED_TARGET_COMPLETION_UNPROVED_RAW_EXIT1",
+  "case": "WEB_STUDENT_OWNERLOSS_AFTER_V2",
+  "revision": "481512e93575070a1f471c65af54df5b4e31cd61",
+  "productBase": "1057de27b70c37b5916013d7c9207e31d8493ce8",
+  "harnessSha256": "b8c939537f3358bef71b42715b1bebb5c47833fa54d8e79fcfc45991123ad658",
+  "rawExitCode": 1,
+  "rawCompleted": false,
+  "rawFailureCode": null,
+  "rawReceipt": "/workspace/rct-pr3-runtime/visual-readiness-20261024/student-ownerloss-after-prep/v2-prep/run/raw-final-b8c93953.json",
+  "rawReceiptSha256": "ed272b38fada126b4781d577ff91fe642e78b57739e1180d61d91f2a4ce2bd72",
+  "observed": {
+    "oneOriginalRealTodayRequest": 1,
+    "actualFullBodyBeforeHold": {
+      "mime": "application/json",
+      "length": 608,
+      "sha256": "17a5089703c3baacdf0a1ca353f7275b2ba3d23e72118c508cfa13ecf9a8fb5e",
+      "decodedJsonValidated": true,
+      "originalEncoding": "NONE",
+      "originalContentLengthPresent": false,
+      "originalDeclaredLength": null,
+      "originalTransferEncoding": "CHUNKED"
+    },
+    "transportNormalization": {
+      "representation": "VALIDATED_DECODED_JSON_BYTES",
+      "removedHeaderNames": [
+        "transfer-encoding"
+      ],
+      "reason": "Full APIResponse.body bytes require non-stream framing; Playwright computes their content-length",
+      "statusPreserved": true,
+      "mimePreserved": true
+    },
+    "pendingAtNativeLogout": true,
+    "pendingAtRelease": true,
+    "nativeLogout": {
+      "forwarded": true,
+      "status": 204,
+      "sameOldBearerStatus": 401,
+      "confirmed": true,
+      "fallbackUsed": false
+    },
+    "sameBodyStatusMimeFulfillResolved": true,
+    "afterReleaseGuestOracle": {
+      "guestLoginVisible": true,
+      "authenticatedProfileActionVisible": false,
+      "privateStudentHomeSurfaceAbsent": true,
+      "pageErrorCount": 0,
+      "targetCausalOutcome": "TARGET_COMPLETION_UNOBSERVED",
+      "clientBodyCompleted": false
+    },
+    "oneGuestPNGPersonallyViewed": true
+  },
+  "notObserved": {
+    "exactTargetTerminalEvent": null,
+    "clientBodyCompleted": false,
+    "oldReadContinuationSettled": "UNPROVED",
+    "bodyDeliveryPass": false,
+    "changedOwnerLossFullRuntimePass": false
+  },
+  "newCauseFacts": "The full608B original JSON buffer was validated/digested before hold. Original Content-Encoding NONE, no Content-Length, Transfer-Encoding CHUNKED; only TE was removed for buffered release. Actual page response200 and fulfill resolve observed, yet neither exact Today requestfinished nor requestfailed appeared in6s. Target event absence remains unresolved after the changed full-body/framing approach; compression/abort/product defect is not established. Do not repeat this approach without a different hypothesis based on these facts.",
+  "cleanup": {
+    "ownCapturedSessionCount": 1,
+    "soleOwnSessionTerminal": true,
+    "method": "Only native logout204 plus same captured oldBearer401; no new selfDELETE/helper/newlogin",
+    "knownCleanup": {
+      "noLiveOwnSession": true,
+      "confirmed": true
+    },
+    "unknownHold": false,
+    "pendingAuth": 0,
+    "pendingPreferences": 0,
+    "pendingBodies": 0,
+    "pendingRoutes": 0,
+    "allThreeForwardedAuthIntents": "ACK_CAPTURED_DURABLE",
+    "browserClosed": true,
+    "sourceUnchanged": true
+  },
+  "pageErrors": [],
+  "blocked": [],
+  "devicePreferenceWrites": 0,
+  "requestFailures": [
+    {
+      "id": "34bd0f95-5ab4-4faf-9758-a7f836b8d1b3",
+      "method": "POST",
+      "path": "/api/auth/logout",
+      "phase": "NATIVE_OWN_LOGOUT",
+      "loginIndex": 0,
+      "canonicalAtStart": true,
+      "requiredCanonical": false,
+      "forwarded": true,
+      "canonicalAtForward": true,
+      "forwardedAtUtc": "2026-10-25T00:44:29.303Z",
+      "captureAckDurable": true,
+      "observedStatus": 204,
+      "category": "ABORTED",
+      "stage": "REQUEST_FAILED",
+      "outcome": "WAIT_DURABLE_INTENT_CLASSIFICATION"
+    },
+    {
+      "id": "34bd0f95-5ab4-4faf-9758-a7f836b8d1b3",
+      "method": "POST",
+      "path": "/api/auth/logout",
+      "phase": "NATIVE_OWN_LOGOUT",
+      "loginIndex": 0,
+      "canonicalAtStart": true,
+      "requiredCanonical": false,
+      "forwarded": true,
+      "canonicalAtForward": true,
+      "forwardedAtUtc": "2026-10-25T00:44:29.303Z",
+      "captureAckDurable": true,
+      "observedStatus": 204,
+      "category": "ABORTED",
+      "stage": "AFTER_CAPTURE",
+      "outcome": "DURABLE_ACK_RETAINED"
+    }
+  ],
+  "reuse": "Originalfe partialnative200/logout204401/zeroerrors remains knownterminal/rawFAIL. Product a7/1057 deterministic2FAIL→6PASS/strictbuild/independent source review remain accepted. Oldtheme4/device6/PWAafter2/password/LIMITED not repeated.",
+  "scopeLimit": "One1440/root16 guest UI state observed; no new functional actions/fullscreen/wholematrix readiness claim. Missing network/continuation terminal proof is explicit. No third retry, new Auth, product changes or investigation framework.",
+  "samples": [
+    {
+      "id": "WT-OWNER-AF01",
+      "state": "v2-guest-after-old-real-today-release",
+      "file": "WEB-OWNERLOSS__WT-OWNER-AF01-v2-guest-after-old-real-today-release__light__1440__481512e93.png",
+      "sha256": "aeefcfa3787ae131d1b1627600daece9d4ed0d6ca35e380581c268115c9bc5cd",
+      "revision": "481512e93575070a1f471c65af54df5b4e31cd61",
+      "theme": "light",
+      "width": 1440,
+      "height": 1000,
+      "rootFont": "16px",
+      "scrollWidth": 1440,
+      "personallyInspected": true,
+      "pngWidth": 1440,
+      "pngHeight": 1000,
+      "bytes": 527822,
+      "inspectedAtUtc": "2026-10-25T00:46:26.525637+00:00",
+      "inspection": "Guest native login form readable with blank credential fields, no authenticated Profile/nav/private StudentHome visible; no horizontal overflow at1440/root16. This observes final guest UI only; target read completion/body delivery remain unproved.",
+      "provenance": "One real own Student3 login/native204-oldBearer401; original full real Today200 buffer held and released with unchanged bytes/status/MIME and only transfer-encoding framing removal. No API JSON/status fabrication or second backend read."
+    }
+  ],
+  "functionalActionsAdded": 0
+}

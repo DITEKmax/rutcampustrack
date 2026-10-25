@@ -1,0 +1,104 @@
+{
+  "kind": "SOURCE_FIX_READY_FOR_ROOT_REVIEW_NO_AFTER_RUNTIME",
+  "commit": "c6b9e43f44c3393cec0f80e6d1b782734fc1e849",
+  "base": "fed1d627b0a6b09a1b4d66d6bbfacf1ccc35afa1",
+  "preservedBranchpoint": "codex/pr3-mobile-host-polish",
+  "branch": "codex/pr3-headman-history-polish",
+  "worktree": "/workspace/rct-worktrees/theme-foundation",
+  "rootEvidenceRevision": "481512e93575070a1f471c65af54df5b4e31cd61",
+  "baselineMobilePwaSharedTmaDiffAgainstRoot481": "EMPTY",
+  "files": [
+    {
+      "path": "frontends/mobile-core/src/features/headman-journal/HeadmanLessonActionsScreen.vue",
+      "sha256": "14783a1b13363065ba4e714d453ef20a21881ec60f7e5178572a59d7581bac00"
+    },
+    {
+      "path": "frontends/mobile-core/src/features/headman-journal/headman-lesson-actions-screen.pcss",
+      "sha256": "341472b61a9c12aeac12d2fb29beec89f87bc4b0bf8b03e6ecb92f8cb010f014"
+    }
+  ],
+  "changes": [
+    {
+      "finding": "V-HLA-FILTER-300-R20",
+      "result": "Intrinsic flex items wrap into another row; labels may wrap within their available width; existing semantic spacing/touch/focus/button appearance retained."
+    },
+    {
+      "finding": "V-HLA-LESSONTYPE-RU",
+      "result": "Reuse existing case-insensitive teacherLessonTypeLabel display helper; null fallback remains Тип не указан; no helper or API changes."
+    }
+  ],
+  "preserved": [
+    "Filter values, order, click handlers and aria-pressed",
+    "History reads, paging, permissions and session-owner fences",
+    "Role/App/Auth/session/shared contracts and mutation safety",
+    "Existing helper bytes unchanged"
+  ],
+  "verification": {
+    "pwaStrictAndProductionBuild": {
+      "status": "PASS",
+      "runs": 1,
+      "log": "pwa-build.log"
+    },
+    "tmaStrictAndProductionBuild": {
+      "status": "PASS",
+      "runs": 1,
+      "log": "tma-build.log"
+    },
+    "postcss": "PASS through PWA Vite configuration; no unresolved imports/mixins",
+    "format": "PCSS and Vue script PASS; wholeVue warns on unchanged preexisting template; baseline qualification retained",
+    "diffCheck": "PASS",
+    "warnings": [
+      "Existing >500kB bundle chunk warning in both builds"
+    ],
+    "newTests": 0,
+    "newAuthOrBrowserRuns": 0
+  },
+  "logs": [
+    {
+      "path": "format-check.log",
+      "sha256": "5aa1c38b6804c96e35242b9aca842d2cbfdae0559386d7e2c39c535282830e58"
+    },
+    {
+      "path": "baseline-format-qualification.json",
+      "sha256": "c6c70f1faf7d805e52832a0c3aedd40700a711178a41976bdbb325fe086067e0"
+    },
+    {
+      "path": "scoped-format-qualification.json",
+      "sha256": "bb1e1836d7a69bfa82df3a224f9a4bfd771f1483e582d084005531e58330f445"
+    },
+    {
+      "path": "postcss-check.log",
+      "sha256": "feed69ab2a8a319aeb53e57cfd15555dbdff9b4196684a7c02c856550f017e3c"
+    },
+    {
+      "path": "pwa-build.log",
+      "sha256": "49d99e4de2d2a4af209bbc80782c6a84e1b359b19a575b7c76a6a6ad486f3ffd"
+    },
+    {
+      "path": "tma-build.log",
+      "sha256": "4b07691966b12a0331ab4aceba5b4cf7e0ac7bfb7f372e92aa14eeafca682066"
+    }
+  ],
+  "beforeEvidence": {
+    "qualified": "/workspace/rct-pr3-runtime/visual-readiness-20261024/headman-lesson-actions-prep/v2-prep/run/qualified-481.json",
+    "manifest": "/workspace/rct-pr3-runtime/visual-readiness-20261024/headman-lesson-actions-prep/v2-prep/run/manifest-481.json",
+    "images": [
+      {
+        "path": "/workspace/rct-pr3-runtime/visual-readiness-20261024/headman-lesson-actions-prep/v2-prep/run/PWA-MOBILE-HEADMANLESSONACTIONS__MB-HLA-01-real-history-root20__light__300__root20__481512e93.png",
+        "sha256": "7a8e991c8e8d06e010f42a974dd0c9b71caae87685aa10e1c56de65e46af57c9"
+      },
+      {
+        "path": "/workspace/rct-pr3-runtime/visual-readiness-20261024/headman-lesson-actions-prep/v2-prep/run/PWA-MOBILE-HEADMANLESSONACTIONS__MB-HLA-02-same-real-history-back-keyboard-focus__dark__768__root16__481512e93.png",
+        "sha256": "6bed2a9b0d4d132d66b8cf06f80615b1413dba4c11b84c5ce0786c3a97080044"
+      }
+    ],
+    "reuse": "Real15 history rows, native Back, existing HEADMAN/group1 role and own-session cleanup results reused; old3bbc rawFAIL immutable."
+  },
+  "limits": [
+    "No after PNG or presentation PASS yet.",
+    "Narrow enlarged-font layout intentionally may use more than one filter row.",
+    "TMA verified by strict/build only; no native host runtime claim.",
+    "No new API/backend/Auth tests; no push or main source changes."
+  ],
+  "next": "Root source review/integration, then separately authorized bounded2frame recapture of changed presentation criteria using accepted v2 readiness/role safety."
+}

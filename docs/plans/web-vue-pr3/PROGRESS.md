@@ -360,3 +360,40 @@ Product source,6unitchecks и прежниеtheme4 не повторяются. 
 правила/игноры прежние. API/backend/JARs не менялись. Actions116/117 в обеих осях,
 Angular активен/commonNginx pending. ResourceQENV010 требует≥7GiB actualfree;
 сейчас≈5.36GB, разумный прирост3GiB, workspace/Dockerdata не очищаются.
+
+
+## Headman history и Student ownerloss — закрытые пакеты2026-10-25
+
+Student1057 принят в bounded scope:6causal realtransportchecks/strictWEBbuild/
+independentreview reused; actualnativeLogout204/oldBearer401 послеожидающегоToday,
+затем guestvisible/privateHome+Profileabsent/errors0 и один лично просмотренный1440PNG.
+Полный608B originalbody released unchanged с одной transfer-framing коррекцией,
+но exactrequestfinished/failed неobserved за6s. RawEXIT1/completedfalse/bodyCompletedfalse
+сохранены; fullbodydelivery NOT_PROVEN. Root принял сочетание causalchecks и actual
+useroutcome как достаточное для3currentguards. Третийодинаковыйruntime не нужен.
+[Bounded acceptance](../../validation/web-vue-pr3/runtime-gallery/student-ownerloss-bounded-20261025/product-slice-accepted.json).
+
+Headmanhistory: Student3/nativeexistingHEADMAN/group1/lesson3 GET200/15events и
+nativeBack подтвержденыEXIT0. Первый3bbcstop был TESTearlydatecount доagenda/policy,
+исправлен v2ожиданием actualready, rawFAIL0PNG оставлен. Before2 выявили narrowroot20
+clippedОтметки и rawlecture. Solewriter c6→Root3371 меняет только2presentationfiles:
+intrinsicflexwrap и existingcase-insensitiveRussianformatter. Source review/PWA+TMA
+strictbuildPASS. ActualAFTER2EXIT0/errors0 лично просмотрен: всеfiltersвидны300light/
+root20, Лекция в обеихтемах, Backkeyboardfocus768dark. ОбаP3закрыты. Backactivation/
+15eventchecks reused, no newaction count. Bothruns exactownDELETE204/sameBearer401/
+browserclosed; roletransition409 observations оставлены безвыдуманнойпричины.
+[Before](../../validation/web-vue-pr3/runtime-gallery/headman-history-before-20261025/index.html) ·
+[After](../../validation/web-vue-pr3/runtime-gallery/headman-history-after-20261025/index.html).
+
+Gallery283PNG/portable283, mobile43boundedobserved/7unchecked (6activeconditional+
+1orphan), original36/corrected37 unchanged. Это не whole-screen/allstate/width/TMA
+readiness. Actions116/117 implemented и116/117 locallyverified; ADMIN33/34.
+Backend/JARs/1530inputs прежние, успешныеchecks не повторялись. Runtime12/groupUI
+пока0: QENV010 actual5.31GB<7GiB; guard/data сохранены. Далее readonlyexistingTeacher
+Excuse и LateCheckin PREP/review, одинbrowserlease. Angular/commonNginx ждутgroupgate.
+
+Freshsource-only004652Z.zip7,456,675B/SHA2560fdf5c3a2312352ecf3cb8c01acefaed6280a66f851a6cdea4725d6408aeda35:
+193commitsrelativecab3,12WT/133publicsources/199entries; bundle/CRC/safepaths/manifest/
+sourcebytechecksPASS. DIRnative1/25/historynative1/4 publicnonsecretclassified,
+unresolved0/rulesunchanged. PIDobservationalhold неsourcefailure/runtimePASS.
+Источникsnapshot481; последующий3371 сохранён вGit. CImanual/PAUSED/dispatch0, no merge/deploy.

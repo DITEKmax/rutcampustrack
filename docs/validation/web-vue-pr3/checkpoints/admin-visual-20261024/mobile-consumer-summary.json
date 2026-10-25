@@ -52,10 +52,12 @@
     "tma-controlled-unsigned-gate-light-300",
     "tma-controlled-unsigned-gate-dark-300"
   ],
-  "qualifiedAgainstSourceRevision": "1057de27b70c37b5916013d7c9207e31d8493ce8",
+  "qualifiedAgainstSourceRevision": "3371d6438b0144976cb338f0fa1bb14cc5c051bd",
   "latestMobileSourceDiffFrom77f": [
     "frontends/mobile-core/src/features/admin-groups/admin-group-deletion-client.test.ts",
     "frontends/mobile-core/src/features/admin-groups/admin-groups-client.ts",
+    "frontends/mobile-core/src/features/headman-journal/HeadmanLessonActionsScreen.vue",
+    "frontends/mobile-core/src/features/headman-journal/headman-lesson-actions-screen.pcss",
     "frontends/mobile-core/src/features/notifications/notifications-realtime.test.ts",
     "frontends/mobile-core/src/features/notifications/notifications-realtime.ts",
     "frontends/mobile-core/src/features/notifications/notifications-screen.pcss",
@@ -81,7 +83,7 @@
     "frontends/pwa-vue/src/pwa-host.pcss",
     "frontends/tma-vue/src/App.vue"
   ],
-  "nextPacketState": "AdminMore mapping corrected by reusedold79e2PNG/sourcequalification; no newAuth/runner/PNG. Remaining8active/orphan/source/retained qualification only; no PREP/runtime withoutRoot nextcontract.",
+  "nextPacketState": "Headmanhistory P3 sourcefix+AFTER2 completed; knownowncleanup/noLiveBrowser; no morepolish/datafixtureextensions without Rootnewcontract.",
   "latestPwaTodayWidthPacket": {
     "qualifiedReceipt": "mobile-next-first-qualified.json",
     "actualState": "day-ended/two-lessons/no-checkin-action",
@@ -101,8 +103,8 @@
     "cleanup": "native204/guest401",
     "notificationConsumer": "notchecked:wronglocator/noinboxrequest"
   },
-  "currentPwaScreensWithObservedBaselines": 42,
-  "currentPwaNotVisuallyCheckedScreens": 8,
+  "currentPwaScreensWithObservedBaselines": 43,
+  "currentPwaNotVisuallyCheckedScreens": 7,
   "originalMappedPwaBaselineScreensUnchanged": 36,
   "latestNotificationConsumer": {
     "observedFrames": 4,
@@ -170,7 +172,7 @@
     "cleanup": "technicalexactownselfDELETE204/samebearer401/browserclosed; notnativeUIlogoutPASS",
     "limits": "No whole-screen/all-state/width/TMA runtime/provider/actioncount claim; localtable scroll interaction notchecked"
   },
-  "reconciliationQualification": "42/50 PWAconsumers have bounded observed baseline slices (including newly reconciled oldAdminMore2);8visuallyunchecked. Historicaloriginal36/14 fields preserved; reconciled originalmapped37 is additive correction. No fullreadiness percentage/actioncount increase.",
+  "reconciliationQualification": "43/50 PWAconsumers have bounded observed baselines;7visuallyunchecked. Headmanhistory2P3 closed in boundedAFTER2; not whole-screen readiness. Historicaloriginal36/14 and reconciledoriginal37 preserved; no overallreadiness percentage/actioncount increase.",
   "studentRequestSelectionConsumer": {
     "revision": "85c068210262b611f6f98d18fb9d7bdd8cecea95",
     "qualifiedReceipt": "student-request-selection-run/qualified-85c.json",
@@ -210,14 +212,42 @@
     "commonNavChangedSinceOriginal": "accepted e715 sourceinfluence, not currentAdminMore runtime"
   },
   "remainingVisualInventoryQualification": {
-    "qualifiedReceipt": "admin-more-prep/REMAINING-8-SOURCE-QUALIFICATION.json",
-    "inventoryUnchecked": 8,
-    "activeConditionalUnchecked": 7,
+    "priorSourceQualification": "admin-more-prep/REMAINING-8-SOURCE-QUALIFICATION.json retained historical8; HeadmanLessonActions now observed withP3",
+    "inventoryUnchecked": 7,
+    "activeConditionalUnchecked": 6,
     "orphanSourceOnly": 1,
-    "actualNewNeeds": "ReadonlyHeadmanlessonhistory and naturallyavailableStudentLatePreview/TeacherTicketPreview; assistant2 require preexistingpermission, HeadmanGroup privacydecision, manualrow absent; no PREP/Auth started",
     "sourceOnlyOrphansDoNotAuthorizeNewFeatures": true
   },
-  "currentSourceQualification": "Individual consumer/source qualifications apply. PWA host logout presentation343 has two accepted after frames; no empty global mobile source delta claimed.",
+  "headmanLessonHistoryConsumer": {
+    "revision": "481512e93575070a1f471c65af54df5b4e31cd61",
+    "qualifiedReceipt": "headman-lesson-actions-prep/v2-prep/run/qualified-481.json",
+    "newFrames": 2,
+    "status": "bounded observed realhistory; both selected P3 presentation findings closed after2",
+    "actualRowsLoaded": 15,
+    "ownContext": "Student3→existingHEADMAN/group1/lesson3",
+    "readiness": "v2 waits actualpolicy/agenda before23Oct; old3bbcTESTstop0PNG remainsFAIL",
+    "cleanup": "technicalexactownselfDELETE204/currentbearer401/browserclosed; NOTnativeUIlogoutPASS",
+    "findings": [
+      "V-HLA-FILTER-300-R20",
+      "V-HLA-LESSONTYPE-RU"
+    ],
+    "afterPresentation": {
+      "revision": "3371d6438b0144976cb338f0fa1bb14cc5c051bd",
+      "qualifiedReceipt": "headman-history-polish/after-prep/run/qualified-3371.json",
+      "manifest": "headman-history-polish/after-prep/run/manifest-3371.json",
+      "newFrames": 2,
+      "status": "Both originalPNG personallyviewed PASS for changedcriteria only",
+      "findings": {
+        "V-HLA-FILTER-300-R20": "CLOSED bounded300light/root20",
+        "V-HLA-LESSONTYPE-RU": "CLOSED bounded300light/root20+768dark/root16"
+      },
+      "cleanup": "one technicalexactownDELETE204/samecapturedoldbearer401/browserclosed/noHOLD",
+      "functionalActionsAdded": 0,
+      "wholeScreenReady": false,
+      "noLiveBrowser": true
+    }
+  },
+  "currentSourceQualification": "Individual source/runtime qualifications apply. Headman history presentation3371 has two accepted after frames; no empty global mobile source delta claimed.",
   "inactiveStandaloneSourceComponents": [
     "MOBILE-TEACHERGROUPSUBJECTS"
   ]

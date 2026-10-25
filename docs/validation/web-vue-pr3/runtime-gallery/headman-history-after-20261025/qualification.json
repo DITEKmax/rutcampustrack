@@ -1,0 +1,164 @@
+{
+  "revision": "3371d6438b0144976cb338f0fa1bb14cc5c051bd",
+  "productBase": "3371d6438b0144976cb338f0fa1bb14cc5c051bd",
+  "runnerSha256": "921847198df1ce53441092c86c484b5ec6234b26bc89bbdbf067fabbff75b513",
+  "rawReceipt": "receipt.json",
+  "rawReceiptSha256": "381fe3d68e4cca5ac4e77b246082a77a969982a0b7d64d6dbbb43d229bd2c447",
+  "rawOutcome": "EXIT0; completed/captureComplete true; raw personallyInspectedfalse retained; personal inspection recorded only in sidecars.",
+  "elapsedSeconds": 5.577,
+  "scope": "AFTER2 only changed P3 presentation; no new functional action count or full-screen/state/width readiness.",
+  "criteria": {
+    "V-HLA-FILTER-300-R20": "PASS bounded personal originalPNG inspection",
+    "V-HLA-LESSONTYPE-RU": "PASS bounded personal originalPNG inspection",
+    "BACK-KEYBOARD-PRESENTATION": "PASS actual768dark/root16 visiblefocus; no Back activation repeated"
+  },
+  "findings": [
+    {
+      "id": "V-HLA-FILTER-300-R20",
+      "severity": "P3",
+      "status": "CLOSED_BOUNDED_ACTUAL_300_LIGHT_ROOT20",
+      "evidence": "PWA-MOBILE-HEADMANLESSONACTIONS__MB-HLA-AFTER-01-filters-and-russian-kind-root20__light__300__root20__3371d6438.png",
+      "qualification": "Personally viewed original300light/root20: Все, Отметки, Пара are fully visible in first row; ДЗ occupies second full row without overlap or clipped text. Lesson context reads Лекция. History remains readable in this viewport."
+    },
+    {
+      "id": "V-HLA-LESSONTYPE-RU",
+      "severity": "P3",
+      "status": "CLOSED_BOUNDED_ACTUAL_300_LIGHT_ROOT20_AND_768_DARK_ROOT16",
+      "evidence": [
+        "PWA-MOBILE-HEADMANLESSONACTIONS__MB-HLA-AFTER-01-filters-and-russian-kind-root20__light__300__root20__3371d6438.png",
+        "PWA-MOBILE-HEADMANLESSONACTIONS__MB-HLA-AFTER-02-russian-kind-back-keyboard-focus__dark__768__root16__3371d6438.png"
+      ],
+      "qualification": "Both personally viewed original frames show Лекция; source reuses existing Russian display formatter, preserving API values."
+    }
+  ],
+  "samples": [
+    {
+      "id": "PWA-MOBILE-HEADMANLESSONACTIONS__MB-HLA-AFTER-01-filters-and-russian-kind-root20__light__300__root20__3371d6438",
+      "consumer": "PWA",
+      "screen": "MOBILE-HEADMANLESSONACTIONS",
+      "state": "filters-and-russian-kind-root20",
+      "file": "PWA-MOBILE-HEADMANLESSONACTIONS__MB-HLA-AFTER-01-filters-and-russian-kind-root20__light__300__root20__3371d6438.png",
+      "sha256": "ac6eb51f9b4ed10e170fb1f0223da96948e4c30c9dbd85c1c2bf07c85b73baba",
+      "theme": "light",
+      "width": 300,
+      "height": 900,
+      "rootFont": "20px",
+      "scrollWidth": 300,
+      "lessonId": "3",
+      "busy": "false",
+      "errorVisible": false,
+      "eventRows": 15,
+      "focusVisible": false,
+      "activeLabel": null,
+      "revision": "3371d6438b0144976cb338f0fa1bb14cc5c051bd",
+      "personallyInspected": true,
+      "caseId": "MB-HLA-AFTER-01",
+      "image": "PWA-MOBILE-HEADMANLESSONACTIONS__MB-HLA-AFTER-01-filters-and-russian-kind-root20__light__300__root20__3371d6438.png",
+      "pngWidth": 300,
+      "pngHeight": 900,
+      "personallyViewed": true,
+      "inspection": "Personally viewed original300light/root20: Все, Отметки, Пара are fully visible in first row; ДЗ occupies second full row without overlap or clipped text. Lesson context reads Лекция. History remains readable in this viewport.",
+      "criterion": "HEADMAN-HISTORY-P3-PRESENTATION-AFTER",
+      "title": "История пары после исправления · light · 300 · 20px",
+      "synthetic": true,
+      "syntheticCause": "Existing synthetic Main stand data; actual viewport/OS-media theme/rootfont stress. Real normalAuth/existing HEADMAN role/historyGET200; no fake body/status or fixture/data commands.",
+      "captureKind": "new original actualPWA after viewport frame"
+    },
+    {
+      "id": "PWA-MOBILE-HEADMANLESSONACTIONS__MB-HLA-AFTER-02-russian-kind-back-keyboard-focus__dark__768__root16__3371d6438",
+      "consumer": "PWA",
+      "screen": "MOBILE-HEADMANLESSONACTIONS",
+      "state": "russian-kind-back-keyboard-focus",
+      "file": "PWA-MOBILE-HEADMANLESSONACTIONS__MB-HLA-AFTER-02-russian-kind-back-keyboard-focus__dark__768__root16__3371d6438.png",
+      "sha256": "4041cba0b0fed4555ea595ee51e625c03f6e531e93739d91f33aee10d1893073",
+      "theme": "dark",
+      "width": 768,
+      "height": 900,
+      "rootFont": "16px",
+      "scrollWidth": 768,
+      "lessonId": "3",
+      "busy": "false",
+      "errorVisible": false,
+      "eventRows": 15,
+      "focusVisible": true,
+      "activeLabel": "Назад",
+      "revision": "3371d6438b0144976cb338f0fa1bb14cc5c051bd",
+      "personallyInspected": true,
+      "caseId": "MB-HLA-AFTER-02",
+      "image": "PWA-MOBILE-HEADMANLESSONACTIONS__MB-HLA-AFTER-02-russian-kind-back-keyboard-focus__dark__768__root16__3371d6438.png",
+      "pngWidth": 768,
+      "pngHeight": 900,
+      "personallyViewed": true,
+      "inspection": "Personally viewed original768dark/root16: context reads Лекция; all four filters readable on one row; native Back has visible purple keyboard focus ring. No new presentation finding in the selected criteria; only the viewport subset of rows was inspected.",
+      "criterion": "HEADMAN-HISTORY-P3-PRESENTATION-AFTER",
+      "title": "История пары после исправления · dark · 768 · 16px",
+      "synthetic": true,
+      "syntheticCause": "Existing synthetic Main stand data; actual viewport/OS-media theme/rootfont stress. Real normalAuth/existing HEADMAN role/historyGET200; no fake body/status or fixture/data commands.",
+      "captureKind": "new original actualPWA after viewport frame"
+    }
+  ],
+  "setup": {
+    "actor": 3,
+    "role": "HEADMAN",
+    "group": 1,
+    "lesson": 3,
+    "historyGet": 200,
+    "normalRoleChoiceMax": 1,
+    "domainCommands": 0,
+    "preferenceWrites": 0,
+    "fixtureWrites": 0
+  },
+  "errors": {
+    "pageErrors": [],
+    "requestFailures": [],
+    "readIncomplete": [],
+    "blocked": [],
+    "non2xxObserved": [
+      {
+        "path": "/api/auth/refresh",
+        "method": "POST",
+        "status": 401,
+        "phase": "BOOTSTRAP",
+        "loginIndex": 0
+      },
+      {
+        "pathHash": "66be5879ef3a006f97cdf3d9fb658d6b9ab244113bbbad159c733f0fee4efb32",
+        "method": "GET",
+        "status": 409,
+        "phase": "EXISTING_TARGET_ROLE_SELECTION",
+        "loginIndex": 0
+      },
+      {
+        "path": "/api/auth/ws-ticket",
+        "method": "POST",
+        "status": 409,
+        "phase": "EXISTING_TARGET_ROLE_SELECTION",
+        "loginIndex": 0
+      }
+    ],
+    "qualification": "Guestbootstrap refresh401 expected. GET pathHash66be and ws-ticket409 observed during existing role selection before targetAdmitted, bearerMatchedAtForwardfalse; no unsupported root-cause attribution. Final target canonical and history200 achieved."
+  },
+  "cleanup": {
+    "method": "TECHNICAL_EXACT_CURRENT_OWN_SELF_SESSION_DELETE",
+    "nativeUiLogoutPass": false,
+    "selfDeleteForwarded": 1,
+    "status": 204,
+    "sameOldBearerStatus": 401,
+    "confirmed": true,
+    "fallbackUsed": false,
+    "intent": "RETURNED"
+  },
+  "browserClosed": true,
+  "sourcePins20VerifiedAfter": true,
+  "processResource": "process-resource-after.json",
+  "beforeEvidence": "../../../headman-lesson-actions-prep/v2-prep/run/qualified-481.json",
+  "beforeAndRawFailureRetained": "Old2 baseline/P3 annotation and original3bbc rawFAIL unchanged; before15row/Back behavior/sourceStrict/build reused.",
+  "limits": [
+    "PWA presentation only in two selected viewports/themes/fonts.",
+    "OS-media theme emulation does not prove manual theme choice.",
+    "No TMA runtime/native provider claim; source/build verification reused.",
+    "No new filters/pagination/empty/loading/error/retry/Back functionality assertion or all15row inspection.",
+    "Technical exact own session cleanup, not native UI logout PASS."
+  ],
+  "qualifiedAtUtc": "2026-10-25T01:38:03.313082+00:00"
+}

@@ -1,0 +1,12 @@
+{
+  "result": "PASS narrowed independent Root acceptance of accepted-critical-block reuse/currentbinding/capture-only visualdelta",
+  "runnerSha256": "921847198df1ce53441092c86c484b5ec6234b26bc89bbdbf067fabbff75b513",
+  "actualRawBlockEquality": {
+    "source": true,
+    "allAuthRoleReadinessShot": true,
+    "cleanupToEnd": true
+  },
+  "sourceHead": "3371d6438b0144976cb338f0fa1bb14cc5c051bd",
+  "runtime": 0,
+  "newRisk": "Only accepted source2presentationpins/newframeIDs and explicit knownlesson3; nativeBackaction duplicate removed. No pixel/CSS/text oracle added."
+}

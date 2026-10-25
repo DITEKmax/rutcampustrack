@@ -1,0 +1,2803 @@
+{
+  "case": "PWA_HEADMAN_OWN_LESSON_ACTIONS_TWO_VIEWPORT_FRAMES",
+  "revision": "481512e93575070a1f471c65af54df5b4e31cd61",
+  "productBase": "343245083694b85298e18b578ad8a51b54af88c9",
+  "harnessSha256": "558073fd5c04a712f974f5566a719ee7d5dded9bb65b4953747b779aa7ad98f8",
+  "startedAtUtc": "2026-10-25T01:11:56.493Z",
+  "expectedActor": 3,
+  "expectedRole": "HEADMAN",
+  "phase": "CAPTURE_COMPLETE_CLEANUP_CONFIRMED_INSPECTION_PENDING",
+  "api": [
+    {
+      "path": "/api/auth/refresh",
+      "method": "POST",
+      "status": 401,
+      "phase": "BOOTSTRAP",
+      "loginIndex": 0
+    },
+    {
+      "path": "/api/auth/login",
+      "method": "POST",
+      "status": 200,
+      "phase": "LOGIN_0",
+      "loginIndex": 0
+    },
+    {
+      "path": "/api/auth/session",
+      "method": "GET",
+      "status": 200,
+      "phase": "LOGIN_0",
+      "loginIndex": 0
+    },
+    {
+      "path": "/api/auth/device-preferences",
+      "method": "GET",
+      "status": 200,
+      "phase": "LOGIN_0",
+      "loginIndex": 0
+    },
+    {
+      "pathHash": "66be5879ef3a006f97cdf3d9fb658d6b9ab244113bbbad159c733f0fee4efb32",
+      "method": "GET",
+      "status": 200,
+      "phase": "LOGIN_0",
+      "loginIndex": 0
+    },
+    {
+      "pathHash": "61e6038f2d3a6dfcdc1b123b37cd7efa3c98f1c6b3dd0aa7d2c060f38f8ed3f2",
+      "method": "GET",
+      "status": 200,
+      "phase": "LOGIN_0",
+      "loginIndex": 0
+    },
+    {
+      "pathHash": "6cb55e97fef19735195b0020d5dd6545645efc7bc46a1d989e5cdbbf8b251030",
+      "method": "GET",
+      "status": 200,
+      "phase": "LOGIN_0",
+      "loginIndex": 0
+    },
+    {
+      "pathHash": "8523bff54cc369633b19fc3d5d401c2750a6a0f69ad7844d9eb5045c1769e1cf",
+      "method": "GET",
+      "status": 200,
+      "phase": "EXISTING_TARGET_ROLE_SELECTION",
+      "loginIndex": 0
+    },
+    {
+      "path": "/api/auth/ws-ticket",
+      "method": "POST",
+      "status": 200,
+      "phase": "EXISTING_TARGET_ROLE_SELECTION",
+      "loginIndex": 0
+    },
+    {
+      "pathHash": "6a3ed7c33ca04a6a7e68847f792e314468b713dea9c4ece627c242271898ae23",
+      "method": "GET",
+      "status": 200,
+      "phase": "EXISTING_TARGET_ROLE_SELECTION",
+      "loginIndex": 0
+    },
+    {
+      "pathHash": "f3c86055724948219ffaedb2ba9d52d644c538d765a16899418a3476b860c86c",
+      "method": "GET",
+      "status": 200,
+      "phase": "EXISTING_TARGET_ROLE_SELECTION",
+      "loginIndex": 0
+    },
+    {
+      "path": "/api/auth/session",
+      "method": "GET",
+      "status": 200,
+      "phase": "EXISTING_TARGET_ROLE_SELECTION",
+      "loginIndex": 0
+    },
+    {
+      "pathHash": "66be5879ef3a006f97cdf3d9fb658d6b9ab244113bbbad159c733f0fee4efb32",
+      "method": "GET",
+      "status": 200,
+      "phase": "EXISTING_TARGET_ROLE_SELECTION",
+      "loginIndex": 0
+    },
+    {
+      "pathHash": "4d1d330e1b27d01a8987f9f6545abad0d8974bcda7dfe864a5c5575d67e1871a",
+      "method": "GET",
+      "status": 200,
+      "phase": "EXISTING_TARGET_ROLE_SELECTION",
+      "loginIndex": 0
+    },
+    {
+      "pathHash": "6b3083317c4acb8fcce03fefafc04f20bfd1c342cd05113948be1521b9059b3c",
+      "method": "GET",
+      "status": 200,
+      "phase": "EXISTING_TARGET_ROLE_SELECTION",
+      "loginIndex": 0
+    },
+    {
+      "pathHash": "a199efda1ba605e3869a7a8cf1051f597e455b2a0c519486f387bc64eeb5869a",
+      "method": "GET",
+      "status": 200,
+      "phase": "EXISTING_TARGET_ROLE_SELECTION",
+      "loginIndex": 0
+    },
+    {
+      "path": "/api/auth/session/active-role",
+      "method": "PUT",
+      "status": 200,
+      "phase": "EXISTING_TARGET_ROLE_SELECTION",
+      "loginIndex": 0
+    },
+    {
+      "pathHash": "66be5879ef3a006f97cdf3d9fb658d6b9ab244113bbbad159c733f0fee4efb32",
+      "method": "GET",
+      "status": 409,
+      "phase": "EXISTING_TARGET_ROLE_SELECTION",
+      "loginIndex": 0
+    },
+    {
+      "path": "/api/auth/ws-ticket",
+      "method": "POST",
+      "status": 409,
+      "phase": "EXISTING_TARGET_ROLE_SELECTION",
+      "loginIndex": 0
+    },
+    {
+      "pathHash": "66be5879ef3a006f97cdf3d9fb658d6b9ab244113bbbad159c733f0fee4efb32",
+      "method": "GET",
+      "status": 200,
+      "phase": "EXISTING_TARGET_ROLE_SELECTION",
+      "loginIndex": 0
+    },
+    {
+      "path": "/api/auth/device-preferences",
+      "method": "GET",
+      "status": 200,
+      "phase": "EXISTING_TARGET_ROLE_SELECTION",
+      "loginIndex": 0
+    },
+    {
+      "pathHash": "55509024692e42fc6487314ca23f93f3ab30db096cb08ea701db696c57e5f83f",
+      "method": "GET",
+      "status": 200,
+      "phase": "EXISTING_TARGET_ROLE_SELECTION",
+      "loginIndex": 0
+    },
+    {
+      "path": "/api/auth/ws-ticket",
+      "method": "POST",
+      "status": 200,
+      "phase": "EXISTING_TARGET_ROLE_SELECTION",
+      "loginIndex": 0
+    },
+    {
+      "pathHash": "ca42491adedb5e5909bbea37098323d62f2540ebfa76f8f6c1e7724556c003d9",
+      "method": "GET",
+      "status": 200,
+      "phase": "EXISTING_TARGET_ROLE_SELECTION",
+      "loginIndex": 0
+    },
+    {
+      "pathHash": "ca42491adedb5e5909bbea37098323d62f2540ebfa76f8f6c1e7724556c003d9",
+      "method": "GET",
+      "status": 200,
+      "phase": "EXISTING_TARGET_ROLE_SELECTION",
+      "loginIndex": 0
+    },
+    {
+      "pathHash": "05ae68882e8f40b13ee20ed093a4c8cfcadfabd2e676bd7126d6a18f157ee131",
+      "method": "GET",
+      "status": 200,
+      "phase": "EXISTING_TARGET_ROLE_SELECTION",
+      "loginIndex": 0
+    },
+    {
+      "pathHash": "6a3ed7c33ca04a6a7e68847f792e314468b713dea9c4ece627c242271898ae23",
+      "method": "GET",
+      "status": 200,
+      "phase": "EXISTING_TARGET_ROLE_SELECTION",
+      "loginIndex": 0
+    },
+    {
+      "pathHash": "05ae68882e8f40b13ee20ed093a4c8cfcadfabd2e676bd7126d6a18f157ee131",
+      "method": "GET",
+      "status": 200,
+      "phase": "EXISTING_TARGET_ROLE_SELECTION",
+      "loginIndex": 0
+    },
+    {
+      "pathHash": "55509024692e42fc6487314ca23f93f3ab30db096cb08ea701db696c57e5f83f",
+      "method": "GET",
+      "status": 200,
+      "phase": "EXISTING_TARGET_ROLE_SELECTION",
+      "loginIndex": 0
+    },
+    {
+      "pathHash": "83408c47b846c24b7a9755db2f34dea88e96cfe99ea9d13bb8172dd26ca52830",
+      "method": "GET",
+      "status": 200,
+      "phase": "EXISTING_TARGET_ROLE_SELECTION",
+      "loginIndex": 0
+    },
+    {
+      "pathHash": "43ec85474f666571a067c1bb82a601809f436f9f3ddf56fe863d0cbe976727a3",
+      "method": "GET",
+      "status": 200,
+      "phase": "EXISTING_TARGET_ROLE_SELECTION",
+      "loginIndex": 0
+    },
+    {
+      "pathHash": "66be5879ef3a006f97cdf3d9fb658d6b9ab244113bbbad159c733f0fee4efb32",
+      "method": "GET",
+      "status": 200,
+      "phase": "NATIVE_READONLY_MANAGEMENT_HISTORY",
+      "loginIndex": 0
+    },
+    {
+      "pathHash": "55509024692e42fc6487314ca23f93f3ab30db096cb08ea701db696c57e5f83f",
+      "method": "GET",
+      "status": 200,
+      "phase": "NATIVE_READONLY_MANAGEMENT_HISTORY",
+      "loginIndex": 0
+    },
+    {
+      "pathHash": "b05fd2eb20115510c259a188067bd51de03fb6d2c5d82ad0a85e398b9c28694f",
+      "method": "GET",
+      "status": 200,
+      "phase": "NATIVE_READONLY_MANAGEMENT_HISTORY",
+      "loginIndex": 0
+    },
+    {
+      "pathHash": "43ec85474f666571a067c1bb82a601809f436f9f3ddf56fe863d0cbe976727a3",
+      "method": "GET",
+      "status": 200,
+      "phase": "NATIVE_READONLY_MANAGEMENT_HISTORY",
+      "loginIndex": 0
+    },
+    {
+      "pathHash": "ca42491adedb5e5909bbea37098323d62f2540ebfa76f8f6c1e7724556c003d9",
+      "method": "GET",
+      "status": 200,
+      "phase": "NATIVE_READONLY_MANAGEMENT_HISTORY",
+      "loginIndex": 0
+    },
+    {
+      "pathHash": "ae39d0a8b2c329e83ea432b637de3e157dc576d2365d497de471414c530873dd",
+      "method": "GET",
+      "status": 200,
+      "phase": "NATIVE_READONLY_MANAGEMENT_HISTORY",
+      "loginIndex": 0
+    },
+    {
+      "pathHash": "ca42491adedb5e5909bbea37098323d62f2540ebfa76f8f6c1e7724556c003d9",
+      "method": "GET",
+      "status": 200,
+      "phase": "NATIVE_READONLY_MANAGEMENT_HISTORY",
+      "loginIndex": 0
+    },
+    {
+      "pathHash": "55509024692e42fc6487314ca23f93f3ab30db096cb08ea701db696c57e5f83f",
+      "method": "GET",
+      "status": 200,
+      "phase": "NATIVE_READONLY_MANAGEMENT_HISTORY",
+      "loginIndex": 0
+    },
+    {
+      "pathHash": "b05fd2eb20115510c259a188067bd51de03fb6d2c5d82ad0a85e398b9c28694f",
+      "method": "GET",
+      "status": 200,
+      "phase": "NATIVE_READONLY_MANAGEMENT_HISTORY",
+      "loginIndex": 0
+    },
+    {
+      "pathHash": "43ec85474f666571a067c1bb82a601809f436f9f3ddf56fe863d0cbe976727a3",
+      "method": "GET",
+      "status": 200,
+      "phase": "NATIVE_READONLY_MANAGEMENT_HISTORY",
+      "loginIndex": 0
+    },
+    {
+      "pathHash": "5e0b19be4cca3e36015884eaa6447fd176d6459fb5aafe57282e539c20eccff6",
+      "method": "GET",
+      "status": 200,
+      "phase": "NATIVE_READONLY_MANAGEMENT_HISTORY",
+      "loginIndex": 0
+    },
+    {
+      "pathHash": "ae39d0a8b2c329e83ea432b637de3e157dc576d2365d497de471414c530873dd",
+      "method": "GET",
+      "status": 200,
+      "phase": "NATIVE_READONLY_MANAGEMENT_HISTORY",
+      "loginIndex": 0
+    },
+    {
+      "path": "/api/attendance/reports/lesson/:id/actions",
+      "lessonId": 3,
+      "method": "GET",
+      "status": 200,
+      "phase": "NATIVE_READONLY_MANAGEMENT_HISTORY",
+      "loginIndex": 0
+    }
+  ],
+  "samples": [
+    {
+      "id": "MB-HLA-01",
+      "consumer": "PWA",
+      "screen": "MOBILE-HEADMANLESSONACTIONS",
+      "state": "real-history-root20",
+      "file": "PWA-MOBILE-HEADMANLESSONACTIONS__MB-HLA-01-real-history-root20__light__300__root20__481512e93.png",
+      "sha256": "7a8e991c8e8d06e010f42a974dd0c9b71caae87685aa10e1c56de65e46af57c9",
+      "theme": "light",
+      "width": 300,
+      "height": 900,
+      "rootFont": "20px",
+      "scrollWidth": 300,
+      "lessonId": "3",
+      "busy": "false",
+      "errorVisible": false,
+      "eventRows": 15,
+      "focusVisible": false,
+      "activeLabel": null,
+      "revision": "481512e93575070a1f471c65af54df5b4e31cd61",
+      "personallyInspected": false
+    },
+    {
+      "id": "MB-HLA-02",
+      "consumer": "PWA",
+      "screen": "MOBILE-HEADMANLESSONACTIONS",
+      "state": "same-real-history-back-keyboard-focus",
+      "file": "PWA-MOBILE-HEADMANLESSONACTIONS__MB-HLA-02-same-real-history-back-keyboard-focus__dark__768__root16__481512e93.png",
+      "sha256": "6bed2a9b0d4d132d66b8cf06f80615b1413dba4c11b84c5ce0786c3a97080044",
+      "theme": "dark",
+      "width": 768,
+      "height": 900,
+      "rootFont": "16px",
+      "scrollWidth": 768,
+      "lessonId": "3",
+      "busy": "false",
+      "errorVisible": false,
+      "eventRows": 15,
+      "focusVisible": true,
+      "activeLabel": "Назад",
+      "revision": "481512e93575070a1f471c65af54df5b4e31cd61",
+      "personallyInspected": false
+    }
+  ],
+  "captureAttempts": [
+    {
+      "id": "MB-HLA-01",
+      "file": "PWA-MOBILE-HEADMANLESSONACTIONS__MB-HLA-01-real-history-root20__light__300__root20__481512e93.png",
+      "state": "CAPTURED_INSPECTION_PENDING",
+      "startedAtUtc": "2026-10-25T01:12:02.487Z"
+    },
+    {
+      "id": "MB-HLA-02",
+      "file": "PWA-MOBILE-HEADMANLESSONACTIONS__MB-HLA-02-same-real-history-back-keyboard-focus__dark__768__root16__481512e93.png",
+      "state": "CAPTURED_INSPECTION_PENDING",
+      "startedAtUtc": "2026-10-25T01:12:02.683Z"
+    }
+  ],
+  "blocked": [],
+  "pageErrors": [],
+  "requestStarts": [
+    {
+      "id": "4833f8e1-1358-47a0-a171-d5ae05f31da4",
+      "method": "POST",
+      "path": "/api/auth/refresh",
+      "phase": "BOOTSTRAP",
+      "loginIndex": 0,
+      "canonicalAtStart": false,
+      "requiredCanonical": false,
+      "forwarded": true,
+      "canonicalAtForward": false,
+      "capturedBearerMatchedAtForward": false,
+      "forwardedAtUtc": "2026-10-25T01:11:59.433Z",
+      "captureAckDurable": true
+    },
+    {
+      "id": "5c1f7baa-f435-4b0f-9887-5a8ca990b6fa",
+      "method": "POST",
+      "path": "/api/auth/login",
+      "phase": "LOGIN_0",
+      "loginIndex": 0,
+      "canonicalAtStart": false,
+      "requiredCanonical": false,
+      "forwarded": true,
+      "canonicalAtForward": false,
+      "capturedBearerMatchedAtForward": false,
+      "forwardedAtUtc": "2026-10-25T01:11:59.633Z",
+      "captureAckDurable": true
+    },
+    {
+      "id": "a85af94e-66a2-4afd-a390-02b0bdabe1ce",
+      "method": "GET",
+      "path": "/api/auth/session",
+      "phase": "LOGIN_0",
+      "loginIndex": 0,
+      "canonicalAtStart": false,
+      "requiredCanonical": true,
+      "forwarded": true,
+      "canonicalAtForward": false,
+      "capturedBearerMatchedAtForward": true,
+      "forwardedAtUtc": "2026-10-25T01:11:59.852Z",
+      "captureAckDurable": true
+    },
+    {
+      "id": "c45e26a8-b655-41ee-906d-6bf507364750",
+      "method": "GET",
+      "pathHash": "66be5879ef3a006f97cdf3d9fb658d6b9ab244113bbbad159c733f0fee4efb32",
+      "phase": "LOGIN_0",
+      "loginIndex": 0,
+      "canonicalAtStart": false,
+      "requiredCanonical": false,
+      "forwarded": true,
+      "canonicalAtForward": true,
+      "capturedBearerMatchedAtForward": true,
+      "forwardedAtUtc": "2026-10-25T01:11:59.927Z"
+    },
+    {
+      "id": "1fc6f0d4-acf3-4684-8963-b8b1c6904f3d",
+      "method": "GET",
+      "pathHash": "61e6038f2d3a6dfcdc1b123b37cd7efa3c98f1c6b3dd0aa7d2c060f38f8ed3f2",
+      "phase": "LOGIN_0",
+      "loginIndex": 0,
+      "canonicalAtStart": false,
+      "requiredCanonical": false,
+      "forwarded": true,
+      "canonicalAtForward": true,
+      "capturedBearerMatchedAtForward": true,
+      "forwardedAtUtc": "2026-10-25T01:11:59.929Z"
+    },
+    {
+      "id": "3d5f9f8f-9a5b-44ce-a355-91f5b72af146",
+      "method": "GET",
+      "path": "/api/auth/device-preferences",
+      "phase": "LOGIN_0",
+      "loginIndex": 0,
+      "canonicalAtStart": false,
+      "requiredCanonical": false,
+      "forwarded": true,
+      "canonicalAtForward": true,
+      "capturedBearerMatchedAtForward": true,
+      "forwardedAtUtc": "2026-10-25T01:11:59.930Z",
+      "captureAckDurable": true
+    },
+    {
+      "id": "9eaf9d11-a541-4ffb-8a62-ce8d0092761e",
+      "method": "GET",
+      "pathHash": "6cb55e97fef19735195b0020d5dd6545645efc7bc46a1d989e5cdbbf8b251030",
+      "phase": "LOGIN_0",
+      "loginIndex": 0,
+      "canonicalAtStart": true,
+      "requiredCanonical": false,
+      "forwarded": true,
+      "canonicalAtForward": true,
+      "capturedBearerMatchedAtForward": true,
+      "forwardedAtUtc": "2026-10-25T01:12:00.057Z"
+    },
+    {
+      "id": "2046d6e5-bc13-47bd-b386-5af651d251ef",
+      "method": "GET",
+      "pathHash": "8523bff54cc369633b19fc3d5d401c2750a6a0f69ad7844d9eb5045c1769e1cf",
+      "phase": "EXISTING_TARGET_ROLE_SELECTION",
+      "loginIndex": 0,
+      "canonicalAtStart": true,
+      "requiredCanonical": false,
+      "forwarded": true,
+      "canonicalAtForward": true,
+      "capturedBearerMatchedAtForward": true,
+      "forwardedAtUtc": "2026-10-25T01:12:00.118Z"
+    },
+    {
+      "id": "b0801276-99d9-4783-b15c-9da027041423",
+      "method": "POST",
+      "path": "/api/auth/ws-ticket",
+      "phase": "EXISTING_TARGET_ROLE_SELECTION",
+      "loginIndex": 0,
+      "canonicalAtStart": true,
+      "requiredCanonical": false,
+      "forwarded": true,
+      "canonicalAtForward": true,
+      "capturedBearerMatchedAtForward": true,
+      "forwardedAtUtc": "2026-10-25T01:12:00.216Z"
+    },
+    {
+      "id": "175d6e8b-f010-48f7-b352-8d224e4801cc",
+      "method": "GET",
+      "pathHash": "4d1d330e1b27d01a8987f9f6545abad0d8974bcda7dfe864a5c5575d67e1871a",
+      "phase": "EXISTING_TARGET_ROLE_SELECTION",
+      "loginIndex": 0,
+      "canonicalAtStart": true,
+      "requiredCanonical": false,
+      "forwarded": true,
+      "canonicalAtForward": true,
+      "capturedBearerMatchedAtForward": true,
+      "forwardedAtUtc": "2026-10-25T01:12:00.223Z"
+    },
+    {
+      "id": "93b955ef-aa0b-4929-b4c0-eb2966d1eed6",
+      "method": "GET",
+      "pathHash": "f3c86055724948219ffaedb2ba9d52d644c538d765a16899418a3476b860c86c",
+      "phase": "EXISTING_TARGET_ROLE_SELECTION",
+      "loginIndex": 0,
+      "canonicalAtStart": true,
+      "requiredCanonical": false,
+      "forwarded": true,
+      "canonicalAtForward": true,
+      "capturedBearerMatchedAtForward": true,
+      "forwardedAtUtc": "2026-10-25T01:12:00.228Z"
+    },
+    {
+      "id": "560f8a91-3654-41bd-9efe-ae05eaad5bb8",
+      "method": "GET",
+      "pathHash": "348ca1e77d2a6d2ce796f712240178c32249592998c418b61a79c2525e71190a",
+      "phase": "EXISTING_TARGET_ROLE_SELECTION",
+      "loginIndex": 0,
+      "canonicalAtStart": true,
+      "requiredCanonical": false,
+      "forwarded": true,
+      "canonicalAtForward": true,
+      "capturedBearerMatchedAtForward": true,
+      "forwardedAtUtc": "2026-10-25T01:12:00.237Z"
+    },
+    {
+      "id": "b4f20a23-ab5a-4633-8210-e8d7d8b12c86",
+      "method": "GET",
+      "pathHash": "bba9abf800ba68da4d32a6f5d51ea74d9c0834a339a04afa3cee3d231af58292",
+      "phase": "EXISTING_TARGET_ROLE_SELECTION",
+      "loginIndex": 0,
+      "canonicalAtStart": true,
+      "requiredCanonical": false,
+      "forwarded": true,
+      "canonicalAtForward": true,
+      "capturedBearerMatchedAtForward": true,
+      "forwardedAtUtc": "2026-10-25T01:12:00.251Z"
+    },
+    {
+      "id": "0eb168a0-277f-41d1-b4a0-f345125f8b3c",
+      "method": "GET",
+      "pathHash": "a199efda1ba605e3869a7a8cf1051f597e455b2a0c519486f387bc64eeb5869a",
+      "phase": "EXISTING_TARGET_ROLE_SELECTION",
+      "loginIndex": 0,
+      "canonicalAtStart": true,
+      "requiredCanonical": false,
+      "forwarded": true,
+      "canonicalAtForward": true,
+      "capturedBearerMatchedAtForward": true,
+      "forwardedAtUtc": "2026-10-25T01:12:00.257Z"
+    },
+    {
+      "id": "6cc7e8e1-6ff2-4856-b286-699d8b4fe1d8",
+      "method": "GET",
+      "pathHash": "6a3ed7c33ca04a6a7e68847f792e314468b713dea9c4ece627c242271898ae23",
+      "phase": "EXISTING_TARGET_ROLE_SELECTION",
+      "loginIndex": 0,
+      "canonicalAtStart": true,
+      "requiredCanonical": false,
+      "forwarded": true,
+      "canonicalAtForward": true,
+      "capturedBearerMatchedAtForward": false,
+      "forwardedAtUtc": "2026-10-25T01:12:00.273Z"
+    },
+    {
+      "id": "9b6c2932-808c-42bf-bb2e-e77019e77288",
+      "method": "GET",
+      "path": "/api/auth/session",
+      "phase": "EXISTING_TARGET_ROLE_SELECTION",
+      "loginIndex": 0,
+      "canonicalAtStart": true,
+      "requiredCanonical": false,
+      "forwarded": true,
+      "canonicalAtForward": true,
+      "capturedBearerMatchedAtForward": true,
+      "forwardedAtUtc": "2026-10-25T01:12:00.340Z",
+      "captureAckDurable": true
+    },
+    {
+      "id": "bf8ce7e8-d0a1-4d0d-a481-9333c3c2390d",
+      "method": "GET",
+      "pathHash": "66be5879ef3a006f97cdf3d9fb658d6b9ab244113bbbad159c733f0fee4efb32",
+      "phase": "EXISTING_TARGET_ROLE_SELECTION",
+      "loginIndex": 0,
+      "canonicalAtStart": true,
+      "requiredCanonical": false,
+      "forwarded": true,
+      "canonicalAtForward": true,
+      "capturedBearerMatchedAtForward": true,
+      "forwardedAtUtc": "2026-10-25T01:12:00.417Z"
+    },
+    {
+      "id": "7eed7150-1667-457f-98ef-1caa78f89255",
+      "method": "GET",
+      "pathHash": "6b3083317c4acb8fcce03fefafc04f20bfd1c342cd05113948be1521b9059b3c",
+      "phase": "EXISTING_TARGET_ROLE_SELECTION",
+      "loginIndex": 0,
+      "canonicalAtStart": true,
+      "requiredCanonical": false,
+      "forwarded": true,
+      "canonicalAtForward": true,
+      "capturedBearerMatchedAtForward": true,
+      "forwardedAtUtc": "2026-10-25T01:12:00.459Z"
+    },
+    {
+      "id": "e504a516-1e82-485f-be6e-fd6c4a463bf4",
+      "method": "PUT",
+      "path": "/api/auth/session/active-role",
+      "phase": "EXISTING_TARGET_ROLE_SELECTION",
+      "loginIndex": 0,
+      "canonicalAtStart": true,
+      "requiredCanonical": false,
+      "forwarded": true,
+      "canonicalAtForward": true,
+      "capturedBearerMatchedAtForward": true,
+      "forwardedAtUtc": "2026-10-25T01:12:00.648Z",
+      "captureAckDurable": true
+    },
+    {
+      "id": "d713062a-d13d-4b1d-812e-5eb2abd805e6",
+      "method": "GET",
+      "pathHash": "66be5879ef3a006f97cdf3d9fb658d6b9ab244113bbbad159c733f0fee4efb32",
+      "phase": "EXISTING_TARGET_ROLE_SELECTION",
+      "loginIndex": 0,
+      "canonicalAtStart": true,
+      "requiredCanonical": false,
+      "forwarded": true,
+      "canonicalAtForward": true,
+      "capturedBearerMatchedAtForward": false,
+      "forwardedAtUtc": "2026-10-25T01:12:00.786Z"
+    },
+    {
+      "id": "cda38815-9a47-4c20-bcdb-c3b232e14955",
+      "method": "POST",
+      "path": "/api/auth/ws-ticket",
+      "phase": "EXISTING_TARGET_ROLE_SELECTION",
+      "loginIndex": 0,
+      "canonicalAtStart": true,
+      "requiredCanonical": false,
+      "forwarded": true,
+      "canonicalAtForward": true,
+      "capturedBearerMatchedAtForward": false,
+      "forwardedAtUtc": "2026-10-25T01:12:00.788Z"
+    },
+    {
+      "id": "60762bd4-310a-4fda-a7ad-c64f3287cb73",
+      "method": "GET",
+      "path": "/api/auth/device-preferences",
+      "phase": "EXISTING_TARGET_ROLE_SELECTION",
+      "loginIndex": 0,
+      "canonicalAtStart": true,
+      "requiredCanonical": false,
+      "forwarded": true,
+      "canonicalAtForward": true,
+      "capturedBearerMatchedAtForward": true,
+      "forwardedAtUtc": "2026-10-25T01:12:00.790Z",
+      "captureAckDurable": true
+    },
+    {
+      "id": "c9560296-5e87-4d6f-9d33-d810e6f296e8",
+      "method": "GET",
+      "pathHash": "66be5879ef3a006f97cdf3d9fb658d6b9ab244113bbbad159c733f0fee4efb32",
+      "phase": "EXISTING_TARGET_ROLE_SELECTION",
+      "loginIndex": 0,
+      "canonicalAtStart": true,
+      "requiredCanonical": false,
+      "forwarded": true,
+      "canonicalAtForward": true,
+      "capturedBearerMatchedAtForward": true,
+      "forwardedAtUtc": "2026-10-25T01:12:00.794Z"
+    },
+    {
+      "id": "7bf8157b-9ddf-48ec-bf79-e36100596cd9",
+      "method": "POST",
+      "path": "/api/auth/ws-ticket",
+      "phase": "EXISTING_TARGET_ROLE_SELECTION",
+      "loginIndex": 0,
+      "canonicalAtStart": true,
+      "requiredCanonical": false,
+      "forwarded": true,
+      "canonicalAtForward": true,
+      "capturedBearerMatchedAtForward": true,
+      "forwardedAtUtc": "2026-10-25T01:12:00.810Z"
+    },
+    {
+      "id": "3b5337c4-14e7-4008-868c-e13aa82c3a61",
+      "method": "GET",
+      "pathHash": "55509024692e42fc6487314ca23f93f3ab30db096cb08ea701db696c57e5f83f",
+      "phase": "EXISTING_TARGET_ROLE_SELECTION",
+      "loginIndex": 0,
+      "canonicalAtStart": true,
+      "requiredCanonical": false,
+      "forwarded": true,
+      "canonicalAtForward": true,
+      "capturedBearerMatchedAtForward": true,
+      "forwardedAtUtc": "2026-10-25T01:12:00.819Z"
+    },
+    {
+      "id": "6aeb3fbb-ce65-4a8e-a3ad-114640fdc7cf",
+      "method": "GET",
+      "pathHash": "05ae68882e8f40b13ee20ed093a4c8cfcadfabd2e676bd7126d6a18f157ee131",
+      "phase": "EXISTING_TARGET_ROLE_SELECTION",
+      "loginIndex": 0,
+      "canonicalAtStart": true,
+      "requiredCanonical": false,
+      "forwarded": true,
+      "canonicalAtForward": true,
+      "capturedBearerMatchedAtForward": true,
+      "forwardedAtUtc": "2026-10-25T01:12:00.832Z"
+    },
+    {
+      "id": "3964a1ea-3a7c-4a2e-8c9e-e07fa4e8d756",
+      "method": "GET",
+      "pathHash": "05ae68882e8f40b13ee20ed093a4c8cfcadfabd2e676bd7126d6a18f157ee131",
+      "phase": "EXISTING_TARGET_ROLE_SELECTION",
+      "loginIndex": 0,
+      "canonicalAtStart": true,
+      "requiredCanonical": false,
+      "forwarded": true,
+      "canonicalAtForward": true,
+      "capturedBearerMatchedAtForward": true,
+      "forwardedAtUtc": "2026-10-25T01:12:00.840Z"
+    },
+    {
+      "id": "6590e093-d35a-4a20-9865-420ef36e173a",
+      "method": "GET",
+      "pathHash": "ca42491adedb5e5909bbea37098323d62f2540ebfa76f8f6c1e7724556c003d9",
+      "phase": "EXISTING_TARGET_ROLE_SELECTION",
+      "loginIndex": 0,
+      "canonicalAtStart": true,
+      "requiredCanonical": false,
+      "forwarded": true,
+      "canonicalAtForward": true,
+      "capturedBearerMatchedAtForward": true,
+      "forwardedAtUtc": "2026-10-25T01:12:00.856Z"
+    },
+    {
+      "id": "b57129e3-f887-48b8-98a8-f6dc5d537a10",
+      "method": "GET",
+      "pathHash": "ca42491adedb5e5909bbea37098323d62f2540ebfa76f8f6c1e7724556c003d9",
+      "phase": "EXISTING_TARGET_ROLE_SELECTION",
+      "loginIndex": 0,
+      "canonicalAtStart": true,
+      "requiredCanonical": false,
+      "forwarded": true,
+      "canonicalAtForward": true,
+      "capturedBearerMatchedAtForward": true,
+      "forwardedAtUtc": "2026-10-25T01:12:00.864Z"
+    },
+    {
+      "id": "2725e383-ca8c-4ada-b645-4200ac4cb759",
+      "method": "GET",
+      "pathHash": "83408c47b846c24b7a9755db2f34dea88e96cfe99ea9d13bb8172dd26ca52830",
+      "phase": "EXISTING_TARGET_ROLE_SELECTION",
+      "loginIndex": 0,
+      "canonicalAtStart": true,
+      "requiredCanonical": false,
+      "forwarded": true,
+      "canonicalAtForward": true,
+      "capturedBearerMatchedAtForward": true,
+      "forwardedAtUtc": "2026-10-25T01:12:00.874Z"
+    },
+    {
+      "id": "7deeace4-0be7-43b4-98e7-1461bb1dd607",
+      "method": "GET",
+      "pathHash": "55509024692e42fc6487314ca23f93f3ab30db096cb08ea701db696c57e5f83f",
+      "phase": "EXISTING_TARGET_ROLE_SELECTION",
+      "loginIndex": 0,
+      "canonicalAtStart": true,
+      "requiredCanonical": false,
+      "forwarded": true,
+      "canonicalAtForward": true,
+      "capturedBearerMatchedAtForward": true,
+      "forwardedAtUtc": "2026-10-25T01:12:00.881Z"
+    },
+    {
+      "id": "bb5f8088-4c79-45b0-a385-82f22a8a2e7e",
+      "method": "GET",
+      "pathHash": "43ec85474f666571a067c1bb82a601809f436f9f3ddf56fe863d0cbe976727a3",
+      "phase": "EXISTING_TARGET_ROLE_SELECTION",
+      "loginIndex": 0,
+      "canonicalAtStart": true,
+      "requiredCanonical": false,
+      "forwarded": true,
+      "canonicalAtForward": true,
+      "capturedBearerMatchedAtForward": true,
+      "forwardedAtUtc": "2026-10-25T01:12:00.890Z"
+    },
+    {
+      "id": "4fbd67b5-3f5c-47f2-90e9-08f5a35b183f",
+      "method": "GET",
+      "pathHash": "6a3ed7c33ca04a6a7e68847f792e314468b713dea9c4ece627c242271898ae23",
+      "phase": "EXISTING_TARGET_ROLE_SELECTION",
+      "loginIndex": 0,
+      "canonicalAtStart": true,
+      "requiredCanonical": false,
+      "forwarded": true,
+      "canonicalAtForward": true,
+      "capturedBearerMatchedAtForward": false,
+      "forwardedAtUtc": "2026-10-25T01:12:01.006Z"
+    },
+    {
+      "id": "cd34d47a-eb6f-4bdc-995f-09aae6622d60",
+      "method": "GET",
+      "pathHash": "5e0b19be4cca3e36015884eaa6447fd176d6459fb5aafe57282e539c20eccff6",
+      "phase": "NATIVE_READONLY_MANAGEMENT_HISTORY",
+      "loginIndex": 0,
+      "canonicalAtStart": true,
+      "requiredCanonical": false,
+      "forwarded": true,
+      "canonicalAtForward": true,
+      "capturedBearerMatchedAtForward": true,
+      "forwardedAtUtc": "2026-10-25T01:12:01.268Z"
+    },
+    {
+      "id": "78f70881-f64c-4652-9653-245ee629a6d9",
+      "method": "GET",
+      "pathHash": "66be5879ef3a006f97cdf3d9fb658d6b9ab244113bbbad159c733f0fee4efb32",
+      "phase": "NATIVE_READONLY_MANAGEMENT_HISTORY",
+      "loginIndex": 0,
+      "canonicalAtStart": true,
+      "requiredCanonical": false,
+      "forwarded": true,
+      "canonicalAtForward": true,
+      "capturedBearerMatchedAtForward": true,
+      "forwardedAtUtc": "2026-10-25T01:12:01.289Z"
+    },
+    {
+      "id": "52344c97-84ce-46ed-89f1-d6e6504edec6",
+      "method": "GET",
+      "pathHash": "ca42491adedb5e5909bbea37098323d62f2540ebfa76f8f6c1e7724556c003d9",
+      "phase": "NATIVE_READONLY_MANAGEMENT_HISTORY",
+      "loginIndex": 0,
+      "canonicalAtStart": true,
+      "requiredCanonical": false,
+      "forwarded": true,
+      "canonicalAtForward": true,
+      "capturedBearerMatchedAtForward": true,
+      "forwardedAtUtc": "2026-10-25T01:12:01.437Z"
+    },
+    {
+      "id": "b752bca5-bb2d-419f-8f92-8272592d7ed3",
+      "method": "GET",
+      "pathHash": "b05fd2eb20115510c259a188067bd51de03fb6d2c5d82ad0a85e398b9c28694f",
+      "phase": "NATIVE_READONLY_MANAGEMENT_HISTORY",
+      "loginIndex": 0,
+      "canonicalAtStart": true,
+      "requiredCanonical": false,
+      "forwarded": true,
+      "canonicalAtForward": true,
+      "capturedBearerMatchedAtForward": true,
+      "forwardedAtUtc": "2026-10-25T01:12:01.443Z"
+    },
+    {
+      "id": "640bd01b-a17f-4ca4-8405-5e88bcd9b19d",
+      "method": "GET",
+      "pathHash": "55509024692e42fc6487314ca23f93f3ab30db096cb08ea701db696c57e5f83f",
+      "phase": "NATIVE_READONLY_MANAGEMENT_HISTORY",
+      "loginIndex": 0,
+      "canonicalAtStart": true,
+      "requiredCanonical": false,
+      "forwarded": true,
+      "canonicalAtForward": true,
+      "capturedBearerMatchedAtForward": true,
+      "forwardedAtUtc": "2026-10-25T01:12:01.450Z"
+    },
+    {
+      "id": "28a88b0f-cceb-472d-8e71-e1a29ef486cc",
+      "method": "GET",
+      "pathHash": "43ec85474f666571a067c1bb82a601809f436f9f3ddf56fe863d0cbe976727a3",
+      "phase": "NATIVE_READONLY_MANAGEMENT_HISTORY",
+      "loginIndex": 0,
+      "canonicalAtStart": true,
+      "requiredCanonical": false,
+      "forwarded": true,
+      "canonicalAtForward": true,
+      "capturedBearerMatchedAtForward": true,
+      "forwardedAtUtc": "2026-10-25T01:12:01.455Z"
+    },
+    {
+      "id": "f2cac2c8-617d-4a59-8cfd-f42a3b86e560",
+      "method": "GET",
+      "pathHash": "ae39d0a8b2c329e83ea432b637de3e157dc576d2365d497de471414c530873dd",
+      "phase": "NATIVE_READONLY_MANAGEMENT_HISTORY",
+      "loginIndex": 0,
+      "canonicalAtStart": true,
+      "requiredCanonical": false,
+      "forwarded": true,
+      "canonicalAtForward": true,
+      "capturedBearerMatchedAtForward": true,
+      "forwardedAtUtc": "2026-10-25T01:12:01.584Z"
+    },
+    {
+      "id": "76fe0086-6446-40a6-a589-8c1896710348",
+      "method": "GET",
+      "pathHash": "ca42491adedb5e5909bbea37098323d62f2540ebfa76f8f6c1e7724556c003d9",
+      "phase": "NATIVE_READONLY_MANAGEMENT_HISTORY",
+      "loginIndex": 0,
+      "canonicalAtStart": true,
+      "requiredCanonical": false,
+      "forwarded": true,
+      "canonicalAtForward": true,
+      "capturedBearerMatchedAtForward": true,
+      "forwardedAtUtc": "2026-10-25T01:12:01.866Z"
+    },
+    {
+      "id": "2de3ec14-b460-42dd-a5f8-3040c9967b27",
+      "method": "GET",
+      "pathHash": "b05fd2eb20115510c259a188067bd51de03fb6d2c5d82ad0a85e398b9c28694f",
+      "phase": "NATIVE_READONLY_MANAGEMENT_HISTORY",
+      "loginIndex": 0,
+      "canonicalAtStart": true,
+      "requiredCanonical": false,
+      "forwarded": true,
+      "canonicalAtForward": true,
+      "capturedBearerMatchedAtForward": true,
+      "forwardedAtUtc": "2026-10-25T01:12:01.878Z"
+    },
+    {
+      "id": "83ef1dfe-1229-4b9e-b819-1800eac13861",
+      "method": "GET",
+      "pathHash": "55509024692e42fc6487314ca23f93f3ab30db096cb08ea701db696c57e5f83f",
+      "phase": "NATIVE_READONLY_MANAGEMENT_HISTORY",
+      "loginIndex": 0,
+      "canonicalAtStart": true,
+      "requiredCanonical": false,
+      "forwarded": true,
+      "canonicalAtForward": true,
+      "capturedBearerMatchedAtForward": true,
+      "forwardedAtUtc": "2026-10-25T01:12:01.887Z"
+    },
+    {
+      "id": "8f775a40-b0b2-4363-a4a2-086d798d5e79",
+      "method": "GET",
+      "pathHash": "43ec85474f666571a067c1bb82a601809f436f9f3ddf56fe863d0cbe976727a3",
+      "phase": "NATIVE_READONLY_MANAGEMENT_HISTORY",
+      "loginIndex": 0,
+      "canonicalAtStart": true,
+      "requiredCanonical": false,
+      "forwarded": true,
+      "canonicalAtForward": true,
+      "capturedBearerMatchedAtForward": true,
+      "forwardedAtUtc": "2026-10-25T01:12:01.896Z"
+    },
+    {
+      "id": "9df0cc7f-6ef6-4c57-933c-cfefeb9309e3",
+      "method": "GET",
+      "pathHash": "ae39d0a8b2c329e83ea432b637de3e157dc576d2365d497de471414c530873dd",
+      "phase": "NATIVE_READONLY_MANAGEMENT_HISTORY",
+      "loginIndex": 0,
+      "canonicalAtStart": true,
+      "requiredCanonical": false,
+      "forwarded": true,
+      "canonicalAtForward": true,
+      "capturedBearerMatchedAtForward": true,
+      "forwardedAtUtc": "2026-10-25T01:12:02.009Z"
+    },
+    {
+      "id": "daf6fb91-67fb-4e41-a494-6b5336f6f8c2",
+      "method": "GET",
+      "path": "/api/attendance/reports/lesson/:id/actions",
+      "lessonId": 3,
+      "phase": "NATIVE_READONLY_MANAGEMENT_HISTORY",
+      "loginIndex": 0,
+      "canonicalAtStart": true,
+      "requiredCanonical": false,
+      "forwarded": true,
+      "canonicalAtForward": true,
+      "capturedBearerMatchedAtForward": true,
+      "forwardedAtUtc": "2026-10-25T01:12:02.228Z"
+    }
+  ],
+  "requestFailures": [],
+  "readIncomplete": [],
+  "historicalOwnReadonly": [],
+  "device": {
+    "readsObserved": 2,
+    "putsForwarded": 0
+  },
+  "cleanup": {
+    "method": "TECHNICAL_EXACT_CURRENT_OWN_SELF_SESSION_DELETE",
+    "nativeUiLogoutPass": false,
+    "selfDeleteForwarded": 1,
+    "status": 204,
+    "sameOldBearerStatus": 401,
+    "confirmed": true,
+    "fallbackUsed": false,
+    "intent": "RETURNED"
+  },
+  "captureComplete": true,
+  "completed": true,
+  "syntheticApiResponses": false,
+  "functionalActionsAdded": 0,
+  "exactOwnHandlesCaptured": [
+    true
+  ],
+  "unknownHold": false,
+  "caseVersion": "v2-agenda-readiness",
+  "readinessRequestBounds": [
+    {
+      "requestId": "4833f8e1-1358-47a0-a171-d5ae05f31da4",
+      "path": "/api/auth/refresh",
+      "method": "POST",
+      "requestStartedAtUtc": "2026-10-25T01:11:59.430Z",
+      "requestStartedPhase": "BOOTSTRAP",
+      "loginIndex": 0,
+      "roleAtRequestStart": {
+        "localRolePutEpoch": 0,
+        "initialOwnCaptured": false,
+        "targetRoleCaptured": false,
+        "targetAdmitted": false
+      },
+      "responseHeadersAtUtc": "2026-10-25T01:11:59.499Z",
+      "status": 401,
+      "localPhaseAtHeaders": "BOOTSTRAP",
+      "selfDeleteForwardedAtHeaders": 0,
+      "cleanupStatusAtHeaders": null,
+      "roleAtResponseHeaders": {
+        "localRolePutEpoch": 0,
+        "initialOwnCaptured": false,
+        "targetRoleCaptured": false,
+        "targetAdmitted": false
+      },
+      "crossedLocalRolePutEpoch": false,
+      "capturedBearerMatchedAtForward": false,
+      "canonicalAtForward": false,
+      "terminalEvent": "requestfinished",
+      "terminalObservedAtUtc": "2026-10-25T01:11:59.507Z",
+      "localPhaseAtTerminalEvent": "BOOTSTRAP",
+      "roleAtTerminalEvent": {
+        "localRolePutEpoch": 0,
+        "initialOwnCaptured": false,
+        "targetRoleCaptured": false,
+        "targetAdmitted": false
+      }
+    },
+    {
+      "requestId": "5c1f7baa-f435-4b0f-9887-5a8ca990b6fa",
+      "path": "/api/auth/login",
+      "method": "POST",
+      "requestStartedAtUtc": "2026-10-25T01:11:59.629Z",
+      "requestStartedPhase": "LOGIN_0",
+      "loginIndex": 0,
+      "roleAtRequestStart": {
+        "localRolePutEpoch": 0,
+        "initialOwnCaptured": false,
+        "targetRoleCaptured": false,
+        "targetAdmitted": false
+      },
+      "responseHeadersAtUtc": "2026-10-25T01:11:59.827Z",
+      "status": 200,
+      "localPhaseAtHeaders": "LOGIN_0",
+      "selfDeleteForwardedAtHeaders": 0,
+      "cleanupStatusAtHeaders": null,
+      "roleAtResponseHeaders": {
+        "localRolePutEpoch": 0,
+        "initialOwnCaptured": false,
+        "targetRoleCaptured": false,
+        "targetAdmitted": false
+      },
+      "crossedLocalRolePutEpoch": false,
+      "capturedBearerMatchedAtForward": false,
+      "canonicalAtForward": false,
+      "terminalEvent": "requestfinished",
+      "terminalObservedAtUtc": "2026-10-25T01:11:59.840Z",
+      "localPhaseAtTerminalEvent": "LOGIN_0",
+      "roleAtTerminalEvent": {
+        "localRolePutEpoch": 0,
+        "initialOwnCaptured": false,
+        "targetRoleCaptured": false,
+        "targetAdmitted": false
+      }
+    },
+    {
+      "requestId": "a85af94e-66a2-4afd-a390-02b0bdabe1ce",
+      "path": "/api/auth/session",
+      "method": "GET",
+      "requestStartedAtUtc": "2026-10-25T01:11:59.844Z",
+      "requestStartedPhase": "LOGIN_0",
+      "loginIndex": 0,
+      "roleAtRequestStart": {
+        "localRolePutEpoch": 0,
+        "initialOwnCaptured": false,
+        "targetRoleCaptured": false,
+        "targetAdmitted": false
+      },
+      "responseHeadersAtUtc": "2026-10-25T01:11:59.903Z",
+      "status": 200,
+      "localPhaseAtHeaders": "LOGIN_0",
+      "selfDeleteForwardedAtHeaders": 0,
+      "cleanupStatusAtHeaders": null,
+      "roleAtResponseHeaders": {
+        "localRolePutEpoch": 0,
+        "initialOwnCaptured": false,
+        "targetRoleCaptured": false,
+        "targetAdmitted": false
+      },
+      "crossedLocalRolePutEpoch": false,
+      "capturedBearerMatchedAtForward": true,
+      "canonicalAtForward": false,
+      "terminalEvent": "requestfinished",
+      "terminalObservedAtUtc": "2026-10-25T01:11:59.910Z",
+      "localPhaseAtTerminalEvent": "LOGIN_0",
+      "roleAtTerminalEvent": {
+        "localRolePutEpoch": 0,
+        "initialOwnCaptured": false,
+        "targetRoleCaptured": false,
+        "targetAdmitted": false
+      }
+    },
+    {
+      "requestId": "c45e26a8-b655-41ee-906d-6bf507364750",
+      "pathHash": "66be5879ef3a006f97cdf3d9fb658d6b9ab244113bbbad159c733f0fee4efb32",
+      "method": "GET",
+      "requestStartedAtUtc": "2026-10-25T01:11:59.912Z",
+      "requestStartedPhase": "LOGIN_0",
+      "loginIndex": 0,
+      "roleAtRequestStart": {
+        "localRolePutEpoch": 0,
+        "initialOwnCaptured": false,
+        "targetRoleCaptured": false,
+        "targetAdmitted": false
+      },
+      "responseHeadersAtUtc": "2026-10-25T01:12:00.008Z",
+      "status": 200,
+      "localPhaseAtHeaders": "LOGIN_0",
+      "selfDeleteForwardedAtHeaders": 0,
+      "cleanupStatusAtHeaders": null,
+      "roleAtResponseHeaders": {
+        "localRolePutEpoch": 0,
+        "initialOwnCaptured": false,
+        "targetRoleCaptured": false,
+        "targetAdmitted": false
+      },
+      "crossedLocalRolePutEpoch": false,
+      "capturedBearerMatchedAtForward": true,
+      "canonicalAtForward": true,
+      "terminalEvent": "requestfinished",
+      "terminalObservedAtUtc": "2026-10-25T01:12:00.009Z",
+      "localPhaseAtTerminalEvent": "LOGIN_0",
+      "roleAtTerminalEvent": {
+        "localRolePutEpoch": 0,
+        "initialOwnCaptured": false,
+        "targetRoleCaptured": false,
+        "targetAdmitted": false
+      }
+    },
+    {
+      "requestId": "1fc6f0d4-acf3-4684-8963-b8b1c6904f3d",
+      "pathHash": "61e6038f2d3a6dfcdc1b123b37cd7efa3c98f1c6b3dd0aa7d2c060f38f8ed3f2",
+      "method": "GET",
+      "requestStartedAtUtc": "2026-10-25T01:11:59.918Z",
+      "requestStartedPhase": "LOGIN_0",
+      "loginIndex": 0,
+      "roleAtRequestStart": {
+        "localRolePutEpoch": 0,
+        "initialOwnCaptured": false,
+        "targetRoleCaptured": false,
+        "targetAdmitted": false
+      },
+      "responseHeadersAtUtc": "2026-10-25T01:12:00.050Z",
+      "status": 200,
+      "localPhaseAtHeaders": "LOGIN_0",
+      "selfDeleteForwardedAtHeaders": 0,
+      "cleanupStatusAtHeaders": null,
+      "roleAtResponseHeaders": {
+        "localRolePutEpoch": 0,
+        "initialOwnCaptured": false,
+        "targetRoleCaptured": false,
+        "targetAdmitted": false
+      },
+      "crossedLocalRolePutEpoch": false,
+      "capturedBearerMatchedAtForward": true,
+      "canonicalAtForward": true,
+      "terminalEvent": "requestfinished",
+      "terminalObservedAtUtc": "2026-10-25T01:12:00.051Z",
+      "localPhaseAtTerminalEvent": "LOGIN_0",
+      "roleAtTerminalEvent": {
+        "localRolePutEpoch": 0,
+        "initialOwnCaptured": false,
+        "targetRoleCaptured": false,
+        "targetAdmitted": false
+      }
+    },
+    {
+      "requestId": "3d5f9f8f-9a5b-44ce-a355-91f5b72af146",
+      "path": "/api/auth/device-preferences",
+      "method": "GET",
+      "requestStartedAtUtc": "2026-10-25T01:11:59.922Z",
+      "requestStartedPhase": "LOGIN_0",
+      "loginIndex": 0,
+      "roleAtRequestStart": {
+        "localRolePutEpoch": 0,
+        "initialOwnCaptured": false,
+        "targetRoleCaptured": false,
+        "targetAdmitted": false
+      },
+      "responseHeadersAtUtc": "2026-10-25T01:11:59.987Z",
+      "status": 200,
+      "localPhaseAtHeaders": "LOGIN_0",
+      "selfDeleteForwardedAtHeaders": 0,
+      "cleanupStatusAtHeaders": null,
+      "roleAtResponseHeaders": {
+        "localRolePutEpoch": 0,
+        "initialOwnCaptured": false,
+        "targetRoleCaptured": false,
+        "targetAdmitted": false
+      },
+      "crossedLocalRolePutEpoch": false,
+      "capturedBearerMatchedAtForward": true,
+      "canonicalAtForward": true,
+      "terminalEvent": "requestfinished",
+      "terminalObservedAtUtc": "2026-10-25T01:12:00.004Z",
+      "localPhaseAtTerminalEvent": "LOGIN_0",
+      "roleAtTerminalEvent": {
+        "localRolePutEpoch": 0,
+        "initialOwnCaptured": false,
+        "targetRoleCaptured": false,
+        "targetAdmitted": false
+      }
+    },
+    {
+      "requestId": "9eaf9d11-a541-4ffb-8a62-ce8d0092761e",
+      "pathHash": "6cb55e97fef19735195b0020d5dd6545645efc7bc46a1d989e5cdbbf8b251030",
+      "method": "GET",
+      "requestStartedAtUtc": "2026-10-25T01:12:00.054Z",
+      "requestStartedPhase": "LOGIN_0",
+      "loginIndex": 0,
+      "roleAtRequestStart": {
+        "localRolePutEpoch": 0,
+        "initialOwnCaptured": false,
+        "targetRoleCaptured": false,
+        "targetAdmitted": false
+      },
+      "responseHeadersAtUtc": "2026-10-25T01:12:00.107Z",
+      "status": 200,
+      "localPhaseAtHeaders": "EXISTING_TARGET_ROLE_SELECTION",
+      "selfDeleteForwardedAtHeaders": 0,
+      "cleanupStatusAtHeaders": null,
+      "roleAtResponseHeaders": {
+        "localRolePutEpoch": 0,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": false,
+        "targetAdmitted": false
+      },
+      "crossedLocalRolePutEpoch": false,
+      "capturedBearerMatchedAtForward": true,
+      "canonicalAtForward": true,
+      "terminalEvent": "requestfinished",
+      "terminalObservedAtUtc": "2026-10-25T01:12:00.109Z",
+      "localPhaseAtTerminalEvent": "EXISTING_TARGET_ROLE_SELECTION",
+      "roleAtTerminalEvent": {
+        "localRolePutEpoch": 0,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": false,
+        "targetAdmitted": false
+      }
+    },
+    {
+      "requestId": "2046d6e5-bc13-47bd-b386-5af651d251ef",
+      "pathHash": "8523bff54cc369633b19fc3d5d401c2750a6a0f69ad7844d9eb5045c1769e1cf",
+      "method": "GET",
+      "requestStartedAtUtc": "2026-10-25T01:12:00.116Z",
+      "requestStartedPhase": "EXISTING_TARGET_ROLE_SELECTION",
+      "loginIndex": 0,
+      "roleAtRequestStart": {
+        "localRolePutEpoch": 0,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": false,
+        "targetAdmitted": false
+      },
+      "responseHeadersAtUtc": "2026-10-25T01:12:00.181Z",
+      "status": 200,
+      "localPhaseAtHeaders": "EXISTING_TARGET_ROLE_SELECTION",
+      "selfDeleteForwardedAtHeaders": 0,
+      "cleanupStatusAtHeaders": null,
+      "roleAtResponseHeaders": {
+        "localRolePutEpoch": 0,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": false,
+        "targetAdmitted": false
+      },
+      "crossedLocalRolePutEpoch": false,
+      "capturedBearerMatchedAtForward": true,
+      "canonicalAtForward": true,
+      "terminalEvent": "requestfinished",
+      "terminalObservedAtUtc": "2026-10-25T01:12:00.182Z",
+      "localPhaseAtTerminalEvent": "EXISTING_TARGET_ROLE_SELECTION",
+      "roleAtTerminalEvent": {
+        "localRolePutEpoch": 0,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": false,
+        "targetAdmitted": false
+      }
+    },
+    {
+      "requestId": "b0801276-99d9-4783-b15c-9da027041423",
+      "path": "/api/auth/ws-ticket",
+      "method": "POST",
+      "requestStartedAtUtc": "2026-10-25T01:12:00.213Z",
+      "requestStartedPhase": "EXISTING_TARGET_ROLE_SELECTION",
+      "loginIndex": 0,
+      "roleAtRequestStart": {
+        "localRolePutEpoch": 0,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": false,
+        "targetAdmitted": false
+      },
+      "responseHeadersAtUtc": "2026-10-25T01:12:00.262Z",
+      "status": 200,
+      "localPhaseAtHeaders": "EXISTING_TARGET_ROLE_SELECTION",
+      "selfDeleteForwardedAtHeaders": 0,
+      "cleanupStatusAtHeaders": null,
+      "roleAtResponseHeaders": {
+        "localRolePutEpoch": 0,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": false,
+        "targetAdmitted": false
+      },
+      "crossedLocalRolePutEpoch": false,
+      "capturedBearerMatchedAtForward": true,
+      "canonicalAtForward": true,
+      "terminalEvent": "requestfinished",
+      "terminalObservedAtUtc": "2026-10-25T01:12:00.265Z",
+      "localPhaseAtTerminalEvent": "EXISTING_TARGET_ROLE_SELECTION",
+      "roleAtTerminalEvent": {
+        "localRolePutEpoch": 0,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": false,
+        "targetAdmitted": false
+      }
+    },
+    {
+      "requestId": "175d6e8b-f010-48f7-b352-8d224e4801cc",
+      "pathHash": "4d1d330e1b27d01a8987f9f6545abad0d8974bcda7dfe864a5c5575d67e1871a",
+      "method": "GET",
+      "requestStartedAtUtc": "2026-10-25T01:12:00.220Z",
+      "requestStartedPhase": "EXISTING_TARGET_ROLE_SELECTION",
+      "loginIndex": 0,
+      "roleAtRequestStart": {
+        "localRolePutEpoch": 0,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": false,
+        "targetAdmitted": false
+      },
+      "responseHeadersAtUtc": "2026-10-25T01:12:00.497Z",
+      "status": 200,
+      "localPhaseAtHeaders": "EXISTING_TARGET_ROLE_SELECTION",
+      "selfDeleteForwardedAtHeaders": 0,
+      "cleanupStatusAtHeaders": null,
+      "roleAtResponseHeaders": {
+        "localRolePutEpoch": 0,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": false,
+        "targetAdmitted": false
+      },
+      "crossedLocalRolePutEpoch": false,
+      "capturedBearerMatchedAtForward": true,
+      "canonicalAtForward": true,
+      "terminalEvent": "requestfinished",
+      "terminalObservedAtUtc": "2026-10-25T01:12:00.499Z",
+      "localPhaseAtTerminalEvent": "EXISTING_TARGET_ROLE_SELECTION",
+      "roleAtTerminalEvent": {
+        "localRolePutEpoch": 0,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": false,
+        "targetAdmitted": false
+      }
+    },
+    {
+      "requestId": "93b955ef-aa0b-4929-b4c0-eb2966d1eed6",
+      "pathHash": "f3c86055724948219ffaedb2ba9d52d644c538d765a16899418a3476b860c86c",
+      "method": "GET",
+      "requestStartedAtUtc": "2026-10-25T01:12:00.225Z",
+      "requestStartedPhase": "EXISTING_TARGET_ROLE_SELECTION",
+      "loginIndex": 0,
+      "roleAtRequestStart": {
+        "localRolePutEpoch": 0,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": false,
+        "targetAdmitted": false
+      },
+      "responseHeadersAtUtc": "2026-10-25T01:12:00.391Z",
+      "status": 200,
+      "localPhaseAtHeaders": "EXISTING_TARGET_ROLE_SELECTION",
+      "selfDeleteForwardedAtHeaders": 0,
+      "cleanupStatusAtHeaders": null,
+      "roleAtResponseHeaders": {
+        "localRolePutEpoch": 0,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": false,
+        "targetAdmitted": false
+      },
+      "crossedLocalRolePutEpoch": false,
+      "capturedBearerMatchedAtForward": true,
+      "canonicalAtForward": true,
+      "terminalEvent": "requestfinished",
+      "terminalObservedAtUtc": "2026-10-25T01:12:00.395Z",
+      "localPhaseAtTerminalEvent": "EXISTING_TARGET_ROLE_SELECTION",
+      "roleAtTerminalEvent": {
+        "localRolePutEpoch": 0,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": false,
+        "targetAdmitted": false
+      }
+    },
+    {
+      "requestId": "560f8a91-3654-41bd-9efe-ae05eaad5bb8",
+      "pathHash": "348ca1e77d2a6d2ce796f712240178c32249592998c418b61a79c2525e71190a",
+      "method": "GET",
+      "requestStartedAtUtc": "2026-10-25T01:12:00.232Z",
+      "requestStartedPhase": "EXISTING_TARGET_ROLE_SELECTION",
+      "loginIndex": 0,
+      "roleAtRequestStart": {
+        "localRolePutEpoch": 0,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": false,
+        "targetAdmitted": false
+      },
+      "terminalEvent": "requestfailed",
+      "terminalObservedAtUtc": "2026-10-25T01:12:00.653Z",
+      "localPhaseAtTerminalEvent": "EXISTING_TARGET_ROLE_SELECTION",
+      "roleAtTerminalEvent": {
+        "localRolePutEpoch": 1,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": false,
+        "targetAdmitted": false
+      },
+      "safeFailureCategory": "ABORTED"
+    },
+    {
+      "requestId": "b4f20a23-ab5a-4633-8210-e8d7d8b12c86",
+      "pathHash": "bba9abf800ba68da4d32a6f5d51ea74d9c0834a339a04afa3cee3d231af58292",
+      "method": "GET",
+      "requestStartedAtUtc": "2026-10-25T01:12:00.242Z",
+      "requestStartedPhase": "EXISTING_TARGET_ROLE_SELECTION",
+      "loginIndex": 0,
+      "roleAtRequestStart": {
+        "localRolePutEpoch": 0,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": false,
+        "targetAdmitted": false
+      },
+      "terminalEvent": "requestfailed",
+      "terminalObservedAtUtc": "2026-10-25T01:12:00.656Z",
+      "localPhaseAtTerminalEvent": "EXISTING_TARGET_ROLE_SELECTION",
+      "roleAtTerminalEvent": {
+        "localRolePutEpoch": 1,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": false,
+        "targetAdmitted": false
+      },
+      "safeFailureCategory": "ABORTED"
+    },
+    {
+      "requestId": "0eb168a0-277f-41d1-b4a0-f345125f8b3c",
+      "pathHash": "a199efda1ba605e3869a7a8cf1051f597e455b2a0c519486f387bc64eeb5869a",
+      "method": "GET",
+      "requestStartedAtUtc": "2026-10-25T01:12:00.254Z",
+      "requestStartedPhase": "EXISTING_TARGET_ROLE_SELECTION",
+      "loginIndex": 0,
+      "roleAtRequestStart": {
+        "localRolePutEpoch": 0,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": false,
+        "targetAdmitted": false
+      },
+      "responseHeadersAtUtc": "2026-10-25T01:12:00.589Z",
+      "status": 200,
+      "localPhaseAtHeaders": "EXISTING_TARGET_ROLE_SELECTION",
+      "selfDeleteForwardedAtHeaders": 0,
+      "cleanupStatusAtHeaders": null,
+      "roleAtResponseHeaders": {
+        "localRolePutEpoch": 0,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": false,
+        "targetAdmitted": false
+      },
+      "crossedLocalRolePutEpoch": false,
+      "capturedBearerMatchedAtForward": true,
+      "canonicalAtForward": true,
+      "terminalEvent": "requestfinished",
+      "terminalObservedAtUtc": "2026-10-25T01:12:00.592Z",
+      "localPhaseAtTerminalEvent": "EXISTING_TARGET_ROLE_SELECTION",
+      "roleAtTerminalEvent": {
+        "localRolePutEpoch": 0,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": false,
+        "targetAdmitted": false
+      }
+    },
+    {
+      "requestId": "6cc7e8e1-6ff2-4856-b286-699d8b4fe1d8",
+      "pathHash": "6a3ed7c33ca04a6a7e68847f792e314468b713dea9c4ece627c242271898ae23",
+      "method": "GET",
+      "requestStartedAtUtc": "2026-10-25T01:12:00.269Z",
+      "requestStartedPhase": "EXISTING_TARGET_ROLE_SELECTION",
+      "loginIndex": 0,
+      "roleAtRequestStart": {
+        "localRolePutEpoch": 0,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": false,
+        "targetAdmitted": false
+      },
+      "responseHeadersAtUtc": "2026-10-25T01:12:00.304Z",
+      "status": 200,
+      "localPhaseAtHeaders": "EXISTING_TARGET_ROLE_SELECTION",
+      "selfDeleteForwardedAtHeaders": 0,
+      "cleanupStatusAtHeaders": null,
+      "roleAtResponseHeaders": {
+        "localRolePutEpoch": 0,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": false,
+        "targetAdmitted": false
+      },
+      "crossedLocalRolePutEpoch": false,
+      "capturedBearerMatchedAtForward": false,
+      "canonicalAtForward": true,
+      "terminalEvent": "requestfinished",
+      "terminalObservedAtUtc": "2026-10-25T01:12:00.305Z",
+      "localPhaseAtTerminalEvent": "EXISTING_TARGET_ROLE_SELECTION",
+      "roleAtTerminalEvent": {
+        "localRolePutEpoch": 0,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": false,
+        "targetAdmitted": false
+      }
+    },
+    {
+      "requestId": "9b6c2932-808c-42bf-bb2e-e77019e77288",
+      "path": "/api/auth/session",
+      "method": "GET",
+      "requestStartedAtUtc": "2026-10-25T01:12:00.333Z",
+      "requestStartedPhase": "EXISTING_TARGET_ROLE_SELECTION",
+      "loginIndex": 0,
+      "roleAtRequestStart": {
+        "localRolePutEpoch": 0,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": false,
+        "targetAdmitted": false
+      },
+      "responseHeadersAtUtc": "2026-10-25T01:12:00.426Z",
+      "status": 200,
+      "localPhaseAtHeaders": "EXISTING_TARGET_ROLE_SELECTION",
+      "selfDeleteForwardedAtHeaders": 0,
+      "cleanupStatusAtHeaders": null,
+      "roleAtResponseHeaders": {
+        "localRolePutEpoch": 0,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": false,
+        "targetAdmitted": false
+      },
+      "crossedLocalRolePutEpoch": false,
+      "capturedBearerMatchedAtForward": true,
+      "canonicalAtForward": true,
+      "terminalEvent": "requestfinished",
+      "terminalObservedAtUtc": "2026-10-25T01:12:00.436Z",
+      "localPhaseAtTerminalEvent": "EXISTING_TARGET_ROLE_SELECTION",
+      "roleAtTerminalEvent": {
+        "localRolePutEpoch": 0,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": false,
+        "targetAdmitted": false
+      }
+    },
+    {
+      "requestId": "bf8ce7e8-d0a1-4d0d-a481-9333c3c2390d",
+      "pathHash": "66be5879ef3a006f97cdf3d9fb658d6b9ab244113bbbad159c733f0fee4efb32",
+      "method": "GET",
+      "requestStartedAtUtc": "2026-10-25T01:12:00.412Z",
+      "requestStartedPhase": "EXISTING_TARGET_ROLE_SELECTION",
+      "loginIndex": 0,
+      "roleAtRequestStart": {
+        "localRolePutEpoch": 0,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": false,
+        "targetAdmitted": false
+      },
+      "responseHeadersAtUtc": "2026-10-25T01:12:00.490Z",
+      "status": 200,
+      "localPhaseAtHeaders": "EXISTING_TARGET_ROLE_SELECTION",
+      "selfDeleteForwardedAtHeaders": 0,
+      "cleanupStatusAtHeaders": null,
+      "roleAtResponseHeaders": {
+        "localRolePutEpoch": 0,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": false,
+        "targetAdmitted": false
+      },
+      "crossedLocalRolePutEpoch": false,
+      "capturedBearerMatchedAtForward": true,
+      "canonicalAtForward": true,
+      "terminalEvent": "requestfinished",
+      "terminalObservedAtUtc": "2026-10-25T01:12:00.492Z",
+      "localPhaseAtTerminalEvent": "EXISTING_TARGET_ROLE_SELECTION",
+      "roleAtTerminalEvent": {
+        "localRolePutEpoch": 0,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": false,
+        "targetAdmitted": false
+      }
+    },
+    {
+      "requestId": "7eed7150-1667-457f-98ef-1caa78f89255",
+      "path": "/api/academic/users/me",
+      "method": "GET",
+      "requestStartedAtUtc": "2026-10-25T01:12:00.440Z",
+      "requestStartedPhase": "EXISTING_TARGET_ROLE_SELECTION",
+      "loginIndex": 0,
+      "roleAtRequestStart": {
+        "localRolePutEpoch": 0,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": false,
+        "targetAdmitted": false
+      },
+      "responseHeadersAtUtc": "2026-10-25T01:12:00.539Z",
+      "status": 200,
+      "localPhaseAtHeaders": "EXISTING_TARGET_ROLE_SELECTION",
+      "selfDeleteForwardedAtHeaders": 0,
+      "cleanupStatusAtHeaders": null,
+      "roleAtResponseHeaders": {
+        "localRolePutEpoch": 0,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": false,
+        "targetAdmitted": false
+      },
+      "crossedLocalRolePutEpoch": false,
+      "capturedBearerMatchedAtForward": true,
+      "canonicalAtForward": true,
+      "terminalEvent": "requestfinished",
+      "terminalObservedAtUtc": "2026-10-25T01:12:00.543Z",
+      "localPhaseAtTerminalEvent": "EXISTING_TARGET_ROLE_SELECTION",
+      "roleAtTerminalEvent": {
+        "localRolePutEpoch": 0,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": false,
+        "targetAdmitted": false
+      }
+    },
+    {
+      "requestId": "e504a516-1e82-485f-be6e-fd6c4a463bf4",
+      "path": "/api/auth/session/active-role",
+      "method": "PUT",
+      "requestStartedAtUtc": "2026-10-25T01:12:00.643Z",
+      "requestStartedPhase": "EXISTING_TARGET_ROLE_SELECTION",
+      "loginIndex": 0,
+      "roleAtRequestStart": {
+        "localRolePutEpoch": 0,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": false,
+        "targetAdmitted": false
+      },
+      "responseHeadersAtUtc": "2026-10-25T01:12:00.726Z",
+      "status": 200,
+      "localPhaseAtHeaders": "EXISTING_TARGET_ROLE_SELECTION",
+      "selfDeleteForwardedAtHeaders": 0,
+      "cleanupStatusAtHeaders": null,
+      "roleAtResponseHeaders": {
+        "localRolePutEpoch": 1,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": false,
+        "targetAdmitted": false
+      },
+      "crossedLocalRolePutEpoch": true,
+      "capturedBearerMatchedAtForward": true,
+      "canonicalAtForward": true,
+      "terminalEvent": "requestfinished",
+      "terminalObservedAtUtc": "2026-10-25T01:12:00.736Z",
+      "localPhaseAtTerminalEvent": "EXISTING_TARGET_ROLE_SELECTION",
+      "roleAtTerminalEvent": {
+        "localRolePutEpoch": 1,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": false,
+        "targetAdmitted": false
+      }
+    },
+    {
+      "requestId": "d713062a-d13d-4b1d-812e-5eb2abd805e6",
+      "pathHash": "66be5879ef3a006f97cdf3d9fb658d6b9ab244113bbbad159c733f0fee4efb32",
+      "method": "GET",
+      "requestStartedAtUtc": "2026-10-25T01:12:00.742Z",
+      "requestStartedPhase": "EXISTING_TARGET_ROLE_SELECTION",
+      "loginIndex": 0,
+      "roleAtRequestStart": {
+        "localRolePutEpoch": 1,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": false,
+        "targetAdmitted": false
+      },
+      "responseHeadersAtUtc": "2026-10-25T01:12:00.894Z",
+      "status": 409,
+      "localPhaseAtHeaders": "EXISTING_TARGET_ROLE_SELECTION",
+      "selfDeleteForwardedAtHeaders": 0,
+      "cleanupStatusAtHeaders": null,
+      "roleAtResponseHeaders": {
+        "localRolePutEpoch": 1,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": true,
+        "targetAdmitted": false
+      },
+      "crossedLocalRolePutEpoch": false,
+      "capturedBearerMatchedAtForward": false,
+      "canonicalAtForward": true
+    },
+    {
+      "requestId": "cda38815-9a47-4c20-bcdb-c3b232e14955",
+      "path": "/api/auth/ws-ticket",
+      "method": "POST",
+      "requestStartedAtUtc": "2026-10-25T01:12:00.747Z",
+      "requestStartedPhase": "EXISTING_TARGET_ROLE_SELECTION",
+      "loginIndex": 0,
+      "roleAtRequestStart": {
+        "localRolePutEpoch": 1,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": false,
+        "targetAdmitted": false
+      },
+      "responseHeadersAtUtc": "2026-10-25T01:12:00.898Z",
+      "status": 409,
+      "localPhaseAtHeaders": "EXISTING_TARGET_ROLE_SELECTION",
+      "selfDeleteForwardedAtHeaders": 0,
+      "cleanupStatusAtHeaders": null,
+      "roleAtResponseHeaders": {
+        "localRolePutEpoch": 1,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": true,
+        "targetAdmitted": false
+      },
+      "crossedLocalRolePutEpoch": false,
+      "capturedBearerMatchedAtForward": false,
+      "canonicalAtForward": true
+    },
+    {
+      "requestId": "60762bd4-310a-4fda-a7ad-c64f3287cb73",
+      "path": "/api/auth/device-preferences",
+      "method": "GET",
+      "requestStartedAtUtc": "2026-10-25T01:12:00.752Z",
+      "requestStartedPhase": "EXISTING_TARGET_ROLE_SELECTION",
+      "loginIndex": 0,
+      "roleAtRequestStart": {
+        "localRolePutEpoch": 1,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": false,
+        "targetAdmitted": false
+      },
+      "responseHeadersAtUtc": "2026-10-25T01:12:00.913Z",
+      "status": 200,
+      "localPhaseAtHeaders": "EXISTING_TARGET_ROLE_SELECTION",
+      "selfDeleteForwardedAtHeaders": 0,
+      "cleanupStatusAtHeaders": null,
+      "roleAtResponseHeaders": {
+        "localRolePutEpoch": 1,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": true,
+        "targetAdmitted": false
+      },
+      "crossedLocalRolePutEpoch": false,
+      "capturedBearerMatchedAtForward": true,
+      "canonicalAtForward": true,
+      "terminalEvent": "requestfinished",
+      "terminalObservedAtUtc": "2026-10-25T01:12:00.922Z",
+      "localPhaseAtTerminalEvent": "EXISTING_TARGET_ROLE_SELECTION",
+      "roleAtTerminalEvent": {
+        "localRolePutEpoch": 1,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": true,
+        "targetAdmitted": false
+      }
+    },
+    {
+      "requestId": "c9560296-5e87-4d6f-9d33-d810e6f296e8",
+      "pathHash": "66be5879ef3a006f97cdf3d9fb658d6b9ab244113bbbad159c733f0fee4efb32",
+      "method": "GET",
+      "requestStartedAtUtc": "2026-10-25T01:12:00.760Z",
+      "requestStartedPhase": "EXISTING_TARGET_ROLE_SELECTION",
+      "loginIndex": 0,
+      "roleAtRequestStart": {
+        "localRolePutEpoch": 1,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": false,
+        "targetAdmitted": false
+      },
+      "responseHeadersAtUtc": "2026-10-25T01:12:00.901Z",
+      "status": 200,
+      "localPhaseAtHeaders": "EXISTING_TARGET_ROLE_SELECTION",
+      "selfDeleteForwardedAtHeaders": 0,
+      "cleanupStatusAtHeaders": null,
+      "roleAtResponseHeaders": {
+        "localRolePutEpoch": 1,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": true,
+        "targetAdmitted": false
+      },
+      "crossedLocalRolePutEpoch": false,
+      "capturedBearerMatchedAtForward": true,
+      "canonicalAtForward": true,
+      "terminalEvent": "requestfinished",
+      "terminalObservedAtUtc": "2026-10-25T01:12:00.902Z",
+      "localPhaseAtTerminalEvent": "EXISTING_TARGET_ROLE_SELECTION",
+      "roleAtTerminalEvent": {
+        "localRolePutEpoch": 1,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": true,
+        "targetAdmitted": false
+      }
+    },
+    {
+      "requestId": "7bf8157b-9ddf-48ec-bf79-e36100596cd9",
+      "path": "/api/auth/ws-ticket",
+      "method": "POST",
+      "requestStartedAtUtc": "2026-10-25T01:12:00.802Z",
+      "requestStartedPhase": "EXISTING_TARGET_ROLE_SELECTION",
+      "loginIndex": 0,
+      "roleAtRequestStart": {
+        "localRolePutEpoch": 1,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": true,
+        "targetAdmitted": false
+      },
+      "responseHeadersAtUtc": "2026-10-25T01:12:00.987Z",
+      "status": 200,
+      "localPhaseAtHeaders": "EXISTING_TARGET_ROLE_SELECTION",
+      "selfDeleteForwardedAtHeaders": 0,
+      "cleanupStatusAtHeaders": null,
+      "roleAtResponseHeaders": {
+        "localRolePutEpoch": 1,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": true,
+        "targetAdmitted": false
+      },
+      "crossedLocalRolePutEpoch": false,
+      "capturedBearerMatchedAtForward": true,
+      "canonicalAtForward": true,
+      "terminalEvent": "requestfinished",
+      "terminalObservedAtUtc": "2026-10-25T01:12:00.999Z",
+      "localPhaseAtTerminalEvent": "EXISTING_TARGET_ROLE_SELECTION",
+      "roleAtTerminalEvent": {
+        "localRolePutEpoch": 1,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": true,
+        "targetAdmitted": false
+      }
+    },
+    {
+      "requestId": "3b5337c4-14e7-4008-868c-e13aa82c3a61",
+      "path": "/api/schedule/academic-week-policy",
+      "method": "GET",
+      "requestStartedAtUtc": "2026-10-25T01:12:00.815Z",
+      "requestStartedPhase": "EXISTING_TARGET_ROLE_SELECTION",
+      "loginIndex": 0,
+      "roleAtRequestStart": {
+        "localRolePutEpoch": 1,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": true,
+        "targetAdmitted": false
+      },
+      "responseHeadersAtUtc": "2026-10-25T01:12:00.961Z",
+      "status": 200,
+      "localPhaseAtHeaders": "EXISTING_TARGET_ROLE_SELECTION",
+      "selfDeleteForwardedAtHeaders": 0,
+      "cleanupStatusAtHeaders": null,
+      "roleAtResponseHeaders": {
+        "localRolePutEpoch": 1,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": true,
+        "targetAdmitted": false
+      },
+      "crossedLocalRolePutEpoch": false,
+      "capturedBearerMatchedAtForward": true,
+      "canonicalAtForward": true,
+      "terminalEvent": "requestfinished",
+      "terminalObservedAtUtc": "2026-10-25T01:12:00.966Z",
+      "localPhaseAtTerminalEvent": "EXISTING_TARGET_ROLE_SELECTION",
+      "roleAtTerminalEvent": {
+        "localRolePutEpoch": 1,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": true,
+        "targetAdmitted": false
+      }
+    },
+    {
+      "requestId": "6aeb3fbb-ce65-4a8e-a3ad-114640fdc7cf",
+      "pathHash": "05ae68882e8f40b13ee20ed093a4c8cfcadfabd2e676bd7126d6a18f157ee131",
+      "method": "GET",
+      "requestStartedAtUtc": "2026-10-25T01:12:00.825Z",
+      "requestStartedPhase": "EXISTING_TARGET_ROLE_SELECTION",
+      "loginIndex": 0,
+      "roleAtRequestStart": {
+        "localRolePutEpoch": 1,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": true,
+        "targetAdmitted": false
+      },
+      "responseHeadersAtUtc": "2026-10-25T01:12:01.207Z",
+      "status": 200,
+      "localPhaseAtHeaders": "NATIVE_READONLY_MANAGEMENT_HISTORY",
+      "selfDeleteForwardedAtHeaders": 0,
+      "cleanupStatusAtHeaders": null,
+      "roleAtResponseHeaders": {
+        "localRolePutEpoch": 1,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": true,
+        "targetAdmitted": true
+      },
+      "crossedLocalRolePutEpoch": false,
+      "capturedBearerMatchedAtForward": true,
+      "canonicalAtForward": true,
+      "terminalEvent": "requestfinished",
+      "terminalObservedAtUtc": "2026-10-25T01:12:01.210Z",
+      "localPhaseAtTerminalEvent": "NATIVE_READONLY_MANAGEMENT_HISTORY",
+      "roleAtTerminalEvent": {
+        "localRolePutEpoch": 1,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": true,
+        "targetAdmitted": true
+      }
+    },
+    {
+      "requestId": "3964a1ea-3a7c-4a2e-8c9e-e07fa4e8d756",
+      "pathHash": "05ae68882e8f40b13ee20ed093a4c8cfcadfabd2e676bd7126d6a18f157ee131",
+      "method": "GET",
+      "requestStartedAtUtc": "2026-10-25T01:12:00.837Z",
+      "requestStartedPhase": "EXISTING_TARGET_ROLE_SELECTION",
+      "loginIndex": 0,
+      "roleAtRequestStart": {
+        "localRolePutEpoch": 1,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": true,
+        "targetAdmitted": false
+      },
+      "responseHeadersAtUtc": "2026-10-25T01:12:01.099Z",
+      "status": 200,
+      "localPhaseAtHeaders": "EXISTING_TARGET_ROLE_SELECTION",
+      "selfDeleteForwardedAtHeaders": 0,
+      "cleanupStatusAtHeaders": null,
+      "roleAtResponseHeaders": {
+        "localRolePutEpoch": 1,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": true,
+        "targetAdmitted": false
+      },
+      "crossedLocalRolePutEpoch": false,
+      "capturedBearerMatchedAtForward": true,
+      "canonicalAtForward": true,
+      "terminalEvent": "requestfinished",
+      "terminalObservedAtUtc": "2026-10-25T01:12:01.113Z",
+      "localPhaseAtTerminalEvent": "EXISTING_TARGET_ROLE_SELECTION",
+      "roleAtTerminalEvent": {
+        "localRolePutEpoch": 1,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": true,
+        "targetAdmitted": false
+      }
+    },
+    {
+      "requestId": "6590e093-d35a-4a20-9865-420ef36e173a",
+      "path": "/api/schedule/groups/:id/lessons",
+      "method": "GET",
+      "requestStartedAtUtc": "2026-10-25T01:12:00.846Z",
+      "requestStartedPhase": "EXISTING_TARGET_ROLE_SELECTION",
+      "loginIndex": 0,
+      "roleAtRequestStart": {
+        "localRolePutEpoch": 1,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": true,
+        "targetAdmitted": false
+      },
+      "safeSourceDateRange": {
+        "from": "2026-10-25",
+        "to": "2026-10-25"
+      },
+      "responseHeadersAtUtc": "2026-10-25T01:12:01.079Z",
+      "status": 200,
+      "localPhaseAtHeaders": "EXISTING_TARGET_ROLE_SELECTION",
+      "selfDeleteForwardedAtHeaders": 0,
+      "cleanupStatusAtHeaders": null,
+      "roleAtResponseHeaders": {
+        "localRolePutEpoch": 1,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": true,
+        "targetAdmitted": false
+      },
+      "crossedLocalRolePutEpoch": false,
+      "capturedBearerMatchedAtForward": true,
+      "canonicalAtForward": true,
+      "terminalEvent": "requestfinished",
+      "terminalObservedAtUtc": "2026-10-25T01:12:01.081Z",
+      "localPhaseAtTerminalEvent": "EXISTING_TARGET_ROLE_SELECTION",
+      "roleAtTerminalEvent": {
+        "localRolePutEpoch": 1,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": true,
+        "targetAdmitted": false
+      }
+    },
+    {
+      "requestId": "b57129e3-f887-48b8-98a8-f6dc5d537a10",
+      "path": "/api/schedule/groups/:id/lessons",
+      "method": "GET",
+      "requestStartedAtUtc": "2026-10-25T01:12:00.860Z",
+      "requestStartedPhase": "EXISTING_TARGET_ROLE_SELECTION",
+      "loginIndex": 0,
+      "roleAtRequestStart": {
+        "localRolePutEpoch": 1,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": true,
+        "targetAdmitted": false
+      },
+      "safeSourceDateRange": {
+        "from": "2026-10-25",
+        "to": "2026-10-25"
+      },
+      "responseHeadersAtUtc": "2026-10-25T01:12:01.014Z",
+      "status": 200,
+      "localPhaseAtHeaders": "EXISTING_TARGET_ROLE_SELECTION",
+      "selfDeleteForwardedAtHeaders": 0,
+      "cleanupStatusAtHeaders": null,
+      "roleAtResponseHeaders": {
+        "localRolePutEpoch": 1,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": true,
+        "targetAdmitted": false
+      },
+      "crossedLocalRolePutEpoch": false,
+      "capturedBearerMatchedAtForward": true,
+      "canonicalAtForward": true,
+      "terminalEvent": "requestfinished",
+      "terminalObservedAtUtc": "2026-10-25T01:12:01.015Z",
+      "localPhaseAtTerminalEvent": "EXISTING_TARGET_ROLE_SELECTION",
+      "roleAtTerminalEvent": {
+        "localRolePutEpoch": 1,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": true,
+        "targetAdmitted": false
+      }
+    },
+    {
+      "requestId": "2725e383-ca8c-4ada-b645-4200ac4cb759",
+      "pathHash": "83408c47b846c24b7a9755db2f34dea88e96cfe99ea9d13bb8172dd26ca52830",
+      "method": "GET",
+      "requestStartedAtUtc": "2026-10-25T01:12:00.872Z",
+      "requestStartedPhase": "EXISTING_TARGET_ROLE_SELECTION",
+      "loginIndex": 0,
+      "roleAtRequestStart": {
+        "localRolePutEpoch": 1,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": true,
+        "targetAdmitted": false
+      },
+      "responseHeadersAtUtc": "2026-10-25T01:12:01.236Z",
+      "status": 200,
+      "localPhaseAtHeaders": "NATIVE_READONLY_MANAGEMENT_HISTORY",
+      "selfDeleteForwardedAtHeaders": 0,
+      "cleanupStatusAtHeaders": null,
+      "roleAtResponseHeaders": {
+        "localRolePutEpoch": 1,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": true,
+        "targetAdmitted": true
+      },
+      "crossedLocalRolePutEpoch": false,
+      "capturedBearerMatchedAtForward": true,
+      "canonicalAtForward": true,
+      "terminalEvent": "requestfinished",
+      "terminalObservedAtUtc": "2026-10-25T01:12:01.239Z",
+      "localPhaseAtTerminalEvent": "NATIVE_READONLY_MANAGEMENT_HISTORY",
+      "roleAtTerminalEvent": {
+        "localRolePutEpoch": 1,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": true,
+        "targetAdmitted": true
+      }
+    },
+    {
+      "requestId": "7deeace4-0be7-43b4-98e7-1461bb1dd607",
+      "path": "/api/schedule/academic-week-policy",
+      "method": "GET",
+      "requestStartedAtUtc": "2026-10-25T01:12:00.878Z",
+      "requestStartedPhase": "EXISTING_TARGET_ROLE_SELECTION",
+      "loginIndex": 0,
+      "roleAtRequestStart": {
+        "localRolePutEpoch": 1,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": true,
+        "targetAdmitted": false
+      },
+      "responseHeadersAtUtc": "2026-10-25T01:12:01.221Z",
+      "status": 200,
+      "localPhaseAtHeaders": "NATIVE_READONLY_MANAGEMENT_HISTORY",
+      "selfDeleteForwardedAtHeaders": 0,
+      "cleanupStatusAtHeaders": null,
+      "roleAtResponseHeaders": {
+        "localRolePutEpoch": 1,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": true,
+        "targetAdmitted": true
+      },
+      "crossedLocalRolePutEpoch": false,
+      "capturedBearerMatchedAtForward": true,
+      "canonicalAtForward": true,
+      "terminalEvent": "requestfinished",
+      "terminalObservedAtUtc": "2026-10-25T01:12:01.226Z",
+      "localPhaseAtTerminalEvent": "NATIVE_READONLY_MANAGEMENT_HISTORY",
+      "roleAtTerminalEvent": {
+        "localRolePutEpoch": 1,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": true,
+        "targetAdmitted": true
+      }
+    },
+    {
+      "requestId": "bb5f8088-4c79-45b0-a385-82f22a8a2e7e",
+      "path": "/api/academic/semesters",
+      "method": "GET",
+      "requestStartedAtUtc": "2026-10-25T01:12:00.886Z",
+      "requestStartedPhase": "EXISTING_TARGET_ROLE_SELECTION",
+      "loginIndex": 0,
+      "roleAtRequestStart": {
+        "localRolePutEpoch": 1,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": true,
+        "targetAdmitted": false
+      },
+      "responseHeadersAtUtc": "2026-10-25T01:12:01.274Z",
+      "status": 200,
+      "localPhaseAtHeaders": "NATIVE_READONLY_MANAGEMENT_HISTORY",
+      "selfDeleteForwardedAtHeaders": 0,
+      "cleanupStatusAtHeaders": null,
+      "roleAtResponseHeaders": {
+        "localRolePutEpoch": 1,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": true,
+        "targetAdmitted": true
+      },
+      "crossedLocalRolePutEpoch": false,
+      "capturedBearerMatchedAtForward": true,
+      "canonicalAtForward": true,
+      "terminalEvent": "requestfinished",
+      "terminalObservedAtUtc": "2026-10-25T01:12:01.277Z",
+      "localPhaseAtTerminalEvent": "NATIVE_READONLY_MANAGEMENT_HISTORY",
+      "roleAtTerminalEvent": {
+        "localRolePutEpoch": 1,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": true,
+        "targetAdmitted": true
+      }
+    },
+    {
+      "requestId": "4fbd67b5-3f5c-47f2-90e9-08f5a35b183f",
+      "pathHash": "6a3ed7c33ca04a6a7e68847f792e314468b713dea9c4ece627c242271898ae23",
+      "method": "GET",
+      "requestStartedAtUtc": "2026-10-25T01:12:01.003Z",
+      "requestStartedPhase": "EXISTING_TARGET_ROLE_SELECTION",
+      "loginIndex": 0,
+      "roleAtRequestStart": {
+        "localRolePutEpoch": 1,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": true,
+        "targetAdmitted": false
+      },
+      "responseHeadersAtUtc": "2026-10-25T01:12:01.109Z",
+      "status": 200,
+      "localPhaseAtHeaders": "EXISTING_TARGET_ROLE_SELECTION",
+      "selfDeleteForwardedAtHeaders": 0,
+      "cleanupStatusAtHeaders": null,
+      "roleAtResponseHeaders": {
+        "localRolePutEpoch": 1,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": true,
+        "targetAdmitted": false
+      },
+      "crossedLocalRolePutEpoch": false,
+      "capturedBearerMatchedAtForward": false,
+      "canonicalAtForward": true,
+      "terminalEvent": "requestfinished",
+      "terminalObservedAtUtc": "2026-10-25T01:12:01.111Z",
+      "localPhaseAtTerminalEvent": "EXISTING_TARGET_ROLE_SELECTION",
+      "roleAtTerminalEvent": {
+        "localRolePutEpoch": 1,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": true,
+        "targetAdmitted": false
+      }
+    },
+    {
+      "requestId": "cd34d47a-eb6f-4bdc-995f-09aae6622d60",
+      "path": "/api/attendance/reports/lesson/:id",
+      "method": "GET",
+      "requestStartedAtUtc": "2026-10-25T01:12:01.260Z",
+      "requestStartedPhase": "NATIVE_READONLY_MANAGEMENT_HISTORY",
+      "loginIndex": 0,
+      "roleAtRequestStart": {
+        "localRolePutEpoch": 1,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": true,
+        "targetAdmitted": true
+      },
+      "responseHeadersAtUtc": "2026-10-25T01:12:02.045Z",
+      "status": 200,
+      "localPhaseAtHeaders": "NATIVE_READONLY_MANAGEMENT_HISTORY",
+      "selfDeleteForwardedAtHeaders": 0,
+      "cleanupStatusAtHeaders": null,
+      "roleAtResponseHeaders": {
+        "localRolePutEpoch": 1,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": true,
+        "targetAdmitted": true
+      },
+      "crossedLocalRolePutEpoch": false,
+      "capturedBearerMatchedAtForward": true,
+      "canonicalAtForward": true,
+      "terminalEvent": "requestfinished",
+      "terminalObservedAtUtc": "2026-10-25T01:12:02.059Z",
+      "localPhaseAtTerminalEvent": "NATIVE_READONLY_MANAGEMENT_HISTORY",
+      "roleAtTerminalEvent": {
+        "localRolePutEpoch": 1,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": true,
+        "targetAdmitted": true
+      }
+    },
+    {
+      "requestId": "78f70881-f64c-4652-9653-245ee629a6d9",
+      "pathHash": "66be5879ef3a006f97cdf3d9fb658d6b9ab244113bbbad159c733f0fee4efb32",
+      "method": "GET",
+      "requestStartedAtUtc": "2026-10-25T01:12:01.284Z",
+      "requestStartedPhase": "NATIVE_READONLY_MANAGEMENT_HISTORY",
+      "loginIndex": 0,
+      "roleAtRequestStart": {
+        "localRolePutEpoch": 1,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": true,
+        "targetAdmitted": true
+      },
+      "responseHeadersAtUtc": "2026-10-25T01:12:01.385Z",
+      "status": 200,
+      "localPhaseAtHeaders": "NATIVE_READONLY_MANAGEMENT_HISTORY",
+      "selfDeleteForwardedAtHeaders": 0,
+      "cleanupStatusAtHeaders": null,
+      "roleAtResponseHeaders": {
+        "localRolePutEpoch": 1,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": true,
+        "targetAdmitted": true
+      },
+      "crossedLocalRolePutEpoch": false,
+      "capturedBearerMatchedAtForward": true,
+      "canonicalAtForward": true,
+      "terminalEvent": "requestfinished",
+      "terminalObservedAtUtc": "2026-10-25T01:12:01.386Z",
+      "localPhaseAtTerminalEvent": "NATIVE_READONLY_MANAGEMENT_HISTORY",
+      "roleAtTerminalEvent": {
+        "localRolePutEpoch": 1,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": true,
+        "targetAdmitted": true
+      }
+    },
+    {
+      "requestId": "52344c97-84ce-46ed-89f1-d6e6504edec6",
+      "path": "/api/schedule/groups/:id/lessons",
+      "method": "GET",
+      "requestStartedAtUtc": "2026-10-25T01:12:01.434Z",
+      "requestStartedPhase": "NATIVE_READONLY_MANAGEMENT_HISTORY",
+      "loginIndex": 0,
+      "roleAtRequestStart": {
+        "localRolePutEpoch": 1,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": true,
+        "targetAdmitted": true
+      },
+      "safeSourceDateRange": {
+        "from": "2026-10-25",
+        "to": "2026-10-25"
+      },
+      "responseHeadersAtUtc": "2026-10-25T01:12:01.576Z",
+      "status": 200,
+      "localPhaseAtHeaders": "NATIVE_READONLY_MANAGEMENT_HISTORY",
+      "selfDeleteForwardedAtHeaders": 0,
+      "cleanupStatusAtHeaders": null,
+      "roleAtResponseHeaders": {
+        "localRolePutEpoch": 1,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": true,
+        "targetAdmitted": true
+      },
+      "crossedLocalRolePutEpoch": false,
+      "capturedBearerMatchedAtForward": true,
+      "canonicalAtForward": true,
+      "terminalEvent": "requestfinished",
+      "terminalObservedAtUtc": "2026-10-25T01:12:01.577Z",
+      "localPhaseAtTerminalEvent": "NATIVE_READONLY_MANAGEMENT_HISTORY",
+      "roleAtTerminalEvent": {
+        "localRolePutEpoch": 1,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": true,
+        "targetAdmitted": true
+      }
+    },
+    {
+      "requestId": "b752bca5-bb2d-419f-8f92-8272592d7ed3",
+      "path": "/api/schedule/lesson-slots",
+      "method": "GET",
+      "requestStartedAtUtc": "2026-10-25T01:12:01.441Z",
+      "requestStartedPhase": "NATIVE_READONLY_MANAGEMENT_HISTORY",
+      "loginIndex": 0,
+      "roleAtRequestStart": {
+        "localRolePutEpoch": 1,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": true,
+        "targetAdmitted": true
+      },
+      "responseHeadersAtUtc": "2026-10-25T01:12:01.532Z",
+      "status": 200,
+      "localPhaseAtHeaders": "NATIVE_READONLY_MANAGEMENT_HISTORY",
+      "selfDeleteForwardedAtHeaders": 0,
+      "cleanupStatusAtHeaders": null,
+      "roleAtResponseHeaders": {
+        "localRolePutEpoch": 1,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": true,
+        "targetAdmitted": true
+      },
+      "crossedLocalRolePutEpoch": false,
+      "capturedBearerMatchedAtForward": true,
+      "canonicalAtForward": true,
+      "terminalEvent": "requestfinished",
+      "terminalObservedAtUtc": "2026-10-25T01:12:01.536Z",
+      "localPhaseAtTerminalEvent": "NATIVE_READONLY_MANAGEMENT_HISTORY",
+      "roleAtTerminalEvent": {
+        "localRolePutEpoch": 1,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": true,
+        "targetAdmitted": true
+      }
+    },
+    {
+      "requestId": "640bd01b-a17f-4ca4-8405-5e88bcd9b19d",
+      "path": "/api/schedule/academic-week-policy",
+      "method": "GET",
+      "requestStartedAtUtc": "2026-10-25T01:12:01.447Z",
+      "requestStartedPhase": "NATIVE_READONLY_MANAGEMENT_HISTORY",
+      "loginIndex": 0,
+      "roleAtRequestStart": {
+        "localRolePutEpoch": 1,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": true,
+        "targetAdmitted": true
+      },
+      "responseHeadersAtUtc": "2026-10-25T01:12:01.511Z",
+      "status": 200,
+      "localPhaseAtHeaders": "NATIVE_READONLY_MANAGEMENT_HISTORY",
+      "selfDeleteForwardedAtHeaders": 0,
+      "cleanupStatusAtHeaders": null,
+      "roleAtResponseHeaders": {
+        "localRolePutEpoch": 1,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": true,
+        "targetAdmitted": true
+      },
+      "crossedLocalRolePutEpoch": false,
+      "capturedBearerMatchedAtForward": true,
+      "canonicalAtForward": true,
+      "terminalEvent": "requestfinished",
+      "terminalObservedAtUtc": "2026-10-25T01:12:01.515Z",
+      "localPhaseAtTerminalEvent": "NATIVE_READONLY_MANAGEMENT_HISTORY",
+      "roleAtTerminalEvent": {
+        "localRolePutEpoch": 1,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": true,
+        "targetAdmitted": true
+      }
+    },
+    {
+      "requestId": "28a88b0f-cceb-472d-8e71-e1a29ef486cc",
+      "path": "/api/academic/semesters",
+      "method": "GET",
+      "requestStartedAtUtc": "2026-10-25T01:12:01.452Z",
+      "requestStartedPhase": "NATIVE_READONLY_MANAGEMENT_HISTORY",
+      "loginIndex": 0,
+      "roleAtRequestStart": {
+        "localRolePutEpoch": 1,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": true,
+        "targetAdmitted": true
+      },
+      "responseHeadersAtUtc": "2026-10-25T01:12:01.569Z",
+      "status": 200,
+      "localPhaseAtHeaders": "NATIVE_READONLY_MANAGEMENT_HISTORY",
+      "selfDeleteForwardedAtHeaders": 0,
+      "cleanupStatusAtHeaders": null,
+      "roleAtResponseHeaders": {
+        "localRolePutEpoch": 1,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": true,
+        "targetAdmitted": true
+      },
+      "crossedLocalRolePutEpoch": false,
+      "capturedBearerMatchedAtForward": true,
+      "canonicalAtForward": true,
+      "terminalEvent": "requestfinished",
+      "terminalObservedAtUtc": "2026-10-25T01:12:01.571Z",
+      "localPhaseAtTerminalEvent": "NATIVE_READONLY_MANAGEMENT_HISTORY",
+      "roleAtTerminalEvent": {
+        "localRolePutEpoch": 1,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": true,
+        "targetAdmitted": true
+      }
+    },
+    {
+      "requestId": "f2cac2c8-617d-4a59-8cfd-f42a3b86e560",
+      "path": "/api/academic/assignments",
+      "method": "GET",
+      "requestStartedAtUtc": "2026-10-25T01:12:01.581Z",
+      "requestStartedPhase": "NATIVE_READONLY_MANAGEMENT_HISTORY",
+      "loginIndex": 0,
+      "roleAtRequestStart": {
+        "localRolePutEpoch": 1,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": true,
+        "targetAdmitted": true
+      },
+      "responseHeadersAtUtc": "2026-10-25T01:12:01.745Z",
+      "status": 200,
+      "localPhaseAtHeaders": "NATIVE_READONLY_MANAGEMENT_HISTORY",
+      "selfDeleteForwardedAtHeaders": 0,
+      "cleanupStatusAtHeaders": null,
+      "roleAtResponseHeaders": {
+        "localRolePutEpoch": 1,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": true,
+        "targetAdmitted": true
+      },
+      "crossedLocalRolePutEpoch": false,
+      "capturedBearerMatchedAtForward": true,
+      "canonicalAtForward": true,
+      "terminalEvent": "requestfinished",
+      "terminalObservedAtUtc": "2026-10-25T01:12:01.757Z",
+      "localPhaseAtTerminalEvent": "NATIVE_READONLY_MANAGEMENT_HISTORY",
+      "roleAtTerminalEvent": {
+        "localRolePutEpoch": 1,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": true,
+        "targetAdmitted": true
+      }
+    },
+    {
+      "requestId": "76fe0086-6446-40a6-a589-8c1896710348",
+      "path": "/api/schedule/groups/:id/lessons",
+      "method": "GET",
+      "requestStartedAtUtc": "2026-10-25T01:12:01.856Z",
+      "requestStartedPhase": "NATIVE_READONLY_MANAGEMENT_HISTORY",
+      "loginIndex": 0,
+      "roleAtRequestStart": {
+        "localRolePutEpoch": 1,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": true,
+        "targetAdmitted": true
+      },
+      "safeSourceDateRange": {
+        "from": "2026-10-23",
+        "to": "2026-10-23"
+      },
+      "responseHeadersAtUtc": "2026-10-25T01:12:01.949Z",
+      "status": 200,
+      "localPhaseAtHeaders": "NATIVE_READONLY_MANAGEMENT_HISTORY",
+      "selfDeleteForwardedAtHeaders": 0,
+      "cleanupStatusAtHeaders": null,
+      "roleAtResponseHeaders": {
+        "localRolePutEpoch": 1,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": true,
+        "targetAdmitted": true
+      },
+      "crossedLocalRolePutEpoch": false,
+      "capturedBearerMatchedAtForward": true,
+      "canonicalAtForward": true,
+      "terminalEvent": "requestfinished",
+      "terminalObservedAtUtc": "2026-10-25T01:12:01.956Z",
+      "localPhaseAtTerminalEvent": "NATIVE_READONLY_MANAGEMENT_HISTORY",
+      "roleAtTerminalEvent": {
+        "localRolePutEpoch": 1,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": true,
+        "targetAdmitted": true
+      }
+    },
+    {
+      "requestId": "2de3ec14-b460-42dd-a5f8-3040c9967b27",
+      "path": "/api/schedule/lesson-slots",
+      "method": "GET",
+      "requestStartedAtUtc": "2026-10-25T01:12:01.873Z",
+      "requestStartedPhase": "NATIVE_READONLY_MANAGEMENT_HISTORY",
+      "loginIndex": 0,
+      "roleAtRequestStart": {
+        "localRolePutEpoch": 1,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": true,
+        "targetAdmitted": true
+      },
+      "responseHeadersAtUtc": "2026-10-25T01:12:01.973Z",
+      "status": 200,
+      "localPhaseAtHeaders": "NATIVE_READONLY_MANAGEMENT_HISTORY",
+      "selfDeleteForwardedAtHeaders": 0,
+      "cleanupStatusAtHeaders": null,
+      "roleAtResponseHeaders": {
+        "localRolePutEpoch": 1,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": true,
+        "targetAdmitted": true
+      },
+      "crossedLocalRolePutEpoch": false,
+      "capturedBearerMatchedAtForward": true,
+      "canonicalAtForward": true,
+      "terminalEvent": "requestfinished",
+      "terminalObservedAtUtc": "2026-10-25T01:12:01.976Z",
+      "localPhaseAtTerminalEvent": "NATIVE_READONLY_MANAGEMENT_HISTORY",
+      "roleAtTerminalEvent": {
+        "localRolePutEpoch": 1,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": true,
+        "targetAdmitted": true
+      }
+    },
+    {
+      "requestId": "83ef1dfe-1229-4b9e-b819-1800eac13861",
+      "path": "/api/schedule/academic-week-policy",
+      "method": "GET",
+      "requestStartedAtUtc": "2026-10-25T01:12:01.883Z",
+      "requestStartedPhase": "NATIVE_READONLY_MANAGEMENT_HISTORY",
+      "loginIndex": 0,
+      "roleAtRequestStart": {
+        "localRolePutEpoch": 1,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": true,
+        "targetAdmitted": true
+      },
+      "responseHeadersAtUtc": "2026-10-25T01:12:01.962Z",
+      "status": 200,
+      "localPhaseAtHeaders": "NATIVE_READONLY_MANAGEMENT_HISTORY",
+      "selfDeleteForwardedAtHeaders": 0,
+      "cleanupStatusAtHeaders": null,
+      "roleAtResponseHeaders": {
+        "localRolePutEpoch": 1,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": true,
+        "targetAdmitted": true
+      },
+      "crossedLocalRolePutEpoch": false,
+      "capturedBearerMatchedAtForward": true,
+      "canonicalAtForward": true,
+      "terminalEvent": "requestfinished",
+      "terminalObservedAtUtc": "2026-10-25T01:12:01.965Z",
+      "localPhaseAtTerminalEvent": "NATIVE_READONLY_MANAGEMENT_HISTORY",
+      "roleAtTerminalEvent": {
+        "localRolePutEpoch": 1,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": true,
+        "targetAdmitted": true
+      }
+    },
+    {
+      "requestId": "8f775a40-b0b2-4363-a4a2-086d798d5e79",
+      "path": "/api/academic/semesters",
+      "method": "GET",
+      "requestStartedAtUtc": "2026-10-25T01:12:01.891Z",
+      "requestStartedPhase": "NATIVE_READONLY_MANAGEMENT_HISTORY",
+      "loginIndex": 0,
+      "roleAtRequestStart": {
+        "localRolePutEpoch": 1,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": true,
+        "targetAdmitted": true
+      },
+      "responseHeadersAtUtc": "2026-10-25T01:12:02.000Z",
+      "status": 200,
+      "localPhaseAtHeaders": "NATIVE_READONLY_MANAGEMENT_HISTORY",
+      "selfDeleteForwardedAtHeaders": 0,
+      "cleanupStatusAtHeaders": null,
+      "roleAtResponseHeaders": {
+        "localRolePutEpoch": 1,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": true,
+        "targetAdmitted": true
+      },
+      "crossedLocalRolePutEpoch": false,
+      "capturedBearerMatchedAtForward": true,
+      "canonicalAtForward": true,
+      "terminalEvent": "requestfinished",
+      "terminalObservedAtUtc": "2026-10-25T01:12:02.002Z",
+      "localPhaseAtTerminalEvent": "NATIVE_READONLY_MANAGEMENT_HISTORY",
+      "roleAtTerminalEvent": {
+        "localRolePutEpoch": 1,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": true,
+        "targetAdmitted": true
+      }
+    },
+    {
+      "requestId": "9df0cc7f-6ef6-4c57-933c-cfefeb9309e3",
+      "path": "/api/academic/assignments",
+      "method": "GET",
+      "requestStartedAtUtc": "2026-10-25T01:12:02.006Z",
+      "requestStartedPhase": "NATIVE_READONLY_MANAGEMENT_HISTORY",
+      "loginIndex": 0,
+      "roleAtRequestStart": {
+        "localRolePutEpoch": 1,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": true,
+        "targetAdmitted": true
+      },
+      "responseHeadersAtUtc": "2026-10-25T01:12:02.095Z",
+      "status": 200,
+      "localPhaseAtHeaders": "NATIVE_READONLY_MANAGEMENT_HISTORY",
+      "selfDeleteForwardedAtHeaders": 0,
+      "cleanupStatusAtHeaders": null,
+      "roleAtResponseHeaders": {
+        "localRolePutEpoch": 1,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": true,
+        "targetAdmitted": true
+      },
+      "crossedLocalRolePutEpoch": false,
+      "capturedBearerMatchedAtForward": true,
+      "canonicalAtForward": true,
+      "terminalEvent": "requestfinished",
+      "terminalObservedAtUtc": "2026-10-25T01:12:02.099Z",
+      "localPhaseAtTerminalEvent": "NATIVE_READONLY_MANAGEMENT_HISTORY",
+      "roleAtTerminalEvent": {
+        "localRolePutEpoch": 1,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": true,
+        "targetAdmitted": true
+      }
+    },
+    {
+      "requestId": "daf6fb91-67fb-4e41-a494-6b5336f6f8c2",
+      "path": "/api/attendance/reports/lesson/:id/actions",
+      "method": "GET",
+      "requestStartedAtUtc": "2026-10-25T01:12:02.221Z",
+      "requestStartedPhase": "NATIVE_READONLY_MANAGEMENT_HISTORY",
+      "loginIndex": 0,
+      "roleAtRequestStart": {
+        "localRolePutEpoch": 1,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": true,
+        "targetAdmitted": true
+      },
+      "responseHeadersAtUtc": "2026-10-25T01:12:02.463Z",
+      "status": 200,
+      "localPhaseAtHeaders": "NATIVE_READONLY_MANAGEMENT_HISTORY",
+      "selfDeleteForwardedAtHeaders": 0,
+      "cleanupStatusAtHeaders": null,
+      "roleAtResponseHeaders": {
+        "localRolePutEpoch": 1,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": true,
+        "targetAdmitted": true
+      },
+      "crossedLocalRolePutEpoch": false,
+      "capturedBearerMatchedAtForward": true,
+      "canonicalAtForward": true,
+      "terminalEvent": "requestfinished",
+      "terminalObservedAtUtc": "2026-10-25T01:12:02.466Z",
+      "localPhaseAtTerminalEvent": "NATIVE_READONLY_MANAGEMENT_HISTORY",
+      "roleAtTerminalEvent": {
+        "localRolePutEpoch": 1,
+        "initialOwnCaptured": true,
+        "targetRoleCaptured": true,
+        "targetAdmitted": true
+      }
+    }
+  ],
+  "agendaReadiness": [
+    {
+      "observedAtUtc": "2026-10-25T01:12:01.519Z",
+      "stage": "BEFORE_KNOWN_DAY_COUNT",
+      "busy": "true",
+      "visibleWeekText": null,
+      "dateLabels": [],
+      "selectedDateLabels": [],
+      "displayedError": false,
+      "classification": "LOADING",
+      "wantedSelectedLabel": null,
+      "selectedDateMatched": true
+    },
+    {
+      "observedAtUtc": "2026-10-25T01:12:01.786Z",
+      "stage": "BEFORE_KNOWN_DAY_COUNT",
+      "busy": "false",
+      "visibleWeekText": "неделя 2 · №119–25 октября",
+      "dateLabels": [
+        "понедельник, 19 октября",
+        "вторник, 20 октября",
+        "среда, 21 октября",
+        "четверг, 22 октября",
+        "пятница, 23 октября",
+        "суббота, 24 октября",
+        "воскресенье, 25 октября"
+      ],
+      "selectedDateLabels": [
+        "воскресенье, 25 октября"
+      ],
+      "displayedError": false,
+      "classification": "POLICY_AND_AGENDA_READY",
+      "wantedSelectedLabel": null,
+      "selectedDateMatched": true
+    },
+    {
+      "observedAtUtc": "2026-10-25T01:12:01.919Z",
+      "stage": "AFTER_KNOWN_DAY_SELECTION",
+      "busy": "true",
+      "visibleWeekText": null,
+      "dateLabels": [],
+      "selectedDateLabels": [],
+      "displayedError": false,
+      "classification": "LOADING",
+      "wantedSelectedLabel": "пятница, 23 октября",
+      "selectedDateMatched": false
+    },
+    {
+      "observedAtUtc": "2026-10-25T01:12:02.125Z",
+      "stage": "AFTER_KNOWN_DAY_SELECTION",
+      "busy": "false",
+      "visibleWeekText": "неделя 2 · №119–25 октября",
+      "dateLabels": [
+        "понедельник, 19 октября",
+        "вторник, 20 октября",
+        "среда, 21 октября",
+        "четверг, 22 октября",
+        "пятница, 23 октября",
+        "суббота, 24 октября",
+        "воскресенье, 25 октября"
+      ],
+      "selectedDateLabels": [
+        "пятница, 23 октября"
+      ],
+      "displayedError": false,
+      "classification": "POLICY_AND_AGENDA_READY",
+      "wantedSelectedLabel": "пятница, 23 октября",
+      "selectedDateMatched": true
+    }
+  ],
+  "readinessRoleMilestones": [
+    {
+      "atUtc": "2026-10-25T01:12:01.467Z",
+      "phase": "NATIVE_READONLY_MANAGEMENT_HISTORY",
+      "initialOwnCaptured": true,
+      "targetRoleCaptured": true,
+      "roleCaptured": true,
+      "localRolePutEpoch": 1,
+      "targetAdmitted": true,
+      "actualTargetGroupConfirmed": "1"
+    }
+  ],
+  "actualTargetGroupConfirmed": "1",
+  "visibleWeekBeforeKnownDay": {
+    "stage": "BEFORE_KNOWN_DAY_COUNT",
+    "busy": "false",
+    "visibleWeekText": "неделя 2 · №119–25 октября",
+    "dateLabels": [
+      "понедельник, 19 октября",
+      "вторник, 20 октября",
+      "среда, 21 октября",
+      "четверг, 22 октября",
+      "пятница, 23 октября",
+      "суббота, 24 октября",
+      "воскресенье, 25 октября"
+    ],
+    "selectedDateLabels": [
+      "воскресенье, 25 октября"
+    ],
+    "displayedError": false,
+    "classification": "POLICY_AND_AGENDA_READY",
+    "wantedSelectedLabel": null,
+    "selectedDateMatched": true
+  },
+  "knownDayLabel": "пятница, 23 октября",
+  "knownDayInReadyVisibleWeek": true,
+  "selectedLessonId": 3,
+  "historyLoaded": true,
+  "nativeBackToSameLessonDetail": true,
+  "browserClosed": true,
+  "sourceUnchanged": true,
+  "finishedAtUtc": "2026-10-25T01:12:03.099Z"
+}

@@ -11,7 +11,7 @@ import ssl
 import subprocess
 import sys
 from pathlib import Path
-from urllib.parse import urlsplit
+from urllib.parse import urljoin, urlsplit
 
 REPO = Path(__file__).resolve().parents[3]
 sys.dont_write_bytecode = True
@@ -141,6 +141,8 @@ def prepare(args):
     config = replace_once(config, "worker_processes auto;", "worker_processes 1;")
     (output / "nginx.conf").write_text(config)
     edge = (REPO / "nginx/conf.d/default.conf").read_text()
+    # Match the external loopback TLS port so redirects and forwarded port stay truthful.
+    edge = replace_once(edge, "listen 443 ssl;", "listen " + str(args.port) + " ssl;")
     edge = replace_once(edge, "/etc/letsencrypt/live/ruttrack.site/fullchain.pem", "/etc/nginx/certs/fullchain.pem")
     edge = replace_once(edge, "/etc/letsencrypt/live/ruttrack.site/privkey.pem", "/etc/nginx/certs/privkey.pem")
     edge = upstream(edge, "upstream_gateway", args.gateway)
@@ -164,7 +166,7 @@ def prepare(args):
     compose = {"name": "rct-pr3-nginx-gate", "services": {"edge": {
         "image": args.image_id, "pull_policy": "never", "entrypoint": ["nginx"],
         "command": ["-g", "daemon off;"], "read_only": True,
-        "ports": ["127.0.0.1:" + str(args.port) + ":443"], "volumes": mounts,
+        "ports": ["127.0.0.1:" + str(args.port) + ":" + str(args.port)], "volumes": mounts,
         "tmpfs": ["/var/cache/nginx:size=16m", "/var/run:size=1m", "/var/log/nginx:size=8m", "/tmp:size=1m"],
         "mem_limit": "128m", "cpus": 0.5, "pids_limit": 32,
         "cap_drop": ["ALL"], "cap_add": ["NET_BIND_SERVICE", "SETUID", "SETGID", "CHOWN"],
@@ -176,7 +178,7 @@ def prepare(args):
         "apps": receipts, "dists": {app: str(path) for app, path in dists.items()},
         "configs": {str(p.relative_to(output)): sha(p.read_bytes())
                     for p in [output / "nginx.conf", *sorted((output / "conf.d").iterdir())]},
-        "localAdaptations": ["one worker", "fresh local certificate paths", "explicit gateway DNS",
+        "localAdaptations": ["one worker", "matching external/local TLS port", "fresh local certificate paths", "explicit gateway DNS",
                              "four loopback inner upstreams/listeners and read-only artifact roots"],
         "productionTLSAndDeployment": "NOT_RUN"})
     print(json.dumps({"state": "PREPARED_NOT_STARTED", "sourceSha": args.expected_sha}))
@@ -271,7 +273,10 @@ def check(args):
         require(missing == 404 and missing_body != expected_index, "Missing asset becomes a SPA shell: " + app)
         results["artifactBytes"][app] = "PASS"
     root_status, root_headers, _ = fetch(args.base, "/", context)
-    require(root_status == 301 and root_headers.get("location", "").endswith("/login"), "Common root route")
+    redirected = urlsplit(urljoin(args.base, root_headers.get("location", "")))
+    require(root_status == 301 and redirected.path == "/login" and
+            (redirected.scheme, redirected.netloc) == (urlsplit(args.base).scheme, urlsplit(args.base).netloc),
+            "Common root redirect must remain on the owned origin")
     for name in ["sw.js", "sw-assets.js", "version.json", "manifest.webmanifest"]:
         status, headers, body = fetch(args.base, "/app/" + name, context)
         require(status == 200 and body == (Path(pins["dists"]["pwa"]) / name).read_bytes(), "PWA policy artifact mismatch")

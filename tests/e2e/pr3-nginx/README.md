@@ -77,7 +77,7 @@ openssl genpkey -genparam -algorithm DH -pkeyopt group:ffdhe2048 \
   -out "$RUN/tls/dhparam.pem"
 ```
 
-`prepare` не запускает Docker. Он берёт source `nginx/nginx.conf`, `nginx/conf.d/default.conf` и inner configs WEB/PWA/TMA/landing. Единственные локальные адаптации: один worker; новая certificate path; явный gateway DNS; четыре loopback upstream/listener/static roots. Production routes, prefix rewrites, CSP и API/WS headers остаются source-derived. Недоступный downstream должен давать настоящий502; здесь нет response stubs или fake healthy endpoints.
+`prepare` не запускает Docker. Он берёт source `nginx/nginx.conf`, `nginx/conf.d/default.conf` и inner configs WEB/PWA/TMA/landing. Единственные локальные адаптации: один worker; TLS listen port совпадает с опубликованным14443, чтобы absolute redirects и forwarded port оставались верными; новая certificate path; явный gateway DNS; четыре loopback upstream/listener/static roots. Production routes, prefix rewrites, CSP и API/WS headers остаются source-derived. Недоступный downstream должен давать настоящий502; здесь нет response stubs или fake healthy endpoints.
 
 ```bash
 # Только после текущего разрешения на лёгкий runtime и проверки ресурса:

@@ -404,3 +404,9 @@ Q-ENV-010, latest factual checkpoint2026-10-25: actualfree5,313,261,568B<7,516,1
 preflight after matching JARs. Same request: approximately+3GiB or≥7GiB free with
 margin, preserving workspace/Dockerdata. No new product question, no new start/
 fixture/delete, no cleanup or guard weakening. Independent lightvisual work continues.
+
+Q-ENV-010, final independent-light-packets checkpoint2026-10-25: actualfree
+5,299,769,344B (~4.94GiB) remains below7GiB=7,516,192,768B. Same outstanding need:
+about+3GiB or≥7GiB free with margin, preserving workspace/Dockerdata. All light
+browser cases knownterminal/closed; no group runtime/fixtures/delete or Angular
+cutover attempted. No new product question/confirmation is required.

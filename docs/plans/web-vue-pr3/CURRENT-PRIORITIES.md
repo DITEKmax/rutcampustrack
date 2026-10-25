@@ -38,7 +38,7 @@ MOBILE-FOLLOWUPS и итог PR; PAUSED не объявляется PASS.
   binding требует freshfrontendfreeze после6219/currentRootGO. Следующий результат:
   один UIdelete/originalUUID, numericpreview/password/status и шесть заранееоткрытых
   WEB/PWA/TMA views, naturalwithdrawal/foreignpreservation. SID может жить для другойроли.
-- Q-ENV-010: actual5,313,261,568B против7GiB preflight. Требуется около+3GiB или≥7GiB
+- Q-ENV-010: actual5,299,769,344B против7GiB preflight. Требуется около+3GiB или≥7GiB
   actualfree с запасом, сохранив workspace/Dockerdata. Guards неослаблены; start/
   fixtures/delete0. Этоединственный вопрос владельцу, не новыйпродуктовыйдопуск.
 - Закрыты PWAhostlogout343/after2, WEBtheme4 и Studentownercancellation1057:
@@ -48,16 +48,18 @@ MOBILE-FOLLOWUPS и итог PR; PAUSED не объявляется PASS.
 - Headmanhistory actual15events/Back/before2 закрыт. Source3371 исправляет только
   filterwrap/typeformatter; PWA/TMAstrictbuild/review и AFTER2PASS. ОбаP3закрыты
   при300light/root20 и768darkfocus. Новыефункциональныедействия0.
-- Gallery287/portable287, finite45boundedobserved/5unchecked из50:4activeconditional+
+- Gallery289/portable289, finite45boundedobserved/5unchecked из50:4activeconditional+
   1orphan. Это не45fullyreadyscreens и неготовностьPR%. Original36/corrected37 preserved.
   [Before/after](../../validation/web-vue-pr3/runtime-gallery/headman-history-after-20261025/index.html).
 - Завершён просмотр существующей одобренной справки преподавателем: обычный UI,
   настоящий GET вложения и возврат, twoPNG/EXIT0/errors0/owncleanup204+401. Готовая
   первая страница PDF не наблюдалась; loading/metadata не выдаются за previewPASS.
   На300/root20 найден узкий перенос даты/времени. TeacherCard CSS fix9e→6219
-  прошёл независимый review/format/PostCSS и один matching PWA strict/build. Остался
-  AFTER2 только для изменённого отображения. Допустимо одно bounded≤7s ожидание естественного PDFready
-  для существенного ещё не проверенного риска; без retry/newAPI/newAuthloop.
+  прошёл независимый review/format/PostCSS и один matching PWA strict/build. AFTER2
+  EXIT0/errors0 закрыл дефект при300/root20 и сохранил wide768/focus. Один bounded≤7s
+  naturalPDFreadyobserver подтвердил canvas и видимую первую страницу в обоих PNG;
+  Open/download/allpages/zoom/provider не проверялись. Старый Back reused, activation0,
+  owncleanup204401/browserclosed. Никаких retry/newAPI/newAuthloop.
 - Завершён просмотр формы «Забыл отметиться»: fresh options200, ownlesson3, budget5/5,
   Continue disabled до выбора, два читаемых кадра с keyboardfocus. Submit/newrequest0,
   EXIT0/errors0/owncleanup204+401/browserclosed. Старый выбор типа и Excuse draft reused.
@@ -76,3 +78,8 @@ bundle/CRC/safepaths/manifest/sourcebytechecksPASS.193 — нечислоunpubli
 Private/secrets/DB/env/keys/JAR/deps исключены; nativeDIR1/25/history1/4 public
 nonsecret findings классифицированы, unresolved0, rulesunchanged. СтарыйZIP сохранён.
 [Receipt](../../validation/web-vue-pr3/checkpoints/remaining-admin-20261024/source-recovery-004652-final.json).
+
+Финальный self-contained source-only ZIP этого опубликованного checkpoint передаётся
+в главном чате; filename/SHA/receipt также в описании PR. Immutable004652 base внутри
+сохраняется побайтно вместе с incremental public-source bundles. Это source backup,
+без runtime/private handles/data и без заявления готовности продукта.

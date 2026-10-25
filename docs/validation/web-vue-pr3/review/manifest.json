@@ -720,5 +720,20 @@
     "path": "teacher-meta-REVIEW-9e547115.md",
     "original_path": "/workspace/rct-pr3-review/teacher-lesson-meta-polish/REVIEW-9e547115.md",
     "sha256": "445ae901093f712aac57633344d31837ae3765283869ce59209d45b66368ef52"
+  },
+  {
+    "path": "teacher-meta-AFTER-STRUCTURAL-aa874849.md",
+    "original_path": "/workspace/rct-pr3-review/teacher-lesson-meta-polish/AFTER-PREP-STRUCTURAL-aa874849.md",
+    "sha256": "32b496c8a2da4fc6965521a373b8f6cb246768b3e5b814a4d6d80c526bb80f23"
+  },
+  {
+    "path": "teacher-meta-AFTER-BINDING-ae05199b.md",
+    "original_path": "/workspace/rct-pr3-review/teacher-lesson-meta-polish/AFTER-PREP-RECHECK-ae05199b.md",
+    "sha256": "a5a19bd80cf0dc344981984322cf19beadd8f2f6548bd012cd2427af7e70c4ae"
+  },
+  {
+    "path": "teacher-meta-AFTER-NOBACK-da0d114c.md",
+    "original_path": "/workspace/rct-pr3-review/teacher-lesson-meta-polish/AFTER-PREP-RECHECK-da0d114c.md",
+    "sha256": "d707c1631572944958a11c7ccfd636398f49ec4da34acb4aa27c7505d84d38d1"
   }
 ]

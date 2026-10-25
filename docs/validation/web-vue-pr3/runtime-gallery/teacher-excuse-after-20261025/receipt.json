@@ -1,0 +1,675 @@
+{
+  "case": "PWA_TEACHER_EXCUSE_META_POLISH_AFTER_TWO",
+  "revision": "7bbef7252a338005b380d8e07a7eb8075ac6b243",
+  "productBase": "6219ca60a322d29921575535eccbf12efa76e304",
+  "harnessSha256": "da0d114c5cd60b718ea534ed7fdee2ccef02558b95d82eb8f1d2be2e3b1dfa16",
+  "startedAtUtc": "2026-10-25T02:09:57.962Z",
+  "expectedActor": 2,
+  "expectedRole": "TEACHER",
+  "phase": "CAPTURE_COMPLETE_CLEANUP_CONFIRMED_INSPECTION_PENDING",
+  "api": [
+    {
+      "path": "/api/auth/refresh",
+      "method": "POST",
+      "status": 401,
+      "phase": "BOOTSTRAP",
+      "loginIndex": 0
+    },
+    {
+      "path": "/api/auth/login",
+      "method": "POST",
+      "status": 200,
+      "phase": "LOGIN_0",
+      "loginIndex": 0
+    },
+    {
+      "path": "/api/auth/session",
+      "method": "GET",
+      "status": 200,
+      "phase": "LOGIN_0",
+      "loginIndex": 0
+    },
+    {
+      "path": "/api/auth/ws-ticket",
+      "method": "POST",
+      "status": 200,
+      "phase": "LOGIN_0",
+      "loginIndex": 0
+    },
+    {
+      "pathHash": "66be5879ef3a006f97cdf3d9fb658d6b9ab244113bbbad159c733f0fee4efb32",
+      "method": "GET",
+      "status": 200,
+      "phase": "LOGIN_0",
+      "loginIndex": 0
+    },
+    {
+      "path": "/api/auth/device-preferences",
+      "method": "GET",
+      "status": 200,
+      "phase": "LOGIN_0",
+      "loginIndex": 0
+    },
+    {
+      "path": "/api/v1/teacher/semester",
+      "method": "GET",
+      "status": 200,
+      "phase": "LOGIN_0",
+      "loginIndex": 0
+    },
+    {
+      "pathHash": "6a3ed7c33ca04a6a7e68847f792e314468b713dea9c4ece627c242271898ae23",
+      "method": "GET",
+      "status": 200,
+      "phase": "LOGIN_0",
+      "loginIndex": 0
+    },
+    {
+      "pathHash": "b05fd2eb20115510c259a188067bd51de03fb6d2c5d82ad0a85e398b9c28694f",
+      "method": "GET",
+      "status": 200,
+      "phase": "LOGIN_0",
+      "loginIndex": 0
+    },
+    {
+      "path": "/api/v1/teacher/semester",
+      "method": "GET",
+      "status": 200,
+      "phase": "LOGIN_0",
+      "loginIndex": 0
+    },
+    {
+      "pathHash": "5976d9ea74202ee79fb95d76733a6e02f2d6cf58b6eb0cc5a762c37d89af8f17",
+      "method": "GET",
+      "status": 200,
+      "phase": "LOGIN_0",
+      "loginIndex": 0
+    },
+    {
+      "pathHash": "66be5879ef3a006f97cdf3d9fb658d6b9ab244113bbbad159c733f0fee4efb32",
+      "method": "GET",
+      "status": 200,
+      "phase": "LOGIN_0",
+      "loginIndex": 0
+    },
+    {
+      "pathHash": "89f60c5c8442c4f7c568d92b24a1205a3f4a8c1177839b71670fd41f74c0276c",
+      "method": "GET",
+      "status": 200,
+      "phase": "LOGIN_0",
+      "loginIndex": 0
+    },
+    {
+      "pathHash": "b05fd2eb20115510c259a188067bd51de03fb6d2c5d82ad0a85e398b9c28694f",
+      "method": "GET",
+      "status": 200,
+      "phase": "LOGIN_0",
+      "loginIndex": 0
+    },
+    {
+      "path": "/api/v1/teacher/semester",
+      "method": "GET",
+      "status": 200,
+      "phase": "LOGIN_0",
+      "loginIndex": 0
+    },
+    {
+      "path": "/api/v1/teacher/catalog",
+      "method": "GET",
+      "status": 200,
+      "phase": "LOGIN_0",
+      "loginIndex": 0
+    },
+    {
+      "pathHash": "5976d9ea74202ee79fb95d76733a6e02f2d6cf58b6eb0cc5a762c37d89af8f17",
+      "method": "GET",
+      "status": 200,
+      "phase": "LOGIN_0",
+      "loginIndex": 0
+    },
+    {
+      "path": "/api/v1/teacher/catalog",
+      "method": "GET",
+      "status": 200,
+      "phase": "LOGIN_0",
+      "loginIndex": 0
+    },
+    {
+      "pathHash": "89f60c5c8442c4f7c568d92b24a1205a3f4a8c1177839b71670fd41f74c0276c",
+      "method": "GET",
+      "status": 200,
+      "phase": "LOGIN_0",
+      "loginIndex": 0
+    },
+    {
+      "path": "/api/v1/teacher/semester",
+      "method": "GET",
+      "status": 200,
+      "phase": "NATIVE_ATTENDANCE_EXISTING_CANDIDATE",
+      "loginIndex": 0
+    },
+    {
+      "path": "/api/v1/teacher/catalog",
+      "method": "GET",
+      "status": 200,
+      "phase": "NATIVE_ATTENDANCE_EXISTING_CANDIDATE",
+      "loginIndex": 0
+    },
+    {
+      "path": "/api/v1/teacher/journal",
+      "method": "GET",
+      "status": 200,
+      "phase": "NATIVE_ATTENDANCE_EXISTING_CANDIDATE",
+      "loginIndex": 0
+    },
+    {
+      "path": "/api/v1/teacher/lessons/:id",
+      "method": "GET",
+      "status": 200,
+      "phase": "NATIVE_ATTENDANCE_EXISTING_CANDIDATE",
+      "loginIndex": 0
+    },
+    {
+      "path": "/api/v1/teacher/excuses/:id",
+      "method": "GET",
+      "status": 200,
+      "phase": "NATIVE_EXISTING_APPROVED_EXCUSE",
+      "loginIndex": 0
+    },
+    {
+      "path": "/api/v1/teacher/excuses/:id/attachments/:id",
+      "method": "GET",
+      "status": 200,
+      "phase": "NATIVE_EXISTING_APPROVED_EXCUSE",
+      "loginIndex": 0
+    }
+  ],
+  "samples": [
+    {
+      "id": "MB-TE-AF01",
+      "consumer": "PWA",
+      "screen": "MOBILE-TEACHEREXCUSE",
+      "state": "after-approved-ticket-metadata-wrap",
+      "file": "PWA-MOBILE-TEACHEREXCUSE__MB-TE-AF01-after-approved-ticket-metadata-wrap__light__300__root20__7bbef7252.png",
+      "sha256": "23d620b9f17df730378756ba2db08929e1717c16af8051fbe2baf45a79808151",
+      "theme": "light",
+      "width": 300,
+      "height": 900,
+      "rootFont": "20px",
+      "scrollWidth": 300,
+      "focusVisible": false,
+      "backFocused": false,
+      "revision": "7bbef7252a338005b380d8e07a7eb8075ac6b243",
+      "personallyInspected": false
+    },
+    {
+      "id": "MB-TE-AF02",
+      "consumer": "PWA",
+      "screen": "MOBILE-TEACHEREXCUSE",
+      "state": "after-same-ticket-back-keyboard-focus",
+      "file": "PWA-MOBILE-TEACHEREXCUSE__MB-TE-AF02-after-same-ticket-back-keyboard-focus__dark__768__root16__7bbef7252.png",
+      "sha256": "f0959994ed1591981b1e79708a009fdd586646664c8c21ee51a66fddcb84b48b",
+      "theme": "dark",
+      "width": 768,
+      "height": 900,
+      "rootFont": "16px",
+      "scrollWidth": 768,
+      "focusVisible": true,
+      "backFocused": true,
+      "revision": "7bbef7252a338005b380d8e07a7eb8075ac6b243",
+      "personallyInspected": false
+    }
+  ],
+  "captureAttempts": [
+    {
+      "id": "MB-TE-AF01",
+      "file": "PWA-MOBILE-TEACHEREXCUSE__MB-TE-AF01-after-approved-ticket-metadata-wrap__light__300__root20__7bbef7252.png",
+      "state": "CAUSE_QUALIFIED_INSPECTION_PENDING",
+      "startedAtUtc": "2026-10-25T02:10:03.117Z",
+      "finishedAtUtc": "2026-10-25T02:10:03.383Z"
+    },
+    {
+      "id": "MB-TE-AF02",
+      "file": "PWA-MOBILE-TEACHEREXCUSE__MB-TE-AF02-after-same-ticket-back-keyboard-focus__dark__768__root16__7bbef7252.png",
+      "state": "CAUSE_QUALIFIED_INSPECTION_PENDING",
+      "startedAtUtc": "2026-10-25T02:10:03.385Z",
+      "finishedAtUtc": "2026-10-25T02:10:03.703Z"
+    }
+  ],
+  "blocked": [],
+  "pageErrors": [],
+  "requestStarts": [
+    {
+      "id": "47d1018b-f401-4a93-9e11-c751fa064f48",
+      "method": "POST",
+      "path": "/api/auth/refresh",
+      "phase": "BOOTSTRAP",
+      "loginIndex": 0,
+      "canonicalAtStart": false,
+      "requiredCanonical": false,
+      "forwarded": true,
+      "canonicalAtForward": false,
+      "forwardedAtUtc": "2026-10-25T02:09:59.993Z",
+      "captureAckDurable": true
+    },
+    {
+      "id": "c2e594e3-ca22-4fae-8177-1c92d060651f",
+      "method": "POST",
+      "path": "/api/auth/login",
+      "phase": "LOGIN_0",
+      "loginIndex": 0,
+      "canonicalAtStart": false,
+      "requiredCanonical": false,
+      "forwarded": true,
+      "canonicalAtForward": false,
+      "forwardedAtUtc": "2026-10-25T02:10:00.247Z",
+      "captureAckDurable": true
+    },
+    {
+      "id": "9c522dec-c67e-406f-b798-485acabb5351",
+      "method": "GET",
+      "path": "/api/auth/session",
+      "phase": "LOGIN_0",
+      "loginIndex": 0,
+      "canonicalAtStart": false,
+      "requiredCanonical": true,
+      "forwarded": true,
+      "canonicalAtForward": false,
+      "forwardedAtUtc": "2026-10-25T02:10:00.373Z",
+      "captureAckDurable": true
+    },
+    {
+      "id": "d3148681-2a9b-4ab6-98e5-b06fab6bee13",
+      "method": "GET",
+      "pathHash": "66be5879ef3a006f97cdf3d9fb658d6b9ab244113bbbad159c733f0fee4efb32",
+      "phase": "LOGIN_0",
+      "loginIndex": 0,
+      "canonicalAtStart": false,
+      "requiredCanonical": false,
+      "forwarded": true,
+      "canonicalAtForward": true,
+      "forwardedAtUtc": "2026-10-25T02:10:00.428Z"
+    },
+    {
+      "id": "0a8b3602-6b6f-4e6d-b808-f7a882ae5c7f",
+      "method": "POST",
+      "path": "/api/auth/ws-ticket",
+      "phase": "LOGIN_0",
+      "loginIndex": 0,
+      "canonicalAtStart": false,
+      "requiredCanonical": false,
+      "forwarded": true,
+      "canonicalAtForward": true,
+      "forwardedAtUtc": "2026-10-25T02:10:00.429Z"
+    },
+    {
+      "id": "5d499a50-5da1-42a4-bde2-ae4b527452e1",
+      "method": "GET",
+      "path": "/api/v1/teacher/semester",
+      "phase": "LOGIN_0",
+      "loginIndex": 0,
+      "canonicalAtStart": false,
+      "requiredCanonical": false,
+      "forwarded": true,
+      "canonicalAtForward": true,
+      "forwardedAtUtc": "2026-10-25T02:10:00.431Z"
+    },
+    {
+      "id": "5be8d57b-d512-4cc1-82c9-d17e7b1ab591",
+      "method": "GET",
+      "path": "/api/auth/device-preferences",
+      "phase": "LOGIN_0",
+      "loginIndex": 0,
+      "canonicalAtStart": false,
+      "requiredCanonical": false,
+      "forwarded": true,
+      "canonicalAtForward": true,
+      "forwardedAtUtc": "2026-10-25T02:10:00.432Z",
+      "captureAckDurable": true
+    },
+    {
+      "id": "0001af3e-9539-4a3f-bf04-9f27a819266d",
+      "method": "GET",
+      "pathHash": "6a3ed7c33ca04a6a7e68847f792e314468b713dea9c4ece627c242271898ae23",
+      "phase": "LOGIN_0",
+      "loginIndex": 0,
+      "canonicalAtStart": true,
+      "requiredCanonical": false,
+      "forwarded": true,
+      "canonicalAtForward": true,
+      "forwardedAtUtc": "2026-10-25T02:10:00.502Z"
+    },
+    {
+      "id": "0a062c1d-d05c-4d43-8e15-2bc2b4727ecb",
+      "method": "GET",
+      "path": "/api/v1/teacher/semester",
+      "phase": "LOGIN_0",
+      "loginIndex": 0,
+      "canonicalAtStart": true,
+      "requiredCanonical": false,
+      "forwarded": true,
+      "canonicalAtForward": true,
+      "forwardedAtUtc": "2026-10-25T02:10:00.560Z"
+    },
+    {
+      "id": "ba9058a1-964e-4f49-ac92-dc406f00f42e",
+      "method": "GET",
+      "path": "/api/v1/teacher/catalog",
+      "phase": "LOGIN_0",
+      "loginIndex": 0,
+      "canonicalAtStart": true,
+      "requiredCanonical": false,
+      "forwarded": true,
+      "canonicalAtForward": true,
+      "forwardedAtUtc": "2026-10-25T02:10:00.562Z"
+    },
+    {
+      "id": "6b1fd612-adf8-4d70-b805-5ee2696902d3",
+      "method": "GET",
+      "pathHash": "b05fd2eb20115510c259a188067bd51de03fb6d2c5d82ad0a85e398b9c28694f",
+      "phase": "LOGIN_0",
+      "loginIndex": 0,
+      "canonicalAtStart": true,
+      "requiredCanonical": false,
+      "forwarded": true,
+      "canonicalAtForward": true,
+      "forwardedAtUtc": "2026-10-25T02:10:00.564Z"
+    },
+    {
+      "id": "df101aaa-f4b6-4fd1-a5e1-fc16e5aa3770",
+      "method": "GET",
+      "pathHash": "89f60c5c8442c4f7c568d92b24a1205a3f4a8c1177839b71670fd41f74c0276c",
+      "phase": "LOGIN_0",
+      "loginIndex": 0,
+      "canonicalAtStart": true,
+      "requiredCanonical": false,
+      "forwarded": true,
+      "canonicalAtForward": true,
+      "forwardedAtUtc": "2026-10-25T02:10:00.565Z"
+    },
+    {
+      "id": "a5f11dcb-349f-4efe-93ad-f66cd921dd24",
+      "method": "GET",
+      "pathHash": "5976d9ea74202ee79fb95d76733a6e02f2d6cf58b6eb0cc5a762c37d89af8f17",
+      "phase": "LOGIN_0",
+      "loginIndex": 0,
+      "canonicalAtStart": true,
+      "requiredCanonical": false,
+      "forwarded": true,
+      "canonicalAtForward": true,
+      "forwardedAtUtc": "2026-10-25T02:10:00.566Z"
+    },
+    {
+      "id": "1db9b600-5260-4d24-b249-11eaec5b30eb",
+      "method": "GET",
+      "pathHash": "66be5879ef3a006f97cdf3d9fb658d6b9ab244113bbbad159c733f0fee4efb32",
+      "phase": "LOGIN_0",
+      "loginIndex": 0,
+      "canonicalAtStart": true,
+      "requiredCanonical": false,
+      "forwarded": true,
+      "canonicalAtForward": true,
+      "forwardedAtUtc": "2026-10-25T02:10:00.659Z"
+    },
+    {
+      "id": "af3dadff-bf4a-453c-9f5f-6f83c8e78eda",
+      "method": "GET",
+      "path": "/api/v1/teacher/semester",
+      "phase": "LOGIN_0",
+      "loginIndex": 0,
+      "canonicalAtStart": true,
+      "requiredCanonical": false,
+      "forwarded": true,
+      "canonicalAtForward": true,
+      "forwardedAtUtc": "2026-10-25T02:10:00.672Z"
+    },
+    {
+      "id": "d79058e1-63e8-417b-8423-5b98cecccee8",
+      "method": "GET",
+      "path": "/api/v1/teacher/catalog",
+      "phase": "LOGIN_0",
+      "loginIndex": 0,
+      "canonicalAtStart": true,
+      "requiredCanonical": false,
+      "forwarded": true,
+      "canonicalAtForward": true,
+      "forwardedAtUtc": "2026-10-25T02:10:00.683Z"
+    },
+    {
+      "id": "2833d8f1-6c8b-4de0-9c1e-3616dd96d1a0",
+      "method": "GET",
+      "pathHash": "b05fd2eb20115510c259a188067bd51de03fb6d2c5d82ad0a85e398b9c28694f",
+      "phase": "LOGIN_0",
+      "loginIndex": 0,
+      "canonicalAtStart": true,
+      "requiredCanonical": false,
+      "forwarded": true,
+      "canonicalAtForward": true,
+      "forwardedAtUtc": "2026-10-25T02:10:00.689Z"
+    },
+    {
+      "id": "ee72e697-be15-4bf2-863c-11395e2c8737",
+      "method": "GET",
+      "pathHash": "89f60c5c8442c4f7c568d92b24a1205a3f4a8c1177839b71670fd41f74c0276c",
+      "phase": "LOGIN_0",
+      "loginIndex": 0,
+      "canonicalAtStart": true,
+      "requiredCanonical": false,
+      "forwarded": true,
+      "canonicalAtForward": true,
+      "forwardedAtUtc": "2026-10-25T02:10:00.696Z"
+    },
+    {
+      "id": "e61299c7-2ad2-4a4d-82ce-732c03b11a26",
+      "method": "GET",
+      "pathHash": "5976d9ea74202ee79fb95d76733a6e02f2d6cf58b6eb0cc5a762c37d89af8f17",
+      "phase": "LOGIN_0",
+      "loginIndex": 0,
+      "canonicalAtStart": true,
+      "requiredCanonical": false,
+      "forwarded": true,
+      "canonicalAtForward": true,
+      "forwardedAtUtc": "2026-10-25T02:10:00.701Z"
+    },
+    {
+      "id": "f6fb571c-c4f1-4135-8c32-85ab096d7cd7",
+      "method": "GET",
+      "path": "/api/v1/teacher/semester",
+      "phase": "NATIVE_ATTENDANCE_EXISTING_CANDIDATE",
+      "loginIndex": 0,
+      "canonicalAtStart": true,
+      "requiredCanonical": false,
+      "forwarded": true,
+      "canonicalAtForward": true,
+      "forwardedAtUtc": "2026-10-25T02:10:00.866Z"
+    },
+    {
+      "id": "ac3e0c85-b1c9-4e78-aadf-00ae0d2f09d5",
+      "method": "GET",
+      "path": "/api/v1/teacher/catalog",
+      "phase": "NATIVE_ATTENDANCE_EXISTING_CANDIDATE",
+      "loginIndex": 0,
+      "canonicalAtStart": true,
+      "requiredCanonical": false,
+      "forwarded": true,
+      "canonicalAtForward": true,
+      "forwardedAtUtc": "2026-10-25T02:10:00.923Z"
+    },
+    {
+      "id": "a40ee4c4-a473-4b86-b7f2-1aeb33de2448",
+      "method": "GET",
+      "path": "/api/v1/teacher/journal",
+      "phase": "NATIVE_ATTENDANCE_EXISTING_CANDIDATE",
+      "loginIndex": 0,
+      "canonicalAtStart": true,
+      "requiredCanonical": false,
+      "forwarded": true,
+      "canonicalAtForward": true,
+      "forwardedAtUtc": "2026-10-25T02:10:01.148Z"
+    },
+    {
+      "id": "845a7ad4-8dd5-4821-b4fd-0f3d31d13f76",
+      "method": "GET",
+      "path": "/api/v1/teacher/journal",
+      "phase": "NATIVE_ATTENDANCE_EXISTING_CANDIDATE",
+      "loginIndex": 0,
+      "canonicalAtStart": true,
+      "requiredCanonical": false,
+      "forwarded": true,
+      "canonicalAtForward": true,
+      "forwardedAtUtc": "2026-10-25T02:10:01.170Z"
+    },
+    {
+      "id": "3a6251b5-afaa-40ff-be89-70f429ff33bb",
+      "method": "GET",
+      "path": "/api/v1/teacher/journal",
+      "phase": "NATIVE_ATTENDANCE_EXISTING_CANDIDATE",
+      "loginIndex": 0,
+      "canonicalAtStart": true,
+      "requiredCanonical": false,
+      "forwarded": true,
+      "canonicalAtForward": true,
+      "forwardedAtUtc": "2026-10-25T02:10:01.196Z"
+    },
+    {
+      "id": "63ed097d-a050-4dd5-8846-b2c6647455f0",
+      "method": "GET",
+      "path": "/api/v1/teacher/lessons/:id",
+      "phase": "NATIVE_ATTENDANCE_EXISTING_CANDIDATE",
+      "loginIndex": 0,
+      "canonicalAtStart": true,
+      "requiredCanonical": false,
+      "forwarded": true,
+      "canonicalAtForward": true,
+      "forwardedAtUtc": "2026-10-25T02:10:01.475Z"
+    },
+    {
+      "id": "f8e2713a-acdf-4340-b717-544458f58a3d",
+      "method": "GET",
+      "path": "/api/v1/teacher/excuses/:id",
+      "phase": "NATIVE_EXISTING_APPROVED_EXCUSE",
+      "loginIndex": 0,
+      "canonicalAtStart": true,
+      "requiredCanonical": false,
+      "forwarded": true,
+      "canonicalAtForward": true,
+      "forwardedAtUtc": "2026-10-25T02:10:01.655Z"
+    },
+    {
+      "id": "738ee3c0-28b1-4153-ae08-467ff13e6bc5",
+      "method": "GET",
+      "path": "/api/v1/teacher/excuses/:id/attachments/:id",
+      "phase": "NATIVE_EXISTING_APPROVED_EXCUSE",
+      "loginIndex": 0,
+      "canonicalAtStart": true,
+      "requiredCanonical": false,
+      "forwarded": true,
+      "canonicalAtForward": true,
+      "forwardedAtUtc": "2026-10-25T02:10:01.777Z"
+    }
+  ],
+  "requestFailures": [],
+  "readIncomplete": [],
+  "device": {
+    "readsObserved": 1,
+    "putsForwarded": 0
+  },
+  "cleanup": {
+    "method": "TECHNICAL_EXACT_CURRENT_OWN_SELF_SESSION_DELETE",
+    "nativeUiLogoutPass": false,
+    "selfDeleteForwarded": 1,
+    "status": 204,
+    "sameOldBearerStatus": 401,
+    "confirmed": true,
+    "fallbackUsed": false,
+    "intent": "RETURNED"
+  },
+  "captureComplete": true,
+  "completed": true,
+  "syntheticApiResponses": false,
+  "functionalActionsAdded": 0,
+  "exactOwnHandlesCaptured": [
+    true
+  ],
+  "unknownHold": false,
+  "candidateFeed": {
+    "busy": "false",
+    "error": false,
+    "groupIndex": 0,
+    "subjectIndex": 0,
+    "selectedGroupId": 1,
+    "selectedSubjectId": 1,
+    "feedLoading": false,
+    "feedError": false,
+    "feedLoaded": true,
+    "lessonPresent": true,
+    "lessonMatches": true,
+    "dateFrom": "2026-10-24",
+    "dateTo": "2026-10-24"
+  },
+  "existingCandidateLessonConfirmed": true,
+  "naturalCandidateTicketEntry": true,
+  "previewTransport": {
+    "declaredActualApiResponseForwarding": true,
+    "maxRedirects": 0,
+    "forwarded": true,
+    "status": 200,
+    "followedRedirects": false,
+    "bodyOrUrlPersisted": false,
+    "independentFullResponseBodyObserved": false,
+    "mime": "application/pdf",
+    "contentLengthHeader": 46025,
+    "originalApiResponseFulfilled": true
+  },
+  "approvedTicketCriterion": {
+    "sourceProjectionLoaded": true,
+    "matchesExpectedApprovedOwnSyntheticTicket": true,
+    "attachmentsOnlyExpected": true,
+    "attachmentMetadata": {
+      "expectedIdMatches": true,
+      "mime": "application/pdf",
+      "size": 46025,
+      "expiredAtRead": false
+    },
+    "independentFullResponseBodyObserved": false
+  },
+  "automaticPreview": {
+    "scope": "ONE_KNOWN_SYNTHETIC_OWN_ATTACHMENT_NATIVE_MOUNT_GET",
+    "requiredBySource": true,
+    "fullResponseBodyObservedByHarness": false,
+    "openFileClicked": false,
+    "bytesOrObjectUrlPersisted": false,
+    "httpStatuses": [
+      200
+    ],
+    "outcome": "ACTUAL_NATIVE_GET_ORIGINAL_RESPONSE_FORWARDED",
+    "filePreviewPass": false
+  },
+  "previewResponseHeaders": [
+    {
+      "status": 200,
+      "mime": "application/pdf",
+      "contentLengthHeader": 46025,
+      "fullResponseBodyObservedByHarness": false
+    }
+  ],
+  "pdfReadyObservation": {
+    "attempts": 1,
+    "maxWaitMs": 7000,
+    "sourceGuard": "data-pdf-ready plus nonzero canvas; source error ends busy",
+    "outcome": "CANVAS_SOURCE_READY_PERSONAL_INSPECTION_REQUIRED",
+    "fileVisualPass": false,
+    "state": {
+      "mounted": true,
+      "ready": true,
+      "busy": "false",
+      "canvasWidth": 369,
+      "canvasHeight": 261
+    }
+  },
+  "nativeBackToSameLessonObserved": false,
+  "nativeBackCriterion": "NOT_RECHECKED_REUSED_BEFORE_REFERENCE",
+  "browserClosed": true,
+  "sourceUnchanged": true,
+  "finishedAtUtc": "2026-10-25T02:10:03.982Z"
+}

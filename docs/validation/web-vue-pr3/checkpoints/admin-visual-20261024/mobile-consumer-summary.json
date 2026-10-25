@@ -52,7 +52,7 @@
     "tma-controlled-unsigned-gate-light-300",
     "tma-controlled-unsigned-gate-dark-300"
   ],
-  "qualifiedAgainstSourceRevision": "63d97497eba26577a8af5fa1428fcc3c959c8992",
+  "qualifiedAgainstSourceRevision": "7bbef7252a338005b380d8e07a7eb8075ac6b243",
   "latestMobileSourceDiffFrom77f": [
     "frontends/mobile-core/src/features/admin-groups/admin-group-deletion-client.test.ts",
     "frontends/mobile-core/src/features/admin-groups/admin-groups-client.ts",
@@ -72,6 +72,7 @@
     "frontends/mobile-core/src/features/teacher/TeacherStatsScreen.vue",
     "frontends/mobile-core/src/features/teacher/teacher-journal-pagination.test.ts",
     "frontends/mobile-core/src/features/teacher/teacher-journal-screen.pcss",
+    "frontends/mobile-core/src/features/teacher/teacher-lesson-r3.pcss",
     "frontends/mobile-core/src/shared/components/StudentFeatureOwner.test.ts",
     "frontends/mobile-core/src/shared/components/StudentFeatureOwner.vue",
     "frontends/mobile-core/src/shared/components/TeacherFeatureOwner.vue",
@@ -212,7 +213,7 @@
     "commonNavChangedSinceOriginal": "accepted e715 sourceinfluence, not currentAdminMore runtime"
   },
   "remainingVisualInventoryQualification": {
-    "priorSourceQualification": "admin-more-prep/REMAINING-8-SOURCE-QUALIFICATION.json retained historical8; HeadmanLessonActions now observed withP3; LateCheckin form nowboundedobserved at63d, otherrows qualification unaffected.; TeacherExcuse nowboundedobservedwithP3/PDFvisualNOTQUALIFIED at63d; remaining4activeconditional+1orphan.",
+    "priorSourceQualification": "admin-more-prep/REMAINING-8-SOURCE-QUALIFICATION.json retained historical8; HeadmanLessonActions now observed withP3; LateCheckin form nowboundedobserved at63d, otherrows qualification unaffected.; TeacherExcuse nowboundedobservedwithP3/PDFvisualNOTQUALIFIED at63d; remaining4activeconditional+1orphan. TeacherExcuse lessonmetaP3 closed after6219/boundedPDFfirstpageobserved; remaining count unchanged.",
     "inventoryUnchecked": 5,
     "activeConditionalUnchecked": 4,
     "orphanSourceOnly": 1,
@@ -282,18 +283,31 @@
     "newPreviouslySourceOnlyConsumers": [
       "MOBILE-TEACHEREXCUSE"
     ],
-    "status": "bounded observed approvedticket;P3needsfix/PDFvisualNOTQUALIFIED",
+    "status": "bounded observed; narrow lessonmeta P3 closed after6219; PDFfirstpage visiblyrendered",
     "rootPersonalInspectionComplete": true,
     "finding": {
       "id": "V-TE-LESSONMETA-300-R20",
       "severity": "P3",
-      "status": "OPEN_NEEDS_FIX_SOURCE_AND_AFTER_NOT_ACCEPTED"
+      "status": "CLOSED_BOUNDED_AFTER_300_LIGHT_ROOT20"
     },
-    "PDFvisual": "NOT_QUALIFIED firstpage notobservedready; loadingcaption/metadata only; nativeoriginalGET200 is transportread only, filePreviewPassfalse",
+    "PDFvisual": "AFTER bounded firstpage rendering observed ready and personallyviewed in both originalPNG; no download/Open/allpages/zoom/provider claim",
     "independentFullClientBodyCompletion": false,
     "cleanup": "technicalexactownselfDELETE204/samecurrentbearer401/browserclosed/noHOLD; NOTnativeUIlogoutPASS",
     "functionalActionsAdded": 0,
-    "wholeScreenReady": false
+    "wholeScreenReady": false,
+    "PDFvisualBefore": "NOT_QUALIFIED firstpage notobservedready; loadingcaption/metadata only; nativeoriginalGET200 is transportread only, filePreviewPassfalse",
+    "afterPresentation": {
+      "revision": "7bbef7252a338005b380d8e07a7eb8075ac6b243",
+      "productBase": "6219ca60a322d29921575535eccbf12efa76e304",
+      "qualifiedReceipt": "teacher-lesson-meta-polish/after-prep/run/qualified-7bb.json",
+      "newImages": 2,
+      "rawReceiptSha256": "436ec95a202b6874fdade47e6d749a006cea42e9280e9b7922c775c6b8a0c2a6",
+      "rawExit": 0,
+      "personalInspection": "author+Root",
+      "PDFfirstpage": "bounded actualcanvas/visiblepage only",
+      "nativeBack": "NOT_RECHECKED oldbeforePASSreused",
+      "cleanup": "exactown204401/browserclosed/noHOLD"
+    }
   },
-  "currentSourceQualification": "Per-consumer source/runtime qualifications; TeacherExcuse narrow lessonmeta P3 open; PDF visual not ready. LateCheckin bounded form observed, not submit PASS."
+  "currentSourceQualification": "Per-consumer revision/limits preserved. One-line TeacherCard wrap6219 has actualAFTER2; historical baseline is not whole-screen readiness."
 }

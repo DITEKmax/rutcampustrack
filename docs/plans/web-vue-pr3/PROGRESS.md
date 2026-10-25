@@ -431,3 +431,35 @@ matching assembledRoot PWA build со strictTypeScript PASS. TMA общая PCSS
 не выполнялся, P3 не объявлен закрытым. Причина повтора — изменённое отображение;
 один boundedPDFreadywait отдельно проверит существенный незакрытый риск безAPIretry.
 [Source/build](../../validation/web-vue-pr3/checkpoints/remaining-admin-20261024/teacher-meta-root-build.json).
+
+
+## TeacherCard AFTER и первая страница PDF — закрыто2026-10-25
+
+Source6219/onePCSSwrap + matchingPWAstrict/build/review reused. Единственный actual
+AFTERda наRoot7bb: EXIT0/errors0, два fullpagePNG300x1651/root20light и768x1214/dark
+приviewportheight900. Автор и Root лично подтвердили читаемую дату/время, отдельный
+перенос chips, сохранённый широкий вариант/Backfocus. V-TE-LESSONMETA-300-R20 CLOSED.
+OptionalnaturalPDFobserver≤7s достигreadycanvas369x261; в обоих оригиналах видна
+первая страница синтетического журнала. Это bounded firstpage render, без Open/
+download/allpages/zoom/provider PASS. Исходные beforeloading кадры не подменены.
+
+Back не активировался: доAuth обнаружен конфликт старого retainedBack шага с Root
+no-repeat scope; aeGO withdrawn/unexecuted, удалён только capture-step/oracle,
+весь Auth/preview/PDF/cleanup/HOLD код unchanged, targetedindependentreviewPASS.
+Затем один actualda, rawBack=false/NOT_RECHECKED, прежний функциональный Back reused.
+RawPDFvisualflagsfalse сохранены, фактическое визуальное подтверждение — отдельный
+sidecar/PNG. OwnexactDELETE204/sameBearer401/browserclosed/noHOLD, raw436ec95aimmutable.
+[Исправленные кадры](../../validation/web-vue-pr3/runtime-gallery/teacher-excuse-after-20261025/index.html).
+
+Gallery289/portable289, finite45boundedobserved/5unchecked из50 (4activeconditional+
+1orphan), не45полностью готовых экранов. Actions116/117 implemented/locallyverified,
+ADMIN33/34. Backend/JARs не менялись, успешные checks не повторялись. Единственный
+внешний ресурсный блокер QENV010:5,299,769,344B (~4.94GiB) <7GiB preflight; нужен
+примерно+3GiB либо≥7GiB actualfree с запасом, сохранив workspace/Dockerdata. Runtime12/
+fixtures/groupUIdelete0. После настоящего group gate — Angular433-file removal и
+assembledcommonNginx. CImanual/PAUSED/dispatch0; без merge/deploy/production.
+
+Финальный portable source-only архив текущего опубликованного checkpoint и SHA
+передаются в главномчате/описанииPR: exactimmutable004652base +incremental public-source
+bundles/allowlist. Все12WT сохранены, sourceWIP0, privatehandles/DB/env/keys/deps/JAR
+не включаются. Source backup не является runtime/product readiness.

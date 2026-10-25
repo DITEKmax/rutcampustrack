@@ -1,14 +1,14 @@
 # CURRENT — existing Goal PR3, 2026-10-25
 
 Owner GO active: existing `codex/web-vue-redesign` / PR3 only. Product6219ca60a;
-previous published checkpoint63d97497e. Root docs/Git/integration; sole product
+previous published checkpoint7bbef7252. Root docs/Git/integration; sole product
 writers in preserved worktrees. Children requested gpt-6.1-sol/high; runtime model
 telemetry unavailable, no fallback claimed. CI/Coverage/Security/OpenAPI manual/
 PAUSED, dispatch0. No main/reset/clean/forcepush/merge/deploy/production/globalcleanup.
 
 Actions implemented116/117 and locallyverified116/117; ADMIN33/34. Not overallPR%.
 Visual inventory33WEB+50mobile, PWA/TMA separately; Angular/build is a fourth axis.
-Gallery287 PNG/portable287, first204 immutable +newer83 hashed. Mobile45 bounded
+Gallery289 PNG/portable289, first204 immutable +newer85 hashed. Mobile45 bounded
 observed/5unchecked:4activeconditional+1orphan TeacherGroupSubjects. Not45 fully
 ready screens. Historicaloriginal36 and corrected originalmapped37 preserved.
 
@@ -53,7 +53,7 @@ frontend6219 requires fresh sourcefreeze/qualification/currentRootGO before effe
 Actual start/fixturewrites/UIdelete0. PlannedoneoriginalUUID/numericpreview/password,
 sixopenWEB/PWA/TMA target+retainedTeacher views, naturalwithdrawal/foreignpreservation.
 
-BLOCKER Q-ENV-010: observed5,313,261,568B free<7GiB (7,516,192,768B) preflight.
+BLOCKER Q-ENV-010: observed5,299,769,344B free<7GiB (7,516,192,768B) preflight.
 Need about+3GiB or≥7GiB actualfree with margin, preserving workspace/Dockerdata.
 No diskconfiguration tool here; 2GiB hard/2.5GiB early250ms guards unchanged.
 16GiB cgroup/4CPU, ONEHEAVYfree. Main13/admin7 retained; clock5/shipping5 stopped.
@@ -65,12 +65,18 @@ CLOSED bounded TeacherExcuse: real existingTeacher2→lesson1/date24/group1/subj
 Student4approved ticket, normal UI/nativeBack, exactautoPreviewGET200/pdf46025
 forwardedoriginalAPIResponse/maxRedirects0. EXIT0/errors0/ownDELETE204+401/browser
 closed,2author+Root personallyviewedPNG. Actual300x1580fullpage/viewport300x900,
-768x900. PDFfirstpage not observedready (loadingcaption), no download/previewPASS.
-P3 V-TE-LESSONMETA-300-R20: date/time compressed vertically atroot20; solewriter
-one-lineTeacherCardCSS9e→6219 independentreview/actualPostCSS/formatPASS,
-one matchingRootPWAproductionbuild (includesstrict) PASS; boundedAFTER2 pending.
-Unchanged Back/authority/read checks reused; optionalone7sPDFready observation
-addresses unverified display risk withoutretry/APIrepeat/fakebody/newAuthloop.
+768x900. Before63d PDFfirstpage not observedready (loadingcaption); AFTER result follows.
+P3 V-TE-LESSONMETA-300-R20 CLOSED_BOUNDED: source9e→6219 onePCSSwrapline,
+independentreview/actualPostCSS/format +one matchingRootPWAstrict/build PASS.
+AFTERda actualEXIT0/errors0, ownDELETE204401/browserclosed/noHOLD. Two author+Root
+personallyviewed originalPNG300x1651/768x1214 fullpage (viewportheight900): date/time
+readable300root20/chipswrap, wide768keyboardfocus preserved. Oneoptional≤7s natural
+PDF observer reachedreadycanvas369x261; firstpage visiblyrendered inbothoriginals,
+syntheticjournal/no credentials. No Open/download/allpages/zoom/provider claim.
+Raw436ec95a unchanged; oldrawPDFvisualflagfalse retained with separatevisualproof.
+BeforeBackPASS reused, noBackactivation/rawfalse NOT_RECHECKED. EarlieraeGO withdrawn
+beforeAuth because retainedBackstep conflictedwithRootno-repeat scope; onlycapture
+suffix corrected/reviewed, then oneactualda. No product/test weakening or thirdcase.
 CLOSED bounded LateCheckin: currentownStudent3 options200/42options/3eligible,
 5of5budget, nativeContinue disabledbeforeselection, ownlesson3/form300lightroot20
 and768darkCancelkeyboardfocus. EXIT0/errors0/noSubmit/noCancelactivation/newrequest0,
@@ -91,4 +97,8 @@ bundle/CRC/safepaths/manifest/sourcebytechecksPASS. No looseprivate/secrets/DB/
 env/keys/JAR/deps; publicsynthetictestfixtures qualified. NativeDIR1/25 andhistory1/4
 allpublicnonsecret/unresolved0, rawtruth retained/rulesunchanged. PIDobservational
 hold is not sourceinvalidity or runtimePASS. Snapshot481 plus new3371publishedsource.
-Productpolicyquestions resolved; only resourceQENV010 needs owner action.
+Final self-contained source-only recovery package for this published checkpoint is
+provided in the main chat; final filename/SHA/receipt are also in PR body. Immutable
+004652 base remains preserved inside the package with incremental public-source
+bundles; no private runtime handles/data. Product-policy questions resolved; only
+resourceQENV010 needs owner action. All writers/browsers idle, source WIP0.

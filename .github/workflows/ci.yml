@@ -2978,7 +2978,7 @@ jobs:
         run: pytest tests/ -v
 
   mobile-vue-build-test:
-    name: Mobile Vue workspace
+    name: Vue workspace — WEB, PWA, TMA
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -2997,6 +2997,7 @@ jobs:
           npm run test:contract
           npm run typecheck:foundation
           npm run typecheck
+          npm run test:web
           node --test pwa-vue/tests/*.test.mjs
           node ../tests/load/scenario-controls.cjs
           npm run build

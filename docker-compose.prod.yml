@@ -1549,7 +1549,7 @@ services:
   # ============================================================
 
   # M13 G11 (extended scope) — все 4 frontend-nginx контейнеров отдают
-  # только статику (Angular/React build artefacts + Tailwind CSS).
+  # только статику клиентских приложений.
   # Resident footprint ~5-10m, 64m mem_limit достаточен с большим запасом
   # на keepalive connections + sendfile buffers. Симметрично с reverse-proxy
   # nginx, чтобы не оставлять unbounded контейнеры в prod.

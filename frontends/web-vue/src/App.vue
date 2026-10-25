@@ -3,6 +3,7 @@ import { watch } from 'vue';
 import { router } from './app/router';
 import { webSession } from './auth/session';
 import ReauthenticationReceipt from './auth/ReauthenticationReceipt.vue';
+import { chunkRecovery } from './app/chunk-recovery';
 import './app/live';
 let lastRole = webSession.snapshot.value?.activeRole ?? null;
 
@@ -37,6 +38,26 @@ watch(
 
 <template>
   <ReauthenticationReceipt />
+  <section
+    v-if="chunkRecovery.failed.value"
+    class="web-notice web-stack"
+    aria-label="Не удалось открыть раздел"
+  >
+    <p role="alert">
+      Не удалось открыть раздел. Возможно, приложение обновилось или пропало подключение. Перед
+      обновлением страницы сохрани изменения и проверь результат незавершённых операций.
+    </p>
+    <button
+      v-if="chunkRecovery.canRefresh.value"
+      class="web-button"
+      @click="chunkRecovery.refresh"
+    >
+      Обновить страницу
+    </button>
+    <p v-else>
+      Проверь подключение. Если раздел по-прежнему недоступен, попробуй открыть его позже.
+    </p>
+  </section>
   <main
     v-if="
       webSession.phase.value === 'starting' ||

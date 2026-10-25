@@ -41,6 +41,8 @@ export default defineConfig({
         'mobile-core/src/**/*.{ts,vue}',
         'pwa-vue/src/**/*.{ts,vue}',
         'tma-vue/src/**/*.{ts,vue}',
+        'web-vue/src/**/*.{ts,vue}',
+        'shared/**/*.{ts,vue}',
       ],
       exclude: ['**/*.test.ts', '**/api/generated/**', '**/*.d.ts'],
     },

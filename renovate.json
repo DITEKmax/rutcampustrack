@@ -34,12 +34,6 @@
       "groupSlug": "spring-boot"
     },
     {
-      "description": "Group Angular updates",
-      "matchPackagePatterns": ["^@angular/"],
-      "groupName": "Angular",
-      "groupSlug": "angular"
-    },
-    {
       "description": "Group React updates (PWA + mini-app)",
       "matchPackageNames": ["react", "react-dom", "@types/react", "@types/react-dom"],
       "groupName": "React",
@@ -56,7 +50,9 @@
       "matchPackageNames": ["grafana/loki"],
       "matchUpdateTypes": ["major"],
       "automerge": false,
-      "prBodyNotes": [":warning: Major Loki upgrade — follow `docs/runbooks/loki-major-upgrade.md` (expand-contract schema)."]
+      "prBodyNotes": [
+        ":warning: Major Loki upgrade — follow `docs/runbooks/loki-major-upgrade.md` (expand-contract schema)."
+      ]
     },
     {
       "description": "cadvisor/Alloy digest bump — auto-merge patch (digest-pinned per M06 D2)",

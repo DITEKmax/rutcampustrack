@@ -67,7 +67,6 @@ dist/
 # Landing has no bundler: dist is canonical source and Docker COPY input.
 !frontends/landing/dist/
 .next/
-.angular/
 .pnpm-store/
 .npm/
 .vite/

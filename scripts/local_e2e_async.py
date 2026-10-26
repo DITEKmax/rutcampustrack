@@ -39,7 +39,65 @@ TOKEN_NAMES = {"ACADEMIC_TO_ATTENDANCE_SERVICE_TOKEN", "SCHEDULE_TO_ACADEMIC_SER
                "ATTENDANCE_TO_ACADEMIC_SERVICE_TOKEN"}
 COMPOSE = ["docker-compose.e2e.yml", "tests/e2e/infra/docker-compose.clock-fixture.yml",
            "tests/e2e/infra/docker-compose.synthetic-baseline.yml"]
-MODES = {"prepare", "openapi", "full", "client", "lesson-lifecycle"}
+MODES = {"prepare", "openapi", "full", "client", "lesson-lifecycle", "ui-batch"}
+# Named remaining scenarios only. No passed client10/lesson4/DOCX1 replay.
+# config, one extended flag, private output variable, expected count, safe result filenames.
+BATCH_LANES = {
+    "auth-smoke": ("playwright.config.ts", None, None, 9, {"auth-token-lifecycle.spec.ts", "mini-app.spec.ts"}),
+    "first3": ("playwright.first3.config.ts", None, "RCT_FOCUS3_RUN", 3, {"mobile-real-server.spec.ts"}),
+    "admin": ("playwright.real-mobile.config.ts", "RCT_E2E_ADMIN_LIFECYCLE", None, 1, {"mobile-real-server.spec.ts"}),
+    "role-security-export": ("playwright.real-mobile.config.ts", "RCT_E2E_ROLE_LOGOUT", None, 6, {"mobile-real-server.spec.ts", "cloud-accepted-role-authority.spec.ts", "cloud-accepted-admin-grants.spec.ts", "cloud-accepted-auth-security.spec.ts"}),
+    "installation": ("playwright.real-mobile.config.ts", "RCT_E2E_SW_LIFECYCLE", None, 2, {"mobile-real-server.spec.ts"}),
+    "geo": ("playwright.teaching-clock.config.ts", None, "RCT_E2E_GEO_RUN", 1, {"teaching-clock-geo.spec.ts"}),
+    "homework": ("playwright.homework-lifecycle.config.ts", None, "RCT_HOMEWORK_LIFECYCLE_RUN", 4, {"mobile-homework-lifecycle.spec.ts"}),
+    "map": ("playwright.map-lifecycle.config.ts", None, "RCT_MAP_LIFECYCLE_RUN", 1, {"mobile-map-lifecycle.spec.ts"}),
+    "registry-html": ("playwright.registry-export.config.ts", None, "RCT_REGISTRY_EXPORT_RUN", 3, {"cloud-accepted-registry-export.spec.ts"}),
+    "helper": ("playwright.helper-capabilities.config.ts", None, "RCT_HELPER_CAPABILITIES_RUN", 6, {"cloud-accepted-helper-capabilities.spec.ts"}),
+}
+BATCH_BLOCKED = [
+    {"lane": "bot", "count": 1, "reason": "HOSTED_BOT_IDENTITY_ADAPTER_REQUIRED"},
+    {"lane": "production-service-worker", "count": 1, "reason": "HOSTED_STATIC_CONTAINER_ADAPTER_REQUIRED"},
+    {"lane": "password-recovery", "count": 1, "reason": "NONCE_OWNED_OTP_BROKER_ADAPTER_REQUIRED"},
+    {"lane": "registry-native-pdf", "count": 3, "reason": "NONCE_OWNED_RENDERER_AUDIT_AND_OUTAGE_RESTORE_REQUIRED"},
+    {"lane": "semester-assignment-recovery-today", "count": 7, "reason": "SEPARATE_LIFECYCLE_CLOCK_AND_RESTORE_ADMISSION_REQUIRED"},
+]
+
+
+def batch_result(report, code, lane):
+    """Only a complete safe named test result may be an ordinary collectable FAIL."""
+    require(type(report) is dict, "BATCH_INVALID_REPORT")
+    rows = report.get("results")
+    expected, files = BATCH_LANES[lane][3:]
+    require(type(rows) is list and len(rows) <= expected and all(type(row) is dict for row in rows)
+            and type(report.get("runnerErrors")) is int and report["runnerErrors"] == 0
+            and report.get("unsafeArtifact") is False, "BATCH_INCOMPLETE_OR_UNSAFE_REPORT")
+    require(len({(row.get("file"), row.get("line"), row.get("project")) for row in rows}) == len(rows)
+            and all(row.get("file") in files and type(row.get("line")) is int and row["line"] > 0
+                    and row.get("project") == "chromium"
+                    and (row.get("expectedStatus") == "passed" or row.get("expectedStatus") == "skipped" and row.get("status") == "skipped")
+                    and row.get("status") in {"passed", "failed", "timedOut", "skipped"} for row in rows),
+            "BATCH_UNEXPECTED_OR_UNSELECTED_TEST")
+    failed = sum(row["status"] in {"failed", "timedOut"} for row in rows)
+    passed = sum(row["status"] == "passed" for row in rows)
+    not_run = expected - passed - failed
+    require((code == 0 and failed == 0 and report.get("status") == "passed")
+            or (code == 1 and (failed > 0 or not_run > 0) and report.get("status") in {"failed", "timedout"}),
+            "BATCH_EXIT_REPORT_MISMATCH")
+    return {"lane": lane, "status": "FAIL" if failed else "INCOMPLETE" if not_run else "PASS", "expected": expected,
+            "passed": passed, "failed": failed, "notRun": not_run,
+            "failures": [{key: row[key] for key in ("file", "line", "project", "status")}
+                         for row in rows if row["status"] != "passed"]}
+
+
+def batch_health(value):
+    """One post-lane readiness snapshot; Running alone does not prove a declared healthcheck."""
+    config = json.loads((Path(value["run"]) / "compose.json").read_text())
+    for row in inventory(value["project"], value["nonce"], complete=True):
+        name = row["Config"]["Labels"]["com.docker.compose.service"]
+        check = config["services"][name].get("healthcheck")
+        if check and not check.get("disable", False) and check.get("test") != ["NONE"]:
+            require(row["State"].get("Health", {}).get("Status") == "healthy", "BATCH_COHORT_NOT_HEALTHY")
+
 NODE_TLS_PROBE = r"""
 const fs=require('fs'),https=require('https'),{X509Certificate}=require('crypto');
 const expected=new X509Certificate(fs.readFileSync(process.argv[1]));
@@ -194,13 +252,13 @@ def inventory(project, nonce, *, complete=False):
     return rows
 
 
-def validate_local(*, complete=True, environment=None, expected_mode=None):
+def validate_local(*, complete=True, environment=None, expected_mode=None, expected_batch_lane=None):
     """Called before pipeline startup and again immediately before the seed write."""
     environment = os.environ if environment is None else environment
     require(sys.platform == "linux" and not environment.get("GITHUB_ACTIONS")
             and not environment.get("RUNNER_ENVIRONMENT"), "LOCAL_NOT_HOSTED")
     value = manifest(Path(environment.get("RCT_LOCAL_STAGE17_MANIFEST", "")))
-    validate_lane_environment(value, environment, expected_mode)
+    validate_lane_environment(value, environment, expected_mode, expected_batch_lane)
     for name, expected in value["sources"].items():
         require(hashlib.sha256((ROOT / name).read_bytes()).hexdigest() == expected, "SOURCE_BYTES_CHANGED")
     run = Path(value["run"])
@@ -243,28 +301,47 @@ def validate_local(*, complete=True, environment=None, expected_mode=None):
     return value
 
 
-def validate_lane_environment(value, environment, expected_mode=None):
+def validate_lane_environment(value, environment, expected_mode=None, expected_batch_lane=None):
     """Mode and environment are a single manifest-bound admission decision."""
     mode = value["mode"]
     require(mode in MODES, "MANIFEST_MODE")
     require(environment.get("RCT_LOCAL_STAGE17_MODE") == mode
             and (expected_mode is None or mode == expected_mode), "LOCAL_LANE_MISMATCH")
+    lane = environment.get("RCT_LOCAL_UI_BATCH_LANE")
+    expected_run = value["run"]
+    if mode == "ui-batch":
+        require(value.get("batch_lanes") == list(BATCH_LANES), "LOCAL_BATCH_MANIFEST")
+        require((lane is None and expected_batch_lane is None and expected_mode is None)
+                or (lane in BATCH_LANES and expected_batch_lane in (None, lane)), "LOCAL_BATCH_LANE")
+        if lane:
+            expected_run += "/lanes/" + lane
+            owned(Path(expected_run), 0o700, directory=True)
+            owned(Path(expected_run) / "artifacts", 0o700, directory=True)
+        for name in {row[2] for row in BATCH_LANES.values() if row[2]}:
+            require(environment.get(name, "") == (expected_run if lane and BATCH_LANES[lane][2] == name else ""), "LOCAL_BATCH_OUTPUT_BINDING")
+        require(environment.get("RCT_FOCUS3_OBSERVATIONS", "") ==
+                (expected_run + "/supervision/observations.safe.json" if lane == "first3" else ""), "LOCAL_BATCH_OBSERVATION_BINDING")
+    else:
+        require(lane is None and expected_batch_lane is None, "LOCAL_BATCH_MODE_REQUIRED")
     diagnostic = value.get("startup_diagnostic", False)
     require(type(diagnostic) is bool and (not diagnostic or mode == "client")
             and environment.get("RCT_LOCAL_CLIENT_STARTUP_DIAGNOSTIC", "false") == ("true" if diagnostic else "false"),
             "LOCAL_DIAGNOSTIC_MISMATCH")
     require(environment.get("RCT_LOCAL_STAGE17_NONCE") == value["nonce"]
-            and environment.get("RCT_REMAINING5_RUN") == value["run"]
+            and environment.get("RCT_REMAINING5_RUN") == expected_run
             and environment.get("RCT_E2E_TEACHING_CLOCK_DIR") == value["run"] + "/clock"
             and environment.get("E2E_BASE_URL") == "https://localhost:8443"
             and all(environment.get(name) == "true" for name in
                     ("RCT_E2E_REMAINING5", "RCT_E2E_SYNTHETIC_SEED"))
-            and environment.get("RCT_E2E_ASYNC_REPORT") == ("false" if mode in {"client", "lesson-lifecycle"} else "true")
+            and environment.get("RCT_E2E_ASYNC_REPORT") == ("false" if mode in {"client", "lesson-lifecycle", "ui-batch"} else "true")
             and environment.get("RCT_LESSON_LIFECYCLE_RUN", "") == (value["run"] if mode == "lesson-lifecycle" else ""),
             "LOCAL_STAGE17_ONLY")
     for flag in ("RCT_E2E_ADMIN_LIFECYCLE", "RCT_E2E_ROLE_LOGOUT", "RCT_E2E_WEBKIT_SUBSET",
                  "RCT_E2E_SW_LIFECYCLE", "RCT_E2E_BOT_ROLE_MENU", "RCT_APP_RECOVERY_PROJECT"):
-        require(not environment.get(flag) if flag == "RCT_APP_RECOVERY_PROJECT" else environment.get(flag) != "true", "LOCAL_STAGE17_ONLY")
+        expected_flag = BATCH_LANES[lane][1] if mode == "ui-batch" and lane else None
+        require(not environment.get(flag) if flag == "RCT_APP_RECOVERY_PROJECT"
+                else environment.get(flag) == "true" if flag == expected_flag
+                else environment.get(flag) != "true", "LOCAL_STAGE17_ONLY")
 
 
 def preflight():
@@ -313,7 +390,7 @@ class Runner:
                    "VIRTUAL_ENV", "SSL_CERT_FILE", "SSL_CERT_DIR", "REQUESTS_CA_BUNDLE"}
         self.env = {key: value for key, value in os.environ.items() if key in allowed}
         # Explicit synthetic file is the only source of Compose credentials.
-        self.env.update(RCT_E2E_SYNTHETIC_SEED="true", RCT_E2E_ASYNC_REPORT="false" if mode in {"client", "lesson-lifecycle"} else "true", RCT_E2E_REMAINING5="true",
+        self.env.update(RCT_E2E_SYNTHETIC_SEED="true", RCT_E2E_ASYNC_REPORT="false" if mode in {"client", "lesson-lifecycle", "ui-batch"} else "true", RCT_E2E_REMAINING5="true",
                         RCT_E2E_SYNTHETIC_BASELINE=BASELINE, E2E_BASE_URL="https://localhost:8443",
                         RCT_E2E_TEACHING_CLOCK_DIR=str(self.run / "clock"), RCT_REMAINING5_RUN=str(self.run),
                         RCT_LOCAL_STAGE17_MANIFEST=str(self.run / "owner.json"), RCT_LOCAL_STAGE17_NONCE=self.nonce,
@@ -369,6 +446,8 @@ class Runner:
                         GRADLE_USER_HOME=os.environ.get("GRADLE_USER_HOME", str(Path.home() / ".gradle")),
                         NPM_CONFIG_CACHE=os.environ.get("NPM_CONFIG_CACHE", str(Path.home() / ".npm")),
                         PLAYWRIGHT_BROWSERS_PATH=os.environ.get("PLAYWRIGHT_BROWSERS_PATH", str(Path.home() / ".cache/ms-playwright")))
+        if self.mode == "ui-batch":
+            (self.run / "lanes").mkdir(mode=0o700)
         # Preserve exact tracked .env.ci bytes except three fresh directed tokens.
         source = capture(["git", "show", "HEAD:tests/e2e/.env.ci"])
         for name in sorted(TOKEN_NAMES):
@@ -433,9 +512,12 @@ class Runner:
                       or name in {".dockerignore", "docker-compose.e2e.yml", "build.gradle.kts", "settings.gradle.kts", "gradle.properties", "gradlew"})
                  and not (".env" in Path(name).name and name != "tests/e2e/.env.ci")}
         paths |= {"scripts/local_e2e_async.py", "tests/e2e/fixtures/local-stage17.ts"}
+        if self.mode == "ui-batch":
+            paths.add("tests/e2e/playwright.local-batch.config.ts")
         hashes = {name: hashlib.sha256((ROOT / name).read_bytes()).hexdigest() for name in sorted(paths)}
         value = {"schema": 1, "uid": os.getuid(), "root": str(ROOT), "run": str(self.run), "nonce": self.nonce, "mode": self.mode,
                  "project": self.project, "source_sha": sha, "sources": hashes, "startup_diagnostic": self.startup_diagnostic,
+                 "batch_lanes": list(BATCH_LANES) if self.mode == "ui-batch" else None,
                  "node_ca_sha256": hashlib.sha256((self.run / "certs/server.crt").read_bytes()).hexdigest(),
                  "images": sorted(self.image_targets),
                  "compose_sha256": hashlib.sha256((self.run / "compose.json").read_bytes()).hexdigest(),
@@ -503,6 +585,8 @@ class Runner:
         validate_local(environment=self.env)
         node_tls_probe(self.run / "certs/server.crt", self.env)
         self.command("NOTIFICATION_KEY_ISOLATION", self.compose("exec", "-T", "notification-web", "sh", "-c", "test ! -e /keys/private.key && test ! -L /keys/private.key"))
+        if self.mode == "ui-batch":
+            return self.execute_batch()
         if self.mode in {"client", "lesson-lifecycle"}:
             config = "playwright.real-mobile.config.ts" if self.mode == "client" else "playwright.lesson-lifecycle.config.ts"
             self.command("CLIENT_REMAINING5" if self.mode == "client" else "LESSON_LIFECYCLE",
@@ -534,6 +618,72 @@ class Runner:
                     emit("STAGE17_RESULT", result=safe["result"], stage=safe["phase"], actual_applications=safe["actual_applications"])
                     if safe["phase"] == "GATEWAY_OPENAPI_ACADEMIC_SERVICE" and safe["result"] == "FAIL":
                         self.diagnose()
+
+    def execute_batch(self):
+        """One isolated stack, serial named lanes, original cleanup after aggregate failure."""
+        outcomes, blocked = [], None
+        base_environment = self.env.copy()
+        clock = self.run / "clock/current-instant"
+        clock_sha = hashlib.sha256(clock.read_bytes()).hexdigest()
+        for lane, (_, flag, output_variable, count, _) in BATCH_LANES.items():
+            if blocked:
+                outcomes.append({"lane": lane, "status": "BLOCKED", "expected": count,
+                                 "passed": 0, "failed": 0, "notRun": count, "reason": blocked})
+                continue
+            directory = self.run / "lanes" / lane
+            directory.mkdir(mode=0o700)
+            (directory / "artifacts").mkdir(mode=0o700)
+            self.env = base_environment.copy()
+            self.env.update(RCT_LOCAL_UI_BATCH_LANE=lane, RCT_REMAINING5_RUN=str(directory),
+                            RCT_DIAGNOSTIC_RUN_DIR=str(directory))
+            if flag:
+                self.env[flag] = "true"
+            if output_variable:
+                self.env[output_variable] = str(directory)
+            if lane == "first3":
+                (directory / "supervision").mkdir(mode=0o700)
+                self.env["RCT_FOCUS3_OBSERVATIONS"] = str(directory / "supervision/observations.safe.json")
+            code = 0
+            try:
+                validate_local(environment=self.env, expected_mode="ui-batch", expected_batch_lane=lane)
+                try:
+                    self.command("UI_BATCH_" + lane.upper().replace("-", "_"),
+                                 ["npx", "playwright", "test", "--config", "playwright.local-batch.config.ts",
+                                  "--project=chromium", "--max-failures=0", "--retries=0", "--workers=1"], cwd=ROOT / "tests/e2e")
+                except AdmissionError as error:
+                    if str(error) != "CHILD_FAILED":
+                        raise
+                    code = error.returncode
+                report = directory / "artifacts/safe-results.json"
+                owned(report, 0o600)
+                require(report.stat().st_size <= 8 * 1024**2, "BATCH_REPORT_BOUND")
+                outcome = batch_result(json.loads(report.read_text()), code, lane)
+                value = validate_local(environment=self.env, expected_mode="ui-batch", expected_batch_lane=lane)
+                # All selected36 lanes read the shared clock. Advancing lifecycle7 remains blocked.
+                batch_health(value)
+                require(hashlib.sha256(clock.read_bytes()).hexdigest() == clock_sha, "BATCH_UNEXPECTED_CLOCK_CHANGE")
+                outcomes.append(outcome)
+                write(directory / "result.safe.json", json.dumps(outcome, indent=2) + "\n")
+                emit("UI_BATCH_LANE", **outcome)
+            except (AdmissionError, OSError, ValueError, KeyError, TypeError, subprocess.SubprocessError) as error:
+                blocked = str(error) if isinstance(error, AdmissionError) else "BATCH_REPORT_OR_INFRASTRUCTURE_FAILURE"
+                outcome = {"lane": lane, "status": "BLOCKED", "expected": count,
+                           "passed": 0, "failed": 0, "notRun": count, "reason": blocked,
+                           "child_returncode": code}
+                outcomes.append(outcome)
+                write(directory / "blocked.safe.json", json.dumps(outcome, indent=2) + "\n")
+                emit("UI_BATCH_LANE", **outcome)
+            finally:
+                self.env = base_environment
+        summary = {"scope": "REMAINING49_FIRST_PORTABLE36", "expected": 49, "selected": 36,
+                   "passed": sum(row["passed"] for row in outcomes),
+                   "failed": sum(row["failed"] for row in outcomes),
+                   "notRun": sum(row["notRun"] for row in outcomes),
+                   "deferred": 13, "lanes": outcomes, "blockedDependencies": BATCH_BLOCKED,
+                   "all49Complete": False, "result": "FAIL" if any(row["status"] != "PASS" for row in outcomes) else "PARTIAL_BLOCKED"}
+        write(self.run / "artifacts/ui-batch.safe.json", json.dumps(summary, indent=2) + "\n")
+        emit("UI_BATCH_RESULT", **summary)
+        raise AdmissionError("UI_BATCH_REMAINING_FAILURES_OR_BLOCKED_DEPENDENCIES")
 
     def diagnose(self):
         """Read-only 30s follow-ups never replace the primary strict 5s result."""
@@ -673,17 +823,22 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("mode", choices=("preflight", *sorted(MODES), "admit"), nargs="?", default="openapi")
     parser.add_argument("--expected-mode", choices=sorted(MODES))
+    parser.add_argument("--expected-batch-lane", choices=list(BATCH_LANES))
     parser.add_argument("--diagnose-startup", action="store_true", help="Client only: same ten scenarios, stop after first failure with closed setup diagnostics")
     args = parser.parse_args()
     require(not args.diagnose_startup or args.mode == "client", "CLIENT_DIAGNOSTIC_ONLY")
     if args.mode == "admit":
-        value = validate_local(expected_mode=args.expected_mode)
+        require(args.expected_batch_lane is None or args.expected_mode == "ui-batch", "LOCAL_BATCH_MODE_REQUIRED")
+        require(args.expected_mode != "ui-batch" or args.expected_batch_lane in BATCH_LANES, "LOCAL_BATCH_LANE_REQUIRED")
+        value = validate_local(expected_mode=args.expected_mode, expected_batch_lane=args.expected_batch_lane)
         if args.expected_mode is None:
             emit("LOCAL_STAGE17_ADMITTED")
+        elif args.expected_mode == "ui-batch":
+            emit("LOCAL_STAGE17_ADMITTED", mode=value["mode"], project=value["project"], nonce=value["nonce"], batchLane=args.expected_batch_lane)
         else:
             emit("LOCAL_STAGE17_ADMITTED", mode=value["mode"], project=value["project"], nonce=value["nonce"])
         return
-    require(args.expected_mode is None, "EXPECTED_MODE_ADMIT_ONLY")
+    require(args.expected_mode is None and args.expected_batch_lane is None, "EXPECTED_MODE_ADMIT_ONLY")
     preflight()
     if args.mode == "preflight":
         emit("PREFLIGHT", result="PASS", containers_started=0)

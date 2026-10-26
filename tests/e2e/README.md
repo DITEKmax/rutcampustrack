@@ -46,3 +46,14 @@ helpers and artifact privacy controls remain in use.
 
 Requirements: Node 24.14+, Docker Compose v2 with `up --wait`, and an available
 isolated runtime lease when running alongside the shared development stand.
+
+
+## Local remaining UI batch
+
+Run python3 scripts/local_e2e_async.py ui-batch only in a separate disposable checkout after the previous local cohort is qualified stopped. Do not run the 17-service stack beside the frozen 12-service stand on a 12GB host. Preserve the old stand volumes, sessions, DLQ and failed native evidence; suspension is not acceptance cleanup.
+
+This mode selects 36 remaining named Chromium scenarios in ten serial lanes: auth smoke9, FIRST3=3, admin1, role/security/export6, synthetic installation2, geo1, homework4, map1, registry HTML3 and helper6. Already passed client10, lesson-lifecycle4 and DOCX1 are excluded. Each invocation owns a new nonce, and each lane has its own private artifact directory and the sole safe reporter; workers1, retries0 and maxFailures0 are enforced.
+
+A valid safe test-process failure or incomplete/skipped lane is collected as FAIL/INCOMPLETE with notRun; it does not claim an assertion-only cause. Independent lanes continue only after frozen identity, actual declared healthchecks and unchanged shared clock are checked. Running alone is insufficient for a declared healthcheck. Missing/unsafe reports, runner errors, unexpected cases, ownership/readiness loss and unexpected shared-clock changes block dependent lanes. Build, admission, private-artifact and cleanup guards remain mandatory. No CI identity is spoofed.
+
+Thirteen scenarios remain explicitly BLOCKED/DEFERRED: hosted bot1, production service-worker1, OTP recovery1, native PDF/outage3 and ordered semester/assignment/recovery/Today7. They need separate portable ownership/restore admission. Even if all selected36 pass, the overall report is PARTIAL_BLOCKED and exit1, never all49 complete. `artifacts/ui-batch.safe.json` records each lane, exact named counts and failed public spec locations. Fix failures together and select the follow-up scope from this report; do not replay already completed unrelated lanes.

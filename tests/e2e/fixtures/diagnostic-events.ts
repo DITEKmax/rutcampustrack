@@ -159,14 +159,28 @@ export function currentDiagnosticCase(): string | null {
     return null;
   }
 }
-export function diagnosticHttpFailure(error: Error, eventCode: string, httpStatus: number): Error {
+export type LogoutControlObservation =
+  | 'LOGOUT_CONTROL_MISSING'
+  | 'LOGOUT_CONTROL_MULTIPLE'
+  | 'LOGOUT_CONTROL_HIDDEN'
+  | 'LOGOUT_CONTROL_DISABLED'
+  | 'LOGOUT_CONTROL_OUTSIDE_VIEWPORT'
+  | 'LOGOUT_CONTROL_POINTER_INTERCEPTED'
+  | 'LOGOUT_CLICK_UNKNOWN';
+
+function diagnosticFailure(
+  error: Error,
+  eventCode: string,
+  httpStatus: number,
+  stageId: 'DATASET_HTTP' | 'UI_ACTION',
+): Error {
   try {
     const state = context(test.info());
     if (!state) return error;
     const event: DiagnosticEvent = {
       schema: 'rct-diagnostic-event.v1',
       caseId: state.binding.caseId,
-      stageId: 'DATASET_HTTP',
+      stageId,
       eventCode,
       httpStatus,
     };
@@ -178,6 +192,13 @@ export function diagnosticHttpFailure(error: Error, eventCode: string, httpStatu
     /* Optional diagnostics must preserve the original failure. */
   }
   return error;
+}
+export function diagnosticHttpFailure(error: Error, eventCode: string, httpStatus: number): Error {
+  return diagnosticFailure(error, eventCode, httpStatus, 'DATASET_HTTP');
+}
+/** Native original-error branding; the catalog admits these observations only for D002. */
+export function diagnosticUiFailure(error: Error, eventCode: LogoutControlObservation): Error {
+  return diagnosticFailure(error, eventCode, 0, 'UI_ACTION');
 }
 export function retainDiagnosticObservation(): void {
   try {

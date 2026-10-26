@@ -494,7 +494,7 @@ class SharedDiagnosticControls(unittest.TestCase):
         actual = diag.decode(args.producer_report.read_bytes())
         stage = diag.STAGES['HOMEWORK_CREATE503']
         self.assertFalse(diag.is_target_failure(actual, stage))
-        counts = {'DATASET_HTTP': 0, 'FRAMEWORK': 0}
+        counts = {'DATASET_HTTP': 0, 'FRAMEWORK': 0, 'UI_ACTION': 0}
         with tempfile.TemporaryDirectory(prefix='rct producer consumer boundary ') as directory:
             payload = Path(directory) / 'projection.safe.json'
             for original in actual['results']:
@@ -516,7 +516,7 @@ class SharedDiagnosticControls(unittest.TestCase):
                 mismatch = copy.deepcopy(value)
                 mismatch['results'][0]['diagnosticEvents'][0]['caseId'] = 'HOSTED_PRIVATE_BOT_AUTHORITY'
                 self.assertFalse(diag.is_target_failure(mismatch, stage))
-        self.assertEqual(counts, {'DATASET_HTTP': 2, 'FRAMEWORK': 4})
+        self.assertEqual(counts, {'DATASET_HTTP': 2, 'FRAMEWORK': 4, 'UI_ACTION': 1})
 
     def test_local_inventory_requires_exact_owned_cohort(self):
         local_spec = importlib.util.spec_from_file_location('local_inventory_control', source_root / 'scripts/local_e2e_async.py')

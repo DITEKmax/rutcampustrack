@@ -209,11 +209,12 @@ def load_catalog():
         raise ValueError('Catalog schema')
     for case, item in value['cases'].items():
         if (not re.fullmatch('[A-Z][A-Z0-9_]{0,63}', case) or type(item) is not dict
-                or set(item) != {'events'} or type(item['events']) is not list or not 1 <= len(item['events']) <= 8):
+                or set(item) != {'events'} or type(item['events']) is not list
+                or not 1 <= len(item['events']) <= (10 if case == 'D002_RECONNECT_ACCOUNT_AUTHORITY' else 8)):
             raise ValueError('Catalog case')
         for event in item['events']:
             if (type(event) is not dict or set(event) != {'stageId', 'eventCode', 'httpStatus'}
-                    or event['stageId'] not in {'DATASET_HTTP', 'FRAMEWORK', 'D002_RECONNECT'}
+                    or event['stageId'] not in {'DATASET_HTTP', 'FRAMEWORK', 'D002_RECONNECT', 'UI_ACTION'}
                     or type(event['eventCode']) is not str or not re.fullmatch('[A-Z][A-Z0-9_]{0,63}', event['eventCode'])
                     or type(event['httpStatus']) is not int or event['httpStatus'] not in {0, 500, 503}):
                 raise ValueError('Catalog event')

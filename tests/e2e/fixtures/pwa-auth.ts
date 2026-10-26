@@ -1,4 +1,9 @@
-import { expect, test, type Page, type Response } from '@playwright/test';
+import { expect, test, type Locator, type Page, type Response } from '@playwright/test';
+import {
+  currentDiagnosticCase,
+  diagnosticUiFailure,
+  type LogoutControlObservation,
+} from './diagnostic-events';
 import { safeFailureAnnotation } from './safe-reporter';
 import type { TestUser } from './users';
 
@@ -116,12 +121,11 @@ export async function logoutPwa(page: Page): Promise<void> {
   await expect(profile.getByRole('heading', { name: 'Профиль', exact: true })).toBeVisible();
   const profileLogout = profile.getByRole('button', { name: 'Выйти', exact: true });
   // Teacher PWA exposes logout in the app shell outside the profile main.
-  const logoutButton =
-    (await profileLogout.count()) > 0
-      ? profileLogout
-      : page
-          .locator('button.pwa-logout')
-          .and(page.getByRole('button', { name: 'Выйти', exact: true }));
+  const useProfileLogout = (await profileLogout.count()) > 0;
+  const shellLogout = page.locator('button.pwa-logout');
+  const logoutButton = useProfileLogout
+    ? profileLogout
+    : shellLogout.and(page.getByRole('button', { name: 'Выйти', exact: true }));
   // Allow 10s device cleanup + 10s logout HTTP + 5s response delivery margin.
   const logoutResponseTimeoutMs = 25_000;
   const [response] = await Promise.all([
@@ -131,10 +135,59 @@ export async function logoutPwa(page: Page): Promise<void> {
         response.request().method() === 'POST',
       { timeout: logoutResponseTimeoutMs },
     ),
-    logoutButton.click(),
+    logoutButton.click().catch(async (error: unknown) => {
+      if (
+        error instanceof Error &&
+        currentDiagnosticCase() === 'D002_RECONNECT_ACCOUNT_AUTHORITY'
+      ) {
+        // The role intersection excludes hidden shell controls; observe the raw candidate.
+        diagnosticUiFailure(
+          error,
+          await observeLogoutControl(useProfileLogout ? logoutButton : shellLogout),
+        );
+      }
+      throw error;
+    }),
   ]);
   expect(response.status()).toBe(204);
   await expect(page.getByRole('heading', { name: 'Войти в приложение' })).toBeVisible();
+}
+
+/** Current DOM facts after a failed real click, not a claim about the click's cause. */
+async function observeLogoutControl(locator: Locator): Promise<LogoutControlObservation> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  try {
+    // One immediate locator query; no actionability wait, scroll or retained handles.
+    return await Promise.race([
+      locator.evaluateAll((elements): LogoutControlObservation => {
+        if (elements.length === 0) return 'LOGOUT_CONTROL_MISSING';
+        if (elements.length !== 1) return 'LOGOUT_CONTROL_MULTIPLE';
+        const element = elements[0];
+        if (!element.isConnected) return 'LOGOUT_CLICK_UNKNOWN';
+        const rect = element.getBoundingClientRect();
+        const style = getComputedStyle(element);
+        if (
+          rect.width <= 0 || rect.height <= 0 ||
+          style.visibility === 'hidden' || style.visibility === 'collapse'
+        ) return 'LOGOUT_CONTROL_HIDDEN';
+        if (element.matches(':disabled') || element.closest('[aria-disabled="true"]'))
+          return 'LOGOUT_CONTROL_DISABLED';
+        const left = Math.max(0, rect.left), top = Math.max(0, rect.top);
+        const right = Math.min(innerWidth, rect.right), bottom = Math.min(innerHeight, rect.bottom);
+        if (right <= left || bottom <= top) return 'LOGOUT_CONTROL_OUTSIDE_VIEWPORT';
+        const hit = document.elementFromPoint((left + right) / 2, (top + bottom) / 2);
+        if (hit && !element.contains(hit)) return 'LOGOUT_CONTROL_POINTER_INTERCEPTED';
+        return 'LOGOUT_CLICK_UNKNOWN';
+      }),
+      new Promise<LogoutControlObservation>((resolve) => {
+        timer = setTimeout(() => resolve('LOGOUT_CLICK_UNKNOWN'), 750);
+      }),
+    ]);
+  } catch {
+    return 'LOGOUT_CLICK_UNKNOWN';
+  } finally {
+    if (timer !== undefined) clearTimeout(timer);
+  }
 }
 
 /** Inspect only an already returned normal login rejection; this cannot retry or replace it. */

@@ -105,6 +105,41 @@
           "stageId": "D002_RECONNECT",
           "eventCode": "OBSERVATION",
           "httpStatus": 0
+        },
+        {
+          "stageId": "UI_ACTION",
+          "eventCode": "LOGOUT_CONTROL_MISSING",
+          "httpStatus": 0
+        },
+        {
+          "stageId": "UI_ACTION",
+          "eventCode": "LOGOUT_CONTROL_MULTIPLE",
+          "httpStatus": 0
+        },
+        {
+          "stageId": "UI_ACTION",
+          "eventCode": "LOGOUT_CONTROL_HIDDEN",
+          "httpStatus": 0
+        },
+        {
+          "stageId": "UI_ACTION",
+          "eventCode": "LOGOUT_CONTROL_DISABLED",
+          "httpStatus": 0
+        },
+        {
+          "stageId": "UI_ACTION",
+          "eventCode": "LOGOUT_CONTROL_OUTSIDE_VIEWPORT",
+          "httpStatus": 0
+        },
+        {
+          "stageId": "UI_ACTION",
+          "eventCode": "LOGOUT_CONTROL_POINTER_INTERCEPTED",
+          "httpStatus": 0
+        },
+        {
+          "stageId": "UI_ACTION",
+          "eventCode": "LOGOUT_CLICK_UNKNOWN",
+          "httpStatus": 0
         }
       ]
     },

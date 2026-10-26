@@ -22,11 +22,17 @@ import assert from 'node:assert/strict';
 import {test as base} from ${JSON.stringify(join(e2e, 'node_modules/@playwright/test'))};
 import {test} from ${JSON.stringify(join(here, 'artifact-privacy.ts'))};
 import {datasetHttpFailure} from ${JSON.stringify(join(here, 'safe-reporter.ts'))};
-import {diagnosticCase, DiagnosticRun, captureDiagnosticFailure} from ${JSON.stringify(join(here, 'diagnostic-events.ts'))};
+import {diagnosticCase, diagnosticUiFailure, DiagnosticRun, captureDiagnosticFailure} from ${JSON.stringify(join(here, 'diagnostic-events.ts'))};
 const setup=test.extend<{}, {syntheticSetup:void}>({syntheticSetup:[async({},use)=>{throw datasetHttpFailure('POST','/api/academic/homeworks',503);},{scope:'worker'}]});
 test('native body', {annotation:diagnosticCase('LIMITED_ADMIN_ACCOUNTS')}, async()=>{throw datasetHttpFailure('POST','/api/academic/homeworks',503);});
 setup('native fixture', {annotation:diagnosticCase('HOMEWORK_FOREIGN_RETRY')}, async({syntheticSetup})=>{});
-test('plain known text', {annotation:diagnosticCase('SESSION_REVOKE_RECOVERY')}, async()=>{throw new Error('Reported synthetic dataset DATASET_HOMEWORK_CREATE_HTTP: HTTP 503');});
+test('plain known text', {annotation:diagnosticCase('SESSION_REVOKE_RECOVERY')}, async()=>{const error=new Error('Reported synthetic dataset DATASET_HOMEWORK_CREATE_HTTP: HTTP 503');assert.equal(diagnosticUiFailure(error,'LOGOUT_CONTROL_HIDDEN'),error);throw error;});
+test('native UI original error', {annotation:diagnosticCase('D002_RECONNECT_ACCOUNT_AUTHORITY')}, async()=>{
+ const error=new Error('private '+${JSON.stringify(canary)}), message=error.message, stack=error.stack;
+ assert.equal(diagnosticUiFailure(error,'UNKNOWN' as any),error);
+ assert.equal(diagnosticUiFailure(error,'LOGOUT_CONTROL_HIDDEN'),error);
+ assert.equal(error.message,message);assert.equal(error.stack,stack);throw error;
+});
 test('different throwable', {annotation:diagnosticCase('ASYNC_DOCX_RESUME')}, async()=>{const caught=datasetHttpFailure('POST','/api/academic/homeworks',503); throw new Error(caught.message);});
 test('exact message and stack clone is a different raw Error', {annotation:diagnosticCase('N2_STUDENT_RETRY_SUSPENDED')}, async()=>{const original=datasetHttpFailure('POST','/api/academic/homeworks',503);const foreign=new Error(original.message);foreign.stack=original.stack;throw foreign;});
 test('valid proof replay on foreign raw Error', {annotation:diagnosticCase('N2_STUDENT_RETRY_ACTIVE')}, async()=>{
@@ -107,7 +113,7 @@ const report = JSON.parse(text)
 assert.equal(report.status, 'failed')
 assert.equal(report.unsafeArtifact, false)
 assert.equal(report.runnerErrors, 0)
-assert.equal(report.results.length, 7)
+assert.equal(report.results.length, 8)
 for (const id of ['LIMITED_ADMIN_ACCOUNTS', 'HOMEWORK_FOREIGN_RETRY']) {
   const row = report.results.find((r) => r.caseId === id)
   assert.equal(row.status, 'failed')
@@ -134,6 +140,16 @@ for (const id of [
     ['FRAMEWORK'],
   )
 }
+const ui = report.results.find((r) => r.caseId === 'D002_RECONNECT_ACCOUNT_AUTHORITY')
+assert.equal(ui.status, 'failed')
+assert.equal(ui.errorCount, 1)
+assert.deepEqual(ui.diagnosticEvents, [{
+  schema: 'rct-diagnostic-event.v1',
+  caseId: 'D002_RECONNECT_ACCOUNT_AUTHORITY',
+  stageId: 'UI_ACTION',
+  eventCode: 'LOGOUT_CONTROL_HIDDEN',
+  httpStatus: 0,
+}])
 assert.equal(report.results.filter((r) => r.status === 'passed').length, 1)
 const artifacts = (directory) =>
   readdirSync(directory, { withFileTypes: true }).flatMap((entry) =>
@@ -183,7 +199,7 @@ console.log(
     schema: 'rct-diagnostic-controls.v1',
     passed: true,
     deliberateChildExit: child.status,
-    rows: 7,
+    rows: 8,
     finiteNegatives: 20,
     ...(withConsumer ? { consumerPassed: true } : {}),
     report: join(out, 'artifacts/safe-results.json'),

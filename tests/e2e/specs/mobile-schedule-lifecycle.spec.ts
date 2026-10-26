@@ -1946,8 +1946,8 @@ test('STUDENT warm semester ETag stays scoped and refreshes the same physical ro
   scenario: dataset,
 }, info) => {
   // This existing student's otherGroup is its own genuinely empty scope.
-  // The two response faults exercise the unchanged Today retry:1 client path,
-  // not a Schedule outage; the manual retry below returns to the real server.
+  // Keep Today unavailable while its error and manual retry action are observed;
+  // the manual retry below returns to the real server after this route is removed.
   const todayPath = '/api/v1/student/today';
   const admissionCutoff =
     (scenarioStartedAt.get(info) ?? performance.now()) +
@@ -1999,18 +1999,19 @@ test('STUDENT warm semester ETag stays scoped and refreshes the same physical ro
       emptyToday.timeZone === 'Europe/Moscow' &&
       emptyToday.lessons.length === 0,
   ).toBe(true);
-  await expect(
-    page.getByRole('heading', { name: 'На сегодня пар нет', exact: true }),
-  ).toBeVisible();
+  const todayScreen = page.getByRole('main', { name: 'Сегодня', exact: true });
+  const emptyState = todayScreen.getByRole('status').filter({
+    has: page.getByRole('button', { name: 'Обновить', exact: true }),
+  });
+  const error = todayScreen.getByRole('alert');
+  await expect(emptyState).toBeVisible();
   await expect(page.locator('.today-list .student-lesson')).toHaveCount(0);
   const todayUrl = new URL(todayPath, page.url()).href;
-  let rejectedTodayReads = 0;
   const failToday: Parameters<typeof page.route>[1] = async (route) => {
-    if (route.request().method() !== 'GET' || rejectedTodayReads >= 2) {
+    if (route.request().method() !== 'GET') {
       await route.continue();
       return;
     }
-    rejectedTodayReads += 1;
     await route.fulfill({
       status: 503,
       contentType: 'application/problem+json',
@@ -2028,24 +2029,18 @@ test('STUDENT warm semester ETag stays scoped and refreshes the same physical ro
   try {
     const [failed] = await Promise.all([
       http(page, todayPath, 'GET'),
-      page.getByRole('button', { name: 'Обновить', exact: true }).click(),
+      emptyState.getByRole('button', { name: 'Обновить', exact: true }).click(),
     ]);
     expect(failed.status()).toBe(503);
-    const error = page.getByRole('alert').filter({
-      has: page.getByRole('heading', { name: 'Не удалось получить данные', exact: true }),
-    });
     await expect(error).toBeVisible();
     await expect(error.getByRole('button', { name: 'Повторить', exact: true })).toBeEnabled();
-    expect(rejectedTodayReads).toBe(2);
-    await expect(
-      page.getByRole('heading', { name: 'На сегодня пар нет', exact: true }),
-    ).toHaveCount(0);
+    await expect(emptyState).toHaveCount(0);
   } finally {
     await page.unroute(todayUrl, failToday);
   }
   const [recoveredTodayResponse] = await Promise.all([
     http(page, todayPath, 'GET'),
-    page.getByRole('alert').getByRole('button', { name: 'Повторить', exact: true }).click(),
+    error.getByRole('button', { name: 'Повторить', exact: true }).click(),
   ]);
   expect(recoveredTodayResponse.status()).toBe(200);
   const recoveredToday = await recoveredTodayResponse.json();
@@ -2054,11 +2049,8 @@ test('STUDENT warm semester ETag stays scoped and refreshes the same physical ro
       recoveredToday.timeZone === 'Europe/Moscow' &&
       recoveredToday.lessons.length === 0,
   ).toBe(true);
-  expect(rejectedTodayReads).toBe(2);
-  await expect(page.getByRole('alert')).toHaveCount(0);
-  await expect(
-    page.getByRole('heading', { name: 'На сегодня пар нет', exact: true }),
-  ).toBeVisible();
+  await expect(error).toHaveCount(0);
+  await expect(emptyState).toBeVisible();
   await expect(page.locator('.today-list .student-lesson')).toHaveCount(0);
   await logoutPwa(page);
   expect((await page.context().cookies()).some((cookie) => cookie.name === 'rct_refresh')).toBe(

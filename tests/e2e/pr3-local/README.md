@@ -27,8 +27,13 @@ handler до launch и всегда reap своих child groups, включая
 - JDK **21**, Gradle wrapper **8.12** из репозитория, Node **24.14.0**, npm **11.9.0**.
   Spring Boot в исходниках — **3.5.16**. Python 3.12 из Ubuntu, `python3-bcrypt`,
   OpenSSL, Git, curl, xz-utils. Java и Node запускаются на Ubuntu, сервисы — в Docker.
-- Не менее 4 CPU и 12 GiB доступной машине памяти; разумно выделить WSL 16 GiB.
-  Перед сервисами требуется 5 GiB свободной RAM, перед Chromium — 2 GiB.
+- Не менее 4 CPU. По умолчанию требуется 12 GiB общей памяти
+  (12 884 901 888 bytes); учитывается меньший из MemTotal и cgroup memory.max.
+  Для согласованной пробной попытки на WSL с 12 GB есть явный prepare-only
+  opt-in `--allow-12gb-wsl`: минимальная общая память — 12 000 000 000 bytes.
+  Например, наблюдённые 12 544 364 544 bytes проходят только с этим opt-in.
+  Перед prepare/start требуется 5 GiB свободной RAM, при runtime admission — 1 GiB,
+  перед Chromium — 2 GiB. Эти пороги свободной памяти не меняются.
   До сборки оставь примерно 25 GiB свободного места под зависимости и JAR;
   **после JAR** проверяется реальный floor 7 GiB. Hard reserve 2 GiB,
   early stop 2.5 GiB, sample interval 250 ms не ослаблены.
@@ -143,6 +148,30 @@ mutable tag на разных машинах. Mongo manifest digest задан �
 /usr/bin/python3 tests/e2e/pr3-local/local.py start
 /usr/bin/python3 tests/e2e/pr3-local/local.py frontends
 ```
+
+Для явно согласованной попытки на WSL с 12 GB замени только первую команду:
+```bash
+/usr/bin/python3 tests/e2e/pr3-local/local.py prepare --source-sha "$PR3_SHA" --allow-12gb-wsl
+```
+Флаг разрешён только для нового `prepare`; другие actions отвергают его до запуска.
+Политика допуска (имя, явный opt-in и total floor) фиксируется одинаково в
+`settings.json`, `pins.json` и private `prepared.json`. Наблюдённые общая/свободная
+память, диск и CPU сохраняются в pins preflight и private prepared receipt.
+Settings/pins входят в package freeze; после prepare менять политику нельзя.
+Runtime admission и browser entry используют этот же проверенный total floor;
+отсутствие политики у старого пакета сохраняет исходные 12 GiB, повреждённая
+или несогласованная политика даёт STOP.
+
+Статический допуск не гарантирует, что памяти хватит во время работы.
+Startup guard записывает memory samples, но сам останавливает child process
+по дисковому резерву/таймауту; readiness отвергает exited/dead container.
+Ошибка или OOM не считается PASS и не разрешает автоматический повтор.
+При startup failure сохраняются private logs/receipts, точные ресурсы
+останавливаются только после ownership qualification; иначе остаётся HOLD.
+В native browser case существующий monitor проверяет свободную память
+каждые 250 ms и начинает свой safe stop ниже 512 MiB; перед единственным
+confirm требуется 1 GiB. Это не гарантия от внезапного OOM.
+Лимиты контейнеров/JVM и глобальная конфигурация WSL этим opt-in не меняются.
 
 `prepare` спрашивает новый текущий пароль Admin1 для **новой пустой локальной БД**.
 Ввод скрыт, пароль не передаётся shell argument и не печатается. Свежий initial

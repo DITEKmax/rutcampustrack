@@ -4,7 +4,78 @@ import ast,copy,datetime,hashlib,json,os,pathlib,signal,subprocess,sys,tempfile,
 
 HERE=pathlib.Path(__file__).resolve().parent
 
+def memory_controls():
+ # Execute only finite pure/extracted functions; no real resource reads or runtime import.
+ import argparse,contextlib,io
+ local_tree=ast.parse((HERE/'local.py').read_text());runtime_tree=ast.parse((HERE/'runtime/runtime.py').read_text())
+ def extracted(tree,names,env):
+  exec(compile(ast.Module(body=[x for x in tree.body if isinstance(x,ast.FunctionDef) and x.name in names],type_ignores=[]),'<memory-policy-only>','exec'),env)
+  return env
+ local=extracted(local_tree,['prepare_admission','available'],{})
+ floor=12884901888;optfloor=12000000000;owner=12544364544
+ budget={'freeBytes':7516192768,'memoryMaximum':floor,'memoryAvailable':5368709120,'cpuCount':4};cases=[]
+ def rejects(call):
+  try:call()
+  except AssertionError:return
+  raise AssertionError('Invalid memory admission was accepted')
+ for opted in [False,True]:
+  minimum=optfloor if opted else floor
+  assert local['prepare_admission']({**budget,'memoryMaximum':minimum},opted)['minimumTotalBytes']==minimum
+  rejects(lambda:local['prepare_admission']({**budget,'memoryMaximum':minimum-1},opted))
+  for key,value in [('freeBytes',7516192767),('memoryAvailable',5368709119),('cpuCount',3)]:
+   rejects(lambda:local['prepare_admission']({**budget,key:value},opted))
+  cases.append(('opt-in' if opted else 'default')+'-boundary-and-unchanged-reserves')
+ rejects(lambda:local['prepare_admission']({**budget,'memoryMaximum':owner}))
+ assert local['prepare_admission']({**budget,'memoryMaximum':owner},True)['explicit12gbWsl'] is True
+ policies=[local['prepare_admission'](budget),local['prepare_admission'](budget,True)]
+ runtime=extracted(runtime_tree,['minimum_memory_total','admission'],{'S':{},'P':{}})
+ assert runtime['minimum_memory_total']()==floor
+ for policy in policies:
+  runtime.update(S={'memoryAdmission':copy.deepcopy(policy)},P={'memoryAdmission':copy.deepcopy(policy)})
+  assert runtime['minimum_memory_total']()==policy['minimumTotalBytes']
+ for settings,pins in [({},policies[1]),(policies[1],{}),(policies[0],policies[1]),(None,None),({'name':'unknown'},policies[1]),({**policies[1],'minimumTotalBytes':0},policies[1]),({**policies[1],'explicit12gbWsl':1},policies[1]),(policies[1],{**policies[1],'explicit12gbWsl':1}),(policies[1],{**policies[1],'minimumTotalBytes':12000000000.0}),(policies[1],{**policies[1],'extra':True})]:
+  runtime.update(S={'memoryAdmission':settings},P={'memoryAdmission':pins});rejects(runtime['minimum_memory_total'])
+ cases.extend(['owner-observation-opt-in-only','legacy-default-and-two-valid-frozen-policies','missing-malformed-mismatched-policy-rejected'])
+ class FakePath:
+  def __init__(self,value):self.value=value
+  def __truediv__(self,name):return FakePath(self.value+'/'+name)
+  def exists(self):return self.value in files
+  def read_text(self):return files[self.value]
+ files={'/proc/meminfo':'MemTotal: 16777216 kB'+chr(10)+'MemAvailable: 12582912 kB'+chr(10),'/sys/fs/cgroup/memory.max':str(owner),'/sys/fs/cgroup/memory.current':'0'}
+ local.update(pathlib=types.SimpleNamespace(Path=FakePath),shutil=types.SimpleNamespace(disk_usage=lambda _:types.SimpleNamespace(free=7516192768)),REPO=None,os=types.SimpleNamespace(cpu_count=lambda:4))
+ observed=local['available']();assert observed['memoryMaximum']==owner;local['prepare_admission'](observed,True);rejects(lambda:local['prepare_admission'](observed))
+ files['/sys/fs/cgroup/memory.max']=str(optfloor-1);rejects(lambda:local['prepare_admission'](local['available'](),True))
+ files['/sys/fs/cgroup/memory.max']=str(floor);files['/sys/fs/cgroup/memory.current']=str(floor-5368709119);rejects(lambda:local['prepare_admission'](local['available'](),True))
+ cases.append('cgroup-total-and-current-headroom-remain-binding')
+ cli_calls=[]
+ class Parser(argparse.ArgumentParser):
+  def parse_args(self,*args,**kwargs):return super().parse_args(argv)
+ cli=extracted(local_tree,['main'],{'argparse':types.SimpleNamespace(ArgumentParser=Parser),'__doc__':'synthetic CLI','install_handlers':lambda:None,'prepare':lambda args:cli_calls.append(args),'platform':lambda:cli_calls.append('forbidden-platform')})
+ for opted in [False,True]:
+  argv=['prepare','--source-sha','f'*40]+(['--allow-12gb-wsl'] if opted else []);cli['main']()
+  assert cli_calls[-1].allow_12gb_wsl is opted
+ for action in ['start','frontends','fixture','case','inspect','summary','stop']:
+  argv=[action,'--allow-12gb-wsl'];before=len(cli_calls)
+  with contextlib.redirect_stderr(io.StringIO()):
+   try:cli['main']()
+   except SystemExit as error:assert error.code==2
+   else:raise AssertionError('Non-prepare opt-in accepted')
+  assert len(cli_calls)==before
+ cases.append('prepare-only-cli-no-runtime-actions')
+ # Existing phase-specific free-RAM guard must still reject before any domain work.
+ for policy in policies:
+  runtime.update(S={'memoryAdmission':policy,'sourceSha':'f'*40},P={'memoryAdmission':policy})
+  observed={'diskAvailable':2684354560,'memoryMaximum':policy['minimumTotalBytes'],'minimumMemoryMaximumBytes':policy['minimumTotalBytes'],'memoryAvailable':1073741824}
+  go={'approved':True,'phase':'fixture-api','rootHead':'f'*40,'sourceCommit':'f'*40,'packageSha256':'synthetic','ownOrigin':'http://127.0.0.1:14250'}
+  runtime.update(json=json,pathlib=types.SimpleNamespace(Path=lambda _:types.SimpleNamespace(read_text=lambda:json.dumps(go))),package_hash=lambda:'synthetic',source=lambda:None,ready=lambda:None,resources=lambda:observed)
+  runtime['admission']('fixture-api','synthetic-go')
+  observed['memoryAvailable']-=1;rejects(lambda:runtime['admission']('fixture-api','synthetic-go'))
+  observed['memoryAvailable']=1073741824;observed['memoryMaximum']-=1;rejects(lambda:runtime['admission']('fixture-api','synthetic-go'))
+ cases.append('runtime-policy-total-and-existing-1gib-free-boundaries')
+ return cases
+
 def main():
+ memory=memory_controls()
  py=list(HERE.rglob('*.py'));js=list(HERE.rglob('*.cjs'))
  for file in py:ast.parse(file.read_text(),filename=str(file))
  for file in js:subprocess.run(['node','--check',str(file)],check=True,capture_output=True)
@@ -112,6 +183,6 @@ def main():
   assert not commands;lifecycle_cases.extend(['partial-known-startup-stop-without-ready','unknown-original-case-stop-HOLD'])
  from check_signal_guard import run_controls
  signals=run_controls()
- print(json.dumps({'pythonSyntax':len(py),'nodeSyntax':len(js),'composeServices':12,'ownershipCases':cases,'preparedDirectoryCases':4,'privateInputTamperCases':1,'startupFreezeCases':2,'processGuardCases':process_cases,'lifecycleCases':lifecycle_cases,'signalAndExceptionControls':signals['signalAndExceptionControls'],'runtimeDockerAuthApiDbBrowserActions':0,'realSignalsToSyntheticProcesses':signals['realSignalsToSyntheticProcesses'],'realServiceSignals':0,'localGate':'NOT_RUN'},indent=2))
+ print(json.dumps({'memoryAdmissionControls':memory,'pythonSyntax':len(py),'nodeSyntax':len(js),'composeServices':12,'ownershipCases':cases,'preparedDirectoryCases':4,'privateInputTamperCases':1,'startupFreezeCases':2,'processGuardCases':process_cases,'lifecycleCases':lifecycle_cases,'signalAndExceptionControls':signals['signalAndExceptionControls'],'runtimeDockerAuthApiDbBrowserActions':0,'realSignalsToSyntheticProcesses':signals['realSignalsToSyntheticProcesses'],'realServiceSignals':0,'localGate':'NOT_RUN'},indent=2))
 
 if __name__=='__main__':main()

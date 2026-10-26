@@ -110,9 +110,13 @@ def available():
  if (cg/'memory.max').exists() and (cg/'memory.max').read_text().strip()!='max':
   limit=int((cg/'memory.max').read_text());maxmem=min(maxmem,limit);mem=min(mem,limit-int((cg/'memory.current').read_text()))
  return {'freeBytes':shutil.disk_usage(REPO).free,'memoryMaximum':maxmem,'memoryAvailable':mem,'cpuCount':os.cpu_count()}
+def prepare_admission(budget,allow_12gb_wsl=False):
+ policy={'name':'explicit-12gb-wsl' if allow_12gb_wsl else 'default-12gib','explicit12gbWsl':allow_12gb_wsl,'minimumTotalBytes':12000000000 if allow_12gb_wsl else 12884901888}
+ assert budget['freeBytes']>=7516192768 and budget['memoryMaximum']>=policy['minimumTotalBytes'] and budget['memoryAvailable']>=5368709120 and budget['cpuCount']>=4,'After-JAR preflight requires7GiB disk/'+str(policy['minimumTotalBytes'])+' bytes total/5GiB available/4CPU'
+ return policy
 def prepare(args):
  platform();source_check(args.source_sha);ports_free();assert not STATE.exists(),'Existing local state is retained; no rekey/reset/second fixture'
- budget=available();assert budget['freeBytes']>=7516192768 and budget['memoryMaximum']>=12884901888 and budget['memoryAvailable']>=5368709120 and budget['cpuCount']>=4,'After-JAR preflight requires7GiB disk/12GiB total/5GiB available/4CPU'
+ budget=available();memory_policy=prepare_admission(budget,args.allow_12gb_wsl)
  # Inspect metadata only. Never adopt a pre-existing project, volume or overlapping network.
  ids=run(DOCKER+['ps','-aq']).splitlines();baseline=[]
  fmt='{"Id":{{json .Id}},"Name":{{json .Name}},"Image":{{json .Image}},"Mounts":{{json .Mounts}},"Running":{{json .State.Running}},"Project":{{json (index .Config.Labels "com.docker.compose.project")}},"Service":{{json (index .Config.Labels "com.docker.compose.service")}},"Owner":{{json (index .Config.Labels "rct.pr3.local.owner")}}}'
@@ -147,8 +151,8 @@ def prepare(args):
   if f.is_file() and f.name!='compose.template.json':write(ROOT/f.name,f.read_text())
  write(PRIVATE/'foreign-baseline.json',baseline)
  contract=json.loads((HERE/'source-contract.json').read_text());services=contract['minimumServices'];nonce=secrets.token_hex(16)
- settings={'repo':str(REPO),'sourceSha':args.source_sha,'ownerNonce':nonce,'services':services,'images':images,'localGate':'NOT_RUN','referenceContractSha256':sha(HERE/'source-contract.json')}
- write(ROOT/'pins.json',{'sourceCommit':args.source_sha,'artifacts':jars,'project':PROJECT,'preflight':{'minimumFreshFreeBytes':7516192768,'earlyStopBytes':2684354560,'hardReserveBytes':2147483648,'sampleIntervalSeconds':.25}})
+ settings={'repo':str(REPO),'sourceSha':args.source_sha,'ownerNonce':nonce,'services':services,'images':images,'localGate':'NOT_RUN','referenceContractSha256':sha(HERE/'source-contract.json'),'memoryAdmission':memory_policy}
+ write(ROOT/'pins.json',{'sourceCommit':args.source_sha,'artifacts':jars,'project':PROJECT,'memoryAdmission':memory_policy,'preflight':{'observedAtPrepare':budget,'minimumFreshFreeBytes':7516192768,'earlyStopBytes':2684354560,'hardReserveBytes':2147483648,'sampleIntervalSeconds':.25}})
  names=run(['git','ls-files','--','services','proto','frontends','gradle','build.gradle.kts','settings.gradle.kts','infra/postgres/init-roles.sh','tests/e2e/infra/baseline','tests/e2e/pr3-local']).splitlines()
  names=sorted(n for n in names if '/build/' not in n and '/node_modules/' not in n and '/dist/' not in n)
  write(ROOT/'source-inputs.SHA256SUMS',''.join(sha(REPO/n)+'  '+n+'\n' for n in names))
@@ -222,7 +226,7 @@ def prepare(args):
  inputs=sorted(p for p in ROOT.rglob('*') if p.is_file() and PRIVATE not in p.parents and p.name not in ['SOURCE.SHA256SUMS','PACKAGE-SHA256'])
  write(ROOT/'SOURCE.SHA256SUMS',''.join(sha(p)+'  '+str(p.relative_to(ROOT))+'\n' for p in inputs))
  write(ROOT/'PACKAGE-SHA256',sha(ROOT/'SOURCE.SHA256SUMS')+'\n')
- write(PRIVATE/'prepared.json',{'state':'NOT_RUN','sourceSha':args.source_sha,'sourceFiles':len(names),'frontendInputs':len(frontend),'packageSha256':sha(ROOT/'SOURCE.SHA256SUMS'),'foreignContainers':len(baseline),'servicesStarted':0,'AuthApiDbActions':0,'budget':budget})
+ write(PRIVATE/'prepared.json',{'state':'NOT_RUN','sourceSha':args.source_sha,'sourceFiles':len(names),'frontendInputs':len(frontend),'packageSha256':sha(ROOT/'SOURCE.SHA256SUMS'),'foreignContainers':len(baseline),'servicesStarted':0,'AuthApiDbActions':0,'budget':budget,'memoryAdmission':memory_policy})
  print('Prepared fresh local files only. Services/fixture/delete NOT_RUN. No cloud or old checkout read.')
 def go(runtime,phase):
  value={'approved':True,'phase':phase,'rootHead':runtime.S['sourceSha'],'sourceCommit':runtime.S['sourceSha'],'packageSha256':runtime.package_hash(),'driverPackageSha256':runtime.package_hash(),'cohort':'ONE_DELETE_SIX_LIVE_VIEWS','ownOrigin':'http://127.0.0.1:14250','telegramContext':'CONTROLLED_OWN_ISOLATED_SIGNER','telegramSignerSource':str(PRIVATE/'local.env'),'telegramSignerSelector':'TMA_BOT_TOKEN','allowObservedTmaHeadmanSuccessorCleanup':True,'capacityQENV010Applied':(PRIVATE/'fresh-runtime-preflight.json').exists()}
@@ -317,7 +321,8 @@ def stop_owned(runtime):
  runtime.ownership();print('Stopped exact nonce-owned containers only; volumes/DB/keys/evidence retained. No down/prune/remove.')
 def main():
  install_handlers()
- p=argparse.ArgumentParser(description=__doc__);p.add_argument('action',choices=['prepare','start','frontends','fixture','case','inspect','summary','stop']);p.add_argument('--source-sha');args=p.parse_args()
+ p=argparse.ArgumentParser(description=__doc__);p.add_argument('action',choices=['prepare','start','frontends','fixture','case','inspect','summary','stop']);p.add_argument('--source-sha');p.add_argument('--allow-12gb-wsl',action='store_true',help='prepare only: explicitly admit >=12000000000 bytes total; other resource guards remain required');args=p.parse_args()
+ if args.allow_12gb_wsl and args.action!='prepare':p.error('--allow-12gb-wsl is only valid with prepare')
  if args.action=='prepare':
   if not args.source_sha:p.error('prepare requires --source-sha with the exact published40-character SHA')
   prepare(args);return

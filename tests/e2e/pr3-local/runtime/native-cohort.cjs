@@ -116,7 +116,7 @@ async function main() {
   // This admits the frozen v8 package, runtime/source/JAR closure and own realm before any credential read.
   python(['-c', 'import runtime,sys;runtime.admission("native-case",sys.argv[1],continuation=True)', goFile]);
   const pre = resources();
-  assert(pre.memoryMaximum >= 12884901888 && pre.memoryAvailable >= 2147483648, 'Actual cgroup budget/headroom required');
+  assert(pre.memoryMaximum >= pre.minimumMemoryMaximumBytes && pre.memoryAvailable >= 2147483648, 'Actual cgroup budget/headroom required');
   assert(pre.diskAvailable >= 2684354560 && go.capacityQENV010Applied === true, 'Root capacity gate remains required');
   require('./prepared-private.cjs').admitPreparedPrivate(PRIVATE);
   save('intent.json', { state: 'RESERVED_NOT_SENT', packageSha, rootHead: go.rootHead, at: new Date().toISOString() }, true);

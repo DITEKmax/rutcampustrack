@@ -79,12 +79,20 @@ def source():
   digest,name=line.split('  ',1);assert sha(REPO/name)==digest,'Frozen local source input changed'
  for a in P['artifacts']:assert sha(a['path'])==a['sha256'],'Built local JAR changed'
  for tag,image_id in S['images'].items():assert json.loads(docker('image','inspect','--format','{{json .Id}}',tag).stdout)==image_id,'Local image pin changed; no pull or replacement'
+def minimum_memory_total():
+ # Old prepared packages without either policy retain the original strict floor.
+ if 'memoryAdmission' not in S and 'memoryAdmission' not in P:return 12884901888
+ choices=[{'name':'default-12gib','explicit12gbWsl':False,'minimumTotalBytes':12884901888},{'name':'explicit-12gb-wsl','explicit12gbWsl':True,'minimumTotalBytes':12000000000}]
+ for policy in [S.get('memoryAdmission'),P.get('memoryAdmission')]:
+  assert type(policy) is dict and type(policy.get('explicit12gbWsl')) is bool and type(policy.get('minimumTotalBytes')) is int and policy in choices,'Unknown frozen memory admission policy; HOLD'
+ assert S['memoryAdmission']==P['memoryAdmission'],'Mismatched frozen memory admission policy; HOLD'
+ return S['memoryAdmission']['minimumTotalBytes']
 def resources():
  info={k:int(v.split()[0])*1024 for k,v in (line.split(':',1) for line in pathlib.Path('/proc/meminfo').read_text().splitlines())}
  maximum=info['MemTotal'];available=info['MemAvailable'];cg=pathlib.Path('/sys/fs/cgroup')
  if (cg/'memory.max').exists() and (cg/'memory.max').read_text().strip()!='max':
   bound=int((cg/'memory.max').read_text());current=int((cg/'memory.current').read_text());maximum=min(maximum,bound);available=min(available,bound-current)
- return {'memoryMaximum':maximum,'memoryAvailable':available,'memoryCurrent':maximum-available,'diskAvailable':shutil.disk_usage(ROOT).free,'cpuCount':os.cpu_count()}
+ return {'minimumMemoryMaximumBytes':minimum_memory_total(),'memoryMaximum':maximum,'memoryAvailable':available,'memoryCurrent':maximum-available,'diskAvailable':shutil.disk_usage(ROOT).free,'cpuCount':os.cpu_count()}
 def ready():
  rows=[r for r in ownership() if r['Project']==PROJECT]
  assert len(rows)==len(S['services']) and {r['Service'] for r in rows}==set(S['services']) and all(r['Running'] for r in rows),'All exact owned services required before API'
@@ -129,6 +137,6 @@ def admission(phase,go,continuation=False):
  g=json.loads(pathlib.Path(go).read_text());assert g.get('approved') is True and g['phase']==phase and g['rootHead']==S['sourceSha'] and g['sourceCommit']==S['sourceSha']
  assert g['packageSha256']==package_hash() and g['ownOrigin']=='http://127.0.0.1:14250'
  source();ready();r=resources();assert r['diskAvailable']>=2684354560,'Early disk reserve; HOLD, no retry'
- assert r['memoryMaximum']>=12884901888 and r['memoryAvailable']>=1073741824,'Local memory budget insufficient'
+ assert r['memoryMaximum']>=r['minimumMemoryMaximumBytes'] and r['memoryAvailable']>=1073741824,'Local memory budget insufficient'
  if phase=='native-case':assert g.get('capacityQENV010Applied') is True and (PRIVATE/'fresh-runtime-preflight.json').exists()
  return g

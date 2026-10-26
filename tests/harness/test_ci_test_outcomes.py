@@ -1650,5 +1650,304 @@ class SafeCases {
                 self.assertNotIn(MARKER, rejected.stdout + rejected.stderr)
 
 
+
+class OrdinaryIntegrationControl(unittest.TestCase):
+    """Current-source proof controls; no Gradle, containers or hosted-run impersonation."""
+
+    EXPECTED_METHODS = {
+        "schedule-service": {
+            "semesterProgressCountsFullPhysicalSemesterWithoutChangingDefaultLessonPage",
+            "concurrentDifferentKeysForSamePhysicalSlot_haveOneDurableWinnerAndTypedConflict",
+        },
+        "auth-service": {
+            "ordinaryPasswordResetDoesNotIssueOrCompleteForActiveAdmin",
+            "passwordAndExactPurposeScopedProofProduceOneDurableReplayableReceipt",
+            "loginOtpCannotAuthorizeSubjectDeletionAndRemainsUsableForLogin",
+        },
+        "academic-service": {
+            "teacherReadyArtifactRequiresEveryCapturedCurrentAssignmentAfterScopeShrinks",
+            "unknownAndNullPermissionElementsAreRejectedWithoutAuthorityMutation",
+            "unfinishedSpringRejectsSignedManualPreviewAndExecutionWithoutChangingDurableState",
+            "initialEnrollmentAndEquivalentRoleAddAtomicallyAdmitPrivateBackfill",
+            "refusedOutboxAndPostFenceEnrollmentRollbackUserHistoryWorkAndOutbox",
+            "onlyExactBackfillAcknowledgementDrainsArchiveAndRetainsReplayIdentity",
+            "v61IsAdditiveAndRestoresPendingAndAppliedReplayIdentities",
+        },
+        "attendance-service": {
+            "studentWeeklyGroupComparisonUsesPersistedHistoricalCellsAndRejectsForeignCatalogue",
+            "blockedLessonDeniesManualRequestButAllowsExcuseAndUnblockRestoresEligibility",
+            "lateInitialMembershipBackfillsOnlyDatedTargetAfterCommittedCloseAndReplaysAfterSeal",
+            "initialMembershipForeignUnknownAndOutboxFailureNeverPartiallyApply",
+            "initialMembershipCannotResurrectSubjectOrSemesterTombstones",
+        },
+    }
+
+    def setUp(self) -> None:
+        temporary = tempfile.TemporaryDirectory(prefix="rct-ordinary-outcome-control-")
+        self.addCleanup(temporary.cleanup)
+        self.root = Path(temporary.name)
+        subprocess.run(["git", "init", "-q"], cwd=self.root, capture_output=True, check=True)
+        self.environment = {"RCT_CI_TEST_OUTCOME": "success"}
+
+    def commit(self) -> None:
+        subprocess.run(["git", "add", "."], cwd=self.root, capture_output=True, check=True)
+        subprocess.run(
+            ["git", "-c", "user.name=CI Control", "-c", "user.email=ci-control@example.invalid",
+             "commit", "-qm", "current ordinary fixture"],
+            cwd=self.root, capture_output=True, check=True,
+        )
+
+    def fixture(self, service: str = "auth-service") -> None:
+        self.service = service
+        module = COLLECTOR.MODULES[service]
+        entries = COLLECTOR.ORDINARY_INTEGRATION.get(
+            service, (("example.OrdinaryIT", "ordinaryMethod", "unused"),)
+        )
+        self.identities = [(classname, method) for classname, method, _ in entries]
+        grouped = {}
+        for classname, method in self.identities:
+            grouped.setdefault(classname, []).append(method)
+        self.sources = []
+        for classname, methods in grouped.items():
+            source = self.root / module / "src/test/java" / (classname.replace(".", "/") + ".java")
+            source.parent.mkdir(parents=True, exist_ok=True)
+            package, _, name = classname.rpartition(".")
+            source.write_text(
+                f"package {package}; class {name} {{\n"
+                + "".join(f"    @Test void {method}() {{}}\n" for method in methods) + "}\n",
+                encoding="utf8",
+            )
+            self.sources.append(source)
+        for suffix in COLLECTOR.ORDINARY_PRODUCTION.get(service, ()):
+            production = self.root / module / suffix
+            production.parent.mkdir(parents=True, exist_ok=True)
+            production.write_text("// current owned production fixture\n", encoding="utf8")
+        self.commit()
+        self.results = self.root / module / "build/test-results/integrationTest"
+        self.results.mkdir(parents=True)
+        self.output = self.root / "build/ci-test-outcomes" / service / "integrationTest/safe-outcomes.json"
+        self.output.parent.mkdir(parents=True)
+        self.native()
+        self.report()
+
+    def native(self, identities=None, child: str = "", failures: int = 0, skipped: int = 0) -> None:
+        identities = self.identities if identities is None else identities
+        body = "".join(
+            f'<testcase classname="{classname}" name="{method}()">{child if index == 0 else ""}</testcase>'
+            for index, (classname, method) in enumerate(identities)
+        )
+        (self.results / "TEST-ordinary.xml").write_text(
+            f'<testsuite tests="{len(identities)}" failures="{failures}" errors="0" skipped="{skipped}">'
+            + body + "</testsuite>", encoding="utf8",
+        )
+
+    def report(self) -> dict:
+        value = COLLECTOR.collect(self.root, self.service, "integrationTest", self.environment)
+        self.output.write_text(json.dumps(value), encoding="utf8")
+        return value
+
+    def verify(self) -> None:
+        COLLECTOR.verify_ordinary_integration(
+            self.root, self.service, "integrationTest", self.environment, self.output
+        )
+
+    def test_all_catalog_groups_and_seven_services_use_current_bytes(self) -> None:
+        self.assertEqual(
+            {service: {method for _, method, _ in entries}
+             for service, entries in COLLECTOR.ORDINARY_INTEGRATION.items()},
+            self.EXPECTED_METHODS,
+        )
+        for service in COLLECTOR.MODULES:
+            with self.subTest(service=service):
+                # Independent temporary repository per lane; no existing report can carry it.
+                with tempfile.TemporaryDirectory(prefix="rct-ordinary-lane-") as temporary:
+                    previous = self.root
+                    self.root = Path(temporary)
+                    subprocess.run(["git", "init", "-q"], cwd=self.root, capture_output=True, check=True)
+                    self.fixture(service)
+                    self.verify()
+                    old_report = self.output.read_bytes()
+                    old_digest = self.report()["cases"][0]["sourceSha256"]
+                    source = self.sources[0]
+                    source.write_text("\n// harmless comment and blank line\n" + source.read_text(), encoding="utf8")
+                    self.commit()
+                    with self.assertRaises(ValueError):
+                        self.verify()  # stale checkout/source digest is rejected
+                    current = self.report()
+                    self.assertNotEqual(old_digest, current["cases"][0]["sourceSha256"])
+                    self.assertNotEqual(old_report, self.output.read_bytes())
+                    self.verify()  # no catalog/workflow hash edit
+                    self.root = previous
+
+    def test_local_control_and_hosted_metadata_are_bound(self) -> None:
+        self.fixture()
+        value = self.report()
+        self.assertEqual(value["metadata"]["event"], "LOCAL_CONTROL")
+        self.assertIsNone(value["metadata"]["runId"])
+        self.assertIsNone(value["metadata"]["runAttempt"])
+        self.verify()
+        local = dict(self.environment)
+        for extra in (
+            {"RCT_CI_RUN_ID": "1"}, {"RCT_CI_RUN_ATTEMPT": "1"},
+            {"RCT_CI_JOB_ID": "java-coverage"}, {"RCT_CI_TEST_OUTCOME": "UNKNOWN"},
+            {"RCT_CI_TEST_OUTCOME": "failure"}, {"RCT_CI_TEST_OUTCOME": "cancelled"},
+            {"RCT_CI_TEST_OUTCOME": "skipped"},
+        ):
+            with self.subTest(extra=extra), self.assertRaises(ValueError):
+                self.environment = {**local, **extra}
+                self.report()
+                self.verify()
+        self.environment = {
+            **local, "RCT_CI_PR_HEAD_SHA": "b" * 40, "RCT_CI_EVENT_NAME": "pull_request",
+            "RCT_CI_RUN_ID": "12345", "RCT_CI_RUN_ATTEMPT": "2", "RCT_CI_JOB_ID": "java-integration-test",
+        }
+        self.report()
+        self.verify()
+        hosted = dict(self.environment)
+        for key in ("RCT_CI_PR_HEAD_SHA", "RCT_CI_JOB_ID", "RCT_CI_RUN_ID", "RCT_CI_RUN_ATTEMPT"):
+            with self.subTest(missing=key), self.assertRaises(ValueError):
+                self.environment = {name: item for name, item in hosted.items() if name != key}
+                self.report()
+                self.verify()
+
+    def test_tampered_json_and_stale_identity_fail_closed(self) -> None:
+        self.fixture()
+        original = self.report()
+        for change in ("duplicate", "missing", "hash", "source", "ordinal", "skip", "failed", "summary", "metadata"):
+            value = json.loads(json.dumps(original))
+            if change == "duplicate":
+                value["cases"].append(dict(value["cases"][0]))
+            elif change == "missing":
+                value["cases"].pop(0)
+            elif change == "summary":
+                value["summary"]["PASSED"] += 1
+            elif change == "metadata":
+                value["metadata"]["checkoutSha"] = "a" * 40
+            else:
+                key, item = {
+                    "hash": ("sourceSha256", "0" * 64), "source": ("source", "foreign.java"),
+                    "ordinal": ("identity", "ORDINAL_ONLY"), "skip": ("status", "SKIPPED"),
+                    "failed": ("status", "FAILED"),
+                }[change]
+                value["cases"][0][key] = item
+            self.output.write_text(json.dumps(value), encoding="utf8")
+            with self.subTest(change=change), self.assertRaises(ValueError):
+                self.verify()
+
+    def test_native_missing_duplicate_skip_failure_unknown_and_incomplete_reject(self) -> None:
+        self.fixture()
+        for identities, child, failures, skipped in (
+            (self.identities[1:], "", 0, 0),
+            (self.identities + [self.identities[0]], "", 0, 0),
+            (self.identities, '<skipped/>', 0, 1),
+            (self.identities, f'<failure message="{MARKER}">{MARKER}</failure>', 1, 0),
+            ([self.identities[0][:1] + ("unknownMethod",)] + self.identities[1:], "", 0, 0),
+            (self.identities + [("foreign.Unknown", "unselectedFailure")], "", 0, 0),
+        ):
+            self.native(identities, child, failures, skipped)
+            if identities[-1] == ("foreign.Unknown", "unselectedFailure"):
+                path = self.results / "TEST-ordinary.xml"
+                path.write_text(path.read_text().replace(
+                    'name="unselectedFailure()"></testcase>',
+                    'name="unselectedFailure()"><failure/></testcase>'
+                ).replace('failures="0"', 'failures="1"'), encoding="utf8")
+            self.report()
+            with self.subTest(identities=identities, child=bool(child)), self.assertRaises(ValueError):
+                self.verify()
+        (self.results / "TEST-ordinary.xml").write_text("<malformed>", encoding="utf8")
+        self.report()
+        with self.assertRaises(ValueError):
+            self.verify()
+
+    def test_report_parser_rejects_duplicate_nonfinite_oversize_and_links(self) -> None:
+        self.fixture()
+        for raw in ('{"collection":"RESULTS","collection":"RESULTS"}', '{"x":NaN}', '{"x":Infinity}', ''):
+            self.output.write_text(raw, encoding="utf8")
+            with self.subTest(raw=raw), self.assertRaises(ValueError):
+                self.verify()
+        self.report()
+        with patch.object(COLLECTOR, "MAX_OUTCOME_JSON_BYTES", 8), self.assertRaises(ValueError):
+            self.verify()
+        outside = self.output.with_name("other.json")
+        outside.write_bytes(self.output.read_bytes())
+        self.output.unlink()
+        try:
+            self.output.symlink_to(outside)
+        except OSError:
+            self.skipTest("Source/report symlink control requires symlink support")
+        with self.assertRaises(ValueError):
+            self.verify()
+
+    def test_dirty_and_duplicate_sources_and_dirty_production_reject(self) -> None:
+        self.fixture()
+        source = self.sources[0]
+        original = source.read_bytes()
+        source.write_bytes(original + b"\n// uncommitted\n")
+        self.report()
+        with self.assertRaises(ValueError):
+            self.verify()
+        source.write_bytes(original)
+        production = self.root / COLLECTOR.MODULES[self.service] / COLLECTOR.ORDINARY_PRODUCTION[self.service][0]
+        production.write_text("// uncommitted production\n", encoding="utf8")
+        self.report()
+        with self.assertRaises(ValueError):
+            self.verify()
+        self.commit()
+        duplicate = source.with_name("Duplicate.java")
+        duplicate.write_bytes(original)
+        self.commit()
+        self.report()
+        with self.assertRaisesRegex(ValueError, "ORDINARY_DUPLICATE_SOURCE"):
+            self.verify()
+
+    def test_selected_source_and_production_symlinks_reject(self) -> None:
+        self.fixture()
+        production = self.root / COLLECTOR.MODULES[self.service] / COLLECTOR.ORDINARY_PRODUCTION[self.service][0]
+        for path in (self.sources[0], production):
+            original = path.read_bytes()
+            target = self.root / "foreign-bytes"
+            target.write_bytes(original)
+            path.unlink()
+            try:
+                path.symlink_to(target)
+            except OSError:
+                path.write_bytes(original)
+                self.skipTest("Source/report symlink control requires symlink support")
+            self.report()
+            with self.subTest(path=path.name), self.assertRaises(ValueError):
+                self.verify()
+            path.unlink()
+            path.write_bytes(original)
+
+    def test_cli_flag_preserves_default_and_requires_explicit_success(self) -> None:
+        self.fixture()
+        script = self.root / "scripts/collect-ci-test-outcomes.py"
+        script.parent.mkdir()
+        script.write_bytes(SCRIPT.read_bytes())
+        base = {"PATH": os.environ.get("PATH", os.defpath)}
+        command = [sys.executable, "-B", str(script), "--service", self.service, "--task", "integrationTest"]
+        for flag, success, exit_code in ((False, False, 0), (True, False, 1), (True, True, 0)):
+            environment = {**base, **({"RCT_CI_TEST_OUTCOME": "success"} if success else {})}
+            result = subprocess.run(
+                command + (["--verify-ordinary-integration"] if flag else []),
+                env=environment, capture_output=True, text=True, check=False,
+            )
+            with self.subTest(flag=flag, success=success):
+                self.assertEqual(result.returncode, exit_code, result.stdout + result.stderr)
+                value = json.loads(self.output.read_text())
+                self.assertEqual(value["acceptance"], "NOT_ASSESSED")
+                self.assertEqual(value["metadata"]["event"], "LOCAL_CONTROL")
+                self.assertEqual(value["metadata"]["testStepOutcome"], "success" if success else "UNKNOWN")
+                self.assertIsNone(value["metadata"]["runId"])
+                self.assertNotIn(MARKER, result.stdout + result.stderr)
+                if not flag:
+                    self.assertEqual(json.loads(result.stdout), {"collection": "RESULTS", "acceptance": "NOT_ASSESSED"})
+                else:
+                    self.assertIn(
+                        "ORDINARY_INTEGRATION_VERIFIED" if success else "ORDINARY_INTEGRATION_REJECTED",
+                        result.stdout,
+                    )
+
+
 if __name__ == "__main__":
     unittest.main()

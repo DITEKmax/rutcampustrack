@@ -2408,6 +2408,7 @@ onBeforeUnmount(() => {
     :map-client="mapClient"
     :profile-port="profilePort"
     :on-recover="openPasswordRecovery"
+    :on-logout="logout"
     :profile-role-select="selectProfileRole"
     :host="host"
     :theme-controller="theme"
@@ -2678,7 +2679,7 @@ onBeforeUnmount(() => {
     @clear-notification-target="clearNotificationTargetIntent"
   />
   <button
-    v-if="authView === 'teacher' || authView === 'headman' || mapViewVisible"
+    v-if="authView === 'headman' || mapViewVisible"
     class="pwa-logout"
     type="button"
     :disabled="authLoading"

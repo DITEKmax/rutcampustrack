@@ -66,6 +66,7 @@ const props = withDefaults(
     reportDownload?: ReportDownloadPort | null;
     profilePort?: ProfilePort | null;
     onRecover?: (() => void | Promise<void>) | undefined;
+    onLogout?: (() => void | Promise<void>) | undefined;
     profileRoleSelect?:
       | ((role: ProfileRole, expectedSessionVersion: string) => void | Promise<void>)
       | undefined;
@@ -82,6 +83,7 @@ const props = withDefaults(
     reportDownload: null,
     profilePort: null,
     onRecover: undefined,
+    onLogout: undefined,
     profileRoleSelect: undefined,
     host: null,
     themeController: null,
@@ -845,6 +847,7 @@ defineExpose({ openNotificationAction });
           :show-active-role="false"
           :on-retry="retryProfileSnapshot"
           :on-navigate="navigateProfile"
+          :on-logout="onLogout"
         />
         <RoleSwitchScreen
           v-else-if="route.id === 'profile/role-switch'"

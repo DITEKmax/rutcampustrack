@@ -3643,7 +3643,6 @@ test.describe('Production PWA service worker D002 @real-mobile', () => {
       })
       .toBe(true);
     const another = await admit(dataset.request, dataset.student, 'STUDENT');
-    await another.call('DELETE', `/api/auth/sessions/${session.sessionId}`, undefined, [204]);
     let completionCommands = 0;
     const countCompletion = (item: Request) => {
       if (new URL(item.url()).pathname.endsWith('/completion') && item.method() === 'PUT')
@@ -3655,6 +3654,9 @@ test.describe('Production PWA service worker D002 @real-mobile', () => {
       await page.clock.setFixedTime(new Date(`${dataset.today}T20:59:59Z`));
       await context.setOffline(true);
       try {
+        await expect(page.getByText('Ты офлайн', { exact: true })).toBeVisible();
+        // Revoke only after offline so online invalidation cannot clear the saved snapshot.
+        await another.call('DELETE', `/api/auth/sessions/${session.sessionId}`, undefined, [204]);
         await page.evaluate(() => {
           Object.defineProperty(window, '__rctD002WarmOfflineReloadOldWindow', { value: true });
         });

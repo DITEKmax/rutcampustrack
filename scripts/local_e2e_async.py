@@ -98,6 +98,60 @@ def batch_health(value):
         if check and not check.get("disable", False) and check.get("test") != ["NONE"]:
             require(row["State"].get("Health", {}).get("Status") == "healthy", "BATCH_COHORT_NOT_HEALTHY")
 
+
+def bundled_dockerfiles(config):
+    """Prepare local inline copies; never rewrite tracked Dockerfiles or custom syntax."""
+    records = {}
+    for name, service in config["services"].items():
+        build = service.get("build")
+        if build is None:
+            continue
+        require(type(build) is dict and not build.get("dockerfile_inline")
+                and "BUILDKIT_SYNTAX" not in build.get("args", {}), "BUNDLED_FRONTEND_BUILD_UNSUPPORTED")
+        context = Path(os.path.abspath(ROOT / build["context"]))
+        path = Path(os.path.abspath(context / build.get("dockerfile", "Dockerfile")))
+        require(context.is_relative_to(ROOT) and context.resolve() == context and context.is_dir()
+                and path.is_relative_to(ROOT) and path.resolve() == path, "BUNDLED_DOCKERFILE_OUTSIDE_SOURCE")
+        info = path.lstat()
+        require(stat.S_ISREG(info.st_mode) and 0 < info.st_size <= 2 * 1024**2,
+                "BUNDLED_DOCKERFILE_NOT_REGULAR_OR_BOUNDED")
+        relative = path.relative_to(ROOT).as_posix()
+        require(capture(["git", "ls-files", "--error-unmatch", "-z", "--", relative]).rstrip("\0") == relative,
+                "BUNDLED_DOCKERFILE_NOT_TRACKED")
+        for ignore in (Path(str(path) + ".dockerignore"), context / "Dockerfile.dockerignore"):
+            require(not ignore.exists() and not ignore.is_symlink(), "BUNDLED_DOCKERFILE_SPECIFIC_IGNORE")
+        with path.open("rb") as stream:
+            original = stream.read(2 * 1024**2 + 1)
+        require(0 < len(original) <= 2 * 1024**2 and not original.startswith(b"\xef\xbb\xbf"),
+                "BUNDLED_DOCKERFILE_NOT_BOUNDED_UTF8")
+        text = original.decode("utf-8", errors="strict")
+        lines = text.splitlines(keepends=True)
+        removed = lines[0].rstrip("\r\n") == "# syntax=docker/dockerfile:1.7"
+        effective = "".join(lines[1:]) if removed else text
+        require(effective.strip() and not re.search(r"(?im)^[ \t]*#[ \t]*syntax[ \t]*=", effective),
+                "BUNDLED_DOCKERFILE_UNKNOWN_SYNTAX")
+        # compose.json is parsed again before each build: preserve every literal dollar.
+        build["dockerfile_inline"] = effective.replace("$", "$$")
+        build.pop("dockerfile", None)
+        records[name] = {"path": relative, "original_sha256": hashlib.sha256(original).hexdigest(),
+                         "effective_sha256": hashlib.sha256(effective.encode("utf-8")).hexdigest(),
+                         "syntax_1_7_removed": removed}
+    require(records, "BUNDLED_DOCKERFILES_MISSING")
+    return records
+
+
+def validate_bundled_dockerfiles(config, records):
+    """Compose config re-escapes dollars on output; equality proves its parse round trip."""
+    for name, record in records.items():
+        build = config["services"][name]["build"]
+        inline = build.get("dockerfile_inline")
+        require(type(inline) is str and "dockerfile" not in build,
+                "BUNDLED_DOCKERFILE_ROUNDTRIP")
+        effective = inline.replace("$$", "$")
+        require(inline == effective.replace("$", "$$")
+                and hashlib.sha256(effective.encode("utf-8")).hexdigest() == record["effective_sha256"],
+                "BUNDLED_DOCKERFILE_ROUNDTRIP")
+
 NODE_TLS_PROBE = r"""
 const fs=require('fs'),https=require('https'),{X509Certificate}=require('crypto');
 const expected=new X509Certificate(fs.readFileSync(process.argv[1]));
@@ -378,9 +432,11 @@ def preflight():
 
 
 class Runner:
-    def __init__(self, mode, *, startup_diagnostic=False):
+    def __init__(self, mode, *, startup_diagnostic=False, bundled_dockerfile_frontend=False):
         require(not startup_diagnostic or mode == "client", "CLIENT_DIAGNOSTIC_ONLY")
+        require(not bundled_dockerfile_frontend or mode == "ui-batch", "BUNDLED_FRONTEND_UI_BATCH_ONLY")
         self.startup_diagnostic = startup_diagnostic
+        self.bundled_dockerfile_frontend = bundled_dockerfile_frontend
         self.mode, self.phase, self.child = mode, "PREPARE", None
         self.nonce = secrets.token_hex(12)
         self.project = "rct-local-stage17-" + self.nonce[:12]
@@ -402,6 +458,8 @@ class Runner:
                         COMPOSE_PARALLEL_LIMIT="1", BUILDKIT_MAX_PARALLELISM="1")
         if mode == "lesson-lifecycle":
             self.env["RCT_LESSON_LIFECYCLE_RUN"] = str(self.run)
+        if bundled_dockerfile_frontend:
+            self.env["BUILDX_BUILDER"] = "default"
 
     def command(self, phase, args, *, cwd=ROOT, stdin=None):
         self.phase = phase
@@ -504,7 +562,22 @@ class Runner:
         for name, value in config["volumes"].items():
             value["name"] = self.project + "_" + name
             value["labels"] = {LABEL: self.nonce}
+        frontend = None
+        if self.bundled_dockerfile_frontend:
+            inspection = capture(["docker", "buildx", "inspect", "default"], env=self.env)
+            require(re.search(r"(?m)^Driver:\s+docker\s*$", inspection), "BUNDLED_FRONTEND_DOCKER_DRIVER_REQUIRED")
+            engine = capture(["docker", "version", "--format", "{{.Server.Version}}"], env=self.env).strip()
+            require(re.fullmatch(r"[0-9]+\.[0-9]+\.[0-9]+(?:[-+][A-Za-z0-9_.-]+)?", engine),
+                    "BUNDLED_FRONTEND_ENGINE_VERSION")
+            frontend = {"requested": True, "builder": "default", "driver": "docker",
+                        "engine_version": engine,
+                        "frontend": "Docker Engine bundled Dockerfile frontend",
+                        "qualification": "LOCAL_OPT_IN_NOT_EXTERNAL_SYNTAX_1_7_EQUIVALENCE",
+                        "dockerfiles": bundled_dockerfiles(config)}
         write(self.run / "compose.json", json.dumps(config, indent=2) + "\n")
+        if frontend is not None:
+            parsed = json.loads(capture([*self.compose("config"), "--format", "json"], env=self.env))
+            validate_bundled_dockerfiles(parsed, frontend["dockerfiles"])
         tracked = capture(["git", "ls-files", "-z"]).split("\0")
         # Include untracked authored harness files; omit evidence and runtime files.
         paths = {name for name in tracked if name and (ROOT / name).is_file()
@@ -514,10 +587,16 @@ class Runner:
         paths |= {"scripts/local_e2e_async.py", "tests/e2e/fixtures/local-stage17.ts"}
         if self.mode == "ui-batch":
             paths.add("tests/e2e/playwright.local-batch.config.ts")
+        if frontend is not None:
+            paths |= {record["path"] for record in frontend["dockerfiles"].values()}
         hashes = {name: hashlib.sha256((ROOT / name).read_bytes()).hexdigest() for name in sorted(paths)}
+        require(frontend is None or all(hashes[record["path"]] == record["original_sha256"]
+                for record in frontend["dockerfiles"].values()), "BUNDLED_DOCKERFILE_SOURCE_CHANGED")
         value = {"schema": 1, "uid": os.getuid(), "root": str(ROOT), "run": str(self.run), "nonce": self.nonce, "mode": self.mode,
                  "project": self.project, "source_sha": sha, "sources": hashes, "startup_diagnostic": self.startup_diagnostic,
                  "batch_lanes": list(BATCH_LANES) if self.mode == "ui-batch" else None,
+                 "bundled_dockerfile_frontend": self.bundled_dockerfile_frontend,
+                 "dockerfile_frontend": frontend,
                  "node_ca_sha256": hashlib.sha256((self.run / "certs/server.crt").read_bytes()).hexdigest(),
                  "images": sorted(self.image_targets),
                  "compose_sha256": hashlib.sha256((self.run / "compose.json").read_bytes()).hexdigest(),
@@ -533,7 +612,8 @@ class Runner:
         if not package.is_file() or json.loads(package.read_text())["version"] != lock["packages"]["node_modules/@playwright/test"]["version"]:
             self.command("NPM_CI", ["npm", "ci", "--ignore-scripts"], cwd=ROOT / "tests/e2e")
         emit("PREPARED", mode=self.mode, run=str(self.run), source_sha=sha, dirty=value["dirty"],
-             startup_diagnostic=self.startup_diagnostic, qualification="FRESH_ISOLATED_LANE")
+             startup_diagnostic=self.startup_diagnostic, bundled_dockerfile_frontend=self.bundled_dockerfile_frontend,
+             qualification="FRESH_ISOLATED_LANE")
 
     def prepare_lesson_clock(self):
         """Before boot only: the final CI lane uses a future weekday at 09:00 Moscow."""
@@ -825,8 +905,11 @@ def main():
     parser.add_argument("--expected-mode", choices=sorted(MODES))
     parser.add_argument("--expected-batch-lane", choices=list(BATCH_LANES))
     parser.add_argument("--diagnose-startup", action="store_true", help="Client only: same ten scenarios, stop after first failure with closed setup diagnostics")
+    parser.add_argument("--bundled-dockerfile-frontend", action="store_true",
+                        help="UI batch only: inline tracked Dockerfiles using the Docker Engine bundled frontend")
     args = parser.parse_args()
     require(not args.diagnose_startup or args.mode == "client", "CLIENT_DIAGNOSTIC_ONLY")
+    require(not args.bundled_dockerfile_frontend or args.mode == "ui-batch", "BUNDLED_FRONTEND_UI_BATCH_ONLY")
     if args.mode == "admit":
         require(args.expected_batch_lane is None or args.expected_mode == "ui-batch", "LOCAL_BATCH_MODE_REQUIRED")
         require(args.expected_mode != "ui-batch" or args.expected_batch_lane in BATCH_LANES, "LOCAL_BATCH_LANE_REQUIRED")
@@ -851,7 +934,8 @@ def main():
         owned(RUNS / "port-8443.lock", 0o600)
         fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
         preflight()  # Race guard after owning the shared fixed-port lease.
-        runner = Runner(args.mode, startup_diagnostic=args.diagnose_startup)
+        runner = Runner(args.mode, startup_diagnostic=args.diagnose_startup,
+                        bundled_dockerfile_frontend=args.bundled_dockerfile_frontend)
         result, cleanup = "FAIL", "NOT_STARTED"
         try:
             runner.prepare()

@@ -20,13 +20,17 @@ if (!lane || !Object.hasOwn(selections, lane)) throw new Error('Local special se
 const context = requireLocalSpecialLane(lane);
 const existing = require(selections[lane].config).default as PlaywrightTestConfig;
 const phase = process.env.RCT_LOCAL_SPECIAL_PHASE!;
+const discovery = process.env.RCT_LOCAL_SPECIAL_DISCOVERY === 'true';
+const outputDir = discovery ? join(context.run, 'discovery', lane, 'artifacts')
+  : phase === 'main' ? join(context.laneRun, 'artifacts') : join(context.laneRun, 'artifacts', phase);
 const escape = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 export default defineConfig({
   ...existing,
   grep: new RegExp(`(?:${selections[lane].titles.map(escape).join('|')})$`),
   grepInvert: undefined,
-  outputDir: phase === 'main' ? join(context.laneRun, 'artifacts') : join(context.laneRun, 'artifacts', phase),
-  reporter: [['./fixtures/safe-reporter.ts', { localStartupDiagnostic: true }]],
+  outputDir,
+  reporter: [['./fixtures/safe-reporter.ts', { localStartupDiagnostic: true, localFrameworkDiagnostic: true,
+    localDiscoveryDiagnostic: discovery, localDiagnosticOutputDir: outputDir }]],
   fullyParallel: false, workers: 1, retries: 0, maxFailures: 0, forbidOnly: true,
   use: { ...existing.use, ignoreHTTPSErrors: false, trace: 'off', video: 'off', screenshot: 'off' },
   projects: existing.projects?.filter(project => project.name === 'chromium').map(project => ({

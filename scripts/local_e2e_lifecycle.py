@@ -456,6 +456,10 @@ def execute_lifecycle(runner):
             'RuntimeError', 'AdmissionError', 'TimeoutExpired', 'CalledProcessError',
             'FileNotFoundError', 'PermissionError', 'JSONDecodeError'} else 'OTHER'
         active = getattr(runner, '_lifecycle_active_lane', lanes[0])
+        try:
+            runner.preserve_special_error(active, None, error)
+        except BaseException:
+            pass
         results[active] = 'FAIL'
     for lane in lanes:
         status = results.get(lane, 'BLOCKED')

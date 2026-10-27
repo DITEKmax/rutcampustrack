@@ -22,6 +22,8 @@ import ssl
 import stat
 import subprocess
 import sys
+import ast
+import traceback
 import time
 import urllib.error
 import urllib.request
@@ -484,6 +486,126 @@ def special_phases(lane):
     return {"assignment": ("prepare", "pending", "resume"), "application-recovery": ("seed", "pending", "admit", "attachment")}.get(lane, ("main",))
 
 
+def selected_cohorts(mode, lifecycle_only=False):
+    require(type(lifecycle_only) is bool and (not lifecycle_only or mode == "special13"), "LIFECYCLE_ONLY_SPECIAL13")
+    return ("lifecycle",) if lifecycle_only else ("nonclock", "lifecycle") if mode == "special13" else (None,)
+
+
+def validate_playwright_list_source():
+    library = ROOT / "tests/e2e/node_modules/playwright"
+    require(json.loads((library / "package.json").read_text())["version"] == "1.59.1", "SPECIAL_DISCOVERY_PLAYWRIGHT_VERSION")
+    for file, digest in {
+        "lib/runner/testRunner.js": "6adc6df6bbde5fdb97c70459a53364612776e927bdc3c2d50c3b3c48e21da21b",
+        "lib/runner/tasks.js": "de2c75366370cf0fcfa5a1a175467ad15ca25e2600afdfb43b4d7d8416e56006",
+        "lib/runner/reporters.js": "9cbf16ef7705b5e4a47e8d76816bbcd9d1d685f8c86dee78a7f86c793505ba3b"}.items():
+        require(hashlib.sha256((library / file).read_bytes()).hexdigest() == digest, "SPECIAL_DISCOVERY_PLAYWRIGHT_SOURCE")
+
+
+SPECIAL_FRAME_SOURCES = {Path(name).name: "tests/e2e/" + name for name in (
+    "fixtures/safe-reporter.ts", "fixtures/local-special.ts", "fixtures/local-stage17.ts", "fixtures/mobile-dataset.ts",
+    "fixtures/artifact-privacy.ts", "fixtures/teaching-clock.ts", "fixtures/semester-lifecycle.spec.ts",
+    "fixtures/assignment-lifecycle.spec.ts", "fixtures/application-recovery.spec.ts", "specs/mobile-real-server.spec.ts",
+    "specs/cloud-accepted-auth-security.spec.ts", "specs/cloud-accepted-registry-export.spec.ts", "clock-specs/teaching-clock-geo.spec.ts",
+    "playwright.local-special.config.ts", "playwright.semester-lifecycle.config.ts", "playwright.assignment-lifecycle.config.ts",
+    "playwright.application-recovery.config.ts", "playwright.teaching-clock.config.ts", "playwright.real-mobile.config.ts",
+    "playwright.registry-export.config.ts", "playwright.config.ts")}
+
+
+def special_public_frame(frame, value):
+    if frame is None:
+        return None
+    require(type(frame) is dict and set(frame) == {"file", "line", "column"} and frame["file"] in SPECIAL_FRAME_SOURCES
+            and type(frame["line"]) is int and 1 <= frame["line"] <= 1000000
+            and type(frame["column"]) is int and 1 <= frame["column"] <= 4096, "SPECIAL_FRAMEWORK_FRAME")
+    name = SPECIAL_FRAME_SOURCES[frame["file"]]
+    raw = (ROOT / name).read_bytes()
+    require(len(raw) <= 2 * 1024**2 and hashlib.sha256(raw).hexdigest() == value["sources"][name], "SPECIAL_FRAMEWORK_SOURCE")
+    lines = raw.decode().splitlines()
+    require(frame["line"] <= len(lines) and frame["column"] <= len(lines[frame["line"] - 1]) + 1, "SPECIAL_FRAMEWORK_FRAME_RANGE")
+    return {key: frame[key] for key in ("file", "line", "column")}
+
+
+def closed_framework_result(report, value):
+    require(type(report) is dict and set(report) == {"schema", "kind", "sourceBound", "sourceRevision", "beginSeen", "runnerStatus", "globalErrors", "privateRetention", "discovery"}
+            and report["schema"] == "RCT_LOCAL_FRAMEWORK_DIAGNOSTIC_V1" and report["kind"] in {"DISCOVERY", "EXECUTION"}
+            and type(report["sourceBound"]) is bool and type(report["beginSeen"]) is bool
+            and (report["sourceRevision"] is None or type(report["sourceRevision"]) is str and re.fullmatch("[a-f0-9]{40}", report["sourceRevision"]))
+            and report["runnerStatus"] in {"passed", "failed", "timedout", "interrupted", "UNKNOWN"}, "SPECIAL_FRAMEWORK_SCHEMA")
+    errors, retention, discovery = (report[name] for name in ("globalErrors", "privateRetention", "discovery"))
+    def counter(number, bound):
+        require(type(number) is int and 0 <= number <= bound, "SPECIAL_FRAMEWORK_COUNTER")
+        return number
+    require(type(errors) is dict and set(errors) == {"observed", "retained", "truncated", "items"}
+            and type(errors["truncated"]) is bool and type(errors["items"]) is list, "SPECIAL_FRAMEWORK_ERRORS")
+    counter(errors["observed"], 1000000); counter(errors["retained"], 16)
+    require(errors["retained"] == len(errors["items"]) <= errors["observed"]
+            and (errors["truncated"] or errors["observed"] == errors["retained"]), "SPECIAL_FRAMEWORK_ERROR_COUNT")
+    items = []
+    for item in errors["items"]:
+        require(type(item) is dict and set(item) == {"errorClass", "frameworkCode", "sourceFrame"}
+                and item["errorClass"] in {"Error", "TypeError", "RangeError", "ReferenceError", "SyntaxError", "TimeoutError", "UNKNOWN"}
+                and item["frameworkCode"] in {"DUPLICATE_TITLE", "UNEXPECTED_TEST", "UNEXPECTED_HOOK", "UNEXPECTED_USE", "UNKNOWN_FIXTURE", "NO_TESTS", "MODULE_NOT_FOUND", "SYNTAX_ERROR", "CONFIG_ERROR", "ADMISSION_ERROR", "OTHER", "UNKNOWN"}, "SPECIAL_FRAMEWORK_ERROR")
+        items.append({"errorClass": item["errorClass"], "frameworkCode": item["frameworkCode"], "sourceFrame": special_public_frame(item["sourceFrame"], value)})
+    require(type(retention) is dict and set(retention) == {"status", "retainedErrors", "bytes", "truncated"}
+            and retention["status"] in {"WRITTEN", "REFUSED", "FAILED"} and type(retention["truncated"]) is bool, "SPECIAL_FRAMEWORK_RETENTION")
+    counter(retention["retainedErrors"], 16); counter(retention["bytes"], 65536)
+    require(type(discovery) is dict and set(discovery) == {"observed", "retained", "truncated", "rejected", "identities"}
+            and type(discovery["truncated"]) is bool and type(discovery["identities"]) is list, "SPECIAL_FRAMEWORK_DISCOVERY")
+    counter(discovery["observed"], 1000000); counter(discovery["retained"], 256); counter(discovery["rejected"], 1000000)
+    require(discovery["retained"] == len(discovery["identities"]) <= discovery["observed"]
+            and (discovery["truncated"] or discovery["observed"] == discovery["retained"] + discovery["rejected"]), "SPECIAL_FRAMEWORK_DISCOVERY_COUNT")
+    identities = []
+    for identity in discovery["identities"]:
+        require(type(identity) is dict and set(identity) == {"file", "line", "project"}
+                and identity["project"] == "chromium", "SPECIAL_FRAMEWORK_IDENTITY")
+        frame = special_public_frame({"file": identity["file"], "line": identity["line"], "column": 1}, value)
+        identities.append({"file": frame["file"], "line": frame["line"], "project": "chromium"})
+    return {"schema": report["schema"], "kind": report["kind"], "sourceBound": report["sourceBound"], "sourceRevision": report["sourceRevision"],
+        "beginSeen": report["beginSeen"], "runnerStatus": report["runnerStatus"], "globalErrors": {"observed": errors["observed"], "retained": errors["retained"], "truncated": errors["truncated"], "items": items},
+        "privateRetention": {key: retention[key] for key in ("status", "retainedErrors", "bytes", "truncated")},
+        "discovery": {"observed": discovery["observed"], "retained": discovery["retained"], "truncated": discovery["truncated"], "rejected": discovery["rejected"], "identities": identities}}
+
+
+def special_log_hints(path, value):
+    info = owned(path, 0o600)
+    require(info.st_size <= 16 * 1024**2, "SPECIAL_DISCOVERY_LOG_BOUND")
+    markers = {code: False for code in ("DUPLICATE_TITLE", "UNEXPECTED_TEST", "UNKNOWN_FIXTURE", "NO_TESTS", "MODULE_NOT_FOUND", "SYNTAX_ERROR", "CONFIG_ERROR", "ADMISSION_ERROR")}
+    patterns = {"DUPLICATE_TITLE": r"duplicate test title", "UNEXPECTED_TEST": r"Playwright Test did not expect test", "UNKNOWN_FIXTURE": r"unknown (?:test|worker) fixture|unknown parameter",
+        "NO_TESTS": r"No tests found", "MODULE_NOT_FOUND": r"Cannot find module|ERR_MODULE_NOT_FOUND", "SYNTAX_ERROR": r"SyntaxError:", "CONFIG_ERROR": r"Error while loading config",
+        "ADMISSION_ERROR": r"Local special resource admission failed|Local special context was rejected"}
+    frames = []
+    for line in path.read_text(errors="replace").splitlines():
+        if len(line) > 65536:
+            continue
+        for code, pattern in patterns.items():
+            markers[code] |= bool(re.search(pattern, line, re.I))
+        if not line.startswith("    at ") or len(frames) >= 8:
+            continue
+        for basename, name in SPECIAL_FRAME_SOURCES.items():
+            match = re.fullmatch(r"    at (?:[^()\r\n]{1,128} \()?" + re.escape(str(ROOT / name)) + r":([1-9][0-9]{0,5}):([1-9][0-9]{0,3})\)?", line)
+            if match:
+                try:
+                    frame = special_public_frame({"file": basename, "line": int(match[1]), "column": int(match[2])}, value)
+                    if frame not in frames:
+                        frames.append(frame)
+                except AdmissionError:
+                    pass
+    return {"status": "PROJECTED", "qualification": "UNTRUSTED_REPORTED_LOG_HINTS", "markers": markers, "sourceFrames": frames}
+
+
+def validate_discovery_receipt(report, value, lane, native_exit):
+    expected = {(file, line, "chromium") for file, line in Runner.special_expected_locations(None, lane)}
+    observed = {(item["file"], item["line"], item["project"]) for item in report["discovery"]["identities"]}
+    require(report["kind"] == "DISCOVERY" and report["sourceBound"] is True and report["sourceRevision"] == value["source_sha"], "SPECIAL_DISCOVERY_SOURCE")
+    require(report["globalErrors"]["observed"] == 0 and report["globalErrors"]["retained"] == 0 and not report["globalErrors"]["truncated"], "SPECIAL_DISCOVERY_GLOBAL_ERRORS")
+    require(report["beginSeen"] and report["discovery"]["observed"] == report["discovery"]["retained"] == len(expected)
+            and report["discovery"]["rejected"] == 0 and not report["discovery"]["truncated"] and observed == expected
+            and len(observed) == len(report["discovery"]["identities"]), "SPECIAL_DISCOVERY_TEST_IDENTITIES")
+    require(type(native_exit) is int and native_exit == 0 and report["runnerStatus"] == "passed"
+            and report["privateRetention"]["status"] == "WRITTEN", "SPECIAL_DISCOVERY_EXIT_OR_RETENTION")
+    return True
+
+
 def private_json(path, bound=8 * 1024**2):
     info = owned(path, 0o600)
     require(0 < info.st_size <= bound and path.resolve() == path, "SPECIAL_PRIVATE_JSON")
@@ -584,6 +706,10 @@ def append_special(value, kind, **fields):
 
 def validate_special_environment(value, environment, lane=None, phase=None):
     cohort = value.get("special_cohort")
+    discovery = environment.get("RCT_LOCAL_SPECIAL_DISCOVERY", "")
+    discovery_lane = environment.get("RCT_LOCAL_SPECIAL_LANE")
+    require(discovery in {"", "true"} and (not discovery or cohort == "lifecycle" and value.get("lifecycle_only") is True
+            and discovery_lane in SPECIAL_LIFECYCLE and environment.get("RCT_LOCAL_SPECIAL_PHASE") == special_phases(discovery_lane)[0]), "SPECIAL_DISCOVERY_BINDING")
     require(cohort in {"nonclock", "lifecycle"} and value.get("special_lanes") == list(SPECIAL_NONCLOCK if cohort == "nonclock" else SPECIAL_LIFECYCLE), "SPECIAL_MANIFEST_COHORT")
     require(environment.get("RCT_LOCAL_SPECIAL_COHORT") == cohort
             and environment.get("RCT_LOCAL_STAGE17_MODE") == "special13"
@@ -968,13 +1094,15 @@ def preflight(*, special=False, retained_receipt=None, retained_pdf_receipt=None
 
 class Runner:
     canonical_mount_records = staticmethod(canonical_mount_records)
-    def __init__(self, mode, *, startup_diagnostic=False, bundled_dockerfile_frontend=False, failed_cases=None, special_cohort=None):
+    def __init__(self, mode, *, startup_diagnostic=False, bundled_dockerfile_frontend=False, failed_cases=None, special_cohort=None, lifecycle_only=False):
         require(not startup_diagnostic or mode == "client", "CLIENT_DIAGNOSTIC_ONLY")
         require(not bundled_dockerfile_frontend or mode in {"ui-batch", "special13"}, "BUNDLED_FRONTEND_UI_BATCH_ONLY")
         require(failed_cases is None or mode == "ui-batch", "BATCH_CASES_UI_BATCH_ONLY")
         require((mode == "special13" and special_cohort in {"nonclock", "lifecycle"})
                 or (mode != "special13" and special_cohort is None), "SPECIAL_COHORT_REQUIRED")
         self.special_cohort = special_cohort
+        require(type(lifecycle_only) is bool and (not lifecycle_only or mode == "special13" and special_cohort == "lifecycle"), "LIFECYCLE_ONLY_SPECIAL13")
+        self.lifecycle_only = lifecycle_only
         self.special_network = None
         self.special_retained_receipt = None
         self.special_retained_pdf_receipt = None
@@ -1052,7 +1180,7 @@ class Runner:
         """Bound only the new local lanes; old launch modes retain their exact command path."""
         self.phase = phase
         emit(phase, state="RUNNING")
-        seconds = 1800 if phase.startswith("BUILD_") else 900 if phase.startswith("SPECIAL_") or phase == "CLOCK_BUILD" else 600 if phase == "BOOT" else 300
+        seconds = 120 if phase.startswith("DISCOVERY_") else 1800 if phase.startswith("BUILD_") else 900 if phase.startswith("SPECIAL_") or phase == "CLOCK_BUILD" else 600 if phase == "BOOT" else 300
         deadline, heartbeat, count = time.monotonic() + seconds, time.monotonic() + 15, 0
         limit = 16 * 1024**2
         require(stdin is None or type(stdin) is bytes and len(stdin) <= 65536, "SPECIAL_STDIN_BOUND")
@@ -1244,6 +1372,7 @@ class Runner:
         if self.special_cohort == "nonclock":
             self.image_targets.append("rct-local-stage17/notification-bot:" + self.nonce)
         value = {"schema": 1, "uid": os.getuid(), "root": str(ROOT), "run": str(self.run), "nonce": self.nonce, "mode": self.mode,
+                 **({"lifecycle_only": True} if self.lifecycle_only else {}),
                  "project": self.project, "source_sha": sha, "sources": hashes, "startup_diagnostic": self.startup_diagnostic,
                  "batch_lanes": selected_batch_lanes(self.failed_cases) if self.mode == "ui-batch" else None,
                  "batch_cases": self.failed_cases,
@@ -1610,6 +1739,7 @@ class Runner:
         (directory / "artifacts").mkdir(mode=0o700, exist_ok=True)
         output = directory / "artifacts" / phase if phase != "main" else directory / "artifacts"
         output.mkdir(mode=0o700, exist_ok=True)
+        self.special_framework_directory(lane, phase)
         base = self.env.copy()
         self.env.update(RCT_LOCAL_SPECIAL_LANE=lane, RCT_LOCAL_SPECIAL_PHASE=phase,
                         RCT_REMAINING5_RUN=str(directory), RCT_DIAGNOSTIC_RUN_DIR=str(directory))
@@ -1650,8 +1780,49 @@ class Runner:
             event = {key: value for key, value in outcome.items() if key != "phase"}
             emit("SPECIAL_PHASE_RESULT", stage=outcome["phase"], **event)
             return outcome
+        except BaseException as error:
+            try:
+                self.preserve_special_error(lane, phase, error)
+            except BaseException:
+                emit("SPECIAL_FAILURE_DIAGNOSTIC", state="UNAVAILABLE")
+            raise
         finally:
             self.env = base
+
+    def preserve_special_error(self, lane, phase, error, *, discovery=False):
+        require(lane in SPECIAL_LIFECYCLE and (phase is None or phase in special_phases(lane)), "SPECIAL_FAILURE_DIAGNOSTIC_BINDING")
+        value = self.special_value()
+        root = self.run / "discovery" / lane if discovery else self.run / "lanes" / lane
+        path = root / (phase + ".failure.safe.json") if phase else self.run / "lifecycle.failure.safe.json"
+        if path.exists():
+            return
+        frame, codes, sources = None, set(), {}
+        for file in ("scripts/local_e2e_async.py", "scripts/local_e2e_lifecycle.py"):
+            raw = (ROOT / file).read_bytes()
+            require(hashlib.sha256(raw).hexdigest() == value["sources"][file], "SPECIAL_DIAGNOSTIC_SOURCE_CHANGED")
+            parsed = ast.parse(raw)
+            sources[str(ROOT / file)] = (file, len(raw.splitlines()))
+            for node in ast.walk(parsed):
+                if isinstance(node, ast.Call) and isinstance(node.func, ast.Name) and node.func.id == "require" and len(node.args) == 2 and isinstance(node.args[1], ast.Constant) and type(node.args[1].value) is str:
+                    codes.add(node.args[1].value)
+        for candidate in traceback.extract_tb(error.__traceback__):
+            source = sources.get(candidate.filename)
+            if source and candidate.name != "require" and 1 <= candidate.lineno <= source[1]:
+                frame = {"source": source[0], "line": candidate.lineno, "sha256": value["sources"][source[0]]}
+        kind = type(error).__name__
+        code = str(error) if isinstance(error, AdmissionError) and str(error) in codes else None
+        receipt = {"schema": "RCT_LOCAL_SPECIAL_FAILURE_V1", "lane": lane, "phase": phase,
+            "errorClass": kind if kind in {"AdmissionError", "RuntimeError", "TimeoutExpired", "CalledProcessError", "FileNotFoundError", "PermissionError", "JSONDecodeError", "KeyboardInterrupt", "ValueError", "TypeError", "KeyError"} else "OTHER",
+            "admissionCode": code, "sourceFrame": frame}
+        write(path, json.dumps(receipt, sort_keys=True) + "\n")
+
+    def special_framework_directory(self, lane, phase):
+        require(lane in SPECIAL_LANES and phase in special_phases(lane), "SPECIAL_FRAMEWORK_PRIVATE_BINDING")
+        root = self.run / "framework-private"
+        for path in (self.run, root, root / lane, root / lane / phase):
+            if path != self.run:
+                path.mkdir(mode=0o700, exist_ok=True)
+            owned(path, 0o700, directory=True)
 
     def special_expected_locations(self, lane):
         files = {"bot": "specs/mobile-real-server.spec.ts", "production-service-worker": "specs/mobile-real-server.spec.ts",
@@ -1666,6 +1837,95 @@ class Runner:
             require(len(matches) == 1, "SPECIAL_ORIGINAL_STORY_TITLE")
             found.add((path.name, matches[0]))
         return found
+
+    def discover_lifecycle(self):
+        """Load every original first phase, without setup/fixtures/test bodies, before any story."""
+        require(self.mode == "special13" and self.special_cohort == "lifecycle" and self.lifecycle_only, "SPECIAL_DISCOVERY_SELECTION")
+        validate_playwright_list_source()
+        clock = self.run / "clock/current-instant"
+        owned(clock, 0o644)
+        original_clock = hashlib.sha256(clock.read_bytes()).hexdigest()
+        root = self.run / "discovery"
+        root.mkdir(mode=0o700)
+        matrix = {"schema": "RCT_LOCAL_LIFECYCLE_DISCOVERY_V1", "status": "BLOCKED", "expected": 7,
+            "lanes": [{"lane": lane, "phase": special_phases(lane)[0], "status": "BLOCKED", "nativeExit": None,
+                       "frameworkReceipt": "NOT_RUN"} for lane in SPECIAL_LIFECYCLE]}
+        try:
+            for row in matrix["lanes"]:
+                lane, phase = row["lane"], row["phase"]
+                directory = root / lane
+                directory.mkdir(mode=0o700)
+                (directory / "artifacts").mkdir(mode=0o700)
+                base = self.env.copy()
+                ordinary = False
+                try:
+                    context = self.special_context(lane, phase)
+                    self.env.update(RCT_LOCAL_SPECIAL_DISCOVERY="true", RCT_LOCAL_SPECIAL_LANE=lane, RCT_LOCAL_SPECIAL_PHASE=phase,
+                        RCT_REMAINING5_RUN=context["laneRun"], RCT_DIAGNOSTIC_RUN_DIR=context["laneRun"])
+                    variable = SPECIAL_LANES[lane][1]
+                    if variable:
+                        self.env[variable] = context["laneRun"]
+                    if lane == "assignment":
+                        self.env["RCT_ASSIGNMENT_LIFECYCLE_PHASE"] = phase
+                    if lane == "application-recovery":
+                        self.env.update(RCT_APP_RECOVERY_PHASE=phase, RCT_APP_RECOVERY_PROJECT="rct-recovery-" + self.nonce)
+                    if lane == "semester-metadata":
+                        self.env["RCT_ADMIN_SEMESTER_UI_RUN"] = context["laneRun"]
+                    if lane == "semester-archive":
+                        self.env.update(RCT_APP_RECOVERY_PROJECT="rct-recovery-" + self.nonce,
+                                        RCT_APP_RECOVERY_RUN=str(self.run / "lanes/application-recovery"))
+                    validate_local(environment=self.env, expected_mode="special13", expected_special_lane=lane, expected_special_phase=phase)
+                    require(hashlib.sha256(clock.read_bytes()).hexdigest() == original_clock, "SPECIAL_DISCOVERY_CLOCK_CHANGED")
+                    self.special_health()
+                    self.special_framework_directory(lane, phase)
+                    try:
+                        self.command("DISCOVERY_" + lane.upper().replace("-", "_"),
+                            ["npx", "playwright", "test", "--list", "--config", "playwright.local-special.config.ts", "--project=chromium"], cwd=ROOT / "tests/e2e")
+                        row["nativeExit"] = 0
+                    except AdmissionError as error:
+                        require(str(error) == "CHILD_FAILED" and type(error.returncode) is int and error.returncode == 1,
+                                "SPECIAL_DISCOVERY_COMMAND_FAILURE")
+                        row["nativeExit"] = error.returncode
+                    ordinary = True
+                    path = directory / "artifacts/framework.safe.json"
+                    row["frameworkReceipt"] = "MISSING" if not path.exists() else "REJECTED"
+                    report = closed_framework_result(private_json(path), self.special_value())
+                    row["frameworkReceipt"] = "READ"
+                    validate_discovery_receipt(report, self.special_value(), lane, row["nativeExit"])
+                    row["status"] = "DISCOVERED"
+                except Exception as error:
+                    try:
+                        self.preserve_special_error(lane, phase, error, discovery=True)
+                    except BaseException:
+                        emit("SPECIAL_FAILURE_DIAGNOSTIC", state="UNAVAILABLE")
+                    if not ordinary:
+                        raise
+                finally:
+                    try:
+                        if row["nativeExit"] is not None:
+                            try:
+                                validate_local(environment=self.env, expected_mode="special13", expected_special_lane=lane, expected_special_phase=phase)
+                                require(hashlib.sha256(clock.read_bytes()).hexdigest() == original_clock, "SPECIAL_DISCOVERY_CLOCK_CHANGED")
+                                self.special_health()
+                            except Exception as error:
+                                row["status"] = "BLOCKED"
+                                try:
+                                    self.preserve_special_error(lane, phase, error, discovery=True)
+                                except BaseException:
+                                    pass
+                                raise
+                        if row["frameworkReceipt"] in {"MISSING", "REJECTED", "NOT_RUN"}:
+                            try:
+                                hints = special_log_hints(self.run / ("discovery_" + lane.replace("-", "_") + ".private.log"), self.special_value())
+                                write(directory / "launch.safe.json", json.dumps(hints, sort_keys=True) + "\n")
+                            except BaseException:
+                                pass
+                    finally:
+                        self.env = base
+            matrix["status"] = "DISCOVERED" if all(row["status"] == "DISCOVERED" for row in matrix["lanes"]) else "BLOCKED"
+        finally:
+            write(self.run / "discovery.safe.json", json.dumps(matrix, sort_keys=True) + "\n")
+        return matrix["status"] == "DISCOVERED"
 
     def build_special_bot(self):
         tag = "rct-local-stage17/notification-bot:" + self.nonce
@@ -1772,7 +2032,25 @@ valid(all(stat.S_IMODE(directory.lstat().st_mode) == 0o755 for directory in dire
                 write(self.run / "lanes" / lane / "logical.result.safe.json", json.dumps(outcome, sort_keys=True) + "\n")
         else:
             from local_e2e_lifecycle import execute_lifecycle
-            execute_lifecycle(self)
+            try:
+                discovered = not self.lifecycle_only or self.discover_lifecycle()
+            except BaseException as error:
+                try:
+                    self.preserve_special_error(SPECIAL_LIFECYCLE[0], None, error)
+                except BaseException:
+                    pass
+                raise
+            if discovered:
+                execute_lifecycle(self)
+            else:
+                from local_e2e_lifecycle import lifecycle_reporting_directory
+                for lane in SPECIAL_LIFECYCLE:
+                    phases = special_phases(lane)
+                    directory = lifecycle_reporting_directory(self, lane, phases)
+                    row = {"lane": lane, "status": "NOT_RUN", "expected": 1, "passed": 0, "failed": 0, "notRun": 1,
+                           "phases": [{"phase": phase, "status": "NOT_RUN"} for phase in phases]}
+                    self.special_outcomes.append(row)
+                    write(directory / "logical.result.safe.json", json.dumps(row, sort_keys=True) + "\n")
         require(len(self.special_outcomes) == (4 if self.special_cohort == "nonclock" else 7), "SPECIAL_LOGICAL_STORY_COUNT")
         write(self.run / "artifacts/special13.safe.json", json.dumps({"cohort": self.special_cohort, "stories": self.special_outcomes}, indent=2) + "\n")
         require(all(row["status"] == "PASS" for row in self.special_outcomes), "SPECIAL_COHORT_TEST_FAILURE")
@@ -2025,6 +2303,7 @@ def main():
     parser.add_argument("--expected-special-lane", choices=list(SPECIAL_LANES))
     parser.add_argument("--expected-special-phase", choices=["main", "prepare", "pending", "resume", "seed", "admit", "attachment"])
     parser.add_argument("--special-service", choices=sorted(SERVICES))
+    parser.add_argument("--lifecycle-only", action="store_true", help="Special13 only: discover then run only the original lifecycle7")
     parser.add_argument("--retained-cohort-receipt", type=Path, help="Special13 only: explicit private closure of the preserved BOOT cohort")
     parser.add_argument("--retained-pdf-cohort-receipt", type=Path, help="Special13 only: exact preserved ee1df PDF cohort closure")
     parser.add_argument("--diagnose-startup", action="store_true", help="Client only: same ten scenarios, stop after first failure with closed setup diagnostics")
@@ -2033,6 +2312,7 @@ def main():
     parser.add_argument("--failed-case", action="append", choices=list(FAILED_CASES),
                         help="UI batch only: select a confirmed failed case ID; repeat for multiple cases")
     args = parser.parse_args()
+    selected_cohorts(args.mode, args.lifecycle_only)
     require(args.retained_cohort_receipt is None or args.mode == "special13", "RETAINED_RECEIPT_SPECIAL_ONLY")
     require(args.retained_pdf_cohort_receipt is None or args.mode == "special13" and args.retained_cohort_receipt is not None, "RETAINED_PDF_RECEIPT_SPECIAL_ONLY")
     require(args.failed_case is None or args.mode == "ui-batch", "BATCH_CASES_UI_BATCH_ONLY")
@@ -2072,14 +2352,15 @@ def main():
         owned(RUNS / "port-8443.lock", 0o600)
         fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
         preflight(special=args.mode == "special13", retained_receipt=args.retained_cohort_receipt, retained_pdf_receipt=args.retained_pdf_cohort_receipt)  # Shared fixed-port lease held.
-        cohorts = ("nonclock", "lifecycle") if args.mode == "special13" else (None,)
+        cohorts = selected_cohorts(args.mode, args.lifecycle_only)
         results = []
         for cohort in cohorts:
             results.append(run_cohort(args, cohort))
         if args.mode == "special13":
             rows = [row for result in results for row in result["stories"]]
-            require(len(rows) == 11 and sum(row["expected"] for row in rows) == 13, "SPECIAL_SUMMARY_COUNT")
-            emit("SPECIAL13_RESULT", expected=13, passed=sum(row["passed"] for row in rows),
+            expected = 7 if args.lifecycle_only else 13
+            require(len(rows) == (7 if args.lifecycle_only else 11) and sum(row["expected"] for row in rows) == expected, "SPECIAL_SUMMARY_COUNT")
+            emit("SPECIAL13_RESULT", expected=expected, passed=sum(row["passed"] for row in rows),
                  failed=sum(row["failed"] for row in rows), notRun=sum(row["notRun"] for row in rows),
                  cohorts=results, actualRuntime="OWNER_LOCAL_ONLY")
             require(all(result["result"] == "PASS" for result in results), "SPECIAL13_INCOMPLETE")
@@ -2087,7 +2368,7 @@ def main():
 
 def run_cohort(args, cohort):
         runner = Runner(args.mode, special_cohort=cohort, startup_diagnostic=args.diagnose_startup,
-                        bundled_dockerfile_frontend=args.bundled_dockerfile_frontend, failed_cases=args.failed_case)
+                        bundled_dockerfile_frontend=args.bundled_dockerfile_frontend, failed_cases=args.failed_case, lifecycle_only=args.lifecycle_only)
         runner.special_retained_receipt = args.retained_cohort_receipt
         runner.special_retained_pdf_receipt = args.retained_pdf_cohort_receipt
         result, cleanup = "FAIL", "NOT_STARTED"

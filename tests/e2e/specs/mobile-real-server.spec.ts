@@ -4,7 +4,7 @@ import { randomBytes, randomUUID, timingSafeEqual } from 'node:crypto';
 import { isDeepStrictEqual } from 'node:util';
 import { createServer } from 'node:http';
 import { execFileSync, spawn } from 'node:child_process';
-import { lstatSync } from 'node:fs';
+import { closeSync, constants, lstatSync, openSync, writeFileSync } from 'node:fs';
 import { isIP } from 'node:net';
 import { localSpecialLane, localSpecialService } from '../fixtures/local-special';
 import { resolve } from 'node:path';
@@ -6242,6 +6242,40 @@ test('actual private bot menu roster and teacher Today use hosted current author
       throw new Error('Owned control address unavailable');
     if (local && !isDeepStrictEqual(localSpecialLane('bot'), local))
       throw new Error('Owned bot admission changed before creation');
+    // The original runner imports modules before its own safe-outcome try block.
+    // Local bootstrap reports only a closed failure class; argv and the runner's oracle stay intact.
+    const bootstrap = `import json, os, runpy, sys, traceback
+path = sys.argv[1]
+sys.argv = sys.argv[1:]
+try:
+    runpy.run_path(path, run_name="__main__")
+except SystemExit:
+    raise
+except Exception as error:
+    kind = type(error).__name__
+    allowed = {"ModuleNotFoundError", "ImportError", "SyntaxError", "PermissionError", "FileNotFoundError"}
+    name = getattr(error, "name", None)
+    filename = getattr(error, "filename", None)
+    target = "OTHER"
+    if filename == path:
+        target = "RUNNER_SOURCE"
+    elif isinstance(filename, str) and (filename == "/app/bot" or filename.startswith("/app/bot/")):
+        target = "BOT_PACKAGE"
+    elif isinstance(name, str):
+        for prefix, category in (("bot", "BOT_PACKAGE"), ("aiohttp", "AIOHTTP"), ("grpc", "GRPC"),
+                                 ("aiogram", "AIOGRAM"), ("google.protobuf", "PROTOBUF"), ("google", "PROTOBUF")):
+            if name == prefix or name.startswith(prefix + "."):
+                target = category
+                break
+    access = {"appReadable": os.access("/app", os.R_OK), "appExecutable": os.access("/app", os.X_OK),
+              "botReadable": os.access("/app/bot", os.R_OK), "botExecutable": os.access("/app/bot", os.X_OK),
+              "runnerReadable": os.access(path, os.R_OK)}
+    print(json.dumps({"qualified": False, "actual_auth_tls": False, "failures": 1, "checks": 0,
+                      "phase": "setup", "startupError": kind if kind in allowed else "OTHER",
+                      "startupTarget": target, "startupAccess": access}), flush=True)
+    traceback.print_exc()
+    sys.exit(1)
+`;
     const args = [
       'run',
       '--rm',
@@ -6292,23 +6326,143 @@ test('actual private bot menu roster and teacher Today use hosted current author
       '--entrypoint',
       'python',
       image,
+      ...(local ? ['-c', bootstrap] : []),
       '/run/u20/runner.py',
       '--hosted-role-menu',
     ];
     const output: Buffer[] = [];
     let bytes = 0;
+    const privateOutput: Buffer[] = [];
+    let privateOutputBytes = 0;
+    let stdoutTruncated = false;
+    const stderr: Buffer[] = [];
+    let stderrBytes = 0;
+    let stderrTruncated = false;
+    let stderrRetentionFailed = false;
+    let stderrFile: number | undefined;
+    if (local) {
+      const directory = lstatSync(local.laneRun);
+      if (!directory.isDirectory() || directory.isSymbolicLink() || (directory.mode & 0o777) !== 0o700)
+        throw new Error('Owned bot diagnostic directory must be private');
+      try {
+        stderrFile = openSync(resolve(local.laneRun, 'bot-child.stderr.log'),
+          constants.O_WRONLY | constants.O_CREAT | constants.O_EXCL | constants.O_NOFOLLOW, 0o600);
+      } catch {
+        throw new Error('Owned bot private diagnostic creation failed');
+      }
+    }
+    const closeStderr = () => {
+      if (stderrFile === undefined) return;
+      const descriptor = stderrFile;
+      stderrFile = undefined;
+      try { closeSync(descriptor); } catch { stderrRetentionFailed = true; }
+    };
+    const retainChildReceipt = (exit: number | null, signal: NodeJS.Signals | null) => {
+      if (!local) return;
+      closeStderr();
+      let stdoutFile: number | undefined;
+      try {
+        stdoutFile = openSync(resolve(local.laneRun, 'bot-child.stdout.log'),
+          constants.O_WRONLY | constants.O_CREAT | constants.O_EXCL | constants.O_NOFOLLOW, 0o600);
+        writeFileSync(stdoutFile, Buffer.concat(privateOutput));
+      } catch {
+        throw new Error('Owned bot private stdout retention failed');
+      } finally {
+        if (stdoutFile !== undefined) {
+          try { closeSync(stdoutFile); } catch { throw new Error('Owned bot private stdout retention failed'); }
+        }
+      }
+      let stdoutState = bytes > 8192 ? 'OVERFLOW' : bytes === 0 ? 'EMPTY' : 'INVALID_JSON';
+      let startupError = 'NONE';
+      let startupTarget: string | null = null;
+      let startupAccess: Record<string, boolean> | null = null;
+      try {
+        if (bytes > 8192) throw new Error('Bounded stdout exceeded');
+        const value = JSON.parse(Buffer.concat(output).toString('utf8'));
+        stdoutState = value !== null && typeof value === 'object' && !Array.isArray(value) ? 'OBJECT_JSON' : 'NON_OBJECT_JSON';
+        if (value !== null && typeof value === 'object' && !Array.isArray(value) &&
+            ['ModuleNotFoundError', 'ImportError', 'SyntaxError', 'PermissionError', 'FileNotFoundError', 'OTHER'].includes(value.startupError)) {
+          startupError = value.startupError;
+          if (['RUNNER_SOURCE', 'BOT_PACKAGE', 'AIOHTTP', 'GRPC', 'AIOGRAM', 'PROTOBUF', 'OTHER'].includes(value.startupTarget))
+            startupTarget = value.startupTarget;
+          const fields = ['appReadable', 'appExecutable', 'botReadable', 'botExecutable', 'runnerReadable'];
+          if (value.startupAccess !== null && typeof value.startupAccess === 'object' &&
+              !Array.isArray(value.startupAccess) && fields.every(field => typeof value.startupAccess[field] === 'boolean'))
+            startupAccess = Object.fromEntries(fields.map(field => [field, value.startupAccess[field]]));
+        }
+      } catch { /* No raw child output enters the receipt. */ }
+      const text = Buffer.concat(stderr).toString('utf8');
+      const stderrClass = ['ModuleNotFoundError', 'ImportError', 'SyntaxError', 'PermissionError', 'FileNotFoundError']
+        .find(kind => new RegExp('^' + kind + ':', 'm').test(text)) ??
+        (/^docker: Error response from daemon:/m.test(text) ? 'DOCKER_START_ERROR' :
+          /Cannot connect to the Docker daemon|permission denied while trying to connect to the Docker/m.test(text) ? 'DOCKER_DAEMON_ERROR' :
+          stderrBytes === 0 ? 'NONE' : 'OTHER');
+      const receipt = {
+        schema: 'RCT_LOCAL_BOT_CHILD_V1',
+        exit: typeof exit === 'number' && Number.isInteger(exit) && exit >= 0 && exit <= 255 ? exit : null,
+        signal: signal === null ? null : ['SIGKILL', 'SIGTERM', 'SIGABRT', 'SIGSEGV', 'SIGINT'].includes(signal) ? signal : 'OTHER',
+        stdoutState, stdoutRetainedBytes: privateOutputBytes, stdoutTruncated,
+        startupError, startupTarget, startupAccess, stderrClass, stderrRetainedBytes: stderrBytes,
+        stderrTruncated, stderrRetentionFailed,
+      };
+      let descriptor: number | undefined;
+      try {
+        descriptor = openSync(resolve(local.laneRun, 'bot-child.safe.json'),
+          constants.O_WRONLY | constants.O_CREAT | constants.O_EXCL | constants.O_NOFOLLOW, 0o600);
+        writeFileSync(descriptor, JSON.stringify(receipt) + '\n');
+      } catch {
+        throw new Error('Owned bot closed diagnostic retention failed');
+      } finally {
+        if (descriptor !== undefined) {
+          try { closeSync(descriptor); } catch { stderrRetentionFailed = true; }
+        }
+      }
+      if (stderrRetentionFailed) throw new Error('Owned bot private diagnostic retention failed');
+    };
     const childResult = new Promise<number | null>((ready, reject) => {
-      child = spawn('docker', args, {
-        env: { PATH: process.env.PATH, NP01_CONTROL_TOKEN: controlToken },
-        stdio: ['ignore', 'pipe', 'ignore'],
-      });
+      try {
+        child = spawn('docker', args, {
+          env: { PATH: process.env.PATH, NP01_CONTROL_TOKEN: controlToken },
+          stdio: ['ignore', 'pipe', local ? 'pipe' : 'ignore'],
+        });
+      } catch {
+        closeStderr();
+        reject(new Error('Hosted bot child could not start'));
+        return;
+      }
       child.stdout!.on('data', (chunk: Buffer) => {
         bytes += chunk.length;
+        if (local) {
+          const bounded = chunk.subarray(0, Math.max(0, 8192 - privateOutputBytes));
+          stdoutTruncated ||= bounded.length !== chunk.length;
+          if (bounded.length) {
+            privateOutput.push(Buffer.from(bounded));
+            privateOutputBytes += bounded.length;
+          }
+        }
         if (bytes > 8192) child!.kill('SIGKILL');
         else output.push(chunk);
       });
-      child.once('error', () => reject(new Error('Hosted bot child could not start')));
-      child.once('close', ready);
+      if (local) {
+        child.stderr!.on('data', (chunk: Buffer) => {
+          const bounded = chunk.subarray(0, Math.max(0, 32768 - stderrBytes));
+          stderrTruncated ||= bounded.length !== chunk.length;
+          if (!bounded.length) return;
+          stderr.push(Buffer.from(bounded));
+          stderrBytes += bounded.length;
+          if (stderrFile !== undefined && !stderrRetentionFailed) {
+            try { writeFileSync(stderrFile, bounded); } catch { stderrRetentionFailed = true; }
+          }
+        });
+      }
+      child.once('error', () => {
+        closeStderr();
+        reject(new Error('Hosted bot child could not start'));
+      });
+      child.once('close', (exit, signal) => {
+        try { retainChildReceipt(exit, signal); ready(exit); }
+        catch { reject(new Error('Owned bot child diagnostic retention failed')); }
+      });
       timer = setTimeout(() => {
         child!.kill('SIGKILL');
       }, 50000);
@@ -6318,6 +6472,8 @@ test('actual private bot menu roster and teacher Today use hosted current author
     let facts: Record<string, unknown>;
     try {
       facts = JSON.parse(Buffer.concat(output).toString('utf8'));
+      if (local && (facts === null || typeof facts !== 'object' || Array.isArray(facts)))
+        throw new Error('Owned bot child safe outcome must be an object');
     } catch {
       throw new Error('Hosted bot child omitted safe outcomes');
     }

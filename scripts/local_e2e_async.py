@@ -1542,7 +1542,8 @@ class Runner:
             outcome = special_result(report, code, lane, phase, expected_locations)
             validate_local(environment=self.env, expected_mode="special13", expected_special_lane=lane, expected_special_phase=phase)
             write(directory / (phase + ".result.safe.json"), json.dumps(outcome, sort_keys=True) + "\n")
-            emit("SPECIAL_PHASE_RESULT", **outcome)
+            event = {key: value for key, value in outcome.items() if key != "phase"}
+            emit("SPECIAL_PHASE_RESULT", stage=outcome["phase"], **event)
             return outcome
         finally:
             self.env = base

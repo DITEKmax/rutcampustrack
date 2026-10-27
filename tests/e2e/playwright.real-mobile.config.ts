@@ -2,7 +2,7 @@ import { lstatSync } from 'node:fs';
 import { isAbsolute, join } from 'node:path';
 import { defineConfig } from '@playwright/test';
 import existing from './playwright.config';
-import { readTeachingInstant } from './fixtures/teaching-clock';
+import { readTeachingInstantForConfig } from './fixtures/teaching-clock';
 import { requireLocalLane } from './fixtures/local-stage17';
 
 // Pinned Playwright checks this before reading a page snapshot, including during teardown.
@@ -46,7 +46,7 @@ if (remaining5) {
       throw new Error('Remaining five require precreated private artifact directories');
     }
   }
-  teachingInstant = readTeachingInstant(process.env.RCT_E2E_TEACHING_CLOCK_DIR);
+  teachingInstant = readTeachingInstantForConfig(process.env.RCT_E2E_TEACHING_CLOCK_DIR);
 }
 
 /** One shared active semester and task-owned disposable dataset; never run in parallel with another seed writer. */
@@ -56,7 +56,7 @@ export default defineConfig<
 >({
   ...existing,
   outputDir: remaining5 ? join(run!, 'artifacts') : './test-results/real-mobile',
-  reporter: [['./fixtures/safe-reporter.ts', ...(startupDiagnostic ? [{ localStartupDiagnostic: true }] : [])]],
+  reporter: [startupDiagnostic ? ['./fixtures/safe-reporter.ts', { localStartupDiagnostic: true }] : ['./fixtures/safe-reporter.ts']],
   use: {
     ...existing.use,
     ignoreHTTPSErrors: false,

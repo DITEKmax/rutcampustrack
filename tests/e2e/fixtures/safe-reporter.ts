@@ -2083,6 +2083,7 @@ const frameworkPublicFiles = [
   'clock-specs/teaching-clock-geo.spec.ts', 'playwright.local-special.config.ts', 'playwright.semester-lifecycle.config.ts',
   'playwright.assignment-lifecycle.config.ts', 'playwright.application-recovery.config.ts', 'playwright.teaching-clock.config.ts',
   'playwright.real-mobile.config.ts', 'playwright.registry-export.config.ts', 'playwright.config.ts',
+  'playwright.local-lifecycle-prerequisites.config.ts', 'local-lifecycle-prerequisites.spec.ts',
 ] as const;
 type FrameworkFrame = { file: string; line: number; column: number };
 type FrameworkSnapshot = { message: string; stack: string; name: string; code: string; truncated: boolean };
@@ -2116,6 +2117,7 @@ function frameworkMethod(value: unknown, key: string): ((...args: never[]) => un
 class LocalFrameworkDiagnostic {
   private output = '';
   private kind: 'DISCOVERY' | 'EXECUTION';
+  private preparation: boolean;
   private modeValid: boolean;
   private beginSeen = false;
   private errors: FrameworkSnapshot[] = [];
@@ -2135,9 +2137,13 @@ class LocalFrameworkDiagnostic {
 
   constructor(options: unknown) {
     const discovery = ownData(options, 'localDiscoveryDiagnostic') === true;
+    this.preparation = ownData(options, 'localPreparationDiagnostic') === true;
     this.kind = discovery ? 'DISCOVERY' : 'EXECUTION';
     this.modeValid = discovery ? ownData(options, '_mode') === 'list' && process.env.RCT_LOCAL_SPECIAL_DISCOVERY === 'true'
       : ownData(options, '_mode') !== 'list' && process.env.RCT_LOCAL_SPECIAL_DISCOVERY !== 'true';
+    const preparationFlag = process.env.RCT_LOCAL_SPECIAL_PREPARATION ?? '';
+    this.modeValid &&= ['', 'true'].includes(preparationFlag) &&
+      (this.preparation ? preparationFlag === 'true' && !discovery : preparationFlag !== 'true');
     const output = ownData(options, 'localDiagnosticOutputDir');
     if (typeof output === 'string') this.output = output;
   }
@@ -2207,12 +2213,13 @@ class LocalFrameworkDiagnostic {
     const owner = JSON.parse(readFileSync(manifest, 'utf8'));
     if (ownData(owner, 'root') !== root || ownData(owner, 'run') !== run || ownData(owner, 'nonce') !== nonce ||
         ownData(owner, 'uid') !== process.getuid?.() || ownData(owner, 'mode') !== 'special13') return;
-    const parent = resolve(run, this.kind === 'DISCOVERY' ? 'discovery' : 'lanes', lane);
-    const output = resolve(parent, 'artifacts', ...(this.kind === 'EXECUTION' && phase !== 'main' ? [phase] : []));
+    if (this.preparation && (lane !== 'semester-metadata' || phase !== 'main' || ownData(owner, 'special_cohort') !== 'lifecycle')) return;
+    const parent = this.preparation ? resolve(run, 'prerequisites') : resolve(run, this.kind === 'DISCOVERY' ? 'discovery' : 'lanes', lane);
+    const output = resolve(parent, 'artifacts', ...(!this.preparation && this.kind === 'EXECUTION' && phase !== 'main' ? [phase] : []));
     if (this.output !== output) return;
     for (let path = parent; path !== run; path = dirname(path)) this.directory(path);
     for (let path = output; path !== parent; path = dirname(path)) this.directory(path);
-    const privateDirectory = resolve(run, 'framework-private', lane, phase);
+    const privateDirectory = resolve(run, 'framework-private', this.preparation ? 'lifecycle-prerequisites' : lane, phase);
     for (let path = privateDirectory; path !== run; path = dirname(path)) this.directory(path);
     this.geometry = { output, privateFile: resolve(privateDirectory, `${this.kind === 'DISCOVERY' ? 'discovery' : 'execution'}.jsonl`) };
     const revision = ownData(owner, 'source_sha');

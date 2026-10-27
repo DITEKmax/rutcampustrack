@@ -508,7 +508,8 @@ SPECIAL_FRAME_SOURCES = {Path(name).name: "tests/e2e/" + name for name in (
     "specs/cloud-accepted-auth-security.spec.ts", "specs/cloud-accepted-registry-export.spec.ts", "clock-specs/teaching-clock-geo.spec.ts",
     "playwright.local-special.config.ts", "playwright.semester-lifecycle.config.ts", "playwright.assignment-lifecycle.config.ts",
     "playwright.application-recovery.config.ts", "playwright.teaching-clock.config.ts", "playwright.real-mobile.config.ts",
-    "playwright.registry-export.config.ts", "playwright.config.ts")}
+    "playwright.registry-export.config.ts", "playwright.config.ts",
+    "playwright.local-lifecycle-prerequisites.config.ts", "local-lifecycle-prerequisites.spec.ts")}
 
 
 def special_public_frame(frame, value):
@@ -618,6 +619,27 @@ def private_json(path, bound=8 * 1024**2):
     return json.loads(path.read_text(), object_pairs_hook=unique)
 
 
+def prerequisite_locations():
+    path = ROOT / "tests/e2e/local-lifecycle-prerequisites.spec.ts"
+    title = "fresh local lifecycle prerequisites use the canonical FIRST3 dataset"
+    lines = path.read_text().splitlines()
+    matches = [index + 1 for index, line in enumerate(lines) if "test(" in line and ("'" + title + "'") in line]
+    require(len(matches) == 1, "SPECIAL_PREPARATION_TITLE")
+    return {(path.name, matches[0])}
+
+
+def closed_preparation_result(report, value):
+    require(type(report) is dict and set(report) == {"schema", "sourceRevision", "calendar", "preview", "clockUnchanged", "status", "datasetInitialized"}
+            and report["schema"] == "RCT_LOCAL_LIFECYCLE_PREREQUISITES_V1" and report["sourceRevision"] == value["source_sha"]
+            and report["status"] == "PREPARED" and report["clockUnchanged"] is True and report["datasetInitialized"] is True
+            and type(report["calendar"]) is dict and report["calendar"] == {"active": True, "dateFromYesterday": True, "dateToTomorrow": True}
+            and all(type(flag) is bool for flag in report["calendar"].values())
+            and type(report["preview"]) is dict and report["preview"] == {"nonzero": True}
+            and type(report["preview"]["nonzero"]) is bool, "SPECIAL_PREPARATION_RECEIPT")
+    return {"schema": report["schema"], "sourceRevision": report["sourceRevision"], "calendar": dict(report["calendar"]),
+            "preview": dict(report["preview"]), "clockUnchanged": True, "status": "PREPARED", "datasetInitialized": True}
+
+
 def canonical_mount_records(value):
     """Complete JSON records; only the outer Docker Mounts order is insignificant."""
     require(type(value) is list and len(value) <= 512 and all(type(item) is dict for item in value), "SPECIAL_MOUNT_RECORDS_SHAPE")
@@ -706,9 +728,17 @@ def append_special(value, kind, **fields):
 
 def validate_special_environment(value, environment, lane=None, phase=None):
     cohort = value.get("special_cohort")
+    preparation = environment.get("RCT_LOCAL_SPECIAL_PREPARATION", "")
+    require(preparation in {"", "true"} and (not preparation or cohort == "lifecycle"
+            and environment.get("RCT_LOCAL_SPECIAL_LANE") == "semester-metadata"
+            and environment.get("RCT_LOCAL_SPECIAL_PHASE") == "main"
+            and not environment.get("RCT_LOCAL_SPECIAL_DISCOVERY")), "SPECIAL_PREPARATION_BINDING")
+    if preparation:
+        for directory in (Path(value["run"]) / "prerequisites", Path(value["run"]) / "prerequisites/artifacts"):
+            owned(directory, 0o700, directory=True)
     discovery = environment.get("RCT_LOCAL_SPECIAL_DISCOVERY", "")
     discovery_lane = environment.get("RCT_LOCAL_SPECIAL_LANE")
-    require(discovery in {"", "true"} and (not discovery or cohort == "lifecycle" and value.get("lifecycle_only") is True
+    require(discovery in {"", "true"} and (not discovery or cohort == "lifecycle"
             and discovery_lane in SPECIAL_LIFECYCLE and environment.get("RCT_LOCAL_SPECIAL_PHASE") == special_phases(discovery_lane)[0]), "SPECIAL_DISCOVERY_BINDING")
     require(cohort in {"nonclock", "lifecycle"} and value.get("special_lanes") == list(SPECIAL_NONCLOCK if cohort == "nonclock" else SPECIAL_LIFECYCLE), "SPECIAL_MANIFEST_COHORT")
     require(environment.get("RCT_LOCAL_SPECIAL_COHORT") == cohort
@@ -914,10 +944,12 @@ RETAINED_PROJECT = "rct-local-stage17-8aad5d587e5d"
 RETAINED_SOURCE = "b8722534a0649491e10be9a9a832b6c782332806"
 RETAINED_PDF_PROJECT = "rct-local-stage17-ee1df05be60a"
 RETAINED_PDF_SOURCE = "3c906d20cf260e08ae265ab04027f66d7465d402"
+RETAINED_RECOVERY_PROJECT = "rct-local-stage17-43589e12d603"
+RETAINED_RECOVERY_SOURCE = "2d2fa75b6454b70c39406e8f9e837d7cf5c3dcbb"
 SPECIAL_PRIVATE_POOL = tuple(f"172.{value}.0.0/24" for value in (30, 31, *range(29, 15, -1))) + tuple(f"10.{value}.0.0/24" for value in range(240, 248))
 
 
-def validate_retained_cohort(path, *, root=None, stopped=True, pdf=False):
+def validate_retained_cohort(path, *, root=None, stopped=True, pdf=False, recovery=False):
     """Only the explicitly closed BOOT cohort may remain beside a new special13 run."""
     root = ROOT if root is None else Path(root)
     path = Path(path)
@@ -925,30 +957,75 @@ def validate_retained_cohort(path, *, root=None, stopped=True, pdf=False):
             and path.is_relative_to(Path.home() / ".local/share/rct-pr3-local/checks"), "RETAINED_RECEIPT_PATH")
     owned(path.parent, 0o700, directory=True)
     receipt = private_json(path)
-    project, source = (RETAINED_PDF_PROJECT, RETAINED_PDF_SOURCE) if pdf else (RETAINED_PROJECT, RETAINED_SOURCE)
+    require(not (pdf and recovery), "RETAINED_FIXED_SELECTION")
+    project, source = ((RETAINED_RECOVERY_PROJECT, RETAINED_RECOVERY_SOURCE) if recovery else
+                       (RETAINED_PDF_PROJECT, RETAINED_PDF_SOURCE) if pdf else (RETAINED_PROJECT, RETAINED_SOURCE))
     run = root / ".agent/evidence/local-runs" / project
     fields = {"schema", "uid", "root", "run", "project", "source_sha", "nonce", "files", "services", "network_id", "status"}
-    require(set(receipt) == fields | ({"transition_files"} if pdf else set())
-            and receipt["schema"] == ("RCT_RETAINED_PDF_CLOSURE_V1" if pdf else "RCT_RETAINED_BOOT_CLOSURE_V1") and receipt["uid"] == os.getuid()
+    require(set(receipt) == fields | ({"transition_files"} if pdf or recovery else set())
+            and receipt["schema"] == ("RCT_RETAINED_RECOVERY_CLOSURE_V1" if recovery else "RCT_RETAINED_PDF_CLOSURE_V1" if pdf else "RCT_RETAINED_BOOT_CLOSURE_V1") and receipt["uid"] == os.getuid()
             and receipt["root"] == str(root) and receipt["run"] == str(run) and receipt["project"] == project
             and receipt["source_sha"] == source and receipt["status"] == ("STOPPED" if stopped else "PRE_STOP"), "RETAINED_RECEIPT_BINDING")
     owned(run, 0o700, directory=True)
     files = {"owner.json", "runtime-identity.json", "compose.json", "result.safe.json"}
     if pdf:
         files.add("lanes/registry-native-pdf/main.result.safe.json")
+    if recovery:
+        files |= {"lanes/application-recovery/seed.result.safe.json", "lanes/application-recovery/logical.result.safe.json",
+                  "lanes/application-recovery/pending.failure.safe.json", "clock/current-instant",
+                  "lanes/application-recovery/lifecycle-input.private.json"}
     require(set(receipt["files"]) == files, "RETAINED_FILES_CHANGED")
     for name, digest in receipt["files"].items():
-        info = owned(run / name, 0o600)
+        info = owned(run / name, 0o644 if name == "clock/current-instant" else 0o600)
         require(info.st_size <= 8 * 1024**2 and hashlib.sha256((run / name).read_bytes()).hexdigest() == digest, "RETAINED_FILES_CHANGED")
     value, frozen, config, result = (private_json(run / name) for name in ("owner.json", "runtime-identity.json", "compose.json", "result.safe.json"))
     require(value["root"] == str(root) and value["run"] == str(run) and value["project"] == project
-            and value["mode"] == "special13" and value["special_cohort"] == "nonclock" and value["source_sha"] == source
+            and value["mode"] == "special13" and value["special_cohort"] == ("lifecycle" if recovery else "nonclock") and value["source_sha"] == source
             and value["nonce"] == receipt["nonce"] and project == "rct-local-stage17-" + receipt["nonce"][:12]
             and re.fullmatch(r"[a-f0-9]{24}", receipt["nonce"])
             and set(frozen["services"]) == SERVICES and set(config["services"]) == SERVICES
-            and result["mode"] == "special13" and result["phase"] == ("SPECIAL_REGISTRY_NATIVE_PDF_MAIN" if pdf else "BOOT")
+            and result["mode"] == "special13" and result["phase"] == ("SPECIAL_APPLICATION_RECOVERY_PENDING" if recovery else "SPECIAL_REGISTRY_NATIVE_PDF_MAIN" if pdf else "BOOT")
             and result["result"] == "FAIL", "RETAINED_BOOT_IDENTITY")
-    if pdf:
+    rebound = {}
+    if recovery:
+        require(result["cleanup"] == "FAIL_RETAINED_FOR_OWNER" and result["container_logs"] == "PASS", "RETAINED_RECOVERY_RESULT")
+        require(private_json(run / "lanes/application-recovery/seed.result.safe.json") == {
+            "lane": "application-recovery", "phase": "seed", "status": "PASS", "expected": 1, "passed": 1, "failed": 0, "notRun": 0}, "RETAINED_RECOVERY_SEED")
+        require(private_json(run / "lanes/application-recovery/logical.result.safe.json") == {
+            "lane": "application-recovery", "status": "FAIL", "expected": 1, "passed": 0, "failed": 1, "notRun": 0,
+            "phases": [{"phase": phase, "status": "PASS" if phase == "seed" else "NOT_RUN"}
+                       for phase in ("seed", "pending", "admit", "attachment")], "errorClass": "RuntimeError"}, "RETAINED_RECOVERY_LOGICAL")
+        failure = private_json(run / "lanes/application-recovery/pending.failure.safe.json")
+        require(failure.get("schema") == "RCT_LOCAL_SPECIAL_FAILURE_V1" and failure.get("lane") == "application-recovery"
+                and failure.get("phase") == "pending" and failure.get("errorClass") == "FileNotFoundError"
+                and failure.get("admissionCode") is None and failure.get("sourceFrame") == {
+                    "source": "scripts/local_e2e_async.py", "line": 308,
+                    "sha256": "9adb985fa55eb80546899aa6db2db86d65578ab3ef61c293e84d8e61f96f196c"}, "RETAINED_RECOVERY_FAILURE")
+        clock_input = private_json(run / "lanes/application-recovery/lifecycle-input.private.json")
+        require(set(clock_input) == {"lessonId", "semesterId", "expectedInstant", "clockSha256"}
+                and type(clock_input["expectedInstant"]) is str and re.fullmatch(r"\d{4}-\d{2}-\d{2}T09:00:00\.000Z", clock_input["expectedInstant"])
+                and (run / "clock/current-instant").read_bytes() == (clock_input["expectedInstant"] + "\n").encode()
+                and hashlib.sha256((run / "clock/current-instant").read_bytes()).hexdigest() == clock_input["clockSha256"], "RETAINED_RECOVERY_CLOCK")
+        require(not any((run / "lanes/application-recovery" / name).exists() or (run / "lanes/application-recovery" / name).is_symlink() for name in (
+            "bundle", "capture.private.json", "verified.private.json", "pending.json", "history-before.json", "admit.result.safe.json", "attachment.result.safe.json")), "RETAINED_RECOVERY_UNEXPECTED_PROGRESS")
+        records, _ = special_records(value)
+        intents = [row for row in records if row["kind"] == "intent" and row["action"] == "RECOVERY_QUIESCE"]
+        require(len(intents) == 1 and not any(row["kind"] in {"recovery-register", "recovery-seal"} for row in records), "RETAINED_RECOVERY_NO_TOPOLOGY")
+        intent = intents[0]
+        require(intent["lane"] == "application-recovery" and intent["phase"] == "pending"
+                and intent["services"] == sorted(SERVICES) and records[-2] == intent
+                and records[-1]["kind"] == "outcome" and records[-1]["intent"] == intent["index"]
+                and records[-1]["success"] is False and records[-1]["restored"] is False, "RETAINED_RECOVERY_ORIGINAL_INTENT")
+        require(all(any(outcome["kind"] == "outcome" and outcome["intent"] == row["index"] and outcome["restored"] is True
+                        for outcome in records) for row in records if row["kind"] == "intent" and row is not intent), "RETAINED_RECOVERY_PRIOR_RESTORATION")
+        rebound = {name: binding for row in records if row["kind"] == "outcome" and row["restored"]
+                   for name, binding in row["network_bindings"].items()}
+        transitions = {entry.name: entry for entry in (run / "transitions").iterdir()}
+        require(set(transitions) == set(receipt["transition_files"]) and len(transitions) == len(records), "RETAINED_RECOVERY_TRANSITIONS")
+        for name, entry in transitions.items():
+            owned(entry, 0o600)
+            require(hashlib.sha256(entry.read_bytes()).hexdigest() == receipt["transition_files"][name], "RETAINED_RECOVERY_TRANSITION_CHANGED")
+    elif pdf:
         require(result["cleanup"] == "FAIL_RETAINED_FOR_OWNER", "RETAINED_PDF_RESULT")
         phase = private_json(run / "lanes/registry-native-pdf/main.result.safe.json")
         require(phase == {"lane": "registry-native-pdf", "phase": "main", "status": "FAIL", "expected": 3, "passed": 2, "failed": 1, "notRun": 0}, "RETAINED_PDF_PHASE")
@@ -985,7 +1062,8 @@ def validate_retained_cohort(path, *, root=None, stopped=True, pdf=False):
                 and row["Config"]["Image"] == pin["configured_image"] == config["services"][name]["image"]
                 and canonical_mount_records(row["Mounts"]) == canonical_mount_records(pin["mounts"])
                 and row["HostConfig"].get("ReadonlyRootfs", False) == pin["readonly"], "RETAINED_IMMUTABLE_CHANGED")
-        require(row["State"]["Running"] is (not stopped) and not row["State"].get("Paused", False), "RETAINED_STATE_CHANGED")
+        expected_running = not stopped and not (recovery and name == "rabbitmq")
+        require(row["State"]["Running"] is expected_running and not row["State"].get("Paused", False), "RETAINED_STATE_CHANGED")
         if pdf and not stopped:
             healthcheck = config["services"][name].get("healthcheck")
             if healthcheck and not healthcheck.get("disable", False) and healthcheck.get("test") != ["NONE"]:
@@ -997,12 +1075,18 @@ def validate_retained_cohort(path, *, root=None, stopped=True, pdf=False):
         binding = row["NetworkSettings"]["Networks"][network_name]
         require(binding["NetworkID"] == frozen["network_id"] and set(binding.get("Aliases") or []) == set(pin["aliases"]), "RETAINED_NETWORK_BINDING")
         fields = ("IPAddress", "IPPrefixLen", "Gateway", "GlobalIPv6Address", "GlobalIPv6PrefixLen", "IPv6Gateway")
-        require(all(binding.get(key) in (None, "", 0) if stopped else binding.get(key) == pin["network_binding"].get(key) for key in fields), "RETAINED_ENDPOINT_CHANGED")
-        require(not stopped or binding.get("EndpointID") in (None, ""), "RETAINED_STOPPED_ENDPOINT")
+        require(all(binding.get(key) in (None, "", 0) if not expected_running else binding.get(key) == rebound.get(name, pin["network_binding"]).get(key) for key in fields), "RETAINED_ENDPOINT_CHANGED")
+        require(expected_running or binding.get("EndpointID") in (None, ""), "RETAINED_STOPPED_ENDPOINT")
         if name in APPS:
             environment = dict(item.split("=", 1) for item in row["Config"]["Env"])
             require(all(environment.get(key) == str(item) for key, item in config["services"][name]["environment"].items()), "RETAINED_ENVIRONMENT_CHANGED")
-    require(seen == SERVICES and (not network.get("Containers") if stopped else set(network.get("Containers", {})) == set(ids)), "RETAINED_NETWORK_MEMBERSHIP")
+    running_ids = {row["Id"] for row in rows if row["State"]["Running"]}
+    require(seen == SERVICES and set(network.get("Containers", {})) == running_ids, "RETAINED_NETWORK_MEMBERSHIP")
+    if recovery:
+        target = "rct-recovery-" + value["nonce"]
+        require(value["special_intent"]["recovery_project"] == target, "RETAINED_RECOVERY_TARGET_BINDING")
+        for command in (["docker", "ps", "-aq", "--no-trunc"], ["docker", "volume", "ls", "-q"], ["docker", "network", "ls", "-q"]):
+            require(not capture([*command, "--filter", "label=com.docker.compose.project=" + target]).strip(), "RETAINED_RECOVERY_TARGET_PRESENT")
     return {"ids": ids, "network_id": network["Id"]}
 
 
@@ -1050,7 +1134,7 @@ def validate_observed_special_network(selected, network, nginx_binding):
             and nginx_binding.get("IPAMConfig", {}).get("IPv4Address") == selected["nginx"], "SPECIAL_OBSERVED_NETWORK_BINDING")
 
 
-def preflight(*, special=False, retained_receipt=None, retained_pdf_receipt=None, selected_network=None):
+def preflight(*, special=False, retained_receipt=None, retained_pdf_receipt=None, retained_recovery_receipt=None, selected_network=None):
     require(sys.platform == "linux" and os.getuid() != 0, "UBUNTU_NONROOT_REQUIRED")
     require(RUNS.resolve() == RUNS, "LINKED_RUNTIME_PARENT")
     for name in ("GITHUB_ACTIONS", "RUNNER_ENVIRONMENT", "GITHUB_RUN_ID", "GITHUB_RUN_ATTEMPT", "GITHUB_SHA"):
@@ -1070,12 +1154,14 @@ def preflight(*, special=False, retained_receipt=None, retained_pdf_receipt=None
     if special:
         retained = validate_retained_cohort(retained_receipt) if retained_receipt else {"ids": []}
         retained_pdf = validate_retained_cohort(retained_pdf_receipt, pdf=True) if retained_pdf_receipt else {"ids": []}
+        retained_recovery = validate_retained_cohort(retained_recovery_receipt, recovery=True) if retained_recovery_receipt else {"ids": []}
+        require(retained_recovery_receipt is None or retained_pdf_receipt is not None, "RETAINED_RECOVERY_REQUIRES_OLDER_RECEIPTS")
         require(retained_pdf_receipt is None or retained_receipt is not None, "RETAINED_PDF_REQUIRES_BOOT_RECEIPT")
-        require(set(local_ids) == set(retained["ids"]) | set(retained_pdf["ids"]), "PREVIOUS_LOCAL_COHORT")
+        require(set(local_ids) == set(retained["ids"]) | set(retained_pdf["ids"]) | set(retained_recovery["ids"]), "PREVIOUS_LOCAL_COHORT")
         selected = special_network_choice(selected_network)
         require(capture(["git", "ls-files", "--error-unmatch", "tests/e2e/.env.ci"]).strip(), "TRACKED_SYNTHETIC_ENV_REQUIRED")
         return selected
-    require(not local_ids and retained_receipt is None and retained_pdf_receipt is None and selected_network is None, "PREVIOUS_LOCAL_COHORT")
+    require(not local_ids and retained_receipt is None and retained_pdf_receipt is None and retained_recovery_receipt is None and selected_network is None, "PREVIOUS_LOCAL_COHORT")
     # Refuse collision rather than changing Gateway's trusted fixed-edge subnet.
     subnet = ipaddress.ip_network("172.30.0.0/24")
     networks = capture(["docker", "network", "ls", "-q"]).splitlines()
@@ -1106,6 +1192,7 @@ class Runner:
         self.special_network = None
         self.special_retained_receipt = None
         self.special_retained_pdf_receipt = None
+        self.special_retained_recovery_receipt = None
         self.special_outcomes = []
         self.failed_cases = selected_batch_cases(failed_cases)
         self.startup_diagnostic = startup_diagnostic
@@ -1257,7 +1344,7 @@ class Runner:
 
     def prepare(self):
         if self.mode == "special13":
-            self.special_network = preflight(special=True, retained_receipt=self.special_retained_receipt, retained_pdf_receipt=self.special_retained_pdf_receipt)
+            self.special_network = preflight(special=True, retained_receipt=self.special_retained_receipt, retained_pdf_receipt=self.special_retained_pdf_receipt, retained_recovery_receipt=self.special_retained_recovery_receipt)
         self.run.mkdir(mode=0o700)
         for name in ("artifacts", "home", "tmp"):
             (self.run / name).mkdir(mode=0o700)
@@ -1291,7 +1378,7 @@ class Runner:
         self.command("CERTIFICATES", ["bash", "tests/e2e/infra/scripts/generate-test-certs.sh"])
         self.command("CLOCK_BUILD", ["bash", "gradlew", "e2eClockFixtureJar", "--no-daemon", "--max-workers=1"])
         self.command("CLOCK_PREPARE", ["node", "tests/e2e/backend-clock/prepare-clock.mjs", str(self.run / "clock"), str(ROOT / "build/e2e-clock/clock-fixture.jar")])
-        if self.mode == "lesson-lifecycle" or self.special_cohort == "lifecycle":
+        if self.mode == "lesson-lifecycle":
             self.prepare_lesson_clock()
         # Compose interpolation receives no ambient credential variables.
         args = ["docker", "compose", "--env-file", str(self.run / "synthetic.env"), "-p", self.project]
@@ -1455,7 +1542,7 @@ class Runner:
         if self.mode == "special13":
             self.phase = "BOOT_NETWORK_ADMISSION"
             emit(self.phase, state="RUNNING")
-            preflight(special=True, retained_receipt=self.special_retained_receipt, retained_pdf_receipt=self.special_retained_pdf_receipt, selected_network=self.special_network)
+            preflight(special=True, retained_receipt=self.special_retained_receipt, retained_pdf_receipt=self.special_retained_pdf_receipt, retained_recovery_receipt=self.special_retained_recovery_receipt, selected_network=self.special_network)
         self.command("BOOT", self.compose("up", "-d", "--no-build", "--wait", "--wait-timeout", "480"))
         if self.mode == "special13":
             self.freeze_special_inventory()
@@ -1773,6 +1860,7 @@ class Runner:
             except AdmissionError as error:
                 require(str(error) == "CHILD_FAILED" and error.returncode in {1}, "SPECIAL_CHILD_INFRASTRUCTURE_FAILURE")
                 code = error.returncode
+            require((output / "safe-results.json").exists(), "SPECIAL_REPORT_NOT_PRODUCED")
             report = private_json(output / "safe-results.json")
             outcome = special_result(report, code, lane, phase, expected_locations)
             validate_local(environment=self.env, expected_mode="special13", expected_special_lane=lane, expected_special_phase=phase)
@@ -1840,7 +1928,7 @@ class Runner:
 
     def discover_lifecycle(self):
         """Load every original first phase, without setup/fixtures/test bodies, before any story."""
-        require(self.mode == "special13" and self.special_cohort == "lifecycle" and self.lifecycle_only, "SPECIAL_DISCOVERY_SELECTION")
+        require(self.mode == "special13" and self.special_cohort == "lifecycle", "SPECIAL_DISCOVERY_SELECTION")
         validate_playwright_list_source()
         clock = self.run / "clock/current-instant"
         owned(clock, 0o644)
@@ -1926,6 +2014,92 @@ class Runner:
         finally:
             write(self.run / "discovery.safe.json", json.dumps(matrix, sort_keys=True) + "\n")
         return matrix["status"] == "DISCOVERED"
+
+    def prepare_lifecycle_prerequisites(self):
+        """Canonical FIRST3 dataset preparation; never an accepted logical story."""
+        require(self.mode == "special13" and self.special_cohort == "lifecycle", "SPECIAL_PREPARATION_SELECTION")
+        root = self.run / "prerequisites"
+        for directory in (root, root / "artifacts", self.run / "framework-private",
+                          self.run / "framework-private/lifecycle-prerequisites",
+                          self.run / "framework-private/lifecycle-prerequisites/main"):
+            directory.mkdir(mode=0o700, exist_ok=True)
+            owned(directory, 0o700, directory=True)
+        context = self.special_context("semester-metadata")
+        base = self.env.copy()
+        clock = self.run / "clock/current-instant"
+        owned(clock, 0o644)
+        clock_sha = hashlib.sha256(clock.read_bytes()).hexdigest()
+        result = {"schema": "RCT_LOCAL_LIFECYCLE_PREPARATION_RESULT_V1", "status": "BLOCKED", "nativeExit": None,
+                  "reportStatus": "MISSING", "frameworkStatus": "MISSING", "preparationStatus": "MISSING"}
+        ordinary = False
+        try:
+            self.env.update(RCT_LOCAL_SPECIAL_PREPARATION="true", RCT_LOCAL_SPECIAL_LANE="semester-metadata",
+                            RCT_LOCAL_SPECIAL_PHASE="main", RCT_REMAINING5_RUN=context["laneRun"],
+                            RCT_DIAGNOSTIC_RUN_DIR=context["laneRun"], RCT_ADMIN_SEMESTER_UI_RUN=context["laneRun"])
+            validate_local(environment=self.env, expected_mode="special13", expected_special_lane="semester-metadata", expected_special_phase="main")
+            self.special_health()
+            try:
+                self.command("LIFECYCLE_PREREQUISITES", ["npx", "playwright", "test", "--config",
+                    "playwright.local-lifecycle-prerequisites.config.ts", "--project=chromium"], cwd=ROOT / "tests/e2e")
+                result["nativeExit"] = 0
+            except AdmissionError as error:
+                require(str(error) == "CHILD_FAILED" and type(error.returncode) is int and error.returncode == 1,
+                        "SPECIAL_PREPARATION_COMMAND_FAILURE")
+                result["nativeExit"] = error.returncode
+            ordinary = True
+            value = self.special_value()
+            result["frameworkStatus"] = "REJECTED" if (root / "artifacts/framework.safe.json").exists() else "MISSING"
+            framework = closed_framework_result(private_json(root / "artifacts/framework.safe.json"), value)
+            result["frameworkStatus"] = "READ"
+            expected = {(file, line, "chromium") for file, line in prerequisite_locations()}
+            observed = {(row["file"], row["line"], row["project"]) for row in framework["discovery"]["identities"]}
+            require(framework["kind"] == "EXECUTION" and framework["sourceBound"] and framework["sourceRevision"] == value["source_sha"]
+                    and framework["beginSeen"] and framework["runnerStatus"] == "passed" and framework["globalErrors"]["observed"] == 0
+                    and not framework["globalErrors"]["truncated"]
+                    and framework["privateRetention"]["status"] == "WRITTEN" and observed == expected
+                    and framework["discovery"]["observed"] == framework["discovery"]["retained"] == len(expected)
+                    and framework["discovery"]["rejected"] == 0 and not framework["discovery"]["truncated"], "SPECIAL_PREPARATION_FRAMEWORK")
+            result["reportStatus"] = "REJECTED" if (root / "artifacts/safe-results.json").exists() else "MISSING"
+            native_report = private_json(root / "artifacts/safe-results.json")
+            case = special_result(native_report, result["nativeExit"],
+                                  "semester-metadata", "main", prerequisite_locations())
+            result["reportStatus"] = case["status"]
+            require(case["status"] == "PASS" and all(type(row.get("errorCount")) is int and row["errorCount"] == 0
+                    for row in native_report["results"]), "SPECIAL_PREPARATION_CASE_FAILED")
+            result["preparationStatus"] = "REJECTED" if (root / "preparation.safe.json").exists() else "MISSING"
+            closed_preparation_result(private_json(root / "preparation.safe.json"), value)
+            result["preparationStatus"] = "READ"
+            result["status"] = "PREPARED"
+        except Exception as error:
+            try:
+                self.preserve_special_error("semester-metadata", None, error)
+            except BaseException:
+                pass
+            if not ordinary:
+                raise
+        finally:
+            try:
+                require(hashlib.sha256(clock.read_bytes()).hexdigest() == clock_sha, "SPECIAL_PREPARATION_CLOCK_CHANGED")
+                if result["nativeExit"] is not None:
+                    validate_local(environment=self.env, expected_mode="special13", expected_special_lane="semester-metadata", expected_special_phase="main")
+                    self.special_health()
+                if result["frameworkStatus"] != "READ":
+                    try:
+                        write(root / "launch.safe.json", json.dumps(special_log_hints(self.run / "lifecycle_prerequisites.private.log", self.special_value()), sort_keys=True) + "\n")
+                    except BaseException:
+                        pass
+            except BaseException:
+                result["status"] = "BLOCKED"
+                raise
+            finally:
+                self.env = base
+                primary = sys.exc_info()[0]
+                try:
+                    write(root / "result.safe.json", json.dumps(result, sort_keys=True) + "\n")
+                except BaseException:
+                    if primary is None:
+                        raise
+        return result["status"] == "PREPARED"
 
     def build_special_bot(self):
         tag = "rct-local-stage17/notification-bot:" + self.nonce
@@ -2033,7 +2207,9 @@ valid(all(stat.S_IMODE(directory.lstat().st_mode) == 0o755 for directory in dire
         else:
             from local_e2e_lifecycle import execute_lifecycle
             try:
-                discovered = not self.lifecycle_only or self.discover_lifecycle()
+                discovered = self.discover_lifecycle()
+                if discovered:
+                    discovered = self.prepare_lifecycle_prerequisites()
             except BaseException as error:
                 try:
                     self.preserve_special_error(SPECIAL_LIFECYCLE[0], None, error)
@@ -2306,6 +2482,7 @@ def main():
     parser.add_argument("--lifecycle-only", action="store_true", help="Special13 only: discover then run only the original lifecycle7")
     parser.add_argument("--retained-cohort-receipt", type=Path, help="Special13 only: explicit private closure of the preserved BOOT cohort")
     parser.add_argument("--retained-pdf-cohort-receipt", type=Path, help="Special13 only: exact preserved ee1df PDF cohort closure")
+    parser.add_argument("--retained-recovery-cohort-receipt", type=Path, help="Special13 only: exact preserved 43589 recovery cohort closure")
     parser.add_argument("--diagnose-startup", action="store_true", help="Client only: same ten scenarios, stop after first failure with closed setup diagnostics")
     parser.add_argument("--bundled-dockerfile-frontend", action="store_true",
                         help="UI batch only: inline tracked Dockerfiles using the Docker Engine bundled frontend")
@@ -2314,6 +2491,7 @@ def main():
     args = parser.parse_args()
     selected_cohorts(args.mode, args.lifecycle_only)
     require(args.retained_cohort_receipt is None or args.mode == "special13", "RETAINED_RECEIPT_SPECIAL_ONLY")
+    require(args.retained_recovery_cohort_receipt is None or args.mode == "special13" and args.retained_pdf_cohort_receipt is not None, "RETAINED_RECOVERY_RECEIPT_SPECIAL_ONLY")
     require(args.retained_pdf_cohort_receipt is None or args.mode == "special13" and args.retained_cohort_receipt is not None, "RETAINED_PDF_RECEIPT_SPECIAL_ONLY")
     require(args.failed_case is None or args.mode == "ui-batch", "BATCH_CASES_UI_BATCH_ONLY")
     selected_batch_cases(args.failed_case)
@@ -2340,7 +2518,7 @@ def main():
         return
     require(args.expected_mode is None and args.expected_batch_lane is None and args.expected_special_lane is None
             and args.expected_special_phase is None and args.special_service is None, "EXPECTED_MODE_ADMIT_ONLY")
-    preflight(special=args.mode == "special13", retained_receipt=args.retained_cohort_receipt, retained_pdf_receipt=args.retained_pdf_cohort_receipt)
+    preflight(special=args.mode == "special13", retained_receipt=args.retained_cohort_receipt, retained_pdf_receipt=args.retained_pdf_cohort_receipt, retained_recovery_receipt=args.retained_recovery_cohort_receipt)
     if args.mode == "preflight":
         emit("PREFLIGHT", result="PASS", containers_started=0)
         return
@@ -2351,7 +2529,7 @@ def main():
     with os.fdopen(descriptor, "r+") as lock:
         owned(RUNS / "port-8443.lock", 0o600)
         fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
-        preflight(special=args.mode == "special13", retained_receipt=args.retained_cohort_receipt, retained_pdf_receipt=args.retained_pdf_cohort_receipt)  # Shared fixed-port lease held.
+        preflight(special=args.mode == "special13", retained_receipt=args.retained_cohort_receipt, retained_pdf_receipt=args.retained_pdf_cohort_receipt, retained_recovery_receipt=args.retained_recovery_cohort_receipt)  # Shared fixed-port lease held.
         cohorts = selected_cohorts(args.mode, args.lifecycle_only)
         results = []
         for cohort in cohorts:
@@ -2371,6 +2549,7 @@ def run_cohort(args, cohort):
                         bundled_dockerfile_frontend=args.bundled_dockerfile_frontend, failed_cases=args.failed_case, lifecycle_only=args.lifecycle_only)
         runner.special_retained_receipt = args.retained_cohort_receipt
         runner.special_retained_pdf_receipt = args.retained_pdf_cohort_receipt
+        runner.special_retained_recovery_receipt = args.retained_recovery_cohort_receipt
         result, cleanup = "FAIL", "NOT_STARTED"
         try:
             if args.mode == "special13":

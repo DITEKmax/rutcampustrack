@@ -1045,12 +1045,12 @@ ROLLBACK;`;
 test('renderer outage terminates its PDF job safely and a fresh job downloads after recovery @cloud-accepted', async ({
   dataset,
 }, info) => {
-  // Three existing 30s generation deadlines plus restoration and a fresh PDF.
+  // Three existing attempts include owner/RPC work, retry backoff and polling.
   // This is a local fixture budget, not a new product deadline or drain SLA.
-  test.setTimeout(240000);
+  test.setTimeout(300000);
   const until = Date.now() + info.timeout - 5000;
   // This failure/recovery journey reuses the fixture's admitted actor; a new login
-  // may legitimately spend 60s on Retry-After before the unchanged 190s reserve.
+  // may legitimately spend 60s on Retry-After before the 230s reserve.
   const actor = dataset.admin;
   const actorId = Number(actor.session.userId);
   registryRequire(
@@ -1125,7 +1125,8 @@ test('renderer outage terminates its PDF job safely and a fresh job downloads af
     'OUTAGE_OWN_NETWORK',
   );
   await registryOutageReady(Math.min(until, Date.now() + 10000), renderer, initial.network);
-  registryRequire(until - Date.now() >= 190000, 'OUTAGE_RESTORATION_RESERVE');
+  // 150s fault + 10s failed-job readback + 35s restoration + 35s fresh PDF.
+  registryRequire(until - Date.now() >= 230000, 'OUTAGE_RESTORATION_RESERVE');
   let failedJob = '';
   let pauseAttempted = false;
   let primaryFailed = false;
@@ -1144,7 +1145,8 @@ test('renderer outage terminates its PDF job safely and a fresh job downloads af
       registryOutageRenderer(until, renderer, initial.network).paused,
       'OUTAGE_PAUSED',
     );
-    const faultUntil = Date.now() + 110000;
+    // Charge pause/admission overhead here while preserving all later reserves.
+    const faultUntil = Math.min(until - 80000, Date.now() + 150000);
     const created = await call(
       'POST',
       '/api/auth/export-jobs',
@@ -1184,9 +1186,24 @@ test('renderer outage terminates its PDF job safely and a fresh job downloads af
         },
       )
       .toBe('error');
-    await call('GET', `/api/auth/export-jobs/${failedJob}/file`, undefined, 409, faultUntil);
-    await call('POST', `/api/auth/export-jobs/${failedJob}/ticket`, undefined, 409, faultUntil);
-    registryOutageFailedFacts(faultUntil, failedJob);
+    // Terminal observation ends the fault wait; readback has its own bounded
+    // 10s window, without borrowing the 35s restore or 35s fresh-job reserves.
+    const failedReadbackUntil = Math.min(until - 70000, Date.now() + 10000);
+    await call(
+      'GET',
+      `/api/auth/export-jobs/${failedJob}/file`,
+      undefined,
+      409,
+      failedReadbackUntil,
+    );
+    await call(
+      'POST',
+      `/api/auth/export-jobs/${failedJob}/ticket`,
+      undefined,
+      409,
+      failedReadbackUntil,
+    );
+    registryOutageFailedFacts(failedReadbackUntil, failedJob);
   } catch (failure) {
     primaryFailed = true;
     primaryFailure = failure;

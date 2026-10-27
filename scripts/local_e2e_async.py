@@ -285,6 +285,14 @@ def capture(args, *, env=None, seconds=20):
                           stderr=subprocess.PIPE, text=True, check=True, timeout=seconds).stdout
 
 
+def capture_before(args, deadline=None):
+    if deadline is None:
+        return capture(args)
+    remaining = deadline - time.monotonic()
+    require(remaining > 0, "SPECIAL_RENDERER_HEALTH_WAIT_EXPIRED")
+    return capture(args, seconds=min(20, remaining))
+
+
 def emit(phase, **values):
     print(json.dumps({"phase": phase, **values}), flush=True)
 
@@ -319,10 +327,10 @@ def manifest(path):
     return value
 
 
-def inventory(project, nonce, *, complete=False):
-    ids = capture(["docker", "ps", "-aq", "--no-trunc", "--filter",
-                   "label=com.docker.compose.project=" + project]).splitlines()
-    rows = json.loads(capture(["docker", "inspect", *ids])) if ids else []
+def inventory(project, nonce, *, complete=False, deadline=None):
+    ids = capture_before(["docker", "ps", "-aq", "--no-trunc", "--filter",
+                   "label=com.docker.compose.project=" + project], deadline).splitlines()
+    rows = json.loads(capture_before(["docker", "inspect", *ids], deadline)) if ids else []
     names = set()
     for row in rows:
         labels = row["Config"].get("Labels", {})
@@ -623,14 +631,15 @@ def special_topology(value):
     return registration
 
 
-def special_inventory(value, *, complete=True, expected_lane=None, expected_phase=None):
+def special_inventory(value, *, complete=True, expected_lane=None, expected_phase=None, deadline=None):
     config = json.loads((Path(value["run"]) / "compose.json").read_text())
     validate_special_network_config(config, value["special_network"])
-    rows = inventory(value["project"], value["nonce"], complete=False)
+    rows = inventory(value["project"], value["nonce"], complete=False, deadline=deadline)
     require(not complete or len(rows) == 17, "SPECIAL_ORIGINAL_INVENTORY")
     frozen_path = Path(value["run"]) / "runtime-identity.json"
     frozen = private_json(frozen_path) if frozen_path.exists() else None
     topology = special_topology(value)
+    require(deadline is None or topology is None, "SPECIAL_RENDERER_WAIT_TOPOLOGY")
     records, _ = special_records(value)
     sealed = {row["intent"] for row in records if row["kind"] == "outcome"}
     active = [row for row in records if row["kind"] == "intent" and row["index"] not in sealed]
@@ -639,7 +648,7 @@ def special_inventory(value, *, complete=True, expected_lane=None, expected_phas
         require(expected_lane is None or expected_lane == intent["lane"] and expected_phase in phases, "SPECIAL_ACTIVE_INTENT_CONTEXT")
     permitted = {service for row in active for service in row["services"]}
     rebind_permitted = {service for row in active for service in SPECIAL_REBIND.get(row["action"], set())}
-    network = json.loads(capture(["docker", "network", "inspect", value["project"] + "_private_net"]))[0]
+    network = json.loads(capture_before(["docker", "network", "inspect", value["project"] + "_private_net"], deadline))[0]
     rebound = {name: binding for record in records if record["kind"] == "outcome" and record["restored"]
                for name, binding in record["network_bindings"].items()}
     for row in rows:
@@ -777,10 +786,12 @@ def special_result(report, code, lane, phase, expected_locations):
 
 RETAINED_PROJECT = "rct-local-stage17-8aad5d587e5d"
 RETAINED_SOURCE = "b8722534a0649491e10be9a9a832b6c782332806"
+RETAINED_PDF_PROJECT = "rct-local-stage17-ee1df05be60a"
+RETAINED_PDF_SOURCE = "3c906d20cf260e08ae265ab04027f66d7465d402"
 SPECIAL_PRIVATE_POOL = tuple(f"172.{value}.0.0/24" for value in (30, 31, *range(29, 15, -1))) + tuple(f"10.{value}.0.0/24" for value in range(240, 248))
 
 
-def validate_retained_cohort(path, *, root=None, stopped=True):
+def validate_retained_cohort(path, *, root=None, stopped=True, pdf=False):
     """Only the explicitly closed BOOT cohort may remain beside a new special13 run."""
     root = ROOT if root is None else Path(root)
     path = Path(path)
@@ -788,42 +799,60 @@ def validate_retained_cohort(path, *, root=None, stopped=True):
             and path.is_relative_to(Path.home() / ".local/share/rct-pr3-local/checks"), "RETAINED_RECEIPT_PATH")
     owned(path.parent, 0o700, directory=True)
     receipt = private_json(path)
-    run = root / ".agent/evidence/local-runs" / RETAINED_PROJECT
-    require(set(receipt) == {"schema", "uid", "root", "run", "project", "source_sha", "nonce", "files", "services", "network_id", "status"}
-            and receipt["schema"] == "RCT_RETAINED_BOOT_CLOSURE_V1" and receipt["uid"] == os.getuid()
-            and receipt["root"] == str(root) and receipt["run"] == str(run) and receipt["project"] == RETAINED_PROJECT
-            and receipt["source_sha"] == RETAINED_SOURCE and receipt["status"] == ("STOPPED" if stopped else "PRE_STOP"), "RETAINED_RECEIPT_BINDING")
+    project, source = (RETAINED_PDF_PROJECT, RETAINED_PDF_SOURCE) if pdf else (RETAINED_PROJECT, RETAINED_SOURCE)
+    run = root / ".agent/evidence/local-runs" / project
+    fields = {"schema", "uid", "root", "run", "project", "source_sha", "nonce", "files", "services", "network_id", "status"}
+    require(set(receipt) == fields | ({"transition_files"} if pdf else set())
+            and receipt["schema"] == ("RCT_RETAINED_PDF_CLOSURE_V1" if pdf else "RCT_RETAINED_BOOT_CLOSURE_V1") and receipt["uid"] == os.getuid()
+            and receipt["root"] == str(root) and receipt["run"] == str(run) and receipt["project"] == project
+            and receipt["source_sha"] == source and receipt["status"] == ("STOPPED" if stopped else "PRE_STOP"), "RETAINED_RECEIPT_BINDING")
     owned(run, 0o700, directory=True)
     files = {"owner.json", "runtime-identity.json", "compose.json", "result.safe.json"}
+    if pdf:
+        files.add("lanes/registry-native-pdf/main.result.safe.json")
     require(set(receipt["files"]) == files, "RETAINED_FILES_CHANGED")
     for name, digest in receipt["files"].items():
         info = owned(run / name, 0o600)
         require(info.st_size <= 8 * 1024**2 and hashlib.sha256((run / name).read_bytes()).hexdigest() == digest, "RETAINED_FILES_CHANGED")
     value, frozen, config, result = (private_json(run / name) for name in ("owner.json", "runtime-identity.json", "compose.json", "result.safe.json"))
-    require(value["root"] == str(root) and value["run"] == str(run) and value["project"] == RETAINED_PROJECT
-            and value["mode"] == "special13" and value["special_cohort"] == "nonclock" and value["source_sha"] == RETAINED_SOURCE
-            and value["nonce"] == receipt["nonce"] and RETAINED_PROJECT == "rct-local-stage17-" + receipt["nonce"][:12]
+    require(value["root"] == str(root) and value["run"] == str(run) and value["project"] == project
+            and value["mode"] == "special13" and value["special_cohort"] == "nonclock" and value["source_sha"] == source
+            and value["nonce"] == receipt["nonce"] and project == "rct-local-stage17-" + receipt["nonce"][:12]
             and re.fullmatch(r"[a-f0-9]{24}", receipt["nonce"])
             and set(frozen["services"]) == SERVICES and set(config["services"]) == SERVICES
-            and result["mode"] == "special13" and result["phase"] == "BOOT" and result["result"] == "FAIL", "RETAINED_BOOT_IDENTITY")
-    for directory in (run / "transitions", run / "lanes"):
-        owned(directory, 0o700, directory=True)
-        require(not list(directory.iterdir()), "RETAINED_SCENARIO_OR_INTENT_PRESENT")
+            and result["mode"] == "special13" and result["phase"] == ("SPECIAL_REGISTRY_NATIVE_PDF_MAIN" if pdf else "BOOT")
+            and result["result"] == "FAIL", "RETAINED_BOOT_IDENTITY")
+    if pdf:
+        require(result["cleanup"] == "FAIL_RETAINED_FOR_OWNER", "RETAINED_PDF_RESULT")
+        phase = private_json(run / "lanes/registry-native-pdf/main.result.safe.json")
+        require(phase == {"lane": "registry-native-pdf", "phase": "main", "status": "FAIL", "expected": 3, "passed": 2, "failed": 1, "notRun": 0}, "RETAINED_PDF_PHASE")
+        records, _ = special_records(value)
+        require(len(records) == 1 and records[0]["kind"] == "intent" and records[0]["action"] == "RENDERER_OUTAGE"
+                and records[0]["lane"] == "registry-native-pdf" and records[0]["phase"] == "main", "RETAINED_PDF_ORIGINAL_INTENT")
+        transitions = {path.name: path for path in (run / "transitions").iterdir()}
+        require(set(transitions) == set(receipt["transition_files"]) == {"0000.json"}, "RETAINED_PDF_TRANSITION_FILES")
+        for name, path in transitions.items():
+            owned(path, 0o600)
+            require(hashlib.sha256(path.read_bytes()).hexdigest() == receipt["transition_files"][name], "RETAINED_PDF_TRANSITION_CHANGED")
+    else:
+        for directory in (run / "transitions", run / "lanes"):
+            owned(directory, 0o700, directory=True)
+            require(not list(directory.iterdir()), "RETAINED_SCENARIO_OR_INTENT_PRESENT")
     require(receipt["network_id"] == frozen["network_id"] and set(receipt["services"]) == SERVICES
             and all(receipt["services"][name] == {"id": pin["id"], "image": pin["image"]} for name, pin in frozen["services"].items()), "RETAINED_FROZEN_BINDING")
-    ids = capture(["docker", "ps", "-aq", "--no-trunc", "--filter", "label=com.docker.compose.project=" + RETAINED_PROJECT]).splitlines()
+    ids = capture(["docker", "ps", "-aq", "--no-trunc", "--filter", "label=com.docker.compose.project=" + project]).splitlines()
     require(len(ids) == 17 and len(set(ids)) == 17, "RETAINED_INVENTORY_COUNT")
     rows = json.loads(capture(["docker", "inspect", *ids]))
     seen = set()
-    network_name = RETAINED_PROJECT + "_private_net"
+    network_name = project + "_private_net"
     network = json.loads(capture(["docker", "network", "inspect", network_name]))[0]
     require(network["Id"] == frozen["network_id"] and network["Labels"].get(LABEL) == value["nonce"]
-            and network["Labels"].get("com.docker.compose.project") == RETAINED_PROJECT, "RETAINED_NETWORK_CHANGED")
+            and network["Labels"].get("com.docker.compose.project") == project, "RETAINED_NETWORK_CHANGED")
     for row in rows:
         labels = row["Config"].get("Labels", {})
         name = labels.get("com.docker.compose.service")
         require(name in SERVICES and name not in seen and labels.get(LABEL) == value["nonce"]
-                and labels.get("com.docker.compose.project") == RETAINED_PROJECT, "RETAINED_FOREIGN_CONTAINER")
+                and labels.get("com.docker.compose.project") == project, "RETAINED_FOREIGN_CONTAINER")
         seen.add(name)
         pin = frozen["services"][name]
         require(row["Id"] == pin["id"] and row["Image"] == pin["image"] and labels == pin["labels"]
@@ -831,6 +860,13 @@ def validate_retained_cohort(path, *, root=None, stopped=True):
                 and canonical_mount_records(row["Mounts"]) == canonical_mount_records(pin["mounts"])
                 and row["HostConfig"].get("ReadonlyRootfs", False) == pin["readonly"], "RETAINED_IMMUTABLE_CHANGED")
         require(row["State"]["Running"] is (not stopped) and not row["State"].get("Paused", False), "RETAINED_STATE_CHANGED")
+        if pdf and not stopped:
+            healthcheck = config["services"][name].get("healthcheck")
+            if healthcheck and not healthcheck.get("disable", False) and healthcheck.get("test") != ["NONE"]:
+                require(row["State"].get("Health", {}).get("Status") == "healthy", "RETAINED_PDF_NOT_HEALTHY")
+            if name == "document-renderer-service":
+                ready = json.loads(capture(["docker", "exec", row["Id"], "wget", "-T", "2", "-qO-", "http://localhost:9095/actuator/health/readiness"], seconds=5))
+                require(type(ready) is dict and ready.get("status") == "UP", "RETAINED_PDF_NOT_READY")
         require(set(row["NetworkSettings"]["Networks"]) == {network_name}, "RETAINED_NETWORK_SET")
         binding = row["NetworkSettings"]["Networks"][network_name]
         require(binding["NetworkID"] == frozen["network_id"] and set(binding.get("Aliases") or []) == set(pin["aliases"]), "RETAINED_NETWORK_BINDING")
@@ -888,7 +924,7 @@ def validate_observed_special_network(selected, network, nginx_binding):
             and nginx_binding.get("IPAMConfig", {}).get("IPv4Address") == selected["nginx"], "SPECIAL_OBSERVED_NETWORK_BINDING")
 
 
-def preflight(*, special=False, retained_receipt=None, selected_network=None):
+def preflight(*, special=False, retained_receipt=None, retained_pdf_receipt=None, selected_network=None):
     require(sys.platform == "linux" and os.getuid() != 0, "UBUNTU_NONROOT_REQUIRED")
     require(RUNS.resolve() == RUNS, "LINKED_RUNTIME_PARENT")
     for name in ("GITHUB_ACTIONS", "RUNNER_ENVIRONMENT", "GITHUB_RUN_ID", "GITHUB_RUN_ATTEMPT", "GITHUB_SHA"):
@@ -907,11 +943,13 @@ def preflight(*, special=False, retained_receipt=None, selected_network=None):
     local_ids = capture(["docker", "ps", "-aq", "--no-trunc", "--filter", "label=" + LABEL]).splitlines()
     if special:
         retained = validate_retained_cohort(retained_receipt) if retained_receipt else {"ids": []}
-        require(set(local_ids) == set(retained["ids"]), "PREVIOUS_LOCAL_COHORT")
+        retained_pdf = validate_retained_cohort(retained_pdf_receipt, pdf=True) if retained_pdf_receipt else {"ids": []}
+        require(retained_pdf_receipt is None or retained_receipt is not None, "RETAINED_PDF_REQUIRES_BOOT_RECEIPT")
+        require(set(local_ids) == set(retained["ids"]) | set(retained_pdf["ids"]), "PREVIOUS_LOCAL_COHORT")
         selected = special_network_choice(selected_network)
         require(capture(["git", "ls-files", "--error-unmatch", "tests/e2e/.env.ci"]).strip(), "TRACKED_SYNTHETIC_ENV_REQUIRED")
         return selected
-    require(not local_ids and retained_receipt is None and selected_network is None, "PREVIOUS_LOCAL_COHORT")
+    require(not local_ids and retained_receipt is None and retained_pdf_receipt is None and selected_network is None, "PREVIOUS_LOCAL_COHORT")
     # Refuse collision rather than changing Gateway's trusted fixed-edge subnet.
     subnet = ipaddress.ip_network("172.30.0.0/24")
     networks = capture(["docker", "network", "ls", "-q"]).splitlines()
@@ -939,6 +977,7 @@ class Runner:
         self.special_cohort = special_cohort
         self.special_network = None
         self.special_retained_receipt = None
+        self.special_retained_pdf_receipt = None
         self.special_outcomes = []
         self.failed_cases = selected_batch_cases(failed_cases)
         self.startup_diagnostic = startup_diagnostic
@@ -1090,7 +1129,7 @@ class Runner:
 
     def prepare(self):
         if self.mode == "special13":
-            self.special_network = preflight(special=True, retained_receipt=self.special_retained_receipt)
+            self.special_network = preflight(special=True, retained_receipt=self.special_retained_receipt, retained_pdf_receipt=self.special_retained_pdf_receipt)
         self.run.mkdir(mode=0o700)
         for name in ("artifacts", "home", "tmp"):
             (self.run / name).mkdir(mode=0o700)
@@ -1287,7 +1326,7 @@ class Runner:
         if self.mode == "special13":
             self.phase = "BOOT_NETWORK_ADMISSION"
             emit(self.phase, state="RUNNING")
-            preflight(special=True, retained_receipt=self.special_retained_receipt, selected_network=self.special_network)
+            preflight(special=True, retained_receipt=self.special_retained_receipt, retained_pdf_receipt=self.special_retained_pdf_receipt, selected_network=self.special_network)
         self.command("BOOT", self.compose("up", "-d", "--no-build", "--wait", "--wait-timeout", "480"))
         if self.mode == "special13":
             self.freeze_special_inventory()
@@ -1464,22 +1503,88 @@ class Runner:
         self.special_health()
         return append_special(value, "recovery-seal", target_ids=target_ids, receipt=str(path), sha256=hashlib.sha256(path.read_bytes()).hexdigest())
 
-    def special_health(self):
-        value = self.special_value()
-        rows = special_inventory(value)
-        topology = special_topology(value)
-        config = json.loads((self.run / "compose.json").read_text())
-        for row in rows:
-            service = row["Config"]["Labels"]["com.docker.compose.service"]
-            project = row["Config"]["Labels"]["com.docker.compose.project"]
-            if topology and service in DATABASES and project == self.project:
-                require(not row["State"]["Running"] and not row["NetworkSettings"]["Networks"], "SPECIAL_SOURCE_DATABASE_NOT_QUIESCENT")
-                continue
-            require(row["State"]["Running"] and not row["State"].get("Paused", False), "SPECIAL_RESTORATION_NOT_RUNNING")
-            check = config["services"][service].get("healthcheck")
-            if check and not check.get("disable", False) and check.get("test") != ["NONE"]:
-                require(row["State"].get("Health", {}).get("Status") == "healthy", "SPECIAL_RESTORATION_NOT_HEALTHY")
-        return True
+    def preserve_special_health(self, rows=None, *, first=False, unavailable=False):
+        """Only admitted identity rows; health stdout/error bodies never cross this boundary."""
+        path = self.run / ("health-first.safe.json" if first else "health.safe.json")
+        if path.exists():
+            return
+        try:
+            require(not unavailable, "SPECIAL_HEALTH_ADMISSION_UNAVAILABLE")
+            if rows is None:
+                rows = special_inventory(self.special_value(), complete=False)
+            services = []
+            for row in rows:
+                labels, state = row["Config"]["Labels"], row["State"]
+                service = labels["com.docker.compose.service"]
+                require(service in SERVICES, "SPECIAL_HEALTH_SERVICE")
+                attempts = []
+                for item in state.get("Health", {}).get("Log", [])[-5:]:
+                    start, end, code = item.get("Start"), item.get("End"), item.get("ExitCode")
+                    require(all(type(text) is str and re.fullmatch(r"\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d(?:\.\d{1,9})?(?:Z|[+-]\d\d:\d\d)", text) for text in (start, end))
+                            and type(code) is int and -255 <= code <= 255, "SPECIAL_HEALTH_ATTEMPT")
+                    attempts.append({"start": start, "end": end, "exitCode": code})
+                require(type(state["Running"]) is bool and type(state.get("Paused", False)) is bool, "SPECIAL_HEALTH_STATE")
+                health = state.get("Health", {}).get("Status", "none")
+                services.append({"service": service, "role": "ORIGINAL" if labels["com.docker.compose.project"] == self.project else "RECOVERY",
+                    "running": state["Running"], "paused": state.get("Paused", False),
+                    "health": health if health in {"none", "starting", "healthy", "unhealthy"} else "OTHER", "attempts": attempts})
+            require(len(services) <= 20, "SPECIAL_HEALTH_COUNT")
+            receipt = {"schema": "RCT_SPECIAL_HEALTH_V1", "status": "READ", "services": services}
+        except BaseException:
+            receipt = {"schema": "RCT_SPECIAL_HEALTH_V1", "status": "UNAVAILABLE", "services": []}
+        write(path, json.dumps(receipt, sort_keys=True) + "\n")
+
+    def special_health(self, renderer_intent=None):
+        rows = None
+        try:
+            value = self.special_value()
+            if renderer_intent is not None:
+                records, _ = special_records(value)
+                require(type(renderer_intent) is dict and type(renderer_intent.get("index")) is int
+                        and 0 <= renderer_intent["index"] < len(records), "SPECIAL_RENDERER_WAIT_INTENT")
+                index = renderer_intent["index"]
+                intent = records[index]
+                require(intent == renderer_intent, "SPECIAL_RENDERER_WAIT_INTENT")
+                require(intent["kind"] == "intent" and intent["lane"] == "registry-native-pdf" and intent["phase"] == "main"
+                        and intent["action"] == "RENDERER_OUTAGE" and intent["services"] == ["document-renderer-service"]
+                        and not any(row["kind"] == "outcome" and row["intent"] == index for row in records), "SPECIAL_RENDERER_WAIT_INTENT")
+            deadline = time.monotonic() + 35
+            config = json.loads((self.run / "compose.json").read_text())
+            while True:
+                rows = None
+                rows = special_inventory(value, deadline=deadline if renderer_intent is not None else None)
+                topology = special_topology(value)
+                pending = None
+                for row in rows:
+                    service = row["Config"]["Labels"]["com.docker.compose.service"]
+                    project = row["Config"]["Labels"]["com.docker.compose.project"]
+                    if topology and service in DATABASES and project == self.project:
+                        require(not row["State"]["Running"] and not row["NetworkSettings"]["Networks"], "SPECIAL_SOURCE_DATABASE_NOT_QUIESCENT")
+                        continue
+                    require(row["State"]["Running"] and not row["State"].get("Paused", False), "SPECIAL_RESTORATION_NOT_RUNNING")
+                    check = config["services"][service].get("healthcheck")
+                    if check and not check.get("disable", False) and check.get("test") != ["NONE"] and row["State"].get("Health", {}).get("Status") != "healthy":
+                        require(renderer_intent is not None and service == "document-renderer-service", "SPECIAL_RESTORATION_NOT_HEALTHY")
+                        pending = row
+                if pending is None:
+                    return True
+                remaining = deadline - time.monotonic()
+                require(remaining > 0, "SPECIAL_RENDERER_HEALTH_WAIT_EXPIRED")
+                ready = json.loads(capture(["docker", "exec", pending["Id"], "wget", "-T", "2", "-qO-", "http://localhost:9095/actuator/health/readiness"], seconds=min(3, remaining)))
+                require(type(ready) is dict and ready.get("status") == "UP", "SPECIAL_RENDERER_READINESS_NOT_RESTORED")
+                try:
+                    self.preserve_special_health(rows, first=True)
+                except BaseException:
+                    emit("SPECIAL_HEALTH_DIAGNOSTIC", state="UNAVAILABLE")
+                remaining = deadline - time.monotonic()
+                require(remaining > 0, "SPECIAL_RENDERER_HEALTH_WAIT_EXPIRED")
+                time.sleep(min(1, remaining))
+        except BaseException:
+            try:
+                self.preserve_special_health(rows, unavailable=rows is None)
+            except BaseException:
+                pass
+            raise
 
     def special_verified_networks(self, service, original_id):
         """Concrete current binding proof for a same-container planned restart only."""
@@ -1565,12 +1670,79 @@ class Runner:
     def build_special_bot(self):
         tag = "rct-local-stage17/notification-bot:" + self.nonce
         require(self.image_identity(tag) is None, "SPECIAL_BOT_TAG_COLLISION")
-        require(tag in self.special_value()["images"] and tag in self.image_targets, "SPECIAL_BOT_FROZEN_INTENT")
+        value = self.special_value()
+        require(tag in value["images"] and tag in self.image_targets, "SPECIAL_BOT_FROZEN_INTENT")
         self.image_admitted.add(tag)
         args = ["docker", "build", "--label", LABEL + "=" + self.nonce, "--tag", tag]
         source = ROOT / "services/notification-bot"
         if self.bundled_dockerfile_frontend:
-            text = (source / "Dockerfile").read_text()
+            if self.mode == "special13" and self.special_cohort == "nonclock":
+                # Only admitted public Python source receives portable image code modes.
+                # Directed capabilities remain host-owned0600 readonly mounts outside /app/bot.
+                dockerfile = source / "Dockerfile"
+                info = dockerfile.lstat()
+                require(dockerfile.resolve() == dockerfile and stat.S_ISREG(info.st_mode)
+                        and not dockerfile.is_symlink() and info.st_nlink == 1 and 0 < info.st_size <= 16384,
+                        "SPECIAL_BOT_DOCKERFILE_SOURCE")
+                original = dockerfile.read_bytes()
+                require(hashlib.sha256(original).hexdigest() == value["sources"].get("services/notification-bot/Dockerfile"),
+                        "SPECIAL_BOT_DOCKERFILE_SOURCE")
+                text = original.decode()
+                marker = "RUN chown -R app:app /app\n"
+                require(text.count(marker) == 1 and text.count("USER app\n") == 1
+                        and text.count("COPY . .\n") == 1
+                        and text.index("COPY . .\n") < text.index(marker) < text.index("USER app\n"),
+                        "SPECIAL_BOT_DOCKERFILE_LAYOUT")
+                prefix = "services/notification-bot/bot/"
+                public = {name[len(prefix):]: digest for name, digest in value["sources"].items()
+                          if name.startswith(prefix) and name.endswith(".py")}
+                require(0 < len(public) <= 512 and "__init__.py" in public
+                        and len(repr(public).encode()) <= 65536
+                        and all(len(name) <= 256 and re.fullmatch(r"(?:[A-Za-z_][A-Za-z0-9_]*/)*[A-Za-z_][A-Za-z0-9_]*\.py", name)
+                                and isinstance(digest, str) and re.fullmatch(r"[a-f0-9]{64}", digest)
+                                for name, digest in public.items()),
+                        "SPECIAL_BOT_PUBLIC_SOURCE_SET")
+                public = dict(sorted(public.items()))
+                program = "file_hashes = " + repr(public) + "\n" + """import hashlib, re, stat
+from pathlib import Path
+def valid(condition):
+    if not condition:
+        raise RuntimeError("SPECIAL_BOT_PUBLIC_CODE_GUARD")
+root = Path("/app/bot")
+valid(root.resolve() == root and 0 < len(file_hashes) <= 512 and "__init__.py" in file_hashes
+      and len(repr(file_hashes).encode()) <= 65536)
+directories = {root}
+for name, digest in file_hashes.items():
+    valid(isinstance(name, str) and len(name) <= 256
+          and re.fullmatch(r"(?:[A-Za-z_][A-Za-z0-9_]*/)*[A-Za-z_][A-Za-z0-9_]*[.]py", name)
+          and isinstance(digest, str) and re.fullmatch(r"[a-f0-9]{64}", digest))
+    path = root / name
+    directories.update(parent for parent in path.parents if parent == root or root in parent.parents)
+for directory in sorted(directories, key=lambda path: (len(path.parts), str(path))):
+    info = directory.lstat()
+    valid(directory.resolve() == directory and stat.S_ISDIR(info.st_mode) and not directory.is_symlink())
+files = []
+total = 0
+for name, digest in file_hashes.items():
+    path = root / name
+    info = path.lstat()
+    total += info.st_size
+    valid(path.resolve() == path and stat.S_ISREG(info.st_mode) and not path.is_symlink()
+          and info.st_nlink == 1 and 0 <= info.st_size <= 2 * 1024**2 and total <= 16 * 1024**2)
+    valid(hashlib.sha256(path.read_bytes()).hexdigest() == digest)
+    files.append(path)
+# Validate the full admitted set before the first permission mutation.
+for directory in directories:
+    directory.chmod(0o755)
+for path in files:
+    path.chmod(0o644)
+valid(all(stat.S_IMODE(directory.lstat().st_mode) == 0o755 for directory in directories)
+      and all(stat.S_IMODE(path.lstat().st_mode) == 0o644 for path in files))
+"""
+                instruction = "RUN " + json.dumps(["python", "-c", program]) + "\n"
+                text = text.replace(marker, marker + instruction)
+            else:
+                text = (source / "Dockerfile").read_text()
             lines = text.splitlines(keepends=True)
             if lines[0].rstrip("\r\n") == "# syntax=docker/dockerfile:1.7":
                 lines.pop(0)
@@ -1592,7 +1764,7 @@ class Runner:
                 self.special_health()
                 intent = self.special_intent(lane, "main", "RENDERER_OUTAGE", ["document-renderer-service"]) if lane == "registry-native-pdf" else None
                 outcome = self.special_phase(lane)
-                self.special_health()
+                self.special_health(renderer_intent=intent)
                 require(hashlib.sha256(clock.read_bytes()).hexdigest() == clock_sha, "SPECIAL_NONCLOCK_CHANGED_CLOCK")
                 if intent:
                     self.special_outcome(intent, outcome["status"] == "PASS", restored=True)
@@ -1854,6 +2026,7 @@ def main():
     parser.add_argument("--expected-special-phase", choices=["main", "prepare", "pending", "resume", "seed", "admit", "attachment"])
     parser.add_argument("--special-service", choices=sorted(SERVICES))
     parser.add_argument("--retained-cohort-receipt", type=Path, help="Special13 only: explicit private closure of the preserved BOOT cohort")
+    parser.add_argument("--retained-pdf-cohort-receipt", type=Path, help="Special13 only: exact preserved ee1df PDF cohort closure")
     parser.add_argument("--diagnose-startup", action="store_true", help="Client only: same ten scenarios, stop after first failure with closed setup diagnostics")
     parser.add_argument("--bundled-dockerfile-frontend", action="store_true",
                         help="UI batch only: inline tracked Dockerfiles using the Docker Engine bundled frontend")
@@ -1861,6 +2034,7 @@ def main():
                         help="UI batch only: select a confirmed failed case ID; repeat for multiple cases")
     args = parser.parse_args()
     require(args.retained_cohort_receipt is None or args.mode == "special13", "RETAINED_RECEIPT_SPECIAL_ONLY")
+    require(args.retained_pdf_cohort_receipt is None or args.mode == "special13" and args.retained_cohort_receipt is not None, "RETAINED_PDF_RECEIPT_SPECIAL_ONLY")
     require(args.failed_case is None or args.mode == "ui-batch", "BATCH_CASES_UI_BATCH_ONLY")
     selected_batch_cases(args.failed_case)
     require(not args.diagnose_startup or args.mode == "client", "CLIENT_DIAGNOSTIC_ONLY")
@@ -1886,7 +2060,7 @@ def main():
         return
     require(args.expected_mode is None and args.expected_batch_lane is None and args.expected_special_lane is None
             and args.expected_special_phase is None and args.special_service is None, "EXPECTED_MODE_ADMIT_ONLY")
-    preflight(special=args.mode == "special13", retained_receipt=args.retained_cohort_receipt)
+    preflight(special=args.mode == "special13", retained_receipt=args.retained_cohort_receipt, retained_pdf_receipt=args.retained_pdf_cohort_receipt)
     if args.mode == "preflight":
         emit("PREFLIGHT", result="PASS", containers_started=0)
         return
@@ -1897,7 +2071,7 @@ def main():
     with os.fdopen(descriptor, "r+") as lock:
         owned(RUNS / "port-8443.lock", 0o600)
         fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
-        preflight(special=args.mode == "special13", retained_receipt=args.retained_cohort_receipt)  # Shared fixed-port lease held.
+        preflight(special=args.mode == "special13", retained_receipt=args.retained_cohort_receipt, retained_pdf_receipt=args.retained_pdf_cohort_receipt)  # Shared fixed-port lease held.
         cohorts = ("nonclock", "lifecycle") if args.mode == "special13" else (None,)
         results = []
         for cohort in cohorts:
@@ -1915,6 +2089,7 @@ def run_cohort(args, cohort):
         runner = Runner(args.mode, special_cohort=cohort, startup_diagnostic=args.diagnose_startup,
                         bundled_dockerfile_frontend=args.bundled_dockerfile_frontend, failed_cases=args.failed_case)
         runner.special_retained_receipt = args.retained_cohort_receipt
+        runner.special_retained_pdf_receipt = args.retained_pdf_cohort_receipt
         result, cleanup = "FAIL", "NOT_STARTED"
         try:
             if args.mode == "special13":
@@ -1933,6 +2108,11 @@ def run_cohort(args, cohort):
             primary = sys.exc_info()[1]
             cleanup_error, logs_error, logs_complete = None, None, True
             if runner.run.exists():
+                if args.mode == "special13" and (primary is not None or result != "PASS") and (runner.run / "owner.json").exists():
+                    try:
+                        runner.preserve_special_health()
+                    except BaseException:
+                        emit("SPECIAL_HEALTH_DIAGNOSTIC", state="UNAVAILABLE")
                 if primary is not None:
                     try:
                         runner.diagnose_http_failure()

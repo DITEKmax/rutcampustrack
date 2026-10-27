@@ -1,3 +1,4 @@
+import { failureBoundary, controlState } from '../fixtures/failed-case-diagnostics';
 import { randomUUID } from 'node:crypto';
 import type { Locator, Page, Request, Response, Route, TestInfo } from '@playwright/test';
 import {
@@ -568,7 +569,9 @@ isolated(
     const choiceName = `${updatedType!.label}: ${beforePreferences.splitChannels ? 'TMA/PWA' : 'TMA/PWA и Telegram'}`;
     const checkbox = settings.getByRole('checkbox', { name: choiceName, exact: true });
     await expect(checkbox).toBeChecked({ checked: beforeChoice.appPush });
-    await checkbox.setChecked(!beforeChoice.appPush);
+    await failureBoundary(info, 'NOTIFICATION_CHECKBOX',
+      () => checkbox.setChecked(!beforeChoice.appPush),
+      async () => ({ ...await controlState(checkbox), desired: !beforeChoice.appPush }));
     let preferencesRequestObserved = false;
     const observePreferencesRequest = (request: Request) => {
       if (request.method() === 'PUT' && new URL(request.url()).pathname === preferencesPath)

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { createDeviceThemeMirror, createDeviceThemeTransport } from '../../shared/foundation';
-import { computed, nextTick, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue';
+import { computed, nextTick, onBeforeUnmount, onMounted, provide, ref, shallowRef, watch } from 'vue';
 import {
   AdminAccessApiError,
   type AdminAccessClient,
@@ -59,6 +59,7 @@ import {
   createGenerationBoundNotificationsV2Api,
   createGenerationBoundNotificationsRealtime,
   createMobileTheme,
+  mobileThemeSystemSourceKey,
   createMobileThemePreference,
   studentFeatureScope,
   studentFeatureScopeIdentity,
@@ -114,14 +115,17 @@ const reportDownload = computed(() =>
 const themePreference = createMobileThemePreference(() =>
   typeof window === 'undefined' ? null : window.localStorage,
 );
+const systemThemeSource = createTelegramSystemThemeSource(host.app);
+provide(mobileThemeSystemSourceKey, systemThemeSource);
 const theme =
   typeof document === 'undefined'
     ? null
     : createMobileTheme({
         mode: themePreference.read() ?? 'system',
-        systemSource: createTelegramSystemThemeSource(host.app),
+        systemSource: systemThemeSource,
+        lockedMode: 'dark',
       });
-const resolvedTheme = ref(theme?.resolvedMode ?? 'light');
+const resolvedTheme = ref(theme?.resolvedMode ?? 'dark');
 const stopThemeSnapshot = theme?.subscribe((snapshot) => {
   resolvedTheme.value = snapshot.resolvedMode;
 });

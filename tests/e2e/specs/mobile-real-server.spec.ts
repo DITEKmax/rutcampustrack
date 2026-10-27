@@ -1,3 +1,4 @@
+import { failureBoundary, handledWaiter } from '../fixtures/failed-case-diagnostics';
 import { diagnosticCase } from '../fixtures/diagnostic-events';
 import { randomBytes, randomUUID, timingSafeEqual } from 'node:crypto';
 import { isDeepStrictEqual } from 'node:util';
@@ -1161,15 +1162,16 @@ test.describe('Current Vue roles with real synthetic domain @real-mobile', () =>
       (await dataset.request.get(attachmentPath, { headers: foreign.headers() })).status(),
     );
     await logoutPwa(page);
-    const teacherDay = page.waitForResponse((response) => {
+    const teacherDay = handledWaiter(page.waitForResponse((response) => {
       const url = new URL(response.url());
       return (
         url.pathname === '/api/v1/teacher/day' &&
         url.searchParams.get('date') === dataset.today &&
         response.request().method() === 'GET'
       );
-    });
-    const { accessToken } = await loginPwa(page, dataset.teacher);
+    }));
+    const { accessToken } = await failureBoundary(info, 'TEACHER_LOGIN',
+      () => loginPwa(page, dataset.teacher), () => ({ actor: 'TEACHER' }));
     await expect(page.locator('.teacher-feature-owner')).toBeVisible();
     const lesson = await page.request.get(
       `/api/v1/teacher/lessons/${dataset.lesson.physicalLessonId}`,
@@ -4706,11 +4708,17 @@ test.describe('Production PWA service worker D002 @real-mobile', () => {
     );
     expect(initial !== undefined).toBe(true);
     // The same helper bearer succeeds before replacement and is refused afterwards.
-    await helper.call('PUT', markPath, {
+    let markHttpStatus: number | null = null;
+    const expectedMarkStatus = String(initial.status ?? 'EMPTY').toUpperCase();
+    await failureBoundary(test.info(), 'HISTORICAL_MARK', () => helper.call('PUT', markPath, {
       status: 'PRESENT',
-      expectedStatus: String(initial.status ?? 'EMPTY').toUpperCase(),
+      expectedStatus: expectedMarkStatus,
       expectedRevision: initial.markRevision ?? 'EMPTY',
-    });
+    }, [200], {}, status => { markHttpStatus = status; }), () => ({
+      httpStatus: markHttpStatus,
+      expectedStatus: ['EMPTY', 'PRESENT', 'ABSENT', 'EXCUSED', 'LATE'].includes(expectedMarkStatus) ? expectedMarkStatus : 'UNKNOWN',
+      expectedRevisionPresent: typeof initial.markRevision === 'string',
+    }));
     const before = (await teacher.call('GET', reportPath)).entries.find(
       (entry: { userId: number }) => Number(entry.userId) === Number(created.id),
     );

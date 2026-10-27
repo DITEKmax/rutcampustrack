@@ -182,8 +182,8 @@ const themePreference = createMobileThemePreference(() =>
 const theme =
   typeof document === 'undefined'
     ? null
-    : createMobileTheme({ mode: themePreference.read() ?? 'system' });
-const resolvedTheme = ref(theme?.resolvedMode ?? 'light');
+    : createMobileTheme({ mode: themePreference.read() ?? 'system', lockedMode: 'dark' });
+const resolvedTheme = ref(theme?.resolvedMode ?? 'dark');
 const stopThemeSnapshot = theme?.subscribe((snapshot) => {
   resolvedTheme.value = snapshot.resolvedMode;
 });

@@ -1,5 +1,7 @@
 <script setup lang="ts">
+import { inject, onBeforeUnmount, ref, watch } from 'vue';
 import MobileIcon from '../../shared/components/MobileIcon.vue';
+import { createMobileTheme, mobileThemeSystemSourceKey } from '../../shared/theme';
 import type { ProfileResolvedTheme, ProfileTheme } from './profile-types';
 import './profile-screen.pcss';
 
@@ -23,6 +25,24 @@ const options: readonly { value: ProfileTheme; label: string }[] = [
   { value: 'system', label: 'Как в системе' },
 ];
 
+// Preview only this screen; the host keeps ownership of html and persistence.
+const systemThemeSource = inject(mobileThemeSystemSourceKey, undefined);
+const preview = createMobileTheme({
+  target: null,
+  mode: props.theme,
+  ...(systemThemeSource === undefined ? {} : { systemSource: systemThemeSource }),
+});
+const previewTheme = ref<ProfileResolvedTheme>(preview.resolvedMode);
+const stopPreviewSnapshot = preview.subscribe(({ resolvedMode }) => {
+  previewTheme.value = resolvedMode;
+});
+const stopPreviewMode = watch(() => props.theme, mode => preview.setMode(mode));
+onBeforeUnmount(() => {
+  stopPreviewMode();
+  stopPreviewSnapshot();
+  preview.dispose();
+});
+
 function chooseTheme(theme: ProfileTheme): void {
   void props.onThemeChange?.(theme);
 }
@@ -31,8 +51,8 @@ function chooseTheme(theme: ProfileTheme): void {
 <template>
   <main
     class="profile-screen profile-appearance"
-    :data-theme="resolvedTheme"
-    :style="{ colorScheme: resolvedTheme }"
+    :data-theme="previewTheme"
+    :style="{ colorScheme: previewTheme }"
     aria-labelledby="profile-appearance-title"
   >
     <div class="profile-screen__content">
@@ -70,6 +90,10 @@ function chooseTheme(theme: ProfileTheme): void {
           <span>{{ option.label }}</span>
         </label>
       </fieldset>
+      <p class="profile-note__body">
+        Выбранная тема сохраняется и пока применяется только на этом экране.
+        Остальные экраны остаются тёмными.
+      </p>
     </div>
   </main>
 </template>

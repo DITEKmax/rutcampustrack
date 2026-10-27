@@ -1,3 +1,4 @@
+import { failedCaseId, safeFirstFailureObservations, type FirstFailureObservation, type FailedCaseId } from './failed-case-diagnostics';
 import { DiagnosticRun, diagnosticHttpFailure, retainDiagnosticObservation, type DiagnosticEvent } from './diagnostic-events';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { basename, dirname, isAbsolute, relative, resolve } from 'node:path';
@@ -2051,6 +2052,8 @@ function safeReportedFrameworkError(annotations: unknown): ReportedFrameworkErro
 }
 
 interface SafeResult {
+  failedCaseId?: FailedCaseId;
+  firstFailureObservations?: FirstFailureObservation[];
   caseId?: string;
   diagnosticEvents?: DiagnosticEvent[];
   reportedFrameworkError?: ReportedFrameworkError;
@@ -2129,6 +2132,10 @@ export default class SafeReporter implements Reporter {
         error.location ? [{ file: basename(error.location.file), line: error.location.line }] : [],
       ),
     };
+    const selectedCase = failedCaseId(test.title);
+    if (selectedCase) row.failedCaseId = selectedCase;
+    const firstFailures = safeFirstFailureObservations(result.annotations);
+    if (firstFailures.length) row.firstFailureObservations = firstFailures;
     const caseId = this.diagnosticRun.caseId(test);
     const events = this.diagnosticRun.read(test, result);
     if (caseId) { row.caseId = caseId; row.diagnosticEvents = events; }

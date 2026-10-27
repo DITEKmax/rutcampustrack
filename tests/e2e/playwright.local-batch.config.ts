@@ -1,3 +1,4 @@
+import { failedCases, type FailedCaseId } from './fixtures/failed-case-diagnostics';
 import { defineConfig, type PlaywrightTestConfig } from '@playwright/test';
 import { join } from 'node:path';
 import { requireLocalLane } from './fixtures/local-stage17';
@@ -38,6 +39,19 @@ if (lane === 'auth-smoke') {
   grep = /real geolocation confirms fresh student, then D005 manual absence rejects the blocked attempt$/;
 } else if (lane === 'registry-html') {
   grep = /(?:FULL ordinary user export downloads filtered HTML with exact safe fields|LIMITED ordinary user export downloads filtered HTML with exact safe fields|FULL admin applies group filters sorting and reset before downloading filtered HTML) @cloud-accepted$/;
+}
+
+// The Python admission above binds this exact enum list to the current manifest.
+if (process.env.RCT_LOCAL_UI_BATCH_CASES) {
+  const selected: unknown = JSON.parse(process.env.RCT_LOCAL_UI_BATCH_CASES);
+  if (!Array.isArray(selected) || selected.length === 0 || selected.length > Object.keys(failedCases).length || new Set(selected).size !== selected.length
+    || selected.some(id => typeof id !== 'string' || !Object.hasOwn(failedCases, id)))
+    throw new Error('Local UI batch failed-case selection is invalid');
+  const titles = (selected as FailedCaseId[]).filter(id => failedCases[id].lane === lane).map(id => failedCases[id].title);
+  if (titles.length === 0) throw new Error('Local UI batch selected lane has no selected cases');
+  const escape = (title: string) => title.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  grep = new RegExp(`(?:${titles.map(escape).join('|')})$`);
+  grepInvert = undefined;
 }
 
 export default defineConfig({

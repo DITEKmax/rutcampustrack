@@ -63,11 +63,39 @@ BATCH_BLOCKED = [
 ]
 
 
-def batch_result(report, code, lane):
+FAILED_CASES = {
+    'TMA_SIGNED_ENTRY': ('auth-smoke', 'signed teacher entry loads the real session and shared profile with host Back'),
+    'TMA_TAMPERED_ENTRY': ('auth-smoke', 'tampered Telegram proof cannot expose role data or navigation'),
+    'HEADMAN_TEACHER_READ': ('first3', 'HEADMAN marks the real roster and TEACHER reads without acquiring write permission'),
+    'ADMIN_HISTORICAL_MARK': ('admin', 'ADMIN creates a multirole headman and restores the archived account without old authority'),
+    'FULL_ADMIN_RIGHTS': ('role-security-export', 'FULL multirole ADMIN assigns updates and revokes LIMITED rights through Vue without foreign-role calls @cloud-accepted'),
+    'OWN_PROFILE_THEME': ('role-security-export', 'own profile security changes password and replacement login rejects old authority @cloud-accepted'),
+    'HOMEWORK_NOTIFICATION': ('homework', 'MANAGE_HOMEWORK non-author edits preserve student completion and revoked authority cannot overwrite it @real-mobile'),
+    'HELPER_PERMISSIONS': ('helper', 'HEADMAN edits helper capabilities through member row and retains VIEW_STATS @cloud-accepted'),
+}
+
+
+def selected_batch_cases(cases):
+    if cases is None:
+        return None
+    require(type(cases) is list and 0 < len(cases) <= len(FAILED_CASES)
+            and all(type(case) is str and case in FAILED_CASES for case in cases)
+            and len(set(cases)) == len(cases), "BATCH_INVALID_CASE_SELECTION")
+    return [case for case in FAILED_CASES if case in cases]
+
+
+def selected_batch_lanes(cases):
+    return [lane for lane in BATCH_LANES if cases is None or any(FAILED_CASES[case][0] == lane for case in cases)]
+
+
+def batch_result(report, code, lane, cases=None):
     """Only a complete safe named test result may be an ordinary collectable FAIL."""
     require(type(report) is dict, "BATCH_INVALID_REPORT")
     rows = report.get("results")
     expected, files = BATCH_LANES[lane][3:]
+    lane_cases = [case for case in cases or [] if FAILED_CASES[case][0] == lane]
+    if cases is not None:
+        expected = len(lane_cases)
     require(type(rows) is list and len(rows) <= expected and all(type(row) is dict for row in rows)
             and type(report.get("runnerErrors")) is int and report["runnerErrors"] == 0
             and report.get("unsafeArtifact") is False, "BATCH_INCOMPLETE_OR_UNSAFE_REPORT")
@@ -77,6 +105,9 @@ def batch_result(report, code, lane):
                     and (row.get("expectedStatus") == "passed" or row.get("expectedStatus") == "skipped" and row.get("status") == "skipped")
                     and row.get("status") in {"passed", "failed", "timedOut", "skipped"} for row in rows),
             "BATCH_UNEXPECTED_OR_UNSELECTED_TEST")
+    if cases is not None:
+        require(all(row.get("failedCaseId") in lane_cases for row in rows)
+                and len({row["failedCaseId"] for row in rows}) == len(rows), "BATCH_UNSELECTED_CASE")
     failed = sum(row["status"] in {"failed", "timedOut"} for row in rows)
     passed = sum(row["status"] == "passed" for row in rows)
     not_run = expected - passed - failed
@@ -364,9 +395,11 @@ def validate_lane_environment(value, environment, expected_mode=None, expected_b
     lane = environment.get("RCT_LOCAL_UI_BATCH_LANE")
     expected_run = value["run"]
     if mode == "ui-batch":
-        require(value.get("batch_lanes") == list(BATCH_LANES), "LOCAL_BATCH_MANIFEST")
+        cases = selected_batch_cases(value.get("batch_cases"))
+        require(value.get("batch_cases") == cases and value.get("batch_lanes") == selected_batch_lanes(cases), "LOCAL_BATCH_MANIFEST")
+        require(environment.get("RCT_LOCAL_UI_BATCH_CASES", "") == (json.dumps(cases) if cases is not None else ""), "LOCAL_BATCH_CASE_BINDING")
         require((lane is None and expected_batch_lane is None and expected_mode is None)
-                or (lane in BATCH_LANES and expected_batch_lane in (None, lane)), "LOCAL_BATCH_LANE")
+                or (lane in value["batch_lanes"] and expected_batch_lane in (None, lane)), "LOCAL_BATCH_LANE")
         if lane:
             expected_run += "/lanes/" + lane
             owned(Path(expected_run), 0o700, directory=True)
@@ -376,7 +409,7 @@ def validate_lane_environment(value, environment, expected_mode=None, expected_b
         require(environment.get("RCT_FOCUS3_OBSERVATIONS", "") ==
                 (expected_run + "/supervision/observations.safe.json" if lane == "first3" else ""), "LOCAL_BATCH_OBSERVATION_BINDING")
     else:
-        require(lane is None and expected_batch_lane is None, "LOCAL_BATCH_MODE_REQUIRED")
+        require(lane is None and expected_batch_lane is None and not environment.get("RCT_LOCAL_UI_BATCH_CASES"), "LOCAL_BATCH_MODE_REQUIRED")
     diagnostic = value.get("startup_diagnostic", False)
     require(type(diagnostic) is bool and (not diagnostic or mode == "client")
             and environment.get("RCT_LOCAL_CLIENT_STARTUP_DIAGNOSTIC", "false") == ("true" if diagnostic else "false"),
@@ -432,9 +465,11 @@ def preflight():
 
 
 class Runner:
-    def __init__(self, mode, *, startup_diagnostic=False, bundled_dockerfile_frontend=False):
+    def __init__(self, mode, *, startup_diagnostic=False, bundled_dockerfile_frontend=False, failed_cases=None):
         require(not startup_diagnostic or mode == "client", "CLIENT_DIAGNOSTIC_ONLY")
         require(not bundled_dockerfile_frontend or mode == "ui-batch", "BUNDLED_FRONTEND_UI_BATCH_ONLY")
+        require(failed_cases is None or mode == "ui-batch", "BATCH_CASES_UI_BATCH_ONLY")
+        self.failed_cases = selected_batch_cases(failed_cases)
         self.startup_diagnostic = startup_diagnostic
         self.bundled_dockerfile_frontend = bundled_dockerfile_frontend
         self.mode, self.phase, self.child = mode, "PREPARE", None
@@ -456,6 +491,8 @@ class Runner:
                         RCT_LOCAL_CLIENT_STARTUP_DIAGNOSTIC="true" if startup_diagnostic else "false",
                         PLAYWRIGHT_NO_COPY_PROMPT="1", NODE_OPTIONS="--max-old-space-size=512",
                         COMPOSE_PARALLEL_LIMIT="1", BUILDKIT_MAX_PARALLELISM="1")
+        if self.failed_cases is not None:
+            self.env["RCT_LOCAL_UI_BATCH_CASES"] = json.dumps(self.failed_cases)
         if mode == "lesson-lifecycle":
             self.env["RCT_LESSON_LIFECYCLE_RUN"] = str(self.run)
         if bundled_dockerfile_frontend:
@@ -585,6 +622,7 @@ class Runner:
                       or name in {".dockerignore", "docker-compose.e2e.yml", "build.gradle.kts", "settings.gradle.kts", "gradle.properties", "gradlew"})
                  and not (".env" in Path(name).name and name != "tests/e2e/.env.ci")}
         paths |= {"scripts/local_e2e_async.py", "tests/e2e/fixtures/local-stage17.ts"}
+        paths.add("tests/e2e/fixtures/failed-case-diagnostics.ts")
         if self.mode == "ui-batch":
             paths.add("tests/e2e/playwright.local-batch.config.ts")
         if frontend is not None:
@@ -594,7 +632,8 @@ class Runner:
                 for record in frontend["dockerfiles"].values()), "BUNDLED_DOCKERFILE_SOURCE_CHANGED")
         value = {"schema": 1, "uid": os.getuid(), "root": str(ROOT), "run": str(self.run), "nonce": self.nonce, "mode": self.mode,
                  "project": self.project, "source_sha": sha, "sources": hashes, "startup_diagnostic": self.startup_diagnostic,
-                 "batch_lanes": list(BATCH_LANES) if self.mode == "ui-batch" else None,
+                 "batch_lanes": selected_batch_lanes(self.failed_cases) if self.mode == "ui-batch" else None,
+                 "batch_cases": self.failed_cases,
                  "bundled_dockerfile_frontend": self.bundled_dockerfile_frontend,
                  "dockerfile_frontend": frontend,
                  "node_ca_sha256": hashlib.sha256((self.run / "certs/server.crt").read_bytes()).hexdigest(),
@@ -705,7 +744,10 @@ class Runner:
         base_environment = self.env.copy()
         clock = self.run / "clock/current-instant"
         clock_sha = hashlib.sha256(clock.read_bytes()).hexdigest()
-        for lane, (_, flag, output_variable, count, _) in BATCH_LANES.items():
+        for lane in selected_batch_lanes(self.failed_cases):
+            _, flag, output_variable, count, _ = BATCH_LANES[lane]
+            if self.failed_cases is not None:
+                count = sum(FAILED_CASES[case][0] == lane for case in self.failed_cases)
             if blocked:
                 outcomes.append({"lane": lane, "status": "BLOCKED", "expected": count,
                                  "passed": 0, "failed": 0, "notRun": count, "reason": blocked})
@@ -737,7 +779,7 @@ class Runner:
                 report = directory / "artifacts/safe-results.json"
                 owned(report, 0o600)
                 require(report.stat().st_size <= 8 * 1024**2, "BATCH_REPORT_BOUND")
-                outcome = batch_result(json.loads(report.read_text()), code, lane)
+                outcome = batch_result(json.loads(report.read_text()), code, lane, self.failed_cases)
                 value = validate_local(environment=self.env, expected_mode="ui-batch", expected_batch_lane=lane)
                 # All selected36 lanes read the shared clock. Advancing lifecycle7 remains blocked.
                 batch_health(value)
@@ -755,7 +797,9 @@ class Runner:
                 emit("UI_BATCH_LANE", **outcome)
             finally:
                 self.env = base_environment
-        summary = {"scope": "REMAINING49_FIRST_PORTABLE36", "expected": 49, "selected": 36,
+        selected_count = len(self.failed_cases) if self.failed_cases is not None else 36
+        summary = {"scope": "REMAINING49_FAILED_CASE_SELECTION" if self.failed_cases is not None else "REMAINING49_FIRST_PORTABLE36",
+                   "expected": 49, "selected": selected_count, "selectedCaseIds": self.failed_cases, "unselected": 36 - selected_count,
                    "passed": sum(row["passed"] for row in outcomes),
                    "failed": sum(row["failed"] for row in outcomes),
                    "notRun": sum(row["notRun"] for row in outcomes),
@@ -907,7 +951,11 @@ def main():
     parser.add_argument("--diagnose-startup", action="store_true", help="Client only: same ten scenarios, stop after first failure with closed setup diagnostics")
     parser.add_argument("--bundled-dockerfile-frontend", action="store_true",
                         help="UI batch only: inline tracked Dockerfiles using the Docker Engine bundled frontend")
+    parser.add_argument("--failed-case", action="append", choices=list(FAILED_CASES),
+                        help="UI batch only: select a confirmed failed case ID; repeat for multiple cases")
     args = parser.parse_args()
+    require(args.failed_case is None or args.mode == "ui-batch", "BATCH_CASES_UI_BATCH_ONLY")
+    selected_batch_cases(args.failed_case)
     require(not args.diagnose_startup or args.mode == "client", "CLIENT_DIAGNOSTIC_ONLY")
     require(not args.bundled_dockerfile_frontend or args.mode == "ui-batch", "BUNDLED_FRONTEND_UI_BATCH_ONLY")
     if args.mode == "admit":
@@ -935,7 +983,7 @@ def main():
         fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
         preflight()  # Race guard after owning the shared fixed-port lease.
         runner = Runner(args.mode, startup_diagnostic=args.diagnose_startup,
-                        bundled_dockerfile_frontend=args.bundled_dockerfile_frontend)
+                        bundled_dockerfile_frontend=args.bundled_dockerfile_frontend, failed_cases=args.failed_case)
         result, cleanup = "FAIL", "NOT_STARTED"
         try:
             runner.prepare()

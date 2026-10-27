@@ -1,3 +1,9 @@
+import type { InjectionKey } from 'vue'
+import type { SystemThemeSource } from '../../../shared/foundation/theme'
+
+/** The host supplies its system palette; a descendant preview owns its subscription. */
+export const mobileThemeSystemSourceKey: InjectionKey<SystemThemeSource> = Symbol('mobile-theme-system-source')
+
 /** Stable mobile aliases to the host-neutral implementation. */
 export {
   THEME_ATTRIBUTE as MOBILE_THEME_ATTRIBUTE,

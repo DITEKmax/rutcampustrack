@@ -34,7 +34,7 @@ import ru.rutcampustrack.attendance.studentrequest.entity.RequestAttachmentDocum
 @Service
 public class AttendanceAttachmentService implements JournalAttachmentPort {
 
-    private static final long MAX_BYTES = 10L * 1024 * 1024;
+    static final long MAX_BYTES = 10L * 1024 * 1024;
     private static final List<String> ALLOWED_TYPES =
             List.of("image/jpeg", "image/png", "application/pdf");
 

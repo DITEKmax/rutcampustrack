@@ -1,3 +1,4 @@
+import { failureBoundary, themeState } from '../fixtures/failed-case-diagnostics';
 import { randomUUID } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 import { lstatSync, readFileSync } from 'node:fs';
@@ -820,7 +821,9 @@ test('own profile security changes password and replacement login rejects old au
     const appearance = page.locator('.profile-appearance');
     await page.getByRole('radio', { name: 'Светлая', exact: true }).check();
     await expect(appearance).toHaveAttribute('data-theme', 'light');
-    await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+    await failureBoundary(info, 'PROFILE_THEME', async () => {
+      await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+    }, () => themeState(page));
     await page.reload();
     await page.getByRole('button', { name: 'Профиль', exact: true }).click();
     await expect(page.locator('.profile-page')).toHaveAttribute('data-theme', 'dark');

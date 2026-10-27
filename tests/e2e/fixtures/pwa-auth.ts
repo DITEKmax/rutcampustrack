@@ -1,3 +1,4 @@
+import { retainFirstFailure } from './failed-case-diagnostics';
 import { expect, test, type Locator, type Page, type Response } from '@playwright/test';
 import {
   currentDiagnosticCase,
@@ -53,6 +54,7 @@ export async function loginPwa(
   async function submit(
     canRetry: boolean,
   ): Promise<{ accessToken: string; session: CurrentSession }> {
+    let stage: 'PWA_LOGIN' | 'PWA_SESSION' | 'PWA_READY' = 'PWA_LOGIN';
     let observedLogin: Response | undefined;
     let observedSession: Response | undefined;
     const observe = (response: Response) => {
@@ -92,11 +94,13 @@ export async function loginPwa(
       expect(login.status()).toBe(200);
       const { accessToken } = (await login.json()) as { accessToken: string };
       expect(typeof accessToken).toBe('string');
+      stage = 'PWA_SESSION';
       const current =
         observedSession ?? (await page.waitForResponse(sessionMatch, responseOptions()));
       if (current.status() !== 200)
         throw new Error(`Synthetic actor session: HTTP ${current.status()}`);
       expect(current.status()).toBe(200);
+      stage = 'PWA_READY';
       const body = (await current.json()) as CurrentSessionResponse;
       const session: CurrentSession = { ...body, activeRole: body.activeRole ?? null };
       if (session.activeRole === null) {
@@ -108,6 +112,11 @@ export async function loginPwa(
       if (options && Date.now() >= retryUntil!)
         throw new Error('Synthetic actor login retry budget exceeded');
       return { accessToken, session };
+    } catch (primary) {
+      try {
+        retainFirstFailure(test.info(), stage, { loginStatus: observedLogin?.status() ?? null, sessionStatus: observedSession?.status() ?? null });
+      } catch { /* Optional observation preserves the primary login/session failure. */ }
+      throw primary;
     } finally {
       page.off('response', observe);
     }

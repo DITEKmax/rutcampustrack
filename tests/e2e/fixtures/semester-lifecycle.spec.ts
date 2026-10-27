@@ -5467,7 +5467,7 @@ function subjectCascadeOtpReceiver(info: TestInfo) {
         current.running === true &&
         current.health === 'healthy' &&
         JSON.stringify(current.labels) === JSON.stringify(pin.labels) &&
-        JSON.stringify(current.mounts) === JSON.stringify(pin.mounts) &&
+        JSON.stringify(mountRecords(current.mounts)) === JSON.stringify(mountRecords(pin.mounts)) &&
         JSON.stringify(current.networks) === JSON.stringify(pin.networks),
       'Owned OTP broker identity changed',
     );

@@ -287,8 +287,10 @@ def service_info(runner, context, service, *, pin=None, stopped=False, planned_r
             and labels.get('com.docker.compose.service') == service
             and labels.get('rct.local.stage17') == context['nonce'], 'LIFECYCLE_FOREIGN_SERVICE')
     if pin:
-        for key in ('Id', 'Image', 'Mounts'):
+        for key in ('Id', 'Image'):
             require(info[key] == pin[key], 'LIFECYCLE_SERVICE_CHANGED')
+        require(runner.canonical_mount_records(info['Mounts']) == runner.canonical_mount_records(pin['Mounts']),
+                'LIFECYCLE_SERVICE_CHANGED')
         require(info['Config'] == pin['Config'], 'LIFECYCLE_SERVICE_IDENTITY_CHANGED')
         verified = runner.special_verified_networks(service, cid) if planned_restart and not stopped else None
         same_service_networks(info['NetworkSettings']['Networks'], pin['NetworkSettings']['Networks'],
@@ -809,7 +811,8 @@ def execute_recovery(runner):
         require(value['Id'] == container, 'RECOVERY_SOURCE_IDENTITY')
         if container in source_pins:
             pin = source_pins[container]
-            require(all(value[key] == pin[key] for key in ('Id', 'Image', 'Config', 'Mounts')),
+            require(all(value[key] == pin[key] for key in ('Id', 'Image', 'Config'))
+                    and runner.canonical_mount_records(value['Mounts']) == runner.canonical_mount_records(pin['Mounts']),
                     'RECOVERY_SOURCE_IDENTITY_CHANGED')
             if value['NetworkSettings']['Networks']:
                 service = value['Config']['Labels']['com.docker.compose.service']

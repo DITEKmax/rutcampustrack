@@ -16,6 +16,7 @@ import {
 import { admit } from '../fixtures/mobile-dataset';
 import { loginPwa, logoutPwa } from '../fixtures/pwa-auth';
 import { localSpecialLane, localSpecialService } from '../fixtures/local-special';
+import { mountRecords } from '../fixtures/owned-container-identity';
 
 registerPrivateSuite();
 
@@ -157,7 +158,7 @@ function ownedOtpReceiver(info: TestInfo) {
         pin.imageName === owned!.configuredImage &&
         pin.labels?.['rct.local.stage17'] === local.nonce && pin.paused === false &&
         isDeepStrictEqual(pin.labels, owned!.labels) &&
-        isDeepStrictEqual(pin.mounts, owned!.mounts) &&
+        isDeepStrictEqual(mountRecords(pin.mounts), mountRecords(owned!.mounts)) &&
         isDeepStrictEqual(pin.networks, owned!.networks))) &&
       pin.labels?.['com.docker.compose.service'] === 'rabbitmq' &&
       pin.running === true &&
@@ -182,7 +183,7 @@ function ownedOtpReceiver(info: TestInfo) {
         current.running === true && (!local || current.paused === false) &&
         current.health === 'healthy' &&
         JSON.stringify(current.labels) === JSON.stringify(pin.labels) &&
-        JSON.stringify(current.mounts) === JSON.stringify(pin.mounts) &&
+        isDeepStrictEqual(mountRecords(current.mounts), mountRecords(pin.mounts)) &&
         JSON.stringify(current.networks) === JSON.stringify(pin.networks),
       'Owned OTP broker identity changed',
     );

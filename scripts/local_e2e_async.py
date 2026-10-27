@@ -488,6 +488,30 @@ def private_json(path, bound=8 * 1024**2):
     return json.loads(path.read_text(), object_pairs_hook=unique)
 
 
+def canonical_mount_records(value):
+    """Complete JSON records; only the outer Docker Mounts order is insignificant."""
+    require(type(value) is list and len(value) <= 512 and all(type(item) is dict for item in value), "SPECIAL_MOUNT_RECORDS_SHAPE")
+    def check(item, depth=0):
+        require(depth <= 16, "SPECIAL_MOUNT_RECORDS_BOUND")
+        if type(item) is dict:
+            require(all(type(key) is str for key in item), "SPECIAL_MOUNT_RECORDS_KEY")
+            for child in item.values(): check(child, depth + 1)
+        elif type(item) is list:
+            for child in item: check(child, depth + 1)
+        else:
+            require(item is None or type(item) in (str, bool, int, float), "SPECIAL_MOUNT_RECORDS_VALUE")
+    records = []
+    for item in value:
+        check(item)
+        try:
+            encoded = json.dumps(item, sort_keys=True, separators=(",", ":"), allow_nan=False)
+        except (ValueError, TypeError):
+            raise AdmissionError("SPECIAL_MOUNT_RECORDS_VALUE") from None
+        require(len(encoded) <= 1024**2, "SPECIAL_MOUNT_RECORDS_BOUND")
+        records.append(encoded)
+    return sorted(records)
+
+
 def special_resource_digest(path):
     path = Path(path)
     info = path.lstat()
@@ -601,6 +625,7 @@ def special_topology(value):
 
 def special_inventory(value, *, complete=True, expected_lane=None, expected_phase=None):
     config = json.loads((Path(value["run"]) / "compose.json").read_text())
+    validate_special_network_config(config, value["special_network"])
     rows = inventory(value["project"], value["nonce"], complete=False)
     require(not complete or len(rows) == 17, "SPECIAL_ORIGINAL_INVENTORY")
     frozen_path = Path(value["run"]) / "runtime-identity.json"
@@ -624,7 +649,8 @@ def special_inventory(value, *, complete=True, expected_lane=None, expected_phas
             pin = frozen["services"][service]
             require(row["Id"] == pin["id"] and row["Image"] == pin["image"]
                     and row["Config"]["Labels"] == pin["labels"] and row["Config"]["Image"] == pin["configured_image"]
-                    and row["Mounts"] == pin["mounts"] and row["HostConfig"].get("ReadonlyRootfs", False) == pin["readonly"], "SPECIAL_ORIGINAL_IDENTITY_CHANGED")
+                    and canonical_mount_records(row["Mounts"]) == canonical_mount_records(pin["mounts"])
+                    and row["HostConfig"].get("ReadonlyRootfs", False) == pin["readonly"], "SPECIAL_ORIGINAL_IDENTITY_CHANGED")
         networks = set(row["NetworkSettings"]["Networks"])
         require(networks == {value["project"] + "_private_net"}
                 or topology and service in DATABASES and networks == set(), "SPECIAL_NETWORK_CHANGED")
@@ -749,7 +775,120 @@ def special_result(report, code, lane, phase, expected_locations):
             "expected": expected, "passed": passed, "failed": failed, "notRun": not_run}
 
 
-def preflight():
+RETAINED_PROJECT = "rct-local-stage17-8aad5d587e5d"
+RETAINED_SOURCE = "b8722534a0649491e10be9a9a832b6c782332806"
+SPECIAL_PRIVATE_POOL = tuple(f"172.{value}.0.0/24" for value in (30, 31, *range(29, 15, -1))) + tuple(f"10.{value}.0.0/24" for value in range(240, 248))
+
+
+def validate_retained_cohort(path, *, root=None, stopped=True):
+    """Only the explicitly closed BOOT cohort may remain beside a new special13 run."""
+    root = ROOT if root is None else Path(root)
+    path = Path(path)
+    require(path.is_absolute() and path.resolve() == path
+            and path.is_relative_to(Path.home() / ".local/share/rct-pr3-local/checks"), "RETAINED_RECEIPT_PATH")
+    owned(path.parent, 0o700, directory=True)
+    receipt = private_json(path)
+    run = root / ".agent/evidence/local-runs" / RETAINED_PROJECT
+    require(set(receipt) == {"schema", "uid", "root", "run", "project", "source_sha", "nonce", "files", "services", "network_id", "status"}
+            and receipt["schema"] == "RCT_RETAINED_BOOT_CLOSURE_V1" and receipt["uid"] == os.getuid()
+            and receipt["root"] == str(root) and receipt["run"] == str(run) and receipt["project"] == RETAINED_PROJECT
+            and receipt["source_sha"] == RETAINED_SOURCE and receipt["status"] == ("STOPPED" if stopped else "PRE_STOP"), "RETAINED_RECEIPT_BINDING")
+    owned(run, 0o700, directory=True)
+    files = {"owner.json", "runtime-identity.json", "compose.json", "result.safe.json"}
+    require(set(receipt["files"]) == files, "RETAINED_FILES_CHANGED")
+    for name, digest in receipt["files"].items():
+        info = owned(run / name, 0o600)
+        require(info.st_size <= 8 * 1024**2 and hashlib.sha256((run / name).read_bytes()).hexdigest() == digest, "RETAINED_FILES_CHANGED")
+    value, frozen, config, result = (private_json(run / name) for name in ("owner.json", "runtime-identity.json", "compose.json", "result.safe.json"))
+    require(value["root"] == str(root) and value["run"] == str(run) and value["project"] == RETAINED_PROJECT
+            and value["mode"] == "special13" and value["special_cohort"] == "nonclock" and value["source_sha"] == RETAINED_SOURCE
+            and value["nonce"] == receipt["nonce"] and RETAINED_PROJECT == "rct-local-stage17-" + receipt["nonce"][:12]
+            and re.fullmatch(r"[a-f0-9]{24}", receipt["nonce"])
+            and set(frozen["services"]) == SERVICES and set(config["services"]) == SERVICES
+            and result["mode"] == "special13" and result["phase"] == "BOOT" and result["result"] == "FAIL", "RETAINED_BOOT_IDENTITY")
+    for directory in (run / "transitions", run / "lanes"):
+        owned(directory, 0o700, directory=True)
+        require(not list(directory.iterdir()), "RETAINED_SCENARIO_OR_INTENT_PRESENT")
+    require(receipt["network_id"] == frozen["network_id"] and set(receipt["services"]) == SERVICES
+            and all(receipt["services"][name] == {"id": pin["id"], "image": pin["image"]} for name, pin in frozen["services"].items()), "RETAINED_FROZEN_BINDING")
+    ids = capture(["docker", "ps", "-aq", "--no-trunc", "--filter", "label=com.docker.compose.project=" + RETAINED_PROJECT]).splitlines()
+    require(len(ids) == 17 and len(set(ids)) == 17, "RETAINED_INVENTORY_COUNT")
+    rows = json.loads(capture(["docker", "inspect", *ids]))
+    seen = set()
+    network_name = RETAINED_PROJECT + "_private_net"
+    network = json.loads(capture(["docker", "network", "inspect", network_name]))[0]
+    require(network["Id"] == frozen["network_id"] and network["Labels"].get(LABEL) == value["nonce"]
+            and network["Labels"].get("com.docker.compose.project") == RETAINED_PROJECT, "RETAINED_NETWORK_CHANGED")
+    for row in rows:
+        labels = row["Config"].get("Labels", {})
+        name = labels.get("com.docker.compose.service")
+        require(name in SERVICES and name not in seen and labels.get(LABEL) == value["nonce"]
+                and labels.get("com.docker.compose.project") == RETAINED_PROJECT, "RETAINED_FOREIGN_CONTAINER")
+        seen.add(name)
+        pin = frozen["services"][name]
+        require(row["Id"] == pin["id"] and row["Image"] == pin["image"] and labels == pin["labels"]
+                and row["Config"]["Image"] == pin["configured_image"] == config["services"][name]["image"]
+                and canonical_mount_records(row["Mounts"]) == canonical_mount_records(pin["mounts"])
+                and row["HostConfig"].get("ReadonlyRootfs", False) == pin["readonly"], "RETAINED_IMMUTABLE_CHANGED")
+        require(row["State"]["Running"] is (not stopped) and not row["State"].get("Paused", False), "RETAINED_STATE_CHANGED")
+        require(set(row["NetworkSettings"]["Networks"]) == {network_name}, "RETAINED_NETWORK_SET")
+        binding = row["NetworkSettings"]["Networks"][network_name]
+        require(binding["NetworkID"] == frozen["network_id"] and set(binding.get("Aliases") or []) == set(pin["aliases"]), "RETAINED_NETWORK_BINDING")
+        fields = ("IPAddress", "IPPrefixLen", "Gateway", "GlobalIPv6Address", "GlobalIPv6PrefixLen", "IPv6Gateway")
+        require(all(binding.get(key) in (None, "", 0) if stopped else binding.get(key) == pin["network_binding"].get(key) for key in fields), "RETAINED_ENDPOINT_CHANGED")
+        require(not stopped or binding.get("EndpointID") in (None, ""), "RETAINED_STOPPED_ENDPOINT")
+        if name in APPS:
+            environment = dict(item.split("=", 1) for item in row["Config"]["Env"])
+            require(all(environment.get(key) == str(item) for key, item in config["services"][name]["environment"].items()), "RETAINED_ENVIRONMENT_CHANGED")
+    require(seen == SERVICES and (not network.get("Containers") if stopped else set(network.get("Containers", {})) == set(ids)), "RETAINED_NETWORK_MEMBERSHIP")
+    return {"ids": ids, "network_id": network["Id"]}
+
+
+def special_network_choice(selected=None):
+    occupied = []
+    ids = capture(["docker", "network", "ls", "-q"]).splitlines()
+    for network in json.loads(capture(["docker", "network", "inspect", *ids])) if ids else []:
+        for item in network.get("IPAM", {}).get("Config") or []:
+            if item.get("Subnet"):
+                occupied.append(ipaddress.ip_network(item["Subnet"]))
+    for row in json.loads(capture(["ip", "-j", "-4", "route", "show", "table", "all"])):
+        destination = row.get("dst", "default")
+        if destination not in ("default", "0.0.0.0/0"):
+            occupied.append(ipaddress.ip_network(destination, strict=False))
+    candidates = (selected["subnet"],) if selected else SPECIAL_PRIVATE_POOL
+    for candidate in candidates:
+        require(candidate in SPECIAL_PRIVATE_POOL, "SPECIAL_NETWORK_POOL")
+        subnet = ipaddress.ip_network(candidate)
+        if any(other.version == 4 and subnet.overlaps(other) for other in occupied):
+            continue
+        value = {"subnet": str(subnet), "gateway": str(subnet.network_address + 1),
+                 "nginx": str(subnet.network_address + 10), "dynamic_range": str(next(subnet.subnets(new_prefix=25)).network_address + 128) + "/25"}
+        require(selected is None or selected == value, "SPECIAL_NETWORK_PROOF_CHANGED")
+        return value
+    raise AdmissionError("SPECIAL_NETWORK_NO_FREE_CANDIDATE")
+
+
+def validate_special_network_config(config, selected):
+    require(type(selected) is dict and selected["subnet"] in SPECIAL_PRIVATE_POOL, "SPECIAL_NETWORK_PROOF")
+    network = config["networks"]["private_net"]
+    expected = {"subnet": selected["subnet"], "gateway": selected["gateway"], "ip_range": selected["dynamic_range"]}
+    require(network["ipam"]["config"] == [expected]
+            and config["services"]["nginx"]["networks"]["private_net"]["ipv4_address"] == selected["nginx"]
+            and config["services"]["api-gateway"]["environment"]["GATEWAY_TRUSTED_PROXY_ADDRESSES"] == selected["nginx"]
+            and ipaddress.ip_address(selected["nginx"]) in ipaddress.ip_network(selected["subnet"])
+            and ipaddress.ip_address(selected["nginx"]) not in ipaddress.ip_network(selected["dynamic_range"]), "SPECIAL_NETWORK_CONFIG_BINDING")
+
+
+def validate_observed_special_network(selected, network, nginx_binding):
+    configs = network.get("IPAM", {}).get("Config")
+    require(type(configs) is list and len(configs) == 1 and type(configs[0]) is dict and configs[0].get("Subnet") == selected["subnet"]
+            and configs[0].get("Gateway") == selected["gateway"] and configs[0].get("IPRange") == selected["dynamic_range"]
+            and nginx_binding.get("IPAddress") == selected["nginx"]
+            and type(nginx_binding.get("IPAMConfig")) is dict
+            and nginx_binding.get("IPAMConfig", {}).get("IPv4Address") == selected["nginx"], "SPECIAL_OBSERVED_NETWORK_BINDING")
+
+
+def preflight(*, special=False, retained_receipt=None, selected_network=None):
     require(sys.platform == "linux" and os.getuid() != 0, "UBUNTU_NONROOT_REQUIRED")
     require(RUNS.resolve() == RUNS, "LINKED_RUNTIME_PARENT")
     for name in ("GITHUB_ACTIONS", "RUNNER_ENVIRONMENT", "GITHUB_RUN_ID", "GITHUB_RUN_ATTEMPT", "GITHUB_SHA"):
@@ -765,7 +904,14 @@ def preflight():
         with socket.socket() as sock:
             sock.bind(("127.0.0.1", port))
     require(not capture(["docker", "ps", "-aq", "--filter", "label=com.docker.compose.project=rct-e2e"]).strip(), "FOREIGN_E2E_COHORT")
-    require(not capture(["docker", "ps", "-aq", "--filter", "label=" + LABEL]).strip(), "PREVIOUS_LOCAL_COHORT")
+    local_ids = capture(["docker", "ps", "-aq", "--no-trunc", "--filter", "label=" + LABEL]).splitlines()
+    if special:
+        retained = validate_retained_cohort(retained_receipt) if retained_receipt else {"ids": []}
+        require(set(local_ids) == set(retained["ids"]), "PREVIOUS_LOCAL_COHORT")
+        selected = special_network_choice(selected_network)
+        require(capture(["git", "ls-files", "--error-unmatch", "tests/e2e/.env.ci"]).strip(), "TRACKED_SYNTHETIC_ENV_REQUIRED")
+        return selected
+    require(not local_ids and retained_receipt is None and selected_network is None, "PREVIOUS_LOCAL_COHORT")
     # Refuse collision rather than changing Gateway's trusted fixed-edge subnet.
     subnet = ipaddress.ip_network("172.30.0.0/24")
     networks = capture(["docker", "network", "ls", "-q"]).splitlines()
@@ -783,6 +929,7 @@ def preflight():
 
 
 class Runner:
+    canonical_mount_records = staticmethod(canonical_mount_records)
     def __init__(self, mode, *, startup_diagnostic=False, bundled_dockerfile_frontend=False, failed_cases=None, special_cohort=None):
         require(not startup_diagnostic or mode == "client", "CLIENT_DIAGNOSTIC_ONLY")
         require(not bundled_dockerfile_frontend or mode in {"ui-batch", "special13"}, "BUNDLED_FRONTEND_UI_BATCH_ONLY")
@@ -790,6 +937,8 @@ class Runner:
         require((mode == "special13" and special_cohort in {"nonclock", "lifecycle"})
                 or (mode != "special13" and special_cohort is None), "SPECIAL_COHORT_REQUIRED")
         self.special_cohort = special_cohort
+        self.special_network = None
+        self.special_retained_receipt = None
         self.special_outcomes = []
         self.failed_cases = selected_batch_cases(failed_cases)
         self.startup_diagnostic = startup_diagnostic
@@ -940,6 +1089,8 @@ class Runner:
                         raise KeyboardInterrupt()
 
     def prepare(self):
+        if self.mode == "special13":
+            self.special_network = preflight(special=True, retained_receipt=self.special_retained_receipt)
         self.run.mkdir(mode=0o700)
         for name in ("artifacts", "home", "tmp"):
             (self.run / name).mkdir(mode=0o700)
@@ -957,6 +1108,16 @@ class Runner:
             require(count <= 1, "DUPLICATE_SYNTHETIC_TOKEN")
             if not count:
                 source += "\n" + name + "=" + token + "\n"
+        if self.mode == "special13":
+            network_values = {"GATEWAY_PRIVATE_SUBNET": self.special_network["subnet"],
+                              "GATEWAY_NETWORK_GATEWAY": self.special_network["gateway"],
+                              "GATEWAY_NGINX_IPV4": self.special_network["nginx"],
+                              "GATEWAY_DYNAMIC_IP_RANGE": self.special_network["dynamic_range"]}
+            for name, value in network_values.items():
+                source, count = re.subn(r"(?m)^" + name + r"=.*$", name + "=" + value, source)
+                require(count <= 1, "SPECIAL_NETWORK_ENV_SOURCE")
+                if not count:
+                    source += "\n" + name + "=" + value + "\n"
         write(self.run / "synthetic.env", source)
         # Reuse the canonical generator, but give it a new owned destination.
         self.env["RCT_E2E_NEW_CERTS_DIR"] = str(self.run / "certs")
@@ -971,6 +1132,8 @@ class Runner:
             args += ["-f", name]
         config = json.loads(capture([*args, "config", "--format", "json"], env=self.env))
         require(set(config["services"]) == SERVICES, "COMPOSE_SERVICE_DRIFT")
+        if self.mode == "special13":
+            validate_special_network_config(config, self.special_network)
         config["name"] = self.project
         certs = str(self.run / "certs")
         original = str(ROOT / "tests/e2e/infra/certs")
@@ -1046,6 +1209,7 @@ class Runner:
                  "batch_lanes": selected_batch_lanes(self.failed_cases) if self.mode == "ui-batch" else None,
                  "batch_cases": self.failed_cases,
                  "special_cohort": self.special_cohort,
+                 "special_network": self.special_network,
                  "special_lanes": list(SPECIAL_NONCLOCK if self.special_cohort == "nonclock" else SPECIAL_LIFECYCLE) if self.mode == "special13" else None,
                  "special_intent": {"recovery_project": "rct-recovery-" + self.nonce,
                                     "bot_image_tag": "rct-local-stage17/notification-bot:" + self.nonce,
@@ -1120,6 +1284,10 @@ class Runner:
                 identifier = self.image_identity(service["image"])
                 require(identifier is not None, "BUILT_IMAGE_MISSING")
                 self.image_ids[service["image"]] = identifier
+        if self.mode == "special13":
+            self.phase = "BOOT_NETWORK_ADMISSION"
+            emit(self.phase, state="RUNNING")
+            preflight(special=True, retained_receipt=self.special_retained_receipt, selected_network=self.special_network)
         self.command("BOOT", self.compose("up", "-d", "--no-build", "--wait", "--wait-timeout", "480"))
         if self.mode == "special13":
             self.freeze_special_inventory()
@@ -1189,6 +1357,8 @@ class Runner:
                  "network_binding": row["NetworkSettings"]["Networks"][self.project + "_private_net"],
                  "readonly": row["HostConfig"].get("ReadonlyRootfs", False)} for row in rows}
         network = json.loads(capture(["docker", "network", "inspect", self.project + "_private_net"]))[0]
+        nginx = next(row for row in rows if row["Config"]["Labels"]["com.docker.compose.service"] == "nginx")
+        validate_observed_special_network(self.special_network, network, nginx["NetworkSettings"]["Networks"][self.project + "_private_net"])
         write(self.run / "runtime-identity.json", json.dumps({"services": pins, "network_id": network["Id"]}, sort_keys=True) + "\n")
 
     def special_value(self):
@@ -1682,12 +1852,14 @@ def main():
     parser.add_argument("--expected-special-lane", choices=list(SPECIAL_LANES))
     parser.add_argument("--expected-special-phase", choices=["main", "prepare", "pending", "resume", "seed", "admit", "attachment"])
     parser.add_argument("--special-service", choices=sorted(SERVICES))
+    parser.add_argument("--retained-cohort-receipt", type=Path, help="Special13 only: explicit private closure of the preserved BOOT cohort")
     parser.add_argument("--diagnose-startup", action="store_true", help="Client only: same ten scenarios, stop after first failure with closed setup diagnostics")
     parser.add_argument("--bundled-dockerfile-frontend", action="store_true",
                         help="UI batch only: inline tracked Dockerfiles using the Docker Engine bundled frontend")
     parser.add_argument("--failed-case", action="append", choices=list(FAILED_CASES),
                         help="UI batch only: select a confirmed failed case ID; repeat for multiple cases")
     args = parser.parse_args()
+    require(args.retained_cohort_receipt is None or args.mode == "special13", "RETAINED_RECEIPT_SPECIAL_ONLY")
     require(args.failed_case is None or args.mode == "ui-batch", "BATCH_CASES_UI_BATCH_ONLY")
     selected_batch_cases(args.failed_case)
     require(not args.diagnose_startup or args.mode == "client", "CLIENT_DIAGNOSTIC_ONLY")
@@ -1713,7 +1885,7 @@ def main():
         return
     require(args.expected_mode is None and args.expected_batch_lane is None and args.expected_special_lane is None
             and args.expected_special_phase is None and args.special_service is None, "EXPECTED_MODE_ADMIT_ONLY")
-    preflight()
+    preflight(special=args.mode == "special13", retained_receipt=args.retained_cohort_receipt)
     if args.mode == "preflight":
         emit("PREFLIGHT", result="PASS", containers_started=0)
         return
@@ -1724,7 +1896,7 @@ def main():
     with os.fdopen(descriptor, "r+") as lock:
         owned(RUNS / "port-8443.lock", 0o600)
         fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
-        preflight()  # Race guard after owning the shared fixed-port lease.
+        preflight(special=args.mode == "special13", retained_receipt=args.retained_cohort_receipt)  # Shared fixed-port lease held.
         cohorts = ("nonclock", "lifecycle") if args.mode == "special13" else (None,)
         results = []
         for cohort in cohorts:
@@ -1741,6 +1913,7 @@ def main():
 def run_cohort(args, cohort):
         runner = Runner(args.mode, special_cohort=cohort, startup_diagnostic=args.diagnose_startup,
                         bundled_dockerfile_frontend=args.bundled_dockerfile_frontend, failed_cases=args.failed_case)
+        runner.special_retained_receipt = args.retained_cohort_receipt
         result, cleanup = "FAIL", "NOT_STARTED"
         try:
             if args.mode == "special13":

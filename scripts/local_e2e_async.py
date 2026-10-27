@@ -2036,6 +2036,7 @@ class Runner:
             self.env.update(RCT_LOCAL_SPECIAL_PREPARATION="true", RCT_LOCAL_SPECIAL_LANE="semester-metadata",
                             RCT_LOCAL_SPECIAL_PHASE="main", RCT_REMAINING5_RUN=context["laneRun"],
                             RCT_DIAGNOSTIC_RUN_DIR=context["laneRun"], RCT_ADMIN_SEMESTER_UI_RUN=context["laneRun"])
+            self.env[SPECIAL_LANES["semester-metadata"][1]] = context["laneRun"]
             validate_local(environment=self.env, expected_mode="special13", expected_special_lane="semester-metadata", expected_special_phase="main")
             self.special_health()
             try:

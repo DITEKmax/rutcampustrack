@@ -38,11 +38,8 @@ import {
 import { normalizeDockerHealthTimestamp, observeHealth, withoutGatewayAdmissionDiagnostic, writeHealthDiagnostic } from './semester-health-diagnostic';
 type Row = Record<string, any>;
 
-// This admission pins the manifest, current phase and every local resource.
-const localLane = process.env.RCT_LOCAL_SPECIAL_LANE;
-const local = localSpecialLane((localLane ?? 'semester-metadata') as LocalSpecialLane);
-if (local && !['semester-metadata', 'subject-deletion', 'semester-reconciliation', 'semester-archive'].includes(localLane ?? ''))
-  throw new Error('Local semester lane mismatch');
+// Playwright clears outputDir before loading tests; strict admission runs in beforeEach.
+let local: ReturnType<typeof localSpecialLane>;
 
 
 type SemesterStage =
@@ -359,6 +356,11 @@ async function inactiveStudentHistory(request: APIRequestContext, student: Actor
 const promotionStartedAt = new WeakMap<object, number>();
 test.beforeEach(async ({}, info) => {
   promotionStartedAt.set(info, performance.now());
+  local = undefined;
+  const localLane = process.env.RCT_LOCAL_SPECIAL_LANE;
+  local = localSpecialLane((localLane ?? 'semester-metadata') as LocalSpecialLane);
+  if (local && !['semester-metadata', 'subject-deletion', 'semester-reconciliation', 'semester-archive'].includes(localLane ?? ''))
+    throw new Error('Local semester lane mismatch');
 });
 
 function promotionForeignCohortsSafe(groups: Row[], cutoff: string): boolean {

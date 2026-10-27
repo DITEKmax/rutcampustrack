@@ -39,7 +39,7 @@ TOKEN_NAMES = {"ACADEMIC_TO_ATTENDANCE_SERVICE_TOKEN", "SCHEDULE_TO_ACADEMIC_SER
                "ATTENDANCE_TO_ACADEMIC_SERVICE_TOKEN"}
 COMPOSE = ["docker-compose.e2e.yml", "tests/e2e/infra/docker-compose.clock-fixture.yml",
            "tests/e2e/infra/docker-compose.synthetic-baseline.yml"]
-MODES = {"prepare", "openapi", "full", "client", "lesson-lifecycle", "ui-batch"}
+MODES = {"prepare", "openapi", "full", "client", "lesson-lifecycle", "ui-batch", "special13"}
 # Named remaining scenarios only. No passed client10/lesson4/DOCX1 replay.
 # config, one extended flag, private output variable, expected count, safe result filenames.
 BATCH_LANES = {
@@ -337,17 +337,24 @@ def inventory(project, nonce, *, complete=False):
     return rows
 
 
-def validate_local(*, complete=True, environment=None, expected_mode=None, expected_batch_lane=None):
+def validate_local(*, complete=True, environment=None, expected_mode=None, expected_batch_lane=None, expected_special_lane=None, expected_special_phase=None):
     """Called before pipeline startup and again immediately before the seed write."""
     environment = os.environ if environment is None else environment
     require(sys.platform == "linux" and not environment.get("GITHUB_ACTIONS")
             and not environment.get("RUNNER_ENVIRONMENT"), "LOCAL_NOT_HOSTED")
     value = manifest(Path(environment.get("RCT_LOCAL_STAGE17_MANIFEST", "")))
-    validate_lane_environment(value, environment, expected_mode, expected_batch_lane)
+    if value["mode"] == "special13":
+        validate_special_environment(value, environment, expected_special_lane, expected_special_phase)
+    else:
+        require(expected_special_lane is None and expected_special_phase is None, "SPECIAL_MODE_REQUIRED")
+        validate_lane_environment(value, environment, expected_mode, expected_batch_lane)
+    require(expected_mode is None or expected_mode == value["mode"], "LOCAL_LANE_MISMATCH")
     for name, expected in value["sources"].items():
         require(hashlib.sha256((ROOT / name).read_bytes()).hexdigest() == expected, "SOURCE_BYTES_CHANGED")
     run = Path(value["run"])
     validate_node_ca(run / "certs/server.crt", environment, value["node_ca_sha256"])
+    if value["mode"] == "special13":
+        require(environment.get("SSL_CERT_FILE") == str(run / "certs/server.crt"), "SPECIAL_PYTHON_TLS_CA")
     require(hashlib.sha256((run / "compose.json").read_bytes()).hexdigest() == value["compose_sha256"], "COMPOSE_CHANGED")
     require((run / "clock/disposable-target").read_text() == "RCT_E2E_DISPOSABLE\n", "CLOCK_MARKER")
     owned(run / "artifacts", 0o700, directory=True)
@@ -359,6 +366,9 @@ def validate_local(*, complete=True, environment=None, expected_mode=None, expec
             pass
         else:
             raise AdmissionError("LAUNCHER_LOCK_MISSING")
+    if value["mode"] == "special13":
+        special_inventory(value, complete=complete, expected_lane=environment.get("RCT_LOCAL_SPECIAL_LANE"), expected_phase=environment.get("RCT_LOCAL_SPECIAL_PHASE"))
+        return value
     rows = inventory(value["project"], value["nonce"], complete=complete)
     if complete:
         config = json.loads((run / "compose.json").read_text())
@@ -420,7 +430,7 @@ def validate_lane_environment(value, environment, expected_mode=None, expected_b
             and environment.get("E2E_BASE_URL") == "https://localhost:8443"
             and all(environment.get(name) == "true" for name in
                     ("RCT_E2E_REMAINING5", "RCT_E2E_SYNTHETIC_SEED"))
-            and environment.get("RCT_E2E_ASYNC_REPORT") == ("false" if mode in {"client", "lesson-lifecycle", "ui-batch"} else "true")
+            and environment.get("RCT_E2E_ASYNC_REPORT") == ("false" if mode in {"client", "lesson-lifecycle", "ui-batch", "special13"} else "true")
             and environment.get("RCT_LESSON_LIFECYCLE_RUN", "") == (value["run"] if mode == "lesson-lifecycle" else ""),
             "LOCAL_STAGE17_ONLY")
     for flag in ("RCT_E2E_ADMIN_LIFECYCLE", "RCT_E2E_ROLE_LOGOUT", "RCT_E2E_WEBKIT_SUBSET",
@@ -429,6 +439,314 @@ def validate_lane_environment(value, environment, expected_mode=None, expected_b
         require(not environment.get(flag) if flag == "RCT_APP_RECOVERY_PROJECT"
                 else environment.get(flag) == "true" if flag == expected_flag
                 else environment.get(flag) != "true", "LOCAL_STAGE17_ONLY")
+
+
+DATABASES = {"postgres-academic", "postgres-schedule", "mongo-attendance"}
+SPECIAL_NONCLOCK = ("bot", "production-service-worker", "password-recovery", "registry-native-pdf")
+SPECIAL_LIFECYCLE = ("semester-metadata", "subject-deletion", "assignment", "today", "semester-reconciliation", "application-recovery", "semester-archive")
+# Existing config, output variable, exact original titles; phases keep one logical story.
+SPECIAL_LANES = {
+    "bot": ("playwright.real-mobile.config.ts", None, ["actual private bot menu roster and teacher Today use hosted current authority"]),
+    "production-service-worker": ("playwright.real-mobile.config.ts", None, ["production worker update activates through the update gate and retains a warm launch"]),
+    "password-recovery": ("playwright.real-mobile.config.ts", None, ["password recovery consumes its own delivered OTP and admits the replacement password @cloud-accepted"]),
+    "registry-native-pdf": ("playwright.registry-export.config.ts", "RCT_REGISTRY_EXPORT_RUN", ["FULL native user PDF preserves selected ordered fields and its committed audit @cloud-accepted", "LIMITED native user PDF preserves selected ordered fields and its committed audit @cloud-accepted", "renderer outage terminates its PDF job safely and a fresh job downloads after recovery @cloud-accepted"]),
+    "semester-metadata": ("playwright.semester-lifecycle.config.ts", "RCT_SEMESTER_LIFECYCLE_RUN", ["FULL admin manages owned semester metadata and historical group promotion through the ready UI"]),
+    "subject-deletion": ("playwright.semester-lifecycle.config.ts", "RCT_SEMESTER_LIFECYCLE_RUN", ["HEADMAN deletes one subject through real proof and participants while mixed EXCUSE keeps the control subject"]),
+    "assignment": ("playwright.assignment-lifecycle.config.ts", "RCT_ASSIGNMENT_LIFECYCLE_RUN", ["assignment lifecycle API phase"]),
+    "today": ("playwright.teaching-clock.config.ts", "RCT_E2E_GEO_RUN", ["student uses Today quick request after the genuine first lesson closes @cloud-accepted"]),
+    "semester-reconciliation": ("playwright.semester-lifecycle.config.ts", "RCT_SEMESTER_LIFECYCLE_RUN", ["FULL admin reconciles one exact stranded close before archive completion"]),
+    "application-recovery": ("playwright.application-recovery.config.ts", "RCT_APP_RECOVERY_RUN", ["application recovery API phase"]),
+    "semester-archive": ("playwright.semester-lifecycle.config.ts", "RCT_SEMESTER_LIFECYCLE_RUN", ["FULL admin archives and restores the disposable CI semester through real participants"]),
+}
+SPECIAL_FLAGS = {"bot": "RCT_E2E_BOT_ROLE_MENU", "production-service-worker": "RCT_E2E_SW_LIFECYCLE", "password-recovery": "RCT_E2E_ROLE_LOGOUT"}
+SPECIAL_ACTIONS = {
+    ("assignment", "pending", "ASSIGNMENT_RESTART"): {"schedule-service"},
+    ("registry-native-pdf", "main", "RENDERER_OUTAGE"): {"document-renderer-service"},
+    ("today", "main", "CLOCK_ADVANCE"): set(),
+    ("semester-reconciliation", "main", "CLOCK_ADVANCE"): set(),
+    ("semester-reconciliation", "main", "RECONCILIATION_OUTAGE"): {"schedule-service", "attendance-service"},
+    ("application-recovery", "pending", "RECOVERY_QUIESCE"): SERVICES,
+}
+SPECIAL_REBIND = {"ASSIGNMENT_RESTART": {"schedule-service"},
+                  "RECONCILIATION_OUTAGE": {"schedule-service", "attendance-service"},
+                  "RECOVERY_QUIESCE": SERVICES - DATABASES - {"nginx"}}
+
+
+def special_phases(lane):
+    return {"assignment": ("prepare", "pending", "resume"), "application-recovery": ("seed", "pending", "admit", "attachment")}.get(lane, ("main",))
+
+
+def private_json(path, bound=8 * 1024**2):
+    info = owned(path, 0o600)
+    require(0 < info.st_size <= bound and path.resolve() == path, "SPECIAL_PRIVATE_JSON")
+    def unique(pairs):
+        value = {}
+        for key, item in pairs:
+            require(key not in value, "SPECIAL_DUPLICATE_JSON_KEY")
+            value[key] = item
+        return value
+    return json.loads(path.read_text(), object_pairs_hook=unique)
+
+
+def special_resource_digest(path):
+    path = Path(path)
+    info = path.lstat()
+    require(path.is_absolute() and path.resolve() == path and stat.S_ISREG(info.st_mode)
+            and not path.is_symlink() and info.st_nlink == 1 and 0 < info.st_size <= 1024**2, "SPECIAL_RESOURCE_FILE_BOUND")
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def special_records(value):
+    directory = Path(value["run"]) / "transitions"
+    owned(directory, 0o700, directory=True)
+    rows = []
+    previous = hashlib.sha256((Path(value["run"]) / "owner.json").read_bytes()).hexdigest()
+    for index, path in enumerate(sorted(directory.glob("*.json"))):
+        require(path.name == f"{index:04d}.json", "SPECIAL_TRANSITION_SEQUENCE")
+        row = private_json(path)
+        require(row.get("index") == index and row.get("previous") == previous
+                and row.get("nonce") == value["nonce"] and row.get("kind") in {"intent", "outcome", "recovery-register", "recovery-seal"}, "SPECIAL_TRANSITION_BINDING")
+        base = {"index", "previous", "nonce", "kind"}
+        fields = {"intent": {"lane", "phase", "action", "services", "extra"}, "outcome": {"intent", "success", "restored", "network_bindings"},
+                  "recovery-register": {"file", "sha256", "project", "images", "source_ids", "source_mounts", "allowed_binds"},
+                  "recovery-seal": {"target_ids", "receipt", "sha256"}}
+        require(set(row) == base | fields[row["kind"]], "SPECIAL_TRANSITION_FIELDS")
+        if row["kind"] == "intent":
+            key = (row["lane"], row["phase"], row["action"])
+            require(key in SPECIAL_ACTIONS and row["services"] == sorted(SPECIAL_ACTIONS[key])
+                    and type(row["extra"]) is dict and len(json.dumps(row["extra"])) <= 16384, "SPECIAL_TRANSITION_INTENT")
+        elif row["kind"] == "outcome":
+            require(type(row["intent"]) is int and 0 <= row["intent"] < index and rows[row["intent"]]["kind"] == "intent"
+                    and type(row["success"]) is bool and type(row["restored"]) is bool
+                    and type(row["network_bindings"]) is dict
+                    and set(row["network_bindings"]) <= SPECIAL_REBIND.get(rows[row["intent"]]["action"], set())
+                    and not any(item["kind"] == "outcome" and item["intent"] == row["intent"] for item in rows), "SPECIAL_TRANSITION_OUTCOME")
+            require(row["restored"] or not row["network_bindings"], "SPECIAL_TRANSITION_UNRESTORED_BINDING")
+            for binding in row["network_bindings"].values():
+                require(type(binding) is dict and set(binding) == {"IPAddress", "IPPrefixLen", "Gateway", "GlobalIPv6Address", "GlobalIPv6PrefixLen", "IPv6Gateway"}
+                        and type(binding["IPPrefixLen"]) is int and 1 <= binding["IPPrefixLen"] <= 32
+                        and type(binding["IPAddress"]) is str and ipaddress.ip_address(binding["IPAddress"]).version == 4
+                        and type(binding["Gateway"]) is str and ipaddress.ip_address(binding["Gateway"]).version == 4
+                        and binding["GlobalIPv6Address"] in (None, "") and binding["GlobalIPv6PrefixLen"] in (None, 0)
+                        and binding["IPv6Gateway"] in (None, ""), "SPECIAL_TRANSITION_BINDING_SHAPE")
+        elif row["kind"] == "recovery-register":
+            require(row["project"] == value["special_intent"]["recovery_project"] and type(row["images"]) is dict
+                    and set(row["images"]) == DATABASES and set(row["source_ids"]) == DATABASES
+                    and set(row["allowed_binds"]) == DATABASES and type(row["source_mounts"]) is list
+                    and re.fullmatch(r"[a-f0-9]{64}", row["sha256"]), "SPECIAL_TRANSITION_RECOVERY_REGISTER")
+        else:
+            require(type(row["target_ids"]) is dict and set(row["target_ids"]) == DATABASES
+                    and all(re.fullmatch(r"[a-f0-9]{64}", item) for item in row["target_ids"].values())
+                    and re.fullmatch(r"[a-f0-9]{64}", row["sha256"]), "SPECIAL_TRANSITION_RECOVERY_SEAL")
+        previous = hashlib.sha256(path.read_bytes()).hexdigest()
+        rows.append(row)
+    return rows, previous
+
+
+def append_special(value, kind, **fields):
+    rows, previous = special_records(value)
+    row = {"index": len(rows), "previous": previous, "nonce": value["nonce"], "kind": kind, **fields}
+    write(Path(value["run"]) / "transitions" / f"{len(rows):04d}.json", json.dumps(row, sort_keys=True) + "\n")
+    return row
+
+
+def validate_special_environment(value, environment, lane=None, phase=None):
+    cohort = value.get("special_cohort")
+    require(cohort in {"nonclock", "lifecycle"} and value.get("special_lanes") == list(SPECIAL_NONCLOCK if cohort == "nonclock" else SPECIAL_LIFECYCLE), "SPECIAL_MANIFEST_COHORT")
+    require(environment.get("RCT_LOCAL_SPECIAL_COHORT") == cohort
+            and environment.get("RCT_LOCAL_STAGE17_MODE") == "special13"
+            and environment.get("RCT_LOCAL_STAGE17_NONCE") == value["nonce"]
+            and environment.get("E2E_BASE_URL") == "https://localhost:8443"
+            and environment.get("RCT_E2E_TEACHING_CLOCK_DIR") == value["run"] + "/clock"
+            and environment.get("RCT_E2E_SYNTHETIC_SEED") == "true"
+            and environment.get("RCT_E2E_REMAINING5") == "true"
+            and environment.get("RCT_E2E_ASYNC_REPORT") == "false"
+            and not environment.get("RCT_LOCAL_UI_BATCH_LANE"), "SPECIAL_ENVIRONMENT")
+    actual_lane, actual_phase = environment.get("RCT_LOCAL_SPECIAL_LANE"), environment.get("RCT_LOCAL_SPECIAL_PHASE")
+    require((actual_lane is None and actual_phase is None and lane is None and phase is None)
+            or (actual_lane in value["special_lanes"] and actual_phase in special_phases(actual_lane)
+                and lane in (None, actual_lane) and phase in (None, actual_phase)), "SPECIAL_LANE_PHASE_BINDING")
+    if actual_lane:
+        lane_run = Path(value["run"]) / "lanes" / actual_lane
+        owned(lane_run, 0o700, directory=True)
+        owned(lane_run / "artifacts", 0o700, directory=True)
+        if actual_phase != "main":
+            owned(lane_run / "artifacts" / actual_phase, 0o700, directory=True)
+        require(environment.get("RCT_REMAINING5_RUN") == str(lane_run)
+                and environment.get("RCT_DIAGNOSTIC_RUN_DIR") == str(lane_run), "SPECIAL_OUTPUT_BINDING")
+        for name in {row[1] for row in SPECIAL_LANES.values() if row[1]}:
+            expected_output = str(lane_run) if name == SPECIAL_LANES[actual_lane][1] else ""
+            if actual_lane == "semester-archive" and name == "RCT_APP_RECOVERY_RUN":
+                expected_output = value["run"] + "/lanes/application-recovery"
+            require(environment.get(name, "") == expected_output, "SPECIAL_OUTPUT_BINDING")
+        for name in ("RCT_E2E_ADMIN_LIFECYCLE", "RCT_E2E_ROLE_LOGOUT", "RCT_E2E_WEBKIT_SUBSET", "RCT_E2E_SW_LIFECYCLE", "RCT_E2E_BOT_ROLE_MENU"):
+            require(environment.get(name) == "true" if name == SPECIAL_FLAGS.get(actual_lane) else environment.get(name) != "true", "SPECIAL_FLAG_BINDING")
+        for selected, variable in (("assignment", "RCT_ASSIGNMENT_LIFECYCLE_PHASE"), ("application-recovery", "RCT_APP_RECOVERY_PHASE")):
+            require(environment.get(variable, "") == (actual_phase if selected == actual_lane else ""), "SPECIAL_PHASE_BINDING")
+    require(environment.get("RCT_APP_RECOVERY_PROJECT", "") in ("", value["special_intent"]["recovery_project"]), "SPECIAL_RECOVERY_PROJECT")
+
+
+def special_topology(value):
+    rows, _ = special_records(value)
+    registrations = [row for row in rows if row["kind"] == "recovery-register"]
+    require(len(registrations) <= 1, "SPECIAL_RECOVERY_DUPLICATE")
+    if not registrations:
+        return None
+    registration = registrations[0]
+    path = Path(registration["file"])
+    require(path.is_relative_to(Path(value["run"])) and path.resolve() == path
+            and hashlib.sha256(path.read_bytes()).hexdigest() == registration["sha256"], "SPECIAL_RECOVERY_CONFIG_CHANGED")
+    return registration
+
+
+def special_inventory(value, *, complete=True, expected_lane=None, expected_phase=None):
+    config = json.loads((Path(value["run"]) / "compose.json").read_text())
+    rows = inventory(value["project"], value["nonce"], complete=False)
+    require(not complete or len(rows) == 17, "SPECIAL_ORIGINAL_INVENTORY")
+    frozen_path = Path(value["run"]) / "runtime-identity.json"
+    frozen = private_json(frozen_path) if frozen_path.exists() else None
+    topology = special_topology(value)
+    records, _ = special_records(value)
+    sealed = {row["intent"] for row in records if row["kind"] == "outcome"}
+    active = [row for row in records if row["kind"] == "intent" and row["index"] not in sealed]
+    for intent in active:
+        phases = {"assignment": {"pending", "resume"}, "application-recovery": {"seed", "pending", "admit", "attachment"}}.get(intent["lane"], {intent["phase"]})
+        require(expected_lane is None or expected_lane == intent["lane"] and expected_phase in phases, "SPECIAL_ACTIVE_INTENT_CONTEXT")
+    permitted = {service for row in active for service in row["services"]}
+    rebind_permitted = {service for row in active for service in SPECIAL_REBIND.get(row["action"], set())}
+    network = json.loads(capture(["docker", "network", "inspect", value["project"] + "_private_net"]))[0]
+    rebound = {name: binding for record in records if record["kind"] == "outcome" and record["restored"]
+               for name, binding in record["network_bindings"].items()}
+    for row in rows:
+        service = row["Config"]["Labels"]["com.docker.compose.service"]
+        require(row["Config"]["Image"] == config["services"][service]["image"], "SPECIAL_CONFIGURED_IMAGE")
+        if frozen:
+            pin = frozen["services"][service]
+            require(row["Id"] == pin["id"] and row["Image"] == pin["image"]
+                    and row["Config"]["Labels"] == pin["labels"] and row["Config"]["Image"] == pin["configured_image"]
+                    and row["Mounts"] == pin["mounts"] and row["HostConfig"].get("ReadonlyRootfs", False) == pin["readonly"], "SPECIAL_ORIGINAL_IDENTITY_CHANGED")
+        networks = set(row["NetworkSettings"]["Networks"])
+        require(networks == {value["project"] + "_private_net"}
+                or topology and service in DATABASES and networks == set(), "SPECIAL_NETWORK_CHANGED")
+        if frozen and networks:
+            attachment = row["NetworkSettings"]["Networks"][value["project"] + "_private_net"]
+            require(attachment["NetworkID"] == frozen["network_id"]
+                    and set(attachment.get("Aliases") or []) == set(frozen["services"][service]["aliases"]), "SPECIAL_NETWORK_ID_CHANGED")
+            fields = ("IPAddress", "IPPrefixLen", "Gateway", "GlobalIPv6Address", "GlobalIPv6PrefixLen", "IPv6Gateway")
+            if row["State"]["Running"]:
+                expected_binding = rebound.get(service, frozen["services"][service]["network_binding"])
+                stable = all(attachment.get(key) == expected_binding.get(key) for key in fields)
+                controlled_rebind = service in rebind_permitted
+                require(stable or controlled_rebind, "SPECIAL_NETWORK_ADDRESS_CHANGED")
+                membership = network.get("Containers", {}).get(row["Id"], {})
+                require(membership.get("IPv4Address") == attachment.get("IPAddress", "") + "/" + str(attachment.get("IPPrefixLen")), "SPECIAL_NETWORK_MEMBERSHIP")
+            else:
+                require(service in permitted or topology and service in DATABASES, "SPECIAL_STOPPED_ENDPOINT_UNPLANNED")
+                require(all(attachment.get(key) in (None, "", 0) for key in ("IPAddress", "IPPrefixLen", "Gateway", "GlobalIPv6Address", "GlobalIPv6PrefixLen", "IPv6Gateway")), "SPECIAL_STOPPED_ENDPOINT_SHAPE")
+        if topology and service in DATABASES and any(record["kind"] == "recovery-seal" for record in records):
+            require(not row["State"]["Running"] and not networks, "SPECIAL_SEALED_SOURCE_DATABASE_ACTIVE")
+        require(not complete or service in permitted or topology and service in DATABASES
+                or row["State"]["Running"] and not row["State"].get("Paused", False), "SPECIAL_UNPLANNED_OUTAGE")
+        if service in APPS:
+            actual = dict(item.split("=", 1) for item in row["Config"]["Env"])
+            require(all(actual.get(key) == str(item) for key, item in config["services"][service]["environment"].items()), "SPECIAL_APPLICATION_ENV_CHANGED")
+        if service == "nginx":
+            require(row["HostConfig"]["PortBindings"] == {"80/tcp": [{"HostIp": "127.0.0.1", "HostPort": "8088"}], "443/tcp": [{"HostIp": "127.0.0.1", "HostPort": "8443"}]}, "EDGE_BINDINGS_CHANGED")
+    require(network["Labels"].get(LABEL) == value["nonce"] and network["Labels"].get("com.docker.compose.project") == value["project"], "FOREIGN_NETWORK")
+    require(not frozen or network["Id"] == frozen["network_id"], "SPECIAL_NETWORK_REPLACED")
+    if topology:
+        targets = special_recovery_inventory(value, topology, complete=complete)
+        rows += targets
+    return rows
+
+
+def special_recovery_inventory(value, topology, *, complete):
+    project = value["special_intent"]["recovery_project"]
+    ids = capture(["docker", "ps", "-aq", "--no-trunc", "--filter", "label=com.docker.compose.project=" + project]).splitlines()
+    rows = json.loads(capture(["docker", "inspect", *ids])) if ids else []
+    config = private_json(Path(topology["file"]))
+    seen = set()
+    for row in rows:
+        labels = row["Config"].get("Labels", {})
+        service = labels.get("com.docker.compose.service")
+        require(service in DATABASES and service not in seen and labels.get(LABEL) == value["nonce"]
+                and labels.get("com.docker.compose.project") == project and labels.get("io.rutcampustrack.recovery") == "disposable"
+                and row["Image"] == topology["images"][service] and row["Config"]["Image"] == config["services"][service]["image"], "SPECIAL_RECOVERY_IDENTITY")
+        seen.add(service)
+        require(set(row["NetworkSettings"]["Networks"]) == {value["project"] + "_private_net"}, "SPECIAL_RECOVERY_NETWORK")
+        frozen = private_json(Path(value["run"]) / "runtime-identity.json")
+        attachment = row["NetworkSettings"]["Networks"][value["project"] + "_private_net"]
+        require(attachment["NetworkID"] == frozen["network_id"] and service in attachment.get("Aliases", []), "SPECIAL_RECOVERY_NETWORK_ID")
+        for mount in row["Mounts"]:
+            expected = topology["allowed_binds"][service]
+            require(mount["Source"] not in topology["source_mounts"]
+                    and (mount["Type"] != "bind" or mount["RW"] is False
+                         and any(item["source"] == mount["Source"] and item["target"] == mount["Destination"]
+                                 and special_resource_digest(item["source"]) == item["sha256"] for item in expected)), "SPECIAL_RECOVERY_DATA_REUSE")
+        require(not complete or row["State"]["Running"] and not row["State"].get("Paused", False), "SPECIAL_RECOVERY_NOT_RUNNING")
+    require(not complete or seen == DATABASES, "SPECIAL_RECOVERY_COUNT")
+    records, _ = special_records(value)
+    seals = [row for row in records if row["kind"] == "recovery-seal"]
+    require(len(seals) <= 1, "SPECIAL_RECOVERY_RESEALED")
+    if seals:
+        require({row["Config"]["Labels"]["com.docker.compose.service"]: row["Id"] for row in rows} == seals[0]["target_ids"], "SPECIAL_RECOVERY_TARGET_REPLACED")
+    return rows
+
+
+def special_context(value, lane, phase):
+    topology = special_topology(value)
+    database_project = value["project"]
+    if topology and (lane == "semester-archive" or lane == "application-recovery" and phase in {"admit", "attachment"}):
+        special_recovery_inventory(value, topology, complete=True)
+        database_project = value["special_intent"]["recovery_project"]
+    image = None
+    pin = Path(value["run"]) / "bot-image.json"
+    if pin.exists():
+        bot_pin = private_json(pin)
+        require(bot_pin["tag"] == value["special_intent"]["bot_image_tag"], "SPECIAL_BOT_TAG_BINDING")
+        image = bot_pin["id"]
+        observed = json.loads(capture(["docker", "image", "inspect", image]))[0]
+        require(observed["Id"] == image and observed["Config"]["Labels"].get(LABEL) == value["nonce"], "SPECIAL_BOT_IMAGE")
+    return {"project": value["project"], "nonce": value["nonce"], "root": value["root"], "run": value["run"],
+            "laneRun": value["run"] + "/lanes/" + lane, "networkName": value["project"] + "_private_net",
+            "certsDir": value["run"] + "/certs", "composeFile": value["run"] + "/compose.json",
+            "recoveryProject": value["special_intent"]["recovery_project"], "databaseProject": database_project, "botImage": image}
+
+
+def special_service(value, service):
+    rows = special_inventory(value)
+    topology = special_topology(value)
+    project = value["special_intent"]["recovery_project"] if topology and service in DATABASES else value["project"]
+    matches = [row for row in rows if row["Config"]["Labels"].get("com.docker.compose.service") == service
+               and row["Config"]["Labels"].get("com.docker.compose.project") == project]
+    require(len(matches) == 1, "SPECIAL_SERVICE_COUNT")
+    row = matches[0]
+    return {"id": row["Id"], "image": row["Image"], "configuredImage": row["Config"]["Image"],
+            "labels": row["Config"]["Labels"], "running": row["State"]["Running"], "paused": row["State"].get("Paused", False),
+            "health": row["State"].get("Health", {}).get("Status"), "readonly": row["HostConfig"].get("ReadonlyRootfs", False),
+            "mounts": row["Mounts"], "networks": row["NetworkSettings"]["Networks"]}
+
+
+def special_result(report, code, lane, phase, expected_locations):
+    """Complete named producer rows only; skips and missing rows remain NOT_RUN."""
+    expected = 3 if lane == "registry-native-pdf" else 1
+    require(type(report) is dict and report.get("unsafeArtifact") is False
+            and type(report.get("runnerErrors")) is int and report["runnerErrors"] == 0, "SPECIAL_UNTRUSTED_REPORT")
+    rows = report.get("results")
+    require(type(rows) is list and len(rows) <= expected and all(type(row) is dict for row in rows), "SPECIAL_REPORT_COUNT")
+    identities = [(row.get("file"), row.get("line"), row.get("project")) for row in rows]
+    require(len(set(identities)) == len(rows)
+            and all((row.get("file"), row.get("line")) in expected_locations and row.get("project") == "chromium"
+                    and row.get("expectedStatus") in {"passed", "skipped"} and row.get("status") in {"passed", "failed", "timedOut", "skipped"}
+                    and not (row.get("status") == "passed" and row.get("expectedStatus") != "passed") for row in rows), "SPECIAL_REPORT_IDENTITY")
+    passed = sum(row["status"] == "passed" for row in rows)
+    failed = sum(row["status"] in {"failed", "timedOut"} for row in rows)
+    not_run = expected - passed - failed
+    require((code == 0 and failed == 0 and report.get("status") == "passed")
+            or (code == 1 and report.get("status") in {"failed", "timedout"} and failed + not_run > 0), "SPECIAL_REPORT_EXIT")
+    # Privacy-safe diagnostics remain separately in the trusted reporter file; this boundary exports enums/counts only.
+    return {"lane": lane, "phase": phase, "status": "FAIL" if failed else "NOT_RUN" if not_run else "PASS",
+            "expected": expected, "passed": passed, "failed": failed, "notRun": not_run}
 
 
 def preflight():
@@ -465,10 +783,14 @@ def preflight():
 
 
 class Runner:
-    def __init__(self, mode, *, startup_diagnostic=False, bundled_dockerfile_frontend=False, failed_cases=None):
+    def __init__(self, mode, *, startup_diagnostic=False, bundled_dockerfile_frontend=False, failed_cases=None, special_cohort=None):
         require(not startup_diagnostic or mode == "client", "CLIENT_DIAGNOSTIC_ONLY")
-        require(not bundled_dockerfile_frontend or mode == "ui-batch", "BUNDLED_FRONTEND_UI_BATCH_ONLY")
+        require(not bundled_dockerfile_frontend or mode in {"ui-batch", "special13"}, "BUNDLED_FRONTEND_UI_BATCH_ONLY")
         require(failed_cases is None or mode == "ui-batch", "BATCH_CASES_UI_BATCH_ONLY")
+        require((mode == "special13" and special_cohort in {"nonclock", "lifecycle"})
+                or (mode != "special13" and special_cohort is None), "SPECIAL_COHORT_REQUIRED")
+        self.special_cohort = special_cohort
+        self.special_outcomes = []
         self.failed_cases = selected_batch_cases(failed_cases)
         self.startup_diagnostic = startup_diagnostic
         self.bundled_dockerfile_frontend = bundled_dockerfile_frontend
@@ -481,7 +803,7 @@ class Runner:
                    "VIRTUAL_ENV", "SSL_CERT_FILE", "SSL_CERT_DIR", "REQUESTS_CA_BUNDLE"}
         self.env = {key: value for key, value in os.environ.items() if key in allowed}
         # Explicit synthetic file is the only source of Compose credentials.
-        self.env.update(RCT_E2E_SYNTHETIC_SEED="true", RCT_E2E_ASYNC_REPORT="false" if mode in {"client", "lesson-lifecycle", "ui-batch"} else "true", RCT_E2E_REMAINING5="true",
+        self.env.update(RCT_E2E_SYNTHETIC_SEED="true", RCT_E2E_ASYNC_REPORT="false" if mode in {"client", "lesson-lifecycle", "ui-batch", "special13"} else "true", RCT_E2E_REMAINING5="true",
                         RCT_E2E_SYNTHETIC_BASELINE=BASELINE, E2E_BASE_URL="https://localhost:8443",
                         RCT_E2E_TEACHING_CLOCK_DIR=str(self.run / "clock"), RCT_REMAINING5_RUN=str(self.run),
                         RCT_LOCAL_STAGE17_MANIFEST=str(self.run / "owner.json"), RCT_LOCAL_STAGE17_NONCE=self.nonce,
@@ -491,6 +813,9 @@ class Runner:
                         RCT_LOCAL_CLIENT_STARTUP_DIAGNOSTIC="true" if startup_diagnostic else "false",
                         PLAYWRIGHT_NO_COPY_PROMPT="1", NODE_OPTIONS="--max-old-space-size=512",
                         COMPOSE_PARALLEL_LIMIT="1", BUILDKIT_MAX_PARALLELISM="1")
+        if mode == "special13":
+            self.env["RCT_LOCAL_SPECIAL_COHORT"] = special_cohort
+            self.env["CI"] = "true"  # Fixture noninteractive guard, never a hosted identity.
         if self.failed_cases is not None:
             self.env["RCT_LOCAL_UI_BATCH_CASES"] = json.dumps(self.failed_cases)
         if mode == "lesson-lifecycle":
@@ -499,6 +824,8 @@ class Runner:
             self.env["BUILDX_BUILDER"] = "default"
 
     def command(self, phase, args, *, cwd=ROOT, stdin=None):
+        if self.mode == "special13":
+            return self.special_command(phase, args, cwd=cwd, stdin=stdin)
         self.phase = phase
         emit(phase, state="RUNNING")
         with (self.run / (phase.lower() + ".private.log")).open("xb") as log:
@@ -533,6 +860,85 @@ class Runner:
                         self.child.wait(timeout=10)
                 self.child = None
 
+    def special_command(self, phase, args, *, cwd=ROOT, stdin=None):
+        """Bound only the new local lanes; old launch modes retain their exact command path."""
+        self.phase = phase
+        emit(phase, state="RUNNING")
+        seconds = 1800 if phase.startswith("BUILD_") else 900 if phase.startswith("SPECIAL_") or phase == "CLOCK_BUILD" else 600 if phase == "BOOT" else 300
+        deadline, heartbeat, count = time.monotonic() + seconds, time.monotonic() + 15, 0
+        limit = 16 * 1024**2
+        require(stdin is None or type(stdin) is bytes and len(stdin) <= 65536, "SPECIAL_STDIN_BOUND")
+        cancelled = False
+        def cancel(*_):
+            nonlocal cancelled
+            cancelled = True
+        path = self.run / (phase.lower() + ".private.log")
+        with os.fdopen(os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o600), "wb") as log:
+            previous = {kind: signal.signal(kind, cancel) for kind in (signal.SIGTERM, signal.SIGINT)}
+            try:
+                self.child = subprocess.Popen(args, cwd=cwd, env=self.env, stdin=subprocess.PIPE if stdin else subprocess.DEVNULL,
+                                              stdout=subprocess.PIPE, stderr=subprocess.STDOUT, start_new_session=phase != "CERTIFICATES",
+                                              process_group=0 if phase == "CERTIFICATES" else None,
+                                              umask=0o022 if phase == "CLOCK_PREPARE" else -1)
+                if cancelled:
+                    raise KeyboardInterrupt()
+                if stdin:
+                    self.child.stdin.write(stdin)
+                    self.child.stdin.close()
+                with selectors.DefaultSelector() as ready:
+                    ready.register(self.child.stdout, selectors.EVENT_READ)
+                    while True:
+                        if cancelled:
+                            raise KeyboardInterrupt()
+                        now = time.monotonic()
+                        require(now < deadline, "SPECIAL_CHILD_TIME_BOUND")
+                        if now >= heartbeat:
+                            emit(phase, state="RUNNING")
+                            heartbeat = now + 15
+                        if not ready.select(min(0.2, deadline - now)):
+                            continue
+                        block = os.read(self.child.stdout.fileno(), min(65536, limit - count + 1))
+                        if not block:
+                            break
+                        available = min(len(block), limit - count)
+                        log.write(block[:available])
+                        count += available
+                        require(available == len(block), "SPECIAL_CHILD_OUTPUT_BOUND")
+                remaining = max(0.01, deadline - time.monotonic())
+                try:
+                    code = self.child.wait(timeout=remaining)
+                except subprocess.TimeoutExpired:
+                    raise AdmissionError("SPECIAL_CHILD_TIME_BOUND") from None
+                if code != 0:
+                    raise AdmissionError("CHILD_FAILED", returncode=code)
+            finally:
+                try:
+                    if self.child is not None:
+                        try:
+                            os.killpg(self.child.pid, signal.SIGTERM)
+                        except ProcessLookupError:
+                            pass
+                        try:
+                            self.child.wait(timeout=10)
+                        except subprocess.TimeoutExpired:
+                            try:
+                                os.killpg(self.child.pid, signal.SIGKILL)
+                            except ProcessLookupError:
+                                pass
+                            self.child.wait(timeout=5)
+                        # A leader may have exited while another owned group member still holds the pipe.
+                        try:
+                            os.killpg(self.child.pid, signal.SIGKILL)
+                        except ProcessLookupError:
+                            pass
+                        self.child.stdout.close()
+                        self.child = None
+                finally:
+                    for kind, handler in previous.items():
+                        signal.signal(kind, handler)
+                    if cancelled:
+                        raise KeyboardInterrupt()
+
     def prepare(self):
         self.run.mkdir(mode=0o700)
         for name in ("artifacts", "home", "tmp"):
@@ -541,7 +947,7 @@ class Runner:
                         GRADLE_USER_HOME=os.environ.get("GRADLE_USER_HOME", str(Path.home() / ".gradle")),
                         NPM_CONFIG_CACHE=os.environ.get("NPM_CONFIG_CACHE", str(Path.home() / ".npm")),
                         PLAYWRIGHT_BROWSERS_PATH=os.environ.get("PLAYWRIGHT_BROWSERS_PATH", str(Path.home() / ".cache/ms-playwright")))
-        if self.mode == "ui-batch":
+        if self.mode in {"ui-batch", "special13"}:
             (self.run / "lanes").mkdir(mode=0o700)
         # Preserve exact tracked .env.ci bytes except three fresh directed tokens.
         source = capture(["git", "show", "HEAD:tests/e2e/.env.ci"])
@@ -557,7 +963,7 @@ class Runner:
         self.command("CERTIFICATES", ["bash", "tests/e2e/infra/scripts/generate-test-certs.sh"])
         self.command("CLOCK_BUILD", ["bash", "gradlew", "e2eClockFixtureJar", "--no-daemon", "--max-workers=1"])
         self.command("CLOCK_PREPARE", ["node", "tests/e2e/backend-clock/prepare-clock.mjs", str(self.run / "clock"), str(ROOT / "build/e2e-clock/clock-fixture.jar")])
-        if self.mode == "lesson-lifecycle":
+        if self.mode == "lesson-lifecycle" or self.special_cohort == "lifecycle":
             self.prepare_lesson_clock()
         # Compose interpolation receives no ambient credential variables.
         args = ["docker", "compose", "--env-file", str(self.run / "synthetic.env"), "-p", self.project]
@@ -627,13 +1033,23 @@ class Runner:
             paths.add("tests/e2e/playwright.local-batch.config.ts")
         if frontend is not None:
             paths |= {record["path"] for record in frontend["dockerfiles"].values()}
+        if self.mode == "special13":
+            paths |= {"tests/e2e/fixtures/local-special.ts", "tests/e2e/playwright.local-special.config.ts",
+                      "scripts/local_e2e_lifecycle.py"}
         hashes = {name: hashlib.sha256((ROOT / name).read_bytes()).hexdigest() for name in sorted(paths)}
         require(frontend is None or all(hashes[record["path"]] == record["original_sha256"]
                 for record in frontend["dockerfiles"].values()), "BUNDLED_DOCKERFILE_SOURCE_CHANGED")
+        if self.special_cohort == "nonclock":
+            self.image_targets.append("rct-local-stage17/notification-bot:" + self.nonce)
         value = {"schema": 1, "uid": os.getuid(), "root": str(ROOT), "run": str(self.run), "nonce": self.nonce, "mode": self.mode,
                  "project": self.project, "source_sha": sha, "sources": hashes, "startup_diagnostic": self.startup_diagnostic,
                  "batch_lanes": selected_batch_lanes(self.failed_cases) if self.mode == "ui-batch" else None,
                  "batch_cases": self.failed_cases,
+                 "special_cohort": self.special_cohort,
+                 "special_lanes": list(SPECIAL_NONCLOCK if self.special_cohort == "nonclock" else SPECIAL_LIFECYCLE) if self.mode == "special13" else None,
+                 "special_intent": {"recovery_project": "rct-recovery-" + self.nonce,
+                                    "bot_image_tag": "rct-local-stage17/notification-bot:" + self.nonce,
+                                    "database_services": sorted(DATABASES), "network": self.project + "_private_net"} if self.mode == "special13" else None,
                  "bundled_dockerfile_frontend": self.bundled_dockerfile_frontend,
                  "dockerfile_frontend": frontend,
                  "node_ca_sha256": hashlib.sha256((self.run / "certs/server.crt").read_bytes()).hexdigest(),
@@ -642,8 +1058,12 @@ class Runner:
                  "dirty": bool(capture(["git", "status", "--porcelain", "--untracked-files=normal"]).strip()),
                  "diff_sha256": hashlib.sha256(subprocess.check_output(["git", "diff", "HEAD", "--binary"], cwd=ROOT)).hexdigest(),
                  "qualification": "Fresh isolated local lane; does not reproduce preceding CI steps. Source bytes recorded; HEAD identity does not assert a clean checkout"}
+        if self.mode == "special13":
+            (self.run / "transitions").mkdir(mode=0o700)
         write(self.run / "owner.json", json.dumps(value, indent=2) + "\n")
         self.env["NODE_EXTRA_CA_CERTS"] = str(self.run / "certs/server.crt")
+        if self.mode == "special13":
+            self.env["SSL_CERT_FILE"] = str(self.run / "certs/server.crt")
         self.trust()
         # Reuse the stand's pinned install. Install only when absent or version-mismatched.
         lock = json.loads((ROOT / "tests/e2e/package-lock.json").read_text())
@@ -701,9 +1121,13 @@ class Runner:
                 require(identifier is not None, "BUILT_IMAGE_MISSING")
                 self.image_ids[service["image"]] = identifier
         self.command("BOOT", self.compose("up", "-d", "--no-build", "--wait", "--wait-timeout", "480"))
+        if self.mode == "special13":
+            self.freeze_special_inventory()
         validate_local(environment=self.env)
         node_tls_probe(self.run / "certs/server.crt", self.env)
         self.command("NOTIFICATION_KEY_ISOLATION", self.compose("exec", "-T", "notification-web", "sh", "-c", "test ! -e /keys/private.key && test ! -L /keys/private.key"))
+        if self.mode == "special13":
+            return self.execute_special()
         if self.mode == "ui-batch":
             return self.execute_batch()
         if self.mode in {"client", "lesson-lifecycle"}:
@@ -737,6 +1161,304 @@ class Runner:
                     emit("STAGE17_RESULT", result=safe["result"], stage=safe["phase"], actual_applications=safe["actual_applications"])
                     if safe["phase"] == "GATEWAY_OPENAPI_ACADEMIC_SERVICE" and safe["result"] == "FAIL":
                         self.diagnose()
+
+    def freeze_special_inventory(self):
+        rows = inventory(self.project, self.nonce, complete=True)
+        config = json.loads((self.run / "compose.json").read_text())
+        for row in rows:
+            name = row["Config"]["Labels"]["com.docker.compose.service"]
+            service = config["services"][name]
+            expected = [(mount["source"], mount["target"], not mount.get("read_only", False))
+                        for mount in service.get("volumes", []) if mount.get("type") == "bind"]
+            for secret in service.get("secrets", []):
+                target = secret.get("target", secret["source"])
+                target = target if target.startswith("/") else "/run/secrets/" + target
+                expected.append((config["secrets"][secret["source"]]["file"], target, False))
+            actual = [(mount["Source"], mount["Destination"], mount["RW"]) for mount in row["Mounts"] if mount["Type"] == "bind"]
+            require(sorted(actual) == sorted(expected), "SPECIAL_BOOT_BIND_CONFIG")
+            for mount in service.get("volumes", []):
+                if mount.get("type") == "volume" and mount.get("source"):
+                    volume_name = config["volumes"][mount["source"]]["name"]
+                    require(any(actual.get("Type") == "volume" and actual.get("Name") == volume_name
+                                and actual["Destination"] == mount["target"] for actual in row["Mounts"]), "SPECIAL_BOOT_VOLUME_CONFIG")
+            require(row["HostConfig"].get("ReadonlyRootfs", False) == service.get("read_only", False), "SPECIAL_BOOT_ROOTFS_CONFIG")
+        pins = {row["Config"]["Labels"]["com.docker.compose.service"]:
+                {"id": row["Id"], "image": row["Image"], "mounts": row["Mounts"],
+                 "labels": row["Config"]["Labels"], "configured_image": row["Config"]["Image"],
+                 "aliases": row["NetworkSettings"]["Networks"][self.project + "_private_net"].get("Aliases") or [],
+                 "network_binding": row["NetworkSettings"]["Networks"][self.project + "_private_net"],
+                 "readonly": row["HostConfig"].get("ReadonlyRootfs", False)} for row in rows}
+        network = json.loads(capture(["docker", "network", "inspect", self.project + "_private_net"]))[0]
+        write(self.run / "runtime-identity.json", json.dumps({"services": pins, "network_id": network["Id"]}, sort_keys=True) + "\n")
+
+    def special_value(self):
+        return manifest(self.run / "owner.json")
+
+    def special_context(self, lane, phase="main"):
+        require(lane in SPECIAL_LANES and phase in special_phases(lane), "SPECIAL_LANE_PHASE")
+        directory = self.run / "lanes" / lane
+        for target in (directory, directory / "artifacts", *((directory / "artifacts" / phase,) if phase != "main" else ())):
+            target.mkdir(mode=0o700, exist_ok=True)
+            owned(target, 0o700, directory=True)
+        return special_context(self.special_value(), lane, phase)
+
+    def special_intent(self, lane, phase, action, services, extra=None):
+        value = self.special_value()
+        require(self.special_cohort == "lifecycle" or lane == "registry-native-pdf", "SPECIAL_MUTATION_COHORT")
+        key = (lane, phase, action)
+        require(lane in value["special_lanes"] and key in SPECIAL_ACTIONS
+                and type(services) in {list, tuple, set} and set(services) == SPECIAL_ACTIONS[key], "SPECIAL_MUTATION_INTENT")
+        require(extra is None or type(extra) is dict and len(json.dumps(extra)) <= 16384, "SPECIAL_INTENT_BOUND")
+        special_inventory(value)
+        intent = append_special(value, "intent", lane=lane, phase=phase, action=action, services=sorted(services), extra=extra or {})
+        if action == "RECOVERY_QUIESCE":
+            self.special_preserve_recovery = True
+        return intent
+
+    def special_outcome(self, intent, success, restored=False):
+        require(type(success) is bool and type(restored) is bool and type(intent) is dict, "SPECIAL_OUTCOME_SHAPE")
+        value = self.special_value()
+        rows, _ = special_records(value)
+        require(intent in rows and intent["kind"] == "intent" and not any(row["kind"] == "outcome" and row["intent"] == intent["index"] for row in rows), "SPECIAL_OUTCOME_INTENT")
+        if restored:
+            self.special_health()
+        bindings = {}
+        if restored:
+            for row in inventory(self.project, self.nonce):
+                name = row["Config"]["Labels"]["com.docker.compose.service"]
+                attachment = row["NetworkSettings"]["Networks"].get(self.project + "_private_net")
+                if name in SPECIAL_REBIND.get(intent["action"], set()) and attachment and row["State"]["Running"]:
+                    bindings[name] = {key: attachment.get(key) for key in ("IPAddress", "IPPrefixLen", "Gateway", "GlobalIPv6Address", "GlobalIPv6PrefixLen", "IPv6Gateway")}
+        return append_special(value, "outcome", intent=intent["index"], success=success, restored=restored, network_bindings=bindings)
+
+    def special_register_recovery(self, target_file, project, source_ids):
+        value = self.special_value()
+        path = Path(target_file)
+        require(self.special_cohort == "lifecycle" and project == value["special_intent"]["recovery_project"]
+                and path.is_absolute() and path.is_relative_to(self.run) and not special_topology(value), "SPECIAL_RECOVERY_REGISTRATION")
+        config = private_json(path)
+        require(set(config["services"]) == DATABASES, "SPECIAL_RECOVERY_SERVICE_SET")
+        original = inventory(self.project, self.nonce)
+        originals = {row["Config"]["Labels"]["com.docker.compose.service"]: row for row in original}
+        require(type(source_ids) is dict and set(source_ids) == DATABASES
+                and all(source_ids[name] == originals[name]["Id"] for name in DATABASES), "SPECIAL_RECOVERY_SOURCE_IDS")
+        source_mounts = [mount["Source"] for name in DATABASES for mount in originals[name]["Mounts"] if mount["RW"]]
+        images, allowed_binds = {}, {}
+        source_config = json.loads((self.run / "compose.json").read_text())
+        for name, service in config["services"].items():
+            require(set(service) <= {"image", "environment", "healthcheck", "volumes", "secrets", "labels", "networks"}
+                    and service.get("environment") == source_config["services"][name].get("environment"), "SPECIAL_RECOVERY_CONFIG_FIELDS")
+            images[name] = originals[name]["Image"]
+            require(service["image"] == images[name] and not service.get("build") and not service.get("ports")
+                    and service.get("labels", {}).get(LABEL) == self.nonce
+                    and service.get("labels", {}).get("io.rutcampustrack.recovery") == "disposable", "SPECIAL_RECOVERY_IMAGE_OR_LABEL")
+            init = {"postgres-academic": ("infra/postgres/init-roles.sh", "/docker-entrypoint-initdb.d/10-rct-roles.sh"),
+                    "postgres-schedule": ("", ""),
+                    "mongo-attendance": ("infra/mongo/init-mongo.js", "/docker-entrypoint-initdb.d/init-mongo.js")}[name]
+            allowed_binds[name] = []
+            for mount in service.get("volumes", []):
+                init_allowed = mount.get("source") == str(ROOT / init[0]) and mount.get("target") == init[1]
+                if init_allowed:
+                    require(init[0] in value["sources"] and hashlib.sha256((ROOT / init[0]).read_bytes()).hexdigest() == value["sources"][init[0]], "SPECIAL_RECOVERY_INIT_SOURCE")
+                require(mount.get("type") == "bind" and mount.get("read_only") is True
+                        and (Path(mount["source"]).is_relative_to(self.run / "certs") or init_allowed)
+                        and mount["source"] not in source_mounts, "SPECIAL_RECOVERY_TARGET_MOUNT")
+                allowed_binds[name].append({"source": mount["source"], "target": mount["target"], "sha256": special_resource_digest(mount["source"])})
+            require(service.get("secrets", []) == source_config["services"][name].get("secrets", []), "SPECIAL_RECOVERY_SECRET_BINDING")
+            for secret in service.get("secrets", []):
+                require(type(secret) is dict and secret["source"] in source_config.get("secrets", {})
+                        and config.get("secrets", {}).get(secret["source"]) == source_config["secrets"][secret["source"]], "SPECIAL_RECOVERY_SECRET_SOURCE")
+                secret_path = Path(config["secrets"][secret["source"]]["file"])
+                target = secret.get("target", secret["source"])
+                target = target if target.startswith("/") else "/run/secrets/" + target
+                require(secret_path.is_relative_to(self.run / "certs") and secret_path.resolve() == secret_path
+                        and any(mount["Type"] == "bind" and mount["RW"] is False and mount["Source"] == str(secret_path)
+                                and mount["Destination"] == target for mount in originals[name]["Mounts"]), "SPECIAL_RECOVERY_SECRET_MOUNT")
+                allowed_binds[name].append({"source": str(secret_path), "target": target, "sha256": special_resource_digest(secret_path)})
+            require(set(service.get("networks", {})) == {"private_net"}, "SPECIAL_RECOVERY_TARGET_NETWORK")
+        require(config.get("networks", {}).get("private_net", {}).get("external") is True
+                and config["networks"]["private_net"].get("name") == self.project + "_private_net", "SPECIAL_RECOVERY_EXTERNAL_NETWORK")
+        return append_special(value, "recovery-register", file=str(path), sha256=hashlib.sha256(path.read_bytes()).hexdigest(),
+                              project=project, images=images, source_ids=source_ids, source_mounts=source_mounts, allowed_binds=allowed_binds)
+
+    def special_seal_recovery(self, target_ids, receipt_path):
+        value = self.special_value()
+        topology = special_topology(value)
+        require(topology is not None, "SPECIAL_RECOVERY_NOT_REGISTERED")
+        rows = special_recovery_inventory(value, topology, complete=True)
+        actual = {row["Config"]["Labels"]["com.docker.compose.service"]: row["Id"] for row in rows}
+        path = Path(receipt_path)
+        require(target_ids == actual and path.is_relative_to(self.run) and path.resolve() == path, "SPECIAL_RECOVERY_SEAL_IDENTITY")
+        receipt = private_json(path)
+        require(type(receipt) is dict and receipt.get("result") == "PASS" and receipt.get("target_project") == value["special_intent"]["recovery_project"], "SPECIAL_RECOVERY_VERIFIER_RECEIPT")
+        self.special_health()
+        return append_special(value, "recovery-seal", target_ids=target_ids, receipt=str(path), sha256=hashlib.sha256(path.read_bytes()).hexdigest())
+
+    def special_health(self):
+        value = self.special_value()
+        rows = special_inventory(value)
+        topology = special_topology(value)
+        config = json.loads((self.run / "compose.json").read_text())
+        for row in rows:
+            service = row["Config"]["Labels"]["com.docker.compose.service"]
+            project = row["Config"]["Labels"]["com.docker.compose.project"]
+            if topology and service in DATABASES and project == self.project:
+                require(not row["State"]["Running"] and not row["NetworkSettings"]["Networks"], "SPECIAL_SOURCE_DATABASE_NOT_QUIESCENT")
+                continue
+            require(row["State"]["Running"] and not row["State"].get("Paused", False), "SPECIAL_RESTORATION_NOT_RUNNING")
+            check = config["services"][service].get("healthcheck")
+            if check and not check.get("disable", False) and check.get("test") != ["NONE"]:
+                require(row["State"].get("Health", {}).get("Status") == "healthy", "SPECIAL_RESTORATION_NOT_HEALTHY")
+        return True
+
+    def special_verified_networks(self, service, original_id):
+        """Concrete current binding proof for a same-container planned restart only."""
+        value = self.special_value()
+        records, _ = special_records(value)
+        closed = {row["intent"] for row in records if row["kind"] == "outcome"}
+        active = [row for row in records if row["kind"] == "intent" and row["index"] not in closed and service in SPECIAL_REBIND.get(row["action"], set())]
+        require(len(active) == 1 and service in SERVICES and service != "nginx", "SPECIAL_NETWORK_REBIND_INTENT")
+        rows = special_inventory(value, expected_lane=active[0]["lane"], expected_phase=active[0]["phase"])
+        matches = [row for row in rows if row["Id"] == original_id and row["Config"]["Labels"]["com.docker.compose.service"] == service
+                   and row["Config"]["Labels"]["com.docker.compose.project"] == self.project]
+        require(len(matches) == 1 and matches[0]["State"]["Running"] and not matches[0]["State"].get("Paused", False), "SPECIAL_NETWORK_REBIND_IDENTITY")
+        row = matches[0]
+        config = json.loads((self.run / "compose.json").read_text())["services"][service]
+        if config.get("healthcheck") and not config["healthcheck"].get("disable", False):
+            require(row["State"].get("Health", {}).get("Status") == "healthy", "SPECIAL_NETWORK_REBIND_HEALTH")
+        return row["NetworkSettings"]["Networks"]
+
+    def special_phase(self, lane, phase="main", extra_env=None):
+        require(lane in self.special_value()["special_lanes"] and phase in special_phases(lane), "SPECIAL_PHASE_SELECTION")
+        directory = self.run / "lanes" / lane
+        directory.mkdir(mode=0o700, exist_ok=True)
+        (directory / "artifacts").mkdir(mode=0o700, exist_ok=True)
+        output = directory / "artifacts" / phase if phase != "main" else directory / "artifacts"
+        output.mkdir(mode=0o700, exist_ok=True)
+        base = self.env.copy()
+        self.env.update(RCT_LOCAL_SPECIAL_LANE=lane, RCT_LOCAL_SPECIAL_PHASE=phase,
+                        RCT_REMAINING5_RUN=str(directory), RCT_DIAGNOSTIC_RUN_DIR=str(directory))
+        flag = SPECIAL_FLAGS.get(lane)
+        if flag:
+            self.env[flag] = "true"
+        variable = SPECIAL_LANES[lane][1]
+        if variable:
+            self.env[variable] = str(directory)
+        if lane == "assignment":
+            self.env["RCT_ASSIGNMENT_LIFECYCLE_PHASE"] = phase
+        if lane == "application-recovery":
+            self.env.update(RCT_APP_RECOVERY_PHASE=phase, RCT_APP_RECOVERY_PROJECT="rct-recovery-" + self.nonce)
+        if lane == "semester-metadata":
+            self.env["RCT_ADMIN_SEMESTER_UI_RUN"] = str(directory)
+        if lane == "semester-archive":
+            self.env.update(RCT_APP_RECOVERY_PROJECT="rct-recovery-" + self.nonce,
+                            RCT_APP_RECOVERY_RUN=str(self.run / "lanes/application-recovery"))
+        if extra_env:
+            require(type(extra_env) is dict and all(type(key) is str and key.startswith("RCT_") and key not in {
+                "RCT_LOCAL_STAGE17_MANIFEST", "RCT_LOCAL_STAGE17_NONCE", "RCT_LOCAL_STAGE17_MODE", "RCT_LOCAL_SPECIAL_COHORT", "RCT_LOCAL_SPECIAL_LANE", "RCT_LOCAL_SPECIAL_PHASE"} for key in extra_env), "SPECIAL_EXTRA_ENV")
+            self.env.update({key: str(value) for key, value in extra_env.items()})
+        code = None
+        try:
+            validate_local(environment=self.env, expected_mode="special13", expected_special_lane=lane, expected_special_phase=phase)
+            expected_locations = self.special_expected_locations(lane)
+            try:
+                self.command("SPECIAL_" + lane.upper().replace("-", "_") + "_" + phase.upper(),
+                             ["npx", "playwright", "test", "--config", "playwright.local-special.config.ts", "--project=chromium"], cwd=ROOT / "tests/e2e")
+                code = 0
+            except AdmissionError as error:
+                require(str(error) == "CHILD_FAILED" and error.returncode in {1}, "SPECIAL_CHILD_INFRASTRUCTURE_FAILURE")
+                code = error.returncode
+            report = private_json(output / "safe-results.json")
+            outcome = special_result(report, code, lane, phase, expected_locations)
+            validate_local(environment=self.env, expected_mode="special13", expected_special_lane=lane, expected_special_phase=phase)
+            write(directory / (phase + ".result.safe.json"), json.dumps(outcome, sort_keys=True) + "\n")
+            emit("SPECIAL_PHASE_RESULT", **outcome)
+            return outcome
+        finally:
+            self.env = base
+
+    def special_expected_locations(self, lane):
+        files = {"bot": "specs/mobile-real-server.spec.ts", "production-service-worker": "specs/mobile-real-server.spec.ts",
+                 "password-recovery": "specs/cloud-accepted-auth-security.spec.ts", "registry-native-pdf": "specs/cloud-accepted-registry-export.spec.ts",
+                 "today": "clock-specs/teaching-clock-geo.spec.ts", "assignment": "fixtures/assignment-lifecycle.spec.ts",
+                 "application-recovery": "fixtures/application-recovery.spec.ts"}
+        path = ROOT / "tests/e2e" / files.get(lane, "fixtures/semester-lifecycle.spec.ts")
+        source = path.read_text().splitlines()
+        found = set()
+        for title in SPECIAL_LANES[lane][2]:
+            matches = [index + 1 for index, line in enumerate(source) if ("test(" in line or "test.skip(" in line) and ("'" + title + "'") in line]
+            require(len(matches) == 1, "SPECIAL_ORIGINAL_STORY_TITLE")
+            found.add((path.name, matches[0]))
+        return found
+
+    def build_special_bot(self):
+        tag = "rct-local-stage17/notification-bot:" + self.nonce
+        require(self.image_identity(tag) is None, "SPECIAL_BOT_TAG_COLLISION")
+        require(tag in self.special_value()["images"] and tag in self.image_targets, "SPECIAL_BOT_FROZEN_INTENT")
+        self.image_admitted.add(tag)
+        args = ["docker", "build", "--label", LABEL + "=" + self.nonce, "--tag", tag]
+        source = ROOT / "services/notification-bot"
+        if self.bundled_dockerfile_frontend:
+            text = (source / "Dockerfile").read_text()
+            lines = text.splitlines(keepends=True)
+            if lines[0].rstrip("\r\n") == "# syntax=docker/dockerfile:1.7":
+                lines.pop(0)
+            require(not re.search(r"(?im)^\s*#\s*syntax\s*=", "".join(lines)), "SPECIAL_BOT_DOCKERFILE_SYNTAX")
+            self.command("BUILD_NOTIFICATION_BOT", [*args, "--file", "-", str(source)], stdin="".join(lines).encode())
+        else:
+            self.command("BUILD_NOTIFICATION_BOT", [*args, str(source)])
+        identifier = self.image_identity(tag)
+        require(identifier is not None, "SPECIAL_BOT_IMAGE_MISSING")
+        self.image_ids[tag] = identifier
+        write(self.run / "bot-image.json", json.dumps({"id": identifier, "tag": tag}) + "\n")
+
+    def execute_special(self):
+        if self.special_cohort == "nonclock":
+            self.build_special_bot()
+            clock = self.run / "clock/current-instant"
+            clock_sha = hashlib.sha256(clock.read_bytes()).hexdigest()
+            for lane in SPECIAL_NONCLOCK:
+                self.special_health()
+                intent = self.special_intent(lane, "main", "RENDERER_OUTAGE", ["document-renderer-service"]) if lane == "registry-native-pdf" else None
+                outcome = self.special_phase(lane)
+                self.special_health()
+                require(hashlib.sha256(clock.read_bytes()).hexdigest() == clock_sha, "SPECIAL_NONCLOCK_CHANGED_CLOCK")
+                if intent:
+                    self.special_outcome(intent, outcome["status"] == "PASS", restored=True)
+                self.special_outcomes.append(outcome)
+                write(self.run / "lanes" / lane / "logical.result.safe.json", json.dumps(outcome, sort_keys=True) + "\n")
+        else:
+            from local_e2e_lifecycle import execute_lifecycle
+            execute_lifecycle(self)
+        require(len(self.special_outcomes) == (4 if self.special_cohort == "nonclock" else 7), "SPECIAL_LOGICAL_STORY_COUNT")
+        write(self.run / "artifacts/special13.safe.json", json.dumps({"cohort": self.special_cohort, "stories": self.special_outcomes}, indent=2) + "\n")
+        require(all(row["status"] == "PASS" for row in self.special_outcomes), "SPECIAL_COHORT_TEST_FAILURE")
+        if self.special_cohort == "lifecycle":
+            self.special_health()
+            records, _ = special_records(self.special_value())
+            require(any(row["kind"] == "recovery-seal" for row in records)
+                    and all(any(result["kind"] == "outcome" and result["intent"] == row["index"]
+                                and result["success"] is True and result["restored"] is True for result in records)
+                            for row in records if row["kind"] == "intent"), "SPECIAL_RECOVERY_FINAL_QUALIFICATION")
+            self.special_preserve_recovery = False
+
+    def cleanup_special_extras(self):
+        if not (self.run / "owner.json").exists():
+            return
+        value = self.special_value()
+        topology = special_topology(value)
+        if topology:
+            for row in special_recovery_inventory(value, topology, complete=False):
+                capture(["docker", "rm", "--force", "--volumes", row["Id"]], seconds=30)
+            # No named data volumes are admitted for fresh recovery targets.
+        ids = capture(["docker", "ps", "-aq", "--no-trunc", "--filter", "label=rct.local.special.bot=" + self.nonce]).splitlines()
+        for identifier in ids:
+            row = json.loads(capture(["docker", "inspect", identifier]))[0]
+            pin = private_json(self.run / "bot-image.json")
+            require(row["Name"] == "/rct-local-bot-" + self.nonce and row["Image"] == pin["id"]
+                    and row["Config"]["Labels"].get(LABEL) == self.nonce and not row["Config"]["Labels"].get("com.docker.compose.project"), "SPECIAL_FOREIGN_BOT")
+            capture(["docker", "rm", "--force", "--volumes", identifier], seconds=30)
+
 
     def execute_batch(self):
         """One isolated stack, serial named lanes, original cleanup after aggregate failure."""
@@ -908,6 +1630,15 @@ class Runner:
 
     def cleanup(self):
         # Never use broad down/prune. Fresh ownership checks precede every removal.
+        if self.mode == "special13":
+            require(not getattr(self, "special_preserve_recovery", False), "SPECIAL_RECOVERY_RETAINED_FOR_OWNER")
+            if (self.run / "owner.json").exists():
+                records, _ = special_records(self.special_value())
+                require(all(any(result["kind"] == "outcome" and result["intent"] == intent["index"] and result["restored"] is True for result in records)
+                            for intent in records if intent["kind"] == "intent"), "SPECIAL_MUTATION_UNRESTORED_RETAINED_FOR_OWNER")
+            if (self.run / "runtime-identity.json").exists():
+                special_inventory(self.special_value(), complete=False)
+            self.cleanup_special_extras()
         rows = inventory(self.project, self.nonce)
         for row in rows:
             capture(["docker", "rm", "--force", "--volumes", row["Id"]], seconds=30)
@@ -948,6 +1679,9 @@ def main():
     parser.add_argument("mode", choices=("preflight", *sorted(MODES), "admit"), nargs="?", default="openapi")
     parser.add_argument("--expected-mode", choices=sorted(MODES))
     parser.add_argument("--expected-batch-lane", choices=list(BATCH_LANES))
+    parser.add_argument("--expected-special-lane", choices=list(SPECIAL_LANES))
+    parser.add_argument("--expected-special-phase", choices=["main", "prepare", "pending", "resume", "seed", "admit", "attachment"])
+    parser.add_argument("--special-service", choices=sorted(SERVICES))
     parser.add_argument("--diagnose-startup", action="store_true", help="Client only: same ten scenarios, stop after first failure with closed setup diagnostics")
     parser.add_argument("--bundled-dockerfile-frontend", action="store_true",
                         help="UI batch only: inline tracked Dockerfiles using the Docker Engine bundled frontend")
@@ -957,11 +1691,19 @@ def main():
     require(args.failed_case is None or args.mode == "ui-batch", "BATCH_CASES_UI_BATCH_ONLY")
     selected_batch_cases(args.failed_case)
     require(not args.diagnose_startup or args.mode == "client", "CLIENT_DIAGNOSTIC_ONLY")
-    require(not args.bundled_dockerfile_frontend or args.mode == "ui-batch", "BUNDLED_FRONTEND_UI_BATCH_ONLY")
+    require(not args.bundled_dockerfile_frontend or args.mode in {"ui-batch", "special13"}, "BUNDLED_FRONTEND_UI_BATCH_ONLY")
     if args.mode == "admit":
         require(args.expected_batch_lane is None or args.expected_mode == "ui-batch", "LOCAL_BATCH_MODE_REQUIRED")
         require(args.expected_mode != "ui-batch" or args.expected_batch_lane in BATCH_LANES, "LOCAL_BATCH_LANE_REQUIRED")
-        value = validate_local(expected_mode=args.expected_mode, expected_batch_lane=args.expected_batch_lane)
+        value = validate_local(expected_mode=args.expected_mode, expected_batch_lane=args.expected_batch_lane,
+                               expected_special_lane=args.expected_special_lane, expected_special_phase=args.expected_special_phase)
+        if args.expected_mode == "special13":
+            require(args.expected_special_lane in SPECIAL_LANES and args.expected_special_phase in special_phases(args.expected_special_lane), "SPECIAL_LANE_REQUIRED")
+            if args.special_service:
+                emit("LOCAL_SPECIAL_SERVICE", service=special_service(value, args.special_service))
+            else:
+                emit("LOCAL_SPECIAL_ADMITTED", **special_context(value, args.expected_special_lane, args.expected_special_phase))
+            return
         if args.expected_mode is None:
             emit("LOCAL_STAGE17_ADMITTED")
         elif args.expected_mode == "ui-batch":
@@ -969,7 +1711,8 @@ def main():
         else:
             emit("LOCAL_STAGE17_ADMITTED", mode=value["mode"], project=value["project"], nonce=value["nonce"])
         return
-    require(args.expected_mode is None and args.expected_batch_lane is None, "EXPECTED_MODE_ADMIT_ONLY")
+    require(args.expected_mode is None and args.expected_batch_lane is None and args.expected_special_lane is None
+            and args.expected_special_phase is None and args.special_service is None, "EXPECTED_MODE_ADMIT_ONLY")
     preflight()
     if args.mode == "preflight":
         emit("PREFLIGHT", result="PASS", containers_started=0)
@@ -982,14 +1725,36 @@ def main():
         owned(RUNS / "port-8443.lock", 0o600)
         fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
         preflight()  # Race guard after owning the shared fixed-port lease.
-        runner = Runner(args.mode, startup_diagnostic=args.diagnose_startup,
+        cohorts = ("nonclock", "lifecycle") if args.mode == "special13" else (None,)
+        results = []
+        for cohort in cohorts:
+            results.append(run_cohort(args, cohort))
+        if args.mode == "special13":
+            rows = [row for result in results for row in result["stories"]]
+            require(len(rows) == 11 and sum(row["expected"] for row in rows) == 13, "SPECIAL_SUMMARY_COUNT")
+            emit("SPECIAL13_RESULT", expected=13, passed=sum(row["passed"] for row in rows),
+                 failed=sum(row["failed"] for row in rows), notRun=sum(row["notRun"] for row in rows),
+                 cohorts=results, actualRuntime="OWNER_LOCAL_ONLY")
+            require(all(result["result"] == "PASS" for result in results), "SPECIAL13_INCOMPLETE")
+
+
+def run_cohort(args, cohort):
+        runner = Runner(args.mode, special_cohort=cohort, startup_diagnostic=args.diagnose_startup,
                         bundled_dockerfile_frontend=args.bundled_dockerfile_frontend, failed_cases=args.failed_case)
         result, cleanup = "FAIL", "NOT_STARTED"
         try:
+            if args.mode == "special13":
+                runner.phase = "SUDO_AUTHENTICATION"
+                emit(runner.phase, state="RUNNING")
+                # Foreground controlling TTY only; sudo handles its own prompt and timestamp.
+                subprocess.run(["sudo", "-v"], cwd=ROOT, env=runner.env, stdout=subprocess.DEVNULL, check=True)
             runner.prepare()
             if args.mode != "prepare":
                 runner.execute()
             result = "PASS"
+        except AdmissionError as error:
+            if args.mode != "special13" or str(error) != "SPECIAL_COHORT_TEST_FAILURE":
+                raise
         finally:
             primary = sys.exc_info()[1]
             cleanup_error, logs_error, logs_complete = None, None, True
@@ -1021,7 +1786,7 @@ def main():
                            "startup_diagnostic": args.diagnose_startup,
                            "container_logs": "FAIL" if logs_error else "PASS" if logs_complete else "PARTIAL",
                            "run": str(runner.run), "error_kind": error_kind,
-                           "exit_code": 130 if isinstance(failure, KeyboardInterrupt) else 1 if failure else 0,
+                           "exit_code": 130 if isinstance(failure, KeyboardInterrupt) else 1 if failure or result != "PASS" else 0,
                            "child_returncode": code if type(code) is int and -128 <= code <= 255 else None,
                            "containers_started": 0 if args.mode == "prepare" else "SEE_PRIVATE_LOGS"}
                 try:
@@ -1034,6 +1799,7 @@ def main():
                         raise
             if primary is None and (logs_error or cleanup_error) is not None:
                 raise logs_error or cleanup_error
+        return {"cohort": cohort, "result": result, "run": str(runner.run), "stories": runner.special_outcomes}
 
 
 if __name__ == "__main__":

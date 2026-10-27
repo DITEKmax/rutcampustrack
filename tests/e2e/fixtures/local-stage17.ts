@@ -1,5 +1,6 @@
 import { execFileSync } from 'node:child_process';
 import { resolve } from 'node:path';
+import { requireLocalSpecialLane, type LocalSpecialLane } from './local-special';
 
 /** Prove the launcher's live 17-container cohort before any local seed change. */
 export function requireLocalStage17(): boolean {
@@ -13,6 +14,12 @@ export function requireLocalLane(mode: 'full' | 'client' | 'lesson-lifecycle' | 
     if (process.env.RCT_LOCAL_STAGE17_NONCE || process.env.RCT_LOCAL_STAGE17_MODE)
       throw new Error('Local disposable cohort manifest is required');
     return undefined;
+  }
+  if (process.env.RCT_LOCAL_STAGE17_MODE === 'special13') {
+    if (mode !== 'client' && mode !== 'full') throw new Error('Local special caller mode rejected');
+    const lane = process.env.RCT_LOCAL_SPECIAL_LANE as LocalSpecialLane;
+    const context = requireLocalSpecialLane(lane);
+    return { project: context.project, nonce: context.nonce };
   }
   const batch = process.env.RCT_LOCAL_STAGE17_MODE === 'ui-batch';
   const admittedMode = batch && mode === 'client' ? 'ui-batch' : mode;

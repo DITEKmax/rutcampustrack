@@ -16,6 +16,7 @@ import type { MobileDataset } from '../fixtures/mobile-dataset';
 import { loginPwa } from '../fixtures/pwa-auth';
 import { TEST_USERS } from '../fixtures/users';
 import { datasetHttpFailure } from '../fixtures/safe-reporter';
+import { localSpecialLane, localSpecialService } from '../fixtures/local-special';
 
 registerPrivateSuite();
 
@@ -286,6 +287,15 @@ function registryContainer(
   until: number,
   service: 'document-renderer-service' | 'postgres-academic',
 ): string {
+  const local = localSpecialLane('registry-native-pdf');
+  if (local) {
+    const current = localSpecialService(local, service);
+    registryRequire(
+      Date.now() < until && current.running === true && current.paused === false,
+      'LOCAL_OWN_CONTAINER_READY',
+    );
+    return current.id;
+  }
   const selected = registryDocker(until, [
     'ps',
     '--filter',
@@ -907,6 +917,26 @@ test('LIMITED native user PDF preserves selected ordered fields and its committe
 // Keep the successful HTML/PDF/PNG cases and their original budgets unchanged.
 function registryOutageRenderer(until: number, id: string, networkId?: string) {
   registryRequire(/^[0-9a-f]{64}$/.test(id), 'OUTAGE_CONTAINER_ID');
+  const local = localSpecialLane('registry-native-pdf');
+  if (local) {
+    // Admission compares the frozen full ID, image, labels, mounts and network.
+    // Only this lane's opened outage intent may temporarily admit paused state.
+    const current = localSpecialService(local, 'document-renderer-service');
+    const networks = current.networks as Record<string, { NetworkID?: unknown }>;
+    const network = networks?.[local.networkName]?.NetworkID;
+    registryRequire(
+      Date.now() < until &&
+        current.id === id &&
+        current.running === true &&
+        typeof current.paused === 'boolean' &&
+        Object.keys(networks).length === 1 &&
+        typeof network === 'string' &&
+        /^[0-9a-f]{64}$/.test(network) &&
+        (networkId === undefined || network === networkId),
+      'OUTAGE_LOCAL_OWN_RENDERER',
+    );
+    return { paused: current.paused, network };
+  }
   const output = registryDocker(until, [
     'inspect',
     '--type',
@@ -1089,7 +1119,11 @@ test('renderer outage terminates its PDF job safely and a fresh job downloads af
   ])
     .toString('utf8')
     .trim();
-  registryRequire(network === 'rct-e2e private_net', 'OUTAGE_OWN_NETWORK');
+  const local = localSpecialLane('registry-native-pdf');
+  registryRequire(
+    network === `${local?.project ?? 'rct-e2e'} private_net`,
+    'OUTAGE_OWN_NETWORK',
+  );
   await registryOutageReady(Math.min(until, Date.now() + 10000), renderer, initial.network);
   registryRequire(until - Date.now() >= 190000, 'OUTAGE_RESTORATION_RESERVE');
   let failedJob = '';
@@ -1099,6 +1133,11 @@ test('renderer outage terminates its PDF job safely and a fresh job downloads af
   try {
     // Capture the exact identity before mutation. Pause leaves the existing
     // process/network/data intact while genuine RPC deadlines remain active.
+    if (local)
+      registryRequire(
+        !registryOutageRenderer(until, renderer, initial.network).paused,
+        'OUTAGE_BEFORE_PAUSE_UNPAUSED',
+      );
     pauseAttempted = true;
     registryDocker(until, ['pause', renderer]);
     registryRequire(
@@ -1159,6 +1198,7 @@ test('renderer outage terminates its PDF job safely and a fresh job downloads af
         // Attempt release even if pause succeeded but its reply was lost. An
         // ambiguous unpause reply is accepted only after exact live readback.
         try {
+          if (local) registryOutageRenderer(restoreUntil, renderer, initial.network);
           registryDocker(restoreUntil, ['unpause', renderer]);
         } catch {
           // The following identity, unpaused state and readiness are mandatory.

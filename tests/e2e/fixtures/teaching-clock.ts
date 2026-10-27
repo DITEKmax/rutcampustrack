@@ -1,3 +1,4 @@
+import { localSpecialLane } from './local-special';
 import { randomUUID } from 'node:crypto';
 import {
   closeSync,
@@ -64,22 +65,18 @@ export function advanceStudentQuickRequestClock(
     throw new Error('Student quick-request clock admission failed');
   }
   try {
+    const local = localSpecialLane('today');
     const runner = process.env.RUNNER_TEMP;
     const run = process.env.GITHUB_RUN_ID;
     const attempt = process.env.GITHUB_RUN_ATTEMPT;
     const uid = process.getuid?.();
     if (
-      process.env.CI !== 'true' ||
+      (!local && process.env.CI !== 'true') ||
       process.env.RCT_E2E_SYNTHETIC_SEED !== 'true' ||
-      !runner ||
-      !isAbsolute(runner) ||
-      !run ||
-      !/^[1-9][0-9]*$/.test(run) ||
-      !attempt ||
-      !/^[1-9][0-9]*$/.test(attempt) ||
+      (!local && (!runner || !isAbsolute(runner) || !run || !/^[1-9][0-9]*$/.test(run) || !attempt || !/^[1-9][0-9]*$/.test(attempt))) ||
       uid === undefined ||
       !directory ||
-      directory !== join(runner, `rct-first3-clock-${run}-${attempt}`)
+      directory !== (local ? join(local.run, 'clock') : join(runner!, `rct-first3-clock-${run}-${attempt}`))
     )
       reject();
     const ownedDirectory = lstatSync(directory);

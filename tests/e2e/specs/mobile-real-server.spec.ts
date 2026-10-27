@@ -5,6 +5,8 @@ import { isDeepStrictEqual } from 'node:util';
 import { createServer } from 'node:http';
 import { execFileSync, spawn } from 'node:child_process';
 import { lstatSync } from 'node:fs';
+import { isIP } from 'node:net';
+import { localSpecialLane, localSpecialService } from '../fixtures/local-special';
 import { resolve } from 'node:path';
 import type { BrowserContext, Download, Page, Request, Response, TestInfo } from '@playwright/test';
 import {
@@ -553,14 +555,15 @@ async function requireProductionWorker(page: Page): Promise<void> {
 
 // Only the CI-owned static container participates; no backend, source tree or volume is changed.
 function productionWorkerFixture() {
+  const local = localSpecialLane('production-service-worker');
   if (
     process.env.RCT_E2E_SW_LIFECYCLE !== 'true' ||
     process.env.RCT_E2E_REMAINING5 !== 'true' ||
     process.env.RCT_E2E_SYNTHETIC_SEED !== 'true' ||
-    process.env.RUNNER_ENVIRONMENT !== 'github-hosted' ||
-    process.env.CI !== 'true' ||
-    process.env.E2E_BASE_URL !== 'https://localhost:8443' ||
-    !process.env.GITHUB_WORKSPACE
+    (!local && (process.env.RUNNER_ENVIRONMENT !== 'github-hosted' ||
+      process.env.CI !== 'true' ||
+      process.env.E2E_BASE_URL !== 'https://localhost:8443' ||
+      !process.env.GITHUB_WORKSPACE))
   ) {
     throw new Error('Production worker fixture requires the owned disposable CI stack');
   }
@@ -577,12 +580,14 @@ function productionWorkerFixture() {
       throw new Error('Owned production worker fixture operation failed');
     }
   }
+  const owned = local ? localSpecialService(local, 'pwa-nginx') : undefined;
+  const networkName = local?.networkName ?? 'rct-e2e_private_net';
   const target = JSON.parse(
     docker([
       'inspect',
       '--format',
       '{"id":{{json .Id}},"labels":{{json .Config.Labels}},"networks":{{json .NetworkSettings.Networks}},"mounts":{{json .Mounts}},"readonly":{{json .HostConfig.ReadonlyRootfs}},"running":{{json .State.Running}}}',
-      'rct-e2e-pwa-nginx-1',
+      owned?.id ?? 'rct-e2e-pwa-nginx-1',
     ]).toString('utf8'),
   );
   const network = JSON.parse(
@@ -591,25 +596,35 @@ function productionWorkerFixture() {
       'inspect',
       '--format',
       '{"id":{{json .Id}},"labels":{{json .Labels}}}',
-      'rct-e2e_private_net',
+      networkName,
     ]).toString('utf8'),
   );
   if (
     !/^[a-f0-9]{64}$/.test(target.id) ||
-    target.labels?.['com.docker.compose.project'] !== 'rct-e2e' ||
+    target.labels?.['com.docker.compose.project'] !== (local?.project ?? 'rct-e2e') ||
     target.labels?.['com.docker.compose.service'] !== 'pwa-nginx' ||
-    target.labels?.['com.docker.compose.project.working_dir'] !== process.env.GITHUB_WORKSPACE ||
+    target.labels?.['com.docker.compose.project.working_dir'] !== (local?.run ?? process.env.GITHUB_WORKSPACE) ||
     target.running !== true ||
     target.readonly !== false ||
     !Array.isArray(target.mounts) ||
     target.mounts.length !== 0 ||
-    Object.keys(target.networks).join() !== 'rct-e2e_private_net' ||
-    target.networks['rct-e2e_private_net'].NetworkID !== network.id ||
-    network.labels?.['com.docker.compose.project'] !== 'rct-e2e' ||
-    network.labels?.['com.docker.compose.network'] !== 'private_net'
+    Object.keys(target.networks).join() !== networkName ||
+    target.networks[networkName].NetworkID !== network.id ||
+    network.labels?.['com.docker.compose.project'] !== (local?.project ?? 'rct-e2e') ||
+    network.labels?.['com.docker.compose.network'] !== 'private_net' ||
+    (local && (target.labels?.['rct.local.stage17'] !== local.nonce ||
+      network.labels?.['rct.local.stage17'] !== local.nonce || target.id !== owned!.id))
   ) {
     throw new Error('Production worker fixture ownership or writable-layer mismatch');
   }
+  const identity = () => {
+    if (!local) return;
+    const current = localSpecialService(local, 'pwa-nginx');
+    if (!isDeepStrictEqual(current, owned) || current.readonly !== false ||
+        !Array.isArray(current.mounts) || current.mounts.length !== 0)
+      throw new Error('Owned local production worker identity changed');
+  };
+  identity();
   const regularFiles = `
     for directory in /usr /usr/share /usr/share/nginx /usr/share/nginx/html; do
       test -d "$directory" && test ! -L "$directory"
@@ -620,6 +635,7 @@ function productionWorkerFixture() {
     test "$(wc -c < "$path")" -le 32768
   `;
   function read(name: 'sw.js' | 'version.json'): Buffer {
+    identity();
     return docker([
       'exec',
       target.id,
@@ -634,6 +650,7 @@ function productionWorkerFixture() {
   function write(name: 'sw.js' | 'version.json', bytes: Buffer): void {
     if (bytes.length === 0 || bytes.length > 32768)
       throw new Error('Invalid bounded static fixture');
+    identity();
     docker(
       [
         'exec',
@@ -5954,20 +5971,20 @@ asyncExportTest.describe('stage17 durable weekly export', () => {
 test('actual private bot menu roster and teacher Today use hosted current authority', { annotation: diagnosticCase('HOSTED_PRIVATE_BOT_AUTHORITY') }, async ({
   activeHeadmanDataset: dataset,
 }, info) => {
+  const local = localSpecialLane('bot');
   const run = process.env.GITHUB_RUN_ID;
   const attempt = process.env.GITHUB_RUN_ATTEMPT;
   const root = resolve(__dirname, '../../..');
   if (
     process.env.RCT_E2E_BOT_ROLE_MENU !== 'true' ||
     process.env.RCT_E2E_SYNTHETIC_SEED !== 'true' ||
-    process.env.RUNNER_ENVIRONMENT !== 'github-hosted' ||
-    process.env.CI !== 'true' ||
-    process.env.E2E_BASE_URL !== 'https://localhost:8443' ||
-    root !== process.env.GITHUB_WORKSPACE ||
-    !run ||
-    !/^[1-9][0-9]*$/.test(run) ||
-    !attempt ||
-    !/^[1-9][0-9]*$/.test(attempt) ||
+    (!local && (process.env.RUNNER_ENVIRONMENT !== 'github-hosted' ||
+      process.env.CI !== 'true' ||
+      process.env.E2E_BASE_URL !== 'https://localhost:8443' ||
+      root !== process.env.GITHUB_WORKSPACE ||
+      !run || !/^[1-9][0-9]*$/.test(run) ||
+      !attempt || !/^[1-9][0-9]*$/.test(attempt))) ||
+    (local && root !== local.root) ||
     process.getuid?.() === undefined ||
     process.getgid?.() === undefined
   )
@@ -5984,19 +6001,39 @@ test('actual private bot menu roster and teacher Today use hosted current author
       throw new Error('Owned bot fixture Docker operation failed');
     }
   }
-  const networkName = 'rct-e2e_private_net';
+  const networkName = local?.networkName ?? 'rct-e2e_private_net';
   const network = JSON.parse(docker(['network', 'inspect', networkName]).toString('utf8'))[0];
   const gateway = network.IPAM?.Config?.[0]?.Gateway;
   if (
     network.Name !== networkName ||
-    network.Labels?.['com.docker.compose.project'] !== 'rct-e2e' ||
+    network.Labels?.['com.docker.compose.project'] !== (local?.project ?? 'rct-e2e') ||
     network.Labels?.['com.docker.compose.network'] !== 'private_net' ||
     typeof gateway !== 'string' ||
-    !/^(?:10|172|192)\.(?:[0-9]{1,3}\.){2}[0-9]{1,3}$/.test(gateway)
+    !/^(?:10|172|192)\.(?:[0-9]{1,3}\.){2}[0-9]{1,3}$/.test(gateway) ||
+    (local && (network.Labels?.['rct.local.stage17'] !== local.nonce ||
+      isIP(gateway) !== 4 ||
+      !/^(?:10\.|172\.(?:1[6-9]|2\d|3[01])\.|192\.168\.)\d/.test(gateway)))
   )
     throw new Error('Owned bot fixture network identity unavailable');
-  const image = `rct/notification-bot:u20-${run}-${attempt}`;
-  const containerName = `rct-u20-bot-${run}-${attempt}`;
+  const image = local?.botImage ?? `rct/notification-bot:u20-${run}-${attempt}`;
+  const containerName = local ? `rct-local-bot-${local.nonce}` : `rct-u20-bot-${run}-${attempt}`;
+  const ownerLabel = local ? 'rct.local.special.bot' : 'rct.u20.owner';
+  const ownerValue = local?.nonce ?? `${run}-${attempt}`;
+  if (local) {
+    if (!local.botImage || !/^sha256:[a-f0-9]{64}$/.test(local.botImage))
+      throw new Error('Owned bot image pin unavailable');
+    const pinned = JSON.parse(docker(['image', 'inspect', '--format',
+      '{"id":{{json .Id}},"labels":{{json .Config.Labels}}}', image]).toString('utf8'));
+    if (pinned.id !== local.botImage || pinned.labels?.['rct.local.stage17'] !== local.nonce)
+      throw new Error('Owned bot image identity mismatch');
+    for (const service of ['auth-service', 'mobile-bff']) {
+      const target = localSpecialService(local, service);
+      if (target.networks?.[networkName]?.NetworkID !== network.Id)
+        throw new Error('Owned bot service network mismatch');
+    }
+    if (docker(['ps', '-aq', '--filter', `name=^/${containerName}$`]).toString('utf8').trim())
+      throw new Error('Owned bot name is already occupied');
+  }
   const mounts = [
     ['auth-server.crt', '/run/u20/auth.crt'],
     ['mobile-bff-server.crt', '/run/u20/read.crt'],
@@ -6004,7 +6041,7 @@ test('actual private bot menu roster and teacher Today use hosted current author
     ['auth-secrets/bot-to-read-token', '/run/u20/read-token'],
   ]
     .map(([file, target]) => {
-      const source = resolve(root, 'tests/e2e/infra/certs', file);
+      const source = resolve(local?.certsDir ?? resolve(root, 'tests/e2e/infra/certs'), file);
       const info = lstatSync(source);
       if (!info.isFile() || info.isSymbolicLink() || info.size <= 0 || info.size > 8192)
         throw new Error('Owned bot fixture capability file unavailable');
@@ -6203,13 +6240,16 @@ test('actual private bot menu roster and teacher Today use hosted current author
     const address = control.address();
     if (!address || typeof address === 'string')
       throw new Error('Owned control address unavailable');
+    if (local && !isDeepStrictEqual(localSpecialLane('bot'), local))
+      throw new Error('Owned bot admission changed before creation');
     const args = [
       'run',
       '--rm',
       '--name',
       containerName,
       '--label',
-      `rct.u20.owner=${run}-${attempt}`,
+      `${ownerLabel}=${ownerValue}`,
+      ...(local ? ['--label', `rct.local.stage17=${local.nonce}`] : []),
       '--pull=never',
       '--network',
       networkName,
@@ -6311,12 +6351,30 @@ test('actual private bot menu roster and teacher Today use hosted current author
         .toString('utf8')
         .trim();
       if (remaining) {
-        const target = JSON.parse(
-          docker(['inspect', '--format', '{{json .Config.Labels}}', remaining]).toString('utf8'),
-        );
-        if (target['rct.u20.owner'] !== `${run}-${attempt}`)
-          throw new Error('Owned bot cleanup refused');
-        docker(['rm', '-f', remaining]);
+        if (local) {
+          if (!/^[a-f0-9]{12,64}$/.test(remaining))
+            throw new Error('Owned bot cleanup identity is ambiguous');
+          const target = JSON.parse(
+            docker(['inspect', '--format',
+              '{"id":{{json .Id}},"name":{{json .Name}},"image":{{json .Image}},"labels":{{json .Config.Labels}}}', remaining]).toString('utf8'),
+          );
+          if (!/^[a-f0-9]{64}$/.test(target.id) || !target.id.startsWith(remaining) ||
+              target.labels?.[ownerLabel] !== ownerValue ||
+              target.name !== `/${containerName}` || target.image !== image ||
+              target.labels?.['rct.local.stage17'] !== local.nonce ||
+              target.labels?.['com.docker.compose.project'] !== undefined)
+            throw new Error('Owned bot cleanup refused');
+          docker(['rm', '-f', target.id]);
+          if (docker(['ps', '-aq', '--filter', `name=^/${containerName}$`]).toString('utf8').trim())
+            throw new Error('Owned bot cleanup outcome unavailable');
+        } else {
+          const target = JSON.parse(
+            docker(['inspect', '--format', '{{json .Config.Labels}}', remaining]).toString('utf8'),
+          );
+          if (target['rct.u20.owner'] !== `${run}-${attempt}`)
+            throw new Error('Owned bot cleanup refused');
+          docker(['rm', '-f', remaining]);
+        }
       }
     } catch {
       cleanupFailed = true;

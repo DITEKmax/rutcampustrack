@@ -1,3 +1,4 @@
+import { localSpecialLane, localSpecialService, type LocalSpecialLane } from './local-special';
 import { diagnosticCase } from './diagnostic-events';
 import { terminal as observeTerminal, assertOwnedSemesterUi } from './semester-lifecycle-observers';
 import { createHash, randomUUID } from 'node:crypto';
@@ -36,6 +37,13 @@ import {
 } from './owned-container-identity';
 import { normalizeDockerHealthTimestamp, observeHealth, withoutGatewayAdmissionDiagnostic, writeHealthDiagnostic } from './semester-health-diagnostic';
 type Row = Record<string, any>;
+
+// This admission pins the manifest, current phase and every local resource.
+const localLane = process.env.RCT_LOCAL_SPECIAL_LANE;
+const local = localSpecialLane((localLane ?? 'semester-metadata') as LocalSpecialLane);
+if (local && !['semester-metadata', 'subject-deletion', 'semester-reconciliation', 'semester-archive'].includes(localLane ?? ''))
+  throw new Error('Local semester lane mismatch');
+
 
 type SemesterStage =
   | 'SETUP'
@@ -481,7 +489,7 @@ async function ownedHistoricalPromotion(
   };
   const today = natural();
   const root = resolve(__dirname, '../../..'),
-    envFile = join(root, 'tests/e2e/.env.ci');
+    envFile = (local ? join(local.run, 'synthetic.env') : join(root, 'tests/e2e/.env.ci'));
   const envStat = lstatSync(envFile);
   requireValue(
     envStat.isFile() &&
@@ -534,8 +542,8 @@ async function ownedHistoricalPromotion(
   };
   // Successful application recovery leaves the original databases stopped.
   const recoveryProject = process.env.RCT_APP_RECOVERY_PROJECT;
-  const project = recoveryProject ?? 'rct-e2e';
-  if (recoveryProject !== undefined) {
+  const project = local?.databaseProject ?? recoveryProject ?? 'rct-e2e';
+  if (!local && recoveryProject !== undefined) {
     const runId = process.env.GITHUB_RUN_ID;
     const runAttempt = process.env.GITHUB_RUN_ATTEMPT;
     requireValue(
@@ -546,7 +554,7 @@ async function ownedHistoricalPromotion(
     );
   }
   const ids = native(
-    recoveryProject === undefined
+    local ? ['ps', '-q', '--filter', `label=com.docker.compose.project=${project}`, '--filter', 'label=com.docker.compose.service=postgres-academic', '--filter', `label=rct.local.stage17=${local.nonce}`] : recoveryProject === undefined
       ? [
           'compose',
           '--env-file',
@@ -588,12 +596,13 @@ async function ownedHistoricalPromotion(
       ]),
     );
   const pin = inspect();
+  if (local) requireValue(localSpecialService(local, 'postgres-academic').id === pin.id, 'Local promotion service mismatch');
   requireValue(
     /^[0-9a-f]{64}$/.test(pin.id) &&
       pin.id.startsWith(ids[0]) &&
       pin.labels?.['com.docker.compose.project'] === project &&
-      (recoveryProject === undefined ||
-        pin.labels?.['io.rutcampustrack.recovery'] === 'disposable') &&
+      (local ? localSpecialService(local, 'postgres-academic').id === pin.id : (recoveryProject === undefined ||
+        pin.labels?.['io.rutcampustrack.recovery'] === 'disposable')) &&
       pin.labels?.['com.docker.compose.service'] === 'postgres-academic' &&
       pin.configuredImage === 'postgres:16' &&
       pin.running === true &&
@@ -1587,10 +1596,12 @@ test('FULL admin archives and restores the disposable CI semester through real p
   playwright,
   page,
 }, info) => {
+  localSpecialLane('semester-archive');
   requirePrivateArtifacts(info);
   test.setTimeout(420000);
   const browserLoginCutoff = performance.now() + 270000;
   const run = process.env.RCT_SEMESTER_LIFECYCLE_RUN;
+  requireValue(!local || run === local.laneRun, 'Local semester checkpoint mismatch');
   requireValue(
     run && isAbsolute(run),
     'Semester lifecycle requires an absolute private run directory',
@@ -2410,6 +2421,7 @@ test('FULL admin manages owned semester metadata and historical group promotion 
   playwright,
   page,
 }, info) => {
+  localSpecialLane('semester-metadata');
   requirePrivateArtifacts(info);
   test.setTimeout(420000);
   const promotionCaseEnd = promotionStartedAt.get(info)! + info.timeout - 10000;
@@ -2423,6 +2435,7 @@ test('FULL admin manages owned semester metadata and historical group promotion 
     return Math.min(cap, remaining);
   };
   const run = process.env.RCT_SEMESTER_LIFECYCLE_RUN;
+  requireValue(!local || run === local.laneRun, 'Local semester checkpoint mismatch');
   requireValue(run && isAbsolute(run), 'Independent admin UI requires its private run directory');
   for (const path of [run, join(run, 'artifacts')]) {
     const stat = lstatSync(path);
@@ -2685,10 +2698,12 @@ test('FULL admin manages owned semester metadata and historical group promotion 
 test('FULL admin reconciles one exact stranded close before archive completion', async ({
   playwright,
 }, info) => {
+  localSpecialLane('semester-reconciliation');
   requirePrivateArtifacts(info);
   test.setTimeout(420000);
   const end = performance.now() + info.timeout - Math.max(info.duration, 10000);
   const run = process.env.RCT_SEMESTER_LIFECYCLE_RUN;
+  requireValue(!local || run === local.laneRun, 'Local semester checkpoint mismatch');
   requireValue(run && isAbsolute(run), 'Reconciliation requires a private run directory');
   for (const path of [run, join(run, 'artifacts')]) {
     const stat = lstatSync(path);
@@ -2712,7 +2727,7 @@ test('FULL admin reconciles one exact stranded close before archive completion',
   );
   const clock = unchangedClock();
   const root = resolve(__dirname, '../../..');
-  const envFile = join(root, 'tests/e2e/.env.ci');
+  const envFile = (local ? join(local.run, 'synthetic.env') : join(root, 'tests/e2e/.env.ci'));
   const envStat = lstatSync(envFile);
   requireValue(
     envStat.isFile() &&
@@ -3218,7 +3233,7 @@ test('FULL admin reconciles one exact stranded close before archive completion',
       throw failure;
     }
   };
-  const compose = [
+  const compose = local ? ['compose', '-p', local.project, '-f', local.composeFile] : [
     'compose',
     '--env-file',
     envFile,
@@ -3251,7 +3266,7 @@ test('FULL admin reconciles one exact stranded close before archive completion',
     requireValue(
       current.id === pin.id &&
         current.image === pin.image &&
-        current.labels['com.docker.compose.project'] === 'rct-e2e' &&
+        current.labels['com.docker.compose.project'] === (local?.project ?? 'rct-e2e') &&
         current.labels['com.docker.compose.service'] === service,
       'Owned container identity changed',
     );
@@ -3418,7 +3433,7 @@ print(JSON.stringify({receipt,claims,acks,docs,other}));`;
   const broker = async (path: string, data?: unknown): Promise<any> => {
     const current = pins.rabbitmq;
     const ip =
-      current.networks.rct_e2e_private_net?.IPAddress ??
+      local ? current.networks[local.networkName]?.IPAddress : current.networks.rct_e2e_private_net?.IPAddress ??
       current.networks['rct-e2e_private_net']?.IPAddress;
     requireValue(
       typeof ip === 'string' && /^(?:10\.|172\.(?:1[6-9]|2\d|3[01])\.|192\.168\.)\d/.test(ip),
@@ -4442,6 +4457,7 @@ AND e.event_type='lesson.closed' AND e.event_payload#>>'{payload,lesson_id}'='${
         'One owned container required',
       );
       pins[service] = inspect(ids[0]);
+      if (local) requireValue(localSpecialService(local, service).id === pins[service].id, 'Local reconciliation service mismatch');
       const current = identity(service);
       requireValue(
         current.running && current.health === 'healthy',
@@ -5323,6 +5339,7 @@ WHERE e.event_id::text=o.payload->>'event_id' AND e.event_type=o.event_type)),
 // Subject deletion has its own test/fixture slot; the two existing semester scenarios are unchanged.
 function subjectCascadeOtpReceiver(info: TestInfo) {
   const run = process.env.RCT_SEMESTER_LIFECYCLE_RUN;
+  requireValue(!local || run === local.laneRun, 'Local semester checkpoint mismatch');
   requireValue(run && isAbsolute(run), 'OTP receiver requires a private run directory');
   for (const directory of [run, join(run, 'artifacts')]) {
     const stat = lstatSync(directory);
@@ -5332,14 +5349,14 @@ function subjectCascadeOtpReceiver(info: TestInfo) {
     );
   }
   requireValue(
-    process.env.CI === 'true' &&
+    (local !== undefined || process.env.CI === 'true') &&
       process.env.RCT_E2E_SYNTHETIC_SEED === 'true' &&
       info.project.outputDir === join(run, 'artifacts') &&
       info.project.use.baseURL === 'https://localhost:8443',
     'OTP receiver requires the exact disposable CI lane',
   );
   const root = resolve(__dirname, '../../..');
-  const envFile = join(root, 'tests/e2e/.env.ci');
+  const envFile = (local ? join(local.run, 'synthetic.env') : join(root, 'tests/e2e/.env.ci'));
   const envStat = lstatSync(envFile);
   requireValue(
     envStat.isFile() &&
@@ -5381,7 +5398,7 @@ function subjectCascadeOtpReceiver(info: TestInfo) {
       throw new Error('Owned OTP container lookup failed');
     }
   };
-  const ids = docker([
+  const ids = docker(local ? ['compose', '-p', local.project, '-f', local.composeFile, 'ps', '-q', 'rabbitmq'] : [
     'compose',
     '--env-file',
     envFile,
@@ -5422,17 +5439,18 @@ function subjectCascadeOtpReceiver(info: TestInfo) {
     }
   };
   const pin = inspect();
+  if (local) requireValue(localSpecialService(local, 'rabbitmq').id === pin.id, 'Local subject broker mismatch');
   requireValue(
     /^[0-9a-f]{64}$/.test(pin.id) &&
       /^sha256:[0-9a-f]{64}$/.test(pin.image) &&
       pin.imageName === 'rabbitmq:3.13-management-alpine' &&
-      pin.labels?.['com.docker.compose.project'] === 'rct-e2e' &&
+      pin.labels?.['com.docker.compose.project'] === (local?.project ?? 'rct-e2e') &&
       pin.labels?.['com.docker.compose.service'] === 'rabbitmq' &&
       pin.running === true &&
       pin.health === 'healthy',
     'Owned OTP broker identity is invalid',
   );
-  const network = pin.networks?.rct_e2e_private_net ?? pin.networks?.['rct-e2e_private_net'];
+  const network = local ? pin.networks?.[local.networkName] : pin.networks?.rct_e2e_private_net ?? pin.networks?.['rct-e2e_private_net'];
   const ip = network?.IPAddress;
   requireValue(
     typeof ip === 'string' &&
@@ -5707,6 +5725,7 @@ const subjectCascadeTest = test.extend<{
 function subjectCascadeReadback(deadline: number) {
   const root = resolve(__dirname, '../../..');
   const run = process.env.RCT_SEMESTER_LIFECYCLE_RUN;
+  requireValue(!local || run === local.laneRun, 'Local semester checkpoint mismatch');
   requireValue(run && isAbsolute(run), 'Subject deletion requires the private semester lane');
   for (const directory of [run, join(run, 'artifacts')]) {
     const stat = lstatSync(directory);
@@ -5724,7 +5743,7 @@ function subjectCascadeReadback(deadline: number) {
       readFileSync(marker, 'utf8').trim() === 'RCT_SEMESTER_DISPOSABLE',
     'Subject deletion stand ownership must match',
   );
-  const envFile = join(root, 'tests/e2e/.env.ci');
+  const envFile = (local ? join(local.run, 'synthetic.env') : join(root, 'tests/e2e/.env.ci'));
   const stat = lstatSync(envFile);
   requireValue(
     stat.isFile() && !stat.isSymbolicLink() && stat.size <= 65536 && (stat.mode & 0o022) === 0,
@@ -5934,7 +5953,7 @@ function subjectCascadeReadback(deadline: number) {
       throw failure;
     }
   };
-  const compose = [
+  const compose = local ? ['compose', '-p', local.project, '-f', local.composeFile] : [
     'compose',
     '--env-file',
     envFile,
@@ -5967,10 +5986,11 @@ function subjectCascadeReadback(deadline: number) {
       'Subject deletion requires one owned database',
     );
     const pin = inspect(ids[0]);
+    if (local) requireValue(localSpecialService(local, service).id === pin.id, 'Local subject database mismatch');
     requireValue(
       /^[0-9a-f]{64}$/.test(pin.id) &&
         /^sha256:[0-9a-f]{64}$/.test(pin.image) &&
-        pin.labels?.['com.docker.compose.project'] === 'rct-e2e' &&
+        pin.labels?.['com.docker.compose.project'] === (local?.project ?? 'rct-e2e') &&
         pin.labels?.['com.docker.compose.service'] === service &&
         pin.running === true &&
         pin.health === 'healthy',
@@ -6287,6 +6307,7 @@ subjectCascadeTest.describe('full subject deletion through the owned stand', () 
   test('HEADMAN deletes one subject through real proof and participants while mixed EXCUSE keeps the control subject', async ({
     subjectCascade,
   }, info) => {
+    localSpecialLane('subject-deletion');
     const { request, otp } = subjectCascade;
     const mainEnd = performance.now() + 330000;
     const remaining = (cap = 10000) => {

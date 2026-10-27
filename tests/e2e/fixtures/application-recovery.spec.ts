@@ -1,3 +1,4 @@
+import { localSpecialLane } from './local-special';
 import { createHash, randomUUID } from 'node:crypto';
 import { chmodSync, existsSync, lstatSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
 import { isAbsolute, join } from 'node:path';
@@ -326,6 +327,7 @@ async function seed(request: APIRequestContext, run: string) {
 
   // The existing 60s lifecycle job closes the genuine marked lesson. Security clocks stay real.
   const expectedInstant = `${dataset.today}T09:00:00.000Z`;
+  requireValue(Date.parse(expectedInstant) > instant.getTime(), 'Recovery clock must advance monotonically');
   const expectedClock = Buffer.from(`${expectedInstant}\n`);
   const temporaryClock = join(clockDirectory, `recovery-${randomUUID()}`);
   writeFileSync(temporaryClock, expectedClock, { flag: 'wx', mode: 0o644 });
@@ -525,10 +527,12 @@ async function seed(request: APIRequestContext, run: string) {
 }
 
 test('application recovery API phase', async ({ playwright }, info) => {
+  const local = localSpecialLane('application-recovery');
   requirePrivateArtifacts(info);
   requireValue(phase && phases.includes(phase), 'Recovery phase must be explicit');
   test.setTimeout(phase === 'seed' ? 300000 : 60000);
   const run = process.env.RCT_APP_RECOVERY_RUN;
+  requireValue(!local || run === local.laneRun, 'Local recovery checkpoint mismatch');
   requireValue(run && isAbsolute(run), 'Recovery requires an absolute private run directory');
   for (const path of [run, join(run, 'artifacts'), join(run, 'artifacts', phase)]) {
     const stat = lstatSync(path);

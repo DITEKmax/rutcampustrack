@@ -1,5 +1,6 @@
 import { failureBoundary, themeState } from '../fixtures/failed-case-diagnostics';
 import { randomUUID } from 'node:crypto';
+import { isDeepStrictEqual } from 'node:util';
 import { execFileSync } from 'node:child_process';
 import { lstatSync, readFileSync } from 'node:fs';
 import { isIP } from 'node:net';
@@ -14,6 +15,7 @@ import {
 } from '../fixtures/cloud-accepted-support';
 import { admit } from '../fixtures/mobile-dataset';
 import { loginPwa, logoutPwa } from '../fixtures/pwa-auth';
+import { localSpecialLane, localSpecialService } from '../fixtures/local-special';
 
 registerPrivateSuite();
 
@@ -47,7 +49,8 @@ function requireOwned(value: unknown, message: string): asserts value {
 
 /** A real event recipient in the same disposable network; never a product OTP endpoint. */
 function ownedOtpReceiver(info: TestInfo) {
-  const run = process.env.RCT_REMAINING5_RUN;
+  const local = localSpecialLane('password-recovery');
+  const run = local?.laneRun ?? process.env.RCT_REMAINING5_RUN;
   requireOwned(run && isAbsolute(run), 'OTP receiver requires a private run directory');
   for (const directory of [run, join(run, 'artifacts')]) {
     const stat = lstatSync(directory);
@@ -57,7 +60,7 @@ function ownedOtpReceiver(info: TestInfo) {
     );
   }
   requireOwned(
-    process.env.CI === 'true' &&
+    (local !== undefined || process.env.CI === 'true') &&
       process.env.RCT_E2E_REMAINING5 === 'true' &&
       process.env.RCT_E2E_ROLE_LOGOUT === 'true' &&
       process.env.RCT_E2E_SYNTHETIC_SEED === 'true' &&
@@ -66,13 +69,15 @@ function ownedOtpReceiver(info: TestInfo) {
     'OTP receiver requires the exact disposable CI lane',
   );
   const root = resolve(__dirname, '../../..');
-  const envFile = join(root, 'tests/e2e/.env.ci');
+  requireOwned(!local || root === local.root, 'Owned OTP source root mismatch');
+  const envFile = local ? join(local.run, 'synthetic.env') : join(root, 'tests/e2e/.env.ci');
   const envStat = lstatSync(envFile);
   requireOwned(
     envStat.isFile() &&
       !envStat.isSymbolicLink() &&
       envStat.size <= 65536 &&
-      (envStat.mode & 0o022) === 0,
+      (envStat.mode & 0o022) === 0 &&
+      (!local || (envStat.mode & 0o777) === 0o600),
     'Synthetic CI configuration must be bounded',
   );
   const secret: Record<string, string> = {};
@@ -106,7 +111,8 @@ function ownedOtpReceiver(info: TestInfo) {
       throw new Error('Owned OTP container lookup failed');
     }
   };
-  const ids = docker([
+  const owned = local ? localSpecialService(local, 'rabbitmq') : undefined;
+  const ids = owned ? [owned.id] : docker([
     'compose',
     '--env-file',
     envFile,
@@ -131,7 +137,7 @@ function ownedOtpReceiver(info: TestInfo) {
           [
             'inspect',
             '--format',
-            '{"id":{{json .Id}},"image":{{json .Image}},"imageName":{{json .Config.Image}},"labels":{{json .Config.Labels}},"running":{{json .State.Running}},"health":{{json .State.Health.Status}},"mounts":{{json .Mounts}},"networks":{{json .NetworkSettings.Networks}}}',
+            '{"id":{{json .Id}},"image":{{json .Image}},"imageName":{{json .Config.Image}},"labels":{{json .Config.Labels}},"running":{{json .State.Running}},"paused":{{json .State.Paused}},"health":{{json .State.Health.Status}},"mounts":{{json .Mounts}},"networks":{{json .NetworkSettings.Networks}}}',
             ids[0],
           ],
           timeout,
@@ -146,13 +152,20 @@ function ownedOtpReceiver(info: TestInfo) {
     /^[0-9a-f]{64}$/.test(pin.id) &&
       /^sha256:[0-9a-f]{64}$/.test(pin.image) &&
       pin.imageName === 'rabbitmq:3.13-management-alpine' &&
-      pin.labels?.['com.docker.compose.project'] === 'rct-e2e' &&
+      pin.labels?.['com.docker.compose.project'] === (local?.project ?? 'rct-e2e') &&
+      (!local || (pin.id === owned!.id && pin.image === owned!.image &&
+        pin.imageName === owned!.configuredImage &&
+        pin.labels?.['rct.local.stage17'] === local.nonce && pin.paused === false &&
+        isDeepStrictEqual(pin.labels, owned!.labels) &&
+        isDeepStrictEqual(pin.mounts, owned!.mounts) &&
+        isDeepStrictEqual(pin.networks, owned!.networks))) &&
       pin.labels?.['com.docker.compose.service'] === 'rabbitmq' &&
       pin.running === true &&
       pin.health === 'healthy',
     'Owned OTP broker identity is invalid',
   );
-  const network = pin.networks?.rct_e2e_private_net ?? pin.networks?.['rct-e2e_private_net'];
+  const network = local ? pin.networks?.[local.networkName] :
+    pin.networks?.rct_e2e_private_net ?? pin.networks?.['rct-e2e_private_net'];
   const ip = network?.IPAddress;
   requireOwned(
     typeof ip === 'string' &&
@@ -166,7 +179,7 @@ function ownedOtpReceiver(info: TestInfo) {
       current.id === pin.id &&
         current.image === pin.image &&
         current.imageName === pin.imageName &&
-        current.running === true &&
+        current.running === true && (!local || current.paused === false) &&
         current.health === 'healthy' &&
         JSON.stringify(current.labels) === JSON.stringify(pin.labels) &&
         JSON.stringify(current.mounts) === JSON.stringify(pin.mounts) &&
@@ -174,7 +187,7 @@ function ownedOtpReceiver(info: TestInfo) {
       'Owned OTP broker identity changed',
     );
   };
-  const queue = `rct-auth-reset-${randomUUID()}`;
+  const queue = local ? `rct-auth-reset-${local.nonce}-${randomUUID()}` : `rct-auth-reset-${randomUUID()}`;
   const queuePath = `queues/%2F/${encodeURIComponent(queue)}`;
   let attempted = false;
   let closing = false;
@@ -435,6 +448,8 @@ function ownedOtpReceiver(info: TestInfo) {
           deleteRemaining,
           true,
         );
+        if (local)
+          await call('GET', queuePath, [404], undefined, Math.floor(end - performance.now()), true);
         return;
       }
     },

@@ -1,5 +1,6 @@
 import { localSpecialLane, localSpecialService, type LocalSpecialLane } from './local-special';
 import { diagnosticCase } from './diagnostic-events';
+import { createInitialReadiness } from './reconciliation-readiness';
 import { createDlqWitness, observeRetainedDlq, readDlqCounters } from './reconciliation-dlq-observation';
 import { terminal as observeTerminal, assertOwnedSemesterUi } from './semester-lifecycle-observers';
 import { createHash, randomUUID } from 'node:crypto';
@@ -3238,6 +3239,7 @@ test('FULL admin reconciles one exact stranded close before archive completion',
     return Math.max(1, Math.min(cap, Math.floor(remaining)));
   };
   const dlqWitness = createDlqWitness();
+  const initialReadiness = createInitialReadiness();
   const nativeDiagnostic = {
     schema: 'RCT_RECONCILIATION_NATIVE_V1',
     main: null as ReconciliationNativeRecord | null,
@@ -4698,7 +4700,7 @@ AND e.event_type='lesson.closed' AND e.event_payload#>>'{payload,lesson_id}'='${
         Number(dataset.otherGroup.id) !== Number(scope.group),
       'Four exact owned initial memberships are required',
     );
-    const initialReadinessEnd = performance.now() + budget(10000);
+    const initialReadinessEnd = initialReadiness.admit((cap) => budget(cap, {}, true));
     const initialMembershipsReady = (): {
       expectedApplied: boolean;
       noPendingWork: boolean;
@@ -4873,7 +4875,7 @@ WHERE e.event_id::text=o.payload->>'event_id' AND e.event_type=o.event_type)),
               initialNoPendingWork: initial.noPendingWork,
               initialProducerSent: initial.producerSent,
             };
-            return (
+            const ready = (
               q.main.messages_ready === 0 &&
               q.main.messages_unacknowledged === 0 &&
               q.main.consumers === 1 &&
@@ -4888,14 +4890,18 @@ WHERE e.event_id::text=o.payload->>'event_id' AND e.event_type=o.event_type)),
               initial.noPendingWork &&
               initial.producerSent
             );
+            initialReadiness.observe(diagnostic.setupQuiescenceLastRead, ready);
+            return ready;
           },
           {
-            timeout: Math.max(1, Math.min(budget(10000), initialReadinessEnd - performance.now())),
+            timeout: initialReadiness.remaining(),
             message: 'Fresh synthetic namespace is quiescent',
           },
         )
         .toBe(true);
+      initialReadiness.finish(true);
     } catch (error) {
+      initialReadiness.finish(false);
       switch (quiescence.firstFailed) {
         case 'MAIN_READY':
           expect.soft(false, 'D9_QUIESCENCE_MAIN_READY').toBe(true);
@@ -5514,6 +5520,15 @@ WHERE e.event_id::text=o.payload->>'event_id' AND e.event_type=o.event_type)),
       const closedDlq = `${JSON.stringify(dlqWitness)}\n`;
       requireValue(Buffer.byteLength(closedDlq, 'utf8') <= 1024, 'DLQ observation metadata must remain bounded');
       writeFileSync(join(run, 'reconciliation-dlq.safe.json'), closedDlq, { mode: 0o600, flag: 'wx' });
+    } catch (error) {
+      retainLifecycleCleanupFailure(info.annotations, 'CLEANUP_SEMESTER_WRITE', error);
+      cleanupFailure ??= { error };
+    }
+    try {
+      initialReadiness.finish(false);
+      const closedReadiness = `${JSON.stringify(initialReadiness.witness)}\n`;
+      requireValue(Buffer.byteLength(closedReadiness, 'utf8') <= 2048, 'Initial readiness metadata must remain bounded');
+      writeFileSync(join(run, 'reconciliation-readiness.safe.json'), closedReadiness, { mode: 0o600, flag: 'wx' });
     } catch (error) {
       retainLifecycleCleanupFailure(info.annotations, 'CLEANUP_SEMESTER_WRITE', error);
       cleanupFailure ??= { error };

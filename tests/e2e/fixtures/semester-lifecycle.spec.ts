@@ -3,7 +3,7 @@ import { diagnosticCase } from './diagnostic-events';
 import { terminal as observeTerminal, assertOwnedSemesterUi } from './semester-lifecycle-observers';
 import { createHash, randomUUID } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
-import { lstatSync, readFileSync, writeFileSync } from 'node:fs';
+import { closeSync, constants, fstatSync, fsyncSync, lstatSync, openSync, readFileSync, readSync, realpathSync, writeFileSync } from 'node:fs';
 import { isAbsolute, join, resolve } from 'node:path';
 import { isIP } from 'node:net';
 import { setTimeout as delay } from 'node:timers/promises';
@@ -1071,12 +1071,88 @@ async function ownedHistoricalPromotion(
   }
 }
 
+/** Closed local diagnostic only; retention failure must never replace the original oracle. */
+function retainMetadataOracle(
+  info: TestInfo,
+  known: Row,
+  current: Row,
+  countKeys: readonly string[],
+): void {
+  let descriptor: number | undefined;
+  try {
+    if (!local || process.platform !== 'linux' || process.env.RCT_LOCAL_STAGE17_MODE !== 'special13' ||
+        process.env.RCT_LOCAL_SPECIAL_COHORT !== 'lifecycle' ||
+        process.env.RCT_LOCAL_SPECIAL_LANE !== 'semester-metadata' || process.env.RCT_LOCAL_SPECIAL_PHASE !== 'main' ||
+        process.env.RCT_LOCAL_SPECIAL_DISCOVERY || process.env.RCT_LOCAL_SPECIAL_PREPARATION) return;
+    const root = resolve(__dirname, '../../..');
+    const run = resolve(root, '.agent/evidence/local-runs', `rct-local-stage17-${local.nonce.slice(0, 12)}`);
+    const artifacts = join(local.laneRun, 'artifacts');
+    const manifest = join(run, 'owner.json');
+    if (local.root !== root || local.run !== run || local.laneRun !== join(run, 'lanes/semester-metadata') ||
+        !/^[a-f0-9]{24}$/.test(local.nonce) || local.project !== `rct-local-stage17-${local.nonce.slice(0, 12)}` ||
+        process.env.RCT_LOCAL_STAGE17_NONCE !== local.nonce || process.env.RCT_LOCAL_STAGE17_MANIFEST !== manifest ||
+        process.env.RCT_SEMESTER_LIFECYCLE_RUN !== local.laneRun || info.project.outputDir !== artifacts) return;
+    for (const path of [run, join(run, 'lanes'), local.laneRun, artifacts]) {
+      const stat = lstatSync(path);
+      if (!stat.isDirectory() || stat.isSymbolicLink() || stat.uid !== process.getuid?.() ||
+          (stat.mode & 0o777) !== 0o700 || realpathSync(path) !== path) return;
+    }
+    const boundedFile = (path: string, maximum: number, mode?: number): Buffer => {
+      const before = lstatSync(path);
+      const fd = openSync(path, constants.O_RDONLY | constants.O_NOFOLLOW | constants.O_NONBLOCK);
+      try {
+        const stat = fstatSync(fd);
+        const identity = (row: typeof stat) => [row.dev, row.ino, row.mode, row.uid, row.size, row.mtimeMs, row.ctimeMs];
+        requireValue(stat.isFile() && !before.isSymbolicLink() && stat.nlink === 1 && stat.uid === process.getuid?.() &&
+          (mode === undefined || (stat.mode & 0o777) === mode) && stat.size > 0 && stat.size <= maximum &&
+          realpathSync(path) === path && JSON.stringify(identity(before)) === JSON.stringify(identity(stat)),
+        'Metadata witness file ownership mismatch');
+        const bytes = Buffer.alloc(maximum + 1);
+        const count = readSync(fd, bytes, 0, bytes.length, 0);
+        requireValue(count === stat.size && JSON.stringify(identity(stat)) === JSON.stringify(identity(fstatSync(fd))) &&
+          JSON.stringify(identity(stat)) === JSON.stringify(identity(lstatSync(path))),
+        'Metadata witness file changed while reading');
+        return bytes.subarray(0, count);
+      } finally { closeSync(fd); }
+    };
+    const owner = JSON.parse(boundedFile(manifest, 8 * 1024 ** 2, 0o600).toString('utf8'));
+    if (owner.root !== root || owner.run !== run || owner.project !== local.project || owner.nonce !== local.nonce ||
+        owner.uid !== process.getuid?.() || owner.mode !== 'special13' || owner.special_cohort !== 'lifecycle' ||
+        typeof owner.source_sha !== 'string' || !/^[a-f0-9]{40}$/.test(owner.source_sha)) return;
+    const source = resolve(__dirname, 'semester-lifecycle.spec.ts');
+    const sourceDigest = owner.sources?.['tests/e2e/fixtures/semester-lifecycle.spec.ts'];
+    if (typeof sourceDigest !== 'string' || !/^[a-f0-9]{64}$/.test(sourceDigest) ||
+        createHash('sha256').update(boundedFile(source, 1024 ** 2)).digest('hex') !== sourceDigest) return;
+    const witness = {
+      schema: 'RCT_LOCAL_METADATA_ORACLE_V1', sourceRevision: owner.source_sha,
+      runBinding: createHash('sha256').update(run, 'utf8').digest('hex'),
+      digestEqual: current?.previewDigest === known.previewDigest,
+      stateVersionEqual: current?.stateVersion === known.stateVersion,
+      countsEqual: countKeys.every(key => current?.counts?.[key] === known.counts[key]),
+      priorStateEqual: current?.priorState === known.priorState,
+    };
+    descriptor = openSync(join(artifacts, 'metadata-oracle.private.json'),
+      constants.O_WRONLY | constants.O_CREAT | constants.O_EXCL | constants.O_NOFOLLOW, 0o600);
+    const retained = fstatSync(descriptor);
+    requireValue(retained.isFile() && retained.nlink === 1 && retained.uid === process.getuid?.() &&
+      (retained.mode & 0o777) === 0o600, 'Metadata witness must remain a private owned file');
+    writeFileSync(descriptor, `${JSON.stringify(witness)}\n`);
+    fsyncSync(descriptor);
+  } catch { /* Missing or unsafe diagnostics never mask the original digest/version assertion. */ }
+  finally {
+    if (descriptor !== undefined) {
+      try { closeSync(descriptor); } catch { /* Preserve the original assertion outcome. */ }
+    }
+  }
+}
+
 async function ownedSemesterMetadataAndDeletion(
   page: import('@playwright/test').Page,
   admin: Actor,
   caseEnd: number,
   currentSemesterId: number,
   teachingInstant: Date,
+  info: TestInfo,
 ): Promise<void> {
   // Keep the existing promotion's main work and original recovery reserve untouched.
   requireValue(
@@ -1445,6 +1521,7 @@ async function ownedSemesterMetadataAndDeletion(
       'GET',
       `/api/academic/semesters/${currentSemesterId}/delete-preview`,
     );
+    retainMetadataOracle(info, known, unchangedPreview, countItems.map(([key]) => key));
     requireValue(
       unchangedPreview.previewDigest === known.previewDigest &&
         unchangedPreview.stateVersion === known.stateVersion,
@@ -2664,6 +2741,7 @@ test('FULL admin manages owned semester metadata and historical group promotion 
       promotionCaseEnd,
       currentSemesterId,
       clock.instant,
+      info,
     );
     await ownedHistoricalPromotion(page, request, admin, promotionCaseEnd, currentSemesterId);
   } catch (error) {

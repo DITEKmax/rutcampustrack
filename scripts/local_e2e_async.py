@@ -1134,7 +1134,448 @@ def validate_observed_special_network(selected, network, nginx_binding):
             and nginx_binding.get("IPAMConfig", {}).get("IPv4Address") == selected["nginx"], "SPECIAL_OBSERVED_NETWORK_BINDING")
 
 
-def preflight(*, special=False, retained_receipt=None, retained_pdf_receipt=None, retained_recovery_receipt=None, selected_network=None):
+def retained_inputs_check(condition, code, relative=None, actual=None, expected=None):
+    if condition:
+        return
+    error = AdmissionError(code)
+    if relative is not None:
+        def closed(row):
+            if not isinstance(row, dict): return None
+            fields = {'dev', 'ino', 'uid', 'gid', 'mode', 'nlink', 'size', 'mtime_ns', 'ctime_ns', 'canonical', 'symlink', 'type'}
+            return {key: value for key, value in row.items() if key in fields and (type(value) in (int, bool) or key == 'type' and value in ('REGULAR', 'DIRECTORY', 'OTHER'))}
+        named = {'relativePath': relative} if len(relative) <= 512 and all(c.isprintable() and c != '\\' for c in relative) else {
+            'relativeNameSha256': hashlib.sha256(relative.encode('utf-8', 'surrogateescape')).hexdigest()}
+        error.preserved_input = {**named, 'actualMetadata': closed(actual), 'expectedMetadata': closed(expected)}
+    raise error
+
+
+def retained_inputs_stat(path, relative=None):
+    try:
+        info = path.lstat()
+    except OSError:
+        retained_inputs_check(False, 'PRESERVED_INPUT_METADATA_UNAVAILABLE', relative)
+    symlink = stat.S_ISLNK(info.st_mode)
+    canonical = not symlink and path.resolve(strict=True) == path
+    row = {'dev': info.st_dev, 'ino': info.st_ino, 'uid': info.st_uid, 'gid': info.st_gid,
+            'mode': stat.S_IMODE(info.st_mode), 'nlink': info.st_nlink, 'size': info.st_size,
+            'mtime_ns': info.st_mtime_ns, 'ctime_ns': info.st_ctime_ns, 'type': 'REGULAR' if stat.S_ISREG(info.st_mode) else 'OTHER',
+            'canonical': canonical, 'symlink': symlink}
+    retained_inputs_check(stat.S_ISREG(info.st_mode) and not symlink and info.st_nlink == 1 and canonical,
+                          'PRESERVED_INPUT_REGULAR_CANONICAL_SINGLE_LINK', relative, row)
+    return row
+
+
+def retained_inputs_source(root, owner):
+    name = 'tests/e2e/infra/scripts/generate-test-certs.sh'
+    expected = 'b230097df5adb974bd7fda16d32abe07b72506578ffb2ebf98bc86ee0405c01b'
+    file = root / name
+    info = file.lstat()
+    mode = stat.S_IMODE(info.st_mode)
+    retained_inputs_check(owner['sources'].get(name) == expected and stat.S_ISREG(info.st_mode)
+                          and info.st_uid == os.getuid() and info.st_nlink == 1 and not file.is_symlink()
+                          and file.resolve(strict=True) == file and mode & 0o022 == 0 and mode & 0o7000 == 0
+                          and bool(mode & 0o400) and 0 < info.st_size <= 512 * 1024, 'PRESERVED_INPUT_PRODUCER_SOURCE', name)
+    raw = file.read_bytes()
+    retained_inputs_check(len(raw) == info.st_size and hashlib.sha256(raw).hexdigest() == expected,
+                          'PRESERVED_INPUT_PRODUCER_BYTES', name)
+    entries = capture(['git', 'ls-tree', '-r', '-l', '-z', 'HEAD']).split('\0')
+    matching = [entry.split('\t', 1)[0].split() for entry in entries if '\t' in entry and entry.split('\t', 1)[1] == name]
+    retained_inputs_check(len(matching) == 1 and len(matching[0]) == 4 and matching[0][0] in ('100644', '100755')
+                          and matching[0][1] == 'blob' and re.fullmatch('[a-f0-9]{40}', matching[0][2])
+                          and matching[0][3] == str(len(raw)), 'PRESERVED_INPUT_PRODUCER_GIT_ENTRY', name)
+    blob = capture(['git', 'cat-file', 'blob', matching[0][2]]).encode('utf-8')
+    retained_inputs_check(blob == raw, 'PRESERVED_INPUT_PRODUCER_GIT_BYTES', name)
+    return {'path': name, 'sha256': expected, 'git_blob': matching[0][2]}
+
+
+def retained_inputs_contract(root, run, owner, frozen, topology):
+    producer = retained_inputs_source(root, owner)
+    certs = run / 'certs'
+    cert_info = certs.lstat()
+    retained_inputs_check(stat.S_IMODE(cert_info.st_mode) in (0o700, 0o755), 'PRESERVED_INPUT_CERT_PARENT_MODE', 'certs')
+    owned(certs, stat.S_IMODE(cert_info.st_mode), directory=True)
+    owned(certs / 'auth-secrets', 0o700, directory=True)
+    specs = {
+        'academic': ('academic-service', 10001, 10001, 0o600, '/run/rct-academic-tls/academic-server.key'),
+        'schedule': ('schedule-service', 10002, 10002, 0o600, '/run/rct-schedule-tls/schedule-server.key'),
+        'attendance': ('attendance-service', 10003, 10003, 0o600, '/run/rct-attendance-tls/attendance-server.key'),
+        'mobile-bff': ('mobile-bff', 10007, 10007, 0o600, '/run/rct-mobile-bff-tls/mobile-bff-server.key'),
+        'auth': ('auth-service', 0, 10004, 0o640, '/run/rct-auth-tls/auth-server.key')}
+    names = ('bot-to-read-token mobile-bff-to-auth-token academic-to-auth-token attendance-to-auth-token '
+             'auth-to-academic-presentation-token mobile-bff-to-academic-token mobile-bff-to-attendance-token '
+             'mobile-bff-to-schedule-token attendance-bot-read-to-academic-token attendance-bot-read-to-schedule-token '
+             'academic-report-to-attendance-token academic-report-to-schedule-token notification-to-academic-token '
+             'bot-to-auth-token pg-legacy-runtime-password pg-migration-password pg-monitor-password '
+             'pg-auth-runtime-password pg-auth-migration-password pg-academic-runtime-password').split()
+    readable = {'certs/auth-secrets/' + name for name in names}
+    retained_inputs_check(sorted(file.name for file in (certs / 'auth-secrets').iterdir()) == sorted(names),
+                          'PRESERVED_INPUT_EXACT_SECRET_NAMES', 'certs/auth-secrets')
+    for name in sorted(readable):
+        row = retained_inputs_stat(run / name, name)
+        retained_inputs_check((row['uid'], row['gid'], row['mode']) == (os.getuid(), os.getgid(), 0o444),
+                              'PRESERVED_INPUT_READABLE_ROLE_OWNER_MODE', name, row)
+    opaque = {}
+    for stem, (service, uid, gid, mode, destination) in specs.items():
+        name = 'certs/' + stem + '-server.key'
+        path = run / name
+        row = retained_inputs_stat(path, name)
+        retained_inputs_check((row['uid'], row['gid'], row['mode']) == (uid, gid, mode) and 0 < row['size'] <= 1024**2,
+                              'PRESERVED_INPUT_OPAQUE_ROLE_METADATA', name, row, {'uid': uid, 'gid': gid, 'mode': mode})
+        matches = [(alias, mount) for alias, pin in frozen['services'].items() for mount in pin['mounts'] if mount.get('Source') == str(path)]
+        retained_inputs_check(len(matches) == 1 and matches[0][0] == service and matches[0][1]['Type'] == 'bind'
+                              and matches[0][1]['Destination'] == destination and matches[0][1]['RW'] is False,
+                              'PRESERVED_INPUT_OPAQUE_READONLY_SOURCE_MOUNT', name)
+        opaque[name] = {'stat': row, 'service': service, 'source_mount': canonical_mount_records([matches[0][1]])}
+    retained_inputs_reject_target_keys(run, topology, {}, ())
+    return {'producer': producer, 'opaque': opaque, 'readable': sorted(readable)}
+
+
+def retained_inputs_reject_target_keys(run, topology, target_config, rows=()):
+    keys = [run / ('certs/' + stem + '-server.key') for stem in ('academic', 'schedule', 'attendance', 'mobile-bff', 'auth')]
+    sources = [item['source'] for binds in topology['allowed_binds'].values() for item in binds]
+    sources += [item['source'] for service in target_config.get('services', {}).values() for item in service.get('volumes', []) if item.get('type') == 'bind']
+    sources += [item['file'] for item in target_config.get('secrets', {}).values()]
+    sources += [mount['Source'] for row in rows for mount in row['Mounts'] if mount['Type'] == 'bind']
+    for source in sources:
+        path = Path(source)
+        retained_inputs_check(path.is_absolute() and '..' not in path.parts and not any(key == path or key.is_relative_to(path) for key in keys),
+                              'PRESERVED_INPUT_OPAQUE_FORBIDDEN_IN_TARGET', 'restored-database-bind')
+
+
+def retained_inputs_inventory(run, roles):
+    files, directories, opaque = {}, {}, {}
+    total = 0
+    pending = [run]
+    while pending:
+        directory = pending.pop()
+        directory_info = directory.lstat()
+        directory_mode = stat.S_IMODE(directory_info.st_mode)
+        name = directory.relative_to(run).as_posix()
+        directory_stat = {key: getattr(directory_info, 'st_' + key) for key in ('dev', 'ino', 'uid', 'gid', 'nlink', 'size', 'mtime_ns', 'ctime_ns')}
+        retained_inputs_check(directory_mode in (0o700, 0o755) and not directory.is_symlink() and directory.resolve(strict=True) == directory,
+                              'PRESERVED_INPUT_DIRECTORY_CANONICAL_MODE', name, {**directory_stat, 'mode': directory_mode, 'type': 'DIRECTORY'})
+        try:
+            owned(directory, directory_mode, directory=True)
+        except AdmissionError:
+            retained_inputs_check(False, 'PRESERVED_INPUT_DIRECTORY_OWNER_MODE', name,
+                                  {**directory_stat, 'mode': directory_mode, 'type': 'DIRECTORY'}, {'uid': os.getuid()})
+        entries = sorted(directory.iterdir())
+        directories[name] = {'mode': directory_mode, 'names': [file.name for file in entries], 'stat': directory_stat}
+        require(len(directories) <= 1024, 'PRESERVED_INPUT_DIRECTORY_BOUND')
+        for file in entries:
+            name = file.relative_to(run).as_posix()
+            info = file.lstat()
+            if stat.S_ISDIR(info.st_mode):
+                retained_inputs_check(not file.is_symlink() and file.resolve(strict=True) == file,
+                                      'PRESERVED_INPUT_DIRECTORY_CANONICAL_MODE', name)
+                pending.append(file)
+                continue
+            row = retained_inputs_stat(file, name)
+            if name in roles['opaque']:
+                retained_inputs_check(row == roles['opaque'][name]['stat'], 'PRESERVED_INPUT_OPAQUE_CHANGED_DURING_ADMISSION', name, row, roles['opaque'][name]['stat'])
+                opaque[name] = roles['opaque'][name]
+                continue
+            mode = row['mode']
+            expected_mode = 0o444 if name in roles['readable'] else mode
+            retained_inputs_check(mode == expected_mode and (name in roles['readable'] or mode in (0o600, 0o644)),
+                                  'PRESERVED_INPUT_READABLE_MODE', name, row)
+            if name in roles['readable']:
+                retained_inputs_check(row['uid'] == os.getuid() and row['gid'] == os.getgid(), 'PRESERVED_INPUT_READABLE_ROLE_OWNER', name, row)
+            try:
+                owned(file, expected_mode)
+            except AdmissionError as error:
+                retained_inputs_check(False, 'PRESERVED_INPUT_ORDINARY_OWNER_MODE', name, row, {'uid': os.getuid(), 'mode': expected_mode})
+            total += row['size']
+            require(0 <= row['size'] <= 2 * 1024**3 and total <= 4 * 1024**3 and len(files) < 4096, 'PRESERVED_INPUT_READABLE_BOUND')
+            digest = hashlib.sha256()
+            with file.open('rb') as stream:
+                for block in iter(lambda: stream.read(1024**2), b''):
+                    digest.update(block)
+            retained_inputs_check(retained_inputs_stat(file, name) == row, 'PRESERVED_INPUT_READABLE_CHANGED_DURING_HASH', name)
+            files[name] = {'mode': mode, 'size': row['size'], 'sha256': digest.hexdigest(), 'stat': row}
+        after = directory.lstat()
+        require(stat.S_ISDIR(after.st_mode) and stat.S_IMODE(after.st_mode) == directory_mode
+                and all(getattr(after, 'st_' + key) == value for key, value in directory_stat.items()), 'PRESERVED_INPUT_DIRECTORY_CHANGED_DURING_SCAN')
+    retained_inputs_check(set(opaque) == set(roles['opaque']) and set(opaque).isdisjoint(files)
+                          and set(roles['readable']) <= set(files), 'PRESERVED_INPUT_MANDATORY25_COVERAGE')
+    return files, directories, opaque, {'producer': roles['producer'], 'readable': roles['readable'], 'opaqueRoles': sorted(roles['opaque'])}
+
+
+def validate_retained_restored_cohort(path, root=None):
+    """Exact fourth closure: observe already-stopped d8fa source17 + restored3."""
+    root = ROOT if root is None else root
+    source = 'daf71da9d5623ac34d4bb3afe3e4ea1d88ddec2f'
+    project = 'rct-local-stage17-d8fa51971e13'
+    snapshot_sha = '5c6b69a26af839d6a0222e4d9e323c7ffc3a77e536410f11a698bbe164aea479'
+    chain = 'c490c6a07b6e134874694f8f76e009913e09c53f8bbee12542b93e861226e851'
+    checks = Path.home() / '.local/share/rct-pr3-local/checks'
+    require(path.is_absolute() and path.resolve() == path and path.is_relative_to(checks)
+            and path.name == 'retained-restored-closure.private.json', 'RETAINED20_RECEIPT_PATH')
+    owned(path.parent, 0o700, directory=True)
+    value = private_json(path)
+    run = root / '.agent/evidence/local-runs' / project
+    require(value['schema'] == 'RCT_RETAINED_PRESERVED_INPUTS_CLOSURE_V1' and value['status'] == 'OBSERVED_ALREADY_STOPPED'
+            and value['opaque_content_qualification'] == 'METADATA_ONLY_NOT_READ_OR_HASHED'
+            and value['operation'] == 'READ_ONLY_OBSERVATION' and value['stop_commands_executed'] == 0
+            and value['uid'] == os.getuid() and value['root'] == str(root) and value['run'] == str(run)
+            and value['project'] == project and value['source_sha'] == source
+            and value['snapshot_sha256'] == snapshot_sha and value['transition_chain'] == chain
+            and value['diagnostic_sha256'] == '555e030bacbe96c27d2bc2db94a873d7a21a7e7d4d3db6d89f707480d25d5010'
+            and value['metadata_sha256'] == '24b11736c5e5d22052489cdf897e9b4b32bfe044bb0da1f255394f143b0d0861'
+            and re.fullmatch(r'd8fa51971e13[a-f0-9]{12}', value['nonce'])
+            and value['target_project'] == 'rct-recovery-' + value['nonce'], 'RETAINED20_BINDING')
+    observation_path = path.parent / 'observed-already-stopped.private.json'
+    owned(observation_path, 0o600)
+    require('intent_sha256' not in value and not (path.parent / 'pre-stop.private.json').exists()
+            and not (path.parent / 'pre-stop.private.json').is_symlink(), 'RETAINED20_NO_FICTITIOUS_STOP_INTENT')
+    require(hashlib.sha256(observation_path.read_bytes()).hexdigest() == value['observation_sha256'], 'RETAINED20_OBSERVATION_SHA')
+    observation = private_json(observation_path)
+    expected = dict(value)
+    expected.pop('observation_sha256')
+    require(observation == expected, 'RETAINED20_OBSERVATION_MATCH')
+    owned(run, 0o700, directory=True)
+    required = {'owner.json', 'runtime-identity.json', 'compose.json', 'result.safe.json',
+                'clock/current-instant', 'lanes/application-recovery/pending.json',
+                'lanes/application-recovery/capture.private.json',
+                'lanes/application-recovery/pending.result.safe.json',
+                'lanes/application-recovery/seed.result.safe.json',
+                'lanes/application-recovery/lifecycle-input.private.json',
+                'lanes/application-recovery/fresh-target.compose.json'}
+    require(required <= set(value['files']) and 'lanes/application-recovery/bundle' in value['directories']
+            and 1 <= len(value['files']) <= 4096 and 1 <= len(value['directories']) <= 1024,
+            'RETAINED20_ARTIFACT_INVENTORY')
+    owner = private_json(run / 'owner.json')
+    frozen = private_json(run / 'runtime-identity.json')
+    failed = private_json(run / 'result.safe.json')
+    require(failed.get('result') == 'FAIL' and failed.get('cleanup') == 'FAIL_RETAINED_FOR_OWNER'
+            and failed.get('container_logs') == 'PASS', 'RETAINED20_OLD_FAILURE_PRESERVED')
+    require(value['files']['owner.json']['sha256'] == '0ab0e385e339a51f976c7a949462f94d0d523f9351fe2c90388af73900ee2bd7'
+            and value['files']['runtime-identity.json']['sha256'] == '656220d21aee437ee80591d528e2063359a3d53ff46308100949419f671b4b20'
+            and value['files']['compose.json']['sha256'] == '1adff2427d90211caed454a09c62ef57ee8474ed7dff303002e58e271e1aa5ef',
+            'RETAINED20_ACCEPTED_SNAPSHOT_BINDINGS')
+    require(all(hashlib.sha256((run / name).read_bytes()).hexdigest() == value['files'][name]['sha256']
+                for name in ('owner.json', 'runtime-identity.json', 'compose.json')), 'RETAINED20_CURRENT_MANIFEST_BYTES')
+    require(value['files']['lanes/application-recovery/seed.result.safe.json']['sha256'] == 'bf6862068edde12fd1f1b3066b37d956149ea70391e1f109e767c07d270aa806'
+            and value['files']['lanes/application-recovery/pending.result.safe.json']['sha256'] == 'afe5013a917288939b0d683d764877a24ad0569a55f033627ecada0c17f1c81a',
+            'RETAINED20_ACCEPTED_SEED_PENDING')
+    require(owner['uid'] == os.getuid() and owner['root'] == str(root) and owner['run'] == str(run)
+            and owner['source_sha'] == source and owner['project'] == project and owner['nonce'] == value['nonce']
+            and owner['special_intent']['recovery_project'] == value['target_project'], 'RETAINED20_OWNER')
+    records, digest = special_records(owner)
+    require(digest == chain and len(records) == 11 and records[-1]['kind'] == 'outcome'
+            and records[-1]['success'] is False and records[-1]['restored'] is False
+            and not any(row['kind'] == 'recovery-seal' for row in records), 'RETAINED20_CHAIN')
+    registration = [row for row in records if row['kind'] == 'recovery-register']
+    require(len(registration) == 1 and registration[0]['project'] == value['target_project'], 'RETAINED20_REGISTRATION')
+    topology = registration[0]
+    target_file = run / 'lanes/application-recovery/fresh-target.compose.json'
+    require(topology['file'] == str(target_file) and hashlib.sha256(target_file.read_bytes()).hexdigest() == topology['sha256'],
+            'RETAINED20_REGISTERED_TARGET_CONFIG')
+    target_config = private_json(target_file)
+    roles = retained_inputs_contract(root, run, owner, frozen, topology)
+    retained_inputs_reject_target_keys(run, topology, target_config)
+    current_files, current_directories, current_opaque, current_roles = retained_inputs_inventory(run, roles)
+    difference = set(current_files) ^ set(value['files']) | set(current_directories) ^ set(value['directories'])
+    retained_inputs_check(not difference, 'PRESERVED_INPUT_FULL_TREE_COVERAGE', sorted(difference)[0] if difference else None)
+    for name, actual in current_files.items():
+        retained_inputs_check(actual == value['files'][name], 'PRESERVED_INPUT_READABLE_DIGEST_OR_METADATA_CHANGED', name,
+                              actual['stat'], value['files'][name].get('stat'))
+    for name, actual in current_directories.items():
+        retained_inputs_check(actual == value['directories'][name], 'PRESERVED_INPUT_DIRECTORY_GRAPH_CHANGED', name,
+                              actual['stat'], value['directories'][name].get('stat'))
+    require(current_roles == value['input_roles'] and set(value['opaque_inputs']) == set(current_opaque), 'PRESERVED_INPUT_EXACT_ROLE_LEDGERS')
+    for name, actual in current_opaque.items():
+        retained_inputs_check(actual == value['opaque_inputs'][name], 'PRESERVED_INPUT_OPAQUE_METADATA_CHANGED', name,
+                              actual['stat'], value['opaque_inputs'][name].get('stat'))
+    clock = (run / 'clock/current-instant').read_bytes()
+    clock_input = private_json(run / 'lanes/application-recovery/lifecycle-input.private.json')
+    require(re.fullmatch(rb'\d{4}-\d\d-\d\dT09:00:00\.000Z\n', clock)
+            and clock == (clock_input['expectedInstant'] + '\n').encode()
+            and hashlib.sha256(clock).hexdigest() == clock_input['clockSha256'], 'RETAINED20_CLOCK12_INPUT')
+    # Both approved helpers perform only immutable file validation in these two calls.
+    # Bind their source before import; never invoke capture/verify/restore entry points.
+    import importlib.util
+    for name in ('scripts/recovery.py', 'scripts/test-application-recovery.py'):
+        file = root / name
+        require(file.resolve() == file and not file.is_symlink()
+                and hashlib.sha256(file.read_bytes()).hexdigest() == owner['sources'][name], 'RETAINED20_BACKUP_VALIDATOR_SOURCE')
+    import sys
+    previous_bytecode = sys.dont_write_bytecode
+    try:
+        sys.dont_write_bytecode = True
+        spec = importlib.util.spec_from_file_location('retained20_backup_validation', root / 'scripts/test-application-recovery.py')
+        backup = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(backup)
+    finally:
+        sys.dont_write_bytecode = previous_bytecode
+    work = run / 'lanes/application-recovery'
+    operation = backup.validate_capture(private_json(work / 'capture.private.json'),
+                backup.r.verify_bundle(work / 'bundle', 'database-only'), backup.r.digest(work / 'bundle/manifest.json'))
+    require(operation['operation_id'] == private_json(work / 'pending.json')['operationId'], 'RETAINED20_PENDING_PLAN_BINDING')
+    records, digest = special_records(owner)
+    require(digest == chain and len(records) == 11 and records[-1]['kind'] == 'outcome'
+            and records[-1]['success'] is False and records[-1]['restored'] is False
+            and not any(row['kind'] == 'recovery-seal' for row in records), 'RETAINED20_CHAIN')
+    require(sorted(file.name for file in (run / 'transitions').iterdir()) == [f'{index:04d}.json' for index in range(11)],
+            'RETAINED20_EXACT_TRANSITION_FILES')
+    registration = [row for row in records if row['kind'] == 'recovery-register']
+    require(len(registration) == 1 and registration[0]['project'] == value['target_project'], 'RETAINED20_REGISTRATION')
+    for suffix in ('verified.private.json', 'admit.result.safe.json', 'attachment.result.safe.json'):
+        file = run / 'lanes/application-recovery' / suffix
+        require(not file.exists() and not file.is_symlink(), 'RETAINED20_NO_SEAL_VERIFY_ADMIT')
+    services = value['services']
+    require(set(services) == {'source:' + name for name in SERVICES} | {'restored:' + name for name in DATABASES},
+            'RETAINED20_SERVICE_SET')
+    retained_inputs_reject_target_keys(run, topology, target_config,
+        [{'Mounts': pin['mounts']} for name, pin in services.items() if name.startswith('restored:')])
+    saved = {}
+    native = run / 'lanes/application-recovery/native-logs'
+    for file in sorted(native.glob('*.safe.json')):
+        receipt = private_json(file)
+        if receipt['action'] == 'RESOURCE_INSPECT' and receipt['exitStatus'] == 0:
+            raw = file.with_name(file.name.replace('.safe.json', '.private.log')).read_bytes()
+            try:
+                rows = json.loads(raw)
+            except (ValueError, UnicodeDecodeError):
+                continue
+            if type(rows) is list and len(rows) == 1 and type(rows[0]) is dict and type(rows[0].get('Config')) is dict:
+                row = rows[0]
+                labels = row['Config']['Labels']
+                cohort = labels.get('com.docker.compose.project')
+                service = labels.get('com.docker.compose.service')
+                key = ('source:' if cohort == project else 'restored:') + str(service)
+                require(cohort in (project, value['target_project']) and key in services, 'RETAINED20_SAVED_FOREIGN')
+                saved[key] = row
+    require(set(saved) == set(services), 'RETAINED20_ALL_SAVED_INSPECTS')
+    retained_inputs_reject_target_keys(run, topology, target_config,
+        [row for name, row in saved.items() if name.startswith('restored:')])
+    for name, pin in services.items():
+        row = saved[name]
+        require(pin['id'] == row['Id'] and pin['image'] == row['Image'] and pin['config'] == row['Config']
+                and canonical_mount_records(pin['mounts']) == canonical_mount_records(row['Mounts'])
+                and pin['readonly'] == row['HostConfig'].get('ReadonlyRootfs', False),
+                'RETAINED20_SAVED_IDENTITY')
+        service = name.split(':', 1)[1]
+        network_name = project + '_private_net'
+        if name.startswith('source:'):
+            if service in DATABASES:
+                require(pin['networks'] == {}, 'RETAINED20_PIN_SOURCE_DATABASE_DETACHED')
+            else:
+                require(set(pin['networks']) == {network_name}, 'RETAINED20_PIN_SOURCE_NETWORK')
+                binding = pin['networks'][network_name]
+                frozen_pin = frozen['services'][service]
+                require(binding['NetworkID'] == frozen['network_id']
+                        and set(binding.get('Aliases') or []) == set(frozen_pin['aliases'])
+                        and all(binding.get(key) == frozen_pin['network_binding'].get(key)
+                                for key in ('IPAMConfig', 'Links', 'DriverOpts')), 'RETAINED20_PIN_SOURCE_ALIASES')
+                if service == 'nginx':
+                    config = private_json(run / 'compose.json')
+                    expected_static = config['services']['nginx']['networks']['private_net']['ipv4_address']
+                    require(binding.get('IPAMConfig') == frozen_pin['network_binding'].get('IPAMConfig')
+                            and type(binding.get('IPAMConfig')) is dict
+                            and binding['IPAMConfig'].get('IPv4Address') == expected_static == frozen_pin['network_binding']['IPAddress'],
+                            'RETAINED20_PIN_FIXED_NGINX')
+        if name.startswith('restored:'):
+            require(set(pin['networks']) == {network_name}, 'RETAINED20_PIN_TARGET_NETWORK')
+            saved_binding = row['NetworkSettings']['Networks'][network_name]
+            binding = pin['networks'][network_name]
+            require(binding['NetworkID'] == saved_binding['NetworkID'] == frozen['network_id']
+                    and set(binding.get('Aliases') or []) == set(saved_binding.get('Aliases') or [])
+                    and all(binding.get(key) == saved_binding.get(key) for key in
+                            ('IPAMConfig', 'Links', 'DriverOpts')),
+                    'RETAINED20_PIN_TARGET_SAVED_NETWORK')
+            for mount in pin['mounts']:
+                require(mount['Source'] not in registration[0]['source_mounts'], 'RETAINED20_NO_SOURCE_MOUNT')
+                if mount['Type'] == 'bind':
+                    require(mount['RW'] is False and any(mount['Source'] == item['source']
+                            and mount['Destination'] == item['target']
+                            and special_resource_digest(item['source']) == item['sha256']
+                            for item in registration[0]['allowed_binds'][service]), 'RETAINED20_TARGET_BIND')
+    ids = [pin['id'] for pin in services.values()]
+    require(len(ids) == len(set(ids)) == 20 and all(re.fullmatch('[a-f0-9]{64}', x) for x in ids), 'RETAINED20_IDS')
+    for cohort, names in ((project, SERVICES), (value['target_project'], DATABASES)):
+        wanted = {pin['id'] for name, pin in services.items() if name.startswith('source:' if cohort == project else 'restored:')}
+        actual = capture(['docker', 'ps', '-aq', '--no-trunc', '--filter', 'label=com.docker.compose.project=' + cohort]).splitlines()
+        require(len(actual) == len(wanted) and set(actual) == wanted, 'RETAINED20_FOREIGN_OR_MISSING')
+    rows = json.loads(capture(['docker', 'inspect', *sorted(ids)]))
+    require(type(rows) is list and len(rows) == 20 and {row['Id'] for row in rows} == set(ids), 'RETAINED20_INSPECT_COUNT')
+    pins_by_id = {pin['id']: (name, pin) for name, pin in services.items()}
+    six = ('IPAddress', 'IPPrefixLen', 'Gateway', 'GlobalIPv6Address', 'GlobalIPv6PrefixLen', 'IPv6Gateway')
+    network_name = project + '_private_net'
+    for row in rows:
+        name, pin = pins_by_id[row['Id']]
+        require(row['Image'] == pin['image'] and row['Config'] == pin['config']
+                and canonical_mount_records(row['Mounts']) == canonical_mount_records(pin['mounts'])
+                and row['HostConfig'].get('ReadonlyRootfs', False) == pin['readonly']
+                and row['State']['Running'] is False and row['State']['Paused'] is False, 'RETAINED20_IMMUTABLE_STOPPED')
+        labels = pin['config']['Labels']
+        service = name.split(':', 1)[1]
+        cohort = project if name.startswith('source:') else value['target_project']
+        require(labels['com.docker.compose.service'] == service and labels['com.docker.compose.project'] == cohort
+                and labels[LABEL] == value['nonce'], 'RETAINED20_CONFIG_LABELS')
+        if name.startswith('source:'):
+            require(pin['id'] == frozen['services'][service]['id'] and pin['image'] == frozen['services'][service]['image'],
+                    'RETAINED20_FROZEN_ID')
+            require(pin['config']['Labels'] == frozen['services'][service]['labels']
+                    and pin['config']['Image'] == frozen['services'][service]['configured_image']
+                    and canonical_mount_records(pin['mounts']) == canonical_mount_records(frozen['services'][service]['mounts'])
+                    and pin['readonly'] == frozen['services'][service]['readonly'], 'RETAINED20_FROZEN_FULL_PIN')
+        else:
+            require(pin['image'] == registration[0]['images'][service]
+                    and labels.get('io.rutcampustrack.recovery') == 'disposable', 'RETAINED20_REGISTERED_IMAGE')
+        nets = row['NetworkSettings']['Networks']
+        require(set(nets) == set(pin['networks']), 'RETAINED20_NETWORK_SET')
+        if name.startswith('source:') and service in DATABASES:
+            require(not nets, 'RETAINED20_SOURCE_DATABASE_DETACHED')
+        else:
+            require(set(nets) == {network_name}, 'RETAINED20_NETWORK_NAME')
+            binding = nets[network_name]
+            saved = pin['networks'][network_name]
+            require(binding['NetworkID'] == saved['NetworkID'] == frozen['network_id']
+                    and set(binding.get('Aliases') or []) == set(saved.get('Aliases') or [])
+                    and all(binding.get(key) == saved.get(key) for key in ('IPAMConfig', 'Links', 'DriverOpts'))
+                    and all(binding.get(field) in (None, '', 0) for field in six)
+                    and binding.get('EndpointID') in (None, ''), 'RETAINED20_STOPPED_NETWORK')
+    networks = json.loads(capture(['docker', 'network', 'inspect', network_name]))
+    require(type(networks) is list and len(networks) == 1 and networks[0].get('Containers', {}) == {}, 'RETAINED20_NETWORK_EMPTY')
+    network = networks[0]
+    require({key: network.get(key) for key in value['network']} == value['network']
+            and network['Id'] == frozen['network_id']
+            and network['Labels'].get(LABEL) == value['nonce']
+            and network['Labels'].get('com.docker.compose.project') == project, 'RETAINED20_NETWORK_IDENTITY')
+    attached = capture(['docker', 'ps', '-aq', '--no-trunc', '--filter', 'network=' + network_name]).splitlines()
+    require(len(attached) == len(set(attached)) and set(attached) == {pin['id'] for pin in services.values() if pin['networks']},
+            'RETAINED20_NETWORK_CONNECTIONS')
+    for volume, wanted in value['volume_connections'].items():
+        require(re.fullmatch('[A-Za-z0-9][A-Za-z0-9_.-]{0,255}', volume), 'RETAINED20_VOLUME_NAME')
+        expected = sorted(pin['id'] for pin in services.values() if any(
+            mount['Type'] == 'volume' and mount['Name'] == volume for mount in pin['mounts']))
+        require(wanted == expected and bool(expected), 'RETAINED20_VOLUME_PIN_CONSUMERS')
+        actual = capture(['docker', 'ps', '-aq', '--no-trunc', '--filter', 'volume=' + volume]).splitlines()
+        require(len(actual) == len(set(actual)) and sorted(actual) == wanted, 'RETAINED20_VOLUME_CONNECTIONS')
+    require(set(value['volume_connections']) == {mount['Name'] for pin in services.values()
+            for mount in pin['mounts'] if mount['Type'] == 'volume'}, 'RETAINED20_ALL_VOLUME_CONNECTIONS')
+    config = private_json(run / 'compose.json')
+    require(value['project_resources'][value['target_project']] == {'volume': [], 'network': []}
+            and value['project_resources'][project]['network'] in ([frozen['network_id']], [frozen['network_id'][:12]])
+            and value['project_resources'][project]['volume'] == sorted(item['name'] for item in config.get('volumes', {}).values()),
+            'RETAINED20_FROZEN_PROJECT_RESOURCES')
+    for cohort in (project, value['target_project']):
+        for kind in ('volume', 'network'):
+            actual = capture(['docker', kind, 'ls', '-q', '--filter', 'label=com.docker.compose.project=' + cohort]).splitlines()
+            require(sorted(actual) == value['project_resources'][cohort][kind], 'RETAINED20_PROJECT_RESOURCES')
+    prior = value['prior_closure_sha256']
+    require(set(prior) == {'boot-correction-QuIxvmeI', 'nonclock-correction-MiifvCjI', 'lifecycle-prerequisites-clock-m6UsYDsR'},
+            'RETAINED20_PRIOR_CLOSURES')
+    for directory, digest in prior.items():
+        older = checks / directory / 'retained-closure.private.json'
+        owned(older.parent, 0o700, directory=True)
+        owned(older, 0o600)
+        require(hashlib.sha256(older.read_bytes()).hexdigest() == digest, 'RETAINED20_PRIOR_CLOSURE_SHA')
+    return {'ids': sorted(ids)}
+
+
+def preflight(*, special=False, retained_receipt=None, retained_pdf_receipt=None, retained_recovery_receipt=None, retained_restored_receipt=None, selected_network=None):
     require(sys.platform == "linux" and os.getuid() != 0, "UBUNTU_NONROOT_REQUIRED")
     require(RUNS.resolve() == RUNS, "LINKED_RUNTIME_PARENT")
     for name in ("GITHUB_ACTIONS", "RUNNER_ENVIRONMENT", "GITHUB_RUN_ID", "GITHUB_RUN_ATTEMPT", "GITHUB_SHA"):
@@ -1155,13 +1596,15 @@ def preflight(*, special=False, retained_receipt=None, retained_pdf_receipt=None
         retained = validate_retained_cohort(retained_receipt) if retained_receipt else {"ids": []}
         retained_pdf = validate_retained_cohort(retained_pdf_receipt, pdf=True) if retained_pdf_receipt else {"ids": []}
         retained_recovery = validate_retained_cohort(retained_recovery_receipt, recovery=True) if retained_recovery_receipt else {"ids": []}
+        retained_restored = validate_retained_restored_cohort(retained_restored_receipt) if retained_restored_receipt else {"ids": []}
+        require(retained_restored_receipt is None or retained_recovery_receipt is not None, "RETAINED_RESTORED_REQUIRES_OLDER_RECEIPTS")
         require(retained_recovery_receipt is None or retained_pdf_receipt is not None, "RETAINED_RECOVERY_REQUIRES_OLDER_RECEIPTS")
         require(retained_pdf_receipt is None or retained_receipt is not None, "RETAINED_PDF_REQUIRES_BOOT_RECEIPT")
-        require(set(local_ids) == set(retained["ids"]) | set(retained_pdf["ids"]) | set(retained_recovery["ids"]), "PREVIOUS_LOCAL_COHORT")
+        require(set(local_ids) == set(retained["ids"]) | set(retained_pdf["ids"]) | set(retained_recovery["ids"]) | set(retained_restored["ids"]), "PREVIOUS_LOCAL_COHORT")
         selected = special_network_choice(selected_network)
         require(capture(["git", "ls-files", "--error-unmatch", "tests/e2e/.env.ci"]).strip(), "TRACKED_SYNTHETIC_ENV_REQUIRED")
         return selected
-    require(not local_ids and retained_receipt is None and retained_pdf_receipt is None and retained_recovery_receipt is None and selected_network is None, "PREVIOUS_LOCAL_COHORT")
+    require(not local_ids and retained_receipt is None and retained_pdf_receipt is None and retained_recovery_receipt is None and retained_restored_receipt is None and selected_network is None, "PREVIOUS_LOCAL_COHORT")
     # Refuse collision rather than changing Gateway's trusted fixed-edge subnet.
     subnet = ipaddress.ip_network("172.30.0.0/24")
     networks = capture(["docker", "network", "ls", "-q"]).splitlines()
@@ -1193,6 +1636,7 @@ class Runner:
         self.special_retained_receipt = None
         self.special_retained_pdf_receipt = None
         self.special_retained_recovery_receipt = None
+        self.special_retained_restored_receipt = None
         self.special_outcomes = []
         self.failed_cases = selected_batch_cases(failed_cases)
         self.startup_diagnostic = startup_diagnostic
@@ -1344,7 +1788,7 @@ class Runner:
 
     def prepare(self):
         if self.mode == "special13":
-            self.special_network = preflight(special=True, retained_receipt=self.special_retained_receipt, retained_pdf_receipt=self.special_retained_pdf_receipt, retained_recovery_receipt=self.special_retained_recovery_receipt)
+            self.special_network = preflight(special=True, retained_receipt=self.special_retained_receipt, retained_pdf_receipt=self.special_retained_pdf_receipt, retained_recovery_receipt=self.special_retained_recovery_receipt, retained_restored_receipt=self.special_retained_restored_receipt)
         self.run.mkdir(mode=0o700)
         for name in ("artifacts", "home", "tmp"):
             (self.run / name).mkdir(mode=0o700)
@@ -1542,7 +1986,7 @@ class Runner:
         if self.mode == "special13":
             self.phase = "BOOT_NETWORK_ADMISSION"
             emit(self.phase, state="RUNNING")
-            preflight(special=True, retained_receipt=self.special_retained_receipt, retained_pdf_receipt=self.special_retained_pdf_receipt, retained_recovery_receipt=self.special_retained_recovery_receipt, selected_network=self.special_network)
+            preflight(special=True, retained_receipt=self.special_retained_receipt, retained_pdf_receipt=self.special_retained_pdf_receipt, retained_recovery_receipt=self.special_retained_recovery_receipt, retained_restored_receipt=self.special_retained_restored_receipt, selected_network=self.special_network)
         self.command("BOOT", self.compose("up", "-d", "--no-build", "--wait", "--wait-timeout", "480"))
         if self.mode == "special13":
             self.freeze_special_inventory()
@@ -2484,6 +2928,7 @@ def main():
     parser.add_argument("--retained-cohort-receipt", type=Path, help="Special13 only: explicit private closure of the preserved BOOT cohort")
     parser.add_argument("--retained-pdf-cohort-receipt", type=Path, help="Special13 only: exact preserved ee1df PDF cohort closure")
     parser.add_argument("--retained-recovery-cohort-receipt", type=Path, help="Special13 only: exact preserved 43589 recovery cohort closure")
+    parser.add_argument("--retained-restored-cohort-receipt", type=Path, help="Special13 only: exact stopped original17 plus restored3 closure")
     parser.add_argument("--diagnose-startup", action="store_true", help="Client only: same ten scenarios, stop after first failure with closed setup diagnostics")
     parser.add_argument("--bundled-dockerfile-frontend", action="store_true",
                         help="UI batch only: inline tracked Dockerfiles using the Docker Engine bundled frontend")
@@ -2493,6 +2938,7 @@ def main():
     selected_cohorts(args.mode, args.lifecycle_only)
     require(args.retained_cohort_receipt is None or args.mode == "special13", "RETAINED_RECEIPT_SPECIAL_ONLY")
     require(args.retained_recovery_cohort_receipt is None or args.mode == "special13" and args.retained_pdf_cohort_receipt is not None, "RETAINED_RECOVERY_RECEIPT_SPECIAL_ONLY")
+    require(args.retained_restored_cohort_receipt is None or args.mode == "special13" and args.lifecycle_only and args.retained_recovery_cohort_receipt is not None, "RETAINED_RESTORED_RECEIPT_LIFECYCLE_ONLY")
     require(args.retained_pdf_cohort_receipt is None or args.mode == "special13" and args.retained_cohort_receipt is not None, "RETAINED_PDF_RECEIPT_SPECIAL_ONLY")
     require(args.failed_case is None or args.mode == "ui-batch", "BATCH_CASES_UI_BATCH_ONLY")
     selected_batch_cases(args.failed_case)
@@ -2519,7 +2965,7 @@ def main():
         return
     require(args.expected_mode is None and args.expected_batch_lane is None and args.expected_special_lane is None
             and args.expected_special_phase is None and args.special_service is None, "EXPECTED_MODE_ADMIT_ONLY")
-    preflight(special=args.mode == "special13", retained_receipt=args.retained_cohort_receipt, retained_pdf_receipt=args.retained_pdf_cohort_receipt, retained_recovery_receipt=args.retained_recovery_cohort_receipt)
+    preflight(special=args.mode == "special13", retained_receipt=args.retained_cohort_receipt, retained_pdf_receipt=args.retained_pdf_cohort_receipt, retained_recovery_receipt=args.retained_recovery_cohort_receipt, retained_restored_receipt=args.retained_restored_cohort_receipt)
     if args.mode == "preflight":
         emit("PREFLIGHT", result="PASS", containers_started=0)
         return
@@ -2530,7 +2976,7 @@ def main():
     with os.fdopen(descriptor, "r+") as lock:
         owned(RUNS / "port-8443.lock", 0o600)
         fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
-        preflight(special=args.mode == "special13", retained_receipt=args.retained_cohort_receipt, retained_pdf_receipt=args.retained_pdf_cohort_receipt, retained_recovery_receipt=args.retained_recovery_cohort_receipt)  # Shared fixed-port lease held.
+        preflight(special=args.mode == "special13", retained_receipt=args.retained_cohort_receipt, retained_pdf_receipt=args.retained_pdf_cohort_receipt, retained_recovery_receipt=args.retained_recovery_cohort_receipt, retained_restored_receipt=args.retained_restored_cohort_receipt)  # Shared fixed-port lease held.
         cohorts = selected_cohorts(args.mode, args.lifecycle_only)
         results = []
         for cohort in cohorts:
@@ -2551,6 +2997,7 @@ def run_cohort(args, cohort):
         runner.special_retained_receipt = args.retained_cohort_receipt
         runner.special_retained_pdf_receipt = args.retained_pdf_cohort_receipt
         runner.special_retained_recovery_receipt = args.retained_recovery_cohort_receipt
+        runner.special_retained_restored_receipt = args.retained_restored_cohort_receipt
         result, cleanup = "FAIL", "NOT_STARTED"
         try:
             if args.mode == "special13":

@@ -1,7 +1,7 @@
 import { closeSync, constants, existsSync, fstatSync, fsyncSync, lstatSync, openSync, readSync, realpathSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { test, requirePrivateArtifacts } from './fixtures/artifact-privacy';
-import { MobileDataset, admit } from './fixtures/mobile-dataset';
+import { MobileDataset, admit, expect } from './fixtures/mobile-dataset';
 import { requireLocalSpecialLane } from './fixtures/local-special';
 import { readTeachingInstant } from './fixtures/teaching-clock';
 import { TEST_USERS } from './fixtures/users';
@@ -98,6 +98,23 @@ test('fresh local lifecycle prerequisites use the canonical FIRST3 dataset', asy
     // The canonical FIRST3 initializer is the sole writer of its dataset and accepted API protocol.
     const dataset = new MobileDataset(request, admin, instant);
     await dataset.initialize();
+    // Match activeHeadmanDataset: the canonical scheduler must settle the owned lesson first.
+    await expect
+      .poll(
+        async () => {
+          const body = await dataset.headmanActor.call(
+            'GET',
+            `/api/schedule/groups/${dataset.group.id}/lessons?dateFrom=${dataset.today}&dateTo=${dataset.today}&size=100`,
+          );
+          const lessons = body._embedded?.lessonResponseList ?? body.content ?? [];
+          const lesson = lessons.find(
+            (row: Record<string, unknown>) => Number(row.id) === Number(dataset.lesson.physicalLessonId),
+          );
+          return lesson?.status === 'ACTIVE' && lesson.current === true;
+        },
+        { timeout: 90000, intervals: [1000], message: 'Own HEADMAN lesson becomes active' },
+      )
+      .toBe(true);
     const inventory = await admin.call('GET', '/api/academic/semesters?size=100');
     const semesters = inventory._embedded?.semesterResponseList;
     requireValue(Array.isArray(semesters) && semesters.length <= 100 && inventory.page?.number === 0 &&

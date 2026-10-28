@@ -614,7 +614,7 @@ def execute_recovery(runner):
         if error is not None and application_failure['errorClass'] == 'UNKNOWN':
             name = type(error).__name__
             application_failure['errorClass'] = name if name in {
-                'RuntimeError', 'TimeoutExpired', 'FileNotFoundError', 'PermissionError',
+                'AdmissionError', 'RuntimeError', 'TimeoutExpired', 'FileNotFoundError', 'PermissionError',
                 'OSError', 'JSONDecodeError', 'ValueError', 'KeyError', 'TypeError',
             } else 'UNKNOWN'
             if isinstance(error, subprocess.TimeoutExpired):
@@ -635,7 +635,7 @@ def execute_recovery(runner):
         # Only the original pinned startup set; neither restored DBs nor discovered names.
         names = ('redis', 'rabbitmq', 'auth-service', 'academic-service', 'schedule-service',
                  'attendance-service', 'document-renderer-service', 'mobile-bff', 'api-gateway',
-                 'notification-web', 'pwa-nginx', 'mini-app-nginx', 'nginx')
+                 'notification-web', 'web-nginx', 'pwa-nginx', 'mini-app-nginx', 'nginx')
         wanted = {'redis', 'rabbitmq', *writers}
         result = {'capture': 'PARTIAL', 'unsupportedService': bool(wanted - set(names)),
                   'services': []}
@@ -669,7 +669,7 @@ def execute_recovery(runner):
             template = identity_format
             if state:
                 template = template[:-1] + (',"status":{{json .State.Status}},'
-                    '"health":{{if .State.Health}}{{json .State.Health.Status}}{{else}}null{{end}},'
+                    '"health":{{with index .State "Health"}}{{json (index . "Status")}}{{else}}null{{end}},'
                     '"oomKilled":{{json .State.OOMKilled}},"exitCode":{{json .State.ExitCode}}}')
             response = logged_run(runner, context, ['docker', 'inspect', '--format', template,
                                        *(pin[1] for pin in pins)],
@@ -820,8 +820,9 @@ def execute_recovery(runner):
                     'RECOVERY_SOURCE_IDENTITY_CHANGED')
             if value['NetworkSettings']['Networks']:
                 service = value['Config']['Labels']['com.docker.compose.service']
+                # The fixed gateway nginx never participates in dynamic rebind admission.
                 verified = runner.special_verified_networks(service, container) if (
-                    stage == 'application' and value['State']['Running']) else None
+                    service != 'nginx' and stage == 'application' and value['State']['Running']) else None
                 same_service_networks(value['NetworkSettings']['Networks'], pin['NetworkSettings']['Networks'],
                                       stopped=not value['State']['Running'], verified_networks=verified)
             else:

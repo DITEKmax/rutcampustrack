@@ -38,6 +38,69 @@ import {
 import { normalizeDockerHealthTimestamp, observeHealth, withoutGatewayAdmissionDiagnostic, writeHealthDiagnostic } from './semester-health-diagnostic';
 type Row = Record<string, any>;
 
+type ReconciliationNativeRecord = {
+  action: string;
+  reason: 'TIMEOUT' | 'OUTPUT_BOUND' | 'EXIT_NONZERO' | 'UNKNOWN';
+  timeoutMs: number;
+  elapsedMs: number;
+  outputBoundBytes: number;
+  exitStatus: number | null;
+  phase: string;
+  cleanup: boolean;
+  cleanupStage: string | null;
+  terminalReported: boolean;
+};
+
+// Closed metadata only: argv, input, env, native output and error text never enter a receipt.
+function reconciliationNativeRecord(
+  args: string[], compose: string[], pins: Record<string, Row>, error: unknown,
+  timeoutMs: number, elapsedMs: number, phase: string, cleanup: boolean, cleanupStage: string,
+): ReconciliationNativeRecord {
+  let action = 'OTHER';
+  const tail = args.slice(compose.length);
+  const isCompose = compose.length > 0 && compose.every((value, index) => args[index] === value);
+  const same = (values: string[], expected: string[]) =>
+    values.length === expected.length && values.every((value, index) => value === expected[index]);
+  for (const [service, label] of [['attendance-service', 'ATTENDANCE'], ['schedule-service', 'SCHEDULE']]) {
+    if (args[0] === 'inspect' && args.length === 4 && args[1] === '--format' && args[3] === pins[service]?.id) {
+      action = `${label}_INSPECT`;
+    } else if (isCompose && same(tail, ['stop', '--timeout', '10', service])) {
+      action = `${label}_STOP`;
+    } else if (isCompose && same(tail, ['up', '-d', '--no-build', '--no-recreate', '--no-deps', '--pull', 'never', service])) {
+      action = `${label}_START`;
+    } else if (isCompose && tail.length === 11 &&
+      same(tail.slice(0, 9), ['up', '-d', '--no-build', '--no-recreate', '--no-deps', '--pull', 'never', '--wait', '--wait-timeout']) &&
+      /^(?:[1-9]|[1-9][0-9]|1[01][0-9]|120)$/.test(tail[9]) && tail[10] === service) {
+      action = `${label}_START_WAIT`;
+    }
+  }
+  if (same(args, ['exec', '-i', '-e', 'PGPASSWORD', pins['postgres-schedule']?.id, 'psql', '-X', '-qAt', '-U', 'rct_user', '-d', 'schedule_db', '-v', 'ON_ERROR_STOP=1'])) action = 'SCHEDULE_SQL';
+  if (same(args, ['exec', '-i', '-e', 'RCT_MONGO_PASSWORD', pins['mongo-attendance']?.id, 'mongosh', '--quiet', '--nodb', '--file', '/dev/stdin'])) action = 'ATTENDANCE_MONGO';
+  let code: unknown;
+  let status: unknown;
+  if (typeof error === 'object' && error !== null) {
+    try {
+      code = Object.getOwnPropertyDescriptor(error, 'code')?.value;
+      status = Object.getOwnPropertyDescriptor(error, 'status')?.value;
+    } catch { /* Unknown stays closed; never evaluate accessors. */ }
+  }
+  const exitStatus = typeof status === 'number' && Number.isInteger(status) && status >= -128 && status <= 255 ? status : null;
+  const phases = ['SETUP', 'CONTROLLED_CLOSE', 'STRANDED', 'PENDING_ARCHIVE', 'EXACT_REPLAY', 'DUPLICATE'];
+  const stages = ['RESTART', 'RECOVER', 'PUBLISH', 'APPLY', 'ARCHIVE', 'RESTORE', 'ACTIVATE', 'VERIFY', 'DLQ', 'SETTLE', 'CLOCK', 'DISPOSE', 'WRITE'];
+  return {
+    action,
+    reason: code === 'ETIMEDOUT' ? 'TIMEOUT' : code === 'ENOBUFS' ? 'OUTPUT_BOUND' : exitStatus !== null && exitStatus !== 0 ? 'EXIT_NONZERO' : 'UNKNOWN',
+    timeoutMs: Math.max(1, Math.min(420000, Math.trunc(timeoutMs))),
+    elapsedMs: Math.max(0, Math.min(86400000, Math.trunc(elapsedMs))),
+    outputBoundBytes: 262144,
+    exitStatus,
+    phase: phases.includes(phase) ? phase : 'OTHER',
+    cleanup,
+    cleanupStage: cleanup ? stages.map((stage) => `CLEANUP_SEMESTER_${stage}`).includes(cleanupStage) ? cleanupStage : 'OTHER' : null,
+    terminalReported: false,
+  };
+}
+
 // Playwright clears outputDir before loading tests; strict admission runs in beforeEach.
 let local: ReturnType<typeof localSpecialLane>;
 
@@ -3169,9 +3232,15 @@ test('FULL admin reconciles one exact stranded close before archive completion',
     if (action) clock.assertUnchanged();
     return Math.max(1, Math.min(cap, Math.floor(remaining)));
   };
+  const nativeDiagnostic = {
+    schema: 'RCT_RECONCILIATION_NATIVE_V1',
+    main: null as ReconciliationNativeRecord | null,
+    cleanup: null as ReconciliationNativeRecord | null,
+  };
   const nativeEnv = {
     PATH: process.env.PATH ?? '/usr/bin:/bin',
     LANG: 'C.UTF-8',
+    ...(process.env.DOCKER_HOST ? { DOCKER_HOST: process.env.DOCKER_HOST } : {}),
     RCT_E2E_TEACHING_CLOCK_DIR: process.env.RCT_E2E_TEACHING_CLOCK_DIR!,
   };
   let nativeFailure: { error: Error; report: () => void } | undefined;
@@ -3182,6 +3251,7 @@ test('FULL admin reconciles one exact stranded close before archive completion',
     cap = 5000,
   ): string => {
     const timeout = budget(cap);
+    const started = performance.now();
     try {
       return execFileSync('docker', args, {
         cwd: root,
@@ -3194,6 +3264,9 @@ test('FULL admin reconciles one exact stranded close before archive completion',
       });
     } catch (error) {
       const failure = new Error('Owned reconciliation command failed');
+      const closedFailure = reconciliationNativeRecord(args, compose, pins, error, timeout, performance.now() - started, diagnostic.phase, cleaning, cleanupStage);
+      if (cleaning) nativeDiagnostic.cleanup ??= closedFailure;
+      else nativeDiagnostic.main ??= closedFailure;
       if (!cleaning) {
         let code: unknown;
         let status: unknown;
@@ -3208,6 +3281,7 @@ test('FULL admin reconciles one exact stranded close before archive completion',
         nativeFailure = {
           error: failure,
           report: () => {
+            nativeDiagnostic.main = { ...closedFailure, terminalReported: true };
             const matches = (expected: (string | undefined)[]) =>
               args.length === expected.length &&
               args.every((value, index) => value === expected[index]);
@@ -3274,6 +3348,10 @@ test('FULL admin reconciles one exact stranded close before archive completion',
               ])
             ) {
               expect.soft(false, 'D9_NATIVE_ATTENDANCE_RESTART').toBe(true);
+            } else if (closedFailure.action === 'ATTENDANCE_START') {
+              expect.soft(false, 'D9_NATIVE_ATTENDANCE_START').toBe(true);
+            } else if (closedFailure.action === 'SCHEDULE_START') {
+              expect.soft(false, 'D9_NATIVE_SCHEDULE_START').toBe(true);
             } else {
               expect.soft(false, 'D9_NATIVE_OTHER').toBe(true);
             }
@@ -5409,6 +5487,14 @@ WHERE e.event_id::text=o.payload->>'event_id' AND e.event_type=o.event_type)),
       });
     } catch (error) {
       retainLifecycleCleanupFailure(info.annotations, cleanupStage, error);
+      cleanupFailure ??= { error };
+    }
+    try {
+      const closedNative = `${JSON.stringify(nativeDiagnostic)}\n`;
+      requireValue(Buffer.byteLength(closedNative, 'utf8') <= 2048, 'Native metadata must remain bounded');
+      writeFileSync(join(run, 'reconciliation-native.safe.json'), closedNative, { mode: 0o600, flag: 'wx' });
+    } catch (error) {
+      retainLifecycleCleanupFailure(info.annotations, 'CLEANUP_SEMESTER_WRITE', error);
       cleanupFailure ??= { error };
     }
     if (originalFailure) throw originalFailure.error;

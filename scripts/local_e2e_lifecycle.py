@@ -371,8 +371,10 @@ def _execute_lifecycle_serial(runner, results):
         outcome = runner.special_phase(lane, 'main', {'RCT_SEMESTER_LIFECYCLE_RUN': context['laneRun']})
         results[lane] = outcome['status']
         runner.special_health()
+        if getattr(runner, 'operational_until', None) == lane: return results
     runner._lifecycle_active_lane = 'assignment'
     results['assignment'] = execute_assignment(runner)
+    if getattr(runner, 'operational_until', None) == 'assignment': return results
     runner._lifecycle_active_lane = 'today'
     context = runner.special_context('today', 'main')
     intent = runner.special_intent('today', 'main', 'CLOCK_ADVANCE', [], {})
@@ -386,6 +388,7 @@ def _execute_lifecycle_serial(runner, results):
     require(valid, 'TODAY_CLOCK_TRANSITION_UNVERIFIED')
     results['today'] = outcome['status']
     runner.special_health()
+    if getattr(runner, 'operational_until', None) == 'today': return results
     runner._lifecycle_active_lane = 'semester-reconciliation'
     advance_to_next_teaching_day(runner)
     context = runner.special_context('semester-reconciliation', 'main')
@@ -399,11 +402,13 @@ def _execute_lifecycle_serial(runner, results):
     require(restored, 'RECONCILIATION_RESTORATION_UNVERIFIED')
     runner.special_health()
     results['semester-reconciliation'] = outcome['status']
+    if getattr(runner, 'operational_until', None) == 'semester-reconciliation': return results
     # Reconciliation is clock-immutable; recovery starts on the same fresh eligible 09:00.
     runner._lifecycle_active_lane = 'application-recovery'
     results['application-recovery'] = execute_recovery(runner)
     require(results['application-recovery'] == 'PASS', 'RECOVERY_DEPENDENT_ARCHIVE_BLOCKED')
     runner.special_health()
+    if getattr(runner, 'operational_until', None) == 'application-recovery': return results
     runner._lifecycle_active_lane = 'semester-archive'
     context = runner.special_context('semester-archive', 'main')
     recovery_context = runner.special_context('application-recovery', 'attachment')
@@ -449,6 +454,7 @@ def execute_lifecycle(runner):
              'semester-reconciliation', 'application-recovery', 'semester-archive')
     results = {}
     failure_class = None
+    selected = set(getattr(runner, 'operational_lanes', lanes))
     try:
         _execute_lifecycle_serial(runner, results)
     except Exception as error:
@@ -462,7 +468,7 @@ def execute_lifecycle(runner):
             pass
         results[active] = 'FAIL'
     for lane in lanes:
-        status = results.get(lane, 'BLOCKED')
+        status = results.get(lane, 'BLOCKED' if lane in selected else 'NOT_RUN')
         phases = ('prepare', 'pending', 'resume') if lane == 'assignment' else (
                  ('seed', 'pending', 'admit', 'attachment') if lane == 'application-recovery' else ('main',))
         directory = None

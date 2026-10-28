@@ -486,6 +486,21 @@ def special_phases(lane):
     return {"assignment": ("prepare", "pending", "resume"), "application-recovery": ("seed", "pending", "admit", "attachment")}.get(lane, ("main",))
 
 
+def operational_selection(admitted, until, *, mode, lifecycle_only):
+    require(type(admitted) is bool and (not admitted or mode == "special13"), "OPERATIONAL_SPECIAL13_ONLY")
+    require(mode != "special13" or admitted, "EXPLICIT_OPERATIONAL_ADMISSION_REQUIRED")
+    require(until is None or admitted and lifecycle_only and until in SPECIAL_LIFECYCLE, "OPERATIONAL_PREFIX_REQUIRES_LIFECYCLE_ONLY")
+    return SPECIAL_LIFECYCLE[:SPECIAL_LIFECYCLE.index(until) + 1] if until else SPECIAL_LIFECYCLE
+
+
+def local_docker_binding():
+    require(not any(os.environ.get(name) for name in ("DOCKER_CONTEXT", "DOCKER_TLS", "DOCKER_TLS_VERIFY", "DOCKER_CERT_PATH")), "LOCAL_DOCKER_CONTEXT_OR_TLS_REFUSED")
+    host = os.environ.get("DOCKER_HOST", "unix:///var/run/docker.sock")
+    require(re.fullmatch(r"unix:///[A-Za-z0-9_./-]+", host) and ".." not in Path(host[7:]).parts
+            and Path(host[7:]).is_absolute(), "LOCAL_DOCKER_UNIX_BINDING_REQUIRED")
+    return host
+
+
 def selected_cohorts(mode, lifecycle_only=False):
     require(type(lifecycle_only) is bool and (not lifecycle_only or mode == "special13"), "LIFECYCLE_ONLY_SPECIAL13")
     return ("lifecycle",) if lifecycle_only else ("nonclock", "lifecycle") if mode == "special13" else (None,)
@@ -727,6 +742,8 @@ def append_special(value, kind, **fields):
 
 
 def validate_special_environment(value, environment, lane=None, phase=None):
+    if value.get("operational_admitted"):
+        require(environment.get("DOCKER_HOST") == value.get("docker_host") and value.get("docker_host") == local_docker_binding(), "OPERATIONAL_DOCKER_BINDING_CHANGED")
     cohort = value.get("special_cohort")
     preparation = environment.get("RCT_LOCAL_SPECIAL_PREPARATION", "")
     require(preparation in {"", "true"} and (not preparation or cohort == "lifecycle"
@@ -1623,7 +1640,7 @@ def preflight(*, special=False, retained_receipt=None, retained_pdf_receipt=None
 
 class Runner:
     canonical_mount_records = staticmethod(canonical_mount_records)
-    def __init__(self, mode, *, startup_diagnostic=False, bundled_dockerfile_frontend=False, failed_cases=None, special_cohort=None, lifecycle_only=False):
+    def __init__(self, mode, *, startup_diagnostic=False, bundled_dockerfile_frontend=False, failed_cases=None, special_cohort=None, lifecycle_only=False, operational=False, operational_until=None):
         require(not startup_diagnostic or mode == "client", "CLIENT_DIAGNOSTIC_ONLY")
         require(not bundled_dockerfile_frontend or mode in {"ui-batch", "special13"}, "BUNDLED_FRONTEND_UI_BATCH_ONLY")
         require(failed_cases is None or mode == "ui-batch", "BATCH_CASES_UI_BATCH_ONLY")
@@ -1632,6 +1649,11 @@ class Runner:
         self.special_cohort = special_cohort
         require(type(lifecycle_only) is bool and (not lifecycle_only or mode == "special13" and special_cohort == "lifecycle"), "LIFECYCLE_ONLY_SPECIAL13")
         self.lifecycle_only = lifecycle_only
+        self.operational_admitted = operational
+        self.operational_until = operational_until
+        if operational_until is not None:
+            operational_selection(operational, operational_until, mode=mode, lifecycle_only=lifecycle_only)
+        self.operational_lanes = SPECIAL_LIFECYCLE[:SPECIAL_LIFECYCLE.index(operational_until) + 1] if operational_until else SPECIAL_LIFECYCLE
         self.special_network = None
         self.special_retained_receipt = None
         self.special_retained_pdf_receipt = None
@@ -1647,7 +1669,7 @@ class Runner:
         self.run = RUNS / self.project
         self.image_targets, self.image_ids, self.image_admitted = [], {}, set()
         allowed = {"PATH", "USER", "LOGNAME", "LANG", "LC_ALL", "TZ", "SHELL", "JAVA_HOME",
-                   "VIRTUAL_ENV", "SSL_CERT_FILE", "SSL_CERT_DIR", "REQUESTS_CA_BUNDLE"}
+                   "VIRTUAL_ENV", "SSL_CERT_FILE", "SSL_CERT_DIR", "REQUESTS_CA_BUNDLE", "DOCKER_HOST"}
         self.env = {key: value for key, value in os.environ.items() if key in allowed}
         # Explicit synthetic file is the only source of Compose credentials.
         self.env.update(RCT_E2E_SYNTHETIC_SEED="true", RCT_E2E_ASYNC_REPORT="false" if mode in {"client", "lesson-lifecycle", "ui-batch", "special13"} else "true", RCT_E2E_REMAINING5="true",
@@ -1787,6 +1809,7 @@ class Runner:
                         raise KeyboardInterrupt()
 
     def prepare(self):
+        require(self.mode != "special13" or self.operational_admitted, "EXPLICIT_OPERATIONAL_ADMISSION_REQUIRED")
         if self.mode == "special13":
             self.special_network = preflight(special=True, retained_receipt=self.special_retained_receipt, retained_pdf_receipt=self.special_retained_pdf_receipt, retained_recovery_receipt=self.special_retained_recovery_receipt, retained_restored_receipt=self.special_retained_restored_receipt)
         self.run.mkdir(mode=0o700)
@@ -1910,6 +1933,8 @@ class Runner:
                  "special_cohort": self.special_cohort,
                  "special_network": self.special_network,
                  "special_lanes": list(SPECIAL_NONCLOCK if self.special_cohort == "nonclock" else SPECIAL_LIFECYCLE) if self.mode == "special13" else None,
+                 **({"operational_admitted": True, "docker_host": self.env["DOCKER_HOST"],
+                     "operational_selected": list(self.operational_lanes)} if self.mode == "special13" else {}),
                  "special_intent": {"recovery_project": "rct-recovery-" + self.nonce,
                                     "bot_image_tag": "rct-local-stage17/notification-bot:" + self.nonce,
                                     "database_services": sorted(DATABASES), "network": self.project + "_private_net"} if self.mode == "special13" else None,
@@ -2635,6 +2660,7 @@ valid(all(stat.S_IMODE(directory.lstat().st_mode) == 0o755 for directory in dire
         write(self.run / "bot-image.json", json.dumps({"id": identifier, "tag": tag}) + "\n")
 
     def execute_special(self):
+        require(self.operational_admitted, "EXPLICIT_OPERATIONAL_ADMISSION_REQUIRED")
         if self.special_cohort == "nonclock":
             self.build_special_bot()
             clock = self.run / "clock/current-instant"
@@ -2674,11 +2700,12 @@ valid(all(stat.S_IMODE(directory.lstat().st_mode) == 0o755 for directory in dire
                     write(directory / "logical.result.safe.json", json.dumps(row, sort_keys=True) + "\n")
         require(len(self.special_outcomes) == (4 if self.special_cohort == "nonclock" else 7), "SPECIAL_LOGICAL_STORY_COUNT")
         write(self.run / "artifacts/special13.safe.json", json.dumps({"cohort": self.special_cohort, "stories": self.special_outcomes}, indent=2) + "\n")
-        require(all(row["status"] == "PASS" for row in self.special_outcomes), "SPECIAL_COHORT_TEST_FAILURE")
+        selected = set(self.operational_lanes) if self.special_cohort == "lifecycle" else set(SPECIAL_NONCLOCK)
+        require(all(row["status"] == "PASS" for row in self.special_outcomes if row["lane"] in selected), "SPECIAL_COHORT_TEST_FAILURE")
         if self.special_cohort == "lifecycle":
             self.special_health()
             records, _ = special_records(self.special_value())
-            require(any(row["kind"] == "recovery-seal" for row in records)
+            require(("application-recovery" not in selected or any(row["kind"] == "recovery-seal" for row in records))
                     and all(any(result["kind"] == "outcome" and result["intent"] == row["index"]
                                 and result["success"] is True and result["restored"] is True for result in records)
                             for row in records if row["kind"] == "intent"), "SPECIAL_RECOVERY_FINAL_QUALIFICATION")
@@ -2924,6 +2951,8 @@ def main():
     parser.add_argument("--expected-special-lane", choices=list(SPECIAL_LANES))
     parser.add_argument("--expected-special-phase", choices=["main", "prepare", "pending", "resume", "seed", "admit", "attachment"])
     parser.add_argument("--special-service", choices=sorted(SERVICES))
+    parser.add_argument("--operational", action="store_true", help="Explicit admission to disposable outage/clock/backup tests; ordinary regression: scripts/lifecycle_regression.py")
+    parser.add_argument("--operational-until", choices=SPECIAL_LIFECYCLE, help="Lifecycle-only: execute the explicitly printed original dependency prefix; later stories remain NOT_RUN")
     parser.add_argument("--lifecycle-only", action="store_true", help="Special13 only: discover then run only the original lifecycle7")
     parser.add_argument("--retained-cohort-receipt", type=Path, help="Special13 only: explicit private closure of the preserved BOOT cohort")
     parser.add_argument("--retained-pdf-cohort-receipt", type=Path, help="Special13 only: exact preserved ee1df PDF cohort closure")
@@ -2935,6 +2964,10 @@ def main():
     parser.add_argument("--failed-case", action="append", choices=list(FAILED_CASES),
                         help="UI batch only: select a confirmed failed case ID; repeat for multiple cases")
     args = parser.parse_args()
+    selected = operational_selection(args.operational, args.operational_until, mode=args.mode, lifecycle_only=args.lifecycle_only)
+    if args.mode == "special13":
+        os.environ["DOCKER_HOST"] = local_docker_binding()
+        emit("OPERATIONAL_SELECTION", selected=list(selected), remaining=[name for name in SPECIAL_LIFECYCLE if name not in selected], fullLifecycleSelection=args.operational_until is None)
     selected_cohorts(args.mode, args.lifecycle_only)
     require(args.retained_cohort_receipt is None or args.mode == "special13", "RETAINED_RECEIPT_SPECIAL_ONLY")
     require(args.retained_recovery_cohort_receipt is None or args.mode == "special13" and args.retained_pdf_cohort_receipt is not None, "RETAINED_RECOVERY_RECEIPT_SPECIAL_ONLY")
@@ -2987,13 +3020,15 @@ def main():
             require(len(rows) == (7 if args.lifecycle_only else 11) and sum(row["expected"] for row in rows) == expected, "SPECIAL_SUMMARY_COUNT")
             emit("SPECIAL13_RESULT", expected=expected, passed=sum(row["passed"] for row in rows),
                  failed=sum(row["failed"] for row in rows), notRun=sum(row["notRun"] for row in rows),
-                 cohorts=results, actualRuntime="OWNER_LOCAL_ONLY")
+                 cohorts=results, actualRuntime="OWNER_LOCAL_ONLY", selectedLifecycle=list(selected),
+                 fullLifecycleAcceptance=all(row["status"] == "PASS" for row in rows if row["lane"] in SPECIAL_LIFECYCLE))
             require(all(result["result"] == "PASS" for result in results), "SPECIAL13_INCOMPLETE")
 
 
 def run_cohort(args, cohort):
         runner = Runner(args.mode, special_cohort=cohort, startup_diagnostic=args.diagnose_startup,
-                        bundled_dockerfile_frontend=args.bundled_dockerfile_frontend, failed_cases=args.failed_case, lifecycle_only=args.lifecycle_only)
+                        bundled_dockerfile_frontend=args.bundled_dockerfile_frontend, failed_cases=args.failed_case, lifecycle_only=args.lifecycle_only,
+                        operational=args.operational, operational_until=args.operational_until)
         runner.special_retained_receipt = args.retained_cohort_receipt
         runner.special_retained_pdf_receipt = args.retained_pdf_cohort_receipt
         runner.special_retained_recovery_receipt = args.retained_recovery_cohort_receipt

@@ -101,6 +101,7 @@ const publicSpecs = [
   resolve(__dirname, '../specs/cloud-accepted-role-authority.spec.ts'),
   resolve(__dirname, '../specs/cloud-accepted-admin-grants.spec.ts'),
   resolve(__dirname, '../clock-specs/teaching-clock-geo.spec.ts'),
+  resolve(__dirname, '../local-lifecycle-prerequisites.spec.ts'),
 ];
 
 /** An untrusted reported frame, never proof of a cause, operation or successful assertion. */

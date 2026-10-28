@@ -1781,7 +1781,7 @@ class Runner:
         """Bound only the new local lanes; old launch modes retain their exact command path."""
         self.phase = phase
         emit(phase, state="RUNNING")
-        seconds = 120 if phase.startswith("DISCOVERY_") else 1800 if phase.startswith("BUILD_") else 900 if phase.startswith("SPECIAL_") or phase == "CLOCK_BUILD" else 600 if phase == "BOOT" else 300
+        seconds = 20 if phase == "NGINX_CONFIG_CHECK" else 120 if phase.startswith("DISCOVERY_") else 1800 if phase.startswith("BUILD_") else 900 if phase.startswith("SPECIAL_") or phase == "CLOCK_BUILD" else 600 if phase == "BOOT" else 300
         deadline, heartbeat, count = time.monotonic() + seconds, time.monotonic() + 15, 0
         limit = 16 * 1024**2
         require(stdin is None or type(stdin) is bytes and len(stdin) <= 65536, "SPECIAL_STDIN_BOUND")
@@ -2070,6 +2070,8 @@ class Runner:
         self.command("BOOT", self.compose("up", "-d", "--no-build", "--wait", "--wait-timeout", "480"))
         if self.mode == "special13":
             self.freeze_special_inventory()
+            if self.reconciliation_only:
+                self.command("NGINX_CONFIG_CHECK", self.compose("exec", "-T", "nginx", "nginx", "-t"))
         validate_local(environment=self.env)
         node_tls_probe(self.run / "certs/server.crt", self.env)
         self.command("NOTIFICATION_KEY_ISOLATION", self.compose("exec", "-T", "notification-web", "sh", "-c", "test ! -e /keys/private.key && test ! -L /keys/private.key"))
@@ -2554,6 +2556,7 @@ class Runner:
             directory.mkdir(mode=0o700, exist_ok=True)
             owned(directory, 0o700, directory=True)
         context = self.special_context("semester-metadata")
+        self.special_framework_directory("semester-metadata", "main")
         base = self.env.copy()
         clock = self.run / "clock/current-instant"
         owned(clock, 0o644)
@@ -2581,11 +2584,11 @@ class Runner:
             result["frameworkStatus"] = "REJECTED" if (root / "artifacts/framework.safe.json").exists() else "MISSING"
             framework = closed_framework_result(private_json(root / "artifacts/framework.safe.json"), value)
             result["frameworkStatus"] = "READ"
+            result["frameworkRunnerStatus"] = framework["runnerStatus"]
             expected = {(file, line, "chromium") for file, line in prerequisite_locations()}
             observed = {(row["file"], row["line"], row["project"]) for row in framework["discovery"]["identities"]}
             require(framework["kind"] == "EXECUTION" and framework["sourceBound"] and framework["sourceRevision"] == value["source_sha"]
-                    and framework["beginSeen"] and framework["runnerStatus"] == "passed" and framework["globalErrors"]["observed"] == 0
-                    and not framework["globalErrors"]["truncated"]
+                    and framework["beginSeen"]
                     and framework["privateRetention"]["status"] == "WRITTEN" and observed == expected
                     and framework["discovery"]["observed"] == framework["discovery"]["retained"] == len(expected)
                     and framework["discovery"]["rejected"] == 0 and not framework["discovery"]["truncated"], "SPECIAL_PREPARATION_FRAMEWORK")
@@ -2594,8 +2597,10 @@ class Runner:
             case = special_result(native_report, result["nativeExit"],
                                   "semester-metadata", "main", prerequisite_locations())
             result["reportStatus"] = case["status"]
-            require(case["status"] == "PASS" and all(type(row.get("errorCount")) is int and row["errorCount"] == 0
-                    for row in native_report["results"]), "SPECIAL_PREPARATION_CASE_FAILED")
+            require(framework["runnerStatus"] == "passed" and framework["globalErrors"]["observed"] == 0
+                    and not framework["globalErrors"]["truncated"] and case["status"] == "PASS"
+                    and all(type(row.get("errorCount")) is int and row["errorCount"] == 0
+                            for row in native_report["results"]), "SPECIAL_PREPARATION_CASE_FAILED")
             result["preparationStatus"] = "REJECTED" if (root / "preparation.safe.json").exists() else "MISSING"
             closed_preparation_result(private_json(root / "preparation.safe.json"), value)
             result["preparationStatus"] = "READ"

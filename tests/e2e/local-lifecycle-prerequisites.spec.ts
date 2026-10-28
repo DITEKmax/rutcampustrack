@@ -1,10 +1,13 @@
-import { closeSync, constants, existsSync, fstatSync, fsyncSync, lstatSync, openSync, readSync, realpathSync, writeFileSync } from 'node:fs';
+import { closeSync, constants, existsSync, fstatSync, fsyncSync, lstatSync, openSync, readSync, realpathSync, writeFileSync, ftruncateSync, writeSync } from 'node:fs';
 import { join } from 'node:path';
 import { test, requirePrivateArtifacts } from './fixtures/artifact-privacy';
 import { MobileDataset, admit, expect } from './fixtures/mobile-dataset';
 import { requireLocalSpecialLane } from './fixtures/local-special';
 import { readTeachingInstant } from './fixtures/teaching-clock';
 import { TEST_USERS } from './fixtures/users';
+import { closedStartupFailure, classifySafeFailure } from './fixtures/safe-reporter';
+import { observePreparationTransport } from './fixtures/preparation-transport';
+import type { APIRequestContext } from '@playwright/test';
 
 function requireValue(condition: unknown, message: string): asserts condition {
   if (!condition) throw new Error(message);
@@ -39,6 +42,29 @@ function ownedFile(path: string, maximum: number, mode = 0o600) {
   }
 }
 
+
+type PreparationPhase = 'CONTEXT' | 'HTTP_READINESS' | 'AUTH_INTENT' | 'ADMIN_ADMISSION' | 'FRESH_BASELINE' | 'CANONICAL_INITIALIZATION' | 'ORIGINAL_VERIFICATION' | 'COMPLETED';
+type Progress = (phase: PreparationPhase, status: 'RUNNING' | 'SUCCEEDED', httpStatus?: number) => void;
+
+// Exactly one nonmutating full-response check in the context subsequently used by canonical admit.
+async function sameContextAdmission<T>(request: Pick<APIRequestContext, 'get'>, progress: Progress,
+  recordAttempt: () => void, canonicalAdmit: () => Promise<T>): Promise<T> {
+  progress('HTTP_READINESS', 'RUNNING');
+  const response = await request.get('/api/auth/session', { maxRedirects: 0 });
+  const status = response.status();
+  progress('HTTP_READINESS', 'RUNNING', status);
+  await response.body();
+  requireValue(status === 401, 'Anonymous same-client session readiness must return401');
+  progress('HTTP_READINESS', 'SUCCEEDED', status);
+  progress('AUTH_INTENT', 'RUNNING');
+  recordAttempt();
+  progress('AUTH_INTENT', 'SUCCEEDED');
+  progress('ADMIN_ADMISSION', 'RUNNING'); // Must be durably recorded before a mutating admit.
+  const admin = await canonicalAdmit();
+  progress('ADMIN_ADMISSION', 'SUCCEEDED');
+  return admin;
+}
+
 test('fresh local lifecycle prerequisites use the canonical FIRST3 dataset', async ({ playwright }, info) => {
   requirePrivateArtifacts(info);
   requireValue(process.platform === 'linux' && process.env.RCT_LOCAL_SPECIAL_PREPARATION === 'true' &&
@@ -70,12 +96,58 @@ test('fresh local lifecycle prerequisites use the canonical FIRST3 dataset', asy
   const instant = readTeachingInstant(clockDirectory);
   const unchanged = () => requireValue(JSON.stringify(snapshot()) === JSON.stringify(clock),
     'Lifecycle prerequisites must leave the educational clock unchanged');
-  const request = await playwright.request.newContext({
-    baseURL: 'https://localhost:8443', ignoreHTTPSErrors: false, timeout: 10000,
-  });
+  const attempt = join(preparation, 'preparation-attempt.private.json');
+  requireValue(!existsSync(attempt) && !existsSync(join(preparation, 'preparation.safe.json')),
+    'Lifecycle preparation must not retry a previously attempted run');
+  const progressPath = join(preparation, 'http-progress.safe.json');
+  const progressDescriptor = openSync(progressPath, constants.O_WRONLY | constants.O_CREAT | constants.O_EXCL | constants.O_NOFOLLOW, 0o600);
+  const started = performance.now();
+  const diagnostic = { schema: 'RCT_LIFECYCLE_HTTP_PROGRESS_V1', sourceRevision: owner.source_sha as string,
+    phase: 'CONTEXT' as PreparationPhase, status: 'RUNNING' as 'RUNNING' | 'PASSED' | 'FAILED',
+    elapsedMs: 0, httpStatus: null as number | null, errorClass: 'UNKNOWN', transportCode: 'UNKNOWN',
+    transport: { schema: 'RCT_PREPARATION_TRANSPORT_V1', status: 'UNAVAILABLE', rows: [], truncated: false, observerFailures: 0,
+      qualification: 'EVENTS_ARE_OBSERVATIONS_NOT_SERVER_RECEIPT_OR_AUTH_COMMIT; ABSENT_EVENT_IS_UNKNOWN' } as ReturnType<ReturnType<typeof observePreparationTransport>['stop']>,
+    steps: [] as { phase: PreparationPhase; status: 'RUNNING' | 'SUCCEEDED'; elapsedMs: number; httpStatus: number | null }[] };
+  const persist = () => {
+    diagnostic.elapsedMs = Math.max(0, Math.min(180000, Math.trunc(performance.now() - started)));
+    const data = Buffer.from(`${JSON.stringify(diagnostic)}\n`);
+    requireValue(data.length <= 16384, 'Preparation HTTP diagnostic must remain bounded');
+    ftruncateSync(progressDescriptor, 0);
+    requireValue(writeSync(progressDescriptor, data, 0, data.length, 0) === data.length, 'Preparation HTTP diagnostic write must complete');
+    fsyncSync(progressDescriptor);
+  };
+  const progress: Progress = (phase, status, httpStatus) => {
+    if (phase !== diagnostic.phase) diagnostic.httpStatus = null;
+    diagnostic.phase = phase;
+    diagnostic.httpStatus = httpStatus ?? diagnostic.httpStatus;
+    diagnostic.steps.push({ phase, status, elapsedMs: Math.max(0, Math.min(180000, Math.trunc(performance.now() - started))), httpStatus: httpStatus ?? null });
+    persist();
+  };
+  let request: APIRequestContext | undefined;
   let primaryFailed = false;
   try {
-    const admin = await admit(request, TEST_USERS.admin, 'ADMIN');
+    progress('CONTEXT', 'RUNNING');
+    request = await playwright.request.newContext({
+      baseURL: 'https://localhost:8443', ignoreHTTPSErrors: false, timeout: 10000,
+    });
+    progress('CONTEXT', 'SUCCEEDED');
+    let transport: ReturnType<typeof observePreparationTransport> | undefined;
+    try { transport = observePreparationTransport(); } catch { /* Optional observation cannot replace an HTTP outcome. */ }
+    const observedProgress: Progress = (phase, status, code) => {
+      if (phase === 'HTTP_READINESS') transport?.enter('READINESS');
+      else if (phase === 'ADMIN_ADMISSION') transport?.enter('ADMIN_ADMISSION');
+      progress(phase, status, code);
+    };
+    let admin: Awaited<ReturnType<typeof admit>>;
+    try { admin = await sameContextAdmission(request, observedProgress, () => {
+      const attemptDescriptor = openSync(attempt, constants.O_WRONLY | constants.O_CREAT | constants.O_EXCL | constants.O_NOFOLLOW, 0o600);
+      try {
+        writeFileSync(attemptDescriptor, `${JSON.stringify({ schema: 'RCT_LOCAL_LIFECYCLE_PREPARATION_ATTEMPT_V1', sourceRevision: owner.source_sha })}\n`);
+        fsyncSync(attemptDescriptor);
+      } finally { closeSync(attemptDescriptor); }
+    }, () => admit(request!, TEST_USERS.admin, 'ADMIN')); }
+    finally { if (transport) diagnostic.transport = transport.stop(); }
+    progress('FRESH_BASELINE', 'RUNNING');
     const before = await admin.call('GET', '/api/academic/semesters?size=100');
     const baseline = before._embedded?.semesterResponseList;
     requireValue(Array.isArray(baseline) && baseline.length === 1 && before.page?.totalElements === 1 && before.page.number === 0 &&
@@ -85,19 +157,13 @@ test('fresh local lifecycle prerequisites use the canonical FIRST3 dataset', asy
       baseline[0].releasePending === false && baseline[0].activationScheduled === false &&
       (baseline[0].stateVersion === 0 || baseline[0].stateVersion === '0'),
     'Lifecycle prerequisites require the unchanged fresh Academic baseline');
-    const attempt = join(preparation, 'preparation-attempt.private.json');
-    requireValue(!existsSync(attempt) && !existsSync(join(preparation, 'preparation.safe.json')),
-      'Lifecycle preparation must not retry a previously attempted run');
-    const attemptDescriptor = openSync(attempt, constants.O_WRONLY | constants.O_CREAT | constants.O_EXCL | constants.O_NOFOLLOW, 0o600);
-    try {
-      writeFileSync(attemptDescriptor, `${JSON.stringify({ schema: 'RCT_LOCAL_LIFECYCLE_PREPARATION_ATTEMPT_V1', sourceRevision: owner.source_sha })}\n`);
-      fsyncSync(attemptDescriptor);
-    } finally {
-      closeSync(attemptDescriptor);
-    }
+    progress('FRESH_BASELINE', 'SUCCEEDED');
+    progress('CANONICAL_INITIALIZATION', 'RUNNING');
     // The canonical FIRST3 initializer is the sole writer of its dataset and accepted API protocol.
     const dataset = new MobileDataset(request, admin, instant);
     await dataset.initialize();
+    progress('CANONICAL_INITIALIZATION', 'SUCCEEDED');
+    progress('ORIGINAL_VERIFICATION', 'RUNNING');
     // Match activeHeadmanDataset: the canonical scheduler must settle the owned lesson first.
     await expect
       .poll(
@@ -150,14 +216,33 @@ test('fresh local lifecycle prerequisites use the canonical FIRST3 dataset', asy
     } finally {
       closeSync(descriptor);
     }
+    progress('ORIGINAL_VERIFICATION', 'SUCCEEDED');
+    progress('COMPLETED', 'SUCCEEDED');
+    diagnostic.status = 'PASSED';
+    persist();
   } catch (error) {
     primaryFailed = true;
+    diagnostic.status = 'FAILED';
+    const failure = closedStartupFailure({ error });
+    diagnostic.errorClass = failure.reportedErrorClass;
+    diagnostic.transportCode = failure.reportedTransportCode;
+    const status = classifySafeFailure(error).httpStatus;
+    if (typeof status === 'number' && status >= 100 && status <= 599) diagnostic.httpStatus = status;
+    try { persist(); } catch { /* Keep the original failure; the exclusive attempt remains. */ }
     throw error;
   } finally {
     let cleanupFailed = false;
     let cleanupError: unknown;
     try { unchanged(); } catch (error) { cleanupFailed = true; cleanupError = error; }
-    try { await request.dispose(); } catch (error) { cleanupFailed = true; cleanupError ??= error; }
+    try { await request?.dispose(); } catch (error) { cleanupFailed = true; cleanupError ??= error; }
+    if (!primaryFailed && cleanupFailed) {
+      diagnostic.status = 'FAILED';
+      const failure = closedStartupFailure({ error: cleanupError });
+      diagnostic.errorClass = failure.reportedErrorClass;
+      diagnostic.transportCode = failure.reportedTransportCode;
+      try { persist(); } catch { /* Preserve the original cleanup failure. */ }
+    }
+    try { closeSync(progressDescriptor); } catch (error) { cleanupFailed = true; cleanupError ??= error; }
     if (!primaryFailed && cleanupFailed) throw cleanupError;
   }
 });

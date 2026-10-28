@@ -407,6 +407,10 @@ def _execute_lifecycle_serial(runner, results):
     if getattr(runner, 'operational_until', None) == 'today': return results
     _execute_reconciliation(runner, results)
     if getattr(runner, 'operational_until', None) == 'semester-reconciliation': return results
+    return _execute_recovery_archive(runner, results)
+
+
+def _execute_recovery_archive(runner, results):
     # Reconciliation is clock-immutable; recovery starts on the same fresh eligible 09:00.
     runner._lifecycle_active_lane = 'application-recovery'
     results['application-recovery'] = execute_recovery(runner)
@@ -462,6 +466,10 @@ def execute_lifecycle(runner):
     try:
         if getattr(runner, 'reconciliation_only', False):
             _execute_reconciliation(runner, results)
+        elif getattr(runner, 'recovery_archive_only', False):
+            runner._lifecycle_active_lane = 'application-recovery'
+            advance_to_next_teaching_day(runner)
+            _execute_recovery_archive(runner, results)
         else:
             _execute_lifecycle_serial(runner, results)
     except Exception as error:

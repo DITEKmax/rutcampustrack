@@ -3208,6 +3208,8 @@ test('FULL admin reconciles one exact stranded close before archive completion',
   let producerDeadline = 0;
   let lessonClosed = false;
   let effectCaptured = false;
+  let consumingCapture: 'CLOSE' | 'PRODUCER' | undefined;
+  let finalProducerObservation = false;
   // Capture recovery shares the original absolute close/producer windows: it cannot reset them.
   // Add30s for exact command/read callbacks, then the existing95s/35s effect settlement.
   // Restart60s each, archive/restore30s each, authority15s and finalqueue/disposal15s remain.
@@ -3220,10 +3222,12 @@ test('FULL admin reconciles one exact stranded close before archive completion',
         ? (diagnostic.recoveryPublishAttempted ? 35000 : 95000) +
           (effectCaptured
             ? 0
-            : (lessonClosed
+            : (lessonClosed || consumingCapture === 'CLOSE'
                 ? 0
                 : Math.max(0, (closeDeadline || performance.now() + 90000) - performance.now())) +
-              (producerDeadline ? Math.max(0, producerDeadline - performance.now()) : 10000) +
+              (consumingCapture === 'PRODUCER'
+                ? 0
+                : producerDeadline ? Math.max(0, producerDeadline - performance.now()) : 10000) +
               30000)
         : 0) +
       ((archiveStarted || next.archive) && !archived ? 30000 : 0) +
@@ -3233,7 +3237,12 @@ test('FULL admin reconciles one exact stranded close before archive completion',
     );
   };
   const budget = (cap: number, next = {}, action = false) => {
-    const remaining = end - performance.now() - (cleaning ? 0 : reserve(next));
+    const now = performance.now();
+    // The active capture window is current work, not a second future reserve.
+    // It still has its original absolute end, including nested native reads.
+    const captureEnd = consumingCapture === 'CLOSE'
+      ? closeDeadline : consumingCapture === 'PRODUCER' && !finalProducerObservation ? producerDeadline : Infinity;
+    const remaining = Math.min(end - now - (cleaning && !consumingCapture ? 0 : reserve(next)), captureEnd - now);
     requireValue(remaining >= (action ? cap : 1000), 'Reconciliation cleanup reserve exhausted');
     if (action) clock.assertUnchanged();
     return Math.max(1, Math.min(cap, Math.floor(remaining)));
@@ -4582,24 +4591,43 @@ AND e.event_type='lesson.closed' AND e.event_payload#>>'{payload,lesson_id}'='${
     };
     // One exact final read is still useful if the original wait expired just before cleanup.
     if (!(await isClosed())) {
-      const remaining = Math.min(budget(90000), Math.floor(closeDeadline - performance.now()));
-      requireValue(remaining > 0, 'Original close recovery window exhausted');
-      await expect
-        .poll(isClosed, {
-          timeout: remaining,
-          message: 'Exact owned lesson closes in its original window',
-        })
-        .toBe(true);
+      consumingCapture = 'CLOSE';
+      try {
+        const remaining = Math.min(budget(90000), Math.floor(closeDeadline - performance.now()));
+        requireValue(remaining > 0, 'Original close recovery window exhausted');
+        await expect
+          .poll(isClosed, {
+            timeout: remaining,
+            message: 'Exact owned lesson closes in its original window',
+          })
+          .toBe(true);
+      } finally {
+        consumingCapture = undefined;
+      }
     }
     lessonClosed = true;
     if (!producerDeadline) producerDeadline = performance.now() + 10000;
-    const isSent = () => effectRows().some((row) => row.producer?.status === 'sent');
-    if (!isSent()) {
-      const remaining = Math.min(budget(10000), Math.floor(producerDeadline - performance.now()));
-      requireValue(remaining > 0, 'Original producer recovery window exhausted');
-      await expect
-        .poll(isSent, { timeout: remaining, message: 'Exact original close producer reaches SENT' })
-        .toBe(true);
+    consumingCapture = 'PRODUCER';
+    try {
+      const isSent = () => effectRows().some((row) => row.producer?.status === 'sent');
+      // Preserve the original one final authoritative read after expiry. This
+      // synchronous bounded read spends OTHER protected budget, never a new poll window.
+      let sent: boolean;
+      finalProducerObservation = producerDeadline <= performance.now();
+      try {
+        sent = isSent();
+      } finally {
+        finalProducerObservation = false;
+      }
+      if (!sent) {
+        const remaining = Math.min(budget(10000), Math.floor(producerDeadline - performance.now()));
+        requireValue(remaining > 0, 'Original producer recovery window exhausted');
+        await expect
+          .poll(isSent, { timeout: remaining, message: 'Exact original close producer reaches SENT' })
+          .toBe(true);
+      }
+    } finally {
+      consumingCapture = undefined;
     }
     effect();
     consumer();
@@ -4961,6 +4989,9 @@ WHERE e.event_id::text=o.payload->>'event_id' AND e.event_type=o.event_type)),
       lessonsPath: `/api/schedule/groups/${dataset.group.id}/lessons?dateFrom=${shift(dataset.today, -1)}&dateTo=${dataset.today}&size=200`,
     };
     diagnostic.phase = 'CONTROLLED_CLOSE';
+    // Admit the existing stop15s + create10s work and the complete prospective
+    // close/producer/recovery reserve before introducing the first outage.
+    budget(15000 + 10000, { stop: 'attendance-service', event: true }, true);
     stop('attendance-service');
     closeDeadline = performance.now() + 90000;
     budget(10000, { event: true }, true);

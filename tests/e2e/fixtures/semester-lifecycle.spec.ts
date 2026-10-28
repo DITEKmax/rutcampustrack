@@ -1,5 +1,6 @@
 import { localSpecialLane, localSpecialService, type LocalSpecialLane } from './local-special';
 import { diagnosticCase } from './diagnostic-events';
+import { createDlqWitness, observeRetainedDlq, readDlqCounters } from './reconciliation-dlq-observation';
 import { terminal as observeTerminal, assertOwnedSemesterUi } from './semester-lifecycle-observers';
 import { createHash, randomUUID } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
@@ -73,6 +74,10 @@ function reconciliationNativeRecord(
       /^(?:[1-9]|[1-9][0-9]|1[01][0-9]|120)$/.test(tail[9]) && tail[10] === service) {
       action = `${label}_START_WAIT`;
     }
+  }
+  for (const [service, label] of [['rabbitmq', 'RABBITMQ'], ['academic-service', 'ACADEMIC']]) {
+    if (args[0] === 'inspect' && args.length === 4 && args[1] === '--format' && args[3] === pins[service]?.id)
+      action = `${label}_INSPECT`;
   }
   if (same(args, ['exec', '-i', '-e', 'PGPASSWORD', pins['postgres-schedule']?.id, 'psql', '-X', '-qAt', '-U', 'rct_user', '-d', 'schedule_db', '-v', 'ON_ERROR_STOP=1'])) action = 'SCHEDULE_SQL';
   if (same(args, ['exec', '-i', '-e', 'RCT_MONGO_PASSWORD', pins['mongo-attendance']?.id, 'mongosh', '--quiet', '--nodb', '--file', '/dev/stdin'])) action = 'ATTENDANCE_MONGO';
@@ -3232,6 +3237,7 @@ test('FULL admin reconciles one exact stranded close before archive completion',
     if (action) clock.assertUnchanged();
     return Math.max(1, Math.min(cap, Math.floor(remaining)));
   };
+  const dlqWitness = createDlqWitness();
   const nativeDiagnostic = {
     schema: 'RCT_RECONCILIATION_NATIVE_V1',
     main: null as ReconciliationNativeRecord | null,
@@ -5425,11 +5431,18 @@ WHERE e.event_id::text=o.payload->>'event_id' AND e.event_type=o.event_type)),
       }
       if (peeked) {
         cleanupStage = 'CLEANUP_SEMESTER_DLQ';
-        const q = await queues();
-        requireValue(
-          q.dead.messages_ready === 1 && q.dead.messages_unacknowledged === 0,
-          'Original DLQ copy must remain retained',
-        );
+        // Management statistics can lag. This final observation reads only the retained
+        // DLQ and leaves the original final15s reservation's last5s for disposal.
+        const observationDeadline = Math.min(performance.now() + 10000, end - 5000);
+        const current = pins.rabbitmq;
+        const ip = local ? current.networks[local.networkName]?.IPAddress :
+          current.networks.rct_e2e_private_net?.IPAddress ?? current.networks['rct-e2e_private_net']?.IPAddress;
+        requireValue(typeof ip === 'string' && /^(?:10\.|172\.(?:1[6-9]|2\d|3[01])\.|192\.168\.)\d/.test(ip),
+          'Owned private broker address required');
+        await observeRetainedDlq((deadline) => readDlqCounters(fetch,
+          `http://${ip}:15672/api/queues/%2F/attendance-service.events.dlq`,
+          { Authorization: `Basic ${Buffer.from(`${secret.RABBITMQ_USER}:${secret.RABBITMQ_PASSWORD}`).toString('base64')}` },
+          deadline), observationDeadline, dlqWitness);
         diagnostic.retainedDlqCopies = 1;
       }
       cleanupStage = 'CLEANUP_SEMESTER_SETTLE';
@@ -5493,6 +5506,14 @@ WHERE e.event_id::text=o.payload->>'event_id' AND e.event_type=o.event_type)),
       const closedNative = `${JSON.stringify(nativeDiagnostic)}\n`;
       requireValue(Buffer.byteLength(closedNative, 'utf8') <= 2048, 'Native metadata must remain bounded');
       writeFileSync(join(run, 'reconciliation-native.safe.json'), closedNative, { mode: 0o600, flag: 'wx' });
+    } catch (error) {
+      retainLifecycleCleanupFailure(info.annotations, 'CLEANUP_SEMESTER_WRITE', error);
+      cleanupFailure ??= { error };
+    }
+    try {
+      const closedDlq = `${JSON.stringify(dlqWitness)}\n`;
+      requireValue(Buffer.byteLength(closedDlq, 'utf8') <= 1024, 'DLQ observation metadata must remain bounded');
+      writeFileSync(join(run, 'reconciliation-dlq.safe.json'), closedDlq, { mode: 0o600, flag: 'wx' });
     } catch (error) {
       retainLifecycleCleanupFailure(info.annotations, 'CLEANUP_SEMESTER_WRITE', error);
       cleanupFailure ??= { error };

@@ -4644,6 +4644,7 @@ jobs:
             ${{ env.RCT_SEMESTER_RECONCILIATION_RUN }}/artifacts/safe-results.json
             ${{ env.RCT_SEMESTER_RECONCILIATION_RUN }}/reconciliation.safe.json
             ${{ env.RCT_SEMESTER_RECONCILIATION_RUN }}/reconciliation-native.safe.json
+            ${{ env.RCT_SEMESTER_RECONCILIATION_RUN }}/reconciliation-dlq.safe.json
           if-no-files-found: warn
           retention-days: 7
 

@@ -486,11 +486,14 @@ def special_phases(lane):
     return {"assignment": ("prepare", "pending", "resume"), "application-recovery": ("seed", "pending", "admit", "attachment")}.get(lane, ("main",))
 
 
-def operational_selection(admitted, until, *, mode, lifecycle_only):
+def operational_selection(admitted, until, *, mode, lifecycle_only, reconciliation_only=False, retained_receipts=()):
     require(type(admitted) is bool and (not admitted or mode == "special13"), "OPERATIONAL_SPECIAL13_ONLY")
     require(mode != "special13" or admitted, "EXPLICIT_OPERATIONAL_ADMISSION_REQUIRED")
     require(until is None or admitted and lifecycle_only and until in SPECIAL_LIFECYCLE, "OPERATIONAL_PREFIX_REQUIRES_LIFECYCLE_ONLY")
-    return SPECIAL_LIFECYCLE[:SPECIAL_LIFECYCLE.index(until) + 1] if until else SPECIAL_LIFECYCLE
+    require(type(reconciliation_only) is bool and (not reconciliation_only or
+            mode == "special13" and admitted and lifecycle_only and until is None
+            and not any(item is not None for item in retained_receipts)), "RECONCILIATION_ONLY_SELECTION")
+    return ("semester-reconciliation",) if reconciliation_only else SPECIAL_LIFECYCLE[:SPECIAL_LIFECYCLE.index(until) + 1] if until else SPECIAL_LIFECYCLE
 
 
 def local_docker_binding():
@@ -1592,7 +1595,42 @@ def validate_retained_restored_cohort(path, root=None):
     return {'ids': sorted(ids)}
 
 
-def preflight(*, special=False, retained_receipt=None, retained_pdf_receipt=None, retained_recovery_receipt=None, retained_restored_receipt=None, selected_network=None):
+# This opt-in reads selected metadata only, never historical owner files or Config.Env.
+STOPPED_HISTORY_FORMAT = '{"id":{{json .Id}},"status":{{json .State.Status}},"running":{{json .State.Running}},"paused":{{json .State.Paused}},"restarting":{{json .State.Restarting}},"nonce":{{json (index .Config.Labels "rct.local.stage17")}},"project":{{json (index .Config.Labels "com.docker.compose.project")}}}'
+
+
+def stopped_history_rows(ids, rows, *, own_nonce=None, previous=None):
+    require(len(ids) == len(set(ids)) and len(ids) <= 512 and
+            all(type(item) is str and re.fullmatch('[0-9a-f]{64}', item) for item in ids), 'RECONCILIATION_HISTORY_IDS')
+    require(type(rows) is list and len(rows) == len(ids), 'RECONCILIATION_HISTORY_SHAPE')
+    normalized = []
+    for row in rows:
+        require(type(row) is dict and set(row) == {'id', 'status', 'running', 'paused', 'restarting', 'nonce', 'project'},
+                'RECONCILIATION_HISTORY_SHAPE')
+        require(row['id'] in ids and type(row['nonce']) is str and re.fullmatch('[0-9a-f]{24}', row['nonce'])
+                and row['nonce'] != own_nonce
+                and row['project'] in (None, 'rct-local-stage17-' + row['nonce'][:12], 'rct-recovery-' + row['nonce'])
+                and (own_nonce is None or row['project'] != 'rct-local-stage17-' + own_nonce[:12]),
+                'RECONCILIATION_HISTORY_IDENTITY')
+        require(row['status'] == 'exited' and row['running'] is False and row['paused'] is False
+                and row['restarting'] is False, 'RECONCILIATION_HISTORY_NOT_EXITED')
+        normalized.append(dict(row))
+    normalized.sort(key=lambda row: row['id'])
+    require(len({row['id'] for row in normalized}) == len(ids), 'RECONCILIATION_HISTORY_IDS')
+    require(previous is None or normalized == previous, 'RECONCILIATION_HISTORY_CHANGED')
+    return normalized
+
+
+def stopped_history(ids, *, own_nonce=None, previous=None):
+    # A fixed template prevents Docker from returning environment, mounts or old data.
+    require(len(ids) <= 512 and all(re.fullmatch('[0-9a-f]{64}', item) for item in ids), 'RECONCILIATION_HISTORY_IDS')
+    text = capture(['docker', 'inspect', '--format', STOPPED_HISTORY_FORMAT, *sorted(ids)]) if ids else ''
+    require(len(text.encode('utf-8')) <= 262144, 'RECONCILIATION_HISTORY_BOUND')
+    rows = [json.loads(line) for line in text.splitlines()]
+    return stopped_history_rows(ids, rows, own_nonce=own_nonce, previous=previous)
+
+
+def preflight(*, special=False, retained_receipt=None, retained_pdf_receipt=None, retained_recovery_receipt=None, retained_restored_receipt=None, selected_network=None, reconciliation_only=False, history=None, own_nonce=None):
     require(sys.platform == "linux" and os.getuid() != 0, "UBUNTU_NONROOT_REQUIRED")
     require(RUNS.resolve() == RUNS, "LINKED_RUNTIME_PARENT")
     for name in ("GITHUB_ACTIONS", "RUNNER_ENVIRONMENT", "GITHUB_RUN_ID", "GITHUB_RUN_ATTEMPT", "GITHUB_SHA"):
@@ -1609,6 +1647,13 @@ def preflight(*, special=False, retained_receipt=None, retained_pdf_receipt=None
             sock.bind(("127.0.0.1", port))
     require(not capture(["docker", "ps", "-aq", "--filter", "label=com.docker.compose.project=rct-e2e"]).strip(), "FOREIGN_E2E_COHORT")
     local_ids = capture(["docker", "ps", "-aq", "--no-trunc", "--filter", "label=" + LABEL]).splitlines()
+    if reconciliation_only:
+        require(special and all(item is None for item in (retained_receipt, retained_pdf_receipt, retained_recovery_receipt, retained_restored_receipt)),
+                'RECONCILIATION_HISTORY_CLOSURE_CONFLICT')
+        observed = stopped_history(local_ids, own_nonce=own_nonce, previous=history)
+        selected = special_network_choice(selected_network)
+        require(capture(["git", "ls-files", "--error-unmatch", "tests/e2e/.env.ci"]).strip(), "TRACKED_SYNTHETIC_ENV_REQUIRED")
+        return selected, observed
     if special:
         retained = validate_retained_cohort(retained_receipt) if retained_receipt else {"ids": []}
         retained_pdf = validate_retained_cohort(retained_pdf_receipt, pdf=True) if retained_pdf_receipt else {"ids": []}
@@ -1640,7 +1685,7 @@ def preflight(*, special=False, retained_receipt=None, retained_pdf_receipt=None
 
 class Runner:
     canonical_mount_records = staticmethod(canonical_mount_records)
-    def __init__(self, mode, *, startup_diagnostic=False, bundled_dockerfile_frontend=False, failed_cases=None, special_cohort=None, lifecycle_only=False, operational=False, operational_until=None):
+    def __init__(self, mode, *, startup_diagnostic=False, bundled_dockerfile_frontend=False, failed_cases=None, special_cohort=None, lifecycle_only=False, operational=False, operational_until=None, reconciliation_only=False):
         require(not startup_diagnostic or mode == "client", "CLIENT_DIAGNOSTIC_ONLY")
         require(not bundled_dockerfile_frontend or mode in {"ui-batch", "special13"}, "BUNDLED_FRONTEND_UI_BATCH_ONLY")
         require(failed_cases is None or mode == "ui-batch", "BATCH_CASES_UI_BATCH_ONLY")
@@ -1651,9 +1696,12 @@ class Runner:
         self.lifecycle_only = lifecycle_only
         self.operational_admitted = operational
         self.operational_until = operational_until
+        self.reconciliation_only = reconciliation_only
+        self.stopped_history = None
         if operational_until is not None:
             operational_selection(operational, operational_until, mode=mode, lifecycle_only=lifecycle_only)
-        self.operational_lanes = SPECIAL_LIFECYCLE[:SPECIAL_LIFECYCLE.index(operational_until) + 1] if operational_until else SPECIAL_LIFECYCLE
+        self.operational_lanes = operational_selection(operational, operational_until, mode=mode, lifecycle_only=lifecycle_only,
+            reconciliation_only=reconciliation_only) if mode == "special13" or reconciliation_only else SPECIAL_LIFECYCLE
         self.special_network = None
         self.special_retained_receipt = None
         self.special_retained_pdf_receipt = None
@@ -1811,7 +1859,12 @@ class Runner:
     def prepare(self):
         require(self.mode != "special13" or self.operational_admitted, "EXPLICIT_OPERATIONAL_ADMISSION_REQUIRED")
         if self.mode == "special13":
-            self.special_network = preflight(special=True, retained_receipt=self.special_retained_receipt, retained_pdf_receipt=self.special_retained_pdf_receipt, retained_recovery_receipt=self.special_retained_recovery_receipt, retained_restored_receipt=self.special_retained_restored_receipt)
+            admitted = preflight(special=True, retained_receipt=self.special_retained_receipt, retained_pdf_receipt=self.special_retained_pdf_receipt, retained_recovery_receipt=self.special_retained_recovery_receipt, retained_restored_receipt=self.special_retained_restored_receipt,
+                                 reconciliation_only=self.reconciliation_only, own_nonce=self.nonce)
+            if self.reconciliation_only:
+                self.special_network, self.stopped_history = admitted
+            else:
+                self.special_network = admitted
         self.run.mkdir(mode=0o700)
         for name in ("artifacts", "home", "tmp"):
             (self.run / name).mkdir(mode=0o700)
@@ -1927,6 +1980,7 @@ class Runner:
             self.image_targets.append("rct-local-stage17/notification-bot:" + self.nonce)
         value = {"schema": 1, "uid": os.getuid(), "root": str(ROOT), "run": str(self.run), "nonce": self.nonce, "mode": self.mode,
                  **({"lifecycle_only": True} if self.lifecycle_only else {}),
+                 **({"reconciliation_only": True} if self.reconciliation_only else {}),
                  "project": self.project, "source_sha": sha, "sources": hashes, "startup_diagnostic": self.startup_diagnostic,
                  "batch_lanes": selected_batch_lanes(self.failed_cases) if self.mode == "ui-batch" else None,
                  "batch_cases": self.failed_cases,
@@ -2011,7 +2065,8 @@ class Runner:
         if self.mode == "special13":
             self.phase = "BOOT_NETWORK_ADMISSION"
             emit(self.phase, state="RUNNING")
-            preflight(special=True, retained_receipt=self.special_retained_receipt, retained_pdf_receipt=self.special_retained_pdf_receipt, retained_recovery_receipt=self.special_retained_recovery_receipt, retained_restored_receipt=self.special_retained_restored_receipt, selected_network=self.special_network)
+            preflight(special=True, retained_receipt=self.special_retained_receipt, retained_pdf_receipt=self.special_retained_pdf_receipt, retained_recovery_receipt=self.special_retained_recovery_receipt, retained_restored_receipt=self.special_retained_restored_receipt, selected_network=self.special_network,
+                      reconciliation_only=self.reconciliation_only, history=self.stopped_history, own_nonce=self.nonce)
         self.command("BOOT", self.compose("up", "-d", "--no-build", "--wait", "--wait-timeout", "480"))
         if self.mode == "special13":
             self.freeze_special_inventory()
@@ -2405,10 +2460,14 @@ class Runner:
         root = self.run / "discovery"
         root.mkdir(mode=0o700)
         matrix = {"schema": "RCT_LOCAL_LIFECYCLE_DISCOVERY_V1", "status": "BLOCKED", "expected": 7,
-            "lanes": [{"lane": lane, "phase": special_phases(lane)[0], "status": "BLOCKED", "nativeExit": None,
+            "lanes": [{"lane": lane, "phase": special_phases(lane)[0], "status": "NOT_RUN" if self.reconciliation_only and lane not in self.operational_lanes else "BLOCKED", "nativeExit": None,
                        "frameworkReceipt": "NOT_RUN"} for lane in SPECIAL_LIFECYCLE]}
+        if self.reconciliation_only:
+            matrix["selected"] = 1
         try:
             for row in matrix["lanes"]:
+                if self.reconciliation_only and row["lane"] not in self.operational_lanes:
+                    continue
                 lane, phase = row["lane"], row["phase"]
                 directory = root / lane
                 directory.mkdir(mode=0o700)
@@ -2479,7 +2538,8 @@ class Runner:
                                 pass
                     finally:
                         self.env = base
-            matrix["status"] = "DISCOVERED" if all(row["status"] == "DISCOVERED" for row in matrix["lanes"]) else "BLOCKED"
+            matrix["status"] = "DISCOVERED" if all(row["status"] == "DISCOVERED" for row in matrix["lanes"]
+                if not self.reconciliation_only or row["lane"] in self.operational_lanes) else "BLOCKED"
         finally:
             write(self.run / "discovery.safe.json", json.dumps(matrix, sort_keys=True) + "\n")
         return matrix["status"] == "DISCOVERED"
@@ -2952,6 +3012,7 @@ def main():
     parser.add_argument("--expected-special-phase", choices=["main", "prepare", "pending", "resume", "seed", "admit", "attachment"])
     parser.add_argument("--special-service", choices=sorted(SERVICES))
     parser.add_argument("--operational", action="store_true", help="Explicit admission to disposable outage/clock/backup tests; ordinary regression: scripts/lifecycle_regression.py")
+    parser.add_argument("--reconciliation-only", action="store_true", help="Explicit fresh D9 only; requires special13 --operational --lifecycle-only; ignores only strictly exited historical containers")
     parser.add_argument("--operational-until", choices=SPECIAL_LIFECYCLE, help="Lifecycle-only: execute the explicitly printed original dependency prefix; later stories remain NOT_RUN")
     parser.add_argument("--lifecycle-only", action="store_true", help="Special13 only: discover then run only the original lifecycle7")
     parser.add_argument("--retained-cohort-receipt", type=Path, help="Special13 only: explicit private closure of the preserved BOOT cohort")
@@ -2964,10 +3025,12 @@ def main():
     parser.add_argument("--failed-case", action="append", choices=list(FAILED_CASES),
                         help="UI batch only: select a confirmed failed case ID; repeat for multiple cases")
     args = parser.parse_args()
-    selected = operational_selection(args.operational, args.operational_until, mode=args.mode, lifecycle_only=args.lifecycle_only)
+    selected = operational_selection(args.operational, args.operational_until, mode=args.mode, lifecycle_only=args.lifecycle_only,
+        reconciliation_only=args.reconciliation_only, retained_receipts=(args.retained_cohort_receipt, args.retained_pdf_cohort_receipt,
+            args.retained_recovery_cohort_receipt, args.retained_restored_cohort_receipt))
     if args.mode == "special13":
         os.environ["DOCKER_HOST"] = local_docker_binding()
-        emit("OPERATIONAL_SELECTION", selected=list(selected), remaining=[name for name in SPECIAL_LIFECYCLE if name not in selected], fullLifecycleSelection=args.operational_until is None)
+        emit("OPERATIONAL_SELECTION", selected=list(selected), remaining=[name for name in SPECIAL_LIFECYCLE if name not in selected], fullLifecycleSelection=args.operational_until is None and not args.reconciliation_only)
     selected_cohorts(args.mode, args.lifecycle_only)
     require(args.retained_cohort_receipt is None or args.mode == "special13", "RETAINED_RECEIPT_SPECIAL_ONLY")
     require(args.retained_recovery_cohort_receipt is None or args.mode == "special13" and args.retained_pdf_cohort_receipt is not None, "RETAINED_RECOVERY_RECEIPT_SPECIAL_ONLY")
@@ -2998,7 +3061,7 @@ def main():
         return
     require(args.expected_mode is None and args.expected_batch_lane is None and args.expected_special_lane is None
             and args.expected_special_phase is None and args.special_service is None, "EXPECTED_MODE_ADMIT_ONLY")
-    preflight(special=args.mode == "special13", retained_receipt=args.retained_cohort_receipt, retained_pdf_receipt=args.retained_pdf_cohort_receipt, retained_recovery_receipt=args.retained_recovery_cohort_receipt, retained_restored_receipt=args.retained_restored_cohort_receipt)
+    preflight(special=args.mode == "special13", retained_receipt=args.retained_cohort_receipt, retained_pdf_receipt=args.retained_pdf_cohort_receipt, retained_recovery_receipt=args.retained_recovery_cohort_receipt, retained_restored_receipt=args.retained_restored_cohort_receipt, reconciliation_only=args.reconciliation_only)
     if args.mode == "preflight":
         emit("PREFLIGHT", result="PASS", containers_started=0)
         return
@@ -3009,7 +3072,7 @@ def main():
     with os.fdopen(descriptor, "r+") as lock:
         owned(RUNS / "port-8443.lock", 0o600)
         fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
-        preflight(special=args.mode == "special13", retained_receipt=args.retained_cohort_receipt, retained_pdf_receipt=args.retained_pdf_cohort_receipt, retained_recovery_receipt=args.retained_recovery_cohort_receipt, retained_restored_receipt=args.retained_restored_cohort_receipt)  # Shared fixed-port lease held.
+        preflight(special=args.mode == "special13", retained_receipt=args.retained_cohort_receipt, retained_pdf_receipt=args.retained_pdf_cohort_receipt, retained_recovery_receipt=args.retained_recovery_cohort_receipt, retained_restored_receipt=args.retained_restored_cohort_receipt, reconciliation_only=args.reconciliation_only)  # Shared fixed-port lease held.
         cohorts = selected_cohorts(args.mode, args.lifecycle_only)
         results = []
         for cohort in cohorts:
@@ -3020,15 +3083,15 @@ def main():
             require(len(rows) == (7 if args.lifecycle_only else 11) and sum(row["expected"] for row in rows) == expected, "SPECIAL_SUMMARY_COUNT")
             emit("SPECIAL13_RESULT", expected=expected, passed=sum(row["passed"] for row in rows),
                  failed=sum(row["failed"] for row in rows), notRun=sum(row["notRun"] for row in rows),
-                 cohorts=results, actualRuntime="OWNER_LOCAL_ONLY", selectedLifecycle=list(selected),
-                 fullLifecycleAcceptance=all(row["status"] == "PASS" for row in rows if row["lane"] in SPECIAL_LIFECYCLE))
+                 cohorts=results, actualRuntime="OWNER_LOCAL_ONLY", selectedLifecycle=list(selected), selectedCount=len(selected),
+                 fullLifecycleAcceptance=not args.reconciliation_only and all(row["status"] == "PASS" for row in rows if row["lane"] in SPECIAL_LIFECYCLE))
             require(all(result["result"] == "PASS" for result in results), "SPECIAL13_INCOMPLETE")
 
 
 def run_cohort(args, cohort):
         runner = Runner(args.mode, special_cohort=cohort, startup_diagnostic=args.diagnose_startup,
                         bundled_dockerfile_frontend=args.bundled_dockerfile_frontend, failed_cases=args.failed_case, lifecycle_only=args.lifecycle_only,
-                        operational=args.operational, operational_until=args.operational_until)
+                        operational=args.operational, operational_until=args.operational_until, reconciliation_only=args.reconciliation_only)
         runner.special_retained_receipt = args.retained_cohort_receipt
         runner.special_retained_pdf_receipt = args.retained_pdf_cohort_receipt
         runner.special_retained_recovery_receipt = args.retained_recovery_cohort_receipt

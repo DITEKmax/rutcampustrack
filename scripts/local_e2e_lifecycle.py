@@ -362,6 +362,22 @@ def execute_assignment(runner):
     return result
 
 
+def _execute_reconciliation(runner, results):
+    runner._lifecycle_active_lane = 'semester-reconciliation'
+    advance_to_next_teaching_day(runner)
+    context = runner.special_context('semester-reconciliation', 'main')
+    private_new(Path(context['laneRun']) / 'disposable-target', b'RCT_SEMESTER_DISPOSABLE\n')
+    intent = runner.special_intent('semester-reconciliation', 'main', 'RECONCILIATION_OUTAGE',
+                                   ['schedule-service', 'attendance-service'], {})
+    outcome = runner.special_phase('semester-reconciliation', 'main', {'RCT_SEMESTER_LIFECYCLE_RUN': context['laneRun']})
+    receipt = json.loads(owned_read(Path(context['laneRun']) / 'reconciliation.safe.json', 4096, 0o600)[0])
+    restored = receipt.get('restorationSucceeded') is True
+    runner.special_outcome(intent, outcome['status'] == 'PASS', restored=restored)
+    require(restored, 'RECONCILIATION_RESTORATION_UNVERIFIED')
+    runner.special_health()
+    results['semester-reconciliation'] = outcome['status']
+
+
 def _execute_lifecycle_serial(runner, results):
     """Serial original logical stories; caller aggregates phase outcomes by lane."""
     for lane in ('semester-metadata', 'subject-deletion'):
@@ -389,19 +405,7 @@ def _execute_lifecycle_serial(runner, results):
     results['today'] = outcome['status']
     runner.special_health()
     if getattr(runner, 'operational_until', None) == 'today': return results
-    runner._lifecycle_active_lane = 'semester-reconciliation'
-    advance_to_next_teaching_day(runner)
-    context = runner.special_context('semester-reconciliation', 'main')
-    private_new(Path(context['laneRun']) / 'disposable-target', b'RCT_SEMESTER_DISPOSABLE\n')
-    intent = runner.special_intent('semester-reconciliation', 'main', 'RECONCILIATION_OUTAGE',
-                                   ['schedule-service', 'attendance-service'], {})
-    outcome = runner.special_phase('semester-reconciliation', 'main', {'RCT_SEMESTER_LIFECYCLE_RUN': context['laneRun']})
-    receipt = json.loads(owned_read(Path(context['laneRun']) / 'reconciliation.safe.json', 4096, 0o600)[0])
-    restored = receipt.get('restorationSucceeded') is True
-    runner.special_outcome(intent, outcome['status'] == 'PASS', restored=restored)
-    require(restored, 'RECONCILIATION_RESTORATION_UNVERIFIED')
-    runner.special_health()
-    results['semester-reconciliation'] = outcome['status']
+    _execute_reconciliation(runner, results)
     if getattr(runner, 'operational_until', None) == 'semester-reconciliation': return results
     # Reconciliation is clock-immutable; recovery starts on the same fresh eligible 09:00.
     runner._lifecycle_active_lane = 'application-recovery'
@@ -456,7 +460,10 @@ def execute_lifecycle(runner):
     failure_class = None
     selected = set(getattr(runner, 'operational_lanes', lanes))
     try:
-        _execute_lifecycle_serial(runner, results)
+        if getattr(runner, 'reconciliation_only', False):
+            _execute_reconciliation(runner, results)
+        else:
+            _execute_lifecycle_serial(runner, results)
     except Exception as error:
         failure_class = type(error).__name__ if type(error).__name__ in {
             'RuntimeError', 'AdmissionError', 'TimeoutExpired', 'CalledProcessError',

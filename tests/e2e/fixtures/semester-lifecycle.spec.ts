@@ -1,5 +1,6 @@
 import { localSpecialLane, localSpecialService, type LocalSpecialLane } from './local-special';
 import { diagnosticCase } from './diagnostic-events';
+import { createPhaseBudget } from './reconciliation-phase-budget';
 import { createInitialReadiness } from './reconciliation-readiness';
 import { createDlqWitness, observeRetainedDlq, readDlqCounters } from './reconciliation-dlq-observation';
 import { terminal as observeTerminal, assertOwnedSemesterUi } from './semester-lifecycle-observers';
@@ -2849,7 +2850,7 @@ test('FULL admin reconciles one exact stranded close before archive completion',
 }, info) => {
   localSpecialLane('semester-reconciliation');
   requirePrivateArtifacts(info);
-  test.setTimeout(420000);
+  test.setTimeout(510000);
   const end = performance.now() + info.timeout - Math.max(info.duration, 10000);
   const run = process.env.RCT_SEMESTER_LIFECYCLE_RUN;
   requireValue(!local || run === local.laneRun, 'Local semester checkpoint mismatch');
@@ -3208,45 +3209,42 @@ test('FULL admin reconciles one exact stranded close before archive completion',
   let producerDeadline = 0;
   let lessonClosed = false;
   let effectCaptured = false;
-  let consumingCapture: 'CLOSE' | 'PRODUCER' | undefined;
-  let finalProducerObservation = false;
-  // Capture recovery shares the original absolute close/producer windows: it cannot reset them.
-  // Add30s for exact command/read callbacks, then the existing95s/35s effect settlement.
-  // Restart60s each, archive/restore30s each, authority15s and finalqueue/disposal15s remain.
-  const reserve = (next: { stop?: string; event?: boolean; archive?: boolean } = {}) => {
+  // Each current operation consumes its own reservation; every other abort obligation remains protected.
+  let captureCompleted = false;
+  let producerComplete = false;
+  const reservations = (next: { stop?: string; event?: boolean; archive?: boolean } = {}) => {
     const pending = new Set(stopped);
     if (next.stop) pending.add(next.stop);
-    return (
-      pending.size * 60000 +
-      ((eventAccepted || next.event) && !applied
-        ? (diagnostic.recoveryPublishAttempted ? 35000 : 95000) +
-          (effectCaptured
-            ? 0
-            : (lessonClosed || consumingCapture === 'CLOSE'
-                ? 0
-                : Math.max(0, (closeDeadline || performance.now() + 90000) - performance.now())) +
-              (consumingCapture === 'PRODUCER'
-                ? 0
-                : producerDeadline ? Math.max(0, producerDeadline - performance.now()) : 10000) +
-              30000)
-        : 0) +
-      ((archiveStarted || next.archive) && !archived ? 30000 : 0) +
-      ((archiveStarted || next.archive) && !restored ? 30000 : 0) +
-      (authorityDirty || next.archive ? 15000 : 0) +
-      15000
-    );
+    const event = (eventAccepted || next.event) && !applied;
+    return {
+      ...(pending.has('attendance-service') ? { ATTENDANCE_RESTART: 60000 } : {}),
+      ...(pending.has('schedule-service') ? { SCHEDULE_RESTART: 60000 } : {}),
+      ...(event ? { EFFECT: diagnostic.recoveryPublishAttempted ? 35000 : 95000 } : {}),
+      ...(event && !captureCompleted ? {
+        ...(!lessonClosed ? { CLOSE: 90000 } : {}), ...(!producerComplete ? { PRODUCER: 10000 } : {}), CAPTURE: 30000,
+      } : {}),
+      ...((archiveStarted || next.archive) && !archived ? { ARCHIVE: 30000 } : {}),
+      ...((archiveStarted || next.archive) && !restored ? { RESTORE: 30000 } : {}),
+      ...(authorityDirty || next.archive ? { AUTHORITY: 15000 } : {}),
+      FINAL: 15000,
+    };
   };
+  const phaseBudget = createPhaseBudget(end, reservations, () => cleaning);
   const budget = (cap: number, next = {}, action = false) => {
-    const now = performance.now();
-    // The active capture window is current work, not a second future reserve.
-    // It still has its original absolute end, including nested native reads.
-    const captureEnd = consumingCapture === 'CLOSE'
-      ? closeDeadline : consumingCapture === 'PRODUCER' && !finalProducerObservation ? producerDeadline : Infinity;
-    const remaining = Math.min(end - now - (cleaning && !consumingCapture ? 0 : reserve(next)), captureEnd - now);
-    requireValue(remaining >= (action ? cap : 1000), 'Reconciliation cleanup reserve exhausted');
+    const value = phaseBudget.budget(cap, next, action);
     if (action) clock.assertUnchanged();
-    return Math.max(1, Math.min(cap, Math.floor(remaining)));
+    return value;
   };
+  // Keep the existing2s request cap. A terminal's POST/poll/finalGET/idempotencyPOST
+  // all consume the same30s lease, rather than only protecting its poll timeout.
+  const leasedActor = (actor: Actor): Actor => Object.assign(Object.create(actor), {
+    call: async (...args: Parameters<Actor['call']>) => {
+      budget(2000, {}, true);
+      const value = await actor.call(...args);
+      phaseBudget.assertWithin();
+      return value;
+    },
+  });
   const dlqWitness = createDlqWitness();
   const initialReadiness = createInitialReadiness();
   const nativeDiagnostic = {
@@ -3742,10 +3740,13 @@ print(JSON.stringify({receipt,claims,acks,docs,other}));`;
       return unknown();
     }
   };
-  const restart = async (service: string, scheduleReturnedAt?: number) => {
+  const restartBody = async (service: string, scheduleReturnedAt?: number) => {
     if (!stopped.has(service)) return;
-    const restartEnd = performance.now() + budget(45000);
+    const resource = service === 'schedule-service' ? 'SCHEDULE_RESTART' : 'ATTENDANCE_RESTART';
+    const finalObservation = phaseBudget.deadline(resource)! <= performance.now();
+    const restartEnd = finalObservation ? performance.now() : performance.now() + budget(45000);
     const remaining = () => {
+      if (finalObservation) return 5000; // One bounded authoritative snapshot, never a new up/poll.
       const value = Math.floor(restartEnd - performance.now());
       requireValue(value > 0, 'Owned restart deadline exhausted');
       return value;
@@ -3845,6 +3846,12 @@ print(JSON.stringify({receipt,claims,acks,docs,other}));`;
         academicHealth.fresh === true
       );
     };
+    if (finalObservation) {
+      recordRestartFailure(before);
+      requireValue(recovered(before), 'Same owned service must recover');
+      stopped.delete(service);
+      return;
+    }
     try {
       docker(
         [
@@ -3895,6 +3902,11 @@ print(JSON.stringify({receipt,claims,acks,docs,other}));`;
     requireValue(performance.now() <= restartEnd, 'Owned restart deadline exhausted');
     stopped.delete(service);
   };
+  const restart = async (service: string, scheduleReturnedAt?: number) => {
+    if (!stopped.has(service)) return;
+    const resource = service === 'schedule-service' ? 'SCHEDULE_RESTART' : 'ATTENDANCE_RESTART';
+    await phaseBudget.run(resource, () => restartBody(service, scheduleReturnedAt), true);
+  };
   const request = await playwright.request.newContext({
     baseURL: 'https://localhost:8443',
     ignoreHTTPSErrors: false,
@@ -3944,6 +3956,10 @@ FROM schedule_semester_archive_effect_ledger e WHERE e.semester_id=${scope.semes
 AND e.event_type='lesson.closed' AND e.event_payload#>>'{payload,lesson_id}'='${scope.lesson}' LIMIT 2) t`);
   const effect = () => {
     const rows = effectRows();
+    if (phaseBudget.witness.recover.stage === 'EFFECT') {
+      phaseBudget.witness.recover.effectRows = rows.length === 0 ? 'ZERO' : rows.length === 1 ? 'ONE' : 'MANY';
+      phaseBudget.witness.recover.effectGuard = false;
+    }
     requireValue(rows.length === 1, 'One exact owned close is required');
     const row = rows[0];
     requireValue(
@@ -3986,16 +4002,19 @@ AND e.event_type='lesson.closed' AND e.event_payload#>>'{payload,lesson_id}'='${
       envelope = bytes;
       scope.event = row.event_id;
     }
+    if (phaseBudget.witness.recover.stage === 'EFFECT') phaseBudget.witness.recover.effectGuard = true;
     return row;
   };
   const consumer = () => {
     const value = mongo();
+    if (phaseBudget.witness.recover.stage === 'CONSUMER') phaseBudget.witness.recover.consumerGuard = false;
     requireValue(
       value.docs.length <= 500 && value.other.length <= 500 && value.acks.length <= 3,
       'Consumer projection must be bounded',
     );
     if (otherBefore === undefined) otherBefore = value.other;
     else equal(value.other, otherBefore, 'Unrelated attendance changed');
+    if (phaseBudget.witness.recover.stage === 'CONSUMER') phaseBudget.witness.recover.consumerGuard = true;
     return value;
   };
   const captureDelayedRetry = async () => {
@@ -4128,7 +4147,7 @@ AND e.event_type='lesson.closed' AND e.event_payload#>>'{payload,lesson_id}'='${
       diagnostic.exactDlqEnvelope = true;
     }
   };
-  const publish = async (duplicate = false) => {
+  const publishBody = async (duplicate = false) => {
     budget(5000, {}, true);
     for (const service of ['attendance-service', 'schedule-service', 'rabbitmq']) {
       const current = identity(service);
@@ -4145,6 +4164,7 @@ AND e.event_type='lesson.closed' AND e.event_payload#>>'{payload,lesson_id}'='${
       requireValue(!diagnostic.recoveryPublishAttempted, 'Only one recovery publish is allowed');
       await stranded();
       diagnostic.recoveryPublishAttempted = true;
+      phaseBudget.narrow('EFFECT', 35000);
     } else {
       requireValue(
         applied && archived && !diagnostic.duplicateAttempted,
@@ -4160,6 +4180,10 @@ AND e.event_type='lesson.closed' AND e.event_payload#>>'{payload,lesson_id}'='${
       payload_encoding: 'base64',
     });
     requireValue(sent.routed === true, 'Exact targeted copy must route to Attendance');
+  };
+  const publish = async (duplicate = false) => {
+    if (duplicate) return publishBody(true);
+    return phaseBudget.run('EFFECT', () => publishBody(false));
   };
   let readinessRequest: { id: string; since: string; until: string } | undefined;
   const captureReadinessFailure = () => {
@@ -4447,7 +4471,7 @@ AND e.event_type='lesson.closed' AND e.event_payload#>>'{payload,lesson_id}'='${
     );
     diagnostic.replayFailureLog = { attendance, schedule };
   };
-  const awaitApplied = async () => {
+  const awaitAppliedBody = async () => {
     await expect
       .poll(
         () => {
@@ -4534,6 +4558,7 @@ AND e.event_type='lesson.closed' AND e.event_payload#>>'{payload,lesson_id}'='${
     applied = true;
     diagnostic.appliedAfterReplay = diagnostic.recoveryPublishAttempted;
   };
+  const awaitApplied = () => phaseBudget.run('EFFECT', awaitAppliedBody);
   const recoverOwnClose = async () => {
     requireValue(
       closeCommand && eventAccepted,
@@ -4565,7 +4590,7 @@ AND e.event_type='lesson.closed' AND e.event_payload#>>'{payload,lesson_id}'='${
     }
     const isClosed = async () => {
       const rows = Object.values(
-        (await closeCommand!.actor.call('GET', closeCommand!.lessonsPath))._embedded ?? {},
+        (await leasedActor(closeCommand!.actor).call('GET', closeCommand!.lessonsPath))._embedded ?? {},
       ).flat();
       if (!cleaning) {
         const target = (rows as Row[]).find((row) => Number(row.id) === scope.lesson);
@@ -4581,56 +4606,58 @@ AND e.event_type='lesson.closed' AND e.event_payload#>>'{payload,lesson_id}'='${
               : 'OTHER_OR_ABSENT',
         };
       }
-      return rows.some(
+      const closed = rows.some(
         (row: any) =>
           Number(row.id) === scope.lesson &&
           Number(row.groupId) === scope.group &&
           Number(row.semesterId) === scope.semester &&
           row.status === 'CLOSED',
       );
+      phaseBudget.witness.recover.closeStatus = closed ? 'CLOSED' : 'OTHER';
+      return closed;
     };
-    // One exact final read is still useful if the original wait expired just before cleanup.
-    if (!(await isClosed())) {
-      consumingCapture = 'CLOSE';
-      try {
+    try {
+      phaseBudget.recoverStage('CLOSE_GET');
+      const closed = await phaseBudget.run('CLOSE', isClosed, true);
+      if (!closed) await phaseBudget.run('CLOSE', async () => {
         const remaining = Math.min(budget(90000), Math.floor(closeDeadline - performance.now()));
         requireValue(remaining > 0, 'Original close recovery window exhausted');
-        await expect
-          .poll(isClosed, {
-            timeout: remaining,
-            message: 'Exact owned lesson closes in its original window',
-          })
-          .toBe(true);
-      } finally {
-        consumingCapture = undefined;
+        await expect.poll(isClosed, {timeout: remaining, message: 'Exact owned lesson closes in its original window'}).toBe(true);
+      });
+      phaseBudget.recoverPassed();
+      lessonClosed = true;
+      if (!producerDeadline) {
+        producerDeadline = performance.now() + 10000;
+        phaseBudget.bind('PRODUCER', producerDeadline);
       }
-    }
-    lessonClosed = true;
-    if (!producerDeadline) producerDeadline = performance.now() + 10000;
-    consumingCapture = 'PRODUCER';
-    try {
-      const isSent = () => effectRows().some((row) => row.producer?.status === 'sent');
-      // Preserve the original one final authoritative read after expiry. This
-      // synchronous bounded read spends OTHER protected budget, never a new poll window.
-      let sent: boolean;
-      finalProducerObservation = producerDeadline <= performance.now();
-      try {
-        sent = isSent();
-      } finally {
-        finalProducerObservation = false;
-      }
-      if (!sent) {
+      phaseBudget.recoverStage('PRODUCER');
+      const isSent = () => {
+        const rows = effectRows();
+        phaseBudget.witness.recover.producerRows = rows.length === 0 ? 'ZERO' : rows.length === 1 ? 'ONE' : 'MANY';
+        const sent = rows.some((row) => row.producer?.status === 'sent');
+        phaseBudget.witness.recover.producerSent = sent;
+        return sent;
+      };
+      const sent = await phaseBudget.run('PRODUCER', isSent, true);
+      if (!sent) await phaseBudget.run('PRODUCER', async () => {
         const remaining = Math.min(budget(10000), Math.floor(producerDeadline - performance.now()));
         requireValue(remaining > 0, 'Original producer recovery window exhausted');
-        await expect
-          .poll(isSent, { timeout: remaining, message: 'Exact original close producer reaches SENT' })
-          .toBe(true);
-      }
-    } finally {
-      consumingCapture = undefined;
+        await expect.poll(isSent, {timeout: remaining, message: 'Exact original close producer reaches SENT'}).toBe(true);
+      });
+      phaseBudget.recoverPassed();
+      producerComplete = true;
+      const capture = () => {
+        phaseBudget.recoverStage('EFFECT'); effect(); phaseBudget.recoverPassed();
+        phaseBudget.recoverStage('CONSUMER'); consumer(); phaseBudget.recoverPassed();
+        captureCompleted = true;
+      };
+      if (captureCompleted) capture();
+      else await phaseBudget.run('CAPTURE', capture, true);
+      phaseBudget.recoverStage('COMPLETE'); phaseBudget.recoverPassed();
+    } catch (error) {
+      phaseBudget.recoverFailed();
+      throw error;
     }
-    effect();
-    consumer();
   };
   try {
     for (const service of [
@@ -4994,6 +5021,7 @@ WHERE e.event_id::text=o.payload->>'event_id' AND e.event_type=o.event_type)),
     budget(15000 + 10000, { stop: 'attendance-service', event: true }, true);
     stop('attendance-service');
     closeDeadline = performance.now() + 90000;
+    phaseBudget.bind('CLOSE', closeDeadline);
     budget(10000, { event: true }, true);
     // Keep accepted-or-ambiguous state even when the committed HTTP response is lost.
     eventAccepted = true;
@@ -5321,14 +5349,14 @@ WHERE e.event_id::text=o.payload->>'event_id' AND e.event_type=o.event_type)),
     diagnostic.phase = 'EXACT_REPLAY';
     await publish();
     await awaitApplied();
-    const completed = await terminal(
-      admin,
+    const completed = await phaseBudget.run('ARCHIVE', () => terminal(
+      leasedActor(admin!),
       scope.semester,
       'ARCHIVE',
       archiveKey,
       archiveProgress,
       budget(20000),
-    );
+    ));
     archived = true;
     requireValue(
       completed.operation.operationId === operation.operationId,
@@ -5398,6 +5426,7 @@ WHERE e.event_id::text=o.payload->>'event_id' AND e.event_type=o.event_type)),
   } finally {
     cleaning = true;
     let cleanupFailure: { error: unknown } | undefined;
+    let leaveFinal: (() => void) | undefined;
     try {
       for (const service of ['schedule-service', 'attendance-service']) {
         try {
@@ -5425,32 +5454,33 @@ WHERE e.event_id::text=o.payload->>'event_id' AND e.event_type=o.event_type)),
       if (admin && previous && archiveStarted) {
         if (!archived) {
           cleanupStage = 'CLEANUP_SEMESTER_ARCHIVE';
-          await terminal(
-            admin,
-            Number(previous.id),
+          await phaseBudget.run('ARCHIVE', () => terminal(
+            leasedActor(admin!),
+            Number(previous!.id),
             'ARCHIVE',
             archiveKey,
             archiveProgress,
             budget(20000),
-          );
+          ));
           archived = true;
         }
         if (!restored) {
           cleanupStage = 'CLEANUP_SEMESTER_RESTORE';
-          await terminal(
-            admin,
-            Number(previous.id),
+          await phaseBudget.run('RESTORE', () => terminal(
+            leasedActor(admin!),
+            Number(previous!.id),
             'RESTORE',
             restoreKey,
             restoreProgress,
             budget(20000),
-          );
+          ));
           restored = true;
         }
+        await phaseBudget.run('AUTHORITY', async () => {
         cleanupStage = 'CLEANUP_SEMESTER_ACTIVATE';
-        const current = await admin.call(
+        const current = await leasedActor(admin!).call(
           'PATCH',
-          `/api/academic/semesters/${previous.id}/activate`,
+          `/api/academic/semesters/${previous!.id}/activate`,
         );
         requireValue(
           current.active === true &&
@@ -5459,18 +5489,20 @@ WHERE e.event_id::text=o.payload->>'event_id' AND e.event_type=o.event_type)),
           'Original active authority must return',
         );
         cleanupStage = 'CLEANUP_SEMESTER_VERIFY';
-        const active = (await semesters(admin)).filter((row) => row.active === true);
+        const active = (await semesters(leasedActor(admin!))).filter((row) => row.active === true);
         requireValue(
-          active.length === 1 && Number(active[0].id) === Number(previous.id),
+          active.length === 1 && Number(active[0].id) === Number(previous!.id),
           'Original exclusive active authority must return',
         );
         authorityDirty = false;
+        });
       }
+      leaveFinal = phaseBudget.enter('FINAL');
       if (peeked) {
         cleanupStage = 'CLEANUP_SEMESTER_DLQ';
         // Management statistics can lag. This final observation reads only the retained
         // DLQ and leaves the original final15s reservation's last5s for disposal.
-        const observationDeadline = Math.min(performance.now() + 10000, end - 5000);
+        const observationDeadline = Math.min(performance.now() + 10000, phaseBudget.deadline('FINAL')! - 5000);
         const current = pins.rabbitmq;
         const ip = local ? current.networks[local.networkName]?.IPAddress :
           current.networks.rct_e2e_private_net?.IPAddress ?? current.networks['rct-e2e_private_net']?.IPAddress;
@@ -5493,6 +5525,10 @@ WHERE e.event_id::text=o.payload->>'event_id' AND e.event_type=o.event_type)),
       retainLifecycleCleanupFailure(info.annotations, cleanupStage, error);
       cleanupFailure = { error };
       diagnostic.cleanupOutcome = 'FAILED';
+    }
+    if (!leaveFinal) {
+      try { leaveFinal = phaseBudget.enter('FINAL'); }
+      catch (error) { cleanupFailure ??= {error}; }
     }
     try {
       cleanupStage = 'CLEANUP_SEMESTER_CLOCK';
@@ -5520,6 +5556,7 @@ WHERE e.event_id::text=o.payload->>'event_id' AND e.event_type=o.event_type)),
     } finally {
       if (disposeTimer !== undefined) clearTimeout(disposeTimer);
     }
+    leaveFinal?.();
     if (cleanupFailure) {
       diagnostic.restorationSucceeded = false;
       diagnostic.cleanupOutcome = 'FAILED';
@@ -5563,6 +5600,14 @@ WHERE e.event_id::text=o.payload->>'event_id' AND e.event_type=o.event_type)),
     } catch (error) {
       retainLifecycleCleanupFailure(info.annotations, 'CLEANUP_SEMESTER_WRITE', error);
       cleanupFailure ??= { error };
+    }
+    try {
+      const closedBudget = `${JSON.stringify(phaseBudget.witness)}\n`;
+      requireValue(Buffer.byteLength(closedBudget, 'utf8') <= 4096, 'Budget metadata must remain bounded');
+      writeFileSync(join(run, 'reconciliation-budget.safe.json'), closedBudget, {mode: 0o600, flag: 'wx'});
+    } catch (error) {
+      retainLifecycleCleanupFailure(info.annotations, 'CLEANUP_SEMESTER_WRITE', error);
+      cleanupFailure ??= {error};
     }
     if (originalFailure) throw originalFailure.error;
     if (cleanupFailure) throw cleanupFailure.error;

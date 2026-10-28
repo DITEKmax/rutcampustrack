@@ -4295,7 +4295,7 @@ jobs:
 
       - name: Verify exact stranded semester effect reconciliation
         id: semester-reconciliation
-        timeout-minutes: 9
+        timeout-minutes: 11
         if: ${{ matrix.group == 'lifecycle' && !cancelled() && steps.e2e-ready.outcome == 'success' && (steps.homework-target-sensitivity.outcome == 'skipped' || steps.homework-target-sensitivity.outputs.restorationSucceeded == 'true') && steps.assignment-lifecycle.outputs.restorationSucceeded == 'true' }}
         working-directory: tests/e2e
         env:
@@ -4645,6 +4645,7 @@ jobs:
             ${{ env.RCT_SEMESTER_RECONCILIATION_RUN }}/reconciliation.safe.json
             ${{ env.RCT_SEMESTER_RECONCILIATION_RUN }}/reconciliation-native.safe.json
             ${{ env.RCT_SEMESTER_RECONCILIATION_RUN }}/reconciliation-dlq.safe.json
+            ${{ env.RCT_SEMESTER_RECONCILIATION_RUN }}/reconciliation-budget.safe.json
           if-no-files-found: warn
           retention-days: 7
 

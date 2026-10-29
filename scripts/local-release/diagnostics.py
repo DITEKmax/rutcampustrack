@@ -5,9 +5,54 @@ import json
 import os
 import re
 import stat
+import secrets
+import traceback
 import xml.etree.ElementTree as ET
 
 LIMIT=32*1024*1024
+
+CONTROL_CLASSES=frozenset(('ValueError','TypeError','RuntimeError','KeyError','IndexError',
+    'OSError','PermissionError','FileNotFoundError','FileExistsError','NotADirectoryError',
+    'IsADirectoryError','BlockingIOError','TimeoutError','UnicodeDecodeError','JSONDecodeError',
+    'ParseError','CalledProcessError','TimeoutExpired','KeyboardInterrupt','AssertionError'))
+CONTROL_CHECKPOINTS=frozenset(('COMMAND','RUN_GATES','TARGETED_RECEIPT','PREFLIGHT'))
+CONTROL_SOURCES=frozenset(('scripts/local-release-gates.py','scripts/local-release/diagnostics.py',
+    'scripts/local-release/targeted_receipt.py','scripts/local-release/progress.py','scripts/local-release/catalog.py'))
+
+def control_error(error,directory,checkpoint,root):
+    """Bounded private traceback; finite source/status projection without locals or message."""
+    if checkpoint not in CONTROL_CHECKPOINTS:checkpoint='PREFLIGHT'
+    name=type(error).__name__;frame=None;cursor=error.__traceback__
+    while cursor is not None:
+        try:
+            path=Path(cursor.tb_frame.f_code.co_filename).resolve()
+            relative=str(path.relative_to(root.resolve())).replace('\\','/')
+            if relative in CONTROL_SOURCES and 0<cursor.tb_lineno<=100000:
+                frame={'path':relative,'line':cursor.tb_lineno}
+        except (ValueError,OSError):pass
+        cursor=cursor.tb_next
+    value={'status':'CONTROL_ERROR','exceptionClass':name if name in CONTROL_CLASSES else 'OTHER',
+           'checkpoint':checkpoint,'lastOwnSourceFrame':frame,'privateTraceback':None}
+    try:
+        if directory is None:return value
+        directory=Path(directory)
+        info=directory.stat()
+        if directory.resolve()!=directory or directory.is_symlink() or info.st_uid!=os.getuid() or stat.S_IMODE(info.st_mode)&0o077:
+            return value
+        prefix='control-error-'+checkpoint.lower()+'-'+secrets.token_hex(4)
+        raw=bytearray()
+        trace=traceback.TracebackException.from_exception(error,limit=32,capture_locals=False)
+        for piece in trace.format():
+            raw.extend(piece.encode('utf-8','replace')[:65536-len(raw)])
+            if len(raw)>=65536:break
+        private=prefix+'.private.log'
+        fd=os.open(directory/private,os.O_WRONLY|os.O_CREAT|os.O_EXCL|os.O_NOFOLLOW,0o600)
+        with os.fdopen(fd,'wb') as output:output.write(raw)
+        value['privateTraceback']=private
+        fd=os.open(directory/(prefix+'.safe.json'),os.O_WRONLY|os.O_CREAT|os.O_EXCL|os.O_NOFOLLOW,0o600)
+        with os.fdopen(fd,'w',encoding='utf-8') as output:output.write(json.dumps(value,sort_keys=True)+'\n')
+    except Exception:pass  # Reporting must never interrupt owned-child/terminal cleanup.
+    return value
 
 def read(path, since):
     info=path.lstat()
@@ -29,6 +74,15 @@ def junit(path,since):
             value=int(suite.get(key,'0'))
             if not 0<=value<=1000000:raise ValueError('JUnit count')
             result[key]+=value
+    for suite in suites:
+        if suite.get('name')=='ru.rutcampustrack.academic.botcredentials.BotCredentialBrokerBridgeIT':
+            # Only the fixed source fixture's bounded marker is projected.
+            texts=[]
+            for node in suite.iter():
+                if node.tag in {'failure','error','system-out'}:
+                    texts.extend((node.get('message',''),node.text or ''))
+            detail=bridge_detail('\n'.join(texts))
+            if detail:result['brokerBridge']=detail
     return result
 
 def sarif(path,since):
@@ -178,9 +232,65 @@ def native_log(path):
     }
     result={'categories':[key for key,pattern in patterns.items() if re.search(pattern,raw)],'retainedPrivateBytes':path.stat().st_size}
     text=raw.decode('utf-8','replace')
+    detail=bridge_detail(text)
+    if detail:result['brokerBridge']=detail
     for field,allowed in RECOVERY_FIELDS.items():
         values=re.findall(r'(?m)^RECOVERY_FAILURE_'+field+r':([A-Z_]+)\r?$',text)
         result['recovery'+field.title()]=next((v for v in reversed(values) if v in allowed),None)
+    return result
+
+BRIDGE_PHASES=frozenset(('setup','actual_auth_change_outbox_confirm_consumer_ack',
+    'same_real_event_completed_dedup_ack','actual_unlinked_reset_original_uid_cleanup',
+    'uncertain_provider_keeps_real_claim_retry_without_ack','actual_worker_death_durable_redelivery_recovery',
+    'worker_death_while_default_processing_lease_held','held_lease_blocks_premature_ack_until_natural_expiry',
+    'unknown_version_real_dlq_releases_claim','completed','cleanup','OTHER'))
+BRIDGE_CAUSES=frozenset(('CHECK_FAILED','ASSERTION','TIMEOUT','HTTP_TRANSPORT',
+    'GRPC_UNAVAILABLE','GRPC_DEADLINE_EXCEEDED','GRPC_UNAUTHENTICATED','GRPC_PERMISSION_DENIED',
+    'GRPC_FAILED_PRECONDITION','GRPC_INVALID_ARGUMENT','GRPC_NOT_FOUND','GRPC_OTHER',
+    'CONTROL_ASSERTION','CONTROL_DATA_INTEGRITY','CONTROL_DATA_ACCESS','CONTROL_AUTH_SESSION',
+    'CONTROL_ARGUMENT','CONTROL_STATE','CONTROL_OTHER','CONTROL_HTTP_STATUS','OTHER'))
+BRIDGE_ACTIONS=frozenset(('change','reset','publish','replay','unknown_version','new_initial',
+    'rebind','restore_binding','worker_started','worker_reaped','facts','verify','NONE','OTHER'))
+BRIDGE_BOOLS=frozenset(('ack_unchanged','pending_positive','held_card_unchanged','foreign_card_unchanged'))
+BRIDGE_INTS=frozenset(('initial_pttl_ms','monotonic_elapsed_ms','redis_elapsed_ms','redeliveries'))
+
+def bridge_detail(text):
+    """Never return any arbitrary message or test/parameter name from native XML."""
+    result={}
+    marker=re.compile(r'BRIDGE_DETAIL_V1 kind=BROKER phase=([a-zA-Z_]{1,100}) cause=([A-Z_]{1,48}) '
+                      r'action=([a-zA-Z_]{1,40}) checks=(-?[0-9]{1,7}) workers_reaped=(true|false|UNKNOWN) '
+                      r'check_line=(-?[0-9]{1,7}) check_call_line=(-?[0-9]{1,7}) observations=([^\s]{1,512})(?=\s|$)')
+    for match in marker.finditer(text):
+        phase,cause,action,checks,workers,line,call,observations=match.groups()
+        if phase not in BRIDGE_PHASES or cause not in BRIDGE_CAUSES or action not in BRIDGE_ACTIONS:continue
+        if not all(-1<=int(v)<=100000 for v in (checks,line,call)):continue
+        values={};valid=True
+        if observations!='NONE':
+            parts=observations.split(',')
+            if len(parts)>8:continue
+            for part in parts:
+                pair=part.split('=')
+                if len(pair)!=2:valid=False;break
+                key,value=pair
+                if key in values:valid=False;break
+                if key in BRIDGE_BOOLS and value in {'true','false'}:values[key]=value=='true'
+                elif key in BRIDGE_INTS and re.fullmatch('-?[0-9]{1,8}',value) and -1<=int(value)<=10000000:values[key]=int(value)
+                else:valid=False;break
+        if not valid:continue
+        result['failure']={'phase':phase,'cause':cause,'action':action,'checks':int(checks),
+                           'workersReaped':{'true':True,'false':False,'UNKNOWN':None}[workers],
+                           'source':'services/notification-bot/tests/np01_broker_bridge_runner.py',
+                           'checkLine':int(line),'checkCallLine':int(call),'observations':values}
+    success=re.compile(r'NP01 broker bridge qualified=true native_python_exit=0 checks=([0-9]{1,7}) '
+                       r'worker_restarts=([0-9]{1,7}) held_lease_initial_pttl_ms=([0-9]{1,8}) '
+                       r'held_lease_monotonic_elapsed_ms=([0-9]{1,8}) held_lease_redis_elapsed_ms=([0-9]{1,8}) '
+                       r'held_lease_redeliveries=([0-9]{1,7})(?=\s|$)')
+    for match in success.finditer(text):
+        values=tuple(map(int,match.groups()))
+        if any(v>10000000 for v in values):continue
+        result['lease']=dict(zip(('checks','worker_restarts','held_lease_initial_pttl_ms',
+                                  'held_lease_monotonic_elapsed_ms','held_lease_redis_elapsed_ms',
+                                  'held_lease_redeliveries'),values))
     return result
 
 RECOVERY_FIELDS={'CLASS': ['RECOVERY_ERROR', 'JSON_DECODE_ERROR', 'UNICODE_DECODE_ERROR', 'OS_ERROR', 'VALUE_ERROR', 'KEY_ERROR', 'OTHER'], 'GUARD': ['BUNDLE_ACCESS_MISSING', 'BUNDLE_ARTIFACTS', 'BUNDLE_DATABASES', 'BUNDLE_DATABASE_ONLY_FILES', 'BUNDLE_DIRECTORY', 'BUNDLE_INTEGRITY', 'BUNDLE_MODE_MISMATCH', 'BUNDLE_REGULAR_FILES', 'CREDENTIAL_FILE_MISSING', 'DISTINCT_TARGETS', 'FILES_ARCHIVE_INVENTORY', 'FILES_ARCHIVE_MEMBER', 'FILES_ENTRY', 'FILES_MODE', 'FILES_SOURCE', 'FILES_SYMLINK', 'MANIFEST_FILES_MODE', 'MANIFEST_FORMAT', 'NOT_QUIESCED', 'OTHER', 'OUTPUT_EXISTS', 'OUTPUT_IN_SOURCE', 'PG_ACCESS_DATABASE', 'PG_ACCESS_DUPLICATE', 'PG_ACCESS_INCOMPLETE', 'PG_ACCESS_OBJECT', 'RECOVERY_ADMIN', 'RESTORE_ACADEMIC_INVENTORY', 'RESTORE_ACADEMIC_SCHEMA', 'RESTORE_AUTH_INVENTORY', 'RESTORE_AUTH_SCHEMA', 'RESTORE_FILES_TARGET_EXISTS', 'RESTORE_MONGO_FILES', 'RESTORE_MONGO_TARGET_NOT_FRESH', 'RESTORE_PG_TARGET_NOT_FRESH', 'RESTORE_PROJECT_PREFIX', 'RESTORE_SCHEDULE_INVENTORY', 'RESTORE_SCHEDULE_SCHEMA', 'RESTORE_TARGET_LABELS', 'SCHEMA_REFERENCE_EXISTS', 'SCHEMA_REFERENCE_ID_CHANGED', 'SCHEMA_REFERENCE_ID_MISSING', 'SOURCE_CHANGED', 'TARGET_NOT_RUNNING'], 'HINT': ['GUARD', 'INPUT_CREDENTIAL', 'INSPECT', 'MONGO_DUMP', 'MONGO_QUERY', 'MONGO_RESTORE', 'OTHER_TOOL', 'PG_DUMP', 'PG_QUERY', 'PG_RESTORE', 'PG_SCHEMA', 'RESTORE_DIFF_ACCESS_ACL', 'RESTORE_DIFF_ACCESS_ACL_COLUMN', 'RESTORE_DIFF_ACCESS_ACL_DATABASE', 'RESTORE_DIFF_ACCESS_ACL_DEFAULT', 'RESTORE_DIFF_ACCESS_ACL_FUNCTION', 'RESTORE_DIFF_ACCESS_ACL_RELATION', 'RESTORE_DIFF_ACCESS_ACL_SCHEMA', 'RESTORE_DIFF_ACCESS_ACL_TYPE', 'RESTORE_DIFF_ACCESS_OBJECT_SET', 'RESTORE_DIFF_ACCESS_ORDER', 'RESTORE_DIFF_ACCESS_OWNER', 'RESTORE_DIFF_OTHER_SHAPE', 'RESTORE_DIFF_SEQUENCES', 'RESTORE_DIFF_TABLES']}

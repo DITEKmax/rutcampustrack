@@ -19,10 +19,13 @@ import time
 HERE=Path(__file__).resolve().parent
 ROOT=HERE.parent
 sys.path.insert(0,str(HERE/'local-release'))
-from catalog import catalog, NOT_APPLICABLE
-from diagnostics import project, admit_gate
+from catalog import catalog, targeted_catalog, NOT_APPLICABLE
+from diagnostics import project, admit_gate, control_error
+from progress import Progress
+from targeted_receipt import selected_xml, make as targeted_receipt, verify as verify_targeted
 
 MAX_LOG=512*1024*1024
+CONTROL_AUDIT=None
 
 def write(path,value):
     raw=(json.dumps(value,sort_keys=True,indent=2,allow_nan=False)+'\n').encode()
@@ -46,7 +49,8 @@ def group_absent(pgid):
 
 def command(gate,env,audit):
     """Own the entire foreground process group; no test output reaches the public console."""
-    log=audit/(gate.name+'.private.log');start=time.monotonic();next_heartbeat=start+30;total=0;cause=None;child=None;closed=False;terminal=None;parent_group=os.getpgrp()
+    log=audit/(gate.name+'.private.log');start=time.monotonic();next_heartbeat=start+30;total=0;cause=None;child=None;closed=False;terminal=None;parent_group=os.getpgrp();control=None
+    progress=Progress(ROOT)
     with log.open('xb') as out:
         transition=False;deferred=False
         def cancel(*_):
@@ -73,7 +77,9 @@ def command(gate,env,audit):
                 selector.register(child.stdout,selectors.EVENT_READ)
                 while selector.get_map():
                     if time.monotonic()>=next_heartbeat:
-                        print('RUN '+gate.name+' '+str(int(time.monotonic()-start))+'s',flush=True);next_heartbeat+=30
+                        print('RUN '+gate.name+' '+str(int(time.monotonic()-start))+'s',flush=True)
+                        if progress.task is not None:print(progress.summary(),flush=True)
+                        next_heartbeat+=30
                     if time.monotonic()-start>gate.seconds:cause='TIME_LIMIT';raise TimeoutError()
                     for key,_ in selector.select(.25):
                         chunk=os.read(key.fd,65536)
@@ -81,10 +87,13 @@ def command(gate,env,audit):
                         total+=len(chunk)
                         if total>MAX_LOG:cause='BYTE_LIMIT';raise ValueError('Private log bound')
                         out.write(chunk);out.flush()
+                        for event in progress.feed(chunk):print(event,flush=True)
                 rc=child.wait(timeout=5)
+                if progress.task is not None:print(progress.summary(),flush=True)
                 if rc in (-signal.SIGINT,130):cause="CANCELLED"
         except BaseException as error:
             cause=cause or ('CANCELLED' if isinstance(error,KeyboardInterrupt) else 'COMMAND_ERROR')
+            if cause=='COMMAND_ERROR':control=control_error(error,audit,'COMMAND',ROOT)
             if child is not None:
                 # INT reaches Python finally blocks AND nested Gradle/native children in this session.
                 # TERM/KILL are last resorts; their result is HOLD, never safe continuation.
@@ -123,7 +132,7 @@ def command(gate,env,audit):
                 finally:terminal.close()
             for kind,handler in previous.items():signal.signal(kind,handler)
             if deferred:cause=cause or 'CANCELLED'
-    return {'nativeExit':rc,'cause':cause,'childrenReaped':closed,'elapsedMs':round((time.monotonic()-start)*1000),'privateLogBytes':min(total,MAX_LOG),'privateLog':log.name}
+    return {'nativeExit':rc,'cause':cause,'childrenReaped':closed,'elapsedMs':round((time.monotonic()-start)*1000),'privateLogBytes':min(total,MAX_LOG),'privateLog':log.name,'controlError':control}
 
 def status(gate,results,hold):
     if hold:return 'HOLD'
@@ -173,16 +182,23 @@ def resources():
             'qualification':'Local WSL analogue; fresh serial cohorts differ from independent GitHub VMs and shared browser job order'}
 
 def main():
-    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--expected-sha',required=True);parser.add_argument('--audit',required=True,type=Path);parser.add_argument('--list',action='store_true');args=parser.parse_args()
-    gates=catalog()
+    global CONTROL_AUDIT
+    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--expected-sha',required=True);parser.add_argument('--audit',required=True,type=Path);parser.add_argument('--list',action='store_true')
+    parser.add_argument('--mode',choices=('targeted','full'),default='full');parser.add_argument('--targeted-audit',type=Path);args=parser.parse_args()
+    full=args.mode=='full';gates=catalog() if full else targeted_catalog()
     if args.list:
-        print(json.dumps({'gates':[{'name':g.name,'command':list(g.command),'requires':list(g.requires),'seconds':g.seconds} for g in gates],'inapplicable':NOT_APPLICABLE,'fullReplay':True},indent=2));return 0
+        print(json.dumps({'gates':[{'name':g.name,'command':list(g.command),'requires':list(g.requires),'seconds':g.seconds} for g in gates],'inapplicable':NOT_APPLICABLE if full else {},'fullReplay':full,'mode':args.mode},indent=2));return 0
     if sys.platform!='linux' or not sys.stdin.isatty():raise ValueError('Foreground owner Linux TTY required')
     if re.fullmatch('[a-f0-9]{40}',args.expected_sha) is None or git('rev-parse','HEAD')!=args.expected_sha or git('status','--porcelain'):
         raise ValueError('Exact clean owner source required')
+    target_binding=None
+    if full:
+        if args.targeted_audit is None:raise ValueError('Same revision native targeted PASS required')
+        target_binding=verify_targeted(ROOT,args.targeted_audit,args.expected_sha)
+    elif args.targeted_audit is not None:raise ValueError('Targeted mode cannot resume an audit')
     audit=args.audit
     if not audit.is_absolute() or audit.exists() or audit.is_symlink():raise ValueError('New exact private audit directory required')
-    audit.mkdir(mode=0o700,parents=True);os.umask(0o077)
+    audit.mkdir(mode=0o700,parents=True);os.umask(0o077);CONTROL_AUDIT=audit
     lock=Path.home()/'.local/share/rct-pr3-local/local-release.lock';lock.parent.mkdir(mode=0o700,parents=True,exist_ok=True)
     lease=lock.open('a');fcntl.flock(lease,fcntl.LOCK_EX|fcntl.LOCK_NB)
     # The browser adapter owns the canonical port lease only during its own native cohort.
@@ -200,8 +216,8 @@ def main():
                PLAYWRIGHT_BROWSERS_PATH=str(audit/'cache/browsers'),NP01_PYTHON_EXECUTABLE=str(audit/'venv/bin/python'),RCT_GITLEAKS_REPORT=str(audit/'gitleaks.sarif'))
     for name in ['tmp','docker-config','cache']: (audit/name).mkdir(mode=0o700)
     wrapper_mode=(ROOT/'gradlew').stat().st_mode & 0o777
-    results={};hold=False;cancelled=False
-    write(audit/'identity.safe.json',{'revision':args.expected_sha,'nonce':nonce,'event':'LOCAL_CONTROL','runId':None,'runAttempt':None,'fullReplay':True,'resources':observed,'startedUtc':datetime.datetime.now(datetime.timezone.utc).isoformat()})
+    results={};hold=False;cancelled=False;control_errors=[]
+    write(audit/'identity.safe.json',{'revision':args.expected_sha,'nonce':nonce,'event':'LOCAL_CONTROL','runId':None,'runAttempt':None,'fullReplay':full,'mode':args.mode,'targetedBinding':target_binding,'resources':observed,'startedUtc':datetime.datetime.now(datetime.timezone.utc).isoformat()})
     try:
         for gate in gates:
             state=status(gate,results,hold)
@@ -214,13 +230,17 @@ def main():
             gate_started=time.time_ns()
             outcome=command(gate,env,audit)
             clean=git('rev-parse','HEAD')==args.expected_sha and not git('-c','core.fileMode=false','diff','--name-only','HEAD')
-            artifacts=admit_gate(gate.name,ROOT,audit,gate_started,args.expected_sha,nonce)
-            native_artifacts=preserve_reports(gate,audit)
+            if gate.name=='academic-targeted':
+                try:selected_xml(ROOT,gate_started);artifacts=True
+                except Exception:artifacts=False
+            else:artifacts=admit_gate(gate.name,ROOT,audit,gate_started,args.expected_sha,nonce)
+            try:native_artifacts=preserve_reports(gate,audit)
+            except Exception:native_artifacts=None;artifacts=False
             projection=audit/'gate-diagnostics'/gate.name;projection.mkdir(mode=0o700,parents=True)
-            try:gate_diagnostics=project(audit/native_artifacts,projection,gate_started)
+            try:gate_diagnostics=project(audit/native_artifacts,projection,gate_started) if native_artifacts else {'status':'UNAVAILABLE'}
             except Exception:gate_diagnostics={'status':'UNAVAILABLE'}
             passed=outcome['nativeExit']==0 and outcome['cause'] is None and outcome['childrenReaped'] and clean and artifacts
-            results[gate.name]={'status':'PASS' if passed else 'FAIL',**outcome,'command':list(gate.command),'revision':args.expected_sha,'secondsLimit':gate.seconds,'sourceRestoredExact':clean,'freshNativeArtifacts':artifacts,'nativeArtifacts':native_artifacts,'diagnostics':gate_diagnostics}
+            results[gate.name]={'status':'PASS' if passed else 'FAIL',**outcome,'command':list(gate.command),'revision':args.expected_sha,'nonce':nonce,'startedNs':gate_started,'secondsLimit':gate.seconds,'sourceRestoredExact':clean,'freshNativeArtifacts':artifacts,'nativeArtifacts':native_artifacts,'diagnostics':gate_diagnostics}
             print(results[gate.name]['status']+' '+gate.name,flush=True)
             # A resource/probe failure needs original saved-state diagnosis before any further test.
             safely_closed=False
@@ -235,16 +255,39 @@ def main():
             if cancelled:break
     except KeyboardInterrupt:
         cancelled=True;hold=True
+    except Exception as error:
+        hold=True
+        detail=control_error(error,audit,'RUN_GATES',ROOT);control_errors.append(detail)
+        print('HOLD '+json.dumps(detail,sort_keys=True),flush=True)
     finally:
         os.chmod(ROOT/'gradlew',wrapper_mode)
         for gate in gates:results.setdefault(gate.name,{'status':'HOLD' if hold else 'BLOCKED'})
         try:diagnostics=project(ROOT,audit,started)
         except Exception:diagnostics={'status':'UNAVAILABLE'}
         accepted=not hold and not cancelled and all(r['status']=='PASS' for r in results.values())
-        value={'schema':1,'revision':args.expected_sha,'event':'LOCAL_CONTROL','accepted':accepted,'cancelled':cancelled,'hold':hold,'gates':results,'inapplicable':NOT_APPLICABLE,'fullReplay':True,'resources':observed,'diagnostics':diagnostics}
+        value={'schema':1,'revision':args.expected_sha,'nonce':nonce,'event':'LOCAL_CONTROL','accepted':accepted,'cancelled':cancelled,'hold':hold,'gates':results,'inapplicable':NOT_APPLICABLE if full else {},'fullReplay':full,'mode':args.mode,'resources':observed,'diagnostics':diagnostics,'controlErrors':control_errors}
+        receipt=None
+        if accepted and not full:
+            try:
+                result_raw=(json.dumps(value,sort_keys=True,indent=2,allow_nan=False)+'\n').encode()
+                receipt=targeted_receipt(ROOT,audit,args.expected_sha,nonce,results,result_raw)
+            except Exception as error:
+                accepted=False;hold=True;value.update(accepted=False,hold=True)
+                detail=control_error(error,audit,'TARGETED_RECEIPT',ROOT);control_errors.append(detail)
+                print('HOLD '+json.dumps(detail,sort_keys=True),flush=True)
         write(audit/'result.safe.json',value)
+        if receipt is not None:write(audit/'targeted-pass.safe.json',receipt)
         print(json.dumps({'accepted':accepted,'pass':sum(r['status']=='PASS' for r in results.values()),'total':len(gates),'hold':hold,'cancelled':cancelled}),flush=True)
         fcntl.flock(lease,fcntl.LOCK_UN);lease.close()
     return 0 if accepted else 130 if cancelled else 1
 
-if __name__=='__main__':raise SystemExit(main())
+if __name__=='__main__':
+    try:raise SystemExit(main())
+    except KeyboardInterrupt:
+        print('HOLD LOCAL_CONTROL_CANCELLED; private delivery diagnostics retained',flush=True)
+        raise SystemExit(130)
+    except Exception as error:
+        directory=CONTROL_AUDIT or os.environ.get('RCT_LOCAL_RELEASE_CONTROL_DIR')
+        detail=control_error(error,directory,'PREFLIGHT',ROOT)
+        print('HOLD '+json.dumps(detail,sort_keys=True),flush=True)
+        raise SystemExit(1)

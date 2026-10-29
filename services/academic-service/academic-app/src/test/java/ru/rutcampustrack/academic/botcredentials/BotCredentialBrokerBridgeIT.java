@@ -99,6 +99,32 @@ class BotCredentialBrokerBridgeIT {
         return count >= 0 && count <= 100_000 ? count : -1;
     }
 
+    private static String checkOutcomes(JsonNode check) {
+        List<String> facts = new ArrayList<>();
+        JsonNode outcomes = check.path("outcomes");
+        for (String name :
+                List.of(
+                        "ack_unchanged",
+                        "pending_positive",
+                        "held_card_unchanged",
+                        "foreign_card_unchanged")) {
+            JsonNode value = outcomes.path(name);
+            if (value.isBoolean()) facts.add(name + "=" + value.booleanValue());
+        }
+        for (String name :
+                List.of(
+                        "initial_pttl_ms", "monotonic_elapsed_ms", "redis_elapsed_ms", "redeliveries")) {
+            JsonNode value = outcomes.path(name);
+            if (value.isIntegralNumber()
+                    && value.canConvertToInt()
+                    && value.intValue() >= -1
+                    && value.intValue() <= 10_000_000) {
+                facts.add(name + "=" + value.intValue());
+            }
+        }
+        return facts.isEmpty() ? "NONE" : String.join(",", facts);
+    }
+
     private static String controlCause(Throwable failure) {
         if (failure instanceof AssertionError) return "ASSERTION";
         if (failure instanceof org.springframework.dao.DataIntegrityViolationException)
@@ -269,7 +295,8 @@ class BotCredentialBrokerBridgeIT {
                         String detail =
                                 String.format(
                                         "BRIDGE_DETAIL_V1 kind=BROKER phase=%s cause=%s"
-                                                + " action=%s checks=%d workers_reaped=%s",
+                                                + " action=%s checks=%d workers_reaped=%s"
+                                                + " check_line=%d check_call_line=%d observations=%s",
                                         closedDetail(result.path("phase"),
                                                 Set.of(
                                                         "setup",
@@ -325,7 +352,10 @@ class BotCredentialBrokerBridgeIT {
                                         boundedChecks(result.path("checks")),
                                         result.path("workers_reaped").isBoolean()
                                                 ? Boolean.toString(result.path("workers_reaped").booleanValue())
-                                                : "UNKNOWN");
+                                                : "UNKNOWN",
+                                        boundedChecks(result.path("failed_check").path("line")),
+                                        boundedChecks(result.path("failed_check").path("call_line")),
+                                        checkOutcomes(result.path("failed_check")));
                         assertThat(child.exitValue()).withFailMessage(detail).isZero();
                         for (String fact :
                                 List.of(
@@ -344,7 +374,7 @@ class BotCredentialBrokerBridgeIT {
                         assertThat(result.path("worker_restarts").asInt(-1)).isEqualTo(2);
                         int heldPttl = result.path("held_lease_initial_pttl_ms").asInt(-1);
                         assertThat(heldPttl).isGreaterThan(270_000).isLessThanOrEqualTo(300_000);
-                        assertThat(result.path("held_lease_elapsed_ms").asInt(-1))
+                        assertThat(result.path("held_lease_redis_elapsed_ms").asInt(-1))
                                 .isGreaterThanOrEqualTo(heldPttl - 2_000);
                         assertThat(result.path("held_lease_redeliveries").asInt(-1))
                                 .isGreaterThanOrEqualTo(2);
@@ -355,8 +385,10 @@ class BotCredentialBrokerBridgeIT {
                                         + result.path("worker_restarts").asInt(-1)
                                         + " held_lease_initial_pttl_ms="
                                         + heldPttl
-                                        + " held_lease_elapsed_ms="
-                                        + result.path("held_lease_elapsed_ms").asInt(-1)
+                                        + " held_lease_monotonic_elapsed_ms="
+                                        + result.path("held_lease_monotonic_elapsed_ms").asInt(-1)
+                                        + " held_lease_redis_elapsed_ms="
+                                        + result.path("held_lease_redis_elapsed_ms").asInt(-1)
                                         + " held_lease_redeliveries="
                                         + result.path("held_lease_redeliveries").asInt(-1));
                         assertThat(

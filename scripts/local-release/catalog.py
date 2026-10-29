@@ -40,3 +40,10 @@ def catalog():
 NOT_APPLICABLE={'diff-cover':'pull_request-only diagnostic comparison; this is LOCAL_CONTROL',
                 'remote-image-scan':'schedule-only scan of remote GHCR images; no local dispatch',
                 'external-provider':'no live Telegram/WebPush/provider accounts in the synthetic local realm'}
+
+def targeted_catalog():
+    original={g.name:g for g in catalog()}
+    return (original['setup'],original['security-public-object-prepare'],original['gitleaks'],
+            Gate('academic-targeted',('bash','scripts/local-release/academic-targeted.sh'),
+                 ('setup',),seconds=3600,resource=True,
+                 reports=('services/academic-service/academic-app/build/test-results/integrationTest',)))

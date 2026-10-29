@@ -2,6 +2,10 @@ package ru.rutcampustrack.academic.grpc;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.github.dockerjava.api.model.ExposedPort;
+import com.github.dockerjava.api.model.PortBinding;
+import com.github.dockerjava.api.model.Ports;
+
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 
 import org.awaitility.Awaitility;
@@ -18,7 +22,18 @@ import java.util.concurrent.atomic.AtomicBoolean;
 class RedisHeadmanRateLimiterIT {
     @Test
     void instancesShareQuotaKeepUsersIndependentAndSubsequentCallsDoNotExtendExpiry() {
-        try (var redis = new GenericContainer<>("redis:7-alpine").withExposedPorts(6379)) {
+        try (var redis =
+                new GenericContainer<>("redis:7-alpine")
+                        .withExposedPorts(6379)
+                        .withCreateContainerCmdModifier(
+                                command ->
+                                        command.getHostConfig()
+                                                .withPortBindings(
+                                                        new PortBinding(
+                                                                Ports.Binding.bindIpAndPort(
+                                                                        "127.0.0.1", 0),
+                                                                ExposedPort.tcp(6379)))
+                                                .withPublishAllPorts(false))) {
             redis.start();
             var config =
                     new RedisStandaloneConfiguration(redis.getHost(), redis.getMappedPort(6379));

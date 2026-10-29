@@ -22,7 +22,7 @@ def main():
             for db, table in [('academic_db', 'academic_outbox'), ('schedule_db', 'schedule_outbox')]:
                 pending += int(runtime.pg('BEGIN READ ONLY; SELECT count(*) FROM ' + table + " WHERE status <> 'sent'; ROLLBACK;", db).stdout.strip())
             raw = runtime.docker('exec', runtime.PROJECT + '-rabbitmq-1', 'rabbitmqctl',
-                                 '-p', 'rct-pr3-local', 'list_queues', '-q', 'messages_ready', 'messages_unacknowledged').stdout
+                                 '-p', runtime.PROJECT, 'list_queues', '-q', 'messages_ready', 'messages_unacknowledged').stdout
             rows = [line.split() for line in raw.splitlines() if line.strip()]
             numeric = [r for r in rows if len(r) == 2 and all(v.isdigit() for v in r)]
             if not numeric:

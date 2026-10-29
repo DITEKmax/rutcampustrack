@@ -116,6 +116,7 @@ jobs:
           PY
 
       - name: Upload JaCoCo XML
+        if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: jacoco-${{ matrix.service.name }}
@@ -152,6 +153,7 @@ jobs:
           appendFileSync(process.env.GITHUB_STEP_SUMMARY, `### Vue workspace\n\nLines: ${total.lines.covered}/${total.lines.total} (${total.lines.pct}%). Diagnostic coverage; no numeric gate.\n`)
           JS
       - name: Upload Vue coverage
+        if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: vitest-lcov-vue
@@ -186,6 +188,7 @@ jobs:
         run: pytest tests/ -v
 
       - name: Upload coverage.xml
+        if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: pytest-coverage-bot

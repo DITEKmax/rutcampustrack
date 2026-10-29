@@ -32,6 +32,7 @@ from zoneinfo import ZoneInfo
 ROOT = Path(__file__).resolve().parents[1]
 RUNS = ROOT / ".agent/evidence/local-runs"
 LABEL = "rct.local.stage17"
+release_alarm_pending = False
 BASELINE = "browser-v2-split-20261018-v1"
 APPS = {"auth-service", "academic-service", "schedule-service", "attendance-service",
         "document-renderer-service", "mobile-bff", "api-gateway", "notification-web"}
@@ -360,7 +361,18 @@ def validate_local(*, complete=True, environment=None, expected_mode=None, expec
         validate_lane_environment(value, environment, expected_mode, expected_batch_lane)
     require(expected_mode is None or expected_mode == value["mode"], "LOCAL_LANE_MISMATCH")
     for name, expected in value["sources"].items():
-        require(hashlib.sha256((ROOT / name).read_bytes()).hexdigest() == expected, "SOURCE_BYTES_CHANGED")
+        actual = hashlib.sha256((ROOT / name).read_bytes()).hexdigest()
+        if actual != expected and value.get("release_lane") == "homework-sensitivity":
+            require(name == "frontends/mobile-core/src/shared/components/StudentFeatureOwner.vue", "SOURCE_BYTES_CHANGED")
+            original = run_source = Path(value["run"]) / "homework-original.vue"
+            owned(original, 0o600)
+            raw = original.read_bytes()
+            boundary = b"  if (navigate) navigation.push(homeworkNotificationRoute);"
+            require(hashlib.sha256(raw).hexdigest() == expected and raw.count(boundary) == 1
+                    and (ROOT / name).read_bytes() == raw.replace(boundary, b"  if (navigate) void homeworkNotificationRoute;")
+                    and environment.get("RCT_LOCAL_RELEASE_SENSITIVITY_PHASE") == "red", "SOURCE_BYTES_CHANGED")
+        else:
+            require(actual == expected, "SOURCE_BYTES_CHANGED")
     run = Path(value["run"])
     validate_node_ca(run / "certs/server.crt", environment, value["node_ca_sha256"])
     if value["mode"] == "special13":
@@ -413,7 +425,17 @@ def validate_lane_environment(value, environment, expected_mode=None, expected_b
     require(environment.get("RCT_LOCAL_STAGE17_MODE") == mode
             and (expected_mode is None or mode == expected_mode), "LOCAL_LANE_MISMATCH")
     lane = environment.get("RCT_LOCAL_UI_BATCH_LANE")
+    release_lane = value.get("release_lane")
+    require(release_lane is None or release_lane in {"full", "client", "webkit", "homework-sensitivity", "lesson-lifecycle", "ui-batch", "special13"}, "RELEASE_SELECTION")
     expected_run = value["run"]
+    if release_lane == "homework-sensitivity":
+        phase = environment.get("RCT_LOCAL_RELEASE_SENSITIVITY_PHASE")
+        require(phase in (None, "red", "green"), "RELEASE_SENSITIVITY_PHASE")
+        if phase:
+            expected_run += "/" + phase
+            owned(Path(expected_run), 0o700, directory=True)
+            owned(Path(expected_run) / "artifacts", 0o700, directory=True)
+        require(environment.get("RCT_HOMEWORK_LIFECYCLE_RUN", "") == (expected_run if phase else ""), "RELEASE_SENSITIVITY_OUTPUT")
     if mode == "ui-batch":
         cases = selected_batch_cases(value.get("batch_cases"))
         require(value.get("batch_cases") == cases and value.get("batch_lanes") == selected_batch_lanes(cases), "LOCAL_BATCH_MANIFEST")
@@ -445,7 +467,7 @@ def validate_lane_environment(value, environment, expected_mode=None, expected_b
             "LOCAL_STAGE17_ONLY")
     for flag in ("RCT_E2E_ADMIN_LIFECYCLE", "RCT_E2E_ROLE_LOGOUT", "RCT_E2E_WEBKIT_SUBSET",
                  "RCT_E2E_SW_LIFECYCLE", "RCT_E2E_BOT_ROLE_MENU", "RCT_APP_RECOVERY_PROJECT"):
-        expected_flag = BATCH_LANES[lane][1] if mode == "ui-batch" and lane else None
+        expected_flag = "RCT_E2E_WEBKIT_SUBSET" if release_lane == "webkit" else BATCH_LANES[lane][1] if mode == "ui-batch" and lane else None
         require(not environment.get(flag) if flag == "RCT_APP_RECOVERY_PROJECT"
                 else environment.get(flag) == "true" if flag == expected_flag
                 else environment.get(flag) != "true", "LOCAL_STAGE17_ONLY")
@@ -1633,7 +1655,7 @@ def stopped_history(ids, *, own_nonce=None, previous=None):
     return stopped_history_rows(ids, rows, own_nonce=own_nonce, previous=previous)
 
 
-def preflight(*, special=False, retained_receipt=None, retained_pdf_receipt=None, retained_recovery_receipt=None, retained_restored_receipt=None, selected_network=None, reconciliation_only=False, recovery_archive_only=False, history=None, own_nonce=None):
+def preflight(*, release=False, special=False, retained_receipt=None, retained_pdf_receipt=None, retained_recovery_receipt=None, retained_restored_receipt=None, selected_network=None, reconciliation_only=False, recovery_archive_only=False, history=None, own_nonce=None):
     require(sys.platform == "linux" and os.getuid() != 0, "UBUNTU_NONROOT_REQUIRED")
     require(RUNS.resolve() == RUNS, "LINKED_RUNTIME_PARENT")
     for name in ("GITHUB_ACTIONS", "RUNNER_ENVIRONMENT", "GITHUB_RUN_ID", "GITHUB_RUN_ATTEMPT", "GITHUB_SHA"):
@@ -1650,6 +1672,13 @@ def preflight(*, special=False, retained_receipt=None, retained_pdf_receipt=None
             sock.bind(("127.0.0.1", port))
     require(not capture(["docker", "ps", "-aq", "--filter", "label=com.docker.compose.project=rct-e2e"]).strip(), "FOREIGN_E2E_COHORT")
     local_ids = capture(["docker", "ps", "-aq", "--no-trunc", "--filter", "label=" + LABEL]).splitlines()
+    if release:
+        require(all(item is None for item in (retained_receipt, retained_pdf_receipt, retained_recovery_receipt, retained_restored_receipt))
+                and not reconciliation_only and not recovery_archive_only, "RELEASE_FRESH_ONLY")
+        observed = stopped_history(local_ids, own_nonce=own_nonce, previous=history)
+        selected = special_network_choice(selected_network)
+        require(capture(["git", "ls-files", "--error-unmatch", "tests/e2e/.env.ci"]).strip(), "TRACKED_SYNTHETIC_ENV_REQUIRED")
+        return selected, observed
     if reconciliation_only or recovery_archive_only:
         require(not (reconciliation_only and recovery_archive_only), "RECOVERY_ARCHIVE_ONLY_SELECTION")
         require(special and all(item is None for item in (retained_receipt, retained_pdf_receipt, retained_recovery_receipt, retained_restored_receipt)),
@@ -1689,12 +1718,15 @@ def preflight(*, special=False, retained_receipt=None, retained_pdf_receipt=None
 
 class Runner:
     canonical_mount_records = staticmethod(canonical_mount_records)
-    def __init__(self, mode, *, startup_diagnostic=False, bundled_dockerfile_frontend=False, failed_cases=None, special_cohort=None, lifecycle_only=False, operational=False, operational_until=None, reconciliation_only=False, recovery_archive_only=False):
+    def __init__(self, mode, *, release_lane=None, startup_diagnostic=False, bundled_dockerfile_frontend=False, failed_cases=None, special_cohort=None, lifecycle_only=False, operational=False, operational_until=None, reconciliation_only=False, recovery_archive_only=False):
         require(not startup_diagnostic or mode == "client", "CLIENT_DIAGNOSTIC_ONLY")
         require(not bundled_dockerfile_frontend or mode in {"ui-batch", "special13"}, "BUNDLED_FRONTEND_UI_BATCH_ONLY")
         require(failed_cases is None or mode == "ui-batch", "BATCH_CASES_UI_BATCH_ONLY")
         require((mode == "special13" and special_cohort in {"nonclock", "lifecycle"})
                 or (mode != "special13" and special_cohort is None), "SPECIAL_COHORT_REQUIRED")
+        require(release_lane is None or release_lane in {"full", "client", "webkit", "homework-sensitivity", "lesson-lifecycle", "ui-batch", "special13"}, "RELEASE_SELECTION")
+        require(release_lane is None or mode == ({"webkit": "client", "homework-sensitivity": "client"}.get(release_lane, release_lane)), "RELEASE_MODE")
+        self.release_lane = release_lane
         self.special_cohort = special_cohort
         require(type(lifecycle_only) is bool and (not lifecycle_only or mode == "special13" and special_cohort == "lifecycle"), "LIFECYCLE_ONLY_SPECIAL13")
         self.lifecycle_only = lifecycle_only
@@ -1747,7 +1779,7 @@ class Runner:
             self.env["BUILDX_BUILDER"] = "default"
 
     def command(self, phase, args, *, cwd=ROOT, stdin=None):
-        if self.mode == "special13":
+        if self.mode == "special13" or self.release_lane:
             return self.special_command(phase, args, cwd=cwd, stdin=stdin)
         self.phase = phase
         emit(phase, state="RUNNING")
@@ -1788,6 +1820,8 @@ class Runner:
         self.phase = phase
         emit(phase, state="RUNNING")
         seconds = 20 if phase == "NGINX_CONFIG_CHECK" else 120 if phase.startswith("DISCOVERY_") else 1800 if phase.startswith("BUILD_") else 900 if phase.startswith("SPECIAL_") or phase == "CLOCK_BUILD" else 600 if phase == "BOOT" else 300
+        if self.release_lane and getattr(self, "deadline", None) is not None:
+            seconds = max(0.01, self.deadline - time.monotonic())
         deadline, heartbeat, count = time.monotonic() + seconds, time.monotonic() + 15, 0
         limit = 16 * 1024**2
         require(stdin is None or type(stdin) is bytes and len(stdin) <= 65536, "SPECIAL_STDIN_BOUND")
@@ -1803,6 +1837,7 @@ class Runner:
                                               stdout=subprocess.PIPE, stderr=subprocess.STDOUT, start_new_session=phase != "CERTIFICATES",
                                               process_group=0 if phase == "CERTIFICATES" else None,
                                               umask=0o022 if phase == "CLOCK_PREPARE" else -1)
+                require(not self.release_lane or not release_alarm_pending, "RELEASE_CHILD_TIME_BOUND")
                 if cancelled:
                     raise KeyboardInterrupt()
                 if stdin:
@@ -1811,6 +1846,7 @@ class Runner:
                 with selectors.DefaultSelector() as ready:
                     ready.register(self.child.stdout, selectors.EVENT_READ)
                     while True:
+                        require(not self.release_lane or not release_alarm_pending, "RELEASE_CHILD_TIME_BOUND")
                         if cancelled:
                             raise KeyboardInterrupt()
                         now = time.monotonic()
@@ -1864,10 +1900,10 @@ class Runner:
 
     def prepare(self):
         require(self.mode != "special13" or self.operational_admitted, "EXPLICIT_OPERATIONAL_ADMISSION_REQUIRED")
-        if self.mode == "special13":
-            admitted = preflight(special=True, retained_receipt=self.special_retained_receipt, retained_pdf_receipt=self.special_retained_pdf_receipt, retained_recovery_receipt=self.special_retained_recovery_receipt, retained_restored_receipt=self.special_retained_restored_receipt,
+        if self.mode == "special13" or self.release_lane:
+            admitted = preflight(release=bool(self.release_lane), special=True, retained_receipt=self.special_retained_receipt, retained_pdf_receipt=self.special_retained_pdf_receipt, retained_recovery_receipt=self.special_retained_recovery_receipt, retained_restored_receipt=self.special_retained_restored_receipt,
                                  reconciliation_only=self.reconciliation_only, recovery_archive_only=self.recovery_archive_only, own_nonce=self.nonce)
-            if self.partial_lifecycle_selection:
+            if self.partial_lifecycle_selection or self.release_lane:
                 self.special_network, self.stopped_history = admitted
             else:
                 self.special_network = admitted
@@ -1888,7 +1924,7 @@ class Runner:
             require(count <= 1, "DUPLICATE_SYNTHETIC_TOKEN")
             if not count:
                 source += "\n" + name + "=" + token + "\n"
-        if self.mode == "special13":
+        if self.mode == "special13" or self.release_lane:
             network_values = {"GATEWAY_PRIVATE_SUBNET": self.special_network["subnet"],
                               "GATEWAY_NETWORK_GATEWAY": self.special_network["gateway"],
                               "GATEWAY_NGINX_IPV4": self.special_network["nginx"],
@@ -1912,7 +1948,7 @@ class Runner:
             args += ["-f", name]
         config = json.loads(capture([*args, "config", "--format", "json"], env=self.env))
         require(set(config["services"]) == SERVICES, "COMPOSE_SERVICE_DRIFT")
-        if self.mode == "special13":
+        if self.mode == "special13" or self.release_lane:
             validate_special_network_config(config, self.special_network)
         config["name"] = self.project
         certs = str(self.run / "certs")
@@ -1988,7 +2024,7 @@ class Runner:
                  **({"lifecycle_only": True} if self.lifecycle_only else {}),
                  **({"reconciliation_only": True} if self.reconciliation_only else {}),
                  **({"recovery_archive_only": True} if self.recovery_archive_only else {}),
-                 "project": self.project, "source_sha": sha, "sources": hashes, "startup_diagnostic": self.startup_diagnostic,
+                 "release_lane": self.release_lane, "project": self.project, "source_sha": sha, "sources": hashes, "startup_diagnostic": self.startup_diagnostic,
                  "batch_lanes": selected_batch_lanes(self.failed_cases) if self.mode == "ui-batch" else None,
                  "batch_cases": self.failed_cases,
                  "special_cohort": self.special_cohort,
@@ -2069,15 +2105,15 @@ class Runner:
                 identifier = self.image_identity(service["image"])
                 require(identifier is not None, "BUILT_IMAGE_MISSING")
                 self.image_ids[service["image"]] = identifier
-        if self.mode == "special13":
+        if self.mode == "special13" or self.release_lane:
             self.phase = "BOOT_NETWORK_ADMISSION"
             emit(self.phase, state="RUNNING")
-            preflight(special=True, retained_receipt=self.special_retained_receipt, retained_pdf_receipt=self.special_retained_pdf_receipt, retained_recovery_receipt=self.special_retained_recovery_receipt, retained_restored_receipt=self.special_retained_restored_receipt, selected_network=self.special_network,
+            preflight(release=bool(self.release_lane), special=True, retained_receipt=self.special_retained_receipt, retained_pdf_receipt=self.special_retained_pdf_receipt, retained_recovery_receipt=self.special_retained_recovery_receipt, retained_restored_receipt=self.special_retained_restored_receipt, selected_network=self.special_network,
                       reconciliation_only=self.reconciliation_only, recovery_archive_only=self.recovery_archive_only, history=self.stopped_history, own_nonce=self.nonce)
         self.command("BOOT", self.compose("up", "-d", "--no-build", "--wait", "--wait-timeout", "480"))
         if self.mode == "special13":
             self.freeze_special_inventory()
-            if self.partial_lifecycle_selection:
+            if self.partial_lifecycle_selection or self.release_lane:
                 self.command("NGINX_CONFIG_CHECK", self.compose("exec", "-T", "nginx", "nginx", "-t"))
         validate_local(environment=self.env)
         node_tls_probe(self.run / "certs/server.crt", self.env)
@@ -2999,6 +3035,8 @@ valid(all(stat.S_IMODE(directory.lstat().st_mode) == 0o755 for directory in dire
                 require(value.get("Labels", {}).get(LABEL) == self.nonce, "FOREIGN_RESOURCE")
                 capture(["docker", resource, "rm", identifier], seconds=30)
         require(not inventory(self.project, self.nonce), "CLEANUP_REMAINS")
+        if getattr(self, "release_bootstrap_hook", None):
+            self.release_bootstrap_hook(self)
         image_receipt = []
         for tag in getattr(self, "image_targets", []):
             if tag not in self.image_admitted:

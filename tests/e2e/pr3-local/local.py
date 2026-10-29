@@ -7,8 +7,31 @@ REPO=HERE.parents[2]
 STATE=REPO/'.pr3-local';ROOT=STATE/'runtime';PRIVATE=ROOT/'private'
 PROJECT='rct-pr3-local';DOCKER=['docker','--host=unix:///var/run/docker.sock']
 PORTS=[14250,14251,14252,18443]
+LOCAL_BINDING=None
+binding_file=REPO/'.pr3-release-config.json'
+if binding_file.exists():
+ assert binding_file.is_file() and not binding_file.is_symlink()
+ LOCAL_BINDING=json.loads(binding_file.read_text())
+ assert set(LOCAL_BINDING)=={'repo','project','ports','subnet','nonce'}
+ assert LOCAL_BINDING['repo']==str(REPO) and REPO.name=='native-source'
+ assert re.fullmatch('[a-f0-9]{24}',LOCAL_BINDING['nonce'])
+ assert LOCAL_BINDING['project']=='rct-pr3-native-'+LOCAL_BINDING['nonce'][:12]
+ assert LOCAL_BINDING['ports']==[15350,15351,15352,19443]
+ assert LOCAL_BINDING['subnet']=='172.31.36.0/24'
+ assert REPO.parent.name=='native' and REPO.parent.parent.name.startswith('local-release-')
+ PROJECT=LOCAL_BINDING['project'];PORTS=LOCAL_BINDING['ports']
+OWN_ORIGIN='http://127.0.0.1:'+str(PORTS[0])
+API_ORIGIN='https://127.0.0.1:'+str(PORTS[3])
+
+def local_template(value):
+ if isinstance(value,dict):return {k:local_template(v) for k,v in value.items()}
+ if isinstance(value,list):return [local_template(v) for v in value]
+ if not LOCAL_BINDING or not isinstance(value,str):return value
+ for old,new in [('rct-pr3-local',PROJECT),('172.31.35.','172.31.36.'),('14250',str(PORTS[0])),('14251',str(PORTS[1])),('14252',str(PORTS[2])),('18443',str(PORTS[3])),('14240','15440'),('14443','15443')]:value=value.replace(old,new)
+ return value
+
 APP_MODULES={'auth':'auth-service/auth-app','academic':'academic-service/academic-app','schedule':'schedule-service/schedule-app','attendance':'attendance-service/attendance-app','notification':'notification-service/notification-app','mobile-bff':'mobile-bff/mobile-bff-app','api-gateway':'api-gateway'}
-ENV={k:v for k,v in os.environ.items() if k in {'PATH','HOME','USER','LOGNAME','LANG','LC_ALL','TERM','TMPDIR','JAVA_HOME'}}
+ENV={k:v for k,v in os.environ.items() if k in {'PATH','HOME','USER','LOGNAME','LANG','LC_ALL','TERM','TMPDIR','JAVA_HOME','PLAYWRIGHT_BROWSERS_PATH'}}
 _OWNERSHIP_TRANSITION=False
 _STOP_PENDING=False
 
@@ -35,19 +58,20 @@ def reap_owned(children):
  records=[];previous=_OWNERSHIP_TRANSITION;_OWNERSHIP_TRANSITION=True
  try:
   for child in children:
-   record={'pid':child.pid,'exit':None,'reaped':False}
+   record={'pid':child.pid,'exit':None,'reaped':False,'wholeGroupEscalated':False}
    try:
-    try:running=child.poll() is None
-    except Exception:running=True
-    if running:
-     try:os.killpg(child.pid,signal.SIGTERM)
-     except ProcessLookupError:pass
-    try:record['exit']=child.wait(timeout=10)
-    except subprocess.TimeoutExpired:
+    # A leader exit does not close its live descendants. The exact PGID was registered at spawn.
+    try:os.killpg(child.pid,signal.SIGTERM)
+    except ProcessLookupError:pass
+    try:
+     try:record['exit']=child.wait(timeout=10)
+     except subprocess.TimeoutExpired:pass
+     time.sleep(.25)
+    finally:
      try:os.killpg(child.pid,signal.SIGKILL)
      except ProcessLookupError:pass
-     record['exit']=child.wait(timeout=5)
-    record['reaped']=True
+     record['wholeGroupEscalated']=True
+    record['exit']=child.wait(timeout=5);record['reaped']=True
    except Exception as error:record['error']=type(error).__name__
    records.append(record)
  finally:_OWNERSHIP_TRANSITION=previous
@@ -66,7 +90,7 @@ def write(p,value):
  try:os.fsync(d)
  finally:os.close(d)
 def platform():
- assert sys.platform=='linux' and REPO==pathlib.Path.home()/'rutcampustrack-pr3','Use only the new ~/rutcampustrack-pr3 checkout on owner Ubuntu/WSL'
+ assert sys.platform=='linux' and (REPO==pathlib.Path.home()/'rutcampustrack-pr3' if LOCAL_BINDING is None else str(REPO)==LOCAL_BINDING['repo']),'Use only the new ~/rutcampustrack-pr3 checkout on owner Ubuntu/WSL'
  assert not STATE.is_symlink() and REPO.resolve()==REPO,'Symlink checkout/state is not admitted'
  for exe in ['docker','openssl','java','node','npm','git']:
   assert shutil.which(exe),'Missing required local tool: '+exe
@@ -128,7 +152,7 @@ def prepare(args):
  if nets:
   for net in json.loads(run(DOCKER+['network','inspect',*nets])):
    for cfg in net.get('IPAM',{}).get('Config') or []:
-    if cfg.get('Subnet'):assert not ipaddress.ip_network(cfg['Subnet']).overlaps(ipaddress.ip_network('172.31.35.0/24')),'Local subnet overlaps another namespace'
+    if cfg.get('Subnet'):assert not ipaddress.ip_network(cfg['Subnet']).overlaps(ipaddress.ip_network(LOCAL_BINDING['subnet'] if LOCAL_BINDING else '172.31.35.0/24')),'Local subnet overlaps another namespace'
  jars=[]
  for name,module in APP_MODULES.items():
   p=REPO/'services'/module/'build/libs'/(name+'-app-0.1.0.jar' if name!='api-gateway' else 'api-gateway-0.1.0.jar')
@@ -151,7 +175,7 @@ def prepare(args):
   if f.is_file() and f.name!='compose.template.json':write(ROOT/f.name,f.read_text())
  write(PRIVATE/'foreign-baseline.json',baseline)
  contract=json.loads((HERE/'source-contract.json').read_text());services=contract['minimumServices'];nonce=secrets.token_hex(16)
- settings={'repo':str(REPO),'sourceSha':args.source_sha,'ownerNonce':nonce,'services':services,'images':images,'localGate':'NOT_RUN','referenceContractSha256':sha(HERE/'source-contract.json'),'memoryAdmission':memory_policy}
+ settings={'localBinding':LOCAL_BINDING,'project':PROJECT,'ports':PORTS,'ownOrigin':OWN_ORIGIN,'apiOrigin':API_ORIGIN,'repo':str(REPO),'sourceSha':args.source_sha,'ownerNonce':nonce,'services':services,'images':images,'localGate':'NOT_RUN','referenceContractSha256':sha(HERE/'source-contract.json'),'memoryAdmission':memory_policy}
  write(ROOT/'pins.json',{'sourceCommit':args.source_sha,'artifacts':jars,'project':PROJECT,'memoryAdmission':memory_policy,'preflight':{'observedAtPrepare':budget,'minimumFreshFreeBytes':7516192768,'earlyStopBytes':2684354560,'hardReserveBytes':2147483648,'sampleIntervalSeconds':.25}})
  names=run(['git','ls-files','--','services','proto','frontends','gradle','build.gradle.kts','settings.gradle.kts','infra/postgres/init-roles.sh','tests/e2e/infra/baseline','tests/e2e/pr3-local']).splitlines()
  names=sorted(n for n in names if '/build/' not in n and '/node_modules/' not in n and '/dist/' not in n)
@@ -161,8 +185,11 @@ def prepare(args):
  write(ROOT/'bindings.json',{'state':'SOURCE_READY_FOR_INDEPENDENT_REVIEW','frontendRootHead':args.source_sha,'frontendInputs':len(frontend),'frontendInputsManifestSha256':sha(ROOT/'frontend-inputs.SHA256SUMS')})
  for folder in ['tls','keys','auth-secrets']:(PRIVATE/folder).mkdir(mode=0o700)
  values={k:secrets.token_urlsafe(32) for k in ['POSTGRES_ACADEMIC_PASSWORD','REDIS_PASSWORD','RABBITMQ_PASSWORD','GRPC_SECRET','INTERNAL_ISSUER_SECRET','TMA_BOT_TOKEN','GROUP_MONGO_ROOT_PASSWORD','GROUP_MONGO_RS_KEY','GROUP_MONGO_ATTENDANCE_PASSWORD','GROUP_MONGO_NOTIFICATION_PASSWORD']}
- values.update({'RABBITMQ_USER':'rct_pr3_local','LOCAL_UID':str(os.getuid()),'LOCAL_GID':str(os.getgid()),'LANE_ROOT':str(ROOT),'LANE_PRIVATE':str(PRIVATE),'GROUP_ROOT':str(ROOT),'GROUP_PRIVATE':str(PRIVATE),'CORS_ALLOWED_ORIGIN':'http://127.0.0.1:14250','ACADEMIC_EXTRA_JSON':'{}'})
- compose=json.loads((HERE/'templates/compose.template.json').read_text())
+ values.update({'RABBITMQ_USER':'rct_pr3_local','LOCAL_UID':str(os.getuid()),'LOCAL_GID':str(os.getgid()),'LANE_ROOT':str(ROOT),'LANE_PRIVATE':str(PRIVATE),'GROUP_ROOT':str(ROOT),'GROUP_PRIVATE':str(PRIVATE),'CORS_ALLOWED_ORIGIN':OWN_ORIGIN,'ACADEMIC_EXTRA_JSON':'{}'})
+ compose=local_template(json.loads((HERE/'templates/compose.template.json').read_text()))
+ if LOCAL_BINDING:compose['services']['api-gateway']['environment']['GATEWAY_TRUSTED_PROXY_ADDRESSES']='172.31.36.10,172.31.36.11'
+ if LOCAL_BINDING:
+  for service in ['rabbitmq','academic-service','schedule-service']:compose['services'][service]['cpus']=1.0
  for service in compose['services'].values():service.setdefault('labels',{})['rct.pr3.local.owner']=nonce
  for kind in ['volumes','networks']:
   for item in compose[kind].values():item.setdefault('labels',{})['rct.pr3.local.owner']=nonce
@@ -214,14 +241,14 @@ def prepare(args):
   file=compose['secrets'][key]['file'].replace('${LANE_PRIVATE}',str(PRIVATE)).replace('${GROUP_PRIVATE}',str(PRIVATE))
   os.chmod(file,0o444)
  os.chmod(ROOT/'init-group-mongo.js',0o444)
- config={'baseURL':'http://127.0.0.1:14250','groupName':'ГДЛ-199','controlGroupName':'ГДЛ-198','admin':{'login':'admin','password':password}}
+ config={'baseURL':OWN_ORIGIN,'groupName':'ГДЛ-199','controlGroupName':'ГДЛ-198','admin':{'login':'admin','password':password}}
  write(PRIVATE/'native-config.json',config);password=None;password_hash=None
  settings['servicePins']=mount_pins(compose,values,jars)
  write(ROOT/'settings.json',settings)
  private_inputs=sorted(p for p in PRIVATE.rglob('*') if p.is_file())
  write(PRIVATE/'input-bindings.json',{'sourceSha':args.source_sha,'ownerNonce':nonce,'files':{str(p.relative_to(PRIVATE)):sha(p) for p in private_inputs}})
  write(ROOT/'PRIVATE-INPUTS-SHA256',sha(PRIVATE/'input-bindings.json')+'\n')
- frontend_config=(HERE/'templates/frontend-config.ts').read_text().replace('__REPO__',str(REPO)).replace('__STATE__',str(ROOT))
+ frontend_config=(HERE/'templates/frontend-config.ts').read_text().replace('__REPO__',str(REPO)).replace('__STATE__',str(ROOT)).replace('__PORT_WEB__',str(PORTS[0])).replace('__PORT_PWA__',str(PORTS[1])).replace('__PORT_TMA__',str(PORTS[2])).replace('__API_ORIGIN__',API_ORIGIN)
  write(ROOT/'frontend-config.ts',frontend_config)
  inputs=sorted(p for p in ROOT.rglob('*') if p.is_file() and PRIVATE not in p.parents and p.name not in ['SOURCE.SHA256SUMS','PACKAGE-SHA256'])
  write(ROOT/'SOURCE.SHA256SUMS',''.join(sha(p)+'  '+str(p.relative_to(ROOT))+'\n' for p in inputs))
@@ -229,7 +256,7 @@ def prepare(args):
  write(PRIVATE/'prepared.json',{'state':'NOT_RUN','sourceSha':args.source_sha,'sourceFiles':len(names),'frontendInputs':len(frontend),'packageSha256':sha(ROOT/'SOURCE.SHA256SUMS'),'foreignContainers':len(baseline),'servicesStarted':0,'AuthApiDbActions':0,'budget':budget,'memoryAdmission':memory_policy})
  print('Prepared fresh local files only. Services/fixture/delete NOT_RUN. No cloud or old checkout read.')
 def go(runtime,phase):
- value={'approved':True,'phase':phase,'rootHead':runtime.S['sourceSha'],'sourceCommit':runtime.S['sourceSha'],'packageSha256':runtime.package_hash(),'driverPackageSha256':runtime.package_hash(),'cohort':'ONE_DELETE_SIX_LIVE_VIEWS','ownOrigin':'http://127.0.0.1:14250','telegramContext':'CONTROLLED_OWN_ISOLATED_SIGNER','telegramSignerSource':str(PRIVATE/'local.env'),'telegramSignerSelector':'TMA_BOT_TOKEN','allowObservedTmaHeadmanSuccessorCleanup':True,'capacityQENV010Applied':(PRIVATE/'fresh-runtime-preflight.json').exists()}
+ value={'approved':True,'phase':phase,'rootHead':runtime.S['sourceSha'],'sourceCommit':runtime.S['sourceSha'],'packageSha256':runtime.package_hash(),'driverPackageSha256':runtime.package_hash(),'cohort':'ONE_DELETE_SIX_LIVE_VIEWS','ownOrigin':OWN_ORIGIN,'telegramContext':'CONTROLLED_OWN_ISOLATED_SIGNER','telegramSignerSource':str(PRIVATE/'local.env'),'telegramSignerSelector':'TMA_BOT_TOKEN','allowObservedTmaHeadmanSuccessorCleanup':True,'capacityQENV010Applied':(PRIVATE/'fresh-runtime-preflight.json').exists()}
  file=PRIVATE/(phase+'-owner-command.json');write(file,value);return file
 def guarded(runtime,args,phase,timeout=300):
  global _OWNERSHIP_TRANSITION
@@ -288,7 +315,7 @@ def frontends(runtime):
  write(PRIVATE/'frontend-intent.json',{'clients':['web','pwa','tma'],'fixtureMode':False})
  try:
   for client in ['web','pwa','tma']:
-   env=runtime.ENV.copy();env.update(RCT_LOCAL_CLIENT=client,VITE_MOBILE_FIXTURE_MODE='false',VITE_API_PROXY_TARGET='https://127.0.0.1:18443',VITE_PUBLIC_BASE='/',NODE_EXTRA_CA_CERTS=str(PRIVATE/'tls/ca.crt'),NODE_OPTIONS='--max-old-space-size=512')
+   env=runtime.ENV.copy();env.update(RCT_LOCAL_CLIENT=client,VITE_MOBILE_FIXTURE_MODE='false',VITE_API_PROXY_TARGET=API_ORIGIN,VITE_PUBLIC_BASE='/',NODE_EXTRA_CA_CERTS=str(PRIVATE/'tls/ca.crt'),NODE_OPTIONS='--max-old-space-size=512')
    log=(PRIVATE/('frontend-'+client+'.log')).open('x');os.chmod(log.name,0o600);logs.append(log)
    spawn_owned(['node',str(REPO/'frontends/node_modules/vite/bin/vite.js'),'--config',str(ROOT/'frontend-config.ts'),'--mode','development'],children,cwd=REPO/'frontends'/(client+'-vue'),env=env,stdout=log,stderr=subprocess.STDOUT)
   print('Three own source servers running in this terminal; use a second terminal for fixture/case. Ctrl-C closes only these child groups.')

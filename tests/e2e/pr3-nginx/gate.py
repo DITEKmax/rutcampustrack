@@ -24,6 +24,7 @@ PACKAGE = "tests/e2e/pr3-nginx"
 RUN_LABEL = "rct.pr3-nginx.run"
 TLS_STATIC_PORT = 14443
 HTTP_AUTH_PORT = 14240
+LOCAL_RELEASE_PROFILE = None
 RUNTIME_NGINX_INPUTS = frozenset("frontends/" + folder + "/nginx.conf" for folder in APPS.values())
 
 
@@ -232,7 +233,7 @@ def prepare(args):
     mounts += [{"type": "bind", "source": str(path), "target": "/srv/" + app, "read_only": True}
                for app, path in {**dists, "landing": landing}.items()]
     nonce = str(uuid.uuid4())
-    compose = {"name": "rct-pr3-nginx-gate", "services": {"edge": {
+    compose = {"name": (LOCAL_RELEASE_PROFILE["project"] if LOCAL_RELEASE_PROFILE else "rct-pr3-nginx-gate"), "services": {"edge": {
         "labels": {RUN_LABEL: nonce}, "user": runtime_user,
         "image": args.image_id, "pull_policy": "never", "entrypoint": ["nginx"],
         "command": ["-g", "daemon off;"], "read_only": True,
@@ -241,11 +242,11 @@ def prepare(args):
         "tmpfs": [path + ":" + options for path, options in runtime_tmpfs(runtime_user).items()],
         "mem_limit": "128m", "memswap_limit": "128m", "cpus": 0.5, "pids_limit": 32,
         "cap_drop": ["ALL"],
-        "security_opt": ["no-new-privileges:true"], "networks": ["main"]}},
+        "security_opt": ["no-new-privileges:true"], "networks": ({"main":{"ipv4_address":LOCAL_RELEASE_PROFILE["ipv4"]}} if LOCAL_RELEASE_PROFILE else ["main"])}},
         "networks": {"main": {"external": True, "name": args.network}}}
     save(output / "compose.json", compose)
     save(output / "pins.json", {"sourceSha": args.expected_sha, "imageId": args.image_id,
-        "runNonce": nonce, "runtimeUser": runtime_user,
+        "runNonce": nonce, "runtimeUser": runtime_user, "localReleaseProfile": LOCAL_RELEASE_PROFILE,
         "availableBefore": free, "forecastMaxAdditionalBytes": 512 * 1024**2,
         "apps": receipts, "dists": {app: str(path) for app, path in dists.items()},
         "configs": {str(p.relative_to(output)): sha(p.read_bytes())
@@ -316,7 +317,9 @@ def admit_container(pins, compose, container, base):
     require(container["entrypoint"] == service["entrypoint"] == ["nginx"] and
             container["command"] == service["command"] == ["-g", "daemon off;"], "Unexpected Nginx entrypoint")
     network = compose["networks"]["main"]["name"]
-    require(service["networks"] == ["main"] and set(container["networks"]) == {network} and
+    if LOCAL_RELEASE_PROFILE:
+        require(network == LOCAL_RELEASE_PROFILE["network"] and container["networks"][network]["IPAddress"] == LOCAL_RELEASE_PROFILE["ipv4"], "Common edge exact own IP/network changed")
+    require(service["networks"] == ({"main":{"ipv4_address":LOCAL_RELEASE_PROFILE["ipv4"]}} if LOCAL_RELEASE_PROFILE else ["main"]) and set(container["networks"]) == {network} and
             container["networkMode"] == network, "Container is outside the selected existing network")
     publication = {str(value) + "/tcp": [{"HostIp": "127.0.0.1", "HostPort": str(value)}]
                    for value in (TLS_STATIC_PORT, HTTP_AUTH_PORT)}
@@ -448,8 +451,19 @@ def check(args):
         raise SystemExit(1)
 
 
+def apply_local_release_profile(path):
+    global TLS_STATIC_PORT, HTTP_AUTH_PORT, LOCAL_RELEASE_PROFILE
+    value=json.loads(Path(path).read_text())
+    require(set(value)=={'project','network','ipv4','httpPort','httpsPort','nonce'},'Closed own common profile required')
+    require(re.fullmatch('[a-f0-9]{24}',value['nonce']), 'Fresh own nonce required')
+    require(value['project']=='rct-pr3-common-'+value['nonce'][:12] and value['network']=='rct-pr3-native-'+value['nonce'][:12]+'_private_net','Exact new realm/project binding required')
+    require(value['ipv4']=='172.31.36.11' and value['httpPort']==15440 and value['httpsPort']==15443,'Exact own proxy identity/ports required')
+    LOCAL_RELEASE_PROFILE=value;HTTP_AUTH_PORT=value['httpPort'];TLS_STATIC_PORT=value['httpsPort']
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--local-release-profile")
     commands = parser.add_subparsers(dest="command", required=True)
     record = commands.add_parser("pin", help="Record explicitly accepted external build evidence, without building")
     for name in ["expected-sha", "source-sha", "dist", "build-log", "out"]:
@@ -474,6 +488,9 @@ def main():
     check_parser.add_argument("--api-ca-sha256", help="Expected SHA256 of the direct API CA bytes")
     check_parser.set_defaults(action=check)
     args = parser.parse_args()
+    if args.local_release_profile:
+        apply_local_release_profile(args.local_release_profile)
+        if hasattr(args,"port"): args.port=TLS_STATIC_PORT
     args.action(args)
 
 

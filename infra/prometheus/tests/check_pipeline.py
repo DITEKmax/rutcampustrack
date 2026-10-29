@@ -20,7 +20,6 @@ import ssl
 import stat
 import subprocess
 import sys
-import tempfile
 import time
 import urllib.error
 import urllib.parse
@@ -33,6 +32,9 @@ import yaml
 from check_formulas import long_window_fixture, record_expr, slo_budget_inventory
 
 ROOT = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(ROOT / "scripts"))
+from local_release_context import runtime_context
+from local_release_evidence import evidence_directory
 _STATE = {"phase": "PRECHECK_OR_CONFIG", "cleanup": "NOT_STARTED"}
 PROM_UID = "PBFA97CFB590B2093"
 PYTHON_IMAGE = "python:3.12.12-slim-bookworm@sha256:593bd06efe90efa80dc4eee3948be7c0fde4134606dd40d8dd8dbcade98e669c"
@@ -912,7 +914,7 @@ def e2e_async_browser():
     def docker(*args, check=True, seconds=15):
         return subprocess.run(["docker", *args], capture_output=True, text=True, check=check, timeout=seconds)
 
-    with tempfile.TemporaryDirectory(prefix=name + "-", dir=temporary_root) as tmp:
+    with evidence_directory(prefix=name + "-", dir=temporary_root) as tmp:
         private = Path(tmp)
         data = private / "data"
         data.mkdir()
@@ -1237,7 +1239,7 @@ def e2e_async_browser():
 
 
 def main():
-    assert os.environ.get("RCT_MONITORING_RUNTIME") == "isolated-ci", "dedicated CI VM required"
+    context = runtime_context("RCT_MONITORING_RUNTIME")
     assert shutil.disk_usage("/tmp").free >= 4 * 1024**3
     source = yaml.safe_load((ROOT / "docker-compose.prod.yml").read_text())
     project = "rct-pipeline-" + uuid.uuid4().hex[:12]
@@ -1260,7 +1262,7 @@ def main():
         "services/notification-bot/requirements.txt",
     ]
     hashes = {p: hashlib.sha256((ROOT / p).read_bytes()).hexdigest() for p in files}
-    with tempfile.TemporaryDirectory(prefix=project + "-") as tmp:
+    with evidence_directory(prefix=project + "-") as tmp:
         td = Path(tmp)
         config = {"services": {}, "networks": {"private_net": {}}, "volumes": {}, "secrets": {}}
         names = ["prometheus", "alertmanager", "grafana", "loki", "tempo", "alloy", "blackbox-exporter"]
@@ -1349,7 +1351,7 @@ def main():
                 "PYTHONDONTWRITEBYTECODE": "1",
                 "OTEL_SDK_DISABLED": "true",
                 "DEPLOYMENT_ENVIRONMENT": "synthetic",
-                "SERVICE_VERSION": os.environ["GITHUB_SHA"],
+                "SERVICE_VERSION": context["checkoutSha"],
             },
             "volumes": [
                 str(ROOT / "services/notification-bot") + ":/application:ro",
@@ -1690,7 +1692,7 @@ def main():
                 RCT_TEST_TELEMETRY_RECEIPT=str(receipt),
                 JAVA_TOOL_OPTIONS="-XX:ActiveProcessorCount=2",
                 DEPLOYMENT_ENVIRONMENT="synthetic",
-                SERVICE_VERSION=os.environ["GITHUB_SHA"],
+                SERVICE_VERSION=context["checkoutSha"],
             )
             command = [
                 "bash",
@@ -1708,7 +1710,7 @@ def main():
             assert receipt.is_file() and receipt.stat().st_size <= 1024 * 1024
             evidence = json.loads(receipt.read_text())
             assert evidence["schema"] == 1 and evidence["kind"] == "actual_application_transport"
-            assert evidence["source_sha"] == os.environ["GITHUB_SHA"]
+            assert evidence["source_sha"] == context["checkoutSha"]
             assert {case["outcome"] for case in evidence["cases"]} == {"success", "error", "cancelled", "recovery"}
             for row in evidence["logs"]:
                 assert row["file"] in {"api-gateway.log", "mobile-bff.log"}
@@ -1786,7 +1788,7 @@ def main():
                 RCT_TEST_TELEMETRY_RECEIPT=str(receipt),
                 JAVA_TOOL_OPTIONS="-XX:ActiveProcessorCount=2",
                 DEPLOYMENT_ENVIRONMENT="synthetic",
-                SERVICE_VERSION=os.environ["GITHUB_SHA"],
+                SERVICE_VERSION=context["checkoutSha"],
             )
             command = [
                 "bash",
@@ -1804,7 +1806,7 @@ def main():
             assert receipt.is_file() and receipt.stat().st_size <= 1024 * 1024
             evidence = json.loads(receipt.read_text())
             assert evidence["schema"] == 1 and evidence["kind"] == "actual_application_background"
-            assert evidence["source_sha"] == os.environ["GITHUB_SHA"]
+            assert evidence["source_sha"] == context["checkoutSha"]
             assert {case["outcome"] for case in evidence["cases"]} == {"recovered", "ordinary"}
             span_count = 0
             for case in evidence["cases"]:

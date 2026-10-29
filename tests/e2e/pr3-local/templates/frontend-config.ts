@@ -10,8 +10,8 @@ export default defineConfig(async environment => {
   const selected = client === 'web' ? web : client === 'pwa' ? pwa : tma
   const original = typeof selected === 'function' ? await selected(environment) : await selected
   return { ...original, cacheDir: `__STATE__/private/vite-${client}`, server: { ...original.server,
-    host: '127.0.0.1', port: client === 'web' ? 14250 : client === 'pwa' ? 14251 : 14252,
+    host: '127.0.0.1', port: client === 'web' ? __PORT_WEB__ : client === 'pwa' ? __PORT_PWA__ : __PORT_TMA__,
     strictPort: true, https: undefined,
     fs: { ...original.server?.fs, deny: [...(original.server?.fs?.deny ?? ['.env', '.env.*', '*.{crt,pem}', '**/.git/**']), '**/.pr3-local/**'] },
-    proxy: { '/api': { target: 'https://127.0.0.1:18443', changeOrigin: true, ws: true, secure: true } } } }
+    proxy: { '/api': { target: '__API_ORIGIN__', changeOrigin: true, ws: true, secure: true } } } }
 })

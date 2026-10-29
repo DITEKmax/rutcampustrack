@@ -97,7 +97,7 @@ async function main() {
   assert.equal(go.driverPackageSha256, packageSha);
   assert.equal(go.cohort, 'ONE_DELETE_SIX_LIVE_VIEWS');
   assert.equal(go.telegramContext, 'CONTROLLED_OWN_ISOLATED_SIGNER');
-  assert.equal(go.ownOrigin, 'http://127.0.0.1:14250');
+  assert.equal(go.ownOrigin, JSON.parse(fs.readFileSync(path.join(ROOT,'settings.json'))).ownOrigin || 'http://127.0.0.1:14250');
   assert.equal(go.allowObservedTmaHeadmanSuccessorCleanup, true, 'Exact one natural TMA successor cleanup scope required');
   const bindings = JSON.parse(fs.readFileSync(path.join(ROOT, 'bindings.json'), 'utf8'));
   assert.equal(bindings.state, 'SOURCE_READY_FOR_INDEPENDENT_REVIEW', 'Accepted frontend correction/source binding remains pending');
@@ -128,7 +128,8 @@ async function main() {
   assert.equal(fixture.step, 'owned-fixture-ready');
   assert.equal(fixture.sourceCommit, go.sourceCommit);
   assert.equal(fixture.telegramIds.headman, 900000199); assert.equal(fixture.telegramIds.teacher, 900000198);
-  const clients = [ ['WEB', 'http://127.0.0.1:14250'], ['PWA', 'http://127.0.0.1:14251'], ['TMA', 'http://127.0.0.1:14252'] ];
+  const ports = JSON.parse(fs.readFileSync(path.join(ROOT,'settings.json'))).ports || [14250,14251,14252,18443];
+  const clients = ['WEB','PWA','TMA'].map((client,index)=>[client,'http://127.0.0.1:'+ports[index]]);
   assert.equal(cfg.baseURL, clients[0][1]); assert.equal(cfg.groupName, fixture.groupName);
   assert.equal(cfg.controlGroupName, fixture.controlGroupName);
   assert(BigInt(fixture.groupId) > 1n && BigInt(fixture.controlGroupId) > 1n && fixture.groupId !== fixture.controlGroupId);
@@ -354,6 +355,11 @@ async function main() {
     assert.equal((await reply).status(), 200, 'Single native login must acknowledge; no retry');
     await waitUntil(() => !!actor.lastSnapshot); await settle();
     if (actor.lastSnapshot.activeRole !== role) {
+      if (client !== 'WEB' && actor.lastSnapshot.activeRole) {
+        await page.getByRole('navigation', { name: 'Основная навигация' })
+          .getByRole('button', { name: 'Профиль', exact: true }).click();
+        await page.getByRole('button', { name: 'Сменить роль', exact: true }).click();
+      }
       const choice = client === 'WEB' ? page.locator('.web-header-role').getByRole('button', { name: labels[role], exact: true }) : page.locator('.profile-role-list').getByRole('button').filter({ hasText: labels[role] });
       await choice.click();
       await waitUntil(() => actor.lastSnapshot?.activeRole === role); await settle();
@@ -379,10 +385,10 @@ async function main() {
       await waitUntil(() => actor.catalogs.some(x => x.body.groups?.some(g => String(g.id) === fixture.groupId) && x.body.groups?.some(g => String(g.id) === fixture.controlGroupId)));
       if (actor.client === 'WEB') {
         await page.getByRole('button', { name: 'По студентам группы', exact: true }).click();
-        actor.groupSelect = page.getByLabel('Группа', { exact: true });
+        actor.groupSelect = page.getByRole('combobox', { name: 'Группа', exact: true });
         assert.equal(await actor.groupSelect.locator('option').filter({ hasText: fixture.groupName }).count(), 1);
         await actor.groupSelect.selectOption(fixture.controlGroupId);
-        await page.getByLabel('Предмет', { exact: true }).selectOption(fixture.controlSubjectId);
+        await page.getByRole('combobox', { name: 'Предмет', exact: true }).selectOption(fixture.controlSubjectId);
         await page.getByRole('checkbox', { name: 'Лекция', exact: true }).check();
         actor.rows = page.locator('.teacher-stats-table tbody th[scope="row"]');
       } else {
@@ -394,7 +400,7 @@ async function main() {
         await page.getByRole('option').filter({ hasText: 'СохранённаяГруппа ' + fixture.caseId.slice(0, 8) }).click();
         const lecture = page.getByRole('button', { name: 'Лекция', exact: true });
         if (await lecture.getAttribute('aria-pressed') !== 'true') await lecture.click();
-        actor.rows = page.locator('.teacher-stats__row-name');
+        actor.rows = actor.ownerLocator.getByRole('heading', { level: 3 });
       }
       await waitUntil(() => actor.stats.some(x => String(x.query.get('groupId')) === fixture.controlGroupId && x.body.students?.some(s => String(s.studentId) === fixture.controlStudent.id)));
       actor.controlQuery = actor.stats.filter(x => x.query.get('groupId') === fixture.controlGroupId && x.query.get('subjectId') === fixture.controlSubjectId).at(-1)?.query.toString();

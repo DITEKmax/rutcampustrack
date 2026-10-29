@@ -3,9 +3,9 @@ import hashlib,json,os,pathlib,re,shutil,subprocess,time
 
 ROOT=pathlib.Path(__file__).resolve().parent
 S=json.loads((ROOT/'settings.json').read_text())
-REPO=pathlib.Path(S['repo']); PRIVATE=ROOT/'private'; PROJECT='rct-pr3-local'
+REPO=pathlib.Path(S['repo']); PRIVATE=ROOT/'private'; PROJECT=S.get('project','rct-pr3-local')
 P=json.loads((ROOT/'pins.json').read_text())
-ENV={k:v for k,v in os.environ.items() if k in {'PATH','HOME','USER','LOGNAME','LANG','LC_ALL','TERM','TMPDIR','JAVA_HOME'}}
+ENV={k:v for k,v in os.environ.items() if k in {'PATH','HOME','USER','LOGNAME','LANG','LC_ALL','TERM','TMPDIR','JAVA_HOME','PLAYWRIGHT_BROWSERS_PATH'}}
 DOCKER=['docker','--host=unix:///var/run/docker.sock']
 
 def sha(p):return hashlib.sha256(pathlib.Path(p).read_bytes()).hexdigest()
@@ -135,7 +135,7 @@ def isolation():
  private_write(PRIVATE/'isolation-proof.json',{'allPassed':True,'sourceSha':S['sourceSha'],'ownerNonce':S['ownerNonce'],'checks':checks,'fixtureTargetWrites':0});print('Own isolated principal controls passed; probe transactions rolled back/aborted.')
 def admission(phase,go,continuation=False):
  g=json.loads(pathlib.Path(go).read_text());assert g.get('approved') is True and g['phase']==phase and g['rootHead']==S['sourceSha'] and g['sourceCommit']==S['sourceSha']
- assert g['packageSha256']==package_hash() and g['ownOrigin']=='http://127.0.0.1:14250'
+ assert g['packageSha256']==package_hash() and g['ownOrigin']==S.get('ownOrigin','http://127.0.0.1:14250')
  source();ready();r=resources();assert r['diskAvailable']>=2684354560,'Early disk reserve; HOLD, no retry'
  assert r['memoryMaximum']>=r['minimumMemoryMaximumBytes'] and r['memoryAvailable']>=1073741824,'Local memory budget insufficient'
  if phase=='native-case':assert g.get('capacityQENV010Applied') is True and (PRIVATE/'fresh-runtime-preflight.json').exists()

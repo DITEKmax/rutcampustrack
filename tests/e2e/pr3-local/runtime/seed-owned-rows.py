@@ -5,6 +5,67 @@ from zoneinfo import ZoneInfo
 import runtime
 P=runtime.PRIVATE
 
+
+SCHEMA='rct.fixture-attendance.v1'
+
+def attendance_javascript(kind,doc,password):
+ parameters=json.dumps({'schema':SCHEMA,'caseId':kind,'doc':doc,'password':password})
+ return 'const p='+parameters+';\n'+r"""
+async function main(){
+ const out={schema:p.schema,caseId:p.caseId,ok:false,stage:'AUTH',checks:{},codes:{}};
+ try{
+  const d=db.getSiblingDB('attendance_db');
+  const auth=await d.auth('rct_group_attendance',p.password);
+  if(!(auth===1||auth===true||(auth&&auth.ok===1)))throw Error('Scoped auth denied');
+  out.checks.ownAuthenticated=true;out.stage='ABSENCE';
+  const wanted={...p.doc};
+  for(const key of ['group_id','lesson_id','semester_id','user_id','subject_id','marked_by'])wanted[key]=NumberLong(String(wanted[key]));
+  wanted.lesson_date=new Date(wanted.lesson_date+'T00:00:00.000Z');
+  wanted.created_at=new Date(wanted.created_at);wanted.updated_at=new Date(wanted.updated_at);
+  const c=d.attendances;
+  const count=await c.countDocuments({$or:[{_id:wanted._id},{lesson_id:wanted.lesson_id,user_id:wanted.user_id}]},{maxTimeMS:10000});
+  if(count!==0)throw Error('Existing fixture attendance; no replay');
+  out.checks.absentBefore=true;out.stage='INSERT';
+  const inserted=await c.insertOne(wanted);
+  if(inserted.acknowledged!==true)throw Error('Insert acknowledgement unknown');
+  out.checks.insertAcknowledged=true;out.stage='VERIFY';
+  const after=await c.countDocuments({_id:wanted._id,lesson_id:wanted.lesson_id,user_id:wanted.user_id,group_id:wanted.group_id,subject_id:wanted.subject_id,semester_id:wanted.semester_id,lesson_date:wanted.lesson_date,lesson_number:1,status:'present',source:'headman',marked_by:wanted.marked_by},{maxTimeMS:10000});
+  if(after!==1)throw Error('Own attendance verification failed');
+  out.checks.exactRowVerified=true;out.stage='DONE';out.ok=true;print(JSON.stringify(out));
+ }catch(e){
+  if(Number.isInteger(e&&e.code))out.codes.mongo=e.code;
+  print(JSON.stringify(out));quit(2);
+ }
+}
+main();
+"""
+
+def attendance_result(stdout,process_exit,kind):
+ try:
+  row=json.loads(stdout)
+  assert type(row) is dict and set(row)=={'schema','caseId','ok','stage','checks','codes'}
+  assert row['schema']==SCHEMA and row['caseId']==kind and type(row['ok']) is bool
+  assert row['stage'] in ['AUTH','ABSENCE','INSERT','VERIFY','DONE']
+  assert type(row['checks']) is dict and set(row['checks'])<={'ownAuthenticated','absentBefore','insertAcknowledged','exactRowVerified'}
+  assert all(value is True for value in row['checks'].values())
+  assert type(row['codes']) is dict and set(row['codes'])<={'mongo'} and all(type(code) is int for code in row['codes'].values())
+ except Exception:
+  return {'schema':SCHEMA,'caseId':kind,'ok':False,'stage':'PROTOCOL_NON_JSON_OR_SCHEMA','checks':{},'codes':{'processExit':process_exit}}
+ row['codes']['processExit']=process_exit
+ row['ok']=row['ok'] is True and process_exit==0 and row['stage']=='DONE' and set(row['checks'])=={'ownAuthenticated','absentBefore','insertAcknowledged','exactRowVerified'}
+ return row
+
+def attendance_seed(state,kind,group,subject,student,rows,date):
+ now=datetime.datetime.now(datetime.timezone.utc).isoformat()
+ doc={'_id':'group-native-'+kind+'-'+state['caseId'],'group_id':group,'lesson_id':rows['lessonId'],'semester_id':int(state['semester']['id']),'user_id':student,'subject_id':subject,'lesson_number':1,'lesson_date':date.isoformat(),'status':'present','source':'headman','marked_by':student,'created_at':now,'updated_at':now,'mark_revision':'fixture-'+state['caseId']+'-'+kind}
+ runtime.private_write(P/('fixture-'+kind+'-attendance-intent.json'),{'kind':kind,'caseId':state['caseId'],'documentId':doc['_id'],'group':group,'subject':subject,'student':student,'lesson':rows['lessonId'],'scheduleAcknowledgement':'schedule-'+kind+'-fixture.json','automaticRetryAllowed':False})
+ uri=(P/'SPRING_DATA_MONGODB_URI').read_text();password=re.search(r':([^:@]+)@',uri).group(1)
+ result=runtime.docker('exec','-i',runtime.PROJECT+'-mongo-attendance-1','mongosh','--norc','--quiet','--host','127.0.0.1','--file','/dev/stdin',input=attendance_javascript(kind,doc,password),expected=None)
+ # Raw child stdout/stderr can contain credentials in parser errors; never persist or print them.
+ proof=attendance_result(result.stdout,result.returncode,kind)
+ runtime.private_write(P/('fixture-'+kind+'-attendance-result.json'),proof)
+ assert proof['ok'] is True,'Attendance seed HOLD; inspect only closed diagnostic, preserve intent and Schedule acknowledgement; no retry'
+
 def seed(state,kind,group,subject,student,members):
  semester=int(state['semester']['id']);teacher=int(state['retainedTeacherId']);assert semester>1 and group>1 and subject>0 and student>3 and teacher>3
  owned=json.loads(runtime.pg(f"BEGIN READ ONLY; SELECT json_build_object('members',(SELECT count(*) FROM academic_role_eligibility WHERE group_id={group} AND role='STUDENT'),'assignment',(SELECT id FROM assignments WHERE group_id={group} AND subject_id={subject} AND teacher_id={teacher} AND semester_id={semester} AND lesson_type='lecture')); ROLLBACK;",'academic_db').stdout);assert owned['members']==members and owned['assignment'];assignment=int(owned['assignment'])
@@ -19,10 +80,7 @@ def seed(state,kind,group,subject,student,members):
  SELECT json_build_object('scheduleItemId',:item_id,'occurrenceId',:occurrence_id,'lessonId',:lesson_id); COMMIT;
  """
  rows=json.loads(runtime.pg(sql,'schedule_db').stdout);rows['assignmentId']=assignment;runtime.private_write(P/('schedule-'+kind+'-fixture.json'),rows)
- doc={'_id':'group-native-'+kind+'-'+state['caseId'],'group_id':group,'lesson_id':rows['lessonId'],'semester_id':semester,'student_id':student,'status':'present'}
- uri=(P/'SPRING_DATA_MONGODB_URI').read_text();password=re.search(r':([^:@]+)@',uri).group(1)
- script="db=db.getSiblingDB('attendance_db');if(!db.auth('rct_group_attendance',"+json.dumps(password)+"))throw Error('Scoped auth denied');const wanted="+json.dumps(doc)+";if(db.attendances.countDocuments({_id:wanted._id})!==0)throw Error('Existing own row; stop');db.attendances.insertOne(wanted);print(JSON.stringify({inserted:db.attendances.countDocuments({_id:wanted._id})}));"
- proof=json.loads(runtime.docker('exec','-i',runtime.PROJECT+'-mongo-attendance-1','mongosh','--quiet','--host','127.0.0.1',input=script).stdout);assert proof['inserted']==1
+ attendance_seed(state,kind,group,subject,student,rows,date)
  return rows
 
 def run(go):

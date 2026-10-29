@@ -16,7 +16,6 @@ import shlex
 import shutil
 import subprocess
 import sys
-import tempfile
 import time
 import urllib.parse
 import urllib.request
@@ -27,6 +26,9 @@ from pathlib import Path
 import yaml
 
 ROOT = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(ROOT / "scripts"))
+from local_release_context import runtime_context
+from local_release_evidence import evidence_directory, evidence_file
 _STATE = {"phase": "PRECHECK_OR_CONFIG", "cleanup": "NOT_STARTED"}
 
 
@@ -260,7 +262,7 @@ def prepared_transaction_contract(docker):
             os.sched_setaffinity(0, {min(os.sched_getaffinity(0))})
             resource.setrlimit(resource.RLIMIT_FSIZE, (4 * 1024**2, 4 * 1024**2))
 
-        with tempfile.TemporaryFile() as output, tempfile.TemporaryFile() as errors:
+        with evidence_file(prefix="rct-prepared-stdout-") as output, evidence_file(prefix="rct-prepared-stderr-") as errors:
             _STATE["phase"] = "PREPARED_TRANSACTION_NATIVE_CHILD_RUN"
             completed = subprocess.run(
                 [sys.executable, "-B", "-m", "tests.prepared_broker_probe"],
@@ -328,11 +330,11 @@ def prepared_transaction_contract(docker):
 
 
 def main():
-    assert os.environ.get("RCT_MONITORING_RUNTIME") == "isolated-ci", "dedicated CI runtime required"
+    context = runtime_context("RCT_MONITORING_RUNTIME")
     assert shutil.disk_usage("/tmp").free >= 4 * 1024**3, "4GiB disk floor required"
     production = yaml.safe_load((ROOT / "docker-compose.prod.yml").read_text())
     project = "rct-obsv-" + uuid.uuid4().hex[:12]
-    with tempfile.TemporaryDirectory(prefix=project + "-") as tmp:
+    with evidence_directory(prefix=project + "-") as tmp:
         td = Path(tmp)
         config = {"services": {}, "networks": {"private_net": {}}, "volumes": {"mongo-test": {}}, "secrets": {}}
         databases = [

@@ -559,7 +559,7 @@ def metadata(root: Path, service: str, task: str, environment: dict[str, str]) -
         result[field] = value
     event = environment.get("RCT_CI_EVENT_NAME", "LOCAL_CONTROL")
     outcome = environment.get("RCT_CI_TEST_OUTCOME", "UNKNOWN")
-    if event not in {"push", "pull_request", "LOCAL_CONTROL"} or outcome not in {
+    if event not in {"push", "pull_request", "workflow_dispatch", "LOCAL_CONTROL"} or outcome not in {
         "success",
         "failure",
         "cancelled",

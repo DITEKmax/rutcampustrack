@@ -1,8 +1,92 @@
 # Portable local adaptation; NOT_RUN until owner output.
 """Scoped read-only before/after evidence: SQL produces digests, never credentials/row dumps."""
-import argparse,hashlib,json,uuid
+import argparse,hashlib,json,re,sys,uuid
 import runtime
 R=runtime.ROOT;P=runtime.PRIVATE
+
+
+MONGO_SCHEMA='rct.local-postproof.mongo.v1'
+
+def mongo_javascript(case_id,database,user,password,group,lesson):
+    parameters=json.dumps({'schema':MONGO_SCHEMA,'caseId':case_id,'database':database,
+                           'user':user,'password':password,'group':str(group),'lesson':str(lesson)})
+    return 'const p='+parameters+';\n'+r"""
+async function main(){
+  const out={schema:p.schema,caseId:p.caseId,ok:false,stage:'AUTH',codes:{},result:null};
+  try{
+    const d=db.getSiblingDB(p.database);
+    const auth=await d.auth(p.user,p.password);
+    if(!(auth===1||auth===true||(auth&&auth.ok===1)))throw Error('Scoped auth denied');
+    out.stage='READ_ONLY_PROOF';
+    if(p.caseId==='ATTENDANCE'){
+      const group=NumberLong(p.group),lesson=NumberLong(p.lesson);
+      const collections=['attendances','late_checkin_requests','excuse_tickets',
+        'request_attachments','lesson_actions','student_checkin_pairs',
+        'student_checkin_receipts','student_request_receipts','lesson_cancellation_markers'];
+      let own=0;const foreign=[];
+      for(const name of collections){
+        own+=await d[name].countDocuments({$or:[{group_id:group},{lesson_id:lesson}]},{maxTimeMS:10000});
+        const rows=await d[name].find({group_id:{$ne:group},lesson_id:{$ne:lesson}})
+          .sort({_id:1}).maxTimeMS(10000).toArray();
+        foreign.push([name,rows]);
+      }
+      const crypto=require('crypto');
+      out.result={targetRows:own,
+        foreignDigest:crypto.createHash('sha256').update(EJSON.stringify(foreign)).digest('hex'),
+        deletedReceipt:await d.group_deletion_participants.countDocuments({group_id:group,state:'DELETED'},{maxTimeMS:10000})};
+    }else if(p.caseId==='NOTIFICATION'){
+      out.result={
+        history:await d.notification_history.countDocuments({},{maxTimeMS:10000}),
+        intents:await d.notification_webpush_intents.countDocuments({},{maxTimeMS:10000}),
+        audiences:await d.notification_event_audiences.countDocuments({},{maxTimeMS:10000}),
+        pushSubscriptions:await d.push_subscriptions.countDocuments({},{maxTimeMS:10000}),
+      };
+    }else throw Error('Unadmitted proof case');
+    out.stage='DONE';out.ok=true;print(JSON.stringify(out));
+  }catch(error){
+    if(Number.isInteger(error&&error.code))out.codes.mongo=error.code;
+    print(JSON.stringify(out));quit(2);
+  }
+}
+main();
+"""
+
+
+def mongo_result(stdout,process_exit,case_id):
+    # Never strip prompts/noise to force PASS; raw child output can include secrets.
+    diagnostic={'schema':MONGO_SCHEMA,'caseId':case_id,'stage':'PROTOCOL_OR_SCHEMA',
+                'code':'INVALID_SINGLE_JSON','processExit':process_exit}
+    try:
+        row=json.loads(stdout)
+        assert type(row) is dict and set(row)=={'schema','caseId','ok','stage','codes','result'}
+        assert row['schema']==MONGO_SCHEMA and row['caseId']==case_id and type(row['ok']) is bool
+        assert row['stage'] in ['AUTH','READ_ONLY_PROOF','DONE']
+        assert type(row['codes']) is dict and set(row['codes'])<={'mongo'}
+        assert all(type(value) is int for value in row['codes'].values())
+        diagnostic.update(stage=row['stage'],code='MONGO_PROOF_NOT_ACKNOWLEDGED')
+        assert row['ok'] is True and row['stage']=='DONE' and process_exit==0
+        value=row['result']
+        keys={'targetRows','foreignDigest','deletedReceipt'} if case_id=='ATTENDANCE' else {'history','intents','audiences','pushSubscriptions'}
+        assert type(value) is dict and set(value)==keys
+        for key,item in value.items():
+            if key=='foreignDigest':
+                assert type(item) is str and re.fullmatch('[0-9a-f]{64}',item)
+            else:
+                assert type(item) is int and item>=0
+        return value,None
+    except Exception:
+        return None,diagnostic
+
+
+def mongo_read(case_id,database,user,password,group,lesson):
+    result=runtime.docker('exec','-i',runtime.PROJECT+'-mongo-attendance-1','mongosh',
+                          '--norc','--quiet','--host','127.0.0.1','--file','/dev/stdin',
+                          input=mongo_javascript(case_id,database,user,password,group,lesson),expected=None)
+    value,diagnostic=mongo_result(result.stdout,result.returncode,case_id)
+    if diagnostic is not None:
+        print(json.dumps(diagnostic),file=sys.stderr)
+        raise RuntimeError('Scoped Mongo proof HOLD; child values withheld; no retry') from None
+    return value
 
 def collect():
  s=json.loads((P/'fixture-state.json').read_text());g=int(s['groupId']);control=int(s['controlGroupId']);assert control>1 and control!=g;member=int(s['accounts'][0]['id']);helper=int(s['accounts'][1]['id']);lesson=int(s['lessonId']);assert g>1 and member>3 and helper>3
@@ -23,15 +107,13 @@ def collect():
  'targetRows',(SELECT count(*) FROM group_deletion_rows({g})),
  'operationPhase',(SELECT phase FROM group_deletion_operations WHERE group_id={g} ORDER BY created_at DESC LIMIT 1)); ROLLBACK;""",'academic_db').stdout
  schedule=runtime.pg(f"""BEGIN READ ONLY; SELECT json_build_object('foreignGroup1',(SELECT md5(coalesce(jsonb_agg(jsonb_build_object('kind',kind,'data',data) ORDER BY kind,data::text)::text,'[]')) FROM group_deletion_rows(1)),'ownedControl',(SELECT md5(coalesce(jsonb_agg(jsonb_build_object('kind',kind,'data',data) ORDER BY kind,data::text)::text,'[]')) FROM group_deletion_rows({control})),'targetRows',(SELECT count(*) FROM group_deletion_rows({g})),'deletedReceipt',(SELECT count(*) FROM group_deletion_participants WHERE group_id={g} AND state='DELETED')); ROLLBACK;""",'schedule_db').stdout
- # Mongo app role; no admin capability or values printed. Public evidence only counts/digests.
- import re
+ # Same scoped app principals and unchanged before/after counts/digests.
  uri=(P/'SPRING_DATA_MONGODB_URI').read_text();password=re.search(r':([^:@]+)@',uri).group(1)
- script="const password="+json.dumps(password)+";const d=db.getSiblingDB('attendance_db');if(!d.auth('rct_group_attendance',password))throw Error('Scoped Mongo auth failed');const crypto=require('crypto');const collections=['attendances','late_checkin_requests','excuse_tickets','request_attachments','lesson_actions','student_checkin_pairs','student_checkin_receipts','student_request_receipts','lesson_cancellation_markers'];let own=0;let foreign=[];for(const c of collections){own+=d[c].countDocuments({$or:[{group_id:"+str(g)+"},{lesson_id:"+str(lesson)+"}]});foreign.push([c,d[c].find({group_id:{$ne:"+str(g)+"},lesson_id:{$ne:"+str(lesson)+"}}).sort({_id:1}).toArray()]);}print(JSON.stringify({targetRows:own,foreignDigest:crypto.createHash('sha256').update(EJSON.stringify(foreign)).digest('hex'),deletedReceipt:d.group_deletion_participants.countDocuments({group_id:"+str(g)+",state:'DELETED'})}));"
- mongo=runtime.docker('exec','-i',runtime.PROJECT+'-mongo-attendance-1','mongosh','--quiet','--host','127.0.0.1',input=script).stdout.strip()
+ mongo=mongo_read('ATTENDANCE','attendance_db','rct_group_attendance',password,g,lesson)
  notification_password=re.search(r':([^:@]+)@',(P/'NOTIFICATION_SPRING_DATA_MONGODB_URI').read_text()).group(1)
- notification_script="const d=db.getSiblingDB('notification_db');if(!d.auth('rct_group_notification',"+json.dumps(notification_password)+"))throw Error('Scoped notification auth denied');print(JSON.stringify({history:d.notification_history.countDocuments({}),intents:d.notification_webpush_intents.countDocuments({}),audiences:d.notification_event_audiences.countDocuments({}),pushSubscriptions:d.push_subscriptions.countDocuments({})}));"
- notification=json.loads(runtime.docker('exec','-i',runtime.PROJECT+'-mongo-attendance-1','mongosh','--quiet','--host','127.0.0.1',input=notification_script).stdout.strip())
- return {'auth':json.loads(auth),'academic':json.loads(academic),'schedule':json.loads(schedule),'attendance':json.loads(mongo),'notification':notification,'groupId':g,'lessonId':lesson}
+ notification=mongo_read('NOTIFICATION','notification_db','rct_group_notification',notification_password,g,lesson)
+ return {'auth':json.loads(auth),'academic':json.loads(academic),'schedule':json.loads(schedule),'attendance':mongo,'notification':notification,'groupId':g,'lessonId':lesson}
+
 def run(mode,go):
  runtime.admission('native-case',go,continuation=True);value=collect()
  if mode=='before':

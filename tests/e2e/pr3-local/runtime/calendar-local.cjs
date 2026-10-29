@@ -15,7 +15,7 @@ async function main(){
  const r=cp.spawnSync('python3',['-c','import runtime,sys;runtime.admission("calendar-setup",sys.argv[1])',go],{cwd:root});if(r.status!==0)throw Error();
  const file=path.join(root,'private/calendar-state.json');save(file,{phase:'intent',at:new Date().toISOString()},true);
  const handle=path.join(root,'private/calendar-auth-handle.json');let api,token,sid;
- const origin='http://127.0.0.1:14250';
+ const origin=settings.ownOrigin||'http://127.0.0.1:14250';
  async function invoke(method,url,data,status){
   if(new URL(url,origin).origin!==origin||!url.startsWith('/api/'))throw Error();
   save(handle,{state:'REQUEST_INTENT',method,url,sid,token,storage:api?await api.storageState():null});

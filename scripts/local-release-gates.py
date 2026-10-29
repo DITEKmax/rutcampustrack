@@ -19,7 +19,7 @@ import time
 HERE=Path(__file__).resolve().parent
 ROOT=HERE.parent
 sys.path.insert(0,str(HERE/'local-release'))
-from catalog import catalog, targeted_catalog, NOT_APPLICABLE
+from catalog import catalog, targeted_catalog, remaining_catalog, NOT_APPLICABLE, REMAINING_EXCLUSIONS
 from diagnostics import project, admit_gate, control_error
 from progress import Progress
 from targeted_receipt import selected_xml, make as targeted_receipt, verify as verify_targeted
@@ -184,10 +184,12 @@ def resources():
 def main():
     global CONTROL_AUDIT
     parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--expected-sha',required=True);parser.add_argument('--audit',required=True,type=Path);parser.add_argument('--list',action='store_true')
-    parser.add_argument('--mode',choices=('targeted','full'),default='full');parser.add_argument('--targeted-audit',type=Path);args=parser.parse_args()
-    full=args.mode=='full';gates=catalog() if full else targeted_catalog()
+    parser.add_argument('--mode',choices=('targeted','full','remaining'),default='full');parser.add_argument('--targeted-audit',type=Path);args=parser.parse_args()
+    full=args.mode=='full';remaining=args.mode=='remaining'
+    gates=catalog() if full else remaining_catalog() if remaining else targeted_catalog()
+    exclusions=REMAINING_EXCLUSIONS if remaining else {}
     if args.list:
-        print(json.dumps({'gates':[{'name':g.name,'command':list(g.command),'requires':list(g.requires),'seconds':g.seconds} for g in gates],'inapplicable':NOT_APPLICABLE if full else {},'fullReplay':full,'mode':args.mode},indent=2));return 0
+        print(json.dumps({'gates':[{'name':g.name,'command':list(g.command),'requires':list(g.requires),'seconds':g.seconds} for g in gates],'inapplicable':NOT_APPLICABLE if full else {},'exclusions':exclusions,'fullReplay':full,'mode':args.mode},indent=2));return 0
     if sys.platform!='linux' or not sys.stdin.isatty():raise ValueError('Foreground owner Linux TTY required')
     if re.fullmatch('[a-f0-9]{40}',args.expected_sha) is None or git('rev-parse','HEAD')!=args.expected_sha or git('status','--porcelain'):
         raise ValueError('Exact clean owner source required')
@@ -195,7 +197,7 @@ def main():
     if full:
         if args.targeted_audit is None:raise ValueError('Same revision native targeted PASS required')
         target_binding=verify_targeted(ROOT,args.targeted_audit,args.expected_sha)
-    elif args.targeted_audit is not None:raise ValueError('Targeted mode cannot resume an audit')
+    elif args.targeted_audit is not None:raise ValueError('Only full mode admits a targeted audit')
     audit=args.audit
     if not audit.is_absolute() or audit.exists() or audit.is_symlink():raise ValueError('New exact private audit directory required')
     audit.mkdir(mode=0o700,parents=True);os.umask(0o077);CONTROL_AUDIT=audit
@@ -215,9 +217,15 @@ def main():
                DOCKER_HOST='unix:///var/run/docker.sock',DOCKER_CONFIG=str(audit/'docker-config'),TRIVY_CACHE_DIR=str(audit/'cache/trivy'),
                PLAYWRIGHT_BROWSERS_PATH=str(audit/'cache/browsers'),NP01_PYTHON_EXECUTABLE=str(audit/'venv/bin/python'),RCT_GITLEAKS_REPORT=str(audit/'gitleaks.sarif'))
     for name in ['tmp','docker-config','cache']: (audit/name).mkdir(mode=0o700)
+    if remaining:
+        # All host Gradle subprocesses inherit this private home, including browser
+        # clock/build helpers. Docker production bootJar builds do not run tests.
+        init=Path(env['GRADLE_USER_HOME'])/'init.d';init.mkdir(mode=0o700,parents=True)
+        shutil.copyfile(HERE/'local-release/no-academic-tests.gradle',init/'no-academic-tests.gradle')
+        (init/'no-academic-tests.gradle').chmod(0o600)
     wrapper_mode=(ROOT/'gradlew').stat().st_mode & 0o777
     results={};hold=False;cancelled=False;control_errors=[]
-    write(audit/'identity.safe.json',{'revision':args.expected_sha,'nonce':nonce,'event':'LOCAL_CONTROL','runId':None,'runAttempt':None,'fullReplay':full,'mode':args.mode,'targetedBinding':target_binding,'resources':observed,'startedUtc':datetime.datetime.now(datetime.timezone.utc).isoformat()})
+    write(audit/'identity.safe.json',{'revision':args.expected_sha,'nonce':nonce,'event':'LOCAL_CONTROL','runId':None,'runAttempt':None,'fullReplay':full,'mode':args.mode,'exclusions':exclusions,'targetedBinding':target_binding,'resources':observed,'startedUtc':datetime.datetime.now(datetime.timezone.utc).isoformat()})
     try:
         for gate in gates:
             state=status(gate,results,hold)
@@ -265,9 +273,9 @@ def main():
         try:diagnostics=project(ROOT,audit,started)
         except Exception:diagnostics={'status':'UNAVAILABLE'}
         accepted=not hold and not cancelled and all(r['status']=='PASS' for r in results.values())
-        value={'schema':1,'revision':args.expected_sha,'nonce':nonce,'event':'LOCAL_CONTROL','accepted':accepted,'cancelled':cancelled,'hold':hold,'gates':results,'inapplicable':NOT_APPLICABLE if full else {},'fullReplay':full,'mode':args.mode,'resources':observed,'diagnostics':diagnostics,'controlErrors':control_errors}
+        value={'schema':1,'revision':args.expected_sha,'nonce':nonce,'event':'LOCAL_CONTROL','accepted':accepted,'acceptanceScope':'SELECTED_REMAINING_GATES_ONLY' if remaining else 'FULL' if full else 'TARGETED_ONLY','cancelled':cancelled,'hold':hold,'gates':results,'exclusions':exclusions,'inapplicable':NOT_APPLICABLE if full else {},'fullReplay':full,'mode':args.mode,'resources':observed,'diagnostics':diagnostics,'controlErrors':control_errors}
         receipt=None
-        if accepted and not full:
+        if accepted and args.mode=='targeted':
             try:
                 result_raw=(json.dumps(value,sort_keys=True,indent=2,allow_nan=False)+'\n').encode()
                 receipt=targeted_receipt(ROOT,audit,args.expected_sha,nonce,results,result_raw)

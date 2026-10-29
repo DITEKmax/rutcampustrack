@@ -47,3 +47,13 @@ def targeted_catalog():
             Gate('academic-targeted',('bash','scripts/local-release/academic-targeted.sh'),
                  ('setup',),seconds=3600,resource=True,
                  reports=('services/academic-service/academic-app/build/test-results/integrationTest',)))
+
+# These omissions are an owner selection, never PASS or a full replay receipt.
+REMAINING_EXCLUSIONS={
+    'java-academic-service':{'status':'NOT_RUN','reason':'OWNER_NO_ACADEMIC_TEST_RERUN'},
+    'browser-client':{'status':'NOT_RUN','reason':'BOOTSTRAP_INVOKES_ACADEMIC_INTEGRATION_TEST'},
+    'native-group-and-nginx':{'status':'BLOCKED','reason':'REQUIRES_FRESH_FULL_JAVA_ACADEMIC_GATE'},
+}
+
+def remaining_catalog():
+    return tuple(g for g in catalog() if g.name not in REMAINING_EXCLUSIONS)

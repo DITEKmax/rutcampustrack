@@ -57,3 +57,24 @@ f45b754ac6769525e503692e49ddaaff15a3bd6e:frontends/web-vue/src/features/headman/
 # Fixed pending-operation test fixtures, independently reviewed in REVIEW-3e58-test-fixtures.md.
 3e58d981fc41f802368daf9f4fe0f92694cc78c3:frontends/web-vue/src/features/headman/recovery-flows.test.ts:generic-api-key:403
 3e58d981fc41f802368daf9f4fe0f92694cc78c3:frontends/web-vue/src/features/headman/recovery-flows.test.ts:generic-api-key:425
+
+# expired-junit-generated-password; individually reviewed historical occurrence 119.
+50c209a0357cec5df429635e11c0952e92633b34:.agent/evidence/qr-login-20261002/r2-xml/TEST-ru.rutcampustrack.auth.integration.QrLoginFlowIT.xml:generic-api-key:141
+# expired-junit-generated-password; individually reviewed historical occurrence 120.
+24e9233526f652efdd17cf59d889d1d2d90aad4a:.agent/evidence/qr-login-20261002/r1-xml/QrLoginFlowIT.xml:generic-api-key:181
+# expired-junit-generated-password; individually reviewed historical occurrence 121.
+24e9233526f652efdd17cf59d889d1d2d90aad4a:.agent/evidence/qr-login-20261002/r1-xml/TEST-ru.rutcampustrack.auth.integration.QrLoginFlowIT.xml:generic-api-key:181
+# expired-junit-generated-password; individually reviewed historical occurrence 131.
+5b1faabbd08ae65e9e9028eeef3d9a3efd85de4a:.agent/evidence/backend-acceptance-20261002-next/otp-AuthOtpFlowIT.xml:generic-api-key:172
+# expired-junit-generated-password; individually reviewed historical occurrence 132.
+5b1faabbd08ae65e9e9028eeef3d9a3efd85de4a:.agent/evidence/backend-acceptance-20261002-next/otp-r2-AuthOtpFlowIT.xml:generic-api-key:139
+# retired-ci-private-fixture; individually reviewed historical occurrence 148.
+7d794db239311de566a35bf3da96a7c1b9015d23:tests/e2e/.env.ci:generic-api-key:30
+# retired-ci-private-fixture; individually reviewed historical occurrence 149.
+be71ed1745c4861071a3c26ec10cb7b23758a4d1:tests/e2e/.env.ci:generic-api-key:45
+# curl-password-placeholder; individually reviewed historical occurrence 150.
+63776d9fccc7462dbaefbb2a4b39ba3445186e6b:docs/runbooks/swagger-prod-access.md:curl-auth-user:109
+# public-vapid-fixture; individually reviewed historical occurrence 154.
+4015d607fb455296310d0b660620b3c499c18c80:services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/push/PushControllerTest.java:generic-api-key:33
+# orphan-illustrative-push-auth; individually reviewed historical occurrence 155.
+999370d482cce6fa3651ec0c355bbece38d06cc6:.planning/research/STACK.md:generic-api-key:167

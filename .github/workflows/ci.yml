@@ -1353,13 +1353,16 @@ jobs:
         run: |
           umask 077
           python3 - <<'PY_ATTENDANCE_SERVICE_TOKEN'
-          import os, secrets, stat
+          import os, secrets, stat, sys
+          sys.path.insert(0, 'scripts')
+          from e2e_fixture_credentials import fresh_credentials
 
           tokens = {name: secrets.token_urlsafe(32) for name in (
               'ACADEMIC_TO_ATTENDANCE_SERVICE_TOKEN',
               'SCHEDULE_TO_ACADEMIC_SERVICE_TOKEN',
               'ATTENDANCE_TO_ACADEMIC_SERVICE_TOKEN',
           )}
+          tokens.update(fresh_credentials())
           if len(set(tokens.values())) != len(tokens):
               raise SystemExit('Synthetic directed service tokens must be distinct')
           for token in tokens.values():
@@ -1423,7 +1426,7 @@ jobs:
                           continue
                       if (len(mentioned) != 1 or not content.startswith(mentioned[0] + b'=')
                               or mentioned[0] in seen):
-                          raise ValueError('Malformed directed-token assignment')
+                          raise ValueError('Malformed synthetic credential assignment')
                       key = mentioned[0]
                       seen.add(key)
                       lines.append(key + b'=' + encoded[key] + line[len(content):])

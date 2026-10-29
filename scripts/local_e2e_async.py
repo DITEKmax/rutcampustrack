@@ -28,6 +28,7 @@ import time
 import urllib.error
 import urllib.request
 from zoneinfo import ZoneInfo
+from e2e_fixture_credentials import fresh_credentials
 
 ROOT = Path(__file__).resolve().parents[1]
 RUNS = ROOT / ".agent/evidence/local-runs"
@@ -1916,10 +1917,11 @@ class Runner:
                         PLAYWRIGHT_BROWSERS_PATH=os.environ.get("PLAYWRIGHT_BROWSERS_PATH", str(Path.home() / ".cache/ms-playwright")))
         if self.mode in {"ui-batch", "special13"}:
             (self.run / "lanes").mkdir(mode=0o700)
-        # Preserve exact tracked .env.ci bytes except three fresh directed tokens.
+        # Preserve tracked fixture bytes, replacing credentials only in private synthetic.env.
         source = capture(["git", "show", "HEAD:tests/e2e/.env.ci"])
-        for name in sorted(TOKEN_NAMES):
-            token = secrets.token_urlsafe(32)
+        credentials = {name: secrets.token_urlsafe(32) for name in TOKEN_NAMES}
+        credentials.update(fresh_credentials())
+        for name, token in sorted(credentials.items()):
             source, count = re.subn(r"(?m)^" + name + r"=.*$", name + "=" + token, source)
             require(count <= 1, "DUPLICATE_SYNTHETIC_TOKEN")
             if not count:

@@ -97,7 +97,7 @@ services:
     environment:
       MONGODB_REPLICA_SET_MODE: primary
       MONGODB_REPLICA_SET_NAME: rs0
-      MONGODB_REPLICA_SET_KEY: ${MONGODB_REPLICA_SET_KEY}
+      MONGODB_REPLICA_SET_KEY: ${MONGODB_REPLICA_SET_KEY:?generate disposable e2e credentials first}
       MONGODB_ROOT_USER: ${MONGO_ROOT_USER}
       MONGODB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
       MONGODB_ADVERTISED_HOSTNAME: mongo-attendance
@@ -578,8 +578,8 @@ services:
       REDIS_PASSWORD: ${REDIS_PASSWORD}
       JWT_PUBLIC_KEY_PATH: /keys/public.key
       NOTIFICATION_WS_ALLOWED_ORIGINS: ${NOTIFICATION_WS_ALLOWED_ORIGINS}
-      VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY}
-      VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY}
+      VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY:?generate disposable e2e credentials first}
+      VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY:?generate disposable e2e credentials first}
       VAPID_SUBJECT: ${VAPID_SUBJECT}
       ALERT_WEBHOOK_SECRET: ${ALERT_WEBHOOK_SECRET}
       SPRING_DATA_MONGODB_URI: mongodb://${MONGO_NOTIFICATION_USER}:${MONGO_NOTIFICATION_PASSWORD}@mongo-attendance:27017/notification_db?authSource=admin&replicaSet=rs0

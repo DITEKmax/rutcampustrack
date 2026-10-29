@@ -11,6 +11,847 @@ regexTarget = "line"
 paths = ['''^frontends/mobile-core/src/features/notifications/NotificationsScreen\.vue$''']
 regexes = ['''^[ \t]*api: NotificationsV2Api;[ \t]*$''']
 
+# Exact validated noncredential source contexts; arbitrary replacements remain scanned.
+[[rules.allowlists]]
+description = "Verified inert source contexts 133,134"
+condition = "AND"
+regexTarget = "line"
+paths = ["^\\.agent/evidence/backend-acceptance-20261002-next/homework-a-api\\.json$"]
+regexes = ["^\\n?        \"requestKey\": \"95e861cd-3333-48f0-940a-def92d5337e9\",\\r?$", "^\\n?            \"requestKey\": \"95e861cd-3333-48f0-940a-def92d5337e9\",\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 135,136,137,138"
+condition = "AND"
+regexTarget = "line"
+paths = ["^\\.agent/evidence/backend-acceptance-20261002-next/homework-date-api\\.json$"]
+regexes = ["^\\n?      \"requestKey\": \"3ca618b4-b361-4c9f-9240-426daad50617\",\\r?$", "^\\n?          \"requestKey\": \"3ca618b4-b361-4c9f-9240-426daad50617\",\\r?$", "^\\n?      \"requestKey\": \"3ca618b4-b361-4c9f-9240-426daad50617\",\\r?$", "^\\n?          \"requestKey\": \"3ca618b4-b361-4c9f-9240-426daad50617\",\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 130"
+condition = "AND"
+regexTarget = "line"
+paths = ["^\\.agent/evidence/oneoff-transfer-20261002/r2/schedule/TEST-ru\\.rutcampustrack\\.schedule\\.lesson\\.LessonTransferWriterIT\\.xml$"]
+regexes = ["^\\n?          Headers = \\[Content-Type:\"application/json;charset=UTF-8\", X-User-Id:\"1790959483092041\", X-User-Role:\"STUDENT\", X-Group-Id:\"1790959483092011\", X-Is-Headman:\"true\", Idempotency-Key:\"c58a9800-3d0b-4be6-a206-d3d487c7a5ae\", Content-Length:\"193\"\\]\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 122,123,124,125,126,127,128,129"
+condition = "AND"
+regexTarget = "line"
+paths = ["^\\.agent/evidence/oneoff-transfer-20261002/r2/schedule/TEST-ru\\.rutcampustrack\\.schedule\\.oneoff\\.OneOffLessonControllerIT\\.xml$"]
+regexes = ["^\\n?          Headers = \\[Content-Type:\"application/json;charset=UTF-8\", X-User-Id:\"42\", X-User-Role:\"STUDENT\", X-Group-Id:\"1\", X-Is-Headman:\"true\", Idempotency-Key:\"3bce3d20-bc6f-4e3c-928e-8d66489920f2\", Content-Length:\"149\"\\]\\r?$", "^\\n?          Headers = \\[Content-Type:\"application/json;charset=UTF-8\", X-User-Id:\"42\", X-User-Role:\"STUDENT\", X-Group-Id:\"1\", X-Is-Headman:\"true\", Idempotency-Key:\"a9dfe76c-00ee-4469-b288-249359b73ad2\", Content-Length:\"146\"\\]\\r?$", "^\\n?          Headers = \\[Content-Type:\"application/json;charset=UTF-8\", X-User-Id:\"42\", X-User-Role:\"STUDENT\", X-Group-Id:\"1\", X-Is-Headman:\"true\", Idempotency-Key:\"f6b65766-a721-49be-a039-8f78fcb54dce\", Content-Length:\"149\"\\]\\r?$", "^\\n?          Headers = \\[Content-Type:\"application/json;charset=UTF-8\", X-User-Id:\"42\", X-User-Role:\"STUDENT\", X-Group-Id:\"1\", X-Is-Headman:\"true\", Idempotency-Key:\"c56fa31c-2f1d-4afe-8769-83a18140040a\", Content-Length:\"146\"\\]\\r?$", "^\\n?          Headers = \\[Content-Type:\"application/json;charset=UTF-8\", X-User-Id:\"42\", X-User-Role:\"STUDENT\", X-Group-Id:\"1\", X-Is-Headman:\"true\", Idempotency-Key:\"817e1810-d733-44d6-879a-b55b58fe8f71\", Content-Length:\"146\"\\]\\r?$", "^\\n?          Headers = \\[Content-Type:\"application/json;charset=UTF-8\", X-User-Id:\"42\", X-User-Role:\"STUDENT\", X-Group-Id:\"1\", X-Is-Headman:\"true\", Idempotency-Key:\"6160a4d4-f584-45db-9f23-da77d31e50dc\", Content-Length:\"146\"\\]\\r?$", "^\\n?          Headers = \\[Content-Type:\"application/json;charset=UTF-8\", X-User-Id:\"42\", X-User-Role:\"STUDENT\", X-Group-Id:\"1\", X-Is-Headman:\"true\", Idempotency-Key:\"bbbef247-6e2f-46f8-b545-1a63d2c87540\", Content-Length:\"146\"\\]\\r?$", "^\\n?          Headers = \\[Content-Type:\"application/json;charset=UTF-8\", X-User-Id:\"42\", X-User-Role:\"STUDENT\", X-Group-Id:\"1\", X-Is-Headman:\"true\", Idempotency-Key:\"cd58de5c-33b6-4bba-8bff-d82112fa6e91\", Content-Length:\"146\"\\]\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 114,115,116,117,118"
+condition = "AND"
+regexTarget = "line"
+paths = ["^\\.agent/evidence/oneoff-transfer-bus-20261002/api-r2\\.json$"]
+regexes = ["^\\n?        \"requestKey\": \"ed81c50f-3701-44a4-8cb1-48beae574727\",\\r?$", "^\\n?      \"key\": \"ed81c50f-3701-44a4-8cb1-48beae574727\",\\r?$", "^\\n?        \"requestKey\": \"ed81c50f-3701-44a4-8cb1-48beae574727\",\\r?$", "^\\n?        \"requestKey\": \"ed81c50f-3701-44a4-8cb1-48beae574727\",\\r?$", "^\\n?        \"key\": \"ed81c50f-3701-44a4-8cb1-48beae574727\",\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 112,113"
+condition = "AND"
+regexTarget = "line"
+paths = ["^\\.agent/evidence/oneoff-transfer-bus-20261002/fresh-api/api-r2\\.json$"]
+regexes = ["^\\n?        \"requestKey\": \"938dcc91-e552-472e-b99b-b3c6b0241721\",\\r?$", "^\\n?        \"requestKey\": \"938dcc91-e552-472e-b99b-b3c6b0241721\",\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 103"
+condition = "AND"
+regexTarget = "line"
+paths = ["^\\.agent/evidence/telegram-recovery-retry-1003/application-recovery-final-ack\\.json$"]
+regexes = ["^\\n?  \"originalRequestKey\": \"b8134109-35e4-4d0e-bfc1-deaecbe28860\",\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 104,105,106"
+condition = "AND"
+regexTarget = "line"
+paths = ["^\\.agent/evidence/vue-homework-date-edit-20261002/correction/source\\.diff$"]
+regexes = ["^\\n? const key = '97eb9070-a49d-45f9-9e72-b9d8fe06eab9'\\r?$", "^\\n?-      \\.mockResolvedValueOnce\\(Response\\.json\\(\\{ homeworkId: '91', bindingId: '501', requestKey: '3bbe4b81-42e1-4bcf-a963-41da6f379c02', state: 'PENDING' \\}, \\{ status: 202 \\}\\)\\)\\r?$", "^\\n?\\+    const otherKey = '3bbe4b81-42e1-4bcf-a963-41da6f379c02'\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 108,109"
+condition = "AND"
+regexTarget = "line"
+paths = ["^\\.agent/evidence/vue-homework-date-edit-20261002/source\\.diff$"]
+regexes = ["^\\n?\\+const key = '97eb9070-a49d-45f9-9e72-b9d8fe06eab9'\\r?$", "^\\n?\\+      \\.mockResolvedValueOnce\\(Response\\.json\\(\\{ homeworkId: '91', bindingId: '501', requestKey: '3bbe4b81-42e1-4bcf-a963-41da6f379c02', state: 'PENDING' \\}, \\{ status: 202 \\}\\)\\)\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 142"
+condition = "AND"
+regexTarget = "line"
+paths = ["^\\.agent/vertical-js-student-01/freeze-ready\\.json$"]
+regexes = ["^\\n?    \"openApiSha256\": \"c89b30f7fb9ee652e5c38e1bbffdab7e8c152aa994b4c4f9b273263ad5efd508\",\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 7"
+condition = "AND"
+regexTarget = "line"
+paths = ["^docs/archive/rutcampustrack-kit/_work/figma-state-headman-117-airy-polish-2-2026-08-22\\.json$"]
+regexes = ["^\\n?  \"fileKey\": \"VgVjQYWILLG9AC7Eh12VMk\",\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 33"
+condition = "AND"
+regexTarget = "line"
+paths = ["^docs/archive/rutcampustrack-kit/_work/figma-state-headman-adaptive-repair-2026-08-24\\.json$"]
+regexes = ["^\\n?  \"fileKey\": \"VgVjQYWILLG9AC7Eh12VMk\",\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 11"
+condition = "AND"
+regexTarget = "line"
+paths = ["^docs/archive/rutcampustrack-kit/_work/figma-state-part-16-student-narrow\\.json$"]
+regexes = ["^\\n?  \"fileKey\": \"VgVjQYWILLG9AC7Eh12VMk\",\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 5"
+condition = "AND"
+regexTarget = "line"
+paths = ["^docs/archive/rutcampustrack-kit/_work/figma-state-part-16-student-regression-after-step-pager-stop\\.json$"]
+regexes = ["^\\n?  \"fileKey\": \"VgVjQYWILLG9AC7Eh12VMk\",\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 8"
+condition = "AND"
+regexTarget = "line"
+paths = ["^docs/archive/rutcampustrack-kit/_work/figma-state-part-16-student-regression-after\\.json$"]
+regexes = ["^\\n?  \"fileKey\": \"VgVjQYWILLG9AC7Eh12VMk\",\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 6"
+condition = "AND"
+regexTarget = "line"
+paths = ["^docs/archive/rutcampustrack-kit/_work/figma-state-part-16-student-regression-before\\.json$"]
+regexes = ["^\\n?  \"fileKey\": \"VgVjQYWILLG9AC7Eh12VMk\",\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 9"
+condition = "AND"
+regexTarget = "line"
+paths = ["^docs/archive/rutcampustrack-kit/_work/figma-state-part-16-student-step-pager-root-before\\.json$"]
+regexes = ["^\\n?  \"fileKey\": \"VgVjQYWILLG9AC7Eh12VMk\",\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 12"
+condition = "AND"
+regexTarget = "line"
+paths = ["^docs/archive/rutcampustrack-kit/_work/headman-narrow/2026-08-28-1024-repair-gate\\.json$"]
+regexes = ["^\\n?  \"fileKey\": \"VgVjQYWILLG9AC7Eh12VMk\",\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 22"
+condition = "AND"
+regexTarget = "line"
+paths = ["^docs/archive/rutcampustrack-kit/_work/headman-narrow/2026-08-28-after-global-repair\\.json$"]
+regexes = ["^\\n?  \"fileKey\": \"VgVjQYWILLG9AC7Eh12VMk\",\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 35"
+condition = "AND"
+regexTarget = "line"
+paths = ["^docs/archive/rutcampustrack-kit/_work/headman-narrow/2026-08-28-before-global-repair\\.json$"]
+regexes = ["^\\n?  \"fileKey\": \"VgVjQYWILLG9AC7Eh12VMk\",\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 17,18"
+condition = "AND"
+regexTarget = "line"
+paths = ["^docs/archive/rutcampustrack-kit/_work/headman-narrow/2026-08-28-before\\.json$"]
+regexes = ["^\\n?  \"fileKey\": \"VgVjQYWILLG9AC7Eh12VMk\",\\r?$", "^\\n?      \"key\": \"564b1a2d3cd048cf927083b09a0a5ce242a95997\",\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 15"
+condition = "AND"
+regexTarget = "line"
+paths = ["^docs/archive/rutcampustrack-kit/_work/headman-narrow/2026-08-28-subjectstats-alternatives\\.json$"]
+regexes = ["^\\n?  \"fileKey\": \"VgVjQYWILLG9AC7Eh12VMk\",\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 34"
+condition = "AND"
+regexTarget = "line"
+paths = ["^docs/archive/rutcampustrack-kit/_work/headman-narrow/2026-08-28-subjectstats-gate-checkpoint\\.json$"]
+regexes = ["^\\n?  \"figmaFileKey\": \"VgVjQYWILLG9AC7Eh12VMk\",\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 10"
+condition = "AND"
+regexTarget = "line"
+paths = ["^docs/archive/rutcampustrack-kit/_work/headman-narrow/2026-08-28-subjectstats-width-ladder-applied\\.json$"]
+regexes = ["^\\n?  \"fileKey\": \"VgVjQYWILLG9AC7Eh12VMk\",\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 13"
+condition = "AND"
+regexTarget = "line"
+paths = ["^docs/archive/rutcampustrack-kit/_work/headman-narrow/2026-08-29-headman-768-before\\.json$"]
+regexes = ["^\\n?  \"fileKey\": \"VgVjQYWILLG9AC7Eh12VMk\",\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 16"
+condition = "AND"
+regexTarget = "line"
+paths = ["^docs/archive/rutcampustrack-kit/_work/headman-narrow/2026-08-29-headman-768-gate\\.json$"]
+regexes = ["^\\n?  \"fileKey\": \"VgVjQYWILLG9AC7Eh12VMk\",\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 19"
+condition = "AND"
+regexTarget = "line"
+paths = ["^docs/archive/rutcampustrack-kit/_work/headman-narrow/2026-08-29-headman-768-master-owner-r7-after\\.json$"]
+regexes = ["^\\n?  \"fileKey\": \"VgVjQYWILLG9AC7Eh12VMk\",\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 14"
+condition = "AND"
+regexTarget = "line"
+paths = ["^docs/archive/rutcampustrack-kit/_work/headman-narrow/2026-08-29-headman-768-master-owner-r7-before\\.json$"]
+regexes = ["^\\n?  \"fileKey\": \"VgVjQYWILLG9AC7Eh12VMk\",\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 24"
+condition = "AND"
+regexTarget = "line"
+paths = ["^docs/archive/rutcampustrack-kit/_work/headman-narrow/2026-08-29-lesson-activity-row-collapse-repair-after\\.json$"]
+regexes = ["^\\n?  \"fileKey\": \"VgVjQYWILLG9AC7Eh12VMk\",\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 23"
+condition = "AND"
+regexTarget = "line"
+paths = ["^docs/archive/rutcampustrack-kit/_work/headman-narrow/2026-08-30-headman-300-gate\\.json$"]
+regexes = ["^\\n?  \"fileKey\": \"VgVjQYWILLG9AC7Eh12VMk\",\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 20"
+condition = "AND"
+regexTarget = "line"
+paths = ["^docs/archive/rutcampustrack-kit/_work/headman-narrow/2026-08-30-headman-425-300-before\\.json$"]
+regexes = ["^\\n?  \"fileKey\": \"VgVjQYWILLG9AC7Eh12VMk\",\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 25"
+condition = "AND"
+regexTarget = "line"
+paths = ["^docs/archive/rutcampustrack-kit/_work/headman-narrow/2026-08-30-headman-425-gate\\.json$"]
+regexes = ["^\\n?  \"fileKey\": \"VgVjQYWILLG9AC7Eh12VMk\",\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 32"
+condition = "AND"
+regexTarget = "line"
+paths = ["^docs/archive/rutcampustrack-kit/_work/headman-narrow/2026-08-30-headman-425-package-after\\.json$"]
+regexes = ["^\\n?  \"fileKey\": \"VgVjQYWILLG9AC7Eh12VMk\",\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 28"
+condition = "AND"
+regexTarget = "line"
+paths = ["^docs/archive/rutcampustrack-kit/_work/headman-narrow/2026-08-30-headman-425-package-before\\.json$"]
+regexes = ["^\\n?  \"fileKey\": \"VgVjQYWILLG9AC7Eh12VMk\",\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 26"
+condition = "AND"
+regexTarget = "line"
+paths = ["^docs/archive/rutcampustrack-kit/_work/headman-narrow/2026-08-30-headman-600-after\\.json$"]
+regexes = ["^\\n?  \"fileKey\": \"VgVjQYWILLG9AC7Eh12VMk\",\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 21"
+condition = "AND"
+regexTarget = "line"
+paths = ["^docs/archive/rutcampustrack-kit/_work/headman-narrow/2026-08-30-headman-600-gate\\.json$"]
+regexes = ["^\\n?  \"fileKey\": \"VgVjQYWILLG9AC7Eh12VMk\",\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 27"
+condition = "AND"
+regexTarget = "line"
+paths = ["^docs/archive/rutcampustrack-kit/_work/headman-narrow/2026-08-30-headman-dark-final\\.json$"]
+regexes = ["^\\n?  \"fileKey\": \"VgVjQYWILLG9AC7Eh12VMk\",\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 29"
+condition = "AND"
+regexTarget = "line"
+paths = ["^docs/archive/rutcampustrack-kit/_work/headman-narrow/2026-08-30-manual-attendance-160-gate\\.json$"]
+regexes = ["^\\n?  \"fileKey\": \"VgVjQYWILLG9AC7Eh12VMk\",\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 30"
+condition = "AND"
+regexTarget = "line"
+paths = ["^docs/archive/rutcampustrack-kit/_work/headman-narrow/2026-08-30-manual-attendance-options\\.json$"]
+regexes = ["^\\n?  \"fileKey\": \"VgVjQYWILLG9AC7Eh12VMk\",\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 31"
+condition = "AND"
+regexTarget = "line"
+paths = ["^docs/archive/rutcampustrack-kit/_work/headman-narrow/design-system-state-part16\\.json$"]
+regexes = ["^\\n?  \"fileKey\": \"VgVjQYWILLG9AC7Eh12VMk\",\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 37"
+condition = "AND"
+regexTarget = "line"
+paths = ["^docs/archive/rutcampustrack-kit/_work/student-mobile-revision-ledger-2026-09-01\\.json$"]
+regexes = ["^\\n?  \"fileKey\": \"VgVjQYWILLG9AC7Eh12VMk\",\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 36"
+condition = "AND"
+regexTarget = "line"
+paths = ["^docs/archive/rutcampustrack-kit/_work/student-mobile-revision-ledger-2026-09-02\\.json$"]
+regexes = ["^\\n?  \"fileKey\": \"VgVjQYWILLG9AC7Eh12VMk\",\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 38"
+condition = "AND"
+regexTarget = "line"
+paths = ["^docs/archive/rutcampustrack-kit/_work/teacher-narrow/design-system-state-part16\\.json$"]
+regexes = ["^\\n?  \"fileKey\": \"VgVjQYWILLG9AC7Eh12VMk\",\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 50"
+condition = "AND"
+regexTarget = "line"
+paths = ["^docs/archive/rutcampustrack-kit/journal/state/figma-state-auth-glass\\.json$"]
+regexes = ["^\\n?  \"fileKey\": \"VgVjQYWILLG9AC7Eh12VMk\",\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 45"
+condition = "AND"
+regexTarget = "line"
+paths = ["^docs/archive/rutcampustrack-kit/journal/state/figma-state-headman-116-116-1-polish-5\\.json$"]
+regexes = ["^\\n?  \"fileKey\": \"VgVjQYWILLG9AC7Eh12VMk\",\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 44"
+condition = "AND"
+regexTarget = "line"
+paths = ["^docs/archive/rutcampustrack-kit/journal/state/figma-state-part-15-batch-1\\.json$"]
+regexes = ["^\\n?  \"fileKey\": \"VgVjQYWILLG9AC7Eh12VMk\",\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 42"
+condition = "AND"
+regexTarget = "line"
+paths = ["^docs/archive/rutcampustrack-kit/journal/state/figma-state-part-15-batch-2\\.json$"]
+regexes = ["^\\n?  \"fileKey\": \"VgVjQYWILLG9AC7Eh12VMk\",\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 41"
+condition = "AND"
+regexTarget = "line"
+paths = ["^docs/archive/rutcampustrack-kit/journal/state/figma-state-part-15-batch-3-acceptance\\.json$"]
+regexes = ["^\\n?  \"fileKey\": \"VgVjQYWILLG9AC7Eh12VMk\",\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 54"
+condition = "AND"
+regexTarget = "line"
+paths = ["^docs/archive/rutcampustrack-kit/journal/state/figma-state-part-15-batch-4-repair-gate\\.json$"]
+regexes = ["^\\n?  \"fileKey\": \"VgVjQYWILLG9AC7Eh12VMk\",\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 39"
+condition = "AND"
+regexTarget = "line"
+paths = ["^docs/archive/rutcampustrack-kit/journal/state/figma-state-part-15-batch-4-tail-closure\\.json$"]
+regexes = ["^\\n?  \"fileKey\": \"VgVjQYWILLG9AC7Eh12VMk\",\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 40"
+condition = "AND"
+regexTarget = "line"
+paths = ["^docs/archive/rutcampustrack-kit/journal/state/mobile-zero-baseline-2026-09-01\\.json$"]
+regexes = ["^\\n?  \"fileKey\": \"VgVjQYWILLG9AC7Eh12VMk\",\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 46"
+condition = "AND"
+regexTarget = "line"
+paths = ["^docs/archive/rutcampustrack-kit/journal/state/part-16-admin-narrow-before-2026-08-31\\.json$"]
+regexes = ["^\\n?  \"fileKey\": \"VgVjQYWILLG9AC7Eh12VMk\",\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 53"
+condition = "AND"
+regexTarget = "line"
+paths = ["^docs/archive/rutcampustrack-kit/journal/state/part-16-admin-narrow-build-checkpoint-bank-1024-stop-2026-08-31\\.json$"]
+regexes = ["^\\n?  \"fileKey\": \"VgVjQYWILLG9AC7Eh12VMk\",\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 48"
+condition = "AND"
+regexTarget = "line"
+paths = ["^docs/archive/rutcampustrack-kit/journal/state/part-16-admin-narrow-build-checkpoint-g11-stop-2026-08-31\\.json$"]
+regexes = ["^\\n?  \"fileKey\": \"VgVjQYWILLG9AC7Eh12VMk\",\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 43"
+condition = "AND"
+regexTarget = "line"
+paths = ["^docs/archive/rutcampustrack-kit/journal/state/part-16-admin-narrow-build-checkpoint-g3-2026-08-31\\.json$"]
+regexes = ["^\\n?  \"fileKey\": \"VgVjQYWILLG9AC7Eh12VMk\",\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 52"
+condition = "AND"
+regexTarget = "line"
+paths = ["^docs/archive/rutcampustrack-kit/journal/state/part-16-admin-narrow-build-checkpoint-g4-2026-08-31\\.json$"]
+regexes = ["^\\n?  \"fileKey\": \"VgVjQYWILLG9AC7Eh12VMk\",\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 49"
+condition = "AND"
+regexTarget = "line"
+paths = ["^docs/archive/rutcampustrack-kit/journal/state/part-16-admin-narrow-build-checkpoint-g5-2026-08-31\\.json$"]
+regexes = ["^\\n?  \"fileKey\": \"VgVjQYWILLG9AC7Eh12VMk\",\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 47"
+condition = "AND"
+regexTarget = "line"
+paths = ["^docs/archive/rutcampustrack-kit/journal/state/part-16-admin-narrow-build-checkpoint-g9-2026-08-31\\.json$"]
+regexes = ["^\\n?  \"fileKey\": \"VgVjQYWILLG9AC7Eh12VMk\",\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 55"
+condition = "AND"
+regexTarget = "line"
+paths = ["^docs/archive/rutcampustrack-kit/journal/state/part-16-admin-narrow-final-2026-08-31\\.json$"]
+regexes = ["^\\n?  \"fileKey\": \"VgVjQYWILLG9AC7Eh12VMk\",\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 51"
+condition = "AND"
+regexTarget = "line"
+paths = ["^docs/archive/rutcampustrack-kit/journal/state/part-16-admin-narrow-final-gates-2026-08-31\\.json$"]
+regexes = ["^\\n?  \"fileKey\": \"VgVjQYWILLG9AC7Eh12VMk\",\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 56"
+condition = "AND"
+regexTarget = "line"
+paths = ["^docs/archive/rutcampustrack-kit/journal/state/part-16-auth-narrow-widths\\.json$"]
+regexes = ["^\\n?  \"fileKey\": \"VgVjQYWILLG9AC7Eh12VMk\",\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 57"
+condition = "AND"
+regexTarget = "line"
+paths = ["^docs/archive/rutcampustrack-kit/journal/state/part-16-definitionlist-preflight-2026-08-31\\.json$"]
+regexes = ["^\\n?  \"fileKey\": \"VgVjQYWILLG9AC7Eh12VMk\",\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 58"
+condition = "AND"
+regexTarget = "line"
+paths = ["^docs/archive/rutcampustrack-kit/journal/state/part-16-formfield-label-before-source\\.json$"]
+regexes = ["^\\n?  \"fileKey\": \"VgVjQYWILLG9AC7Eh12VMk\",\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 60"
+condition = "AND"
+regexTarget = "line"
+paths = ["^docs/archive/rutcampustrack-kit/journal/state/part-16-formfield-label-related-masters-audit\\.json$"]
+regexes = ["^\\n?  \"fileKey\": \"VgVjQYWILLG9AC7Eh12VMk\",\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 59"
+condition = "AND"
+regexTarget = "line"
+paths = ["^docs/archive/rutcampustrack-kit/journal/state/part-16-headman-light-bank-r7-after-2026-08-31\\.json$"]
+regexes = ["^\\n?  \"fileKey\": \"VgVjQYWILLG9AC7Eh12VMk\",\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 61"
+condition = "AND"
+regexTarget = "line"
+paths = ["^docs/archive/rutcampustrack-kit/journal/state/part-16-headman-light-bank-r7-before-2026-08-31\\.json$"]
+regexes = ["^\\n?  \"fileKey\": \"VgVjQYWILLG9AC7Eh12VMk\",\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 69"
+condition = "AND"
+regexTarget = "line"
+paths = ["^docs/archive/rutcampustrack-kit/journal/state/part-16-headman-narrow-after-global-repair\\.json$"]
+regexes = ["^\\n?  \"fileKey\": \"VgVjQYWILLG9AC7Eh12VMk\",\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 99"
+condition = "AND"
+regexTarget = "line"
+paths = ["^docs/archive/rutcampustrack-kit/journal/state/part-16-headman-narrow-before-global-repair\\.json$"]
+regexes = ["^\\n?  \"fileKey\": \"VgVjQYWILLG9AC7Eh12VMk\",\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 62"
+condition = "AND"
+regexTarget = "line"
+paths = ["^docs/archive/rutcampustrack-kit/journal/state/part-16-headman-narrow-global-repair-closure\\.json$"]
+regexes = ["^\\n?  \"fileKey\": \"VgVjQYWILLG9AC7Eh12VMk\",\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 65"
+condition = "AND"
+regexTarget = "line"
+paths = ["^docs/archive/rutcampustrack-kit/journal/state/part-16-metricvalue-after-2026-08-31\\.json$"]
+regexes = ["^\\n?  \"fileKey\": \"VgVjQYWILLG9AC7Eh12VMk\",\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 64"
+condition = "AND"
+regexTarget = "line"
+paths = ["^docs/archive/rutcampustrack-kit/journal/state/part-16-metricvalue-before-2026-08-31\\.json$"]
+regexes = ["^\\n?  \"fileKey\": \"VgVjQYWILLG9AC7Eh12VMk\",\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 63"
+condition = "AND"
+regexTarget = "line"
+paths = ["^docs/archive/rutcampustrack-kit/journal/state/part-16-teacher-narrow-before\\.json$"]
+regexes = ["^\\n?  \"fileKey\": \"VgVjQYWILLG9AC7Eh12VMk\",\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 67"
+condition = "AND"
+regexTarget = "line"
+paths = ["^docs/archive/rutcampustrack-kit/journal/state/part-16-teacher-narrow-final-2026-08-31\\.json$"]
+regexes = ["^\\n?  \"fileKey\": \"VgVjQYWILLG9AC7Eh12VMk\",\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 72"
+condition = "AND"
+regexTarget = "line"
+paths = ["^docs/archive/rutcampustrack-kit/journal/state/part-17-mobile-foundations-after-2026-09-01\\.json$"]
+regexes = ["^\\n?  \"fileKey\": \"VgVjQYWILLG9AC7Eh12VMk\",\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 70"
+condition = "AND"
+regexTarget = "line"
+paths = ["^docs/archive/rutcampustrack-kit/journal/state/part-17-mobile-foundations-repair-after-2026-09-01\\.json$"]
+regexes = ["^\\n?  \"fileKey\": \"VgVjQYWILLG9AC7Eh12VMk\",\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 68"
+condition = "AND"
+regexTarget = "line"
+paths = ["^docs/archive/rutcampustrack-kit/journal/state/part-17-mobile-foundations-run-2026-09-01\\.json$"]
+regexes = ["^\\n?  \"fileKey\": \"VgVjQYWILLG9AC7Eh12VMk\",\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 73"
+condition = "AND"
+regexTarget = "line"
+paths = ["^docs/archive/rutcampustrack-kit/journal/state/part-17-student-mobile-after-2026-09-01\\.json$"]
+regexes = ["^\\n?  \"fileKey\": \"VgVjQYWILLG9AC7Eh12VMk\",\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 66"
+condition = "AND"
+regexTarget = "line"
+paths = ["^docs/archive/rutcampustrack-kit/journal/state/part-17-student-mobile-bank-after-2026-09-01\\.json$"]
+regexes = ["^\\n?  \"fileKey\": \"VgVjQYWILLG9AC7Eh12VMk\",\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 71"
+condition = "AND"
+regexTarget = "line"
+paths = ["^docs/archive/rutcampustrack-kit/journal/state/part-17-student-mobile-bank-before-2026-09-01\\.json$"]
+regexes = ["^\\n?  \"fileKey\": \"VgVjQYWILLG9AC7Eh12VMk\",\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 74"
+condition = "AND"
+regexTarget = "line"
+paths = ["^docs/archive/rutcampustrack-kit/journal/state/part-17-student-mobile-before-2026-09-01\\.json$"]
+regexes = ["^\\n?  \"fileKey\": \"VgVjQYWILLG9AC7Eh12VMk\",\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 78"
+condition = "AND"
+regexTarget = "line"
+paths = ["^docs/archive/rutcampustrack-kit/journal/state/part-17-student-mobile-revision-after-2026-09-02\\.json$"]
+regexes = ["^\\n?  \"fileKey\": \"VgVjQYWILLG9AC7Eh12VMk\",\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 76"
+condition = "AND"
+regexTarget = "line"
+paths = ["^docs/archive/rutcampustrack-kit/journal/state/part-17-student-mobile-revision-final-2026-09-02\\.json$"]
+regexes = ["^\\n?  \"fileKey\": \"VgVjQYWILLG9AC7Eh12VMk\",\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 79"
+condition = "AND"
+regexTarget = "line"
+paths = ["^docs/archive/rutcampustrack-kit/journal/state/part-18-headman-mobile-after-2026-09-02\\.json$"]
+regexes = ["^\\n?  \"fileKey\": \"VgVjQYWILLG9AC7Eh12VMk\",\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 75"
+condition = "AND"
+regexTarget = "line"
+paths = ["^docs/archive/rutcampustrack-kit/journal/state/part-18-headman-mobile-bank-after-2026-09-02\\.json$"]
+regexes = ["^\\n?  \"fileKey\": \"VgVjQYWILLG9AC7Eh12VMk\",\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 80"
+condition = "AND"
+regexTarget = "line"
+paths = ["^docs/archive/rutcampustrack-kit/journal/state/part-18-headman-mobile-bank-before-2026-09-02\\.json$"]
+regexes = ["^\\n?  \"fileKey\": \"VgVjQYWILLG9AC7Eh12VMk\",\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 88"
+condition = "AND"
+regexTarget = "line"
+paths = ["^docs/archive/rutcampustrack-kit/journal/state/part-18-headman-mobile-bank-pause-2026-09-02\\.json$"]
+regexes = ["^\\n?  \"fileKey\": \"VgVjQYWILLG9AC7Eh12VMk\",\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 81"
+condition = "AND"
+regexTarget = "line"
+paths = ["^docs/archive/rutcampustrack-kit/journal/state/part-18-headman-mobile-before-2026-09-02\\.json$"]
+regexes = ["^\\n?  \"fileKey\": \"VgVjQYWILLG9AC7Eh12VMk\",\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 84"
+condition = "AND"
+regexTarget = "line"
+paths = ["^docs/archive/rutcampustrack-kit/journal/state/part-19-headman-mobile-revision-after-2026-09-02\\.json$"]
+regexes = ["^\\n?  \"fileKey\": \"VgVjQYWILLG9AC7Eh12VMk\",\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 90"
+condition = "AND"
+regexTarget = "line"
+paths = ["^docs/archive/rutcampustrack-kit/journal/state/part-19-headman-mobile-revision-before-2026-09-02\\.json$"]
+regexes = ["^\\n?  \"fileKey\": \"VgVjQYWILLG9AC7Eh12VMk\",\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 85"
+condition = "AND"
+regexTarget = "line"
+paths = ["^docs/archive/rutcampustrack-kit/journal/state/part-20-headman-mobile-polish-after-2026-09-03\\.json$"]
+regexes = ["^\\n?  \"fileKey\": \"VgVjQYWILLG9AC7Eh12VMk\",\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 96"
+condition = "AND"
+regexTarget = "line"
+paths = ["^docs/archive/rutcampustrack-kit/journal/state/part-20-headman-mobile-polish-before-2026-09-03\\.json$"]
+regexes = ["^\\n?  \"fileKey\": \"VgVjQYWILLG9AC7Eh12VMk\",\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 86"
+condition = "AND"
+regexTarget = "line"
+paths = ["^docs/archive/rutcampustrack-kit/journal/state/part-21-headman-mobile-polish-2-after-2026-09-04\\.json$"]
+regexes = ["^\\n?  \"fileKey\": \"VgVjQYWILLG9AC7Eh12VMk\",\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 93"
+condition = "AND"
+regexTarget = "line"
+paths = ["^docs/archive/rutcampustrack-kit/journal/state/part-21-headman-mobile-polish-2-before-2026-09-04\\.json$"]
+regexes = ["^\\n?  \"fileKey\": \"VgVjQYWILLG9AC7Eh12VMk\",\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 83"
+condition = "AND"
+regexTarget = "line"
+paths = ["^docs/archive/rutcampustrack-kit/journal/state/part-22-23-mobile-transport-ledger-2026-09-04\\.json$"]
+regexes = ["^\\n?  \"fileKey\": \"VgVjQYWILLG9AC7Eh12VMk\",\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 92"
+condition = "AND"
+regexTarget = "line"
+paths = ["^docs/archive/rutcampustrack-kit/journal/state/part-22-mobile-admin-after-2026-09-04\\.json$"]
+regexes = ["^\\n?  \"fileKey\": \"VgVjQYWILLG9AC7Eh12VMk\",\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 95"
+condition = "AND"
+regexTarget = "line"
+paths = ["^docs/archive/rutcampustrack-kit/journal/state/part-22-mobile-admin-before-2026-09-04\\.json$"]
+regexes = ["^\\n?  \"fileKey\": \"VgVjQYWILLG9AC7Eh12VMk\",\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 91"
+condition = "AND"
+regexTarget = "line"
+paths = ["^docs/archive/rutcampustrack-kit/journal/state/part-23-mobile-teacher-after-2026-09-04\\.json$"]
+regexes = ["^\\n?  \"fileKey\": \"VgVjQYWILLG9AC7Eh12VMk\",\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 94"
+condition = "AND"
+regexTarget = "line"
+paths = ["^docs/archive/rutcampustrack-kit/journal/state/part-23-mobile-teacher-before-2026-09-04\\.json$"]
+regexes = ["^\\n?  \"fileKey\": \"VgVjQYWILLG9AC7Eh12VMk\",\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 82"
+condition = "AND"
+regexTarget = "line"
+paths = ["^docs/archive/rutcampustrack-kit/journal/state/part-24-admin-teacher-mobile-after-2026-09-05\\.json$"]
+regexes = ["^\\n?  \"fileKey\": \"VgVjQYWILLG9AC7Eh12VMk\",\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 87"
+condition = "AND"
+regexTarget = "line"
+paths = ["^docs/archive/rutcampustrack-kit/journal/state/part-24-admin-teacher-mobile-external-delta-2026-09-05\\.json$"]
+regexes = ["^\\n?  \"fileKey\": \"VgVjQYWILLG9AC7Eh12VMk\",\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 77"
+condition = "AND"
+regexTarget = "line"
+paths = ["^docs/archive/rutcampustrack-kit/journal/state/part-24-admin-teacher-mobile-pause-2026-09-05\\.json$"]
+regexes = ["^\\n?  \"fileKey\": \"VgVjQYWILLG9AC7Eh12VMk\",\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 89"
+condition = "AND"
+regexTarget = "line"
+paths = ["^docs/archive/rutcampustrack-kit/journal/state/part-25-admin-mobile-owner-corrections-2026-09-05\\.json$"]
+regexes = ["^\\n?  \"fileKey\": \"VgVjQYWILLG9AC7Eh12VMk\",\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 97"
+condition = "AND"
+regexTarget = "line"
+paths = ["^docs/archive/rutcampustrack-kit/journal/state/part-25-admin-mobile-owner-corrections-after-2026-09-05\\.json$"]
+regexes = ["^\\n?  \"fileKey\": \"VgVjQYWILLG9AC7Eh12VMk\",\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 98"
+condition = "AND"
+regexTarget = "line"
+paths = ["^docs/archive/rutcampustrack-kit/journal/state/part-26-teacher-profile-role-entry-and-role-gradient-after-2026-09-05\\.json$"]
+regexes = ["^\\n?  \"fileKey\": \"VgVjQYWILLG9AC7Eh12VMk\",\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 143,144"
+condition = "AND"
+regexTarget = "line"
+paths = ["^docs/design/packets/JS-STUDENT-01/manifest\\.json$"]
+regexes = ["^\\n?    \"fileKey\": \"VgVjQYWILLG9AC7Eh12VMk\",\\r?$", "^\\n?    \"docs/design/tokens-v2\\.json\": \"53c5f074e398cc045538df0f3a119e58ab0173b8923f93d70a8546c04ca6a779\"\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 145"
+condition = "AND"
+regexTarget = "line"
+paths = ["^docs/design/packets/JS-STUDENT-01/token-mapping\\.json$"]
+regexes = ["^\\n?      \"docs/design/tokens-v2\\.json\": \"53c5f074e398cc045538df0f3a119e58ab0173b8923f93d70a8546c04ca6a779\"\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 151"
+condition = "AND"
+regexTarget = "line"
+paths = ["^docs/report-before-v0\\.0\\.0/13-infra-docker-ci\\.md$"]
+regexes = ["^\\n?- \\*\\*\u0427\u0442\u043e:\\*\\* Prometheus \u0441\u043a\u0440\u0435\u0439\u043f\u0438\u0442 `auth-service:9090/actuator/prometheus` \u0431\u0435\u0437 \u0430\u0432\u0442\u043e\u0440\u0438\u0437\u0430\u0446\u0438\u0438\\. \u041b\u044e\u0431\u043e\u0439 \u043a\u043e\u043d\u0442\u0435\u0439\u043d\u0435\u0440 \u0432 `private_net` \u043c\u043e\u0436\u0435\u0442 \u0447\u0438\u0442\u0430\u0442\u044c \u043c\u0435\u0442\u0440\u0438\u043a\u0438 \\(\u0432\u043a\u043b\u044e\u0447\u0430\u044f rate OTP-\u043e\u0448\u0438\u0431\u043e\u043a, rate login-\u043f\u043e\u043f\u044b\u0442\u043e\u043a \u2014 \u043f\u043e \u043d\u0438\u043c \u043c\u043e\u0436\u043d\u043e \u0441\u0443\u0434\u0438\u0442\u044c \u043e brute force\\)\\.\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 100"
+condition = "AND"
+regexTarget = "line"
+paths = ["^frontends/mobile-core/src/dev/NotificationsReview\\.vue$"]
+regexes = ["^\\n?const api: NotificationsV2Api = \\{\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 139"
+condition = "AND"
+regexTarget = "line"
+paths = ["^frontends/mobile-core/src/features/admin-semester/admin-semester-client\\.test\\.ts$"]
+regexes = ["^\\n?        key: 'cb087e19-b5ae-44cb-9444-c685c7f9a3d2',\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 140,141"
+condition = "AND"
+regexTarget = "line"
+paths = ["^frontends/mobile-core/src/features/headman-journal/headman-journal-client\\.test\\.ts$"]
+regexes = ["^\\n?      requestKey: '2507aed5-9905-4b02-a91f-bf98799e18b6',\\r?$", "^\\n?      requestKey: '2507aed5-9905-4b02-a91f-bf98799e18b6',\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 107,110,111"
+condition = "AND"
+regexTarget = "line"
+paths = ["^frontends/mobile-core/src/features/homework/headman-homework-client\\.test\\.ts$"]
+regexes = ["^\\n?    const otherKey = '3bbe4b81-42e1-4bcf-a963-41da6f379c02'\\r?$", "^\\n?const key = '97eb9070-a49d-45f9-9e72-b9d8fe06eab9'\\r?$", "^\\n?      \\.mockResolvedValueOnce\\(Response\\.json\\(\\{ homeworkId: '91', bindingId: '501', requestKey: '3bbe4b81-42e1-4bcf-a963-41da6f379c02', state: 'PENDING' \\}, \\{ status: 202 \\}\\)\\)\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 101"
+condition = "AND"
+regexTarget = "line"
+paths = ["^frontends/mobile-core/src/features/notifications/NotificationsScreen\\.vue$"]
+regexes = ["^\\n?  api: NotificationsV2Api\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 102"
+condition = "AND"
+regexTarget = "line"
+paths = ["^frontends/pwa-vue/tests/sw-migration\\.test\\.mjs$"]
+regexes = ["^\\n?  assert\\.deepEqual\\(w\\.retired\\.sort\\(\\), \\['headman-api-cache-v1', 'rct-student-pwa-v2-old', 'workbox-precache-v2-https://campus\\.example/app/'\\]\\.sort\\(\\)\\)\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 153"
+condition = "AND"
+regexTarget = "line"
+paths = ["^frontends/pwa/src/features/notifications/NotificationCenter\\.tsx$"]
+regexes = ["^\\n?const STORAGE_KEY = 'rct\\.pwa\\.notifications\\.v1'\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 152"
+condition = "AND"
+regexTarget = "line"
+paths = ["^frontends/pwa/src/features/notifications/notificationPrefs\\.ts$"]
+regexes = ["^\\n?const STORAGE_KEY = 'rct\\.pwa\\.notif-prefs\\.v1'\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 146,147"
+condition = "AND"
+regexTarget = "line"
+paths = ["^frontends/web-panel/src/app/core/notifications/notification-prefs\\.service\\.ts$"]
+regexes = ["^\\n?const STORAGE_KEY = 'rct\\.web\\.notif-prefs\\.v1';\\r?$", "^\\n?const STORAGE_KEY = 'rct\\.web\\.notif-prefs\\.v1';\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 4"
+condition = "AND"
+regexTarget = "line"
+paths = ["^frontends/web-vue/src/features/admin/group-deletion-state\\.test\\.ts$"]
+regexes = ["^\\n?const key = 'd16d6bf8-f57b-4ab5-aa43-05f3c1d7e9c0'\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 1"
+condition = "AND"
+regexTarget = "line"
+paths = ["^scripts/local_e2e_async\\.py$"]
+regexes = ["^\\n?                require\\(cohort in \\(project, value\\['target_project'\\]\\) and key in services, 'RETAINED20_SAVED_FOREIGN'\\)\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 3"
+condition = "AND"
+regexTarget = "line"
+paths = ["^tests/e2e/pr3-local/runtime/native-cohort\\.cjs$"]
+regexes = ["^\\n?      actor\\.lastAuthIntent\\.state = 'ACKNOWLEDGED_204';\\r?$"]
+
+[[rules.allowlists]]
+description = "Verified inert source contexts 2"
+condition = "AND"
+regexTarget = "line"
+paths = ["^tests/e2e/pr3-local/source-contract\\.json$"]
+regexes = ["^\\n?      \"fixture-api\\.cjs\": \"9fd7a76f7614f08bd6555cb0a4c56eaa360c91a52d59bfec621ebd9ef579308e\",\\r?$"]
+
 # Inert policy data for the existing Security step; no native allowlist is created
 # until every occurrence in the scanned file history has a recognized context.
 [rct_metadata]

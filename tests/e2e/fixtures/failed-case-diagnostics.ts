@@ -28,7 +28,7 @@ const stages = {
   HISTORICAL_MARK: ['httpStatus', 'expectedStatus', 'expectedRevisionPresent'],
   ADMIN_ACTIVITY: ['httpStatus', 'jsonDecoded', 'activityReady', 'periodMatches', 'bucketMatches', 'metricStateKnown', 'geoCountsKnown', 'metricStateMatches', 'metricValueMatches', 'metricFractionMatches', 'metricDeltaMatches', 'selectedPeriodMatches'],
   HOMEWORK_MONTH: ['httpStatus', 'selectedDatePresent', 'fromContainsSelected', 'toContainsSelected', 'fromInsideSemester', 'toInsideSemester', 'semesterIdMatches', 'calendarReady', 'selectedDateEnabled'],
-  TEACHER_SHORTCUT: ['requestObserved', 'requestFailed', 'httpStatus', 'semesterMatches', 'groupMatches', 'subjectMatches', 'lessonTypeMatches', 'pastOnlyMatches', 'pageMatches', 'pageSizeMatches', 'responseObserved', 'journalVisible', 'shortcutVisible'],
+  TEACHER_SHORTCUT: ['requestObserved', 'requestFailed', 'httpStatus', 'semesterMatches', 'groupMatches', 'subjectMatches', 'lessonTypeMatches', 'pastOnlyMatches', 'pageMatches', 'pageSizeMatches', 'responseObserved', 'journalVisible', 'shortcutVisible', 'clickStarted', 'clickCompleted', 'clickPending', 'clickErrorClass', 'clickSettledAfterFailure', 'clickCompletedAfterFailure', 'beforeCount', 'beforeVisible', 'beforeEnabled', 'beforeReceivesEvents', 'afterCount', 'afterVisible', 'afterEnabled', 'afterReceivesEvents', 'homeVisible', 'navigationDetail', 'activeTeacherRole'],
   SEMESTER_METADATA_ISOLATION: ['semesterIdEqual', 'digestEqual', 'stateVersionEqual', 'priorStateEqual', 'countsEqual', 'scheduleTemplatesEqual', 'oneOffLessonsEqual', 'lessonsEqual', 'assignmentsEqual', 'homeworksEqual', 'attendanceMarksEqual', 'studentRequestsEqual'],
   ADMIN_RIGHTS_MODE: ['limitedCount', 'fullCount', 'limitedChecked', 'fullChecked'],
   PROFILE_THEME: ['selectedTheme', 'appearanceTheme', 'htmlTheme', 'profileTheme'],
@@ -60,6 +60,8 @@ function closed(value: unknown): FirstFailureObservation | undefined {
       const item = facts[key];
       let valid: boolean;
       if (key === 'knownPermissions' || key === 'knownExpectedPermissions') valid = Array.isArray(item) && item.length <= 5 && new Set(item).size === item.length && item.every(code => typeof code === 'string' && permissions.includes(code));
+      else if (key === 'beforeCount' || key === 'afterCount') valid = item === null || Number.isSafeInteger(item) && (item as number) >= 0 && (item as number) <= 10000;
+      else if (key === 'clickErrorClass') valid = typeof item === 'string' && ['NONE', 'TIMEOUT', 'ERROR', 'TYPE_ERROR', 'UNKNOWN'].includes(item);
       else if (key.endsWith('Count') || key === 'count') valid = Number.isSafeInteger(item) && (item as number) >= 0 && (item as number) <= 10000;
       else if (['httpStatus', 'loginStatus', 'sessionStatus'].includes(key)) valid = item === null || Number.isInteger(item) && (item as number) >= 100 && (item as number) <= 599;
       else if (key.endsWith('Theme')) valid = typeof item === 'string' && themes.includes(item);
@@ -159,4 +161,42 @@ export function helperRequestState(value: unknown, expectedPermissions: readonly
     unknownExpectedPermissions: expectedArray && expected.some(code => typeof code !== 'string' || !permissions.includes(code)),
     expectedPermissionsEqual: expectedArray && expected.length === expectedPermissions.length
       && new Set(expected).size === expected.length && [...expected].sort().every((code, index) => code === [...expectedPermissions].sort()[index]) };
+}
+
+/** Closed class only: never read or export exception message/stack or invoke a name getter. */
+export function teacherShortcutClickErrorClass(error: unknown): 'TIMEOUT' | 'ERROR' | 'TYPE_ERROR' | 'UNKNOWN' {
+  try {
+    const name = error && typeof error === 'object' ? Object.getOwnPropertyDescriptor(error, 'name')?.value : undefined;
+    if (name === 'TimeoutError') return 'TIMEOUT';
+    if (error instanceof TypeError) return 'TYPE_ERROR';
+    if (error instanceof Error) return 'ERROR';
+  } catch { /* A diagnostic class cannot replace the primary failure. */ }
+  return 'UNKNOWN';
+}
+
+/** Read-only, bounded witnesses of the actual teacher owner and internal route surface. */
+export async function teacherShortcutState(page: Page, shortcut: Locator) {
+  const unavailable = { count: null as number | null, visible: null as boolean | null,
+    enabled: null as boolean | null, receivesEvents: null as boolean | null,
+    journalVisible: null as boolean | null, shortcutVisible: null as boolean | null,
+    homeVisible: null as boolean | null, navigationDetail: null as boolean | null,
+    activeTeacherRole: null as boolean | null };
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  try {
+    return await Promise.race([
+      (async () => {
+        const [control, journalVisible, shortcutVisible, homeVisible, navigationDetail, activeTeacherRole] = await Promise.all([
+          controlState(shortcut), page.locator('.teacher-journal').isVisible(), shortcut.isVisible(),
+          page.locator('.teacher-home').isVisible(),
+          page.locator('.mobile-shell[data-surface="detail"] .teacher-feature-owner').isVisible(),
+          page.locator('.teacher-feature-owner').isVisible(),
+        ]);
+        return { count: control.count, visible: control.visible, enabled: control.enabled,
+          receivesEvents: control.receivesEvents, journalVisible, shortcutVisible, homeVisible,
+          navigationDetail, activeTeacherRole };
+      })(),
+      new Promise<typeof unavailable>(resolve => { timer = setTimeout(() => resolve(unavailable), 300); }),
+    ]);
+  } catch { return unavailable; }
+  finally { if (timer) clearTimeout(timer); }
 }

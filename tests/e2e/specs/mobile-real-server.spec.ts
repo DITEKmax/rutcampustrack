@@ -1,4 +1,4 @@
-import { failureBoundary, handledWaiter, retainFirstFailure } from '../fixtures/failed-case-diagnostics';
+import { failureBoundary, handledWaiter, retainFirstFailure, teacherShortcutClickErrorClass, teacherShortcutState } from '../fixtures/failed-case-diagnostics';
 import { diagnosticCase } from '../fixtures/diagnostic-events';
 import { randomBytes, randomUUID, timingSafeEqual } from 'node:crypto';
 import { isDeepStrictEqual } from 'node:util';
@@ -1986,6 +1986,7 @@ test.describe('Current Vue roles with real synthetic domain @real-mobile', () =>
       await expect(shortcut).toHaveCount(1);
       await expect(shortcut).toContainText(groupName);
       await expect(shortcut).toContainText('Лекция');
+      const beforeShortcut = await teacherShortcutState(page, shortcut);
       const shortcutFacts = {
         requestObserved: false,
         requestFailed: false,
@@ -2000,6 +2001,23 @@ test.describe('Current Vue roles with real synthetic domain @real-mobile', () =>
         responseObserved: false,
         journalVisible: null as boolean | null,
         shortcutVisible: null as boolean | null,
+        clickStarted: false,
+        clickCompleted: false,
+        clickPending: false,
+        clickErrorClass: 'NONE' as 'NONE' | ReturnType<typeof teacherShortcutClickErrorClass>,
+        clickSettledAfterFailure: null as boolean | null,
+        clickCompletedAfterFailure: null as boolean | null,
+        beforeCount: beforeShortcut.count,
+        beforeVisible: beforeShortcut.visible,
+        beforeEnabled: beforeShortcut.enabled,
+        beforeReceivesEvents: beforeShortcut.receivesEvents,
+        afterCount: null as number | null,
+        afterVisible: null as boolean | null,
+        afterEnabled: null as boolean | null,
+        afterReceivesEvents: null as boolean | null,
+        homeVisible: null as boolean | null,
+        navigationDetail: null as boolean | null,
+        activeTeacherRole: null as boolean | null,
       };
       const shortcutQueryMatches = (url: URL): boolean => {
         const predicates = {
@@ -2028,23 +2046,47 @@ test.describe('Current Vue roles with real synthetic domain @real-mobile', () =>
       page.on('request', observeShortcutRequest);
       page.on('requestfailed', observeShortcutFailure);
       let shortcutResponse: Response;
+      let shortcutClick: Promise<void> | undefined;
       try {
-        [shortcutResponse] = await Promise.all([
-          page.waitForResponse((response) => {
+        const responseWaiter = handledWaiter(page.waitForResponse((response) => {
             const url = new URL(response.url());
             if (response.request().method() !== 'GET' || url.pathname !== '/api/v1/teacher/journal') return false;
             shortcutFacts.responseObserved = true;
             shortcutFacts.httpStatus = response.status();
             const matches = shortcutQueryMatches(url);
             return matches;
-          }),
-          shortcut.click(),
-        ]);
+          }));
+        shortcutFacts.clickStarted = true;
+        shortcutFacts.clickPending = true;
+        // Same 10s action budget as the real-mobile config. This also bounds draining
+        // the existing click if its response waiter rejects first; never retry it.
+        shortcutClick = handledWaiter(shortcut.click({ timeout: 10_000 }).then(() => {
+          shortcutFacts.clickCompleted = true;
+          shortcutFacts.clickPending = false;
+        }, error => {
+          shortcutFacts.clickPending = false;
+          shortcutFacts.clickErrorClass = teacherShortcutClickErrorClass(error);
+          throw error;
+        }));
+        [shortcutResponse] = await Promise.all([responseWaiter, shortcutClick]);
       } catch (error) {
-        // Retain only closed predicates; neither query values nor server content leave the private run.
-        shortcutFacts.journalVisible = await page.locator('.teacher-journal').isVisible().catch(() => null);
-        shortcutFacts.shortcutVisible = await shortcut.isVisible().catch(() => null);
-        retainFirstFailure(info, 'TEACHER_SHORTCUT', shortcutFacts);
+        // Freeze click state at the primary boundary before bounded read-only diagnostics.
+        const failureFacts = { ...shortcutFacts };
+        const afterShortcut = await teacherShortcutState(page, shortcut);
+        Object.assign(failureFacts, {
+          afterCount: afterShortcut.count, afterVisible: afterShortcut.visible,
+          afterEnabled: afterShortcut.enabled, afterReceivesEvents: afterShortcut.receivesEvents,
+          journalVisible: afterShortcut.journalVisible, shortcutVisible: afterShortcut.shortcutVisible,
+          homeVisible: afterShortcut.homeVisible, navigationDetail: afterShortcut.navigationDetail,
+          activeTeacherRole: afterShortcut.activeTeacherRole,
+        });
+        // Playwright click has no per-call cancellation. Settle the already bounded
+        // action before dataset teardown, preserving this exact primary exception.
+        if (shortcutClick) await shortcutClick.catch(() => {});
+        failureFacts.clickSettledAfterFailure = !shortcutFacts.clickPending;
+        failureFacts.clickCompletedAfterFailure = shortcutFacts.clickCompleted;
+        failureFacts.clickErrorClass = shortcutFacts.clickErrorClass;
+        retainFirstFailure(info, 'TEACHER_SHORTCUT', failureFacts);
         throw error;
       } finally {
         page.off('request', observeShortcutRequest);

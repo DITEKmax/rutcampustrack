@@ -28,6 +28,11 @@ const cases = [
     semesterMatches: true, groupMatches: true, subjectMatches: false,
     lessonTypeMatches: true, pastOnlyMatches: true, pageMatches: true, pageSizeMatches: true,
     responseObserved: false, journalVisible: true, shortcutVisible: false,
+    clickStarted: true, clickCompleted: false, clickPending: false, clickErrorClass: 'TIMEOUT',
+    clickSettledAfterFailure: true, clickCompletedAfterFailure: false,
+    beforeCount: 1, beforeVisible: true, beforeEnabled: true, beforeReceivesEvents: false,
+    afterCount: null, afterVisible: null, afterEnabled: null, afterReceivesEvents: null,
+    homeVisible: false, navigationDetail: true, activeTeacherRole: true,
   }],
   ['SEMESTER_METADATA', 'SEMESTER_METADATA_ISOLATION', {
     semesterIdEqual: true, digestEqual: false, stateVersionEqual: true, priorStateEqual: true,

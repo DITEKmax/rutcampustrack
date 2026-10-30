@@ -6,6 +6,7 @@ All child output is private; only closed phase/status receipts reach the termina
 
 import argparse
 import datetime
+import errno
 import fcntl
 import hashlib
 import ipaddress
@@ -1663,6 +1664,52 @@ def stopped_history(ids, *, own_nonce=None, previous=None):
     return stopped_history_rows(ids, rows, own_nonce=own_nonce, previous=previous)
 
 
+
+def failure_diagnostic(error, *, operation="UNKNOWN"):
+    """Closed safe fields only; the complete traceback belongs in a private log."""
+    frame = None
+    current = error.__traceback__
+    allowed = {str(ROOT / "scripts/local_e2e_async.py"): "scripts/local_e2e_async.py",
+               str(ROOT / "scripts/local-release/browser-replay.py"): "scripts/local-release/browser-replay.py"}
+    while current is not None:
+        code = current.tb_frame.f_code
+        if code.co_filename in allowed:
+            frame = {"file": allowed[code.co_filename], "function": code.co_name,
+                     "line": current.tb_lineno}
+        current = current.tb_next
+    port = getattr(error, "rct_port", None)
+    probe = getattr(error, "rct_operation", None) == "PORT_BIND_PROBE" and port in (8443, 8088)
+    return {"errno": error.errno if isinstance(error, OSError) and error.errno in errno.errorcode else None,
+            "errnoName": errno.errorcode.get(error.errno) if isinstance(error, OSError) else None,
+            "operation": "PORT_BIND_PROBE" if probe else operation,
+            "port": port if probe else None, "sourceFrame": frame}
+
+
+def project_resource_absence(project):
+    """Three fresh read-only exact-project queries; any unknown observation raises."""
+    require(re.fullmatch(r"rct-local-stage17-[0-9a-f]{12}", project), "PROJECT_ABSENCE_IDENTITY")
+    commands = {"containers": ["docker", "ps", "-aq", "--no-trunc"],
+                "networks": ["docker", "network", "ls", "-q"],
+                "volumes": ["docker", "volume", "ls", "-q"]}
+    counts = {kind: len(capture([*command, "--filter", "label=com.docker.compose.project=" + project]).splitlines())
+              for kind, command in commands.items()}
+    return {"project": project, "counts": counts, "absent": all(count == 0 for count in counts.values())}
+
+
+def preallocation_failure_closed(runner):
+    """NO_DIR alone is never proof: only our read-only preflight before allocation."""
+    if runner.preflight_started is not True or runner.allocation_started is not False:
+        return None
+    try:
+        runner.run.lstat()
+    except FileNotFoundError:
+        pass
+    else:
+        return None
+    observation = project_resource_absence(runner.project)
+    return observation if observation["absent"] else None
+
+
 def preflight(*, release=False, special=False, retained_receipt=None, retained_pdf_receipt=None, retained_recovery_receipt=None, retained_restored_receipt=None, selected_network=None, reconciliation_only=False, recovery_archive_only=False, history=None, own_nonce=None):
     require(sys.platform == "linux" and os.getuid() != 0, "UBUNTU_NONROOT_REQUIRED")
     require(RUNS.resolve() == RUNS, "LINKED_RUNTIME_PARENT")
@@ -1676,8 +1723,13 @@ def preflight(*, release=False, special=False, retained_receipt=None, retained_p
     version = capture(["docker", "compose", "version", "--short"]).strip().lstrip("v").split(".")
     require(tuple(map(int, version[:2])) >= (2, 24), "COMPOSE_VERSION")
     for port in (8443, 8088):
-        with socket.socket() as sock:
-            sock.bind(("127.0.0.1", port))
+        try:
+            with socket.socket() as sock:
+                sock.bind(("127.0.0.1", port))
+        except OSError as error:
+            # Add closed context without wrapping/replacing the primary exception.
+            error.rct_operation, error.rct_port = "PORT_BIND_PROBE", port
+            raise
     require(not capture(["docker", "ps", "-aq", "--filter", "label=com.docker.compose.project=rct-e2e"]).strip(), "FOREIGN_E2E_COHORT")
     local_ids = capture(["docker", "ps", "-aq", "--no-trunc", "--filter", "label=" + LABEL]).splitlines()
     if release:
@@ -1761,6 +1813,8 @@ class Runner:
         self.nonce = secrets.token_hex(12)
         self.project = "rct-local-stage17-" + self.nonce[:12]
         self.run = RUNS / self.project
+        self.preflight_started = False
+        self.allocation_started = False
         self.image_targets, self.image_ids, self.image_admitted = [], {}, set()
         allowed = {"PATH", "USER", "LOGNAME", "LANG", "LC_ALL", "TZ", "SHELL", "JAVA_HOME",
                    "VIRTUAL_ENV", "SSL_CERT_FILE", "SSL_CERT_DIR", "REQUESTS_CA_BUNDLE", "DOCKER_HOST"}
@@ -1909,12 +1963,15 @@ class Runner:
     def prepare(self):
         require(self.mode != "special13" or self.operational_admitted, "EXPLICIT_OPERATIONAL_ADMISSION_REQUIRED")
         if self.mode == "special13" or self.release_lane:
+            self.preflight_started = True
             admitted = preflight(release=bool(self.release_lane), special=True, retained_receipt=self.special_retained_receipt, retained_pdf_receipt=self.special_retained_pdf_receipt, retained_recovery_receipt=self.special_retained_recovery_receipt, retained_restored_receipt=self.special_retained_restored_receipt,
                                  reconciliation_only=self.reconciliation_only, recovery_archive_only=self.recovery_archive_only, own_nonce=self.nonce)
             if self.partial_lifecycle_selection or self.release_lane:
                 self.special_network, self.stopped_history = admitted
             else:
                 self.special_network = admitted
+        # Mark intent before mkdir: even an uncertain allocation failure is HOLD.
+        self.allocation_started = True
         self.run.mkdir(mode=0o700)
         for name in ("artifacts", "home", "tmp"):
             (self.run / name).mkdir(mode=0o700)

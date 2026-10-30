@@ -17,6 +17,7 @@ import stat
 import subprocess
 import sys
 import time
+import traceback
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "scripts"))
@@ -177,9 +178,10 @@ class ReplayRunner(lane.Runner):
             lane.require(str(error) == "UI_BATCH_REMAINING_FAILURES_OR_BLOCKED_DEPENDENCIES", "RELEASE_BATCH_FAILURE")
             report = read_report(self.run / "artifacts/ui-batch.safe.json")
             if self.failed_cases is not None:
-                lane.require(report['selectedCaseIds'] == self.failed_cases and report['selected'] == 3
-                             and report['passed'] == 3 and report['failed'] == report['notRun'] == 0,
-                             "RELEASE_FAILED_CI_THREE_CASES")
+                self.focused_counts = batch_counts(report, self.failed_cases)
+                lane.require(report['selectedCaseIds'] == self.failed_cases and report['selected'] == len(self.failed_cases)
+                             and report['passed'] == len(self.failed_cases) and report['failed'] == report['notRun'] == 0,
+                             "RELEASE_FAILED_CI_SELECTED_CASES")
             else:
                 portable36(report)
             # special13 is separately mandatory in the fixed release catalog.
@@ -218,10 +220,66 @@ def bootstrap_hook(runner):
                  "BOOTSTRAP_RECEIPT_FAILED")
 
 
-def run_cohort(selection, target, cohort=None, *, focused=False, bundled_dockerfile_frontend=False):
-    options = {'failed_cases': ['HEADMAN_TEACHER_READ','FULL_ADMIN_RIGHTS','HOMEWORK_PERIOD']} if focused and selection == 'ui-batch' else {}
-    if focused and selection == 'special13':
-        options.update(lifecycle_only=True, operational_until='semester-metadata')
+
+def batch_counts(report, cases):
+    lane.require(report.get("selectedCaseIds") == cases and report.get("selected") == len(cases)
+                 and all(type(report.get(key)) is int and 0 <= report[key] <= len(cases)
+                         for key in ("passed", "failed", "notRun"))
+                 and sum(report[key] for key in ("passed", "failed", "notRun")) == len(cases),
+                 "RELEASE_SELECTED_COUNTS")
+    return {key: report[key] for key in ("selected", "passed", "failed", "notRun")}
+
+
+def focused_observations(runner):
+    if runner.selection == "ui-batch":
+        return {"batch": getattr(runner, "focused_counts", None)}
+    rows = [row for row in runner.special_outcomes if row["lane"] == "semester-metadata"]
+    metadata = None
+    if rows:
+        lane.require(len(rows) == 1 and rows[0]["expected"] == 1
+                     and all(type(rows[0][key]) is int and rows[0][key] in (0, 1)
+                             for key in ("passed", "failed", "notRun"))
+                     and sum(rows[0][key] for key in ("passed", "failed", "notRun")) == 1,
+                     "RELEASE_METADATA_COUNTS")
+        metadata = {key: rows[0][key] for key in ("expected", "passed", "failed", "notRun")}
+    prerequisite = None
+    path = runner.run / "prerequisites/result.safe.json"
+    if path.exists():
+        report = read_report(path)
+        lane.require(report.get("schema") == "RCT_LOCAL_LIFECYCLE_PREPARATION_RESULT_V1"
+                     and report.get("status") in {"PREPARED", "BLOCKED"}
+                     and report.get("reportStatus") in {"MISSING", "REJECTED", "PASS", "FAIL", "BLOCKED"},
+                     "RELEASE_PREREQUISITE_COUNTS")
+        prerequisite = {"status": report["status"], "reportStatus": report["reportStatus"],
+                        "passed": int(report["status"] == "PREPARED")}
+    return {"semesterMetadata": metadata, "datasetPrerequisite": prerequisite}
+
+
+def focused_options(selection, remaining_two=False):
+    if selection == "ui-batch":
+        return {"failed_cases": ["HEADMAN_TEACHER_READ"] if remaining_two else
+                ["HEADMAN_TEACHER_READ", "FULL_ADMIN_RIGHTS", "HOMEWORK_PERIOD"]}
+    return {"lifecycle_only": True, "operational_until": "semester-metadata"} if selection == "special13" else {}
+
+
+
+def secondary_failure(target, selection, cohort, stage, phase, error):
+    """Retain a cleanup witness separately; never replace the original failure."""
+    lane.require(stage in {"TRUST_RESTORE", "LOG_CAPTURE", "CLEANUP", "PREFLIGHT_ABSENCE", "REPORT_COUNTS"},
+                 "RELEASE_SECONDARY_STAGE")
+    result = {"stage": stage, "diagnostic": lane.failure_diagnostic(error, operation=stage),
+              "privateTraceback": "UNAVAILABLE", "cancelled": isinstance(error, KeyboardInterrupt)}
+    try:
+        lane.write(target / ("secondary-" + selection + "-" + (cohort or "single") + "-" + stage.lower() + ".private.log"),
+                   "phase=" + phase + "\n" + "".join(traceback.format_exception(error)))
+        result["privateTraceback"] = "WRITTEN"
+    except BaseException as log_error:
+        result["cancelled"] = result["cancelled"] or isinstance(log_error, KeyboardInterrupt)
+    return result
+
+
+def run_cohort(selection, target, cohort=None, *, focused=False, remaining_two=False, bundled_dockerfile_frontend=False):
+    options = focused_options(selection, remaining_two) if focused else {}
     runner = ReplayRunner(selection, special_cohort=cohort, operational=selection == "special13",
                           bundled_dockerfile_frontend=bundled_dockerfile_frontend, **options)
     if focused and selection == 'special13':
@@ -232,6 +290,9 @@ def run_cohort(selection, target, cohort=None, *, focused=False, bundled_dockerf
     failure = None
     cancelled = False
     cleanup, restored, bootstrap_skipped = False, True, False
+    cleanup_state, preallocation = "UNKNOWN", None
+    diagnostic, diagnostic_log = None, "NOT_NEEDED"
+    secondary = []
     try:
         runner.prepare()
         if focused:
@@ -251,6 +312,14 @@ def run_cohort(selection, target, cohort=None, *, focused=False, bundled_dockerf
     except BaseException as error:
         cancelled = isinstance(error, KeyboardInterrupt)
         failure = error
+        diagnostic = lane.failure_diagnostic(error, operation="READ_ONLY_PREFLIGHT" if runner.preflight_started and not runner.allocation_started else "RUNNER")
+        try:
+            lane.write(target / ("failure-" + selection + "-" + (cohort or "single") + ".private.log"),
+                       "phase=" + runner.phase + "\n" + "".join(traceback.format_exception(error)))
+            diagnostic_log = "WRITTEN"
+        except BaseException as log_error:
+            cancelled = cancelled or isinstance(log_error, KeyboardInterrupt)
+            diagnostic_log = "UNAVAILABLE"
     finally:
         signal.setitimer(signal.ITIMER_REAL, 0)
         runner.deadline = None
@@ -261,11 +330,13 @@ def run_cohort(selection, target, cohort=None, *, focused=False, bundled_dockerf
                 except BaseException as error:
                     cancelled = cancelled or isinstance(error, KeyboardInterrupt)
                     restored = False
+                    secondary.append(secondary_failure(target, selection, cohort, "TRUST_RESTORE", runner.phase, error))
                     failure = failure or error
             try:
                 lane.require(runner.preserve_logs() is not False, "RELEASE_LOGS_INCOMPLETE")
             except BaseException as error:
                 cancelled = cancelled or isinstance(error, KeyboardInterrupt)
+                secondary.append(secondary_failure(target, selection, cohort, "LOG_CAPTURE", runner.phase, error))
                 failure = failure or error
             try:
                 if selection == "client" and cancelled:
@@ -275,13 +346,44 @@ def run_cohort(selection, target, cohort=None, *, focused=False, bundled_dockerf
                     bootstrap_skipped = True
                 runner.cleanup()
                 cleanup = True
+                cleanup_state = "PASS"
             except BaseException as error:
                 cancelled = cancelled or isinstance(error, KeyboardInterrupt)
+                secondary.append(secondary_failure(target, selection, cohort, "CLEANUP", runner.phase, error))
                 failure = failure or error
+        elif failure is not None and not cancelled:
+            try:
+                preallocation = lane.preallocation_failure_closed(runner)
+                if preallocation is not None:
+                    cleanup, cleanup_state = True, "NOT_REQUIRED"
+            except BaseException as observation_error:
+                # Failed/unknown Docker observation must retain HOLD, not replace primary.
+                cancelled = cancelled or isinstance(observation_error, KeyboardInterrupt)
+                secondary.append(secondary_failure(target, selection, cohort, "PREFLIGHT_ABSENCE", runner.phase, observation_error))
+        observed = None
+        if focused:
+            try:
+                observed = focused_observations(runner)
+            except BaseException as error:
+                cancelled = cancelled or isinstance(error, KeyboardInterrupt)
+                secondary.append(secondary_failure(target, selection, cohort, "REPORT_COUNTS", runner.phase, error))
+                failure = failure or error
+        cancelled = cancelled or any(item["cancelled"] for item in secondary)
+        if failure is not None and diagnostic is None:
+            diagnostic = lane.failure_diagnostic(failure, operation="RUNNER")
+            try:
+                lane.write(target / ("failure-" + selection + "-" + (cohort or "single") + ".private.log"),
+                           "phase=" + runner.phase + "\n" + "".join(traceback.format_exception(failure)))
+                diagnostic_log = "WRITTEN"
+            except BaseException as log_error:
+                cancelled = cancelled or isinstance(log_error, KeyboardInterrupt)
+                diagnostic_log = "UNAVAILABLE"
         restored = restored and runner.source_restored
         status = "HOLD" if not restored or not cleanup else "CANCELLED" if cancelled else "FAIL" if failure else "PASS"
         result = {"bootstrap": {"status": "NOT_RUN", "reason": "CANCELLED"} if bootstrap_skipped else None, "cancelled": cancelled, "status": status, "cleanup": cleanup, "restoration": restored, "run": str(runner.run), "cohort": cohort,
-                  "errorKind": (type(failure).__name__ if type(failure).__name__ in {"AdmissionError","TimeoutError","TimeoutExpired","KeyboardInterrupt","OSError","ValueError","KeyError","TypeError","CalledProcessError","FileNotFoundError","PermissionError","JSONDecodeError"} else "OTHER") if failure else None, "phase": runner.phase}
+                  "errorKind": (type(failure).__name__ if type(failure).__name__ in {"AdmissionError","TimeoutError","TimeoutExpired","KeyboardInterrupt","OSError","ValueError","KeyError","TypeError","CalledProcessError","FileNotFoundError","PermissionError","JSONDecodeError"} else "OTHER") if failure else None, "phase": runner.phase,
+                  "cleanupState": cleanup_state, "preallocation": preallocation,
+                  "failureDiagnostic": diagnostic, "privateTraceback": diagnostic_log, "secondaryFailures": secondary, "observedCounts": observed}
         lane.write(target / ("cohort-" + (selection + "-" if focused else "") + (cohort or "single") + ".safe.json"), json.dumps(result) + "\n")
     return result
 
@@ -298,11 +400,14 @@ def controls(target):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("mode", choices=MODES)
+    parser.add_argument("--remaining-two", action="store_true",
+                        help="failed-ci only: HEADMAN_TEACHER_READ and SEMESTER_METADATA plus canonical dataset prerequisite")
     parser.add_argument("--bundled-dockerfile-frontend", action="store_true",
                         help="failed-ci only: reuse the guarded Docker Engine bundled frontend")
     args = parser.parse_args()
     lane.require(not args.bundled_dockerfile_frontend or args.mode == "failed-ci",
                  "BUNDLED_FRONTEND_FAILED_CI_ONLY")
+    lane.require(not args.remaining_two or args.mode == "failed-ci", "REMAINING_TWO_FAILED_CI_ONLY")
     os.umask(0o077)
     revision, nonce, audit = binding(os.environ)
     target = audit / ("browser-" + args.mode)
@@ -324,17 +429,26 @@ def main():
                 selections = [('ui-batch', None), ('special13', 'lifecycle')] if args.mode == 'failed-ci' else [(args.mode, cohort) for cohort in (("nonclock", "lifecycle") if args.mode == "special13" else (None,))]
                 for selection, cohort in selections:
                     row = run_cohort(selection, target, cohort, focused=args.mode == 'failed-ci',
+                                     remaining_two=args.remaining_two,
                                      bundled_dockerfile_frontend=args.bundled_dockerfile_frontend)
                     rows.append(row)
                     cancelled = cancelled or row["cancelled"]
                     if row["status"] == "HOLD" or row["cancelled"]:
                         break
                 status = "HOLD" if any(r["status"] == "HOLD" for r in rows) else "CANCELLED" if cancelled else "PASS" if all(r["status"] == "PASS" for r in rows) else "FAIL"
-    except KeyboardInterrupt:
-        cancelled, status = True, "CANCELLED"
+    except BaseException as error:
+        cancelled = isinstance(error, KeyboardInterrupt)
+        status = "HOLD"
+        try:
+            lane.write(target / "outer-failure.private.log", "".join(traceback.format_exception(error)))
+            lane.write(target / "outer-failure.safe.json", json.dumps(lane.failure_diagnostic(error, operation="OUTER_PREFLIGHT_OR_LOCK")) + "\n")
+        except BaseException:
+            pass
+        raise
     finally:
         lane.write(target / "result.safe.json", json.dumps({"schemaVersion": 1, "event": "LOCAL_CONTROL", "revision": revision, "nonce": nonce,
-                   "mode": args.mode, "status": status, "cancelled": cancelled, "cleanup": all(row["cleanup"] for row in rows), "cohorts": rows,
+                   "mode": args.mode, "status": status, "cancelled": cancelled, "cleanup": (args.mode == "controls" and status == "PASS") or bool(rows) and all(row["cleanup"] for row in rows) and status != "HOLD", "cohorts": rows,
+                   "remainingTwo": args.remaining_two,
                    "qualification": "Fresh cohorts serially; CI shared-job order/state and hosted hardware differ. No hosted CI identity."}) + "\n")
     return exit_code(status, cancelled)
 

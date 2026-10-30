@@ -10,6 +10,7 @@ import stat
 import subprocess
 import sys
 import uuid
+import unicodedata
 
 
 DIAGNOSTIC_ENV = "RCT_INITIAL_ADMIN_DIAGNOSTICS"
@@ -114,7 +115,10 @@ def validate_request(request):
     if not isinstance(request["login"], str) or not re.fullmatch(r"[A-Za-z0-9_.-]{3,32}", request["login"]):
         raise Refused()
     password = request["initialPassword"]
-    if not isinstance(password, str) or not 0 < len(password.encode("utf-8")) <= 72:
+    if (not isinstance(password, str) or not 12 <= len(password)
+            or not 0 < len(password.encode("utf-8")) <= 72
+            or not any(unicodedata.category(c) == "Nd" for c in password)
+            or not any(unicodedata.category(c)[0] in "PS" for c in password)):
         raise Refused()
     profile = request["profile"]
     if not isinstance(profile, dict) or set(profile) != {"firstName", "lastName", "middleName"}:
@@ -126,11 +130,16 @@ def validate_request(request):
     canonical(profile)  # Reject unpaired Unicode surrogates before making any DB command.
 
 
-def invoke(compose_files, service, stage, payload, *, diagnostics=False):
+def invoke(compose_files, service, stage, payload, *, diagnostics=False,
+           project_name=None, env_file=None, image_tag=None):
     owner = {"auth-service": "auth", "academic-service": "academic"}[service]
     name = "Auth" if owner == "auth" else "Academic"
     main = f"ru.rutcampustrack.{owner}.bootstrap.InitialAdministrator{name}Command"
     command = ["docker", "compose"]
+    if project_name is not None:
+        command += ["--project-name", project_name]
+    if env_file is not None:
+        command += ["--env-file", env_file]
     for path in compose_files:
         command += ["-f", path]
     command += ["run", "--rm", "--no-deps", "-T", "--entrypoint", "java"]
@@ -141,8 +150,9 @@ def invoke(compose_files, service, stage, payload, *, diagnostics=False):
                 "-XX:-HeapDumpOnOutOfMemoryError", "-XX:ErrorFile=/dev/null",
                 f"-Dloader.main={main}", "org.springframework.boot.loader.launch.PropertiesLauncher", stage]
     try:
+        options = {} if image_tag is None else {"env": dict(os.environ, IMAGE_TAG=image_tag)}
         result = subprocess.run(command, input=canonical(payload), capture_output=True,
-                                timeout=30, check=False, close_fds=True)
+                                timeout=30, check=False, close_fds=True, **options)
     except subprocess.TimeoutExpired:
         raise Refused(reason="CHILD_TIMEOUT") from None
     except OSError:
@@ -217,12 +227,22 @@ def main(argv=None):
     phase, reason = "PARSE", "INPUT"
     parser = ClosedParser(description="Explicit initial FULL administrator bootstrap")
     parser.add_argument("--request-file", required=True)
-    parser.add_argument("--compose-file", action="append", required=True)
+    parser.add_argument("--compose-file", action="append")
+    parser.add_argument("--validate-only", action="store_true")
+    parser.add_argument("--project-name")
+    parser.add_argument("--env-file")
+    parser.add_argument("--image-tag")
     try:
         args = parser.parse_args(argv)
+        if not args.validate_only and not args.compose_file:
+            raise Refused()
+        if args.image_tag is not None and not re.fullmatch(r"[0-9a-f]{40}", args.image_tag):
+            raise Refused()
         phase = "READ_REQUEST"
         request = read_request(args.request_file)
         phase = "VALIDATE_REQUEST"
+        if args.validate_only:
+            return 0
 
         def call(service, stage, body):
             nonlocal phase, reason
@@ -236,7 +256,8 @@ def main(argv=None):
                 ("academic-service", "finalize"): "ACADEMIC_FINALIZE",
             }.get((service, stage), "OTHER")
             reason = "OTHER"
-            reply = invoke(args.compose_file, service, stage, body, diagnostics=diagnostics)
+            reply = invoke(args.compose_file, service, stage, body, diagnostics=diagnostics,
+                           project_name=args.project_name, env_file=args.env_file, image_tag=args.image_tag)
             reason = "PROTOCOL"
             return reply
 

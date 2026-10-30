@@ -1,9 +1,24 @@
 name: CI
 
-# Temporary owner-authorized pause for codex/web-vue-redesign.
-# Restore automatic triggers before merge after explicit owner GO.
-# See docs/plans/web-vue-pr3/CI-DEVELOPMENT-POLICY.md.
 on:
+  push:
+    branches: ['main', 'dev']
+    paths-ignore:
+      - 'docs/**'
+      - '.planning/**'
+      - '*.md'
+      - 'SECURITY.md'
+      - 'renovate.json'
+      - '.pre-commit-config.yaml'
+  pull_request:
+    branches: ['**']
+    paths-ignore:
+      - 'docs/**'
+      - '.planning/**'
+      - '*.md'
+      - 'SECURITY.md'
+      - 'renovate.json'
+      - '.pre-commit-config.yaml'
   workflow_dispatch:
     inputs:
       omit_academic:
@@ -1113,6 +1128,7 @@ jobs:
           controls=(tests/harness/test_ci_test_outcomes.py
                     tests/harness/test_gateway_smoke.py
                     tests/harness/test_deploy_prerequisites.py
+                    tests/harness/test_release_controls.py
                     tests/harness/test_served_web_panel.py
                     scripts/test-recovery-failure-boundaries.py)
           for control in "${controls[@]}"; do

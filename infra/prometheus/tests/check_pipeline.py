@@ -126,7 +126,7 @@ def background_native_failure(raw, sources):
 _BACKGROUND_TEST_CLASS = "ru.rutcampustrack.attendance.integration.RabbitDecisionRetryIT"
 _BACKGROUND_TEST_METHOD = "transientOutageAfterThreeAttemptsAutomaticallyRedrivesOriginalAfterThirtySeconds"
 _BACKGROUND_TEST_SOURCE = "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/RabbitDecisionRetryIT.java"
-_BACKGROUND_TEST_SOURCE_HASH = "b37440ac80044742dc771b1e728d3daba7dd9aa7fe3ad10e25a5a4fbbfbe0287"
+_BACKGROUND_TEST_SOURCE_HASH = "dcd4ecb2ae9a93722e18c9e545a28e9f4c0d504c6ed0520f12409a44084b01e6"
 _BACKGROUND_TEST_REPORT = "services/attendance-service/attendance-app/build/test-results/integrationTest/TEST-ru.rutcampustrack.attendance.integration.RabbitDecisionRetryIT.xml"
 
 
@@ -209,7 +209,7 @@ def background_test_failure(raw, source):
             "exportedSpan": (624, 629, "TEST_EXPORTED_SPAN"),
             "assertWorkerCorrelation": (631, 644, "TEST_WORKER_CORRELATION"),
             "collectorEndpoint": (646, 666, "COLLECTOR_ENDPOINT"),
-            "writeCollectorReceipt": (668, 745, "COLLECTOR_RECEIPT"),
+            "writeCollectorReceipt": (668, 744, "COLLECTOR_RECEIPT"),
         }
         # The first exact public frame in the primary exception only. Do not promote causes,
         # suppressed failures, unknown frames or arbitrary line numbers to a public identity.
@@ -1526,7 +1526,10 @@ def main(host_and_bot_only=False, remaining_infra_only=False):
                     output.write(data if isinstance(data, bytes) else data.encode())
             except OSError:
                 # Optional diagnostics must not block cleanup or replace its primary failure.
-                _STATE["remaining_diagnostics"]["private_evidence"] = "WRITE_FAILED"
+                if remaining_infra_only:
+                    _STATE["remaining_diagnostics"]["private_evidence"] = "WRITE_FAILED"
+                else:
+                    _STATE["private_evidence"] = "WRITE_FAILED"
 
         def command_run(command, **kwargs):
             nonlocal command_sequence
@@ -1961,6 +1964,7 @@ def main(host_and_bot_only=False, remaining_infra_only=False):
         def run_application_gradle(command, env, filename, seconds):
             assert not remaining_infra_only, "Java transport is excluded from remaining infrastructure scope"
             with (td / filename).open("wb") as log:
+                os.fchmod(log.fileno(), 0o600)
                 diagnostic_started_ns = time.time_ns()
                 process = subprocess.Popen(
                     command, cwd=ROOT, env=env, stdout=log, stderr=subprocess.STDOUT, start_new_session=True

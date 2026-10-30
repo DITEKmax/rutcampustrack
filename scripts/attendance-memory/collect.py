@@ -129,15 +129,16 @@ def docker_snapshot(seconds=30):
     result = {}
     for kind, listing, command, format_string in specs:
         identifiers = sorted(capture(listing))
-        if len(identifiers) > 4096 or any(not re.fullmatch(r'[A-Za-z0-9_.-]{1,256}', item) for item in identifiers):
+        if len(identifiers) > 4096 or len(set(identifiers)) != len(identifiers) or any(not re.fullmatch(r'[A-Za-z0-9_.-]{1,256}', item) for item in identifiers):
             raise ValueError('DOCKER_INVENTORY_BOUND')
         rows = []
-        for identifier in identifiers:
+        for offset in range(0, len(identifiers), 64):
+            batch = identifiers[offset:offset + 64]
             argv = ['inspect'] if command == 'inspect' else [command, 'inspect']
-            row = capture([*argv, '--format', format_string, identifier])
-            if len(row) != 1 or len(row[0]) > 65536:
+            batch_rows = capture([*argv, '--format', format_string, *batch])
+            if len(batch_rows) != len(batch) or any(len(row) > 65536 or not row.startswith(identifier + '|') for identifier, row in zip(batch, batch_rows)):
                 raise ValueError('DOCKER_PIN_BOUND')
-            rows.append(row[0])
+            rows.extend(batch_rows)
         result[kind] = rows
     return result
 

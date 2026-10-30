@@ -1396,8 +1396,98 @@ def host_bot_metrics(api, wait, control, project):
     return diagnostics
 
 
-def main(host_and_bot_only=False):
+_REMAINING_CHECKPOINTS = (
+    "PRECHECK", "SLO_SEED", "ALLOY_VALIDATE", "COHORT_START", "GRAFANA_READY",
+    "SLO_SAMPLE_CAP", "SLO_AVAILABILITY", "SLO_COVERAGE", "SLO_SAMPLES",
+    "DATASOURCE_PROMETHEUS", "DATASOURCE_LOKI", "DATASOURCE_TEMPO", "GRAFANA_AUTH",
+    "DASHBOARD_BUSINESS", "DASHBOARD_GRPC", "DASHBOARD_LOGS", "OPERATOR_QUERY",
+    "OPERATOR_ALERTS", "BOUNDARY_QUERY_POST", "BOUNDARY_SILENCE", "BOUNDARY_AUTH",
+    "PANEL_DOCKER_26", "PANEL_DOCKER_35", "PANEL_BUSINESS_6", "QUERY_NO_DATA", "QUERY_INVALID",
+    "RPC_SERIES", "RPC_LABELS", "RPC_PANEL_1", "RPC_PANEL_2", "RPC_PANEL_3", "RPC_PANEL_4",
+    "SYNTHETIC_TRACE_EMIT", "SYNTHETIC_LOG_EMIT", "SYNTHETIC_LOG_DELIVERY", "SYNTHETIC_TRACE_DELIVERY",
+    "LOG_TO_TRACE_LINK", "TRACE_TO_LOG_LINK", "TRACE_TO_LOG_QUERY", "ALLOY_POSITIONS",
+    "OWNED_RECREATE", "RECREATE_GRAFANA", "RECREATE_LOG", "RECREATE_TRACE", "RECREATE_POSITIONS",
+    "RECREATE_DATASOURCE", "POST_RECREATE_EMIT", "POST_RECREATE_DELIVERY", "POST_RECREATE_POSITIONS",
+    "ONE_ALLOY_READER", "ALLOY_UP", "SYNTHETIC_SERIES", "LOW_CARDINALITY_LABELS", "SENT_ENTRIES",
+    "DROP_BASELINE", "DROP_PROBE", "DROP_OBSERVED", "ALLOY_RSS", "ALLOY_CPU", "COMPLETE",
+)
+_REMAINING_EXCLUSIONS = {
+    "host_and_bot_metrics": "NOT_RUN",
+    "GatewayBffTracePropagationIT": "NOT_RUN",
+    "RabbitDecisionRetryIT": "NOT_RUN",
+    "actual_application_spans_logs_and_grafana_navigation": "NOT_RUN",
+    "actual_background_retry_dedup_spans": "NOT_RUN",
+    "three_application_service_log_series": "NOT_RUN",
+}
+
+
+def remaining_checkpoint(identifier):
+    if _STATE.get("scope") == "REMAINING_INFRA_ONLY":
+        assert identifier in _REMAINING_CHECKPOINTS
+        _STATE["remaining_diagnostics"]["checkpoint"] = identifier
+        _STATE["remaining_diagnostics"].pop("assertion_observation", None)
+
+
+def remaining_values(values, expected=None):
+    if _STATE.get("scope") == "REMAINING_INFRA_ONLY":
+        observation = host_bot_observation([{"value": [0, value]} for value in values])
+        if type(expected) in (int, float) and math.isfinite(expected) and abs(expected) <= 10**15:
+            observation["expected"] = expected
+        elif isinstance(expected, list):
+            observation["expected_values"] = host_bot_observation([{"value": [0, value]} for value in expected])
+        _STATE["remaining_diagnostics"]["assertion_observation"] = observation
+
+
+def remaining_api_observation(service, path, status=None, payload=None):
+    """Closed endpoint IDs and numeric aggregates; no URLs, labels or error text."""
+    if _STATE.get("scope") != "REMAINING_INFRA_ONLY":
+        return
+    route = urllib.parse.urlsplit(path).path
+    endpoints = {
+        "prometheus": [("/api/v1/status/flags", "PROM_FLAGS"), ("/api/v1/query", "PROM_QUERY")],
+        "grafana": [("/grafana/api/health", "GRAFANA_HEALTH"),
+                    ("/grafana/api/datasources", "GRAFANA_DATASOURCE"),
+                    ("/grafana/api/dashboards/uid/", "GRAFANA_DASHBOARD"),
+                    ("/grafana/api/ds/query", "GRAFANA_QUERY")],
+        "nginx": [("/prometheus/api/v1/query", "OPERATOR_QUERY"),
+                  ("/alertmanager/api/v2/alerts", "OPERATOR_ALERTS"),
+                  ("/alertmanager/api/v2/silences", "OPERATOR_SILENCES")],
+        "loki": [("/loki/api/v1/query_range", "LOKI_QUERY"), ("/loki/api/v1/series", "LOKI_SERIES")],
+        "tempo": [("/v1/traces", "TEMPO_INGEST"), ("/api/traces/", "TEMPO_TRACE")],
+        "notification-web": [("/emit", "FIXTURE_EMIT")],
+    }
+    endpoint = next((identifier for prefix, identifier in endpoints.get(service, [])
+                     if route == prefix or route.startswith(prefix.rstrip("/") + "/")), "OTHER")
+    observation = {"service": service if service in endpoints else "OTHER", "endpoint": endpoint,
+                   "http_status": status if type(status) is int and 100 <= status <= 599 else None}
+    try:
+        if isinstance(payload, dict):
+            data = payload.get("data")
+            rows = data.get("result") if isinstance(data, dict) else data
+            if isinstance(rows, list):
+                observation.update(host_bot_observation(rows))
+            results = payload.get("results")
+            if isinstance(results, dict):
+                values = [value for result in results.values() if isinstance(result, dict)
+                          for frame in result.get("frames", [])
+                          for field, numbers in zip(frame.get("schema", {}).get("fields", []),
+                                                    frame.get("data", {}).get("values", []))
+                          if field.get("type") == "number" for value in numbers if value is not None]
+                observation.update(host_bot_observation([{"value": [0, value]} for value in values]))
+        elif isinstance(payload, list):
+            observation["sample_count"] = min(len(payload), 1000000)
+    except (AttributeError, KeyError, TypeError, ValueError, OverflowError):
+        observation["projection_status"] = "UNEXPECTED_SHAPE"
+    _STATE["remaining_diagnostics"]["last_api_observation"] = observation
+
+
+def main(host_and_bot_only=False, remaining_infra_only=False):
     context = runtime_context("RCT_MONITORING_RUNTIME")
+    assert not (host_and_bot_only and remaining_infra_only), "Choose one local diagnostic scope"
+    if remaining_infra_only:
+        _STATE["scope"] = "REMAINING_INFRA_ONLY"
+        _STATE["remaining_diagnostics"] = {"checkpoint": "PRECHECK"}
+        assert context["event"] == "LOCAL_CONTROL", "Remaining infrastructure scope is local only"
     if host_and_bot_only:
         _STATE["scope"] = "HOST_AND_BOT_METRICS"
         assert context["event"] == "LOCAL_CONTROL", "Host/bot diagnostic scope is local only"
@@ -1426,6 +1516,39 @@ def main(host_and_bot_only=False):
     hashes = {p: hashlib.sha256((ROOT / p).read_bytes()).hexdigest() for p in files}
     with evidence_directory(prefix=project + "-") as tmp:
         td = Path(tmp)
+        command_sequence = 0
+        api_sequence = 0
+
+        def private_write(filename, data):
+            try:
+                descriptor = os.open(td / filename, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+                with os.fdopen(descriptor, "wb") as output:
+                    output.write(data if isinstance(data, bytes) else data.encode())
+            except OSError:
+                # Optional diagnostics must not block cleanup or replace its primary failure.
+                _STATE["remaining_diagnostics"]["private_evidence"] = "WRITE_FAILED"
+
+        def command_run(command, **kwargs):
+            nonlocal command_sequence
+            if not remaining_infra_only:
+                return subprocess.run(command, **kwargs)
+            # This local scope admits only the original promtool seed and Docker.
+            assert command[0] == "docker" or (
+                command[0] == os.environ.get("PROMTOOL", "promtool") and Path(command[0]).name == "promtool"
+            )
+            command_sequence += 1
+            stem = "remaining-command-" + str(command_sequence).zfill(4)
+            private_write(stem + ".metadata.private.json", json.dumps({"argv": command}))
+            try:
+                output = subprocess.run(command, **kwargs)
+            except (subprocess.CalledProcessError, subprocess.TimeoutExpired) as error:
+                private_write(stem + ".stdout.private.log", error.stdout or b"")
+                private_write(stem + ".stderr.private.log", error.stderr or b"")
+                raise
+            private_write(stem + ".stdout.private.log", output.stdout or b"")
+            private_write(stem + ".stderr.private.log", output.stderr or b"")
+            return output
+
         config = {"services": {}, "networks": {"private_net": {}}, "volumes": {}, "secrets": {}}
         names = ["prometheus", "alertmanager", "grafana", "loki", "tempo", "alloy", "blackbox-exporter"]
         for name in names:
@@ -1476,62 +1599,64 @@ def main(host_and_bot_only=False):
             if name == "tempo":
                 service["ports"].append("127.0.0.1::4318")
             config["services"][name] = service
-        # Use production images, collectors, host mounts and capabilities exactly.
-        # Host capability absence is a failed precondition, never synthetic data.
-        _STATE["phase"] = "HOST_EXPORTER_PRECONDITIONS"
-        host_paths = ["/proc", "/sys", "/var/run/dbus", "/var/lib/docker", "/dev/disk", "/dev/kmsg"]
-        missing_host_paths = [path for path in host_paths if not Path(path).exists()]
-        _STATE["missing_host_paths"] = missing_host_paths
-        assert not missing_host_paths, "host-exporter required mounts/devices unavailable: " + ",".join(
-            missing_host_paths
-        )
-        available_kib = int(
-            next(
-                line.split()[1]
-                for line in Path("/proc/meminfo").read_text().splitlines()
-                if line.startswith("MemAvailable:")
+        if not remaining_infra_only:
+            # Use production images, collectors, host mounts and capabilities exactly.
+            # Host capability absence is a failed precondition, never synthetic data.
+            _STATE["phase"] = "HOST_EXPORTER_PRECONDITIONS"
+            host_paths = ["/proc", "/sys", "/var/run/dbus", "/var/lib/docker", "/dev/disk", "/dev/kmsg"]
+            missing_host_paths = [path for path in host_paths if not Path(path).exists()]
+            _STATE["missing_host_paths"] = missing_host_paths
+            assert not missing_host_paths, "host-exporter required mounts/devices unavailable: " + ",".join(
+                missing_host_paths
             )
-        )
-        assert available_kib >= 2 * 1024**2, "2GiB available before telemetry cohort required"
-        for name in ["node-exporter", "cadvisor"]:
-            service = copy.deepcopy(source["services"][name])
-            service.pop("container_name", None)
-            service["cpus"] = 0.25
-            config["services"][name] = service
-        control = td / "bot-control"
-        control.mkdir(mode=0o700)
-        config["services"]["notification-bot"] = {
-            "image": PYTHON_IMAGE,
-            "working_dir": "/application",
-            "command": [
-                "sh",
-                "-ec",
-                "umask 077; python -m pip install --target /tmp/bot-deps --no-cache-dir --disable-pip-version-check -r requirements.txt PyYAML==6.0.3 >/control/install.private.log 2>&1; exec python /repository/infra/prometheus/tests/check_pipeline.py --bot-metrics-worker",
-            ],
-            "environment": {
-                "PYTHONPATH": "/tmp/bot-deps:/application:/repository/infra/prometheus/tests",
-                "PYTHONDONTWRITEBYTECODE": "1",
-                "OTEL_SDK_DISABLED": "true",
-                "DEPLOYMENT_ENVIRONMENT": "synthetic",
-                "SERVICE_VERSION": context["checkoutSha"],
-            },
-            "volumes": [
-                str(ROOT / "services/notification-bot") + ":/application:ro",
-                str(ROOT / "infra/prometheus/tests") + ":/repository/infra/prometheus/tests:ro",
-                str(control) + ":/control",
-            ],
-            "networks": ["private_net"],
-            "ports": ["127.0.0.1::8081"],
-            "user": str(os.getuid()) + ":" + str(os.getgid()),
-            "mem_limit": "256m",
-            "cpus": 0.5,
-            "cap_drop": ["ALL"],
-            "security_opt": ["no-new-privileges:true"],
-            "logging": {"driver": "json-file", "options": {"max-size": "1m", "max-file": "1"}},
-        }
+            available_kib = int(
+                next(
+                    line.split()[1]
+                    for line in Path("/proc/meminfo").read_text().splitlines()
+                    if line.startswith("MemAvailable:")
+                )
+            )
+            assert available_kib >= 2 * 1024**2, "2GiB available before telemetry cohort required"
+            for name in ["node-exporter", "cadvisor"]:
+                service = copy.deepcopy(source["services"][name])
+                service.pop("container_name", None)
+                service["cpus"] = 0.25
+                config["services"][name] = service
+            control = td / "bot-control"
+            control.mkdir(mode=0o700)
+            config["services"]["notification-bot"] = {
+                "image": PYTHON_IMAGE,
+                "working_dir": "/application",
+                "command": [
+                    "sh",
+                    "-ec",
+                    "umask 077; python -m pip install --target /tmp/bot-deps --no-cache-dir --disable-pip-version-check -r requirements.txt PyYAML==6.0.3 >/control/install.private.log 2>&1; exec python /repository/infra/prometheus/tests/check_pipeline.py --bot-metrics-worker",
+                ],
+                "environment": {
+                    "PYTHONPATH": "/tmp/bot-deps:/application:/repository/infra/prometheus/tests",
+                    "PYTHONDONTWRITEBYTECODE": "1",
+                    "OTEL_SDK_DISABLED": "true",
+                    "DEPLOYMENT_ENVIRONMENT": "synthetic",
+                    "SERVICE_VERSION": context["checkoutSha"],
+                },
+                "volumes": [
+                    str(ROOT / "services/notification-bot") + ":/application:ro",
+                    str(ROOT / "infra/prometheus/tests") + ":/repository/infra/prometheus/tests:ro",
+                    str(control) + ":/control",
+                ],
+                "networks": ["private_net"],
+                "ports": ["127.0.0.1::8081"],
+                "user": str(os.getuid()) + ":" + str(os.getgid()),
+                "mem_limit": "256m",
+                "cpus": 0.5,
+                "cap_drop": ["ALL"],
+                "security_opt": ["no-new-privileges:true"],
+                "logging": {"driver": "json-file", "options": {"max-size": "1m", "max-file": "1"}},
+            }
         if not host_and_bot_only:
             # Seed exactly the retained finite30d rollup inventory. The running
             # production-version engine enforces its unchanged500000sample cap.
+            remaining_checkpoint("SLO_SEED")
             _, budget = long_window_fixture()
             seed_end = (int(time.time()) // 1800) * 1800 - 4 * 3600
             seed = td / "slo-budget.openmetrics"
@@ -1562,7 +1687,7 @@ def main(host_and_bot_only=False):
             seed_db = td / "slo-budget-tsdb"
             seed_db.mkdir(mode=0o777)
             seed_db.chmod(0o777)  # Synthetic-only owned data, writable by image UID65534.
-            subprocess.run(
+            command_run(
                 [
                     os.environ.get("PROMTOOL", "promtool"),
                     "tsdb",
@@ -1589,7 +1714,7 @@ def main(host_and_bot_only=False):
         prom["scrape_configs"] = [
             x
             for x in prom["scrape_configs"]
-            if x["job_name"] in names + ["node-exporter", "cadvisor", "notification-bot"]
+            if x["job_name"] in names + ([] if remaining_infra_only else ["node-exporter", "cadvisor", "notification-bot"])
         ]
         for job in prom["scrape_configs"]:
             if job["job_name"] in ["node-exporter", "cadvisor", "notification-bot"]:
@@ -1626,7 +1751,7 @@ def main(host_and_bot_only=False):
         # Real application processes run on the CI host; these files use their
         # production JSON encoder, not a second Docker ingestion of those apps.
         alloy += '\nloki.source.file "actual_applications" {\n  targets = [\n'
-        for service in ["api-gateway", "mobile-bff", "delivery-probe"]:
+        for service in (["delivery-probe"] if remaining_infra_only else ["api-gateway", "mobile-bff", "delivery-probe"]):
             alloy += (
                 '    {__path__ = "/application-logs/'
                 + service
@@ -1702,9 +1827,15 @@ def main(host_and_bot_only=False):
         prefix = ["docker", "compose", "--project-name", project, "-f", str(compose)]
 
         def docker(*args, check=True):
-            return subprocess.run(prefix + list(args), text=True, capture_output=True, check=check)
+            return command_run(prefix + list(args), text=True, capture_output=True, check=check)
 
         def api(name, path, body=None, headers=None, port=None):
+            nonlocal api_sequence
+            if remaining_infra_only:
+                api_sequence += 1
+                api_stem = "remaining-api-" + str(api_sequence).zfill(4)
+                private_write(api_stem + ".metadata.private.json", json.dumps({
+                    "service": name, "path": path, "port": port, "body": body}))
             internal = (
                 port
                 or {
@@ -1723,9 +1854,21 @@ def main(host_and_bot_only=False):
                 data=None if body is None else json.dumps(body).encode(),
                 headers=dict({"Content-Type": "application/json", "Accept": "application/json"}, **(headers or {})),
             )
-            with urllib.request.build_opener(urllib.request.ProxyHandler({})).open(req, timeout=15) as response:
-                payload = response.read()
-                return json.loads(payload) if payload else None
+            remaining_api_observation(name, path)
+            try:
+                with urllib.request.build_opener(urllib.request.ProxyHandler({})).open(req, timeout=15) as response:
+                    remaining_api_observation(name, path, response.status)
+                    payload = response.read()
+                    if remaining_infra_only:
+                        private_write(api_stem + ".response.private.json", payload)
+                    payload = json.loads(payload) if payload else None
+                    remaining_api_observation(name, path, response.status, payload)
+                    return payload
+            except urllib.error.HTTPError as error:
+                remaining_api_observation(name, path, error.code)
+                if remaining_infra_only:
+                    private_write(api_stem + ".status.private.json", json.dumps({"http_status": error.code}))
+                raise
 
         def wait(predicate, seconds=100):
             end = time.monotonic() + seconds
@@ -1780,7 +1923,7 @@ def main(host_and_bot_only=False):
         def positions(component="loki.source.docker.containers"):
             cid = docker("ps", "--quiet", "alloy").stdout.strip()
             dest = td / (component + "-positions.yml")
-            subprocess.run(
+            command_run(
                 ["docker", "cp", cid + ":/var/lib/alloy/" + component + "/positions.yml", str(dest)],
                 capture_output=True,
                 check=True,
@@ -1816,6 +1959,7 @@ def main(host_and_bot_only=False):
             return set(result)
 
         def run_application_gradle(command, env, filename, seconds):
+            assert not remaining_infra_only, "Java transport is excluded from remaining infrastructure scope"
             with (td / filename).open("wb") as log:
                 diagnostic_started_ns = time.time_ns()
                 process = subprocess.Popen(
@@ -2005,9 +2149,12 @@ def main(host_and_bot_only=False):
         try:
             _STATE["phase"] = "PIPELINE_START"
             if not host_and_bot_only:
+                remaining_checkpoint("ALLOY_VALIDATE")
                 docker("run", "--rm", "--no-deps", "alloy", "validate", "/etc/alloy/config.alloy")
+            remaining_checkpoint("COHORT_START")
             docker("up", "-d")
             if not host_and_bot_only:
+                remaining_checkpoint("GRAFANA_READY")
                 wait(lambda: grafana("/api/health")["database"] == "ok", 120)
 
             def samples(expression):
@@ -2015,15 +2162,16 @@ def main(host_and_bot_only=False):
                 assert response["status"] == "success"
                 return response["data"]["result"]
 
-            host_bot_metrics(api, wait, control, project)
-            checks.append(
-                {
-                    "actual_host_exporters": ["node-exporter", "cadvisor"],
-                    "available_memory_kib_before_start": available_kib,
-                    "bot_actual_queue_completion_delta": 1,
-                    "qualification": "Production HTTP/SDK/send queue with a local provider; no Telegram receipt or broker consumer claim",
-                }
-            )
+            if not remaining_infra_only:
+                host_bot_metrics(api, wait, control, project)
+                checks.append(
+                    {
+                        "actual_host_exporters": ["node-exporter", "cadvisor"],
+                        "available_memory_kib_before_start": available_kib,
+                        "bot_actual_queue_completion_delta": 1,
+                        "qualification": "Production HTTP/SDK/send queue with a local provider; no Telegram receipt or broker consumer claim",
+                    }
+                )
             if host_and_bot_only:
                 result = {
                     "result": "PARTIAL_PASS",
@@ -2039,21 +2187,28 @@ def main(host_and_bot_only=False):
                 # Returns through the same finally; cleanup failure still raises.
                 return result
             # Release640MiB limits before the existing Java/broker cohort peaks.
-            docker("stop", "notification-bot", "node-exporter", "cadvisor")
+            if not remaining_infra_only:
+                docker("stop", "notification-bot", "node-exporter", "cadvisor")
             _STATE["phase"] = "SLO_ENGINE_AND_GRAFANA"
+            remaining_checkpoint("SLO_SAMPLE_CAP")
             flags = api("prometheus", "/api/v1/status/flags")["data"]
+            remaining_values([flags["query.max-samples"]], 500000)
             assert int(flags["query.max-samples"]) == budget["production_max_samples"] == 500000
             for name, expected in [
                 ("rct_sli:http_availability30d", 0.999),
                 ("rct_sli:http_source_coverage_seconds30d", 2590200),
                 ("rct_sli:http_source_samples30d", 1440),
             ]:
+                remaining_checkpoint({"rct_sli:http_availability30d": "SLO_AVAILABILITY",
+                                      "rct_sli:http_source_coverage_seconds30d": "SLO_COVERAGE",
+                                      "rct_sli:http_source_samples30d": "SLO_SAMPLES"}[name])
                 response = api(
                     "prometheus",
                     "/api/v1/query?" + urllib.parse.urlencode({"query": record_expr(name), "time": seed_end}),
                 )
                 assert response["status"] == "success"
                 values = [float(row["value"][1]) for row in response["data"]["result"]]
+                remaining_values(values, expected)
                 assert len(values) == budget["series"] == 40
                 assert all(math.isclose(value, expected, rel_tol=1e-10, abs_tol=1e-10) for value in values)
                 slo_results.append(
@@ -2067,7 +2222,9 @@ def main(host_and_bot_only=False):
                 )
             checks.append("actual500000sample engine: full30d40class rollup queries and coverage")
             for uid in [PROM_UID, "loki", "tempo"]:
+                remaining_checkpoint({PROM_UID: "DATASOURCE_PROMETHEUS", "loki": "DATASOURCE_LOKI", "tempo": "DATASOURCE_TEMPO"}[uid])
                 assert grafana("/api/datasources/uid/" + uid)["uid"] == uid
+            remaining_checkpoint("GRAFANA_AUTH")
             try:
                 api("grafana", "/grafana/api/datasources")
             except urllib.error.HTTPError as error:
@@ -2075,7 +2232,9 @@ def main(host_and_bot_only=False):
             else:
                 raise AssertionError("Grafana datasource API requires authentication")
             for uid in ["business-kpis-m04", "grpc-latency-m05", "rct-logs-overview"]:
+                remaining_checkpoint({"business-kpis-m04": "DASHBOARD_BUSINESS", "grpc-latency-m05": "DASHBOARD_GRPC", "rct-logs-overview": "DASHBOARD_LOGS"}[uid])
                 assert grafana("/api/dashboards/uid/" + uid)["meta"]["provisioned"]
+            remaining_checkpoint("OPERATOR_QUERY")
             operator_auth = "Basic " + base64.b64encode(b"operator:synthetic-operator-only").decode()
             wait(
                 lambda: (
@@ -2086,6 +2245,7 @@ def main(host_and_bot_only=False):
                 ),
                 60,
             )
+            remaining_checkpoint("OPERATOR_ALERTS")
             assert isinstance(
                 api("nginx", "/alertmanager/api/v2/alerts", headers={"Authorization": operator_auth}), list
             )
@@ -2094,6 +2254,7 @@ def main(host_and_bot_only=False):
                 ("/alertmanager/api/v2/silences", {}, 403),
                 ("/prometheus/api/v1/query?query=up", None, 401),
             ]:
+                remaining_checkpoint({403: "BOUNDARY_SILENCE" if "silences" in path else "BOUNDARY_QUERY_POST", 401: "BOUNDARY_AUTH"}[status])
                 try:
                     api("nginx", path, body, {} if status == 401 else {"Authorization": operator_auth})
                 except urllib.error.HTTPError as error:
@@ -2117,19 +2278,23 @@ def main(host_and_bot_only=False):
                 ("business-kpis.json", 6, [0.1, 0.95]),
             ]
             for filename, panel, values in expected:
+                remaining_checkpoint({26: "PANEL_DOCKER_26", 35: "PANEL_DOCKER_35", 6: "PANEL_BUSINESS_6"}[panel])
                 wait(
                     lambda filename=filename, panel=panel, values=values: (
                         len(query(dashboard_expression(filename, panel))) == len(values)
                     )
                 )
                 actual = sorted(query(dashboard_expression(filename, panel)))
+                remaining_values(actual, values)
                 assert all(math.isclose(a, b, rel_tol=1e-6) for a, b in zip(actual, sorted(values))), (
                     filename,
                     panel,
                     actual,
                 )
                 checks.append({"query_panel": panel, "expected": sorted(values), "actual": actual})
+            remaining_checkpoint("QUERY_NO_DATA")
             assert query("missing_synthetic_metric") == [], "missing input must remain no data"
+            remaining_checkpoint("QUERY_INVALID")
             try:
                 query("sum(")
             except (AssertionError, urllib.error.HTTPError):
@@ -2137,10 +2302,12 @@ def main(host_and_bot_only=False):
             else:
                 raise AssertionError("invalid query must produce a query error")
             _STATE["phase"] = "GRPC_IDENTITY"
+            remaining_checkpoint("RPC_SERIES")
             selector = '{job="grpc-identity-fixture"}'
             wait(lambda: len(samples("grpc_client_duration_seconds_count" + selector)) == 2)
             expected_rpc = {("ScheduleGrpcService", "OK"), ("AuthGrpcService", "UNAVAILABLE")}
             raw_rpc = samples("grpc_client_duration_seconds_count" + selector)
+            remaining_checkpoint("RPC_LABELS")
             for row in raw_rpc:
                 labels = row["metric"]
                 assert labels["service"] == "academic-service" and labels["method"] == "Get"
@@ -2148,6 +2315,7 @@ def main(host_and_bot_only=False):
             assert {(row["metric"]["grpc_service"], row["metric"]["status"]) for row in raw_rpc} == expected_rpc
             # Execute the actual provisioned panel expressions with only fixed selectors substituted.
             for panel_id in [1, 2, 3, 4]:
+                remaining_checkpoint("RPC_PANEL_" + str(panel_id))
                 expression = dashboard_expression("grpc-latency.json", panel_id)
                 expression = expression.replace('job=~".*"', 'job="grpc-identity-fixture"')
                 wait(lambda expression=expression: bool(samples(expression)) and all(
@@ -2189,7 +2357,13 @@ def main(host_and_bot_only=False):
                     }
                 ]
             }
+            if remaining_infra_only:
+                private_write("remaining-fixture.metadata.private.json", json.dumps({
+                    "project": project, "traceId": trace, "spanId": span, "requestId": request_id,
+                    "timestamp_ns": now, "qualification": "SYNTHETIC_NOTIFICATION_WEB_ONLY"}))
+            remaining_checkpoint("SYNTHETIC_TRACE_EMIT")
             api("tempo", "/v1/traces", trace_body, port="4318")
+            remaining_checkpoint("SYNTHETIC_LOG_EMIT")
             api("notification-web", "/emit", {"traceId": trace, "spanId": span, "requestId": request_id})
             loki_query = (
                 '{service="notification-web",environment="synthetic"} | json | requestId="'
@@ -2211,12 +2385,16 @@ def main(host_and_bot_only=False):
                     ),
                 )["data"]["result"]
 
+            remaining_checkpoint("SYNTHETIC_LOG_DELIVERY")
             wait(lambda: bool(logs()), 120)
+            remaining_checkpoint("SYNTHETIC_TRACE_DELIVERY")
             wait(lambda: bool(api("tempo", "/api/traces/" + trace).get("batches")), 120)
+            remaining_checkpoint("LOG_TO_TRACE_LINK")
             line = logs()[0]["values"][0][1]
             derived = grafana("/api/datasources/uid/loki")["jsonData"]["derivedFields"][0]
             assert re.search(derived["matcherRegex"], line).group(1) == trace
             assert derived["datasourceUid"] == "tempo"
+            remaining_checkpoint("TRACE_TO_LOG_LINK")
             to_logs = grafana("/api/datasources/uid/tempo")["jsonData"]["tracesToLogsV2"]
             assert to_logs["datasourceUid"] == "loki" and to_logs["customQuery"]
             # Check the actual provisioned custom link interpolates into a query
@@ -2226,6 +2404,7 @@ def main(host_and_bot_only=False):
                 .replace('${__span.tags["service.name"]}', "notification-web")
                 .replace("${__trace.traceId}", trace)
             )
+            remaining_checkpoint("TRACE_TO_LOG_QUERY")
             linked = api(
                 "loki",
                 "/loki/api/v1/query_range?"
@@ -2235,25 +2414,36 @@ def main(host_and_bot_only=False):
             )["data"]["result"]
             assert linked and json.loads(linked[0]["values"][0][1])["requestId"] == request_id
             checks.append("requestId JSON search and actual provisioned logs↔trace queries")
+            remaining_checkpoint("ALLOY_POSITIONS")
             fixture_cid = docker("ps", "--quiet", "notification-web").stdout.strip()
             wait(lambda: any(fixture_cid in key[0] for key in positions()), 30)
             checkpoint = positions()
             fixture_keys = {key for key in checkpoint if fixture_cid in key[0]}
             assert fixture_keys
+            remaining_checkpoint("OWNED_RECREATE")
             docker("up", "-d", "--force-recreate", "--no-deps", "alloy", "loki", "tempo", "grafana")
+            remaining_checkpoint("RECREATE_GRAFANA")
             wait(lambda: grafana("/api/health")["database"] == "ok", 120)
+            remaining_checkpoint("RECREATE_LOG")
             wait(lambda: bool(logs()), 120)
+            remaining_checkpoint("RECREATE_TRACE")
             wait(lambda: bool(api("tempo", "/api/traces/" + trace).get("batches")), 120)
+            remaining_checkpoint("RECREATE_POSITIONS")
             after = positions()
             assert fixture_keys <= set(after) and all(int(after[k]) >= int(checkpoint[k]) for k in fixture_keys), (
                 "persisted fixture log checkpoint did not survive"
             )
+            remaining_checkpoint("RECREATE_DATASOURCE")
             assert grafana("/api/datasources/uid/loki")["uid"] == "loki"
             checks.append("Loki/Tempo log+trace, Alloy positions and Grafana provisioning survive owned recreate")
             # A distinct post-recreate line must arrive through the same reader.
+            remaining_checkpoint("POST_RECREATE_EMIT")
             recreated_id = str(uuid.uuid4())
+            if remaining_infra_only:
+                private_write("remaining-recreate.metadata.private.json", json.dumps({"requestId": recreated_id, "container_id": fixture_cid}))
             api("notification-web", "/emit", {"traceId": trace, "spanId": span, "requestId": recreated_id})
             recreate_query = loki_query.replace(request_id, recreated_id)
+            remaining_checkpoint("POST_RECREATE_DELIVERY")
             wait(
                 lambda: bool(
                     api(
@@ -2266,41 +2456,63 @@ def main(host_and_bot_only=False):
                 ),
                 60,
             )
+            remaining_checkpoint("POST_RECREATE_POSITIONS")
             wait(lambda: all(positions().get(key, 0) > checkpoint[key] for key in fixture_keys), 30)
+            remaining_checkpoint("ONE_ALLOY_READER")
             running = docker("ps", "--quiet", "alloy").stdout.strip().splitlines()
+            remaining_values([len(running)], 1)
             assert len(running) == 1, "exactly one owned ingestion service required"
             checks.append("one Alloy reader delivers a distinct post-recreate marker")
-            _STATE["phase"] = "ACTUAL_JAVA_TRANSPORT"
-            app_result = application_transport()
-            _STATE["phase"] = "ACTUAL_BACKGROUND_TRANSPORT"
-            background_result = background_transport()
+            if not remaining_infra_only:
+                _STATE["phase"] = "ACTUAL_JAVA_TRANSPORT"
+                app_result = application_transport()
+                _STATE["phase"] = "ACTUAL_BACKGROUND_TRANSPORT"
+                background_result = background_transport()
             _STATE["phase"] = "ALLOY_DELIVERY_AND_BUDGET"
+            remaining_checkpoint("ALLOY_UP")
             wait(lambda: len(samples('up{job="alloy"} == 1')) == 1, 60)
+            remaining_checkpoint("SYNTHETIC_SERIES")
             series = api(
                 "loki",
                 "/loki/api/v1/series?"
                 + urllib.parse.urlencode(
                     {
-                        "match[]": '{service=~"api-gateway|mobile-bff|notification-web",environment="synthetic"}',
+                        "match[]": ('{service="notification-web",environment="synthetic"}' if remaining_infra_only
+                                    else '{service=~"api-gateway|mobile-bff|notification-web",environment="synthetic"}'),
                         "start": str(now),
                         "end": str(time.time_ns()),
                     }
                 ),
             )["data"]
-            assert {row["service"] for row in series} == {"api-gateway", "mobile-bff", "notification-web"}
+            if remaining_infra_only:
+                assert {row["service"] for row in series} == {"notification-web"}
+            else:
+                assert {row["service"] for row in series} == {"api-gateway", "mobile-bff", "notification-web"}
+            remaining_checkpoint("LOW_CARDINALITY_LABELS")
             forbidden = {"requestid", "traceid", "spanid", "eventid", "userid", "jobid", "authorization", "cookie"}
             assert all(not (forbidden & {key.replace("_", "").lower() for key in row}) for row in series)
+            remaining_checkpoint("SENT_ENTRIES")
             sent = samples('loki_write_sent_entries_total{job="alloy"}')
             assert sent and sum(float(row["value"][1]) for row in sent) > 0
             # Loki's unchanged64KiB limit rejects this controlled, non-business line.
             # Require actual terminal-drop telemetry, never a synthetic metric.
+            remaining_checkpoint("DROP_BASELINE")
             before_drop = samples('sum(loki_write_dropped_entries_total{job="alloy"})')
             baseline = float(before_drop[0]["value"][1]) if before_drop else 0
+            remaining_checkpoint("DROP_PROBE")
             (app_logs / "delivery-probe.log").write_text("controlled-line-limit-probe:" + "x" * 70000 + "\n")
+            remaining_checkpoint("DROP_OBSERVED")
             wait(lambda: bool(samples('sum(loki_write_dropped_entries_total{job="alloy"}) > ' + str(baseline))), 60)
+            remaining_checkpoint("ALLOY_RSS")
             rss = samples('process_resident_memory_bytes{job="alloy"}')
+            remaining_values([row["value"][1] for row in rss], 256 * 1024**2)
             assert len(rss) == 1 and 0 < float(rss[0]["value"][1]) <= 256 * 1024**2
+            remaining_checkpoint("ALLOY_CPU")
+            if remaining_infra_only:
+                # Java IT normally supplies this interval; await real post-recreate scrapes instead.
+                wait(lambda: len(samples('rate(process_cpu_seconds_total{job="alloy"}[1m])')) == 1, 60)
             cpu = samples('rate(process_cpu_seconds_total{job="alloy"}[1m])')
+            remaining_values([row["value"][1] for row in cpu], 0.6)
             assert len(cpu) == 1 and 0 <= float(cpu[0]["value"][1]) <= 0.6
             checks.append(
                 {
@@ -2312,15 +2524,22 @@ def main(host_and_bot_only=False):
                     }
                 }
             )
+            remaining_checkpoint("COMPLETE")
             result = {
-                "result": "PASS",
-                "source_sha": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip(),
+                "result": "PARTIAL_PASS" if remaining_infra_only else "PASS",
+                "source_sha": (context["checkoutSha"] if remaining_infra_only else subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip()),
                 "config_sha256": hashes,
                 "checks": checks,
                 "slo_30d_budget": dict(budget, queries=slo_results),
-                "host_bot_diagnostics": _STATE["host_bot_diagnostics"],
-                "actual_application_transport": app_result,
-                "actual_background_transport": background_result,
+                **({"scope": "REMAINING_INFRA_ONLY", "full_monitoring": False,
+                    "excluded_assertions": dict(_REMAINING_EXCLUSIONS),
+                    "qualification": "Independent infrastructure with synthetic notification-web telemetry only; actual Java application/background transports and their three-service log inventory NOT_RUN",
+                    "synthetic_fixture_log_budget": {"service": "notification-web", "qualification": "SYNTHETIC_FIXTURE_ONLY"},
+                    "remaining_diagnostics": _STATE["remaining_diagnostics"]}
+                   if remaining_infra_only else {
+                    "host_bot_diagnostics": _STATE["host_bot_diagnostics"],
+                    "actual_application_transport": app_result,
+                    "actual_background_transport": background_result}),
                 "elapsed_seconds": round(time.monotonic() - started, 2),
             }
         finally:
@@ -2328,10 +2547,11 @@ def main(host_and_bot_only=False):
             # Private tail before down removes the worker; diagnostics cannot
             # replace the primary failure or prevent exact-owned cleanup.
             try:
-                raw = subprocess.run(prefix + ["logs", "--no-color", "--tail", "100",
-                                               "notification-bot", "node-exporter", "cadvisor"],
+                log_services = (list(config["services"]) if remaining_infra_only else
+                                ["notification-bot", "node-exporter", "cadvisor"])
+                raw = command_run(prefix + ["logs", "--no-color", "--tail", "100", *log_services],
                                      capture_output=True, timeout=15, check=False)
-                descriptor = os.open(td / "host-bot.private.log", os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+                descriptor = os.open(td / ("remaining-infra.private.log" if remaining_infra_only else "host-bot.private.log"), os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
                 with os.fdopen(descriptor, "wb") as log:
                     log.write(raw.stdout[:1024**2])
                     log.write(raw.stderr[:65536])
@@ -2363,9 +2583,10 @@ if __name__ == "__main__":
     elif sys.argv[1:] == ["--e2e-async-browser"]:
         e2e_async_browser()
     else:
-        assert sys.argv[1:] in ([], ["--host-and-bot-only"])
+        assert sys.argv[1:] in ([], ["--host-and-bot-only"], ["--remaining-infra-only"])
         try:
-            partial = main(host_and_bot_only=sys.argv[1:] == ["--host-and-bot-only"])
+            partial = main(host_and_bot_only=sys.argv[1:] == ["--host-and-bot-only"],
+                           remaining_infra_only=sys.argv[1:] == ["--remaining-infra-only"])
             if partial is not None:
                 partial["cleanup"] = _STATE["cleanup"]
                 print(json.dumps(partial))
@@ -2401,6 +2622,9 @@ if __name__ == "__main__":
                            if "scope" in _STATE else {}),
                         **({"host_bot_diagnostics": _STATE["host_bot_diagnostics"]}
                            if "host_bot_diagnostics" in _STATE else {}),
+                        **({"remaining_diagnostics": _STATE["remaining_diagnostics"],
+                            "excluded_assertions": dict(_REMAINING_EXCLUSIONS)}
+                           if "remaining_diagnostics" in _STATE else {}),
                         "source_frame": own_source_frame(error),
                         "missing_host_paths": _STATE.get("missing_host_paths", []),
                     }

@@ -218,11 +218,12 @@ def bootstrap_hook(runner):
                  "BOOTSTRAP_RECEIPT_FAILED")
 
 
-def run_cohort(selection, target, cohort=None, *, focused=False):
+def run_cohort(selection, target, cohort=None, *, focused=False, bundled_dockerfile_frontend=False):
     options = {'failed_cases': ['HEADMAN_TEACHER_READ','FULL_ADMIN_RIGHTS','HOMEWORK_PERIOD']} if focused and selection == 'ui-batch' else {}
     if focused and selection == 'special13':
         options.update(lifecycle_only=True, operational_until='semester-metadata')
-    runner = ReplayRunner(selection, special_cohort=cohort, operational=selection == "special13", **options)
+    runner = ReplayRunner(selection, special_cohort=cohort, operational=selection == "special13",
+                          bundled_dockerfile_frontend=bundled_dockerfile_frontend, **options)
     if focused and selection == 'special13':
         runner.partial_lifecycle_selection = True
     if selection == "client":
@@ -297,7 +298,11 @@ def controls(target):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("mode", choices=MODES)
+    parser.add_argument("--bundled-dockerfile-frontend", action="store_true",
+                        help="failed-ci only: reuse the guarded Docker Engine bundled frontend")
     args = parser.parse_args()
+    lane.require(not args.bundled_dockerfile_frontend or args.mode == "failed-ci",
+                 "BUNDLED_FRONTEND_FAILED_CI_ONLY")
     os.umask(0o077)
     revision, nonce, audit = binding(os.environ)
     target = audit / ("browser-" + args.mode)
@@ -318,7 +323,8 @@ def main():
                 lane.preflight(release=True)
                 selections = [('ui-batch', None), ('special13', 'lifecycle')] if args.mode == 'failed-ci' else [(args.mode, cohort) for cohort in (("nonclock", "lifecycle") if args.mode == "special13" else (None,))]
                 for selection, cohort in selections:
-                    row = run_cohort(selection, target, cohort, focused=args.mode == 'failed-ci')
+                    row = run_cohort(selection, target, cohort, focused=args.mode == 'failed-ci',
+                                     bundled_dockerfile_frontend=args.bundled_dockerfile_frontend)
                     rows.append(row)
                     cancelled = cancelled or row["cancelled"]
                     if row["status"] == "HOLD" or row["cancelled"]:

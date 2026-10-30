@@ -1920,6 +1920,7 @@ class Runner:
             self.env["RCT_LOCAL_CLIENT_CASES"] = json.dumps(client_cases, separators=(',', ':'))
         if mode == "special13":
             self.env["RCT_LOCAL_SPECIAL_COHORT"] = special_cohort
+        if mode in {"ui-batch", "special13"}:
             self.env["CI"] = "true"  # Fixture noninteractive guard, never a hosted identity.
         if self.failed_cases is not None:
             self.env["RCT_LOCAL_UI_BATCH_CASES"] = json.dumps(self.failed_cases)

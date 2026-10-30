@@ -653,7 +653,10 @@ function shifted(date: string, days: number): string {
 async function selectHomeworkDate(page: Page, dataset: MobileDataset, date: string): Promise<void> {
   expect(date >= dataset.semester.dateFrom && date <= dataset.semester.dateTo).toBe(true);
   const monthTab = page.getByRole('tab', { name: 'Месяц', exact: true });
-  const readMonth = async (action: () => Promise<unknown>): Promise<void> => {
+  const readMonth = async (
+    action: () => Promise<unknown>,
+    expectedMonth?: string,
+  ): Promise<void> => {
     const read = page.waitForResponse((response) => {
       const url = new URL(response.url());
       const from = url.searchParams.get('from'),
@@ -662,7 +665,8 @@ async function selectHomeworkDate(page: Page, dataset: MobileDataset, date: stri
         url.pathname !== '/api/v1/student/homework' ||
         response.request().method() !== 'GET' ||
         !from ||
-        !to
+        !to ||
+        (expectedMonth !== undefined && from.slice(0, 7) !== expectedMonth)
       )
         return false;
       const first = from.slice(0, 7) + '-01';
@@ -678,6 +682,9 @@ async function selectHomeworkDate(page: Page, dataset: MobileDataset, date: stri
     const response = await read;
     expect(response.status()).toBe(200);
     const feed = await response.json();
+    const requestUrl = new URL(response.url());
+    const requestFrom = requestUrl.searchParams.get('from')!;
+    const requestTo = requestUrl.searchParams.get('to')!;
     const calendar = page.locator('.homework-calendar');
     const selectedDay = calendar.locator('button[aria-pressed="true"]');
     const facts = {
@@ -692,8 +699,13 @@ async function selectHomeworkDate(page: Page, dataset: MobileDataset, date: stri
       selectedDateEnabled: null as boolean | null,
     };
     try {
-      // The response body can finish before Vue publishes the new month's calendar.
-      // Calendar readiness also requires the accepted feed to cover this exact period.
+      // HTTP completion can precede Vue publication while the previous calendar
+      // is still ready/enabled. First bind the selected day to this response month.
+      expect(feed.from === requestFrom && feed.to === requestTo).toBe(true);
+      await expect(selectedDay).toHaveAttribute(
+        'data-homework-date',
+        new RegExp(`^${requestFrom.slice(0, 7)}-\\d{2}$`),
+      );
       await expect(calendar).toHaveAttribute('aria-busy', 'false');
       facts.calendarReady = true;
       await expect(selectedDay).toBeEnabled();
@@ -725,13 +737,17 @@ async function selectHomeworkDate(page: Page, dataset: MobileDataset, date: stri
     Number(value.slice(0, 4)) * 12 + Number(value.slice(5, 7));
   const steps = monthIndex(date) - monthIndex(selected!);
   for (let index = 0; index < Math.abs(steps); index++) {
-    await readMonth(() =>
-      page
-        .getByRole('button', {
-          name: steps < 0 ? 'Предыдущий период' : 'Следующий период',
-          exact: true,
-        })
-        .click(),
+    const expected = new Date(`${selected!.slice(0, 7)}-01T12:00:00Z`);
+    expected.setUTCMonth(expected.getUTCMonth() + Math.sign(steps) * (index + 1));
+    await readMonth(
+      () =>
+        page
+          .getByRole('button', {
+            name: steps < 0 ? 'Предыдущий период' : 'Следующий период',
+            exact: true,
+          })
+          .click(),
+      expected.toISOString().slice(0, 7),
     );
   }
   const target = page.locator(`.homework-calendar button[data-homework-date="${date}"]`);

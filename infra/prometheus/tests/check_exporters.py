@@ -17,6 +17,7 @@ import shutil
 import subprocess
 import sys
 import time
+import traceback
 import urllib.parse
 import urllib.request
 import uuid
@@ -1021,6 +1022,32 @@ def main():
                 "redis_probe": _STATE["redis_probe"],
                 "redis_exporter": _STATE["redis_exporter"],
             }
+        except BaseException as error:
+            # Preserve the original failure before down removes the owned containers.
+            # Diagnostics are private and optional; they never replace that failure.
+            def private_diagnostic(name, value):
+                if value is None:
+                    return
+                try:
+                    raw = value if isinstance(value, bytes) else str(value).encode()
+                    descriptor = os.open(td / name, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+                    with os.fdopen(descriptor, "wb") as output:
+                        output.write(raw[:2 * 1024**2])
+                except Exception:
+                    pass
+
+            private_diagnostic("exporter-traceback.private.log", traceback.format_exc())
+            if isinstance(error, subprocess.SubprocessError):
+                private_diagnostic("exporter-command.stdout.private.log", getattr(error, "stdout", None))
+                private_diagnostic("exporter-command.stderr.private.log", getattr(error, "stderr", None))
+            try:
+                logs = docker("--profile", "rabbit-metrics-contract", "logs", "--no-color", "--tail", "100",
+                              check=False, seconds=15)
+                private_diagnostic("exporter-containers.stdout.private.log", logs.stdout)
+                private_diagnostic("exporter-containers.stderr.private.log", logs.stderr)
+            except Exception:
+                pass
+            raise
         finally:
             primary = sys.exc_info()[0]
             _STATE["cleanup"] = "STARTED"

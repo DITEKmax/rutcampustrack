@@ -54,7 +54,9 @@ python infra/prometheus/tests/check_formulas.py
 
 stage=DELIVERY
 python3 infra/prometheus/tests/check_delivery.py | tee build/monitoring/delivery.json
+# Match CI permissions for newly generated nonroot container inputs only.
+# The private audit ancestry and parent-created logs/receipts stay owner-only.
 stage=EXPORTERS
-python3 infra/prometheus/tests/check_exporters.py | tee build/monitoring/exporters.json
+(umask 022; python3 infra/prometheus/tests/check_exporters.py) | tee build/monitoring/exporters.json
 stage=PIPELINE
-python3 infra/prometheus/tests/check_pipeline.py | tee build/monitoring/pipeline.json
+(umask 022; python3 infra/prometheus/tests/check_pipeline.py) | tee build/monitoring/pipeline.json

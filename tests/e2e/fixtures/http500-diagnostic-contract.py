@@ -439,6 +439,30 @@ class SharedDiagnosticControls(unittest.TestCase):
                                          event(reconnect['caseId'], 'OBSERVATION', 0, 'D002_RECONNECT')]
         reconnect['d002ReconnectObservation'] = reconnect_observation()
         self.assertTrue(diag.is_target_failure(receipt([homework, reconnect]), diag.STAGES['HOMEWORK_CREATE503']))
+        # New producer field is optional, finite and cannot hide a sibling 503.
+        for endpoint in ('refresh', 'current'):
+            for phase in ('UNKNOWN', 'NOT_CALLED', 'PENDING', 'FULFILLED', 'REJECTED'):
+                with self.subTest(endpoint=endpoint, phase=phase):
+                    observed = copy.deepcopy(reconnect)
+                    observed['d002ReconnectObservation']['atOnline'] = {'refresh': 'UNKNOWN', 'current': 'UNKNOWN'}
+                    observed['d002ReconnectObservation']['atOnline'][endpoint] = phase
+                    self.assertTrue(diag.closed_case_row(observed))
+                    self.assertTrue(diag.is_homework_failure(receipt([homework, observed])))
+                    self.assertTrue(diag.is_target_failure(receipt([homework, observed]), diag.STAGES['HOMEWORK_CREATE503']))
+                    self.assertFalse(diag.is_homework_failure(receipt([observed])))  # No sibling 503, no trigger.
+        for invalid in (None, True, [], {}, {'refresh': 'PENDING'},
+                        {'refresh': True, 'current': 'NOT_CALLED'},
+                        {'refresh': 'PENDING', 'current': False},
+                        {'refresh': private, 'current': 'NOT_CALLED'},
+                        {'refresh': 'PENDING', 'current': 'NOT_CALLED', 'raw': private},
+                        {'refresh': {'phase': 'PENDING'}, 'current': 'NOT_CALLED'}):
+            observed = copy.deepcopy(reconnect)
+            observed['d002ReconnectObservation']['atOnline'] = invalid
+            self.assertFalse(diag.is_homework_failure(receipt([homework, observed])))
+        observed = copy.deepcopy(reconnect)
+        observed['d002ReconnectObservation']['atOnline'] = {'refresh': 'PENDING', 'current': 'NOT_CALLED'}
+        observed['diagnosticEvents'].pop()  # Correct field cannot bypass the observation event binding.
+        self.assertFalse(diag.is_homework_failure(receipt([homework, observed])))
         reconnect['d002ReconnectObservation']['raw'] = private
         self.assertFalse(diag.is_target_failure(receipt([homework, reconnect]), diag.STAGES['HOMEWORK_CREATE503']))
         good = receipt([row('ASYNC_DOCX_RESUME', failed=False)], failed=False)

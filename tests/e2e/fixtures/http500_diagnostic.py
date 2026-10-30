@@ -723,11 +723,20 @@ def closed_d002_reconnect_observation(value):
         return exact(item, keys) and all(type(item[key]) is bool for key in keys)
     endpoints, epochs = ('refresh', 'current'), ('preOnline', 'postOnline')
     top_flags = ('offlineSeen', 'onlineSeen', 'online', 'observationUnknown')
-    if (not exact(value, (*top_flags, 'native', 'pageHttp', 'priorPending', 'refreshHttpStatus'))
+    keys = (*top_flags, 'native', 'pageHttp', 'priorPending', 'refreshHttpStatus')
+    if type(value) is dict and 'atOnline' in value:
+        keys += ('atOnline',)
+    if (not exact(value, keys)
             or any(type(value[key]) is not bool for key in top_flags)
             or not exact(value['native'], epochs) or not exact(value['pageHttp'], endpoints)
             or not flags(value['priorPending'], endpoints)):
         return False
+    if 'atOnline' in value:
+        at_online = value['atOnline']
+        if (not exact(at_online, endpoints) or any(type(at_online[endpoint]) is not str
+                or at_online[endpoint] not in {'UNKNOWN', 'NOT_CALLED', 'PENDING', 'FULFILLED', 'REJECTED'}
+                for endpoint in endpoints)):
+            return False
     for epoch in epochs:
         states = value['native'][epoch]
         if not exact(states, endpoints):

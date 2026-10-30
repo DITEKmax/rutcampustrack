@@ -77,7 +77,7 @@ def failed_ci_catalog():
         Gate('prepared-control', ('python3','-B','scripts/prepared-projection-control.py'), ('failed-ci-setup',), seconds=90,
              reports=('build/monitoring/prepared-control.safe.json',)),
         Gate('monitoring-tools', ('python3','scripts/local-release/setup-tools.py','--monitoring-only'), ('prepared-control',), seconds=600),
-        Gate('monitoring', ('bash','scripts/local-release/monitoring.sh'), ('monitoring-tools',), seconds=1500, resource=True, reports=tuple('build/monitoring/'+n+'.json' for n in ('delivery','exporters','pipeline'))),
+        Gate('monitoring', ('bash','scripts/local-release/monitoring.sh'), ('monitoring-tools',), seconds=1500, resource=True, reports=tuple('build/monitoring/'+n+'.json' for n in ('delivery','exporters','pipeline','chain.safe'))),
         Gate('source-public-object-prepare', ('python3','scripts/local-release/source-public-object-prepare.py'), ('failed-ci-setup',), seconds=120),
         Gate('java-attendance-service', ('bash','scripts/local-release/attendance-coverage.sh'), ('failed-ci-setup','source-public-object-prepare'), seconds=3600, resource=True,
              reports=(root+'/build/test-results',root+'/build/reports/jacoco',root+'/build/reports/tests',root+'/build/reports/integrationTest','build/ci-test-outcomes/attendance-service')),

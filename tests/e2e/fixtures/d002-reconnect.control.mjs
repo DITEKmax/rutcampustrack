@@ -1,0 +1,103 @@
+/** Pure exact-online observer and existing private error sink controls. No browser/server. */
+import assert from 'node:assert/strict';
+import * as fs from 'node:fs';
+import { resolve, join } from 'node:path';
+import { tmpdir } from 'node:os';
+import { runInNewContext } from 'node:vm';
+import { stripTypeScriptTypes } from 'node:module';
+const text = fs.readFileSync(new URL('./safe-reporter.ts', import.meta.url), 'utf8');
+const begin = text.indexOf('export function createD002ReconnectObserver()');
+const end = text.indexOf('\nexport const safeFailureAnnotation', begin);
+const observerSource = stripTypeScriptTypes(text.slice(begin, end), { mode: 'transform' }).replace(/export /g, '');
+const events = new Map(), calls = [];
+const original = function (...args) {
+  let resolve, reject;
+  const promise = new Promise((ok, fail) => { resolve = ok; reject = fail; });
+  calls.push({ receiver: this, args, promise, resolve, reject });
+  return promise;
+};
+const sandbox = { fetch: original, URL, Request, location: { origin: 'https://private.invalid', href: 'https://private.invalid/app/' },
+  navigator: { onLine: true }, addEventListener: (kind, callback) => events.set(kind, callback),
+  removeEventListener: kind => events.delete(kind) };
+const create = () => runInNewContext(`${observerSource}; createD002ReconnectObserver()`, sandbox);
+const same = (actual, expected) => assert.deepEqual(JSON.parse(JSON.stringify(actual)), expected);
+let observer = create();
+const receiver = {}, init = { method: 'POST' };
+const pending = sandbox.fetch.call(receiver, '/api/auth/refresh', init);
+assert.equal(pending, calls[0].promise); assert.equal(calls[0].receiver, receiver); assert.equal(calls[0].args[1], init);
+events.get('offline')(); events.get('online')();
+same(observer.read().atOnline, { refresh: 'PENDING', current: 'NOT_CALLED' });
+const error = new Error('PRIVATE_D002_ERROR_CANARY');
+calls[0].reject(error); assert.equal(await pending.catch(value => value), error);
+assert.equal(observer.read().native.preOnline.refresh.phase, 'REJECTED');
+same(observer.read().atOnline, { refresh: 'PENDING', current: 'NOT_CALLED' });
+events.get('online')(); assert.equal(observer.read().atOnline.refresh, 'PENDING', 'first online snapshot is immutable');
+observer.restore(); assert.equal(sandbox.fetch, original);
+observer = create();
+const settled = sandbox.fetch('/api/auth/refresh', init); calls.at(-1).reject(error); await settled.catch(() => {});
+events.get('online')(); assert.equal(observer.read().atOnline.refresh, 'REJECTED'); observer.restore();
+observer = create();
+const fulfilled = sandbox.fetch('/api/auth/refresh', init); calls.at(-1).resolve(new Response('{}')); await fulfilled;
+events.get('online')(); assert.equal(observer.read().atOnline.refresh, 'FULFILLED'); observer.restore();
+observer = create();
+same(observer.read().atOnline, { refresh: 'UNKNOWN', current: 'UNKNOWN' });
+sandbox.fetch('/api/auth/refresh', init); sandbox.fetch('/api/auth/refresh', init);
+events.get('online')(); assert.equal(observer.read().atOnline.refresh, 'UNKNOWN'); observer.restore();
+assert.equal(runInNewContext(`${observerSource}; createD002ReconnectObserver().read()`, {}), null);
+
+const start = text.indexOf("export const d002ReconnectObservationAnnotation"), stop = text.indexOf('\nconst startupFixtureStages', start);
+const closure = stripTypeScriptTypes(text.slice(start, stop), { mode: 'transform' }).replace(/export /g, '');
+const ownData = (value, key) => value && typeof value === 'object' ? Object.getOwnPropertyDescriptor(value, key)?.value : undefined;
+const closed = new Function('ownData', 'retainDiagnosticObservation', `${closure}; return closedD002ReconnectObservation;`)(ownData, () => {});
+const state = { phase: 'NOT_CALLED', multiple: false };
+const observation = { offlineSeen: true, onlineSeen: true, online: true, observationUnknown: false,
+  atOnline: { refresh: 'PENDING', current: 'NOT_CALLED' },
+  native: { preOnline: { refresh: { phase: 'REJECTED', multiple: false }, current: state }, postOnline: { refresh: state, current: state } },
+  pageHttp: { refresh: { requested: true, responded: false, failed: true }, current: { requested: false, responded: false, failed: false } },
+  priorPending: { refresh: false, current: false }, refreshHttpStatus: 'UNOBSERVED' };
+assert.deepEqual(closed(observation), observation);
+for (const candidate of [{ ...observation, body: 'PRIVATE_CANARY' },
+  { ...observation, atOnline: { ...observation.atOnline, url: 'PRIVATE_CANARY' } },
+  { ...observation, atOnline: { refresh: 'PRIVATE_CANARY', current: 'NOT_CALLED' } }]) assert.equal(closed(candidate), undefined);
+let getters = 0;
+const hostile = { ...observation, atOnline: Object.defineProperty({ current: 'NOT_CALLED' }, 'refresh', { get() { getters++; return 'PENDING'; } }) };
+assert.equal(closed(hostile), undefined); assert.equal(getters, 0);
+assert.equal(JSON.stringify(closed(observation)).includes('PRIVATE'), false);
+
+const root = fs.mkdtempSync(join(tmpdir(), 'rct-d002-private-')); fs.chmodSync(root, 0o700);
+try {
+  const privacy = fs.readFileSync(new URL('./artifact-privacy.ts', import.meta.url), 'utf8');
+  const a = privacy.indexOf('const failedCiRawCounts = '), b = privacy.indexOf('/** Run before Playwright', a);
+  const source = stripTypeScriptTypes(privacy.slice(a,b), { mode: 'transform' }).replace(/export /g, '');
+  const nonce = 'abcdef0123456789abcdef01', caseId = 'D002_RECONNECT_ACCOUNT_AUTHORITY';
+  const title = 'D002 reconnect rechecks changed grants and a late old feed cannot replace the new account';
+  const run = resolve(root, '.agent/evidence/local-runs', `rct-local-stage17-${nonce.slice(0,12)}`), directory = resolve(run, 'framework-private/failed-ci');
+  fs.mkdirSync(directory, { recursive: true, mode: 0o700 });
+  const manifest = resolve(run, 'owner.json'), target = resolve(directory, 'test-errors.private.jsonl');
+  const owner = { root, run, nonce, uid: process.getuid(), source_sha: 'source', mode: 'client', release_lane: 'client', client_case: caseId };
+  const writeOwner = value => fs.writeFileSync(manifest, JSON.stringify(value), { mode: 0o600 }); writeOwner(owner);
+  const env = { RCT_LOCAL_RELEASE_MODE: '', RCT_LOCAL_CLIENT_CASE: caseId, RCT_LOCAL_STAGE17_NONCE: nonce,
+    RCT_LOCAL_STAGE17_MANIFEST: manifest, RCT_LOCAL_RELEASE_REVISION: 'source', RCT_LOCAL_STAGE17_MODE: 'client' };
+  const proc = { env, platform: 'linux', getuid: () => process.getuid(), stderr: { write: value => assert.equal(value, 'RCT_FAILED_CI_RAW_RETENTION_V1 FAIL\n') } };
+  const names = ['closeSync','constants','fstatSync','lstatSync','openSync','readFileSync','realpathSync','writeSync'];
+  const factory = new Function(...names, 'resolve', '__dirname', 'failedCaseId', 'process', `${source}; return retainFailedCiRawError;`);
+  const sink = () => factory(...names.map(name => fs[name]), resolve, resolve(root, 'tests/e2e/fixtures'), () => undefined, proc);
+  assert.equal(sink()({ title }, error), 'OFF'); assert.equal(fs.existsSync(target), false);
+  env.RCT_LOCAL_RELEASE_MODE = 'failed-ci'; delete env.RCT_LOCAL_CLIENT_CASE;
+  assert.equal(sink()({ title }, error), 'REJECTED'); assert.equal(fs.existsSync(target), false);
+  env.RCT_LOCAL_CLIENT_CASE = caseId;
+  for (const change of [{ client_case: 'wrong' }, { mode: 'ui-batch' }, { release_lane: null }, { source_sha: 'wrong' }]) {
+    writeOwner({ ...owner, ...change }); assert.equal(sink()({ title }, error), 'FAILED'); assert.equal(fs.existsSync(target), false);
+  }
+  writeOwner(owner);
+  const retain = sink(); const before = Object.getOwnPropertyDescriptors(error);
+  assert.equal(retain({ title }, error), 'RETAINED');
+  assert.equal(fs.statSync(target).mode & 0o777, 0o600);
+  assert.ok(fs.readFileSync(target, 'utf8').includes('PRIVATE_D002_ERROR_CANARY'));
+  assert.deepEqual(Object.getOwnPropertyDescriptors(error), before);
+  assert.equal(retain({ title }, error), 'ALREADY_RETAINED');
+} finally { fs.rmSync(root, { recursive: true, force: true }); }
+console.log(JSON.stringify({ state: 'PASS', nativeAtOnlinePendingImmutable: true, rejectedBeforeOnlineDistinct: true,
+  fulfilledBeforeOnlineDistinct: true, unknownAndMultipleClosed: true, promiseIdentityPreserved: true,
+  privateFieldGetterClosure: true, exactClientRaw0600: true, defaultCiRawOff: true, native: 'NOT_RUN' }));
+

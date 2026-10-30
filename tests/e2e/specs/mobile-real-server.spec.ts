@@ -4220,6 +4220,7 @@ test.describe('Production PWA service worker D002 @real-mobile', () => {
                 online: observed.online,
                 observationUnknown: httpObservationUnknown || observed.observationUnknown,
                 native: observed.native,
+                atOnline: observed.atOnline,
                 pageHttp: authHttp,
                 priorPending: {
                   refresh: [...priorAuth].some((request) => pendingAuth.get(request) === 'refresh'),

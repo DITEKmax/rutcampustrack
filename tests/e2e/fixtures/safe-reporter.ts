@@ -45,10 +45,17 @@ export function createD002ReconnectObserver() {
   let observationUnknown = false;
   let offlineSeen = false;
   let onlineSeen = false;
+  const atOnline = { refresh: 'UNKNOWN' as Phase | 'UNKNOWN', current: 'UNKNOWN' as Phase | 'UNKNOWN' };
   const offline = () => {
     offlineSeen = true;
   };
   const online = () => {
+    if (!onlineSeen) {
+      for (const endpoint of ['refresh', 'current'] as const) {
+        const state = preOnline[endpoint];
+        atOnline[endpoint] = observationUnknown || state.multiple ? 'UNKNOWN' : state.phase;
+      }
+    }
     onlineSeen = true;
   };
   const observed: typeof fetch = function (this: unknown, ...args) {
@@ -131,6 +138,7 @@ export function createD002ReconnectObserver() {
       online: navigator.onLine,
       refresh: { ...refresh },
       current: { ...current },
+      atOnline: { ...atOnline },
       native: {
         preOnline: { refresh: { ...preOnline.refresh }, current: { ...preOnline.current } },
         postOnline: { refresh: { ...postOnline.refresh }, current: { ...postOnline.current } },
@@ -1781,6 +1789,7 @@ export interface D002ReconnectObservation {
   onlineSeen: boolean;
   online: boolean;
   observationUnknown: boolean;
+  atOnline?: D002Endpoints<D002NativeState['phase'] | 'UNKNOWN'>;
   native: {
     preOnline: D002Endpoints<D002NativeState>;
     postOnline: D002Endpoints<D002NativeState>;
@@ -1806,8 +1815,11 @@ function closedD002ReconnectObservation(value: unknown): D002ReconnectObservatio
   const endpoints = ['refresh', 'current'] as const;
   const epochs = ['preOnline', 'postOnline'] as const;
   const topFlags = ['offlineSeen', 'onlineSeen', 'online', 'observationUnknown'] as const;
-  if (!exact(value, [...topFlags, 'native', 'pageHttp', 'priorPending', 'refreshHttpStatus']))
+  const atOnline = ownData(value, 'atOnline');
+  if (!exact(value, [...topFlags, 'native', 'pageHttp', 'priorPending', 'refreshHttpStatus', ...(atOnline === undefined ? [] : ['atOnline'])]))
     return;
+  if (atOnline !== undefined && (!exact(atOnline, endpoints) || endpoints.some(endpoint =>
+    !['UNKNOWN', 'NOT_CALLED', 'PENDING', 'FULFILLED', 'REJECTED'].includes(ownData(atOnline, endpoint) as string)))) return;
   if (topFlags.some((key) => typeof ownData(value, key) !== 'boolean')) return;
   const native = ownData(value, 'native');
   const pageHttp = ownData(value, 'pageHttp');
@@ -1850,6 +1862,10 @@ function closedD002ReconnectObservation(value: unknown): D002ReconnectObservatio
     };
   };
   return {
+    ...(atOnline === undefined ? {} : { atOnline: {
+      refresh: ownData(atOnline, 'refresh') as D002NativeState['phase'] | 'UNKNOWN',
+      current: ownData(atOnline, 'current') as D002NativeState['phase'] | 'UNKNOWN',
+    } }),
     offlineSeen: ownData(value, 'offlineSeen') as boolean,
     onlineSeen: ownData(value, 'onlineSeen') as boolean,
     online: ownData(value, 'online') as boolean,

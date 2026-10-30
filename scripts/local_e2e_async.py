@@ -74,6 +74,9 @@ BATCH_BLOCKED = [
 ]
 
 
+D002_CASE = "D002_RECONNECT_ACCOUNT_AUTHORITY"
+D002_TITLE = "D002 reconnect rechecks changed grants and a late old feed cannot replace the new account"
+
 FAILED_CASES = {
     'TMA_SIGNED_ENTRY': ('auth-smoke', 'signed teacher entry loads the real session and shared profile with host Back'),
     'TMA_TAMPERED_ENTRY': ('auth-smoke', 'tampered Telegram proof cannot expose role data or navigation'),
@@ -85,6 +88,11 @@ FAILED_CASES = {
     'HOMEWORK_NOTIFICATION': ('homework', 'MANAGE_HOMEWORK non-author edits preserve student completion and revoked authority cannot overwrite it @real-mobile'),
     'HELPER_PERMISSIONS': ('helper', 'HEADMAN edits helper capabilities through member row and retains VIEW_STATS @cloud-accepted'),
 }
+
+
+def client_case_arguments(case):
+    require(case in (None, D002_CASE), "CLIENT_CASE_SELECTION")
+    return ["--grep", re.escape(D002_TITLE) + "$"] if case else []
 
 
 def selected_batch_cases(cases):
@@ -461,6 +469,9 @@ def validate_lane_environment(value, environment, expected_mode=None, expected_b
                 (expected_run + "/supervision/observations.safe.json" if lane == "first3" else ""), "LOCAL_BATCH_OBSERVATION_BINDING")
     else:
         require(lane is None and expected_batch_lane is None and not environment.get("RCT_LOCAL_UI_BATCH_CASES"), "LOCAL_BATCH_MODE_REQUIRED")
+    client_case = value.get("client_case")
+    require(client_case in (None, D002_CASE) and (client_case is None or mode == "client" and release_lane == "client")
+            and environment.get("RCT_LOCAL_CLIENT_CASE", "") == (client_case or ""), "LOCAL_CLIENT_CASE_BINDING")
     diagnostic = value.get("startup_diagnostic", False)
     require(type(diagnostic) is bool and (not diagnostic or mode == "client")
             and environment.get("RCT_LOCAL_CLIENT_STARTUP_DIAGNOSTIC", "false") == ("true" if diagnostic else "false"),
@@ -1850,9 +1861,11 @@ def preflight(*, release=False, special=False, retained_receipt=None, retained_p
 
 class Runner:
     canonical_mount_records = staticmethod(canonical_mount_records)
-    def __init__(self, mode, *, release_lane=None, startup_diagnostic=False, bundled_dockerfile_frontend=False, failed_cases=None, special_cohort=None, lifecycle_only=False, operational=False, operational_until=None, reconciliation_only=False, recovery_archive_only=False):
+    def __init__(self, mode, *, release_lane=None, startup_diagnostic=False, bundled_dockerfile_frontend=False, client_case=None, failed_cases=None, special_cohort=None, lifecycle_only=False, operational=False, operational_until=None, reconciliation_only=False, recovery_archive_only=False):
+        require(client_case in (None, D002_CASE) and (client_case is None or mode == "client" and release_lane == "client"), "CLIENT_CASE_SELECTION")
+        self.client_case = client_case
         require(not startup_diagnostic or mode == "client", "CLIENT_DIAGNOSTIC_ONLY")
-        require(not bundled_dockerfile_frontend or mode in {"ui-batch", "special13"}, "BUNDLED_FRONTEND_UI_BATCH_ONLY")
+        require(not bundled_dockerfile_frontend or mode in {"ui-batch", "special13"} or client_case == D002_CASE, "BUNDLED_FRONTEND_UI_BATCH_ONLY")
         require(failed_cases is None or mode == "ui-batch", "BATCH_CASES_UI_BATCH_ONLY")
         require((mode == "special13" and special_cohort in {"nonclock", "lifecycle"})
                 or (mode != "special13" and special_cohort is None), "SPECIAL_COHORT_REQUIRED")
@@ -1902,6 +1915,8 @@ class Runner:
                         RCT_LOCAL_CLIENT_STARTUP_DIAGNOSTIC="true" if startup_diagnostic else "false",
                         PLAYWRIGHT_NO_COPY_PROMPT="1", NODE_OPTIONS="--max-old-space-size=512",
                         COMPOSE_PARALLEL_LIMIT="1", BUILDKIT_MAX_PARALLELISM="1")
+        if client_case:
+            self.env["RCT_LOCAL_CLIENT_CASE"] = client_case
         if mode == "special13":
             self.env["RCT_LOCAL_SPECIAL_COHORT"] = special_cohort
             self.env["CI"] = "true"  # Fixture noninteractive guard, never a hosted identity.
@@ -2159,6 +2174,7 @@ class Runner:
         if self.special_cohort == "nonclock":
             self.image_targets.append("rct-local-stage17/notification-bot:" + self.nonce)
         value = {"schema": 1, "uid": os.getuid(), "root": str(ROOT), "run": str(self.run), "nonce": self.nonce, "mode": self.mode,
+                 **({"client_case": self.client_case} if self.client_case else {}),
                  **({"lifecycle_only": True} if self.lifecycle_only else {}),
                  **({"reconciliation_only": True} if self.reconciliation_only else {}),
                  **({"recovery_archive_only": True} if self.recovery_archive_only else {}),
@@ -2264,6 +2280,7 @@ class Runner:
             config = "playwright.real-mobile.config.ts" if self.mode == "client" else "playwright.lesson-lifecycle.config.ts"
             self.command("CLIENT_REMAINING5" if self.mode == "client" else "LESSON_LIFECYCLE",
                          ["npx", "playwright", "test", "--config", config, "--project=chromium",
+                          *client_case_arguments(self.client_case),
                           *(["--max-failures=1"] if self.startup_diagnostic else [])], cwd=ROOT / "tests/e2e")
             emit("BROWSER_LANE_RESULT", mode=self.mode, result="PASS", qualification="FRESH_ISOLATED_LANE")
             return

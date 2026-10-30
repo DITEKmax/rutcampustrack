@@ -194,8 +194,12 @@ const failedCiRawObjects = new WeakSet<object>();
 export type FailedCiRawRetention = 'OFF' | 'RETAINED' | 'ALREADY_RETAINED' | 'REJECTED' | 'FAILED';
 function retainFailedCiRawError(info: Pick<TestInfo, 'title'>, error: unknown): FailedCiRawRetention {
   if (process.env.RCT_LOCAL_RELEASE_MODE !== 'failed-ci') return 'OFF';
-  const caseId = failedCaseId(info.title);
-  if (!caseId || !['HEADMAN_TEACHER_READ', 'FULL_ADMIN_RIGHTS', 'HOMEWORK_PERIOD', 'SEMESTER_METADATA'].includes(caseId)
+  const caseId = failedCaseId(info.title) ??
+    (process.env.RCT_LOCAL_CLIENT_CASE === 'D002_RECONNECT_ACCOUNT_AUTHORITY' &&
+     info.title === 'D002 reconnect rechecks changed grants and a late old feed cannot replace the new account'
+      ? 'D002_RECONNECT_ACCOUNT_AUTHORITY' : undefined);
+  const d002 = caseId === 'D002_RECONNECT_ACCOUNT_AUTHORITY' && process.env.RCT_LOCAL_CLIENT_CASE === caseId;
+  if (!caseId || (!d002 && !['HEADMAN_TEACHER_READ', 'FULL_ADMIN_RIGHTS', 'HOMEWORK_PERIOD', 'SEMESTER_METADATA'].includes(caseId))
       || !error || typeof error !== 'object') return 'REJECTED';
   if (failedCiRawObjects.has(error)) return 'ALREADY_RETAINED';
   let status: FailedCiRawRetention = 'FAILED';
@@ -217,7 +221,8 @@ function retainFailedCiRawError(info: Pick<TestInfo, 'title'>, error: unknown): 
     const owner = JSON.parse(readFileSync(manifest, 'utf8'));
     if (owner.root !== root || owner.run !== run || owner.nonce !== nonce || owner.uid !== process.getuid?.()
         || owner.source_sha !== process.env.RCT_LOCAL_RELEASE_REVISION || owner.mode !== process.env.RCT_LOCAL_STAGE17_MODE
-        || !['ui-batch', 'special13'].includes(owner.mode)) throw new Error('Private source binding');
+        || (d002 ? owner.mode !== 'client' || owner.release_lane !== 'client' || owner.client_case !== caseId
+                   : !['ui-batch', 'special13'].includes(owner.mode))) throw new Error('Private source binding');
     const count = failedCiRawCounts.get(caseId) ?? 0;
     if (count >= 16) throw new Error('Private test bound');
     const fields: Record<string, string> = {};

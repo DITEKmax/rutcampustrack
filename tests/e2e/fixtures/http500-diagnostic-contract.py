@@ -400,11 +400,11 @@ class SharedDiagnosticControls(unittest.TestCase):
         legacy['results'][0]['diagnostics'] = [{'stage': 'DATASET_HTTP', 'cause': 'DATASET_ATTENDANCE_MARK_HTTP', 'httpStatus': 500}]
         self.assertFalse(diag.is_target_failure(legacy, config))
 
-    def test_current_ten_case_client_cohort_and_foreign_rejections(self):
+    def test_current_eleven_case_client_cohort_and_foreign_rejections(self):
         stage = diag.STAGES['HOMEWORK_CREATE503']
         rows = [row(case, 'DATASET_HOMEWORK_CREATE_HTTP', 503, failed=index == 0)
                 for index, case in enumerate(sorted(diag.CLIENT_CASES))]
-        self.assertEqual(len(rows), 10)
+        self.assertEqual(len(rows), 11)
         self.assertTrue(diag.is_target_failure(receipt(rows), stage))
         for mutation in ('duplicate', 'foreign-async', 'oversized', 'unknown-row', 'unknown-event'):
             with self.subTest(mutation=mutation):

@@ -267,14 +267,15 @@ def d002_counts(report):
     lane.require(type(report) is dict and report.get("runnerErrors") == 0 and report.get("unsafeArtifact") is False
                  and report.get("suppressedStdoutBytes") == report.get("suppressedStderrBytes") == 0
                  and report.get("status") in {"passed", "failed"} and type(report.get("results")) is list
-                 and len(report["results"]) == 1, "D002_REPORT_SCHEMA")
-    row = report["results"][0]
-    lane.require(row.get("caseId") == lane.D002_CASE and row.get("project") == "chromium"
-                 and row.get("file") == "mobile-real-server.spec.ts" and row.get("expectedStatus") == "passed"
-                 and row.get("status") in {"passed", "failed", "timedOut", "interrupted", "skipped"}, "D002_EXACT_CASE")
-    return {"selected": 1, "passed": int(row["status"] == "passed"),
-            "failed": int(row["status"] in {"failed", "timedOut"}),
-            "notRun": int(row["status"] in {"interrupted", "skipped"}), "fullAcceptance": False}
+                 and len(report["results"]) == 2, "D002_REPORT_SCHEMA")
+    rows = report["results"]
+    lane.require([row.get("caseId") for row in rows] == list(lane.D002_CASES)
+                 and all(row.get("project") == "chromium" and row.get("file") == "mobile-real-server.spec.ts"
+                         and row.get("expectedStatus") == "passed"
+                         and row.get("status") in {"passed", "failed", "timedOut", "interrupted", "skipped"} for row in rows), "D002_EXACT_CASES")
+    return {"selected": 2, "passed": sum(row["status"] == "passed" for row in rows),
+            "failed": sum(row["status"] in {"failed", "timedOut"} for row in rows),
+            "notRun": sum(row["status"] in {"interrupted", "skipped"} for row in rows), "fullAcceptance": False}
 
 
 def secondary_failure(target, selection, cohort, stage, phase, error):
@@ -295,7 +296,7 @@ def secondary_failure(target, selection, cohort, stage, phase, error):
 def run_cohort(selection, target, cohort=None, *, focused=False, remaining_two=False, headman_only=False, d002_only=False, bundled_dockerfile_frontend=False):
     options = focused_options(selection, remaining_two, headman_only) if focused else {}
     runner = ReplayRunner(selection, special_cohort=cohort, operational=selection == "special13",
-                          bundled_dockerfile_frontend=bundled_dockerfile_frontend, client_case=lane.D002_CASE if d002_only else None, **options)
+                          bundled_dockerfile_frontend=bundled_dockerfile_frontend, client_cases=lane.D002_CASES if d002_only else None, **options)
     if focused and selection == 'special13':
         runner.partial_lifecycle_selection = True
     if selection == "client" and not d002_only:
@@ -318,7 +319,7 @@ def run_cohort(selection, target, cohort=None, *, focused=False, remaining_two=F
             trust.install()
         runner.execute()
         if selection in {"client", "webkit", "lesson-lifecycle"}:
-            closed_report(read_report(runner.run / "artifacts/safe-results.json"), 1 if d002_only else {"client": 10, "webkit": 1, "lesson-lifecycle": 4}[selection], "webkit" if trust else "chromium")
+            closed_report(read_report(runner.run / "artifacts/safe-results.json"), 2 if d002_only else {"client": 11, "webkit": 1, "lesson-lifecycle": 4}[selection], "webkit" if trust else "chromium")
         if selection == "special13":
             expected = 1 if focused else 6 if cohort == "nonclock" else 7
             rows = [row for row in runner.special_outcomes if not focused or row['lane'] == 'semester-metadata']
@@ -423,7 +424,7 @@ def main():
     parser.add_argument("mode", choices=MODES)
     selection = parser.add_mutually_exclusive_group()
     selection.add_argument("--d002-only", action="store_true",
-                           help="client only: exact D002 reconnect case, partial acceptance and private raw framework log")
+                           help="client only: two independent D002 cases, partial acceptance and private raw framework log")
     selection.add_argument("--headman-only", action="store_true",
                            help="failed-ci only: HEADMAN_TEACHER_READ, without metadata or dataset prerequisite")
     selection.add_argument("--remaining-two", action="store_true",
@@ -479,7 +480,7 @@ def main():
         lane.write(target / "result.safe.json", json.dumps({"schemaVersion": 1, "event": "LOCAL_CONTROL", "revision": revision, "nonce": nonce,
                    "mode": args.mode, "status": status, "cancelled": cancelled, "cleanup": (args.mode == "controls" and status == "PASS") or bool(rows) and all(row["cleanup"] for row in rows) and status != "HOLD", "cohorts": rows,
                    "remainingTwo": args.remaining_two, "headmanOnly": args.headman_only,
-                   **({"selectedCaseIds": [lane.D002_CASE], "selected": 1, "fullAcceptance": False} if args.d002_only else {}),
+                   **({"selectedCaseIds": list(lane.D002_CASES), "selected": 2, "fullAcceptance": False} if args.d002_only else {}),
                    "qualification": "Fresh cohorts serially; CI shared-job order/state and hosted hardware differ. No hosted CI identity."}) + "\n")
     return exit_code(status, cancelled)
 

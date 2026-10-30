@@ -43,7 +43,7 @@ export function createD002ReconnectObserver() {
   const preOnline = { refresh: makeState(), current: makeState() };
   const postOnline = { refresh: makeState(), current: makeState() };
   let observationUnknown = false;
-  let offlineSeen = false;
+  let offlineSeen = navigator.onLine === false;
   let onlineSeen = false;
   const atOnline = { refresh: 'UNKNOWN' as Phase | 'UNKNOWN', current: 'UNKNOWN' as Phase | 'UNKNOWN' };
   const offline = () => {

@@ -210,7 +210,7 @@ def load_catalog():
     for case, item in value['cases'].items():
         if (not re.fullmatch('[A-Z][A-Z0-9_]{0,63}', case) or type(item) is not dict
                 or set(item) != {'events'} or type(item['events']) is not list
-                or not 1 <= len(item['events']) <= (10 if case == 'D002_RECONNECT_ACCOUNT_AUTHORITY' else 8)):
+                or not 1 <= len(item['events']) <= (10 if case in {'D002_RECONNECT_ACCOUNT_AUTHORITY', 'D002_LATE_ACCOUNT_HOMEWORK'} else 8)):
             raise ValueError('Catalog case')
         for event in item['events']:
             if (type(event) is not dict or set(event) != {'stageId', 'eventCode', 'httpStatus'}
@@ -227,7 +227,7 @@ CATALOG = load_catalog()
 CLIENT_CASES = {
     'LIMITED_ADMIN_ACCOUNTS', 'HOMEWORK_FOREIGN_RETRY', 'SESSION_REVOKE_RECOVERY',
     'D003_DEVICE_REUSE_SUSPENDED_GRANT', 'D003_HEADMAN_TMA_MARK',
-    'D002_WARM_OFFLINE_REVOKED', 'D002_RECONNECT_ACCOUNT_AUTHORITY', 'D002_TMA_ONLINE_ONLY',
+    'D002_WARM_OFFLINE_REVOKED', 'D002_RECONNECT_ACCOUNT_AUTHORITY', 'D002_LATE_ACCOUNT_HOMEWORK', 'D002_TMA_ONLINE_ONLY',
     'N2_STUDENT_RETRY_ACTIVE', 'N2_STUDENT_RETRY_SUSPENDED',
 }
 STATS_CASES = {'STUDENT_MANUAL_BUDGET_AUTO_APPROVAL', 'HEADMAN_LESSON_CANCEL_RESTORE',

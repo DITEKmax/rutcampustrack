@@ -8,7 +8,15 @@ import { closeSync, constants, lstatSync, openSync, writeFileSync } from 'node:f
 import { isIP } from 'node:net';
 import { localSpecialLane, localSpecialService } from '../fixtures/local-special';
 import { resolve } from 'node:path';
-import type { BrowserContext, Download, Page, Request, Response, TestInfo } from '@playwright/test';
+import type {
+  BrowserContext,
+  Download,
+  JSHandle,
+  Page,
+  Request,
+  Response,
+  TestInfo,
+} from '@playwright/test';
 import {
   test as mobileTest,
   expect,
@@ -4072,519 +4080,568 @@ test.describe('Production PWA service worker D002 @real-mobile', () => {
     }
   });
 
-  test('D002 reconnect rechecks changed grants and a late old feed cannot replace the new account', { annotation: diagnosticCase('D002_RECONNECT_ACCOUNT_AUTHORITY') }, async ({
-    page,
-    context,
-    dataset,
-  }) => {
-    const marker = `${dataset.marker}-offline-owner`;
-    await publishOfflineHomework(dataset, marker);
-    const multirole = await dataset.user('TEACHER');
-    const rolePath = `/api/academic/users/${multirole.id}/roles/STUDENT`;
-    await dataset.admin.call('PUT', rolePath, {
-      status: 'ACTIVE',
-      groupId: dataset.group.id,
-      telegramId: multirole.telegramId,
-    });
-    type ReconnectKind = 'refresh' | 'current';
-    const pendingAuth = new Map<Request, ReconnectKind>();
-    const authHttp = {
-      refresh: { requested: false, responded: false, failed: false },
-      current: { requested: false, responded: false, failed: false },
-    };
-    let httpObservationUnknown = false;
-    let observingReconnect = false;
-    const priorAuth = new Set<Request>();
-    const authKind = (request: Request): ReconnectKind | undefined => {
-      const url = new URL(request.url());
-      if (url.origin !== new URL(page.url()).origin) return;
-      if (url.pathname === '/api/auth/refresh' && request.method() === 'POST') return 'refresh';
-      if (url.pathname === '/api/auth/session' && request.method() === 'GET') return 'current';
-    };
-    const observeAuthRequest = (request: Request) => {
+  test(
+    'D002 offline reload rechecks suspended grants before role selection',
+    { annotation: diagnosticCase('D002_RECONNECT_ACCOUNT_AUTHORITY') },
+    async ({ page, context, d002Dataset: dataset }) => {
+      const marker = `${dataset.marker}-offline-owner`;
+      await publishOfflineHomework(dataset, marker);
+      const multirole = await dataset.user('TEACHER');
+      const rolePath = `/api/academic/users/${multirole.id}/roles/STUDENT`;
+      await dataset.admin.call('PUT', rolePath, {
+        status: 'ACTIVE',
+        groupId: dataset.group.id,
+        telegramId: multirole.telegramId,
+      });
+      type ReconnectKind = 'refresh' | 'current';
+      const pendingAuth = new Map<Request, ReconnectKind>();
+      const authHttp = {
+        refresh: { requested: false, responded: false, failed: false },
+        current: { requested: false, responded: false, failed: false },
+      };
+      let httpObservationUnknown = false;
+      let observingReconnect = false;
+      const priorAuth = new Set<Request>();
+      const authKind = (request: Request): ReconnectKind | undefined => {
+        const url = new URL(request.url());
+        if (url.origin !== new URL(page.url()).origin) return;
+        if (url.pathname === '/api/auth/refresh' && request.method() === 'POST') return 'refresh';
+        if (url.pathname === '/api/auth/session' && request.method() === 'GET') return 'current';
+      };
+      const observeAuthRequest = (request: Request) => {
+        try {
+          const kind = authKind(request);
+          if (!kind) return;
+          // A bounded identity set observes old HTTP work without retaining its contents.
+          if (pendingAuth.size < 16) pendingAuth.set(request, kind);
+          else httpObservationUnknown = true;
+          if (observingReconnect) authHttp[kind].requested = true;
+        } catch {
+          httpObservationUnknown = true;
+        }
+      };
+      const observeAuthResponse = (response: Response) => {
+        const kind = pendingAuth.get(response.request());
+        if (observingReconnect && kind) authHttp[kind].responded = true;
+      };
+      const finishAuthRequest = (request: Request) => {
+        pendingAuth.delete(request);
+        priorAuth.delete(request);
+      };
+      const failAuthRequest = (request: Request) => {
+        const kind = pendingAuth.get(request);
+        if (observingReconnect && kind) authHttp[kind].failed = true;
+        finishAuthRequest(request);
+      };
+      const detachAuthObservation = () => {
+        page.off('request', observeAuthRequest);
+        page.off('response', observeAuthResponse);
+        page.off('requestfinished', finishAuthRequest);
+        page.off('requestfailed', failAuthRequest);
+        pendingAuth.clear();
+        priorAuth.clear();
+      };
+      // Include requests already in flight when the native page wrapper is installed.
+      page.on('request', observeAuthRequest);
+      page.on('response', observeAuthResponse);
+      page.on('requestfinished', finishAuthRequest);
+      page.on('requestfailed', failAuthRequest);
+      let rolePrimary: { error: unknown } | undefined;
       try {
-        const kind = authKind(request);
-        if (!kind) return;
-        // A bounded identity set observes old HTTP work without retaining its contents.
-        if (pendingAuth.size < 16) pendingAuth.set(request, kind);
-        else httpObservationUnknown = true;
-        if (observingReconnect) authHttp[kind].requested = true;
-      } catch {
-        httpObservationUnknown = true;
+        const logged = await loginPwa(page, multirole);
+        expect(logged.session.activeRole).toBe('STUDENT');
+        await page.getByRole('button', { name: 'Задания', exact: true }).click();
+        await expect(page.getByText(marker, { exact: true })).toBeVisible();
+        await requireProductionWorker(page);
+        await page.getByRole('button', { name: 'Профиль', exact: true }).click();
+        await page.getByRole('button', { name: 'Сменить роль', exact: true }).click();
+        const teacher = page.getByRole('button', { name: /Преподаватель/ });
+        await expect(teacher).toBeEnabled();
+        let roleCommands = 0;
+        const countRole = (item: Request) => {
+          if (
+            new URL(item.url()).pathname === '/api/auth/session/active-role' &&
+            item.method() === 'PUT'
+          )
+            roleCommands += 1;
+        };
+        const reconnectOrigin = new URL(page.url()).origin;
+        let refreshStatus: number | undefined;
+        let reconnectTimer: ReturnType<typeof setTimeout> | undefined;
+        let cancelCurrent: ((error: Error) => void) | undefined;
+        let resolveCurrent: ((response: Response) => void) | undefined;
+        let currentObserved = false;
+        let currentTimedOut = false;
+        let onlineRestored = false;
+        let offlinePrimary: { error: unknown } | undefined;
+        const observeReconnect = (response: Response) => {
+          const url = new URL(response.url());
+          if (url.origin !== reconnectOrigin) return;
+          if (url.pathname === '/api/auth/refresh' && response.request().method() === 'POST')
+            refreshStatus = response.status();
+          if (url.pathname === '/api/auth/session' && response.request().method() === 'GET') {
+            currentObserved = true;
+            resolveCurrent?.(response);
+          }
+        };
+        let reconnectObserver: JSHandle<ReturnType<typeof createD002ReconnectObserver>> | undefined;
+        page.on('request', countRole);
+        try {
+          await context.setOffline(true);
+          await expect(teacher).toBeDisabled();
+          await expect(page.getByRole('button', { name: /Студент/ })).toBeDisabled();
+          await teacher.press('Enter');
+          expect(roleCommands).toBe(0);
+          await dataset.admin.call('PUT', rolePath, { status: 'SUSPENDED' });
+          // Public completed boundary: destroy old auth work while still offline.
+          // Restored cached Student UI is read-only before any online admission.
+          await page.reload();
+          await expect(
+            page.getByRole('navigation', { name: 'Основная навигация', exact: true }),
+          ).toBeVisible();
+          await expect(page.getByText('Ты офлайн', { exact: true })).toBeVisible();
+          await expect(
+            page.getByRole('button', { name: 'Сменить роль, активная роль: студент', exact: true }),
+          ).toBeDisabled();
+          await page.getByRole('button', { name: 'Задания', exact: true }).click();
+          await expect(page.getByText(marker, { exact: true })).toBeVisible();
+          await expect(page.getByRole('slider', { name: new RegExp(marker) })).toBeDisabled();
+          expect(roleCommands).toBe(0);
+          for (const request of pendingAuth.keys()) priorAuth.add(request);
+          observingReconnect = true;
+          reconnectObserver = await page.evaluateHandle(createD002ReconnectObserver);
+          const reconnectTimeout = test.info().project.use.actionTimeout ?? 30000;
+          if (!Number.isSafeInteger(reconnectTimeout) || reconnectTimeout <= 0)
+            throw new Error('D002 existing action timeout must be finite');
+          const current = new Promise<Response>((resolve, reject) => {
+            resolveCurrent = resolve;
+            cancelCurrent = reject;
+            reconnectTimer = setTimeout(() => {
+              currentTimedOut = true;
+              reject(new Error('D002 reconnect current session response deadline'));
+            }, reconnectTimeout);
+          });
+          void current.catch(() => undefined);
+          page.on('response', observeReconnect);
+          page.off('request', countRole);
+          await context.setOffline(false);
+          onlineRestored = true;
+          let response: Response;
+          try {
+            response = await current;
+          } catch (error) {
+            if (currentTimedOut) {
+              const timedOutRefreshStatus = refreshStatus;
+              const observed = await reconnectObserver!
+                .evaluate((value) => value.read())
+                .catch(() => null);
+              if (observed !== null)
+                retainD002ReconnectObservation(test.info().annotations, {
+                  offlineSeen: observed.offlineSeen,
+                  onlineSeen: observed.onlineSeen,
+                  online: observed.online,
+                  observationUnknown: httpObservationUnknown || observed.observationUnknown,
+                  native: observed.native,
+                  atOnline: observed.atOnline,
+                  pageHttp: authHttp,
+                  priorPending: {
+                    refresh: [...priorAuth].some((request) => pendingAuth.get(request) === 'refresh'),
+                    current: [...priorAuth].some((request) => pendingAuth.get(request) === 'current'),
+                  },
+                  refreshHttpStatus:
+                    timedOutRefreshStatus === undefined
+                      ? 'UNOBSERVED'
+                      : [200, 401, 403, 429, 503].includes(timedOutRefreshStatus)
+                        ? timedOutRefreshStatus
+                        : 'OTHER',
+                });
+              if (timedOutRefreshStatus === undefined) {
+                if (observed === null)
+                  expect.soft(false, 'D002_RECONNECT_OBSERVER_UNAVAILABLE').toBe(true);
+                else if (httpObservationUnknown || observed.observationUnknown)
+                  expect.soft(false, 'D002_RECONNECT_HTTP_OBSERVATION_UNKNOWN').toBe(true);
+                else if (!observed.offlineSeen)
+                  expect.soft(false, 'D002_RECONNECT_OFFLINE_UNOBSERVED').toBe(true);
+                else if (!observed.onlineSeen && observed.online)
+                  expect.soft(false, 'D002_RECONNECT_ONLINE_UNOBSERVED_NAVIGATOR_ONLINE').toBe(true);
+                else if (!observed.onlineSeen)
+                  expect.soft(false, 'D002_RECONNECT_ONLINE_UNOBSERVED_NAVIGATOR_OFFLINE').toBe(true);
+                else if (!observed.online)
+                  expect.soft(false, 'D002_RECONNECT_ONLINE_SEEN_NAVIGATOR_OFFLINE').toBe(true);
+                else if ([...priorAuth].some((request) => pendingAuth.get(request) === 'refresh'))
+                  expect.soft(false, 'D002_RECONNECT_PRIOR_REFRESH_HTTP_PENDING').toBe(true);
+                else if (priorAuth.size > 0)
+                  expect.soft(false, 'D002_RECONNECT_PRIOR_CURRENT_HTTP_PENDING').toBe(true);
+                else if (observed.refresh.multiple || observed.current.multiple)
+                  expect.soft(false, 'D002_RECONNECT_MULTIPLE_NATIVE_CALLS_UNKNOWN').toBe(true);
+                else if (observed.refresh.beforeOnline || observed.current.beforeOnline)
+                  expect.soft(false, 'D002_RECONNECT_PREONLINE_NATIVE_CALL_UNKNOWN').toBe(true);
+                else if (observed.current.phase === 'REJECTED')
+                  expect.soft(false, 'D002_RECONNECT_CURRENT_NATIVE_REJECTED').toBe(true);
+                else if (observed.current.phase === 'PENDING')
+                  expect.soft(false, 'D002_RECONNECT_CURRENT_NATIVE_PENDING').toBe(true);
+                else if (observed.current.phase === 'FULFILLED')
+                  expect
+                    .soft(false, 'D002_RECONNECT_CURRENT_NATIVE_FULFILLED_RESPONSE_GAP')
+                    .toBe(true);
+                else if (authHttp.current.responded)
+                  expect
+                    .soft(false, 'D002_RECONNECT_CURRENT_PAGE_RESPONSE_GAP_UNKNOWN_OLD')
+                    .toBe(true);
+                else if (authHttp.current.failed)
+                  expect.soft(false, 'D002_RECONNECT_CURRENT_PAGE_FAILED_UNKNOWN_OLD').toBe(true);
+                else if (authHttp.current.requested)
+                  expect.soft(false, 'D002_RECONNECT_CURRENT_PAGE_PENDING_UNKNOWN_OLD').toBe(true);
+                else if (observed.refresh.phase === 'REJECTED')
+                  expect.soft(false, 'D002_RECONNECT_REFRESH_NATIVE_REJECTED').toBe(true);
+                else if (observed.refresh.phase === 'PENDING')
+                  expect.soft(false, 'D002_RECONNECT_REFRESH_NATIVE_PENDING').toBe(true);
+                else if (observed.refresh.phase === 'FULFILLED')
+                  expect
+                    .soft(false, 'D002_RECONNECT_REFRESH_NATIVE_FULFILLED_RESPONSE_GAP')
+                    .toBe(true);
+                else if (authHttp.refresh.responded)
+                  expect
+                    .soft(false, 'D002_RECONNECT_REFRESH_PAGE_RESPONSE_GAP_UNKNOWN_OLD')
+                    .toBe(true);
+                else if (authHttp.refresh.failed)
+                  expect.soft(false, 'D002_RECONNECT_REFRESH_PAGE_FAILED_UNKNOWN_OLD').toBe(true);
+                else if (authHttp.refresh.requested)
+                  expect.soft(false, 'D002_RECONNECT_REFRESH_PAGE_PENDING_UNKNOWN_OLD').toBe(true);
+                else expect.soft(false, 'D002_RECONNECT_NATIVE_NOT_CALLED_UNKNOWN_OLD').toBe(true);
+              } else if (timedOutRefreshStatus === 200)
+                expect.soft(false, 'D002_RECONNECT_REFRESH_200').toBe(true);
+              else if (timedOutRefreshStatus === 401)
+                expect.soft(false, 'D002_RECONNECT_REFRESH_401').toBe(true);
+              else if (timedOutRefreshStatus === 403)
+                expect.soft(false, 'D002_RECONNECT_REFRESH_403').toBe(true);
+              else if (timedOutRefreshStatus === 429)
+                expect.soft(false, 'D002_RECONNECT_REFRESH_429').toBe(true);
+              else if (timedOutRefreshStatus === 503)
+                expect.soft(false, 'D002_RECONNECT_REFRESH_503').toBe(true);
+              else expect.soft(false, 'D002_RECONNECT_REFRESH_OTHER').toBe(true);
+            }
+            throw error;
+          } finally {
+            if (reconnectTimer !== undefined) clearTimeout(reconnectTimer);
+          }
+          expect(response.status()).toBe(200);
+          const neutral = await response.json();
+          expect(neutral.activeRole ?? null).toBeNull();
+          expect(
+            neutral.roles.some(
+              (grant: { role: string; selectable: boolean }) =>
+                grant.role === 'STUDENT' && !grant.selectable,
+            ),
+          ).toBe(true);
+          expect(
+            neutral.roles.some(
+              (grant: { role: string; selectable: boolean }) =>
+                grant.role === 'TEACHER' && grant.selectable,
+            ),
+          ).toBe(true);
+        } catch (error) {
+          offlinePrimary = { error };
+          throw error;
+        } finally {
+          page.off('request', countRole);
+          page.off('response', observeReconnect);
+          detachAuthObservation();
+          // D002_ADMISSION_CLEANUP_BEGIN
+          let observerCleanup: { error: unknown } | undefined;
+          try {
+            if (reconnectObserver) await reconnectObserver.evaluate((value) => value.restore());
+          } catch (error) {
+            observerCleanup = { error };
+            expect.soft(false, 'D002 grant OBSERVER_RESTORE_UNAVAILABLE').toBe(true);
+          }
+          try {
+            if (reconnectObserver) await reconnectObserver.dispose();
+          } catch (error) {
+            observerCleanup ??= { error };
+            expect.soft(false, 'D002 grant OBSERVER_DISPOSE_UNAVAILABLE').toBe(true);
+          }
+          if (reconnectTimer !== undefined) clearTimeout(reconnectTimer);
+          if (!currentObserved) cancelCurrent?.(new Error('D002 reconnect observation cancelled'));
+          if (!onlineRestored) {
+            try {
+              await context.setOffline(false);
+            } catch (error) {
+              expect.soft(false, 'D002 grant ONLINE_RESTORE_UNAVAILABLE').toBe(true);
+              if (!offlinePrimary) throw error;
+            }
+          }
+          if (!offlinePrimary && observerCleanup) throw observerCleanup.error;
+          // D002_ADMISSION_CLEANUP_END
+        }
+        await expect(page.getByRole('heading', { name: 'Сменить роль', exact: true })).toBeVisible();
+        await expect(page.getByRole('navigation', { name: 'Основная навигация' })).toHaveCount(0);
+        await expect(page.getByText(marker, { exact: true })).toHaveCount(0);
+        await selectPwaRole(page, 'Преподаватель');
+        await expect(page.locator('.teacher-feature-owner')).toBeVisible();
+        await logoutPwa(page);
+      } catch (error) {
+        rolePrimary = { error };
+        throw error;
+      } finally {
+        detachAuthObservation();
+        // D002_ROLE_CLEANUP_BEGIN
+        let cleanupFailure: { error: unknown } | undefined;
+        try {
+          await context.setOffline(false);
+        } catch (error) {
+          cleanupFailure = { error };
+          expect.soft(false, 'D002 grant NETWORK_CLEANUP_UNAVAILABLE').toBe(true);
+        }
+        try {
+          await dataset.admin.call('PUT', rolePath, {
+            status: 'ACTIVE',
+            groupId: dataset.group.id,
+          });
+        } catch (error) {
+          cleanupFailure ??= { error };
+          expect.soft(false, 'D002 grant ROLE_CLEANUP_UNAVAILABLE').toBe(true);
+        }
+        if (!rolePrimary && cleanupFailure) throw cleanupFailure.error;
+        // D002_ROLE_CLEANUP_END
       }
-    };
-    const observeAuthResponse = (response: Response) => {
-      const kind = pendingAuth.get(response.request());
-      if (observingReconnect && kind) authHttp[kind].responded = true;
-    };
-    const finishAuthRequest = (request: Request) => {
-      pendingAuth.delete(request);
-      priorAuth.delete(request);
-    };
-    const failAuthRequest = (request: Request) => {
-      const kind = pendingAuth.get(request);
-      if (observingReconnect && kind) authHttp[kind].failed = true;
-      finishAuthRequest(request);
-    };
-    const detachAuthObservation = () => {
-      page.off('request', observeAuthRequest);
-      page.off('response', observeAuthResponse);
-      page.off('requestfinished', finishAuthRequest);
-      page.off('requestfailed', failAuthRequest);
-      pendingAuth.clear();
-      priorAuth.clear();
-    };
-    // Include requests already in flight when the native page wrapper is installed.
-    page.on('request', observeAuthRequest);
-    page.on('response', observeAuthResponse);
-    page.on('requestfinished', finishAuthRequest);
-    page.on('requestfailed', failAuthRequest);
-    let rolePrimary: { error: unknown } | undefined;
-    try {
-      const logged = await loginPwa(page, multirole);
-      expect(logged.session.activeRole).toBe('STUDENT');
+    },
+  );
+
+  test(
+    'D002 late prior-account homework cannot replace the new account or offline snapshot',
+    { annotation: diagnosticCase('D002_LATE_ACCOUNT_HOMEWORK') },
+    async ({ page, context, d002Dataset: dataset }) => {
+      const marker = `${dataset.marker}-late-account`;
+      await publishOfflineHomework(dataset, marker);
+      await loginPwa(page, dataset.student);
       await page.getByRole('button', { name: 'Задания', exact: true }).click();
       await expect(page.getByText(marker, { exact: true })).toBeVisible();
       await requireProductionWorker(page);
-      await page.getByRole('button', { name: 'Профиль', exact: true }).click();
-      await page.getByRole('button', { name: 'Сменить роль', exact: true }).click();
-      const teacher = page.getByRole('button', { name: /Преподаватель/ });
-      await expect(teacher).toBeEnabled();
-      let roleCommands = 0;
-      const countRole = (item: Request) => {
-        if (
-          new URL(item.url()).pathname === '/api/auth/session/active-role' &&
-          item.method() === 'PUT'
-        )
-          roleCommands += 1;
-      };
-      const reconnectOrigin = new URL(page.url()).origin;
-      let refreshStatus: number | undefined;
-      let reconnectTimer: ReturnType<typeof setTimeout> | undefined;
-      let cancelCurrent: ((error: Error) => void) | undefined;
-      let resolveCurrent: ((response: Response) => void) | undefined;
-      let currentObserved = false;
-      let currentTimedOut = false;
-      let onlineRestored = false;
-      let offlinePrimary: { error: unknown } | undefined;
-      const observeReconnect = (response: Response) => {
-        const url = new URL(response.url());
-        if (url.origin !== reconnectOrigin) return;
-        if (url.pathname === '/api/auth/refresh' && response.request().method() === 'POST')
-          refreshStatus = response.status();
-        if (url.pathname === '/api/auth/session' && response.request().method() === 'GET') {
-          currentObserved = true;
-          resolveCurrent?.(response);
-        }
-      };
-      for (const request of pendingAuth.keys()) priorAuth.add(request);
-      observingReconnect = true;
-      const reconnectObserver = await page.evaluateHandle(createD002ReconnectObserver);
-      page.on('request', countRole);
-      try {
-        await context.setOffline(true);
-        await expect(teacher).toBeDisabled();
-        await expect(page.getByRole('button', { name: /Студент/ })).toBeDisabled();
-        await teacher.press('Enter');
-        expect(roleCommands).toBe(0);
-        await dataset.admin.call('PUT', rolePath, { status: 'SUSPENDED' });
-        const reconnectTimeout = test.info().project.use.actionTimeout ?? 30000;
-        if (!Number.isSafeInteger(reconnectTimeout) || reconnectTimeout <= 0)
-          throw new Error('D002 existing action timeout must be finite');
-        const current = new Promise<Response>((resolve, reject) => {
-          resolveCurrent = resolve;
-          cancelCurrent = reject;
-          reconnectTimer = setTimeout(() => {
-            currentTimedOut = true;
-            reject(new Error('D002 reconnect current session response deadline'));
-          }, reconnectTimeout);
-        });
-        void current.catch(() => undefined);
-        page.on('response', observeReconnect);
-        page.off('request', countRole);
-        await context.setOffline(false);
-        onlineRestored = true;
-        let response: Response;
-        try {
-          response = await current;
-        } catch (error) {
-          if (currentTimedOut) {
-            const timedOutRefreshStatus = refreshStatus;
-            const observed = await reconnectObserver
-              .evaluate((value) => value.read())
-              .catch(() => null);
-            if (observed !== null)
-              retainD002ReconnectObservation(test.info().annotations, {
-                offlineSeen: observed.offlineSeen,
-                onlineSeen: observed.onlineSeen,
-                online: observed.online,
-                observationUnknown: httpObservationUnknown || observed.observationUnknown,
-                native: observed.native,
-                atOnline: observed.atOnline,
-                pageHttp: authHttp,
-                priorPending: {
-                  refresh: [...priorAuth].some((request) => pendingAuth.get(request) === 'refresh'),
-                  current: [...priorAuth].some((request) => pendingAuth.get(request) === 'current'),
-                },
-                refreshHttpStatus:
-                  timedOutRefreshStatus === undefined
-                    ? 'UNOBSERVED'
-                    : [200, 401, 403, 429, 503].includes(timedOutRefreshStatus)
-                      ? timedOutRefreshStatus
-                      : 'OTHER',
-              });
-            if (timedOutRefreshStatus === undefined) {
-              if (observed === null)
-                expect.soft(false, 'D002_RECONNECT_OBSERVER_UNAVAILABLE').toBe(true);
-              else if (httpObservationUnknown || observed.observationUnknown)
-                expect.soft(false, 'D002_RECONNECT_HTTP_OBSERVATION_UNKNOWN').toBe(true);
-              else if (!observed.offlineSeen)
-                expect.soft(false, 'D002_RECONNECT_OFFLINE_UNOBSERVED').toBe(true);
-              else if (!observed.onlineSeen && observed.online)
-                expect.soft(false, 'D002_RECONNECT_ONLINE_UNOBSERVED_NAVIGATOR_ONLINE').toBe(true);
-              else if (!observed.onlineSeen)
-                expect.soft(false, 'D002_RECONNECT_ONLINE_UNOBSERVED_NAVIGATOR_OFFLINE').toBe(true);
-              else if (!observed.online)
-                expect.soft(false, 'D002_RECONNECT_ONLINE_SEEN_NAVIGATOR_OFFLINE').toBe(true);
-              else if ([...priorAuth].some((request) => pendingAuth.get(request) === 'refresh'))
-                expect.soft(false, 'D002_RECONNECT_PRIOR_REFRESH_HTTP_PENDING').toBe(true);
-              else if (priorAuth.size > 0)
-                expect.soft(false, 'D002_RECONNECT_PRIOR_CURRENT_HTTP_PENDING').toBe(true);
-              else if (observed.refresh.multiple || observed.current.multiple)
-                expect.soft(false, 'D002_RECONNECT_MULTIPLE_NATIVE_CALLS_UNKNOWN').toBe(true);
-              else if (observed.refresh.beforeOnline || observed.current.beforeOnline)
-                expect.soft(false, 'D002_RECONNECT_PREONLINE_NATIVE_CALL_UNKNOWN').toBe(true);
-              else if (observed.current.phase === 'REJECTED')
-                expect.soft(false, 'D002_RECONNECT_CURRENT_NATIVE_REJECTED').toBe(true);
-              else if (observed.current.phase === 'PENDING')
-                expect.soft(false, 'D002_RECONNECT_CURRENT_NATIVE_PENDING').toBe(true);
-              else if (observed.current.phase === 'FULFILLED')
-                expect
-                  .soft(false, 'D002_RECONNECT_CURRENT_NATIVE_FULFILLED_RESPONSE_GAP')
-                  .toBe(true);
-              else if (authHttp.current.responded)
-                expect
-                  .soft(false, 'D002_RECONNECT_CURRENT_PAGE_RESPONSE_GAP_UNKNOWN_OLD')
-                  .toBe(true);
-              else if (authHttp.current.failed)
-                expect.soft(false, 'D002_RECONNECT_CURRENT_PAGE_FAILED_UNKNOWN_OLD').toBe(true);
-              else if (authHttp.current.requested)
-                expect.soft(false, 'D002_RECONNECT_CURRENT_PAGE_PENDING_UNKNOWN_OLD').toBe(true);
-              else if (observed.refresh.phase === 'REJECTED')
-                expect.soft(false, 'D002_RECONNECT_REFRESH_NATIVE_REJECTED').toBe(true);
-              else if (observed.refresh.phase === 'PENDING')
-                expect.soft(false, 'D002_RECONNECT_REFRESH_NATIVE_PENDING').toBe(true);
-              else if (observed.refresh.phase === 'FULFILLED')
-                expect
-                  .soft(false, 'D002_RECONNECT_REFRESH_NATIVE_FULFILLED_RESPONSE_GAP')
-                  .toBe(true);
-              else if (authHttp.refresh.responded)
-                expect
-                  .soft(false, 'D002_RECONNECT_REFRESH_PAGE_RESPONSE_GAP_UNKNOWN_OLD')
-                  .toBe(true);
-              else if (authHttp.refresh.failed)
-                expect.soft(false, 'D002_RECONNECT_REFRESH_PAGE_FAILED_UNKNOWN_OLD').toBe(true);
-              else if (authHttp.refresh.requested)
-                expect.soft(false, 'D002_RECONNECT_REFRESH_PAGE_PENDING_UNKNOWN_OLD').toBe(true);
-              else expect.soft(false, 'D002_RECONNECT_NATIVE_NOT_CALLED_UNKNOWN_OLD').toBe(true);
-            } else if (timedOutRefreshStatus === 200)
-              expect.soft(false, 'D002_RECONNECT_REFRESH_200').toBe(true);
-            else if (timedOutRefreshStatus === 401)
-              expect.soft(false, 'D002_RECONNECT_REFRESH_401').toBe(true);
-            else if (timedOutRefreshStatus === 403)
-              expect.soft(false, 'D002_RECONNECT_REFRESH_403').toBe(true);
-            else if (timedOutRefreshStatus === 429)
-              expect.soft(false, 'D002_RECONNECT_REFRESH_429').toBe(true);
-            else if (timedOutRefreshStatus === 503)
-              expect.soft(false, 'D002_RECONNECT_REFRESH_503').toBe(true);
-            else expect.soft(false, 'D002_RECONNECT_REFRESH_OTHER').toBe(true);
-          }
-          throw error;
-        } finally {
-          if (reconnectTimer !== undefined) clearTimeout(reconnectTimer);
-        }
-        expect(response.status()).toBe(200);
-        const neutral = await response.json();
-        expect(neutral.activeRole ?? null).toBeNull();
-        expect(
-          neutral.roles.some(
-            (grant: { role: string; selectable: boolean }) =>
-              grant.role === 'STUDENT' && !grant.selectable,
-          ),
-        ).toBe(true);
-        expect(
-          neutral.roles.some(
-            (grant: { role: string; selectable: boolean }) =>
-              grant.role === 'TEACHER' && grant.selectable,
-          ),
-        ).toBe(true);
-      } catch (error) {
-        offlinePrimary = { error };
-        throw error;
-      } finally {
-        page.off('request', countRole);
-        page.off('response', observeReconnect);
-        detachAuthObservation();
-        let observerCleanup: { error: unknown } | undefined;
-        try {
-          await reconnectObserver.evaluate((value) => value.restore());
-        } catch (error) {
-          observerCleanup = { error };
-        }
-        try {
-          await reconnectObserver.dispose();
-        } catch (error) {
-          observerCleanup ??= { error };
-        }
-        if (reconnectTimer !== undefined) clearTimeout(reconnectTimer);
-        if (!currentObserved) cancelCurrent?.(new Error('D002 reconnect observation cancelled'));
-        if (!onlineRestored) {
-          try {
-            await context.setOffline(false);
-          } catch (error) {
-            if (!offlinePrimary) throw error;
-          }
-        }
-        if (!offlinePrimary && observerCleanup) throw observerCleanup.error;
-      }
-      await expect(page.getByRole('heading', { name: 'Сменить роль', exact: true })).toBeVisible();
-      await expect(page.getByRole('navigation', { name: 'Основная навигация' })).toHaveCount(0);
-      await expect(page.getByText(marker, { exact: true })).toHaveCount(0);
-      await selectPwaRole(page, 'Преподаватель');
-      await expect(page.locator('.teacher-feature-owner')).toBeVisible();
-      await logoutPwa(page);
-    } catch (error) {
-      rolePrimary = { error };
-      throw error;
-    } finally {
-      detachAuthObservation();
-      let cleanupFailure: { error: unknown } | undefined;
-      try {
-        await context.setOffline(false);
-      } catch (error) {
-        cleanupFailure = { error };
-      }
-      try {
-        await dataset.admin.call('PUT', rolePath, {
-          status: 'ACTIVE',
-          groupId: dataset.group.id,
-        });
-      } catch (error) {
-        cleanupFailure ??= { error };
-      }
-      if (!rolePrimary && cleanupFailure) throw cleanupFailure.error;
-    }
-
-    await loginPwa(page, dataset.student);
-    await page.getByRole('button', { name: 'Задания', exact: true }).click();
-    await expect(page.getByText(marker, { exact: true })).toBeVisible();
-    const heldFetch = await page.evaluateHandle(
-      ({ tomorrow, homeworkId }) => {
-        const descriptor = Object.getOwnPropertyDescriptor(globalThis, 'fetch');
-        if (!descriptor || typeof descriptor.value !== 'function' || !descriptor.configurable)
-          throw new Error('D002 native fetch descriptor unavailable');
-        const original = descriptor.value as typeof fetch;
-        let held = false;
-        let fetchedOwnResponse = false;
-        let nativeRejected = false;
-        let inspectionFailed = false;
-        let ownerReady = false;
-        let releasedToNewOwner = false;
-        let delivered = false;
-        let released = false;
-        let releaseGate!: () => void;
-        const gate = new Promise<void>((resolve) => {
-          releaseGate = resolve;
-        });
-        let releaseTimer: ReturnType<typeof setTimeout> | undefined;
-        const release = () => {
-          if (released) return;
-          released = true;
-          if (releaseTimer !== undefined) clearTimeout(releaseTimer);
-          releaseGate();
-        };
-        const delayed: typeof fetch = function (this: unknown, ...args) {
-          let matches = false;
-          try {
-            const [input, init] = args;
-            const request = input instanceof globalThis.Request ? input : null;
-            const method = init?.method ?? request?.method ?? 'GET';
-            const address =
-              typeof input === 'string' ? input : input instanceof URL ? input.href : request?.url;
-            if (!held && method.toUpperCase() === 'GET' && typeof address === 'string') {
-              const url = new URL(address, location.href);
-              matches =
-                url.origin === location.origin &&
-                url.pathname === '/api/v1/student/homework' &&
-                url.searchParams.get('from') === tomorrow &&
-                url.searchParams.get('to') === tomorrow;
-            }
-          } catch {
-            // Matching never changes the native call's arguments, result or error.
-          }
-          if (matches) held = true;
-          const nativePromise: ReturnType<typeof fetch> = Reflect.apply(original, this, args);
-          if (!matches) return nativePromise;
-          return nativePromise.then(
-            async (response) => {
-              try {
-                const feed = await response.clone().json();
-                fetchedOwnResponse =
-                  response.status === 200 &&
-                  Array.isArray(feed.items) &&
-                  feed.items.some((item: { id: string }) => String(item.id) === homeworkId);
-              } catch {
-                inspectionFailed = true;
+      const heldFetch = await page.evaluateHandle(
+        ({ tomorrow, homeworkId }) => {
+          const descriptor = Object.getOwnPropertyDescriptor(globalThis, 'fetch');
+          if (!descriptor || typeof descriptor.value !== 'function' || !descriptor.configurable)
+            throw new Error('D002 native fetch descriptor unavailable');
+          const original = descriptor.value as typeof fetch;
+          let held = false;
+          let fetchedOwnResponse = false;
+          let nativeRejected = false;
+          let inspectionFailed = false;
+          let ownerReady = false;
+          let releasedToNewOwner = false;
+          let delivered = false;
+          let released = false;
+          let releaseGate!: () => void;
+          const gate = new Promise<void>((resolve) => {
+            releaseGate = resolve;
+          });
+          let releaseTimer: ReturnType<typeof setTimeout> | undefined;
+          const release = () => {
+            if (released) return;
+            released = true;
+            if (releaseTimer !== undefined) clearTimeout(releaseTimer);
+            releaseGate();
+          };
+          const delayed: typeof fetch = function (this: unknown, ...args) {
+            let matches = false;
+            try {
+              const [input, init] = args;
+              const request = input instanceof globalThis.Request ? input : null;
+              const method = init?.method ?? request?.method ?? 'GET';
+              const address =
+                typeof input === 'string' ? input : input instanceof URL ? input.href : request?.url;
+              if (!held && method.toUpperCase() === 'GET' && typeof address === 'string') {
+                const url = new URL(address, location.href);
+                matches =
+                  url.origin === location.origin &&
+                  url.pathname === '/api/v1/student/homework' &&
+                  url.searchParams.get('from') === tomorrow &&
+                  url.searchParams.get('to') === tomorrow;
               }
-              if (!released) releaseTimer = setTimeout(release, 15000);
-              await gate;
-              releasedToNewOwner = ownerReady;
-              delivered = true;
-              return response;
+            } catch {
+              // Matching never changes the native call's arguments, result or error.
+            }
+            if (matches) held = true;
+            const nativePromise: ReturnType<typeof fetch> = Reflect.apply(original, this, args);
+            if (!matches) return nativePromise;
+            return nativePromise.then(
+              async (response) => {
+                try {
+                  const feed = await response.clone().json();
+                  fetchedOwnResponse =
+                    response.status === 200 &&
+                    Array.isArray(feed.items) &&
+                    feed.items.some((item: { id: string }) => String(item.id) === homeworkId);
+                } catch {
+                  inspectionFailed = true;
+                }
+                if (!released) releaseTimer = setTimeout(release, 15000);
+                await gate;
+                releasedToNewOwner = ownerReady;
+                delivered = true;
+                return response;
+              },
+              (error) => {
+                nativeRejected = true;
+                throw error;
+              },
+            );
+          };
+          const restore = () => Object.defineProperty(globalThis, 'fetch', descriptor);
+          Object.defineProperty(globalThis, 'fetch', { ...descriptor, value: delayed });
+          return {
+            read: () => ({
+              held,
+              fetchedOwnResponse,
+              nativeRejected,
+              inspectionFailed,
+              delivered,
+              releasedToNewOwner,
+            }),
+            restore: () => {
+              restore();
             },
-            (error) => {
-              nativeRejected = true;
-              throw error;
+            releaseToNewOwner: () => {
+              ownerReady = true;
+              release();
             },
-          );
-        };
-        const restore = () => Object.defineProperty(globalThis, 'fetch', descriptor);
-        Object.defineProperty(globalThis, 'fetch', { ...descriptor, value: delayed });
-        return {
-          read: () => ({
-            held,
-            fetchedOwnResponse,
-            nativeRejected,
-            inspectionFailed,
-            delivered,
-            releasedToNewOwner,
-          }),
-          restore: () => {
-            restore();
-          },
-          releaseToNewOwner: () => {
-            ownerReady = true;
-            release();
-          },
-          cleanup: () => {
-            release();
-            restore();
-          },
-        };
-      },
-      { tomorrow: dataset.tomorrow, homeworkId: String(dataset.homework.id) },
-    );
-    let fetchRestored = false;
-    let gateDisposed = false;
-    try {
+            cleanup: () => {
+              release();
+              restore();
+            },
+          };
+        },
+        { tomorrow: dataset.tomorrow, homeworkId: String(dataset.homework.id) },
+      );
+      let fetchRestored = false;
+      let gateDisposed = false;
+      let latePrimary: { error: unknown } | undefined;
       try {
-        await page.getByRole('button', { name: 'Следующий период', exact: true }).click();
         try {
-          await expect
-            .poll(
-              async () => (await heldFetch.evaluate((value) => value.read())).fetchedOwnResponse,
-            )
-            .toBe(true);
-        } catch (error) {
-          const state = await heldFetch.evaluate((value) => value.read()).catch(() => null);
-          if (state === null) expect.soft(false, 'D002 old feed GATE_UNAVAILABLE').toBe(true);
-          else if (!state.held) expect.soft(false, 'D002 old feed GATE_NOT_CLAIMED').toBe(true);
-          else if (state.nativeRejected)
-            expect.soft(false, 'D002 old feed NATIVE_REJECTED').toBe(true);
-          else if (state.inspectionFailed)
-            expect.soft(false, 'D002 old feed INSPECTION_FAILED').toBe(true);
-          else expect.soft(false, 'D002 old feed OWN_RESPONSE_MISSING').toBe(true);
-          throw error;
+          await page.getByRole('button', { name: 'Следующий период', exact: true }).click();
+          try {
+            await expect
+              .poll(
+                async () => (await heldFetch.evaluate((value) => value.read())).fetchedOwnResponse,
+              )
+              .toBe(true);
+          } catch (error) {
+            const state = await heldFetch.evaluate((value) => value.read()).catch(() => null);
+            if (state === null) expect.soft(false, 'D002 old feed GATE_UNAVAILABLE').toBe(true);
+            else if (!state.held) expect.soft(false, 'D002 old feed GATE_NOT_CLAIMED').toBe(true);
+            else if (state.nativeRejected)
+              expect.soft(false, 'D002 old feed NATIVE_REJECTED').toBe(true);
+            else if (state.inspectionFailed)
+              expect.soft(false, 'D002 old feed INSPECTION_FAILED').toBe(true);
+            else expect.soft(false, 'D002 old feed OWN_RESPONSE_MISSING').toBe(true);
+            throw error;
+          }
+        } finally {
+          try {
+            await heldFetch.evaluate((value) => value.restore());
+            fetchRestored = true;
+          } catch {
+            expect.soft(false, 'D002 old feed FETCH_GATE_RESTORE_UNAVAILABLE').toBe(true);
+          }
         }
-      } finally {
-        try {
-          await heldFetch.evaluate((value) => value.restore());
-          fetchRestored = true;
-        } catch {
-          expect.soft(false, 'D002 old feed FETCH_GATE_RESTORE_UNAVAILABLE').toBe(true);
-        }
-      }
-      expect(fetchRestored, 'D002 old feed FETCH_GATE_NOT_RESTORED').toBe(true);
-      await logoutPwa(page);
-      // Keep this document alive: loginPwa.goto would destroy the delayed callback.
-      await page.getByLabel('Логин', { exact: true }).fill(dataset.foreignStudent.login);
-      await page
-        .getByLabel('Пароль', { exact: true })
-        .and(page.locator('input[name="password"]'))
-        .fill(dataset.foreignStudent.password);
-      const [login, current] = await Promise.all([
-        page.waitForResponse(
-          (item) =>
-            new URL(item.url()).pathname === '/api/auth/login' &&
-            item.request().method() === 'POST',
-        ),
-        page.waitForResponse(
-          (item) =>
-            new URL(item.url()).pathname === '/api/auth/session' &&
-            item.request().method() === 'GET',
-        ),
-        page.getByRole('button', { name: 'Войти', exact: true }).click(),
-      ]);
-      expect(login.status()).toBe(200);
-      expect(current.status()).toBe(200);
-      expect(String((await current.json()).userId) === String(dataset.foreignStudent.id)).toBe(
-        true,
-      );
-      await page.getByRole('button', { name: 'Задания', exact: true }).click();
-      const emptyDay = page.locator('.homework-empty-day');
-      await expect(emptyDay).toHaveText('На этот день заданий нет.');
-      await expect(emptyDay).toBeVisible();
-      await expect(page.locator('.homework-card')).toHaveCount(0);
-      await heldFetch.evaluate((value) => value.releaseToNewOwner());
-      await expect
-        .poll(async () => (await heldFetch.evaluate((value) => value.read())).delivered)
-        .toBe(true);
-      expect((await heldFetch.evaluate((value) => value.read())).releasedToNewOwner).toBe(true);
-      await page.evaluate(
-        () =>
-          new Promise<void>((resolve) =>
-            requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+        expect(fetchRestored, 'D002 old feed FETCH_GATE_NOT_RESTORED').toBe(true);
+        await logoutPwa(page);
+        // Keep this document alive: loginPwa.goto would destroy the delayed callback.
+        await page.getByLabel('Логин', { exact: true }).fill(dataset.foreignStudent.login);
+        await page
+          .getByLabel('Пароль', { exact: true })
+          .and(page.locator('input[name="password"]'))
+          .fill(dataset.foreignStudent.password);
+        const [login, current] = await Promise.all([
+          page.waitForResponse(
+            (item) =>
+              new URL(item.url()).pathname === '/api/auth/login' &&
+              item.request().method() === 'POST',
           ),
-      );
-      await expect(page.getByText(marker, { exact: true })).toHaveCount(0);
-      await expect(page.getByText(dataset.marker, { exact: true })).toHaveCount(0);
-      await expect
-        .poll(() =>
-          page.evaluate(
+          page.waitForResponse(
+            (item) =>
+              new URL(item.url()).pathname === '/api/auth/session' &&
+              item.request().method() === 'GET',
+          ),
+          page.getByRole('button', { name: 'Войти', exact: true }).click(),
+        ]);
+        expect(login.status()).toBe(200);
+        expect(current.status()).toBe(200);
+        expect(String((await current.json()).userId) === String(dataset.foreignStudent.id)).toBe(
+          true,
+        );
+        await page.getByRole('button', { name: 'Задания', exact: true }).click();
+        const emptyDay = page.locator('.homework-empty-day');
+        await expect(emptyDay).toHaveText('На этот день заданий нет.');
+        await expect(emptyDay).toBeVisible();
+        await expect(page.locator('.homework-card')).toHaveCount(0);
+        await heldFetch.evaluate((value) => value.releaseToNewOwner());
+        await expect
+          .poll(async () => (await heldFetch.evaluate((value) => value.read())).delivered)
+          .toBe(true);
+        expect((await heldFetch.evaluate((value) => value.read())).releasedToNewOwner).toBe(true);
+        await page.evaluate(
+          () =>
+            new Promise<void>((resolve) =>
+              requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+            ),
+        );
+        await expect(page.getByText(marker, { exact: true })).toHaveCount(0);
+        await expect(page.getByText(dataset.marker, { exact: true })).toHaveCount(0);
+        await expect
+          .poll(() =>
+            page.evaluate(
+              (id) => localStorage.getItem('rct-student-mobile.current-owner') === id,
+              String(dataset.foreignStudent.id),
+            ),
+          )
+          .toBe(true);
+        await heldFetch.evaluate((value) => value.cleanup());
+        await heldFetch.dispose();
+        gateDisposed = true;
+        await context.setOffline(true);
+        await page.reload();
+        await page.getByRole('button', { name: 'Задания', exact: true }).click();
+        await expect(page.getByText('Ты офлайн', { exact: true })).toBeVisible();
+        await expect(page.getByText(marker, { exact: true })).toHaveCount(0);
+        await expect(page.getByText(dataset.marker, { exact: true })).toHaveCount(0);
+        expect(
+          await page.evaluate(
             (id) => localStorage.getItem('rct-student-mobile.current-owner') === id,
             String(dataset.foreignStudent.id),
           ),
-        )
-        .toBe(true);
-      await heldFetch.evaluate((value) => value.cleanup());
-      await heldFetch.dispose().catch(() => {});
-      gateDisposed = true;
-      await context.setOffline(true);
-      await page.reload();
-      await page.getByRole('button', { name: 'Задания', exact: true }).click();
-      await expect(page.getByText('Ты офлайн', { exact: true })).toBeVisible();
-      await expect(page.getByText(marker, { exact: true })).toHaveCount(0);
-      await expect(page.getByText(dataset.marker, { exact: true })).toHaveCount(0);
-      expect(
-        await page.evaluate(
-          (id) => localStorage.getItem('rct-student-mobile.current-owner') === id,
-          String(dataset.foreignStudent.id),
-        ),
-      ).toBe(true);
-    } finally {
-      if (!gateDisposed) {
-        try {
-          await heldFetch.evaluate((value) => value.cleanup());
-        } catch {
-          expect.soft(false, 'D002 old feed FETCH_GATE_CLEANUP_UNAVAILABLE').toBe(true);
-        } finally {
-          await heldFetch.dispose().catch(() => {});
+        ).toBe(true);
+      } catch (error) {
+        latePrimary = { error };
+        throw error;
+      } finally {
+        // D002_ACCOUNT_CLEANUP_BEGIN
+        let cleanupFailure: unknown;
+        if (!gateDisposed) {
+          try {
+            await heldFetch.evaluate((value) => value.cleanup());
+          } catch (error) {
+            cleanupFailure ??= error;
+            expect.soft(false, 'D002 old feed FETCH_GATE_CLEANUP_UNAVAILABLE').toBe(true);
+          } finally {
+            await heldFetch.dispose().catch((error) => {
+              cleanupFailure = error;
+              expect.soft(false, 'D002 old feed HANDLE_DISPOSE_UNAVAILABLE').toBe(true);
+            });
+          }
         }
+        try {
+          await context.setOffline(false);
+        } catch (error) {
+          cleanupFailure ??= error;
+          expect.soft(false, 'D002 old feed NETWORK_CLEANUP_UNAVAILABLE').toBe(true);
+        }
+        if (!latePrimary && cleanupFailure) throw cleanupFailure;
+        // D002_ACCOUNT_CLEANUP_END
       }
-      await context.setOffline(false);
-    }
-  });
-
+    },
+  );
   test('D002 TMA stays online-only beside a warm PWA snapshot', { annotation: diagnosticCase('D002_TMA_ONLINE_ONLY') }, async ({
     page,
     context,

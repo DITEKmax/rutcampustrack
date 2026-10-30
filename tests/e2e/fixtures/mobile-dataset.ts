@@ -859,7 +859,7 @@ export async function selectPwaRole(page: Page, label: string) {
 }
 
 export const test = base.extend<
-  {},
+  { d002Dataset: MobileDataset },
   {
     dataset: MobileDataset;
     activeHeadmanDataset: MobileDataset;
@@ -913,6 +913,47 @@ export const test = base.extend<
       // Root owns disposal of this task-labelled stack. Never delete unrelated existing data.
     },
     { scope: 'worker', timeout: 180000 },
+  ],
+  // D002 stories own actors/groups/homework; the admitted semester is read-only.
+  d002Dataset: [
+    async ({ playwright, dataset: baseline, teachingInstant }, use, info) => {
+      const baselineId = String(baseline.semester.id);
+      const admitted = () => baseline.admin.call('GET', '/api/academic/semesters?size=100');
+      const before = items(await admitted(), 'semesterResponseList').find(
+        (row) => String(row.id) === baselineId,
+      );
+      expect(before?.active).toBe(true);
+      expect(before?.dateFrom <= baseline.today && before?.dateTo >= baseline.tomorrow).toBe(true);
+      expect(moscowDate(teachingInstant)).toBe(baseline.today);
+      const request = await playwright.request.newContext({
+        baseURL: String(info.project.use.baseURL ?? 'https://localhost:8443'),
+        ignoreHTTPSErrors: true,
+      });
+      try {
+        const own = new MobileDataset(
+          request,
+          await admit(request, TEST_USERS.admin, 'ADMIN'),
+          teachingInstant,
+          0,
+        );
+        await own.initialize();
+        expect(String(own.semester.id)).toBe(baselineId);
+        expect(own.minimumWeeklyReportWeeks).toBe(0);
+        expect(own.today).toBe(baseline.today);
+        expect(own.tomorrow).toBe(baseline.tomorrow);
+        const after = items(await admitted(), 'semesterResponseList').find(
+          (row) => String(row.id) === baselineId,
+        );
+        expect(after?.active).toBe(true);
+        expect(after?.dateFrom).toBe(before?.dateFrom);
+        expect(after?.dateTo).toBe(before?.dateTo);
+        await use(own);
+      } finally {
+        await request.dispose();
+      }
+      // Own nonce-stack disposal owns the synthetic records; no domain DELETE.
+    },
+    { timeout: 180000 },
   ],
   activeHeadmanDataset: [
     async ({ dataset }, use) => {

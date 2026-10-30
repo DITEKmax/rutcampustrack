@@ -194,11 +194,16 @@ const failedCiRawObjects = new WeakSet<object>();
 export type FailedCiRawRetention = 'OFF' | 'RETAINED' | 'ALREADY_RETAINED' | 'REJECTED' | 'FAILED';
 function retainFailedCiRawError(info: Pick<TestInfo, 'title'>, error: unknown): FailedCiRawRetention {
   if (process.env.RCT_LOCAL_RELEASE_MODE !== 'failed-ci') return 'OFF';
-  const caseId = failedCaseId(info.title) ??
-    (process.env.RCT_LOCAL_CLIENT_CASE === 'D002_RECONNECT_ACCOUNT_AUTHORITY' &&
-     info.title === 'D002 reconnect rechecks changed grants and a late old feed cannot replace the new account'
-      ? 'D002_RECONNECT_ACCOUNT_AUTHORITY' : undefined);
-  const d002 = caseId === 'D002_RECONNECT_ACCOUNT_AUTHORITY' && process.env.RCT_LOCAL_CLIENT_CASE === caseId;
+  const d002Cases = ['D002_RECONNECT_ACCOUNT_AUTHORITY', 'D002_LATE_ACCOUNT_HOMEWORK'];
+  const d002Titles = [
+    'D002 offline reload rechecks suspended grants before role selection',
+    'D002 late prior-account homework cannot replace the new account or offline snapshot',
+  ];
+  const selectedD002 = process.env.RCT_LOCAL_CLIENT_CASES === JSON.stringify(d002Cases);
+  const index = d002Titles.indexOf(info.title);
+  const caseId =
+    failedCaseId(info.title) ?? (selectedD002 && index >= 0 ? d002Cases[index] : undefined);
+  const d002 = !!caseId && selectedD002 && d002Cases.includes(caseId);
   if (!caseId || (!d002 && !['HEADMAN_TEACHER_READ', 'FULL_ADMIN_RIGHTS', 'HOMEWORK_PERIOD', 'SEMESTER_METADATA'].includes(caseId))
       || !error || typeof error !== 'object') return 'REJECTED';
   if (failedCiRawObjects.has(error)) return 'ALREADY_RETAINED';
@@ -219,10 +224,20 @@ function retainFailedCiRawError(info: Pick<TestInfo, 'title'>, error: unknown): 
         || metadata.nlink !== 1 || metadata.uid !== process.getuid?.() || (metadata.mode & 0o777) !== 0o600
         || metadata.size <= 0 || metadata.size > 8 * 1024 ** 2) throw new Error('Private manifest');
     const owner = JSON.parse(readFileSync(manifest, 'utf8'));
-    if (owner.root !== root || owner.run !== run || owner.nonce !== nonce || owner.uid !== process.getuid?.()
-        || owner.source_sha !== process.env.RCT_LOCAL_RELEASE_REVISION || owner.mode !== process.env.RCT_LOCAL_STAGE17_MODE
-        || (d002 ? owner.mode !== 'client' || owner.release_lane !== 'client' || owner.client_case !== caseId
-                   : !['ui-batch', 'special13'].includes(owner.mode))) throw new Error('Private source binding');
+    if (
+      owner.root !== root ||
+      owner.run !== run ||
+      owner.nonce !== nonce ||
+      owner.uid !== process.getuid?.() ||
+      owner.source_sha !== process.env.RCT_LOCAL_RELEASE_REVISION ||
+      owner.mode !== process.env.RCT_LOCAL_STAGE17_MODE ||
+      (d002
+        ? owner.mode !== 'client' ||
+          owner.release_lane !== 'client' ||
+          JSON.stringify(owner.client_cases) !== JSON.stringify(d002Cases)
+        : !['ui-batch', 'special13'].includes(owner.mode))
+    )
+      throw new Error('Private source binding');
     const count = failedCiRawCounts.get(caseId) ?? 0;
     if (count >= 16) throw new Error('Private test bound');
     const fields: Record<string, string> = {};

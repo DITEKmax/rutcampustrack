@@ -56,7 +56,11 @@ export default defineConfig<
 >({
   ...existing,
   outputDir: remaining5 ? join(run!, 'artifacts') : './test-results/real-mobile',
-  reporter: [startupDiagnostic ? ['./fixtures/safe-reporter.ts', { localStartupDiagnostic: true }] : ['./fixtures/safe-reporter.ts']],
+  reporter: [
+    startupDiagnostic
+      ? ['./fixtures/safe-reporter.ts', { localStartupDiagnostic: true }]
+      : ['./fixtures/safe-reporter.ts'],
+  ],
   use: {
     ...existing.use,
     ignoreHTTPSErrors: false,
@@ -94,7 +98,7 @@ export default defineConfig<
                   ? /(?:SUSPENDED STUDENT retains active TEACHER access until UI logout-all revokes both sessions|four durable grants default to STUDENT; explicit role survives reload and stale version cannot switch @cloud-accepted|unconfirmed UI logout clears its owner and rejects a late real feed through reload @cloud-accepted|FULL multirole ADMIN assigns updates and revokes LIMITED rights through Vue without foreign-role calls @cloud-accepted|own profile security changes password and replacement login rejects old authority @cloud-accepted|password recovery consumes its own delivered OTP and admits the replacement password @cloud-accepted|FULL exports five group attendance formats; dashboard-only LIMITED reads until revocation @cloud-accepted)$/
                   : adminLifecycle
                     ? /ADMIN creates a multirole headman and restores the archived account without old authority$/
-                    : /(?:LIMITED ADMIN views accounts while creation is denied by UI and server|empty foreign-group homework and transport failure provide a real retry path|another live session revokes the browser session and recovery exposes login only|D003 reuse admits twice; suspended grant yields neutral bootstrap and protected denials|D003 signed HEADMAN TMA marks an isolated own-group roster row|warm offline reload remains read-only; revoked session reconnect clears the cached user|D002 reconnect rechecks changed grants and a late old feed cannot replace the new account|D002 TMA stays online-only beside a warm PWA snapshot|N2 retained Student shell recovers through current-only retry \(active\)|N2 retained Student shell recovers through current-only retry \(suspended\))$/,
+                    : /(?:LIMITED ADMIN views accounts while creation is denied by UI and server|empty foreign-group homework and transport failure provide a real retry path|another live session revokes the browser session and recovery exposes login only|D003 reuse admits twice; suspended grant yields neutral bootstrap and protected denials|D003 signed HEADMAN TMA marks an isolated own-group roster row|warm offline reload remains read-only; revoked session reconnect clears the cached user|D002 offline reload rechecks suspended grants before role selection|D002 late prior-account homework cannot replace the new account or offline snapshot|D002 TMA stays online-only beside a warm PWA snapshot|N2 retained Student shell recovers through current-only retry \(active\)|N2 retained Student shell recovers through current-only retry \(suspended\))$/,
       }
     : {}),
   projects: existing.projects

@@ -147,7 +147,9 @@ export async function logoutPwa(page: Page): Promise<void> {
     logoutButton.click().catch(async (error: unknown) => {
       if (
         error instanceof Error &&
-        currentDiagnosticCase() === 'D002_RECONNECT_ACCOUNT_AUTHORITY'
+        ['D002_RECONNECT_ACCOUNT_AUTHORITY', 'D002_LATE_ACCOUNT_HOMEWORK'].includes(
+          currentDiagnosticCase() ?? '',
+        )
       ) {
         // The role intersection excludes hidden shell controls; observe the raw candidate.
         diagnosticUiFailure(

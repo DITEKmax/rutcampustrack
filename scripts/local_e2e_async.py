@@ -51,7 +51,7 @@ TOKEN_NAMES = {"ACADEMIC_TO_ATTENDANCE_SERVICE_TOKEN", "SCHEDULE_TO_ACADEMIC_SER
 COMPOSE = ["docker-compose.e2e.yml", "tests/e2e/infra/docker-compose.clock-fixture.yml",
            "tests/e2e/infra/docker-compose.synthetic-baseline.yml"]
 MODES = {"prepare", "openapi", "full", "client", "lesson-lifecycle", "ui-batch", "special13"}
-# Named remaining scenarios only. No passed client10/lesson4/DOCX1 replay.
+# Named remaining scenarios only. No passed sibling client cases/lesson4/DOCX1 replay.
 # config, one extended flag, private output variable, expected count, safe result filenames.
 BATCH_LANES = {
     "auth-smoke": ("playwright.config.ts", None, None, 9, {"auth-token-lifecycle.spec.ts", "mini-app.spec.ts"}),
@@ -74,8 +74,8 @@ BATCH_BLOCKED = [
 ]
 
 
-D002_CASE = "D002_RECONNECT_ACCOUNT_AUTHORITY"
-D002_TITLE = "D002 reconnect rechecks changed grants and a late old feed cannot replace the new account"
+D002_CASES = ("D002_RECONNECT_ACCOUNT_AUTHORITY", "D002_LATE_ACCOUNT_HOMEWORK")
+D002_TITLES = ("D002 offline reload rechecks suspended grants before role selection", "D002 late prior-account homework cannot replace the new account or offline snapshot")
 
 FAILED_CASES = {
     'TMA_SIGNED_ENTRY': ('auth-smoke', 'signed teacher entry loads the real session and shared profile with host Back'),
@@ -90,9 +90,9 @@ FAILED_CASES = {
 }
 
 
-def client_case_arguments(case):
-    require(case in (None, D002_CASE), "CLIENT_CASE_SELECTION")
-    return ["--grep", re.escape(D002_TITLE) + "$"] if case else []
+def client_cases_arguments(cases):
+    require(cases in (None, D002_CASES), "CLIENT_CASE_SELECTION")
+    return ["--grep", "(?:" + "|".join(map(re.escape, D002_TITLES)) + ")$"] if cases else []
 
 
 def selected_batch_cases(cases):
@@ -469,9 +469,9 @@ def validate_lane_environment(value, environment, expected_mode=None, expected_b
                 (expected_run + "/supervision/observations.safe.json" if lane == "first3" else ""), "LOCAL_BATCH_OBSERVATION_BINDING")
     else:
         require(lane is None and expected_batch_lane is None and not environment.get("RCT_LOCAL_UI_BATCH_CASES"), "LOCAL_BATCH_MODE_REQUIRED")
-    client_case = value.get("client_case")
-    require(client_case in (None, D002_CASE) and (client_case is None or mode == "client" and release_lane == "client")
-            and environment.get("RCT_LOCAL_CLIENT_CASE", "") == (client_case or ""), "LOCAL_CLIENT_CASE_BINDING")
+    client_cases = value.get("client_cases")
+    require((client_cases is None or client_cases == list(D002_CASES)) and (client_cases is None or mode == "client" and release_lane == "client")
+            and environment.get("RCT_LOCAL_CLIENT_CASES", "") == (json.dumps(client_cases, separators=(',', ':')) if client_cases else ""), "LOCAL_CLIENT_CASE_BINDING")
     diagnostic = value.get("startup_diagnostic", False)
     require(type(diagnostic) is bool and (not diagnostic or mode == "client")
             and environment.get("RCT_LOCAL_CLIENT_STARTUP_DIAGNOSTIC", "false") == ("true" if diagnostic else "false"),
@@ -1861,11 +1861,11 @@ def preflight(*, release=False, special=False, retained_receipt=None, retained_p
 
 class Runner:
     canonical_mount_records = staticmethod(canonical_mount_records)
-    def __init__(self, mode, *, release_lane=None, startup_diagnostic=False, bundled_dockerfile_frontend=False, client_case=None, failed_cases=None, special_cohort=None, lifecycle_only=False, operational=False, operational_until=None, reconciliation_only=False, recovery_archive_only=False):
-        require(client_case in (None, D002_CASE) and (client_case is None or mode == "client" and release_lane == "client"), "CLIENT_CASE_SELECTION")
-        self.client_case = client_case
+    def __init__(self, mode, *, release_lane=None, startup_diagnostic=False, bundled_dockerfile_frontend=False, client_cases=None, failed_cases=None, special_cohort=None, lifecycle_only=False, operational=False, operational_until=None, reconciliation_only=False, recovery_archive_only=False):
+        require(client_cases in (None, D002_CASES) and (client_cases is None or mode == "client" and release_lane == "client"), "CLIENT_CASE_SELECTION")
+        self.client_cases = client_cases
         require(not startup_diagnostic or mode == "client", "CLIENT_DIAGNOSTIC_ONLY")
-        require(not bundled_dockerfile_frontend or mode in {"ui-batch", "special13"} or client_case == D002_CASE, "BUNDLED_FRONTEND_UI_BATCH_ONLY")
+        require(not bundled_dockerfile_frontend or mode in {"ui-batch", "special13"} or client_cases == D002_CASES, "BUNDLED_FRONTEND_UI_BATCH_ONLY")
         require(failed_cases is None or mode == "ui-batch", "BATCH_CASES_UI_BATCH_ONLY")
         require((mode == "special13" and special_cohort in {"nonclock", "lifecycle"})
                 or (mode != "special13" and special_cohort is None), "SPECIAL_COHORT_REQUIRED")
@@ -1915,8 +1915,8 @@ class Runner:
                         RCT_LOCAL_CLIENT_STARTUP_DIAGNOSTIC="true" if startup_diagnostic else "false",
                         PLAYWRIGHT_NO_COPY_PROMPT="1", NODE_OPTIONS="--max-old-space-size=512",
                         COMPOSE_PARALLEL_LIMIT="1", BUILDKIT_MAX_PARALLELISM="1")
-        if client_case:
-            self.env["RCT_LOCAL_CLIENT_CASE"] = client_case
+        if client_cases:
+            self.env["RCT_LOCAL_CLIENT_CASES"] = json.dumps(client_cases, separators=(',', ':'))
         if mode == "special13":
             self.env["RCT_LOCAL_SPECIAL_COHORT"] = special_cohort
             self.env["CI"] = "true"  # Fixture noninteractive guard, never a hosted identity.
@@ -2174,7 +2174,7 @@ class Runner:
         if self.special_cohort == "nonclock":
             self.image_targets.append("rct-local-stage17/notification-bot:" + self.nonce)
         value = {"schema": 1, "uid": os.getuid(), "root": str(ROOT), "run": str(self.run), "nonce": self.nonce, "mode": self.mode,
-                 **({"client_case": self.client_case} if self.client_case else {}),
+                 **({"client_cases": self.client_cases} if self.client_cases else {}),
                  **({"lifecycle_only": True} if self.lifecycle_only else {}),
                  **({"reconciliation_only": True} if self.reconciliation_only else {}),
                  **({"recovery_archive_only": True} if self.recovery_archive_only else {}),
@@ -2280,7 +2280,7 @@ class Runner:
             config = "playwright.real-mobile.config.ts" if self.mode == "client" else "playwright.lesson-lifecycle.config.ts"
             self.command("CLIENT_REMAINING5" if self.mode == "client" else "LESSON_LIFECYCLE",
                          ["npx", "playwright", "test", "--config", config, "--project=chromium",
-                          *client_case_arguments(self.client_case),
+                          *client_cases_arguments(self.client_cases),
                           *(["--max-failures=1"] if self.startup_diagnostic else [])], cwd=ROOT / "tests/e2e")
             emit("BROWSER_LANE_RESULT", mode=self.mode, result="PASS", qualification="FRESH_ISOLATED_LANE")
             return
@@ -3225,7 +3225,7 @@ def main():
     parser.add_argument("--retained-pdf-cohort-receipt", type=Path, help="Special13 only: exact preserved ee1df PDF cohort closure")
     parser.add_argument("--retained-recovery-cohort-receipt", type=Path, help="Special13 only: exact preserved 43589 recovery cohort closure")
     parser.add_argument("--retained-restored-cohort-receipt", type=Path, help="Special13 only: exact stopped original17 plus restored3 closure")
-    parser.add_argument("--diagnose-startup", action="store_true", help="Client only: same ten scenarios, stop after first failure with closed setup diagnostics")
+    parser.add_argument("--diagnose-startup", action="store_true", help="Client only: same eleven scenarios, stop after first failure with closed setup diagnostics")
     parser.add_argument("--bundled-dockerfile-frontend", action="store_true",
                         help="UI batch only: inline tracked Dockerfiles using the Docker Engine bundled frontend")
     parser.add_argument("--failed-case", action="append", choices=list(FAILED_CASES),

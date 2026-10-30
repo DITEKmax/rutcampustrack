@@ -1188,6 +1188,12 @@ jobs:
           node --test pwa-vue/tests/*.test.mjs
           node ../tests/load/scenario-controls.cjs
           npm run build
+      - name: Verify deterministic PWA reconnect and bootstrap ordering
+        working-directory: frontends
+        run: |
+          npx --no-install vitest run --config vitest.config.ts \
+            pwa-vue/src/reconnect-recovery.test.ts \
+            pwa-vue/src/bootstrap-policy.test.ts
   # M13 G15 — ShellCheck lint для всех bash-скриптов.
   # Gate на ошибки уровня `error` и `warning`; `info`/`style` не блочат.
   shellcheck:
@@ -1742,7 +1748,35 @@ jobs:
           printf 'RCT_REMAINING5_RUN=%s\n' "$RCT_REMAINING5_RUN" >> "$GITHUB_ENV"
           mkdir -m 700 -- "$RCT_REMAINING5_RUN"
           mkdir -m 700 -- "$RCT_REMAINING5_RUN/artifacts"
-          npx playwright test --config playwright.real-mobile.config.ts --project=chromium --grep '(?:LIMITED ADMIN views accounts while creation is denied by UI and server|empty foreign-group homework and transport failure provide a real retry path|another live session revokes the browser session and recovery exposes login only|D003 reuse admits twice; suspended grant yields neutral bootstrap and protected denials|D003 signed HEADMAN TMA marks an isolated own-group roster row|warm offline reload remains read-only; revoked session reconnect clears the cached user|D002 reconnect rechecks changed grants and a late old feed cannot replace the new account|D002 TMA stays online-only beside a warm PWA snapshot|N2 retained Student shell recovers through current-only retry \(active\)|N2 retained Student shell recovers through current-only retry \(suspended\))$'
+          npx playwright test --config playwright.real-mobile.config.ts --project=chromium --grep '(?:LIMITED ADMIN views accounts while creation is denied by UI and server|empty foreign-group homework and transport failure provide a real retry path|another live session revokes the browser session and recovery exposes login only|D003 reuse admits twice; suspended grant yields neutral bootstrap and protected denials|D003 signed HEADMAN TMA marks an isolated own-group roster row|warm offline reload remains read-only; revoked session reconnect clears the cached user|D002 TMA stays online-only beside a warm PWA snapshot|N2 retained Student shell recovers through current-only retry \(active\)|N2 retained Student shell recovers through current-only retry \(suspended\))$'
+
+      - name: Run two independent D002 authority and account isolation stories
+        id: d002
+        if: ${{ matrix.group == 'client' && !cancelled() && steps.e2e-ready.outcome == 'success' }}
+        working-directory: tests/e2e
+        env:
+          E2E_BASE_URL: https://localhost:8443
+          RCT_E2E_SYNTHETIC_SEED: 'true'
+          RCT_E2E_REMAINING5: 'true'
+          RCT_REMAINING5_RUN: ${{ runner.temp }}/rct-d002-${{ github.run_id }}-${{ github.run_attempt }}
+          PLAYWRIGHT_NO_COPY_PROMPT: '1'
+          NODE_OPTIONS: --max-old-space-size=512
+          CI: 'true'
+        run: |
+          umask 077
+          printf 'RCT_D002_RUN=%s\n' "$RCT_REMAINING5_RUN" >> "$GITHUB_ENV"
+          mkdir -m 700 -- "$RCT_REMAINING5_RUN"
+          mkdir -m 700 -- "$RCT_REMAINING5_RUN/artifacts"
+          npx playwright test --config playwright.real-mobile.config.ts --project=chromium --grep '(?:D002 offline reload rechecks suspended grants before role selection|D002 late prior-account homework cannot replace the new account or offline snapshot)$'
+
+      - name: Upload only safe D002 authority and account isolation outcomes
+        if: always() && matrix.group == 'client' && steps.d002.outcome != 'skipped'
+        uses: actions/upload-artifact@v4
+        with:
+          name: d002-safe-${{ github.run_attempt }}
+          path: ${{ env.RCT_D002_RUN }}/artifacts/safe-results.json
+          if-no-files-found: warn
+          retention-days: 7
 
       - name: Record closed Homework503 dependency hints after remaining5 failure
         if: ${{ matrix.group == 'client' && !cancelled() && steps.remaining5.outcome == 'failure' }}

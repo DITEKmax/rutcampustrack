@@ -9,7 +9,7 @@ cleanup() {
   trap - EXIT
   cleanup_status=0
   if [ -f "$RCT_FILES_RECOVERY_DIR/owned-projects.json" ]; then
-    python3 scripts/test-recovery.py --work-dir "$RCT_FILES_RECOVERY_DIR" --project-base "$RCT_FILES_RECOVERY_PROJECT" --cleanup || cleanup_status=$?
+    python3 scripts/test-recovery.py --work-dir "$RCT_FILES_RECOVERY_DIR" --project-base "$RCT_FILES_RECOVERY_PROJECT" --source-revision "$RCT_LOCAL_RELEASE_REVISION" --nonce "$RCT_LOCAL_RELEASE_NONCE" --cleanup || cleanup_status=$?
   fi
   printf '{"nativeExit":%d,"cleanupExit":%d}\n' "$original" "$cleanup_status" > "$RCT_LOCAL_RELEASE_AUDIT/files-recovery-exits.safe.json"
   if [ "$cleanup_status" -ne 0 ]; then exit 99; fi
@@ -18,4 +18,4 @@ cleanup() {
 trap cleanup EXIT
 docker pull "$RCT_RECOVERY_PG_IMAGE"
 docker pull "$RCT_RECOVERY_MONGO_IMAGE"
-python3 scripts/test-recovery.py --work-dir "$RCT_FILES_RECOVERY_DIR" --project-base "$RCT_FILES_RECOVERY_PROJECT" --pg-image "$RCT_RECOVERY_PG_IMAGE" --mongo-image "$RCT_RECOVERY_MONGO_IMAGE"
+python3 scripts/test-recovery.py --work-dir "$RCT_FILES_RECOVERY_DIR" --project-base "$RCT_FILES_RECOVERY_PROJECT" --source-revision "$RCT_LOCAL_RELEASE_REVISION" --nonce "$RCT_LOCAL_RELEASE_NONCE" --pg-image "$RCT_RECOVERY_PG_IMAGE" --mongo-image "$RCT_RECOVERY_MONGO_IMAGE"

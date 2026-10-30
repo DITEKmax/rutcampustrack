@@ -304,13 +304,13 @@ test('FULL multirole ADMIN assigns updates and revokes LIMITED rights through Vu
       await expect(row.locator('.admin-dashboard-screen__delta')).toHaveText(expectedGrowth);
     }
     // ADMIN22: each actual period payload must be represented by the existing metric cards.
-    await assertActivity(page, await activityReply, 'today');
+    await assertActivity(page, await activityReply, 'today', expect, info);
     for (const period of ['all_time', 'today'] as const) {
       const next = completedActivity(page, period);
       await page
         .getByRole('button', { name: period === 'today' ? 'Сегодня' : 'Всё время', exact: true })
         .click();
-      await assertActivity(page, await next, period);
+      await assertActivity(page, await next, period, expect, info);
     }
     // End ADMIN22 activity witness.
     const foreignScreens = page.locator(

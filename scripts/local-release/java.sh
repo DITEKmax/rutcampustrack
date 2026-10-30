@@ -23,5 +23,10 @@ collect() {
   exit "$original"
 }
 trap collect EXIT
-./gradlew "$module:test" "$module:integrationTest" "$module:jacocoTestReport" "$module:bootJar" --no-daemon --max-workers=4 "${flags[@]}"
+if [ "$service" = attendance-service ]; then
+  bash scripts/local-release/attendance-coverage.sh
+  ./gradlew "$module:bootJar" --no-daemon --max-workers=4
+else
+  ./gradlew "$module:test" "$module:integrationTest" "$module:jacocoTestReport" "$module:bootJar" --no-daemon --max-workers=4 "${flags[@]}"
+fi
 outcome=success

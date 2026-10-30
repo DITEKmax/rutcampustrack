@@ -74,6 +74,7 @@ FAILED_CASES = {
     'ADMIN_HISTORICAL_MARK': ('admin', 'ADMIN creates a multirole headman and restores the archived account without old authority'),
     'FULL_ADMIN_RIGHTS': ('role-security-export', 'FULL multirole ADMIN assigns updates and revokes LIMITED rights through Vue without foreign-role calls @cloud-accepted'),
     'OWN_PROFILE_THEME': ('role-security-export', 'own profile security changes password and replacement login rejects old authority @cloud-accepted'),
+    'HOMEWORK_PERIOD': ('homework', 'STUDENT multi-item feed keeps focus and rolls back a failed completion with safe external materials @real-mobile'),
     'HOMEWORK_NOTIFICATION': ('homework', 'MANAGE_HOMEWORK non-author edits preserve student completion and revoked authority cannot overwrite it @real-mobile'),
     'HELPER_PERMISSIONS': ('helper', 'HEADMAN edits helper capabilities through member row and retains VIEW_STATS @cloud-accepted'),
 }

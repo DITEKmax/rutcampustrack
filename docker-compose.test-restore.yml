@@ -18,7 +18,7 @@ services:
       POSTGRES_MONITOR_PASSWORD: ${POSTGRES_ACADEMIC_MONITOR_PASSWORD:?required}
       POSTGRES_AUTH_MIGRATION_PASSWORD: ${POSTGRES_AUTH_MIGRATION_PASSWORD:?required}
     volumes:
-      - ./infra/postgres/init-roles.sh:/docker-entrypoint-initdb.d/10-rct-roles.sh:ro
+      - ${RCT_RECOVERY_INIT_ROLES_FILE:-./infra/postgres/init-roles.sh}:/docker-entrypoint-initdb.d/10-rct-roles.sh:ro
     tmpfs:
       - /var/lib/postgresql/data
     mem_limit: 256m
@@ -47,7 +47,7 @@ services:
       POSTGRES_MIGRATION_PASSWORD: ${POSTGRES_SCHEDULE_MIGRATION_PASSWORD:?required}
       POSTGRES_MONITOR_PASSWORD: ${POSTGRES_SCHEDULE_MONITOR_PASSWORD:?required}
     volumes:
-      - ./infra/postgres/init-roles.sh:/docker-entrypoint-initdb.d/10-rct-roles.sh:ro
+      - ${RCT_RECOVERY_INIT_ROLES_FILE:-./infra/postgres/init-roles.sh}:/docker-entrypoint-initdb.d/10-rct-roles.sh:ro
     tmpfs:
       - /var/lib/postgresql/data
     mem_limit: 256m

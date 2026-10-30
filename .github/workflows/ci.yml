@@ -5,6 +5,12 @@ name: CI
 # See docs/plans/web-vue-pr3/CI-DEVELOPMENT-POLICY.md.
 on:
   workflow_dispatch:
+    inputs:
+      omit_academic:
+        description: 'Explicitly omit Academic tests and dependent operator CLI acceptance'
+        required: false
+        type: boolean
+        default: false
 
 jobs:
   java-unit-test:
@@ -28,6 +34,7 @@ jobs:
             path: ':services:notification-service:notification-app'
           - name: mobile-bff
             path: ':services:mobile-bff:mobile-bff-app'
+        exclude: ${{ fromJSON(inputs.omit_academic && '[{"service":{"name":"academic-service","path":":services:academic-service:academic-app"}}]' || '[]') }}
     steps:
       - uses: actions/checkout@v4
 
@@ -124,6 +131,7 @@ jobs:
             path: ':services:notification-service:notification-app'
           - name: mobile-bff
             path: ':services:mobile-bff:mobile-bff-app'
+        exclude: ${{ fromJSON(inputs.omit_academic && '[{"service":{"name":"academic-service","path":":services:academic-service:academic-app"}}]' || '[]') }}
     steps:
       - uses: actions/checkout@v4
 
@@ -3829,7 +3837,7 @@ jobs:
 
       - name: Verify the actual initial-administrator operator CLI
         id: bootstrap-cli
-        if: ${{ !cancelled() && matrix.group == 'client' && steps.bootstrap-images.outcome == 'success' && steps.e2e-stop.outcome == 'success' }}
+        if: ${{ !inputs.omit_academic && !cancelled() && matrix.group == 'client' && steps.bootstrap-images.outcome == 'success' && steps.e2e-stop.outcome == 'success' }}
         timeout-minutes: 10
         env:
           RCT_BOOTSTRAP_CLI_ACCEPTANCE: 'true'
@@ -3846,7 +3854,7 @@ jobs:
         run: |
           python3 scripts/local-release/bootstrap-cli.py --output "$RUNNER_TEMP/rct-bootstrap-cli-proof-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
       - name: Upload the existing collector's operator CLI outcome
-        if: ${{ !cancelled() && matrix.group == 'client' && steps.bootstrap-images.outcome == 'success' && steps.e2e-stop.outcome == 'success' }}
+        if: ${{ !inputs.omit_academic && !cancelled() && matrix.group == 'client' && steps.bootstrap-images.outcome == 'success' && steps.e2e-stop.outcome == 'success' }}
         uses: actions/upload-artifact@v4
         with:
           name: bootstrap-cli-safe-${{ github.run_attempt }}
@@ -3866,7 +3874,13 @@ jobs:
       - name: Require both isolated browser groups to succeed
         env:
           RCT_BROWSER_MATRIX_RESULT: ${{ needs.e2e-auth.result }}
+          OMIT_ACADEMIC: ${{ inputs.omit_academic && 'true' || 'false' }}
         run: |
+          if [ "$OMIT_ACADEMIC" = true ]; then
+            printf '%s\n' 'Selected scope: 6 Java unit + 6 Java IT modules. Academic tests and dependent initial-administrator CLI acceptance NOT_RUN by explicit selection; all other browser assertions remain required.' >> "$GITHUB_STEP_SUMMARY"
+          else
+            printf '%s\n' 'Default full selection: 7 Java modules and existing operator CLI acceptance retained.' >> "$GITHUB_STEP_SUMMARY"
+          fi
           if [ "$RCT_BROWSER_MATRIX_RESULT" != success ]; then
             printf '%s\n' 'Required browser groups did not both succeed'
             exit 1
@@ -3900,13 +3914,7 @@ jobs:
           python -m pip install PyYAML==6.0.3 aio-pika==9.5.3
           # Reuse unchanged bot runtime pins for the existing isolated Rabbit cohort's prepared probe.
           python -m pip install -r services/notification-bot/requirements.txt
-          if python -B tests/harness/test_prepared_probe_projection.py > "$RUNNER_TEMP/prepared-projection.private.log" 2>&1; then
-            printf '%s\n' 'PASS bounded prepared receipt projection'
-          else
-            status=$?
-            printf 'FAIL bounded prepared receipt projection (exit %d)\n' "$status"
-            exit "$status"
-          fi
+          python -B scripts/prepared-projection-control.py
           mkdir -p "$RUNNER_TEMP/rct-monitoring-tools" build/monitoring
           python - <<'PY'
           import hashlib, os, pathlib, tarfile, urllib.request

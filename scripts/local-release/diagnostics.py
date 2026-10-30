@@ -149,6 +149,8 @@ def project(root,audit,since):
             except FileNotFoundError:result['safeReports'][key]={'status':'MISSING'}
             except Exception:result['safeReports'][key]={'status':'REJECTED'}
     roles={
+        'attendance-memory':root/'build/attendance-memory/summary.safe.json',
+        'prepared-control':root/'build/monitoring/prepared-control.safe.json',
         'monitoring-delivery':root/'build/monitoring/delivery.json',
         'monitoring-exporters':root/'build/monitoring/exporters.json',
         'monitoring-pipeline':root/'build/monitoring/pipeline.json',
@@ -158,7 +160,7 @@ def project(root,audit,since):
         'common-auth':audit/'native/common/auth.safe.json',
         'bootstrap-cli':audit/'bootstrap/bootstrap-safe.json',
     }
-    for mode in ('controls','full','client','webkit','lesson-lifecycle','ui-batch','special13','homework-sensitivity'):
+    for mode in ('controls','full','client','webkit','lesson-lifecycle','ui-batch','special13','homework-sensitivity','failed-ci'):
         roles['browser-'+mode]=audit/('browser-'+mode)/'result.safe.json'
     for service,name in [('attendance-service','reason-enum-regression-safe.json'),('schedule-service','oneoff-regression-safe.json'),('attendance-service','attendance-enum-regression-safe.json'),('academic-service','cache-commit-safe.json')]:
         roles[name]=root/'build/ci-test-outcomes'/service/name
@@ -175,7 +177,27 @@ def project(root,audit,since):
     return result
 
 
-def admit_gate(name,root,audit,since,revision=None,nonce=None):
+def recovery_closed(path,since,revision,nonce):
+    try:
+        value=json.loads(read(path,since))
+        expected={'schema','sourceRevision','nonce','projectPairBound','syntheticLabelsValidated','containersAbsent','networksAbsent','volumesAbsent','closed','cleanupExit'}
+        return (set(value)==expected and path.stat().st_mode & 0o777==0o600
+            and value['schema']=='rct-files-recovery-cleanup.v1' and value['sourceRevision']==revision and value['nonce']==nonce
+            and type(value['cleanupExit']) is int and value['cleanupExit']==0
+            and all(value[key] is True for key in ('projectPairBound','syntheticLabelsValidated','containersAbsent','networksAbsent','volumesAbsent','closed')))
+    except Exception:return False
+
+
+def memory_closed(path,since,revision,nonce):
+    try:
+        value=json.loads(read(path,since))
+        return (value.get('schema')=='RCT_ATTENDANCE_MEMORY_V1' and value.get('context',{}).get('checkoutSha')==revision
+            and value.get('context',{}).get('runIdentity')=='local-'+nonce and value.get('result') in {'PASS','FAIL'}
+            and len(value.get('arms',[]))>0 and all(row.get('cleanup') is True and row.get('cause') is None for row in value['arms']))
+    except Exception:return False
+
+
+def admit_gate(name,root,audit,since,revision=None,nonce=None,mode=None):
     """Native success and fresh native artifacts are both required; coverage has no threshold."""
     try:
         if name.startswith('java-') and name!='java-verification':
@@ -186,6 +208,30 @@ def admit_gate(name,root,audit,since,revision=None,nonce=None):
                 if report.get('collection')!='RESULTS' or not report.get('cases'):return False
                 if report.get('metadata',{}).get('event')!='LOCAL_CONTROL':return False
             coverage(root/'services'/module/'build/reports/jacoco/test/jacocoTestReport.xml',since)
+            if mode=='failed-ci' and service=='attendance-service':
+                memory=json.loads(read(root/'build/attendance-memory/summary.safe.json',since))
+                if memory.get('schema')!='RCT_ATTENDANCE_MEMORY_V1' or memory.get('result')!='PASS' or memory.get('armsMode')!='target':return False
+                if memory.get('context',{}).get('checkoutSha')!=revision or memory.get('context',{}).get('runIdentity')!='local-'+nonce:return False
+                if len(memory.get('arms',[]))!=1:return False
+                arm=memory['arms'][0]
+                if arm.get('heapMiB')!=1024 or arm.get('nativeExit')!=0 or arm.get('telemetryComplete') is not True or arm.get('rosterConfirmed') is not True or arm.get('cleanup') is not True:return False
+                if arm.get('actualWorkerPolicy')!={task:{'workers':4,'maxParallelForks':1,'forkEvery':0} for task in ('test','integrationTest')}:return False
+                starts=[]
+                for task in ('test','integrationTest'):
+                    jvm=arm.get('jvm',{}).get(task,{})
+                    start=jvm.get('start',{})
+                    if jvm.get('complete') is not True or start.get('javaVersion')!='21.0.13+9' or start.get('javaVendor')!='TEMURIN' or start.get('xmxBytes')!=1024*1024**2:return False
+                    if type(start.get('pid')) is not int or start['pid']<=0:return False
+                    starts.append((start['pid'],start.get('timestampMs')))
+                if len(set(starts))!=2:return False
+        elif name=='attendance-memory':
+            report=json.loads(read(root/'build/attendance-memory/summary.safe.json',since))
+            if report.get('schema')!='RCT_ATTENDANCE_MEMORY_V1' or report.get('result')!='PASS' or report.get('armsMode')!='comparison' or report.get('context',{}).get('checkoutSha')!=revision:return False
+            if [row.get('heapMiB') for row in report.get('arms',[])]!=[512,1024]:return False
+            if any(row.get('nativeExit')!=0 or row.get('cleanup') is not True or row.get('telemetryComplete') is not True for row in report['arms']):return False
+        elif name=='prepared-control':
+            report=json.loads(read(root/'build/monitoring/prepared-control.safe.json',since))
+            if report.get('result')!='PASS' or report.get('testsRun')!=14 or report.get('failures')!=[]:return False
         elif name=='bot':
             if junit(root/'services/notification-bot/junit.xml',since)['tests']<=0:return False
             coverage(root/'services/notification-bot/coverage.xml',since)
@@ -220,6 +266,7 @@ def native_log(path):
         source.seek(max(0,path.stat().st_size-8*1024*1024));tail=source.read(8*1024*1024)
     raw=head+b'\n'+tail
     patterns={
+        'RAW_DIAGNOSTIC_RETENTION_FAILURE':rb'RCT_FAILED_CI_RAW_RETENTION_V1 FAIL',
         'COMPILATION_FAILURE':rb'Compilation failed|compileJava FAILED|cannot find symbol',
         'DEPENDENCY_RESOLUTION_FAILURE':rb'Could not resolve all|Could not download|Could not resolve ',
         'DOCKER_UNAVAILABLE':rb'Could not find a valid Docker environment|Cannot connect to the Docker daemon',
@@ -232,6 +279,10 @@ def native_log(path):
     }
     result={'categories':[key for key,pattern in patterns.items() if re.search(pattern,raw)],'retainedPrivateBytes':path.stat().st_size}
     text=raw.decode('utf-8','replace')
+    actual={}
+    for match in re.finditer(r'(?m)^RCT_ATTENDANCE_TEST_RESOURCE_V1\|:services:attendance-service:attendance-app:(test|integrationTest)\|-Xmx1024m\|1\r?$',text):
+        actual[match[1]]={'maxHeapMiB':1024,'maxParallelForks':1}
+    if actual:result['attendanceTestResources']=actual
     detail=bridge_detail(text)
     if detail:result['brokerBridge']=detail
     for field,allowed in RECOVERY_FIELDS.items():

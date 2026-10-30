@@ -1,4 +1,4 @@
-import { failureBoundary, handledWaiter } from '../fixtures/failed-case-diagnostics';
+import { failureBoundary, handledWaiter, retainFirstFailure } from '../fixtures/failed-case-diagnostics';
 import { diagnosticCase } from '../fixtures/diagnostic-events';
 import { randomBytes, randomUUID, timingSafeEqual } from 'node:crypto';
 import { isDeepStrictEqual } from 'node:util';
@@ -1980,29 +1980,76 @@ test.describe('Current Vue roles with real synthetic domain @real-mobile', () =>
       const shortcut = page
         .locator('[data-teacher-action="journal-open"]')
         .filter({ hasText: shortcutName });
+      // The catalog reply is only a header witness; the day/assignment projection
+      // must finish before clicking its assignment shortcut.
+      await expect(page.getByRole('main', { name: 'Сегодня у преподавателя', exact: true })).toHaveAttribute('aria-busy', 'false');
       await expect(shortcut).toHaveCount(1);
       await expect(shortcut).toContainText(groupName);
       await expect(shortcut).toContainText('Лекция');
-      const [shortcutResponse] = await Promise.all([
-        page.waitForResponse((response) => {
-          const url = new URL(response.url());
-          return (
-            response.request().method() === 'GET' &&
-            url.pathname === '/api/v1/teacher/journal' &&
-            url.searchParams.get('semesterId') === String(dataset.semester.id) &&
-            url.searchParams.get('groupId') === String(dataset.group.id) &&
-            url.searchParams.get('subjectId') === String(shortcutSubjectId) &&
-            url.searchParams
-              .getAll('lessonType')
-              .map((type) => type.toUpperCase())
-              .join() === 'LECTURE' &&
-            url.searchParams.get('pastOnly') === 'true' &&
-            url.searchParams.get('page') === '0' &&
-            url.searchParams.get('pageSize') === '100'
-          );
-        }),
-        shortcut.click(),
-      ]);
+      const shortcutFacts = {
+        requestObserved: false,
+        requestFailed: false,
+        httpStatus: null as number | null,
+        semesterMatches: null as boolean | null,
+        groupMatches: null as boolean | null,
+        subjectMatches: null as boolean | null,
+        lessonTypeMatches: null as boolean | null,
+        pastOnlyMatches: null as boolean | null,
+        pageMatches: null as boolean | null,
+        pageSizeMatches: null as boolean | null,
+        responseObserved: false,
+        journalVisible: null as boolean | null,
+        shortcutVisible: null as boolean | null,
+      };
+      const shortcutQueryMatches = (url: URL): boolean => {
+        const predicates = {
+          semesterMatches: url.searchParams.get('semesterId') === String(dataset.semester.id),
+          groupMatches: url.searchParams.get('groupId') === String(dataset.group.id),
+          subjectMatches: url.searchParams.get('subjectId') === String(shortcutSubjectId),
+          lessonTypeMatches: url.searchParams.getAll('lessonType').map((type) => type.toUpperCase()).join() === 'LECTURE',
+          pastOnlyMatches: url.searchParams.get('pastOnly') === 'true',
+          pageMatches: url.searchParams.get('page') === '0',
+          pageSizeMatches: url.searchParams.get('pageSize') === '100',
+        };
+        Object.assign(shortcutFacts, predicates);
+        return Object.values(predicates).every(Boolean);
+      };
+      const observeShortcutRequest = (request: Request) => {
+        const url = new URL(request.url());
+        if (request.method() !== 'GET' || url.pathname !== '/api/v1/teacher/journal') return;
+        shortcutFacts.requestObserved = true;
+        shortcutQueryMatches(url);
+      };
+      const observeShortcutFailure = (request: Request) => {
+        const url = new URL(request.url());
+        if (request.method() === 'GET' && url.pathname === '/api/v1/teacher/journal')
+          shortcutFacts.requestFailed = true;
+      };
+      page.on('request', observeShortcutRequest);
+      page.on('requestfailed', observeShortcutFailure);
+      let shortcutResponse: Response;
+      try {
+        [shortcutResponse] = await Promise.all([
+          page.waitForResponse((response) => {
+            const url = new URL(response.url());
+            if (response.request().method() !== 'GET' || url.pathname !== '/api/v1/teacher/journal') return false;
+            shortcutFacts.responseObserved = true;
+            shortcutFacts.httpStatus = response.status();
+            const matches = shortcutQueryMatches(url);
+            return matches;
+          }),
+          shortcut.click(),
+        ]);
+      } catch (error) {
+        // Retain only closed predicates; neither query values nor server content leave the private run.
+        shortcutFacts.journalVisible = await page.locator('.teacher-journal').isVisible().catch(() => null);
+        shortcutFacts.shortcutVisible = await shortcut.isVisible().catch(() => null);
+        retainFirstFailure(info, 'TEACHER_SHORTCUT', shortcutFacts);
+        throw error;
+      } finally {
+        page.off('request', observeShortcutRequest);
+        page.off('requestfailed', observeShortcutFailure);
+      }
       expect(shortcutResponse.status()).toBe(200);
       const shortcutJournal = await shortcutResponse.json();
       expect(shortcutJournal.lessons).toEqual([]);

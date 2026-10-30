@@ -1,4 +1,4 @@
-import { failureBoundary, controlState } from '../fixtures/failed-case-diagnostics';
+import { failureBoundary, controlState, retainFirstFailure } from '../fixtures/failed-case-diagnostics';
 import { randomUUID } from 'node:crypto';
 import type { Locator, Page, Request, Response, Route, TestInfo } from '@playwright/test';
 import {
@@ -678,18 +678,41 @@ async function selectHomeworkDate(page: Page, dataset: MobileDataset, date: stri
     const response = await read;
     expect(response.status()).toBe(200);
     const feed = await response.json();
-    const selected = await page
-      .locator('.homework-calendar button[aria-pressed="true"]')
-      .getAttribute('data-homework-date');
-    expect(
-      typeof selected === 'string' &&
-        feed.from <= selected &&
-        selected <= feed.to &&
-        feed.from >= dataset.semester.dateFrom &&
-        feed.to <= dataset.semester.dateTo &&
-        feed.semester.id === String(dataset.semester.id),
-    ).toBe(true);
-    await expect(page.locator('.homework-skeleton')).toHaveCount(0);
+    const calendar = page.locator('.homework-calendar');
+    const selectedDay = calendar.locator('button[aria-pressed="true"]');
+    const facts = {
+      httpStatus: response.status(),
+      selectedDatePresent: null as boolean | null,
+      fromContainsSelected: null as boolean | null,
+      toContainsSelected: null as boolean | null,
+      fromInsideSemester: feed.from >= dataset.semester.dateFrom,
+      toInsideSemester: feed.to <= dataset.semester.dateTo,
+      semesterIdMatches: feed.semester.id === String(dataset.semester.id),
+      calendarReady: null as boolean | null,
+      selectedDateEnabled: null as boolean | null,
+    };
+    try {
+      // The response body can finish before Vue publishes the new month's calendar.
+      // Calendar readiness also requires the accepted feed to cover this exact period.
+      await expect(calendar).toHaveAttribute('aria-busy', 'false');
+      facts.calendarReady = true;
+      await expect(selectedDay).toBeEnabled();
+      facts.selectedDateEnabled = true;
+      const selected = await selectedDay.getAttribute('data-homework-date');
+      facts.selectedDatePresent = typeof selected === 'string';
+      facts.fromContainsSelected = typeof selected === 'string' && feed.from <= selected;
+      facts.toContainsSelected = typeof selected === 'string' && selected <= feed.to;
+      expect(
+        facts.selectedDatePresent && facts.fromContainsSelected && facts.toContainsSelected &&
+          facts.fromInsideSemester && facts.toInsideSemester && facts.semesterIdMatches,
+      ).toBe(true);
+      await expect(page.locator('.homework-skeleton')).toHaveCount(0);
+    } catch (error) {
+      if (facts.calendarReady === null) facts.calendarReady = false;
+      else if (facts.selectedDateEnabled === null) facts.selectedDateEnabled = false;
+      retainFirstFailure(test.info(), 'HOMEWORK_MONTH', facts);
+      throw error;
+    }
   };
   if ((await monthTab.getAttribute('aria-selected')) !== 'true')
     await readMonth(() => monthTab.click());

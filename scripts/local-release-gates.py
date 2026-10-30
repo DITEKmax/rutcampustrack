@@ -19,9 +19,10 @@ import time
 HERE=Path(__file__).resolve().parent
 ROOT=HERE.parent
 sys.path.insert(0,str(HERE/'local-release'))
-from catalog import catalog, targeted_catalog, remaining_catalog, NOT_APPLICABLE, REMAINING_EXCLUSIONS
-from diagnostics import project, admit_gate, control_error
+from catalog import catalog, targeted_catalog, remaining_catalog, failed_ci_catalog, attendance_memory_catalog, NOT_APPLICABLE, REMAINING_EXCLUSIONS
+from diagnostics import project, admit_gate, control_error, recovery_closed, memory_closed
 from progress import Progress
+from lease import acquire as acquire_lease
 from targeted_receipt import selected_xml, make as targeted_receipt, verify as verify_targeted
 
 MAX_LOG=512*1024*1024
@@ -184,9 +185,9 @@ def resources():
 def main():
     global CONTROL_AUDIT
     parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--expected-sha',required=True);parser.add_argument('--audit',required=True,type=Path);parser.add_argument('--list',action='store_true')
-    parser.add_argument('--mode',choices=('targeted','full','remaining'),default='full');parser.add_argument('--targeted-audit',type=Path);args=parser.parse_args()
-    full=args.mode=='full';remaining=args.mode=='remaining'
-    gates=catalog() if full else remaining_catalog() if remaining else targeted_catalog()
+    parser.add_argument('--mode',choices=('targeted','full','remaining','failed-ci','attendance-memory'),default='full');parser.add_argument('--targeted-audit',type=Path);args=parser.parse_args()
+    full=args.mode=='full';remaining=args.mode=='remaining';failed_ci=args.mode=='failed-ci'
+    gates=attendance_memory_catalog() if args.mode=='attendance-memory' else failed_ci_catalog() if failed_ci else catalog() if full else remaining_catalog() if remaining else targeted_catalog()
     exclusions=REMAINING_EXCLUSIONS if remaining else {}
     if args.list:
         print(json.dumps({'gates':[{'name':g.name,'command':list(g.command),'requires':list(g.requires),'seconds':g.seconds} for g in gates],'inapplicable':NOT_APPLICABLE if full else {},'exclusions':exclusions,'fullReplay':full,'mode':args.mode},indent=2));return 0
@@ -202,7 +203,7 @@ def main():
     if not audit.is_absolute() or audit.exists() or audit.is_symlink():raise ValueError('New exact private audit directory required')
     audit.mkdir(mode=0o700,parents=True);os.umask(0o077);CONTROL_AUDIT=audit
     lock=Path.home()/'.local/share/rct-pr3-local/local-release.lock';lock.parent.mkdir(mode=0o700,parents=True,exist_ok=True)
-    lease=lock.open('a');fcntl.flock(lease,fcntl.LOCK_EX|fcntl.LOCK_NB)
+    lease=acquire_lease(lock,os.environ.get('RCT_LOCAL_RELEASE_LEASE_FD'))
     # The browser adapter owns the canonical port lease only during its own native cohort.
     nonce=secrets.token_hex(12);started=time.time_ns()
     observed=resources()
@@ -211,13 +212,13 @@ def main():
     env={k:v for k,v in os.environ.items() if k in {'PATH','HOME','USER','LOGNAME','LANG','LC_ALL','TERM','JAVA_HOME','TMPDIR','HTTP_PROXY','HTTPS_PROXY','http_proxy','https_proxy','ALL_PROXY','all_proxy'}}
     bypass=os.environ.get('NO_PROXY',os.environ.get('no_proxy',''))
     env['NO_PROXY']=env['no_proxy']=','.join(filter(None,[bypass,'localhost','127.0.0.1','::1']))
-    env.update(RCT_LOCAL_RELEASE_REVISION=args.expected_sha,RCT_LOCAL_RELEASE_NONCE=nonce,RCT_LOCAL_RELEASE_AUDIT=str(audit),
+    env.update(RCT_LOCAL_RELEASE_MODE=args.mode,RCT_LOCAL_RELEASE_REVISION=args.expected_sha,RCT_LOCAL_RELEASE_NONCE=nonce,RCT_LOCAL_RELEASE_AUDIT=str(audit),
                RUNNER_TEMP=str(audit/'tmp'),PYTHONDONTWRITEBYTECODE='1',CI='true',TZ='UTC',LANG='C.UTF-8',LC_ALL='C.UTF-8',PIP_CONFIG_FILE='/dev/null',RCT_MONITORING_RUNTIME='isolated-local',RCT_OBSERVABILITY_APPS_RUNTIME='isolated-local',
                GRADLE_USER_HOME=str(audit/'cache/gradle'),npm_config_cache=str(audit/'cache/npm'),npm_config_userconfig='/dev/null',
                DOCKER_HOST='unix:///var/run/docker.sock',DOCKER_CONFIG=str(audit/'docker-config'),TRIVY_CACHE_DIR=str(audit/'cache/trivy'),
                PLAYWRIGHT_BROWSERS_PATH=str(audit/'cache/browsers'),NP01_PYTHON_EXECUTABLE=str(audit/'venv/bin/python'),RCT_GITLEAKS_REPORT=str(audit/'gitleaks.sarif'))
     for name in ['tmp','docker-config','cache']: (audit/name).mkdir(mode=0o700)
-    if remaining:
+    if remaining or failed_ci or args.mode=='attendance-memory':
         # All host Gradle subprocesses inherit this private home, including browser
         # clock/build helpers. Docker production bootJar builds do not run tests.
         init=Path(env['GRADLE_USER_HOME'])/'init.d';init.mkdir(mode=0o700,parents=True)
@@ -232,26 +233,36 @@ def main():
             if state!='RUN':results[gate.name]={'status':state};continue
             print('RUN '+gate.name,flush=True)
             archive_old(gate,audit)
-            if gate.name!='setup':
+            if gate.name not in {'setup','failed-ci-setup','attendance-memory-setup'} and args.mode!='attendance-memory':
                 env['PATH']=str(audit/'venv/bin')+':'+str(audit/'tools')+':'+os.environ['PATH']
                 env.update(PROMTOOL=str(audit/'tools/promtool'),PROMETHEUS_BIN=str(audit/'tools/prometheus'),ALERTMANAGER_BIN=str(audit/'tools/alertmanager'))
             gate_started=time.time_ns()
+            resources_before=resources()
             outcome=command(gate,env,audit)
+            resources_after=resources()
             clean=git('rev-parse','HEAD')==args.expected_sha and not git('-c','core.fileMode=false','diff','--name-only','HEAD')
             if gate.name=='academic-targeted':
                 try:selected_xml(ROOT,gate_started);artifacts=True
                 except Exception:artifacts=False
-            else:artifacts=admit_gate(gate.name,ROOT,audit,gate_started,args.expected_sha,nonce)
+            else:artifacts=admit_gate(gate.name,ROOT,audit,gate_started,args.expected_sha,nonce,mode=args.mode)
             try:native_artifacts=preserve_reports(gate,audit)
             except Exception:native_artifacts=None;artifacts=False
             projection=audit/'gate-diagnostics'/gate.name;projection.mkdir(mode=0o700,parents=True)
             try:gate_diagnostics=project(audit/native_artifacts,projection,gate_started) if native_artifacts else {'status':'UNAVAILABLE'}
             except Exception:gate_diagnostics={'status':'UNAVAILABLE'}
             passed=outcome['nativeExit']==0 and outcome['cause'] is None and outcome['childrenReaped'] and clean and artifacts
-            results[gate.name]={'status':'PASS' if passed else 'FAIL',**outcome,'command':list(gate.command),'revision':args.expected_sha,'nonce':nonce,'startedNs':gate_started,'secondsLimit':gate.seconds,'sourceRestoredExact':clean,'freshNativeArtifacts':artifacts,'nativeArtifacts':native_artifacts,'diagnostics':gate_diagnostics}
+            results[gate.name]={'status':'PASS' if passed else 'FAIL',**outcome,'command':list(gate.command),'revision':args.expected_sha,'nonce':nonce,'startedNs':gate_started,'secondsLimit':gate.seconds,'sourceRestoredExact':clean,'freshNativeArtifacts':artifacts,'nativeArtifacts':native_artifacts,'diagnostics':gate_diagnostics,'resourcesBefore':resources_before,'resourcesAfter':resources_after}
             print(results[gate.name]['status']+' '+gate.name,flush=True)
             # A resource/probe failure needs original saved-state diagnosis before any further test.
             safely_closed=False
+            if gate.name=='files-recovery':
+                try:
+                    safely_closed=recovery_closed(audit/'files-recovery/cleanup.safe.json',gate_started,args.expected_sha,nonce)
+                except Exception:pass
+            if gate.name=='attendance-memory':
+                try:
+                    safely_closed=memory_closed(ROOT/'build/attendance-memory/summary.safe.json',gate_started,args.expected_sha,nonce)
+                except Exception:pass
             if gate.name.startswith('browser-'):
                 try:
                     receipt=json.loads((audit/gate.name/'result.safe.json').read_text())
@@ -273,7 +284,7 @@ def main():
         try:diagnostics=project(ROOT,audit,started)
         except Exception:diagnostics={'status':'UNAVAILABLE'}
         accepted=not hold and not cancelled and all(r['status']=='PASS' for r in results.values())
-        value={'schema':1,'revision':args.expected_sha,'nonce':nonce,'event':'LOCAL_CONTROL','accepted':accepted,'acceptanceScope':'SELECTED_REMAINING_GATES_ONLY' if remaining else 'FULL' if full else 'TARGETED_ONLY','cancelled':cancelled,'hold':hold,'gates':results,'exclusions':exclusions,'inapplicable':NOT_APPLICABLE if full else {},'fullReplay':full,'mode':args.mode,'resources':observed,'diagnostics':diagnostics,'controlErrors':control_errors}
+        value={'schema':1,'revision':args.expected_sha,'nonce':nonce,'event':'LOCAL_CONTROL','accepted':accepted,'acceptanceScope':'ATTENDANCE_MEMORY_DIAGNOSTIC_ONLY' if args.mode=='attendance-memory' else 'FAILED_CI_CHECKS_ONLY' if failed_ci else 'SELECTED_REMAINING_GATES_ONLY' if remaining else 'FULL' if full else 'TARGETED_ONLY','cancelled':cancelled,'hold':hold,'gates':results,'exclusions':exclusions,'inapplicable':NOT_APPLICABLE if full else {},'fullReplay':full,'mode':args.mode,'resources':observed,'diagnostics':diagnostics,'controlErrors':control_errors}
         receipt=None
         if accepted and args.mode=='targeted':
             try:

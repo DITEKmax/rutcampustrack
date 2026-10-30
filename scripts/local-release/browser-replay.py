@@ -22,7 +22,7 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "scripts"))
 import local_e2e_async as lane
 
-MODES = ("full", "client", "webkit", "lesson-lifecycle", "ui-batch", "special13", "homework-sensitivity", "controls")
+MODES = ("full", "client", "webkit", "lesson-lifecycle", "ui-batch", "special13", "homework-sensitivity", "controls", "failed-ci")
 BUDGETS = {"full": 600, "client": 600, "webkit": 420, "lesson-lifecycle": 1020,
            "homework-sensitivity": 420}
 CONTROLS = (
@@ -127,6 +127,7 @@ class ReplayRunner(lane.Runner):
     def __init__(self, selection, **kwargs):
         super().__init__({"webkit": "client", "homework-sensitivity": "client"}.get(selection, selection), release_lane=selection, **kwargs)
         self.env.update({key: os.environ[key] for key in ("RCT_LOCAL_RELEASE_REVISION", "RCT_LOCAL_RELEASE_NONCE", "RCT_LOCAL_RELEASE_AUDIT")})
+        self.env["RCT_LOCAL_RELEASE_MODE"] = os.environ.get("RCT_LOCAL_RELEASE_MODE", "")
         self.selection = selection
         self.deadline = None
         self.source_restored = True
@@ -174,7 +175,13 @@ class ReplayRunner(lane.Runner):
             super().execute_batch()
         except lane.AdmissionError as error:
             lane.require(str(error) == "UI_BATCH_REMAINING_FAILURES_OR_BLOCKED_DEPENDENCIES", "RELEASE_BATCH_FAILURE")
-            portable36(read_report(self.run / "artifacts/ui-batch.safe.json"))
+            report = read_report(self.run / "artifacts/ui-batch.safe.json")
+            if self.failed_cases is not None:
+                lane.require(report['selectedCaseIds'] == self.failed_cases and report['selected'] == 3
+                             and report['passed'] == 3 and report['failed'] == report['notRun'] == 0,
+                             "RELEASE_FAILED_CI_THREE_CASES")
+            else:
+                portable36(report)
             # special13 is separately mandatory in the fixed release catalog.
 
     def cleanup(self):
@@ -211,8 +218,13 @@ def bootstrap_hook(runner):
                  "BOOTSTRAP_RECEIPT_FAILED")
 
 
-def run_cohort(selection, target, cohort=None):
-    runner = ReplayRunner(selection, special_cohort=cohort, operational=selection == "special13")
+def run_cohort(selection, target, cohort=None, *, focused=False):
+    options = {'failed_cases': ['HEADMAN_TEACHER_READ','FULL_ADMIN_RIGHTS','HOMEWORK_PERIOD']} if focused and selection == 'ui-batch' else {}
+    if focused and selection == 'special13':
+        options.update(lifecycle_only=True, operational_until='semester-metadata')
+    runner = ReplayRunner(selection, special_cohort=cohort, operational=selection == "special13", **options)
+    if focused and selection == 'special13':
+        runner.partial_lifecycle_selection = True
     if selection == "client":
         runner.release_bootstrap_hook = bootstrap_hook
     trust = SystemTrust(runner) if selection == "webkit" else None
@@ -221,6 +233,10 @@ def run_cohort(selection, target, cohort=None):
     cleanup, restored, bootstrap_skipped = False, True, False
     try:
         runner.prepare()
+        if focused:
+            for path in (runner.run / 'framework-private', runner.run / 'framework-private/failed-ci'):
+                path.mkdir(mode=0o700, exist_ok=True)
+                lane.owned(path, 0o700, directory=True)
         if trust:
             runner.command("WEBKIT_SUDO_AUTH", ["sudo", "-n", "true"])
             trust.install()
@@ -228,8 +244,8 @@ def run_cohort(selection, target, cohort=None):
         if selection in {"client", "webkit", "lesson-lifecycle"}:
             closed_report(read_report(runner.run / "artifacts/safe-results.json"), {"client": 10, "webkit": 1, "lesson-lifecycle": 4}[selection], "webkit" if trust else "chromium")
         if selection == "special13":
-            expected = 6 if cohort == "nonclock" else 7
-            rows = runner.special_outcomes
+            expected = 1 if focused else 6 if cohort == "nonclock" else 7
+            rows = [row for row in runner.special_outcomes if not focused or row['lane'] == 'semester-metadata']
             lane.require(sum(row["expected"] for row in rows) == expected and all(row["status"] == "PASS" for row in rows), "RELEASE_SPECIAL_INCOMPLETE")
     except BaseException as error:
         cancelled = isinstance(error, KeyboardInterrupt)
@@ -264,8 +280,8 @@ def run_cohort(selection, target, cohort=None):
         restored = restored and runner.source_restored
         status = "HOLD" if not restored or not cleanup else "CANCELLED" if cancelled else "FAIL" if failure else "PASS"
         result = {"bootstrap": {"status": "NOT_RUN", "reason": "CANCELLED"} if bootstrap_skipped else None, "cancelled": cancelled, "status": status, "cleanup": cleanup, "restoration": restored, "run": str(runner.run), "cohort": cohort,
-                  "errorKind": type(failure).__name__ if failure else None, "phase": runner.phase}
-        lane.write(target / ("cohort-" + (cohort or "single") + ".safe.json"), json.dumps(result) + "\n")
+                  "errorKind": (type(failure).__name__ if type(failure).__name__ in {"AdmissionError","TimeoutError","TimeoutExpired","KeyboardInterrupt","OSError","ValueError","KeyError","TypeError","CalledProcessError","FileNotFoundError","PermissionError","JSONDecodeError"} else "OTHER") if failure else None, "phase": runner.phase}
+        lane.write(target / ("cohort-" + (selection + "-" if focused else "") + (cohort or "single") + ".safe.json"), json.dumps(result) + "\n")
     return result
 
 
@@ -300,8 +316,9 @@ def main():
                 lane.owned(lane.RUNS / "port-8443.lock", 0o600)
                 fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
                 lane.preflight(release=True)
-                for cohort in (("nonclock", "lifecycle") if args.mode == "special13" else (None,)):
-                    row = run_cohort(args.mode, target, cohort)
+                selections = [('ui-batch', None), ('special13', 'lifecycle')] if args.mode == 'failed-ci' else [(args.mode, cohort) for cohort in (("nonclock", "lifecycle") if args.mode == "special13" else (None,))]
+                for selection, cohort in selections:
+                    row = run_cohort(selection, target, cohort, focused=args.mode == 'failed-ci')
                     rows.append(row)
                     cancelled = cancelled or row["cancelled"]
                     if row["status"] == "HOLD" or row["cancelled"]:

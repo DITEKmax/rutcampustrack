@@ -108,9 +108,16 @@ def check(condition, *, outcomes=None):
                 "outcomes": {
                     name: value
                     for name, value in (outcomes or {}).items()
-                    if name in (
-                        "ack_unchanged", "pending_positive", "held_card_unchanged", "foreign_card_unchanged",
-                        "initial_pttl_ms", "monotonic_elapsed_ms", "redis_elapsed_ms", "redeliveries",
+                    if name
+                    in (
+                        "ack_unchanged",
+                        "pending_positive",
+                        "held_card_unchanged",
+                        "foreign_card_unchanged",
+                        "initial_pttl_ms",
+                        "monotonic_elapsed_ms",
+                        "redis_elapsed_ms",
+                        "redeliveries",
                     )
                     and (type(value) is bool or type(value) is int and -1 <= value <= 10_000_000)
                 },

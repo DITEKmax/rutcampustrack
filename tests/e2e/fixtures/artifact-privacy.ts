@@ -1,6 +1,7 @@
 import { beginDiagnosticCase, captureDiagnosticFailure } from './diagnostic-events';
 import { test as base, type TestInfo, type WorkerInfo } from '@playwright/test';
-import { readFileSync } from 'node:fs';
+import { closeSync, constants, fstatSync, lstatSync, openSync, readFileSync, realpathSync, writeSync } from 'node:fs';
+import { failedCaseId } from './failed-case-diagnostics';
 import { resolve } from 'node:path';
 import {
   classifySafeFailure,
@@ -187,9 +188,68 @@ function reportedSpecLocation(error: unknown, info: Pick<TestInfo, 'file' | 'lin
   return fallback;
 }
 
+/** Only the explicitly selected owner replay keeps raw errors before the ordinary scrub. */
+const failedCiRawCounts = new Map<string, number>();
+const failedCiRawObjects = new WeakSet<object>();
+function retainFailedCiRawError(info: TestInfo, error: unknown): void {
+  if (process.env.RCT_LOCAL_RELEASE_MODE !== 'failed-ci') return;
+  const caseId = failedCaseId(info.title);
+  if (!caseId || !['HEADMAN_TEACHER_READ', 'FULL_ADMIN_RIGHTS', 'HOMEWORK_PERIOD', 'SEMESTER_METADATA'].includes(caseId)
+      || !error || typeof error !== 'object' || failedCiRawObjects.has(error)) return;
+  let fd: number | undefined;
+  try {
+    const root = resolve(__dirname, '../../..'), nonce = process.env.RCT_LOCAL_STAGE17_NONCE;
+    if (process.platform !== 'linux' || !nonce || !/^[a-f0-9]{24}$/.test(nonce)) throw new Error('Private identity');
+    const run = resolve(root, '.agent/evidence/local-runs', `rct-local-stage17-${nonce.slice(0, 12)}`);
+    const directory = resolve(run, 'framework-private/failed-ci');
+    for (const path of [run, resolve(run, 'framework-private'), directory]) {
+      const metadata = lstatSync(path);
+      if (!metadata.isDirectory() || metadata.isSymbolicLink() || metadata.uid !== process.getuid?.()
+          || (metadata.mode & 0o777) !== 0o700 || realpathSync(path) !== path) throw new Error('Private directory');
+    }
+    const manifest = resolve(run, 'owner.json'), metadata = lstatSync(manifest);
+    if (process.env.RCT_LOCAL_STAGE17_MANIFEST !== manifest || !metadata.isFile() || metadata.isSymbolicLink()
+        || metadata.nlink !== 1 || metadata.uid !== process.getuid?.() || (metadata.mode & 0o777) !== 0o600
+        || metadata.size <= 0 || metadata.size > 8 * 1024 ** 2) throw new Error('Private manifest');
+    const owner = JSON.parse(readFileSync(manifest, 'utf8'));
+    if (owner.root !== root || owner.run !== run || owner.nonce !== nonce || owner.uid !== process.getuid?.()
+        || owner.source_sha !== process.env.RCT_LOCAL_RELEASE_REVISION || owner.mode !== process.env.RCT_LOCAL_STAGE17_MODE
+        || !['ui-batch', 'special13'].includes(owner.mode)) throw new Error('Private source binding');
+    const count = failedCiRawCounts.get(caseId) ?? 0;
+    if (count >= 16) throw new Error('Private test bound');
+    const fields: Record<string, string> = {};
+    for (const [name, limit] of [['message', 8192], ['stack', 16384], ['name', 128], ['code', 128]] as const) {
+      const value = Object.getOwnPropertyDescriptor(error, name)?.value;
+      if (typeof value === 'string') fields[name] = value.slice(0, limit);
+    }
+    const raw = Buffer.from(JSON.stringify({ caseId, ordinal: count + 1, ...fields }) + '\n');
+    if (raw.length > 64 * 1024) throw new Error('Private error bound');
+    fd = openSync(resolve(directory, 'test-errors.private.jsonl'), constants.O_WRONLY | constants.O_CREAT | constants.O_APPEND | constants.O_NOFOLLOW, 0o600);
+    const target = fstatSync(fd);
+    if (!target.isFile() || target.nlink !== 1 || target.uid !== process.getuid?.() || (target.mode & 0o777) !== 0o600
+        || target.size + raw.length > 256 * 1024) throw new Error('Private final bound');
+    let written = 0;
+    while (written < raw.length) {
+      const size = writeSync(fd, raw, written, raw.length - written);
+      if (size <= 0) throw new Error('Private write');
+      written += size;
+    }
+    failedCiRawCounts.set(caseId, count + 1);
+    failedCiRawObjects.add(error);
+  } catch {
+    // A finite marker exposes a retention failure; the original test error survives.
+    process.stderr.write('RCT_FAILED_CI_RAW_RETENTION_V1 FAIL\n');
+  } finally {
+    if (fd !== undefined) {
+      try { closeSync(fd); } catch { process.stderr.write('RCT_FAILED_CI_RAW_RETENTION_V1 FAIL\n'); }
+    }
+  }
+}
+
 /** Run before Playwright writes automatic error-context.md, which otherwise includes raw call logs. */
 export function sanitizeTestErrors(info: TestInfo): void {
   for (const error of info.errors) {
+    retainFailedCiRawError(info, error);
     captureDiagnosticFailure(info, error, () => {
     // The generic rewritten message adds no new cause on repeated sanitizer passes.
     const message = Object.getOwnPropertyDescriptor(error, 'message');

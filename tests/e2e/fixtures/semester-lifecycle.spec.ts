@@ -1,5 +1,6 @@
 import { localSpecialLane, localSpecialService, type LocalSpecialLane } from './local-special';
 import { diagnosticCase } from './diagnostic-events';
+import { retainFirstFailure } from './failed-case-diagnostics';
 import { createPhaseBudget } from './reconciliation-phase-budget';
 import { createInitialReadiness } from './reconciliation-readiness';
 import { createDlqWitness, observeRetainedDlq, readDlqCounters } from './reconciliation-dlq-observation';
@@ -1141,6 +1142,27 @@ async function ownedHistoricalPromotion(
   }
 }
 
+/** Exact comparison facts only; raw identities, digests, counts and metadata never leave the case. */
+function semesterMetadataIsolationFacts(known: Row, current: Row) {
+  const counts = {
+    scheduleTemplatesEqual: current?.counts?.scheduleTemplates === known.counts.scheduleTemplates,
+    oneOffLessonsEqual: current?.counts?.oneOffLessons === known.counts.oneOffLessons,
+    lessonsEqual: current?.counts?.lessons === known.counts.lessons,
+    assignmentsEqual: current?.counts?.assignments === known.counts.assignments,
+    homeworksEqual: current?.counts?.homeworks === known.counts.homeworks,
+    attendanceMarksEqual: current?.counts?.attendanceMarks === known.counts.attendanceMarks,
+    studentRequestsEqual: current?.counts?.studentRequests === known.counts.studentRequests,
+  };
+  return {
+    semesterIdEqual: current?.semesterId === known.semesterId,
+    digestEqual: current?.previewDigest === known.previewDigest,
+    stateVersionEqual: current?.stateVersion === known.stateVersion,
+    priorStateEqual: current?.priorState === known.priorState,
+    countsEqual: Object.values(counts).every((equal) => equal),
+    ...counts,
+  };
+}
+
 /** Closed local diagnostic only; retention failure must never replace the original oracle. */
 function retainMetadataOracle(
   info: TestInfo,
@@ -1592,6 +1614,9 @@ async function ownedSemesterMetadataAndDeletion(
       `/api/academic/semesters/${currentSemesterId}/delete-preview`,
     );
     retainMetadataOracle(info, known, unchangedPreview, countItems.map(([key]) => key));
+    const metadataFacts = semesterMetadataIsolationFacts(known, unchangedPreview);
+    if (!metadataFacts.digestEqual || !metadataFacts.stateVersionEqual)
+      retainFirstFailure(info, 'SEMESTER_METADATA_ISOLATION', metadataFacts);
     requireValue(
       unchangedPreview.previewDigest === known.previewDigest &&
         unchangedPreview.stateVersion === known.stateVersion,

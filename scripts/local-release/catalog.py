@@ -57,3 +57,29 @@ REMAINING_EXCLUSIONS={
 
 def remaining_catalog():
     return tuple(g for g in catalog() if g.name not in REMAINING_EXCLUSIONS)
+
+
+def attendance_memory_catalog():
+    return (
+        Gate('attendance-memory-setup', ('bash','scripts/local-release/attendance-memory-setup.sh'), seconds=120),
+        Gate('source-public-object-prepare', ('python3','scripts/local-release/source-public-object-prepare.py'), ('attendance-memory-setup',), seconds=120),
+        Gate('attendance-memory', ('python3','-B','scripts/attendance-memory/run.py','--arms','comparison'), ('attendance-memory-setup','source-public-object-prepare'), seconds=5400, resource=True,
+             reports=('build/attendance-memory','build/ci-test-outcomes/attendance-service')),
+    )
+
+
+def failed_ci_catalog():
+    """Only the seven failed checks; preparation is not a repeated acceptance gate."""
+    root='services/attendance-service/attendance-app'
+    return (
+        Gate('failed-ci-setup', ('bash','scripts/local-release/failed-ci-setup.sh'), seconds=1800),
+        Gate('ruff-scope', ('ruff','format','--check','services/notification-bot/tests/np01_broker_bridge_runner.py'), ('failed-ci-setup',), seconds=60),
+        Gate('prepared-control', ('python3','-B','scripts/prepared-projection-control.py'), ('failed-ci-setup',), seconds=90,
+             reports=('build/monitoring/prepared-control.safe.json',)),
+        Gate('monitoring-tools', ('python3','scripts/local-release/setup-tools.py','--monitoring-only'), ('prepared-control',), seconds=600),
+        Gate('monitoring', ('bash','scripts/local-release/monitoring.sh'), ('monitoring-tools',), seconds=1500, resource=True, reports=tuple('build/monitoring/'+n+'.json' for n in ('delivery','exporters','pipeline'))),
+        Gate('source-public-object-prepare', ('python3','scripts/local-release/source-public-object-prepare.py'), ('failed-ci-setup',), seconds=120),
+        Gate('java-attendance-service', ('bash','scripts/local-release/attendance-coverage.sh'), ('failed-ci-setup','source-public-object-prepare'), seconds=3600, resource=True,
+             reports=(root+'/build/test-results',root+'/build/reports/jacoco',root+'/build/reports/tests',root+'/build/reports/integrationTest','build/ci-test-outcomes/attendance-service')),
+        Gate('browser-failed-ci', ('python3','scripts/local-release/browser-replay.py','failed-ci'), ('failed-ci-setup','source-public-object-prepare'), seconds=7200, resource=True),
+    )

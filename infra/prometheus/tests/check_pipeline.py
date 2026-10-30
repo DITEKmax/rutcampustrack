@@ -41,9 +41,9 @@ PYTHON_IMAGE = "python:3.12.12-slim-bookworm@sha256:593bd06efe90efa80dc4eee3948b
 
 
 _BACKGROUND_NATIVE_SOURCE_HASHES = {
-    "build.gradle.kts": "dcdaa1dd36c43ddd8d8722060e4448aa6fccb04281618fd304087b3d533469e7",
+    "build.gradle.kts": "d093c2b7f7ac52044f4ecb62934e645e18078fe7909e5684137059647cc9111f",
     "settings.gradle.kts": "0da039246607505fbd6c8c3c2340345dab96f4051f6a5fc49e475c864a7b0617",
-    "services/attendance-service/attendance-app/build.gradle.kts": "2c3680f5666fd30dc168ba17ef23ef60fe4f4ac5316e055d9a7ff8e429faecf2",
+    "services/attendance-service/attendance-app/build.gradle.kts": "87292858ef502bf581d90dd3334f915368482f7f100f0c358b1b9dda1a744502",
     "services/attendance-service/attendance-api-contract/build.gradle.kts": "e2c1d174ecd031671cbd78326566ca3bda1eea875ef3ecf1eee2d62b6c674038",
     "services/shared/shared-web/build.gradle.kts": "3b763bce4032f304d1f43fdd226c0bfbe14531f35a2a056578aa348b247e0bd3",
     "services/shared/shared-web-api/build.gradle.kts": "88c458ed5bac640ad3034b1c89b33a331e5540f51521ce7215aee28eafd7f5ee",

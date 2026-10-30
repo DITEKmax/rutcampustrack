@@ -2,7 +2,16 @@ set -euo pipefail
 umask 077
 mkdir -p build/monitoring
 python3 scripts/test-env-prod.py --compose-config
-python3 -B tests/harness/test_prepared_probe_projection.py
+if [ "${RCT_LOCAL_RELEASE_MODE:-}" = failed-ci ]; then
+  python3 - <<'PY'
+import hashlib,json,pathlib
+root=pathlib.Path.cwd(); receipt=json.loads((root/'build/monitoring/prepared-control.safe.json').read_text())
+assert receipt['result']=='PASS' and receipt['nativeExit']==0 and receipt['testsRun']==14 and receipt['failures']==[]
+assert all(hashlib.sha256((root/name).read_bytes()).hexdigest()==expected for name,expected in receipt['sourceSha256'].items())
+PY
+else
+  python3 -B scripts/prepared-projection-control.py
+fi
 promtool check config --syntax-only infra/prometheus/prometheus.yml
 promtool check rules infra/prometheus/rules/*.yml
 amtool check-config infra/alertmanager/alertmanager.yml

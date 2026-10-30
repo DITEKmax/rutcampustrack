@@ -155,6 +155,30 @@ try {
     .split('\n')
     .map((line) => JSON.parse(line).caseId)
   assert.deepEqual(rawCases, cases)
+  const producedAuthority = spawnSync('python3', ['-B', '-c',
+    "import sys; sys.path.insert(0, sys.argv[1] + '/scripts'); import local_e2e_async as lane; print(lane.Runner('client', release_lane='client', client_cases=lane.D002_AUTHORITY_CASES).env['RCT_LOCAL_CLIENT_CASES'])", actualRoot], { encoding: 'utf8' });
+  assert.equal(producedAuthority.status, 0);
+  const serializedAuthority = producedAuthority.stdout.trim();
+  assert.equal(serializedAuthority, JSON.stringify(cases.slice(0, 1)), 'Actual Python A-only canonical environment');
+  env.RCT_LOCAL_CLIENT_CASES = serializedAuthority;
+  writeOwner({ ...owner, client_cases: cases.slice(0, 1) });
+  const authority = sink();
+  assert.equal(authority({ title }, new Error('PRIVATE_AUTHORITY_CANARY')), 'RETAINED');
+  const retainedBeforeForeign = fs.readFileSync(target);
+  assert.equal(authority({ title: lateTitle }, new Error('PRIVATE_UNSELECTED_B_CANARY')), 'REJECTED');
+  assert.deepEqual(fs.readFileSync(target), retainedBeforeForeign);
+  writeOwner(owner);
+  assert.equal(sink()({ title }, new Error('PRIVATE_UNBOUND_CANARY')), 'FAILED');
+  env.RCT_LOCAL_CLIENT_CASES = serializedPair;
+  writeOwner({ ...owner, client_cases: cases.slice(0, 1) });
+  assert.equal(sink()({ title }, new Error('PRIVATE_UNBOUND_CANARY')), 'FAILED');
+  for (const rejected of [[cases[1]], [...cases].reverse(), ['FOREIGN']]) {
+    env.RCT_LOCAL_CLIENT_CASES = JSON.stringify(rejected);
+    writeOwner({ ...owner, client_cases: rejected });
+    assert.equal(sink()({ title }, new Error('PRIVATE_FOREIGN_CANARY')), 'REJECTED');
+    assert.equal(sink()({ title: lateTitle }, new Error('PRIVATE_FOREIGN_CANARY')), 'REJECTED');
+  }
+
 } finally { fs.rmSync(root, { recursive: true, force: true }); }
 // Execute the actual changed finally statements, not a mirrored cleanup model.
 const storySource = fs.readFileSync(new URL('../specs/mobile-real-server.spec.ts', import.meta.url), 'utf8');
@@ -210,6 +234,8 @@ console.log(
     exactClientRaw0600: true,
     defaultCiRawOff: true,
     actualPythonPairBothTitlesRetained: true,
+    actualPythonAuthorityOnlyRetained: true,
+    authorityRejectsUnselectedBAndCrossedBindings: true,
     spacedPairRejected: true,
     native: 'NOT_RUN',
   }),

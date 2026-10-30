@@ -53,8 +53,14 @@ class PreparedProjectionControls(unittest.TestCase):
             self.assertEqual(options['env']['OTEL_SDK_DISABLED'], 'true')
             options['stdout'].write(raw)
             return subprocess.CompletedProcess(command, status)
+        def evidence(**options):
+            self.assertIn(options['prefix'], {'rct-prepared-stdout-', 'rct-prepared-stderr-'})
+            return tempfile.TemporaryFile(mode='w+b')
         try:
-            with patch.object(contract.subprocess, 'run', side_effect=child):
+            # This unit owns evidence streams; native subprocess assertions below
+            # must not intercept production source-context Git admission.
+            with patch.object(contract, 'evidence_file', side_effect=evidence), \
+                    patch.object(contract.subprocess, 'run', side_effect=child):
                 return contract.prepared_transaction_contract(docker)
         finally:
             self.assertEqual(len([args for args in calls if 'delete_vhost' in args]), 1)

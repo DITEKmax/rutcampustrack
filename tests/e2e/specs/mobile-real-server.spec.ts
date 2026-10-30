@@ -4205,7 +4205,17 @@ test.describe('Production PWA service worker D002 @real-mobile', () => {
           ).toBeDisabled();
           await page.getByRole('button', { name: 'Задания', exact: true }).click();
           await expect(page.getByText(marker, { exact: true })).toBeVisible();
-          await expect(page.getByRole('slider', { name: new RegExp(marker) })).toBeDisabled();
+          const ownOfflineHomework = page.locator('article.homework-card').filter({
+            has: page.getByText(marker, { exact: true }),
+          });
+          await expect(ownOfflineHomework).toHaveCount(1);
+          await expect(ownOfflineHomework).toBeVisible();
+          await expect(
+            ownOfflineHomework.getByRole('slider', {
+              name: `Выполнить: ${dataset.subject.name}`,
+              exact: true,
+            }),
+          ).toBeDisabled();
           expect(roleCommands).toBe(0);
           for (const request of pendingAuth.keys()) priorAuth.add(request);
           observingReconnect = true;

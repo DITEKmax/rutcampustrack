@@ -75,6 +75,7 @@ BATCH_BLOCKED = [
 
 
 D002_CASES = ("D002_RECONNECT_ACCOUNT_AUTHORITY", "D002_LATE_ACCOUNT_HOMEWORK")
+D002_AUTHORITY_CASES = D002_CASES[:1]
 D002_TITLES = ("D002 offline reload rechecks suspended grants before role selection", "D002 late prior-account homework cannot replace the new account or offline snapshot")
 
 FAILED_CASES = {
@@ -91,8 +92,8 @@ FAILED_CASES = {
 
 
 def client_cases_arguments(cases):
-    require(cases in (None, D002_CASES), "CLIENT_CASE_SELECTION")
-    return ["--grep", "(?:" + "|".join(map(re.escape, D002_TITLES)) + ")$"] if cases else []
+    require(cases in (None, D002_CASES, D002_AUTHORITY_CASES), "CLIENT_CASE_SELECTION")
+    return ["--grep", "(?:" + "|".join(map(re.escape, D002_TITLES[:len(cases)])) + ")$"] if cases else []
 
 
 def selected_batch_cases(cases):
@@ -470,7 +471,7 @@ def validate_lane_environment(value, environment, expected_mode=None, expected_b
     else:
         require(lane is None and expected_batch_lane is None and not environment.get("RCT_LOCAL_UI_BATCH_CASES"), "LOCAL_BATCH_MODE_REQUIRED")
     client_cases = value.get("client_cases")
-    require((client_cases is None or client_cases == list(D002_CASES)) and (client_cases is None or mode == "client" and release_lane == "client")
+    require((client_cases is None or client_cases in (list(D002_CASES), list(D002_AUTHORITY_CASES))) and (client_cases is None or mode == "client" and release_lane == "client")
             and environment.get("RCT_LOCAL_CLIENT_CASES", "") == (json.dumps(client_cases, separators=(',', ':')) if client_cases else ""), "LOCAL_CLIENT_CASE_BINDING")
     diagnostic = value.get("startup_diagnostic", False)
     require(type(diagnostic) is bool and (not diagnostic or mode == "client")
@@ -1862,10 +1863,10 @@ def preflight(*, release=False, special=False, retained_receipt=None, retained_p
 class Runner:
     canonical_mount_records = staticmethod(canonical_mount_records)
     def __init__(self, mode, *, release_lane=None, startup_diagnostic=False, bundled_dockerfile_frontend=False, client_cases=None, failed_cases=None, special_cohort=None, lifecycle_only=False, operational=False, operational_until=None, reconciliation_only=False, recovery_archive_only=False):
-        require(client_cases in (None, D002_CASES) and (client_cases is None or mode == "client" and release_lane == "client"), "CLIENT_CASE_SELECTION")
+        require(client_cases in (None, D002_CASES, D002_AUTHORITY_CASES) and (client_cases is None or mode == "client" and release_lane == "client"), "CLIENT_CASE_SELECTION")
         self.client_cases = client_cases
         require(not startup_diagnostic or mode == "client", "CLIENT_DIAGNOSTIC_ONLY")
-        require(not bundled_dockerfile_frontend or mode in {"ui-batch", "special13"} or client_cases == D002_CASES, "BUNDLED_FRONTEND_UI_BATCH_ONLY")
+        require(not bundled_dockerfile_frontend or mode in {"ui-batch", "special13"} or client_cases in (D002_CASES, D002_AUTHORITY_CASES), "BUNDLED_FRONTEND_UI_BATCH_ONLY")
         require(failed_cases is None or mode == "ui-batch", "BATCH_CASES_UI_BATCH_ONLY")
         require((mode == "special13" and special_cohort in {"nonclock", "lifecycle"})
                 or (mode != "special13" and special_cohort is None), "SPECIAL_COHORT_REQUIRED")

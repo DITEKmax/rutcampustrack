@@ -30,6 +30,13 @@ class D002Controls(unittest.TestCase):
             with self.assertRaises(lane.AdmissionError):
                 lane.Runner(mode, release_lane=release, client_cases=lane.D002_CASES)
         self.assertNotIn('RCT_LOCAL_CLIENT_CASES', lane.Runner('client').env)
+        authority = lane.client_cases_arguments(lane.D002_AUTHORITY_CASES)
+        self.assertTrue(re.search(authority[1], lane.D002_TITLES[0]))
+        self.assertFalse(re.search(authority[1], lane.D002_TITLES[1]))
+        for rejected in ((lane.D002_CASES[1],), tuple(reversed(lane.D002_CASES)), ('FOREIGN',)):
+            with self.assertRaises(lane.AdmissionError): lane.client_cases_arguments(rejected)
+            with self.assertRaises(lane.AdmissionError): lane.Runner('client', release_lane='client', client_cases=rejected)
+
 
     def test_manifest_and_environment_must_agree(self):
         runner = lane.Runner('client', release_lane='client', client_cases=lane.D002_CASES)
@@ -40,6 +47,12 @@ class D002Controls(unittest.TestCase):
             changed = {**value, field: bad}
             with self.assertRaises(lane.AdmissionError):
                 lane.validate_lane_environment(changed, runner.env, expected_mode='client')
+        authority = lane.Runner('client', release_lane='client', client_cases=lane.D002_AUTHORITY_CASES)
+        one = {**value, 'client_cases': list(lane.D002_AUTHORITY_CASES), 'nonce': authority.nonce, 'run': str(authority.run)}
+        lane.validate_lane_environment(one, authority.env, expected_mode='client')
+        for crossed, env in (({**one, 'client_cases': list(lane.D002_CASES)}, authority.env),
+                             ({**value, 'client_cases': list(lane.D002_AUTHORITY_CASES)}, runner.env)):
+            with self.assertRaises(lane.AdmissionError): lane.validate_lane_environment(crossed, env)
         changed = {**runner.env, 'RCT_LOCAL_CLIENT_CASES': ''}
         with self.assertRaises(lane.AdmissionError):
             lane.validate_lane_environment(value, changed)
@@ -58,6 +71,13 @@ class D002Controls(unittest.TestCase):
             self.assertIs(actual['fullAcceptance'], False)
         mixed = self.report('passed'); mixed['results'][0]['status'] = 'failed'; mixed['status'] = 'failed'
         self.assertEqual(replay.d002_counts(mixed), {'selected': 2, 'passed': 1, 'failed': 1, 'notRun': 0, 'fullAcceptance': False})
+        one = self.report('passed'); one['results'] = one['results'][:1]
+        self.assertEqual(replay.d002_counts(one, lane.D002_AUTHORITY_CASES), {'selected': 1, 'passed': 1, 'failed': 0, 'notRun': 0, 'fullAcceptance': False})
+        one['status'] = one['results'][0]['status'] = 'failed'
+        self.assertEqual(replay.d002_counts(one, lane.D002_AUTHORITY_CASES)['failed'], 1)
+        with self.assertRaises(lane.AdmissionError): replay.d002_counts(self.report(), lane.D002_AUTHORITY_CASES)
+        for rejected in ((lane.D002_CASES[1],), tuple(reversed(lane.D002_CASES)), ('FOREIGN',)):
+            with self.assertRaises(lane.AdmissionError): replay.d002_counts(one, rejected)
         for mutate in [lambda r: r.update(runnerErrors=1), lambda r: r.update(unsafeArtifact=True),
                        lambda r: r['results'].append(copy.deepcopy(r['results'][0])),
                        lambda r: r['results'][0].update(caseId='HEADMAN_TEACHER_READ'),

@@ -33,8 +33,17 @@ from check_formulas import long_window_fixture, record_expr, slo_budget_inventor
 
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT / "scripts"))
-from local_release_context import runtime_context
-from local_release_evidence import evidence_directory
+# Host helpers are lazy: the worker mounts only bot + tests.
+def runtime_context(*args, **kwargs):
+    from local_release_context import runtime_context as host_context
+    return host_context(*args, **kwargs)
+
+
+def evidence_directory(*args, **kwargs):
+    from local_release_evidence import evidence_directory as host_evidence
+    return host_evidence(*args, **kwargs)
+
+
 _STATE = {"phase": "PRECHECK_OR_CONFIG", "cleanup": "NOT_STARTED"}
 PROM_UID = "PBFA97CFB590B2093"
 PYTHON_IMAGE = "python:3.12.12-slim-bookworm@sha256:593bd06efe90efa80dc4eee3948be7c0fde4134606dd40d8dd8dbcade98e669c"
@@ -1238,14 +1247,167 @@ def e2e_async_browser():
         raise SystemExit(1)
 
 
-def main():
+_HOST_BOT_QUERY_IDS = (
+    "UP_NODE", "UP_CADVISOR", "UP_BOT", "NODE_MEMORY", "NODE_FILESYSTEM", "NODE_CPU",
+    "CONTAINER_MEMORY", "BOT_COMPLETED_ZERO", "BOT_WORKERS", "BOT_POLLING_ABSENT",
+    "BOT_COMPLETED_ONE", "BOT_EXHAUSTED_ZERO", "BOT_QUEUE_EMPTY",
+)
+_HOST_BOT_CHECKPOINTS = _HOST_BOT_QUERY_IDS + (
+    "IDENTITY_NODE", "IDENTITY_CADVISOR", "IDENTITY_BOT", "BOT_HEALTH_503",
+    "BOT_QUEUE_START", "BOT_QUEUE_DONE", "COMPLETE",
+)
+
+
+def host_bot_error_code(error):
+    if isinstance(error, urllib.error.HTTPError):
+        return "HTTP_ERROR"
+    if isinstance(error, subprocess.CalledProcessError):
+        return "COMMAND_FAILED"
+    if isinstance(error, subprocess.TimeoutExpired):
+        return "COMMAND_TIMEOUT"
+    if isinstance(error, OSError):
+        return "IO_ERROR"
+    if isinstance(error, (ValueError, IndexError, KeyError, TypeError)):
+        return "RESPONSE_SHAPE"
+    if isinstance(error, AssertionError):
+        return "ASSERTION"
+    return "OTHER_ERROR"
+
+
+def own_source_frame(error):
+    """Qualified innermost own-source location; never text or foreign frames."""
+    line = None
+    frame = error.__traceback__
+    while frame is not None:
+        if frame.tb_frame.f_code.co_filename == __file__:
+            line = frame.tb_lineno
+        frame = frame.tb_next
+    return {
+        "path": "infra/prometheus/tests/check_pipeline.py",
+        "line": line if type(line) is int and 1 <= line <= 100000 else None,
+        "sha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+        "qualification": "OWN_SOURCE_LOCATION_NOT_AUTHENTICATED_ROOT_CAUSE",
+    }
+
+
+def host_bot_observation(rows):
+    """Finite aggregates; no labels, queries, timestamps or raw error text."""
+    values = []
+    for row in rows[:32]:
+        try:
+            value = float(row["value"][1])
+        except (ValueError, TypeError, KeyError, IndexError, OverflowError):
+            continue
+        if math.isfinite(value) and abs(value) <= 10**15:
+            values.append(value)
+    return {
+        "sample_count": min(len(rows), 1000000),
+        "sample_count_capped": len(rows) > 1000000,
+        "bounded_values_observed": len(values),
+        "values_truncated": len(rows) > 32,
+        "value_min": min(values) if values else None,
+        "value_max": max(values) if values else None,
+        "error_code": "NONE",
+    }
+
+
+def host_bot_metrics(api, wait, control, project):
+    """Shared full/local assertions; observations do not change the oracle."""
+    _STATE["phase"] = "HOST_AND_BOT_METRICS"
+    diagnostics = {"checkpoint": None, "observations": {}, "error_code": "NONE"}
+    _STATE["host_bot_diagnostics"] = diagnostics
+    ids = {"node-exporter": "NODE", "cadvisor": "CADVISOR", "notification-bot": "BOT"}
+    original_wait = wait
+
+    def wait(predicate, seconds=100):
+        try:
+            return original_wait(predicate, seconds)
+        except AssertionError:
+            if diagnostics["error_code"] == "NONE":
+                diagnostics["error_code"] = "WAIT_TIMEOUT"
+            raise
+
+    def checkpoint(identifier):
+        assert identifier in _HOST_BOT_CHECKPOINTS
+        diagnostics["checkpoint"] = identifier
+        diagnostics["error_code"] = "NONE"
+
+    def observed(query_id, expression):
+        assert query_id in _HOST_BOT_QUERY_IDS
+        try:
+            response = api("prometheus", "/api/v1/query?" + urllib.parse.urlencode({"query": expression}))
+            assert response["status"] == "success"
+            rows = response["data"]["result"]
+            diagnostics["observations"][query_id] = host_bot_observation(rows)
+            diagnostics["error_code"] = "NONE"
+            return rows
+        except Exception as error:
+            code = host_bot_error_code(error)
+            diagnostics["observations"][query_id] = {"error_code": code}
+            diagnostics["error_code"] = code
+            raise
+
+    for job in ["node-exporter", "cadvisor", "notification-bot"]:
+        checkpoint("UP_" + ids[job])
+        wait(lambda job=job: len(observed('UP_' + ids[job], 'up{job="' + job + '"} == 1')) == 1, 180)
+        identity = observed('UP_' + ids[job], 'up{job="' + job + '"} == 1')[0]["metric"]
+        port = {"node-exporter": 9100, "cadvisor": 8080, "notification-bot": 8081}[job]
+        checkpoint("IDENTITY_" + ids[job])
+        diagnostics["observations"]["UP_" + ids[job]]["expected_labels"] = {
+            "instance": identity.get("instance") == job + ":" + str(port),
+            "service": identity.get("service") == job,
+            "environment": identity.get("environment") == "synthetic",
+        }
+        assert identity["instance"] == job + ":" + str(port)
+        assert identity["service"] == job and identity["environment"] == "synthetic"
+    checkpoint("BOT_HEALTH_503")
+    try:
+        api("notification-bot", "/health", port="8081")
+        raise AssertionError("bot polling is absent; health must not be fabricated UP")
+    except urllib.error.HTTPError as error:
+        diagnostics["health_status"] = error.code if type(error.code) is int and 100 <= error.code <= 599 else None
+        assert error.code == 503
+    for query_id, expression in [
+        ("NODE_MEMORY", 'node_memory_MemTotal_bytes{job="node-exporter"} > 0'),
+        ("NODE_FILESYSTEM", 'node_filesystem_avail_bytes{job="node-exporter",mountpoint="/"} > 0'),
+        ("NODE_CPU", 'node_cpu_seconds_total{job="node-exporter",mode="idle"} > 0'),
+        ("CONTAINER_MEMORY", 'container_memory_usage_bytes{job="cadvisor",container_label_com_docker_compose_project="'
+        + project
+        + '"} > 0'),
+        ("BOT_COMPLETED_ZERO", 'notification_bot_send_tasks_completed_total{job="notification-bot"} == 0'),
+        ("BOT_WORKERS", 'notification_bot_send_workers_alive{job="notification-bot"} == 2'),
+        ("BOT_POLLING_ABSENT", 'notification_bot_task_alive{job="notification-bot",task="polling"} == 0'),
+    ]:
+        checkpoint(query_id)
+        wait(lambda expression=expression, query_id=query_id: bool(observed(query_id, expression)))
+    # Polling/consumer were deliberately never started: health remains503,
+    # while the real metrics endpoint and queue execution are observable.
+    checkpoint("BOT_QUEUE_START")
+    (control / "start").write_text("GO")
+    checkpoint("BOT_QUEUE_DONE")
+    wait(lambda: (control / "done").exists())
+    checkpoint("BOT_COMPLETED_ONE")
+    wait(lambda: len(observed("BOT_COMPLETED_ONE", 'notification_bot_send_tasks_completed_total{job="notification-bot"} == 1')) == 1)
+    checkpoint("BOT_EXHAUSTED_ZERO")
+    assert len(observed("BOT_EXHAUSTED_ZERO", 'notification_bot_send_tasks_exhausted_total{job="notification-bot"} == 0')) == 1
+    checkpoint("BOT_QUEUE_EMPTY")
+    assert len(observed("BOT_QUEUE_EMPTY", 'notification_bot_send_queue_depth{job="notification-bot"} == 0')) == 1
+    checkpoint("COMPLETE")
+    return diagnostics
+
+
+def main(host_and_bot_only=False):
     context = runtime_context("RCT_MONITORING_RUNTIME")
+    if host_and_bot_only:
+        _STATE["scope"] = "HOST_AND_BOT_METRICS"
+        assert context["event"] == "LOCAL_CONTROL", "Host/bot diagnostic scope is local only"
     assert shutil.disk_usage("/tmp").free >= 4 * 1024**3
     source = yaml.safe_load((ROOT / "docker-compose.prod.yml").read_text())
     project = "rct-pipeline-" + uuid.uuid4().hex[:12]
     auth = "Basic " + base64.b64encode(b"admin:synthetic-grafana-only").decode()
     checks = []
     files = [
+        "infra/prometheus/tests/check_pipeline.py",
         "docker-compose.prod.yml",
         "infra/prometheus/prometheus.yml",
         "infra/prometheus/rules/service-objectives.yml",
@@ -1344,7 +1506,7 @@ def main():
             "command": [
                 "sh",
                 "-ec",
-                "python -m pip install --target /tmp/bot-deps --no-cache-dir --disable-pip-version-check -r requirements.txt PyYAML==6.0.3 >/control/install.private.log 2>&1; exec python /repository/infra/prometheus/tests/check_pipeline.py --bot-metrics-worker",
+                "umask 077; python -m pip install --target /tmp/bot-deps --no-cache-dir --disable-pip-version-check -r requirements.txt PyYAML==6.0.3 >/control/install.private.log 2>&1; exec python /repository/infra/prometheus/tests/check_pipeline.py --bot-metrics-worker",
             ],
             "environment": {
                 "PYTHONPATH": "/tmp/bot-deps:/application:/repository/infra/prometheus/tests",
@@ -1367,57 +1529,58 @@ def main():
             "security_opt": ["no-new-privileges:true"],
             "logging": {"driver": "json-file", "options": {"max-size": "1m", "max-file": "1"}},
         }
-        # Seed exactly the retained finite30d rollup inventory. The running
-        # production-version engine enforces its unchanged500000sample cap.
-        _, budget = long_window_fixture()
-        seed_end = (int(time.time()) // 1800) * 1800 - 4 * 3600
-        seed = td / "slo-budget.openmetrics"
-        with seed.open("w") as output:
-            for name, value in [
-                ("http_eligible_events30m", 1000),
-                ("http_error_events30m", 1),
-                ("http_window_timestamp_seconds", None),
-                ("http_source_coverage_seconds30d", 2590200),
-                ("http_source_samples30d", 1440),
-            ]:
-                metric = "rct_sli:" + name
-                output.write("# TYPE " + metric + " gauge\n")
-                for labels in slo_budget_inventory():
-                    for i in range(1441):
-                        timestamp = seed_end - 30 * 86400 + i * 1800
-                        output.write(
-                            metric
-                            + "{"
-                            + labels
-                            + "} "
-                            + str(timestamp if value is None else value)
-                            + " "
-                            + str(timestamp)
-                            + "\n"
-                        )
-            output.write("# EOF\n")
-        seed_db = td / "slo-budget-tsdb"
-        seed_db.mkdir(mode=0o777)
-        seed_db.chmod(0o777)  # Synthetic-only owned data, writable by image UID65534.
-        subprocess.run(
-            [
-                os.environ.get("PROMTOOL", "promtool"),
-                "tsdb",
-                "create-blocks-from",
-                "openmetrics",
-                "--quiet",
-                str(seed),
-                str(seed_db),
-            ],
-            capture_output=True,
-            check=True,
-            timeout=180,
-        )
-        config["services"]["prometheus"]["volumes"] = [
-            mount for mount in config["services"]["prometheus"]["volumes"] if mount.split(":")[1] != "/prometheus"
-        ] + [str(seed_db) + ":/prometheus"]
-        # Match the owned bind-directory UID; this cohort does not claim OS-user isolation.
-        config["services"]["prometheus"]["user"] = str(os.getuid()) + ":" + str(os.getgid())
+        if not host_and_bot_only:
+            # Seed exactly the retained finite30d rollup inventory. The running
+            # production-version engine enforces its unchanged500000sample cap.
+            _, budget = long_window_fixture()
+            seed_end = (int(time.time()) // 1800) * 1800 - 4 * 3600
+            seed = td / "slo-budget.openmetrics"
+            with seed.open("w") as output:
+                for name, value in [
+                    ("http_eligible_events30m", 1000),
+                    ("http_error_events30m", 1),
+                    ("http_window_timestamp_seconds", None),
+                    ("http_source_coverage_seconds30d", 2590200),
+                    ("http_source_samples30d", 1440),
+                ]:
+                    metric = "rct_sli:" + name
+                    output.write("# TYPE " + metric + " gauge\n")
+                    for labels in slo_budget_inventory():
+                        for i in range(1441):
+                            timestamp = seed_end - 30 * 86400 + i * 1800
+                            output.write(
+                                metric
+                                + "{"
+                                + labels
+                                + "} "
+                                + str(timestamp if value is None else value)
+                                + " "
+                                + str(timestamp)
+                                + "\n"
+                            )
+                output.write("# EOF\n")
+            seed_db = td / "slo-budget-tsdb"
+            seed_db.mkdir(mode=0o777)
+            seed_db.chmod(0o777)  # Synthetic-only owned data, writable by image UID65534.
+            subprocess.run(
+                [
+                    os.environ.get("PROMTOOL", "promtool"),
+                    "tsdb",
+                    "create-blocks-from",
+                    "openmetrics",
+                    "--quiet",
+                    str(seed),
+                    str(seed_db),
+                ],
+                capture_output=True,
+                check=True,
+                timeout=180,
+            )
+            config["services"]["prometheus"]["volumes"] = [
+                mount for mount in config["services"]["prometheus"]["volumes"] if mount.split(":")[1] != "/prometheus"
+            ] + [str(seed_db) + ":/prometheus"]
+            # Match the owned bind-directory UID; this cohort does not claim OS-user isolation.
+            config["services"]["prometheus"]["user"] = str(os.getuid()) + ":" + str(os.getgid())
         slo_results = []
         (td / "alert-token").write_text("synthetic-alert-receiver-only")
         config["secrets"]["alert-webhook-token"] = {"file": str(td / "alert-token")}
@@ -1524,6 +1687,14 @@ def main():
             "mem_limit": "64m",
             "cpus": 0.25,
         }
+        if host_and_bot_only:
+            retained = {"prometheus", "node-exporter", "cadvisor", "notification-bot"}
+            config["services"] = {name: service for name, service in config["services"].items() if name in retained}
+            for service in config["services"].values():
+                service.pop("depends_on", None)
+            prom["scrape_configs"] = [job for job in prom["scrape_configs"]
+                                      if job["job_name"] in retained - {"prometheus"}]
+            (td / "prometheus.yml").write_text(yaml.safe_dump(prom, sort_keys=False))
         # Alloy obtains service identity from the Compose service; use the same
         # service.name in the synthetic trace below, not a request/trace ID label.
         compose = td / "compose.yml"
@@ -1833,46 +2004,18 @@ def main():
         started = time.monotonic()
         try:
             _STATE["phase"] = "PIPELINE_START"
-            docker("run", "--rm", "--no-deps", "alloy", "validate", "/etc/alloy/config.alloy")
+            if not host_and_bot_only:
+                docker("run", "--rm", "--no-deps", "alloy", "validate", "/etc/alloy/config.alloy")
             docker("up", "-d")
-            wait(lambda: grafana("/api/health")["database"] == "ok", 120)
+            if not host_and_bot_only:
+                wait(lambda: grafana("/api/health")["database"] == "ok", 120)
 
             def samples(expression):
                 response = api("prometheus", "/api/v1/query?" + urllib.parse.urlencode({"query": expression}))
                 assert response["status"] == "success"
                 return response["data"]["result"]
 
-            _STATE["phase"] = "HOST_AND_BOT_METRICS"
-            for job in ["node-exporter", "cadvisor", "notification-bot"]:
-                wait(lambda job=job: len(samples('up{job="' + job + '"} == 1')) == 1, 180)
-                identity = samples('up{job="' + job + '"} == 1')[0]["metric"]
-                port = {"node-exporter": 9100, "cadvisor": 8080, "notification-bot": 8081}[job]
-                assert identity["instance"] == job + ":" + str(port)
-                assert identity["service"] == job and identity["environment"] == "synthetic"
-            try:
-                api("notification-bot", "/health", port="8081")
-                raise AssertionError("bot polling is absent; health must not be fabricated UP")
-            except urllib.error.HTTPError as error:
-                assert error.code == 503
-            for expression in [
-                'node_memory_MemTotal_bytes{job="node-exporter"} > 0',
-                'node_filesystem_avail_bytes{job="node-exporter",mountpoint="/"} > 0',
-                'node_cpu_seconds_total{job="node-exporter",mode="idle"} > 0',
-                'container_memory_usage_bytes{job="cadvisor",container_label_com_docker_compose_project="'
-                + project
-                + '"} > 0',
-                'notification_bot_send_tasks_completed_total{job="notification-bot"} == 0',
-                'notification_bot_send_workers_alive{job="notification-bot"} == 2',
-                'notification_bot_task_alive{job="notification-bot",task="polling"} == 0',
-            ]:
-                wait(lambda expression=expression: bool(samples(expression)))
-            # Polling/consumer were deliberately never started: health remains503,
-            # while the real metrics endpoint and queue execution are observable.
-            (control / "start").write_text("GO")
-            wait(lambda: (control / "done").exists())
-            wait(lambda: len(samples('notification_bot_send_tasks_completed_total{job="notification-bot"} == 1')) == 1)
-            assert len(samples('notification_bot_send_tasks_exhausted_total{job="notification-bot"} == 0')) == 1
-            assert len(samples('notification_bot_send_queue_depth{job="notification-bot"} == 0')) == 1
+            host_bot_metrics(api, wait, control, project)
             checks.append(
                 {
                     "actual_host_exporters": ["node-exporter", "cadvisor"],
@@ -1881,6 +2024,20 @@ def main():
                     "qualification": "Production HTTP/SDK/send queue with a local provider; no Telegram receipt or broker consumer claim",
                 }
             )
+            if host_and_bot_only:
+                result = {
+                    "result": "PARTIAL_PASS",
+                    "scope": "HOST_AND_BOT_METRICS",
+                    "full_monitoring": False,
+                    "qualification": "Host exporters and local bot queue only; no Java/SLO/Grafana/Loki/Tempo/Telegram proof",
+                    "source_sha": context["checkoutSha"],
+                    "config_sha256": hashes,
+                    "checks": checks,
+                    "host_bot_diagnostics": _STATE["host_bot_diagnostics"],
+                    "elapsed_seconds": round(time.monotonic() - started, 2),
+                }
+                # Returns through the same finally; cleanup failure still raises.
+                return result
             # Release640MiB limits before the existing Java/broker cohort peaks.
             docker("stop", "notification-bot", "node-exporter", "cadvisor")
             _STATE["phase"] = "SLO_ENGINE_AND_GRAFANA"
@@ -2161,12 +2318,25 @@ def main():
                 "config_sha256": hashes,
                 "checks": checks,
                 "slo_30d_budget": dict(budget, queries=slo_results),
+                "host_bot_diagnostics": _STATE["host_bot_diagnostics"],
                 "actual_application_transport": app_result,
                 "actual_background_transport": background_result,
                 "elapsed_seconds": round(time.monotonic() - started, 2),
             }
         finally:
             primary = sys.exc_info()[0]
+            # Private tail before down removes the worker; diagnostics cannot
+            # replace the primary failure or prevent exact-owned cleanup.
+            try:
+                raw = subprocess.run(prefix + ["logs", "--no-color", "--tail", "100",
+                                               "notification-bot", "node-exporter", "cadvisor"],
+                                     capture_output=True, timeout=15, check=False)
+                descriptor = os.open(td / "host-bot.private.log", os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+                with os.fdopen(descriptor, "wb") as log:
+                    log.write(raw.stdout[:1024**2])
+                    log.write(raw.stderr[:65536])
+            except Exception:
+                pass
             _STATE["cleanup"] = "STARTED"
             try:
                 cleanup = docker("down", "--volumes", "--remove-orphans", check=False)
@@ -2193,9 +2363,12 @@ if __name__ == "__main__":
     elif sys.argv[1:] == ["--e2e-async-browser"]:
         e2e_async_browser()
     else:
-        assert not sys.argv[1:]
+        assert sys.argv[1:] in ([], ["--host-and-bot-only"])
         try:
-            main()
+            partial = main(host_and_bot_only=sys.argv[1:] == ["--host-and-bot-only"])
+            if partial is not None:
+                partial["cleanup"] = _STATE["cleanup"]
+                print(json.dumps(partial))
         except Exception as error:  # noqa: BLE001 -- closed runtime boundary must never serialize exception text
             allowed = {
                 "AssertionError",
@@ -2207,6 +2380,10 @@ if __name__ == "__main__":
                 "KeyError",
                 "HTTPError",
             }
+            if "host_bot_diagnostics" in _STATE and _STATE["phase"] == "HOST_AND_BOT_METRICS":
+                diagnostics = _STATE["host_bot_diagnostics"]
+                if diagnostics["error_code"] == "NONE":
+                    diagnostics["error_code"] = host_bot_error_code(error)
             exception = type(error).__name__
             code = getattr(error, "returncode", None)
             print(
@@ -2220,6 +2397,11 @@ if __name__ == "__main__":
                         "native_failure": _STATE.get("native_failure", {"category": "UNKNOWN", "source_stage": "UNKNOWN"}),
                         **({"background_test_failure": _STATE["background_test_failure"]}
                            if "background_test_failure" in _STATE else {}),
+                        **({"scope": _STATE["scope"], "full_monitoring": False}
+                           if "scope" in _STATE else {}),
+                        **({"host_bot_diagnostics": _STATE["host_bot_diagnostics"]}
+                           if "host_bot_diagnostics" in _STATE else {}),
+                        "source_frame": own_source_frame(error),
                         "missing_host_paths": _STATE.get("missing_host_paths", []),
                     }
                 )

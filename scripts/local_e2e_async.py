@@ -9,6 +9,7 @@ import datetime
 import fcntl
 import hashlib
 import ipaddress
+import importlib.util
 import json
 import os
 from pathlib import Path
@@ -28,7 +29,12 @@ import time
 import urllib.error
 import urllib.request
 from zoneinfo import ZoneInfo
-from e2e_fixture_credentials import fresh_credentials
+# Resolve the trusted sibling independently of CLI/importlib caller sys.path.
+_credentials_spec = importlib.util.spec_from_file_location(
+    "_rct_e2e_fixture_credentials", Path(__file__).resolve().with_name("e2e_fixture_credentials.py"))
+_credentials = importlib.util.module_from_spec(_credentials_spec)
+_credentials_spec.loader.exec_module(_credentials)
+fresh_credentials = _credentials.fresh_credentials
 
 ROOT = Path(__file__).resolve().parents[1]
 RUNS = ROOT / ".agent/evidence/local-runs"

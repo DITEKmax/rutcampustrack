@@ -3832,7 +3832,8 @@ jobs:
 
       - name: Stop isolated e2e containers
         id: e2e-stop
-        if: always()
+        # A failed/cancelled boot can already own containers; a skipped boot owns none.
+        if: ${{ always() && contains(fromJSON('["success","failure","cancelled"]'), steps.bootstrap-images.outcome) }}
         run: docker compose --env-file tests/e2e/.env.ci -p rct-e2e -f docker-compose.e2e.yml down
 
       - name: Verify the actual initial-administrator operator CLI

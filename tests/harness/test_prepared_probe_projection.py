@@ -306,7 +306,7 @@ class NativeFailureProjectionControls(unittest.TestCase):
             state = {'phase': 'ACTUAL_BACKGROUND_GRADLE'}
             def diagnostic_failure(started_ns):
                 raise OSError('synthetic-private-io')
-            namespace = dict(self.pipeline, td=Path(directory), ROOT=ROOT, _STATE=state, subprocess=subprocess,
+            namespace = dict(self.pipeline, td=Path(directory), ROOT=ROOT, _STATE=state, subprocess=subprocess, remaining_infra_only=False,
                              read_background_test_failure=diagnostic_failure)
             exec(compile(ast.Module(body=[self.gradle_parent], type_ignores=[]), '<existing-parent-control>', 'exec'), namespace)
             process = SimpleNamespace(wait=lambda **kwargs: 1, poll=lambda: 1)
@@ -566,7 +566,7 @@ class NativeFailureProjectionControls(unittest.TestCase):
                     calls.append(started)
                     return {'category': 'ASSERTION', 'source_stage': 'SELECTED_TEST_BODY',
                             'admission_reason': 'SIGNATURE_CLASSIFIED'}
-                namespace = dict(self.pipeline, td=Path(directory), ROOT=ROOT, _STATE=state, subprocess=subprocess,
+                namespace = dict(self.pipeline, td=Path(directory), ROOT=ROOT, _STATE=state, subprocess=subprocess, remaining_infra_only=False,
                                  read_background_test_failure=diagnostic)
                 exec(compile(ast.Module(body=[self.gradle_parent], type_ignores=[]), '<existing-parent-control>', 'exec'), namespace)
                 process = SimpleNamespace(wait=lambda **kwargs: code, poll=lambda: code)
@@ -585,6 +585,12 @@ class NativeFailureProjectionControls(unittest.TestCase):
                     self.assert_closed(state['background_test_failure'], 'SIGNATURE_CLASSIFIED')
                 else:
                     self.assertNotIn('background_test_failure', state)
+            namespace['remaining_infra_only'] = True
+            with patch.object(subprocess, 'Popen') as spawn, patch.object(Path, 'open') as log:
+                with self.assertRaisesRegex(AssertionError, '^Java transport is excluded from remaining infrastructure scope$'):
+                    namespace['run_application_gradle'](['never-executed'], {}, 'background-gradle.private.log', 600)
+            spawn.assert_not_called()
+            log.assert_not_called()
 
 
 if __name__ == '__main__':

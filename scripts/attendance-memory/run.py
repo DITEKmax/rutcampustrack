@@ -31,7 +31,6 @@ CANCELLED = False
 def request_cancel(*_):
     global CANCELLED
     CANCELLED = True
-EXPECTED_TEST_TREE = 'fa2953ef550d1150efcb86cd0d942b63158ed016c1e35366c263c446d463236b'
 
 
 def test_tree():
@@ -273,7 +272,7 @@ def close_arm(directory, before, initial, result):
     result['cleanup'] = before is not None and observed == before and result.get('processGroupAbsent') is True
 
 
-def arm_run(directory, heap, jar, environment):
+def arm_run(directory, heap, jar, environment, observed_tree):
     directory.mkdir(mode=0o700)
     result = {'heapMiB': heap, 'nativeExit': None, 'cause': None, 'cleanup': False, 'telemetryComplete': False,
               'javaHeapOom': False, 'nativeMemoryFailure': False, 'retainedGrowthSuspected': False,
@@ -285,11 +284,16 @@ def arm_run(directory, heap, jar, environment):
         initial = memory()
         if CANCELLED:
             raise KeyboardInterrupt()
+        if test_tree() != observed_tree:
+            result['cause'] = 'SOURCE_TREE_CHANGED'
+            raise ValueError('SOURCE_TREE_CHANGED')
         result.update(native(directory, heap, jar, environment))
-        result['rosterConfirmed'] = test_tree() == EXPECTED_TEST_TREE
+        result['rosterConfirmed'] = test_tree() == observed_tree
+        if not result['rosterConfirmed']:
+            result['cause'] = 'SOURCE_TREE_CHANGED'
     except BaseException as error:
         result['controlClass'] = error_class(error)
-        result['cause'] = 'CANCELLED' if isinstance(error, KeyboardInterrupt) else 'CONTROL_ERROR'
+        result['cause'] = 'CANCELLED' if isinstance(error, KeyboardInterrupt) else result['cause'] or 'CONTROL_ERROR'
     # Independent phases: diagnostic failures cannot jump over resource closure.
     try:
         collect_arm(directory, result, environment)
@@ -306,6 +310,14 @@ def arm_run(directory, heap, jar, environment):
     except BaseException as error:
         result['closureError'] = error_class(error)
         result['cleanup'] = False
+    try:
+        if test_tree() != observed_tree:
+            result['rosterConfirmed'] = False
+            result['cause'] = 'SOURCE_TREE_CHANGED'
+    except BaseException as error:
+        result['rosterConfirmed'] = False
+        result['sourceIntegrityError'] = error_class(error)
+        result['cause'] = 'CANCELLED' if isinstance(error, KeyboardInterrupt) else 'SOURCE_TREE_UNVERIFIED'
     if CANCELLED:
         result['cause'] = 'CANCELLED'
     result['result'] = 'HOLD' if result['diagnosticsFailed'] or not result['cleanup'] or result['cause'] is not None else 'PASS' if result['nativeExit'] == 0 and result['telemetryComplete'] and result['rosterConfirmed'] and result['jacocoPresent'] and all(result.get(t + 'CollectionExit') == 0 for t in ('test', 'integrationTest')) else 'FAIL'
@@ -328,18 +340,20 @@ def main():
         raise ValueError('COMPARISON_LOCAL_ONLY')
     if subprocess.check_output(['git', '-c', 'core.fileMode=false', 'status', '--porcelain'], cwd=ROOT, text=True).strip():
         raise ValueError('CLEAN_FRESH_SOURCE_REQUIRED')
+    observed_tree = test_tree()
     nonce = os.environ.get('RCT_LOCAL_RELEASE_NONCE') or os.urandom(12).hex()
     parent = Path(os.environ.get('RCT_LOCAL_RELEASE_AUDIT', os.environ.get('RUNNER_TEMP', '/tmp')))
     output = parent / ('attendance-memory-' + nonce)
     output.mkdir(mode=0o700)
-    summary = {'schema': 'RCT_ATTENDANCE_MEMORY_V1', 'context': context, 'armsMode': args.arms, 'arms': [], 'result': 'HOLD', 'conclusion': 'INCONCLUSIVE', 'heapPolicyMiB': [512, 1024] if args.arms == 'comparison' else [1024], 'workers': 4, 'maxParallelForks': 1, 'forkEvery': 0, 'initialHeapPolicy': 'UNSET_JVM_DEFAULT; historical initial heap unknown', 'profile': profile(), 'jdkVersion': VERSION, 'jdkArchiveSha256': SHA256, 'enrolledTestTreeSha256': EXPECTED_TEST_TREE, 'expectedPassed': {'test': 419, 'integrationTest': 266}, 'qualification': 'Diagnostic arms retain native failures; NOT_REPRODUCED does not prove absence of leaks; WSL is not hosted-VM equivalence'}
+    summary = {'schema': 'RCT_ATTENDANCE_MEMORY_V1', 'context': context, 'armsMode': args.arms, 'arms': [], 'result': 'HOLD', 'conclusion': 'INCONCLUSIVE', 'heapPolicyMiB': [512, 1024] if args.arms == 'comparison' else [1024], 'workers': 4, 'maxParallelForks': 1, 'forkEvery': 0, 'initialHeapPolicy': 'UNSET_JVM_DEFAULT; historical initial heap unknown', 'profile': profile(), 'jdkVersion': VERSION, 'jdkArchiveSha256': SHA256, 'observedTestTreeSha256': observed_tree, 'expectedPassed': {'test': 419, 'integrationTest': 266}, 'qualification': 'Diagnostic arms retain native failures; NOT_REPRODUCED does not prove absence of leaks; WSL is not hosted-VM equivalence'}
+    summary['admissionReason'] = 'NOT_EVALUATED'
     public = ROOT / 'build/attendance-memory'
     public.mkdir(mode=0o700, parents=True, exist_ok=True)
     try:
         if summary['profile']['os'] != 'UBUNTU_24_04' or summary['profile']['architecture'] != 'X64' or summary['profile']['affinityCount'] != 4:
+            summary['admissionReason'] = 'HOST_PROFILE_MISMATCH'
             raise ValueError('HOST_PROFILE_MISMATCH')
-        if test_tree() != EXPECTED_TEST_TREE:
-            raise ValueError('ENROLLED_TEST_TREE_CHANGED_REBIND_ROSTER')
+        summary['admissionReason'] = 'ACCEPTED'
         home = ensure(output / 'toolchain')
         classes = output / 'classes'
         classes.mkdir(mode=0o700)
@@ -355,7 +369,10 @@ def main():
         for heap in summary['heapPolicyMiB']:
             if CANCELLED:
                 break
-            arm = arm_run(output / ('heap-' + str(heap)), heap, jar, env)
+            if test_tree() != observed_tree:
+                summary['admissionReason'] = 'SOURCE_TREE_CHANGED'
+                raise ValueError('SOURCE_TREE_CHANGED')
+            arm = arm_run(output / ('heap-' + str(heap)), heap, jar, env, observed_tree)
             summary['arms'].append(arm)
             if not arm['cleanup'] or arm['result'] == 'HOLD':
                 break

@@ -255,9 +255,9 @@ def focused_observations(runner):
     return {"semesterMetadata": metadata, "datasetPrerequisite": prerequisite}
 
 
-def focused_options(selection, remaining_two=False):
+def focused_options(selection, remaining_two=False, headman_only=False):
     if selection == "ui-batch":
-        return {"failed_cases": ["HEADMAN_TEACHER_READ"] if remaining_two else
+        return {"failed_cases": ["HEADMAN_TEACHER_READ"] if remaining_two or headman_only else
                 ["HEADMAN_TEACHER_READ", "FULL_ADMIN_RIGHTS", "HOMEWORK_PERIOD"]}
     return {"lifecycle_only": True, "operational_until": "semester-metadata"} if selection == "special13" else {}
 
@@ -278,8 +278,8 @@ def secondary_failure(target, selection, cohort, stage, phase, error):
     return result
 
 
-def run_cohort(selection, target, cohort=None, *, focused=False, remaining_two=False, bundled_dockerfile_frontend=False):
-    options = focused_options(selection, remaining_two) if focused else {}
+def run_cohort(selection, target, cohort=None, *, focused=False, remaining_two=False, headman_only=False, bundled_dockerfile_frontend=False):
+    options = focused_options(selection, remaining_two, headman_only) if focused else {}
     runner = ReplayRunner(selection, special_cohort=cohort, operational=selection == "special13",
                           bundled_dockerfile_frontend=bundled_dockerfile_frontend, **options)
     if focused and selection == 'special13':
@@ -400,7 +400,10 @@ def controls(target):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("mode", choices=MODES)
-    parser.add_argument("--remaining-two", action="store_true",
+    selection = parser.add_mutually_exclusive_group()
+    selection.add_argument("--headman-only", action="store_true",
+                           help="failed-ci only: HEADMAN_TEACHER_READ, without metadata or dataset prerequisite")
+    selection.add_argument("--remaining-two", action="store_true",
                         help="failed-ci only: HEADMAN_TEACHER_READ and SEMESTER_METADATA plus canonical dataset prerequisite")
     parser.add_argument("--bundled-dockerfile-frontend", action="store_true",
                         help="failed-ci only: reuse the guarded Docker Engine bundled frontend")
@@ -408,6 +411,7 @@ def main():
     lane.require(not args.bundled_dockerfile_frontend or args.mode == "failed-ci",
                  "BUNDLED_FRONTEND_FAILED_CI_ONLY")
     lane.require(not args.remaining_two or args.mode == "failed-ci", "REMAINING_TWO_FAILED_CI_ONLY")
+    lane.require(not args.headman_only or args.mode == "failed-ci", "HEADMAN_ONLY_FAILED_CI_ONLY")
     os.umask(0o077)
     revision, nonce, audit = binding(os.environ)
     target = audit / ("browser-" + args.mode)
@@ -427,9 +431,11 @@ def main():
                 fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
                 lane.preflight(release=True)
                 selections = [('ui-batch', None), ('special13', 'lifecycle')] if args.mode == 'failed-ci' else [(args.mode, cohort) for cohort in (("nonclock", "lifecycle") if args.mode == "special13" else (None,))]
+                if args.headman_only:
+                    selections = [('ui-batch', None)]
                 for selection, cohort in selections:
                     row = run_cohort(selection, target, cohort, focused=args.mode == 'failed-ci',
-                                     remaining_two=args.remaining_two,
+                                     remaining_two=args.remaining_two, headman_only=args.headman_only,
                                      bundled_dockerfile_frontend=args.bundled_dockerfile_frontend)
                     rows.append(row)
                     cancelled = cancelled or row["cancelled"]
@@ -448,7 +454,7 @@ def main():
     finally:
         lane.write(target / "result.safe.json", json.dumps({"schemaVersion": 1, "event": "LOCAL_CONTROL", "revision": revision, "nonce": nonce,
                    "mode": args.mode, "status": status, "cancelled": cancelled, "cleanup": (args.mode == "controls" and status == "PASS") or bool(rows) and all(row["cleanup"] for row in rows) and status != "HOLD", "cohorts": rows,
-                   "remainingTwo": args.remaining_two,
+                   "remainingTwo": args.remaining_two, "headmanOnly": args.headman_only,
                    "qualification": "Fresh cohorts serially; CI shared-job order/state and hosted hardware differ. No hosted CI identity."}) + "\n")
     return exit_code(status, cancelled)
 

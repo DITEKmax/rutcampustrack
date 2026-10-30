@@ -14,6 +14,9 @@
   font-size: var(--rct-font-size-dense);
   line-height: var(--rct-leading-caption);
 }
+.mobile-shell[data-surface='root'][data-dock-visible='true'] .teacher-home {
+  padding-block-end: calc(env(safe-area-inset-bottom) + var(--rct-today-bottom-space));
+}
 .teacher-screen *,
 .teacher-screen *::before,
 .teacher-screen *::after {

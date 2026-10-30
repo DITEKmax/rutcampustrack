@@ -1682,7 +1682,13 @@ def failure_diagnostic(error, *, operation="UNKNOWN"):
     return {"errno": error.errno if isinstance(error, OSError) and error.errno in errno.errorcode else None,
             "errnoName": errno.errorcode.get(error.errno) if isinstance(error, OSError) else None,
             "operation": "PORT_BIND_PROBE" if probe else operation,
-            "port": port if probe else None, "sourceFrame": frame}
+            "port": port if probe else None, "sourceFrame": frame,
+            "portReadiness": getattr(error, "rct_port_readiness", None)
+                if probe and getattr(error, "rct_port_readiness", None) in
+                    {"BIND_ERROR", "NOT_TIME_WAIT_ONLY", "BUDGET_EXPIRED"} else None,
+            "portTcpState": getattr(error, "rct_port_tcp_state", None)
+                if probe and getattr(error, "rct_port_tcp_state", None) in
+                    {"TIME_WAIT_ONLY", "LISTENER", "OTHER_TCP_STATE", "UNKNOWN"} else None}
 
 
 def project_resource_absence(project):
@@ -1710,6 +1716,77 @@ def preallocation_failure_closed(runner):
     return observation if observation["absent"] else None
 
 
+# One explicit budget for both fixed ports; independent of browser action timeouts.
+PORT_READINESS_BUDGET_SECONDS = 65.0
+PORT_READINESS_POLL_SECONDS = 0.2
+
+
+def port_tcp_state(port, *, proc=Path("/proc/net")):
+    """Closed Linux observation only; never expose addresses, process IDs or rows."""
+    states = []
+    try:
+        for name, width, addresses in (
+                ("tcp", 8, {"00000000", "0100007F"}),
+                ("tcp6", 32, {"0" * 32, "0000000000000000FFFF00000100007F"})):
+            with (proc / name).open("rb") as stream:
+                raw = stream.read(4 * 1024**2 + 1)
+            if len(raw) > 4 * 1024**2 or not raw.endswith(b"\n"):
+                return "UNKNOWN"
+            lines = raw.decode("ascii").splitlines()
+            if not lines or "local_address" not in lines[0] or not any(
+                    name in lines[0] for name in ("rem_address", "remote_address")):
+                return "UNKNOWN"
+            for line in lines[1:]:
+                fields = line.split()
+                if (len(fields) < 12 or re.fullmatch(r"[0-9]+:", fields[0]) is None
+                        or re.fullmatch(r"[0-9A-F]{" + str(width) + r"}:[0-9A-F]{4}", fields[1]) is None
+                        or re.fullmatch(r"[0-9A-F]{" + str(width) + r"}:[0-9A-F]{4}", fields[2]) is None
+                        or re.fullmatch(r"[0-9A-F]{2}", fields[3]) is None):
+                    return "UNKNOWN"
+                address, local_port = fields[1].split(":")
+                if address in addresses and int(local_port, 16) == port:
+                    states.append(fields[3])
+    except (OSError, UnicodeError):
+        return "UNKNOWN"
+    if "0A" in states:
+        return "LISTENER"
+    if any(state != "06" for state in states):
+        return "OTHER_TCP_STATE"
+    return "TIME_WAIT_ONLY" if states else "UNKNOWN"
+
+
+def strict_port_bind(port):
+    # Keep the original gate. Socket reuse would conceal a real conflict.
+    with socket.socket() as sock:
+        sock.bind(("127.0.0.1", port))
+
+
+def port_ready(port, deadline):
+    original = None
+    while True:
+        try:
+            strict_port_bind(port)
+            return
+        except OSError as error:
+            if original is None:
+                original = error
+                original.rct_operation, original.rct_port = "PORT_BIND_PROBE", port
+            if error.errno != errno.EADDRINUSE:
+                # Do not replace the initial bind failure, even if a later probe differs.
+                original.rct_port_readiness = "BIND_ERROR"
+                raise original
+            state = port_tcp_state(port)
+            original.rct_port_tcp_state = state
+            if state != "TIME_WAIT_ONLY":
+                original.rct_port_readiness = "NOT_TIME_WAIT_ONLY"
+                raise original
+            remaining = deadline - time.monotonic()
+            if remaining <= 0:
+                original.rct_port_readiness = "BUDGET_EXPIRED"
+                raise original
+            time.sleep(min(PORT_READINESS_POLL_SECONDS, remaining))
+
+
 def preflight(*, release=False, special=False, retained_receipt=None, retained_pdf_receipt=None, retained_recovery_receipt=None, retained_restored_receipt=None, selected_network=None, reconciliation_only=False, recovery_archive_only=False, history=None, own_nonce=None):
     require(sys.platform == "linux" and os.getuid() != 0, "UBUNTU_NONROOT_REQUIRED")
     require(RUNS.resolve() == RUNS, "LINKED_RUNTIME_PARENT")
@@ -1722,14 +1799,9 @@ def preflight(*, release=False, special=False, retained_receipt=None, retained_p
                      if line.startswith("MemAvailable:"))) >= 6 * 1024**2, "MEMORY_BELOW_6_GIB")
     version = capture(["docker", "compose", "version", "--short"]).strip().lstrip("v").split(".")
     require(tuple(map(int, version[:2])) >= (2, 24), "COMPOSE_VERSION")
+    port_deadline = time.monotonic() + PORT_READINESS_BUDGET_SECONDS
     for port in (8443, 8088):
-        try:
-            with socket.socket() as sock:
-                sock.bind(("127.0.0.1", port))
-        except OSError as error:
-            # Add closed context without wrapping/replacing the primary exception.
-            error.rct_operation, error.rct_port = "PORT_BIND_PROBE", port
-            raise
+        port_ready(port, port_deadline)
     require(not capture(["docker", "ps", "-aq", "--filter", "label=com.docker.compose.project=rct-e2e"]).strip(), "FOREIGN_E2E_COHORT")
     local_ids = capture(["docker", "ps", "-aq", "--no-trunc", "--filter", "label=" + LABEL]).splitlines()
     if release:

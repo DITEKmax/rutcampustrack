@@ -28,7 +28,7 @@ const cases = [
     semesterMatches: true, groupMatches: true, subjectMatches: false,
     lessonTypeMatches: true, pastOnlyMatches: true, pageMatches: true, pageSizeMatches: true,
     responseObserved: false, journalVisible: true, shortcutVisible: false,
-    clickStarted: true, clickCompleted: false, clickPending: false, clickErrorClass: 'TIMEOUT',
+    clickStarted: true, clickCompleted: false, clickPending: false, clickErrorClass: 'TIMEOUT', clickLogReason: 'UNKNOWN', clickRawRetention: 'OFF',
     clickSettledAfterFailure: true, clickCompletedAfterFailure: false,
     beforeCount: 1, beforeVisible: true, beforeEnabled: true, beforeReceivesEvents: false,
     afterCount: null, afterVisible: null, afterEnabled: null, afterReceivesEvents: null,

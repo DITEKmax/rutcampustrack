@@ -28,7 +28,7 @@ const stages = {
   HISTORICAL_MARK: ['httpStatus', 'expectedStatus', 'expectedRevisionPresent'],
   ADMIN_ACTIVITY: ['httpStatus', 'jsonDecoded', 'activityReady', 'periodMatches', 'bucketMatches', 'metricStateKnown', 'geoCountsKnown', 'metricStateMatches', 'metricValueMatches', 'metricFractionMatches', 'metricDeltaMatches', 'selectedPeriodMatches'],
   HOMEWORK_MONTH: ['httpStatus', 'selectedDatePresent', 'fromContainsSelected', 'toContainsSelected', 'fromInsideSemester', 'toInsideSemester', 'semesterIdMatches', 'calendarReady', 'selectedDateEnabled'],
-  TEACHER_SHORTCUT: ['requestObserved', 'requestFailed', 'httpStatus', 'semesterMatches', 'groupMatches', 'subjectMatches', 'lessonTypeMatches', 'pastOnlyMatches', 'pageMatches', 'pageSizeMatches', 'responseObserved', 'journalVisible', 'shortcutVisible', 'clickStarted', 'clickCompleted', 'clickPending', 'clickErrorClass', 'clickSettledAfterFailure', 'clickCompletedAfterFailure', 'beforeCount', 'beforeVisible', 'beforeEnabled', 'beforeReceivesEvents', 'afterCount', 'afterVisible', 'afterEnabled', 'afterReceivesEvents', 'homeVisible', 'navigationDetail', 'activeTeacherRole'],
+  TEACHER_SHORTCUT: ['requestObserved', 'requestFailed', 'httpStatus', 'semesterMatches', 'groupMatches', 'subjectMatches', 'lessonTypeMatches', 'pastOnlyMatches', 'pageMatches', 'pageSizeMatches', 'responseObserved', 'journalVisible', 'shortcutVisible', 'clickStarted', 'clickCompleted', 'clickPending', 'clickErrorClass', 'clickLogReason', 'clickRawRetention', 'clickSettledAfterFailure', 'clickCompletedAfterFailure', 'beforeCount', 'beforeVisible', 'beforeEnabled', 'beforeReceivesEvents', 'afterCount', 'afterVisible', 'afterEnabled', 'afterReceivesEvents', 'homeVisible', 'navigationDetail', 'activeTeacherRole'],
   SEMESTER_METADATA_ISOLATION: ['semesterIdEqual', 'digestEqual', 'stateVersionEqual', 'priorStateEqual', 'countsEqual', 'scheduleTemplatesEqual', 'oneOffLessonsEqual', 'lessonsEqual', 'assignmentsEqual', 'homeworksEqual', 'attendanceMarksEqual', 'studentRequestsEqual'],
   ADMIN_RIGHTS_MODE: ['limitedCount', 'fullCount', 'limitedChecked', 'fullChecked'],
   PROFILE_THEME: ['selectedTheme', 'appearanceTheme', 'htmlTheme', 'profileTheme'],
@@ -61,6 +61,8 @@ function closed(value: unknown): FirstFailureObservation | undefined {
       let valid: boolean;
       if (key === 'knownPermissions' || key === 'knownExpectedPermissions') valid = Array.isArray(item) && item.length <= 5 && new Set(item).size === item.length && item.every(code => typeof code === 'string' && permissions.includes(code));
       else if (key === 'beforeCount' || key === 'afterCount') valid = item === null || Number.isSafeInteger(item) && (item as number) >= 0 && (item as number) <= 10000;
+      else if (key === 'clickLogReason') valid = typeof item === 'string' && ['NONE', 'POINTER_INTERCEPTION_SEEN', 'NOT_VISIBLE_SEEN', 'NOT_ENABLED_SEEN', 'NOT_STABLE_SEEN', 'DETACHED_SEEN', 'MULTIPLE_REASONS_SEEN', 'UNKNOWN'].includes(item);
+      else if (key === 'clickRawRetention') valid = typeof item === 'string' && ['NOT_ATTEMPTED', 'OFF', 'RETAINED', 'ALREADY_RETAINED', 'REJECTED', 'FAILED'].includes(item);
       else if (key === 'clickErrorClass') valid = typeof item === 'string' && ['NONE', 'TIMEOUT', 'ERROR', 'TYPE_ERROR', 'UNKNOWN'].includes(item);
       else if (key.endsWith('Count') || key === 'count') valid = Number.isSafeInteger(item) && (item as number) >= 0 && (item as number) <= 10000;
       else if (['httpStatus', 'loginStatus', 'sessionStatus'].includes(key)) valid = item === null || Number.isInteger(item) && (item as number) >= 100 && (item as number) <= 599;
@@ -172,6 +174,26 @@ export function teacherShortcutClickErrorClass(error: unknown): 'TIMEOUT' | 'ERR
     if (error instanceof Error) return 'ERROR';
   } catch { /* A diagnostic class cannot replace the primary failure. */ }
   return 'UNKNOWN';
+}
+
+/** A bounded own-message call-log witness, never proof of the product root cause. */
+export function teacherShortcutClickLogReason(error: unknown): 'POINTER_INTERCEPTION_SEEN' | 'NOT_VISIBLE_SEEN' | 'NOT_ENABLED_SEEN' | 'NOT_STABLE_SEEN' | 'DETACHED_SEEN' | 'MULTIPLE_REASONS_SEEN' | 'UNKNOWN' {
+  try {
+    const message = error && typeof error === 'object' ? Object.getOwnPropertyDescriptor(error, 'message')?.value : undefined;
+    if (typeof message !== 'string' || message.length > 8192) return 'UNKNOWN';
+    const marker = message.indexOf('\nCall log:\n');
+    if (marker < 0) return 'UNKNOWN';
+    const log = message.slice(marker + 11);
+    const reasons = [
+      ['POINTER_INTERCEPTION_SEEN', /intercepts pointer events/],
+      ['NOT_VISIBLE_SEEN', /element is not visible/],
+      ['NOT_ENABLED_SEEN', /element is not enabled/],
+      ['NOT_STABLE_SEEN', /element is not stable/],
+      ['DETACHED_SEEN', /element (?:is not attached to the DOM|was detached from the DOM)/],
+    ] as const;
+    const seen = reasons.filter(([, pattern]) => log.split('\n').some(line => /^\s*- /.test(line) && pattern.test(line)));
+    return seen.length > 1 ? 'MULTIPLE_REASONS_SEEN' : seen[0]?.[0] ?? 'UNKNOWN';
+  } catch { return 'UNKNOWN'; }
 }
 
 /** Read-only, bounded witnesses of the actual teacher owner and internal route surface. */

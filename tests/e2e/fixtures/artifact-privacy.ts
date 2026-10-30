@@ -191,11 +191,14 @@ function reportedSpecLocation(error: unknown, info: Pick<TestInfo, 'file' | 'lin
 /** Only the explicitly selected owner replay keeps raw errors before the ordinary scrub. */
 const failedCiRawCounts = new Map<string, number>();
 const failedCiRawObjects = new WeakSet<object>();
-function retainFailedCiRawError(info: TestInfo, error: unknown): void {
-  if (process.env.RCT_LOCAL_RELEASE_MODE !== 'failed-ci') return;
+export type FailedCiRawRetention = 'OFF' | 'RETAINED' | 'ALREADY_RETAINED' | 'REJECTED' | 'FAILED';
+function retainFailedCiRawError(info: Pick<TestInfo, 'title'>, error: unknown): FailedCiRawRetention {
+  if (process.env.RCT_LOCAL_RELEASE_MODE !== 'failed-ci') return 'OFF';
   const caseId = failedCaseId(info.title);
   if (!caseId || !['HEADMAN_TEACHER_READ', 'FULL_ADMIN_RIGHTS', 'HOMEWORK_PERIOD', 'SEMESTER_METADATA'].includes(caseId)
-      || !error || typeof error !== 'object' || failedCiRawObjects.has(error)) return;
+      || !error || typeof error !== 'object') return 'REJECTED';
+  if (failedCiRawObjects.has(error)) return 'ALREADY_RETAINED';
+  let status: FailedCiRawRetention = 'FAILED';
   let fd: number | undefined;
   try {
     const root = resolve(__dirname, '../../..'), nonce = process.env.RCT_LOCAL_STAGE17_NONCE;
@@ -236,14 +239,27 @@ function retainFailedCiRawError(info: TestInfo, error: unknown): void {
     }
     failedCiRawCounts.set(caseId, count + 1);
     failedCiRawObjects.add(error);
+    status = 'RETAINED';
   } catch {
     // A finite marker exposes a retention failure; the original test error survives.
     process.stderr.write('RCT_FAILED_CI_RAW_RETENTION_V1 FAIL\n');
   } finally {
     if (fd !== undefined) {
-      try { closeSync(fd); } catch { process.stderr.write('RCT_FAILED_CI_RAW_RETENTION_V1 FAIL\n'); }
+      try { closeSync(fd); } catch {
+        status = 'FAILED';
+        process.stderr.write('RCT_FAILED_CI_RAW_RETENTION_V1 FAIL\n');
+      }
     }
   }
+  return status;
+}
+
+/** Secondary shortcut errors use the identical guarded private sink before the primary scrub. */
+export function retainTeacherShortcutClickError(info: Pick<TestInfo, 'title'>, error: unknown): FailedCiRawRetention {
+  try {
+    if (failedCaseId(info.title) !== 'HEADMAN_TEACHER_READ') return 'REJECTED';
+    return retainFailedCiRawError(info, error);
+  } catch { return 'FAILED'; }
 }
 
 /** Run before Playwright writes automatic error-context.md, which otherwise includes raw call logs. */

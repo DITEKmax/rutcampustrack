@@ -1,4 +1,4 @@
-import { failureBoundary, handledWaiter, retainFirstFailure, teacherShortcutClickErrorClass, teacherShortcutState } from '../fixtures/failed-case-diagnostics';
+import { failureBoundary, handledWaiter, retainFirstFailure, teacherShortcutClickErrorClass, teacherShortcutClickLogReason, teacherShortcutState } from '../fixtures/failed-case-diagnostics';
 import { diagnosticCase } from '../fixtures/diagnostic-events';
 import { randomBytes, randomUUID, timingSafeEqual } from 'node:crypto';
 import { isDeepStrictEqual } from 'node:util';
@@ -18,7 +18,7 @@ import {
 } from '../fixtures/mobile-dataset';
 import { loginPwa, logoutPwa } from '../fixtures/pwa-auth';
 import { installTelegramHost, syntheticInitData } from '../fixtures/telegram';
-import { requirePrivateArtifacts, sanitizeTestErrors } from '../fixtures/artifact-privacy';
+import { requirePrivateArtifacts, sanitizeTestErrors, retainTeacherShortcutClickError, type FailedCiRawRetention } from '../fixtures/artifact-privacy';
 import {
   datasetHttpFailure,
   createD002ReconnectObserver,
@@ -2005,6 +2005,8 @@ test.describe('Current Vue roles with real synthetic domain @real-mobile', () =>
         clickCompleted: false,
         clickPending: false,
         clickErrorClass: 'NONE' as 'NONE' | ReturnType<typeof teacherShortcutClickErrorClass>,
+        clickLogReason: 'NONE' as 'NONE' | ReturnType<typeof teacherShortcutClickLogReason>,
+        clickRawRetention: 'NOT_ATTEMPTED' as 'NOT_ATTEMPTED' | FailedCiRawRetention,
         clickSettledAfterFailure: null as boolean | null,
         clickCompletedAfterFailure: null as boolean | null,
         beforeCount: beforeShortcut.count,
@@ -2066,6 +2068,8 @@ test.describe('Current Vue roles with real synthetic domain @real-mobile', () =>
         }, error => {
           shortcutFacts.clickPending = false;
           shortcutFacts.clickErrorClass = teacherShortcutClickErrorClass(error);
+          shortcutFacts.clickLogReason = teacherShortcutClickLogReason(error);
+          shortcutFacts.clickRawRetention = retainTeacherShortcutClickError(info, error);
           throw error;
         }));
         [shortcutResponse] = await Promise.all([responseWaiter, shortcutClick]);
@@ -2086,6 +2090,8 @@ test.describe('Current Vue roles with real synthetic domain @real-mobile', () =>
         failureFacts.clickSettledAfterFailure = !shortcutFacts.clickPending;
         failureFacts.clickCompletedAfterFailure = shortcutFacts.clickCompleted;
         failureFacts.clickErrorClass = shortcutFacts.clickErrorClass;
+        failureFacts.clickLogReason = shortcutFacts.clickLogReason;
+        failureFacts.clickRawRetention = shortcutFacts.clickRawRetention;
         retainFirstFailure(info, 'TEACHER_SHORTCUT', failureFacts);
         throw error;
       } finally {

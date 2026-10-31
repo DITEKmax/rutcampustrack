@@ -16,12 +16,18 @@ public class GroupOptionsController implements GroupOptionsApi {
         this.jdbc = jdbc;
     }
 
+    /** Legacy source callers keep the same non-archived picker. */
+    public GroupOptionsResponse options(String search, int page, int size) {
+        return options(search, page, size, false);
+    }
+
     @Override
     @RequireRole(
             value = {UserRole.ADMIN},
-            admin = {"USERS_MANAGE", "GROUPS_VIEW"},
+            admin = {"USERS_MANAGE", "GROUPS_VIEW", "USERS_VIEW"},
             adminAny = true)
-    public GroupOptionsResponse options(String search, int page, int size) {
+    public GroupOptionsResponse options(
+            String search, int page, int size, boolean includeArchived) {
         if (page < 0 || size < 1 || size > 100 || (long) page * size > Integer.MAX_VALUE)
             throw AdminAccessException.invalid();
         String pattern =
@@ -33,13 +39,17 @@ public class GroupOptionsController implements GroupOptionsApi {
                         + "%";
         long total =
                 jdbc.queryForObject(
-                        "SELECT COUNT(*) FROM groups WHERE archived_at IS NULL AND name ILIKE ? ESCAPE '!'",
+                        "SELECT COUNT(*) FROM groups WHERE (? OR archived_at IS NULL) AND name ILIKE ? ESCAPE '!'",
                         Long.class,
+                        includeArchived,
                         pattern);
         var items =
                 jdbc.query(
-                        "SELECT id,name FROM groups WHERE archived_at IS NULL AND name ILIKE ? ESCAPE '!' ORDER BY name,id LIMIT ? OFFSET ?",
-                        (rs, n) -> new GroupOptionsResponse.Item(rs.getLong(1), rs.getString(2)),
+                        "SELECT id,name,archived_at IS NOT NULL AS archived FROM groups WHERE (? OR archived_at IS NULL) AND name ILIKE ? ESCAPE '!' ORDER BY name,id LIMIT ? OFFSET ?",
+                        (rs, n) ->
+                                new GroupOptionsResponse.Item(
+                                        rs.getLong(1), rs.getString(2), rs.getBoolean(3)),
+                        includeArchived,
                         pattern,
                         size,
                         (long) page * size);

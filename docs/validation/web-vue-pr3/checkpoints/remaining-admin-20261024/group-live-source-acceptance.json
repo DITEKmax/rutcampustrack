@@ -1,0 +1,51 @@
+{
+  "commit": "8e83a2d9105af75d015d6df7a8888eab330f43dc",
+  "base": "e715bab97106c6f3b9d24f78d96c1cbc2d4b70ba",
+  "manifestSha256": "732d4c02bcc1288aa21535ea07b6d0a9852b7d4ff0b63c175a9e2d1bbe82e651",
+  "files": 25,
+  "bytes": 633933,
+  "branch": "codex/pr3-group-live-delivery",
+  "worktree": "/workspace/rct-worktrees/web-foundation",
+  "state": "SOURCE_AND_TARGETED_CHECKS_READY; Root reports independent full review + F1 recheck PASS; actual isolated socket user flow not run by author",
+  "checks": {
+    "client": "55 distinct behavior checks: final7 mounted teacher/F1 +48 unchanged prior checks, causal reuse documented; strict PWA fresh and WEB/TMA unchanged checks reused",
+    "academic": "2 changed existing actual HTTP/PG/Auth cases PASS; other18 previously closed backend cases unchanged/reused",
+    "notificationUnit": "EventConsumerTest6 native PASS",
+    "notificationMongo": "HiddenGroupInvalidationIT1 actual replica-set transaction PASS",
+    "compile": "Academic compileJava/compileTestJava and Notification compileJava/compileTestJava PASS"
+  },
+  "evidence": [
+    "client-checks.json",
+    "client-checks-final.json",
+    "F1-source-checks.json",
+    "notification-compile-r3-result.json",
+    "notification-compile-r3-cleanup.json",
+    "academic-r1-result.json",
+    "academic-r1-cleanup.json",
+    "notification-r1-result.json",
+    "notification-r1-cleanup.json"
+  ],
+  "failuresPreserved": [
+    "compile-r1 TEST Iterable.size assertion; corrected exactly once after Root GO",
+    "compile-r2 ENV offline missing canonical Testcontainers1.21.4; existing dependencies fetched via normal Maven after Root GO, no version/config downgrade"
+  ],
+  "heavyRuns": 5,
+  "heavySeconds": 297.95,
+  "resources": "ALL30 pre-existing container IDs/images/mount sets/states unchanged,20 running; own resources0 and Gradle workers0 after every phase; no pulls/OOM/guard stops; ONEHEAVY released",
+  "remaining": "Root integration and separately admitted matching Academic/Notification runtime artifacts plus actual same-realm WEB/PWA/TMA natural idle withdrawal/reconnect/retained-group flow. No author bootJAR/stand/API business delete/browser/main/push/CI/deploy actions.",
+  "compatibility": "Optional local Academic v1 event payload + local Notification consumer; old2-arg callers omit recipients; hidden WS payload only string group_id, no recipient list/history/toast/push. Auth/Schedule/Attendance/shared grpc/generated/config/credentials/styles unchanged.",
+  "rootIntegration": "b0399300b",
+  "sourceEquality": "All25 live files byte-identical to author8e83; two Profile files equalc35, Roota851.",
+  "assembledVue": {
+    "root": "a851d5cf7",
+    "result": "PASS all3 npm build includes strict vue-tsc",
+    "log": "/workspace/rct-pr3-runtime/group-final-integration-20261024/root-live-profile-assembled-build.log",
+    "viteSeconds": [
+      9.33,
+      8.9,
+      6.7
+    ],
+    "logSha256": "0b3068af2b4fe43f322df8ab1073381c3e18688133bf800f7600e193f016d03c",
+    "reason": "New integrated shared active-read logic, PWA/TMA App wiring and Profile loading; prior e715 WEB-only build insufficient for this changed source."
+  }
+}

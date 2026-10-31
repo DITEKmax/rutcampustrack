@@ -1,7 +1,7 @@
 @import '../../styles/tokens.pcss';
 .headman-group {
-  --rct-group-accent-soft: #32135e;
-  --rct-group-switch-on: #14a885;
+  --rct-group-accent-soft: var(--rct-color-accent-soft);
+  --rct-group-switch-on: var(--rct-color-state-success-fill);
   display: grid;
   align-content: start;
   gap: var(--rct-space-4);
@@ -332,7 +332,7 @@
 }
 .headman-group__dirty,
 .headman-group__configure {
-  color: var(--rct-color-text-on-fill-strong);
+  color: var(--rct-color-text-primary);
 }
 
 .headman-group__member[data-role='Студент'] {

@@ -1,0 +1,173 @@
+{
+  "state": "CLOSED_REUSE_EXISTING_OLD_BASELINE_NO_NEW_AUTH_PNG_PACKET",
+  "sourceQualifiedAgainst": "1057de27b70c37b5916013d7c9207e31d8493ce8",
+  "originalRenderRevision": "79e8fdce620af0493287469725e82bee511b2e8f",
+  "canonicalScreen": "MOBILE-ADMINMORE",
+  "activeExistingScreen": true,
+  "activeRoute": "App.vue adminMoreViewVisible→AdminShell active=more→AdminMoreScreen; enabled native ADMIN dock Ещё→navigateAdmin(more), with current admin authority gate",
+  "adoptedCapabilities": "Existing More is a navigation hub for active semester/catalog and campus-map capabilities; no additional functional action count/new page requirement. Unlike orphan TeacherGroupSubjects, currentMore is emitted by normal native dock.",
+  "samples": [
+    {
+      "file": "/workspace/rct-pr3-runtime/mobile-theme-final/admin-root-3-dark-300.png",
+      "sha256": "279d12cb929f921a916ef1571ed6d2739e511d6851927f2a78d5f227a66fb3a8",
+      "bytes": 24363,
+      "pngWidth": 300,
+      "pngHeight": 900,
+      "capturedAtFileMtimeUTC": "2026-10-24T00:33:43.484738+00:00",
+      "revision": "79e8fdce620af0493287469725e82bee511b2e8f",
+      "state": "admin-root-3",
+      "platform": "PWA real API",
+      "theme": "dark",
+      "viewportWidth": 300,
+      "viewportHeight": 900,
+      "rootFont": "16px",
+      "sampleType": "visual sample; not a functional test",
+      "canonicalScreen": "MOBILE-ADMINMORE",
+      "personallyInspected": true,
+      "inspection": "Actual retained300/root16 original shows More title, Academic/Semesters and Campus/buildings+mapstatistics readonly navigation rows; readable boththemes. This is old79e render, not currentAuth/runtime proof."
+    },
+    {
+      "file": "/workspace/rct-pr3-runtime/mobile-theme-final/admin-root-3-light-300.png",
+      "sha256": "9d0059e803fbf15bf91d3916d5889a354493a47184d6387631de6bdbe3aedd47",
+      "bytes": 22875,
+      "pngWidth": 300,
+      "pngHeight": 900,
+      "capturedAtFileMtimeUTC": "2026-10-24T00:33:43.372736+00:00",
+      "revision": "79e8fdce620af0493287469725e82bee511b2e8f",
+      "state": "admin-root-3",
+      "platform": "PWA real API",
+      "theme": "light",
+      "viewportWidth": 300,
+      "viewportHeight": 900,
+      "rootFont": "16px",
+      "sampleType": "visual sample; not a functional test",
+      "canonicalScreen": "MOBILE-ADMINMORE",
+      "personallyInspected": true,
+      "inspection": "Actual retained300/root16 original shows More title, Academic/Semesters and Campus/buildings+mapstatistics readonly navigation rows; readable boththemes. This is old79e render, not currentAuth/runtime proof."
+    }
+  ],
+  "newImages": 0,
+  "newRuntimeActions": 0,
+  "newAuthSessions": 0,
+  "newRunnerCreated": false,
+  "sourceCoreFingerprint": [
+    {
+      "path": "frontends/mobile-core/src/features/admin-dashboard/AdminMoreScreen.vue",
+      "currentSha256": "1e80a68ded25c246b6820ae6eb4f011dc1e532b55ffbe80501c20043c7d726dd",
+      "diffFrom79e": "byte-equivalent"
+    },
+    {
+      "path": "frontends/mobile-core/src/features/admin-dashboard/admin-more-screen.pcss",
+      "currentSha256": "e3a295c80d191830f40ba48ef879f95bfc33fbe7b6ea75ab8564e24b6d50f128",
+      "diffFrom79e": "byte-equivalent"
+    },
+    {
+      "path": "frontends/mobile-core/src/shared/components/AdminShell.vue",
+      "currentSha256": "04d7a072a5a1011961a091e220645649df3e588ea461bdb0c407b12025c85c80",
+      "diffFrom79e": "byte-equivalent"
+    },
+    {
+      "path": "frontends/mobile-core/src/shared/admin-navigation.ts",
+      "currentSha256": "c967b427559f8146aed334ff1fca5f1dd61207c7430035149190e942cfb007bc",
+      "diffFrom79e": "byte-equivalent"
+    }
+  ],
+  "currentParentAppSha256": "adb8bc300fdf820b8b78ee0a90d5253fc521977fa5dbf5f092bed080e785ec41",
+  "currentAdminMoreRenderBranchSha256": "9ebcdd862ce529c167ef6422669ab0b9c7619e91f002e04f7cd948aebd0282fc",
+  "adminMoreRenderBranchByteEqual79e": true,
+  "parentAppWholeFileChanged": true,
+  "affectedCommonShellTheme": {
+    "files": [
+      {
+        "path": "frontends/shared/foundation/theme.ts",
+        "currentSha256": "6a88658ff18edaa7f9b3ae6c893a7059015e02e00eb42e484f892fbf255d5a3a",
+        "changedSince79e": false
+      },
+      {
+        "path": "frontends/shared/foundation/theme-preference.ts",
+        "currentSha256": "ba69328b793205d6c53b3af54ec4aa4820736979f16c03ed9bbd6cbd07c6a6ae",
+        "changedSince79e": false
+      },
+      {
+        "path": "frontends/shared/foundation/device-theme.ts",
+        "currentSha256": "7eeb9ea07170ecdb47989346e447c3386290934518b7cb083f67044e3cccd06d",
+        "changedSince79e": false
+      },
+      {
+        "path": "frontends/shared/foundation/tokens.pcss",
+        "currentSha256": "1ad8740220aa155f3dbd6961d0ad8639be2da9362db755a00bac5d1f36e83717",
+        "changedSince79e": false
+      },
+      {
+        "path": "frontends/shared/foundation/mixins.pcss",
+        "currentSha256": "d23791e441450eeb3bc59bc90f5f7f82d4243e4d7b2c35adef52ce60a3ed04c6",
+        "changedSince79e": false
+      },
+      {
+        "path": "frontends/shared/foundation/base.pcss",
+        "currentSha256": "2b7edc7e0d657451e5697a57a85037638f52ea36526c385b8eb6f4db3374a692",
+        "changedSince79e": false
+      },
+      {
+        "path": "frontends/mobile-core/src/styles/base.pcss",
+        "currentSha256": "f9b5a71242a22b2ddf61d217dddc80fffd8af7019a0cbd7b3b7860e8dd4595d7",
+        "changedSince79e": false
+      },
+      {
+        "path": "frontends/mobile-core/src/styles/tokens.pcss",
+        "currentSha256": "5e2cc37157dbe2c1d8e2f335a972ea94963f2ec0e5da15df908504aee0faece8",
+        "changedSince79e": false
+      },
+      {
+        "path": "frontends/mobile-core/src/shared/components/MobileShell.vue",
+        "currentSha256": "67c1d82b033f0d6c2cae8c12b79ee47ac6f7320aa6ad437a8df9fc25404bc14b",
+        "changedSince79e": false
+      },
+      {
+        "path": "frontends/mobile-core/src/shared/components/mobile-shell.pcss",
+        "currentSha256": "1ef91f16d859d8f703b2801f2937d877d608a0a645c6d2009b1ec53dfceb2de5",
+        "changedSince79e": false
+      },
+      {
+        "path": "frontends/mobile-core/src/shared/components/MobileBottomNav.vue",
+        "currentSha256": "4f30edd3b16c54b1a3e143c4404eba6efd3ca1000fd6a13bbf48e67f03b4c816",
+        "changedSince79e": false
+      },
+      {
+        "path": "frontends/mobile-core/src/shared/components/mobile-bottom-nav.pcss",
+        "currentSha256": "12c4df44839b6a694870e3e2aca27e7969f9b6fb0a82f104ca7cb45283f783af",
+        "changedSince79e": true
+      },
+      {
+        "path": "frontends/mobile-core/src/shared/components/admin-shell.pcss",
+        "currentSha256": "6575172889889431d8b6b8c644baac0711b40fe4fa2fee851d8489b31742c46f",
+        "changedSince79e": false
+      }
+    ],
+    "changedPaths": [
+      "frontends/mobile-core/src/shared/components/mobile-bottom-nav.pcss"
+    ],
+    "changedInfluence": "Only common MobileBottomNav PCSS differs: narrow five-slot rails get minmax columns/spacing; labels become nowrap. Accepted e715 sharednav corrective qualification reused as source/common influence, not a new currentAdminMore/nav runtime test. More rows/font/semanticpalette/themeowner/MobileShell/AdminShell source unchanged.",
+    "acceptedCommonEvidence": [
+      "../changed-nav-e715-qualified.json",
+      "../host-logout-polish/after-prep/run/qualified-7d.json sharednav inTeacherHome context, not AdminMore recapture",
+      "docs/plans/web-vue-pr3/THEME-CONTRACT.md and accepted theme/mobile reviews"
+    ]
+  },
+  "historicalLimits": [
+    "Old300/root16 boththeme render reused at79e. Historicaloriginal140 author cleanup limitations remain as accepted originaldataset; no new/currentAuth200/logout/sessioncleanup assertion.",
+    "AdminMore statichub baseline only, not destination CRUD/actions/export/permission-edit validation. No currentrole/grant/account/password writes, no credentials endpoints, no user8 or fixture rights.",
+    "root20/keyboardfocus/768/allotherwidths and nestedstates remainnotchecked; no concrete newlayout risk requiring currentAuth/new2PNG.",
+    "Current source qualification explicitly accounts for common nav delta and parentApp source changes; does not label everydependency unchanged.",
+    "Original140 PNG count unchanged; this corrects a missed canonical mapping, not an additional frame or action."
+  ],
+  "modelRequested": "gpt-6.1-sol/high",
+  "runtimeTelemetry": "unavailable",
+  "qualifiedAtUtc": "2026-10-25T00:03:00.741198+00:00",
+  "docsOrWebOnlyBinding": {
+    "priorRoot": "7d664ce89cff5813772d1923e310ad74c2706c87",
+    "currentRoot": "1057de27b70c37b5916013d7c9207e31d8493ce8",
+    "pwaMobileSharedTmaAndFixtureBytesUnchanged": true,
+    "noRuntimeReplayed": true
+  }
+}

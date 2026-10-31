@@ -15,7 +15,7 @@ const props = withDefaults(
     theme?: 'dark' | 'light';
     showBack?: boolean;
   }>(),
-  { theme: 'dark', showBack: true },
+  { showBack: true },
 );
 const emit = defineEmits<{ back: []; 'owner-error': [cause: unknown] }>();
 const inventory = ref<readonly AdminMapBuildingResponse[]>([]);

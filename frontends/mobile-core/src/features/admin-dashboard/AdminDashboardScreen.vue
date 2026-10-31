@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import SvgIcon from '../../../../shared/foundation/SvgIcon.vue';
 import NotificationsEntryButton from '../notifications/NotificationsEntryButton.vue';
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { StaleSessionGenerationError } from '../../shared/session-owner';
@@ -162,11 +163,10 @@ onBeforeUnmount(() => {
         type="button"
         @click="emit('open-role-switch')"
       >
-        Администратор<img
+        Администратор<SvgIcon
           :src="chevronIcon"
-          alt=""
           aria-hidden="true"
-        >
+        />
       </button>
       <NotificationsEntryButton
         v-if="onNotifications"
@@ -344,12 +344,11 @@ onBeforeUnmount(() => {
               "
             >
               <span>{{ adminActivityLabels[code] }}</span>
-              <img
+              <SvgIcon
                 v-if="metricCode === code"
                 :src="checkIcon"
-                alt=""
                 aria-hidden="true"
-              >
+              />
             </button>
           </div>
         </MobileToolsSheet>

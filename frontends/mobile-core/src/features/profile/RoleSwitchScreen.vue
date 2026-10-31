@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import SvgIcon from '../../../../shared/foundation/SvgIcon.vue';
 import type {
   ProfileRequestError,
   ProfileResolvedTheme,
@@ -35,7 +36,6 @@ const props = withDefaults(
     onBack: undefined,
     onSelectRole: undefined,
     compact: false,
-    theme: 'dark',
   },
 );
 
@@ -67,11 +67,10 @@ async function selectRole(role: ProfileRole): Promise<void> {
           aria-label="Назад"
           @click="onBack?.()"
         >
-          <img
+          <SvgIcon
             :src="rolePrevious"
-            alt=""
             aria-hidden="true"
-          >
+          />
         </button>
         <h1
           id="profile-role-title"
@@ -145,12 +144,12 @@ async function selectRole(role: ProfileRole): Promise<void> {
                 : ''
             }}</span>
           </span>
-          <img
+          <SvgIcon
             v-if="compact && snapshot.activeRole === grant.role && pendingRole === null"
             class="profile-role-card__check"
             :src="currentCheck"
             alt="Текущая роль"
-          >
+          />
           <span
             v-if="pendingRole === grant.role"
             class="profile-role-card__status"

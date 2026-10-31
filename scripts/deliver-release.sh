@@ -16,6 +16,7 @@ fi
 [[ "${VPS_HOST:-}" =~ ^[a-zA-Z0-9][a-zA-Z0-9.-]+$ ]] || exit 2
 [[ "${VPS_USER:-}" =~ ^[a-z_][a-z0-9_-]*$ ]] || exit 2
 [[ "${GITHUB_RUN_ID:-}" =~ ^[0-9]+$ && "${GITHUB_RUN_ATTEMPT:-}" =~ ^[0-9]+$ ]] || exit 2
+python3 scripts/release-images.py "${RELEASE_IMAGE_MANIFEST:-release-images.json}" "$DEPLOY_SHA"
 private="$(mktemp -d)"
 incoming_created=false
 cleanup() {
@@ -51,6 +52,7 @@ fi
 # Validate the whole delivery before SSH or any VPS writes.
 python3 scripts/deployment-secrets.py validate --env "$private/PROD_ENV" --bundle "$private/PROD_SECRET_FILES_B64"
 unset PROD_ENV PROD_SECRET_FILES_B64 SSH_PRIVATE_KEY GHCR_TOKEN SSH_KNOWN_HOSTS
+cp "${RELEASE_IMAGE_MANIFEST:-release-images.json}" "$private/release-images.json"
 git archive --format=tar "$DEPLOY_SHA" > "$private/source.tar"
 printf '%s\n' "$DEPLOY_SHA" > "$private/REVISION"
 ssh_opts=(-i "$private/SSH_PRIVATE_KEY" -o IdentitiesOnly=yes -o BatchMode=yes
@@ -61,7 +63,7 @@ remote="$VPS_USER@$VPS_HOST"
 # shellcheck disable=SC2029 # Validated SHA/run identifiers; no secret interpolation.
 ssh "${ssh_opts[@]}" "$remote" "umask 077; mkdir -p /opt/rutcampustrack/incoming /opt/rutcampustrack/releases; mkdir '$incoming'; test ! -e '$release'"
 incoming_created=true
-files=("$private/source.tar" "$private/REVISION" "$private/PROD_ENV" "$private/PROD_SECRET_FILES_B64" "$private/GHCR_TOKEN")
+files=("$private/release-images.json" "$private/source.tar" "$private/REVISION" "$private/PROD_ENV" "$private/PROD_SECRET_FILES_B64" "$private/GHCR_TOKEN")
 if [[ "$bootstrap" == true ]]; then files+=("$private/INITIAL_ADMIN_REQUEST"); fi
 scp "${ssh_opts[@]}" "${files[@]}" "$remote:$incoming/"
 # No git pull: release configs/scripts and IMAGE_TAG refer to the same revision.

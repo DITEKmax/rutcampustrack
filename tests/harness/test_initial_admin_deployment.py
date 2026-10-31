@@ -1,5 +1,6 @@
 """Private first-admin transport boundaries; only synthetic subprocesses, no network or Docker."""
 import json
+import importlib.util
 import os
 from pathlib import Path
 import re
@@ -10,6 +11,10 @@ import unittest
 
 ROOT = Path(__file__).resolve().parents[2]
 SHA = "a" * 40
+spec = importlib.util.spec_from_file_location('release_images', ROOT / 'scripts/release-images.py')
+images = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(images)
+MANIFEST = {'source_sha': SHA, 'images': {name: images.PREFIX + name + '@sha256:' + 'b' * 64 for name in images.IMAGES}}
 PASSWORD = "Synthetic-first-123!"
 
 
@@ -29,8 +34,9 @@ class InitialAdminDeploymentControls(unittest.TestCase):
     def sandbox(self, root):
         scripts, bindir = root / "scripts", root / "bin"
         scripts.mkdir()
+        (root / 'release-images.json').write_text(json.dumps(MANIFEST))
         bindir.mkdir()
-        for name in ("deliver-release.sh", "deploy-release.sh", "bootstrap-initial-admin.py"):
+        for name in ("deliver-release.sh", "deploy-release.sh", "bootstrap-initial-admin.py", "release-images.py"):
             shutil.copyfile(ROOT / "scripts" / name, scripts / name)
         write(scripts / "deployment-secrets.py", "import sys\n")
         env = dict(os.environ, PATH=str(bindir) + os.pathsep + os.environ["PATH"],
@@ -191,6 +197,7 @@ os.execv(%r, [%r] + sys.argv[1:])
         env = self.sandbox(root)
         incoming = root / "server/incoming/123-1"
         incoming.mkdir(parents=True)
+        (incoming / 'release-images.json').write_text(json.dumps(MANIFEST))
         for name, value in (("REVISION", SHA), ("PROD_ENV", "synthetic"),
                             ("PROD_SECRET_FILES_B64", "synthetic"), ("GHCR_TOKEN", "synthetic"),
                             ("INITIAL_ADMIN_REQUEST", json.dumps(request()))):
@@ -212,6 +219,9 @@ import hashlib, json, os, sys
 args=sys.argv[1:]
 with open(os.environ['RCT_TEST_LOG'], 'a') as log:
     log.write(json.dumps([args, os.environ.get('IMAGE_TAG')])+'\\n')
+if args[:2] == ['image', 'inspect']:
+    name = args[-1].rsplit(':', 1)[0]
+    print(json.dumps([{'RepoDigests': [name + '@sha256:' + 'b'*64]}]))
 if args[:2] == ['ps', '--format']: raise SystemExit(0)
 if args and args[0]=='run':
     print('SYNTHETIC-PUBLIC')

@@ -1,0 +1,63 @@
+{
+  "qualification": "PRODUCT_SLICE_BOUNDED_ACCEPTED_ROOT_CRITERIA_DECISION",
+  "acceptedAtUtc": "2026-10-25T00:51:03.029930+00:00",
+  "ownerDecision": "Root accepted the combined deterministic retired-continuation behavior evidence and actual guest/no-private/no-pageerror user outcome as sufficient for the three Student owner-cancellation guards. No third runtime replay is required.",
+  "productSource": {
+    "authorCommit": "a7f9d93618aa45f1252fae3fdf1dfc32eb9e9f54",
+    "integratedCommit": "1057de27b70c37b5916013d7c9207e31d8493ce8",
+    "executionRoot": "481512e93575070a1f471c65af54df5b4e31cd61",
+    "scope": "Home current-before-assert; Attendance loadSubject/remember current guards; transport authority fences unchanged"
+  },
+  "criteria": [
+    {
+      "criterion": "Retired awaited-read continuation/queued filter settles without leaked owner error or successor overwrite; old transport still rejects retired owner",
+      "result": "PASS_DETERMINISTIC_BEHAVIOR_6",
+      "evidence": "/workspace/rct-worktrees/web-foundation/.agent/evidence/student-owner-cancellation/final-behavior-minimal-diff.log",
+      "baseline": "/workspace/rct-worktrees/web-foundation/.agent/evidence/student-owner-cancellation/baseline-isolated-owner.log"
+    },
+    {
+      "criterion": "Strict WEB types/build",
+      "result": "PASS_REUSED_ONCE",
+      "evidence": "/workspace/rct-worktrees/web-foundation/.agent/evidence/student-owner-cancellation/final-web-build.log"
+    },
+    {
+      "criterion": "Independent source acceptance",
+      "result": "PASS_REUSED",
+      "evidence": "/workspace/rct-pr3-review/student-owner-cancellation/REVIEW-a7f9d936.md"
+    },
+    {
+      "criterion": "Native logout while real Today response pending, same-old-bearer terminal proof, after-release guest remains visible without authenticated Profile/private StudentHome or pageerror",
+      "result": "OBSERVED_ACTUAL_BOUNDED",
+      "evidence": "/workspace/rct-pr3-runtime/visual-readiness-20261024/student-ownerloss-after-prep/v2-prep/run/qualified-4815.json",
+      "image": "WEB-OWNERLOSS__WT-OWNER-AF01-v2-guest-after-old-real-today-release__light__1440__481512e93.png",
+      "personallyInspected": true
+    },
+    {
+      "criterion": "Full client Today body/network terminal completion",
+      "result": "NOT_PROVEN_TECHNICAL_OBSERVATION",
+      "evidence": "/workspace/rct-pr3-runtime/visual-readiness-20261024/student-ownerloss-after-prep/v2-prep/run/receipt.json",
+      "details": "Neither exact target requestfinished nor requestfailed appeared within6s. clientBodyCompleted=false and changedOwnerLossObserved=false remain unchanged. Real full608B JSON body/CE NONE/noCL/TE CHUNKED metadata is retained; no compression/abort cause asserted."
+    }
+  ],
+  "rawTruth": {
+    "driverExitCode": 1,
+    "completed": false,
+    "changedOwnerLossObserved": false,
+    "clientBodyCompleted": false,
+    "rawReceipt": "/workspace/rct-pr3-runtime/visual-readiness-20261024/student-ownerloss-after-prep/v2-prep/run/receipt.json",
+    "rawReceiptSha256": "ed272b38fada126b4781d577ff91fe642e78b57739e1180d61d91f2a4ce2bd72",
+    "rawFlagsUntouched": true
+  },
+  "provenance": "Actual original full200 buffer retained only in RAM, body length/digest/MIME/encoding metadata recorded; same bytes/status/MIME release with documented transport framing. No fabricated API JSON/status or second backend read. Originalfe/raw and v2 facts preserved.",
+  "cleanup": {
+    "nativeLogout204": true,
+    "sameOldBearer401": true,
+    "soleOwnSessionKnownTerminal": true,
+    "noUnknownHold": true,
+    "browserClosed": true,
+    "sourceUnchanged": true,
+    "mainLease": "FREE"
+  },
+  "limits": "Bounded product-slice acceptance only. No full client-body-delivery PASS, no raw driver PASS, no full screen/matrix/provider claim. Actions117 count unchanged. No further probe/CDP/Auth/header experiment, product/test change or runtime replay is authorized by this sidecar.",
+  "gallery": "/workspace/rct-pr3-runtime/visual-readiness-20261024/student-ownerloss-after-prep/v2-prep/run/gallery-4815.html"
+}

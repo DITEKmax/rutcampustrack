@@ -1,3 +1,4 @@
+import { currentDiagnosticCase } from './diagnostic-events';
 import { randomBytes, randomUUID } from 'node:crypto';
 import { setTimeout } from 'node:timers/promises';
 import {
@@ -49,15 +50,12 @@ function retainMarkRequestId(
       return;
     if (process.env.RCT_E2E_BOT_ROLE_MENU === 'true') {
       const info = base.info();
-      const workspace = process.env.GITHUB_WORKSPACE;
+      const workspace = process.env.RCT_DIAGNOSTIC_CHECKOUT_ROOT ?? process.env.GITHUB_WORKSPACE;
       if (
-        resolve(info.file) ===
-          join(workspace ?? '', 'tests/e2e/specs/mobile-real-server.spec.ts') &&
-        info.title ===
-          'actual private bot menu roster and teacher Today use hosted current authority'
+        currentDiagnosticCase() === 'HOSTED_PRIVATE_BOT_AUTHORITY'
       ) {
         const temporary = process.env.RUNNER_TEMP;
-        const run = process.env.RCT_REMAINING5_RUN;
+        const run = process.env.RCT_DIAGNOSTIC_RUN_DIR ?? process.env.RCT_REMAINING5_RUN;
         const clock = process.env.RCT_E2E_TEACHING_CLOCK_DIR;
         const runId = process.env.GITHUB_RUN_ID ?? '';
         const attempt = process.env.GITHUB_RUN_ATTEMPT ?? '';
@@ -79,7 +77,6 @@ function retainMarkRequestId(
           attempt.trim() !== attempt ||
           run !== join(temporary, `rct-u20-bot-${runId}-${attempt}`) ||
           clock !== join(temporary, `rct-first3-clock-${runId}-${attempt}`) ||
-          info.line !== 5943 ||
           info.project.name !== 'chromium' ||
           info.project.outputDir !== join(run, 'artifacts') ||
           Object.getOwnPropertyDescriptor(session ?? {}, 'activeRole')?.value !== 'HEADMAN'
@@ -131,9 +128,9 @@ function retainMarkRequestId(
         return;
       }
     }
-    const run = process.env.RCT_SEMESTER_LIFECYCLE_RUN;
+    const run = process.env.RCT_DIAGNOSTIC_RUN_DIR ?? process.env.RCT_SEMESTER_LIFECYCLE_RUN;
     const temporary = process.env.RUNNER_TEMP;
-    const workspace = process.env.GITHUB_WORKSPACE;
+    const workspace = process.env.RCT_DIAGNOSTIC_CHECKOUT_ROOT ?? process.env.GITHUB_WORKSPACE;
     const runId = process.env.GITHUB_RUN_ID ?? '';
     const attempt = process.env.GITHUB_RUN_ATTEMPT ?? '';
     if (
@@ -142,6 +139,7 @@ function retainMarkRequestId(
       !workspace ||
       !isAbsolute(temporary) ||
       !isAbsolute(workspace) ||
+      resolve(__dirname, '../../..') !== workspace ||
       !/^[1-9][0-9]{0,19}$/.test(runId) ||
       !/^[1-9][0-9]{0,5}$/.test(attempt) ||
       run !== join(temporary, `rct-semester-lifecycle-${runId}-${attempt}`)
@@ -149,9 +147,7 @@ function retainMarkRequestId(
       return;
     const info = base.info();
     if (
-      resolve(info.file) !== join(workspace, 'tests/e2e/fixtures/semester-lifecycle.spec.ts') ||
-      info.title !==
-        'FULL admin archives and restores the disposable CI semester through real participants' ||
+      currentDiagnosticCase() !== 'SEMESTER_ARCHIVE_RESTORE' ||
       info.project.name !== 'chromium' ||
       info.project.outputDir !== join(run, 'artifacts')
     )
@@ -863,7 +859,7 @@ export async function selectPwaRole(page: Page, label: string) {
 }
 
 export const test = base.extend<
-  {},
+  { d002Dataset: MobileDataset },
   {
     dataset: MobileDataset;
     activeHeadmanDataset: MobileDataset;
@@ -917,6 +913,47 @@ export const test = base.extend<
       // Root owns disposal of this task-labelled stack. Never delete unrelated existing data.
     },
     { scope: 'worker', timeout: 180000 },
+  ],
+  // D002 stories own actors/groups/homework; the admitted semester is read-only.
+  d002Dataset: [
+    async ({ playwright, dataset: baseline, teachingInstant }, use, info) => {
+      const baselineId = String(baseline.semester.id);
+      const admitted = () => baseline.admin.call('GET', '/api/academic/semesters?size=100');
+      const before = items(await admitted(), 'semesterResponseList').find(
+        (row) => String(row.id) === baselineId,
+      );
+      expect(before?.active).toBe(true);
+      expect(before?.dateFrom <= baseline.today && before?.dateTo >= baseline.tomorrow).toBe(true);
+      expect(moscowDate(teachingInstant)).toBe(baseline.today);
+      const request = await playwright.request.newContext({
+        baseURL: String(info.project.use.baseURL ?? 'https://localhost:8443'),
+        ignoreHTTPSErrors: true,
+      });
+      try {
+        const own = new MobileDataset(
+          request,
+          await admit(request, TEST_USERS.admin, 'ADMIN'),
+          teachingInstant,
+          0,
+        );
+        await own.initialize();
+        expect(String(own.semester.id)).toBe(baselineId);
+        expect(own.minimumWeeklyReportWeeks).toBe(0);
+        expect(own.today).toBe(baseline.today);
+        expect(own.tomorrow).toBe(baseline.tomorrow);
+        const after = items(await admitted(), 'semesterResponseList').find(
+          (row) => String(row.id) === baselineId,
+        );
+        expect(after?.active).toBe(true);
+        expect(after?.dateFrom).toBe(before?.dateFrom);
+        expect(after?.dateTo).toBe(before?.dateTo);
+        await use(own);
+      } finally {
+        await request.dispose();
+      }
+      // Own nonce-stack disposal owns the synthetic records; no domain DELETE.
+    },
+    { timeout: 180000 },
   ],
   activeHeadmanDataset: [
     async ({ dataset }, use) => {

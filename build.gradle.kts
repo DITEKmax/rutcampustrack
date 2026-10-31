@@ -1,5 +1,10 @@
 import java.io.File
 import java.time.OffsetDateTime
+import org.gradle.api.tasks.testing.TestDescriptor
+import org.gradle.api.tasks.testing.TestListener
+import org.gradle.api.tasks.testing.TestResult
+import org.gradle.api.tasks.TaskState
+import org.gradle.api.execution.TaskExecutionListener
 
 plugins {
     java
@@ -40,6 +45,32 @@ version = "0.1.0"
 
 val javaVersion = 21
 
+// Source identities and primitive native events only: never descriptor names,
+// parameter values, exception messages or test output. CI and local use this
+// same default listener. Local captures raw Gradle output in a private log.
+val progressTasks = setOf("compileJava", "compileTestJava", "test", "integrationTest",
+    "jacocoTestReport", "bootJar", "classes", "testClasses", "processResources",
+    "processTestResources", "generateProto", "generateTestProto")
+gradle.taskGraph.addTaskExecutionListener(object : TaskExecutionListener {
+    override fun beforeExecute(task: Task) {
+        if (task.name in progressTasks) {
+            task.logger.lifecycle("RCT_GRADLE_V1|TASK_START|${task.path}")
+        }
+    }
+    override fun afterExecute(task: Task, state: TaskState) {
+        if (task.name in progressTasks) {
+            val outcome = when {
+                state.failure != null -> "FAIL"
+                state.noSource -> "NO_SOURCE"
+                state.upToDate -> "UP_TO_DATE"
+                state.skipped -> "SKIPPED"
+                else -> "SUCCESS"
+            }
+            task.logger.lifecycle("RCT_GRADLE_V1|TASK_DONE|${task.path}|$outcome")
+        }
+    }
+})
+
 allprojects {
     repositories {
         mavenCentral()
@@ -72,6 +103,44 @@ subprojects {
 
     tasks.withType<Test> {
         useJUnitPlatform()
+        val authoredClasses = project.fileTree("src/test/java") { include("**/*.java") }
+            .files.map { source ->
+                source.relativeTo(project.file("src/test/java")).invariantSeparatorsPath
+                    .removeSuffix(".java").replace('/', '.')
+            }.toSet()
+        addTestListener(object : TestListener {
+            private var completed = 0L
+            private var failed = 0L
+            private var skipped = 0L
+            private var lastCompleted = 0L
+            private val classes = mutableSetOf<String>()
+            private fun source(test: TestDescriptor): String? =
+                test.className?.substringBefore('$')?.takeIf { it in authoredClasses }
+            private fun age(): String = if (lastCompleted == 0L) "NONE" else
+                ((System.nanoTime() - lastCompleted) / 1_000_000_000L).toString()
+            @Synchronized override fun beforeTest(test: TestDescriptor) {
+                source(test)?.let { identity ->
+                    logger.lifecycle("RCT_GRADLE_V1|TEST_START|$path|$identity|${age()}")
+                }
+            }
+            @Synchronized override fun afterTest(test: TestDescriptor, result: TestResult) {
+                completed += result.testCount
+                failed += result.failedTestCount
+                skipped += result.skippedTestCount
+                lastCompleted = System.nanoTime()
+                source(test)?.let { identity ->
+                    logger.lifecycle("RCT_GRADLE_V1|TEST_DONE|$path|$identity|$completed|$failed|$skipped")
+                }
+            }
+            override fun beforeSuite(suite: TestDescriptor) {}
+            @Synchronized override fun afterSuite(suite: TestDescriptor, result: TestResult) {
+                source(suite)?.let { identity ->
+                    if (suite.className == identity && suite.parent?.className == null && classes.add(identity)) {
+                        logger.lifecycle("RCT_GRADLE_V1|CLASS_DONE|$path|$identity|${classes.size}|${age()}")
+                    }
+                }
+            }
+        })
     }
 
     // JaCoCo aggregates unit and integration execution data for Java modules.

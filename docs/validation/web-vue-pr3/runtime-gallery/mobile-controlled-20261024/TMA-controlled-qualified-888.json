@@ -1,0 +1,108 @@
+{
+  "sourceRevision": "888667e32f9ae0503fc3004fa280a96c72c2861a",
+  "producer": "Root one actual TTY60198 execute-once, exit0; observer independently inspected5retainedoriginalPNG",
+  "rawReceipt": "tma-controlled-actor4-once-receipt.json",
+  "runner": "tma-controlled-actor4-once.cjs",
+  "runnerSha256": "66440998fba8f45510f7e0244bb6891e7279ad1d3bf56aacde55cdb6b0c98f23",
+  "publicHelperSha256Verified": "39283efb54eb0ecdfa3403b51329af78bc05aac23cead9d0f1152c12487483a6",
+  "startedAt": "2026-10-24T19:14:38.422Z",
+  "finishedAt": "2026-10-24T19:14:42.342Z",
+  "elapsedSeconds": 3.92,
+  "personallyViewedAll5Png": true,
+  "originalHashIntegrity": "5/5 match; no PNGs modified",
+  "criteria": {
+    "TMA-CONTROLLED-ADMISSION": {
+      "status": "ready for thissinglecontrolledexchange",
+      "authPosts": 1,
+      "realAuthTmaStatus": 200,
+      "realCanonicalSessionOwner": "expectedownedactor4/STUDENT confirmed",
+      "actualStudentTodayStatus": 200,
+      "configuredPublicSignerMatch": "RealAuth accepted this existingpublicCI HMAC proof and currentownedbinding. This verifies configuredverifier/signermatch for thisexchange only; no env/privatevalue read or newkey.",
+      "limits": "Not externalTelegram SDK/host/provider validation, productionbot match or alluser/role admission."
+    },
+    "TMA-TODAY-BASE": {
+      "status": "observed baseline with300sharednavigationvisualfinding",
+      "frames": 3,
+      "states": "actual day-ended/two populatedlesson cards; firstУ,secondН plus existingpendingrequest indicator/Запросотправлен; no command performed",
+      "widthsByTheme": {
+        "light": [
+          300,
+          1440
+        ],
+        "dark": [
+          300
+        ]
+      },
+      "observations": [
+        "Day-ended explanation and bothactual lessoncards/time/attendance/requeststatus readable.300 text wraps;1440 mobilecanvas remainscentered.",
+        "At300both themes navigationlabels Сегодня/Задания/Профиль break off finalsingleletter; see V-MOBILE-NAV-300.1440labels singleline.",
+        "All3 scrollWidth equalsviewport; no horizontal loss."
+      ],
+      "limits": [
+        "No active/disabledcheckin/empty/error/loading/retry/keyboard/offline acceptance.",
+        "Dark1440 and other6widths notchecked for controlledTMA."
+      ]
+    },
+    "TMA-PROFILE-BASE": {
+      "status": "ready bounded1440light overview;300light onlynaturalinitialloadingobserved",
+      "frames": 2,
+      "loadedOverview": {
+        "theme": "light",
+        "width": 1440,
+        "actualData": "ownedfixture name/role/group/syntheticTelegramID and profilemenu; actualAuthsession200+Academicusers/me200",
+        "sensitiveDialogsOpened": false
+      },
+      "initialLoading": {
+        "theme": "light",
+        "width": 300,
+        "observed": "Profileheading + Загрузжаемпрофиль… +logoutbutton/nav; firstshot preceded settledprofiledata.",
+        "cause": "normalAPI timing; harness waited for logoutbutton, which existswhileloading. Not held/delayed/mocked GET.",
+        "loadedProfile300Ready": false
+      },
+      "limits": [
+        "300loadedbaseline notproved; darkProfile notcaptured.",
+        "Menuappearance doesnotprove role/appearance/security/sessions/history/browser-approval operations.",
+        "Plainloading presentation is an observation, not independentlyconfirmed productbug withoutloadingcriterion."
+      ]
+    },
+    "TMA-HOST-THEME": {
+      "status": "ready controlledadapterevent slice only",
+      "observed": "Same realadmittedToday follows injectedhost colorScheme light→themeChanged dark at300; no manualtheme/devicepreferencewrite.",
+      "boundary": "SDKfulfilled/testhostinjected/initDataHMACsignedbyexistingpublicCIhelper; themeChanged deliberatelycontrolled, nativeproviderunknown"
+    },
+    "CLEANUP": {
+      "status": "ready",
+      "cleanup": {
+        "exactOwnHandleCaptured": true,
+        "nativeLogoutSent": true,
+        "fallbackUsed": false,
+        "logoutStatus": 204,
+        "guestReadStatus": 401,
+        "confirmed": true
+      },
+      "privateSIDMode": "0600confirmed; SID/bearer/proof excludedfrompublicartifacts",
+      "unexpectedMutations": [],
+      "pageErrors": [],
+      "browserClosed": true,
+      "unknownHold": false,
+      "noReexecution": "oneattemptguardretained; no freshlogin/replay requested"
+    },
+    "NATIVE-TELEGRAM-PROVIDER": {
+      "status": "notchecked",
+      "reason": "SDK/host/proof supplied by clearlysynthetic existinghelper; no nativeTelegramlaunch/provider/runtimeacceptance attempted"
+    }
+  },
+  "inventory": {
+    "sharedTmaConsumerScreensWithControlledPostLoginSlices": 2,
+    "sharedTmaScreens": 48,
+    "pwaOnlyAuthExcludedFromTma": 2,
+    "fullTmaScreensAllStatesWidthsReady": 0,
+    "nativeProviderPostLoginScreensVerified": 0,
+    "functionalActionsAdded": 0,
+    "overallReadyPercent": null
+  },
+  "finding": "V-MOBILE-NAV-300 minorP3 sharedbottomnav labelwrapping; sourcepacketonly/noedit",
+  "sourceUnchangedDuringRun": true,
+  "modelRequested": "gpt-6.1-sol/high",
+  "runtimeModelEffortTelemetry": "unavailable"
+}

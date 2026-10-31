@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useProjectionRefresh } from '../../shared/projection-refresh';
 import ExportButton from '../../shared/components/ExportButton.vue';
 import { toTeacherStatsReportSelector } from './teacher-client';
 import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue';
@@ -113,6 +114,7 @@ let contextRevision = 0;
 const contextReady = ref(false);
 const canChooseContext = computed(() => contextReady.value && authorizedGroups.value.length > 0);
 const error = ref<string | null>(null);
+const projectionError = ref<string | null>(null);
 const revision = ref(0);
 const sorts = computed({
   get: () => scopeMemory.value[scope.value].sorts,
@@ -290,6 +292,7 @@ function chooseDirectoryGroup(id: string): void {
 }
 
 async function loadContext(): Promise<void> {
+  projectionError.value = null;
   contextReady.value = false;
   const api = props.api;
   const semesterId = props.semesterId;
@@ -337,18 +340,50 @@ async function loadContext(): Promise<void> {
   }
 }
 
+async function refreshProjection(): Promise<void> {
+  if (!contextReady.value) { await loadContext(); return; }
+  const api = props.api,
+    semesterId = props.semesterId,
+    current = ++contextRevision;
+  if (!api || !semesterId) return;
+  try {
+    const catalog = await api.catalog(semesterId);
+    if (!isCurrentContext(current)) return;
+    authorizedGroups.value = catalog.groups;
+    catalogSubjectOptions.value = mergeSubjectOptions(
+      catalog.taughtSubjectOptions,
+      catalog.subjectOptions,
+    );
+    authorizedSubjectOptions.value = mergeSubjectOptions(catalogSubjectOptions.value, []);
+    if (
+      selectedGroupId.value !== null &&
+      !catalog.groups.some((group) => group.id === selectedGroupId.value)
+    ) {
+      selectedGroupId.value = null;
+      selectedSubjectId.value = null;
+      stats.value = null;
+      statsQuery.value = null;
+      return;
+    }
+    projectionError.value = null;
+    await loadStatsForRevision(++revision.value, true);
+  } catch (cause) {
+    if (!isCurrentContext(current) || cause instanceof StaleSessionGenerationError) return;
+    failProjection(cause, 'Не удалось получить назначения преподавателя.');
+  }
+}
+
 async function loadStats(): Promise<void> {
   if (!canChooseContext.value) return;
   const current = ++revision.value;
   await loadStatsForRevision(current);
 }
 
-async function loadStatsForRevision(current: number): Promise<void> {
+async function loadStatsForRevision(current: number, retainProjection = false): Promise<void> {
   const api = props.api;
   const semesterId = props.semesterId;
-  stats.value = null;
-  statsQuery.value = null;
-  statsLoading.value = true;
+  if (!retainProjection) { stats.value = null; statsQuery.value = null; projectionError.value = null; }
+  statsLoading.value = !retainProjection;
   error.value = null;
   try {
     if (!api || !semesterId) {
@@ -379,11 +414,28 @@ async function loadStatsForRevision(current: number): Promise<void> {
     statsQuery.value = query;
   } catch (cause) {
     if (!isCurrent(current) || cause instanceof StaleSessionGenerationError) return;
-    error.value =
-      cause instanceof TeacherApiError ? cause.message : 'Не удалось получить статистику.';
-    emit('error', cause);
+    if (retainProjection) failProjection(cause, 'Не удалось получить статистику.');
+    else {
+      error.value = cause instanceof TeacherApiError ? cause.message : 'Не удалось получить статистику.';
+      emit('error', cause);
+    }
   } finally {
     if (isCurrent(current)) statsLoading.value = false;
+  }
+}
+
+function failProjection(cause: unknown, fallback: string): void {
+  const message = cause instanceof Error ? cause.message : fallback;
+  if (cause instanceof TeacherApiError && [401, 403, 404].includes(cause.response.status)) {
+    // Confirmed authority/target loss still retires the inadmissible projection.
+    stats.value = null;
+    statsQuery.value = null;
+    error.value = message;
+    projectionError.value = null;
+    emit('error', cause);
+  } else {
+    // A transient read cannot cancel a pending/unknown export under the same query.
+    projectionError.value = message;
   }
 }
 
@@ -691,6 +743,7 @@ function isCurrentContext(requestRevision: number): boolean {
 function isCurrent(requestRevision: number): boolean {
   return !disposed && requestRevision === revision.value;
 }
+useProjectionRefresh(refreshProjection);
 </script>
 
 <template>
@@ -999,12 +1052,12 @@ function isCurrent(requestRevision: number): boolean {
       </div>
     </form>
     <StudentWarningBlock
-      v-if="error"
+      v-if="error || projectionError"
       title="Статистика недоступна"
-      :message="error"
+      :message="error ?? projectionError ?? ''"
       severity="error"
       action-label="Повторить"
-      @action="loadContext"
+      @action="projectionError ? refreshProjection() : loadContext()"
     />
     <p
       v-else-if="loading"

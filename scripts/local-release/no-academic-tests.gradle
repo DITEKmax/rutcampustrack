@@ -1,0 +1,10 @@
+// Task-private guard for the owner-selected remaining local replay only.
+// Fail before executing any task; do not silently skip tests or create PASS.
+gradle.taskGraph.whenReady { graph ->
+    if (graph.allTasks.any { task ->
+        task instanceof org.gradle.api.tasks.testing.Test &&
+            task.path.startsWith(':services:academic-service:')
+    }) {
+        throw new GradleException('OWNER_NO_ACADEMIC_TEST_RERUN')
+    }
+}

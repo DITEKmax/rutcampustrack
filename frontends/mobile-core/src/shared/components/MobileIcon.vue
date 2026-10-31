@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import SvgIcon from '../../../../shared/foundation/SvgIcon.vue';
 import copyIcon from '../../assets/admin/copy.svg';
 defineProps<{
   name:
@@ -34,13 +35,12 @@ defineProps<{
 </script>
 
 <template>
-  <img
+  <SvgIcon
     v-if="name === 'copy'"
     class="mobile-icon"
     :src="copyIcon"
-    alt=""
     aria-hidden="true"
-  >
+  />
   <svg
     v-else
     class="mobile-icon"

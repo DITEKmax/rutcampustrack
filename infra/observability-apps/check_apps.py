@@ -12,7 +12,6 @@ import secrets
 import shutil
 import subprocess
 import sys
-import tempfile
 import threading
 import time
 import urllib.error
@@ -20,6 +19,9 @@ import urllib.request
 import yaml
 
 ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(ROOT / "scripts"))
+from local_release_context import runtime_context
+from local_release_evidence import evidence_directory
 MIB = 1024**2
 GIB = 1024**3
 SERVICES = {"glitchtip-db", "glitchtip", "pyroscope", "homepage", "observer-proxy"}
@@ -347,16 +349,16 @@ def main():
     if "--source" in sys.argv:
         print(json.dumps(static))
         return
-    require(os.environ.get("RCT_OBSERVABILITY_APPS_RUNTIME") == "isolated-ci" and os.environ.get("GITHUB_ACTIONS") == "true", "Native acceptance requires its isolated CI lease")
+    context = runtime_context("RCT_OBSERVABILITY_APPS_RUNTIME")
     require(shutil.disk_usage("/tmp").free >= 6 * GIB, "6GiB startup floor; preserve 4GiB during runtime")
-    revision = os.environ["GITHUB_SHA"]
+    revision = context["checkoutSha"]
     require(re.fullmatch("[a-f0-9]{40}", revision), "Exact source revision required")
-    project = "rct-apps-" + os.environ["GITHUB_RUN_ID"] + "-" + os.environ["GITHUB_RUN_ATTEMPT"]
-    require(re.fullmatch(r"rct-apps-[0-9]+-[0-9]+", project), "Invalid disposable ownership")
+    project = "rct-apps-" + context["runIdentity"]
+    require(re.fullmatch(r"rct-apps-(?:[0-9]+-[0-9]+|local-[a-f0-9]{24})", project), "Invalid disposable ownership")
     classpath = (ROOT / "services/attendance-service/attendance-app/build/observability-probe-classpath.txt").read_text().strip()
     output = ROOT / "build/monitoring"
     output.mkdir(parents=True, exist_ok=True)
-    with tempfile.TemporaryDirectory(prefix=project + "-", dir=os.environ.get("RUNNER_TEMP", "/tmp")) as directory:
+    with evidence_directory(prefix=project + "-", dir=os.environ.get("RUNNER_TEMP", "/tmp")) as directory:
         work = Path(directory)
         environment = dict(os.environ)
         environment.update({"RCT_OBSERVER_PROJECT": project, "RCT_GLITCHTIP_ALLOWED_HOSTS": "localhost,127.0.0.1,observer-proxy,glitchtip"})
@@ -383,7 +385,7 @@ def main():
         original = ["docker", "compose", "--project-name", project, "--env-file", str(envfile), "-f", str(ROOT / "docker-compose.observability-apps.yml")]
         config = json.loads(run(original + ["config", "--format", "json"]).stdout)
         config.pop("name", None)
-        run_identity = os.environ["GITHUB_RUN_ID"] + "-" + os.environ["GITHUB_RUN_ATTEMPT"]
+        run_identity = context["runIdentity"]
         identity = {"ru.rutcampustrack.apps.source": revision,
                     "ru.rutcampustrack.apps.run": run_identity,
                     "ru.rutcampustrack.apps.scope": "isolated-observability-apps"}
@@ -793,7 +795,7 @@ if __name__ == "__main__":
     try:
         raise SystemExit(main() or 0)
     except Exception as error:
-        failure = {"result": "FAIL", "source_sha": os.environ.get("GITHUB_SHA"), **safe_failure(error), "stage": CURRENT_STAGE}
+        failure = {"result": "FAIL", "source_sha": os.environ.get("RCT_LOCAL_RELEASE_REVISION", os.environ.get("GITHUB_SHA")), **safe_failure(error), "stage": CURRENT_STAGE}
         output = ROOT / "build/monitoring"
         output.mkdir(parents=True, exist_ok=True)
         (output / "apps.json").write_text(json.dumps(failure, indent=2) + "\n")

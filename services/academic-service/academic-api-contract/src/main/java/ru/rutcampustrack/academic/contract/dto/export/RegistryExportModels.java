@@ -7,6 +7,7 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import java.util.List;
 import ru.rutcampustrack.academic.contract.dto.group.*;
@@ -33,8 +34,22 @@ public final class RegistryExportModels {
             @JsonDeserialize(using = StrictRegistryEnumDeserializer.class) AccountStatus status,
             @Pattern(regexp = "ACTIVE|EXPELLED|GRADUATED|SUSPENDED|DISMISSED|ARCHIVED")
                     String roleStatus,
+            @com.fasterxml.jackson.annotation.JsonInclude(
+                            com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL)
+                    @Positive
+                    Long groupId,
             @Size(max = 8) List<@NotNull @Valid SortOrder> sorts,
-            @NotBlank String format) {}
+            @NotBlank String format) {
+        public Users(
+                String search,
+                String role,
+                AccountStatus status,
+                String roleStatus,
+                List<SortOrder> sorts,
+                String format) {
+            this(search, role, status, roleStatus, null, sorts, format);
+        }
+    }
 
     public record FormatOption(String code, String label, String contentType, String extension) {}
 }

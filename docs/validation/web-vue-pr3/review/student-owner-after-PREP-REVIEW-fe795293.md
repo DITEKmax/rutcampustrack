@@ -1,0 +1,24 @@
+# Student owner-loss after — scoped runtime PREP review
+
+**PASS. Blocking findings в changed hold/delivery/causality/cleanup scope не обнаружены.** Actual owner-loss case/PNG/cleanup ещё не выполнены. Отдельный Root resource/lease GO остаётся необходимым.
+
+Reviewed runner SHA256 `fe795293ea91f2cd385abc19159918c4c135c95d6d858f5baf26c41a58a2b41c`; exact Root/sourceBase `1057de27b70c37b5916013d7c9207e31d8493ce8`. Проверены `runner.cjs`, `PREP.json`, `QUALIFICATION.md`, `CRITICAL-DELTA.md`. Унаследованные e38 Auth barriers/validators/classifier/quiesce переиспользованы через scoped diff; старые Auth/theme/device suites и source product review не повторялись.
+
+**Hold/admission ordering согласован.** `runner.cjs:202`–`220`, `338`, `347`:
+
+- Допускается ровно первый actual Today GET на уже captured canonical own user3/STUDENT и matching RAM bearer. Pre-forward metadata сохраняется до network fetch. `route.fetch` имеет timeout7s/maxRedirects0 и должен вернуть real200; ответ хранится в RAM, JSON/status/headers не переписываются и второго backend read нет.
+- Route branch возвращает `holdRealToday(...)` Promise **без await внутри admission try**. Синхронный finally освобождает local serialized admission до ожидания response/delivery; зависший Today не входит в Auth/preferences drain. Поэтому hold не требует завершения Today перед native logout и не создаёт найденного по структуре admission deadlock.
+- Native logout forward guard требует real200Received + deliveryHeld + !deliveryReleased. Release по successful path разрешён только после native logout confirmed204/same captured old bearer401 и terminal sole own SID. Используется `route.fulfill({response: original})`; после fulfill исходный APIResponse dispose.
+- Acceptance ждёт original client requestfinished по exact request ID, затем microtask/two animation frames, native guest login visible, authenticated Profile action absent и pageErrors0. Один guest PNG требует последующей personal inspection. Counters/phase/time metadata отличают held-before-logout, forwarded-while-held и delivered-after-terminal; synthetic transport delay явно обозначен.
+
+**Auth/cancellation/cleanup influence согласовано.** Один slot запрещает второй login; preference PUT/theme helpers удалены. Нормальное завершение использует уже квалифицированный native logout204/401 и не отправляет selfDELETE. Exact-current technical selfDELETE разрешён лишь для известной собственной сессии при failure **до** native logout forward. Sent/unknown native logout не получает fallback cleanup/retry/new Auth; он остаётся fresh exact Root proof/HOLD. Late delivery failure/pageerror не превращается в actual PASS.
+
+Failure/deadline paths ограничены: Today fetch7s, hold до capture deadline45s, inherited capture/direct Auth/drain bounds. При unknown quiesce сначала закрывает только owned browser transport, затем abandons held delivery; release reason/unknown/sealed guard не позволяет fulfill abandoned private200 как successful case. Late Today changes входят в scope/epoch и не оправдывают stale Root proof. При known terminal pre-native cleanup remaining delivery тоже abandons, без нового Auth. Перепутывания browser close и session revocation не добавлено.
+
+**Sanitized pageerror evidence:** сохраняются только validated name, runner phase, максимум6 frontend/node_modules module paths и line. URL query/hash, raw stack/message, function names/column/body/headers/credentials не сохраняются. Первый pageerror прекращает capture; он не объявляется только TEST error. Старые e38 names-only errors не приписываются этому единственному runtime callsite заранее.
+
+**Binding/config:** actual runner hash = PREP.sha256/command; фактический Root HEAD = exact1057; relevant tracked working status пуст. Все21 source pins совпали, включая reviewed integrated Home/Attendance final bytes, state/transport/client/Auth/shared inputs. `run/` отсутствует; reviewer не создавал reservation. Exact source/hash/debug gate и fresh wx reservation сохранены до browser/Auth.
+
+Пользовательский результат будущего selected case: Student выходит, пока Home ожидает старый реальный read; поздний200 не возвращает private Home и не создаёт unhandled owner error, пользователь остаётся на guest login. Это один changed runtime scenario; Attendance queued-filter regressions, prior theme4/deviceHTTP6 и другие принятые проверки переиспользуются, replay не требуется. Source PASS не заменяет actual причинную последовательность и просмотр guest PNG.
+
+Reviewer: только public source/diff/hash/Git reads. Runtime/runner/tests/syntax/browser/Auth/network/DB/private values —0. Создан только этот report; product/repo/shared docs/runtime source не изменены. QENV010 runtime12 STOP и CI/manual PAUSED сохраняются; no merge/deploy. Requested gpt-6.1-sol/high; actual model telemetry unavailable. No children.

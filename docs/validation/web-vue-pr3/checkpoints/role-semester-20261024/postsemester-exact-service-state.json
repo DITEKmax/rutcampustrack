@@ -1,0 +1,79 @@
+{
+  "observedUtc": "2026-10-24T10:42:11.723513+00:00",
+  "all7ConfigCIDImageMountProjectionSame": true,
+  "main13Clock5SameHealthy": true,
+  "selectedServiceState": [
+    {
+      "service": "tls-edge",
+      "cid": "1c7b1069c43664bfa82e290296ecdc560c89c02bb914ec01e0576f2da42d8e44",
+      "running": true,
+      "health": "healthy",
+      "restartCount": 0,
+      "OOM": false,
+      "exitCode": 0,
+      "lastProbeExit": 0
+    },
+    {
+      "service": "api-gateway",
+      "cid": "457d506ed4ab08912d699fde0c3435d1427e53d9c8eda402ed86fbff03c5b0cb",
+      "running": true,
+      "health": "healthy",
+      "restartCount": 0,
+      "OOM": false,
+      "exitCode": 0,
+      "lastProbeExit": 0
+    },
+    {
+      "service": "auth-service",
+      "cid": "daaeffdeadacdd01130b663f94a321d1f5c19545a26df0b6da918b4c5f8524fa",
+      "running": true,
+      "health": "healthy",
+      "restartCount": 0,
+      "OOM": false,
+      "exitCode": 0,
+      "lastProbeExit": 0
+    },
+    {
+      "service": "academic-service",
+      "cid": "ea1384c95c75170fc6affcebc5a535109804d2413631ab1576f1d6da1d426299",
+      "running": true,
+      "health": "unhealthy",
+      "restartCount": 0,
+      "OOM": false,
+      "exitCode": 0,
+      "lastProbeExit": 1
+    },
+    {
+      "service": "postgres-academic",
+      "cid": "7a94cb51f9e26775df5dad2b3c749c37ff218a57aa160e15e76cdfb0db4e0152",
+      "running": true,
+      "health": "healthy",
+      "restartCount": 0,
+      "OOM": false,
+      "exitCode": 0,
+      "lastProbeExit": 0
+    },
+    {
+      "service": "redis",
+      "cid": "6c4381f7c6ecad72c4c823f9fc7f17562d8a879094d07467644c4f2ba96e560a",
+      "running": true,
+      "health": "healthy",
+      "restartCount": 0,
+      "OOM": false,
+      "exitCode": 0,
+      "lastProbeExit": 0
+    },
+    {
+      "service": "rabbitmq",
+      "cid": "381e52fd7a1ba1697b2b0acf054df32b5a6d5d096def424d7a8c5af111205305",
+      "running": true,
+      "health": "healthy",
+      "restartCount": 0,
+      "OOM": false,
+      "exitCode": 0,
+      "lastProbeExit": 0
+    }
+  ],
+  "remainingDiskBytes": 2565623808,
+  "noMutationsOrRetries": true
+}

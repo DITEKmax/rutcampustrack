@@ -1,0 +1,111 @@
+{
+  "revision": "f32ff22baaa8d68de03d7606d0799f4586ca17f1",
+  "sourceBase": "d69ac9159e3bfff169c4b2bd25adbcc7d9def771",
+  "rawReceipt": "receipt.json",
+  "qualification": "qualification.json",
+  "images": [
+    {
+      "id": "PWA-MOBILE-TEACHERLESSON__MB-TLM-01-real-first-lesson-roster__light__425__f32ff22ba",
+      "consumer": "PWA",
+      "screen": "MOBILE-TEACHERLESSON",
+      "state": "real-first-lesson-roster",
+      "file": "PWA-MOBILE-TEACHERLESSON__MB-TLM-01-real-first-lesson-roster__light__425__f32ff22ba.png",
+      "sha256": "a19b9913c1fa1f786e60a1c1210077e108c4b2a947e399f4f07ccad6b9deac28",
+      "theme": "light",
+      "width": 425,
+      "rootFont": "16px",
+      "scrollWidth": 425,
+      "focusVisible": false,
+      "revision": "f32ff22baaa8d68de03d7606d0799f4586ca17f1",
+      "personallyInspected": true,
+      "caseId": "MB-TLM-01",
+      "image": "PWA-MOBILE-TEACHERLESSON__MB-TLM-01-real-first-lesson-roster__light__425__f32ff22ba.png",
+      "height": 1000,
+      "pngWidth": 425,
+      "personallyViewed": true,
+      "inspection": "425light: complete lesson/date/time/type/group/room/status card and populated ten-row roster readable; long synthetic names wrap, status icons remain separate; scrollWidth425.",
+      "criterion": "TEACHER-LESSON-READ",
+      "captureKind": "new actual PWA read-only consumer slice",
+      "synthetic": true,
+      "syntheticCause": "Existing synthetic stand fixture data; OS media preference and viewport only. Real Auth/API unmodified; no manual device preference writes; no response mocks.",
+      "title": "Состав пары · light · 425",
+      "description": "425light: complete lesson/date/time/type/group/room/status card and populated ten-row roster readable; long synthetic names wrap, status icons remain separate; scrollWidth425.",
+      "limits": [
+        "Ручной причины в первой паре нет: эта часть пакета не проверена. Global PWA logout visualP3 исправляется отдельно."
+      ]
+    },
+    {
+      "id": "PWA-MOBILE-TEACHERLESSON__MB-TLM-02-same-real-lesson-roster__dark__300__f32ff22ba",
+      "consumer": "PWA",
+      "screen": "MOBILE-TEACHERLESSON",
+      "state": "same-real-lesson-roster",
+      "file": "PWA-MOBILE-TEACHERLESSON__MB-TLM-02-same-real-lesson-roster__dark__300__f32ff22ba.png",
+      "sha256": "3081d6870f8e63c159b477d41503c5a5782a504ff349d118ff69adb64f1681c8",
+      "theme": "dark",
+      "width": 300,
+      "rootFont": "16px",
+      "scrollWidth": 300,
+      "focusVisible": false,
+      "revision": "f32ff22baaa8d68de03d7606d0799f4586ca17f1",
+      "personallyInspected": true,
+      "caseId": "MB-TLM-02",
+      "image": "PWA-MOBILE-TEACHERLESSON__MB-TLM-02-same-real-lesson-roster__dark__300__f32ff22ba.png",
+      "height": 1128,
+      "pngWidth": 300,
+      "personallyViewed": true,
+      "inspection": "300dark: date/time wraps across lines but remains legible; lesson metadata and ten roster rows remain within viewport; status symbols remain distinct; scrollWidth300.",
+      "criterion": "TEACHER-LESSON-READ",
+      "captureKind": "new actual PWA read-only consumer slice",
+      "synthetic": true,
+      "syntheticCause": "Existing synthetic stand fixture data; OS media preference and viewport only. Real Auth/API unmodified; no manual device preference writes; no response mocks.",
+      "title": "Состав пары · dark · 300",
+      "description": "300dark: date/time wraps across lines but remains legible; lesson metadata and ten roster rows remain within viewport; status symbols remain distinct; scrollWidth300.",
+      "limits": [
+        "Ручной причины в первой паре нет: эта часть пакета не проверена. Global PWA logout visualP3 исправляется отдельно."
+      ]
+    },
+    {
+      "id": "PWA-MOBILE-TEACHERLESSON__MB-TLM-03-same-real-lesson-back-keyboard-focus__light__768__f32ff22ba",
+      "consumer": "PWA",
+      "screen": "MOBILE-TEACHERLESSON",
+      "state": "same-real-lesson-back-keyboard-focus",
+      "file": "PWA-MOBILE-TEACHERLESSON__MB-TLM-03-same-real-lesson-back-keyboard-focus__light__768__f32ff22ba.png",
+      "sha256": "cb515ad6f48564c4f4ced9393e45b5490838a50379cf02e95cb8afde2f926a36",
+      "theme": "light",
+      "width": 768,
+      "rootFont": "16px",
+      "scrollWidth": 768,
+      "focusVisible": true,
+      "revision": "f32ff22baaa8d68de03d7606d0799f4586ca17f1",
+      "personallyInspected": true,
+      "caseId": "MB-TLM-03",
+      "image": "PWA-MOBILE-TEACHERLESSON__MB-TLM-03-same-real-lesson-back-keyboard-focus__light__768__f32ff22ba.png",
+      "height": 1000,
+      "pngWidth": 768,
+      "personallyViewed": true,
+      "inspection": "768light: centered bounded mobile content; long names wrap; Back has visible purple keyboard focus ring; scrollWidth768.",
+      "criterion": "TEACHER-LESSON-READ",
+      "captureKind": "new actual PWA read-only consumer slice",
+      "synthetic": true,
+      "syntheticCause": "Existing synthetic stand fixture data; OS media preference and viewport only. Real Auth/API unmodified; no manual device preference writes; no response mocks.",
+      "title": "Состав пары · фокус кнопки назад · light · 768",
+      "description": "768light: centered bounded mobile content; long names wrap; Back has visible purple keyboard focus ring; scrollWidth768.",
+      "limits": [
+        "Ручной причины в первой паре нет: эта часть пакета не проверена. Global PWA logout visualP3 исправляется отдельно."
+      ]
+    }
+  ],
+  "newImages": 3,
+  "wholePacketComplete": false,
+  "rawOutcome": "EXIT1 naturalmissingmanual; not relabelled PASS",
+  "functionalActionsAdded": 0,
+  "privateExcluded": true,
+  "publicProjection": {
+    "rawManifestSha256": "fe7ccc4914d0f2aa9c93285fdaed4f728bc8469bedbde95f6b0b6330c3a0873c",
+    "changes": [
+      "local relative metadata links",
+      "readable title/description plus explicit visual limits"
+    ],
+    "pngBytesUnchanged": true
+  }
+}

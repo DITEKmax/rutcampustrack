@@ -18,7 +18,10 @@ public class SubjectDeletionNoStoreFilter extends OncePerRequestFilter {
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getServletPath();
         return !(path.matches("/academic/subjects/[^/]+/deletion(?:-preview|-challenge)?")
-                || path.startsWith("/academic/subject-deletion-operations/"));
+                || path.startsWith("/academic/subject-deletion-operations/")
+                || path.matches("/academic/groups/[^/]+/(?:deletion-preview|deletions)")
+                || path.matches("/academic/groups/[^/]+/deletions/[^/]+/resolve")
+                || path.startsWith("/academic/group-deletions/"));
     }
 
     @Override

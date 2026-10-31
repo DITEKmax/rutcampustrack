@@ -1,0 +1,191 @@
+import { computed, onBeforeUnmount, ref } from 'vue'
+import { createWebTransport, WebAuthorityChangedError } from '../../app/api'
+import { webSession } from '../../auth/session'
+import { webAssistantAccess } from '../../app/assistant'
+import {
+  HeadmanGroupApi,
+  type HeadmanAssistantPermission,
+} from '../../../../mobile-core/src/features/headman-group/headman-group-client'
+import { HeadmanJournalApi } from '../../../../mobile-core/src/features/headman-journal/headman-journal-client'
+import { HeadmanLessonActionsApi } from '../../../../mobile-core/src/features/headman-journal/headman-journal-actions-client'
+import { HeadmanRequestsApi } from '../../../../mobile-core/src/features/headman-requests/headman-requests-client'
+import { HeadmanSubjectsApi } from '../../../../mobile-core/src/features/headman-subjects/headman-subjects-client'
+import { HeadmanScheduleApi } from '../../../../mobile-core/src/features/schedule/headman-schedule-client'
+import { HeadmanHomeworkApi } from '../../../../mobile-core/src/features/homework/headman-homework-client'
+import { HeadmanStatsApi } from '../../../../mobile-core/src/features/headman-stats/headman-stats-client'
+
+/** One admitted identity and transport for the entire lifetime of a mounted page. */
+export function useHeadmanFeature() {
+  const captured = createWebTransport()
+  let alive = true
+  const assertCurrent = () => {
+    captured.assertCurrent()
+    if (!alive) throw new WebAuthorityChangedError()
+  }
+  const transport = { ...captured, assertCurrent }
+  onBeforeUnmount(() => {
+    alive = false
+  })
+  const session = webSession.snapshot.value
+  const isHeadman = session?.activeRole === 'HEADMAN'
+  const groupId = Number(
+    session?.roles.find((grant) => grant.role === session.activeRole && grant.status === 'ACTIVE')
+      ?.groupId,
+  )
+  const permissions = computed(() => webAssistantAccess.permissions.value)
+  const ready = ref(false)
+  const group = new HeadmanGroupApi(transport)
+  const journal = new HeadmanJournalApi(transport)
+  const actions = new HeadmanLessonActionsApi(transport)
+  const requests = new HeadmanRequestsApi(transport)
+  const subjects = new HeadmanSubjectsApi(transport)
+  const schedule = new HeadmanScheduleApi(transport)
+  const homework = new HeadmanHomeworkApi(transport)
+  const stats = new HeadmanStatsApi(transport)
+  const readOnly = computed(() => !!session?.readOnly)
+  const allowed = (permission?: HeadmanAssistantPermission) =>
+    ready.value &&
+    (isHeadman ||
+      (webAssistantAccess.loaded.value && !!permission && permissions.value.includes(permission)))
+  const writable = (permission?: HeadmanAssistantPermission) =>
+    allowed(permission) && !readOnly.value
+  async function initialize() {
+    assertCurrent()
+    if (
+      !Number.isSafeInteger(groupId) ||
+      groupId <= 0 ||
+      !['HEADMAN', 'STUDENT'].includes(session?.activeRole ?? '')
+    )
+      throw new Error('Нет действующего доступа к группе.')
+    if (!isHeadman) {
+      await webAssistantAccess.load()
+      assertCurrent()
+      if (!permissions.value.length) throw new Error('Тебе не назначены права помощника.')
+    }
+    ready.value = true
+  }
+  return {
+    transport,
+    assertCurrent,
+    initialize,
+    groupId,
+    isHeadman,
+    readOnly,
+    permissions,
+    allowed,
+    writable,
+    group,
+    journal,
+    actions,
+    requests,
+    subjects,
+    schedule,
+    homework,
+    stats,
+  }
+}
+
+export type HeadmanFeature = ReturnType<typeof useHeadmanFeature>
+export const today = () =>
+  new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Europe/Moscow',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(new Date())
+export function addDays(date: string, count: number) {
+  const value = new Date(`${date}T12:00:00Z`)
+  value.setUTCDate(value.getUTCDate() + count)
+  return value.toISOString().slice(0, 10)
+}
+export function weekStart(date: string) {
+  const day = new Date(`${date}T12:00:00Z`).getUTCDay()
+  return addDays(date, -((day + 6) % 7))
+}
+export function dateLabel(date: string | null | undefined) {
+  if (!date) return '—'
+  const value = new Date(date.length === 10 ? `${date}T12:00:00Z` : date)
+  return Number.isFinite(value.getTime())
+    ? value.toLocaleDateString('ru-RU', {
+        day: 'numeric',
+        month: 'short',
+        timeZone: 'Europe/Moscow',
+      })
+    : date
+}
+export function lessonTypeCode(value: string | null | undefined): string {
+  return value?.toUpperCase() ?? ''
+}
+export const lessonTypes: Readonly<Record<string, string>> = {
+  LECTURE: 'Лекция',
+  PRACTICE: 'Практика',
+  LAB: 'Лабораторная',
+}
+export const markLabels: Readonly<Record<string, string>> = {
+  PRESENT: 'Был',
+  ABSENT: 'Не был',
+  EXCUSED: 'Уважительная',
+  EMPTY: 'Нет отметки',
+  CANCELLED: 'Отменено',
+  UNSUPPORTED: 'Неизвестный статус',
+}
+export const markSymbols: Readonly<Record<string, string>> = {
+  PRESENT: '+',
+  ABSENT: 'н',
+  EXCUSED: 'у',
+  EMPTY: '—',
+  CANCELLED: '×',
+  UNSUPPORTED: '?',
+}
+export function sourceLabel(value: string | null | undefined) {
+  const labels: Readonly<Record<string, string>> = {
+    STUDENT_GEO: 'Геоотметка',
+    HEADMAN: 'Староста',
+    AUTO_SCHEDULER: 'Автоматически',
+    LATE_CHECKIN: 'Апелляция',
+    HEADMAN_EXCUSE: 'Уважительная причина',
+  }
+  return value ? (labels[value.toUpperCase()] ?? 'Другой источник') : '—'
+}
+export function reasonLabel(value: string | null | undefined) {
+  const labels: Readonly<Record<string, string>> = {
+    ILLNESS: 'Болезнь',
+    MEDICAL_EXAMINATION: 'Медосмотр',
+    COMPETITION_PARTICIPATION: 'Соревнование',
+    FAMILY_CIRCUMSTANCES: 'Семейные обстоятельства',
+    SUMMONS: 'Повестка',
+    UNIVERSITY_ORDER: 'Приказ университета',
+    EXEMPTION: 'Освобождение',
+    OTHER: 'Другое',
+  }
+  return value ? (labels[value] ?? value) : '—'
+}
+export function actionLabel(value: string) {
+  const labels: Readonly<Record<string, string>> = {
+    ATTENDANCE_SET: 'Отметка изменена',
+    ATTENDANCE_CLEARED: 'Отметка снята',
+    GEO_ATTEMPT: 'Попытка геоотметки',
+    AUTO_ABSENT: 'Автоматическая отметка «н»',
+    REQUEST_SUBMITTED: 'Заявка подана',
+    REQUEST_DECIDED: 'По заявке принято решение',
+    REQUEST_CANCELLED: 'Заявка отозвана',
+    ROOM_CHANGED: 'Аудитория изменена',
+    LESSON_CREATED: 'Пара создана',
+    LESSON_EDITED: 'Пара изменена',
+    LESSON_CANCELLED: 'Пара отменена',
+    LESSON_RESTORED: 'Пара восстановлена',
+    LESSON_TRANSFERRED: 'Пара перенесена',
+    HOMEWORK_CREATED: 'Выдано домашнее задание',
+    HOMEWORK_EDITED: 'Домашнее задание изменено',
+    HOMEWORK_ARCHIVED: 'Домашнее задание в архиве',
+  }
+  return labels[value] ?? `Другое действие (${value})`
+}
+export function saveBlob(blob: Blob, filename: string) {
+  const url = URL.createObjectURL(blob)
+  const anchor = document.createElement('a')
+  anchor.href = url
+  anchor.download = filename
+  anchor.click()
+  setTimeout(() => URL.revokeObjectURL(url), 1000)
+}

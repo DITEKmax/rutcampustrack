@@ -1,0 +1,44 @@
+{
+  "actionId": "ACT-ADMIN-SEMESTER-ACTIVATE",
+  "result": "LOCALLY_VERIFIED_ACTION_WITH_EXPLICIT_STAND_LIMIT",
+  "sourceRevision": "0421d344c9697d58efc8f039b74c5bdf594c6eb4",
+  "project": "rct-pr3-admin-isolated",
+  "nativeUiReceiptPath": "/workspace/rct-pr3-runtime/admin-native-isolated-20261024/semester_activate-2026-10-24T10-31-12-325Z/receipt.json",
+  "nativeUiReceiptSha256": "66aba2d098464d95dec96a53fc31e8490d89971f0739f1336b5e44ca002c1aad",
+  "nativeUiExit": 0,
+  "createStatus": 201,
+  "activateStatus": 200,
+  "targetSemesterId": 2,
+  "uniqueActive": true,
+  "prior1InactiveIdentityPreserved": true,
+  "ownLogout204Guest401": true,
+  "rawPostReadPath": "/workspace/rct-pr3-runtime/admin-isolated-20261024/evidence/SEMESTER-ACTIVATE-POSTREAD-2.json",
+  "rawPostReadSha256": "751f165bd517a363f51137513c7b973edf749bb2417fdf0015c64a040f759ad3",
+  "rawCompositeExit": 1,
+  "rawCompositePassed": false,
+  "rawSame7Healthy": false,
+  "semanticChecks": {
+    "SQLReadOnly": true,
+    "canonicalMarkers": true,
+    "originalSemester1PreservedExceptActive": true,
+    "newSemesterExactActiveAUTUMN2029": true,
+    "exactTwoSemestersAndUniqueActive": true,
+    "AuthAuthorityUnchanged": true,
+    "AcademicProfilesCatalogUnchanged": true,
+    "oneCanonicalActivationOutbox": true,
+    "onePreviousDeactivationOutbox": true,
+    "mapTablesStillEmpty": true,
+    "remaining2GiB": true,
+    "main13Clock5SameHealthy": true
+  },
+  "independentQualification": {
+    "reportPath": "/workspace/rct-pr3-review/admin-isolated/REVIEW-case-dependency-qualification-20261024.md",
+    "reportSha256": "62f4a52d227c0a6d264ecf5e51e3ce8b5bdbb1a7de5ce6996d839b0bcfbedfeb",
+    "criterion": "JS-ADMIN-09 one active current semester + durable mandatory publisher effects; no Attendance/Schedule participant barrier"
+  },
+  "limits": [
+    "Historical Academic OUT_OF_SERVICE from unsupported Attendance activity channel is NOT marked PASS; raw composite remains native1/false.",
+    "No async Attendance cache/Notification/provider delivery or fullDashboard data acceptance is claimed.",
+    "Main active semester2 is a different server and was not targeted. No restore/archive/delete or role/credential mutation."
+  ]
+}

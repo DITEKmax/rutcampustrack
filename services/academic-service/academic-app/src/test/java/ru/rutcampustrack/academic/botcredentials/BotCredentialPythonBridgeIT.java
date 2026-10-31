@@ -54,6 +54,7 @@ import java.util.Base64;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -65,6 +66,28 @@ import javax.net.ssl.KeyManagerFactory;
  * separately.
  */
 class BotCredentialPythonBridgeIT {
+    private static String closedDetail(JsonNode value, Set<String> allowed) {
+        return value.isTextual() && allowed.contains(value.textValue()) ? value.textValue() : "OTHER";
+    }
+
+    private static int boundedChecks(JsonNode value) {
+        if (!value.isIntegralNumber() || !value.canConvertToInt()) return -1;
+        int count = value.intValue();
+        return count >= 0 && count <= 100_000 ? count : -1;
+    }
+
+    private static String controlCause(Throwable failure) {
+        if (failure instanceof AssertionError) return "ASSERTION";
+        if (failure instanceof org.springframework.dao.DataIntegrityViolationException)
+            return "DATA_INTEGRITY";
+        if (failure instanceof org.springframework.dao.DataAccessException) return "DATA_ACCESS";
+        if (failure instanceof ru.rutcampustrack.auth.session.AuthSessionException)
+            return "AUTH_SESSION";
+        if (failure instanceof IllegalArgumentException) return "ARGUMENT";
+        if (failure instanceof IllegalStateException) return "STATE";
+        return "OTHER";
+    }
+
     private final ObjectMapper mapper = new ObjectMapper();
 
     @Configuration(proxyBeanMethods = false)
@@ -263,8 +286,14 @@ class BotCredentialPythonBridgeIT {
                                                 .set("Content-Type", "application/json");
                                         exchange.sendResponseHeaders(200, response.length);
                                         exchange.getResponseBody().write(response);
-                                    } catch (RuntimeException failure) {
-                                        exchange.sendResponseHeaders(500, -1);
+                                    } catch (Throwable failure) {
+                                        byte[] response =
+                                                mapper.writeValueAsBytes(
+                                                        Map.of("controlCause", controlCause(failure)));
+                                        exchange.getResponseHeaders()
+                                                .set("Content-Type", "application/json");
+                                        exchange.sendResponseHeaders(500, response.length);
+                                        exchange.getResponseBody().write(response);
                                     } finally {
                                         exchange.close();
                                     }
@@ -309,9 +338,63 @@ class BotCredentialPythonBridgeIT {
                             var output = child.getInputStream().readAllBytes();
                             boolean qualified;
                             BridgePhase phase = BridgePhase.OTHER;
+                            String detail;
                             try {
                                 var result = mapper.readTree(output);
                                 phase = BridgePhase.from(result.path("phase"));
+                                detail =
+                                        String.format(
+                                                "BRIDGE_DETAIL_V1 kind=PYTHON stage=%s cause=%s checks=%d",
+                                                closedDetail(result.path("own_homework_stage"),
+                                                        Set.of(
+                                                                "SETUP",
+                                                                "PROFILE",
+                                                                "HANDLERS",
+                                                                "TRANSPORT_DENIALS",
+                                                                "REVOKE_CONTROL",
+                                                                "REVOKED_SCOPE_ABSENT",
+                                                                "OLD_SCOPE_DENIED",
+                                                                "REACTIVATE_CONTROL",
+                                                                "FRESH_SCOPE",
+                                                                "ROLES_VERSION_ADVANCED",
+                                                                "HOMEWORK_RESTORED",
+                                                                "REBIND_CONTROL",
+                                                                "REBOUND_OLD_SCOPE_DENIED",
+                                                                "RESTORE_CONTROL",
+                                                                "RESTORED_SCOPE",
+                                                                "BINDING_VERSION_ADVANCED",
+                                                                "STALE_SCOPE_DENIED",
+                                                                "RESTORED_HOMEWORK",
+                                                                "CLEANUP_REACTIVATE",
+                                                                "CLEANUP_RESTORE_BINDING",
+                                                                "CLEANUP_GENERIC",
+                                                                "CLEANUP_PROTECTED",
+                                                                "CLEANUP_MENU",
+                                                                "OTHER")),
+                                                closedDetail(result.path("own_homework_cause"),
+                                                        Set.of(
+                                                                "CHECK_FAILED",
+                                                                "ASSERTION",
+                                                                "TIMEOUT",
+                                                                "HTTP_TRANSPORT",
+                                                                "GRPC_UNAVAILABLE",
+                                                                "GRPC_DEADLINE_EXCEEDED",
+                                                                "GRPC_UNAUTHENTICATED",
+                                                                "GRPC_PERMISSION_DENIED",
+                                                                "GRPC_FAILED_PRECONDITION",
+                                                                "GRPC_INVALID_ARGUMENT",
+                                                                "GRPC_NOT_FOUND",
+                                                                "GRPC_OTHER",
+                                                                "CONTROL_ASSERTION",
+                                                                "CONTROL_DATA_INTEGRITY",
+                                                                "CONTROL_DATA_ACCESS",
+                                                                "CONTROL_AUTH_SESSION",
+                                                                "CONTROL_ARGUMENT",
+                                                                "CONTROL_STATE",
+                                                                "CONTROL_OTHER",
+                                                                "CONTROL_HTTP_STATUS",
+                                                                "OTHER")),
+                                                boundedChecks(result.path("checks")));
                                 qualified =
                                         result.path("qualified").asBoolean(false)
                                                 && result.path("actual_tls").asBoolean(false)
@@ -333,9 +416,11 @@ class BotCredentialPythonBridgeIT {
                             String branchName = branch.isEmpty() ? "CREDENTIALS" : "OWN_HOMEWORK";
                             assertThat(child.exitValue())
                                     .as("NP01_BRIDGE branch=%s phase=%s", branchName, phase)
+                                    .withFailMessage("%n%s", detail)
                                     .isZero();
                             assertThat(qualified)
                                     .as("NP01_BRIDGE branch=%s phase=%s", branchName, phase)
+                                    .withFailMessage("%n%s", detail)
                                     .isTrue();
                         }
                         assertThat(

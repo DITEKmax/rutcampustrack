@@ -1,0 +1,20 @@
+{
+  "actionId": "ACT-ADMIN-MAP-DELETE",
+  "result": "NOT_RUN_APPROVAL_REVIEW_REJECTED_BEFORE_EXECUTION",
+  "questionId": "Q-ENV-007",
+  "sourceRevision": "0421d344c9697d58efc8f039b74c5bdf594c6eb4",
+  "harnessSha256": "c75be9e409843c20f87165f4ff8bb725f65cbff9fd6bfeeb1966db6f36cd5757",
+  "criticalDependenciesProofSha256": "3f5146c05a083579ec20931feb4a865b8490c70b9f59c2cac7a12708141a2126",
+  "browserStarts": 0,
+  "logins": 0,
+  "uploads": 0,
+  "deletes": 0,
+  "retries": 0,
+  "reason": "Automatic reviewer considered Q-ENV-004 isolated Java HTTP/PostgreSQL approval insufficient for this distinct whole-history PNG/SVG deletion via UI.",
+  "preparedScope": "Only new own floor25001/1, two versions/four synthetic PNG/SVG; one original password-confirmed operation. Preserve building/floor/usage/high-water/receipt.",
+  "limits": [
+    "No new case starts until owner reply. Existing expired admission may not be replayed.",
+    "No main/prod/user/grant mutation. No global health PASS.",
+    "Wrong-password and completed-replay after reupload excluded from this native case; backend Auth confirmation is stubbed in earlier HTTP IT."
+  ]
+}

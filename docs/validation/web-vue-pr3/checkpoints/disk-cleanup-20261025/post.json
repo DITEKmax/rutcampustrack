@@ -1,0 +1,183 @@
+{
+  "kind": "INDEPENDENT_READONLY_POST_CLEANUP",
+  "observedAtUtc": "2026-10-25T06:35:20.609929+00:00",
+  "reviewerRuntime": "requested gpt-6.1-sol/high; telemetry unavailable; no fallback claimed",
+  "mutationsByReviewer": "this one public post.json only; no deletion/runtime/Auth/API/DB/service operations",
+  "planSha256": "56a6c98c4cabad9fa2810d55d53e5d99befa4d268eb31c7d3db75c79385612d5",
+  "plannedCount": 109,
+  "all109CandidatesAbsent": true,
+  "protectedJars": {
+    "count": 25,
+    "allShaAndSizeMatch": true
+  },
+  "canonicalFourSurplusRecoveries": [
+    {
+      "path": "/workspace/rct-pr3-runtime/artifacts/593f47f69a6ad4fcb7399f50ad31775a93a1a0ceaa7fd4ae58c12cd25d7491e3/api-gateway-0.1.0.jar",
+      "sha256": "593f47f69a6ad4fcb7399f50ad31775a93a1a0ceaa7fd4ae58c12cd25d7491e3",
+      "retainedAndShaMatches": true
+    },
+    {
+      "path": "/workspace/rct-pr3-runtime/artifacts/a433178685a4a9cf421ab949fc699b5efaf03fe91c50d3917c1655bfca24cbe2/academic-app-0.1.0.jar",
+      "sha256": "a433178685a4a9cf421ab949fc699b5efaf03fe91c50d3917c1655bfca24cbe2",
+      "retainedAndShaMatches": true
+    },
+    {
+      "path": "/workspace/rct-pr3-runtime/artifacts/32bda499a73a5368d64126fbcba49e378d5e81ea349a4b20f7f671c1357c4035/auth-app-0.1.0.jar",
+      "sha256": "32bda499a73a5368d64126fbcba49e378d5e81ea349a4b20f7f671c1357c4035",
+      "retainedAndShaMatches": true
+    },
+    {
+      "path": "/workspace/rct-pr3-runtime/artifacts/52c4873c372eaed34c20294a77334a81936474021688f24558386e7282c0ace3/document-renderer-app-0.1.0.jar",
+      "sha256": "52c4873c372eaed34c20294a77334a81936474021688f24558386e7282c0ace3",
+      "retainedAndShaMatches": true
+    }
+  ],
+  "originalHandoff": {
+    "path": "/workspace/rct-pr3-setup/inputs/handoff-20261023-validated/web-vue-handoff-20261023.zip",
+    "bytes": 87568617,
+    "sha256": "0f851394e9c8031e252cbff57fbb6bd277cdcce5e59a6cff7e3b555b6654f3cc",
+    "entries": 422,
+    "crcPass": true
+  },
+  "sourceRecovery": {
+    "path": "/workspace/rct-pr3-recovery/pr3-source-recovery-20261025-final.zip",
+    "bytes": 8784846,
+    "expectedBytes": 8784846,
+    "sha256": "00fb9f0158468e18acd134b7542c03906fd1e5daf10354f266a03e3a0fa58bd0",
+    "expectedSha256": "00fb9f0158468e18acd134b7542c03906fd1e5daf10354f266a03e3a0fa58bd0",
+    "matchesExpected": true
+  },
+  "sourceWorktrees": {
+    "baseline": "immutable final source recovery ZIP worktree metadata and raw status.porcelain.z",
+    "count": 12,
+    "allHeadsBranchesStatusesEqual": true,
+    "rows": [
+      {
+        "name": "root",
+        "head": "f0c0015dfa164bc0416e4aa0be469951fc7353ab",
+        "headEqualsRecovery": true,
+        "branchEqualsRecovery": true,
+        "rawStatusEqualsRecovery": true,
+        "statusSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "admin-authority-reconcile",
+        "head": "2d3398326dd3ae8892a7a8d8921f32e88eb57f13",
+        "headEqualsRecovery": true,
+        "branchEqualsRecovery": true,
+        "rawStatusEqualsRecovery": true,
+        "statusSha256": "807e18df382660edb3fb7be763af06e2037fcb76e4577407723b9d90b1bc74f9"
+      },
+      {
+        "name": "admin-web",
+        "head": "bb25f6b7ac3787912fadb8b3f52b1a076b346a69",
+        "headEqualsRecovery": true,
+        "branchEqualsRecovery": true,
+        "rawStatusEqualsRecovery": true,
+        "statusSha256": "bb55dcda9db9a2d46334265551be7d3cda7f2929e2e41e7249d2cdc1a69abc8f"
+      },
+      {
+        "name": "device-api",
+        "head": "1fe1588dd1ed635df6a8735d5115d436151e8cec",
+        "headEqualsRecovery": true,
+        "branchEqualsRecovery": true,
+        "rawStatusEqualsRecovery": true,
+        "statusSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "group-final-delete",
+        "head": "64f0ea2925287ec45bcaa1082118eb8aaa904943",
+        "headEqualsRecovery": true,
+        "branchEqualsRecovery": true,
+        "rawStatusEqualsRecovery": true,
+        "statusSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "headman-web",
+        "head": "9059d1de7cde33035153182ea1366e8dc097fad0",
+        "headEqualsRecovery": true,
+        "branchEqualsRecovery": true,
+        "rawStatusEqualsRecovery": true,
+        "statusSha256": "bb55dcda9db9a2d46334265551be7d3cda7f2929e2e41e7249d2cdc1a69abc8f"
+      },
+      {
+        "name": "runtime-stand",
+        "head": "5838a8c25357740ad92a1be5977f65e9568794a1",
+        "headEqualsRecovery": true,
+        "branchEqualsRecovery": true,
+        "rawStatusEqualsRecovery": true,
+        "statusSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "student-web",
+        "head": "a1a6bd944cfcf6e47f6974bc67f2f00315cef435",
+        "headEqualsRecovery": true,
+        "branchEqualsRecovery": true,
+        "rawStatusEqualsRecovery": true,
+        "statusSha256": "807e18df382660edb3fb7be763af06e2037fcb76e4577407723b9d90b1bc74f9"
+      },
+      {
+        "name": "teacher-web",
+        "head": "fb45894662db261cc1e1935bd11e77be136c5beb",
+        "headEqualsRecovery": true,
+        "branchEqualsRecovery": true,
+        "rawStatusEqualsRecovery": true,
+        "statusSha256": "7d6f84f3ef9e93935f96bd0eab5bbab4a2ffc74577fae676d64eb5a11e4e0fcf"
+      },
+      {
+        "name": "theme-foundation",
+        "head": "c6b9e43f44c3393cec0f80e6d1b782734fc1e849",
+        "headEqualsRecovery": true,
+        "branchEqualsRecovery": true,
+        "rawStatusEqualsRecovery": true,
+        "statusSha256": "bb55dcda9db9a2d46334265551be7d3cda7f2929e2e41e7249d2cdc1a69abc8f"
+      },
+      {
+        "name": "web-foundation",
+        "head": "9e547115125ddf8cdf4f4431331923e652d75843",
+        "headEqualsRecovery": true,
+        "branchEqualsRecovery": true,
+        "rawStatusEqualsRecovery": true,
+        "statusSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "web-map",
+        "head": "85d801b9077632f9f805fca37fbf7b79ba33d50d",
+        "headEqualsRecovery": true,
+        "branchEqualsRecovery": true,
+        "rawStatusEqualsRecovery": true,
+        "statusSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    ]
+  },
+  "docker": {
+    "containerCount": 30,
+    "running": 20,
+    "stopped": 10,
+    "all30ObservedIdPrefixesNamesImagesStatesMatchInitialToolInventory": true,
+    "initialBaseline": "earlier read-only system df -v and selected inspect tool observations in this reviewer thread",
+    "currentMountCount": 134,
+    "allInitial134MountsMachineEqualityClaimed": false,
+    "mountLimitation": "No immutable pre-cleanup full mount array exists; current134 count, earlier candidateOverlap0, and selected active artifact/exploded paths are verified. No Docker mutations were performed by cleanup owner or reviewer.",
+    "activeExplodedAcademicMountPreserved": true,
+    "adminAuthGatewayMountsPreserved": true,
+    "canonicalMainArtifactsStillMounted": true
+  },
+  "retainedCaches": {
+    "/workspace/.npm/_cacache": true,
+    "/workspace/.gradle/caches/modules-2": true,
+    "/workspace/.gradle/wrapper/dists": true,
+    "/workspace/rutcampustrack/tests/e2e/node_modules": true
+  },
+  "capacity": {
+    "rootRecordedBeforeBytes": 5244747776,
+    "rootRecordedAfterBatch3Bytes": 6531416064,
+    "rootRecordedNetIncreaseBytes": 1286668288,
+    "minimumBytes": 7516192768,
+    "rootRecordedDeficitBytes": 984776704,
+    "freshObservedAvailableBytes": 6530727936,
+    "minimumMetAtRecordedAfter": false,
+    "status": "QENV010_STOP_FURTHER_CLEANUP_STOP_NO_RUNTIME_GO"
+  },
+  "checksPass": true
+}

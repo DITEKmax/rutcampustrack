@@ -713,9 +713,49 @@ class GatewayBffTracePropagationIT {
         }
     }
 
-    /**
-     * Optional private CI collector I/O; the ordinary IT also verifies actual JSON log encoding.
-     */
+    /** The outer pipeline validates the checkout and private local audit before collector I/O. */
+    private static String collectorSource(Map<String, String> env) {
+        boolean local =
+                List.of(
+                                        "RCT_LOCAL_RELEASE_REVISION",
+                                        "RCT_LOCAL_RELEASE_NONCE",
+                                        "RCT_LOCAL_RELEASE_AUDIT")
+                                .stream()
+                                .anyMatch(env::containsKey)
+                        || "isolated-local".equals(env.get("RCT_MONITORING_RUNTIME"));
+        String source;
+        if (local) {
+            assertThat(
+                            List.of(
+                                            "GITHUB_ACTIONS",
+                                            "GITHUB_SHA",
+                                            "GITHUB_RUN_ID",
+                                            "GITHUB_RUN_ATTEMPT",
+                                            "GITHUB_EVENT_NAME",
+                                            "RCT_CI_PR_HEAD_SHA")
+                                    .stream()
+                                    .noneMatch(env::containsKey))
+                    .as("LOCAL_CONTROL must not claim a GitHub identity")
+                    .isTrue();
+            assertThat(env.get("RCT_MONITORING_RUNTIME")).isEqualTo("isolated-local");
+            assertThat(env.get("RCT_LOCAL_RELEASE_NONCE")).matches("[0-9a-f]{24}");
+            assertThat(env.get("RCT_LOCAL_RELEASE_AUDIT")).isNotBlank();
+            source = env.get("RCT_LOCAL_RELEASE_REVISION");
+        } else {
+            assertThat(env.get("GITHUB_ACTIONS")).isEqualTo("true");
+            assertThat(env.get("GITHUB_RUN_ID")).matches("[0-9]+");
+            assertThat(env.get("GITHUB_RUN_ATTEMPT")).matches("[0-9]+");
+            assertThat(env.get("RCT_MONITORING_RUNTIME")).isEqualTo("isolated-ci");
+            source = env.get("GITHUB_SHA");
+        }
+        assertThat(source).as("exact executable collector source revision").matches("[0-9a-f]{40}");
+        assertThat(env.get("SERVICE_VERSION"))
+                .as("collector resource and receipt must identify the same checked source")
+                .isEqualTo(source);
+        return source;
+    }
+
+    /** Optional private collector I/O; the ordinary IT also verifies actual JSON log encoding. */
     private record CollectorSettings(URI endpoint, Path logDir, Path receipt, String sourceSha) {
         static CollectorSettings fromEnvironment() throws IOException {
             String endpoint = System.getenv("RCT_TEST_OTLP_ENDPOINT");
@@ -746,10 +786,7 @@ class GatewayBffTracePropagationIT {
             assertThat(Files.exists(output))
                     .as("private receipt must not overwrite existing data")
                     .isFalse();
-            String source = System.getenv("GITHUB_SHA");
-            assertThat(source != null && source.matches("[0-9a-f]{40}"))
-                    .as("collector proof requires exact CI executable source SHA")
-                    .isTrue();
+            String source = collectorSource(System.getenv());
             Files.createDirectories(directory);
             return new CollectorSettings(target, directory, output, source);
         }

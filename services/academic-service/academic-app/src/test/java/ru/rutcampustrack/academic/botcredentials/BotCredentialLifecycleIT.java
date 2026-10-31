@@ -669,6 +669,14 @@ class BotCredentialLifecycleIT {
                         + " auth_outbox,password_reset_tokens,qr_login_challenges,qr_login_issuers"
                         + " TO "
                             + role);
+        } else if (role.equals("rct_academic_runtime")) {
+            // V14 skips grants when the role is absent; this fixture creates it after migration.
+            owner.execute(
+                    "GRANT EXECUTE ON FUNCTION public.group_deletion_rows(bigint),"
+                            + " public.group_deletion_manifest(bigint),"
+                            + " public.group_deletion_row_authorized(text,jsonb),"
+                            + " public.group_deletion_manifest_closed(bigint)"
+                            + " TO rct_academic_runtime");
         }
     }
 

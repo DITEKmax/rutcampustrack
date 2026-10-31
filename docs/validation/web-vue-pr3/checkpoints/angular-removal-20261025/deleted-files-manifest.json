@@ -1,0 +1,2172 @@
+{
+  "base": "7ef451a6cfd7f0e0134816eb4ea90ca290829668",
+  "trackedFiles": 433,
+  "untrackedFiles": 0,
+  "entries": [
+    {
+      "path": "frontends/web-panel/.editorconfig",
+      "bytes": 314,
+      "sha256": "d62fd282eadb5b3ff888a23ba5968e490cc0a77dded2fbc4f704b7e6e247f4db"
+    },
+    {
+      "path": "frontends/web-panel/Dockerfile",
+      "bytes": 383,
+      "sha256": "098ebc9979de7069711fd6c7789a232dbce2057b7f6acf26408b5db194cb23ba"
+    },
+    {
+      "path": "frontends/web-panel/angular.json",
+      "bytes": 2838,
+      "sha256": "ba995334a04acdf3165acd15277442bef1fc40cf107056919b42083d2ad62e24"
+    },
+    {
+      "path": "frontends/web-panel/dist/3rdpartylicenses.txt",
+      "bytes": 67066,
+      "sha256": "b166cb9439d2aca371e1cbd9efd83be9a8020e46fae9f019284d1dce35a02440"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/chunk-2JMSH3X2.js",
+      "bytes": 9594,
+      "sha256": "69c62361d17d650db5e0031d0b70b170891dae531e8a8792071a9f065c10e223"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/chunk-2R4V3TV2.js",
+      "bytes": 7427,
+      "sha256": "36d1813679cd5310f37245a1ab304a0d42100c399372142dbb726a565e49b214"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/chunk-3RW67N3A.js",
+      "bytes": 11621,
+      "sha256": "7fdc2bab4c7194db091e35a5483c89c44f0e2d0a4466f563edb4837337ae2192"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/chunk-4CYPCDQR.js",
+      "bytes": 1271,
+      "sha256": "67b743acb000597f1c9e0b7a70febb7f0efe66fe728b0662ca24b0022b67e881"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/chunk-4DAJJIBN.js",
+      "bytes": 22601,
+      "sha256": "73fc60f94e93bc6bd813d0056cce56880ef3804cad1a21264b0d14d905f799b2"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/chunk-5JAJI33L.js",
+      "bytes": 180084,
+      "sha256": "bff95aad9265d4c7b4b7d0b6aedb824e8e3c1d529c9a11cdd6f3bad9c582e755"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/chunk-5W6F5ZOF.js",
+      "bytes": 1898,
+      "sha256": "c1bac89ec9e5614852f62bb83c4ced9371f012286b18fde683e5b283b7e085cf"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/chunk-5YLVGZTE.js",
+      "bytes": 5844,
+      "sha256": "2dc283b34a709e1bbb1b9b7bfe748691e3ce42ac0acba8048b216e514be0188c"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/chunk-5ZRYCB6U.js",
+      "bytes": 64277,
+      "sha256": "71e346802e35c5bffdf00296d5c12db5603f0f853b8b3d76812a76b0587b4868"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/chunk-6C2Z7WKV.js",
+      "bytes": 4570,
+      "sha256": "3af801a2cf5f399e0995af3f6138261a1ac2e0c61d81070b7740f8714b638f78"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/chunk-6PNX36BR.js",
+      "bytes": 12652,
+      "sha256": "5a595075faa905e8fd45ce51d5babb47d652906633d501450ad1fd1072530559"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/chunk-6SEXS7RP.js",
+      "bytes": 13132,
+      "sha256": "ad61e080ccb3b5ffa613e4b71903a568502832776edd626d9496c88d8f9187a4"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/chunk-7CBIBP7M.js",
+      "bytes": 11012,
+      "sha256": "a7917f967ae7f07a5e6f771b18be204c238e255511e138fe863610adf24337c3"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/chunk-7EWFGLVH.js",
+      "bytes": 840,
+      "sha256": "5b44321fc8a8e4c1c5cd34c57380d4d579b7fe704122e8ce17fb62c53ea0432c"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/chunk-7O7GTZAJ.js",
+      "bytes": 556,
+      "sha256": "ca701cede14f50b7357285fd7e896f3d9b6814190295b3ac916e13a532d7b354"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/chunk-ABSEBU7O.js",
+      "bytes": 1304,
+      "sha256": "996c41dafe01d8e783118e1f39cbb984af22cd4c4c19fda4e6d9406db1326dcd"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/chunk-ADG7JADO.js",
+      "bytes": 15549,
+      "sha256": "1cccd36be1dd21499cf0a876e2f9cd8b03d95b7aa73bd4410168b923c2ece45e"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/chunk-AK6GI2A3.js",
+      "bytes": 15050,
+      "sha256": "aa9ee3b1466bb3a816031a336eec53c4b21d18d1b11705fd74c9b798ae151d1e"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/chunk-ASXPTFC3.js",
+      "bytes": 14648,
+      "sha256": "d33f21dbd355d5112d00eb2071213a68cdcf8e60f115d40aae69ebdb4ddf4d2e"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/chunk-AXZH3YW2.js",
+      "bytes": 10255,
+      "sha256": "dd56d895e0ab2f9b7bae4b616ca612f57c145b328017a63705885659c24e6b1d"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/chunk-BN4FJCIX.js",
+      "bytes": 68391,
+      "sha256": "48a1b80a255b4daa619626724e2e0c4e2f7a8c05fae14edb45f00f15901ea21e"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/chunk-D473XD5J.js",
+      "bytes": 40684,
+      "sha256": "41245b177a02ac652f526633b08bffa69c4b41c2c7750f430ca922a49a659bf0"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/chunk-D637QQ2X.js",
+      "bytes": 4364,
+      "sha256": "bf4aa95b704de2292adb6d6248ff13fe536169b6cfcdadb02b2ff9478e0a365a"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/chunk-DD5OP3MH.js",
+      "bytes": 77994,
+      "sha256": "4965b329ecedc7d09167fede37d5264bec5347b5449b11b37a1e3aed78e7f589"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/chunk-DEX2PALU.js",
+      "bytes": 14036,
+      "sha256": "0b24e6116844305ac5cbe7e15d6ccc3beebf701e68f807e47422819893bb382a"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/chunk-EQDQRRRY.js",
+      "bytes": 1279,
+      "sha256": "ce82103a3c08f314f838ecb8b9d816f26047cc92b8fcc222d94d72145ca20e65"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/chunk-FBP7VOTN.js",
+      "bytes": 25289,
+      "sha256": "08b62614bd7ad434c1aacb1adb12d03a6d297334b2cdd0b051d634b9787320be"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/chunk-FLYPJVNC.js",
+      "bytes": 48703,
+      "sha256": "2b3a8fc5f809345bf1f8a12f892453539d1c6429ab2987c475d07818ee4d0017"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/chunk-GGQ7LRWG.js",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/chunk-GVVU6SIC.js",
+      "bytes": 22686,
+      "sha256": "bf8c1b5dab936fa44eb5943c51cb8a04d398e0fa2ff977ebc07cc07ad4d34036"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/chunk-HAK7OYJ7.js",
+      "bytes": 17952,
+      "sha256": "1a08b7a832d4dd587c0e580b1a45a138ccc58982183b569a77eb2504d906df91"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/chunk-HJTC4BQ3.js",
+      "bytes": 11201,
+      "sha256": "27647b24cb2631aefe33c276abc1b339b8434b69164ef987134858dabfc2408d"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/chunk-HO7J4OVD.js",
+      "bytes": 51547,
+      "sha256": "6d7571235c6c6db0afb585a4f51e8695a501d1a42dd621632aa20a4e8f3df022"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/chunk-HOE5CGZP.js",
+      "bytes": 1230,
+      "sha256": "984dc3f7b6f4b1dafee7baf24554acb28c8547cfc0eae8aec8861adb980bd03c"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/chunk-IMJYDWSH.js",
+      "bytes": 74651,
+      "sha256": "52ccc4c42120791be6d84661d381ea572b2bb0b8da83de3243a39002be6b64a1"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/chunk-IP2LE3HY.js",
+      "bytes": 3725,
+      "sha256": "167e869195c505a6170998f45c9f16cd31f290b2aa419da686a3d020939b5d0e"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/chunk-ITCMZYCF.js",
+      "bytes": 2808,
+      "sha256": "12e99bce2f534d4010c25869bcc7a0816d0ace9eb3b5d89843840b3b094cd974"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/chunk-IXWUUF5G.js",
+      "bytes": 26259,
+      "sha256": "906d7dda1f3d55aebbd04439768089ed09e2e0517eff17e923776895097ec1a0"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/chunk-JBCGJI6W.js",
+      "bytes": 22457,
+      "sha256": "79eb45024e1c98ac40c1e9b9cefa573154bab11fe5a1112ca573442390a05531"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/chunk-JJKWJHIU.js",
+      "bytes": 2674,
+      "sha256": "1ef50ad7bcc3a66731b6776f94db5628b7a0b5cab94b3b8ca1dcb8eae3c28e8f"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/chunk-JQHNKDIT.js",
+      "bytes": 10530,
+      "sha256": "e724010b8efafbfbbe1fbba291ea88bf1676b961bf3d94416500a07576199153"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/chunk-JVCSG5NW.js",
+      "bytes": 16103,
+      "sha256": "df010e5b1a6b0bde58835ca035e30a7c1e576f49a49c0cd4cdcab12a0f8f524e"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/chunk-K6QYXVRL.js",
+      "bytes": 8456,
+      "sha256": "d2f289c7cb29854a95fa0d12c3300446fd2434a8b5a7b655f327354611369245"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/chunk-KGLTBGTL.js",
+      "bytes": 840,
+      "sha256": "431d030190f1c14465de84139d6c7915eb6ece622ed3c3bc2ea8911ad3c9a1e5"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/chunk-KM2GB5WP.js",
+      "bytes": 17540,
+      "sha256": "e454aaa97f75c844e6c1d73e7ef5e69304dc6b31f58ba8ce2550e9742e30d5be"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/chunk-L2BV4JLN.js",
+      "bytes": 88415,
+      "sha256": "daab5556b59e90f3fabce74f05a777276763a201c3381b8c84fd5048fceafbb9"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/chunk-LAG5UWOU.js",
+      "bytes": 28953,
+      "sha256": "fb859c1d20fd984257a708ec899ab7702d6a36f07c60c4a98c9150314951345a"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/chunk-LPWQ4H44.js",
+      "bytes": 18717,
+      "sha256": "2aeeca7e82a2b443d4a32756a3ddaf6976843a31b2a03e637e44699701b6bd9c"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/chunk-MTA5HPIR.js",
+      "bytes": 9090,
+      "sha256": "5650433305c3eb0c1c211bd9a16f33d33b661dc9de377c764c215064b054e9d3"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/chunk-MXJVUOXR.js",
+      "bytes": 16406,
+      "sha256": "69f5ed1f2c56753378bcbfbf884350b33ab027f7aa22e4f8c0fe90f422f3cec4"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/chunk-N5F72P4T.js",
+      "bytes": 7928,
+      "sha256": "726cc1bc87ea4ef5245c17694bf1f17a936385ed1960c6946da9b0876ee842b5"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/chunk-NTYKDERJ.js",
+      "bytes": 17642,
+      "sha256": "d4b3c83ae5e24328bcbc8a6ded22e696105967d34d7264d0adccb63bf0b4d426"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/chunk-NW4AYMB2.js",
+      "bytes": 935,
+      "sha256": "41e71f576f2f3fea5e0c48423f9b255c05e3add8fd58db5ddad45927f79d9440"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/chunk-OGPJ74AT.js",
+      "bytes": 37425,
+      "sha256": "61de94379028c9150711fac24067c4d4b9be6e1c61dcecc568f47ae8fc26336e"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/chunk-OJ7KCVNF.js",
+      "bytes": 16536,
+      "sha256": "796bfdfc3e860614f90f2a8015c55fea75aaa3f3b21f54ef72061f9483958eda"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/chunk-OMBFTJI7.js",
+      "bytes": 2209,
+      "sha256": "48827a383410b4cb62ecf3351209fc7f192b5b33b8d05ed14fee0f917feb6a25"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/chunk-OPCRLDCP.js",
+      "bytes": 8802,
+      "sha256": "7920367861b8f1a5502b5d19a46658005ebecde43967e9dd228c710c5c4fdc47"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/chunk-OPFGSR7N.js",
+      "bytes": 28488,
+      "sha256": "6172e67f747193b2479a4ab8d3383a54de656120b122c6fcd2aea09e4d02b892"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/chunk-Q5NBFBPR.js",
+      "bytes": 29053,
+      "sha256": "064f023853b8ff026a6ab32ecd5d67e9f5387a514f38aedbcdee784f887d4ec3"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/chunk-Q6VYOTIV.js",
+      "bytes": 63596,
+      "sha256": "e343b5ea7f6fcd94f2b10ba82c5f52b31bea8dd75771be8cf5c4004c5ab9a286"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/chunk-QCZSYMQC.js",
+      "bytes": 2524,
+      "sha256": "5a537fff39d29cd85cebd0e82b9cb3647c1bfa30f4b43fcd07942d281cdde81a"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/chunk-QIYWXOVG.js",
+      "bytes": 10052,
+      "sha256": "c8f000bb9ba72b8eae13297abc583ee59e2922a16dca5529a3827f733a77aa60"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/chunk-QLHLHLXI.js",
+      "bytes": 16142,
+      "sha256": "bbc172150ddd866005d86c1dc6f4975acf3e7dd0ac66834438455c1343bde382"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/chunk-QO24ODNY.js",
+      "bytes": 43513,
+      "sha256": "c06bf33d805d70b05c3f55244ac5729874226fbea5f4c3eedb5e6dea9838e83d"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/chunk-ROWYGNBT.js",
+      "bytes": 16934,
+      "sha256": "6fb3059265162ca7c7947a0ca5079d948f20a794b6d9e202f6e85e34e2ab7493"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/chunk-SDHE3IGQ.js",
+      "bytes": 966,
+      "sha256": "3cee92624fa1b62c9e8e14ec5182d650e589efafce252cada6ca5dee071f3a32"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/chunk-SGYCFQGT.js",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/chunk-SHMCWMJ5.js",
+      "bytes": 64093,
+      "sha256": "036a2b173b42df8694cd7c9ae4f53a5df1598acf9e85751552f9981c7db1677a"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/chunk-SSVTX3CO.js",
+      "bytes": 28868,
+      "sha256": "2db28149f2b592d0bf1c8f738027bbe66acece87157899cf979ab83e63b424b8"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/chunk-TUHV2K7F.js",
+      "bytes": 18539,
+      "sha256": "4d1c27aee54291ca01e323854e5555e2c6380b9bfa4d72b57752368212e163e8"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/chunk-VN3CQEPZ.js",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/chunk-VT44SU37.js",
+      "bytes": 16738,
+      "sha256": "bf16d8d9c163aa60c6dad46726796956293d2d988db29b4fcc3b4f544b91ff9f"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/chunk-W2JZXLNS.js",
+      "bytes": 1305,
+      "sha256": "1a020d00013eb2813156a019b69b23ed58b381df9d1531b1ec85c98f10ab75b6"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/chunk-W4BNGQYG.js",
+      "bytes": 3980,
+      "sha256": "0a6baddc23406a9a450d9af03969d18aad9354004fc6faaccdfe07acd52cdd2d"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/chunk-W4UVPXJ6.js",
+      "bytes": 19066,
+      "sha256": "319a04f374ba0af406fb3cc02d00fe48be3cc95ca1a071defc9d5db6c8c16146"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/chunk-WBGCF5VK.js",
+      "bytes": 13129,
+      "sha256": "4810e67a1e6166c7ad39443ded8709f728613e07b188720e6119b6c24623f7dd"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/chunk-WMD4QLDP.js",
+      "bytes": 305,
+      "sha256": "43615c8d7c49e613759fffe87004c0a018f66e957f9ff9dda91d2aee7e0356c7"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/chunk-WP7NX34V.js",
+      "bytes": 18843,
+      "sha256": "a52b6d5e88f26ad6c1df3864f12356323fa31a2fae89731cc887fb258a9a9e9c"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/chunk-WSD33GHR.js",
+      "bytes": 185,
+      "sha256": "ea5fb679e9ed855ad1df08e6218832111757c47bb9920a6eac965eb2b107ae93"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/chunk-X3HN3VDP.js",
+      "bytes": 244,
+      "sha256": "0d38cae25020bbb372c6ab11da6a5ced2e344f32817d443f1c7e556ec902bcb1"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/chunk-XBYWMMNV.js",
+      "bytes": 9578,
+      "sha256": "fd7720408b4b35115446579e1b8e7293f380f12b62b902c350444b6e28d0c9da"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/chunk-XEOLPU5R.js",
+      "bytes": 166517,
+      "sha256": "aa6bd0072a0696111b7213983c4977fd08682e91ccadab206d2eb5cf501030d2"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/chunk-YBKGW4S2.js",
+      "bytes": 11155,
+      "sha256": "49d4778b8c40b922494a339844219bda37d1de3eaf32b70c82a87047b73babc5"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/chunk-YO2SV2T7.js",
+      "bytes": 1419,
+      "sha256": "11b98759d0155e5a67fc2c442f2e8d18107df93ee16765f508b0b586432abd88"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/chunk-ZDWKDPSB.js",
+      "bytes": 77072,
+      "sha256": "bef6b12a2545f78c6252c270097d1dd479889a24b080816dd02935dd86fdbf0d"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/chunk-ZS2B5R4G.js",
+      "bytes": 84164,
+      "sha256": "1bfdfa4d3bd05da94ff5acf27f9f2323207b80a7bb33a948e0c9e3a747ff7f9e"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/favicon.svg",
+      "bytes": 664,
+      "sha256": "85223ceb39a2ebb25dcc77ddb5287ea27b982c2ce5d2cf444a6e3507e573b9e8"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/index.html",
+      "bytes": 21157,
+      "sha256": "13d43a13c9214ad0ba6ef5e0a3393fdaf8f37713c97f536d85f9f4ac29220bd4"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/logo.svg",
+      "bytes": 664,
+      "sha256": "85223ceb39a2ebb25dcc77ddb5287ea27b982c2ce5d2cf444a6e3507e573b9e8"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/main-F4UHJ2FF.js",
+      "bytes": 14491,
+      "sha256": "6fbf647f2d2f685ac4577db8e5847de534b36707f012385be4bf4c630edc0f95"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/media/Phosphor-2TTV6TYS.ttf",
+      "bytes": 488636,
+      "sha256": "06b91e022b7ee899a63efced879392a74f0bacbda54e4467e9f663220d173a10"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/media/Phosphor-FILTTWNO.woff2",
+      "bytes": 147380,
+      "sha256": "c2ea45ea05ff5c7df1936770c104725f2a68f43fd343f35f3da23a30b27de32a"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/media/Phosphor-KLBJTFWE.woff",
+      "bytes": 488716,
+      "sha256": "396c5eae7f2dfb4d1f5432edd87109eda2f92a451b2167e43a26165b82770f75"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/media/Phosphor-Y4JO5C3F.svg",
+      "bytes": 2996371,
+      "sha256": "e874e712d3f1b7774b4cba7dafda1eecdb1f075cd5e2ec1109c0553421ecaed3"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/media/dm-sans-latin-ext-wght-normal-7P2MDJRX.woff2",
+      "bytes": 18228,
+      "sha256": "a5d38fe99f930275684999b462c7123faa063d9e44e73b4b241723d884aa0f49"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/media/dm-sans-latin-wght-normal-X7UMQEPN.woff2",
+      "bytes": 36932,
+      "sha256": "9fea608a947e67020c33cad9a6fe3d60c54119dfb8cff87768a8117a15ed7543"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/media/inter-cyrillic-ext-wght-normal-IYF56FF6.woff2",
+      "bytes": 25960,
+      "sha256": "ca157063339ac4ad418f214f3abfed119b0798ab4d377386ce5c9e5a7a435ebd"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/media/inter-cyrillic-wght-normal-JEOLYBOO.woff2",
+      "bytes": 18748,
+      "sha256": "71d5ee93cc1e9f1d520a3a8b66456de18c7879d8df09d57fcd2eaff75fef0075"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/media/inter-greek-ext-wght-normal-EOVOK2B5.woff2",
+      "bytes": 11232,
+      "sha256": "6e9e020a25f9b56d418f2c085b1d3c09725a4da23fe693a5b463064606732190"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/media/inter-greek-wght-normal-IRE366VL.woff2",
+      "bytes": 18996,
+      "sha256": "1be3448e292fbf05ffe176fe1e43f135013d50b1e7d324ad1a558f623d3bb6f6"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/media/inter-latin-ext-wght-normal-HA22NDSG.woff2",
+      "bytes": 85068,
+      "sha256": "34b9c504cab7a73e37b746343a449132e56cf7b5481af2cb81dc74dcff25c956"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/media/inter-latin-wght-normal-NRMW37G5.woff2",
+      "bytes": 48256,
+      "sha256": "3100e775e8616cd2611beecfa23a4263d7037586789b43f035236a2e6fbd4c62"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/media/inter-vietnamese-wght-normal-CE5GGD3W.woff2",
+      "bytes": 10252,
+      "sha256": "5c66f9e07e90c6d4ac4922cc68d60de26c17b1858e677fb5e603fce3952b3ff2"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/media/jetbrains-mono-cyrillic-400-normal-C5JECUCT.woff2",
+      "bytes": 5328,
+      "sha256": "522f5827308102a9c0ea7860b5a11306043610ecf03d150ba32056a06e8c56e2"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/media/jetbrains-mono-cyrillic-400-normal-FGCZYWMY.woff",
+      "bytes": 6976,
+      "sha256": "67c9cc7864b4940dbfb246c7b452c1de8e96f140f334d363fcdd87dbfeadab72"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/media/jetbrains-mono-cyrillic-500-normal-ABSXDA7Y.woff",
+      "bytes": 7024,
+      "sha256": "d408a664dc721f614e6346e09f3f32b2837005db28f5e4797ce8dd19da07e4ea"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/media/jetbrains-mono-cyrillic-500-normal-VZRFRX2D.woff2",
+      "bytes": 5356,
+      "sha256": "26c9ed511def1f0fd3d1b5fe6d5c0c594d9ef8dd2435d2ff240ea265a416b6e4"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/media/jetbrains-mono-cyrillic-ext-400-normal-C7IFWGF6.woff2",
+      "bytes": 1160,
+      "sha256": "5f4292eb92ca542e9f60048ca72832d0183b1a06e5d7bcfeed16f9be9ebb4018"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/media/jetbrains-mono-cyrillic-ext-400-normal-PWXUA557.woff",
+      "bytes": 1748,
+      "sha256": "9e3cd33bee514ed877dcbd13d4c0e2e676ff39241883e4ca41cdeeaaab3fc074"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/media/jetbrains-mono-cyrillic-ext-500-normal-3HPBCRGM.woff2",
+      "bytes": 1172,
+      "sha256": "d6c74dfddab488c40652ff116952624a88f8fa1de196732fd58b8e042a8967d2"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/media/jetbrains-mono-cyrillic-ext-500-normal-ALWIYOP7.woff",
+      "bytes": 1744,
+      "sha256": "df0c4d0a31a56e66619213393846310de8df59952e02f8d594ca81ecb782f89d"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/media/jetbrains-mono-greek-400-normal-JJNQZMPZ.woff",
+      "bytes": 5664,
+      "sha256": "09f89e8369d7745ac5fe92e62a9ea13f66f40fd95b5495fac014c54b3a1ca6cc"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/media/jetbrains-mono-greek-400-normal-O7JTTR3P.woff2",
+      "bytes": 4228,
+      "sha256": "365b7a8eaff022b13ed0561fde3890a04a30507d773ecd5adb3aca8e766a285c"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/media/jetbrains-mono-greek-500-normal-RHDMXKAE.woff2",
+      "bytes": 4284,
+      "sha256": "5b6dee4610cdaab7c4218c1692aa9a536414010eef4e5b3cfb25f45007811bcc"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/media/jetbrains-mono-greek-500-normal-S2QQDTY6.woff",
+      "bytes": 5720,
+      "sha256": "89656e472646bf4d52c23d499fa2e467ad3ee73447fda24eefb96e176b1312d6"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/media/jetbrains-mono-latin-400-normal-3OOWLGQ2.woff2",
+      "bytes": 21168,
+      "sha256": "14425ba9c695763c1547f48a206b7aa60350a33ae23de09f0407877f3fcd89eb"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/media/jetbrains-mono-latin-400-normal-WDD34GPP.woff",
+      "bytes": 27496,
+      "sha256": "658b9ee07b0249cf910a8d6f3d812d46c962bae81d7379a0355b1db35c61586f"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/media/jetbrains-mono-latin-500-normal-ETEQEOVZ.woff",
+      "bytes": 28208,
+      "sha256": "a270dd0bf13d91053b8999b7c120ffadb59680cfd63fe1a6b388a13bf2809fe1"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/media/jetbrains-mono-latin-500-normal-V4XIP5OW.woff2",
+      "bytes": 21832,
+      "sha256": "cb182feeed4d798ff6961d3c79f7026279448fca0676438aaecb21f3fc39553a"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/media/jetbrains-mono-latin-ext-400-normal-55RNMRQS.woff",
+      "bytes": 10128,
+      "sha256": "e7131bbf591e1ed9b74e44e162f6a39affa00ac21654cb683585d085733f6355"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/media/jetbrains-mono-latin-ext-400-normal-JVR3IR4Z.woff2",
+      "bytes": 7336,
+      "sha256": "505dfba8ecbe77e82765f36d317ed7ef4ac42719dc5f4ae68d1c483fd22d0d14"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/media/jetbrains-mono-latin-ext-500-normal-2BKZW4LT.woff",
+      "bytes": 10336,
+      "sha256": "8006c29f8ec53d12d281774d669a02a70b599590d110ff1a4b4a40a6fd975676"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/media/jetbrains-mono-latin-ext-500-normal-W67NWU5E.woff2",
+      "bytes": 7528,
+      "sha256": "879df9319f1cbf633bee1dd489e376a9e1e8c458f4abddcfe381cb83b5e6b027"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/media/jetbrains-mono-vietnamese-400-normal-7ULXAK72.woff",
+      "bytes": 5372,
+      "sha256": "1dfe0f740fa86409034058e49474b01126ae9ea8c1ecda905917b90d57f03b00"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/media/jetbrains-mono-vietnamese-400-normal-KU7YLUPA.woff2",
+      "bytes": 3924,
+      "sha256": "efc9e0df126ca6dd1c37a022bfe1d664d23b3fcaa32979d2028ecb4c074306c8"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/media/jetbrains-mono-vietnamese-500-normal-HO6446ON.woff2",
+      "bytes": 4040,
+      "sha256": "bb7b98e92899b511e8f3e99c924142f4421896b2cbc9406c3727c25427662cc9"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/media/jetbrains-mono-vietnamese-500-normal-LNSQLO7C.woff",
+      "bytes": 5476,
+      "sha256": "6b14186bc983291a126aa8d6d9c3044415c968262279eecbb9bb194f1daf7800"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/media/plus-jakarta-sans-cyrillic-ext-wght-normal-JQUONSEA.woff2",
+      "bytes": 1716,
+      "sha256": "c46a510ab43925a55ecfe6c2d5fad0ce1902cd48ab276621d41f7afa42e4daee"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/media/plus-jakarta-sans-latin-ext-wght-normal-UBEBQO7H.woff2",
+      "bytes": 21728,
+      "sha256": "38e3b8fd8045048eb311d90170a4429ed2c8f405852dc3d91b5af8452758703f"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/media/plus-jakarta-sans-latin-wght-normal-XZSBT77D.woff2",
+      "bytes": 27348,
+      "sha256": "153fc85b70298beeb1d61a5f723331649e7f23bb77302a66e61cb3e2fbdb5e79"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/media/plus-jakarta-sans-vietnamese-wght-normal-TOS5SH3L.woff2",
+      "bytes": 8352,
+      "sha256": "b275d1258601dda240fc6a1d4a6cad56e691d898f5cdf1b0e4fd6ca0022d8e40"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/polyfills-B6TNHZQ6.js",
+      "bytes": 34579,
+      "sha256": "e58411db71b908616c5c212d2373e7b5ab79055c7987e0836e64b259da72507f"
+    },
+    {
+      "path": "frontends/web-panel/dist/browser/styles-QRYOVJ25.css",
+      "bytes": 128663,
+      "sha256": "65a5976c464cd95dcef2d8f8064ef6a446528740c8cb0ffaad6973f72521055b"
+    },
+    {
+      "path": "frontends/web-panel/dist/prerendered-routes.json",
+      "bytes": 18,
+      "sha256": "a79ddcc8a115190e9c19479ed36914741a7d1db74f0a1153529efc80725505fe"
+    },
+    {
+      "path": "frontends/web-panel/nginx.conf",
+      "bytes": 1264,
+      "sha256": "e65620002aa597780189e913faf01dd0190813c90dc19c872837963cd9ce4268"
+    },
+    {
+      "path": "frontends/web-panel/package-lock.json",
+      "bytes": 556149,
+      "sha256": "8b64ad5d2faa76434c431b2acfd413e711d78dcdca3f1e8c1b0d4e35f0d9d082"
+    },
+    {
+      "path": "frontends/web-panel/package.json",
+      "bytes": 1872,
+      "sha256": "5dfe4799c0a10249b23e06512435b03e0680e7576ac312a387fd84d031175ef3"
+    },
+    {
+      "path": "frontends/web-panel/proxy.conf.json",
+      "bytes": 79,
+      "sha256": "2295c23feb8f9dbba4350bb2ee358a63df00b3ae59716fab61209fa151eca5ea"
+    },
+    {
+      "path": "frontends/web-panel/public/favicon.svg",
+      "bytes": 664,
+      "sha256": "85223ceb39a2ebb25dcc77ddb5287ea27b982c2ce5d2cf444a6e3507e573b9e8"
+    },
+    {
+      "path": "frontends/web-panel/public/logo.svg",
+      "bytes": 664,
+      "sha256": "85223ceb39a2ebb25dcc77ddb5287ea27b982c2ce5d2cf444a6e3507e573b9e8"
+    },
+    {
+      "path": "frontends/web-panel/scripts/generate-types.mjs",
+      "bytes": 3525,
+      "sha256": "fdda3aedbc579204341ec565b0d361a4cb355c600cbb1d4308aa78f4f6aad81d"
+    },
+    {
+      "path": "frontends/web-panel/src/app/api/generated/academic.types.ts",
+      "bytes": 211934,
+      "sha256": "6c1e786e7895c23b0bda7f99e9a1524882337e956b9758ff298acbd169f40c5e"
+    },
+    {
+      "path": "frontends/web-panel/src/app/api/generated/attendance.types.ts",
+      "bytes": 108549,
+      "sha256": "e9fbc034b53008a19230a51f7df4c82a669b70d1f09e06f90e0fed2843ede939"
+    },
+    {
+      "path": "frontends/web-panel/src/app/api/generated/auth.types.ts",
+      "bytes": 39142,
+      "sha256": "e830ca6496c0809266cd504d9e6527630090751920d8513ba1d275edabd8af37"
+    },
+    {
+      "path": "frontends/web-panel/src/app/api/generated/schedule.types.ts",
+      "bytes": 66152,
+      "sha256": "5d51ac1b9cf971c4f223463ee005f62eec00a859fd345345f4eedf0fadc9781a"
+    },
+    {
+      "path": "frontends/web-panel/src/app/api/schema.ts",
+      "bytes": 12646,
+      "sha256": "3fa6db10fd62713de492401c7354668bd5d8d6bfd1cba1ff5257ab8ddcc03683"
+    },
+    {
+      "path": "frontends/web-panel/src/app/app.component.ts",
+      "bytes": 241,
+      "sha256": "bede3aa41b8f0193fe2a481c05960bba94f6376244ed1daf38e0b10c66e978b1"
+    },
+    {
+      "path": "frontends/web-panel/src/app/app.config.ts",
+      "bytes": 1877,
+      "sha256": "2e3f6b8e12fa580975a9821d2699a46fd12e1d99b5ffc1ff7cce49d4cdef0562"
+    },
+    {
+      "path": "frontends/web-panel/src/app/app.routes.ts",
+      "bytes": 2529,
+      "sha256": "1533b545d22ad502e535598956f3f7e5b50ccdc3cb10068ab5feacd87f2485e4"
+    },
+    {
+      "path": "frontends/web-panel/src/app/core/auth/auth.api.ts",
+      "bytes": 2094,
+      "sha256": "c7b0bcef8ceda015f87f5f98b6c29efcb86c22d0361c37d1a0ecb7876003711e"
+    },
+    {
+      "path": "frontends/web-panel/src/app/core/auth/auth.guard.spec.ts",
+      "bytes": 5026,
+      "sha256": "3d199882cce4bbb800b5a81dfd63de53db8f799740eefb57042a9494e67eccdf"
+    },
+    {
+      "path": "frontends/web-panel/src/app/core/auth/auth.guard.ts",
+      "bytes": 385,
+      "sha256": "fc2086a502e5c43a5c402a583c6416d9b009c578fd61665aa633225300d16138"
+    },
+    {
+      "path": "frontends/web-panel/src/app/core/auth/auth.interceptor.spec.ts",
+      "bytes": 5974,
+      "sha256": "b9ba00674a7c0d7f381469f8ee794d0c2d2a62ddc21825d5c418bcd98311bd11"
+    },
+    {
+      "path": "frontends/web-panel/src/app/core/auth/auth.interceptor.ts",
+      "bytes": 2893,
+      "sha256": "152d7a45d78d5896b1b0cdd200d1e9ea83080d76746f4ff49a6d862b9abf7ebc"
+    },
+    {
+      "path": "frontends/web-panel/src/app/core/auth/auth.service.spec.ts",
+      "bytes": 6968,
+      "sha256": "f91e26a61cd10668198ee42ff04189f8e200bc4f6cd7c1365e7d8bb61e4add66"
+    },
+    {
+      "path": "frontends/web-panel/src/app/core/auth/auth.service.ts",
+      "bytes": 5138,
+      "sha256": "bbde6296a9952aa4f019bc17a37c50b8772d361c541b77c57c1ca7d1c97b852a"
+    },
+    {
+      "path": "frontends/web-panel/src/app/core/auth/clear-all-client-state.spec.ts",
+      "bytes": 1444,
+      "sha256": "71188e4859a0ffb71bcf738d6ebbe29cac23c666fb294e8c3551beeb751a2bd3"
+    },
+    {
+      "path": "frontends/web-panel/src/app/core/auth/clear-all-client-state.ts",
+      "bytes": 689,
+      "sha256": "668845dbe9d3408d50b3b01b4bacd04d06b125a152f425d14b737548abe88dcd"
+    },
+    {
+      "path": "frontends/web-panel/src/app/core/auth/guest.guard.spec.ts",
+      "bytes": 3048,
+      "sha256": "bbe27c307b916094ecbca2654af18907678a324505bb81a7779a4165fa389743"
+    },
+    {
+      "path": "frontends/web-panel/src/app/core/auth/guest.guard.ts",
+      "bytes": 423,
+      "sha256": "c564ba7a8ea482d364707c6cf3a8232a6f41740fc8ff20a34593693c5b3db421"
+    },
+    {
+      "path": "frontends/web-panel/src/app/core/auth/headman.guard.spec.ts",
+      "bytes": 3022,
+      "sha256": "a86483c080f9ff0dad0c8fb9fb8bfb3676e75efb16c353122bb53d4a288b924f"
+    },
+    {
+      "path": "frontends/web-panel/src/app/core/auth/headman.guard.ts",
+      "bytes": 518,
+      "sha256": "f55fc3cb07212f4193917eb0e7a229958b8c6e56c809c676ceaaf00d2b73b9d6"
+    },
+    {
+      "path": "frontends/web-panel/src/app/core/auth/role.guard.ts",
+      "bytes": 569,
+      "sha256": "22bc82454f8af20c64cc058176e8770f2495889355fb984b727bbc2dc7faafdd"
+    },
+    {
+      "path": "frontends/web-panel/src/app/core/auth/student.guard.spec.ts",
+      "bytes": 2945,
+      "sha256": "8f54c498d243fe4d91d5a9fe9d32bcb658e7ce09dd45e5b255ea4c7d87c7157d"
+    },
+    {
+      "path": "frontends/web-panel/src/app/core/auth/student.guard.ts",
+      "bytes": 500,
+      "sha256": "71b236f6e1267d4151f7fd78019d695d4ee35afd4958df85f7fd9086036017ae"
+    },
+    {
+      "path": "frontends/web-panel/src/app/core/auth/ws-ticket.ts",
+      "bytes": 1125,
+      "sha256": "54c27b48dd27e4bf9ff5f2b2847cf9434be751063460b5bd3a91d3e6d20f3ce4"
+    },
+    {
+      "path": "frontends/web-panel/src/app/core/errors/error-toast.component.ts",
+      "bytes": 3897,
+      "sha256": "a997187a24541b3bc1aed8ec7ea6eb9a173bc7b71e96fe528ad76e44c12740c5"
+    },
+    {
+      "path": "frontends/web-panel/src/app/core/errors/error-toast.service.ts",
+      "bytes": 1325,
+      "sha256": "3ea9bc514520bbf03b71c0c309e0820992ded76d6dedd8f6e4d17e49fb7be52c"
+    },
+    {
+      "path": "frontends/web-panel/src/app/core/errors/problem-details.interceptor.ts",
+      "bytes": 1560,
+      "sha256": "5a0753aaa3adfa13041f8a1e790cd73baba74e5c38b096780cb9c2a8928781af"
+    },
+    {
+      "path": "frontends/web-panel/src/app/core/errors/problem-details.spec.ts",
+      "bytes": 2951,
+      "sha256": "164b8c7c0a68ab62d0f6550eb06726673c4547374d795d139de1e1d186a642e3"
+    },
+    {
+      "path": "frontends/web-panel/src/app/core/errors/problem-details.ts",
+      "bytes": 5101,
+      "sha256": "921fef9f4120169dd31a367d8adefd17e43e33dbb9337853b182f8377199adbf"
+    },
+    {
+      "path": "frontends/web-panel/src/app/core/notifications/notification-bell.component.ts",
+      "bytes": 14343,
+      "sha256": "e60bab0004b012d74d68b16536bb7b4baba738e500a6cc77c23fabeaa3693c8f"
+    },
+    {
+      "path": "frontends/web-panel/src/app/core/notifications/notification-center.service.spec.ts",
+      "bytes": 8598,
+      "sha256": "7d035c3c24a1fd6236669567976cacbc7da63e9ec956bd31e4026177a0861c9a"
+    },
+    {
+      "path": "frontends/web-panel/src/app/core/notifications/notification-center.service.ts",
+      "bytes": 13526,
+      "sha256": "7ff0618ae5304d0eb2459a9650bc8c2ba70f67bd855d224c99ac5ae113785678"
+    },
+    {
+      "path": "frontends/web-panel/src/app/core/notifications/notification-history.api.spec.ts",
+      "bytes": 3132,
+      "sha256": "154d970f0a337607368bf3fcdf2adbcce8a263044d660e6c6a2c60f39c51e624"
+    },
+    {
+      "path": "frontends/web-panel/src/app/core/notifications/notification-history.api.ts",
+      "bytes": 2132,
+      "sha256": "b2fdc3e4025d56d38c96cd1c1b284b70ce8aabdb03ea7cc2ac518ec9223476b5"
+    },
+    {
+      "path": "frontends/web-panel/src/app/core/notifications/notification-history.service.ts",
+      "bytes": 5471,
+      "sha256": "85e37dd56fd0ccd5b3f186cc1430ad8ab491ad1dedb7b84c50c84897bd49b605"
+    },
+    {
+      "path": "frontends/web-panel/src/app/core/notifications/notification-prefs.service.ts",
+      "bytes": 5313,
+      "sha256": "3789104bbe4ef5908b994893723d2ec3e6498c358bc7962ef8377f8fc77f461a"
+    },
+    {
+      "path": "frontends/web-panel/src/app/core/profile/avatar.component.ts",
+      "bytes": 1730,
+      "sha256": "b8fe0392560bde35b3af433d3672141d2cdfb22df2ef9aeace4903282aa6591f"
+    },
+    {
+      "path": "frontends/web-panel/src/app/core/profile/preset-avatars.ts",
+      "bytes": 2478,
+      "sha256": "e5609951e7050e2a82aa64f806fabebdaa2a5571e80c2bc44fa30ce6c6581cef"
+    },
+    {
+      "path": "frontends/web-panel/src/app/core/profile/profile-dialog.component.css",
+      "bytes": 5194,
+      "sha256": "1bdbf5a6682334062e0227f0552ea4c80f14f8622166b0e24e326492d59cf0e2"
+    },
+    {
+      "path": "frontends/web-panel/src/app/core/profile/profile-dialog.component.html",
+      "bytes": 5407,
+      "sha256": "b28369a78b6e5dcde5cce0688e1242ae38965fd030ada8f1e9aba6fe2ee7ad97"
+    },
+    {
+      "path": "frontends/web-panel/src/app/core/profile/profile-dialog.component.ts",
+      "bytes": 4257,
+      "sha256": "76e30db02fe94a0f548cbaafb5605be5cbd271beca6879cb9eb3eb70baf9bd26"
+    },
+    {
+      "path": "frontends/web-panel/src/app/core/profile/profile.service.ts",
+      "bytes": 2704,
+      "sha256": "c963be9f8b852f8118da264fc950e2e564bb28ea435d730614ad4e1fc10b7b35"
+    },
+    {
+      "path": "frontends/web-panel/src/app/core/theme/theme-toggle.component.ts",
+      "bytes": 3176,
+      "sha256": "4ccd7f3677efc472eb0b0b850ab05120b0e86b2d4ee918dc375bec4ae2e3dc26"
+    },
+    {
+      "path": "frontends/web-panel/src/app/core/theme/theme.service.spec.ts",
+      "bytes": 5179,
+      "sha256": "74eb959cb0e96de731af286f699e183efc2b501bf9c100dc58e743fdef2f96f9"
+    },
+    {
+      "path": "frontends/web-panel/src/app/core/theme/theme.service.ts",
+      "bytes": 2984,
+      "sha256": "31cc36658e82f025fceeec7ab600538f9fb1de4d09e9d691e911e00b881434c1"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/admin/admin.routes.ts",
+      "bytes": 1508,
+      "sha256": "a57f6ad9db48ad36b00968ee09c7bbb802463b390308bc2159bbe720486965c8"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/admin/dashboard/admin-dashboard.component.css",
+      "bytes": 4396,
+      "sha256": "0d76eaa125831bb681673dc1dde4e896dced3f5800502ac7bfac75fe05a2a037"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/admin/dashboard/admin-dashboard.component.html",
+      "bytes": 8625,
+      "sha256": "d3ead277b0599958b9b69f4383c4eede54159ae16e9bc351d98c17baa1cf35e1"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/admin/dashboard/admin-dashboard.component.spec.ts",
+      "bytes": 3586,
+      "sha256": "61e4a06901736ac5212d919d7a31e83dc236a58a0e6efd6d553a0dad7f5c9019"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/admin/dashboard/admin-dashboard.component.ts",
+      "bytes": 4230,
+      "sha256": "1211a9b9a432dd552b65403172523ac28b0203997017f5d7fa5cdc70e2cfd7dc"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/admin/dashboard/stat-card/stat-card.component.css",
+      "bytes": 3913,
+      "sha256": "5ab0bca120d7511bfd6e3843d43ed315dd79e74c7e7d7d5d1214e6d2c52c6cc9"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/admin/dashboard/stat-card/stat-card.component.ts",
+      "bytes": 7645,
+      "sha256": "51e2394900d3726decc64df032ec49938afbed4da229a37d558aaf7b5686c60e"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/admin/groups/assign-headman-dialog/assign-headman-dialog.component.ts",
+      "bytes": 1734,
+      "sha256": "a8f0b1b00492644d965aa8c5385d15e30e171611c5e1426cfea96f69ec14dd23"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/admin/groups/delete-group-dialog/delete-group-dialog.component.ts",
+      "bytes": 2256,
+      "sha256": "73001a9de87a6b66f8f3a7cf0e3f254892f65a4c18b5d4d899681d0012a39a19"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/admin/groups/group-dialog/group-dialog.component.html",
+      "bytes": 1527,
+      "sha256": "2f810e41529d9039fc6ef93a1e8aeb0f96b9cb11ee6179862bbd67a174efa6f5"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/admin/groups/group-dialog/group-dialog.component.spec.ts",
+      "bytes": 4717,
+      "sha256": "4476a379e220cce5a261958e3829e4a44f6837d1ae41cd90b80a61cfd8a8c7db"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/admin/groups/group-dialog/group-dialog.component.ts",
+      "bytes": 4137,
+      "sha256": "d3bebf4d0b326ae07984d524403d104eb8da40b1a54b3ff4272fd52d4173cb1c"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/admin/groups/group-history/group-history-page.component.html",
+      "bytes": 3058,
+      "sha256": "c529536547e4fbba48ece51995b2097bfcbabd3cb317c955a653dee9e9432280"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/admin/groups/group-history/group-history-page.component.scss",
+      "bytes": 1150,
+      "sha256": "66baae9c6ff91dc6a9be295904de08fc43f1e7e2e8adc9d11acbbb23cc5084b3"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/admin/groups/group-history/group-history-page.component.spec.ts",
+      "bytes": 5363,
+      "sha256": "e5d6076a752c84333aca145b98a840184fb4caac2220a68d9124ed4d014d913a"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/admin/groups/group-history/group-history-page.component.ts",
+      "bytes": 3617,
+      "sha256": "f4a1cf747147274d6e332a6252d6b9dafa754bf5fb29954bbd3bd591d0fb0e02"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/admin/groups/groups-page.component.html",
+      "bytes": 7629,
+      "sha256": "29aecd6b5e568b87c746c75f832a2661e9a35f7736e2cc88e081c4d32fed630e"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/admin/groups/groups-page.component.scss",
+      "bytes": 553,
+      "sha256": "d88c9dc3789a3fd9efbfc83fe180dd9c0bf96e0c222cbdbdf0a7bafb80a6968c"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/admin/groups/groups-page.component.spec.ts",
+      "bytes": 6546,
+      "sha256": "cd0f3f257b1bc8dce8c2a4f22a918bc8b96cae74114f329f85ec922d3b24085a"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/admin/groups/groups-page.component.ts",
+      "bytes": 9302,
+      "sha256": "79e52094b200235e41ee657e3683d1598145183e972e2006dd756550c98974e3"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/admin/groups/promotion-preview-dialog/promotion-preview-dialog.component.html",
+      "bytes": 3480,
+      "sha256": "82f0deef61384eca4ed954e72f726ed62b9169ada2137e3b43e3c5ad42220afc"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/admin/groups/promotion-preview-dialog/promotion-preview-dialog.component.scss",
+      "bytes": 952,
+      "sha256": "e55b34a4c351e68f8d657cb3eaddd99a3fca16173edaedbe7b2967cb901d9c5c"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/admin/groups/promotion-preview-dialog/promotion-preview-dialog.component.spec.ts",
+      "bytes": 5103,
+      "sha256": "e6c1d6513d959c0667713c1b600b3422719bf489a7fb640a0909db3122a3d77a"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/admin/groups/promotion-preview-dialog/promotion-preview-dialog.component.ts",
+      "bytes": 3156,
+      "sha256": "9031d0de2d98e8cc8d7abfb49f07d0c13966ad8ad10c60e5e737ae4701d3091c"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/admin/groups/revoke-headman-dialog/revoke-headman-dialog.component.ts",
+      "bytes": 1043,
+      "sha256": "ccf849ca5b79b72fc3d0f8408b10e331f2be2fe21232a75a8bb5423aeaf82de9"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/admin/semesters/delete-semester-dialog/delete-semester-dialog.component.spec.ts",
+      "bytes": 4050,
+      "sha256": "bc9bcc2b7ca54c86fa9bfdf081821d139d02521f5dbda1522935222e913bb19f"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/admin/semesters/delete-semester-dialog/delete-semester-dialog.component.ts",
+      "bytes": 1703,
+      "sha256": "a83a5780dfc9e544d9cb664afcc4a5a4ae1f2e4990c917958312ae7156a31951"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/admin/semesters/semester-dialog/semester-dialog.component.html",
+      "bytes": 2542,
+      "sha256": "4b365ffb3c743b564dbb530efb87a2e1485a85c58486f5a62ac3782433e198a9"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/admin/semesters/semester-dialog/semester-dialog.component.spec.ts",
+      "bytes": 5862,
+      "sha256": "017ee4fa48a45b9d04e30cca25274511d5e45d3d47578dabdb1261f332b1294f"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/admin/semesters/semester-dialog/semester-dialog.component.ts",
+      "bytes": 6485,
+      "sha256": "6d1fc6c5fdd30762b86f84a664931d733a91eedac065d3a91c3a8692d3f32e81"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/admin/semesters/semesters-page.component.html",
+      "bytes": 3484,
+      "sha256": "d37856b6b33e66fac671ac1740a327ce78c96b03d7f323cc207784713ca32de3"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/admin/semesters/semesters-page.component.spec.ts",
+      "bytes": 3705,
+      "sha256": "51b695f6750e62ac69d4b41eb9672a88447930c61ecdf3de9ff3de859410d2b8"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/admin/semesters/semesters-page.component.ts",
+      "bytes": 4166,
+      "sha256": "8020defa57117e6cc9b2a58a2927929b2a1e1d74110ed3e685a559fd02ce2384"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/admin/shared/admin-api.service.spec.ts",
+      "bytes": 10822,
+      "sha256": "0bdce3a085f85c07f3dbe0c2c939fc7fdc6f8cfa0ba79d006ddc25124586e5a0"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/admin/shared/admin-api.service.ts",
+      "bytes": 6722,
+      "sha256": "9b3f130be9af924a8fe718c1b26d3d13bec8ca590ea433f14c6246d45bccf982"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/admin/shared/role-chip/role-chip.component.ts",
+      "bytes": 604,
+      "sha256": "f2e9590934c5cd40deee089e54d734f3e1b4b4050b3550c15b47ec95f87ea517"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/admin/shared/status-chip/status-chip.component.ts",
+      "bytes": 634,
+      "sha256": "b05a03770e25ef2e58c35fd49fc8f5b3ec844979ded094670adb9ac5b59dd1de"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/admin/shared/types.ts",
+      "bytes": 813,
+      "sha256": "1398e0705f5277cd7f8f1605ee62eaf7ecb9f09c1bb92cbc6c1bf98299bec1c3"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/admin/users/archive-user-dialog/archive-user-dialog.component.ts",
+      "bytes": 1048,
+      "sha256": "a66881e634f378c6b89d8719db2f14f8958ed1630af27d7c1862eef9be1ddd3f"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/admin/users/user-dialog/user-dialog.component.css",
+      "bytes": 3775,
+      "sha256": "5c154b5613d207886a62de3186d445b4c64da2c1ca4f830405eead8d153e51b4"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/admin/users/user-dialog/user-dialog.component.html",
+      "bytes": 6999,
+      "sha256": "d33a7519bc59769e087fce850db4496dffde3b9b20e7c4137eeb3338cd479cec"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/admin/users/user-dialog/user-dialog.component.spec.ts",
+      "bytes": 13008,
+      "sha256": "0a0ff14267d27e79e102e86c1c737ba45171b4c0f8eb5913081a586313ccdf18"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/admin/users/user-dialog/user-dialog.component.ts",
+      "bytes": 9722,
+      "sha256": "d9521cccfdd6913b9d627acdd5d4cc7dc395e0681ade3ce2166f79d09f97332f"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/admin/users/users-page.component.html",
+      "bytes": 6450,
+      "sha256": "832dc8580ba7a6ac4d766c9ed65da5a04fbdf9dca042ab3c2311aac3d8209f06"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/admin/users/users-page.component.scss",
+      "bytes": 860,
+      "sha256": "b2a17885523d987e25b043f2d62755386085eb6df7a33588777c9899541a8e74"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/admin/users/users-page.component.spec.ts",
+      "bytes": 7411,
+      "sha256": "1830615816bd959bf84e67ab8cf4ad8c65ee17bfdf5bec46250819f20bf1f4b7"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/admin/users/users-page.component.ts",
+      "bytes": 9309,
+      "sha256": "1018264ac2980f82e8704502b9a6b3634db0d8589a0549bc8f2a5e7e15ec055a"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/headman/dashboard/headman-dashboard.component.ts",
+      "bytes": 12099,
+      "sha256": "836d5450136a8d9bd27b549d6b9f4881dded3bdb6882e5d5d90f2abbe601ac95"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/headman/excuses/excuse.types.ts",
+      "bytes": 2521,
+      "sha256": "f7f01c1da7217e0bf4f199c063b111996d250abfbac682a797a37b9b385fe5dc"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/headman/excuses/headman-excuses.component.spec.ts",
+      "bytes": 9137,
+      "sha256": "e7949bdde664157bdbfa87e103d179c1c20821f6de8c3ab395f86069b81eaf78"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/headman/excuses/headman-excuses.component.ts",
+      "bytes": 23115,
+      "sha256": "568317a32370b3a6a6cd8890b256d9ff1de92307e08864a80b3c49d1f95b8d99"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/headman/group/assign-assistant-dialog.component.ts",
+      "bytes": 6177,
+      "sha256": "7eb1976d3b76dec9fccdff238810ebf4e0c6dc932f248370184d7561a1fa3aef"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/headman/group/delete-assistant-dialog.component.ts",
+      "bytes": 1096,
+      "sha256": "a6ece8df03ab52e02d0795a795d72411699425b0fc3465ddb88f2b850610a273"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/headman/group/headman-group.component.ts",
+      "bytes": 10456,
+      "sha256": "8a4ad58b1a3dec7e4cb707529102a7e38de0a584191a9a1f451f950bac8c9723"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/headman/headman-placeholder/headman-placeholder.component.ts",
+      "bytes": 849,
+      "sha256": "e1d688dd51fe1147abdb1051aad9710e49ce6b512e76522e97352b902cafe7e8"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/headman/headman.routes.ts",
+      "bytes": 3244,
+      "sha256": "8320a339df445b73399ee195bbf705f55add30336adf29da0cdf299066cce097"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/headman/homework/headman-homework-api.service.ts",
+      "bytes": 2130,
+      "sha256": "54a7a1b7da5053d3f2d4df58488dbd04a750af8456300f9a6cbd4ace23727c74"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/headman/homework/headman-homework.component.spec.ts",
+      "bytes": 6639,
+      "sha256": "1dd52a9c43341240fa47732571e2610c0213e614c794fd26876cd7d52e499b75"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/headman/homework/headman-homework.component.ts",
+      "bytes": 19619,
+      "sha256": "1479ed5586ba9ee64b7c0003609f74252b5c26b2817bf24c3003c8f5f84d562e"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/headman/homework/homework-inline-form/homework-inline-form.component.spec.ts",
+      "bytes": 5383,
+      "sha256": "bd0b238f7989ab9ace26cfada5d97f27c74feb5b171db40eb2515f3b0fe80d5d"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/headman/homework/homework-inline-form/homework-inline-form.component.ts",
+      "bytes": 11005,
+      "sha256": "eef6d5055909665454ff48574e3933cd2f435c304d381f946364d25d26499239"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/headman/journal/headman-journal-grid/headman-journal-grid.component.spec.ts",
+      "bytes": 5212,
+      "sha256": "207d7d0b676931d7ba43c349532b9e181e46e758ddb8bd9a4bfc8fee09b022a5"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/headman/journal/headman-journal-grid/headman-journal-grid.component.ts",
+      "bytes": 13061,
+      "sha256": "be0a7c20f4cad726be38429112bb9ccd9e94fb3b72f8eb12c1a0ec0c28e74e1f"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/headman/journal/headman-journal-page.component.html",
+      "bytes": 1734,
+      "sha256": "b78ff64b76c5e6eea9eec610636df0fe4ca3c7277bf473b690d2ed942a0ec0d4"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/headman/journal/headman-journal-page.component.spec.ts",
+      "bytes": 3582,
+      "sha256": "a3bd37b2f75f30eab9f530bee7760055093785888d0d19cbeaed1e35a0ae435a"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/headman/journal/headman-journal-page.component.ts",
+      "bytes": 3932,
+      "sha256": "d5e8b5c43e6be096c0faad817c9b405fda727132e138351663000528321db820"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/headman/late-checkin/headman-late-checkin.component.spec.ts",
+      "bytes": 3847,
+      "sha256": "030889986ccda63d1d3ac436b6d65e8351113c169796e83520808b30c96c0708"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/headman/late-checkin/headman-late-checkin.component.ts",
+      "bytes": 18768,
+      "sha256": "991845c4961fb379138c1d0153e65f7e48249b28c1ccc6baefced7e1d30b8ed7"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/headman/late-checkin/late-checkin.types.ts",
+      "bytes": 2237,
+      "sha256": "a80be75cb7e861c354929deb3761c37952e847cd433e6ae9b29521bb7fbc37c5"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/headman/lessons/headman-lessons.component.spec.ts",
+      "bytes": 18104,
+      "sha256": "3477e22f7c6f6e6bd61078a434669dc716c6fc3d48e674714749ed7aae3c7a5d"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/headman/lessons/headman-lessons.component.ts",
+      "bytes": 37876,
+      "sha256": "10acdf67c621afa53216d041110ed186a65dbf9bfe4238687c99473cc4a1cbf6"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/headman/schedule/headman-schedule.component.spec.ts",
+      "bytes": 8715,
+      "sha256": "30c7e140ee408f223ca4a8b2be5ec0e1a5ca8895ca8696b88ed12048c1a2296d"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/headman/schedule/headman-schedule.component.ts",
+      "bytes": 23877,
+      "sha256": "c7d0b592f152feb681f6247400cbcc1adee484b3b608537b533ec77850c845be"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/headman/schedule/one-off-dialog.component.spec.ts",
+      "bytes": 4361,
+      "sha256": "29a9290abdce205198decd4fe6ef85968ed72ddf56575c9e44cfb0eedc1a4621"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/headman/schedule/one-off-dialog.component.ts",
+      "bytes": 7546,
+      "sha256": "93e590125bf337d3f6e36eb7cfee724e15675807eee97b85a25c84a491ab01a6"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/headman/schedule/schedule-slot-dialog.component.spec.ts",
+      "bytes": 5714,
+      "sha256": "f9c72030e2c35fb71a48f1eb01253374ab1caad23223024963e6cc2eda912e71"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/headman/schedule/schedule-slot-dialog.component.ts",
+      "bytes": 12488,
+      "sha256": "0814bb0029deff4e62c496e863044a3a96aedc559e3fe1f89bb0c7b6d396dc71"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/headman/shared/academic-week-policy.types.ts",
+      "bytes": 490,
+      "sha256": "d4165153c846004090ec0f219ebc9e53d5d6c4b23e13ee641733143f9bfd07f1"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/headman/shared/headman-api.service.spec.ts",
+      "bytes": 15211,
+      "sha256": "8d059e80eb1df11fbd95c520f70a44c54a90050e4eb1acc0415e95209fb45098"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/headman/shared/headman-api.service.ts",
+      "bytes": 22949,
+      "sha256": "871402d690f32475a76460cb5197026e3b5c06a7a8168c32741e38443d3e4c91"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/headman/shared/headman-report.types.ts",
+      "bytes": 640,
+      "sha256": "df48c38b8620f51b8b70bab0fca3dcefc6afb750d991587d354db9f36a9d54eb"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/headman/shared/headman-stomp.service.spec.ts",
+      "bytes": 2941,
+      "sha256": "1c0d7e8c4ec2bc113d19961ac4cc23a49530cdc8f785aca5274c1a20506d63b4"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/headman/shared/headman-stomp.service.ts",
+      "bytes": 2252,
+      "sha256": "911476080e8f59a3b426b6ffdbebdd9e402012d27ab999651a0f02921012c331"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/headman/stats/headman-stats.component.spec.ts",
+      "bytes": 5294,
+      "sha256": "8de874d71954d47287559d0178dd58bda78d50aada3b976efc4ed1d8256a4044"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/headman/stats/headman-stats.component.ts",
+      "bytes": 10070,
+      "sha256": "56b8c4c5779285318917c461b8ae6344c26b3f1f82b83742596437f518e5aaf4"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/headman/subjects/delete-subject-dialog.component.ts",
+      "bytes": 3759,
+      "sha256": "8deb432e28e7b15ffc9781947905c7a122feccfe6427143ae0db099719d7a01b"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/headman/subjects/headman-subjects.component.ts",
+      "bytes": 11611,
+      "sha256": "f0c5bd47e64a9fefeb129e7661686dcab263e86c0be84c12a97780f449520e29"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/headman/subjects/subject-dialog.component.spec.ts",
+      "bytes": 6624,
+      "sha256": "458716bff51edef2680d23714a1fb885ee0dd44e843af22319fca4f87baa5148"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/headman/subjects/subject-dialog.component.ts",
+      "bytes": 8277,
+      "sha256": "c91a63c931472dc3260cd1e8310b3bb9257766bf8bc0142c3eea761bf6b3c66b"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/headman/weekly-journal/headman-weekly-journal.component.css",
+      "bytes": 9516,
+      "sha256": "c404d7eef16607d697464a318003ac450a41312a6e42c6e4e478f4372c8ef7be"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/headman/weekly-journal/headman-weekly-journal.component.html",
+      "bytes": 7746,
+      "sha256": "0f3a55a9341c2e27e81177e754d5e0d5353d2f621371fecd62832a9675ea37a3"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/headman/weekly-journal/headman-weekly-journal.component.spec.ts",
+      "bytes": 5238,
+      "sha256": "2017f4b53e9cbb5f00f94d0b495f56fb389ce1275381e6258805884de1515dbe"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/headman/weekly-journal/headman-weekly-journal.component.ts",
+      "bytes": 14304,
+      "sha256": "59a6523d69f9fac0fc450b59534409b048cf9e3b8551cd1d467b5f1048b6cc6a"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/headman/weekly-journal/headman-weekly-report-dialog.component.spec.ts",
+      "bytes": 3343,
+      "sha256": "639ff29220cdc0e9b927e7fba533d378d4706dcc7e6a0b557cd8674cf4a382b9"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/headman/weekly-journal/headman-weekly-report-dialog.component.ts",
+      "bytes": 10223,
+      "sha256": "6da920bb3b73ff0d68e3508f543f1dfad8457f168722c25141edc933367ad474"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/login/login.component.css",
+      "bytes": 8736,
+      "sha256": "fa9d63a9eef56895443a5dae81fea72b5c200f56f26bf16e8926c67ee7830218"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/login/login.component.html",
+      "bytes": 4661,
+      "sha256": "562f193815ddf1d3756662ed741003f562af9c074cb560e1b55485c690c364c7"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/login/login.component.spec.ts",
+      "bytes": 13191,
+      "sha256": "c920e711ee373baf6f7bf8702ae074b81bb6d69ee10cd380e5c0b49ba5642ea0"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/login/login.component.ts",
+      "bytes": 3247,
+      "sha256": "24594fbd863e3126399f22be079de084db86ad6a1ce6e5b03f714fdad0906a2c"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/not-found/not-found.component.ts",
+      "bytes": 1913,
+      "sha256": "4d69b58be4a417f2fa366e5fa638e6a8b00ffaaaf59aefa5f7b9cdd3df5722ae"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/student/checkin/checkin-error-mapper.spec.ts",
+      "bytes": 2230,
+      "sha256": "fde426baf14c7aad473e90616691e86b9262ec0c81b7836d46d4487865dc8f0f"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/student/checkin/checkin-error-mapper.ts",
+      "bytes": 2973,
+      "sha256": "987c1c87a82e0cad3eeed708023c078296cf7da18c1f3f430691dc48abb3e98e"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/student/checkin/student-checkin.component.css",
+      "bytes": 8017,
+      "sha256": "1597617ba28f289abb0d3e147fcefe0436aa7b3af182a75a3a189db3712de5a1"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/student/checkin/student-checkin.component.html",
+      "bytes": 3930,
+      "sha256": "10ebaa6d58b6805130dfe93a5cb22b9d81e15841b9b91187578b5b620f02fecc"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/student/checkin/student-checkin.component.spec.ts",
+      "bytes": 12697,
+      "sha256": "c4be2a89ccbacd002e65de4188f2211d3ae901ad8634462cdae19ace8cbe57a5"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/student/checkin/student-checkin.component.ts",
+      "bytes": 12512,
+      "sha256": "b7aea1afabc73be3e404d0461390e43e4043ee6015b7a5b7ea3ea2d428d31e15"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/student/dashboard/next-lesson-card/next-lesson-card.component.css",
+      "bytes": 3112,
+      "sha256": "518724c541fa26790d5eb37f0a1813ce993e69e9b0dabf6ebf7a9ce045e439bd"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/student/dashboard/next-lesson-card/next-lesson-card.component.html",
+      "bytes": 1382,
+      "sha256": "b493c39c7923770f81996315752e3681bc5ffe35627d2901c5b887bece9f4264"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/student/dashboard/next-lesson-card/next-lesson-card.component.spec.ts",
+      "bytes": 3145,
+      "sha256": "38b92c94afa45508bab54c96da50ba64b37bebc2d5dc747f9e4d56160d6148a3"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/student/dashboard/next-lesson-card/next-lesson-card.component.ts",
+      "bytes": 1581,
+      "sha256": "54f1d752ecb97a8472712e1796bdcdc3e33f478663505d4ba169bea62bfdc975"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/student/dashboard/redzone-warning/redzone-warning.component.css",
+      "bytes": 1204,
+      "sha256": "a521175fc6aec7e9efebfe3d08f0470698005f9458e61ca4dbcff1c3135df673"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/student/dashboard/redzone-warning/redzone-warning.component.html",
+      "bytes": 438,
+      "sha256": "3bea825247341a4e3b9407b3fad0be4cba4b1cfc16773a6e8310a99bf0f067bc"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/student/dashboard/redzone-warning/redzone-warning.component.spec.ts",
+      "bytes": 1417,
+      "sha256": "8e8ddb25955381e541ce8baa7b6f434b80988456e9d52f7b63143d3720879e78"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/student/dashboard/redzone-warning/redzone-warning.component.ts",
+      "bytes": 1251,
+      "sha256": "53452e3c0265d839589cf856bf5e6f145073aafcda7f83b45883b979f8c48f54"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/student/dashboard/student-dashboard.component.css",
+      "bytes": 2658,
+      "sha256": "ebc4a5b30b3f021d6346204dbd5b35a0f37f7fc0d4292e44567594bbbdc3d811"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/student/dashboard/student-dashboard.component.html",
+      "bytes": 3003,
+      "sha256": "f22a491bc13baf1daf224dd5db7a6ca89fe186a5108f9bdda3d2f03cbcca44e9"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/student/dashboard/student-dashboard.component.spec.ts",
+      "bytes": 11872,
+      "sha256": "57b93b7393b78d8efe49a834cf1c54b96d035ee9940807279d59da5938ab4c4d"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/student/dashboard/student-dashboard.component.ts",
+      "bytes": 6607,
+      "sha256": "9a1c19931bfa6c146671478b724267e9804a388d405ec9bc47ad9aeb21f3732f"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/student/excuses/excuse-form-dialog/excuse-form-dialog.component.css",
+      "bytes": 5526,
+      "sha256": "9af8f41a9490bf7497c2094bf675041a6b9c0aedc331490c8b4d6d08dc026468"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/student/excuses/excuse-form-dialog/excuse-form-dialog.component.html",
+      "bytes": 5135,
+      "sha256": "7dddfbef5a44c7a0babaf3de929101ed7218868c21e42bce1073a4ebcb27ba37"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/student/excuses/excuse-form-dialog/excuse-form-dialog.component.ts",
+      "bytes": 9057,
+      "sha256": "3a58fb5a3663d7f2eea9da5807db2cd12ec873ef2ddb1bcd2691c2f18dcd166a"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/student/excuses/student-excuses.component.css",
+      "bytes": 5071,
+      "sha256": "ed67677e49f5ddc1e35a0904385cb2da4a4596c391d2ec0c2f02669e0d6d393c"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/student/excuses/student-excuses.component.html",
+      "bytes": 5441,
+      "sha256": "43c38798d7082a447f8e5ba6084868ce30ae777aa4e17402543c6925db596ad1"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/student/excuses/student-excuses.component.spec.ts",
+      "bytes": 10175,
+      "sha256": "5b11ff30d2f051e4b6be0160705e48b49a5faa14772cd7dd3d07f6dd71e1b292"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/student/excuses/student-excuses.component.ts",
+      "bytes": 9013,
+      "sha256": "84133d6cdd2d886f48dd01147f4fc28541c5129880024d422ec2676ee34ada26"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/student/homework/day-view/student-homework-day-view.component.css",
+      "bytes": 1300,
+      "sha256": "5cf0047c66a6e9c6dcb8c0552f6a509d8cd087eaac079940210fbf2b3d625e07"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/student/homework/day-view/student-homework-day-view.component.html",
+      "bytes": 1176,
+      "sha256": "18aa914a730464148c829f3f19ce107061af303362d3b4d87001361aac4626e0"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/student/homework/day-view/student-homework-day-view.component.spec.ts",
+      "bytes": 3722,
+      "sha256": "b1bf7baa0e16a0f4af9507e901c4c7e8343489b09a6af9470e1b48dc507315fb"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/student/homework/day-view/student-homework-day-view.component.ts",
+      "bytes": 2570,
+      "sha256": "14ab8def434fbdab9fdfa527787f9dcd974bb070fc8c4f2c854037b3a0452ca2"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/student/homework/homework-item/homework-item.component.ts",
+      "bytes": 4768,
+      "sha256": "35fdb7b593a7883369aad9f8c28cb096c84e01ddda597df46973f2adc8728f02"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/student/homework/month-view/student-homework-month-view.component.css",
+      "bytes": 2695,
+      "sha256": "b1810cf5f9fed5ce8c0f57204914b7610a0399d95453ab892d534d0081c47442"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/student/homework/month-view/student-homework-month-view.component.html",
+      "bytes": 2094,
+      "sha256": "98a026fd9789c08a1f95e67ff4bffe2e21e85a7e375c6ab5973e43a9733817f3"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/student/homework/month-view/student-homework-month-view.component.spec.ts",
+      "bytes": 3476,
+      "sha256": "f918069b33cd2a0286191f01ca2cf2758c81dc24c2f445d0adde82ee594238d6"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/student/homework/month-view/student-homework-month-view.component.ts",
+      "bytes": 3203,
+      "sha256": "232eddafd7a1260fab2ec1c819fcf5c6e282a9a96cb52d4eddd395e604ce3e55"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/student/homework/student-homework.component.css",
+      "bytes": 925,
+      "sha256": "f5de638f8998f379fc2eff1e6d5819b0bf0749c99b7e54dc042ae4e1a0dca266"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/student/homework/student-homework.component.html",
+      "bytes": 2240,
+      "sha256": "10f09ae80c6983b611477f9db6fdcbe6ff4bb7161032fe10dd7e50030fdb0c53"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/student/homework/student-homework.component.spec.ts",
+      "bytes": 4835,
+      "sha256": "2dcc41f1647950ee4a35d3fae6391d6abd48c39820fa13b7a8ba11b3f3f02049"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/student/homework/student-homework.component.ts",
+      "bytes": 5863,
+      "sha256": "04643a3fd7d7d601bbe7c6f6ee71fb055e2d48ab50d9d64ea2a5e8e325cf7a20"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/student/homework/week-view/student-homework-week-view.component.css",
+      "bytes": 1547,
+      "sha256": "e919de9ef0f62c2d0965518289f1d1f1efe0f34f1cf613b3ae50710e52661dad"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/student/homework/week-view/student-homework-week-view.component.html",
+      "bytes": 1453,
+      "sha256": "3d7e3596b2750fe8ea8392b774b280410daaf91e679bbf754e023d6054e17b3b"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/student/homework/week-view/student-homework-week-view.component.spec.ts",
+      "bytes": 3876,
+      "sha256": "c72cef8bd1e288980b53fa5105b404a6731c9b396ec3613bf3d166cad85b5b92"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/student/homework/week-view/student-homework-week-view.component.ts",
+      "bytes": 2904,
+      "sha256": "df03a2ca2b5de3895cb504024e7c087535f88378b35bc93c19cf60b11a128ff1"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/student/late-checkin/student-late-checkin.component.css",
+      "bytes": 3310,
+      "sha256": "1d5afff29701a144988f834dcdb258de30f56f94ee0a0bcda1d6077a7290eb0d"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/student/late-checkin/student-late-checkin.component.html",
+      "bytes": 3881,
+      "sha256": "13aef6191c3e0e70ca4d40051771683096e1ce16d6a32d1aa95bcc977da50a53"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/student/late-checkin/student-late-checkin.component.spec.ts",
+      "bytes": 5494,
+      "sha256": "bfd2b24fd1445dfaf10fce8b8de9e7cb56798c664352965ca981dc9cc0ffe0dd"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/student/late-checkin/student-late-checkin.component.ts",
+      "bytes": 5885,
+      "sha256": "6ee6087c3179cc103a6e0a5a1baf8473ff0ac8ed00970124b417fce7bc23e227"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/student/notifications/notification-item/notification-item.component.ts",
+      "bytes": 9645,
+      "sha256": "7152e99642ba97b0029b51056ea30828d6213e7f4808825b32e2410bc5585869"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/student/notifications/notification-settings.component.ts",
+      "bytes": 7377,
+      "sha256": "d32ac2e99a0704eb471f278d9963ffdcfffc219572eb42b94fbb9933e6c56939"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/student/notifications/student-notifications.component.css",
+      "bytes": 445,
+      "sha256": "0a741ba83aa50f5c95364b31fe2377fc07a816fc950578c2cb33dc5fe5e01ddc"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/student/notifications/student-notifications.component.html",
+      "bytes": 1571,
+      "sha256": "e6c389052e8c5f98dfddae88f7ad1f025f2bc73c82ef777cfb33853026fd7845"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/student/notifications/student-notifications.component.ts",
+      "bytes": 4339,
+      "sha256": "347c58f65ccbe5dc08a86140098656fa9eb5fa35439bfbd99fd7f5e046519ee6"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/student/profile/student-profile.component.css",
+      "bytes": 3875,
+      "sha256": "cc00d7f3d16928c0e1c42a730a8354581f48a9ac9304811a9fedcb0c908eee85"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/student/profile/student-profile.component.html",
+      "bytes": 4922,
+      "sha256": "1376f04ade3a7569bb334abb5b034ee56b5bc17f15356050b717e8d58e5bd95f"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/student/profile/student-profile.component.ts",
+      "bytes": 4315,
+      "sha256": "5b42dda517968d611753d887c142d5e6185cb1ac76af1596be187649e9fe5bf7"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/student/schedule/lesson-row/lesson-row.component.css",
+      "bytes": 6591,
+      "sha256": "534cd4f84c66d4dbba19370a07b3d6d259bdb022dfaa63c0bab859816082b7d6"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/student/schedule/lesson-row/lesson-row.component.html",
+      "bytes": 3164,
+      "sha256": "b7c77a87111f3398f4d23772f115994afb4502d17e1fad61a07c736d96ace3de"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/student/schedule/lesson-row/lesson-row.component.spec.ts",
+      "bytes": 5078,
+      "sha256": "159787a061da2ef7d2adce533a2cdaebc719d6a7dce5f555cb983892f29ab174"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/student/schedule/lesson-row/lesson-row.component.ts",
+      "bytes": 4657,
+      "sha256": "5f967c26a34791446fef0dfc347bfdc06e384ea2166e4373ceea5c04eacf562b"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/student/schedule/student-schedule.component.css",
+      "bytes": 5277,
+      "sha256": "8719d9b2426518902ab9cae973abfa4ca4e859590536aca91adca4ad394e86aa"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/student/schedule/student-schedule.component.html",
+      "bytes": 3645,
+      "sha256": "51ebe3f0aada9d2025f3013511f2080d5e3ef6a276ddc9bc6aa8117cfc10e99c"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/student/schedule/student-schedule.component.spec.ts",
+      "bytes": 11224,
+      "sha256": "0850c6c429e57850a67df80ba4297f5f956e71cc3094f75f9ef9b5906cbdf04a"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/student/schedule/student-schedule.component.ts",
+      "bytes": 10472,
+      "sha256": "47ab731e26d5814cbf77daf3982e97fb4658b7ab7c43eea06bfb1d4381e56cc2"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/student/schedule/week-utils.spec.ts",
+      "bytes": 4661,
+      "sha256": "3499155bfc522da9e343edbae761925524da8eeb66534c6b6fcf4efd7404ec57"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/student/schedule/week-utils.ts",
+      "bytes": 2953,
+      "sha256": "21ed7a00729290287809c0c9c11f5fee41c7c91a5bf0c75704a5c5c4cf21ce1b"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/student/shared/format-load-error.ts",
+      "bytes": 1179,
+      "sha256": "9eaf8f7284c8ba9e6a4f18018ef9c7eb177f2f4054a8916846f2f899bfc3d974"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/student/shared/student-api.service.spec.ts",
+      "bytes": 5307,
+      "sha256": "a5a40c3a084777944b41b185e0694019a1cff764eb6afd5a25b5085ff2998bc4"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/student/shared/student-api.service.ts",
+      "bytes": 8865,
+      "sha256": "fdbfe8419b562046a921b7838715c353e1171f8b3408b9df82303fd553748b9b"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/student/shared/student-banner.service.ts",
+      "bytes": 1405,
+      "sha256": "fa166fc527af47352ec9ab793b5bf2e53ad01ca5fb8d0f0859c9cdf9e558f673"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/student/shared/student-notification-badge.service.ts",
+      "bytes": 598,
+      "sha256": "6ead3e00e2bad99ee78fac84070da241b665a5ea7f25369b54b94e5d3b443dd2"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/student/shared/student-schedule.types.ts",
+      "bytes": 4179,
+      "sha256": "af21aca4e98a673edf9fedef62d607f06673d5e7972ebb8e1337842f4b53a1a1"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/student/shared/student-stomp.service.spec.ts",
+      "bytes": 4986,
+      "sha256": "5ab8b16381bd9d3427356337c40e71d0981c3ca903537258ad841ff4a9134bed"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/student/shared/student-stomp.service.ts",
+      "bytes": 4659,
+      "sha256": "7cf1add5a4f7580c0840c7ace34c469d85bf6eb741f85e150dd1437d5d768cc1"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/student/shared/subject-cache.service.spec.ts",
+      "bytes": 2937,
+      "sha256": "ea30b223ed4a5b9d13f86771af65b6043088c79227d5c305e1e3436b14711a9d"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/student/shared/subject-cache.service.ts",
+      "bytes": 1755,
+      "sha256": "f17d7ff9feba75080cf537351bee05584ca9598748dc095dafc2a3b980013eca"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/student/stats/student-overall-card/student-overall-card.component.ts",
+      "bytes": 2142,
+      "sha256": "d4d66c4e1e70216bfb6b268481bcdd4359ba9925eb08314cfe756a27b9db23fc"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/student/stats/student-stats.component.css",
+      "bytes": 337,
+      "sha256": "e21175c1a8e4053891cf9fb32c1c214f0f3f2986fef54c933600e3281da34b92"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/student/stats/student-stats.component.html",
+      "bytes": 1575,
+      "sha256": "87a1a1810c6cc4a0992469b65b8b0f90667ec3c3dff9e22790919a5595c0c7ea"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/student/stats/student-stats.component.ts",
+      "bytes": 2493,
+      "sha256": "47c8344608db40808c4525d228d17cbf18a8409c0a3d6a0da665ee5befa44092"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/student/stats/student-subject-chart/student-subject-chart.component.spec.ts",
+      "bytes": 1213,
+      "sha256": "faa7642341854ea0e734d0a252992609c4d79109030cfaebcae450d51920e1dc"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/student/stats/student-subject-chart/student-subject-chart.component.ts",
+      "bytes": 5157,
+      "sha256": "b248f46dee141e35ba029aef7dce6b5f0fc32374400bf0ff28595a53130e42f5"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/student/student.routes.ts",
+      "bytes": 2735,
+      "sha256": "1ca5f37cd590e3d0ebd9c08f1520f0c26c69b4b07d9bd0c491bbe6e97b9bf966"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/teacher/dashboard/teacher-dashboard.component.css",
+      "bytes": 3655,
+      "sha256": "562bc0406f5d8e476fcd3c4f546d8e2644964190cb4191a6f3ef8107ca9dea44"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/teacher/dashboard/teacher-dashboard.component.html",
+      "bytes": 2925,
+      "sha256": "29ee5882b7c74a61c2a86326317e785b28aa176307c8948348faba4df5131577"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/teacher/dashboard/teacher-dashboard.component.ts",
+      "bytes": 1580,
+      "sha256": "e3e8114927da8ac105f1378d9249f72ba337d9df018ed4e5eb6c775ca7264f75"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/teacher/journal/journal-api.service.spec.ts",
+      "bytes": 3458,
+      "sha256": "6aa3ac0bd2d58e46466aea5259e865b6e30fef2f13424506aeb262021c780f72"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/teacher/journal/journal-api.service.ts",
+      "bytes": 2141,
+      "sha256": "033028e031d8ce3d95d978c44c9300cbba2f0d61629b1a2be9bc3f2d65c2be18"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/teacher/journal/journal-cell/journal-cell.component.spec.ts",
+      "bytes": 1553,
+      "sha256": "0f2c691fcabaea119834862be18488db40ceac418306a49456912a303468fa51"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/teacher/journal/journal-cell/journal-cell.component.ts",
+      "bytes": 1400,
+      "sha256": "8f18d86986f241baf575561ce884f09a716b73edc8479422b17530a7c5f88cd9"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/teacher/journal/journal-grid/journal-grid.component.html",
+      "bytes": 1535,
+      "sha256": "56f2457e9dc2f06b5a12595b50a1dae9d0a0e99b7f1a184b8fbcd183d91eb4d7"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/teacher/journal/journal-grid/journal-grid.component.spec.ts",
+      "bytes": 3318,
+      "sha256": "42f96df5d7d72391af4a5afb779a977f316cbd82435eab0605807b148645b5c7"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/teacher/journal/journal-grid/journal-grid.component.ts",
+      "bytes": 7953,
+      "sha256": "9ccb074732afa4ea2e22346d97a15dff5ee0af24d57b05042bd477a941c29903"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/teacher/journal/journal-page.component.html",
+      "bytes": 3448,
+      "sha256": "612813e0f7520b3b6fa3d94bec479e86603cd0207382a86dff6fcc694df81b26"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/teacher/journal/journal-page.component.spec.ts",
+      "bytes": 6694,
+      "sha256": "ebdc6446b2cf0dfdfa387cf40ca6874473185504a013ffef59d4203a10e336c1"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/teacher/journal/journal-page.component.ts",
+      "bytes": 7825,
+      "sha256": "17c26fdd2064e42475570c377f00653bcedf3c3d777e7912585b2f0819ab9fa1"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/teacher/journal/status-legend/status-legend.component.spec.ts",
+      "bytes": 1001,
+      "sha256": "3114910a8a3b91da937fd366afb4b395b3b4d712e56f36ede8dce5f79101ae8e"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/teacher/journal/status-legend/status-legend.component.ts",
+      "bytes": 1067,
+      "sha256": "37e1edf77009d0d041d5a743e6153cea9ba197b6edf74aff49e1baea33a63817"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/teacher/journal/types.ts",
+      "bytes": 1789,
+      "sha256": "e1cf9914caeb1ba7e322dca5af994273a8ef6faeebd218bf9887516c954df071"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/teacher/stats/overall-stat-card/overall-stat-card.component.spec.ts",
+      "bytes": 1095,
+      "sha256": "8149cf70e8d4dfc77267c76810c003f14a8e26f7debc5ab1bd57ff32d53bac1e"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/teacher/stats/overall-stat-card/overall-stat-card.component.ts",
+      "bytes": 1808,
+      "sha256": "40d25774d86d50be07377f058ea91b50afb6abf38026430f9d377dd805bfd1fb"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/teacher/stats/stats-page.component.html",
+      "bytes": 4028,
+      "sha256": "b2ae8a6a74ce7f0632104215bda670cd693eeb7d4781d623ab2c09f7dd45277a"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/teacher/stats/stats-page.component.spec.ts",
+      "bytes": 6268,
+      "sha256": "701f58043000817ac2b8205721f08ce19b5d1e15458907f789190404d2312840"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/teacher/stats/stats-page.component.ts",
+      "bytes": 7806,
+      "sha256": "5ac34c17976839bc874024042861715c3f1e363d1d77ea759fdc83995c9bbc6c"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/teacher/stats/stats-utils.spec.ts",
+      "bytes": 6068,
+      "sha256": "31babf8236927e172afb517631a457c12d56500c44fe6c083cf6be8c0957dc47"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/teacher/stats/stats-utils.ts",
+      "bytes": 1756,
+      "sha256": "55260cc0e109f39533b0c00c6429b424b0658352c8a707c0fa68b5490c339434"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/teacher/stats/subject-chart/subject-chart.component.spec.ts",
+      "bytes": 2097,
+      "sha256": "4d7370a59abeda8f617147e1ea74e66977ea95cad18298b4d2dbf4d8c8e74255"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/teacher/stats/subject-chart/subject-chart.component.ts",
+      "bytes": 4120,
+      "sha256": "17d730609c47df9336a320813559665480cd09d4b63e2b6555dc4cbb10ca114d"
+    },
+    {
+      "path": "frontends/web-panel/src/app/features/teacher/teacher.routes.ts",
+      "bytes": 1309,
+      "sha256": "77659b15b97dd7285e14f9115ee6cd1458631a05c9fbfb83720beb79eb9348f2"
+    },
+    {
+      "path": "frontends/web-panel/src/app/layout/header/header.component.css",
+      "bytes": 3067,
+      "sha256": "fe5aeda697d61ce562a466a703cd1419aaabf2a6b2a8cc043171e38557d17948"
+    },
+    {
+      "path": "frontends/web-panel/src/app/layout/header/header.component.html",
+      "bytes": 876,
+      "sha256": "fc0d8153ea8c089036355022e5169062239aabd4bd4746c556b6ef86fdb750c3"
+    },
+    {
+      "path": "frontends/web-panel/src/app/layout/header/header.component.ts",
+      "bytes": 3850,
+      "sha256": "3a7e53cedce2ff37ba26b5cfd1679a7c8a37b19ad77b7fa4c0923410f75a240f"
+    },
+    {
+      "path": "frontends/web-panel/src/app/layout/shell/shell.component.css",
+      "bytes": 2031,
+      "sha256": "d231a62190ebf211e86e380d9c61eb0131c3adff245b928184fd297007b9e451"
+    },
+    {
+      "path": "frontends/web-panel/src/app/layout/shell/shell.component.html",
+      "bytes": 475,
+      "sha256": "f4f7824b16c61c675cfaccd98cfe6c80c2d35a8313072ad4bc2f8848fd960a39"
+    },
+    {
+      "path": "frontends/web-panel/src/app/layout/shell/shell.component.ts",
+      "bytes": 1949,
+      "sha256": "f8b6cee400cced58a96874a04867e496f036464a704cdc88d53600c36dc50c6a"
+    },
+    {
+      "path": "frontends/web-panel/src/app/layout/shell/student-pwa-banner/student-pwa-banner.component.css",
+      "bytes": 1322,
+      "sha256": "d1899e3d487aa84fa6a92ae3e124c10e7aee1ffed5e7acbec9d0abbd3c3b2da8"
+    },
+    {
+      "path": "frontends/web-panel/src/app/layout/shell/student-pwa-banner/student-pwa-banner.component.html",
+      "bytes": 1310,
+      "sha256": "e849ba7070435ff4b7a878702967ea702a3d3e9abc9bfadd4df0f842868772ca"
+    },
+    {
+      "path": "frontends/web-panel/src/app/layout/shell/student-pwa-banner/student-pwa-banner.component.spec.ts",
+      "bytes": 4425,
+      "sha256": "69426596ce0e24cd66db16e896647442464f59a2b7170b1e593e46af08a8d994"
+    },
+    {
+      "path": "frontends/web-panel/src/app/layout/shell/student-pwa-banner/student-pwa-banner.component.ts",
+      "bytes": 3407,
+      "sha256": "d66521d0e2a81c7c10f9f8c1296b018c682bb6b93fb295dda63bc10586ff5b99"
+    },
+    {
+      "path": "frontends/web-panel/src/app/layout/sidebar/sidebar.component.css",
+      "bytes": 7165,
+      "sha256": "15fd7d42b095346ba80388454a3d7f82ac5ef57f9190b14b096e86c6581b6503"
+    },
+    {
+      "path": "frontends/web-panel/src/app/layout/sidebar/sidebar.component.html",
+      "bytes": 5913,
+      "sha256": "8d5b83433196e1ac2e85fa47ccc4e1f974ce825e38b0ed7ae2b4921d28f12180"
+    },
+    {
+      "path": "frontends/web-panel/src/app/layout/sidebar/sidebar.component.spec.ts",
+      "bytes": 7229,
+      "sha256": "2468595256175e07cb2f23c3bba45c7182fa64c505de031986361251af1afff2"
+    },
+    {
+      "path": "frontends/web-panel/src/app/layout/sidebar/sidebar.component.ts",
+      "bytes": 9529,
+      "sha256": "9a24faab8e3d31d6d90dc406b03ea2993329988ef5fd9297df322b5053e35660"
+    },
+    {
+      "path": "frontends/web-panel/src/app/shared/attendance-symbols.ts",
+      "bytes": 1098,
+      "sha256": "e0ce646943102f327b656c298bb66836755aa52df32e6ed72af0504153091425"
+    },
+    {
+      "path": "frontends/web-panel/src/app/shared/confirm-dialog/confirm-dialog.component.ts",
+      "bytes": 1970,
+      "sha256": "be4b8f02830ef5ff3ce7237c15eaf670c7728624ac855fc2b658151c820e5dda"
+    },
+    {
+      "path": "frontends/web-panel/src/app/shared/confirm-with-reason-dialog/confirm-with-reason-dialog.component.spec.ts",
+      "bytes": 3496,
+      "sha256": "747bd9d4d28443fdb2ecdb4dc2761793debbf9f5c868aa11b18363dcb3edc5a7"
+    },
+    {
+      "path": "frontends/web-panel/src/app/shared/confirm-with-reason-dialog/confirm-with-reason-dialog.component.ts",
+      "bytes": 4770,
+      "sha256": "4ad06c1f908222f51ade41cef8466e4f50fe85d45675182943faf77464525476"
+    },
+    {
+      "path": "frontends/web-panel/src/app/shared/homework-card/homework-card.component.ts",
+      "bytes": 7005,
+      "sha256": "269b1e3e92d3eeafe0cb42f57ab7ea43d783dc2df77d2469ee5b1b89e2fda89f"
+    },
+    {
+      "path": "frontends/web-panel/src/app/shared/segmented-control/segmented-control.component.css",
+      "bytes": 935,
+      "sha256": "86a0929f7e541fbc429c7bc698d0562617d739a9ebb7189cbafabf3111049503"
+    },
+    {
+      "path": "frontends/web-panel/src/app/shared/segmented-control/segmented-control.component.html",
+      "bytes": 524,
+      "sha256": "fef0503f3668bba6b5de1eeb04eaa42f77f2e45b21d5c27363cc3549d59eb5de"
+    },
+    {
+      "path": "frontends/web-panel/src/app/shared/segmented-control/segmented-control.component.spec.ts",
+      "bytes": 2700,
+      "sha256": "4de039b91e09d15e7c358e9b772ac4f3bcf09699317cfbcff7c61d3c6ef2f4a8"
+    },
+    {
+      "path": "frontends/web-panel/src/app/shared/segmented-control/segmented-control.component.ts",
+      "bytes": 1265,
+      "sha256": "1927c7c628b996f734c050034bfc39297040a3c60218acb42a7cea3fb34d2f8c"
+    },
+    {
+      "path": "frontends/web-panel/src/app/shared/week-navigator/week-navigator.component.ts",
+      "bytes": 5509,
+      "sha256": "6cab77e500cbeeb75c1560858ab8406b576e1496b049cd629e4d3d63781f4794"
+    },
+    {
+      "path": "frontends/web-panel/src/index.html",
+      "bytes": 295,
+      "sha256": "17886c9909d9dada000a386b8244a61af3519e4ec1dceb7cc422d53346cec3db"
+    },
+    {
+      "path": "frontends/web-panel/src/main.ts",
+      "bytes": 1791,
+      "sha256": "10c0af3787d61d2a3df8a44092cdf7d57048fd7a0de8f7f39b87a8875744738c"
+    },
+    {
+      "path": "frontends/web-panel/src/styles.css",
+      "bytes": 15651,
+      "sha256": "72e7e2b5b788ee15cb334a2dd4107d14827c18fbcf12adf8abd8b25245378c81"
+    },
+    {
+      "path": "frontends/web-panel/src/styles/data-surfaces.css",
+      "bytes": 15566,
+      "sha256": "303d252f1fab005d9477acc89d1edc28c296b4ab66afbdd131618a34d32939e8"
+    },
+    {
+      "path": "frontends/web-panel/src/styles/fonts.css",
+      "bytes": 986,
+      "sha256": "10a615a8a2ea4bbd0921a238cbdebea2047467ae4fa2c0e14c9be47847356ab4"
+    },
+    {
+      "path": "frontends/web-panel/src/styles/tokens.css",
+      "bytes": 7798,
+      "sha256": "6c41d67cd6c491ab4fafe3706e6a654f888aaeccac79e1739d8d4dfd6ef21a30"
+    },
+    {
+      "path": "frontends/web-panel/src/test-setup.ts",
+      "bytes": 625,
+      "sha256": "09920ea69e689883dc284045f34d7992909de6c245cf8ea57f172ab661f4f698"
+    },
+    {
+      "path": "frontends/web-panel/tsconfig.app.json",
+      "bytes": 424,
+      "sha256": "7c030d64833de2975bdbc63e5fe2e7aff3177ca781b976840baff34a70be9eef"
+    },
+    {
+      "path": "frontends/web-panel/tsconfig.json",
+      "bytes": 915,
+      "sha256": "f88ab782788a0ee32d04c10e89e276c00deb9228b5d21a9e4086932c56e9b5c1"
+    },
+    {
+      "path": "frontends/web-panel/tsconfig.spec.json",
+      "bytes": 229,
+      "sha256": "991440b7e4d12706eb9a4faa4ff6e2d368370a4574688bdf74900813400b52c3"
+    },
+    {
+      "path": "frontends/web-panel/vitest.config.ts",
+      "bytes": 1022,
+      "sha256": "fb6e2af591a164704cf50b97807486fa3645519c183f360f20b6a65d6175d52f"
+    }
+  ]
+}

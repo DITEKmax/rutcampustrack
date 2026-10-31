@@ -1,0 +1,11 @@
+{
+  "kind": "static-dom-only",
+  "cases": 7,
+  "oldOwnerPrefixedMatches": 0,
+  "newOwnedMatches": 7,
+  "foreignOnlyMatches": 0,
+  "pageURL": "about:blank",
+  "networkRequests": 0,
+  "vueLoaded": false,
+  "auth": false
+}

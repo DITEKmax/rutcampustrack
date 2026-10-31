@@ -81,6 +81,17 @@ public class GlobalExceptionHandler {
                 HttpStatus.CONFLICT, "conflict", "Конфликт данных", ex.getMessage(), request);
     }
 
+    @ExceptionHandler(AttendanceWriteBusyException.class)
+    public ResponseEntity<ErrorResponse> handleAttendanceWriteBusy(
+            AttendanceWriteBusyException ex, HttpServletRequest request) {
+        return problem(
+                HttpStatus.SERVICE_UNAVAILABLE,
+                "attendance-write-busy",
+                "Запись посещаемости временно занята",
+                AttendanceWriteBusyException.PUBLIC_DETAIL,
+                request);
+    }
+
     @ExceptionHandler(DuplicateKeyException.class)
     public ResponseEntity<ErrorResponse> handleDuplicateKey(
             DuplicateKeyException ex, HttpServletRequest request) {

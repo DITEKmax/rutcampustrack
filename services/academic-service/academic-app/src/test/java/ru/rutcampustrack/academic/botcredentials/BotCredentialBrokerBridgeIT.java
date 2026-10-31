@@ -2,6 +2,7 @@ package ru.rutcampustrack.academic.botcredentials;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.dockerjava.api.model.ExposedPort;
@@ -88,6 +89,54 @@ import javax.net.ssl.KeyManagerFactory;
  * Genuine Auth transaction/outbox/confirmed Rabbit → native consumer/Redis → Academic/TLS/provider.
  */
 class BotCredentialBrokerBridgeIT {
+    private static String closedDetail(JsonNode value, Set<String> allowed) {
+        return value.isTextual() && allowed.contains(value.textValue()) ? value.textValue() : "OTHER";
+    }
+
+    private static int boundedChecks(JsonNode value) {
+        if (!value.isIntegralNumber() || !value.canConvertToInt()) return -1;
+        int count = value.intValue();
+        return count >= 0 && count <= 100_000 ? count : -1;
+    }
+
+    private static String checkOutcomes(JsonNode check) {
+        List<String> facts = new ArrayList<>();
+        JsonNode outcomes = check.path("outcomes");
+        for (String name :
+                List.of(
+                        "ack_unchanged",
+                        "pending_positive",
+                        "held_card_unchanged",
+                        "foreign_card_unchanged")) {
+            JsonNode value = outcomes.path(name);
+            if (value.isBoolean()) facts.add(name + "=" + value.booleanValue());
+        }
+        for (String name :
+                List.of(
+                        "initial_pttl_ms", "monotonic_elapsed_ms", "redis_elapsed_ms", "redeliveries")) {
+            JsonNode value = outcomes.path(name);
+            if (value.isIntegralNumber()
+                    && value.canConvertToInt()
+                    && value.intValue() >= -1
+                    && value.intValue() <= 10_000_000) {
+                facts.add(name + "=" + value.intValue());
+            }
+        }
+        return facts.isEmpty() ? "NONE" : String.join(",", facts);
+    }
+
+    private static String controlCause(Throwable failure) {
+        if (failure instanceof AssertionError) return "ASSERTION";
+        if (failure instanceof org.springframework.dao.DataIntegrityViolationException)
+            return "DATA_INTEGRITY";
+        if (failure instanceof org.springframework.dao.DataAccessException) return "DATA_ACCESS";
+        if (failure instanceof ru.rutcampustrack.auth.session.AuthSessionException)
+            return "AUTH_SESSION";
+        if (failure instanceof IllegalArgumentException) return "ARGUMENT";
+        if (failure instanceof IllegalStateException) return "STATE";
+        return "OTHER";
+    }
+
     private static final Instant COMMAND_TIME = Instant.parse("2026-10-12T00:00:00Z");
     private static final String RUNNER =
             "services/notification-bot/tests/np01_broker_bridge_runner.py";
@@ -243,7 +292,71 @@ class BotCredentialBrokerBridgeIT {
                             throw new AssertionError("native broker bridge deadline exceeded");
                         }
                         var result = mapper.readTree(child.getInputStream().readAllBytes());
-                        assertThat(child.exitValue()).isZero();
+                        String detail =
+                                String.format(
+                                        "BRIDGE_DETAIL_V1 kind=BROKER phase=%s cause=%s"
+                                                + " action=%s checks=%d workers_reaped=%s"
+                                                + " check_line=%d check_call_line=%d observations=%s",
+                                        closedDetail(result.path("phase"),
+                                                Set.of(
+                                                        "setup",
+                                                        "actual_auth_change_outbox_confirm_consumer_ack",
+                                                        "same_real_event_completed_dedup_ack",
+                                                        "actual_unlinked_reset_original_uid_cleanup",
+                                                        "uncertain_provider_keeps_real_claim_retry_without_ack",
+                                                        "actual_worker_death_durable_redelivery_recovery",
+                                                        "worker_death_while_default_processing_lease_held",
+                                                        "held_lease_blocks_premature_ack_until_natural_expiry",
+                                                        "unknown_version_real_dlq_releases_claim",
+                                                        "completed",
+                                                        "cleanup")),
+                                        closedDetail(result.path("failure_cause"),
+                                                Set.of(
+                                                        "CHECK_FAILED",
+                                                        "ASSERTION",
+                                                        "TIMEOUT",
+                                                        "HTTP_TRANSPORT",
+                                                        "GRPC_UNAVAILABLE",
+                                                        "GRPC_DEADLINE_EXCEEDED",
+                                                        "GRPC_UNAUTHENTICATED",
+                                                        "GRPC_PERMISSION_DENIED",
+                                                        "GRPC_FAILED_PRECONDITION",
+                                                        "GRPC_INVALID_ARGUMENT",
+                                                        "GRPC_NOT_FOUND",
+                                                        "GRPC_OTHER",
+                                                        "CONTROL_ASSERTION",
+                                                        "CONTROL_DATA_INTEGRITY",
+                                                        "CONTROL_DATA_ACCESS",
+                                                        "CONTROL_AUTH_SESSION",
+                                                        "CONTROL_ARGUMENT",
+                                                        "CONTROL_STATE",
+                                                        "CONTROL_OTHER",
+                                                        "CONTROL_HTTP_STATUS",
+                                                        "OTHER")),
+                                        closedDetail(result.path("control_action"),
+                                                Set.of(
+                                                        "change",
+                                                        "reset",
+                                                        "publish",
+                                                        "replay",
+                                                        "unknown_version",
+                                                        "new_initial",
+                                                        "rebind",
+                                                        "restore_binding",
+                                                        "worker_started",
+                                                        "worker_reaped",
+                                                        "facts",
+                                                        "verify",
+                                                        "NONE",
+                                                        "OTHER")),
+                                        boundedChecks(result.path("checks")),
+                                        result.path("workers_reaped").isBoolean()
+                                                ? Boolean.toString(result.path("workers_reaped").booleanValue())
+                                                : "UNKNOWN",
+                                        boundedChecks(result.path("failed_check").path("line")),
+                                        boundedChecks(result.path("failed_check").path("call_line")),
+                                        checkOutcomes(result.path("failed_check")));
+                        assertThat(child.exitValue()).withFailMessage(detail).isZero();
                         for (String fact :
                                 List.of(
                                         "qualified",
@@ -261,7 +374,7 @@ class BotCredentialBrokerBridgeIT {
                         assertThat(result.path("worker_restarts").asInt(-1)).isEqualTo(2);
                         int heldPttl = result.path("held_lease_initial_pttl_ms").asInt(-1);
                         assertThat(heldPttl).isGreaterThan(270_000).isLessThanOrEqualTo(300_000);
-                        assertThat(result.path("held_lease_elapsed_ms").asInt(-1))
+                        assertThat(result.path("held_lease_redis_elapsed_ms").asInt(-1))
                                 .isGreaterThanOrEqualTo(heldPttl - 2_000);
                         assertThat(result.path("held_lease_redeliveries").asInt(-1))
                                 .isGreaterThanOrEqualTo(2);
@@ -272,8 +385,10 @@ class BotCredentialBrokerBridgeIT {
                                         + result.path("worker_restarts").asInt(-1)
                                         + " held_lease_initial_pttl_ms="
                                         + heldPttl
-                                        + " held_lease_elapsed_ms="
-                                        + result.path("held_lease_elapsed_ms").asInt(-1)
+                                        + " held_lease_monotonic_elapsed_ms="
+                                        + result.path("held_lease_monotonic_elapsed_ms").asInt(-1)
+                                        + " held_lease_redis_elapsed_ms="
+                                        + result.path("held_lease_redis_elapsed_ms").asInt(-1)
                                         + " held_lease_redeliveries="
                                         + result.path("held_lease_redeliveries").asInt(-1));
                         assertThat(
@@ -508,7 +623,10 @@ class BotCredentialBrokerBridgeIT {
         } catch (Throwable failure) {
             // Never put SQL, producer commands, provider content or synthetic secrets into
             // transport/logs.
-            exchange.sendResponseHeaders(500, -1);
+            byte[] output = mapper.writeValueAsBytes(Map.of("controlCause", controlCause(failure)));
+            exchange.getResponseHeaders().set("Content-Type", "application/json");
+            exchange.sendResponseHeaders(500, output.length);
+            exchange.getResponseBody().write(output);
         } finally {
             exchange.close();
         }

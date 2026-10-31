@@ -8,6 +8,9 @@
     "name" : "Assistants",
     "description" : "Управление помощниками старосты"
   }, {
+    "name" : "Group deletion",
+    "description" : "Окончательное удаление одной группы с сохранением аккаунтов"
+  }, {
     "name" : "Semester archive",
     "description" : "Идемпотентные команды архивации и восстановления семестра"
   }, {
@@ -3465,6 +3468,15 @@
           "required" : false,
           "schema" : {
             "type" : "string"
+          }
+        }, {
+          "name" : "groupId",
+          "in" : "query",
+          "description" : "Положительный ID группы в сохранённой связи STUDENT/HEADMAN. Не состав на дату; неизвестный ID даёт пустой список.",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
           }
         }, {
           "name" : "pageable",
@@ -7861,6 +7873,234 @@
         } ]
       }
     },
+    "/academic/groups/{id}/deletions" : {
+      "post" : {
+        "tags" : [ "Group deletion" ],
+        "operationId" : "confirmGroupDeletion",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "Idempotency-Key",
+          "in" : "header",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/ConfirmAdminGroupDeletionRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/AdminGroupDeletionOperation"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Ошибка валидации запроса",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Требуется аутентификация",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Доступ запрещён",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Ресурс не найден",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Конфликт данных",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429" : {
+            "description" : "Превышен лимит запросов",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Внутренняя ошибка сервера",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
+    "/academic/groups/{id}/deletions/{operationId}/resolve" : {
+      "post" : {
+        "tags" : [ "Group deletion" ],
+        "summary" : "Разрешить исход удаления по исходному UUID",
+        "description" : "Возвращает исходную принятую операцию. Если приём ещё не состоялся, атомарно сохраняет CANCELLED/NOT_ACCEPTED и исключает поздний приём этого UUID. Не отменяет уже принятую операцию. Пароль и повторное подтверждение удаления не передаются.",
+        "operationId" : "resolveGroupDeletion",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "operationId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/AdminGroupDeletionOperation"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Ошибка валидации запроса",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Требуется аутентификация",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Доступ запрещён",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Ресурс не найден",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Конфликт данных",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429" : {
+            "description" : "Превышен лимит запросов",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Внутренняя ошибка сервера",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
     "/academic/groups/registry" : {
       "get" : {
         "tags" : [ "Groups" ],
@@ -9588,6 +9828,7 @@
       "patch" : {
         "tags" : [ "Assistants" ],
         "summary" : "Обновить права помощника (HEADMAN/ADMIN)",
+        "description" : "expectedPermissions задаёт условное сравнение набора прав под блокировкой. Пустые permissions со снимком отзывают помощника и возвращают active=false; без снимка пустой набор запрещён.",
         "operationId" : "updatePermissions",
         "parameters" : [ {
           "name" : "id",
@@ -9649,8 +9890,8 @@
               }
             }
           },
-          "401" : {
-            "description" : "Требуется аутентификация",
+          "409" : {
+            "description" : "Помощник отозван или права изменились; extras.code=ASSISTANT_PERMISSIONS_CONFLICT при несовпадении снимка",
             "content" : {
               "application/problem+json" : {
                 "schema" : {
@@ -9659,8 +9900,8 @@
               }
             }
           },
-          "409" : {
-            "description" : "Конфликт данных",
+          "401" : {
+            "description" : "Требуется аутентификация",
             "content" : {
               "application/problem+json" : {
                 "schema" : {
@@ -12688,6 +12929,106 @@
         } ]
       }
     },
+    "/academic/groups/{id}/deletion-preview" : {
+      "get" : {
+        "tags" : [ "Group deletion" ],
+        "operationId" : "previewGroupDeletion",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/AdminGroupDeletionPreview"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Ошибка валидации запроса",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Требуется аутентификация",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Доступ запрещён",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Ресурс не найден",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Конфликт данных",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429" : {
+            "description" : "Превышен лимит запросов",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Внутренняя ошибка сервера",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
     "/academic/groups/options" : {
       "get" : {
         "tags" : [ "group-options-controller" ],
@@ -12717,6 +13058,14 @@
             "type" : "integer",
             "format" : "int32",
             "default" : 20
+          }
+        }, {
+          "name" : "includeArchived",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "boolean",
+            "default" : false
           }
         } ],
         "responses" : {
@@ -12859,6 +13208,106 @@
           },
           "401" : {
             "description" : "Требуется аутентификация",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Ресурс не найден",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Конфликт данных",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429" : {
+            "description" : "Превышен лимит запросов",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Внутренняя ошибка сервера",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
+    "/academic/group-deletions/{operationId}" : {
+      "get" : {
+        "tags" : [ "Group deletion" ],
+        "operationId" : "getGroupDeletionStatus",
+        "parameters" : [ {
+          "name" : "operationId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/AdminGroupDeletionOperation"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Ошибка валидации запроса",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Требуется аутентификация",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Доступ запрещён",
             "content" : {
               "application/problem+json" : {
                 "schema" : {
@@ -16119,6 +16568,10 @@
             "type" : "string",
             "pattern" : "ACTIVE|EXPELLED|GRADUATED|SUSPENDED|DISMISSED|ARCHIVED"
           },
+          "groupId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
           "sorts" : {
             "type" : "array",
             "items" : {
@@ -16549,6 +17002,10 @@
             "type" : "string",
             "pattern" : "ACTIVE|EXPELLED|GRADUATED|SUSPENDED|DISMISSED|ARCHIVED"
           },
+          "groupId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
           "sorts" : {
             "type" : "array",
             "items" : {
@@ -16897,6 +17354,51 @@
           }
         },
         "required" : [ "name" ]
+      },
+      "ConfirmAdminGroupDeletionRequest" : {
+        "type" : "object",
+        "properties" : {
+          "password" : {
+            "type" : "string",
+            "maxLength" : 256,
+            "minLength" : 0
+          },
+          "previewDigest" : {
+            "type" : "string",
+            "minLength" : 1,
+            "pattern" : "[0-9a-f]{64}"
+          }
+        },
+        "required" : [ "password", "previewDigest" ]
+      },
+      "AdminGroupDeletionOperation" : {
+        "type" : "object",
+        "properties" : {
+          "operationId" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "groupId" : {
+            "type" : "string"
+          },
+          "phase" : {
+            "type" : "string",
+            "enum" : [ "PREPARING", "COMMITTING", "COMPLETED", "RELEASING", "CANCELLED" ]
+          },
+          "retryable" : {
+            "type" : "boolean"
+          },
+          "counts" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "integer",
+              "format" : "int64"
+            }
+          },
+          "failure" : {
+            "type" : "string"
+          }
+        }
       },
       "CreateAdminGroupRequest" : {
         "type" : "object",
@@ -17531,12 +18033,19 @@
         "properties" : {
           "permissions" : {
             "type" : "array",
-            "description" : "Новый набор прав (минимум один элемент)",
+            "description" : "Новый набор прав. Пустой набор отзывает помощника только при переданном expectedPermissions.",
             "items" : {
               "type" : "string",
               "enum" : [ "MARK_ATTENDANCE", "MANAGE_EXCUSES", "MANAGE_HOMEWORK", "CANCEL_LESSONS", "VIEW_STATS" ]
-            },
-            "minItems" : 1
+            }
+          },
+          "expectedPermissions" : {
+            "type" : "array",
+            "description" : "Ранее прочитанный полный набор прав. Сравнение без учёта порядка атомарно; несовпадение возвращает 409 ASSISTANT_PERMISSIONS_CONFLICT. Без поля сохраняется прежнее безусловное обновление.",
+            "items" : {
+              "type" : "string",
+              "enum" : [ "MARK_ATTENDANCE", "MANAGE_EXCUSES", "MANAGE_HOMEWORK", "CANCEL_LESSONS", "VIEW_STATS" ]
+            }
           }
         },
         "required" : [ "permissions" ]
@@ -18084,6 +18593,10 @@
           },
           "previewDigest" : {
             "type" : "string"
+          },
+          "deletionScope" : {
+            "type" : [ "string", "null" ],
+            "enum" : [ "ALL_VERSIONS", "CURRENT_FORMAT", null ]
           }
         }
       },
@@ -18416,6 +18929,27 @@
           }
         }
       },
+      "AdminGroupDeletionPreview" : {
+        "type" : "object",
+        "properties" : {
+          "groupId" : {
+            "type" : "string"
+          },
+          "groupName" : {
+            "type" : "string"
+          },
+          "previewDigest" : {
+            "type" : "string"
+          },
+          "counts" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "integer",
+              "format" : "int64"
+            }
+          }
+        }
+      },
       "AdminGroupRegistryResponse" : {
         "type" : "object",
         "description" : "Страница реестра групп администратора",
@@ -18492,8 +19026,13 @@
           },
           "name" : {
             "type" : "string"
+          },
+          "archived" : {
+            "type" : "boolean",
+            "description" : "Группа архивирована"
           }
-        }
+        },
+        "required" : [ "archived" ]
       },
       "DashboardDailyGrowthResponse" : {
         "type" : "object",

@@ -1,0 +1,45 @@
+{
+  "phase": "before",
+  "origin": "http://127.0.0.1:14250",
+  "responses": [
+    {
+      "path": "/api/auth/login",
+      "method": "POST",
+      "status": 200
+    },
+    {
+      "path": "/api/auth/session",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/api/auth/session/active-role",
+      "method": "PUT",
+      "status": 200
+    },
+    {
+      "path": "/api/auth/logout",
+      "method": "POST",
+      "status": 204
+    },
+    {
+      "path": "/api/auth/session",
+      "method": "GET",
+      "status": 401
+    }
+  ],
+  "domainWrites": 0,
+  "errors": [],
+  "logout": true,
+  "closed": true,
+  "beforeRolePath": "/",
+  "roleStatus": 200,
+  "afterRolePath": "/",
+  "headings": [
+    "Страница недоступна"
+  ],
+  "meReads": 0,
+  "unavailable": 1,
+  "outcome": "PASS",
+  "guestSessionStatus": 401
+}

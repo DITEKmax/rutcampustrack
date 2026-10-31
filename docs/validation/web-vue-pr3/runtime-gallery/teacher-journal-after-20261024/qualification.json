@@ -1,0 +1,222 @@
+{
+  "revision": "d69ac9159e3bfff169c4b2bd25adbcc7d9def771",
+  "runnerSha256": "6ff3233f55726b625f85057df0a8cd4181dad527ce1a010735623ca71e800268",
+  "rawReceipt": "receipt.json",
+  "rawReceiptSha256": "57a0d89e99e3cbf213dc7625ebc4e23ad19174f8ddc09138334b239351e9baf8",
+  "rawOutcome": "EXIT0 completedtrue; raw personallyInspected:false retained; this sidecar records all4 actual personal inspections",
+  "elapsedSeconds": 5.5,
+  "criteria": {
+    "JOURNAL-INITIAL-LOADING": {
+      "status": "READY_BOUNDED_425_LIGHT",
+      "evidence": "AF01 personally viewed: static journal-shaped skeleton; real outgoingGET held before/afterPNG; busy status; no bare visible caption. Other theme/width loading combinations not claimed."
+    },
+    "JOURNAL-CONTROLLED-RECOVERY": {
+      "status": "READY_BOUNDED_SYNTHETIC_FAILURE_ACTUAL_RECOVERY",
+      "evidence": "AF02 one local503 card/nohostduplicate; normal retry sameURL real200; AF03/04 populated projection/no stalehostwarning. Closes V-TJ-RECOVERY-STALE-GLOBAL-ERROR in this changed consumer slice."
+    },
+    "JOURNAL-WIDTH-THEME": {
+      "status": "READY_SELECTED_425_LIGHT_300_DARK",
+      "evidence": "All4 source root16, outer scrollWidth==viewport; personally inspected. Table local horizontal scroll interaction NOT_CHECKED. 300loading/keyboardfocus/new1440 NOT_CHECKED here."
+    },
+    "SESSION-RESOURCE-CLEANUP": {
+      "status": "TECHNICAL_OWN_SESSION_CLEANUP_PASS",
+      "evidence": "Canonical actor2/exactSID, sealed browserAPI; one normalAuthAPI exactcurrentSIDDELETE204, samebearerGETsession401, browser closed. NOTnativeUIlogoutPASS. No newhelper/loginretry/fallback."
+    },
+    "SCOPE-LIMITS": {
+      "status": "QUALIFIED_SHARED_SOURCE_PWA_RUNTIME_ONLY",
+      "evidence": "Same shared Journal component serves PWA/TMA; no TMA runtime newclaim/native provider PASS. No wholeTeacher/fullmobile/actioncount increase. Old type-selection/768focus bounded before evidence reused, not fresh runtimePASS."
+    }
+  },
+  "sourcePins": [
+    {
+      "path": "frontends/mobile-core/src/features/teacher/TeacherJournalScreen.vue",
+      "sha256": "775344af3e98cbb1b93d3384cf0d4ee5cf69eec0a290af6f7869916f2d804ed5"
+    },
+    {
+      "path": "frontends/mobile-core/src/features/teacher/teacher-journal-screen.pcss",
+      "sha256": "4d9da0cea0aeb4902ffa01ee4f8742805fbf026ddc6850a23d3ccb1ecb485e2f"
+    },
+    {
+      "path": "frontends/mobile-core/src/features/teacher/teacher-client.ts",
+      "sha256": "98d397fa8c35b8c242e3f015884d71dd01c1ab9696ec8f1dd2f33a85952b8475"
+    },
+    {
+      "path": "frontends/mobile-core/src/shared/components/TeacherFeatureOwner.vue",
+      "sha256": "5f2575335e5f90da9c40cc5de3c15bf1902a270c04f2c99ad4ae3b7be1cb756e"
+    },
+    {
+      "path": "frontends/pwa-vue/src/App.vue",
+      "sha256": "2b23659d00e5184392e439aa0b839c1c18f6a083d2973dbc7d044db0be740ae2"
+    },
+    {
+      "path": "frontends/pwa-vue/src/auth.ts",
+      "sha256": "03d12164cfeaaec68d3fc8e5410ebe7692ebed7f3ea8eeeace7c53239532abd2"
+    },
+    {
+      "path": "frontends/pwa-vue/src/auth-client.ts",
+      "sha256": "1c1a2902301c83ce1937e97ab3d2cb53e953faf5b91765f5b080effd6becf846"
+    },
+    {
+      "path": "tests/e2e/fixtures/users.ts",
+      "sha256": "34b26d13a614a6b60872fa1a007f2d3ead810733d610401b141f9b26ffd2cb2f"
+    }
+  ],
+  "actualAuth": {
+    "loginForwarded": 1,
+    "startupRefreshForwarded": 1,
+    "roleForwarded": 0,
+    "loginStatus": 200,
+    "startupRefreshStatus": 401
+  },
+  "controlledRead": {
+    "heldHits": 1,
+    "synthetic503": 1,
+    "watchdogExpired": false,
+    "queryDigest": "39be774f857c168b477c4f6c4f65992aa2b2c43d72a784029171dd7e1d0ee466",
+    "heldAtUtc": "2026-10-24T22:16:16.471Z",
+    "holdExpiresAtUtc": "2026-10-24T22:16:24.471Z"
+  },
+  "retrySameQueryActual200": true,
+  "cleanup": {
+    "method": "TECHNICAL_NORMAL_AUTH_API_SELF_SESSION_DELETE",
+    "nativeUiLogoutPass": false,
+    "expectedActorMatched": true,
+    "exactSidMatched": true,
+    "selfDeleteForwarded": 1,
+    "selfDeleteStatus": 204,
+    "guestBearerStatus": 401,
+    "confirmed": true,
+    "fallbackUsed": false,
+    "intent": "RETURNED",
+    "forwardStartedAtUtc": "2026-10-24T22:16:17.420Z"
+  },
+  "privateHandle": "private/own-session-and-run-scope.json;0600/no bearer persisted; values excluded",
+  "browserClosed": true,
+  "sourceUnchanged": true,
+  "blockedWrites": [],
+  "pageErrors": [],
+  "originalsPreserved": {
+    "frozenEightPublicFilesHashMatch": true,
+    "frozenPrivateGuardHashMatch": true,
+    "originalPublic392HarnessHashMatch": true,
+    "noOldFilesWrittenByThisRun": true,
+    "old64379RawFailureNotRelabeled": true,
+    "oldCleanupPost": "Root separately qualified f137; no cleanup replay",
+    "reusedBefore": [
+      "../teacher-journal-original-unknown-cab3/PWA-MOBILE-TEACHERJOURNAL__MB-TJ-01-type-selection__light__425__cab3eed18.png",
+      "../teacher-journal-original-unknown-cab3/PWA-MOBILE-TEACHERJOURNAL__MB-TJ-06-same-query-keyboard-focus__light__768__cab3eed18.png"
+    ]
+  },
+  "samples": [
+    {
+      "id": "PWA-MOBILE-TEACHERJOURNAL__MB-TJ-AF01-after-held-get-skeleton__light__425__d69ac9159",
+      "consumer": "PWA",
+      "screen": "MOBILE-TEACHERJOURNAL",
+      "state": "after-held-get-skeleton",
+      "file": "PWA-MOBILE-TEACHERJOURNAL__MB-TJ-AF01-after-held-get-skeleton__light__425__d69ac9159.png",
+      "sha256": "fc5e8d7f5c284265da18d066715133b2b65f99fa7183e1ea5443d1fad5770508",
+      "theme": "light",
+      "width": 425,
+      "rootFont": "16px",
+      "scrollWidth": 425,
+      "focusVisible": false,
+      "revision": "d69ac9159e3bfff169c4b2bd25adbcc7d9def771",
+      "personallyInspected": true,
+      "caseId": "MB-TJ-AF01",
+      "title": "Журнал · skeleton · light · 425",
+      "description": "Реальный journal GET удержан в браузере для кадра. Статический скелетон таблицы, читаемый header/toolbar; строка загрузки доступна assistive technology. Затем тот же перехваченный запрос получает одну синтетическую503.",
+      "image": "PWA-MOBILE-TEACHERJOURNAL__MB-TJ-AF01-after-held-get-skeleton__light__425__d69ac9159.png",
+      "height": 900,
+      "personallyViewed": true,
+      "inspection": "Строки и короткие ячейки скелетона соответствуют форме журнала; лишней видимой подписи и горизонтального переполнения нет.",
+      "synthetic": true,
+      "syntheticCause": "Controlled heldGET then one synthetic503; retry/data/Auth real; OS theme preference. Synthetic test fixture names visible. No fake Auth/success/API projection.",
+      "criterion": "JOURNAL-INITIAL-LOADING",
+      "nativeTelegramProviderVerified": false
+    },
+    {
+      "id": "PWA-MOBILE-TEACHERJOURNAL__MB-TJ-AF02-after-local-controlled-503__light__425__d69ac9159",
+      "consumer": "PWA",
+      "screen": "MOBILE-TEACHERJOURNAL",
+      "state": "after-local-controlled-503",
+      "file": "PWA-MOBILE-TEACHERJOURNAL__MB-TJ-AF02-after-local-controlled-503__light__425__d69ac9159.png",
+      "sha256": "33e1b0b3fdaf3b0c58768f0707fab164de7799201b68adf1251c627f6102c348",
+      "theme": "light",
+      "width": 425,
+      "rootFont": "16px",
+      "scrollWidth": 425,
+      "focusVisible": false,
+      "revision": "d69ac9159e3bfff169c4b2bd25adbcc7d9def771",
+      "personallyInspected": true,
+      "caseId": "MB-TJ-AF02",
+      "title": "Журнал · локальная503 · light · 425",
+      "description": "Одна явно синтетическая503 для presentation/recovery проверки. Одна локальная ошибка «Журнал недоступен» с «Повторить»; общий duplicate-banner отсутствует. Auth/backend для остальных операций реальные.",
+      "image": "PWA-MOBILE-TEACHERJOURNAL__MB-TJ-AF02-after-local-controlled-503__light__425__d69ac9159.png",
+      "height": 900,
+      "personallyViewed": true,
+      "inspection": "Локальная карточка ошибки и кнопка retry читаемы; второго host warning нет.",
+      "synthetic": true,
+      "syntheticCause": "Controlled heldGET then one synthetic503; retry/data/Auth real; OS theme preference. Synthetic test fixture names visible. No fake Auth/success/API projection.",
+      "criterion": "JOURNAL-CONTROLLED-RECOVERY",
+      "nativeTelegramProviderVerified": false
+    },
+    {
+      "id": "PWA-MOBILE-TEACHERJOURNAL__MB-TJ-AF03-after-native-retry-real200__light__425__d69ac9159",
+      "consumer": "PWA",
+      "screen": "MOBILE-TEACHERJOURNAL",
+      "state": "after-native-retry-real200",
+      "file": "PWA-MOBILE-TEACHERJOURNAL__MB-TJ-AF03-after-native-retry-real200__light__425__d69ac9159.png",
+      "sha256": "11607c7bfbf9b16e903cc9dc9fa4e8f14f4111cb4280cf1f288eeb118ee83aac",
+      "theme": "light",
+      "width": 425,
+      "rootFont": "16px",
+      "scrollWidth": 425,
+      "focusVisible": false,
+      "revision": "d69ac9159e3bfff169c4b2bd25adbcc7d9def771",
+      "personallyInspected": true,
+      "caseId": "MB-TJ-AF03",
+      "title": "Журнал · retry actual200 · light · 425",
+      "description": "Обычная UI-кнопка «Повторить» отправила тот же URL и получила реальный200. Реальная таблица журнала восстановилась, локальное и прежнее глобальное предупреждения отсутствуют.",
+      "image": "PWA-MOBILE-TEACHERJOURNAL__MB-TJ-AF03-after-native-retry-real200__light__425__d69ac9159.png",
+      "height": 900,
+      "personallyViewed": true,
+      "inspection": "Заголовки, имена и метрики читаемы; таблица заполнена, старого предупреждения внизу страницы нет.",
+      "synthetic": true,
+      "syntheticCause": "Controlled heldGET then one synthetic503; retry/data/Auth real; OS theme preference. Synthetic test fixture names visible. No fake Auth/success/API projection.",
+      "criterion": "JOURNAL-CONTROLLED-RECOVERY",
+      "nativeTelegramProviderVerified": false
+    },
+    {
+      "id": "PWA-MOBILE-TEACHERJOURNAL__MB-TJ-AF04-after-same-query-recovered__dark__300__d69ac9159",
+      "consumer": "PWA",
+      "screen": "MOBILE-TEACHERJOURNAL",
+      "state": "after-same-query-recovered",
+      "file": "PWA-MOBILE-TEACHERJOURNAL__MB-TJ-AF04-after-same-query-recovered__dark__300__d69ac9159.png",
+      "sha256": "7d93570ebbbdb475158949de6cd59aab5c51c441f92273e57de5893178e7dc30",
+      "theme": "dark",
+      "width": 300,
+      "rootFont": "16px",
+      "scrollWidth": 300,
+      "focusVisible": false,
+      "revision": "d69ac9159e3bfff169c4b2bd25adbcc7d9def771",
+      "personallyInspected": true,
+      "caseId": "MB-TJ-AF04",
+      "title": "Журнал · восстановлен · dark · 300",
+      "description": "Тот же реальный восстановленный journal-query после200; OS media dark. Нет повторного Auth/запроса ради темы. Внешняя страница не переполняется; таблица имеет штатную локальную область горизонтальной прокрутки.",
+      "image": "PWA-MOBILE-TEACHERJOURNAL__MB-TJ-AF04-after-same-query-recovered__dark__300__d69ac9159.png",
+      "height": 900,
+      "personallyViewed": true,
+      "inspection": "Dark surface/контраст и toolbar читаемы; глобального предупреждения нет. Даты выходят за локальную область таблицы: фактический scroll/drag в этом пакете не проверялся.",
+      "synthetic": true,
+      "syntheticCause": "Controlled heldGET then one synthetic503; retry/data/Auth real; OS theme preference. Synthetic test fixture names visible. No fake Auth/success/API projection.",
+      "criterion": "JOURNAL-WIDTH-THEME",
+      "nativeTelegramProviderVerified": false
+    }
+  ],
+  "functionalActionsAdded": 0,
+  "newImages": 4,
+  "newAuthAfterThisRunAllowed": false,
+  "modelRequested": "gpt-6.1-sol/high",
+  "runtimeTelemetry": "unavailable",
+  "qualifiedAt": "2026-10-24T22:17:39.874834+00:00"
+}

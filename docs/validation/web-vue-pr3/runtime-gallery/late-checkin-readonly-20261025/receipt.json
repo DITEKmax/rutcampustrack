@@ -1,0 +1,471 @@
+{
+  "case": "PWA_LATE_CHECKIN_READONLY_TWO_VIEWPORT_FRAMES",
+  "revision": "63d97497eba26577a8af5fa1428fcc3c959c8992",
+  "productBase": "3371d6438b0144976cb338f0fa1bb14cc5c051bd",
+  "harnessSha256": "0f841e26845415da2edba5a3082271763f763ec8143f1c543bc4fa129cae47b4",
+  "startedAtUtc": "2026-10-25T01:54:58.645Z",
+  "expectedActor": 3,
+  "expectedRole": "STUDENT",
+  "phase": "CAPTURE_COMPLETE_CLEANUP_CONFIRMED_INSPECTION_PENDING",
+  "api": [
+    {
+      "path": "/api/auth/refresh",
+      "method": "POST",
+      "status": 401,
+      "phase": "BOOTSTRAP",
+      "loginIndex": 0
+    },
+    {
+      "path": "/api/auth/login",
+      "method": "POST",
+      "status": 200,
+      "phase": "LOGIN_0",
+      "loginIndex": 0
+    },
+    {
+      "path": "/api/auth/session",
+      "method": "GET",
+      "status": 200,
+      "phase": "LOGIN_0",
+      "loginIndex": 0
+    },
+    {
+      "path": "/api/auth/device-preferences",
+      "method": "GET",
+      "status": 200,
+      "phase": "LOGIN_0",
+      "loginIndex": 0
+    },
+    {
+      "pathHash": "66be5879ef3a006f97cdf3d9fb658d6b9ab244113bbbad159c733f0fee4efb32",
+      "method": "GET",
+      "status": 200,
+      "phase": "LOGIN_0",
+      "loginIndex": 0
+    },
+    {
+      "pathHash": "61e6038f2d3a6dfcdc1b123b37cd7efa3c98f1c6b3dd0aa7d2c060f38f8ed3f2",
+      "method": "GET",
+      "status": 200,
+      "phase": "LOGIN_0",
+      "loginIndex": 0
+    },
+    {
+      "pathHash": "6cb55e97fef19735195b0020d5dd6545645efc7bc46a1d989e5cdbbf8b251030",
+      "method": "GET",
+      "status": 200,
+      "phase": "LOGIN_0",
+      "loginIndex": 0
+    },
+    {
+      "pathHash": "8523bff54cc369633b19fc3d5d401c2750a6a0f69ad7844d9eb5045c1769e1cf",
+      "method": "GET",
+      "status": 200,
+      "phase": "LOGIN_0",
+      "loginIndex": 0
+    },
+    {
+      "path": "/api/auth/ws-ticket",
+      "method": "POST",
+      "status": 200,
+      "phase": "LOGIN_0",
+      "loginIndex": 0
+    },
+    {
+      "pathHash": "6a3ed7c33ca04a6a7e68847f792e314468b713dea9c4ece627c242271898ae23",
+      "method": "GET",
+      "status": 200,
+      "phase": "LOGIN_0",
+      "loginIndex": 0
+    },
+    {
+      "pathHash": "f3c86055724948219ffaedb2ba9d52d644c538d765a16899418a3476b860c86c",
+      "method": "GET",
+      "status": 200,
+      "phase": "LOGIN_0",
+      "loginIndex": 0
+    },
+    {
+      "pathHash": "4d1d330e1b27d01a8987f9f6545abad0d8974bcda7dfe864a5c5575d67e1871a",
+      "method": "GET",
+      "status": 200,
+      "phase": "LOGIN_0",
+      "loginIndex": 0
+    },
+    {
+      "pathHash": "66be5879ef3a006f97cdf3d9fb658d6b9ab244113bbbad159c733f0fee4efb32",
+      "method": "GET",
+      "status": 200,
+      "phase": "NATIVE_LATE_CHECKIN_READONLY_PREVIEW",
+      "loginIndex": 0
+    },
+    {
+      "pathHash": "4d1d330e1b27d01a8987f9f6545abad0d8974bcda7dfe864a5c5575d67e1871a",
+      "method": "GET",
+      "status": 200,
+      "phase": "NATIVE_LATE_CHECKIN_READONLY_PREVIEW",
+      "loginIndex": 0
+    },
+    {
+      "pathHash": "a199efda1ba605e3869a7a8cf1051f597e455b2a0c519486f387bc64eeb5869a",
+      "method": "GET",
+      "status": 200,
+      "phase": "LOGIN_0",
+      "loginIndex": 0
+    },
+    {
+      "pathHash": "65bfeba739ae9f97272d9429f334c7802719d703a3c74f197cc4bb00ccd7f130",
+      "method": "GET",
+      "status": 200,
+      "phase": "NATIVE_LATE_CHECKIN_READONLY_PREVIEW",
+      "loginIndex": 0
+    },
+    {
+      "pathHash": "bba9abf800ba68da4d32a6f5d51ea74d9c0834a339a04afa3cee3d231af58292",
+      "method": "GET",
+      "status": 200,
+      "phase": "LOGIN_0",
+      "loginIndex": 0
+    },
+    {
+      "pathHash": "348ca1e77d2a6d2ce796f712240178c32249592998c418b61a79c2525e71190a",
+      "method": "GET",
+      "status": 200,
+      "phase": "LOGIN_0",
+      "loginIndex": 0
+    }
+  ],
+  "samples": [
+    {
+      "id": "MB-LC-01",
+      "consumer": "PWA",
+      "screen": "MOBILE-LATECHECKINREQUEST",
+      "state": "eligible-form-readonly-preview",
+      "file": "PWA-MOBILE-LATECHECKINREQUEST__MB-LC-01-eligible-form-readonly-preview__light__300__root20__63d97497e.png",
+      "sha256": "a4c9e37a84a63002c758383804556c37424097498cf8879e3d0d88d7f065e537",
+      "theme": "light",
+      "width": 300,
+      "height": 900,
+      "rootFont": "20px",
+      "scrollWidth": 300,
+      "busy": "false",
+      "errorVisible": false,
+      "selectedSummaryPresent": true,
+      "submitEnabled": true,
+      "cancelFocusVisible": false,
+      "cancelIsActive": false,
+      "revision": "63d97497eba26577a8af5fa1428fcc3c959c8992",
+      "personallyInspected": false
+    },
+    {
+      "id": "MB-LC-02",
+      "consumer": "PWA",
+      "screen": "MOBILE-LATECHECKINREQUEST",
+      "state": "same-form-cancel-keyboard-focus",
+      "file": "PWA-MOBILE-LATECHECKINREQUEST__MB-LC-02-same-form-cancel-keyboard-focus__dark__768__root16__63d97497e.png",
+      "sha256": "bc07f309b31f74cb3899cc535d9e9dc03b624eb5993c041c24c449eac8234cd2",
+      "theme": "dark",
+      "width": 768,
+      "height": 900,
+      "rootFont": "16px",
+      "scrollWidth": 768,
+      "busy": "false",
+      "errorVisible": false,
+      "selectedSummaryPresent": true,
+      "submitEnabled": true,
+      "cancelFocusVisible": true,
+      "cancelIsActive": true,
+      "revision": "63d97497eba26577a8af5fa1428fcc3c959c8992",
+      "personallyInspected": false
+    }
+  ],
+  "captureAttempts": [
+    {
+      "id": "MB-LC-01",
+      "file": "PWA-MOBILE-LATECHECKINREQUEST__MB-LC-01-eligible-form-readonly-preview__light__300__root20__63d97497e.png",
+      "state": "CAPTURED_INSPECTION_PENDING",
+      "startedAtUtc": "2026-10-25T01:55:02.927Z"
+    },
+    {
+      "id": "MB-LC-02",
+      "file": "PWA-MOBILE-LATECHECKINREQUEST__MB-LC-02-same-form-cancel-keyboard-focus__dark__768__root16__63d97497e.png",
+      "state": "CAPTURED_INSPECTION_PENDING",
+      "startedAtUtc": "2026-10-25T01:55:03.141Z"
+    }
+  ],
+  "blocked": [],
+  "pageErrors": [],
+  "requestStarts": [
+    {
+      "id": "d43fc355-5c43-4681-805f-ec57dcc51a20",
+      "method": "POST",
+      "path": "/api/auth/refresh",
+      "phase": "BOOTSTRAP",
+      "loginIndex": 0,
+      "canonicalAtStart": false,
+      "requiredCanonical": false,
+      "forwarded": true,
+      "canonicalAtForward": false,
+      "forwardedAtUtc": "2026-10-25T01:55:01.378Z",
+      "captureAckDurable": true
+    },
+    {
+      "id": "e7b75834-94b4-4ca2-9962-e541381787d6",
+      "method": "POST",
+      "path": "/api/auth/login",
+      "phase": "LOGIN_0",
+      "loginIndex": 0,
+      "canonicalAtStart": false,
+      "requiredCanonical": false,
+      "forwarded": true,
+      "canonicalAtForward": false,
+      "forwardedAtUtc": "2026-10-25T01:55:01.604Z",
+      "captureAckDurable": true
+    },
+    {
+      "id": "ed0868b8-c513-436e-9e71-b699a0da4517",
+      "method": "GET",
+      "path": "/api/auth/session",
+      "phase": "LOGIN_0",
+      "loginIndex": 0,
+      "canonicalAtStart": false,
+      "requiredCanonical": true,
+      "forwarded": true,
+      "canonicalAtForward": false,
+      "forwardedAtUtc": "2026-10-25T01:55:01.730Z",
+      "captureAckDurable": true
+    },
+    {
+      "id": "728a87ec-924f-4d76-9544-72f681835a00",
+      "method": "GET",
+      "pathHash": "66be5879ef3a006f97cdf3d9fb658d6b9ab244113bbbad159c733f0fee4efb32",
+      "phase": "LOGIN_0",
+      "loginIndex": 0,
+      "canonicalAtStart": false,
+      "requiredCanonical": false,
+      "forwarded": true,
+      "canonicalAtForward": true,
+      "forwardedAtUtc": "2026-10-25T01:55:01.786Z"
+    },
+    {
+      "id": "aa072946-1594-4805-95fc-039ea3565b93",
+      "method": "GET",
+      "pathHash": "61e6038f2d3a6dfcdc1b123b37cd7efa3c98f1c6b3dd0aa7d2c060f38f8ed3f2",
+      "phase": "LOGIN_0",
+      "loginIndex": 0,
+      "canonicalAtStart": false,
+      "requiredCanonical": false,
+      "forwarded": true,
+      "canonicalAtForward": true,
+      "forwardedAtUtc": "2026-10-25T01:55:01.788Z"
+    },
+    {
+      "id": "38cd1302-338c-4c9d-93c3-30c2e397b58c",
+      "method": "GET",
+      "path": "/api/auth/device-preferences",
+      "phase": "LOGIN_0",
+      "loginIndex": 0,
+      "canonicalAtStart": false,
+      "requiredCanonical": false,
+      "forwarded": true,
+      "canonicalAtForward": true,
+      "forwardedAtUtc": "2026-10-25T01:55:01.790Z",
+      "captureAckDurable": true
+    },
+    {
+      "id": "db5afc1b-1b85-4050-9439-ed3d2f890512",
+      "method": "GET",
+      "pathHash": "6cb55e97fef19735195b0020d5dd6545645efc7bc46a1d989e5cdbbf8b251030",
+      "phase": "LOGIN_0",
+      "loginIndex": 0,
+      "canonicalAtStart": true,
+      "requiredCanonical": false,
+      "forwarded": true,
+      "canonicalAtForward": true,
+      "forwardedAtUtc": "2026-10-25T01:55:01.859Z"
+    },
+    {
+      "id": "00e5d71c-e633-45f5-8491-6410a6ec751c",
+      "method": "GET",
+      "pathHash": "8523bff54cc369633b19fc3d5d401c2750a6a0f69ad7844d9eb5045c1769e1cf",
+      "phase": "LOGIN_0",
+      "loginIndex": 0,
+      "canonicalAtStart": true,
+      "requiredCanonical": false,
+      "forwarded": true,
+      "canonicalAtForward": true,
+      "forwardedAtUtc": "2026-10-25T01:55:01.928Z"
+    },
+    {
+      "id": "dd4d69d0-38b4-4d1c-a8af-4a8d887df445",
+      "method": "POST",
+      "path": "/api/auth/ws-ticket",
+      "phase": "LOGIN_0",
+      "loginIndex": 0,
+      "canonicalAtStart": true,
+      "requiredCanonical": false,
+      "forwarded": true,
+      "canonicalAtForward": true,
+      "forwardedAtUtc": "2026-10-25T01:55:02.047Z"
+    },
+    {
+      "id": "fc8459e4-da99-4434-b2ce-24102ffce265",
+      "method": "GET",
+      "pathHash": "4d1d330e1b27d01a8987f9f6545abad0d8974bcda7dfe864a5c5575d67e1871a",
+      "phase": "LOGIN_0",
+      "loginIndex": 0,
+      "canonicalAtStart": true,
+      "requiredCanonical": false,
+      "forwarded": true,
+      "canonicalAtForward": true,
+      "forwardedAtUtc": "2026-10-25T01:55:02.053Z"
+    },
+    {
+      "id": "ac4dff89-82f6-4a00-9304-052a965081fe",
+      "method": "GET",
+      "pathHash": "f3c86055724948219ffaedb2ba9d52d644c538d765a16899418a3476b860c86c",
+      "phase": "LOGIN_0",
+      "loginIndex": 0,
+      "canonicalAtStart": true,
+      "requiredCanonical": false,
+      "forwarded": true,
+      "canonicalAtForward": true,
+      "forwardedAtUtc": "2026-10-25T01:55:02.061Z"
+    },
+    {
+      "id": "66069218-b243-4b75-94d6-cfc6754d8373",
+      "method": "GET",
+      "pathHash": "348ca1e77d2a6d2ce796f712240178c32249592998c418b61a79c2525e71190a",
+      "phase": "LOGIN_0",
+      "loginIndex": 0,
+      "canonicalAtStart": true,
+      "requiredCanonical": false,
+      "forwarded": true,
+      "canonicalAtForward": true,
+      "forwardedAtUtc": "2026-10-25T01:55:02.067Z"
+    },
+    {
+      "id": "8a58aebc-4aa3-42e4-8e49-1ce483c200a8",
+      "method": "GET",
+      "pathHash": "bba9abf800ba68da4d32a6f5d51ea74d9c0834a339a04afa3cee3d231af58292",
+      "phase": "LOGIN_0",
+      "loginIndex": 0,
+      "canonicalAtStart": true,
+      "requiredCanonical": false,
+      "forwarded": true,
+      "canonicalAtForward": true,
+      "forwardedAtUtc": "2026-10-25T01:55:02.074Z"
+    },
+    {
+      "id": "9ea97d00-cc76-40ad-95c3-26a89e107d86",
+      "method": "GET",
+      "pathHash": "a199efda1ba605e3869a7a8cf1051f597e455b2a0c519486f387bc64eeb5869a",
+      "phase": "LOGIN_0",
+      "loginIndex": 0,
+      "canonicalAtStart": true,
+      "requiredCanonical": false,
+      "forwarded": true,
+      "canonicalAtForward": true,
+      "forwardedAtUtc": "2026-10-25T01:55:02.086Z"
+    },
+    {
+      "id": "78741a73-7110-4eb4-9386-7be0bd487b84",
+      "method": "GET",
+      "pathHash": "6a3ed7c33ca04a6a7e68847f792e314468b713dea9c4ece627c242271898ae23",
+      "phase": "LOGIN_0",
+      "loginIndex": 0,
+      "canonicalAtStart": true,
+      "requiredCanonical": false,
+      "forwarded": true,
+      "canonicalAtForward": true,
+      "forwardedAtUtc": "2026-10-25T01:55:02.126Z"
+    },
+    {
+      "id": "a98c8e5e-4b09-4453-a794-7272afca1ee9",
+      "method": "GET",
+      "pathHash": "66be5879ef3a006f97cdf3d9fb658d6b9ab244113bbbad159c733f0fee4efb32",
+      "phase": "NATIVE_LATE_CHECKIN_READONLY_PREVIEW",
+      "loginIndex": 0,
+      "canonicalAtStart": true,
+      "requiredCanonical": false,
+      "forwarded": true,
+      "canonicalAtForward": true,
+      "forwardedAtUtc": "2026-10-25T01:55:02.318Z"
+    },
+    {
+      "id": "c36c70f1-ff41-4a08-ab87-745ecea4042b",
+      "method": "GET",
+      "pathHash": "4d1d330e1b27d01a8987f9f6545abad0d8974bcda7dfe864a5c5575d67e1871a",
+      "phase": "NATIVE_LATE_CHECKIN_READONLY_PREVIEW",
+      "loginIndex": 0,
+      "canonicalAtStart": true,
+      "requiredCanonical": false,
+      "forwarded": true,
+      "canonicalAtForward": true,
+      "forwardedAtUtc": "2026-10-25T01:55:02.325Z"
+    },
+    {
+      "id": "59599fd9-82d5-4dd1-ace2-ac9b810bedad",
+      "method": "GET",
+      "pathHash": "65bfeba739ae9f97272d9429f334c7802719d703a3c74f197cc4bb00ccd7f130",
+      "phase": "NATIVE_LATE_CHECKIN_READONLY_PREVIEW",
+      "loginIndex": 0,
+      "canonicalAtStart": true,
+      "requiredCanonical": false,
+      "forwarded": true,
+      "canonicalAtForward": true,
+      "forwardedAtUtc": "2026-10-25T01:55:02.462Z"
+    }
+  ],
+  "requestFailures": [],
+  "readIncomplete": [],
+  "device": {
+    "readsObserved": 1,
+    "putsForwarded": 0
+  },
+  "cleanup": {
+    "method": "TECHNICAL_EXACT_CURRENT_OWN_SELF_SESSION_DELETE",
+    "nativeUiLogoutPass": false,
+    "selfDeleteForwarded": 1,
+    "status": 204,
+    "sameOldBearerStatus": 401,
+    "confirmed": true,
+    "fallbackUsed": false,
+    "intent": "RETURNED"
+  },
+  "captureComplete": true,
+  "completed": true,
+  "syntheticApiResponses": false,
+  "functionalActionsAdded": 0,
+  "exactOwnHandlesCaptured": [
+    true
+  ],
+  "unknownHold": false,
+  "optionsHeaders": {
+    "path": "/api/v1/student/requests/options",
+    "method": "GET",
+    "status": 200,
+    "observedAtUtc": "2026-10-25T01:55:02.582Z",
+    "requestId": "9ea97d00-cc76-40ad-95c3-26a89e107d86",
+    "requestStartedPhase": "LOGIN_0",
+    "canonicalAtForward": true,
+    "loginIndex": 0
+  },
+  "freshOptions": {
+    "status": 200,
+    "currentOwnBearerMatched": true,
+    "totalLessonOptions": 42,
+    "lateEligibleCount": 3,
+    "remaining": 5,
+    "limit": 5,
+    "readAtUtc": "2026-10-25T01:55:02.636Z"
+  },
+  "preformUnselectedContinueDisabled": true,
+  "selectedLessonId": "3",
+  "submitActivated": false,
+  "cancelActivated": false,
+  "newRequestSubmitted": false,
+  "browserClosed": true,
+  "sourceUnchanged": true,
+  "finishedAtUtc": "2026-10-25T01:55:03.592Z"
+}

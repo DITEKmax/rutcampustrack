@@ -10,8 +10,8 @@ Install frontend tools with `npm ci --prefix frontends`. Prettier is pinned in
 the mobile workspace lockfile; `npm run format:check --prefix frontends` and
 `npm run format --prefix frontends` use the same curated inventory. Existing
 ESLint rules remain enabled. PCSS uses the CSS parser, preserving PostCSS mixins,
-units and tokens. Vue template whitespace is treated strictly; Angular keeps
-its semicolon convention through an override.
+units and tokens. Vue template whitespace is treated strictly. The retired Angular
+package and its formatter exception are removed; shared source rules remain enabled.
 
 Java uses `./gradlew formatJavaCheck` / `formatJava`, with Spotless 7.0.4 and
 google-java-format 1.25.2 AOSP (four-space indentation), on the existing JDK 21.

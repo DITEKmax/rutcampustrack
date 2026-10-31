@@ -672,8 +672,7 @@ class RabbitDecisionRetryIT extends AbstractAttendanceIntegrationTest {
             WorkerAttempt ordinaryWorker)
             throws java.io.IOException {
         if (collectorEndpoint() == null) return;
-        String source = System.getenv("GITHUB_SHA");
-        assertThat(source).as("exact executable CI revision").matches("[0-9a-f]{40}");
+        String source = collectorSource(System.getenv());
         var output = java.nio.file.Path.of(System.getenv("RCT_TEST_TELEMETRY_RECEIPT"));
         assertThat(output.isAbsolute()).isTrue();
         assertThat(java.nio.file.Files.exists(output))
@@ -742,6 +741,48 @@ class RabbitDecisionRetryIT extends AbstractAttendanceIntegrationTest {
                 output,
                 new ObjectMapper().writeValueAsString(receipt) + "\n",
                 java.nio.file.StandardOpenOption.WRITE);
+    }
+
+    /** The outer pipeline validates the checkout and private local audit before collector I/O. */
+    private static String collectorSource(Map<String, String> env) {
+        boolean local =
+                List.of(
+                                        "RCT_LOCAL_RELEASE_REVISION",
+                                        "RCT_LOCAL_RELEASE_NONCE",
+                                        "RCT_LOCAL_RELEASE_AUDIT")
+                                .stream()
+                                .anyMatch(env::containsKey)
+                        || "isolated-local".equals(env.get("RCT_MONITORING_RUNTIME"));
+        String source;
+        if (local) {
+            assertThat(
+                            List.of(
+                                            "GITHUB_ACTIONS",
+                                            "GITHUB_SHA",
+                                            "GITHUB_RUN_ID",
+                                            "GITHUB_RUN_ATTEMPT",
+                                            "GITHUB_EVENT_NAME",
+                                            "RCT_CI_PR_HEAD_SHA")
+                                    .stream()
+                                    .noneMatch(env::containsKey))
+                    .as("LOCAL_CONTROL must not claim a GitHub identity")
+                    .isTrue();
+            assertThat(env.get("RCT_MONITORING_RUNTIME")).isEqualTo("isolated-local");
+            assertThat(env.get("RCT_LOCAL_RELEASE_NONCE")).matches("[0-9a-f]{24}");
+            assertThat(env.get("RCT_LOCAL_RELEASE_AUDIT")).isNotBlank();
+            source = env.get("RCT_LOCAL_RELEASE_REVISION");
+        } else {
+            assertThat(env.get("GITHUB_ACTIONS")).isEqualTo("true");
+            assertThat(env.get("GITHUB_RUN_ID")).matches("[0-9]+");
+            assertThat(env.get("GITHUB_RUN_ATTEMPT")).matches("[0-9]+");
+            assertThat(env.get("RCT_MONITORING_RUNTIME")).isEqualTo("isolated-ci");
+            source = env.get("GITHUB_SHA");
+        }
+        assertThat(source).as("exact executable collector source revision").matches("[0-9a-f]{40}");
+        assertThat(env.get("SERVICE_VERSION"))
+                .as("collector resource and receipt must identify the same checked source")
+                .isEqualTo(source);
+        return source;
     }
 
     private record TraceOrigin(String traceId, String spanId, Map<String, Object> envelope) {}

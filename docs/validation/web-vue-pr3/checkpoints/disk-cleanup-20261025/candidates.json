@@ -1,0 +1,896 @@
+{
+  "sourceRoot": "f0c0015dfa164bc0416e4aa0be469951fc7353ab",
+  "ownerAuthorization": "latest user permits exact reproducible/surplus cleanup; all no-delete constraints retained",
+  "beforeFreeBytes": 5245366272,
+  "targetFreeBytes": 8053063680,
+  "minimumGroupFreeBytes": 7516192768,
+  "rows": [
+    {
+      "batch": 1,
+      "path": "/workspace/rutcampustrack/services/academic-service/academic-app/build/classes",
+      "allocatedBytes": 27156480,
+      "purpose": "compiled classes / extracted or generated protobuf / compiler intermediate",
+      "recovery": "preserved source/proto/Gradle tasks+JDK21+Gradle8.12+modules-2; rebuild affected task",
+      "kind": "build-intermediate"
+    },
+    {
+      "batch": 1,
+      "path": "/workspace/rutcampustrack/services/academic-service/academic-app/build/generated",
+      "allocatedBytes": 14536704,
+      "purpose": "compiled classes / extracted or generated protobuf / compiler intermediate",
+      "recovery": "preserved source/proto/Gradle tasks+JDK21+Gradle8.12+modules-2; rebuild affected task",
+      "kind": "build-intermediate"
+    },
+    {
+      "batch": 1,
+      "path": "/workspace/rutcampustrack/services/academic-service/academic-app/build/extracted-include-protos",
+      "allocatedBytes": 1560576,
+      "purpose": "compiled classes / extracted or generated protobuf / compiler intermediate",
+      "recovery": "preserved source/proto/Gradle tasks+JDK21+Gradle8.12+modules-2; rebuild affected task",
+      "kind": "build-intermediate"
+    },
+    {
+      "batch": 1,
+      "path": "/workspace/rutcampustrack/services/academic-service/academic-app/build/extracted-protos",
+      "allocatedBytes": 12288,
+      "purpose": "compiled classes / extracted or generated protobuf / compiler intermediate",
+      "recovery": "preserved source/proto/Gradle tasks+JDK21+Gradle8.12+modules-2; rebuild affected task",
+      "kind": "build-intermediate"
+    },
+    {
+      "batch": 1,
+      "path": "/workspace/rutcampustrack/services/academic-service/academic-app/build/tmp",
+      "allocatedBytes": 7524352,
+      "purpose": "compiled classes / extracted or generated protobuf / compiler intermediate",
+      "recovery": "preserved source/proto/Gradle tasks+JDK21+Gradle8.12+modules-2; rebuild affected task",
+      "kind": "build-intermediate"
+    },
+    {
+      "batch": 1,
+      "path": "/workspace/rutcampustrack/services/auth-service/auth-app/build/classes",
+      "allocatedBytes": 19116032,
+      "purpose": "compiled classes / extracted or generated protobuf / compiler intermediate",
+      "recovery": "preserved source/proto/Gradle tasks+JDK21+Gradle8.12+modules-2; rebuild affected task",
+      "kind": "build-intermediate"
+    },
+    {
+      "batch": 1,
+      "path": "/workspace/rutcampustrack/services/auth-service/auth-app/build/generated",
+      "allocatedBytes": 14512128,
+      "purpose": "compiled classes / extracted or generated protobuf / compiler intermediate",
+      "recovery": "preserved source/proto/Gradle tasks+JDK21+Gradle8.12+modules-2; rebuild affected task",
+      "kind": "build-intermediate"
+    },
+    {
+      "batch": 1,
+      "path": "/workspace/rutcampustrack/services/auth-service/auth-app/build/extracted-include-protos",
+      "allocatedBytes": 839680,
+      "purpose": "compiled classes / extracted or generated protobuf / compiler intermediate",
+      "recovery": "preserved source/proto/Gradle tasks+JDK21+Gradle8.12+modules-2; rebuild affected task",
+      "kind": "build-intermediate"
+    },
+    {
+      "batch": 1,
+      "path": "/workspace/rutcampustrack/services/auth-service/auth-app/build/extracted-protos",
+      "allocatedBytes": 8192,
+      "purpose": "compiled classes / extracted or generated protobuf / compiler intermediate",
+      "recovery": "preserved source/proto/Gradle tasks+JDK21+Gradle8.12+modules-2; rebuild affected task",
+      "kind": "build-intermediate"
+    },
+    {
+      "batch": 1,
+      "path": "/workspace/rutcampustrack/services/auth-service/auth-app/build/tmp",
+      "allocatedBytes": 1220608,
+      "purpose": "compiled classes / extracted or generated protobuf / compiler intermediate",
+      "recovery": "preserved source/proto/Gradle tasks+JDK21+Gradle8.12+modules-2; rebuild affected task",
+      "kind": "build-intermediate"
+    },
+    {
+      "batch": 1,
+      "path": "/workspace/rutcampustrack/services/mobile-bff/mobile-bff-app/build/classes",
+      "allocatedBytes": 17645568,
+      "purpose": "compiled classes / extracted or generated protobuf / compiler intermediate",
+      "recovery": "preserved source/proto/Gradle tasks+JDK21+Gradle8.12+modules-2; rebuild affected task",
+      "kind": "build-intermediate"
+    },
+    {
+      "batch": 1,
+      "path": "/workspace/rutcampustrack/services/mobile-bff/mobile-bff-app/build/generated",
+      "allocatedBytes": 14512128,
+      "purpose": "compiled classes / extracted or generated protobuf / compiler intermediate",
+      "recovery": "preserved source/proto/Gradle tasks+JDK21+Gradle8.12+modules-2; rebuild affected task",
+      "kind": "build-intermediate"
+    },
+    {
+      "batch": 1,
+      "path": "/workspace/rutcampustrack/services/mobile-bff/mobile-bff-app/build/extracted-include-protos",
+      "allocatedBytes": 712704,
+      "purpose": "compiled classes / extracted or generated protobuf / compiler intermediate",
+      "recovery": "preserved source/proto/Gradle tasks+JDK21+Gradle8.12+modules-2; rebuild affected task",
+      "kind": "build-intermediate"
+    },
+    {
+      "batch": 1,
+      "path": "/workspace/rutcampustrack/services/mobile-bff/mobile-bff-app/build/extracted-protos",
+      "allocatedBytes": 8192,
+      "purpose": "compiled classes / extracted or generated protobuf / compiler intermediate",
+      "recovery": "preserved source/proto/Gradle tasks+JDK21+Gradle8.12+modules-2; rebuild affected task",
+      "kind": "build-intermediate"
+    },
+    {
+      "batch": 1,
+      "path": "/workspace/rutcampustrack/services/mobile-bff/mobile-bff-app/build/tmp",
+      "allocatedBytes": 774144,
+      "purpose": "compiled classes / extracted or generated protobuf / compiler intermediate",
+      "recovery": "preserved source/proto/Gradle tasks+JDK21+Gradle8.12+modules-2; rebuild affected task",
+      "kind": "build-intermediate"
+    },
+    {
+      "batch": 1,
+      "path": "/workspace/rct-worktrees/web-foundation/services/academic-service/academic-app/build/classes",
+      "allocatedBytes": 27590656,
+      "purpose": "compiled classes / extracted or generated protobuf / compiler intermediate",
+      "recovery": "preserved source/proto/Gradle tasks+JDK21+Gradle8.12+modules-2; rebuild affected task",
+      "kind": "build-intermediate"
+    },
+    {
+      "batch": 1,
+      "path": "/workspace/rct-worktrees/web-foundation/services/academic-service/academic-app/build/generated",
+      "allocatedBytes": 14753792,
+      "purpose": "compiled classes / extracted or generated protobuf / compiler intermediate",
+      "recovery": "preserved source/proto/Gradle tasks+JDK21+Gradle8.12+modules-2; rebuild affected task",
+      "kind": "build-intermediate"
+    },
+    {
+      "batch": 1,
+      "path": "/workspace/rct-worktrees/web-foundation/services/academic-service/academic-app/build/extracted-include-protos",
+      "allocatedBytes": 1564672,
+      "purpose": "compiled classes / extracted or generated protobuf / compiler intermediate",
+      "recovery": "preserved source/proto/Gradle tasks+JDK21+Gradle8.12+modules-2; rebuild affected task",
+      "kind": "build-intermediate"
+    },
+    {
+      "batch": 1,
+      "path": "/workspace/rct-worktrees/web-foundation/services/academic-service/academic-app/build/extracted-protos",
+      "allocatedBytes": 12288,
+      "purpose": "compiled classes / extracted or generated protobuf / compiler intermediate",
+      "recovery": "preserved source/proto/Gradle tasks+JDK21+Gradle8.12+modules-2; rebuild affected task",
+      "kind": "build-intermediate"
+    },
+    {
+      "batch": 1,
+      "path": "/workspace/rct-worktrees/web-foundation/services/academic-service/academic-app/build/tmp",
+      "allocatedBytes": 5734400,
+      "purpose": "compiled classes / extracted or generated protobuf / compiler intermediate",
+      "recovery": "preserved source/proto/Gradle tasks+JDK21+Gradle8.12+modules-2; rebuild affected task",
+      "kind": "build-intermediate"
+    },
+    {
+      "batch": 1,
+      "path": "/workspace/rct-worktrees/web-foundation/services/mobile-bff/mobile-bff-app/build/classes",
+      "allocatedBytes": 18001920,
+      "purpose": "compiled classes / extracted or generated protobuf / compiler intermediate",
+      "recovery": "preserved source/proto/Gradle tasks+JDK21+Gradle8.12+modules-2; rebuild affected task",
+      "kind": "build-intermediate"
+    },
+    {
+      "batch": 1,
+      "path": "/workspace/rct-worktrees/web-foundation/services/mobile-bff/mobile-bff-app/build/generated",
+      "allocatedBytes": 14745600,
+      "purpose": "compiled classes / extracted or generated protobuf / compiler intermediate",
+      "recovery": "preserved source/proto/Gradle tasks+JDK21+Gradle8.12+modules-2; rebuild affected task",
+      "kind": "build-intermediate"
+    },
+    {
+      "batch": 1,
+      "path": "/workspace/rct-worktrees/web-foundation/services/mobile-bff/mobile-bff-app/build/extracted-include-protos",
+      "allocatedBytes": 712704,
+      "purpose": "compiled classes / extracted or generated protobuf / compiler intermediate",
+      "recovery": "preserved source/proto/Gradle tasks+JDK21+Gradle8.12+modules-2; rebuild affected task",
+      "kind": "build-intermediate"
+    },
+    {
+      "batch": 1,
+      "path": "/workspace/rct-worktrees/web-foundation/services/mobile-bff/mobile-bff-app/build/extracted-protos",
+      "allocatedBytes": 8192,
+      "purpose": "compiled classes / extracted or generated protobuf / compiler intermediate",
+      "recovery": "preserved source/proto/Gradle tasks+JDK21+Gradle8.12+modules-2; rebuild affected task",
+      "kind": "build-intermediate"
+    },
+    {
+      "batch": 1,
+      "path": "/workspace/rct-worktrees/web-foundation/services/mobile-bff/mobile-bff-app/build/tmp",
+      "allocatedBytes": 774144,
+      "purpose": "compiled classes / extracted or generated protobuf / compiler intermediate",
+      "recovery": "preserved source/proto/Gradle tasks+JDK21+Gradle8.12+modules-2; rebuild affected task",
+      "kind": "build-intermediate"
+    },
+    {
+      "batch": 1,
+      "path": "/workspace/rct-worktrees/web-foundation/services/notification-service/notification-app/build/classes",
+      "allocatedBytes": 18903040,
+      "purpose": "compiled classes / extracted or generated protobuf / compiler intermediate",
+      "recovery": "preserved source/proto/Gradle tasks+JDK21+Gradle8.12+modules-2; rebuild affected task",
+      "kind": "build-intermediate"
+    },
+    {
+      "batch": 1,
+      "path": "/workspace/rct-worktrees/web-foundation/services/notification-service/notification-app/build/generated",
+      "allocatedBytes": 14753792,
+      "purpose": "compiled classes / extracted or generated protobuf / compiler intermediate",
+      "recovery": "preserved source/proto/Gradle tasks+JDK21+Gradle8.12+modules-2; rebuild affected task",
+      "kind": "build-intermediate"
+    },
+    {
+      "batch": 1,
+      "path": "/workspace/rct-worktrees/web-foundation/services/notification-service/notification-app/build/extracted-include-protos",
+      "allocatedBytes": 1495040,
+      "purpose": "compiled classes / extracted or generated protobuf / compiler intermediate",
+      "recovery": "preserved source/proto/Gradle tasks+JDK21+Gradle8.12+modules-2; rebuild affected task",
+      "kind": "build-intermediate"
+    },
+    {
+      "batch": 1,
+      "path": "/workspace/rct-worktrees/web-foundation/services/notification-service/notification-app/build/extracted-protos",
+      "allocatedBytes": 12288,
+      "purpose": "compiled classes / extracted or generated protobuf / compiler intermediate",
+      "recovery": "preserved source/proto/Gradle tasks+JDK21+Gradle8.12+modules-2; rebuild affected task",
+      "kind": "build-intermediate"
+    },
+    {
+      "batch": 1,
+      "path": "/workspace/rct-worktrees/web-foundation/services/notification-service/notification-app/build/tmp",
+      "allocatedBytes": 5361664,
+      "purpose": "compiled classes / extracted or generated protobuf / compiler intermediate",
+      "recovery": "preserved source/proto/Gradle tasks+JDK21+Gradle8.12+modules-2; rebuild affected task",
+      "kind": "build-intermediate"
+    },
+    {
+      "batch": 1,
+      "path": "/workspace/rct-worktrees/web-foundation/services/auth-service/auth-app/build/classes",
+      "allocatedBytes": 19443712,
+      "purpose": "compiled classes / extracted or generated protobuf / compiler intermediate",
+      "recovery": "preserved source/proto/Gradle tasks+JDK21+Gradle8.12+modules-2; rebuild affected task",
+      "kind": "build-intermediate"
+    },
+    {
+      "batch": 1,
+      "path": "/workspace/rct-worktrees/web-foundation/services/auth-service/auth-app/build/generated",
+      "allocatedBytes": 14745600,
+      "purpose": "compiled classes / extracted or generated protobuf / compiler intermediate",
+      "recovery": "preserved source/proto/Gradle tasks+JDK21+Gradle8.12+modules-2; rebuild affected task",
+      "kind": "build-intermediate"
+    },
+    {
+      "batch": 1,
+      "path": "/workspace/rct-worktrees/web-foundation/services/auth-service/auth-app/build/extracted-include-protos",
+      "allocatedBytes": 839680,
+      "purpose": "compiled classes / extracted or generated protobuf / compiler intermediate",
+      "recovery": "preserved source/proto/Gradle tasks+JDK21+Gradle8.12+modules-2; rebuild affected task",
+      "kind": "build-intermediate"
+    },
+    {
+      "batch": 1,
+      "path": "/workspace/rct-worktrees/web-foundation/services/auth-service/auth-app/build/extracted-protos",
+      "allocatedBytes": 8192,
+      "purpose": "compiled classes / extracted or generated protobuf / compiler intermediate",
+      "recovery": "preserved source/proto/Gradle tasks+JDK21+Gradle8.12+modules-2; rebuild affected task",
+      "kind": "build-intermediate"
+    },
+    {
+      "batch": 1,
+      "path": "/workspace/rct-worktrees/web-foundation/services/auth-service/auth-app/build/tmp",
+      "allocatedBytes": 1056768,
+      "purpose": "compiled classes / extracted or generated protobuf / compiler intermediate",
+      "recovery": "preserved source/proto/Gradle tasks+JDK21+Gradle8.12+modules-2; rebuild affected task",
+      "kind": "build-intermediate"
+    },
+    {
+      "batch": 1,
+      "path": "/workspace/rct-worktrees/device-api/services/academic-service/academic-app/build/classes",
+      "allocatedBytes": 27115520,
+      "purpose": "compiled classes / extracted or generated protobuf / compiler intermediate",
+      "recovery": "preserved source/proto/Gradle tasks+JDK21+Gradle8.12+modules-2; rebuild affected task",
+      "kind": "build-intermediate"
+    },
+    {
+      "batch": 1,
+      "path": "/workspace/rct-worktrees/device-api/services/academic-service/academic-app/build/generated",
+      "allocatedBytes": 14528512,
+      "purpose": "compiled classes / extracted or generated protobuf / compiler intermediate",
+      "recovery": "preserved source/proto/Gradle tasks+JDK21+Gradle8.12+modules-2; rebuild affected task",
+      "kind": "build-intermediate"
+    },
+    {
+      "batch": 1,
+      "path": "/workspace/rct-worktrees/device-api/services/academic-service/academic-app/build/extracted-include-protos",
+      "allocatedBytes": 1560576,
+      "purpose": "compiled classes / extracted or generated protobuf / compiler intermediate",
+      "recovery": "preserved source/proto/Gradle tasks+JDK21+Gradle8.12+modules-2; rebuild affected task",
+      "kind": "build-intermediate"
+    },
+    {
+      "batch": 1,
+      "path": "/workspace/rct-worktrees/device-api/services/academic-service/academic-app/build/extracted-protos",
+      "allocatedBytes": 12288,
+      "purpose": "compiled classes / extracted or generated protobuf / compiler intermediate",
+      "recovery": "preserved source/proto/Gradle tasks+JDK21+Gradle8.12+modules-2; rebuild affected task",
+      "kind": "build-intermediate"
+    },
+    {
+      "batch": 1,
+      "path": "/workspace/rct-worktrees/device-api/services/academic-service/academic-app/build/tmp",
+      "allocatedBytes": 5754880,
+      "purpose": "compiled classes / extracted or generated protobuf / compiler intermediate",
+      "recovery": "preserved source/proto/Gradle tasks+JDK21+Gradle8.12+modules-2; rebuild affected task",
+      "kind": "build-intermediate"
+    },
+    {
+      "batch": 1,
+      "path": "/workspace/rct-worktrees/device-api/services/mobile-bff/mobile-bff-app/build/classes",
+      "allocatedBytes": 17694720,
+      "purpose": "compiled classes / extracted or generated protobuf / compiler intermediate",
+      "recovery": "preserved source/proto/Gradle tasks+JDK21+Gradle8.12+modules-2; rebuild affected task",
+      "kind": "build-intermediate"
+    },
+    {
+      "batch": 1,
+      "path": "/workspace/rct-worktrees/device-api/services/mobile-bff/mobile-bff-app/build/generated",
+      "allocatedBytes": 14520320,
+      "purpose": "compiled classes / extracted or generated protobuf / compiler intermediate",
+      "recovery": "preserved source/proto/Gradle tasks+JDK21+Gradle8.12+modules-2; rebuild affected task",
+      "kind": "build-intermediate"
+    },
+    {
+      "batch": 1,
+      "path": "/workspace/rct-worktrees/device-api/services/mobile-bff/mobile-bff-app/build/extracted-include-protos",
+      "allocatedBytes": 712704,
+      "purpose": "compiled classes / extracted or generated protobuf / compiler intermediate",
+      "recovery": "preserved source/proto/Gradle tasks+JDK21+Gradle8.12+modules-2; rebuild affected task",
+      "kind": "build-intermediate"
+    },
+    {
+      "batch": 1,
+      "path": "/workspace/rct-worktrees/device-api/services/mobile-bff/mobile-bff-app/build/extracted-protos",
+      "allocatedBytes": 8192,
+      "purpose": "compiled classes / extracted or generated protobuf / compiler intermediate",
+      "recovery": "preserved source/proto/Gradle tasks+JDK21+Gradle8.12+modules-2; rebuild affected task",
+      "kind": "build-intermediate"
+    },
+    {
+      "batch": 1,
+      "path": "/workspace/rct-worktrees/device-api/services/mobile-bff/mobile-bff-app/build/tmp",
+      "allocatedBytes": 770048,
+      "purpose": "compiled classes / extracted or generated protobuf / compiler intermediate",
+      "recovery": "preserved source/proto/Gradle tasks+JDK21+Gradle8.12+modules-2; rebuild affected task",
+      "kind": "build-intermediate"
+    },
+    {
+      "batch": 1,
+      "path": "/workspace/rct-worktrees/device-api/services/notification-service/notification-app/build/classes",
+      "allocatedBytes": 17846272,
+      "purpose": "compiled classes / extracted or generated protobuf / compiler intermediate",
+      "recovery": "preserved source/proto/Gradle tasks+JDK21+Gradle8.12+modules-2; rebuild affected task",
+      "kind": "build-intermediate"
+    },
+    {
+      "batch": 1,
+      "path": "/workspace/rct-worktrees/device-api/services/notification-service/notification-app/build/generated",
+      "allocatedBytes": 14520320,
+      "purpose": "compiled classes / extracted or generated protobuf / compiler intermediate",
+      "recovery": "preserved source/proto/Gradle tasks+JDK21+Gradle8.12+modules-2; rebuild affected task",
+      "kind": "build-intermediate"
+    },
+    {
+      "batch": 1,
+      "path": "/workspace/rct-worktrees/device-api/services/notification-service/notification-app/build/extracted-include-protos",
+      "allocatedBytes": 749568,
+      "purpose": "compiled classes / extracted or generated protobuf / compiler intermediate",
+      "recovery": "preserved source/proto/Gradle tasks+JDK21+Gradle8.12+modules-2; rebuild affected task",
+      "kind": "build-intermediate"
+    },
+    {
+      "batch": 1,
+      "path": "/workspace/rct-worktrees/device-api/services/notification-service/notification-app/build/extracted-protos",
+      "allocatedBytes": 8192,
+      "purpose": "compiled classes / extracted or generated protobuf / compiler intermediate",
+      "recovery": "preserved source/proto/Gradle tasks+JDK21+Gradle8.12+modules-2; rebuild affected task",
+      "kind": "build-intermediate"
+    },
+    {
+      "batch": 1,
+      "path": "/workspace/rct-worktrees/device-api/services/notification-service/notification-app/build/tmp",
+      "allocatedBytes": 1146880,
+      "purpose": "compiled classes / extracted or generated protobuf / compiler intermediate",
+      "recovery": "preserved source/proto/Gradle tasks+JDK21+Gradle8.12+modules-2; rebuild affected task",
+      "kind": "build-intermediate"
+    },
+    {
+      "batch": 1,
+      "path": "/workspace/rct-worktrees/device-api/services/auth-service/auth-app/build/classes",
+      "allocatedBytes": 20647936,
+      "purpose": "compiled classes / extracted or generated protobuf / compiler intermediate",
+      "recovery": "preserved source/proto/Gradle tasks+JDK21+Gradle8.12+modules-2; rebuild affected task",
+      "kind": "build-intermediate"
+    },
+    {
+      "batch": 1,
+      "path": "/workspace/rct-worktrees/device-api/services/auth-service/auth-app/build/generated",
+      "allocatedBytes": 14528512,
+      "purpose": "compiled classes / extracted or generated protobuf / compiler intermediate",
+      "recovery": "preserved source/proto/Gradle tasks+JDK21+Gradle8.12+modules-2; rebuild affected task",
+      "kind": "build-intermediate"
+    },
+    {
+      "batch": 1,
+      "path": "/workspace/rct-worktrees/device-api/services/auth-service/auth-app/build/extracted-include-protos",
+      "allocatedBytes": 1814528,
+      "purpose": "compiled classes / extracted or generated protobuf / compiler intermediate",
+      "recovery": "preserved source/proto/Gradle tasks+JDK21+Gradle8.12+modules-2; rebuild affected task",
+      "kind": "build-intermediate"
+    },
+    {
+      "batch": 1,
+      "path": "/workspace/rct-worktrees/device-api/services/auth-service/auth-app/build/extracted-protos",
+      "allocatedBytes": 12288,
+      "purpose": "compiled classes / extracted or generated protobuf / compiler intermediate",
+      "recovery": "preserved source/proto/Gradle tasks+JDK21+Gradle8.12+modules-2; rebuild affected task",
+      "kind": "build-intermediate"
+    },
+    {
+      "batch": 1,
+      "path": "/workspace/rct-worktrees/device-api/services/auth-service/auth-app/build/tmp",
+      "allocatedBytes": 6352896,
+      "purpose": "compiled classes / extracted or generated protobuf / compiler intermediate",
+      "recovery": "preserved source/proto/Gradle tasks+JDK21+Gradle8.12+modules-2; rebuild affected task",
+      "kind": "build-intermediate"
+    },
+    {
+      "batch": 1,
+      "path": "/workspace/rct-worktrees/group-final-delete/services/schedule-service/schedule-app/build/classes",
+      "allocatedBytes": 20254720,
+      "purpose": "compiled classes / extracted or generated protobuf / compiler intermediate",
+      "recovery": "preserved source/proto/Gradle tasks+JDK21+Gradle8.12+modules-2; rebuild affected task",
+      "kind": "build-intermediate"
+    },
+    {
+      "batch": 1,
+      "path": "/workspace/rct-worktrees/group-final-delete/services/schedule-service/schedule-app/build/generated",
+      "allocatedBytes": 14753792,
+      "purpose": "compiled classes / extracted or generated protobuf / compiler intermediate",
+      "recovery": "preserved source/proto/Gradle tasks+JDK21+Gradle8.12+modules-2; rebuild affected task",
+      "kind": "build-intermediate"
+    },
+    {
+      "batch": 1,
+      "path": "/workspace/rct-worktrees/group-final-delete/services/schedule-service/schedule-app/build/extracted-include-protos",
+      "allocatedBytes": 1675264,
+      "purpose": "compiled classes / extracted or generated protobuf / compiler intermediate",
+      "recovery": "preserved source/proto/Gradle tasks+JDK21+Gradle8.12+modules-2; rebuild affected task",
+      "kind": "build-intermediate"
+    },
+    {
+      "batch": 1,
+      "path": "/workspace/rct-worktrees/group-final-delete/services/schedule-service/schedule-app/build/extracted-protos",
+      "allocatedBytes": 12288,
+      "purpose": "compiled classes / extracted or generated protobuf / compiler intermediate",
+      "recovery": "preserved source/proto/Gradle tasks+JDK21+Gradle8.12+modules-2; rebuild affected task",
+      "kind": "build-intermediate"
+    },
+    {
+      "batch": 1,
+      "path": "/workspace/rct-worktrees/group-final-delete/services/schedule-service/schedule-app/build/tmp",
+      "allocatedBytes": 5218304,
+      "purpose": "compiled classes / extracted or generated protobuf / compiler intermediate",
+      "recovery": "preserved source/proto/Gradle tasks+JDK21+Gradle8.12+modules-2; rebuild affected task",
+      "kind": "build-intermediate"
+    },
+    {
+      "batch": 1,
+      "path": "/workspace/rct-worktrees/group-final-delete/services/attendance-service/attendance-app/build/classes",
+      "allocatedBytes": 24260608,
+      "purpose": "compiled classes / extracted or generated protobuf / compiler intermediate",
+      "recovery": "preserved source/proto/Gradle tasks+JDK21+Gradle8.12+modules-2; rebuild affected task",
+      "kind": "build-intermediate"
+    },
+    {
+      "batch": 1,
+      "path": "/workspace/rct-worktrees/group-final-delete/services/attendance-service/attendance-app/build/generated",
+      "allocatedBytes": 14753792,
+      "purpose": "compiled classes / extracted or generated protobuf / compiler intermediate",
+      "recovery": "preserved source/proto/Gradle tasks+JDK21+Gradle8.12+modules-2; rebuild affected task",
+      "kind": "build-intermediate"
+    },
+    {
+      "batch": 1,
+      "path": "/workspace/rct-worktrees/group-final-delete/services/attendance-service/attendance-app/build/extracted-include-protos",
+      "allocatedBytes": 1421312,
+      "purpose": "compiled classes / extracted or generated protobuf / compiler intermediate",
+      "recovery": "preserved source/proto/Gradle tasks+JDK21+Gradle8.12+modules-2; rebuild affected task",
+      "kind": "build-intermediate"
+    },
+    {
+      "batch": 1,
+      "path": "/workspace/rct-worktrees/group-final-delete/services/attendance-service/attendance-app/build/extracted-protos",
+      "allocatedBytes": 12288,
+      "purpose": "compiled classes / extracted or generated protobuf / compiler intermediate",
+      "recovery": "preserved source/proto/Gradle tasks+JDK21+Gradle8.12+modules-2; rebuild affected task",
+      "kind": "build-intermediate"
+    },
+    {
+      "batch": 1,
+      "path": "/workspace/rct-worktrees/group-final-delete/services/attendance-service/attendance-app/build/tmp",
+      "allocatedBytes": 5873664,
+      "purpose": "compiled classes / extracted or generated protobuf / compiler intermediate",
+      "recovery": "preserved source/proto/Gradle tasks+JDK21+Gradle8.12+modules-2; rebuild affected task",
+      "kind": "build-intermediate"
+    },
+    {
+      "batch": 1,
+      "path": "/workspace/rct-worktrees/group-final-delete/services/academic-service/academic-app/build/classes",
+      "allocatedBytes": 27586560,
+      "purpose": "compiled classes / extracted or generated protobuf / compiler intermediate",
+      "recovery": "preserved source/proto/Gradle tasks+JDK21+Gradle8.12+modules-2; rebuild affected task",
+      "kind": "build-intermediate"
+    },
+    {
+      "batch": 1,
+      "path": "/workspace/rct-worktrees/group-final-delete/services/academic-service/academic-app/build/generated",
+      "allocatedBytes": 14753792,
+      "purpose": "compiled classes / extracted or generated protobuf / compiler intermediate",
+      "recovery": "preserved source/proto/Gradle tasks+JDK21+Gradle8.12+modules-2; rebuild affected task",
+      "kind": "build-intermediate"
+    },
+    {
+      "batch": 1,
+      "path": "/workspace/rct-worktrees/group-final-delete/services/academic-service/academic-app/build/extracted-include-protos",
+      "allocatedBytes": 1564672,
+      "purpose": "compiled classes / extracted or generated protobuf / compiler intermediate",
+      "recovery": "preserved source/proto/Gradle tasks+JDK21+Gradle8.12+modules-2; rebuild affected task",
+      "kind": "build-intermediate"
+    },
+    {
+      "batch": 1,
+      "path": "/workspace/rct-worktrees/group-final-delete/services/academic-service/academic-app/build/extracted-protos",
+      "allocatedBytes": 12288,
+      "purpose": "compiled classes / extracted or generated protobuf / compiler intermediate",
+      "recovery": "preserved source/proto/Gradle tasks+JDK21+Gradle8.12+modules-2; rebuild affected task",
+      "kind": "build-intermediate"
+    },
+    {
+      "batch": 1,
+      "path": "/workspace/rct-worktrees/group-final-delete/services/academic-service/academic-app/build/tmp",
+      "allocatedBytes": 5754880,
+      "purpose": "compiled classes / extracted or generated protobuf / compiler intermediate",
+      "recovery": "preserved source/proto/Gradle tasks+JDK21+Gradle8.12+modules-2; rebuild affected task",
+      "kind": "build-intermediate"
+    },
+    {
+      "batch": 1,
+      "path": "/workspace/rct-worktrees/group-final-delete/services/auth-service/auth-app/build/classes",
+      "allocatedBytes": 19443712,
+      "purpose": "compiled classes / extracted or generated protobuf / compiler intermediate",
+      "recovery": "preserved source/proto/Gradle tasks+JDK21+Gradle8.12+modules-2; rebuild affected task",
+      "kind": "build-intermediate"
+    },
+    {
+      "batch": 1,
+      "path": "/workspace/rct-worktrees/group-final-delete/services/auth-service/auth-app/build/generated",
+      "allocatedBytes": 14745600,
+      "purpose": "compiled classes / extracted or generated protobuf / compiler intermediate",
+      "recovery": "preserved source/proto/Gradle tasks+JDK21+Gradle8.12+modules-2; rebuild affected task",
+      "kind": "build-intermediate"
+    },
+    {
+      "batch": 1,
+      "path": "/workspace/rct-worktrees/group-final-delete/services/auth-service/auth-app/build/extracted-include-protos",
+      "allocatedBytes": 839680,
+      "purpose": "compiled classes / extracted or generated protobuf / compiler intermediate",
+      "recovery": "preserved source/proto/Gradle tasks+JDK21+Gradle8.12+modules-2; rebuild affected task",
+      "kind": "build-intermediate"
+    },
+    {
+      "batch": 1,
+      "path": "/workspace/rct-worktrees/group-final-delete/services/auth-service/auth-app/build/extracted-protos",
+      "allocatedBytes": 8192,
+      "purpose": "compiled classes / extracted or generated protobuf / compiler intermediate",
+      "recovery": "preserved source/proto/Gradle tasks+JDK21+Gradle8.12+modules-2; rebuild affected task",
+      "kind": "build-intermediate"
+    },
+    {
+      "batch": 1,
+      "path": "/workspace/rct-worktrees/group-final-delete/services/auth-service/auth-app/build/tmp",
+      "allocatedBytes": 1064960,
+      "purpose": "compiled classes / extracted or generated protobuf / compiler intermediate",
+      "recovery": "preserved source/proto/Gradle tasks+JDK21+Gradle8.12+modules-2; rebuild affected task",
+      "kind": "build-intermediate"
+    },
+    {
+      "batch": 1,
+      "path": "/workspace/rct-worktrees/runtime-stand/services/document-renderer-service/document-renderer-app/build/classes",
+      "allocatedBytes": 17182720,
+      "purpose": "compiled classes / extracted or generated protobuf / compiler intermediate",
+      "recovery": "preserved source/proto/Gradle tasks+JDK21+Gradle8.12+modules-2; rebuild affected task",
+      "kind": "build-intermediate"
+    },
+    {
+      "batch": 1,
+      "path": "/workspace/rct-worktrees/runtime-stand/services/document-renderer-service/document-renderer-app/build/generated",
+      "allocatedBytes": 14520320,
+      "purpose": "compiled classes / extracted or generated protobuf / compiler intermediate",
+      "recovery": "preserved source/proto/Gradle tasks+JDK21+Gradle8.12+modules-2; rebuild affected task",
+      "kind": "build-intermediate"
+    },
+    {
+      "batch": 1,
+      "path": "/workspace/rct-worktrees/runtime-stand/services/document-renderer-service/document-renderer-app/build/extracted-include-protos",
+      "allocatedBytes": 839680,
+      "purpose": "compiled classes / extracted or generated protobuf / compiler intermediate",
+      "recovery": "preserved source/proto/Gradle tasks+JDK21+Gradle8.12+modules-2; rebuild affected task",
+      "kind": "build-intermediate"
+    },
+    {
+      "batch": 1,
+      "path": "/workspace/rct-worktrees/runtime-stand/services/document-renderer-service/document-renderer-app/build/extracted-protos",
+      "allocatedBytes": 8192,
+      "purpose": "compiled classes / extracted or generated protobuf / compiler intermediate",
+      "recovery": "preserved source/proto/Gradle tasks+JDK21+Gradle8.12+modules-2; rebuild affected task",
+      "kind": "build-intermediate"
+    },
+    {
+      "batch": 1,
+      "path": "/workspace/rct-worktrees/runtime-stand/services/document-renderer-service/document-renderer-app/build/tmp",
+      "allocatedBytes": 561152,
+      "purpose": "compiled classes / extracted or generated protobuf / compiler intermediate",
+      "recovery": "preserved source/proto/Gradle tasks+JDK21+Gradle8.12+modules-2; rebuild affected task",
+      "kind": "build-intermediate"
+    },
+    {
+      "batch": 1,
+      "path": "/workspace/rct-worktrees/runtime-stand/services/schedule-service/schedule-app/build/classes",
+      "allocatedBytes": 18571264,
+      "purpose": "compiled classes / extracted or generated protobuf / compiler intermediate",
+      "recovery": "preserved source/proto/Gradle tasks+JDK21+Gradle8.12+modules-2; rebuild affected task",
+      "kind": "build-intermediate"
+    },
+    {
+      "batch": 1,
+      "path": "/workspace/rct-worktrees/runtime-stand/services/schedule-service/schedule-app/build/generated",
+      "allocatedBytes": 14520320,
+      "purpose": "compiled classes / extracted or generated protobuf / compiler intermediate",
+      "recovery": "preserved source/proto/Gradle tasks+JDK21+Gradle8.12+modules-2; rebuild affected task",
+      "kind": "build-intermediate"
+    },
+    {
+      "batch": 1,
+      "path": "/workspace/rct-worktrees/runtime-stand/services/schedule-service/schedule-app/build/extracted-include-protos",
+      "allocatedBytes": 839680,
+      "purpose": "compiled classes / extracted or generated protobuf / compiler intermediate",
+      "recovery": "preserved source/proto/Gradle tasks+JDK21+Gradle8.12+modules-2; rebuild affected task",
+      "kind": "build-intermediate"
+    },
+    {
+      "batch": 1,
+      "path": "/workspace/rct-worktrees/runtime-stand/services/schedule-service/schedule-app/build/extracted-protos",
+      "allocatedBytes": 8192,
+      "purpose": "compiled classes / extracted or generated protobuf / compiler intermediate",
+      "recovery": "preserved source/proto/Gradle tasks+JDK21+Gradle8.12+modules-2; rebuild affected task",
+      "kind": "build-intermediate"
+    },
+    {
+      "batch": 1,
+      "path": "/workspace/rct-worktrees/runtime-stand/services/schedule-service/schedule-app/build/tmp",
+      "allocatedBytes": 1011712,
+      "purpose": "compiled classes / extracted or generated protobuf / compiler intermediate",
+      "recovery": "preserved source/proto/Gradle tasks+JDK21+Gradle8.12+modules-2; rebuild affected task",
+      "kind": "build-intermediate"
+    },
+    {
+      "batch": 1,
+      "path": "/workspace/rct-worktrees/runtime-stand/services/attendance-service/attendance-app/build/classes",
+      "allocatedBytes": 21147648,
+      "purpose": "compiled classes / extracted or generated protobuf / compiler intermediate",
+      "recovery": "preserved source/proto/Gradle tasks+JDK21+Gradle8.12+modules-2; rebuild affected task",
+      "kind": "build-intermediate"
+    },
+    {
+      "batch": 1,
+      "path": "/workspace/rct-worktrees/runtime-stand/services/attendance-service/attendance-app/build/generated",
+      "allocatedBytes": 14520320,
+      "purpose": "compiled classes / extracted or generated protobuf / compiler intermediate",
+      "recovery": "preserved source/proto/Gradle tasks+JDK21+Gradle8.12+modules-2; rebuild affected task",
+      "kind": "build-intermediate"
+    },
+    {
+      "batch": 1,
+      "path": "/workspace/rct-worktrees/runtime-stand/services/attendance-service/attendance-app/build/extracted-include-protos",
+      "allocatedBytes": 712704,
+      "purpose": "compiled classes / extracted or generated protobuf / compiler intermediate",
+      "recovery": "preserved source/proto/Gradle tasks+JDK21+Gradle8.12+modules-2; rebuild affected task",
+      "kind": "build-intermediate"
+    },
+    {
+      "batch": 1,
+      "path": "/workspace/rct-worktrees/runtime-stand/services/attendance-service/attendance-app/build/extracted-protos",
+      "allocatedBytes": 8192,
+      "purpose": "compiled classes / extracted or generated protobuf / compiler intermediate",
+      "recovery": "preserved source/proto/Gradle tasks+JDK21+Gradle8.12+modules-2; rebuild affected task",
+      "kind": "build-intermediate"
+    },
+    {
+      "batch": 1,
+      "path": "/workspace/rct-worktrees/runtime-stand/services/attendance-service/attendance-app/build/tmp",
+      "allocatedBytes": 1196032,
+      "purpose": "compiled classes / extracted or generated protobuf / compiler intermediate",
+      "recovery": "preserved source/proto/Gradle tasks+JDK21+Gradle8.12+modules-2; rebuild affected task",
+      "kind": "build-intermediate"
+    },
+    {
+      "batch": 1,
+      "path": "/workspace/rct-worktrees/runtime-stand/services/notification-service/notification-app/build/classes",
+      "allocatedBytes": 17846272,
+      "purpose": "compiled classes / extracted or generated protobuf / compiler intermediate",
+      "recovery": "preserved source/proto/Gradle tasks+JDK21+Gradle8.12+modules-2; rebuild affected task",
+      "kind": "build-intermediate"
+    },
+    {
+      "batch": 1,
+      "path": "/workspace/rct-worktrees/runtime-stand/services/notification-service/notification-app/build/generated",
+      "allocatedBytes": 14520320,
+      "purpose": "compiled classes / extracted or generated protobuf / compiler intermediate",
+      "recovery": "preserved source/proto/Gradle tasks+JDK21+Gradle8.12+modules-2; rebuild affected task",
+      "kind": "build-intermediate"
+    },
+    {
+      "batch": 1,
+      "path": "/workspace/rct-worktrees/runtime-stand/services/notification-service/notification-app/build/extracted-include-protos",
+      "allocatedBytes": 749568,
+      "purpose": "compiled classes / extracted or generated protobuf / compiler intermediate",
+      "recovery": "preserved source/proto/Gradle tasks+JDK21+Gradle8.12+modules-2; rebuild affected task",
+      "kind": "build-intermediate"
+    },
+    {
+      "batch": 1,
+      "path": "/workspace/rct-worktrees/runtime-stand/services/notification-service/notification-app/build/extracted-protos",
+      "allocatedBytes": 8192,
+      "purpose": "compiled classes / extracted or generated protobuf / compiler intermediate",
+      "recovery": "preserved source/proto/Gradle tasks+JDK21+Gradle8.12+modules-2; rebuild affected task",
+      "kind": "build-intermediate"
+    },
+    {
+      "batch": 1,
+      "path": "/workspace/rct-worktrees/runtime-stand/services/notification-service/notification-app/build/tmp",
+      "allocatedBytes": 1122304,
+      "purpose": "compiled classes / extracted or generated protobuf / compiler intermediate",
+      "recovery": "preserved source/proto/Gradle tasks+JDK21+Gradle8.12+modules-2; rebuild affected task",
+      "kind": "build-intermediate"
+    },
+    {
+      "batch": 1,
+      "path": "/workspace/.gradle/caches/8.12/generated-gradle-jars",
+      "allocatedBytes": 182878208,
+      "purpose": "derived Gradle cache; no running host Gradle/JVM dependency",
+      "recovery": "preserved Gradle8.12 distribution/modules-2/JDK; regenerate",
+      "kind": "derived-gradle-cache"
+    },
+    {
+      "batch": 1,
+      "path": "/workspace/.gradle/caches/8.12/javaCompile",
+      "allocatedBytes": 69472256,
+      "purpose": "derived Gradle cache; no running host Gradle/JVM dependency",
+      "recovery": "preserved Gradle8.12 distribution/modules-2/JDK; regenerate",
+      "kind": "derived-gradle-cache"
+    },
+    {
+      "batch": 1,
+      "path": "/workspace/.gradle/caches/8.12/transforms",
+      "allocatedBytes": 61747200,
+      "purpose": "derived Gradle cache; no running host Gradle/JVM dependency",
+      "recovery": "preserved Gradle8.12 distribution/modules-2/JDK; regenerate",
+      "kind": "derived-gradle-cache"
+    },
+    {
+      "batch": 2,
+      "path": "/workspace/rct-worktrees/device-api/services/api-gateway/build/libs/api-gateway-0.1.0.jar",
+      "allocatedBytes": 62132224,
+      "purpose": "unmounted surplus bootJAR copy",
+      "recovery": "/workspace/rct-pr3-runtime/artifacts/593f47f69a6ad4fcb7399f50ad31775a93a1a0ceaa7fd4ae58c12cd25d7491e3/api-gateway-0.1.0.jar",
+      "sha256": "593f47f69a6ad4fcb7399f50ad31775a93a1a0ceaa7fd4ae58c12cd25d7491e3",
+      "kind": "sha-equal-surplus"
+    },
+    {
+      "batch": 2,
+      "path": "/workspace/rct-worktrees/device-api/services/academic-service/academic-app/build/libs/academic-app-0.1.0.jar",
+      "allocatedBytes": 102686720,
+      "purpose": "unmounted surplus bootJAR copy",
+      "recovery": "/workspace/rct-pr3-runtime/artifacts/a433178685a4a9cf421ab949fc699b5efaf03fe91c50d3917c1655bfca24cbe2/academic-app-0.1.0.jar",
+      "sha256": "a433178685a4a9cf421ab949fc699b5efaf03fe91c50d3917c1655bfca24cbe2",
+      "kind": "sha-equal-surplus"
+    },
+    {
+      "batch": 2,
+      "path": "/workspace/rct-worktrees/device-api/services/auth-service/auth-app/build/libs/auth-app-0.1.0.jar",
+      "allocatedBytes": 104128512,
+      "purpose": "unmounted surplus bootJAR copy",
+      "recovery": "/workspace/rct-pr3-runtime/artifacts/32bda499a73a5368d64126fbcba49e378d5e81ea349a4b20f7f671c1357c4035/auth-app-0.1.0.jar",
+      "sha256": "32bda499a73a5368d64126fbcba49e378d5e81ea349a4b20f7f671c1357c4035",
+      "kind": "sha-equal-surplus"
+    },
+    {
+      "batch": 2,
+      "path": "/workspace/rct-worktrees/runtime-stand/services/document-renderer-service/document-renderer-app/build/libs/document-renderer-app-0.1.0.jar",
+      "allocatedBytes": 50597888,
+      "purpose": "unmounted surplus bootJAR copy",
+      "recovery": "/workspace/rct-pr3-runtime/artifacts/52c4873c372eaed34c20294a77334a81936474021688f24558386e7282c0ace3/document-renderer-app-0.1.0.jar",
+      "sha256": "52c4873c372eaed34c20294a77334a81936474021688f24558386e7282c0ace3",
+      "kind": "sha-equal-surplus"
+    },
+    {
+      "batch": 2,
+      "path": "/workspace/rct-pr3-tooling/npm-cache/_cacache",
+      "allocatedBytes": 73043968,
+      "purpose": "own install cache,285contentSHA-equal maincache",
+      "recovery": "preserved /workspace/.npm/_cacache and installed shareddependencies",
+      "kind": "npm-cache-stock-clean"
+    },
+    {
+      "batch": 3,
+      "path": "/workspace/rct-pr3-setup/inputs/handoff-20261023-validated/web-vue-handoff-20261023.zip.part001",
+      "allocatedBytes": 31457280,
+      "purpose": "binary slice duplicate of preserved originalZIP",
+      "recovery": "/workspace/rct-pr3-setup/inputs/handoff-20261023-validated/web-vue-handoff-20261023.zip + preserved TRANSFER-MANIFEST.json",
+      "sha256": "66078d599493ea0fc8dea6546a75df0751d8d1ee88c107d6c2fd4802c7e4f683",
+      "kind": "transfer-surplus"
+    },
+    {
+      "batch": 3,
+      "path": "/workspace/rct-pr3-setup/inputs/handoff-20261023-validated/web-vue-handoff-20261023.zip.part002",
+      "allocatedBytes": 31457280,
+      "purpose": "binary slice duplicate of preserved originalZIP",
+      "recovery": "/workspace/rct-pr3-setup/inputs/handoff-20261023-validated/web-vue-handoff-20261023.zip + preserved TRANSFER-MANIFEST.json",
+      "sha256": "faeee78d4c2e01c4a6502dbc1f993cab15b36ad98983ef0f707d4c5aa3ad23fb",
+      "kind": "transfer-surplus"
+    },
+    {
+      "batch": 3,
+      "path": "/workspace/rct-pr3-setup/inputs/handoff-20261023-validated/web-vue-handoff-20261023.zip.part003",
+      "allocatedBytes": 24657920,
+      "purpose": "binary slice duplicate of preserved originalZIP",
+      "recovery": "/workspace/rct-pr3-setup/inputs/handoff-20261023-validated/web-vue-handoff-20261023.zip + preserved TRANSFER-MANIFEST.json",
+      "sha256": "cb24e022f283034a3df2eea81cf3001a480c465db6a0d4a315875da2d924c151",
+      "kind": "transfer-surplus"
+    },
+    {
+      "batch": 3,
+      "path": "/workspace/attachments/e153a824-4a73-4b30-bb44-b24d82a2f84c/web-vue-handoff-20261023-transfer-01-of-03.zip",
+      "allocatedBytes": 31461376,
+      "purpose": "ZIPwrapper of exact original slice plus preserved manifest/readme",
+      "recovery": "/workspace/rct-pr3-setup/inputs/handoff-20261023-validated/web-vue-handoff-20261023.zip + preserved transfer metadata; futureZIPheaders neednotbyteequal",
+      "sha256": "bd44e1202b2e35fdfbfe321f1a162088a2efd0e5d40e42d17a939bbc122926cb",
+      "kind": "transfer-surplus"
+    },
+    {
+      "batch": 3,
+      "path": "/workspace/attachments/467760d5-0103-45e1-a574-b8baca008f75/web-vue-handoff-20261023-transfer-02-of-03.zip",
+      "allocatedBytes": 31461376,
+      "purpose": "ZIPwrapper of exact original slice plus preserved manifest/readme",
+      "recovery": "/workspace/rct-pr3-setup/inputs/handoff-20261023-validated/web-vue-handoff-20261023.zip + preserved transfer metadata; futureZIPheaders neednotbyteequal",
+      "sha256": "e03c5a222da8cb8850f297eadb04916a04b3b0829e3702f575efae876ac33f32",
+      "kind": "transfer-surplus"
+    },
+    {
+      "batch": 3,
+      "path": "/workspace/attachments/aa01f13b-94b9-4af4-9bf2-91327290e37f/web-vue-handoff-20261023-transfer-03-of-03.zip",
+      "allocatedBytes": 24657920,
+      "purpose": "ZIPwrapper of exact original slice plus preserved manifest/readme",
+      "recovery": "/workspace/rct-pr3-setup/inputs/handoff-20261023-validated/web-vue-handoff-20261023.zip + preserved transfer metadata; futureZIPheaders neednotbyteequal",
+      "sha256": "1df7cb7d07a4f1a1b497e01f5133279bcf0ea930581f82e78ba81c4394eca314",
+      "kind": "transfer-surplus"
+    }
+  ],
+  "allocatedCandidateBytes": 1636708352,
+  "logicalIsNotActualReclaim": true,
+  "protectedJars": "/workspace/rct-pr3-runtime/group-current-source-qualification-20261025/protected-jars.json",
+  "retained": "allsource/WT/Git/WIP/recoveryZIPs/uniquechecks/25protectedJARs/mountedJARs/oldsetup3JARs/entirenode_modules/mainnpm/modules-2/wrapper/allDockerimagescontainersvolumesdata/privateconfigs",
+  "status": "PLAN_ONLY_PENDING_INDEPENDENT_SCOPE_REVIEW_NO_DELETIONS"
+}

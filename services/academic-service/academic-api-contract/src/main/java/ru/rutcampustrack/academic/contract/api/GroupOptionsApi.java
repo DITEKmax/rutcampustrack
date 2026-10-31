@@ -9,5 +9,6 @@ public interface GroupOptionsApi {
     GroupOptionsResponse options(
             @RequestParam(defaultValue = "") String search,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size);
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "false") boolean includeArchived);
 }

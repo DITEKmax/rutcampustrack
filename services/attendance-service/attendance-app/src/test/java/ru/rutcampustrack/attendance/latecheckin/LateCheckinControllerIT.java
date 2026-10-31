@@ -18,9 +18,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.http.MediaType;
-import ru.rutcampustrack.attendance.checkin.AttendanceDocument;
+import org.springframework.test.annotation.DirtiesContext;
 import ru.rutcampustrack.attendance.contract.dto.latecheckin.LateCheckinDecisionRequest;
 import ru.rutcampustrack.attendance.contract.enums.LateCheckinRequestStatus;
 import ru.rutcampustrack.attendance.integration.AbstractAttendanceIntegrationTest;
@@ -41,7 +40,13 @@ import ru.rutcampustrack.schedule.grpc.LessonResponse;
  * <p>gRPC-клиенты — {@code @MockitoBean} из базового класса. Реальная Mongo через Testcontainers
  * ({@link AbstractAttendanceIntegrationTest}). X-User-* заголовки имитируют JWT-claims от Gateway.
  */
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 class LateCheckinControllerIT extends AbstractAttendanceIntegrationTest {
+    @org.springframework.test.context.DynamicPropertySource
+    static void auditIsolation(org.springframework.test.context.DynamicPropertyRegistry registry) {
+        ru.rutcampustrack.attendance.integration.AuditTestIsolation.register(
+                registry, "latecheckincontrollerit", 12);
+    }
 
     private static final Long STUDENT_ID = 100L;
     private static final Long HEADMAN_ID = 777L;
@@ -56,8 +61,8 @@ class LateCheckinControllerIT extends AbstractAttendanceIntegrationTest {
 
     @BeforeEach
     void setUp() {
-        mongoTemplate.remove(new Query(), LateCheckinRequest.class);
-        mongoTemplate.remove(new Query(), AttendanceDocument.class);
+        mongoTemplate.getCollection("late_checkin_requests").deleteMany(new org.bson.Document());
+        mongoTemplate.getCollection("attendances").deleteMany(new org.bson.Document());
 
         Mockito.reset(scheduleGrpcClient, academicGrpcClient);
         when(academicGrpcClient.isHeadman(HEADMAN_ID, GROUP_ID))

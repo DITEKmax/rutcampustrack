@@ -2,7 +2,6 @@ package ru.rutcampustrack.auth.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonValue;
-
 import io.swagger.v3.oas.annotations.media.Schema;
 
 /** Only a current generated password may cross this scoped, non-cacheable boundary. */
@@ -43,7 +42,8 @@ public record HeadmanCredentialView(
 
     public enum Origin {
         INITIAL("initial"),
-        HEADMAN_RESET("headman_reset");
+        HEADMAN_RESET("headman_reset"),
+        ADMIN_RESET("admin_reset");
         private final String code;
 
         Origin(String code) {

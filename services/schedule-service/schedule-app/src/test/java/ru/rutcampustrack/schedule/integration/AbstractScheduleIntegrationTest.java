@@ -1,5 +1,9 @@
 package ru.rutcampustrack.schedule.integration;
 
+import com.github.dockerjava.api.model.ExposedPort;
+import com.github.dockerjava.api.model.PortBinding;
+import com.github.dockerjava.api.model.Ports;
+
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -18,9 +22,9 @@ import ru.rutcampustrack.schedule.item.entity.ScheduleItem;
 import ru.rutcampustrack.schedule.item.repository.ScheduleItemRepository;
 import ru.rutcampustrack.schedule.lesson.entity.Lesson;
 import ru.rutcampustrack.schedule.lesson.repository.LessonRepository;
+import ru.rutcampustrack.shared.outbox.OutboxEventSender;
 import ru.rutcampustrack.shared.outbox.OutboxRecord;
 import ru.rutcampustrack.shared.outbox.OutboxStorage;
-import ru.rutcampustrack.shared.outbox.OutboxEventSender;
 
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -152,6 +156,7 @@ ON CONFLICT (assignment_id) DO NOTHING
                 """
                 TRUNCATE TABLE
                     schedule_subject_deletion_participants,
+                    group_deletion_participants,
                     schedule_outbox,
                     schedule_semester_archive_effect_ledger,
                     schedule_semester_archive_barriers,
@@ -184,10 +189,27 @@ ON CONFLICT (assignment_id) DO NOTHING
         // Each test JVM owns its synthetic database; do not reuse another run's container.
         POSTGRES =
                 new PostgreSQLContainer<>("postgres:16")
+                        .withInitScript("group-deletion-runtime-roles.sql")
                         .withDatabaseName("schedule_db")
                         .withUsername("rct_user")
                         .withPassword("rct_dev_pass")
                         .withReuse(false);
+        if ("1".equals(System.getenv("RCT_GROUP_DELETION_BOUNDED")))
+            POSTGRES.withImagePullPolicy(new CachedImagesOnlyPullPolicy())
+                    .withLabel(
+                            "rct.fixture.owner",
+                            "group-delete-schedule-" + java.util.UUID.randomUUID())
+                    .withCreateContainerCmdModifier(
+                            command ->
+                                    command.getHostConfig()
+                                            .withMemory(384L * 1024 * 1024)
+                                            .withMemorySwap(384L * 1024 * 1024)
+                                            .withNanoCPUs(500_000_000L)
+                                            .withPortBindings(
+                                                    new PortBinding(
+                                                            Ports.Binding.bindIpAndPort(
+                                                                    "127.0.0.1", 0),
+                                                            new ExposedPort(5432))));
         POSTGRES.start();
     }
 

@@ -1,0 +1,13 @@
+# GROUP FINAL DELETE — SOURCEv10 one-line recheck
+
+**PASS по единственной Schedule correction и её причинному влиянию. Blocking findings нет.** SOURCEv9 startup review,13 закрытых Academic/Auth cases и два независимых Schedule r1 PASS переиспользованы; whole backend review не повторялось. Это source acceptance, не результат повторного IT.
+
+Пересчитаны full patch SHA256 `87c0dfef82ae6546a1ca5baa6a646dcc97194cca99bdd78c3783250a6cd902bd` и manifest SHA256 `e8275b42fb9218e84de715df5b67ff8322f631f4e4c58ac376d6fe7cfdec8868`; все48 entries совпали. Сравнение v9/v10 подтверждает ровно один путь и одно добавление: `ScheduleGroupDeletionParticipant.java:72` — `.addAllLessons(command.getLessonsList())`. Другие47 файлов, tests/assertions и startup policies byte-identical.
+
+Actual `schedule-it-v9-r1-cases.json` показывает единственный failure в `staleManifestHasNoEffectsAndReleaseBeforePrepareSurvivesLateCommands`: первый RELEASE receipt не имел top-level lessons, повторный содержал exact два command lessons. Test equality не ослаблена. Для epoch-null RELEASE первая операция сохраняет immutable normalized command_manifest с полным lesson inventory, participant/preview digests, actor/group и RELEASED tombstone; её counts по-прежнему пусты. Новый ответ теперь возвращает тот же lesson list/order, который `stored()` всегда добавляет при replay (`:194`). Поэтому при непустом command lessons first/replay receipts совпадают по содержимому; пустой list остаётся пустым.
+
+Correction меняет только response construction после прежнего RELEASED insert. Advisory/row locks, exact command byte comparison, actor/group/digest guards, immutable command storage и запрет позднего PREPARE/SEAL/COMMIT для RELEASED epoch не меняются. Данные lessons не читаются/удаляются этим добавлением, fence не создаётся заново. RELEASE-before-PREPARE по-прежнему фиксирует долговечный zero-effect tombstone; изменение не разрешает конфликтующий command и не обходится live authority admission. Два уже прошедших Schedule paths (target-only erasure/foreign preservation и least-privilege actual callback) причинно не затронуты.
+
+Достаточный следующий runtime scope остаётся один упавший Schedule method, затем четыре ещё не запущенных Attendance метода после собственного Schedule cleanup и fresh Root technical/resource/source GO. Возвращать два Schedule PASS или13 Academic/Auth PASS в повтор оснований нет. Исходный Schedule r1 FAIL остаётся immutable.
+
+Создан только этот отчёт. Reviewer выполнил public source/evidence reads и SHA/byte-diff checks; Gradle/tests/Docker/API/DB/browser/private/runtime runs=0. Requested Sol6.1/high; served-model telemetry недоступна. Password d896 review/evidence не изменены.

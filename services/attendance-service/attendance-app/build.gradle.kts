@@ -1,8 +1,45 @@
+import java.nio.file.Path
+
 plugins {
     java
     id("org.springframework.boot")
     id("io.spring.dependency-management")
     id("com.google.protobuf") version "0.9.4"
+}
+
+// The instrumented attendance suite exceeded Gradle's default 512 MiB test heap.
+// Bound the forked test JVM identically for CI coverage and local replay; the
+// Gradle build JVM has a separate budget. Keep every test and JaCoCo execution.
+tasks.withType<Test>().configureEach {
+    val heapMiB = providers.gradleProperty("rct.attendance.heapMiB").orElse("1024").get()
+    require(heapMiB in listOf("512", "1024")) { "Attendance heap must be 512 or 1024 MiB" }
+    maxHeapSize = "${heapMiB}m"
+    maxParallelForks = 1
+    forkEvery = 0
+    val memoryAgent = providers.gradleProperty("rct.attendance.memoryAgent").orNull
+    val memoryDirectory = providers.gradleProperty("rct.attendance.memoryDir").orNull
+    require((memoryAgent == null) == (memoryDirectory == null)) { "Complete memory probe selection required" }
+    if (memoryAgent != null && memoryDirectory != null) {
+        require(listOf(memoryAgent, memoryDirectory).all {
+            Path.of(it).isAbsolute && !it.contains(',') && !it.contains('\n') && !it.contains('\r')
+        }) { "Absolute memory probe paths required" }
+        jvmArgs("-javaagent:$memoryAgent=path=$memoryDirectory/$name.memory.jsonl,intervalMs=1000,maxBytes=16777216")
+        // Only these enrolled Test tasks bypass up-to-date/cache decisions.
+        outputs.upToDateWhen { false }
+        outputs.cacheIf { false }
+    }
+    doFirst {
+        val heap = allJvmArgs.singleOrNull { it.startsWith("-Xmx") }
+        logger.lifecycle("RCT_ATTENDANCE_TEST_RESOURCE_V1|$path|$heap|$maxParallelForks")
+        logger.lifecycle("RCT_ATTENDANCE_WORKERS_V1|$path|${gradle.startParameter.maxWorkerCount}|$maxParallelForks|$forkEvery")
+    }
+}
+
+if (providers.gradleProperty("rct.attendance.memoryAgent").isPresent) {
+    tasks.matching { it.name == "jacocoTestReport" }.configureEach {
+        outputs.upToDateWhen { false }
+        outputs.cacheIf { false }
+    }
 }
 
 group = "ru.rutcampustrack"

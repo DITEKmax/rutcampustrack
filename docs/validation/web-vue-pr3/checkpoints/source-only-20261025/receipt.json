@@ -1,0 +1,27 @@
+{
+  "archive": "/workspace/rct-pr3-recovery/pr3-source-only-08e08aedc.zip",
+  "bytes": 11130527,
+  "sha256": "caa5b61406f5bd6a37f78169159fef73cf512b58c1e8cadd8ed1245e66d8f82c",
+  "sourceSha": "08e08aedc00dd7a6eae173a9766dbfcc55c1ba8c",
+  "sourceFileCount": 3666,
+  "zipEntries": 3668,
+  "uncompressedSourceBytes": 38492611,
+  "crc": "PASS",
+  "safePaths": "PASS",
+  "allManifestSha256": "PASS",
+  "gitBlobIdentity": "PASS",
+  "symlinks": 0,
+  "sourceBeforeAfterUnchanged": true,
+  "secretsScan": {
+    "nativeRawExit": 1,
+    "nativeFindingCount": 12,
+    "manualQualifiedPublicNonSecret": 12,
+    "unresolved": 0,
+    "ruleOrIgnoreChanges": false,
+    "sourceChangesToSilenceScanner": false,
+    "qualificationSha256": "00f7ce4fbaddfddb2ab50d1b4602f589da8ee48887ab4ebc4e59ac05ca2ec13c",
+    "independentReviewSha256": "18680feb0a50a58872c1aa4d16d9329424c542a4f6a5b0f1223b2728d79025d3"
+  },
+  "independentIntegrity": "PASS",
+  "totalUncompressedZipBytes": 39633076
+}

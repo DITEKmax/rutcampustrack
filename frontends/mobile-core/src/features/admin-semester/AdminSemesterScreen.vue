@@ -27,7 +27,6 @@ const props = withDefaults(
     theme?: 'dark' | 'light';
   }>(),
   {
-    theme: 'dark',
   },
 );
 

@@ -45,6 +45,24 @@
   cursor: pointer;
   @mixin rct-focus-ring;
 }
+@media (max-width: 22.5rem) {
+  .notifications-screen__header {
+    display: grid;
+    grid-template-columns: 1fr auto;
+  }
+  .notifications-screen__header h1 {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+  .notifications-screen__back {
+    grid-column: 1;
+    grid-row: 1;
+  }
+  .notifications-screen__gear {
+    grid-column: 2;
+    grid-row: 1;
+  }
+}
 .notifications-screen__notice,
 .notifications-screen__device {
   margin-block: var(--rct-space-4);

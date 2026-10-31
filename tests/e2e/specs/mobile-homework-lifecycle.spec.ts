@@ -1,3 +1,4 @@
+import { failureBoundary, controlState, retainFirstFailure } from '../fixtures/failed-case-diagnostics';
 import { randomUUID } from 'node:crypto';
 import type { Locator, Page, Request, Response, Route, TestInfo } from '@playwright/test';
 import {
@@ -568,7 +569,9 @@ isolated(
     const choiceName = `${updatedType!.label}: ${beforePreferences.splitChannels ? 'TMA/PWA' : 'TMA/PWA и Telegram'}`;
     const checkbox = settings.getByRole('checkbox', { name: choiceName, exact: true });
     await expect(checkbox).toBeChecked({ checked: beforeChoice.appPush });
-    await checkbox.setChecked(!beforeChoice.appPush);
+    await failureBoundary(info, 'NOTIFICATION_CHECKBOX',
+      () => checkbox.setChecked(!beforeChoice.appPush),
+      async () => ({ ...await controlState(checkbox), desired: !beforeChoice.appPush }));
     let preferencesRequestObserved = false;
     const observePreferencesRequest = (request: Request) => {
       if (request.method() === 'PUT' && new URL(request.url()).pathname === preferencesPath)
@@ -650,7 +653,10 @@ function shifted(date: string, days: number): string {
 async function selectHomeworkDate(page: Page, dataset: MobileDataset, date: string): Promise<void> {
   expect(date >= dataset.semester.dateFrom && date <= dataset.semester.dateTo).toBe(true);
   const monthTab = page.getByRole('tab', { name: 'Месяц', exact: true });
-  const readMonth = async (action: () => Promise<unknown>): Promise<void> => {
+  const readMonth = async (
+    action: () => Promise<unknown>,
+    expectedMonth?: string,
+  ): Promise<void> => {
     const read = page.waitForResponse((response) => {
       const url = new URL(response.url());
       const from = url.searchParams.get('from'),
@@ -659,7 +665,8 @@ async function selectHomeworkDate(page: Page, dataset: MobileDataset, date: stri
         url.pathname !== '/api/v1/student/homework' ||
         response.request().method() !== 'GET' ||
         !from ||
-        !to
+        !to ||
+        (expectedMonth !== undefined && from.slice(0, 7) !== expectedMonth)
       )
         return false;
       const first = from.slice(0, 7) + '-01';
@@ -675,18 +682,49 @@ async function selectHomeworkDate(page: Page, dataset: MobileDataset, date: stri
     const response = await read;
     expect(response.status()).toBe(200);
     const feed = await response.json();
-    const selected = await page
-      .locator('.homework-calendar button[aria-pressed="true"]')
-      .getAttribute('data-homework-date');
-    expect(
-      typeof selected === 'string' &&
-        feed.from <= selected &&
-        selected <= feed.to &&
-        feed.from >= dataset.semester.dateFrom &&
-        feed.to <= dataset.semester.dateTo &&
-        feed.semester.id === String(dataset.semester.id),
-    ).toBe(true);
-    await expect(page.locator('.homework-skeleton')).toHaveCount(0);
+    const requestUrl = new URL(response.url());
+    const requestFrom = requestUrl.searchParams.get('from')!;
+    const requestTo = requestUrl.searchParams.get('to')!;
+    const calendar = page.locator('.homework-calendar');
+    const selectedDay = calendar.locator('button[aria-pressed="true"]');
+    const facts = {
+      httpStatus: response.status(),
+      selectedDatePresent: null as boolean | null,
+      fromContainsSelected: null as boolean | null,
+      toContainsSelected: null as boolean | null,
+      fromInsideSemester: feed.from >= dataset.semester.dateFrom,
+      toInsideSemester: feed.to <= dataset.semester.dateTo,
+      semesterIdMatches: feed.semester.id === String(dataset.semester.id),
+      calendarReady: null as boolean | null,
+      selectedDateEnabled: null as boolean | null,
+    };
+    try {
+      // HTTP completion can precede Vue publication while the previous calendar
+      // is still ready/enabled. First bind the selected day to this response month.
+      expect(feed.from === requestFrom && feed.to === requestTo).toBe(true);
+      await expect(selectedDay).toHaveAttribute(
+        'data-homework-date',
+        new RegExp(`^${requestFrom.slice(0, 7)}-\\d{2}$`),
+      );
+      await expect(calendar).toHaveAttribute('aria-busy', 'false');
+      facts.calendarReady = true;
+      await expect(selectedDay).toBeEnabled();
+      facts.selectedDateEnabled = true;
+      const selected = await selectedDay.getAttribute('data-homework-date');
+      facts.selectedDatePresent = typeof selected === 'string';
+      facts.fromContainsSelected = typeof selected === 'string' && feed.from <= selected;
+      facts.toContainsSelected = typeof selected === 'string' && selected <= feed.to;
+      expect(
+        facts.selectedDatePresent && facts.fromContainsSelected && facts.toContainsSelected &&
+          facts.fromInsideSemester && facts.toInsideSemester && facts.semesterIdMatches,
+      ).toBe(true);
+      await expect(page.locator('.homework-skeleton')).toHaveCount(0);
+    } catch (error) {
+      if (facts.calendarReady === null) facts.calendarReady = false;
+      else if (facts.selectedDateEnabled === null) facts.selectedDateEnabled = false;
+      retainFirstFailure(test.info(), 'HOMEWORK_MONTH', facts);
+      throw error;
+    }
   };
   if ((await monthTab.getAttribute('aria-selected')) !== 'true')
     await readMonth(() => monthTab.click());
@@ -699,13 +737,17 @@ async function selectHomeworkDate(page: Page, dataset: MobileDataset, date: stri
     Number(value.slice(0, 4)) * 12 + Number(value.slice(5, 7));
   const steps = monthIndex(date) - monthIndex(selected!);
   for (let index = 0; index < Math.abs(steps); index++) {
-    await readMonth(() =>
-      page
-        .getByRole('button', {
-          name: steps < 0 ? 'Предыдущий период' : 'Следующий период',
-          exact: true,
-        })
-        .click(),
+    const expected = new Date(`${selected!.slice(0, 7)}-01T12:00:00Z`);
+    expected.setUTCMonth(expected.getUTCMonth() + Math.sign(steps) * (index + 1));
+    await readMonth(
+      () =>
+        page
+          .getByRole('button', {
+            name: steps < 0 ? 'Предыдущий период' : 'Следующий период',
+            exact: true,
+          })
+          .click(),
+      expected.toISOString().slice(0, 7),
     );
   }
   const target = page.locator(`.homework-calendar button[data-homework-date="${date}"]`);
@@ -1351,25 +1393,68 @@ isolated(
     ).toHaveAttribute('aria-current', 'date');
     await expect(earlierCard).toHaveAttribute('data-completion', 'completed');
     await expect(page.getByRole('tab', { selected: true })).toHaveCount(1);
+    const weekFacts = {
+      httpStatus: null as number | null,
+      otherRangeResponseObserved: false,
+      responseObserved: false,
+      jsonDecoded: false,
+      responseMatchesRequest: null as boolean | null,
+      fromContainsToday: null as boolean | null,
+      toContainsToday: null as boolean | null,
+      fromInsideSemester: null as boolean | null,
+      toInsideSemester: null as boolean | null,
+      spanWithinWeek: null as boolean | null,
+      semesterIdMatches: null as boolean | null,
+    };
+    // The first week selection starts at server Today. Correlate its clipped
+    // Monday–Sunday request: a late month/projection refresh is not this action.
+    const monday = shifted(
+      dataset.today,
+      -((new Date(`${dataset.today}T12:00:00Z`).getUTCDay() + 6) % 7),
+    );
+    const sunday = shifted(monday, 6);
+    const weekFrom = monday < dataset.semester.dateFrom ? dataset.semester.dateFrom : monday;
+    const weekTo = sunday > dataset.semester.dateTo ? dataset.semester.dateTo : sunday;
     const weekRead = page.waitForResponse((response) => {
       const url = new URL(response.url());
-      return (
-        url.pathname === '/api/v1/student/homework' &&
-        response.request().method() === 'GET' &&
-        Boolean(url.searchParams.get('from') && url.searchParams.get('to'))
-      );
+      if (
+        url.pathname !== '/api/v1/student/homework' ||
+        response.request().method() !== 'GET'
+      )
+        return false;
+      const matches =
+        url.searchParams.get('from') === weekFrom && url.searchParams.get('to') === weekTo;
+      if (!matches) weekFacts.otherRangeResponseObserved = true;
+      return matches;
     });
-    await page.getByRole('tab', { name: 'Неделя', exact: true }).click();
-    const weekResponse = await weekRead;
-    expect(weekResponse.status()).toBe(200);
-    const week = await weekResponse.json();
-    expect(
-      week.from <= dataset.today &&
-        week.to >= dataset.today &&
-        week.from >= dataset.semester.dateFrom &&
-        week.to <= dataset.semester.dateTo &&
-        Date.parse(`${week.to}T12:00:00Z`) - Date.parse(`${week.from}T12:00:00Z`) <= 6 * 86400000,
-    ).toBe(true);
+    try {
+      await page.getByRole('tab', { name: 'Неделя', exact: true }).click();
+      const weekResponse = await weekRead;
+      weekFacts.responseObserved = true;
+      weekFacts.httpStatus = weekResponse.status();
+      expect(weekResponse.status()).toBe(200);
+      const week = await weekResponse.json();
+      weekFacts.jsonDecoded = true;
+      weekFacts.responseMatchesRequest = week?.from === weekFrom && week?.to === weekTo;
+      weekFacts.fromContainsToday = typeof week?.from === 'string' && week.from <= dataset.today;
+      weekFacts.toContainsToday = typeof week?.to === 'string' && week.to >= dataset.today;
+      weekFacts.fromInsideSemester =
+        typeof week?.from === 'string' && week.from >= dataset.semester.dateFrom;
+      weekFacts.toInsideSemester =
+        typeof week?.to === 'string' && week.to <= dataset.semester.dateTo;
+      weekFacts.spanWithinWeek =
+        Date.parse(`${week?.to}T12:00:00Z`) - Date.parse(`${week?.from}T12:00:00Z`) <=
+        6 * 86400000;
+      weekFacts.semesterIdMatches = week?.semester?.id === String(dataset.semester.id);
+      expect(
+        weekFacts.fromContainsToday && weekFacts.toContainsToday &&
+          weekFacts.fromInsideSemester && weekFacts.toInsideSemester && weekFacts.spanWithinWeek,
+      ).toBe(true);
+      expect(weekFacts.responseMatchesRequest && weekFacts.semesterIdMatches).toBe(true);
+    } catch (error) {
+      retainFirstFailure(info, 'HOMEWORK_WEEK', weekFacts);
+      throw error;
+    }
     await expect(page.getByRole('tab', { name: 'Неделя', exact: true })).toHaveAttribute(
       'aria-selected',
       'true',

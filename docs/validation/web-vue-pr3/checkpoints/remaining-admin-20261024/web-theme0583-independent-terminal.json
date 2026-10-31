@@ -1,0 +1,16 @@
+{
+  "observedAtUtc": "2026-10-24T23:32:57.549234+00:00",
+  "result": "KNOWN_OWN_NATIVE_LOGOUT_TERMINAL",
+  "SQLOrAPIMutations": 0,
+  "newAuth": 0,
+  "ownSessionCount": 1,
+  "ownSessionRevoked": true,
+  "secondLoginForwarded": false,
+  "allSixForwardedIntentsDurablyAcknowledged": true,
+  "noPendingAuthOrPrefs": true,
+  "globalIdentityGrantProfileMetadataUnchanged": true,
+  "otherSessionPreservationBasis": "Strict native endpoint/handle request ledger: only one dedicated own Student3 login/logout and three native own-device CAS writes; no foreign-session endpoint or helper request. No historical SQL foreign-session digest comparison claimed.",
+  "fullUiLifecyclePassed": false,
+  "rawFailureRetained": true,
+  "privateScopeFileSha256": "a89680b6443036b3c620544edbd85b993c22d0de4c4d1064e8b2307a0bd56233"
+}

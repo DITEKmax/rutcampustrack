@@ -4,7 +4,7 @@
 DO $baseline$
 DECLARE
     expected_fixture_key CONSTANT text := 'browser-v2-split-20261018-v1';
-    expected_fingerprint CONSTANT bytea := sha256(convert_to(expected_fixture_key || ':auth', 'UTF8'));
+    expected_fingerprint CONSTANT bytea := sha256(convert_to(expected_fixture_key || ':auth:teacher-telegram-v1', 'UTF8'));
     synthetic_hash CONSTANT text := '$2a$10$A9r8miSBxjlpjxFB/z0jIerCCSOrLQP6N.sXrjBAw9l7iy4vmRFpi';
     actor record;
     operation uuid;
@@ -54,8 +54,9 @@ BEGIN
 
         -- The legacy V2 actors had no generated initial credential to disclose.
         INSERT INTO auth_identities(id, login, password_hash, initial_password,
-            account_state, provision_operation_id, fence_operation_id)
-        VALUES(actor.id, actor.login, synthetic_hash, NULL, 'PENDING', operation, operation);
+            account_state, provision_operation_id, fence_operation_id, telegram_id)
+        VALUES(actor.id, actor.login, synthetic_hash, NULL, 'PENDING', operation, operation,
+            CASE WHEN actor.id = 2 THEN 900000001 ELSE NULL END);
         INSERT INTO user_role_grants(id, user_id, role, status, group_id)
         VALUES(actor.id, actor.id, actor.role, 'active',
             CASE WHEN actor.role = 'student' THEN 1 ELSE NULL END);
@@ -99,7 +100,12 @@ BEGIN
                WHERE u.account_state <> 'ACTIVE' OR u.fence_operation_id IS NOT NULL
                   OR o.phase <> 'COMMITTED' OR o.committed_catalog_version <> u.catalog_version
                   OR c.projection->>'account_state' <> 'ACTIVE'
-                  OR c.projection->>'academic_revision' <> '1') THEN
+                  OR c.projection->>'academic_revision' <> '1'
+                  OR u.telegram_id IS DISTINCT FROM CASE WHEN u.id = 2 THEN 900000001 ELSE NULL END
+                  OR u.telegram_binding_version <> 1
+                  OR c.projection->>'telegram_id' IS DISTINCT FROM
+                      CASE WHEN u.id = 2 THEN '900000001' ELSE NULL END
+                  OR c.projection->>'telegram_binding_version' IS DISTINCT FROM '1') THEN
         RAISE EXCEPTION 'Auth fixture final receipt or catalog is inconsistent';
     END IF;
     PERFORM setval(pg_get_serial_sequence('auth_identities', 'id'), 3, TRUE);

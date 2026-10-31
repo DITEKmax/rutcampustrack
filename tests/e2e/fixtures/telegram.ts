@@ -1,7 +1,7 @@
 import { createHmac, randomUUID } from 'node:crypto';
 import type { Page } from '@playwright/test';
 
-// Matches only tests/e2e/.env.ci and infra/seed-telegram.sql.
+// Synthetic token matches tests/e2e/.env.ci; teacher ID matches the initial Auth baseline callback.
 const CI_TMA_BOT_TOKEN = 'ci_test_tma_bot_token_placeholder';
 
 export function teacherInitData(tampered = false): string {

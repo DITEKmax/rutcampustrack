@@ -197,6 +197,10 @@ public final class AcademicIdentityIntegrationFixture implements AutoCloseable {
                         .withReuse(false)
                         .withLabel("rct.fixture.owner", namespace);
         loopback(authRedis, 6379);
+        if ("1".equals(System.getenv("RCT_GROUP_DELETION_BOUNDED"))) {
+            postgres.withImagePullPolicy(new CachedImagesOnlyPullPolicy());
+            authRedis.withImagePullPolicy(new CachedImagesOnlyPullPolicy());
+        }
         try {
             postgres.start();
             authRedis.start();
@@ -297,7 +301,9 @@ public final class AcademicIdentityIntegrationFixture implements AutoCloseable {
                                                     authContext.getBean(
                                                             AuthPasswordStepUpService.class),
                                                     authContext.getBean(
-                                                            SubjectDeletionProofService.class)),
+                                                            SubjectDeletionProofService.class),
+                                                    authContext.getBean(
+                                                            AuthGroupDeletionParticipant.class)),
                                             identity,
                                             actor))
                             .addService(
@@ -461,6 +467,7 @@ public final class AcademicIdentityIntegrationFixture implements AutoCloseable {
                 AuthReportCapabilityService.class,
                 SemesterDeletionConfirmationService.class,
                 AuthPasswordStepUpService.class,
+                AuthGroupDeletionParticipant.class,
                 SubjectDeletionProofService.class,
                 AuthCredentialReaderInvalidationStore.class);
         authContext.refresh();
@@ -706,6 +713,24 @@ public final class AcademicIdentityIntegrationFixture implements AutoCloseable {
                         .setReadOnly(snapshot.isReadOnly());
         if (grant.groupId() != null) identity.setGroupId(grant.groupId());
         return new SelectedActor(admit(identity.build()));
+    }
+
+    /** Runs Auth's actual current-session logout transaction and revocation event. */
+    public void revokeCurrent(SelectedActor actor) {
+        outsideTransaction();
+        var result =
+                authContext
+                        .getBean(SessionLifecycleService.class)
+                        .revokeCurrent(
+                                new SessionLifecycleService.RevokeRequest(
+                                        actor.userId(),
+                                        actor.sessionId(),
+                                        Instant.now(),
+                                        AuthMethod.PASSWORD,
+                                        "owned-integration-fixture",
+                                        namespace));
+        if (!result.succeeded())
+            throw new IllegalStateException("Actual Auth current-session logout rejected");
     }
 
     /** Runs Auth's actual current-password validation and credential/session transaction. */
@@ -1348,6 +1373,15 @@ SELECT NOT has_schema_privilege(current_user,'public','CREATE')
     }
 
     private static void loopback(GenericContainer<?> resource, int port) {
+        if ("1".equals(System.getenv("RCT_GROUP_DELETION_BOUNDED"))) {
+            long memory = (port == 6379 ? 96L : 384L) * 1024 * 1024;
+            resource.withCreateContainerCmdModifier(
+                    command ->
+                            command.getHostConfig()
+                                    .withMemory(memory)
+                                    .withMemorySwap(memory)
+                                    .withNanoCPUs(500_000_000L));
+        }
         resource.withCreateContainerCmdModifier(
                 command ->
                         command.getHostConfig()

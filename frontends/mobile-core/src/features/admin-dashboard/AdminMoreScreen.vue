@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import SvgIcon from '../../../../shared/foundation/SvgIcon.vue';
 import { adminCanNavigate } from '../../shared/admin-navigation';
 import type { AdminAccessProfile } from '../admin-access/admin-access-client';
 import semesterIcon from '../../assets/admin/semester.svg';
@@ -30,15 +31,13 @@ const emit = defineEmits<{ navigate: [route: 'semesters' | 'map' | 'map-statisti
         class="admin-more__row"
         @click="emit('navigate', 'semesters')"
       >
-        <img
+        <SvgIcon
           :src="semesterIcon"
-          alt=""
           aria-hidden="true"
-        ><span>Семестры</span><img
+        /><span>Семестры</span><SvgIcon
           :src="nextIcon"
-          alt=""
           aria-hidden="true"
-        >
+        />
       </button>
     </section>
     <section
@@ -53,26 +52,25 @@ const emit = defineEmits<{ navigate: [route: 'semesters' | 'map' | 'map-statisti
         class="admin-more__row"
         @click="emit('navigate', 'map')"
       >
-        <img
+        <SvgIcon
+          :width="24"
+          :height="24"
           :src="mapIcon"
-          alt=""
           aria-hidden="true"
-        ><span>Корпуса и этажи</span><img
+        /><span>Корпуса и этажи</span><SvgIcon
           :src="nextIcon"
-          alt=""
           aria-hidden="true"
-        >
+        />
       </button>
       <button
         type="button"
         class="admin-more__row"
         @click="emit('navigate', 'map-statistics')"
       >
-        <MobileIcon name="attendance-graph" /><span>Статистика карты</span><img
+        <MobileIcon name="attendance-graph" /><span>Статистика карты</span><SvgIcon
           :src="nextIcon"
-          alt=""
           aria-hidden="true"
-        >
+        />
       </button>
     </section>
   </main>

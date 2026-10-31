@@ -1,0 +1,37 @@
+{
+  "evidenceKind": "real-runtime-safe-projection",
+  "originalPath": "/tmp/rct-headman/late53-approve-root-summary.json",
+  "originalSha256": "5f8a6a930e4294a4c066ae1021d58250518a31e269679706c2e442bcc4f815b1",
+  "scopeNote": "One actual normal UI approval; metadata/other-student guards exact. No mutation rerun after harness-only optional-null correction.",
+  "source": "3f5852b9524245e98b16110b8fb4fde4bd68f389",
+  "origin": "http://127.0.0.1:14210",
+  "requestId": "6adc14fea6849215f823a07f",
+  "actorId": 12,
+  "studentId": 15,
+  "lessonId": 53,
+  "decisionStatus": 200,
+  "terminal": "APPROVED",
+  "decisionBy": 12,
+  "before": {
+    "status": "absent",
+    "source": "auto_scheduler"
+  },
+  "after": {
+    "status": "present",
+    "source": "late_checkin",
+    "approvedTicket": {
+      "kind": "LATE_CHECKIN",
+      "id": "6adc14fea6849215f823a07f",
+      "status": "APPROVED"
+    }
+  },
+  "guards": {
+    "lesson53MetadataExactUnchanged": true,
+    "lesson64MetadataAndReportExactUnchanged": true,
+    "student12Present53ExactUnchanged": true,
+    "otherStudents53ExactUnchanged": true
+  },
+  "logoutStatus": 204,
+  "result": "PASS",
+  "harnessCorrection": "Optional reason omitted by canonical approved request; initial final expectation required null. No runtime rerun or repeated mutation."
+}

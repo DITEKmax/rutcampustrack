@@ -97,7 +97,7 @@ services:
     environment:
       MONGODB_REPLICA_SET_MODE: primary
       MONGODB_REPLICA_SET_NAME: rs0
-      MONGODB_REPLICA_SET_KEY: ${MONGODB_REPLICA_SET_KEY}
+      MONGODB_REPLICA_SET_KEY: ${MONGODB_REPLICA_SET_KEY:?generate disposable e2e credentials first}
       MONGODB_ROOT_USER: ${MONGO_ROOT_USER}
       MONGODB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
       MONGODB_ADVERTISED_HOSTNAME: mongo-attendance
@@ -578,8 +578,8 @@ services:
       REDIS_PASSWORD: ${REDIS_PASSWORD}
       JWT_PUBLIC_KEY_PATH: /keys/public.key
       NOTIFICATION_WS_ALLOWED_ORIGINS: ${NOTIFICATION_WS_ALLOWED_ORIGINS}
-      VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY}
-      VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY}
+      VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY:?generate disposable e2e credentials first}
+      VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY:?generate disposable e2e credentials first}
       VAPID_SUBJECT: ${VAPID_SUBJECT}
       ALERT_WEBHOOK_SECRET: ${ALERT_WEBHOOK_SECRET}
       SPRING_DATA_MONGODB_URI: mongodb://${MONGO_NOTIFICATION_USER}:${MONGO_NOTIFICATION_PASSWORD}@mongo-attendance:27017/notification_db?authSource=admin&replicaSet=rs0
@@ -610,7 +610,17 @@ services:
       retries: 5
       start_period: 75s
 
-  # Current mobile Vue frontends; no external Telegram bot is started.
+  # Current Vue frontends; no external Telegram bot is started.
+
+  web-nginx:
+    build:
+      context: ./frontends
+      dockerfile: web-vue/Dockerfile
+    image: rct/web-nginx:${IMAGE_TAG:-e2e-local}
+    expose:
+      - '80'
+    networks:
+      - private_net
 
   pwa-nginx:
     build:
@@ -636,7 +646,7 @@ services:
     networks:
       - private_net
 
-  # TLS reverse proxy for the current mobile clients and backend.
+  # TLS reverse proxy for the current Vue clients and backend.
 
   nginx:
     image: nginx:1.27-alpine
@@ -653,6 +663,8 @@ services:
     depends_on:
       api-gateway:
         condition: service_healthy
+      web-nginx:
+        condition: service_started
       pwa-nginx:
         condition: service_started
       mini-app-nginx:

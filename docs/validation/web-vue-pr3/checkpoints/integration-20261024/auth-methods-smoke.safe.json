@@ -1,0 +1,72 @@
+{
+  "source": "2ee6a85e842b43ee7fcbcc68ebb043f0fb42fda7",
+  "clean": true,
+  "checks": [
+    "OTP deep link and actual invalid code rejected",
+    "actual QR challenge locally encoded",
+    "separate authenticated approval -> poll -> real exchange -> authoritative session",
+    "actual recovery request202 -> non-enumerating code screen",
+    "actual invalid recovery code rejected",
+    "recovery responsive nooverflow300/768/1440"
+  ],
+  "errors": [],
+  "api": [
+    {
+      "status": 401,
+      "path": "/api/auth/refresh"
+    },
+    {
+      "status": 401,
+      "path": "/api/auth/otp/verify-by-code"
+    },
+    {
+      "status": 200,
+      "path": "/api/auth/qr/challenges"
+    },
+    {
+      "status": 200,
+      "path": "/api/auth/qr/status"
+    },
+    {
+      "status": 200,
+      "path": "/api/auth/qr/status"
+    },
+    {
+      "status": 200,
+      "path": "/api/auth/qr/status"
+    },
+    {
+      "status": 200,
+      "path": "/api/auth/qr/exchange"
+    },
+    {
+      "status": 200,
+      "path": "/api/auth/session"
+    },
+    {
+      "status": 200,
+      "path": "/api/auth/ws-ticket"
+    },
+    {
+      "status": 200,
+      "path": "/api/auth/device-preferences"
+    },
+    {
+      "status": 204,
+      "path": "/api/auth/logout"
+    },
+    {
+      "status": 202,
+      "path": "/api/auth/password-reset/request"
+    },
+    {
+      "status": 400,
+      "path": "/api/auth/password-reset/verify"
+    }
+  ],
+  "provenance": {
+    "original_path": "/workspace/rct-pr3-runtime/web-foundation/auth-methods-smoke.json",
+    "original_sha256": "73165a2ccb29b612b209ca0e8f5ccfa6d0b5f17a03730a77dad6b1daa6397303",
+    "projection": "only source/checks/errors/status + method/path/status; no request/response bodies, actors, credentials, OTPs or capabilities"
+  }
+}

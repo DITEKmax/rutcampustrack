@@ -1,5 +1,6 @@
 package ru.rutcampustrack.academic.map;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -103,6 +104,53 @@ public class CampusMapDeletionRepository {
                 targetId,
                 digest);
     }
+
+    /** Metadata only: previews never materialize the stored BYTEA payloads. */
+    public List<PlanAsset> planAssets(long floorId) {
+        return jdbc.query(
+                """
+                SELECT a.id, a.plan_version_id, a.format, a.bytes, a.sha256
+                FROM campus_map_asset a JOIN campus_map_plan_version p ON p.id = a.plan_version_id
+                WHERE p.floor_id = ? ORDER BY a.plan_version_id, a.id
+                """,
+                (rs, row) ->
+                        new PlanAsset(
+                                rs.getLong("id"),
+                                rs.getLong("plan_version_id"),
+                                rs.getString("format"),
+                                rs.getLong("bytes"),
+                                rs.getBytes("sha256")),
+                floorId);
+    }
+
+    /** Only the plan graph is purged; the floor identity and its usage remain. */
+    public void purgePlanGraph(long floorId) {
+        // Also capture versions inserted by older writers before the high-water column existed.
+        jdbc.update(
+                """
+                UPDATE campus_map_floor f SET plan_version_high_water = GREATEST(
+                    f.plan_version_high_water,
+                    COALESCE((SELECT MAX(p.version) FROM campus_map_plan_version p WHERE p.floor_id = f.id), 0)),
+                    current_version_id = NULL WHERE f.id = ?
+                """,
+                floorId);
+        jdbc.query(
+                "SELECT set_config('rutcampustrack.map_delete_floor_id', ?, true)",
+                rs -> null,
+                Long.toString(floorId));
+        jdbc.update(
+                "DELETE FROM campus_map_plan_format WHERE plan_version_id IN "
+                        + "(SELECT id FROM campus_map_plan_version WHERE floor_id = ?)",
+                floorId);
+        jdbc.update(
+                "DELETE FROM campus_map_asset WHERE plan_version_id IN "
+                        + "(SELECT id FROM campus_map_plan_version WHERE floor_id = ?)",
+                floorId);
+        jdbc.update("DELETE FROM campus_map_plan_version WHERE floor_id = ?", floorId);
+    }
+
+    public record PlanAsset(
+            long id, long planVersionId, String format, long bytes, byte[] sha256) {}
 
     public void deleteFloor(long floorId) {
         // The local scope expires on commit/rollback. Database guards still protect every other

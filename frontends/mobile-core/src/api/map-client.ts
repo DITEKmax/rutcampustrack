@@ -242,6 +242,8 @@ export class AdminMapClient {
       result.buildingCode !== buildingCode ||
       result.floorCode !== floorCode ||
       result.format !== (format ?? null) ||
+      (result.deletionScope != null &&
+        result.deletionScope !== (format === undefined ? 'ALL_VERSIONS' : 'CURRENT_FORMAT')) ||
       typeof result.label !== 'string' ||
       !Number.isSafeInteger(result.files) ||
       result.files < 0 ||

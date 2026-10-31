@@ -55,6 +55,8 @@ public class AuthPasswordStepUpService {
         if (!old.isEmpty()) return receipt(b, old.getFirst(), actor);
         String token = AuthActorMetadataInterceptor.ACTOR_TOKEN.get();
         switch (b.getPurpose()) {
+            case PASSWORD_STEP_UP_PURPOSE_GROUP_DELETE ->
+                    confirmation.confirmGroupDeletion(token, request.getPassword());
             case PASSWORD_STEP_UP_PURPOSE_USER_ARCHIVE ->
                     confirmation.confirmUserArchive(
                             new ConfirmUserArchiveRequest(
@@ -128,6 +130,41 @@ VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)
         return receipt(request.getBinding(), uuid(request.getReceiptId()), actor);
     }
 
+    /**
+     * No JWT reconstruction: exact Auth-owned proof plus original live session, under commit locks.
+     * Known negative admission returns normally so the caller can persist a zero-effect rejection.
+     */
+    @Transactional
+    public boolean admitStoredGroupCommit(PasswordStepUpReceipt proof) {
+        try {
+            if (!proof.getUnknownFields().asMap().isEmpty()
+                    || !proof.hasBinding()
+                    || !proof.hasActor()
+                    || proof.getBinding().getPurpose()
+                            != PasswordStepUpPurpose.PASSWORD_STEP_UP_PURPOSE_GROUP_DELETE)
+                return false;
+            validate(proof.getBinding());
+            SessionPrincipal actor = AuthReportCapabilityService.principal(proof.getActor());
+            lock(actor, proof.getBinding());
+            jdbc.queryForList(
+                    "SELECT sid FROM auth_sessions WHERE sid=? FOR UPDATE", actor.sessionId());
+            // Re-read after obtaining the session row lock: logout/role-switch cannot race effects.
+            lock(actor, proof.getBinding());
+            return receipt(proof.getBinding(), uuid(proof.getReceiptId()), actor).equals(proof);
+        } catch (ru.rutcampustrack.shared.security.admin.AdminAccessException denied) {
+            if (denied.getStatusCode().value() != 403) throw denied;
+            return false;
+        } catch (io.grpc.StatusRuntimeException denied) {
+            if (!java.util.Set.of(
+                            Status.Code.PERMISSION_DENIED,
+                            Status.Code.UNAUTHENTICATED,
+                            Status.Code.FAILED_PRECONDITION,
+                            Status.Code.INVALID_ARGUMENT)
+                    .contains(denied.getStatus().getCode())) throw denied;
+            return false;
+        }
+    }
+
     private void lock(SessionPrincipal actor, PasswordStepUpBinding binding) {
         admins.lockGlobal();
         admins.lockUsers(
@@ -139,6 +176,8 @@ VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)
         var required =
                 switch (binding.getPurpose()) {
                     case PASSWORD_STEP_UP_PURPOSE_USER_ARCHIVE -> new String[] {"USERS_ARCHIVE"};
+                    case PASSWORD_STEP_UP_PURPOSE_GROUP_DELETE ->
+                            new String[] {"GROUPS_MANAGE", "DATA_DELETE"};
                     case PASSWORD_STEP_UP_PURPOSE_SEMESTER_DELETE ->
                             new String[] {"SEMESTERS_MANAGE", "DATA_DELETE"};
                     default -> new String[] {"CAMPUS_MAP_MANAGE", "DATA_DELETE"};

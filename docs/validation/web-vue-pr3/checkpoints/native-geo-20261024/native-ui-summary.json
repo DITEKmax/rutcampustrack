@@ -1,0 +1,509 @@
+{
+  "startedAt": "2026-10-24T05:34:22.070Z",
+  "scope": "ONE_NATURAL_MAIN_UI_STUDENT15_GEO64",
+  "rootRevision": "1aeaab64bfa043fa8755ac6578cd27aa574d79b4",
+  "studentRevision": "3d6cf10a88a9e3b9d54474a7b28a5d3484a5f3ab",
+  "actorId": 15,
+  "lessonId": 64,
+  "occurrenceId": 45,
+  "occurrenceRevision": 1,
+  "geolocation": {
+    "semantics": "SIMULATED browser-native test provider; no physical presence claim",
+    "latitude": 55.788204,
+    "longitude": 37.606762,
+    "accuracy": 5,
+    "origin": "http://127.0.0.1:14210"
+  },
+  "commands": [
+    {
+      "path": "/api/v1/student/lessons/64/checkin",
+      "method": "POST",
+      "body": {
+        "geo": {
+          "kind": "COORDINATES",
+          "latitude": 55.788204,
+          "longitude": 37.606762
+        }
+      },
+      "capturedAt": "2026-10-24T05:34:25.541Z",
+      "idempotencyDigest": {
+        "algorithm": "SHA256",
+        "hex": "47f5c2eb161c93abd36d2e4e2c5b882ce3360ea99a4c383a759a88a6931b7105"
+      }
+    }
+  ],
+  "http": [
+    {
+      "path": "/api/v1/student/session",
+      "method": "GET",
+      "status": 200,
+      "at": "2026-10-24T05:34:23.709Z"
+    },
+    {
+      "path": "/api/v1/student/session",
+      "method": "GET",
+      "status": 200,
+      "at": "2026-10-24T05:34:23.873Z"
+    },
+    {
+      "path": "/api/v1/student/today",
+      "method": "GET",
+      "status": 200,
+      "at": "2026-10-24T05:34:24.331Z"
+    },
+    {
+      "path": "/api/v1/student/requests/options",
+      "method": "GET",
+      "status": 200,
+      "at": "2026-10-24T05:34:24.433Z"
+    },
+    {
+      "path": "/api/v1/student/homework",
+      "method": "GET",
+      "status": 200,
+      "at": "2026-10-24T05:34:24.467Z"
+    },
+    {
+      "path": "/api/v1/student/attendance",
+      "method": "GET",
+      "status": 200,
+      "at": "2026-10-24T05:34:24.532Z"
+    },
+    {
+      "path": "/api/v1/student/homework",
+      "method": "GET",
+      "status": 200,
+      "at": "2026-10-24T05:34:24.593Z"
+    },
+    {
+      "path": "/api/v1/student/statistics/subjects/4",
+      "method": "GET",
+      "status": 200,
+      "at": "2026-10-24T05:34:24.892Z"
+    },
+    {
+      "path": "/api/v1/student/session",
+      "method": "GET",
+      "status": 200,
+      "at": "2026-10-24T05:34:24.997Z"
+    },
+    {
+      "path": "/api/v1/student/today",
+      "method": "GET",
+      "status": 200,
+      "at": "2026-10-24T05:34:25.078Z"
+    },
+    {
+      "path": "/api/v1/student/requests/options",
+      "method": "GET",
+      "status": 200,
+      "at": "2026-10-24T05:34:25.183Z"
+    },
+    {
+      "path": "/api/v1/student/attendance",
+      "method": "GET",
+      "status": 200,
+      "at": "2026-10-24T05:34:25.374Z"
+    },
+    {
+      "path": "/api/v1/student/requests/6adc14fea6849215f823a07f",
+      "method": "GET",
+      "status": 200,
+      "at": "2026-10-24T05:34:25.449Z"
+    },
+    {
+      "path": "/api/v1/student/lessons/64/checkin",
+      "method": "POST",
+      "status": 200,
+      "at": "2026-10-24T05:34:25.818Z"
+    },
+    {
+      "path": "/api/v1/student/requests/options",
+      "method": "GET",
+      "status": 200,
+      "at": "2026-10-24T05:34:25.930Z"
+    },
+    {
+      "path": "/api/v1/student/today",
+      "method": "GET",
+      "status": 200,
+      "at": "2026-10-24T05:34:25.941Z"
+    },
+    {
+      "path": "/api/v1/student/today",
+      "method": "GET",
+      "status": 200,
+      "at": "2026-10-24T05:34:26.036Z"
+    },
+    {
+      "path": "/api/v1/student/attendance",
+      "method": "GET",
+      "status": 200,
+      "at": "2026-10-24T05:34:26.085Z"
+    },
+    {
+      "path": "/api/v1/student/statistics/subjects/4",
+      "method": "GET",
+      "status": 200,
+      "at": "2026-10-24T05:34:26.383Z"
+    },
+    {
+      "path": "/api/v1/student/attendance",
+      "method": "GET",
+      "status": 200,
+      "at": "2026-10-24T05:34:26.395Z"
+    },
+    {
+      "path": "/api/v1/student/requests/options",
+      "method": "GET",
+      "status": 200,
+      "at": "2026-10-24T05:34:26.491Z"
+    },
+    {
+      "path": "/api/auth/logout",
+      "method": "POST",
+      "status": 204,
+      "at": "2026-10-24T05:34:26.701Z"
+    }
+  ],
+  "checks": [
+    "frozen assembledRoot source exact",
+    "assembled student source matches frozen3d6",
+    "coordinator fresh ACTIVE64 and authoritative campus confirmed",
+    "normal own15 STUDENT and secure browser-native geolocation granted",
+    "current own15 group4 semester2 capability and write eligibility",
+    "fresh first ACTIVE64 allowed inside natural current window",
+    "original occurrence45rev1 unblocked no pending or existing present",
+    "protected own53 present nativeLate approved budget4of5",
+    "only one enabled native action for exact current hero",
+    "typed native200 PRESENT STUDENT_GEO for64",
+    "authoritative Today confirms own64 PRESENT STUDENT_GEO",
+    "authoritative attendance own64 PRESENT",
+    "same occurrence45rev1 and protected own53/budget preserved",
+    "one original native GEO command exact supplied provider coordinates",
+    "native trusted click safety admitted actual hero64",
+    "actual UI confirms and disables new check-in",
+    "no browser runtime errors"
+  ],
+  "errors": [],
+  "phase": "closed",
+  "knownTerminal": true,
+  "cleanup": {
+    "logout": true,
+    "permissionRevoked": true,
+    "contextClosed": true,
+    "browserClosed": true
+  },
+  "browserAuthority": {
+    "userId": "15",
+    "role": "STUDENT",
+    "readOnly": false,
+    "isSecureContext": true,
+    "geolocationAvailable": true,
+    "permission": "granted"
+  },
+  "before": {
+    "serverNow": "2026-10-24T05:34:25.046864388Z",
+    "authority": {
+      "userId": "15",
+      "groupId": "4",
+      "semesterId": "2",
+      "readOnly": false,
+      "capabilities": [
+        "TODAY",
+        "GEO_CHECKIN",
+        "OFFLINE_SEMESTER_SCHEDULE"
+      ]
+    },
+    "today64": {
+      "schedule": {
+        "id": "64",
+        "date": "2026-10-24",
+        "lessonNumber": 1,
+        "startsAt": "08:30:00",
+        "endsAt": "09:50:00",
+        "status": "ACTIVE",
+        "subject": {
+          "id": "4",
+          "name": "PR3 proof drill teacher scope",
+          "type": "LECTURE"
+        },
+        "room": {
+          "current": "PR3 student15 owned Today planned",
+          "previous": null,
+          "changeState": "UNKNOWN"
+        }
+      },
+      "attendance": null,
+      "checkinEligibility": {
+        "allowed": true,
+        "reason": "ELIGIBLE",
+        "retryAt": null
+      },
+      "request": null
+    },
+    "option64": {
+      "lesson": {
+        "id": "64",
+        "lessonNumber": 1,
+        "status": "active",
+        "blocked": false,
+        "subjectId": "4",
+        "subjectName": "PR3 proof drill teacher scope",
+        "subjectType": "lecture",
+        "semesterId": "2",
+        "date": "2026-10-24",
+        "startsAt": "08:30:00",
+        "endsAt": "09:50:00",
+        "occurrenceId": "45",
+        "occurrenceRevision": "1"
+      },
+      "excuseEligible": true,
+      "lateCheckinEligible": false,
+      "pendingRequests": []
+    },
+    "attendance64": {
+      "id": "64",
+      "date": "2026-10-24",
+      "number": "1",
+      "subject": {
+        "id": "4",
+        "name": "PR3 proof drill teacher scope",
+        "type": "LECTURE"
+      },
+      "type": "LECTURE",
+      "schedule": {
+        "startsAt": "08:30:00",
+        "endsAt": "09:50:00",
+        "room": "PR3 student15 owned Today planned"
+      },
+      "status": "ACTIVE",
+      "requestOptions": [
+        {
+          "id": "EXCUSE",
+          "kind": "EXCUSE",
+          "label": "Уважительная причина",
+          "enabled": true,
+          "reason": null
+        },
+        {
+          "id": "LATE_CHECKIN",
+          "kind": "LATE_CHECKIN",
+          "label": "Поздняя отметка",
+          "enabled": false,
+          "reason": null
+        }
+      ],
+      "explanation": null
+    },
+    "protectedOwn53": {
+      "id": "53",
+      "date": "2026-10-23",
+      "number": "1",
+      "subject": {
+        "id": "4",
+        "name": "PR3 proof drill teacher scope",
+        "type": "LECTURE"
+      },
+      "type": "LECTURE",
+      "schedule": {
+        "startsAt": "08:30:00",
+        "endsAt": "09:50:00",
+        "room": "PR3 proof isolated past scope"
+      },
+      "status": "PRESENT",
+      "requestOptions": [
+        {
+          "id": "EXCUSE",
+          "kind": "EXCUSE",
+          "label": "Уважительная причина",
+          "enabled": false,
+          "reason": null
+        },
+        {
+          "id": "LATE_CHECKIN",
+          "kind": "LATE_CHECKIN",
+          "label": "Поздняя отметка",
+          "enabled": false,
+          "reason": null
+        }
+      ],
+      "explanation": null
+    },
+    "budget": {
+      "semesterId": "2",
+      "limit": 5,
+      "used": 1,
+      "remaining": 4
+    },
+    "nativeLate53Status": "APPROVED"
+  },
+  "preClickGuard": {
+    "heroId": "64",
+    "renderedLessonId": "64",
+    "eligible": true
+  },
+  "clickGuard": {
+    "heroId": "64",
+    "renderedLessonId": "64",
+    "eligible": true,
+    "dispatched": true,
+    "allowed": true,
+    "blocked": false
+  },
+  "nativeStatus": 200,
+  "ack": {
+    "outcome": "PRESENT",
+    "lessonId": "64",
+    "attendance": {
+      "status": "PRESENT",
+      "source": "STUDENT_GEO",
+      "markedAt": "2026-10-24T05:34:25.710Z"
+    },
+    "request": null,
+    "retryAt": null,
+    "serverNow": "2026-10-24T05:34:25.710Z",
+    "_links": {
+      "today": {
+        "href": "/api/v1/student/today"
+      },
+      "self": {
+        "href": "/api/v1/student/lessons/64/checkin"
+      }
+    }
+  },
+  "after": {
+    "today64": {
+      "schedule": {
+        "id": "64",
+        "date": "2026-10-24",
+        "lessonNumber": 1,
+        "startsAt": "08:30:00",
+        "endsAt": "09:50:00",
+        "status": "ACTIVE",
+        "subject": {
+          "id": "4",
+          "name": "PR3 proof drill teacher scope",
+          "type": "LECTURE"
+        },
+        "room": {
+          "current": "PR3 student15 owned Today planned",
+          "previous": null,
+          "changeState": "UNKNOWN"
+        }
+      },
+      "attendance": {
+        "status": "PRESENT",
+        "source": "STUDENT_GEO",
+        "markedAt": "2026-10-24T05:34:25.710Z"
+      },
+      "checkinEligibility": {
+        "allowed": false,
+        "reason": "ALREADY_PRESENT",
+        "retryAt": null
+      },
+      "request": null
+    },
+    "attendance64": {
+      "id": "64",
+      "date": "2026-10-24",
+      "number": "1",
+      "subject": {
+        "id": "4",
+        "name": "PR3 proof drill teacher scope",
+        "type": "LECTURE"
+      },
+      "type": "LECTURE",
+      "schedule": {
+        "startsAt": "08:30:00",
+        "endsAt": "09:50:00",
+        "room": "PR3 student15 owned Today planned"
+      },
+      "status": "PRESENT",
+      "requestOptions": [
+        {
+          "id": "EXCUSE",
+          "kind": "EXCUSE",
+          "label": "Уважительная причина",
+          "enabled": false,
+          "reason": null
+        },
+        {
+          "id": "LATE_CHECKIN",
+          "kind": "LATE_CHECKIN",
+          "label": "Поздняя отметка",
+          "enabled": false,
+          "reason": null
+        }
+      ],
+      "explanation": null
+    },
+    "protectedOwn53": {
+      "id": "53",
+      "date": "2026-10-23",
+      "number": "1",
+      "subject": {
+        "id": "4",
+        "name": "PR3 proof drill teacher scope",
+        "type": "LECTURE"
+      },
+      "type": "LECTURE",
+      "schedule": {
+        "startsAt": "08:30:00",
+        "endsAt": "09:50:00",
+        "room": "PR3 proof isolated past scope"
+      },
+      "status": "PRESENT",
+      "requestOptions": [
+        {
+          "id": "EXCUSE",
+          "kind": "EXCUSE",
+          "label": "Уважительная причина",
+          "enabled": false,
+          "reason": null
+        },
+        {
+          "id": "LATE_CHECKIN",
+          "kind": "LATE_CHECKIN",
+          "label": "Поздняя отметка",
+          "enabled": false,
+          "reason": null
+        }
+      ],
+      "explanation": null
+    },
+    "option64": {
+      "lesson": {
+        "id": "64",
+        "lessonNumber": 1,
+        "status": "active",
+        "blocked": false,
+        "subjectId": "4",
+        "subjectName": "PR3 proof drill teacher scope",
+        "subjectType": "lecture",
+        "semesterId": "2",
+        "date": "2026-10-24",
+        "startsAt": "08:30:00",
+        "endsAt": "09:50:00",
+        "occurrenceId": "45",
+        "occurrenceRevision": "1"
+      },
+      "excuseEligible": false,
+      "lateCheckinEligible": false,
+      "pendingRequests": []
+    },
+    "budget": {
+      "semesterId": "2",
+      "limit": 5,
+      "used": 1,
+      "remaining": 4
+    },
+    "serverNow": "2026-10-24T05:34:25.981284857Z"
+  },
+  "screenshot": {
+    "path": "/tmp/student-web-natural-geo64/own15-geo64-present.png",
+    "sha256": "16cb8f37751a9870605640c8e64aecc04f1c3ed8dfb545e7252918099f503825"
+  },
+  "result": "PASS_NATIVE_GEO_AWAIT_PARENT_POSTGUARDS",
+  "finishedAt": "2026-10-24T05:34:26.813Z"
+}

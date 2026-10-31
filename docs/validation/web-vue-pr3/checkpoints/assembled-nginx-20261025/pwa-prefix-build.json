@@ -1,0 +1,96 @@
+{
+  "app": "pwa",
+  "sourceSha": "524f44a5a4f27491b3abe73417a004b62e7dad18",
+  "gateSourceSha": "524f44a5a4f27491b3abe73417a004b62e7dad18",
+  "sourceInputsSha256": "120ee69cf3420e325c1e76b6c33ef575408cb20cc97f7428f61fb2793706097e",
+  "files": {
+    "apple-touch-icon.png": {
+      "bytes": 5948,
+      "sha256": "14fbaba63e8e98d36b514b0c9dc948367928493be5550ef2c10213d42cc320fa"
+    },
+    "assets/AttachmentPdfPreview-CzqUjaac.css": {
+      "bytes": 5449,
+      "sha256": "a5da77f8de0fe765cda6ba5fb192f6808b5fd9ce4ab187fc9b513fd35fc729b6"
+    },
+    "assets/AttachmentPdfPreview-DxN8Eubv.js": {
+      "bytes": 497221,
+      "sha256": "b5d67f21654832c87713da3344644b61c1eff8920e80f0d125eab3bb17fb48ea"
+    },
+    "assets/index-D9LXJq9H.js": {
+      "bytes": 1801532,
+      "sha256": "7e27e3c7db2f04f0238c7499467eceff9d1c005999edff14547450685feb1cba"
+    },
+    "assets/index-DviAQ9B7.css": {
+      "bytes": 505362,
+      "sha256": "94ee519d2b5da0985d7b33c057faec5d87a00ee6886f09d250374658ca135f02"
+    },
+    "assets/onest-cyrillic-wght-normal-DXI_y_WF.woff2": {
+      "bytes": 14228,
+      "sha256": "37bc16874135c16134679b1db25b87fe80eb9fcd4ef3666af7c531bfde204fe2"
+    },
+    "assets/onest-latin-ext-wght-normal-CnNj8hVb.woff2": {
+      "bytes": 15992,
+      "sha256": "391a9b24b5c46ebff5d21f53cdb2edaa31c3446da3b722f038ab07d75d02a82d"
+    },
+    "assets/onest-latin-wght-normal-CUIqqgP9.woff2": {
+      "bytes": 32236,
+      "sha256": "67849bcc11e02177442da14ad954bfe1cc709553dad137b5003449b303e83fc3"
+    },
+    "assets/pdf.worker.min-Dkey6ZUl.mjs": {
+      "bytes": 1321307,
+      "sha256": "145d2dd3ab0c86151011dba95acfa2d5336e2accd59388ea43dbee0efddaaec6"
+    },
+    "favicon.svg": {
+      "bytes": 664,
+      "sha256": "85223ceb39a2ebb25dcc77ddb5287ea27b982c2ce5d2cf444a6e3507e573b9e8"
+    },
+    "icon-192.png": {
+      "bytes": 6336,
+      "sha256": "0abcc4bf0d8a8e4846400da1735978044ad44e7b922fb4e62f041a84e88bd39c"
+    },
+    "icon-512.png": {
+      "bytes": 25658,
+      "sha256": "28bf8a67bba67c6b573a52e708387e53c1c359aed8c49327efc2f18ca6b62242"
+    },
+    "index.html": {
+      "bytes": 756,
+      "sha256": "efb27c2354bbf9f39ada24650659af36cd54dddb50396286d091091e9a1fa298"
+    },
+    "manifest.webmanifest": {
+      "bytes": 442,
+      "sha256": "68fb36b82a10fbf5eb3ec576be1f6b9164ec8bb1542938b47514eec71cbb32fb"
+    },
+    "sw-assets.js": {
+      "bytes": 408,
+      "sha256": "ed469c4229fa11354779bfcaaa9c954b628761a4e192f5b25e5ee87b1bc814d5"
+    },
+    "sw.js": {
+      "bytes": 8394,
+      "sha256": "436d4b5dfe423a0282de73de33ca9e2a0b1fa39f681f172185874c62b636ab8c"
+    },
+    "version.json": {
+      "bytes": 207,
+      "sha256": "429b1f8721e9fa3bcd6067c40ceb338443b9a842f635aefae021b68303538764"
+    }
+  },
+  "buildEvidenceSha256": "2a74406d7fd1f25ffe3e93c3387bdcff995c69d019c3cd9425ee7e3fd26c1eae",
+  "artifactContract": {
+    "publicBase": "/app/",
+    "entryPath": "/app/assets/index-D9LXJq9H.js",
+    "producerConfig": {
+      "NODE_ENV": "production",
+      "VITE_PUBLIC_BASE": "/app/",
+      "VITE_MOBILE_FIXTURE_MODE": "false",
+      "VITE_APP_VERSION": "0.0.0",
+      "VITE_MIN_SUPPORTED_VERSION": "",
+      "VITE_FORCE_UPDATE": "true"
+    },
+    "producerConfigSha256": "9a876e3a089b7ee63fdbecdc310a4ba3543267dfe10dfe540a525ce0140bcd84",
+    "versionPolicySha256": "429b1f8721e9fa3bcd6067c40ceb338443b9a842f635aefae021b68303538764"
+  },
+  "producerConfigEvidence": "ENFORCED_BUILD_ENV",
+  "provenance": "FRESH_STRICT_WORKSPACE_BUILD",
+  "elapsedSeconds": 34.688,
+  "availableBefore": 6502780928,
+  "availableAfter": 6498373632
+}

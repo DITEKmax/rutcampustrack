@@ -1,0 +1,175 @@
+{
+  "actionId": "ACT-ADMIN-PROMOTE",
+  "result": "LOCALLY_VERIFIED",
+  "sourceRevision": "e8db2f4bb5f9d376729767cd87760bcd7bbb3224",
+  "syntheticFixture": true,
+  "startedAtUtc": "2026-10-24T06:59:29.190Z",
+  "completedAtUtc": "2026-10-24T06:59:34.191Z",
+  "ownerApproval": "Q-ENV-006: Разрешить три тестовые записи и PROMOTE",
+  "fixture": {
+    "groupId": 6,
+    "cycleSemesterId": 5,
+    "coverage": "managed_v1",
+    "newRows": 3,
+    "period": "2025-02-01..2025-06-30",
+    "latestCompletedSpringChange": "NULL -> owned5"
+  },
+  "ack": {
+    "httpStatus": 200,
+    "executed": true,
+    "dryRun": false,
+    "distinctPromotionKeys": 1,
+    "nativePromotionPosts": 1,
+    "explicitExecuteClicks": 1,
+    "idempotencyDigestSha256": "ca52f72b93cc4d18b633491c86bbb6260a348c85549b02d149bfbbe6e8053bde"
+  },
+  "identityStatus": {
+    "httpStatus": 200,
+    "status": "SUCCEEDED",
+    "sameOriginalOperation": true
+  },
+  "before": {
+    "id": 6,
+    "name": "ОИАР-110",
+    "active": true,
+    "trainingDurationYears": 4,
+    "noHeadman": true,
+    "rosterCandidates": 0
+  },
+  "after": {
+    "id": 6,
+    "name": "ОИАР-210",
+    "active": true,
+    "trainingDurationYears": 4,
+    "registryCourse": 2
+  },
+  "secondPreview": {
+    "groupId": 6,
+    "cycleSemesterId": 5,
+    "cycleDateTo": "2025-06-30",
+    "dryRun": true,
+    "executed": false,
+    "promoteCount": 0,
+    "promotedStudentCount": 0,
+    "archiveCount": 0,
+    "archivedStudentCount": 0,
+    "skippedGroupCount": 1,
+    "skippedStudentCount": 0,
+    "conflictCount": 0,
+    "toPromote": [],
+    "toArchive": [],
+    "skipped": [
+      {
+        "id": 6,
+        "name": "ОИАР-210",
+        "studentCount": 0,
+        "reason": "ALREADY_PROCESSED",
+        "previousAction": "PROMOTE",
+        "previousFrom": "ОИАР-110",
+        "previousTo": "ОИАР-210"
+      }
+    ],
+    "conflicts": []
+  },
+  "backendPins": [
+    {
+      "service": "Auth",
+      "sourceRevision": "f3c03bd81b3d44873abff2ad7126d9a000e51381",
+      "artifactSha256": "32bda499a73a5368d64126fbcba49e378d5e81ea349a4b20f7f671c1357c4035"
+    },
+    {
+      "service": "API Gateway",
+      "sourceRevision": "3c02a3241c3ac228f887fdd7b5af9e20c2bf4753",
+      "artifactSha256": "593f47f69a6ad4fcb7399f50ad31775a93a1a0ceaa7fd4ae58c12cd25d7491e3"
+    },
+    {
+      "service": "Academic",
+      "sourceRevision": "950e621b074affdda7063b343cf3c6f3a079279b",
+      "artifactSha256": "fa360caa53e5710da9225e3a6a328da7e613992e97bbc49b8b78256a3e54db6c"
+    },
+    {
+      "service": "Mobile BFF",
+      "sourceRevision": "60346b26bf471a5838b0023f07076e808b876dd3",
+      "artifactSha256": "854793e346fb36bd2ae49985e97f286f010fb43bffb2b479f9f28b2f86d81c0c"
+    },
+    {
+      "service": "Schedule",
+      "sourceRevision": "60346b26bf471a5838b0023f07076e808b876dd3",
+      "artifactSha256": "b937ac602f591bf01381b6a22c5273d0bebb035d3308e23551195c57d9dbbd1f"
+    },
+    {
+      "service": "Attendance",
+      "sourceRevision": "60346b26bf471a5838b0023f07076e808b876dd3",
+      "artifactSha256": "52c628b2e04ec220c261abada49acfe65e1eac35f74fc1bb47076b467a7d6137"
+    },
+    {
+      "service": "Notification",
+      "sourceRevision": "60346b26bf471a5838b0023f07076e808b876dd3",
+      "artifactSha256": "c57f270340f24c15c094e12f8eccaac0a4698801b7547a72baaef49f6a97b86c"
+    },
+    {
+      "service": "Document Renderer",
+      "sourceRevision": "60346b26bf471a5838b0023f07076e808b876dd3",
+      "artifactSha256": "52c4873c372eaed34c20294a77334a81936474021688f24558386e7282c0ace3"
+    }
+  ],
+  "independentPostChecks": {
+    "own6IdentityCourse2Active210": true,
+    "exactlyOneOwnPromoteLedger": true,
+    "cycle5Retained": true,
+    "active2Unchanged": true,
+    "rosterHeadmanHistoryAssignments0": true,
+    "authNoGrants": true,
+    "foreignAcademicGroupsUsersSemestersUnchanged": true,
+    "foreignAuthVersionsGrantsUnchanged": true,
+    "protected53AndOwn15Geo64Unchanged": true
+  },
+  "archiveCleanup": {
+    "commands": 1,
+    "httpStatus": 200,
+    "originalOperationStatus": "SUCCEEDED",
+    "checks": {
+      "exactOwn6ArchivedCanonical": true,
+      "identityCodeCourseDurationRetained": true,
+      "emptyNoHeadmanHistoryAssignments": true,
+      "authNoGrants": true,
+      "onePromoteLedgerUnchanged": true,
+      "cycle5LatestRetained": true,
+      "active2Unchanged": true,
+      "foreignAcademicUnchanged": true,
+      "foreignAuthUnchanged": true,
+      "foreignAssignmentsUnchangedSincePostPromote": true,
+      "protected53Own15Geo64Unchanged": true
+    },
+    "name": "ОИАР-210 (выпуск 2026)",
+    "status": "ARCHIVED",
+    "semesterAndLedger": "owned5 and exactly one PROMOTE ledger retained",
+    "qualification": "Initial harness rejected the canonical graduation suffix after acknowledged200. No second PUT/key. Original200 body was not persisted; independent postread and original identity read resolve the result."
+  },
+  "sessionCleanup": {
+    "exactOwnOldSessionDeleteAttempts": 1,
+    "deleteStatus": 204,
+    "newOwnLogout": 204,
+    "guestStatus": 401,
+    "other71StableIdentityRevocationActiveStateUnchanged": true,
+    "exactlyOneNewOwnPasswordSessionInCleanupWindowAndRevoked": true,
+    "expiryLimitation": "Pre-cleanup expiry values were not stored; expiry byte equality is not claimed.",
+    "debugger": "Automatic approval review rejected inspector attachment before execution. No inspector opened; normal Auth API used."
+  },
+  "processCleanup": {
+    "status": "PASS",
+    "normalSignals": "two exact-process SIGTERM; original runner exit143 is expected termination, not a functional PASS",
+    "allCapturedDescendantsClosed": true,
+    "remaining": []
+  },
+  "qualifications": [
+    "Initial seed composite false flags retained. shedLock is timer metadata; event_consumer_processed is transport dedup metadata, both explicitly source-qualified.",
+    "Six Attendance collection changes were preserved and diagnosed as normal lesson closure/auto ABSENT at06:55:07Z, before PROMOTE06:59:29Z. No all-database equality claim.",
+    "Protected53 and owned15 GEO64 unchanged. Foreign assignment comparison starts at post-PROMOTE; older specific baseline unavailable. Schedule postread is a fresh baseline.",
+    "Post-archive21 Attendance collection differences versus post-PROMOTE: none; transport qualifications remain separate.",
+    "Historical SQL setup is not acceptance of creating a completed semester through the public API.",
+    "Q-ENV-005 stop/snapshot was approved but unnecessary after natural GEO; never run, snapshotFALSE. Approval is not repurposed for other lanes."
+  ],
+  "CI": "PAUSED/workflow_dispatch; no dispatch",
+  "mainRuntime": "same13 healthy; no stop/snapshot/clock/production"
+}

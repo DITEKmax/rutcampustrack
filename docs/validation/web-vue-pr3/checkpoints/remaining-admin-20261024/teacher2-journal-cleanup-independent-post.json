@@ -1,0 +1,29 @@
+{
+  "at": "2026-10-24T21:58:11.746350+00:00",
+  "phase": "post",
+  "SQLOrAPIMutations": 0,
+  "newLogin": false,
+  "handleValuesPublic": false,
+  "privateSelectorSha256": "a73d580125eeb5f50bc41ffc79f1690394058c882cec308795a5cc74f57d57e0",
+  "metadata": {
+    "readOnly": true,
+    "syntheticMarker": true,
+    "exactTargetRow": true,
+    "exactTargetRevoked": true,
+    "identityMetadataDigest": "9dfcdff1e49297590833c7bc3d3a0461a563057a37025973106fe5ac2bcbd516",
+    "grantsDigest": "b551fb940ad5bea52cdaa6ab0ed2a51401405ed94eaed9ec279ebb27fbd61eaf",
+    "profilesDigest": "86e9deca41758c4f234be4f37b80a8244d81362e01b7d8b7f589c25bfe1ed8df",
+    "otherSessionsCount": 339,
+    "otherSessionRevocationDigest": "e3ca1525a7ccd17788362d457e2fb4020efe7175ec661551ccd4e7b83937fa5f",
+    "exactHelperRevoked": true
+  },
+  "checks": {
+    "identityMetadataDigestUnchanged": true,
+    "grantsDigestUnchanged": true,
+    "profilesDigestUnchanged": true,
+    "otherSessionsCountUnchanged": true,
+    "otherSessionRevocationDigestUnchanged": true,
+    "exactBothOwnRevoked": true
+  },
+  "passed": true
+}

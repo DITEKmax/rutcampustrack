@@ -1,0 +1,50 @@
+{
+  "projection": "Selected nonsecret facts only; originals unchanged outside repository. keySha256 is published as idempotencyDigestSha256; no original operation/session IDs or credentials.",
+  "sources": [
+    {
+      "path": "/workspace/rct-pr3-runtime/admin-web/promotion-own6-20261024/receipt.json",
+      "sha256": "67c9eb6389bfc8596a956e1e0b31d4694af69147a1e18252ad718d1b11dba713",
+      "bytes": 9555
+    },
+    {
+      "path": "/workspace/rct-pr3-runtime/admin-promotion-postread-20261024/receipt-070949.json",
+      "sha256": "cf97b60b4937a6f3ddc7e7cca87602bebb8ba4ad9e1a65d3d1e0153443e7de14",
+      "bytes": 11399
+    },
+    {
+      "path": "/workspace/rct-pr3-runtime/admin-promotion-postarchive-20261024/receipt-073043.json",
+      "sha256": "b88966c50e8ae3912b837546819455ff302c5d39862661d56c2f8a5f711b325e",
+      "bytes": 5700
+    },
+    {
+      "path": "/workspace/rct-pr3-runtime/admin-web/promotion-own6-20261024/session-cleanup.json",
+      "sha256": "d903fa9edeb4250ea5cef8dfe803de68fffb1f10674607dc1febe0fab46452cb",
+      "bytes": 1317
+    },
+    {
+      "path": "/workspace/rct-pr3-runtime/admin-own-session-cleanup-20261024/FINAL-READONLY-VERIFICATION.json",
+      "sha256": "b879fc59dbac5cd69f6ba6913ebf9ad1494898894fc73e31cce90748be050abd",
+      "bytes": 1578
+    },
+    {
+      "path": "/workspace/rct-pr3-runtime/admin-web/promotion-own6-20261024/old-process-close.json",
+      "sha256": "b2fd21b94c12567da469c3b54604d7f4641a11410eeb5fa7d4862cd553597aba",
+      "bytes": 1709
+    },
+    {
+      "path": "/workspace/rct-pr3-runtime/combined-map-build-20261024/receipt.json",
+      "sha256": "38bab4eac8ea6a385cf0e9eb8d70819d6c0547b1b1e08a17a39137c008c43918",
+      "bytes": 759
+    },
+    {
+      "path": "/workspace/rct-pr3-runtime/admin-web/promotion-own6-20261024/archive-cleanup.json",
+      "sha256": "c0b7ec067d6fd9cad6d21bcc0a58c89cabaff3e11fd7467118ac61678e0e7113",
+      "bytes": 1065
+    },
+    {
+      "path": "/workspace/rct-pr3-runtime/admin-promotion-postread-20261024/SELECTED-DOMAIN-DIFF-DIAGNOSTIC.json",
+      "sha256": "56fb4f9e6aa3edd69215fe05bf3a13b93180c45022bfddbe7ee0672cee23e2a0",
+      "bytes": 8046
+    }
+  ]
+}

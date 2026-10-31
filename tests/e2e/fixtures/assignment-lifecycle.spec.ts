@@ -1,3 +1,5 @@
+import { localSpecialLane } from './local-special';
+import { diagnosticCase } from './diagnostic-events';
 import { randomUUID } from 'node:crypto';
 import { existsSync, lstatSync, readFileSync, writeFileSync } from 'node:fs';
 import { isAbsolute, join } from 'node:path';
@@ -1011,11 +1013,13 @@ async function assignmentReportReady(
   }
 }
 
-test('assignment lifecycle API phase', async ({ playwright }, info) => {
+test('assignment lifecycle API phase', { annotation: diagnosticCase('ASSIGNMENT_LIFECYCLE_API') }, async ({ playwright }, info) => {
+  const local = localSpecialLane('assignment');
   requirePrivateArtifacts(info);
   requireValue(phase && phases.includes(phase), 'Assignment phase must be explicit');
   test.setTimeout(phase === 'prepare' ? 300000 : 120000);
   const run = process.env.RCT_ASSIGNMENT_LIFECYCLE_RUN;
+  requireValue(!local || run === local.laneRun, 'Local assignment checkpoint mismatch');
   requireValue(run && isAbsolute(run), 'Assignment requires an absolute private run directory');
   for (const path of [run, join(run, 'artifacts'), join(run, 'artifacts', phase)]) {
     const stat = lstatSync(path);

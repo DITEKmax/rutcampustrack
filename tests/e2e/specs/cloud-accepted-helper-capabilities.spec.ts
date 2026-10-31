@@ -1,3 +1,4 @@
+import { failureBoundary, helperRequestState } from '../fixtures/failed-case-diagnostics';
 import { randomUUID } from 'node:crypto';
 import { setTimeout as delay } from 'node:timers/promises';
 import type { Request, TestInfo } from '@playwright/test';
@@ -627,7 +628,13 @@ test('HEADMAN edits helper capabilities through member row and retains VIEW_STAT
     await confirmation.getByRole('button', { name: 'Отозвать права', exact: true }).click();
     const response = await saved;
     expect(response.status()).toBe(200);
-    expect(response.request().postDataJSON()).toEqual({ permissions: ['VIEW_STATS'] });
+    const savedPayload: unknown = response.request().postDataJSON();
+    await failureBoundary(info, 'HELPER_REQUEST', async () => {
+      expect(savedPayload).toEqual({
+        permissions: ['VIEW_STATS'],
+        expectedPermissions: ['MANAGE_EXCUSES', 'VIEW_STATS'],
+      });
+    }, () => helperRequestState(savedPayload, ['MANAGE_EXCUSES', 'VIEW_STATS']));
     await expect(
       group.getByText('Изменения подтверждены сервером.', { exact: true }),
     ).toBeVisible();

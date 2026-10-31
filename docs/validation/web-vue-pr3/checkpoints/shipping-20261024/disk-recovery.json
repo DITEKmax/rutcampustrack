@@ -1,0 +1,38 @@
+{
+  "scope": "Own shipping build-cache only, exact IDs independently reviewed; no global prune.",
+  "originalCandidates": 31,
+  "removedTotal": 30,
+  "retainedCandidateCount": 1,
+  "initialFreeBytes": 0,
+  "afterFirstLeafMiB": 399,
+  "afterMainRecoveryGiB": 8.06,
+  "finalFreeBytes": 10865889280,
+  "foreignCachesPreserved": true,
+  "containersImagesVolumesPreserved": true,
+  "healthIncident": "Four main healthchecks became unhealthy at disk exhaustion; all13 recovered after first owned-cache removal without restart.",
+  "underlyingDriver": "vfs; full-copy cache snapshots consumed much more disk than logical Docker cache sizes.",
+  "executionReceipts": [
+    {
+      "originalPath": "/tmp/pr3-one-owned-cache-recovery.log",
+      "sha256": "72f7bec1d91848917e3217813e65bf8b45fbbb403f75f9ad268caf38e3b7374e"
+    },
+    {
+      "originalPath": "/tmp/pr3-cache-removed-73ya4ieqxsjdhj6th9ewm10gb.log",
+      "sha256": "3c6dec9b0472f617c32e5c2cd4378c3ef4b32f57395bc0d6b85e1f42e2cdb537"
+    },
+    {
+      "originalPath": "/tmp/pr3-shipping-cache-recovery-executed.json",
+      "sha256": "22459da718ef7ef2416febdf7ecb665b2d33c2a06fdfd0e5c5c528f3047bf8e5"
+    },
+    {
+      "originalPath": "/tmp/pr3-shipping-cache-recovery-extra-headroom.json",
+      "sha256": "90a3eec5d4b090003e09aa2ce43336f19c512a315dbc2920b879a788e589d38d"
+    }
+  ],
+  "reviewPath": "/tmp/pr3-shipping-cache-readonly-REVIEW.md",
+  "harnessLimits": [
+    "One metadata check compared unordered Docker mount arrays; consecutive read-only inspections proved same image and mount sets. Canonical sorted-set comparison retained all identity checks.",
+    "Mobile static initial version-key expectation was corrected to existing latest schema; image/HTTP checks unchanged.",
+    "First buildx invocation failed because its client cache attempted read-only HOME; only BUILDX_CONFIG moved to own workspace cache, Docker credentials/config untouched."
+  ]
+}

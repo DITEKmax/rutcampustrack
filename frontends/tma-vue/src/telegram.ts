@@ -1,3 +1,4 @@
+import type { SystemThemeSource } from '../../shared/foundation'
 import type { MobileHostAdapter, MobileHostAction, StudentCheckinCommand } from '@rct/mobile-core'
 import type { TelegramDownloadFileParams } from './report-download-adapter'
 
@@ -24,6 +25,7 @@ interface TelegramWebApp {
   viewportHeight: number
   viewportStableHeight?: number
   safeAreaInset?: { top: number; right: number; bottom: number; left: number }
+  colorScheme?: 'light' | 'dark'
   themeParams?: Record<string, string>
   BackButton?: TelegramButton
   MainButton?: TelegramButton
@@ -264,5 +266,16 @@ export class TelegramHost implements MobileHostAdapter {
         }),
       )
     })
+  }
+}
+
+/** Telegram's active appearance is the system source inside the mini app. */
+export function createTelegramSystemThemeSource(app: TelegramWebApp | null): SystemThemeSource {
+  return {
+    read: () => (app?.colorScheme === 'dark' ? 'dark' : 'light'),
+    subscribe(listener) {
+      app?.onEvent?.('themeChanged', listener)
+      return () => app?.offEvent?.('themeChanged', listener)
+    },
   }
 }

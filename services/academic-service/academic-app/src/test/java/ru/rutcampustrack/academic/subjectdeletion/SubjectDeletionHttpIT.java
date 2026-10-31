@@ -6,6 +6,9 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 
 import com.fasterxml.jackson.databind.*;
+import com.github.dockerjava.api.model.ExposedPort;
+import com.github.dockerjava.api.model.PortBinding;
+import com.github.dockerjava.api.model.Ports;
 
 import io.grpc.*;
 
@@ -91,7 +94,16 @@ class SubjectDeletionHttpIT {
                             "subject_deletion_" + UUID.randomUUID().toString().replace("-", ""))
                     .withUsername("subject_deletion_test")
                     .withPassword("synthetic-local-only")
-                    .withReuse(false);
+                    .withReuse(false)
+                    .withCreateContainerCmdModifier(
+                            command ->
+                                    command.getHostConfig()
+                                            .withPortBindings(
+                                                    new PortBinding(
+                                                            Ports.Binding.bindIpAndPort(
+                                                                    "127.0.0.1", 0),
+                                                            ExposedPort.tcp(5432)))
+                                            .withPublishAllPorts(false));
 
     static {
         POSTGRES.start();

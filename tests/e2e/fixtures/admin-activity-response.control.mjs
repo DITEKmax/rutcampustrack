@@ -12,6 +12,9 @@ const { requireOrImport } = require(
 const { completedActivity, assertActivity } = await requireOrImport(
   join(dirname(fileURLToPath(import.meta.url)), 'admin-activity.ts'),
 );
+const { safeFirstFailureObservations } = await requireOrImport(
+  join(dirname(fileURLToPath(import.meta.url)), 'failed-case-diagnostics.ts'),
+);
 // Counterfactual header observer retains the old failure mode independently of source spelling.
 const headerActivity = (page, period) => page.waitForResponse((response) => {
   const url = new URL(response.url());
@@ -20,14 +23,14 @@ const headerActivity = (page, period) => page.waitForResponse((response) => {
     response.request().method() === 'GET';
 });
 function factory(observe) {
-  return (expect, page) => {
+  return (expect, page, info) => {
     const first = observe(page, 'today');
     return async () => {
-      await assertActivity(page, await first, 'today', expect);
+      await assertActivity(page, await first, 'today', expect, info);
       for (const period of ['all_time', 'today']) {
         const next = observe(page, period);
         await page.getByRole('button', { name: period === 'today' ? 'Сегодня' : 'Всё время', exact: true }).click();
-        await assertActivity(page, await next, period, expect);
+        await assertActivity(page, await next, period, expect, info);
       }
     };
   };
@@ -86,7 +89,8 @@ function modelExpect(page, value, message) {
   return {
     async toHaveAttribute(name, expected) {
       let actual;
-      if (value.kind === 'row' && name === 'data-state') actual = page.ui.state;
+      if (value.kind === 'activity' && name === 'aria-busy') actual = page.ui.busy ? 'true' : 'false';
+      else if (value.kind === 'row' && name === 'data-state') actual = page.ui.state;
       else if (value.kind === 'delta' && name === 'aria-label') actual = 'относительно вчера';
       else if (value.kind === 'button' && name === 'aria-pressed') {
         actual = page.ui.selected && value.name === (page.ui.period === 'today' ? 'Сегодня' : 'Всё время') ? 'true' : 'false';
@@ -122,6 +126,7 @@ function controlPage(options) {
       return wait(event, predicate);
     },
     locator(selector) {
+      if (selector === '.admin-dashboard-screen__activity') return locator('activity');
       const match = /^\[data-admin-activity-metric="([A-Za-z]+)"\]$/.exec(selector);
       assert.ok(match && metricCodes.includes(match[1]), 'Unmodelled metric row');
       return locator('row', match[1]);
@@ -181,6 +186,7 @@ function controlPage(options) {
     if (options.fractionMismatch) page.ui.fraction = '2 из 6';
     if (options.deltaMismatch) page.ui.deltas.positiveMarks = '—';
     if (options.stateMismatch) page.ui.state = 'UNAVAILABLE';
+    if (options.activityBusy) page.ui.busy = true;
     if (options.buttonMismatch) page.ui.selected = false;
     if (options.supersedePhase === phase) {
       const old = response(phase, 'aborted', { aborted: true });
@@ -205,13 +211,17 @@ function controlPage(options) {
 }
 async function run(factory, options = {}) {
   const control = controlPage(options);
-  const check = factory((value, message) => modelExpect(control.page, value, message), control.page);
+  const info = {
+    title: 'FULL multirole ADMIN assigns updates and revokes LIMITED rights through Vue without foreign-role calls @cloud-accepted',
+    annotations: [],
+  };
+  const check = factory((value, message) => modelExpect(control.page, value, message), control.page, info);
   const completion = check();
   // Attach rejection handling before delivering the deterministic lifecycle.
   const outcome = completion.then(() => ({ passed: true }), (error) => ({ passed: false, error }));
   control.emitInitial();
   if (options.noReplacement) control.expireOriginalWaiter();
-  return { ...await outcome, observations: control.observations };
+  return { ...await outcome, observations: control.observations, failureFacts: safeFirstFailureObservations(info.annotations) };
 }
 
 assert.equal((await run(baselineFactory)).passed, true, 'Baseline must pass without supersession');
@@ -232,11 +242,13 @@ let negativeRejected = 0;
 for (const changes of [
   { malformed: true }, { status: 403 }, { wrongPeriod: true }, { wrongBucket: true },
   ...metricCodes.map((metricMismatch) => ({ metricMismatch })),
-  { fractionMismatch: true }, { deltaMismatch: true }, { stateMismatch: true }, { buttonMismatch: true },
+  { activityBusy: true }, { fractionMismatch: true }, { deltaMismatch: true }, { stateMismatch: true }, { buttonMismatch: true },
 ]) {
   const result = await run(fixedFactory, { supersedePhase: 0, ...changes });
   assert.equal(result.passed, false, 'A completed response must still satisfy the original full activity oracle');
   assert.equal(result.observations.abortedBodyReads, 0);
+  assert.equal(result.failureFacts.length, 1, 'Actual failed assertions must retain closed predicates');
+  assert.equal(result.failureFacts[0].stage, 'ADMIN_ACTIVITY');
   negativeRejected++;
 }
 const unavailable = await run(fixedFactory, { supersedePhase: 0, noReplacement: true });

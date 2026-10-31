@@ -1,0 +1,25 @@
+{
+  "schema": "rct-diagnostic-cardinality-correction.v1",
+  "sourceRevision": "557fc782adcfc5eee24cc5210631ac8c1bca6a6d",
+  "fixtureSha256": "d1d5a0c656e31d3667823328d96ccb3c3dec205978fb8cdc6471353dafc6b82c",
+  "rows": 10,
+  "observed": {
+    "before": {
+      "allRowsClosed": true,
+      "semanticHomeworkFailure": true,
+      "fullAdmission": false
+    },
+    "after": {
+      "allRowsClosed": true,
+      "semanticHomeworkFailure": true,
+      "fullAdmission": true
+    }
+  },
+  "controlLog": "cardinality-controls.log",
+  "controls": 19,
+  "exitCode": 0,
+  "elapsedSeconds": 0.762,
+  "reason": "P2 linked current CI caller selects ten cases, old eight-row cap rejects genuine closed full report; finite cohort bound replaces cap.",
+  "reproHarnessCorrection": "Initial disposable prior-module fixture used shallow path and failed parents[3] with IndexError; repeated only repro with correct fresh tests/e2e/fixtures layout. No source change or suite repeat.",
+  "runtimeServiceCalls": 0
+}

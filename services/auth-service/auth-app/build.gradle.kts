@@ -113,6 +113,7 @@ sourceSets {
             include("auth_data_authority.proto")
             include("auth_identity_operations.proto")
             include("auth_security_capabilities.proto")
+            include("group_deletion.proto")
         }
     }
 }

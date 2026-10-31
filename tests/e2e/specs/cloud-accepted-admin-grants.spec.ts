@@ -1,3 +1,4 @@
+import { failureBoundary, controlState } from '../fixtures/failed-case-diagnostics';
 import { completedActivity, assertActivity } from '../fixtures/admin-activity';
 import { randomBytes, randomUUID } from 'node:crypto';
 import { isDeepStrictEqual } from 'node:util';
@@ -303,13 +304,13 @@ test('FULL multirole ADMIN assigns updates and revokes LIMITED rights through Vu
       await expect(row.locator('.admin-dashboard-screen__delta')).toHaveText(expectedGrowth);
     }
     // ADMIN22: each actual period payload must be represented by the existing metric cards.
-    await assertActivity(page, await activityReply, 'today');
+    await assertActivity(page, await activityReply, 'today', expect, info);
     for (const period of ['all_time', 'today'] as const) {
       const next = completedActivity(page, period);
       await page
         .getByRole('button', { name: period === 'today' ? 'Сегодня' : 'Всё время', exact: true })
         .click();
-      await assertActivity(page, await next, period);
+      await assertActivity(page, await next, period, expect, info);
     }
     // End ADMIN22 activity witness.
     const foreignScreens = page.locator(
@@ -349,7 +350,13 @@ test('FULL multirole ADMIN assigns updates and revokes LIMITED rights through Vu
       })
       .click();
     await expect(users.getByRole('heading', { name: 'Права доступа', exact: true })).toBeVisible();
-    await expect(users.getByRole('radio', { name: 'Выбранные права', exact: true })).toBeChecked();
+    await failureBoundary(info, 'ADMIN_RIGHTS_MODE', async () => {
+      await expect(users.getByRole('radio', { name: 'Выбранные права', exact: true })).toBeChecked();
+    }, async () => {
+      const limited = await controlState(users.getByRole('radio', { name: 'Выбранные права', exact: true }));
+      const full = await controlState(users.getByRole('radio', { name: 'Полный доступ', exact: true }));
+      return { limitedCount: limited.count, fullCount: full.count, limitedChecked: limited.checked, fullChecked: full.checked };
+    });
     const view = users.getByRole('checkbox', { name: 'Просмотр пользователей', exact: true });
     const manage = users.getByRole('checkbox', { name: 'Управление пользователями', exact: true });
     await manage.check();

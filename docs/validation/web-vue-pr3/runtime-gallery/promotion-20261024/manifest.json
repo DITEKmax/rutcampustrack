@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "kind": "real-runtime-gallery",
+  "title": "Перевод собственной тестовой группы",
+  "functionalTestCount": 0,
+  "scope": "One real UI frame linked to separately accepted PROMOTE action; screenshots are not action counts.",
+  "limits": [
+    "Exact UI revisione8db, Academic950. Current map backend is not deployed here.",
+    "Historical ownedSPRING fixture explicitly approved Q-ENV-006. No reference/Figma images."
+  ],
+  "screenshots": [
+    {
+      "id": "WEB-ADMIN-GROUPS__promotion-already-processed__light__1440__e8db2f4bb",
+      "screen": "WEB-ADMIN-GROUPS",
+      "state": "promotion-already-processed",
+      "theme": "light",
+      "width": 1440,
+      "revision": "e8db2f4bb5f9d376729767cd87760bcd7bbb3224",
+      "title": "Перевод группы выполнен",
+      "description": "После одного настоящего PROMOTE: курс2, повторный preview ALREADY_PROCESSED. Кадр до последующей архивации собственной пустой группы.",
+      "image": "screenshots/WEB-ADMIN-GROUPS__promotion-already-processed__light__1440__e8db2f4bb.png",
+      "pixelWidth": 1440,
+      "pixelHeight": 1345,
+      "bytes": 143998,
+      "sha256": "ff96ce9ab623deced5bacfbd9fb496bd889acfd9e2ab12a9b2d835bcc0d3d1cf",
+      "provenance": "real-runtime",
+      "syntheticFixtureData": true
+    }
+  ]
+}

@@ -1,3 +1,4 @@
+import type { ThemeMode, ResolvedTheme } from '../../../../shared/foundation/theme'
 import type { BrowserLoginApprovalPort } from './browser-login-approval'
 
 export type ProfileRole = 'STUDENT' | 'HEADMAN' | 'TEACHER' | 'ADMIN'
@@ -8,8 +9,8 @@ export type ProfileRoleStatus =
   | 'GRADUATED'
   | 'DISMISSED'
   | 'ARCHIVED'
-export type ProfileTheme = 'light' | 'dark' | 'system'
-export type ProfileResolvedTheme = 'light' | 'dark'
+export type ProfileTheme = ThemeMode
+export type ProfileResolvedTheme = ResolvedTheme
 export type ProfileRoute =
   | 'schedule'
   | 'statistics'
@@ -22,7 +23,7 @@ export type ProfileRoute =
   | 'security'
   | 'sessions'
   | 'history'
-export type ProfileAuthMethod = 'PASSWORD' | 'OTP' | 'TMA'
+export type ProfileAuthMethod = 'PASSWORD' | 'OTP' | 'TMA' | 'QR'
 export type ProfileHistoryType =
   | 'LOGIN'
   | 'ROLE_CHANGED'

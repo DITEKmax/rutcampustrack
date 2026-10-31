@@ -1,0 +1,41 @@
+{
+  "commit": "a7f9d93618aa45f1252fae3fdf1dfc32eb9e9f54",
+  "base": "8e83a2d9105af75d015d6df7a8888eab330f43dc",
+  "branch": "codex/pr3-student-owner-cancellation",
+  "userOutcome": "Student can leave/change authority while old Home reads settle; retired continuation exits without Vue unhandled owner error or writing successor state. Queued retired Attendance filter returns without rejected action or old-owner read.",
+  "runtimeCallsiteLimit": "Deterministic source regressions reproduced Home asyncwatch and Attendance queued filter; actual e38 names-only pageErrors are retained and not assigned to an exact runtime stack/callsite.",
+  "productDiff": "Home current() return before still-retained assertCurrent; Attendance loadSubject and remember entry current guards. No transport/global error handling/API/contracts/mutations/theme/security changes.",
+  "verification": {
+    "canonicalBaseline": "baseline-isolated-owner.log: actual transport/frozenowner/deferredread ->2 semantic FAIL;4existing PASS",
+    "finalBehavior": "final-behavior-minimal-diff.log:6/6 PASS,including2new semantics and4existing currenterror/retention/draft/paging. Actual owner fence still rejects old transport.",
+    "strictBuild": "final-web-build.log: npm run build:web once PASS (vue-tsc strict + Vite), existing chunk-size warning only",
+    "diffCheck": "git diff --check PASS",
+    "runtimeAuthBrowser": 0,
+    "targetedVitestInvocations": 5,
+    "invocationReasons": [
+      "baseline.log: Home genuine cancellationFAIL plus incorrect checkbox invocation harnessFAIL",
+      "baseline-corrected-action.log: Home cancellationFAIL; Attendance would falsely pass because mocked identity persisted across tests",
+      "baseline-isolated-owner.log: reset mocked identity pertest; both semantic baseline failures established",
+      "final-behavior.log:6PASS; rawPrettier introduced unrelated templateformatting",
+      "final-behavior-minimal-diff.log:6PASS after restoring untouched template bytes and keeping fixture formatdiffminimal; no behavior scope expansion"
+    ],
+    "buildInvocations": 1
+  },
+  "files": [
+    {
+      "path": "frontends/web-vue/src/features/student/StudentHomePage.vue",
+      "sha256": "0252b3491531e29db74919ca32e9220f88a2e70e0bc27761303b98c1e7808504"
+    },
+    {
+      "path": "frontends/web-vue/src/features/student/StudentAttendancePage.vue",
+      "sha256": "f061c064acf311d94b50149107e3ca35336f09bdf5f1fa6b3185759916f2192e"
+    },
+    {
+      "path": "frontends/web-vue/src/features/student/student-refresh.test.ts",
+      "sha256": "e79fb0d1c82c6860ebce4005d817fcca5bae16387de07f62cb4bbe5decb7288b"
+    }
+  ],
+  "createdAtUtc": "2026-10-24T23:57:33.365247+00:00",
+  "push": false,
+  "rootIntegrationPending": true
+}

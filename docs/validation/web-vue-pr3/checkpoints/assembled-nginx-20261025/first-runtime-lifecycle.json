@@ -1,0 +1,15 @@
+{
+  "sourceSha": "4f48f169da10caf111b6a3b2a82c6880079e23d4",
+  "phase": "FAILED",
+  "pollMs": 250,
+  "guard": null,
+  "ownedId": "fc73d4f3997100e2b74afb729e03dd78650e3e60e39e0378a510bb3f9ff517fb",
+  "beforeAvailable": 6492479488,
+  "minimumAvailable": 6388129792,
+  "error": "Scoped command failed; raw log retained: static-check.log",
+  "original30Unchanged": false,
+  "originalCount": 30,
+  "afterCount": 30,
+  "availableAfter": 6492405760,
+  "seconds": 3.194
+}

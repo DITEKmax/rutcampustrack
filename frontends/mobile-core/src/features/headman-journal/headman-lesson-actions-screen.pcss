@@ -35,9 +35,16 @@
   font-size: var(--rct-font-size-caption);
 }
 .headman-actions__filters {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  display: flex;
+  flex-wrap: wrap;
   gap: var(--rct-space-2);
+}
+.headman-actions__filters > button {
+  flex: 1 1 max-content;
+  min-inline-size: 0;
+  max-inline-size: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 .headman-actions button {
   min-block-size: var(--rct-control-min-touch);
@@ -126,7 +133,7 @@
   block-size: var(--rct-headman-status-size);
   border-radius: var(--rct-radius-full);
   color: var(--rct-color-status-on-fill);
-  background: var(--rct-color-text-muted);
+  background: var(--rct-color-status-none-fill);
   font-size: var(--rct-font-size-dense);
   font-weight: var(--rct-font-weight-medium);
 }

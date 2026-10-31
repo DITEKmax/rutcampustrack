@@ -1,0 +1,325 @@
+# API changes — PR3
+
+2026-10-25 ordinary diagnostic harness: только тестовая/CI/local обвязка; business
+endpoints/OpenAPI/DB/contracts клиентов не менялись. [Scope/evidence](../../validation/web-vue-pr3/checkpoints/diagnostic-harness-20261025/README.md).
+
+## API-001 — device theme preference mirror
+
+Status: implemented and integrated; affected Auth/PostgreSQL/Gateway checks
+PASS, source and narrow generated-contract review PASS; actual browser GET/PUT/
+CAS and PWA application logout/account-change mirror PASS. Author source f92cf2ba5 +3c02a3241; root integration
+04fc51b2d +98214275e. Production migration/deployment not performed.
+
+Purpose: preserve device-level light/dark/system across logout/login and account
+changes without linking the preference to an account or using fingerprinting.
+Validated local preference remains available offline and takes precedence;
+backend is a durable mirror, not an authentication method.
+
+| Method/path | Request | Success |
+|---|---|---|
+| GET /api/auth/device-preferences | live bearer; optional opaque cookie | theme:null/light/dark/system, revision:canonical decimal string; creates/renews missing or expired context |
+| PUT /api/auth/device-preferences | live bearer + established cookie; {theme,expectedRevision} | committed theme/revision after atomic CAS |
+
+Internal Auth paths omit `/api`; existing Gateway routing is reused. Bootstrap
+allowlists contain only these exact GET/PUT paths in both filters. Existing
+admission rules remain: live bearer required; stale/revoked/terminal grants
+follow the existing session/bootstrap protocol. Cookie alone grants nothing.
+
+Errors use RFC9457 and no-store: validation400 INVALID_REQUEST;
+409 DEVICE_CONTEXT_LOST / DEVICE_REVISION_CONFLICT;
+503 DEVICE_PREFERENCES_UNAVAILABLE, including failed commit. Existing session
+401/409/503 errors retain their meaning. Unknown PUT result must be read back;
+clients do not blindly repeat a write. Expected revision is a canonical
+nonnegative decimal string bounded by Long.MAX_VALUE.
+
+The `__Host-rct_device` cookie is random32-byte base64url, Secure/HttpOnly/
+SameSite=Strict/Path=/, without Domain; logout preserves it. Auth FlywayV15 adds
+`auth_device_preferences` with selector SHA256, nullable theme, revision and
+expiry, without account/session/IP/UA. REQUIRED transaction holds admission
+locks through commit, then device lock; bounded expired-context cleanup reuses
+the existing job pattern. No preference events or changes to Web Push.
+
+Compatibility: additive endpoint/table/schema. Existing refresh cookie, CSRF,
+logout, auth/session and PWA/TMA operations are preserved. PWA/TMA/web consume
+the common frontend mirror; older clients can ignore the new API. The Java
+contract remains the source for Auth OpenAPI3.1 and generated TypeScript;
+nullable theme and explicit problem schemas are represented in generated files.
+
+Validation: real PostgreSQL/Redis Auth HTTP tests for persistence/account jars,
+cookie-without-bearer/revoked/stale/bootstrap, CAS, expiry, unavailable storage,
+deferred commit failure, concurrent PUT versus logout; SameSite contract,
+Auth/Gateway exact-path filters, OpenAPI snapshot and generation/schema checks.
+Evidence `/tmp/device-api-summary-20261024.md`,
+`/tmp/device-api-checks-20261024.json`; independent report
+[immutable source review](../../validation/web-vue-pr3/review/device-api-REVIEW-f92cf2ba5.md)
+and [metadata recheck](../../validation/web-vue-pr3/review/device-api-RECHECK-3c02a3241.md).
+Browser evidence: `/workspace/rct-pr3-runtime/theme-api-smoke-20261024.log` and
+`theme-api-immutable-smoke-20261024.log`; PWA owner evidence under
+`/workspace/rct-worktrees/theme-foundation/.agent/evidence/pr3-theme/20261024/`.
+HTTP Secure-cookie readback uses the browser page fetch; a separate APIRequestContext
+is not equivalent to the application cookie behavior. No cookie flag was relaxed.
+
+## API-002 — administrator credential generation/readback
+
+Status: source52eb8520 integrated after independent backend PASS. New web
+consumer is in progress; ACT-ADMIN-REGENERATE-PASSWORD not counted complete.
+Real Auth/PostgreSQL HTTP6 + shared Headman regression4 + Authfilter9 + OpenAPI
+snapshot/schema/types PASS. Production migration/deployment not performed.
+
+Adds GET /api/auth/admin/users/{userId}/initial-password (audited permitted
+readback/disclosure) and POST /api/auth/admin/users/{userId}/generated-password.
+Existing password-reset-link route is unchanged. POST requires
+{expectedCredentialsVersion:positive canonical decimal string}. Both return
+{userId,credentialsVersion,state:GENERATED|USER_CHANGED|UNAVAILABLE,
+origin:initial|headman_reset|admin_reset|null,password:string|null}, no-store;
+only GENERATED discloses generated material. Own changed password is never read.
+
+Live ADMIN + USER_CREDENTIALS_MANAGE and AuthAdminAccess rules are preserved:
+FULL can target active ADMIN including self; LIMITED cannot target active ADMIN.
+Missing404 CREDENTIAL_TARGET_NOT_FOUND, fenced/archived409 CREDENTIAL_TARGET_UNAVAILABLE,
+stale version409 CREDENTIAL_VERSION_CONFLICT, invalid400 INVALID_REQUEST,
+authority/commit503. RFC9457 codes normalize existing flat code and extras.code.
+Identity/session locks remain held through commit; secure generation and one
+shared mutation retain hash/CAS/reset-ticket invalidation/all-session revocation,
+audit and outbox atomicity. No secret/hash in event/audit/log/error payload.
+
+Unknown POST result must be read back before any further decision; never blindly
+regenerate with a fresh version. Same version cannot rotate twice. Successful
+self target revokes the actor too; UI must warn and show returned material only
+in volatile memory. Unknown self result requires fresh permitted administrator
+or existing recovery; an old bearer cannot read back after session revocation.
+
+Compatibility: additive endpoint + Auth FlywayV16 enum check extension admin_reset;
+existing endpoints and historical Academic migrations unchanged. Shared Headman
+reader/mutation extracted; relevant lifecycle/rollback/concurrentCAS regressions
+PASS. PWA/TMA manual origin decoder and caption now accept admin_reset (web owner
+compatibility commits integrated); generated Auth types come from backend owner.
+No new web operation is silently ported into mobile navigation.
+
+[Independent review](../../validation/web-vue-pr3/review/admin-generation-REVIEW-52eb8520.md)
+records source acceptance and UI/runtime limits. Original summary and checks:
+`/tmp/admin-generated-password-summary-20261024.md`,
+`/tmp/admin-generated-password-checks-20261024.json`. Final source-matched AuthJAR
+SHA256 3f8d9d0e9ea3bd944b774c2a05246df9b3a35caa2d19aae8b8570aba68c5dc05;
+stand rollout remains runtime-owner coordinated, not proof of web UI completion.
+
+## API-003 — retained group and account status in user registry/export
+
+Status: author f3c03bd81 +6289ab528 +b32d47b0e integrated, independent review
+PASS including async selector correction. Source-matched immutable Auth/Academic
+artifacts verified/copied; stand rollout13healthy and actual filtered UI/history/HTML export PASS.
+
+Existing administrator user list and export selectors accept optional groupId;
+existing status filter is forwarded by the shared client. Membership means the
+current or retained STUDENT/HEADMAN grant, including archived accounts/group
+links, rather than any group ever visited. Role/status/group refer to the same
+grant; TEACHER/ADMIN role filtering retains its separate group-link semantics.
+Invalid selectors retain existing400 behavior; granular USERS_VIEW/export rights
+remain enforced. Omitted groupId preserves older query behavior and export hash
+shape, including older queued jobs. Paged totals/rows and sync/async render reuse
+the same selector. This enables retained composition history without inventing
+an as-of dated-membership endpoint.
+
+The async export lease compares complete normalized JSON trees. Canonical parsing
+on both sides prevents a valid small Long ID from falsely mismatching IntNode;
+changed/missing/extra selectors and changed array order still fail admission403.
+Actor/session/version/kind/private lease/state/expiry checks are unchanged.
+
+PWA/TMA: additive optional query and shared client forwarding; omitted selectors
+keep previous behavior. No new web registry/navigation is ported to mobile.
+Real Auth/Academic authority/selector/snapshot checks and async enqueue202→claim→
+render200 with changed/missing selectors403 passed. Independent immutable reports:
+[group selector review](../../validation/web-vue-pr3/review/group-filter-REVIEW-f3c03bd81.md),
+[async correction recheck](../../validation/web-vue-pr3/review/group-filter-RECHECK-b32d47b0e.md).
+
+## API-004 — conditional existing assistant permissions (accepted, actual rollout PASS)
+
+Source072486ca4 integrated; real HTTP3/snapshot/types/JAR PASS. Independent
+combined review950 PASS; immutable950 actually deployed. Contract: Existing PATCH assistant permissions
+adds optional expectedPermissions set. It compares authoritative rights under
+existing group/headman then assistant locks; mismatch409
+ASSISTANT_PERMISSIONS_CONFLICT without mutation/outbox. Null/unknown enum400.
+Existing nonempty {permissions} calls remain compatible. Conditional permissions[]
+with expected snapshot invokes the existing revoke lifecycle, returns inactive200
+and preserves historical permissions. Legacy empty PATCH remains400 and DELETE204
+is unchanged. Effective rights require active assignment. Web and existing mobile
+confirmation use frozen before snapshot, including removal of the last right;
+new helper assignment behavior is unchanged. No new mobile feature/UI is added.
+
+Targeted real PostgreSQL/HTTP concurrent stale add versus revoke, conflict rollback,
+conditional last-right revoke and legacy/invalid/forbidden cases PASS3tests;
+source/schema/independent review950 PASS; actual stand950 CAS assign/revoke/stale409/last-right inactive and names-only archive lookup PASS.
+
+## API-005 — names-only group options lookup (accepted, actual rollout PASS)
+
+Source950e621b0 and real HTTP2/snapshot/types/JAR PASS, independent combined
+CAS/lookup review PASS. Reuse GET /api/academic/groups/options; allow USERS_VIEW in that endpoint's existing
+permission union, without granting GROUPS_VIEW. Optional includeArchived=false
+preserves old pickers. includeArchived=true returns retained archive entries;
+additive archived:boolean accompanies existing id/name only. Count and rows use
+the same predicate; existing Java constructor retained. No profiles/contacts/grants
+are exposed. Shared manual adapter owned admin author; generated types backend.
+Directory history/filter uses archive lookup, create-user picker keeps default.
+PWA/TMA omitted flag stays active-only. No new mobile page or permission widening.
+
+
+## API-006 — whole-scheme map final deletion (locally verified)
+
+Canonical owner decision2026-10-02 already authorizes all scheme versions and
+PNG/SVG bytes with preview/password proof. Source0100+6839+1fe and shared APIa36/
+WEB85 are integrated in rootc3c08a935; independent backend and combined WEB/API
+reviews PASS. Existing routes/request/result/granular permissions/Auth proof/
+catalog lock/durable receipt remain. format=null preview hashes the complete
+owned graph, including orphan history; old narrow digest cannot authorize it.
+One PostgreSQL transaction removes owned versions/format rows/BYTEA assets,
+preserves building/floor/usage/receipts and rolls back on failure. Additive active
+Academic FlywayV13 high-water prevents metadata URL reuse after reupload;
+exact replay cannot delete a new version. Explicit PNG/SVG keeps the existing
+selected-format meaning.
+
+Optional nullable preview field deletionScope: ALL_VERSIONS for format=null,
+CURRENT_FORMAT for an explicit format. Old missing/null responses remain readable;
+they do not enable whole deletion in WEB. Non-null unknown or format-mismatched
+values are rejected by the shared adapter. Actual OpenAPI3.1 schema includes
+literal JSON null in its enum; generated TypeScript allows null. Scope UI/replay
+keeps the original operation identity and requires explicit password confirmation;
+no automatic retry or fresh key after an unknown result.
+
+PWA/TMA existing AdminMapScreen passes explicit format and keeps previous
+behavior; the additive field is ignored there. No new mobile whole-delete page.
+Shared client compatibility and strict WEB/PWA/TMA builds PASS. New WEB action
+was not silently added to mobile.
+
+Verification: real HTTP/PostgreSQL3 whole-graph/stale/replay/reupload/rollback
+cases + one selected-format regression PASS;4 scope/snapshot business cases and
+OpenAPI nullable corpus11 PASS, client16 and WEBstate12 PASS; Academic-only types
+check and immutable bootJar PASS. Backend IT explicitly stubs remote Auth password
+confirmation, so it is not a full Auth+WEB runtime acceptance. First migration-path
+failure and initial nullable-enum P2 remain recorded alongside passing corrections.
+Final immutable Academic1fe JAR SHA256
+`a433178685a4a9cf421ab949fc699b5efaf03fe91c50d3917c1655bfca24cbe2`.
+Main stand stays Academic950; no rollout, stand map deletion or production migration.
+Owner Q-ENV-007 approved the distinct synthetic realAuth UI case. One native
+whole-delete200 removed two versions/four assets; independent PostgreSQL21 checks
+confirmed retained building/floor/usage/high-water/receipt. Actual Auth confirmation
+correct204 then wrong403 CURRENT_PASSWORD_INVALID and24 independent postchecks
+close the real-password gap. Raw Auth helper native1/passedfalse is retained:
+its anonymous direct Auth session read403 is source-correct; it expected401 from
+the different browser/Gateway boundary. Its own session is independently revoked.
+No repeat deletion/confirmation or replay-after-reupload campaign was run; existing
+real PG replay/high-water/rollback results reused. Missing Attendance activity and
+whole-stand/downstream health remain explicit limits. Main Academic950 unchanged.
+[Qualified local acceptance](../../validation/web-vue-pr3/checkpoints/admin-visual-20261024/map-local-acceptance.json).
+
+[Backend review](../../validation/web-vue-pr3/review/map-REVIEW-0100dd7c.md),
+[nullable recheck](../../validation/web-vue-pr3/review/map-RECHECK-1fe1588d.md),
+[combined API/WEB review](../../validation/web-vue-pr3/review/map-web-REVIEW-a36ab626-85d801b9.md).
+Original detailed receipts remain in /tmp/map-whole-delete-* and /tmp/map-scope-null-*;
+[source/build checkpoint](../../validation/web-vue-pr3/checkpoints/promotion-map-20261024/combined-frontends-build.json).
+
+
+## API-007 — group final deletion (source/review ready, behavior pending)
+
+Additive current ADMIN GROUPS_MANAGE+DATA_DELETE endpoints:
+GET `/academic/groups/{groupId}/deletion-preview`, POST
+`/academic/groups/{groupId}/deletions` with UUID Idempotency-Key and
+`{password, previewDigest}`, GET `/academic/group-deletions/{operationId}`.
+Preview has exact group identity, digest and numeric counts for accounts affected,
+memberships/headman/helpers, Academic/Schedule/Attendance rows and Auth grants.
+Operation phases PREPARING/COMMITTING/COMPLETED/RELEASING/CANCELLED are durable;
+unknown requests retain original identity and are not retried with a fresh key.
+Current password proof and live original actor/session are checked before first
+irreversible Auth commit. Existing proofless legacy DELETE is rejected409.
+
+POST `/academic/groups/{groupId}/deletions/{operationId}/resolve` has no body or
+password. Current authorized same actor may recover after a new session. An
+accepted original is returned/resumed, never cancelled. If it was not accepted,
+a unique-key transaction stores immutable CANCELLED/NOT_ACCEPTED/counts0; the
+same key blocks any late original acceptance. GET404 alone is not zero-effect
+proof. This allows normal wrong-password/stale-preview validation recovery without
+blind deletion. Only authoritative terminal receipt unlocks a new preview.
+
+Q-PROD-004: delete target-group membership, headman/helper assignments and its
+specific authority/data; preserve accounts/credentials/other roles/other groups,
+without automatic archive/dropout/graduation. Open sessions lose target access.
+Auth/Academic/Schedule/Attendance participant changes are additive; existing
+Subject/Semester participants and PWA/TMA operations remain. No new mobile group
+final-delete UI. Shared generated contracts remain one canonical source.
+
+SOURCEv10 (commit64f0ea2925287ec45bcaa1082118eb8aaa904943) has accepted narrow
+independent reviews and all20 meaningful integration cases closed:13 Academic/Auth
+HTTP/PG/Redis,3 restricted-role Schedule PG and4 actual Mongo replica transaction
+cases. Existing successful cases were reused across causal fixes. Explicit status
+@PathVariable binding fixes a real GET500; Schedule first RELEASE now returns the
+same lessons as durable replay. Test fixture/lifecycle fixes do not change product
+contracts. All target-only deletion, replay/resolve races, session/password/grant
+fences and foreign-role/account/group preservation are qualified at these boundaries.
+
+Academic cases use Schedule/Attendance transport doubles; real participant DB cases
+close those local protocols separately. Four-service assembled UI deletion and open
+access withdrawal are still pending, so whole runtime/API compatibility is not PASS.
+SOURCEv10, client and Vue UI are integrated; four source-matched64f bootJARs
+are preserved. Live-delivery changes below require new Academic/Notification JARs. Raw disk guard exits/no-XML UNKNOWN
+and the first RELEASE mismatch remain evidence; no successful delete was repeated.
+CI/OpenAPI Drift remains manual/PAUSED; no workflow was dispatched.
+
+
+### API-007 live invalidation — source accepted, socket runtime pending
+
+Existing Academic v1 `group.updated` adds optional `payload.affected_user_ids`
+only for canonical completed deletion. Producer freezes the exact membership,
+headman/helper and current/legacy teacher-assignment union before erase in the
+same transactional outbox. Other callers omit the optional list. Existing schema
+permits unknown properties; schemas/validators are test resources, not embedded
+runtime validators. Auth/Schedule/Attendance/shared/proto code unchanged from64f;
+existing matched Auth/Schedule/Attendance JARs remain usable. Academic and
+Notification production code changed, so both require matching new JARs.
+
+Existing fanout exchange `rut-uit.events`, empty routing key and envelope type
+`group.updated`, existing realm-scoped
+Notification web events queue/consumer and Mongo idempotency remain. Consumer
+validates source/version/positive long IDs, claims in the Mongo transaction,
+and sends hidden personal `/topic/user/{uid}` hints only after commit. Socket
+payload contains only group_id as decimal string; recipient lists never leave
+Notification. No notification history/toast/push or new mobile business operation.
+Per-recipient socket failure does not suppress the next recipient. Durable outbox/
+claim/replay rules remain; real socket delivery is a separate runtime gate.
+
+WEB reuses live refresh; PWA/TMA active reads now refresh without remounting the
+same owner or losing drafts/unknown export requestId. Typed existing WS-ticket
+WRONG_ROLE403 enters normal bounded admission; generic close adds no Auth POST
+or blind retry. Known lost scope retires private projections, transient503 keeps
+pending export ownership. Source8e83 integratedb039, full review +F1 recheck PASS;
+55 client behavior cases,6 Notification units,2 actual Academic PG/Auth and1 actual
+Mongo transaction PASS. F1 original failure and test/environment setup failures
+retained; successful unchanged behavior was reused. Actual same-realm socket and
+one UI group deletion remain pending. No PWA/TMA endpoint removed or newly exposed;
+WebPush unchanged. CI/OpenAPI remain manual/PAUSED.
+
+
+API-007 readiness update: matchingAcademic/Notification/MobileBFF8e83 ready,
+Root1530 runtimeinputs equal31a5; Auth/Schedule/Attendance64f reused by closure.
+No endpoint/protobuf/backend delta for981+2d/58+fb UI fixes. Runtime12/callback/
+calendar fixture and six-view cohort reviewedsource, noactualstart/delete. Auth
+commit unselects matchinggrant/sessionVersion+1; entireSID neednot be revoked.
+NaturalTMAreadmission mayproducefreshsameactorSID, bothold/newownedSID cleanup
+mustbe accounted separately. ActualUI/WS compatibility remains gated bycapacity.
+
+
+## 2026-10-25 — Angular retirement / execution placement
+
+Angular source/dependency/build cleanup и WEB lazy-module recovery не меняют backend
+endpoints, payloads, grants или API compatibility PWA/TMA. Current1530 backend inputs
+и matching JARs сохраняются;20 group boundary/live checks переиспользованы. Полный
+numeric-preview/password/originalUUID/result/passive6 withdrawal/foreign-preservation
+UI gate перенесён на отдельную Ubuntu владельца и остаётся NOT RUN до его вывода.
+Никаких cloud group grants/delete ради закрытия gate. Portable launchers и fresh
+synthetic local config проверяются отдельно; cloud DB/secrets/keys не экспортируются.
+
+
+25октября2026, доставка без нового endpoint: confirmedcommonNginx MIME PDFmoduleworker
+вWEB/PWA/TMA исправлен config-only0664fecbf/106aefbb9. Standard MIMEtable сохранена,
+mjs JavaScript +immutable/404; существующие API/payload/grants не меняются.
+AppJS/workerbytes не пересобираются; actualservedHTTPrecheck ведётся отдельно.
+
+Actual serving recheck240a1b2a: MIME/cache/404 PASS WEB/PWA/TMA; native PWA HTTP Auth/API/STOMP PASS, WEB bounded qualification с raw test FAIL сохранена. Endpoint/payload/grants изменений в этом пакете нет. HTTPS/provider/SW lifecycle не засчитаны.

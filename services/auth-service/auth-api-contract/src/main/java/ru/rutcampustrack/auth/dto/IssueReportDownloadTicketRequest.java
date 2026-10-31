@@ -295,6 +295,10 @@ public record IssueReportDownloadTicketRequest(
                 append(canonical, adminUsers.roleStatus());
                 appendSorts(canonical, adminUsers.sorts());
                 append(canonical, adminUsers.format().code());
+                if (adminUsers.groupId() != null) {
+                    append(canonical, "groupId");
+                    append(canonical, adminUsers.groupId());
+                }
             }
             case ADMIN_GROUP_ATTENDANCE -> {
                 append(canonical, adminGroupAttendance.semesterId());
@@ -401,8 +405,22 @@ public record IssueReportDownloadTicketRequest(
             @Pattern(regexp = "ACTIVE|EXPELLED|SUSPENDED|ARCHIVED") String status,
             @Pattern(regexp = "ACTIVE|EXPELLED|GRADUATED|SUSPENDED|DISMISSED|ARCHIVED")
                     String roleStatus,
+            @com.fasterxml.jackson.annotation.JsonInclude(
+                            com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL)
+                    @Positive
+                    Long groupId,
             @Size(max = 8) List<@NotNull @Valid RegistrySort> sorts,
             @NotNull ReportDownloadFormat format) {
+        public AdminUsersParameters(
+                String search,
+                String role,
+                String status,
+                String roleStatus,
+                List<RegistrySort> sorts,
+                ReportDownloadFormat format) {
+            this(search, role, status, roleStatus, null, sorts, format);
+        }
+
         public AdminUsersParameters {
             sorts = immutable(sorts);
         }

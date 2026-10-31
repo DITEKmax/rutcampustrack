@@ -1,0 +1,18 @@
+{
+  "batch": 2,
+  "beforeFreeBytes": 5963792384,
+  "afterFreeBytes": 6356365312,
+  "actualFreeIncreaseBytes": 392572928,
+  "deletedPaths": [
+    "/workspace/rct-worktrees/device-api/services/api-gateway/build/libs/api-gateway-0.1.0.jar",
+    "/workspace/rct-worktrees/device-api/services/academic-service/academic-app/build/libs/academic-app-0.1.0.jar",
+    "/workspace/rct-worktrees/device-api/services/auth-service/auth-app/build/libs/auth-app-0.1.0.jar",
+    "/workspace/rct-worktrees/runtime-stand/services/document-renderer-service/document-renderer-app/build/libs/document-renderer-app-0.1.0.jar",
+    "/workspace/rct-pr3-tooling/npm-cache/_cacache"
+  ],
+  "count": 5,
+  "originalJars": "SHAretained",
+  "mainNpmCache": "preserved",
+  "minimumMet": false,
+  "atUnix": 1792909861.296235
+}

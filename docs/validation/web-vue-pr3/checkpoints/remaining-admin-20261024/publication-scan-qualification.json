@@ -1,0 +1,18 @@
+{
+  "rulesAndIgnores": "unchanged",
+  "stagedScan": {
+    "exit": 0,
+    "findings": 0,
+    "path": "/workspace/rct-pr3-runtime/restore-20261024/live-profile-staged-gitleaks.json"
+  },
+  "commitScan": {
+    "range": "888667e32..a851d5cf7",
+    "exit": 1,
+    "findings": 1,
+    "rule": "generic-api-key",
+    "file": "frontends/web-vue/src/features/admin/group-deletion-state.test.ts",
+    "introducedCommit": "ec6f6c1d6c1c06e7025f86f9a695e41e9b68e434",
+    "classification": "NONSECRET: literal UUID in a unit test used as operation Idempotency-Key; no credential/provider, never a runtime actor identifier. Actual source line checked. Native FAIL retained; no rule/ignore/history/source changes made to hide it."
+  },
+  "originalThreeMapFindings": "Resolved and published before888; no repeat needed."
+}

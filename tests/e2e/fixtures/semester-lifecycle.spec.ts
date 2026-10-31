@@ -1,7 +1,13 @@
+import { localSpecialLane, localSpecialService, type LocalSpecialLane } from './local-special';
+import { diagnosticCase } from './diagnostic-events';
+import { retainFirstFailure } from './failed-case-diagnostics';
+import { createPhaseBudget } from './reconciliation-phase-budget';
+import { createInitialReadiness } from './reconciliation-readiness';
+import { createDlqWitness, observeRetainedDlq, readDlqCounters } from './reconciliation-dlq-observation';
 import { terminal as observeTerminal, assertOwnedSemesterUi } from './semester-lifecycle-observers';
 import { createHash, randomUUID } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
-import { lstatSync, readFileSync, writeFileSync } from 'node:fs';
+import { closeSync, constants, fstatSync, fsyncSync, lstatSync, openSync, readFileSync, readSync, realpathSync, writeFileSync } from 'node:fs';
 import { isAbsolute, join, resolve } from 'node:path';
 import { isIP } from 'node:net';
 import { setTimeout as delay } from 'node:timers/promises';
@@ -35,6 +41,77 @@ import {
 } from './owned-container-identity';
 import { normalizeDockerHealthTimestamp, observeHealth, withoutGatewayAdmissionDiagnostic, writeHealthDiagnostic } from './semester-health-diagnostic';
 type Row = Record<string, any>;
+
+type ReconciliationNativeRecord = {
+  action: string;
+  reason: 'TIMEOUT' | 'OUTPUT_BOUND' | 'EXIT_NONZERO' | 'UNKNOWN';
+  timeoutMs: number;
+  elapsedMs: number;
+  outputBoundBytes: number;
+  exitStatus: number | null;
+  phase: string;
+  cleanup: boolean;
+  cleanupStage: string | null;
+  terminalReported: boolean;
+};
+
+// Closed metadata only: argv, input, env, native output and error text never enter a receipt.
+function reconciliationNativeRecord(
+  args: string[], compose: string[], pins: Record<string, Row>, error: unknown,
+  timeoutMs: number, elapsedMs: number, phase: string, cleanup: boolean, cleanupStage: string,
+): ReconciliationNativeRecord {
+  let action = 'OTHER';
+  const tail = args.slice(compose.length);
+  const isCompose = compose.length > 0 && compose.every((value, index) => args[index] === value);
+  const same = (values: string[], expected: string[]) =>
+    values.length === expected.length && values.every((value, index) => value === expected[index]);
+  for (const [service, label] of [['attendance-service', 'ATTENDANCE'], ['schedule-service', 'SCHEDULE']]) {
+    if (args[0] === 'inspect' && args.length === 4 && args[1] === '--format' && args[3] === pins[service]?.id) {
+      action = `${label}_INSPECT`;
+    } else if (isCompose && same(tail, ['stop', '--timeout', '10', service])) {
+      action = `${label}_STOP`;
+    } else if (isCompose && same(tail, ['up', '-d', '--no-build', '--no-recreate', '--no-deps', '--pull', 'never', service])) {
+      action = `${label}_START`;
+    } else if (isCompose && tail.length === 11 &&
+      same(tail.slice(0, 9), ['up', '-d', '--no-build', '--no-recreate', '--no-deps', '--pull', 'never', '--wait', '--wait-timeout']) &&
+      /^(?:[1-9]|[1-9][0-9]|1[01][0-9]|120)$/.test(tail[9]) && tail[10] === service) {
+      action = `${label}_START_WAIT`;
+    }
+  }
+  for (const [service, label] of [['rabbitmq', 'RABBITMQ'], ['academic-service', 'ACADEMIC']]) {
+    if (args[0] === 'inspect' && args.length === 4 && args[1] === '--format' && args[3] === pins[service]?.id)
+      action = `${label}_INSPECT`;
+  }
+  if (same(args, ['exec', '-i', '-e', 'PGPASSWORD', pins['postgres-schedule']?.id, 'psql', '-X', '-qAt', '-U', 'rct_user', '-d', 'schedule_db', '-v', 'ON_ERROR_STOP=1'])) action = 'SCHEDULE_SQL';
+  if (same(args, ['exec', '-i', '-e', 'RCT_MONGO_PASSWORD', pins['mongo-attendance']?.id, 'mongosh', '--quiet', '--nodb', '--file', '/dev/stdin'])) action = 'ATTENDANCE_MONGO';
+  let code: unknown;
+  let status: unknown;
+  if (typeof error === 'object' && error !== null) {
+    try {
+      code = Object.getOwnPropertyDescriptor(error, 'code')?.value;
+      status = Object.getOwnPropertyDescriptor(error, 'status')?.value;
+    } catch { /* Unknown stays closed; never evaluate accessors. */ }
+  }
+  const exitStatus = typeof status === 'number' && Number.isInteger(status) && status >= -128 && status <= 255 ? status : null;
+  const phases = ['SETUP', 'CONTROLLED_CLOSE', 'STRANDED', 'PENDING_ARCHIVE', 'EXACT_REPLAY', 'DUPLICATE'];
+  const stages = ['RESTART', 'RECOVER', 'PUBLISH', 'APPLY', 'ARCHIVE', 'RESTORE', 'ACTIVATE', 'VERIFY', 'DLQ', 'SETTLE', 'CLOCK', 'DISPOSE', 'WRITE'];
+  return {
+    action,
+    reason: code === 'ETIMEDOUT' ? 'TIMEOUT' : code === 'ENOBUFS' ? 'OUTPUT_BOUND' : exitStatus !== null && exitStatus !== 0 ? 'EXIT_NONZERO' : 'UNKNOWN',
+    timeoutMs: Math.max(1, Math.min(420000, Math.trunc(timeoutMs))),
+    elapsedMs: Math.max(0, Math.min(86400000, Math.trunc(elapsedMs))),
+    outputBoundBytes: 262144,
+    exitStatus,
+    phase: phases.includes(phase) ? phase : 'OTHER',
+    cleanup,
+    cleanupStage: cleanup ? stages.map((stage) => `CLEANUP_SEMESTER_${stage}`).includes(cleanupStage) ? cleanupStage : 'OTHER' : null,
+    terminalReported: false,
+  };
+}
+
+// Playwright clears outputDir before loading tests; strict admission runs in beforeEach.
+let local: ReturnType<typeof localSpecialLane>;
+
 
 type SemesterStage =
   | 'SETUP'
@@ -350,6 +427,11 @@ async function inactiveStudentHistory(request: APIRequestContext, student: Actor
 const promotionStartedAt = new WeakMap<object, number>();
 test.beforeEach(async ({}, info) => {
   promotionStartedAt.set(info, performance.now());
+  local = undefined;
+  const localLane = process.env.RCT_LOCAL_SPECIAL_LANE;
+  local = localSpecialLane((localLane ?? 'semester-metadata') as LocalSpecialLane);
+  if (local && !['semester-metadata', 'subject-deletion', 'semester-reconciliation', 'semester-archive'].includes(localLane ?? ''))
+    throw new Error('Local semester lane mismatch');
 });
 
 function promotionForeignCohortsSafe(groups: Row[], cutoff: string): boolean {
@@ -480,7 +562,7 @@ async function ownedHistoricalPromotion(
   };
   const today = natural();
   const root = resolve(__dirname, '../../..'),
-    envFile = join(root, 'tests/e2e/.env.ci');
+    envFile = (local ? join(local.run, 'synthetic.env') : join(root, 'tests/e2e/.env.ci'));
   const envStat = lstatSync(envFile);
   requireValue(
     envStat.isFile() &&
@@ -533,8 +615,8 @@ async function ownedHistoricalPromotion(
   };
   // Successful application recovery leaves the original databases stopped.
   const recoveryProject = process.env.RCT_APP_RECOVERY_PROJECT;
-  const project = recoveryProject ?? 'rct-e2e';
-  if (recoveryProject !== undefined) {
+  const project = local?.databaseProject ?? recoveryProject ?? 'rct-e2e';
+  if (!local && recoveryProject !== undefined) {
     const runId = process.env.GITHUB_RUN_ID;
     const runAttempt = process.env.GITHUB_RUN_ATTEMPT;
     requireValue(
@@ -545,7 +627,7 @@ async function ownedHistoricalPromotion(
     );
   }
   const ids = native(
-    recoveryProject === undefined
+    local ? ['ps', '-q', '--filter', `label=com.docker.compose.project=${project}`, '--filter', 'label=com.docker.compose.service=postgres-academic', '--filter', `label=rct.local.stage17=${local.nonce}`] : recoveryProject === undefined
       ? [
           'compose',
           '--env-file',
@@ -587,12 +669,13 @@ async function ownedHistoricalPromotion(
       ]),
     );
   const pin = inspect();
+  if (local) requireValue(localSpecialService(local, 'postgres-academic').id === pin.id, 'Local promotion service mismatch');
   requireValue(
     /^[0-9a-f]{64}$/.test(pin.id) &&
       pin.id.startsWith(ids[0]) &&
       pin.labels?.['com.docker.compose.project'] === project &&
-      (recoveryProject === undefined ||
-        pin.labels?.['io.rutcampustrack.recovery'] === 'disposable') &&
+      (local ? localSpecialService(local, 'postgres-academic').id === pin.id : (recoveryProject === undefined ||
+        pin.labels?.['io.rutcampustrack.recovery'] === 'disposable')) &&
       pin.labels?.['com.docker.compose.service'] === 'postgres-academic' &&
       pin.configuredImage === 'postgres:16' &&
       pin.running === true &&
@@ -1059,12 +1142,109 @@ async function ownedHistoricalPromotion(
   }
 }
 
+/** Exact comparison facts only; raw identities, digests, counts and metadata never leave the case. */
+function semesterMetadataIsolationFacts(known: Row, current: Row) {
+  const counts = {
+    scheduleTemplatesEqual: current?.counts?.scheduleTemplates === known.counts.scheduleTemplates,
+    oneOffLessonsEqual: current?.counts?.oneOffLessons === known.counts.oneOffLessons,
+    lessonsEqual: current?.counts?.lessons === known.counts.lessons,
+    assignmentsEqual: current?.counts?.assignments === known.counts.assignments,
+    homeworksEqual: current?.counts?.homeworks === known.counts.homeworks,
+    attendanceMarksEqual: current?.counts?.attendanceMarks === known.counts.attendanceMarks,
+    studentRequestsEqual: current?.counts?.studentRequests === known.counts.studentRequests,
+  };
+  return {
+    semesterIdEqual: current?.semesterId === known.semesterId,
+    digestEqual: current?.previewDigest === known.previewDigest,
+    stateVersionEqual: current?.stateVersion === known.stateVersion,
+    priorStateEqual: current?.priorState === known.priorState,
+    countsEqual: Object.values(counts).every((equal) => equal),
+    ...counts,
+  };
+}
+
+/** Closed local diagnostic only; retention failure must never replace the original oracle. */
+function retainMetadataOracle(
+  info: TestInfo,
+  known: Row,
+  current: Row,
+  countKeys: readonly string[],
+): void {
+  let descriptor: number | undefined;
+  try {
+    if (!local || process.platform !== 'linux' || process.env.RCT_LOCAL_STAGE17_MODE !== 'special13' ||
+        process.env.RCT_LOCAL_SPECIAL_COHORT !== 'lifecycle' ||
+        process.env.RCT_LOCAL_SPECIAL_LANE !== 'semester-metadata' || process.env.RCT_LOCAL_SPECIAL_PHASE !== 'main' ||
+        process.env.RCT_LOCAL_SPECIAL_DISCOVERY || process.env.RCT_LOCAL_SPECIAL_PREPARATION) return;
+    const root = resolve(__dirname, '../../..');
+    const run = resolve(root, '.agent/evidence/local-runs', `rct-local-stage17-${local.nonce.slice(0, 12)}`);
+    const artifacts = join(local.laneRun, 'artifacts');
+    const manifest = join(run, 'owner.json');
+    if (local.root !== root || local.run !== run || local.laneRun !== join(run, 'lanes/semester-metadata') ||
+        !/^[a-f0-9]{24}$/.test(local.nonce) || local.project !== `rct-local-stage17-${local.nonce.slice(0, 12)}` ||
+        process.env.RCT_LOCAL_STAGE17_NONCE !== local.nonce || process.env.RCT_LOCAL_STAGE17_MANIFEST !== manifest ||
+        process.env.RCT_SEMESTER_LIFECYCLE_RUN !== local.laneRun || info.project.outputDir !== artifacts) return;
+    for (const path of [run, join(run, 'lanes'), local.laneRun, artifacts]) {
+      const stat = lstatSync(path);
+      if (!stat.isDirectory() || stat.isSymbolicLink() || stat.uid !== process.getuid?.() ||
+          (stat.mode & 0o777) !== 0o700 || realpathSync(path) !== path) return;
+    }
+    const boundedFile = (path: string, maximum: number, mode?: number): Buffer => {
+      const before = lstatSync(path);
+      const fd = openSync(path, constants.O_RDONLY | constants.O_NOFOLLOW | constants.O_NONBLOCK);
+      try {
+        const stat = fstatSync(fd);
+        const identity = (row: typeof stat) => [row.dev, row.ino, row.mode, row.uid, row.size, row.mtimeMs, row.ctimeMs];
+        requireValue(stat.isFile() && !before.isSymbolicLink() && stat.nlink === 1 && stat.uid === process.getuid?.() &&
+          (mode === undefined || (stat.mode & 0o777) === mode) && stat.size > 0 && stat.size <= maximum &&
+          realpathSync(path) === path && JSON.stringify(identity(before)) === JSON.stringify(identity(stat)),
+        'Metadata witness file ownership mismatch');
+        const bytes = Buffer.alloc(maximum + 1);
+        const count = readSync(fd, bytes, 0, bytes.length, 0);
+        requireValue(count === stat.size && JSON.stringify(identity(stat)) === JSON.stringify(identity(fstatSync(fd))) &&
+          JSON.stringify(identity(stat)) === JSON.stringify(identity(lstatSync(path))),
+        'Metadata witness file changed while reading');
+        return bytes.subarray(0, count);
+      } finally { closeSync(fd); }
+    };
+    const owner = JSON.parse(boundedFile(manifest, 8 * 1024 ** 2, 0o600).toString('utf8'));
+    if (owner.root !== root || owner.run !== run || owner.project !== local.project || owner.nonce !== local.nonce ||
+        owner.uid !== process.getuid?.() || owner.mode !== 'special13' || owner.special_cohort !== 'lifecycle' ||
+        typeof owner.source_sha !== 'string' || !/^[a-f0-9]{40}$/.test(owner.source_sha)) return;
+    const source = resolve(__dirname, 'semester-lifecycle.spec.ts');
+    const sourceDigest = owner.sources?.['tests/e2e/fixtures/semester-lifecycle.spec.ts'];
+    if (typeof sourceDigest !== 'string' || !/^[a-f0-9]{64}$/.test(sourceDigest) ||
+        createHash('sha256').update(boundedFile(source, 1024 ** 2)).digest('hex') !== sourceDigest) return;
+    const witness = {
+      schema: 'RCT_LOCAL_METADATA_ORACLE_V1', sourceRevision: owner.source_sha,
+      runBinding: createHash('sha256').update(run, 'utf8').digest('hex'),
+      digestEqual: current?.previewDigest === known.previewDigest,
+      stateVersionEqual: current?.stateVersion === known.stateVersion,
+      countsEqual: countKeys.every(key => current?.counts?.[key] === known.counts[key]),
+      priorStateEqual: current?.priorState === known.priorState,
+    };
+    descriptor = openSync(join(artifacts, 'metadata-oracle.private.json'),
+      constants.O_WRONLY | constants.O_CREAT | constants.O_EXCL | constants.O_NOFOLLOW, 0o600);
+    const retained = fstatSync(descriptor);
+    requireValue(retained.isFile() && retained.nlink === 1 && retained.uid === process.getuid?.() &&
+      (retained.mode & 0o777) === 0o600, 'Metadata witness must remain a private owned file');
+    writeFileSync(descriptor, `${JSON.stringify(witness)}\n`);
+    fsyncSync(descriptor);
+  } catch { /* Missing or unsafe diagnostics never mask the original digest/version assertion. */ }
+  finally {
+    if (descriptor !== undefined) {
+      try { closeSync(descriptor); } catch { /* Preserve the original assertion outcome. */ }
+    }
+  }
+}
+
 async function ownedSemesterMetadataAndDeletion(
   page: import('@playwright/test').Page,
   admin: Actor,
   caseEnd: number,
   currentSemesterId: number,
   teachingInstant: Date,
+  info: TestInfo,
 ): Promise<void> {
   // Keep the existing promotion's main work and original recovery reserve untouched.
   requireValue(
@@ -1433,6 +1613,10 @@ async function ownedSemesterMetadataAndDeletion(
       'GET',
       `/api/academic/semesters/${currentSemesterId}/delete-preview`,
     );
+    retainMetadataOracle(info, known, unchangedPreview, countItems.map(([key]) => key));
+    const metadataFacts = semesterMetadataIsolationFacts(known, unchangedPreview);
+    if (!metadataFacts.digestEqual || !metadataFacts.stateVersionEqual)
+      retainFirstFailure(info, 'SEMESTER_METADATA_ISOLATION', metadataFacts);
     requireValue(
       unchangedPreview.previewDigest === known.previewDigest &&
         unchangedPreview.stateVersion === known.stateVersion,
@@ -1582,14 +1766,16 @@ async function ownedSemesterMetadataAndDeletion(
   if (cleanupFailure) throw cleanupFailure.error;
 }
 
-test('FULL admin archives and restores the disposable CI semester through real participants', async ({
+test('FULL admin archives and restores the disposable CI semester through real participants', { annotation: diagnosticCase('SEMESTER_ARCHIVE_RESTORE') }, async ({
   playwright,
   page,
 }, info) => {
+  localSpecialLane('semester-archive');
   requirePrivateArtifacts(info);
   test.setTimeout(420000);
   const browserLoginCutoff = performance.now() + 270000;
   const run = process.env.RCT_SEMESTER_LIFECYCLE_RUN;
+  requireValue(!local || run === local.laneRun, 'Local semester checkpoint mismatch');
   requireValue(
     run && isAbsolute(run),
     'Semester lifecycle requires an absolute private run directory',
@@ -2409,6 +2595,7 @@ test('FULL admin manages owned semester metadata and historical group promotion 
   playwright,
   page,
 }, info) => {
+  localSpecialLane('semester-metadata');
   requirePrivateArtifacts(info);
   test.setTimeout(420000);
   const promotionCaseEnd = promotionStartedAt.get(info)! + info.timeout - 10000;
@@ -2422,6 +2609,7 @@ test('FULL admin manages owned semester metadata and historical group promotion 
     return Math.min(cap, remaining);
   };
   const run = process.env.RCT_SEMESTER_LIFECYCLE_RUN;
+  requireValue(!local || run === local.laneRun, 'Local semester checkpoint mismatch');
   requireValue(run && isAbsolute(run), 'Independent admin UI requires its private run directory');
   for (const path of [run, join(run, 'artifacts')]) {
     const stat = lstatSync(path);
@@ -2648,6 +2836,7 @@ test('FULL admin manages owned semester metadata and historical group promotion 
       promotionCaseEnd,
       currentSemesterId,
       clock.instant,
+      info,
     );
     await ownedHistoricalPromotion(page, request, admin, promotionCaseEnd, currentSemesterId);
   } catch (error) {
@@ -2684,10 +2873,12 @@ test('FULL admin manages owned semester metadata and historical group promotion 
 test('FULL admin reconciles one exact stranded close before archive completion', async ({
   playwright,
 }, info) => {
+  localSpecialLane('semester-reconciliation');
   requirePrivateArtifacts(info);
-  test.setTimeout(420000);
+  test.setTimeout(510000);
   const end = performance.now() + info.timeout - Math.max(info.duration, 10000);
   const run = process.env.RCT_SEMESTER_LIFECYCLE_RUN;
+  requireValue(!local || run === local.laneRun, 'Local semester checkpoint mismatch');
   requireValue(run && isAbsolute(run), 'Reconciliation requires a private run directory');
   for (const path of [run, join(run, 'artifacts')]) {
     const stat = lstatSync(path);
@@ -2711,7 +2902,7 @@ test('FULL admin reconciles one exact stranded close before archive completion',
   );
   const clock = unchangedClock();
   const root = resolve(__dirname, '../../..');
-  const envFile = join(root, 'tests/e2e/.env.ci');
+  const envFile = (local ? join(local.run, 'synthetic.env') : join(root, 'tests/e2e/.env.ci'));
   const envStat = lstatSync(envFile);
   requireValue(
     envStat.isFile() &&
@@ -2990,15 +3181,9 @@ test('FULL admin reconciles one exact stranded close before archive completion',
     readinessFailureLog: null as ReadinessLog | null,
     archiveReadinessLastRead: null as {
       httpStatus: number | null;
-      transport:
-        | 'TLS_CERTIFICATE'
-        | 'TLS_HANDSHAKE'
-        | 'ECONNRESET'
-        | 'ECONNREFUSED'
-        | 'REQUEST_CONTEXT_DISPOSED'
-        | 'REQUEST_TIMEOUT'
-        | 'UNKNOWN'
-        | null;
+      transport: NonNullable<
+        ReturnType<typeof safeNativePrimaryFailures>[number]['transportHint']
+      > | null;
       semesterMatches: boolean | null;
       priorStateActive: boolean | null;
       stateVersionMatches: boolean | null;
@@ -3049,39 +3234,53 @@ test('FULL admin reconciles one exact stranded close before archive completion',
   let producerDeadline = 0;
   let lessonClosed = false;
   let effectCaptured = false;
-  // Capture recovery shares the original absolute close/producer windows: it cannot reset them.
-  // Add30s for exact command/read callbacks, then the existing95s/35s effect settlement.
-  // Restart60s each, archive/restore30s each, authority15s and finalqueue/disposal15s remain.
-  const reserve = (next: { stop?: string; event?: boolean; archive?: boolean } = {}) => {
+  // Each current operation consumes its own reservation; every other abort obligation remains protected.
+  let captureCompleted = false;
+  let producerComplete = false;
+  const reservations = (next: { stop?: string; event?: boolean; archive?: boolean } = {}) => {
     const pending = new Set(stopped);
     if (next.stop) pending.add(next.stop);
-    return (
-      pending.size * 60000 +
-      ((eventAccepted || next.event) && !applied
-        ? (diagnostic.recoveryPublishAttempted ? 35000 : 95000) +
-          (effectCaptured
-            ? 0
-            : (lessonClosed
-                ? 0
-                : Math.max(0, (closeDeadline || performance.now() + 90000) - performance.now())) +
-              (producerDeadline ? Math.max(0, producerDeadline - performance.now()) : 10000) +
-              30000)
-        : 0) +
-      ((archiveStarted || next.archive) && !archived ? 30000 : 0) +
-      ((archiveStarted || next.archive) && !restored ? 30000 : 0) +
-      (authorityDirty || next.archive ? 15000 : 0) +
-      15000
-    );
+    const event = (eventAccepted || next.event) && !applied;
+    return {
+      ...(pending.has('attendance-service') ? { ATTENDANCE_RESTART: 60000 } : {}),
+      ...(pending.has('schedule-service') ? { SCHEDULE_RESTART: 60000 } : {}),
+      ...(event ? { EFFECT: diagnostic.recoveryPublishAttempted ? 35000 : 95000 } : {}),
+      ...(event && !captureCompleted ? {
+        ...(!lessonClosed ? { CLOSE: 90000 } : {}), ...(!producerComplete ? { PRODUCER: 10000 } : {}), CAPTURE: 30000,
+      } : {}),
+      ...((archiveStarted || next.archive) && !archived ? { ARCHIVE: 30000 } : {}),
+      ...((archiveStarted || next.archive) && !restored ? { RESTORE: 30000 } : {}),
+      ...(authorityDirty || next.archive ? { AUTHORITY: 15000 } : {}),
+      FINAL: 15000,
+    };
   };
+  const phaseBudget = createPhaseBudget(end, reservations, () => cleaning);
   const budget = (cap: number, next = {}, action = false) => {
-    const remaining = end - performance.now() - (cleaning ? 0 : reserve(next));
-    requireValue(remaining >= (action ? cap : 1000), 'Reconciliation cleanup reserve exhausted');
+    const value = phaseBudget.budget(cap, next, action);
     if (action) clock.assertUnchanged();
-    return Math.max(1, Math.min(cap, Math.floor(remaining)));
+    return value;
+  };
+  // Keep the existing2s request cap. A terminal's POST/poll/finalGET/idempotencyPOST
+  // all consume the same30s lease, rather than only protecting its poll timeout.
+  const leasedActor = (actor: Actor): Actor => Object.assign(Object.create(actor), {
+    call: async (...args: Parameters<Actor['call']>) => {
+      budget(2000, {}, true);
+      const value = await actor.call(...args);
+      phaseBudget.assertWithin();
+      return value;
+    },
+  });
+  const dlqWitness = createDlqWitness();
+  const initialReadiness = createInitialReadiness();
+  const nativeDiagnostic = {
+    schema: 'RCT_RECONCILIATION_NATIVE_V1',
+    main: null as ReconciliationNativeRecord | null,
+    cleanup: null as ReconciliationNativeRecord | null,
   };
   const nativeEnv = {
     PATH: process.env.PATH ?? '/usr/bin:/bin',
     LANG: 'C.UTF-8',
+    ...(process.env.DOCKER_HOST ? { DOCKER_HOST: process.env.DOCKER_HOST } : {}),
     RCT_E2E_TEACHING_CLOCK_DIR: process.env.RCT_E2E_TEACHING_CLOCK_DIR!,
   };
   let nativeFailure: { error: Error; report: () => void } | undefined;
@@ -3092,6 +3291,7 @@ test('FULL admin reconciles one exact stranded close before archive completion',
     cap = 5000,
   ): string => {
     const timeout = budget(cap);
+    const started = performance.now();
     try {
       return execFileSync('docker', args, {
         cwd: root,
@@ -3104,6 +3304,9 @@ test('FULL admin reconciles one exact stranded close before archive completion',
       });
     } catch (error) {
       const failure = new Error('Owned reconciliation command failed');
+      const closedFailure = reconciliationNativeRecord(args, compose, pins, error, timeout, performance.now() - started, diagnostic.phase, cleaning, cleanupStage);
+      if (cleaning) nativeDiagnostic.cleanup ??= closedFailure;
+      else nativeDiagnostic.main ??= closedFailure;
       if (!cleaning) {
         let code: unknown;
         let status: unknown;
@@ -3118,6 +3321,7 @@ test('FULL admin reconciles one exact stranded close before archive completion',
         nativeFailure = {
           error: failure,
           report: () => {
+            nativeDiagnostic.main = { ...closedFailure, terminalReported: true };
             const matches = (expected: (string | undefined)[]) =>
               args.length === expected.length &&
               args.every((value, index) => value === expected[index]);
@@ -3184,6 +3388,10 @@ test('FULL admin reconciles one exact stranded close before archive completion',
               ])
             ) {
               expect.soft(false, 'D9_NATIVE_ATTENDANCE_RESTART').toBe(true);
+            } else if (closedFailure.action === 'ATTENDANCE_START') {
+              expect.soft(false, 'D9_NATIVE_ATTENDANCE_START').toBe(true);
+            } else if (closedFailure.action === 'SCHEDULE_START') {
+              expect.soft(false, 'D9_NATIVE_SCHEDULE_START').toBe(true);
             } else {
               expect.soft(false, 'D9_NATIVE_OTHER').toBe(true);
             }
@@ -3223,7 +3431,7 @@ test('FULL admin reconciles one exact stranded close before archive completion',
       throw failure;
     }
   };
-  const compose = [
+  const compose = local ? ['compose', '-p', local.project, '-f', local.composeFile] : [
     'compose',
     '--env-file',
     envFile,
@@ -3256,7 +3464,7 @@ test('FULL admin reconciles one exact stranded close before archive completion',
     requireValue(
       current.id === pin.id &&
         current.image === pin.image &&
-        current.labels['com.docker.compose.project'] === 'rct-e2e' &&
+        current.labels['com.docker.compose.project'] === (local?.project ?? 'rct-e2e') &&
         current.labels['com.docker.compose.service'] === service,
       'Owned container identity changed',
     );
@@ -3423,7 +3631,7 @@ print(JSON.stringify({receipt,claims,acks,docs,other}));`;
   const broker = async (path: string, data?: unknown): Promise<any> => {
     const current = pins.rabbitmq;
     const ip =
-      current.networks.rct_e2e_private_net?.IPAddress ??
+      local ? current.networks[local.networkName]?.IPAddress : current.networks.rct_e2e_private_net?.IPAddress ??
       current.networks['rct-e2e_private_net']?.IPAddress;
     requireValue(
       typeof ip === 'string' && /^(?:10\.|172\.(?:1[6-9]|2\d|3[01])\.|192\.168\.)\d/.test(ip),
@@ -3557,10 +3765,13 @@ print(JSON.stringify({receipt,claims,acks,docs,other}));`;
       return unknown();
     }
   };
-  const restart = async (service: string, scheduleReturnedAt?: number) => {
+  const restartBody = async (service: string, scheduleReturnedAt?: number) => {
     if (!stopped.has(service)) return;
-    const restartEnd = performance.now() + budget(45000);
+    const resource = service === 'schedule-service' ? 'SCHEDULE_RESTART' : 'ATTENDANCE_RESTART';
+    const finalObservation = phaseBudget.deadline(resource)! <= performance.now();
+    const restartEnd = finalObservation ? performance.now() : performance.now() + budget(45000);
     const remaining = () => {
+      if (finalObservation) return 5000; // One bounded authoritative snapshot, never a new up/poll.
       const value = Math.floor(restartEnd - performance.now());
       requireValue(value > 0, 'Owned restart deadline exhausted');
       return value;
@@ -3660,6 +3871,12 @@ print(JSON.stringify({receipt,claims,acks,docs,other}));`;
         academicHealth.fresh === true
       );
     };
+    if (finalObservation) {
+      recordRestartFailure(before);
+      requireValue(recovered(before), 'Same owned service must recover');
+      stopped.delete(service);
+      return;
+    }
     try {
       docker(
         [
@@ -3710,6 +3927,11 @@ print(JSON.stringify({receipt,claims,acks,docs,other}));`;
     requireValue(performance.now() <= restartEnd, 'Owned restart deadline exhausted');
     stopped.delete(service);
   };
+  const restart = async (service: string, scheduleReturnedAt?: number) => {
+    if (!stopped.has(service)) return;
+    const resource = service === 'schedule-service' ? 'SCHEDULE_RESTART' : 'ATTENDANCE_RESTART';
+    await phaseBudget.run(resource, () => restartBody(service, scheduleReturnedAt), true);
+  };
   const request = await playwright.request.newContext({
     baseURL: 'https://localhost:8443',
     ignoreHTTPSErrors: false,
@@ -3759,6 +3981,10 @@ FROM schedule_semester_archive_effect_ledger e WHERE e.semester_id=${scope.semes
 AND e.event_type='lesson.closed' AND e.event_payload#>>'{payload,lesson_id}'='${scope.lesson}' LIMIT 2) t`);
   const effect = () => {
     const rows = effectRows();
+    if (phaseBudget.witness.recover.stage === 'EFFECT') {
+      phaseBudget.witness.recover.effectRows = rows.length === 0 ? 'ZERO' : rows.length === 1 ? 'ONE' : 'MANY';
+      phaseBudget.witness.recover.effectGuard = false;
+    }
     requireValue(rows.length === 1, 'One exact owned close is required');
     const row = rows[0];
     requireValue(
@@ -3801,16 +4027,19 @@ AND e.event_type='lesson.closed' AND e.event_payload#>>'{payload,lesson_id}'='${
       envelope = bytes;
       scope.event = row.event_id;
     }
+    if (phaseBudget.witness.recover.stage === 'EFFECT') phaseBudget.witness.recover.effectGuard = true;
     return row;
   };
   const consumer = () => {
     const value = mongo();
+    if (phaseBudget.witness.recover.stage === 'CONSUMER') phaseBudget.witness.recover.consumerGuard = false;
     requireValue(
       value.docs.length <= 500 && value.other.length <= 500 && value.acks.length <= 3,
       'Consumer projection must be bounded',
     );
     if (otherBefore === undefined) otherBefore = value.other;
     else equal(value.other, otherBefore, 'Unrelated attendance changed');
+    if (phaseBudget.witness.recover.stage === 'CONSUMER') phaseBudget.witness.recover.consumerGuard = true;
     return value;
   };
   const captureDelayedRetry = async () => {
@@ -3943,7 +4172,7 @@ AND e.event_type='lesson.closed' AND e.event_payload#>>'{payload,lesson_id}'='${
       diagnostic.exactDlqEnvelope = true;
     }
   };
-  const publish = async (duplicate = false) => {
+  const publishBody = async (duplicate = false) => {
     budget(5000, {}, true);
     for (const service of ['attendance-service', 'schedule-service', 'rabbitmq']) {
       const current = identity(service);
@@ -3960,6 +4189,7 @@ AND e.event_type='lesson.closed' AND e.event_payload#>>'{payload,lesson_id}'='${
       requireValue(!diagnostic.recoveryPublishAttempted, 'Only one recovery publish is allowed');
       await stranded();
       diagnostic.recoveryPublishAttempted = true;
+      phaseBudget.narrow('EFFECT', 35000);
     } else {
       requireValue(
         applied && archived && !diagnostic.duplicateAttempted,
@@ -3975,6 +4205,10 @@ AND e.event_type='lesson.closed' AND e.event_payload#>>'{payload,lesson_id}'='${
       payload_encoding: 'base64',
     });
     requireValue(sent.routed === true, 'Exact targeted copy must route to Attendance');
+  };
+  const publish = async (duplicate = false) => {
+    if (duplicate) return publishBody(true);
+    return phaseBudget.run('EFFECT', () => publishBody(false));
   };
   let readinessRequest: { id: string; since: string; until: string } | undefined;
   const captureReadinessFailure = () => {
@@ -4262,7 +4496,7 @@ AND e.event_type='lesson.closed' AND e.event_payload#>>'{payload,lesson_id}'='${
     );
     diagnostic.replayFailureLog = { attendance, schedule };
   };
-  const awaitApplied = async () => {
+  const awaitAppliedBody = async () => {
     await expect
       .poll(
         () => {
@@ -4349,6 +4583,7 @@ AND e.event_type='lesson.closed' AND e.event_payload#>>'{payload,lesson_id}'='${
     applied = true;
     diagnostic.appliedAfterReplay = diagnostic.recoveryPublishAttempted;
   };
+  const awaitApplied = () => phaseBudget.run('EFFECT', awaitAppliedBody);
   const recoverOwnClose = async () => {
     requireValue(
       closeCommand && eventAccepted,
@@ -4380,7 +4615,7 @@ AND e.event_type='lesson.closed' AND e.event_payload#>>'{payload,lesson_id}'='${
     }
     const isClosed = async () => {
       const rows = Object.values(
-        (await closeCommand!.actor.call('GET', closeCommand!.lessonsPath))._embedded ?? {},
+        (await leasedActor(closeCommand!.actor).call('GET', closeCommand!.lessonsPath))._embedded ?? {},
       ).flat();
       if (!cleaning) {
         const target = (rows as Row[]).find((row) => Number(row.id) === scope.lesson);
@@ -4396,37 +4631,58 @@ AND e.event_type='lesson.closed' AND e.event_payload#>>'{payload,lesson_id}'='${
               : 'OTHER_OR_ABSENT',
         };
       }
-      return rows.some(
+      const closed = rows.some(
         (row: any) =>
           Number(row.id) === scope.lesson &&
           Number(row.groupId) === scope.group &&
           Number(row.semesterId) === scope.semester &&
           row.status === 'CLOSED',
       );
+      phaseBudget.witness.recover.closeStatus = closed ? 'CLOSED' : 'OTHER';
+      return closed;
     };
-    // One exact final read is still useful if the original wait expired just before cleanup.
-    if (!(await isClosed())) {
-      const remaining = Math.min(budget(90000), Math.floor(closeDeadline - performance.now()));
-      requireValue(remaining > 0, 'Original close recovery window exhausted');
-      await expect
-        .poll(isClosed, {
-          timeout: remaining,
-          message: 'Exact owned lesson closes in its original window',
-        })
-        .toBe(true);
+    try {
+      phaseBudget.recoverStage('CLOSE_GET');
+      const closed = await phaseBudget.run('CLOSE', isClosed, true);
+      if (!closed) await phaseBudget.run('CLOSE', async () => {
+        const remaining = Math.min(budget(90000), Math.floor(closeDeadline - performance.now()));
+        requireValue(remaining > 0, 'Original close recovery window exhausted');
+        await expect.poll(isClosed, {timeout: remaining, message: 'Exact owned lesson closes in its original window'}).toBe(true);
+      });
+      phaseBudget.recoverPassed();
+      lessonClosed = true;
+      if (!producerDeadline) {
+        producerDeadline = performance.now() + 10000;
+        phaseBudget.bind('PRODUCER', producerDeadline);
+      }
+      phaseBudget.recoverStage('PRODUCER');
+      const isSent = () => {
+        const rows = effectRows();
+        phaseBudget.witness.recover.producerRows = rows.length === 0 ? 'ZERO' : rows.length === 1 ? 'ONE' : 'MANY';
+        const sent = rows.some((row) => row.producer?.status === 'sent');
+        phaseBudget.witness.recover.producerSent = sent;
+        return sent;
+      };
+      const sent = await phaseBudget.run('PRODUCER', isSent, true);
+      if (!sent) await phaseBudget.run('PRODUCER', async () => {
+        const remaining = Math.min(budget(10000), Math.floor(producerDeadline - performance.now()));
+        requireValue(remaining > 0, 'Original producer recovery window exhausted');
+        await expect.poll(isSent, {timeout: remaining, message: 'Exact original close producer reaches SENT'}).toBe(true);
+      });
+      phaseBudget.recoverPassed();
+      producerComplete = true;
+      const capture = () => {
+        phaseBudget.recoverStage('EFFECT'); effect(); phaseBudget.recoverPassed();
+        phaseBudget.recoverStage('CONSUMER'); consumer(); phaseBudget.recoverPassed();
+        captureCompleted = true;
+      };
+      if (captureCompleted) capture();
+      else await phaseBudget.run('CAPTURE', capture, true);
+      phaseBudget.recoverStage('COMPLETE'); phaseBudget.recoverPassed();
+    } catch (error) {
+      phaseBudget.recoverFailed();
+      throw error;
     }
-    lessonClosed = true;
-    if (!producerDeadline) producerDeadline = performance.now() + 10000;
-    const isSent = () => effectRows().some((row) => row.producer?.status === 'sent');
-    if (!isSent()) {
-      const remaining = Math.min(budget(10000), Math.floor(producerDeadline - performance.now()));
-      requireValue(remaining > 0, 'Original producer recovery window exhausted');
-      await expect
-        .poll(isSent, { timeout: remaining, message: 'Exact original close producer reaches SENT' })
-        .toBe(true);
-    }
-    effect();
-    consumer();
   };
   try {
     for (const service of [
@@ -4447,6 +4703,7 @@ AND e.event_type='lesson.closed' AND e.event_payload#>>'{payload,lesson_id}'='${
         'One owned container required',
       );
       pins[service] = inspect(ids[0]);
+      if (local) requireValue(localSpecialService(local, service).id === pins[service].id, 'Local reconciliation service mismatch');
       const current = identity(service);
       requireValue(
         current.running && current.health === 'healthy',
@@ -4523,7 +4780,7 @@ AND e.event_type='lesson.closed' AND e.event_payload#>>'{payload,lesson_id}'='${
         Number(dataset.otherGroup.id) !== Number(scope.group),
       'Four exact owned initial memberships are required',
     );
-    const initialReadinessEnd = performance.now() + budget(10000);
+    const initialReadinessEnd = initialReadiness.admit((cap) => budget(cap, {}, true));
     const initialMembershipsReady = (): {
       expectedApplied: boolean;
       noPendingWork: boolean;
@@ -4698,7 +4955,7 @@ WHERE e.event_id::text=o.payload->>'event_id' AND e.event_type=o.event_type)),
               initialNoPendingWork: initial.noPendingWork,
               initialProducerSent: initial.producerSent,
             };
-            return (
+            const ready = (
               q.main.messages_ready === 0 &&
               q.main.messages_unacknowledged === 0 &&
               q.main.consumers === 1 &&
@@ -4713,14 +4970,18 @@ WHERE e.event_id::text=o.payload->>'event_id' AND e.event_type=o.event_type)),
               initial.noPendingWork &&
               initial.producerSent
             );
+            initialReadiness.observe(diagnostic.setupQuiescenceLastRead, ready);
+            return ready;
           },
           {
-            timeout: Math.max(1, Math.min(budget(10000), initialReadinessEnd - performance.now())),
+            timeout: initialReadiness.remaining(),
             message: 'Fresh synthetic namespace is quiescent',
           },
         )
         .toBe(true);
+      initialReadiness.finish(true);
     } catch (error) {
+      initialReadiness.finish(false);
       switch (quiescence.firstFailed) {
         case 'MAIN_READY':
           expect.soft(false, 'D9_QUIESCENCE_MAIN_READY').toBe(true);
@@ -4780,8 +5041,12 @@ WHERE e.event_id::text=o.payload->>'event_id' AND e.event_type=o.event_type)),
       lessonsPath: `/api/schedule/groups/${dataset.group.id}/lessons?dateFrom=${shift(dataset.today, -1)}&dateTo=${dataset.today}&size=200`,
     };
     diagnostic.phase = 'CONTROLLED_CLOSE';
+    // Admit the existing stop15s + create10s work and the complete prospective
+    // close/producer/recovery reserve before introducing the first outage.
+    budget(15000 + 10000, { stop: 'attendance-service', event: true }, true);
     stop('attendance-service');
     closeDeadline = performance.now() + 90000;
+    phaseBudget.bind('CLOSE', closeDeadline);
     budget(10000, { event: true }, true);
     // Keep accepted-or-ambiguous state even when the committed HTTP response is lost.
     eventAccepted = true;
@@ -5109,14 +5374,14 @@ WHERE e.event_id::text=o.payload->>'event_id' AND e.event_type=o.event_type)),
     diagnostic.phase = 'EXACT_REPLAY';
     await publish();
     await awaitApplied();
-    const completed = await terminal(
-      admin,
+    const completed = await phaseBudget.run('ARCHIVE', () => terminal(
+      leasedActor(admin!),
       scope.semester,
       'ARCHIVE',
       archiveKey,
       archiveProgress,
       budget(20000),
-    );
+    ));
     archived = true;
     requireValue(
       completed.operation.operationId === operation.operationId,
@@ -5186,6 +5451,7 @@ WHERE e.event_id::text=o.payload->>'event_id' AND e.event_type=o.event_type)),
   } finally {
     cleaning = true;
     let cleanupFailure: { error: unknown } | undefined;
+    let leaveFinal: (() => void) | undefined;
     try {
       for (const service of ['schedule-service', 'attendance-service']) {
         try {
@@ -5213,32 +5479,33 @@ WHERE e.event_id::text=o.payload->>'event_id' AND e.event_type=o.event_type)),
       if (admin && previous && archiveStarted) {
         if (!archived) {
           cleanupStage = 'CLEANUP_SEMESTER_ARCHIVE';
-          await terminal(
-            admin,
-            Number(previous.id),
+          await phaseBudget.run('ARCHIVE', () => terminal(
+            leasedActor(admin!),
+            Number(previous!.id),
             'ARCHIVE',
             archiveKey,
             archiveProgress,
             budget(20000),
-          );
+          ));
           archived = true;
         }
         if (!restored) {
           cleanupStage = 'CLEANUP_SEMESTER_RESTORE';
-          await terminal(
-            admin,
-            Number(previous.id),
+          await phaseBudget.run('RESTORE', () => terminal(
+            leasedActor(admin!),
+            Number(previous!.id),
             'RESTORE',
             restoreKey,
             restoreProgress,
             budget(20000),
-          );
+          ));
           restored = true;
         }
+        await phaseBudget.run('AUTHORITY', async () => {
         cleanupStage = 'CLEANUP_SEMESTER_ACTIVATE';
-        const current = await admin.call(
+        const current = await leasedActor(admin!).call(
           'PATCH',
-          `/api/academic/semesters/${previous.id}/activate`,
+          `/api/academic/semesters/${previous!.id}/activate`,
         );
         requireValue(
           current.active === true &&
@@ -5247,20 +5514,29 @@ WHERE e.event_id::text=o.payload->>'event_id' AND e.event_type=o.event_type)),
           'Original active authority must return',
         );
         cleanupStage = 'CLEANUP_SEMESTER_VERIFY';
-        const active = (await semesters(admin)).filter((row) => row.active === true);
+        const active = (await semesters(leasedActor(admin!))).filter((row) => row.active === true);
         requireValue(
-          active.length === 1 && Number(active[0].id) === Number(previous.id),
+          active.length === 1 && Number(active[0].id) === Number(previous!.id),
           'Original exclusive active authority must return',
         );
         authorityDirty = false;
+        });
       }
+      leaveFinal = phaseBudget.enter('FINAL');
       if (peeked) {
         cleanupStage = 'CLEANUP_SEMESTER_DLQ';
-        const q = await queues();
-        requireValue(
-          q.dead.messages_ready === 1 && q.dead.messages_unacknowledged === 0,
-          'Original DLQ copy must remain retained',
-        );
+        // Management statistics can lag. This final observation reads only the retained
+        // DLQ and leaves the original final15s reservation's last5s for disposal.
+        const observationDeadline = Math.min(performance.now() + 10000, phaseBudget.deadline('FINAL')! - 5000);
+        const current = pins.rabbitmq;
+        const ip = local ? current.networks[local.networkName]?.IPAddress :
+          current.networks.rct_e2e_private_net?.IPAddress ?? current.networks['rct-e2e_private_net']?.IPAddress;
+        requireValue(typeof ip === 'string' && /^(?:10\.|172\.(?:1[6-9]|2\d|3[01])\.|192\.168\.)\d/.test(ip),
+          'Owned private broker address required');
+        await observeRetainedDlq((deadline) => readDlqCounters(fetch,
+          `http://${ip}:15672/api/queues/%2F/attendance-service.events.dlq`,
+          { Authorization: `Basic ${Buffer.from(`${secret.RABBITMQ_USER}:${secret.RABBITMQ_PASSWORD}`).toString('base64')}` },
+          deadline), observationDeadline, dlqWitness);
         diagnostic.retainedDlqCopies = 1;
       }
       cleanupStage = 'CLEANUP_SEMESTER_SETTLE';
@@ -5274,6 +5550,10 @@ WHERE e.event_id::text=o.payload->>'event_id' AND e.event_type=o.event_type)),
       retainLifecycleCleanupFailure(info.annotations, cleanupStage, error);
       cleanupFailure = { error };
       diagnostic.cleanupOutcome = 'FAILED';
+    }
+    if (!leaveFinal) {
+      try { leaveFinal = phaseBudget.enter('FINAL'); }
+      catch (error) { cleanupFailure ??= {error}; }
     }
     try {
       cleanupStage = 'CLEANUP_SEMESTER_CLOCK';
@@ -5301,6 +5581,7 @@ WHERE e.event_id::text=o.payload->>'event_id' AND e.event_type=o.event_type)),
     } finally {
       if (disposeTimer !== undefined) clearTimeout(disposeTimer);
     }
+    leaveFinal?.();
     if (cleanupFailure) {
       diagnostic.restorationSucceeded = false;
       diagnostic.cleanupOutcome = 'FAILED';
@@ -5320,6 +5601,39 @@ WHERE e.event_id::text=o.payload->>'event_id' AND e.event_type=o.event_type)),
       retainLifecycleCleanupFailure(info.annotations, cleanupStage, error);
       cleanupFailure ??= { error };
     }
+    try {
+      const closedNative = `${JSON.stringify(nativeDiagnostic)}\n`;
+      requireValue(Buffer.byteLength(closedNative, 'utf8') <= 2048, 'Native metadata must remain bounded');
+      writeFileSync(join(run, 'reconciliation-native.safe.json'), closedNative, { mode: 0o600, flag: 'wx' });
+    } catch (error) {
+      retainLifecycleCleanupFailure(info.annotations, 'CLEANUP_SEMESTER_WRITE', error);
+      cleanupFailure ??= { error };
+    }
+    try {
+      const closedDlq = `${JSON.stringify(dlqWitness)}\n`;
+      requireValue(Buffer.byteLength(closedDlq, 'utf8') <= 1024, 'DLQ observation metadata must remain bounded');
+      writeFileSync(join(run, 'reconciliation-dlq.safe.json'), closedDlq, { mode: 0o600, flag: 'wx' });
+    } catch (error) {
+      retainLifecycleCleanupFailure(info.annotations, 'CLEANUP_SEMESTER_WRITE', error);
+      cleanupFailure ??= { error };
+    }
+    try {
+      initialReadiness.finish(false);
+      const closedReadiness = `${JSON.stringify(initialReadiness.witness)}\n`;
+      requireValue(Buffer.byteLength(closedReadiness, 'utf8') <= 2048, 'Initial readiness metadata must remain bounded');
+      writeFileSync(join(run, 'reconciliation-readiness.safe.json'), closedReadiness, { mode: 0o600, flag: 'wx' });
+    } catch (error) {
+      retainLifecycleCleanupFailure(info.annotations, 'CLEANUP_SEMESTER_WRITE', error);
+      cleanupFailure ??= { error };
+    }
+    try {
+      const closedBudget = `${JSON.stringify(phaseBudget.witness)}\n`;
+      requireValue(Buffer.byteLength(closedBudget, 'utf8') <= 4096, 'Budget metadata must remain bounded');
+      writeFileSync(join(run, 'reconciliation-budget.safe.json'), closedBudget, {mode: 0o600, flag: 'wx'});
+    } catch (error) {
+      retainLifecycleCleanupFailure(info.annotations, 'CLEANUP_SEMESTER_WRITE', error);
+      cleanupFailure ??= {error};
+    }
     if (originalFailure) throw originalFailure.error;
     if (cleanupFailure) throw cleanupFailure.error;
   }
@@ -5328,6 +5642,7 @@ WHERE e.event_id::text=o.payload->>'event_id' AND e.event_type=o.event_type)),
 // Subject deletion has its own test/fixture slot; the two existing semester scenarios are unchanged.
 function subjectCascadeOtpReceiver(info: TestInfo) {
   const run = process.env.RCT_SEMESTER_LIFECYCLE_RUN;
+  requireValue(!local || run === local.laneRun, 'Local semester checkpoint mismatch');
   requireValue(run && isAbsolute(run), 'OTP receiver requires a private run directory');
   for (const directory of [run, join(run, 'artifacts')]) {
     const stat = lstatSync(directory);
@@ -5337,14 +5652,14 @@ function subjectCascadeOtpReceiver(info: TestInfo) {
     );
   }
   requireValue(
-    process.env.CI === 'true' &&
+    (local !== undefined || process.env.CI === 'true') &&
       process.env.RCT_E2E_SYNTHETIC_SEED === 'true' &&
       info.project.outputDir === join(run, 'artifacts') &&
       info.project.use.baseURL === 'https://localhost:8443',
     'OTP receiver requires the exact disposable CI lane',
   );
   const root = resolve(__dirname, '../../..');
-  const envFile = join(root, 'tests/e2e/.env.ci');
+  const envFile = (local ? join(local.run, 'synthetic.env') : join(root, 'tests/e2e/.env.ci'));
   const envStat = lstatSync(envFile);
   requireValue(
     envStat.isFile() &&
@@ -5386,7 +5701,7 @@ function subjectCascadeOtpReceiver(info: TestInfo) {
       throw new Error('Owned OTP container lookup failed');
     }
   };
-  const ids = docker([
+  const ids = docker(local ? ['compose', '-p', local.project, '-f', local.composeFile, 'ps', '-q', 'rabbitmq'] : [
     'compose',
     '--env-file',
     envFile,
@@ -5427,17 +5742,18 @@ function subjectCascadeOtpReceiver(info: TestInfo) {
     }
   };
   const pin = inspect();
+  if (local) requireValue(localSpecialService(local, 'rabbitmq').id === pin.id, 'Local subject broker mismatch');
   requireValue(
     /^[0-9a-f]{64}$/.test(pin.id) &&
       /^sha256:[0-9a-f]{64}$/.test(pin.image) &&
       pin.imageName === 'rabbitmq:3.13-management-alpine' &&
-      pin.labels?.['com.docker.compose.project'] === 'rct-e2e' &&
+      pin.labels?.['com.docker.compose.project'] === (local?.project ?? 'rct-e2e') &&
       pin.labels?.['com.docker.compose.service'] === 'rabbitmq' &&
       pin.running === true &&
       pin.health === 'healthy',
     'Owned OTP broker identity is invalid',
   );
-  const network = pin.networks?.rct_e2e_private_net ?? pin.networks?.['rct-e2e_private_net'];
+  const network = local ? pin.networks?.[local.networkName] : pin.networks?.rct_e2e_private_net ?? pin.networks?.['rct-e2e_private_net'];
   const ip = network?.IPAddress;
   requireValue(
     typeof ip === 'string' &&
@@ -5454,7 +5770,7 @@ function subjectCascadeOtpReceiver(info: TestInfo) {
         current.running === true &&
         current.health === 'healthy' &&
         JSON.stringify(current.labels) === JSON.stringify(pin.labels) &&
-        JSON.stringify(current.mounts) === JSON.stringify(pin.mounts) &&
+        JSON.stringify(mountRecords(current.mounts)) === JSON.stringify(mountRecords(pin.mounts)) &&
         JSON.stringify(current.networks) === JSON.stringify(pin.networks),
       'Owned OTP broker identity changed',
     );
@@ -5712,6 +6028,7 @@ const subjectCascadeTest = test.extend<{
 function subjectCascadeReadback(deadline: number) {
   const root = resolve(__dirname, '../../..');
   const run = process.env.RCT_SEMESTER_LIFECYCLE_RUN;
+  requireValue(!local || run === local.laneRun, 'Local semester checkpoint mismatch');
   requireValue(run && isAbsolute(run), 'Subject deletion requires the private semester lane');
   for (const directory of [run, join(run, 'artifacts')]) {
     const stat = lstatSync(directory);
@@ -5729,7 +6046,7 @@ function subjectCascadeReadback(deadline: number) {
       readFileSync(marker, 'utf8').trim() === 'RCT_SEMESTER_DISPOSABLE',
     'Subject deletion stand ownership must match',
   );
-  const envFile = join(root, 'tests/e2e/.env.ci');
+  const envFile = (local ? join(local.run, 'synthetic.env') : join(root, 'tests/e2e/.env.ci'));
   const stat = lstatSync(envFile);
   requireValue(
     stat.isFile() && !stat.isSymbolicLink() && stat.size <= 65536 && (stat.mode & 0o022) === 0,
@@ -5939,7 +6256,7 @@ function subjectCascadeReadback(deadline: number) {
       throw failure;
     }
   };
-  const compose = [
+  const compose = local ? ['compose', '-p', local.project, '-f', local.composeFile] : [
     'compose',
     '--env-file',
     envFile,
@@ -5972,10 +6289,11 @@ function subjectCascadeReadback(deadline: number) {
       'Subject deletion requires one owned database',
     );
     const pin = inspect(ids[0]);
+    if (local) requireValue(localSpecialService(local, service).id === pin.id, 'Local subject database mismatch');
     requireValue(
       /^[0-9a-f]{64}$/.test(pin.id) &&
         /^sha256:[0-9a-f]{64}$/.test(pin.image) &&
-        pin.labels?.['com.docker.compose.project'] === 'rct-e2e' &&
+        pin.labels?.['com.docker.compose.project'] === (local?.project ?? 'rct-e2e') &&
         pin.labels?.['com.docker.compose.service'] === service &&
         pin.running === true &&
         pin.health === 'healthy',
@@ -6292,6 +6610,7 @@ subjectCascadeTest.describe('full subject deletion through the owned stand', () 
   test('HEADMAN deletes one subject through real proof and participants while mixed EXCUSE keeps the control subject', async ({
     subjectCascade,
   }, info) => {
+    localSpecialLane('subject-deletion');
     const { request, otp } = subjectCascade;
     const mainEnd = performance.now() + 330000;
     const remaining = (cap = 10000) => {

@@ -2,6 +2,7 @@
   box-sizing: border-box;
   font-family: var(--rct-font-family-sans, sans-serif);
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   min-block-size: 100dvh;
   place-items: center;
   padding: 1.5rem;
@@ -13,6 +14,9 @@
   box-sizing: border-box;
   display: grid;
   inline-size: min(100%, 28rem);
+  min-inline-size: 0;
+  grid-template-columns: minmax(0, 1fr);
+  overflow-wrap: anywhere;
   gap: 1rem;
   padding: 2rem;
   border: 1px solid color-mix(in srgb, currentColor 12%, transparent);
@@ -41,12 +45,16 @@
 
 .login-field {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  min-inline-size: 0;
   gap: 0.4rem;
   font-size: 0.9rem;
   font-weight: 600;
 }
 
 .login-field input {
+  inline-size: 100%;
+  min-inline-size: 0;
   min-block-size: 2.75rem;
   padding: 0.65rem 0.8rem;
   border: 1px solid color-mix(in srgb, currentColor 24%, transparent);
@@ -112,6 +120,7 @@
 
 .login-methods {
   display: flex;
+  flex-wrap: wrap;
   gap: var(--rct-space-2);
   margin-block: var(--rct-space-4);
 }
@@ -122,5 +131,7 @@
 
 .login-card [role='tabpanel'] {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  min-inline-size: 0;
   gap: var(--rct-space-4);
 }

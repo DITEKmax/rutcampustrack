@@ -1,0 +1,313 @@
+{
+  "sourceRevision": "77fbd7a5e79bcaf3185f60e4ee2f18c7a3e3896b",
+  "sourcePresenceNotRuntime": true,
+  "canonicalRows": 83,
+  "mobileRows": 50,
+  "sharedMobileScreens": 48,
+  "PwaOnlyAuthScreens": 2,
+  "retainedOriginalFrames": 140,
+  "retainedPwaRealApi": 138,
+  "retainedTmaControlledUnsigned": 2,
+  "originalHashIntegrity": "140/140 match retained manifest; noimagesmodified",
+  "mappedPwaBaselineScreens": 36,
+  "pwaVisualNotCheckedScreens": 14,
+  "tmaPostLoginScreens": 2,
+  "fullScreenAllStateWidthReadyClaim": false,
+  "newFunctionalActions": 0,
+  "sourceChangedPaths": {
+    "79e8fdce620af0493287469725e82bee511b2e8f": [
+      "frontends/mobile-core/src/api/generated/academic.types.ts",
+      "frontends/mobile-core/src/api/map-client.test.ts",
+      "frontends/mobile-core/src/api/map-client.ts",
+      "frontends/mobile-core/src/api/types.ts",
+      "frontends/mobile-core/src/features/headman-stats/headman-stats-mobile.pcss",
+      "frontends/mobile-core/src/shared/report-download-client.ts",
+      "frontends/pwa-vue/Dockerfile",
+      "frontends/pwa-vue/src/login-screen.pcss",
+      "frontends/shared/profile/avatar-presets.ts",
+      "frontends/tma-vue/Dockerfile"
+    ],
+    "1e7dca2f10e1c86a309bdb478a59f5057b9d1872": [
+      "frontends/mobile-core/src/api/generated/academic.types.ts",
+      "frontends/mobile-core/src/api/map-client.test.ts",
+      "frontends/mobile-core/src/api/map-client.ts",
+      "frontends/mobile-core/src/api/types.ts",
+      "frontends/pwa-vue/Dockerfile",
+      "frontends/shared/profile/avatar-presets.ts",
+      "frontends/tma-vue/Dockerfile"
+    ]
+  },
+  "acceptedCorrectiveManifest": "/workspace/rct-pr3-runtime/mobile-theme-p2-fix/PNG-MANIFEST.json",
+  "qualifications": [
+    "Original79 auth/semesterP2 frames superseded byaccepted1e7 corrective12",
+    "Retained140 cleanup notretrofitted; authorreported ownlogout failures are historical limitations",
+    "No signed nativeTMA auth evidence in2controlledunsigned gates",
+    "Sharedmobile/foundation/themeowner/source wrappers unchanged by77fWEB-onlyfix",
+    "Remainingmap-client/API/avatar deltas are explicitconsumerqualification, notglobalinvalidation"
+  ],
+  "personallyViewedRepresentativeOriginals": [
+    "student-home-light-300",
+    "student-home-dark-300",
+    "teacher-home-light-1440",
+    "tma-controlled-unsigned-gate-light-300",
+    "tma-controlled-unsigned-gate-dark-300"
+  ],
+  "qualifiedAgainstSourceRevision": "7bbef7252a338005b380d8e07a7eb8075ac6b243",
+  "latestMobileSourceDiffFrom77f": [
+    "frontends/mobile-core/src/features/admin-groups/admin-group-deletion-client.test.ts",
+    "frontends/mobile-core/src/features/admin-groups/admin-groups-client.ts",
+    "frontends/mobile-core/src/features/headman-journal/HeadmanLessonActionsScreen.vue",
+    "frontends/mobile-core/src/features/headman-journal/headman-lesson-actions-screen.pcss",
+    "frontends/mobile-core/src/features/notifications/notifications-realtime.test.ts",
+    "frontends/mobile-core/src/features/notifications/notifications-realtime.ts",
+    "frontends/mobile-core/src/features/notifications/notifications-screen.pcss",
+    "frontends/mobile-core/src/features/profile/ProfileScreen.vue",
+    "frontends/mobile-core/src/features/profile/profile-screen.pcss",
+    "frontends/mobile-core/src/features/teacher/TeacherAttendanceScreen.vue",
+    "frontends/mobile-core/src/features/teacher/TeacherExcuseScreen.vue",
+    "frontends/mobile-core/src/features/teacher/TeacherHomeScreen.vue",
+    "frontends/mobile-core/src/features/teacher/TeacherJournalScreen.vue",
+    "frontends/mobile-core/src/features/teacher/TeacherLessonScreen.vue",
+    "frontends/mobile-core/src/features/teacher/TeacherManualExcuseScreen.vue",
+    "frontends/mobile-core/src/features/teacher/TeacherStatsScreen.vue",
+    "frontends/mobile-core/src/features/teacher/teacher-journal-pagination.test.ts",
+    "frontends/mobile-core/src/features/teacher/teacher-journal-screen.pcss",
+    "frontends/mobile-core/src/features/teacher/teacher-lesson-r3.pcss",
+    "frontends/mobile-core/src/shared/components/StudentFeatureOwner.test.ts",
+    "frontends/mobile-core/src/shared/components/StudentFeatureOwner.vue",
+    "frontends/mobile-core/src/shared/components/TeacherFeatureOwner.vue",
+    "frontends/mobile-core/src/shared/components/mobile-bottom-nav.pcss",
+    "frontends/mobile-core/src/shared/components/teacher-context-retry.test.ts",
+    "frontends/mobile-core/src/shared/projection-refresh.ts",
+    "frontends/pwa-vue/src/App.vue",
+    "frontends/pwa-vue/src/group-live-readmission.test.ts",
+    "frontends/pwa-vue/src/pwa-host.pcss",
+    "frontends/tma-vue/src/App.vue"
+  ],
+  "nextPacketState": "LateCheckin2 complete/knowncleanup/rootpersonalinspection; TeacherExcuse2 boundedobservedwithP3open/PDFvisualNOTQUALIFIED. AppointedTeacherproductfix separate, no automatic furtherAuth/runtime.",
+  "latestPwaTodayWidthPacket": {
+    "qualifiedReceipt": "mobile-next-first-qualified.json",
+    "actualState": "day-ended/two-lessons/no-checkin-action",
+    "newFrames": 12,
+    "widths": [
+      425,
+      600,
+      768,
+      1024,
+      1280,
+      1920
+    ],
+    "themes": [
+      "light",
+      "dark"
+    ],
+    "cleanup": "native204/guest401",
+    "notificationConsumer": "notchecked:wronglocator/noinboxrequest"
+  },
+  "currentPwaScreensWithObservedBaselines": 45,
+  "currentPwaNotVisuallyCheckedScreens": 5,
+  "originalMappedPwaBaselineScreensUnchanged": 36,
+  "latestNotificationConsumer": {
+    "observedFrames": 4,
+    "sourceRevision": "7ad6e29353b78f7f7087360ef8a5e107a3cf5873",
+    "qualifiedReceipt": "mobile-notification-first4-qualified.json",
+    "status": "entry/back/history observed; minor300title fix",
+    "rawRun": "exit0",
+    "cleanup": "native204/guest401",
+    "afterFix": {
+      "sourceRevision": "5e6a1843352b549f0d9a49c8a7327e00b2f62714",
+      "newFrames": 3,
+      "qualifiedReceipt": "notification-title-fix/after-qualified-5e6.json",
+      "status": "V-MOB-NOTIF-300closed; actualInbox200/native204/guest401"
+    }
+  },
+  "notificationTitle300Finding": "CLOSED boundedroot16 PWA300light/dark; after-qualified-5e6.json",
+  "tmaPostLoginQualification": "2sharedconsumers withcontrolledsigned actualAuth/data slices; notallstates/widths; notnativeTelegramprovider",
+  "tmaControlledPostLoginScreens": 2,
+  "tmaSharedScreenDenominator": 48,
+  "tmaNativeProviderPostLoginScreens": 0,
+  "tmaFullScreensAllStatesWidthsReady": 0,
+  "tmaControlledExchange888": {
+    "receipt": "TMA-controlled-qualified-888.json",
+    "manifest": "TMA-controlled-manifest-888.json",
+    "screens": 2,
+    "frames": 5,
+    "profile300": "naturalinitialloadingonly/notloadedbaseline",
+    "actualAuth200OnePost": true,
+    "cleanup": "native204/guest401/browserclosed",
+    "nativeProvider": "notchecked",
+    "finding": "V-MOBILE-NAV-300 P3"
+  },
+  "sharedNav300Finding": {
+    "status": "CLOSED boundedPWA300light/TMA300dark root16/20+PWA1440light",
+    "manifest": "changed-nav-e715-manifest.json",
+    "qualifiedReceipt": "changed-nav-e715-qualified.json",
+    "newFrames": 5,
+    "root20MinTarget": "46×75CSSpx",
+    "cleanup": "2native204/guest401/browserclosed",
+    "scope": "changedfive-slotnav only; no wholeapp/role/allstatesclaim"
+  },
+  "profileInitialLoading": {
+    "status": "CLOSED boundedPWA300light/TMAcontrolled300dark root16",
+    "manifest": "profile-loading-manifest-cab3.json",
+    "qualifiedReceipt": "profile-loading-qualified-cab3.json",
+    "afterFrames": 2,
+    "loaded1440": "reuse888/notnewPASS",
+    "rawPwaAttempt": "FAIL preserved; cleanupseparatelyRootPG95d933+knownclose",
+    "TmaRemaining": "actualPASS/native204guest401/browserclosed"
+  },
+  "teacherJournalConsumer": {
+    "status": "bounded before6+changedafter4 observed; loading/recovery qualified",
+    "sourceRevision": "d69ac9159e3bfff169c4b2bd25adbcc7d9def771",
+    "qualifiedReceipt": "teacher-journal-after-run/qualified-d69.json",
+    "newAfterFrames": 4,
+    "reusedBeforeFrames": 2,
+    "afterWidthsThemes": {
+      "light": [
+        425
+      ],
+      "dark": [
+        300
+      ]
+    },
+    "cleanup": "technicalexactownselfDELETE204/samebearer401/browserclosed; notnativeUIlogoutPASS",
+    "limits": "No whole-screen/all-state/width/TMA runtime/provider/actioncount claim; localtable scroll interaction notchecked"
+  },
+  "reconciliationQualification": "45/50 PWAconsumers have bounded observed baselines;5visuallyunchecked (4activeconditional+1sourceonlyorphan). LateCheckin selectedform observed/rootpersonallyviewed; TeacherExcuse approvedticket observed withOPEN P3 lessonmetadata300root20 and PDFvisualNOTQUALIFIED. Historicaloriginal36/14 and reconciledoriginal37 preserved. No whole-screen readiness percentage/actioncount increase.",
+  "studentRequestSelectionConsumer": {
+    "revision": "85c068210262b611f6f98d18fb9d7bdd8cecea95",
+    "qualifiedReceipt": "student-request-selection-run/qualified-85c.json",
+    "newFrames": 6,
+    "newPreviouslySourceOnlyConsumers": [
+      "MOBILE-REQUESTLESSONSELECTION",
+      "MOBILE-EXCUSEREQUEST"
+    ],
+    "states": "type425light/selection425light/invaliddates+validempty300dark/selectedkeyboard768light/draftpreview425light",
+    "cleanup": "one technicalexactselfDELETE204/samebearer401/browserclosed; NOTnativeUIlogoutPASS",
+    "limits": "Realcachedoptions/noforcedloading; no submit/upload/commands/allstatewidth/TMAprovider claim"
+  },
+  "teacherLessonConsumer": {
+    "revision": "f32ff22baaa8d68de03d7606d0799f4586ca17f1",
+    "qualifiedReceipt": "teacher-lesson-manual-prep/run/qualified-f32.json",
+    "newFrames": 3,
+    "newPreviouslySourceOnlyConsumers": [
+      "MOBILE-TEACHERLESSON"
+    ],
+    "states": "populatedroster425light/300dark/Backkeyboardfocus768light",
+    "rawPacket": "EXIT1 incomplete due naturalmissingmanual; not productbug; rawpreserved",
+    "manualExcuse": "notchecked; no naturalrow in firstlesson; nofallback/search/fixture/newAuth",
+    "cleanup": "one technicalexactownselfDELETE204/sameoldbearer401/browserclosed; NOTnativeUIlogoutPASS",
+    "finding": "P3 sharedhost Выйти plainbrowserbutton at bottomleft, outside centeredcolumn768; nofixclaim"
+  },
+  "reconciledOriginalMappedPwaBaselineScreens": 37,
+  "originalAdminMoreMappingCorrection": {
+    "retainedOriginalState": "admin-root-3",
+    "canonicalScreen": "MOBILE-ADMINMORE",
+    "originalFrames": 2,
+    "newFrames": 0,
+    "newAuth": 0,
+    "qualifiedReceipt": "admin-more-prep/REUSE-QUALIFICATION.json",
+    "sourceQualifiedAgainst": "1057de27b70c37b5916013d7c9207e31d8493ce8",
+    "historicalOriginalMapped36Preserved": true,
+    "deltaOriginalMappedScreens": 1,
+    "commonNavChangedSinceOriginal": "accepted e715 sourceinfluence, not currentAdminMore runtime"
+  },
+  "remainingVisualInventoryQualification": {
+    "priorSourceQualification": "admin-more-prep/REMAINING-8-SOURCE-QUALIFICATION.json retained historical8; HeadmanLessonActions now observed withP3; LateCheckin form nowboundedobserved at63d, otherrows qualification unaffected.; TeacherExcuse nowboundedobservedwithP3/PDFvisualNOTQUALIFIED at63d; remaining4activeconditional+1orphan. TeacherExcuse lessonmetaP3 closed after6219/boundedPDFfirstpageobserved; remaining count unchanged.",
+    "inventoryUnchecked": 5,
+    "activeConditionalUnchecked": 4,
+    "orphanSourceOnly": 1,
+    "sourceOnlyOrphansDoNotAuthorizeNewFeatures": true,
+    "remainingActiveConsumers": [
+      "MOBILE-ASSISTANTACTIONS",
+      "MOBILE-HEADMANGROUP",
+      "MOBILE-ASSISTANTHOMEWORK",
+      "MOBILE-TEACHERMANUALEXCUSE"
+    ]
+  },
+  "headmanLessonHistoryConsumer": {
+    "revision": "481512e93575070a1f471c65af54df5b4e31cd61",
+    "qualifiedReceipt": "headman-lesson-actions-prep/v2-prep/run/qualified-481.json",
+    "newFrames": 2,
+    "status": "bounded observed realhistory; both selected P3 presentation findings closed after2",
+    "actualRowsLoaded": 15,
+    "ownContext": "Student3→existingHEADMAN/group1/lesson3",
+    "readiness": "v2 waits actualpolicy/agenda before23Oct; old3bbcTESTstop0PNG remainsFAIL",
+    "cleanup": "technicalexactownselfDELETE204/currentbearer401/browserclosed; NOTnativeUIlogoutPASS",
+    "findings": [
+      "V-HLA-FILTER-300-R20",
+      "V-HLA-LESSONTYPE-RU"
+    ],
+    "afterPresentation": {
+      "revision": "3371d6438b0144976cb338f0fa1bb14cc5c051bd",
+      "qualifiedReceipt": "headman-history-polish/after-prep/run/qualified-3371.json",
+      "manifest": "headman-history-polish/after-prep/run/manifest-3371.json",
+      "newFrames": 2,
+      "status": "Both originalPNG personallyviewed PASS for changedcriteria only",
+      "findings": {
+        "V-HLA-FILTER-300-R20": "CLOSED bounded300light/root20",
+        "V-HLA-LESSONTYPE-RU": "CLOSED bounded300light/root20+768dark/root16"
+      },
+      "cleanup": "one technicalexactownDELETE204/samecapturedoldbearer401/browserclosed/noHOLD",
+      "functionalActionsAdded": 0,
+      "wholeScreenReady": false,
+      "noLiveBrowser": true
+    }
+  },
+  "lateCheckinRequestConsumer": {
+    "revision": "63d97497eba26577a8af5fa1428fcc3c959c8992",
+    "productBase": "3371d6438b0144976cb338f0fa1bb14cc5c051bd",
+    "qualifiedReceipt": "late-checkin-readonly-prep/run/qualified-63d.json",
+    "manifest": "late-checkin-readonly-prep/run/manifest-63d.json",
+    "newFrames": 2,
+    "newPreviouslySourceOnlyConsumers": [
+      "MOBILE-LATECHECKINREQUEST"
+    ],
+    "status": "bounded observed eligibleform/readability/focus; no submit",
+    "freshOptions": "realGET200/42options/3lateeligible/remaining5of5/currentownStudent3bearer/canonical matched",
+    "selectedOwnLessonId": "3",
+    "states": "300lightroot20formpreview;768darkroot16Cancelkeyboardfocus;nativeunselectedContinue-disabled beforeselection",
+    "cleanup": "technicalexactownselfDELETE204/samecurrentbearer401/browserclosed/noHOLD; NOTnativeUIlogoutPASS",
+    "domainOrPreferenceWrites": 0,
+    "functionalActionsAdded": 0,
+    "limits": "No submit/budgetconsumption/validationerror/allstates/widths/TMAnativeprovider/manualtheme outcome claim.",
+    "rootPersonalInspectionComplete": true
+  },
+  "teacherExcuseConsumer": {
+    "revision": "63d97497eba26577a8af5fa1428fcc3c959c8992",
+    "productBase": "3371d6438b0144976cb338f0fa1bb14cc5c051bd",
+    "runnerSha256": "00f3f39dd4146c007e48075002ad5a5e709023d13cf4eb12fab5d39f12b37105",
+    "qualifiedReceipt": "teacher-excuse-readonly-prep/run/qualified-63d.json",
+    "manifest": "teacher-excuse-readonly-prep/run/manifest.json",
+    "newFrames": 2,
+    "newPreviouslySourceOnlyConsumers": [
+      "MOBILE-TEACHEREXCUSE"
+    ],
+    "status": "bounded observed; narrow lessonmeta P3 closed after6219; PDFfirstpage visiblyrendered",
+    "rootPersonalInspectionComplete": true,
+    "finding": {
+      "id": "V-TE-LESSONMETA-300-R20",
+      "severity": "P3",
+      "status": "CLOSED_BOUNDED_AFTER_300_LIGHT_ROOT20"
+    },
+    "PDFvisual": "AFTER bounded firstpage rendering observed ready and personallyviewed in both originalPNG; no download/Open/allpages/zoom/provider claim",
+    "independentFullClientBodyCompletion": false,
+    "cleanup": "technicalexactownselfDELETE204/samecurrentbearer401/browserclosed/noHOLD; NOTnativeUIlogoutPASS",
+    "functionalActionsAdded": 0,
+    "wholeScreenReady": false,
+    "PDFvisualBefore": "NOT_QUALIFIED firstpage notobservedready; loadingcaption/metadata only; nativeoriginalGET200 is transportread only, filePreviewPassfalse",
+    "afterPresentation": {
+      "revision": "7bbef7252a338005b380d8e07a7eb8075ac6b243",
+      "productBase": "6219ca60a322d29921575535eccbf12efa76e304",
+      "qualifiedReceipt": "teacher-lesson-meta-polish/after-prep/run/qualified-7bb.json",
+      "newImages": 2,
+      "rawReceiptSha256": "436ec95a202b6874fdade47e6d749a006cea42e9280e9b7922c775c6b8a0c2a6",
+      "rawExit": 0,
+      "personalInspection": "author+Root",
+      "PDFfirstpage": "bounded actualcanvas/visiblepage only",
+      "nativeBack": "NOT_RECHECKED oldbeforePASSreused",
+      "cleanup": "exactown204401/browserclosed/noHOLD"
+    }
+  },
+  "currentSourceQualification": "Per-consumer revision/limits preserved. One-line TeacherCard wrap6219 has actualAFTER2; historical baseline is not whole-screen readiness."
+}

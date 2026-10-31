@@ -1,0 +1,17 @@
+{
+  "imageSourceRevision": "9b8d87c80a0076b204804b0cb5dc61ccb9034e1f",
+  "result": "FAIL",
+  "endpoint": "/assets/auth-background-original.png",
+  "status": 403,
+  "cause": "nginx worker open() Permission denied: copied canonical public PNG mode0600",
+  "canonicalSourceAndImageHash": "5ecad9bf5b38ddf9fe2114c5ab422cec78ea81c746fc2ee0b2ab5d9b3b6fff16",
+  "sourceMode": "0600",
+  "distMode": "0600",
+  "passedBeforeFailure": [
+    "root/deep-link shell identity/no-store",
+    "missing module/style/worker404 with no SPA fallback",
+    "served module MIME and container/build byte identity"
+  ],
+  "correction": "Normalize only final selected public build output permissions in image, retain all HTTP/hash assertions.",
+  "diagnosticLimit": "Subsequent immediate restart probe hit connection reset before readiness; no corrected-success claim."
+}

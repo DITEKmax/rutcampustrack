@@ -1,0 +1,46 @@
+{
+  "scope": "a1e5c20b3..HEAD plus staged documentation/gallery",
+  "sourceRevision": "8e280baef7edcef1098db9fb62bcaacf3646179a",
+  "fileCount": 16,
+  "textFileCount": 16,
+  "formatChecks": "temporary byte-exact copies, product files not modified by root",
+  "checks": [
+    {
+      "name": "check-json",
+      "exit": 0,
+      "output": ""
+    },
+    {
+      "name": "check-yaml",
+      "exit": 0,
+      "output": ""
+    },
+    {
+      "name": "check-added-large-files",
+      "exit": 0,
+      "output": ""
+    },
+    {
+      "name": "end-of-file-fixer",
+      "exit": 0,
+      "output": ""
+    },
+    {
+      "name": "trailing-whitespace-fixer",
+      "exit": 0,
+      "output": ""
+    },
+    {
+      "name": "gitleaks-commits",
+      "exit": 0,
+      "output": "\u001b[90m8:49AM\u001b[0m \u001b[32mINF\u001b[0m 2 commits scanned.\n\u001b[90m8:49AM\u001b[0m \u001b[32mINF\u001b[0m scanned ~666 bytes (666 bytes) in 7.78ms\n\u001b[90m8:49AM\u001b[0m \u001b[32mINF\u001b[0m no leaks found\n"
+    },
+    {
+      "name": "gitleaks-staged",
+      "exit": 0,
+      "output": "\u001b[90m8:49AM\u001b[0m \u001b[32mINF\u001b[0m 1 commits scanned.\n\u001b[90m8:49AM\u001b[0m \u001b[32mINF\u001b[0m scanned ~24445 bytes (24.44 KB) in 37.6ms\n\u001b[90m8:49AM\u001b[0m \u001b[32mINF\u001b[0m no leaks found\n"
+    }
+  ],
+  "actualInstalledHook": "not installed; pinned equivalent executables run directly",
+  "CI": "PAUSED/workflow_dispatch"
+}

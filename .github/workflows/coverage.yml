@@ -20,6 +20,13 @@ on:
       - 'SECURITY.md'
       - 'renovate.json'
       - '.pre-commit-config.yaml'
+  workflow_dispatch:
+    inputs:
+      omit_academic:
+        description: 'Explicitly omit Academic tests and dependent operator CLI acceptance'
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -27,7 +34,7 @@ permissions:
 jobs:
   java-coverage:
     name: Java coverage — ${{ matrix.service.name }}
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.service.name == 'attendance-service' && 'ubuntu-24.04' || 'ubuntu-latest' }}
     strategy:
       fail-fast: false
       matrix:
@@ -53,12 +60,23 @@ jobs:
           - name: mobile-bff
             path: ':services:mobile-bff:mobile-bff-app'
             report: 'services/mobile-bff/mobile-bff-app/build/reports/jacoco/test/jacocoTestReport.xml'
+        exclude: ${{ fromJSON(inputs.omit_academic && '[{"service":{"name":"academic-service","path":":services:academic-service:academic-app","report":"services/academic-service/academic-app/build/reports/jacoco/test/jacocoTestReport.xml"}}]' || '[]') }}
     steps:
+      - name: Record explicit coverage selection
+        if: matrix.service.name == 'attendance-service'
+        env:
+          OMIT_ACADEMIC: ${{ inputs.omit_academic && 'true' || 'false' }}
+        run: |
+          if [ "$OMIT_ACADEMIC" = true ]; then
+            printf '%s\n' 'Selected coverage scope: 6 Java + Python + Vue = 8 report families; Academic NOT_RUN by explicit selection.' >> "$GITHUB_STEP_SUMMARY"
+          else
+            printf '%s\n' 'Default coverage scope: 7 Java + Python + Vue = 9 report families.' >> "$GITHUB_STEP_SUMMARY"
+          fi
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
 
       - uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9 # v4.8.0
         with:
-          java-version: '21'
+          java-version: ${{ matrix.service.name == 'attendance-service' && '21.0.13+9' || '21' }}
           distribution: 'temurin'
           cache: 'gradle'
 
@@ -88,7 +106,22 @@ jobs:
 
       - name: Run tests with coverage
         id: coverage-tests
-        run: ./gradlew ${{ matrix.service.path }}:test ${{ matrix.service.path }}:integrationTest ${{ matrix.service.path }}:jacocoTestReport --no-daemon
+        shell: bash
+        run: |
+          if [ '${{ matrix.service.name }}' = attendance-service ]; then
+            python3 -B scripts/attendance-memory/run.py --arms target
+          else
+            ./gradlew ${{ matrix.service.path }}:test ${{ matrix.service.path }}:integrationTest ${{ matrix.service.path }}:jacocoTestReport --no-daemon
+          fi
+
+      - name: Upload only bounded numeric Attendance memory diagnostics
+        if: ${{ always() && matrix.service.name == 'attendance-service' }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: attendance-memory-${{ github.run_attempt }}
+          path: build/attendance-memory/*.safe.json*
+          if-no-files-found: error
+          retention-days: 7
 
       - name: Collect safe coverage test outcomes
         if: always()
@@ -130,6 +163,7 @@ jobs:
           PY
 
       - name: Upload JaCoCo XML
+        if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: jacoco-${{ matrix.service.name }}
@@ -138,7 +172,7 @@ jobs:
           retention-days: 7
 
   frontend-coverage:
-    name: Mobile Vue coverage — PWA, TMA, mobile-core
+    name: Vue coverage — WEB, PWA, TMA, mobile-core, shared
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
@@ -147,7 +181,7 @@ jobs:
           node-version: '24.14.0'
           cache: 'npm'
           cache-dependency-path: frontends/package-lock.json
-      - name: Install mobile Vue workspace
+      - name: Install Vue workspace
         working-directory: frontends
         run: npm ci
       - name: Run existing Vue tests with coverage
@@ -163,12 +197,13 @@ jobs:
           const lcov = readFileSync('coverage/lcov.info', 'utf8').replace(/^SF:(.+)$/gm, (_, source) =>
             `SF:${relative(process.env.GITHUB_WORKSPACE, resolve(source)).split(sep).join('/')}`)
           writeFileSync('coverage/lcov.info', lcov)
-          appendFileSync(process.env.GITHUB_STEP_SUMMARY, `### Mobile Vue\n\nLines: ${total.lines.covered}/${total.lines.total} (${total.lines.pct}%). Diagnostic coverage; no numeric gate.\n`)
+          appendFileSync(process.env.GITHUB_STEP_SUMMARY, `### Vue workspace\n\nLines: ${total.lines.covered}/${total.lines.total} (${total.lines.pct}%). Diagnostic coverage; no numeric gate.\n`)
           JS
       - name: Upload Vue coverage
+        if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: vitest-lcov-mobile-vue
+          name: vitest-lcov-vue
           path: frontends/coverage/
           if-no-files-found: error
           retention-days: 7
@@ -200,6 +235,7 @@ jobs:
         run: pytest tests/ -v
 
       - name: Upload coverage.xml
+        if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: pytest-coverage-bot

@@ -1,0 +1,19 @@
+{
+  "result": "PASS selected Root independent readiness/passive-diagnostic diff review",
+  "baselineSolReview": "PREP-REVIEW-3bbc9cd5.md PASS reused",
+  "runnerSha256": "558073fd5c04a712f974f5566a719ee7d5dded9bb65b4953747b779aa7ad98f8",
+  "actualCriticalFunctionEquality": {
+    "durableWrite": true,
+    "forward": true,
+    "recordHistoricalOwnRead": true,
+    "validateReadPayload": true,
+    "lateReadRejected": true,
+    "readBody": true,
+    "setup": true,
+    "cleanup": true,
+    "quiesceForRoot": true,
+    "holdForRoot": true
+  },
+  "newRuntime": 0,
+  "scope": "bounded source busy/policy/weekday ready before date selection; no search/week/lesson fallback; diagnostics safe source dates/path/phase/status only"
+}

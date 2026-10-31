@@ -45,7 +45,7 @@ class OneOffLessonCancelledConsumerIT extends AbstractAttendanceIntegrationTest 
 
     @BeforeEach
     void cleanCollection() {
-        mongoTemplate.remove(new Query(), AttendanceDocument.class);
+        mongoTemplate.getCollection("attendances").deleteMany(new org.bson.Document());
     }
 
     private Map<String, Object> envelope(Long groupId, LocalDate date, int lessonNumber) {

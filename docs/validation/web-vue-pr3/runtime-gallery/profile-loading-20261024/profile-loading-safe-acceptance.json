@@ -1,0 +1,15 @@
+{
+  "criterion": "LOAD-PROFILE-01",
+  "status": "accepted bounded2loadingafterstates withseparatePWAcleanupqualification",
+  "manifest": "profile-loading-manifest-cab3.json",
+  "qualifiedReceipt": "profile-loading-qualified-cab3.json",
+  "gallery": "profile-loading-gallery-cab3.html",
+  "sourceRevision": "cab3eed183d9453a6bfcc17ca12149d1894f39ba",
+  "afterPngCount": 2,
+  "historicalLoadedControlReused": 1,
+  "PwaRawAttempt": "FAIL/UNKNOWN preserved; notconvertedPASS",
+  "PwaCleanup": "RootPGpost95d933 bothold+helperrevoked/allotherfactsunchanged; known92079exit2/0liveownedprocesses",
+  "TmaRun": "oneAuth200/release200/canonicalnative204samebearer401/exit0/browserclosed",
+  "newFunctionalActions": 0,
+  "nativeTelegramProviderVerified": false
+}

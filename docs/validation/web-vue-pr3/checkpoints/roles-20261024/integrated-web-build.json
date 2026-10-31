@@ -1,0 +1,16 @@
+{
+  "kind": "local-integration-build",
+  "sourceRevision": "820d8fe99b502fb28443e07390ec5ba1fea5a20d",
+  "command": "npm run build:web",
+  "cwd": "frontends",
+  "exitCode": 0,
+  "strictVueTypes": true,
+  "ViteProductionBuild": true,
+  "logPath": "/tmp/pr3-integrated-web-build-20261024-shipping.log",
+  "logSha256": "c516d0fc9e70d677e9ec3ce9613f8075ef248c6e223e0ea0e2b19ee87508326f",
+  "limits": [
+    "Known Vite large-chunk warning retained; threshold not raised.",
+    "Not an image/static-server/production routing check.",
+    "CI/Coverage/Security/OpenAPI PAUSED/workflow_dispatch; no dispatch."
+  ]
+}

@@ -1,0 +1,829 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-10-23T22:35:16.902Z",
+  "source": {
+    "root": "/workspace/rct-worktrees/web-foundation",
+    "revision": "cab5b8a2f9149cf9da22da0d411bf37739dd9746",
+    "paths": [
+      "frontends/web-vue",
+      "frontends/shared",
+      "frontends/mobile-core",
+      "frontends/pwa-vue/src/auth-client.ts"
+    ]
+  },
+  "runtime": {
+    "provenance": "real-runtime",
+    "synthetic": true,
+    "webUrl": "http://127.0.0.1:14210",
+    "backendUrl": "http://127.0.0.1:18080",
+    "backendSourceRevision": "df81d17fa5dc311fa4c4cc7fd9352c2b3aed8999",
+    "backendScope": [
+      "API Gateway",
+      "Auth",
+      "Academic",
+      "Schedule",
+      "Postgres",
+      "Redis",
+      "RabbitMQ",
+      "Mobile BFF",
+      "Attendance",
+      "Notification",
+      "MongoDB replica set"
+    ],
+    "limitations": [
+      "Scope: actual web password login and STUDENT Homework only; no other screen acceptance is claimed.",
+      "Auth canonical background asset remains blocked by environment access (Q-ENV-002); this gallery records the actual implementation with that visual gap.",
+      "Today and notification unread-count HTTP200 verified. Renderer/export services and external providers are outside this minimal runtime scope."
+    ],
+    "serviceSources": {
+      "Auth": {
+        "sourceRevision": "3c02a3241c3ac228f887fdd7b5af9e20c2bf4753",
+        "sha256": "1a802a0d6e9870dbcdc06179d884858170ae366ddbc7d25e5b3c584237321e92"
+      },
+      "API Gateway": {
+        "sourceRevision": "3c02a3241c3ac228f887fdd7b5af9e20c2bf4753"
+      },
+      "otherBackend": "60346b26bf471a5838b0023f07076e808b876dd3"
+    },
+    "artifacts": [
+      {
+        "service": "Auth",
+        "jar": "/workspace/rct-worktrees/device-api/services/auth-service/auth-app/build/libs/auth-app-0.1.0.jar",
+        "sourceRevision": "3c02a3241c3ac228f887fdd7b5af9e20c2bf4753",
+        "sha256": "1a802a0d6e9870dbcdc06179d884858170ae366ddbc7d25e5b3c584237321e92"
+      },
+      {
+        "service": "API Gateway",
+        "jar": "/workspace/rct-worktrees/device-api/services/api-gateway/build/libs/api-gateway-0.1.0.jar",
+        "sourceRevision": "3c02a3241c3ac228f887fdd7b5af9e20c2bf4753",
+        "sha256": "593f47f69a6ad4fcb7399f50ad31775a93a1a0ceaa7fd4ae58c12cd25d7491e3"
+      },
+      {
+        "service": "Academic",
+        "jar": "/workspace/rutcampustrack/services/academic-service/academic-app/build/libs/academic-app-0.1.0.jar",
+        "sourceRevision": "60346b26bf471a5838b0023f07076e808b876dd3",
+        "sha256": "9ea2fd3f014b38c24fc34f81fd7925a6dc43dfee9244279f847bb2eec0bd5a86"
+      },
+      {
+        "service": "Mobile BFF",
+        "jar": "/workspace/rutcampustrack/services/mobile-bff/mobile-bff-app/build/libs/mobile-bff-app-0.1.0.jar",
+        "sourceRevision": "60346b26bf471a5838b0023f07076e808b876dd3",
+        "sha256": "854793e346fb36bd2ae49985e97f286f010fb43bffb2b479f9f28b2f86d81c0c"
+      },
+      {
+        "service": "Schedule",
+        "jar": "/workspace/rct-worktrees/runtime-stand/services/schedule-service/schedule-app/build/libs/schedule-app-0.1.0.jar",
+        "sourceRevision": "60346b26bf471a5838b0023f07076e808b876dd3",
+        "sha256": "b937ac602f591bf01381b6a22c5273d0bebb035d3308e23551195c57d9dbbd1f"
+      },
+      {
+        "service": "Attendance",
+        "jar": "/workspace/rct-worktrees/runtime-stand/services/attendance-service/attendance-app/build/libs/attendance-app-0.1.0.jar",
+        "sourceRevision": "60346b26bf471a5838b0023f07076e808b876dd3",
+        "sha256": "52c628b2e04ec220c261abada49acfe65e1eac35f74fc1bb47076b467a7d6137"
+      },
+      {
+        "service": "Notification",
+        "jar": "/workspace/rct-worktrees/runtime-stand/services/notification-service/notification-app/build/libs/notification-app-0.1.0.jar",
+        "sourceRevision": "60346b26bf471a5838b0023f07076e808b876dd3",
+        "sha256": "c57f270340f24c15c094e12f8eccaac0a4698801b7547a72baaef49f6a97b86c"
+      }
+    ],
+    "rootIntegrationRevision": "dcf7c4fe9747f5e9ac60c251457f61ac3acede4e",
+    "reviewStatus": "candidate capture; source recheck pending at capture start"
+  },
+  "harnessRevision": "16a5fbe0c7ce743900599121a42505240834b106",
+  "browserVersion": "154.0.8037.57",
+  "browserSettings": {
+    "serviceWorkers": "block",
+    "timezoneId": "Europe/Moscow",
+    "locale": "ru-RU",
+    "fullPage": true
+  },
+  "entries": [
+    {
+      "screenId": "WEB-AUTH-PASSWORD",
+      "stateId": "default",
+      "title": "Вход · dark",
+      "description": "Реальная форма входа до ввода данных, тема выбрана через интерфейс.",
+      "theme": "dark",
+      "width": 1440,
+      "sourceRevision": "cab5b8a2f9149cf9da22da0d411bf37739dd9746",
+      "limitations": [
+        "Канонический фоновый asset отсутствует: Q-ENV-002."
+      ],
+      "status": "captured",
+      "id": "WEB-AUTH-PASSWORD/default/dark/1440",
+      "bytes": 25112,
+      "sha256": "30a7f696dacf3b26893d17f08ec39985e53b103ef95391b0ef10f7779829beee",
+      "horizontalOverflow": false,
+      "rootFontSize": "16px",
+      "resolvedColorScheme": "dark",
+      "imageWidth": 1440,
+      "viewportHeight": 1000,
+      "imageHeight": 1000,
+      "screenshot": "screenshots/WEB-AUTH-PASSWORD__default__dark__1440.png",
+      "provenance": "real-runtime",
+      "capturedAt": "2026-10-23T22:35:17.941Z",
+      "url": "http://127.0.0.1:14210/login",
+      "http": [
+        {
+          "method": "POST",
+          "path": "/api/auth/refresh",
+          "status": 401
+        }
+      ],
+      "javascriptErrors": []
+    },
+    {
+      "screenId": "WEB-AUTH-PASSWORD",
+      "stateId": "default",
+      "title": "Вход · light",
+      "description": "Реальная форма входа до ввода данных, тема выбрана через интерфейс.",
+      "theme": "light",
+      "width": 1440,
+      "sourceRevision": "cab5b8a2f9149cf9da22da0d411bf37739dd9746",
+      "limitations": [
+        "Канонический фоновый asset отсутствует: Q-ENV-002."
+      ],
+      "status": "captured",
+      "id": "WEB-AUTH-PASSWORD/default/light/1440",
+      "bytes": 24877,
+      "sha256": "78328794e548400e968137a79f06ea9a0a323a72f1608e16330528f310fc4040",
+      "horizontalOverflow": false,
+      "rootFontSize": "16px",
+      "resolvedColorScheme": "light",
+      "imageWidth": 1440,
+      "viewportHeight": 1000,
+      "imageHeight": 1000,
+      "screenshot": "screenshots/WEB-AUTH-PASSWORD__default__light__1440.png",
+      "provenance": "real-runtime",
+      "capturedAt": "2026-10-23T22:35:18.418Z",
+      "url": "http://127.0.0.1:14210/login",
+      "http": [
+        {
+          "method": "POST",
+          "path": "/api/auth/refresh",
+          "status": 401
+        }
+      ],
+      "javascriptErrors": []
+    },
+    {
+      "screenId": "WEB-STUDENT-HOMEWORK",
+      "stateId": "populated-week",
+      "title": "Домашнее задание · неделя · dark",
+      "description": "Настоящее ДЗ1 группы1 из Academic/Schedule через BFF; личная отметка не установлена.",
+      "theme": "dark",
+      "width": 1440,
+      "sourceRevision": "cab5b8a2f9149cf9da22da0d411bf37739dd9746",
+      "limitations": [],
+      "status": "captured",
+      "id": "WEB-STUDENT-HOMEWORK/populated-week/dark/1440",
+      "bytes": 56274,
+      "sha256": "f36fb18027e14cd9b9d7653e9359dd4a35295052a28fce6e3378aaecd195d73e",
+      "horizontalOverflow": false,
+      "rootFontSize": "16px",
+      "resolvedColorScheme": "dark",
+      "imageWidth": 1440,
+      "viewportHeight": 1000,
+      "imageHeight": 1000,
+      "screenshot": "screenshots/WEB-STUDENT-HOMEWORK__populated-week__dark__1440.png",
+      "provenance": "real-runtime",
+      "capturedAt": "2026-10-23T22:35:20.024Z",
+      "url": "http://127.0.0.1:14210/student/homework",
+      "http": [
+        {
+          "method": "POST",
+          "path": "/api/auth/refresh",
+          "status": 401
+        },
+        {
+          "method": "POST",
+          "path": "/api/auth/login",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "path": "/api/auth/session",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "path": "/api/auth/device-preferences",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "path": "/api/auth/refresh",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "path": "/api/auth/session",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "path": "/api/auth/device-preferences",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "path": "/api/v1/student/homework",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "path": "/api/v1/student/homework",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "path": "/api/auth/device-preferences",
+          "status": 200
+        },
+        {
+          "method": "PUT",
+          "path": "/api/auth/device-preferences",
+          "status": 200
+        }
+      ],
+      "javascriptErrors": []
+    },
+    {
+      "screenId": "WEB-STUDENT-HOMEWORK",
+      "stateId": "populated-week",
+      "title": "Домашнее задание · неделя · dark",
+      "description": "Настоящее ДЗ1 группы1 из Academic/Schedule через BFF; личная отметка не установлена.",
+      "theme": "dark",
+      "width": 1920,
+      "sourceRevision": "cab5b8a2f9149cf9da22da0d411bf37739dd9746",
+      "limitations": [],
+      "status": "captured",
+      "id": "WEB-STUDENT-HOMEWORK/populated-week/dark/1920",
+      "bytes": 58249,
+      "sha256": "7aca39fc9aa82e69590cf6fbfd3a72fba308cc751173c850bc3ee7bf40860d22",
+      "horizontalOverflow": false,
+      "rootFontSize": "16px",
+      "resolvedColorScheme": "dark",
+      "imageWidth": 1920,
+      "viewportHeight": 1000,
+      "imageHeight": 1000,
+      "screenshot": "screenshots/WEB-STUDENT-HOMEWORK__populated-week__dark__1920.png",
+      "provenance": "real-runtime",
+      "capturedAt": "2026-10-23T22:35:20.360Z",
+      "url": "http://127.0.0.1:14210/student/homework",
+      "http": [
+        {
+          "method": "GET",
+          "path": "/api/auth/device-preferences",
+          "status": 200
+        }
+      ],
+      "javascriptErrors": []
+    },
+    {
+      "screenId": "WEB-STUDENT-HOMEWORK",
+      "stateId": "populated-week",
+      "title": "Домашнее задание · неделя · dark",
+      "description": "Настоящее ДЗ1 группы1 из Academic/Schedule через BFF; личная отметка не установлена.",
+      "theme": "dark",
+      "width": 1280,
+      "sourceRevision": "cab5b8a2f9149cf9da22da0d411bf37739dd9746",
+      "limitations": [],
+      "status": "captured",
+      "id": "WEB-STUDENT-HOMEWORK/populated-week/dark/1280",
+      "bytes": 54800,
+      "sha256": "4fed8b4f72b400f6d443f74257cd1952f81d1bd9e39c9764816b72456b61e726",
+      "horizontalOverflow": false,
+      "rootFontSize": "16px",
+      "resolvedColorScheme": "dark",
+      "imageWidth": 1280,
+      "viewportHeight": 1000,
+      "imageHeight": 1000,
+      "screenshot": "screenshots/WEB-STUDENT-HOMEWORK__populated-week__dark__1280.png",
+      "provenance": "real-runtime",
+      "capturedAt": "2026-10-23T22:35:20.682Z",
+      "url": "http://127.0.0.1:14210/student/homework",
+      "http": [
+        {
+          "method": "GET",
+          "path": "/api/auth/device-preferences",
+          "status": 200
+        }
+      ],
+      "javascriptErrors": []
+    },
+    {
+      "screenId": "WEB-STUDENT-HOMEWORK",
+      "stateId": "populated-week",
+      "title": "Домашнее задание · неделя · dark",
+      "description": "Настоящее ДЗ1 группы1 из Academic/Schedule через BFF; личная отметка не установлена.",
+      "theme": "dark",
+      "width": 1024,
+      "sourceRevision": "cab5b8a2f9149cf9da22da0d411bf37739dd9746",
+      "limitations": [],
+      "status": "captured",
+      "id": "WEB-STUDENT-HOMEWORK/populated-week/dark/1024",
+      "bytes": 51138,
+      "sha256": "cc635f13529a5627b401025a331a2f917a8fc70da4df71d1f1d455833182deed",
+      "horizontalOverflow": false,
+      "rootFontSize": "16px",
+      "resolvedColorScheme": "dark",
+      "imageWidth": 1024,
+      "viewportHeight": 1000,
+      "imageHeight": 1000,
+      "screenshot": "screenshots/WEB-STUDENT-HOMEWORK__populated-week__dark__1024.png",
+      "provenance": "real-runtime",
+      "capturedAt": "2026-10-23T22:35:21.011Z",
+      "url": "http://127.0.0.1:14210/student/homework",
+      "http": [
+        {
+          "method": "GET",
+          "path": "/api/auth/device-preferences",
+          "status": 200
+        }
+      ],
+      "javascriptErrors": []
+    },
+    {
+      "screenId": "WEB-STUDENT-HOMEWORK",
+      "stateId": "populated-week",
+      "title": "Домашнее задание · неделя · dark",
+      "description": "Настоящее ДЗ1 группы1 из Academic/Schedule через BFF; личная отметка не установлена.",
+      "theme": "dark",
+      "width": 768,
+      "sourceRevision": "cab5b8a2f9149cf9da22da0d411bf37739dd9746",
+      "limitations": [],
+      "status": "captured",
+      "id": "WEB-STUDENT-HOMEWORK/populated-week/dark/768",
+      "bytes": 49863,
+      "sha256": "28d7cd977c94a9c5caef9dc3bc5c3f0216ef4372779436167a6659239142f5bd",
+      "horizontalOverflow": false,
+      "rootFontSize": "16px",
+      "resolvedColorScheme": "dark",
+      "imageWidth": 768,
+      "viewportHeight": 1000,
+      "imageHeight": 1000,
+      "screenshot": "screenshots/WEB-STUDENT-HOMEWORK__populated-week__dark__768.png",
+      "provenance": "real-runtime",
+      "capturedAt": "2026-10-23T22:35:21.326Z",
+      "url": "http://127.0.0.1:14210/student/homework",
+      "http": [
+        {
+          "method": "GET",
+          "path": "/api/auth/device-preferences",
+          "status": 200
+        }
+      ],
+      "javascriptErrors": []
+    },
+    {
+      "screenId": "WEB-STUDENT-HOMEWORK",
+      "stateId": "populated-week",
+      "title": "Домашнее задание · неделя · dark",
+      "description": "Настоящее ДЗ1 группы1 из Academic/Schedule через BFF; личная отметка не установлена.",
+      "theme": "dark",
+      "width": 600,
+      "sourceRevision": "cab5b8a2f9149cf9da22da0d411bf37739dd9746",
+      "limitations": [],
+      "status": "captured",
+      "id": "WEB-STUDENT-HOMEWORK/populated-week/dark/600",
+      "bytes": 47085,
+      "sha256": "17089231f767399426d62ac3823c2c5fde5d67e1a329ae673c61c7d667f0c216",
+      "horizontalOverflow": false,
+      "rootFontSize": "16px",
+      "resolvedColorScheme": "dark",
+      "imageWidth": 600,
+      "viewportHeight": 1000,
+      "imageHeight": 1000,
+      "screenshot": "screenshots/WEB-STUDENT-HOMEWORK__populated-week__dark__600.png",
+      "provenance": "real-runtime",
+      "capturedAt": "2026-10-23T22:35:21.639Z",
+      "url": "http://127.0.0.1:14210/student/homework",
+      "http": [
+        {
+          "method": "GET",
+          "path": "/api/auth/device-preferences",
+          "status": 200
+        }
+      ],
+      "javascriptErrors": []
+    },
+    {
+      "screenId": "WEB-STUDENT-HOMEWORK",
+      "stateId": "populated-week",
+      "title": "Домашнее задание · неделя · dark",
+      "description": "Настоящее ДЗ1 группы1 из Academic/Schedule через BFF; личная отметка не установлена.",
+      "theme": "dark",
+      "width": 425,
+      "sourceRevision": "cab5b8a2f9149cf9da22da0d411bf37739dd9746",
+      "limitations": [],
+      "status": "captured",
+      "id": "WEB-STUDENT-HOMEWORK/populated-week/dark/425",
+      "bytes": 45267,
+      "sha256": "26109b3650e86da52d17c3338d9c07585a9e9f11d3ca2c9adff691c593289e3b",
+      "horizontalOverflow": false,
+      "rootFontSize": "16px",
+      "resolvedColorScheme": "dark",
+      "imageWidth": 425,
+      "viewportHeight": 1000,
+      "imageHeight": 1000,
+      "screenshot": "screenshots/WEB-STUDENT-HOMEWORK__populated-week__dark__425.png",
+      "provenance": "real-runtime",
+      "capturedAt": "2026-10-23T22:35:21.957Z",
+      "url": "http://127.0.0.1:14210/student/homework",
+      "http": [
+        {
+          "method": "GET",
+          "path": "/api/auth/device-preferences",
+          "status": 200
+        }
+      ],
+      "javascriptErrors": []
+    },
+    {
+      "screenId": "WEB-STUDENT-HOMEWORK",
+      "stateId": "populated-week",
+      "title": "Домашнее задание · неделя · dark",
+      "description": "Настоящее ДЗ1 группы1 из Academic/Schedule через BFF; личная отметка не установлена.",
+      "theme": "dark",
+      "width": 300,
+      "sourceRevision": "cab5b8a2f9149cf9da22da0d411bf37739dd9746",
+      "limitations": [],
+      "status": "captured",
+      "id": "WEB-STUDENT-HOMEWORK/populated-week/dark/300",
+      "bytes": 46002,
+      "sha256": "00e536aa5db8599ad712d9053addb96d1e9243e6f3bca68a6018dd3791ccbb66",
+      "horizontalOverflow": false,
+      "rootFontSize": "16px",
+      "resolvedColorScheme": "dark",
+      "imageWidth": 300,
+      "viewportHeight": 1000,
+      "imageHeight": 1000,
+      "screenshot": "screenshots/WEB-STUDENT-HOMEWORK__populated-week__dark__300.png",
+      "provenance": "real-runtime",
+      "capturedAt": "2026-10-23T22:35:22.246Z",
+      "url": "http://127.0.0.1:14210/student/homework",
+      "http": [
+        {
+          "method": "GET",
+          "path": "/api/auth/device-preferences",
+          "status": 200
+        }
+      ],
+      "javascriptErrors": []
+    },
+    {
+      "screenId": "WEB-STUDENT-HOMEWORK",
+      "stateId": "populated-week",
+      "title": "Домашнее задание · неделя · light",
+      "description": "Настоящее ДЗ1 группы1 из Academic/Schedule через BFF; личная отметка не установлена.",
+      "theme": "light",
+      "width": 1440,
+      "sourceRevision": "cab5b8a2f9149cf9da22da0d411bf37739dd9746",
+      "limitations": [],
+      "status": "captured",
+      "id": "WEB-STUDENT-HOMEWORK/populated-week/light/1440",
+      "bytes": 54032,
+      "sha256": "3620b6b50f13536dbba59a4dc694fbf5c51f17b0f59778f7e6e9ddc503ad4af8",
+      "horizontalOverflow": false,
+      "rootFontSize": "16px",
+      "resolvedColorScheme": "light",
+      "imageWidth": 1440,
+      "viewportHeight": 1000,
+      "imageHeight": 1000,
+      "screenshot": "screenshots/WEB-STUDENT-HOMEWORK__populated-week__light__1440.png",
+      "provenance": "real-runtime",
+      "capturedAt": "2026-10-23T22:35:22.602Z",
+      "url": "http://127.0.0.1:14210/student/homework",
+      "http": [
+        {
+          "method": "GET",
+          "path": "/api/auth/device-preferences",
+          "status": 200
+        },
+        {
+          "method": "PUT",
+          "path": "/api/auth/device-preferences",
+          "status": 200
+        }
+      ],
+      "javascriptErrors": []
+    },
+    {
+      "screenId": "WEB-STUDENT-HOMEWORK",
+      "stateId": "populated-week",
+      "title": "Домашнее задание · неделя · light",
+      "description": "Настоящее ДЗ1 группы1 из Academic/Schedule через BFF; личная отметка не установлена.",
+      "theme": "light",
+      "width": 1920,
+      "sourceRevision": "cab5b8a2f9149cf9da22da0d411bf37739dd9746",
+      "limitations": [],
+      "status": "captured",
+      "id": "WEB-STUDENT-HOMEWORK/populated-week/light/1920",
+      "bytes": 56003,
+      "sha256": "ec88ee4617b6f96e69cabbc0fa465ba722046f38af43e99a9e4c7788a3bd7d8a",
+      "horizontalOverflow": false,
+      "rootFontSize": "16px",
+      "resolvedColorScheme": "light",
+      "imageWidth": 1920,
+      "viewportHeight": 1000,
+      "imageHeight": 1000,
+      "screenshot": "screenshots/WEB-STUDENT-HOMEWORK__populated-week__light__1920.png",
+      "provenance": "real-runtime",
+      "capturedAt": "2026-10-23T22:35:22.919Z",
+      "url": "http://127.0.0.1:14210/student/homework",
+      "http": [
+        {
+          "method": "GET",
+          "path": "/api/auth/device-preferences",
+          "status": 200
+        }
+      ],
+      "javascriptErrors": []
+    },
+    {
+      "screenId": "WEB-STUDENT-HOMEWORK",
+      "stateId": "populated-week",
+      "title": "Домашнее задание · неделя · light",
+      "description": "Настоящее ДЗ1 группы1 из Academic/Schedule через BFF; личная отметка не установлена.",
+      "theme": "light",
+      "width": 1280,
+      "sourceRevision": "cab5b8a2f9149cf9da22da0d411bf37739dd9746",
+      "limitations": [],
+      "status": "captured",
+      "id": "WEB-STUDENT-HOMEWORK/populated-week/light/1280",
+      "bytes": 52413,
+      "sha256": "290e7617405b570c979bbc2cc0e5b44394c29b704b327a0def11dec472d9e0c4",
+      "horizontalOverflow": false,
+      "rootFontSize": "16px",
+      "resolvedColorScheme": "light",
+      "imageWidth": 1280,
+      "viewportHeight": 1000,
+      "imageHeight": 1000,
+      "screenshot": "screenshots/WEB-STUDENT-HOMEWORK__populated-week__light__1280.png",
+      "provenance": "real-runtime",
+      "capturedAt": "2026-10-23T22:35:23.213Z",
+      "url": "http://127.0.0.1:14210/student/homework",
+      "http": [
+        {
+          "method": "GET",
+          "path": "/api/auth/device-preferences",
+          "status": 200
+        }
+      ],
+      "javascriptErrors": []
+    },
+    {
+      "screenId": "WEB-STUDENT-HOMEWORK",
+      "stateId": "populated-week",
+      "title": "Домашнее задание · неделя · light",
+      "description": "Настоящее ДЗ1 группы1 из Academic/Schedule через BFF; личная отметка не установлена.",
+      "theme": "light",
+      "width": 1024,
+      "sourceRevision": "cab5b8a2f9149cf9da22da0d411bf37739dd9746",
+      "limitations": [],
+      "status": "captured",
+      "id": "WEB-STUDENT-HOMEWORK/populated-week/light/1024",
+      "bytes": 49409,
+      "sha256": "caebff59b9dcb838f81f8ec984de4b4caaea481d8ae5a8562dc3a6ad8f26b55b",
+      "horizontalOverflow": false,
+      "rootFontSize": "16px",
+      "resolvedColorScheme": "light",
+      "imageWidth": 1024,
+      "viewportHeight": 1000,
+      "imageHeight": 1000,
+      "screenshot": "screenshots/WEB-STUDENT-HOMEWORK__populated-week__light__1024.png",
+      "provenance": "real-runtime",
+      "capturedAt": "2026-10-23T22:35:23.521Z",
+      "url": "http://127.0.0.1:14210/student/homework",
+      "http": [
+        {
+          "method": "GET",
+          "path": "/api/auth/device-preferences",
+          "status": 200
+        }
+      ],
+      "javascriptErrors": []
+    },
+    {
+      "screenId": "WEB-STUDENT-HOMEWORK",
+      "stateId": "populated-week",
+      "title": "Домашнее задание · неделя · light",
+      "description": "Настоящее ДЗ1 группы1 из Academic/Schedule через BFF; личная отметка не установлена.",
+      "theme": "light",
+      "width": 768,
+      "sourceRevision": "cab5b8a2f9149cf9da22da0d411bf37739dd9746",
+      "limitations": [],
+      "status": "captured",
+      "id": "WEB-STUDENT-HOMEWORK/populated-week/light/768",
+      "bytes": 48431,
+      "sha256": "273a14ed1daae5f78c3d1195a712510d7cb109b58658ba6273117e9f6cfbe723",
+      "horizontalOverflow": false,
+      "rootFontSize": "16px",
+      "resolvedColorScheme": "light",
+      "imageWidth": 768,
+      "viewportHeight": 1000,
+      "imageHeight": 1000,
+      "screenshot": "screenshots/WEB-STUDENT-HOMEWORK__populated-week__light__768.png",
+      "provenance": "real-runtime",
+      "capturedAt": "2026-10-23T22:35:23.817Z",
+      "url": "http://127.0.0.1:14210/student/homework",
+      "http": [
+        {
+          "method": "GET",
+          "path": "/api/auth/device-preferences",
+          "status": 200
+        }
+      ],
+      "javascriptErrors": []
+    },
+    {
+      "screenId": "WEB-STUDENT-HOMEWORK",
+      "stateId": "populated-week",
+      "title": "Домашнее задание · неделя · light",
+      "description": "Настоящее ДЗ1 группы1 из Academic/Schedule через BFF; личная отметка не установлена.",
+      "theme": "light",
+      "width": 600,
+      "sourceRevision": "cab5b8a2f9149cf9da22da0d411bf37739dd9746",
+      "limitations": [],
+      "status": "captured",
+      "id": "WEB-STUDENT-HOMEWORK/populated-week/light/600",
+      "bytes": 45662,
+      "sha256": "11647a96a5dd688859e8404b126bb401c7009d1383ea607df5c39a29488bf69d",
+      "horizontalOverflow": false,
+      "rootFontSize": "16px",
+      "resolvedColorScheme": "light",
+      "imageWidth": 600,
+      "viewportHeight": 1000,
+      "imageHeight": 1000,
+      "screenshot": "screenshots/WEB-STUDENT-HOMEWORK__populated-week__light__600.png",
+      "provenance": "real-runtime",
+      "capturedAt": "2026-10-23T22:35:24.099Z",
+      "url": "http://127.0.0.1:14210/student/homework",
+      "http": [
+        {
+          "method": "GET",
+          "path": "/api/auth/device-preferences",
+          "status": 200
+        }
+      ],
+      "javascriptErrors": []
+    },
+    {
+      "screenId": "WEB-STUDENT-HOMEWORK",
+      "stateId": "populated-week",
+      "title": "Домашнее задание · неделя · light",
+      "description": "Настоящее ДЗ1 группы1 из Academic/Schedule через BFF; личная отметка не установлена.",
+      "theme": "light",
+      "width": 425,
+      "sourceRevision": "cab5b8a2f9149cf9da22da0d411bf37739dd9746",
+      "limitations": [],
+      "status": "captured",
+      "id": "WEB-STUDENT-HOMEWORK/populated-week/light/425",
+      "bytes": 43731,
+      "sha256": "2a7dc9fa2f51fa5710d1552e9247c51181fc56cfa4e1e3ca6cf4d04a43515a0d",
+      "horizontalOverflow": false,
+      "rootFontSize": "16px",
+      "resolvedColorScheme": "light",
+      "imageWidth": 425,
+      "viewportHeight": 1000,
+      "imageHeight": 1000,
+      "screenshot": "screenshots/WEB-STUDENT-HOMEWORK__populated-week__light__425.png",
+      "provenance": "real-runtime",
+      "capturedAt": "2026-10-23T22:35:24.381Z",
+      "url": "http://127.0.0.1:14210/student/homework",
+      "http": [
+        {
+          "method": "GET",
+          "path": "/api/auth/device-preferences",
+          "status": 200
+        }
+      ],
+      "javascriptErrors": []
+    },
+    {
+      "screenId": "WEB-STUDENT-HOMEWORK",
+      "stateId": "populated-week",
+      "title": "Домашнее задание · неделя · light",
+      "description": "Настоящее ДЗ1 группы1 из Academic/Schedule через BFF; личная отметка не установлена.",
+      "theme": "light",
+      "width": 300,
+      "sourceRevision": "cab5b8a2f9149cf9da22da0d411bf37739dd9746",
+      "limitations": [],
+      "status": "captured",
+      "id": "WEB-STUDENT-HOMEWORK/populated-week/light/300",
+      "bytes": 44354,
+      "sha256": "3f6f73a99b5345ce494f92e9b7490b5396b05f894b82c4143598fbccca7f729e",
+      "horizontalOverflow": false,
+      "rootFontSize": "16px",
+      "resolvedColorScheme": "light",
+      "imageWidth": 300,
+      "viewportHeight": 1000,
+      "imageHeight": 1000,
+      "screenshot": "screenshots/WEB-STUDENT-HOMEWORK__populated-week__light__300.png",
+      "provenance": "real-runtime",
+      "capturedAt": "2026-10-23T22:35:24.686Z",
+      "url": "http://127.0.0.1:14210/student/homework",
+      "http": [
+        {
+          "method": "GET",
+          "path": "/api/auth/device-preferences",
+          "status": 200
+        }
+      ],
+      "javascriptErrors": []
+    },
+    {
+      "screenId": "WEB-STUDENT-HOMEWORK",
+      "stateId": "completed-week",
+      "title": "Домашнее задание · выполнено · dark",
+      "description": "Личная отметка выполнения установлена настоящим PUT200; после съёмки снимается, сессия отзывается через UI.",
+      "theme": "dark",
+      "width": 1440,
+      "sourceRevision": "cab5b8a2f9149cf9da22da0d411bf37739dd9746",
+      "limitations": [],
+      "status": "captured",
+      "id": "WEB-STUDENT-HOMEWORK/completed-week/dark/1440",
+      "bytes": 55741,
+      "sha256": "3bd9f13e0729ec1ebd0877dbf16554503b27dc71bf66e660cef3ac20af53604c",
+      "horizontalOverflow": false,
+      "rootFontSize": "16px",
+      "resolvedColorScheme": "dark",
+      "imageWidth": 1440,
+      "viewportHeight": 1000,
+      "imageHeight": 1000,
+      "screenshot": "screenshots/WEB-STUDENT-HOMEWORK__completed-week__dark__1440.png",
+      "provenance": "real-runtime",
+      "capturedAt": "2026-10-23T22:35:25.242Z",
+      "url": "http://127.0.0.1:14210/student/homework",
+      "http": [
+        {
+          "method": "GET",
+          "path": "/api/auth/device-preferences",
+          "status": 200
+        },
+        {
+          "method": "PUT",
+          "path": "/api/auth/device-preferences",
+          "status": 200
+        },
+        {
+          "method": "PUT",
+          "path": "/api/v1/student/homework/1/completion",
+          "status": 200
+        }
+      ],
+      "javascriptErrors": []
+    },
+    {
+      "screenId": "WEB-STUDENT-HOMEWORK",
+      "stateId": "completed-week",
+      "title": "Домашнее задание · выполнено · light",
+      "description": "Личная отметка выполнения установлена настоящим PUT200; после съёмки снимается, сессия отзывается через UI.",
+      "theme": "light",
+      "width": 1440,
+      "sourceRevision": "cab5b8a2f9149cf9da22da0d411bf37739dd9746",
+      "limitations": [],
+      "status": "captured",
+      "id": "WEB-STUDENT-HOMEWORK/completed-week/light/1440",
+      "bytes": 54351,
+      "sha256": "7dfc94edf275e4ad24dd9074d02d529eb8d79046006a4f632bb9ec916efd0e5e",
+      "horizontalOverflow": false,
+      "rootFontSize": "16px",
+      "resolvedColorScheme": "light",
+      "imageWidth": 1440,
+      "viewportHeight": 1000,
+      "imageHeight": 1000,
+      "screenshot": "screenshots/WEB-STUDENT-HOMEWORK__completed-week__light__1440.png",
+      "provenance": "real-runtime",
+      "capturedAt": "2026-10-23T22:35:25.560Z",
+      "url": "http://127.0.0.1:14210/student/homework",
+      "http": [
+        {
+          "method": "GET",
+          "path": "/api/auth/device-preferences",
+          "status": 200
+        },
+        {
+          "method": "PUT",
+          "path": "/api/auth/device-preferences",
+          "status": 200
+        },
+        {
+          "method": "PUT",
+          "path": "/api/v1/student/homework/1/completion",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "path": "/api/auth/logout",
+          "status": 204
+        }
+      ],
+      "javascriptErrors": []
+    }
+  ]
+}

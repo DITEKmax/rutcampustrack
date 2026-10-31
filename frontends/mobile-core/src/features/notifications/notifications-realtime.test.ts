@@ -227,3 +227,66 @@ describe('admin dashboard invalidation on the existing transport', () => {
     }
   })
 })
+
+describe('role withdrawal readmission', () => {
+  it.each([401, 403])('readmits one typed %s denial and fences a retired owner', async (status) => {
+    let generation = 1
+    const refresh = vi.fn(async () => {
+      generation += 1
+    })
+    const fetcher = vi.fn(async () => Response.json({ code: 'WRONG_ROLE' }, { status }))
+    let config!: StompConfig
+    const fake = { activate: vi.fn(), deactivate: vi.fn(async () => undefined), subscribe: vi.fn() }
+    const lifecycle = createGenerationBoundNotificationsRealtime({
+      owner: {
+        currentGeneration: () => generation,
+        accessTokenFor: () => 'old',
+        refreshFor: refresh,
+      },
+      scope: { userId: '42', groupId: '17', headman: false },
+      onChanged: vi.fn(),
+      fetcher,
+      createClient(value) {
+        config = value
+        return fake
+      },
+    })
+    await config.beforeConnect?.(fake as unknown as Client)
+    await config.beforeConnect?.(fake as unknown as Client)
+    expect(refresh).toHaveBeenCalledOnce()
+    expect(fetcher).toHaveBeenCalledOnce()
+    lifecycle.dispose()
+  })
+  it('keeps generic close and forbidden retries free of auth writes and ignores a late successor', async () => {
+    let generation = 1
+    const refresh = vi.fn(async () => undefined)
+    const fetcher = vi.fn(async () => Response.json({ code: 'OUT_OF_SCOPE' }, { status: 403 }))
+    let config!: StompConfig
+    const fake = { activate: vi.fn(), deactivate: vi.fn(async () => undefined), subscribe: vi.fn() }
+    const changed = vi.fn()
+    const lifecycle = createGenerationBoundNotificationsRealtime({
+      owner: {
+        currentGeneration: () => generation,
+        accessTokenFor: () => 'old',
+        refreshFor: refresh,
+      },
+      scope: { userId: '42', groupId: '17', headman: false },
+      onChanged: changed,
+      fetcher,
+      createClient(value) {
+        config = value
+        return fake
+      },
+    })
+    await config.beforeConnect?.(fake as unknown as Client)
+    config.onWebSocketClose?.({} as never)
+    config.onWebSocketClose?.({} as never)
+    expect(refresh).not.toHaveBeenCalled()
+    expect(fetcher).toHaveBeenCalledOnce()
+    generation += 1
+    await config.beforeConnect?.(fake as unknown as Client)
+    expect(fetcher).toHaveBeenCalledOnce()
+    expect(changed).not.toHaveBeenCalled()
+    lifecycle.dispose()
+  })
+})

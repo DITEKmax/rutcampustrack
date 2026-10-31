@@ -29,7 +29,7 @@
 .headman-homework button:disabled {
   cursor: default;
 }
-.headman-homework img {
+.headman-homework :is(img, .rct-svg-icon) {
   flex: 0 0 auto;
 }
 .headman-homework__header h1 {
@@ -163,7 +163,7 @@
   background: var(--rct-color-surface-raised);
   color: var(--rct-color-text-secondary);
 }
-.headman-homework__archive-link img:last-child {
+.headman-homework__archive-link :is(img, .rct-svg-icon):last-child {
   margin-inline-start: auto;
 }
 .headman-homework__progress {
@@ -492,7 +492,7 @@
   background: var(--rct-color-surface-float);
   z-index: 1;
 }
-.headman-homework-back img {
+.headman-homework-back :is(img, .rct-svg-icon) {
   transform: none;
 }
 

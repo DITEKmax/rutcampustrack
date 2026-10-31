@@ -21,6 +21,79 @@ MODULES = {
 TEST_ANNOTATIONS = {"Test", "ParameterizedTest", "RepeatedTest", "TestFactory", "TestTemplate"}
 IDENTIFIER = re.compile(r"[A-Za-z_$][A-Za-z0-9_$]*\Z")
 MAX_XML_BYTES = 32 * 1024 * 1024
+# Ordinary integration guarantees are source identities, not frozen source bytes.
+# Historical sensitivity/restoration proofs remain separate workflow gates.
+ORDINARY_INTEGRATION = {
+    "schedule-service": (
+        ("ru.rutcampustrack.schedule.integration.LessonApiIT",
+         "semesterProgressCountsFullPhysicalSemesterWithoutChangingDefaultLessonPage",
+         "integration/LessonApiIT.java"),
+        ("ru.rutcampustrack.schedule.oneoff.OneOffLessonControllerIT",
+         "concurrentDifferentKeysForSamePhysicalSlot_haveOneDurableWinnerAndTypedConflict",
+         "oneoff/OneOffLessonControllerIT.java"),
+    ),
+    "auth-service": (
+        ("ru.rutcampustrack.auth.integration.AuthOtpFlowIT",
+         "ordinaryPasswordResetDoesNotIssueOrCompleteForActiveAdmin", "integration/AuthOtpFlowIT.java"),
+        ("ru.rutcampustrack.auth.integration.SubjectDeletionProofHttpIT",
+         "passwordAndExactPurposeScopedProofProduceOneDurableReplayableReceipt",
+         "integration/SubjectDeletionProofHttpIT.java"),
+        ("ru.rutcampustrack.auth.integration.SubjectDeletionProofHttpIT",
+         "loginOtpCannotAuthorizeSubjectDeletionAndRemainsUsableForLogin",
+         "integration/SubjectDeletionProofHttpIT.java"),
+    ),
+    "academic-service": (
+        ("ru.rutcampustrack.academic.exportjobs.AcademicExportJobsIT",
+         "teacherReadyArtifactRequiresEveryCapturedCurrentAssignmentAfterScopeShrinks",
+         "exportjobs/AcademicExportJobsIT.java"),
+        ("ru.rutcampustrack.academic.admin.AdminAccessAuthorityIT",
+         "unknownAndNullPermissionElementsAreRejectedWithoutAuthorityMutation", "admin/AdminAccessAuthorityIT.java"),
+        ("ru.rutcampustrack.academic.group.GroupPromotionCycleIT",
+         "unfinishedSpringRejectsSignedManualPreviewAndExecutionWithoutChangingDurableState",
+         "group/GroupPromotionCycleIT.java"),
+        ("ru.rutcampustrack.academic.integration.HistoricalMembershipIT",
+         "initialEnrollmentAndEquivalentRoleAddAtomicallyAdmitPrivateBackfill", "integration/HistoricalMembershipIT.java"),
+        ("ru.rutcampustrack.academic.integration.HistoricalMembershipIT",
+         "refusedOutboxAndPostFenceEnrollmentRollbackUserHistoryWorkAndOutbox", "integration/HistoricalMembershipIT.java"),
+        ("ru.rutcampustrack.academic.integration.HistoricalMembershipIT",
+         "onlyExactBackfillAcknowledgementDrainsArchiveAndRetainsReplayIdentity", "integration/HistoricalMembershipIT.java"),
+        ("ru.rutcampustrack.academic.integration.HistoricalMembershipIT",
+         "v61IsAdditiveAndRestoresPendingAndAppliedReplayIdentities", "integration/HistoricalMembershipIT.java"),
+    ),
+    "attendance-service": (
+        ("ru.rutcampustrack.attendance.studentrequest.StudentRequestDomainIT",
+         "studentWeeklyGroupComparisonUsesPersistedHistoricalCellsAndRejectsForeignCatalogue",
+         "studentrequest/StudentRequestDomainIT.java"),
+        ("ru.rutcampustrack.attendance.studentrequest.StudentRequestDomainIT",
+         "blockedLessonDeniesManualRequestButAllowsExcuseAndUnblockRestoresEligibility",
+         "studentrequest/StudentRequestDomainIT.java"),
+        ("ru.rutcampustrack.attendance.integration.EventConsumerIT",
+         "lateInitialMembershipBackfillsOnlyDatedTargetAfterCommittedCloseAndReplaysAfterSeal",
+         "integration/EventConsumerIT.java"),
+        ("ru.rutcampustrack.attendance.integration.EventConsumerIT",
+         "initialMembershipForeignUnknownAndOutboxFailureNeverPartiallyApply", "integration/EventConsumerIT.java"),
+        ("ru.rutcampustrack.attendance.integration.EventConsumerIT",
+         "initialMembershipCannotResurrectSubjectOrSemesterTombstones", "integration/EventConsumerIT.java"),
+    ),
+}
+ORDINARY_PRODUCTION = {
+    "schedule-service": (
+        "src/main/java/ru/rutcampustrack/schedule/lesson/repository/LessonRepository.java",
+        "src/main/resources/db/migration/V17__student_occurrence_homework_binding.sql",
+    ),
+    "auth-service": ("src/main/java/ru/rutcampustrack/auth/service/SubjectDeletionProofService.java",),
+    "academic-service": (
+        "src/main/java/ru/rutcampustrack/academic/exportjobs/LocalReportAuthority.java",
+        "src/main/java/ru/rutcampustrack/academic/admin/AdminAccessService.java",
+        "src/main/java/ru/rutcampustrack/academic/group/GroupPromotionService.java",
+        "src/main/java/ru/rutcampustrack/academic/repository/SemesterRepository.java",
+    ),
+    "attendance-service": (
+        "src/main/java/ru/rutcampustrack/attendance/studentrequest/StudentRequestService.java",
+        "src/main/java/ru/rutcampustrack/attendance/event/InitialMembershipAttendanceBackfillService.java",
+    ),
+}
+MAX_OUTCOME_JSON_BYTES = 32 * 1024 * 1024
 CAP_CLASS = "ru.rutcampustrack.schedule.integration.RecurringScheduleItemIT"
 CAP_METHOD = "capNarrowingCommitIsFreshBeforeBlockedPhysicalInsert"
 CAP_FAILURE_CLASSES = (
@@ -440,7 +513,7 @@ def unlinked_scoped_path(root: Path, path: Path, scope: Path) -> bool:
         return False
 
 
-def source_registry(root: Path, module: str) -> dict[str, dict]:
+def source_registry(root: Path, module: str, *, reject_duplicates: bool = False) -> dict[str, dict]:
     registry = {}
     paths = git(root, "ls-files", "-z", "--", f"{module}/src/test/java").split("\0")
     for relative in paths:
@@ -451,6 +524,8 @@ def source_registry(root: Path, module: str) -> dict[str, dict]:
             continue
         data = path.read_bytes()
         for classname, methods in java_test_declarations(data.decode("utf8")).items():
+            if reject_duplicates and classname in registry:
+                raise ValueError("ORDINARY_DUPLICATE_SOURCE")
             registry[classname] = {"methods": methods, "source": relative, "sha256": hashlib.sha256(data).hexdigest()}
     return registry
 
@@ -484,7 +559,7 @@ def metadata(root: Path, service: str, task: str, environment: dict[str, str]) -
         result[field] = value
     event = environment.get("RCT_CI_EVENT_NAME", "LOCAL_CONTROL")
     outcome = environment.get("RCT_CI_TEST_OUTCOME", "UNKNOWN")
-    if event not in {"push", "pull_request", "LOCAL_CONTROL"} or outcome not in {
+    if event not in {"push", "pull_request", "workflow_dispatch", "LOCAL_CONTROL"} or outcome not in {
         "success",
         "failure",
         "cancelled",
@@ -1039,13 +1114,112 @@ def collect(root: Path, service: str, task: str, environment: dict[str, str]) ->
     return report
 
 
+def strict_outcome_json(root: Path, path: Path, service: str) -> dict:
+    scope = root / "build/ci-test-outcomes" / service / "integrationTest"
+    if not unlinked_scoped_path(root, path, scope) or not path.is_file():
+        raise ValueError("ORDINARY_REPORT_PATH")
+    with path.open("rb") as stream:
+        data = stream.read(MAX_OUTCOME_JSON_BYTES + 1)
+    if not 0 < len(data) <= MAX_OUTCOME_JSON_BYTES:
+        raise ValueError("ORDINARY_REPORT_SIZE")
+
+    def pairs(items):
+        result = {}
+        for key, value in items:
+            if key in result:
+                raise ValueError("ORDINARY_DUPLICATE_JSON")
+            result[key] = value
+        return result
+
+    def nonfinite(_):
+        raise ValueError("ORDINARY_NONFINITE_JSON")
+
+    return json.loads(data, object_pairs_hook=pairs, parse_constant=nonfinite)
+
+
+def clean_checkout_file(root: Path, relative: str, scope: Path) -> None:
+    path = root / relative
+    if not unlinked_scoped_path(root, path, scope) or not path.is_file():
+        raise ValueError("ORDINARY_SOURCE_PATH")
+    if git(root, "status", "--porcelain", "--", relative):
+        raise ValueError("ORDINARY_SOURCE_DIRTY")
+    # HEAD equality also rejects untracked/ignored files and index-only substitutions.
+    original = subprocess.run(
+        ["git", "show", "HEAD:" + relative], cwd=root, capture_output=True, check=False
+    )
+    if original.returncode or path.read_bytes() != original.stdout:
+        raise ValueError("ORDINARY_SOURCE_REVISION")
+
+
+def verify_ordinary_integration(
+    root: Path, service: str, task: str, environment: dict[str, str], path: Path
+) -> None:
+    """Fail closed on ordinary proof; LOCAL_CONTROL never becomes hosted CI evidence."""
+    if service not in MODULES or task != "integrationTest":
+        raise ValueError("ORDINARY_SCOPE")
+    expected = metadata(root, service, task, environment)
+    if expected["job"] != "java-integration-test" or expected["testStepOutcome"] != "success":
+        raise ValueError("ORDINARY_EXECUTION")
+    if expected["event"] == "LOCAL_CONTROL":
+        if expected["runId"] is not None or expected["runAttempt"] is not None:
+            raise ValueError("ORDINARY_LOCAL_RUN")
+    elif any(
+        name not in environment
+        for name in (
+            "RCT_CI_PR_HEAD_SHA", "RCT_CI_JOB_ID", "RCT_CI_RUN_ID", "RCT_CI_RUN_ATTEMPT"
+        )
+    ) or expected["runId"] is None or expected["runAttempt"] is None:
+        raise ValueError("ORDINARY_CI_RUN")
+
+    value = strict_outcome_json(root, path, service)
+    # Recollect through the same safe parser: validates all metadata, summaries and
+    # XML ordinals/counts without accepting edited/stale JSON as native evidence.
+    current = collect(root, service, task, environment)
+    if json.dumps(value, sort_keys=True) != json.dumps(current, sort_keys=True) or value.get("metadata") != expected:
+        raise ValueError("ORDINARY_REPORT_BINDING")
+    if value.get("collection") != "RESULTS":
+        raise ValueError("ORDINARY_INCOMPLETE")
+    if any(case["status"] in {"FAILED", "ERROR", "NOT_EXECUTED"} for case in value["cases"]):
+        raise ValueError("ORDINARY_FAILED")
+
+    module = MODULES[service]
+    registry = source_registry(root, module, reject_duplicates=True)
+    for classname, method, suffix in ORDINARY_INTEGRATION.get(service, ()):
+        source = f"{module}/src/test/java/ru/rutcampustrack/{service.removesuffix('-service')}/{suffix}"
+        known = registry.get(classname)
+        if not known or known["source"] != source or method not in known["methods"]:
+            raise ValueError("ORDINARY_SOURCE_IDENTITY")
+        clean_checkout_file(root, source, root / module / "src/test/java")
+        selected = [
+            case for case in value["cases"]
+            if case.get("classname") == classname and case.get("method") == method
+        ]
+        if len(selected) != 1:
+            raise ValueError("ORDINARY_CASE_COUNT")
+        case = selected[0]
+        if (
+            case.get("identity") != "SOURCE_METHOD"
+            or case.get("source") != source
+            or case.get("sourceSha256") != known["sha256"]
+            or case.get("status") != "PASSED"
+        ):
+            raise ValueError("ORDINARY_CASE_IDENTITY")
+    for suffix in ORDINARY_PRODUCTION.get(service, ()):
+        clean_checkout_file(root, f"{module}/{suffix}", root / module / "src/main")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--service", required=True, choices=MODULES)
     parser.add_argument("--task", required=True, choices=("test", "integrationTest"))
+    parser.add_argument("--verify-ordinary-integration", action="store_true",
+                        help="Require successful current ordinary integration proof (CI or LOCAL_CONTROL)")
     arguments = parser.parse_args()
     root = Path(__file__).resolve().parent.parent
     output = root / "build/ci-test-outcomes" / arguments.service / arguments.task / "safe-outcomes.json"
+    if arguments.verify_ordinary_integration and not unlinked_scoped_path(root, output, output.parent):
+        print("ORDINARY_INTEGRATION_REJECTED")
+        raise SystemExit(1)
     try:
         environment = {name: os.environ[name] for name in METADATA_ENV if name in os.environ}
         report = collect(root, arguments.service, arguments.task, environment)
@@ -1055,6 +1229,14 @@ def main() -> None:
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(json.dumps(report, indent=2) + "\n", encoding="utf8")
     print(json.dumps({"collection": report["collection"], "acceptance": "NOT_ASSESSED"}))
+    if arguments.verify_ordinary_integration:
+        try:
+            verify_ordinary_integration(root, arguments.service, arguments.task, environment, output)
+        except Exception:
+            # Fixed diagnostic only; exceptions may contain native/private input.
+            print("ORDINARY_INTEGRATION_REJECTED")
+            raise SystemExit(1)
+        print("ORDINARY_INTEGRATION_VERIFIED")
 
 
 if __name__ == "__main__":

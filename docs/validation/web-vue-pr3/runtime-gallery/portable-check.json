@@ -1,0 +1,14 @@
+{
+  "kind": "portable-gallery-data-only-refresh",
+  "result": "PASS local metadata/image hashes/paths only",
+  "imageCount": 278,
+  "old204ImagePin": "08a3d1aa45b23967168589afa1c2d7ff083e1de9",
+  "artifactSha256": "95b5dab64693195a78a9f779f81a2b558483000bbd961f46f9cc180c35540602",
+  "priorBrowserSmoke": "portable-check-200-51e46f715.json",
+  "priorDataOnlyRefresh": "portable-check-204-historical.json",
+  "renderLogicUnchanged": true,
+  "browserNotRerun": "Only data/count/text changed; renderer byte-equal to85c and previous browser smoke reused. No new278-browser or external HTTP availability claim.",
+  "functionalActionsAdded": 0,
+  "new74ImageSource": "existing PR branch/permanent filenames/SHA256",
+  "newPublicationQualification": "Three new actual frames (PWA after2, WEB relogin1), plus two unchanged original79e AdminMore frames newly published/reused; no new runtime/auth for those originals."
+}

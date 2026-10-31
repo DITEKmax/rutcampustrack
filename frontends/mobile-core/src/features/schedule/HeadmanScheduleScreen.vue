@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import SvgIcon from '../../../../shared/foundation/SvgIcon.vue';
 import type { NotificationAction } from '../notifications/notifications-v2-models';
 import { notificationNumericId } from '../notifications/notifications-actions';
 import { computed, nextTick, onBeforeUnmount, ref, shallowRef, useId, watch } from 'vue';
@@ -1807,11 +1808,11 @@ defineExpose({ openNotificationAction });
         type="button"
         @click="onBack"
       >
-        <img
+        <SvgIcon
           v-if="route.id === homeworkRouteId"
           :src="homeworkBackIcon"
           alt="Назад"
-        >
+        />
         <template v-else>
           Назад
         </template>

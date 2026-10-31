@@ -1,0 +1,74 @@
+{
+  "sourceRevision": "7ff97da6e1d557b7ec37471e9f5926007d59bf7d",
+  "rawRunResult": "exit1, stopped first causal notification locator failure; original retained",
+  "startedAt": "2026-10-24T18:22:17.411Z",
+  "finishedAt": "2026-10-24T18:22:35.213Z",
+  "elapsedSeconds": 17.802,
+  "command": "timeout --signal=TERM --kill-after=5s 60s node mobile-next.cjs first",
+  "rawReceipt": "mobile-next-first-receipt.json",
+  "rawHarness": "mobile-next-first-attempt1.cjs",
+  "personallyViewedAll12Png": true,
+  "hashIntegrity": "12/12 retained original SHA256 match",
+  "criteria": {
+    "MB-TODAY-BP": {
+      "status": "ready bounded actual day-ended baseline",
+      "widths": [
+        425,
+        600,
+        768,
+        1024,
+        1280,
+        1920
+      ],
+      "themes": [
+        "light",
+        "dark"
+      ],
+      "actualRead": "/api/v1/student/today200",
+      "observations": [
+        "Two actual synthetic stand lesson cards and ended-day explanation visible across all6widths/both themes.",
+        "Titles/room metadata/time/status badges readable, no horizontal content loss; scrollWidth equalsviewport for12.",
+        "Navigation5items visible and currentToday distinct; bell+unread94 visible; wide viewports retain intended existing narrow centered mobile content, no new desktop layout inferred.",
+        "Header bell is a second row under role pill in all12. Source contains .today-topbar grid and shared notifications-role-header flex with equal specificity; this is a retained layout observation, not a blocker without accepted row-placement criterion."
+      ],
+      "limits": [
+        "No active/disabled checkin action rendered at actual18:22 UTC day-ended state; checkin eligibility/control states remainnotchecked.",
+        "Not empty/error/loading/form/keyboard acceptance; not whole screen allstateREADY."
+      ]
+    },
+    "MB-NOTIF-BASE": {
+      "status": "notchecked",
+      "cause": "Harness regex /^Уведомления/ contradicts actual component aria-label Открыть уведомления[, ...]; visible bell in all12, no inbox request, no evidence of broken navigation.",
+      "source": "frontends/mobile-core/src/features/notifications/NotificationsEntryButton.vue:13",
+      "changedHypothesis": "Use /^Открыть уведомления(?:,|$)/ normal availablebutton; separate4frame-only packet, do not repeatToday."
+    },
+    "MB-CLEAN": {
+      "status": "ready",
+      "cleanup": [
+        {
+          "consumer": "PWA",
+          "exactOwnHandleCaptured": true,
+          "nativeLogoutSent": true,
+          "fallbackUsed": false,
+          "httpStatus": 204,
+          "guestReadStatus": 401,
+          "confirmed": true
+        }
+      ],
+      "domainMutations": [],
+      "pageErrors": [],
+      "privateHandleMode": "0600 confirmed; SID/bearer excluded from publicreceipt",
+      "browser": "Own context/browser closed by finally; other existing root browser untouched"
+    },
+    "MB-TMA-ENTRY": {
+      "status": "notchecked",
+      "reason": "Not part firstwindow"
+    }
+  },
+  "newFunctionalActions": 0,
+  "whole83ReadinessClaim": false,
+  "modelRequested": "gpt-6.1-sol/high",
+  "runtimeTelemetry": "unavailable",
+  "nextPreparedCommand": "timeout --signal=TERM --kill-after=5s 60s node mobile-next.cjs notification-first4",
+  "nextExecution": "pending Root GO"
+}

@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "kind": "real-runtime-gallery",
+  "title": "Положительная GEO64 — текущий readonlyrender",
+  "functionalTestCount": 0,
+  "scope": "One render after separately accepted nativeUI functional case; no second command",
+  "limits": [
+    "Nativecommand/source1aea, thisreadonlylabelrender/source43b7.",
+    "SIMULATED browser-native geolocation provider in originalcase, no physicalpresence claim.",
+    "Reference/Figma absent; originalnativePNG retained in functionalcheckpoint."
+  ],
+  "screenshots": [
+    {
+      "id": "WEB-STUDENT-HOME__geo-present-current-label__light__1440__43b7f6451",
+      "screen": "WEB-STUDENT-HOME",
+      "state": "geo-present-current-label",
+      "theme": "light",
+      "width": 1440,
+      "revision": "43b7f6451fc5b9dc7de72827de41d222af469149",
+      "title": "Геоотметка подтверждена",
+      "description": "Текущий readonlyrender после настоящего nativeUI check-in в естественном окне; незавершённый сегодняшний период подписан точно. Повторной команды нет.",
+      "image": "screenshots/WEB-STUDENT-HOME__geo-present-current-label__light__1440__43b7f6451.png",
+      "pixelWidth": 1440,
+      "pixelHeight": 1307,
+      "bytes": 128884,
+      "sha256": "95a0d585a4a863b12ef655f5e3c74d9696c74d1250006892e830240e62539510",
+      "provenance": "real-runtime",
+      "syntheticFixtureData": true
+    }
+  ]
+}

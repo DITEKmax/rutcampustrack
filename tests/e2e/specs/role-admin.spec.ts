@@ -1,37 +1,33 @@
-import { expectWebPanelRoute } from '../fixtures/web-panel-route';
-import { test, expect } from '@playwright/test';
+import { expect, type Request } from '@playwright/test';
+import { test } from '../fixtures/artifact-privacy';
 import { TEST_USERS } from '../fixtures/users';
 import { loginAs } from '../fixtures/auth';
-
-/**
- * M08 Группа 5 (P2-8/5) — role-admin golden paths.
- *
- * Admin-only пути:
- *  - /admin/dashboard — live-status overview
- *  - /admin/users — CRUD пользователей
- *  - /admin/groups — CRUD групп
- *  - /admin/semesters — управление семестрами
- *  - /admin/settings — глобальные настройки
- *
- * Cross-role guard: admin не должен иметь прямой доступ к /teacher/*
- * или /student/* (role-guard redirect → /admin/dashboard).
- */
+import { expectWebPanelRoute } from '../fixtures/web-panel-route';
 
 test.describe('Role: ADMIN', () => {
   test.beforeEach(async ({ page }) => {
     await loginAs(page, TEST_USERS.admin);
   });
 
-  test('can access admin-only paths', async ({ page }) => {
-    const paths = ['/admin/dashboard', '/admin/users', '/admin/groups', '/admin/semesters'];
-    for (const path of paths) {
+  test('can access actually permitted dashboard and registries with loaded identities', async ({ page }) => {
+    for (const path of ['/admin/dashboard', '/admin/users', '/admin/groups', '/admin/semesters'])
       await expectWebPanelRoute(page, path);
-    }
   });
 
-  test('cannot access /student/* — redirected to /admin/dashboard', async ({ page }) => {
-    await page.goto('/student/schedule');
-    // Role-guard redirect на admin landing
-    await expect(page).toHaveURL(/\/admin\//, { timeout: 5_000 });
+  test('foreign STUDENT route retains permitted ADMIN home and never starts target reads', async ({ page }) => {
+    let foreignData = false;
+    const origin = new URL(page.url()).origin;
+    const observe = (request: Request) => {
+      const url = new URL(request.url());
+      if (url.origin === origin && /^\/api\/v1\/student\//.test(url.pathname)) foreignData = true;
+    };
+    page.on('request', observe);
+    try {
+      await page.goto('/student/schedule');
+      await expect(page).toHaveURL(url => url.pathname === TEST_USERS.admin.expectedLandingPath);
+      await expect(page.locator('main#main .admin-page')).toBeVisible();
+      await expect(page.locator('main#main .student-page')).toHaveCount(0);
+      expect(foreignData, 'Denied target never starts student data').toBe(false);
+    } finally { page.off('request', observe); }
   });
 });

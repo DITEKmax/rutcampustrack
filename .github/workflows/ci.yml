@@ -1320,7 +1320,7 @@ jobs:
   e2e-auth:
     name: Playwright E2E auth flow (${{ matrix.group }})
     runs-on: ubuntu-latest
-    timeout-minutes: 50
+    timeout-minutes: ${{ matrix.group == 'client' && 90 || 50 }}
     strategy:
       fail-fast: false
       max-parallel: 2
@@ -1560,11 +1560,49 @@ jobs:
           printf '%s\n' 'PASS disposable Notification consumer has no signing private-key file'
 
       - name: Install Playwright + browsers
+        timeout-minutes: 10
         working-directory: tests/e2e
         run: |
+          set -Eeuo pipefail
+          phase='npm dependencies'
+          apt_config=''
+          cleanup() {
+            status=$?
+            trap - EXIT
+            if [ -n "$apt_config" ]; then
+              if ! sudo rm -f -- "$apt_config"; then
+                printf '%s\n' '::error::Failed to remove the owned temporary apt configuration'
+                if [ "$status" -eq 0 ]; then status=1; fi
+              fi
+            fi
+            if [ "$status" -ne 0 ]; then
+              printf '::error::Playwright preparation failed during %s (exit %s)\n' "$phase" "$status"
+            fi
+            exit "$status"
+          }
+          trap cleanup EXIT
+          trap 'exit 130' INT
+          trap 'exit 143' TERM
+          printf 'Playwright preparation: %s\n' "$phase"
           npm ci
+          phase='admission retry control'
+          printf 'Playwright preparation: %s\n' "$phase"
           node check-admission-retry.mjs
-          npx playwright install --with-deps chromium webkit
+          phase='system dependencies'
+          printf 'Playwright preparation: %s\n' "$phase"
+          test "$GITHUB_ACTIONS" = true
+          test "$RUNNER_ENVIRONMENT" = github-hosted
+          # Playwright elevates apt via sudo, so use a runner-owned config file,
+          # rather than relying on APT_CONFIG surviving sudo's environment reset.
+          apt_config=$(sudo mktemp /etc/apt/apt.conf.d/99rct-e2e-install-XXXXXX)
+          printf 'Acquire::http::Timeout "30";\nAcquire::https::Timeout "30";\nAcquire::Retries "2";\n' \
+            | sudo tee "$apt_config" >/dev/null
+          npx --no-install playwright install-deps chromium webkit
+          phase='browser downloads'
+          printf 'Playwright preparation: %s\n' "$phase"
+          npx --no-install playwright install chromium webkit
+          phase='existing preparation controls'
+          printf 'Playwright preparation: %s\n' "$phase"
           node fixtures/semester-lifecycle-ui.control.mjs
           node fixtures/admin-activity-response.control.mjs
           node fixtures/web-panel-route.control.mjs

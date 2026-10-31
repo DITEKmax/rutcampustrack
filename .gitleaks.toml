@@ -4,6 +4,32 @@ useDefault = true
 [[rules]]
 id = "generic-api-key"
 
+# Synthetic request identities, not credentials. Exact lines stay stable when
+# Git attributes the fixtures to a new PR merge or their line numbers move.
+[[rules.allowlists]]
+description = "Exact synthetic request-decision UUID fixture with null accessToken"
+condition = "AND"
+regexTarget = "line"
+paths = ['''^frontends/web-vue/src/features/headman/request-decision-state\.test\.ts$''']
+regexes = ["^\\n?const key = 'd6ab481d-8b40-4220-bb88-b2aee1ce495a'\\r?$"]
+
+[[rules.allowlists]]
+description = "Exact synthetic pending-replacement requestKey fixture"
+condition = "AND"
+regexTarget = "line"
+paths = ['''^frontends/web-vue/src/features/headman/recovery-flows\.test\.ts$''']
+regexes = [
+  "^\\n?          requestKey: 'c3960e90-a0b6-4e8e-aed9-cb08c1155886',\\r?$",
+  "^\\n?        requestKey: 'c3960e90-a0b6-4e8e-aed9-cb08c1155886',\\r?$",
+]
+
+[[rules.allowlists]]
+description = "Exact public-key endpoint response stub in PushControllerTest"
+condition = "AND"
+regexTarget = "line"
+paths = ["^services/notification-service/notification-app/src/test/java/ru/rutcampustrack/notification/push/PushControllerTest\\.java$"]
+regexes = ["^\\n?    private static final String TEST_VAPID_KEY = \"BKR2jT5k1Iu93_V8AHx3cpqE\";\\r?$"]
+
 [[rules.allowlists]]
 description = "Exact TypeScript prop type annotation"
 condition = "AND"

@@ -23,6 +23,12 @@ const cases = [
     toContainsSelected: true, fromInsideSemester: true, toInsideSemester: true,
     semesterIdMatches: true, calendarReady: true, selectedDateEnabled: true,
   }],
+  ['HOMEWORK_PERIOD', 'HOMEWORK_WEEK', {
+    httpStatus: 200, otherRangeResponseObserved: true, responseObserved: true,
+    jsonDecoded: true, responseMatchesRequest: false, fromContainsToday: true,
+    toContainsToday: true, fromInsideSemester: true, toInsideSemester: true,
+    spanWithinWeek: false, semesterIdMatches: true,
+  }],
   ['HEADMAN_TEACHER_READ', 'TEACHER_SHORTCUT', {
     requestObserved: true, requestFailed: false, httpStatus: null,
     semesterMatches: true, groupMatches: true, subjectMatches: false,

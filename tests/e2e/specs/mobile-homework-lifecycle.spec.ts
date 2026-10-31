@@ -1393,25 +1393,68 @@ isolated(
     ).toHaveAttribute('aria-current', 'date');
     await expect(earlierCard).toHaveAttribute('data-completion', 'completed');
     await expect(page.getByRole('tab', { selected: true })).toHaveCount(1);
+    const weekFacts = {
+      httpStatus: null as number | null,
+      otherRangeResponseObserved: false,
+      responseObserved: false,
+      jsonDecoded: false,
+      responseMatchesRequest: null as boolean | null,
+      fromContainsToday: null as boolean | null,
+      toContainsToday: null as boolean | null,
+      fromInsideSemester: null as boolean | null,
+      toInsideSemester: null as boolean | null,
+      spanWithinWeek: null as boolean | null,
+      semesterIdMatches: null as boolean | null,
+    };
+    // The first week selection starts at server Today. Correlate its clipped
+    // Monday–Sunday request: a late month/projection refresh is not this action.
+    const monday = shifted(
+      dataset.today,
+      -((new Date(`${dataset.today}T12:00:00Z`).getUTCDay() + 6) % 7),
+    );
+    const sunday = shifted(monday, 6);
+    const weekFrom = monday < dataset.semester.dateFrom ? dataset.semester.dateFrom : monday;
+    const weekTo = sunday > dataset.semester.dateTo ? dataset.semester.dateTo : sunday;
     const weekRead = page.waitForResponse((response) => {
       const url = new URL(response.url());
-      return (
-        url.pathname === '/api/v1/student/homework' &&
-        response.request().method() === 'GET' &&
-        Boolean(url.searchParams.get('from') && url.searchParams.get('to'))
-      );
+      if (
+        url.pathname !== '/api/v1/student/homework' ||
+        response.request().method() !== 'GET'
+      )
+        return false;
+      const matches =
+        url.searchParams.get('from') === weekFrom && url.searchParams.get('to') === weekTo;
+      if (!matches) weekFacts.otherRangeResponseObserved = true;
+      return matches;
     });
-    await page.getByRole('tab', { name: 'Неделя', exact: true }).click();
-    const weekResponse = await weekRead;
-    expect(weekResponse.status()).toBe(200);
-    const week = await weekResponse.json();
-    expect(
-      week.from <= dataset.today &&
-        week.to >= dataset.today &&
-        week.from >= dataset.semester.dateFrom &&
-        week.to <= dataset.semester.dateTo &&
-        Date.parse(`${week.to}T12:00:00Z`) - Date.parse(`${week.from}T12:00:00Z`) <= 6 * 86400000,
-    ).toBe(true);
+    try {
+      await page.getByRole('tab', { name: 'Неделя', exact: true }).click();
+      const weekResponse = await weekRead;
+      weekFacts.responseObserved = true;
+      weekFacts.httpStatus = weekResponse.status();
+      expect(weekResponse.status()).toBe(200);
+      const week = await weekResponse.json();
+      weekFacts.jsonDecoded = true;
+      weekFacts.responseMatchesRequest = week?.from === weekFrom && week?.to === weekTo;
+      weekFacts.fromContainsToday = typeof week?.from === 'string' && week.from <= dataset.today;
+      weekFacts.toContainsToday = typeof week?.to === 'string' && week.to >= dataset.today;
+      weekFacts.fromInsideSemester =
+        typeof week?.from === 'string' && week.from >= dataset.semester.dateFrom;
+      weekFacts.toInsideSemester =
+        typeof week?.to === 'string' && week.to <= dataset.semester.dateTo;
+      weekFacts.spanWithinWeek =
+        Date.parse(`${week?.to}T12:00:00Z`) - Date.parse(`${week?.from}T12:00:00Z`) <=
+        6 * 86400000;
+      weekFacts.semesterIdMatches = week?.semester?.id === String(dataset.semester.id);
+      expect(
+        weekFacts.fromContainsToday && weekFacts.toContainsToday &&
+          weekFacts.fromInsideSemester && weekFacts.toInsideSemester && weekFacts.spanWithinWeek,
+      ).toBe(true);
+      expect(weekFacts.responseMatchesRequest && weekFacts.semesterIdMatches).toBe(true);
+    } catch (error) {
+      retainFirstFailure(info, 'HOMEWORK_WEEK', weekFacts);
+      throw error;
+    }
     await expect(page.getByRole('tab', { name: 'Неделя', exact: true })).toHaveAttribute(
       'aria-selected',
       'true',

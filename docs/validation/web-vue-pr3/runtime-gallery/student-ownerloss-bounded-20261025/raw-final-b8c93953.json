@@ -1,0 +1,549 @@
+{
+  "case": "WEB_STUDENT_OWNERLOSS_AFTER_V2",
+  "revision": "481512e93575070a1f471c65af54df5b4e31cd61",
+  "productBase": "1057de27b70c37b5916013d7c9207e31d8493ce8",
+  "harnessSha256": "b8c939537f3358bef71b42715b1bebb5c47833fa54d8e79fcfc45991123ad658",
+  "startedAtUtc": "2026-10-25T00:44:26.619Z",
+  "expectedActor": 3,
+  "expectedRole": "STUDENT",
+  "phase": "KNOWN_STOP_CLEANUP_QUALIFIED",
+  "api": [
+    {
+      "path": "/api/auth/refresh",
+      "method": "POST",
+      "status": 401,
+      "phase": "BOOTSTRAP",
+      "loginIndex": 0
+    },
+    {
+      "path": "/api/auth/login",
+      "method": "POST",
+      "status": 200,
+      "phase": "LOGIN_0",
+      "loginIndex": 0
+    },
+    {
+      "path": "/api/auth/session",
+      "method": "GET",
+      "status": 200,
+      "phase": "LOGIN_0",
+      "loginIndex": 0
+    },
+    {
+      "path": "/api/auth/device-preferences",
+      "method": "GET",
+      "status": 200,
+      "phase": "LOGIN_0",
+      "loginIndex": 0
+    },
+    {
+      "pathHash": "6cb55e97fef19735195b0020d5dd6545645efc7bc46a1d989e5cdbbf8b251030",
+      "method": "GET",
+      "status": 200,
+      "phase": "LOGIN_0",
+      "loginIndex": 0
+    },
+    {
+      "path": "/api/auth/ws-ticket",
+      "method": "POST",
+      "status": 200,
+      "phase": "LOGIN_0",
+      "loginIndex": 0
+    },
+    {
+      "pathHash": "1ac431db2bc18d7440f21b1cd2a7a83f741e1bf52b56a1234e926d065de3d88a",
+      "method": "GET",
+      "status": 200,
+      "phase": "LOGIN_0",
+      "loginIndex": 0
+    },
+    {
+      "pathHash": "6a3ed7c33ca04a6a7e68847f792e314468b713dea9c4ece627c242271898ae23",
+      "method": "GET",
+      "status": 200,
+      "phase": "LOGIN_0",
+      "loginIndex": 0
+    },
+    {
+      "pathHash": "f0320a899084e1ad76c16312486dcce0184101b4b7b77c886228015245584536",
+      "method": "GET",
+      "status": 200,
+      "phase": "LOGIN_0",
+      "loginIndex": 0
+    },
+    {
+      "pathHash": "61e6038f2d3a6dfcdc1b123b37cd7efa3c98f1c6b3dd0aa7d2c060f38f8ed3f2",
+      "method": "GET",
+      "status": 200,
+      "phase": "LOGIN_0",
+      "loginIndex": 0
+    },
+    {
+      "pathHash": "66be5879ef3a006f97cdf3d9fb658d6b9ab244113bbbad159c733f0fee4efb32",
+      "method": "GET",
+      "status": 200,
+      "phase": "LOGIN_0",
+      "loginIndex": 0
+    },
+    {
+      "pathHash": "1ac431db2bc18d7440f21b1cd2a7a83f741e1bf52b56a1234e926d065de3d88a",
+      "method": "GET",
+      "status": 200,
+      "phase": "LOGIN_0",
+      "loginIndex": 0
+    },
+    {
+      "pathHash": "6cb55e97fef19735195b0020d5dd6545645efc7bc46a1d989e5cdbbf8b251030",
+      "method": "GET",
+      "status": 200,
+      "phase": "LOGIN_0",
+      "loginIndex": 0
+    },
+    {
+      "pathHash": "f0320a899084e1ad76c16312486dcce0184101b4b7b77c886228015245584536",
+      "method": "GET",
+      "status": 200,
+      "phase": "LOGIN_0",
+      "loginIndex": 0
+    },
+    {
+      "pathHash": "61e6038f2d3a6dfcdc1b123b37cd7efa3c98f1c6b3dd0aa7d2c060f38f8ed3f2",
+      "method": "GET",
+      "status": 200,
+      "phase": "LOGIN_0",
+      "loginIndex": 0
+    },
+    {
+      "pathHash": "66be5879ef3a006f97cdf3d9fb658d6b9ab244113bbbad159c733f0fee4efb32",
+      "method": "GET",
+      "status": 200,
+      "phase": "LOGIN_0",
+      "loginIndex": 0
+    },
+    {
+      "pathHash": "a199efda1ba605e3869a7a8cf1051f597e455b2a0c519486f387bc64eeb5869a",
+      "method": "GET",
+      "status": 200,
+      "phase": "STUDENT_ADMITTED_0",
+      "loginIndex": 0
+    },
+    {
+      "path": "/api/auth/logout",
+      "method": "POST",
+      "status": 204,
+      "phase": "NATIVE_OWN_LOGOUT",
+      "loginIndex": 0
+    },
+    {
+      "pathHash": "348ca1e77d2a6d2ce796f712240178c32249592998c418b61a79c2525e71190a",
+      "method": "GET",
+      "status": 200,
+      "phase": "STUDENT_ADMITTED_0",
+      "loginIndex": 0
+    },
+    {
+      "path": "/api/v1/student/today",
+      "method": "GET",
+      "status": 200,
+      "phase": "STUDENT_ADMITTED_0",
+      "loginIndex": 0
+    }
+  ],
+  "samples": [
+    {
+      "id": "WT-OWNER-AF01",
+      "state": "v2-guest-after-old-real-today-release",
+      "file": "WEB-OWNERLOSS__WT-OWNER-AF01-v2-guest-after-old-real-today-release__light__1440__481512e93.png",
+      "sha256": "aeefcfa3787ae131d1b1627600daece9d4ed0d6ca35e380581c268115c9bc5cd",
+      "revision": "481512e93575070a1f471c65af54df5b4e31cd61",
+      "theme": "light",
+      "width": 1440,
+      "height": 1000,
+      "rootFont": "16px",
+      "scrollWidth": 1440,
+      "personallyInspected": false
+    }
+  ],
+  "captureAttempts": [
+    {
+      "id": "WT-OWNER-AF01",
+      "state": "v2-guest-after-old-real-today-release",
+      "status": "CAPTURED_INSPECTION_PENDING",
+      "file": "WEB-OWNERLOSS__WT-OWNER-AF01-v2-guest-after-old-real-today-release__light__1440__481512e93.png"
+    }
+  ],
+  "blocked": [],
+  "pageErrors": [],
+  "requestStarts": [
+    {
+      "id": "74d746bb-4317-4fd8-88a1-9b89b2a1f5b7",
+      "method": "POST",
+      "path": "/api/auth/refresh",
+      "phase": "BOOTSTRAP",
+      "loginIndex": 0,
+      "canonicalAtStart": false,
+      "requiredCanonical": false,
+      "forwarded": true,
+      "canonicalAtForward": false,
+      "forwardedAtUtc": "2026-10-25T00:44:27.991Z",
+      "captureAckDurable": true
+    },
+    {
+      "id": "8b5b86a9-f13f-43f2-acca-823ae38ae891",
+      "method": "POST",
+      "path": "/api/auth/login",
+      "phase": "LOGIN_0",
+      "loginIndex": 0,
+      "canonicalAtStart": false,
+      "requiredCanonical": false,
+      "forwarded": true,
+      "canonicalAtForward": false,
+      "forwardedAtUtc": "2026-10-25T00:44:28.245Z",
+      "captureAckDurable": true
+    },
+    {
+      "id": "ad8cb306-bc21-47e6-89fc-ef91392f87ec",
+      "method": "GET",
+      "path": "/api/auth/session",
+      "phase": "LOGIN_0",
+      "loginIndex": 0,
+      "canonicalAtStart": false,
+      "requiredCanonical": true,
+      "forwarded": true,
+      "canonicalAtForward": false,
+      "forwardedAtUtc": "2026-10-25T00:44:28.377Z",
+      "captureAckDurable": true
+    },
+    {
+      "id": "1eeb37ef-a898-4454-b4b6-04eae304e810",
+      "method": "GET",
+      "pathHash": "6cb55e97fef19735195b0020d5dd6545645efc7bc46a1d989e5cdbbf8b251030",
+      "phase": "LOGIN_0",
+      "loginIndex": 0,
+      "canonicalAtStart": false,
+      "requiredCanonical": false,
+      "forwarded": true,
+      "canonicalAtForward": true,
+      "forwardedAtUtc": "2026-10-25T00:44:28.454Z"
+    },
+    {
+      "id": "147882e1-71db-40f9-8e98-f84f155a3263",
+      "method": "POST",
+      "path": "/api/auth/ws-ticket",
+      "phase": "LOGIN_0",
+      "loginIndex": 0,
+      "canonicalAtStart": false,
+      "requiredCanonical": false,
+      "forwarded": true,
+      "canonicalAtForward": true,
+      "forwardedAtUtc": "2026-10-25T00:44:28.455Z"
+    },
+    {
+      "id": "ef9bc271-9b7b-4ab2-83e7-5f9732bbd8df",
+      "method": "GET",
+      "path": "/api/auth/device-preferences",
+      "phase": "LOGIN_0",
+      "loginIndex": 0,
+      "canonicalAtStart": false,
+      "requiredCanonical": false,
+      "forwarded": true,
+      "canonicalAtForward": true,
+      "forwardedAtUtc": "2026-10-25T00:44:28.456Z",
+      "captureAckDurable": true
+    },
+    {
+      "id": "f33a760a-29c1-4ebe-8d82-7091bf0189d1",
+      "method": "GET",
+      "pathHash": "1ac431db2bc18d7440f21b1cd2a7a83f741e1bf52b56a1234e926d065de3d88a",
+      "phase": "LOGIN_0",
+      "loginIndex": 0,
+      "canonicalAtStart": false,
+      "requiredCanonical": false,
+      "forwarded": true,
+      "canonicalAtForward": true,
+      "forwardedAtUtc": "2026-10-25T00:44:28.457Z"
+    },
+    {
+      "id": "b5841d27-5de4-4951-b646-9633a1376b80",
+      "method": "GET",
+      "pathHash": "f0320a899084e1ad76c16312486dcce0184101b4b7b77c886228015245584536",
+      "phase": "LOGIN_0",
+      "loginIndex": 0,
+      "canonicalAtStart": false,
+      "requiredCanonical": false,
+      "forwarded": true,
+      "canonicalAtForward": true,
+      "forwardedAtUtc": "2026-10-25T00:44:28.458Z"
+    },
+    {
+      "id": "fd761ff1-cea1-4498-bf2f-2cd173f1f21c",
+      "method": "GET",
+      "pathHash": "6a3ed7c33ca04a6a7e68847f792e314468b713dea9c4ece627c242271898ae23",
+      "phase": "LOGIN_0",
+      "loginIndex": 0,
+      "canonicalAtStart": true,
+      "requiredCanonical": false,
+      "forwarded": true,
+      "canonicalAtForward": true,
+      "forwardedAtUtc": "2026-10-25T00:44:28.606Z"
+    },
+    {
+      "id": "a21981bc-37b4-440d-9190-74c470d2f1a7",
+      "method": "GET",
+      "pathHash": "61e6038f2d3a6dfcdc1b123b37cd7efa3c98f1c6b3dd0aa7d2c060f38f8ed3f2",
+      "phase": "LOGIN_0",
+      "loginIndex": 0,
+      "canonicalAtStart": true,
+      "requiredCanonical": false,
+      "forwarded": true,
+      "canonicalAtForward": true,
+      "forwardedAtUtc": "2026-10-25T00:44:28.628Z"
+    },
+    {
+      "id": "9003a2a1-9c49-41d5-9a39-5b73c418ce96",
+      "method": "GET",
+      "pathHash": "66be5879ef3a006f97cdf3d9fb658d6b9ab244113bbbad159c733f0fee4efb32",
+      "phase": "LOGIN_0",
+      "loginIndex": 0,
+      "canonicalAtStart": true,
+      "requiredCanonical": false,
+      "forwarded": true,
+      "canonicalAtForward": true,
+      "forwardedAtUtc": "2026-10-25T00:44:28.694Z"
+    },
+    {
+      "id": "fd8d5712-6931-4a67-957b-efc9b0f87d23",
+      "method": "GET",
+      "pathHash": "6cb55e97fef19735195b0020d5dd6545645efc7bc46a1d989e5cdbbf8b251030",
+      "phase": "LOGIN_0",
+      "loginIndex": 0,
+      "canonicalAtStart": true,
+      "requiredCanonical": false,
+      "forwarded": true,
+      "canonicalAtForward": true,
+      "forwardedAtUtc": "2026-10-25T00:44:28.709Z"
+    },
+    {
+      "id": "568374fb-d736-4de7-879d-cf96c39bb73d",
+      "method": "GET",
+      "pathHash": "61e6038f2d3a6dfcdc1b123b37cd7efa3c98f1c6b3dd0aa7d2c060f38f8ed3f2",
+      "phase": "LOGIN_0",
+      "loginIndex": 0,
+      "canonicalAtStart": true,
+      "requiredCanonical": false,
+      "forwarded": true,
+      "canonicalAtForward": true,
+      "forwardedAtUtc": "2026-10-25T00:44:28.718Z"
+    },
+    {
+      "id": "3c3f3aa3-c173-44e4-a32d-9538cae67757",
+      "method": "GET",
+      "pathHash": "1ac431db2bc18d7440f21b1cd2a7a83f741e1bf52b56a1234e926d065de3d88a",
+      "phase": "LOGIN_0",
+      "loginIndex": 0,
+      "canonicalAtStart": true,
+      "requiredCanonical": false,
+      "forwarded": true,
+      "canonicalAtForward": true,
+      "forwardedAtUtc": "2026-10-25T00:44:28.728Z"
+    },
+    {
+      "id": "d18e4157-bed1-4847-9aad-b46454935f18",
+      "method": "GET",
+      "pathHash": "f0320a899084e1ad76c16312486dcce0184101b4b7b77c886228015245584536",
+      "phase": "LOGIN_0",
+      "loginIndex": 0,
+      "canonicalAtStart": true,
+      "requiredCanonical": false,
+      "forwarded": true,
+      "canonicalAtForward": true,
+      "forwardedAtUtc": "2026-10-25T00:44:28.734Z"
+    },
+    {
+      "id": "b3444019-ca69-4895-ad8a-40fcdd586d0d",
+      "method": "GET",
+      "pathHash": "66be5879ef3a006f97cdf3d9fb658d6b9ab244113bbbad159c733f0fee4efb32",
+      "phase": "LOGIN_0",
+      "loginIndex": 0,
+      "canonicalAtStart": true,
+      "requiredCanonical": false,
+      "forwarded": true,
+      "canonicalAtForward": true,
+      "forwardedAtUtc": "2026-10-25T00:44:28.907Z"
+    },
+    {
+      "id": "62604d3a-6169-400f-a9fe-3bb995bc2ffb",
+      "method": "GET",
+      "path": "/api/v1/student/today",
+      "phase": "STUDENT_ADMITTED_0",
+      "loginIndex": 0,
+      "canonicalAtStart": true,
+      "requiredCanonical": false,
+      "forwarded": true,
+      "canonicalAtForward": true,
+      "forwardedAtUtc": "2026-10-25T00:44:28.920Z"
+    },
+    {
+      "id": "70aec9f8-7990-48cd-9fca-bbf4051bd891",
+      "method": "GET",
+      "pathHash": "348ca1e77d2a6d2ce796f712240178c32249592998c418b61a79c2525e71190a",
+      "phase": "STUDENT_ADMITTED_0",
+      "loginIndex": 0,
+      "canonicalAtStart": true,
+      "requiredCanonical": false,
+      "forwarded": true,
+      "canonicalAtForward": true,
+      "forwardedAtUtc": "2026-10-25T00:44:28.927Z"
+    },
+    {
+      "id": "ee75ab12-9567-4191-b05b-d89fa2969db6",
+      "method": "GET",
+      "pathHash": "a199efda1ba605e3869a7a8cf1051f597e455b2a0c519486f387bc64eeb5869a",
+      "phase": "STUDENT_ADMITTED_0",
+      "loginIndex": 0,
+      "canonicalAtStart": true,
+      "requiredCanonical": false,
+      "forwarded": true,
+      "canonicalAtForward": true,
+      "forwardedAtUtc": "2026-10-25T00:44:28.931Z"
+    },
+    {
+      "id": "34bd0f95-5ab4-4faf-9758-a7f836b8d1b3",
+      "method": "POST",
+      "path": "/api/auth/logout",
+      "phase": "NATIVE_OWN_LOGOUT",
+      "loginIndex": 0,
+      "canonicalAtStart": true,
+      "requiredCanonical": false,
+      "forwarded": true,
+      "canonicalAtForward": true,
+      "forwardedAtUtc": "2026-10-25T00:44:29.303Z",
+      "captureAckDurable": true
+    }
+  ],
+  "requestFailures": [
+    {
+      "id": "34bd0f95-5ab4-4faf-9758-a7f836b8d1b3",
+      "method": "POST",
+      "path": "/api/auth/logout",
+      "phase": "NATIVE_OWN_LOGOUT",
+      "loginIndex": 0,
+      "canonicalAtStart": true,
+      "requiredCanonical": false,
+      "forwarded": true,
+      "canonicalAtForward": true,
+      "forwardedAtUtc": "2026-10-25T00:44:29.303Z",
+      "captureAckDurable": true,
+      "observedStatus": 204,
+      "category": "ABORTED",
+      "stage": "REQUEST_FAILED",
+      "outcome": "WAIT_DURABLE_INTENT_CLASSIFICATION"
+    },
+    {
+      "id": "34bd0f95-5ab4-4faf-9758-a7f836b8d1b3",
+      "method": "POST",
+      "path": "/api/auth/logout",
+      "phase": "NATIVE_OWN_LOGOUT",
+      "loginIndex": 0,
+      "canonicalAtStart": true,
+      "requiredCanonical": false,
+      "forwarded": true,
+      "canonicalAtForward": true,
+      "forwardedAtUtc": "2026-10-25T00:44:29.303Z",
+      "captureAckDurable": true,
+      "observedStatus": 204,
+      "category": "ABORTED",
+      "stage": "AFTER_CAPTURE",
+      "outcome": "DURABLE_ACK_RETAINED"
+    }
+  ],
+  "readIncomplete": [],
+  "device": {
+    "initial": {
+      "theme": null,
+      "revision": "0"
+    },
+    "putsForwarded": 0,
+    "writes": [],
+    "unexpectedPreferenceWrites": 0,
+    "last": {
+      "theme": null,
+      "revision": "0"
+    }
+  },
+  "today": {
+    "requestCount": 1,
+    "real200Received": true,
+    "deliveryHeld": true,
+    "deliveryReleased": true,
+    "bodyReady": true,
+    "fulfillResolved": true,
+    "clientBodyCompleted": false,
+    "targetTerminal": null,
+    "targetEvents": [],
+    "requestId": "62604d3a-6169-400f-a9fe-3bb995bc2ffb",
+    "requestStartedPhase": "STUDENT_ADMITTED_0",
+    "expectedOwnerBearerMatched": true,
+    "body": {
+      "mime": "application/json",
+      "length": 608,
+      "sha256": "17a5089703c3baacdf0a1ca353f7275b2ba3d23e72118c508cfa13ecf9a8fb5e",
+      "decodedJsonValidated": true,
+      "originalEncoding": "NONE",
+      "originalContentLengthPresent": false,
+      "originalDeclaredLength": null,
+      "originalTransferEncoding": "CHUNKED"
+    },
+    "transportNormalization": {
+      "representation": "VALIDATED_DECODED_JSON_BYTES",
+      "removedHeaderNames": [
+        "transfer-encoding"
+      ],
+      "reason": "Full APIResponse.body bytes require non-stream framing; Playwright computes their content-length",
+      "statusPreserved": true,
+      "mimePreserved": true
+    },
+    "realStatus": 200,
+    "receivedAtUtc": "2026-10-25T00:44:29.078Z",
+    "logoutForwardedWhileDeliveryHeld": true,
+    "targetPendingAtLogoutForward": true,
+    "releaseReason": "AFTER_NATIVE_204_SAME_BEARER_401",
+    "releasedAtUtc": "2026-10-25T00:44:29.450Z",
+    "targetPendingAtRelease": true,
+    "fulfillResolvedAtUtc": "2026-10-25T00:44:29.454Z",
+    "terminalWaitTimedOut": true,
+    "targetCausalOutcome": "TARGET_COMPLETION_UNOBSERVED"
+  },
+  "nativeLogout": {
+    "forwarded": true,
+    "status": 204,
+    "sameOldBearerStatus": 401,
+    "confirmed": true,
+    "fallbackUsed": false
+  },
+  "cleanup": {
+    "noLiveOwnSession": true,
+    "confirmed": true
+  },
+  "captureComplete": true,
+  "completed": false,
+  "syntheticApiResponses": false,
+  "syntheticTransportDelay": "Full original real Today200 body buffered before hold; same bytes/status/MIME released with decoded-body transport framing only; exact terminal branch recorded",
+  "functionalActionsAdded": 0,
+  "exactOwnHandlesCaptured": [
+    true
+  ],
+  "unknownHold": false,
+  "afterRelease": {
+    "guestLoginVisible": true,
+    "authenticatedProfileActionVisible": false,
+    "privateStudentHomeSurfaceAbsent": true,
+    "pageErrorCount": 0,
+    "targetCausalOutcome": "TARGET_COMPLETION_UNOBSERVED",
+    "clientBodyCompleted": false
+  },
+  "changedOwnerLossObserved": false,
+  "browserClosed": true,
+  "sourceUnchanged": true,
+  "finishedAtUtc": "2026-10-25T00:44:35.964Z"
+}

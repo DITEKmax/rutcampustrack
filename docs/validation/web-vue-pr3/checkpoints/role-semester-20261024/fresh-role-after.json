@@ -1,0 +1,59 @@
+{
+  "phase": "after",
+  "origin": "http://127.0.0.1:14250",
+  "responses": [
+    {
+      "path": "/api/auth/login",
+      "method": "POST",
+      "status": 200
+    },
+    {
+      "path": "/api/auth/session",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/api/auth/session/active-role",
+      "method": "PUT",
+      "status": 200
+    },
+    {
+      "path": "/api/academic/admin-access/me",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/api/academic/admin-access/me",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/api/auth/logout",
+      "method": "POST",
+      "status": 204
+    },
+    {
+      "path": "/api/auth/session",
+      "method": "GET",
+      "status": 401
+    }
+  ],
+  "domainWrites": 0,
+  "errors": [],
+  "logout": true,
+  "closed": true,
+  "beforeRolePath": "/",
+  "roleStatus": 200,
+  "afterRolePath": "/admin/dashboard",
+  "roleLabel": "Администратор",
+  "sourceRevision": "0421d344c9697d58efc8f039b74c5bdf594c6eb4",
+  "sourceAppSha256": "b257165eec7b9adf4c0348eab0df7c6c62ca5005b9363dcd2095f5fa67217446",
+  "expectedCanonicalPath": "/admin/dashboard",
+  "headings": [
+    "Обзор системы"
+  ],
+  "meReads": 2,
+  "unavailable": 0,
+  "outcome": "PASS",
+  "guestSessionStatus": 401
+}

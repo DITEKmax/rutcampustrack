@@ -1,15 +1,6 @@
 name: Deploy
 
-# M06 G7 (C0-8, 13 P0-2): deploy triggered ONLY after successful CI run.
-# `workflow_run` fires after CI completes; `if: success()` filter ensures
-# red CI doesn't release to prod. Red CI = no deploy, period.
-# Fallback: manual `workflow_dispatch` для emergency releases (когда
-# CI падает по flake'у и надо выкатить fix).
-#
-# IMPORTANT: в workflow_run-triggered job'е `github.sha` = SHA of default
-# branch HEAD at workflow creation (может отставать), а `workflow_run.
-# head_sha` = actual CI-commit. Используем DEPLOY_SHA env-переменную,
-# резолвится через `|| github.sha` для workflow_dispatch fallback.
+# One exact source revision: quality gate → build digests → blocking scan/sign → explicit apply.
 on:
   workflow_run:
     workflows: [CI]
@@ -18,16 +9,21 @@ on:
   workflow_dispatch:
     inputs:
       commit_sha:
-        description: 'Commit SHA для emergency deploy (обязателен, audit trail)'
+        description: 'Exact source SHA with all four quality workflows successful'
         required: true
         type: string
+      prepare_only:
+        description: 'Build, scan and sign only; never use production inputs or SSH'
+        required: false
+        default: true
+        type: boolean
       bootstrap_initial_admin:
         description: 'Однократно создать первого FULL администратора из INITIAL_ADMIN_REQUEST'
         required: false
         default: false
         type: boolean
       reason:
-        description: 'Почему emergency deploy без CI'
+        description: 'Release audit reason (never bypasses quality checks)'
         required: true
         type: string
 
@@ -43,39 +39,71 @@ env:
   DEPLOY_SHA: ${{ github.event.inputs.commit_sha || github.event.workflow_run.head_sha || github.sha }}
 
 jobs:
+  release-gate:
+    name: Require all same-SHA quality checks
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (vars.PRODUCTION_DEPLOY_ENABLED == 'true' &&
+       github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.head_branch == 'main' &&
+       github.event.workflow_run.event == 'push' &&
+       github.event.workflow_run.head_repository.full_name == github.repository)
+    runs-on: ubuntu-latest
+    timeout-minutes: 65
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - name: Reject disabled apply and non-main manual workflow
+        env:
+          PRODUCTION_DEPLOY_ENABLED: ${{ vars.PRODUCTION_DEPLOY_ENABLED }}
+          PREPARE_ONLY: ${{ github.event_name == 'workflow_dispatch' && inputs.prepare_only && 'true' || 'false' }}
+        run: |
+          [[ "$DEPLOY_SHA" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$GITHUB_REF" == refs/heads/main ]]
+          if [[ "$PREPARE_ONLY" != true && "$PRODUCTION_DEPLOY_ENABLED" != true ]]; then
+            echo '::error::Production apply is disabled; choose prepare_only=true'
+            exit 1
+          fi
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          # Immutable workflow source from the guarded main ref, never candidate code.
+          ref: ${{ github.workflow_sha }}
+          path: release-control
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Bound same-SHA quality wait (never dispatches tests)
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PRODUCTION_DEPLOY_ENABLED: ${{ vars.PRODUCTION_DEPLOY_ENABLED }}
+          PREPARE_ONLY: ${{ github.event_name == 'workflow_dispatch' && inputs.prepare_only && 'true' || 'false' }}
+        run: |
+          args=()
+          if [[ "$PREPARE_ONLY" != true ]]; then args+=(--apply); fi
+          python3 -I release-control/scripts/release-quality-gate.py --sha "$DEPLOY_SHA" --repository "$GITHUB_REPOSITORY" "${args[@]}"
+      - name: Save safe quality receipt
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: release-quality-${{ env.DEPLOY_SHA }}
+          path: release-quality.json
+          if-no-files-found: ignore
+
   build-push:
     name: Build and Push to GHCR
-    # M06 G9 H1 (security-audit): strict event/branch guards —
-    # workflow_run fires on BOTH success + failure; event может быть
-    # pull_request от fork'а (не наш main). Explicit check:
-    #   1. event_name = 'workflow_dispatch' (manual, с required input commit_sha), ИЛИ
-    #   2. workflow_run.conclusion = 'success' И head_branch = 'main' И event = 'push'
-    # Fork-PR'ы и feature-branch'и НЕ дают deploy даже если CI green.
-    if: >-
-      vars.PRODUCTION_DEPLOY_ENABLED == 'true' &&
-      (github.event_name == 'workflow_dispatch' ||
-       (github.event.workflow_run.conclusion == 'success' &&
-        github.event.workflow_run.head_branch == 'main' &&
-        github.event.workflow_run.event == 'push'))
+    needs: release-gate
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
+    outputs:
+      manifest: ${{ steps.manifest.outputs.json }}
     steps:
-      - name: Validate exact release SHA
-        run: '[[ "$DEPLOY_SHA" =~ ^[0-9a-f]{40}$ ]]'
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
           ref: ${{ env.DEPLOY_SHA }}
-          # M16 hotfix: actions/checkout@v4 с `ref: <SHA>` без fetch-depth=0
-          # отправляет неправильный refspec `+refs/heads/<SHA>*:...` (treats
-          # SHA как branch name). См. actions/checkout issue #1515. Workaround
-          # — fetch-depth: 0 (full history). На workflow_run (auto-trigger
-          # после CI) commit обычно HEAD main и shallow работал, но при
-          # workflow_dispatch (manual emergency deploy через `gh workflow run`
-          # commit_sha=<SHA>`) bag триггерится consistent. Cost: чуть больше
-          # network I/O для fetch full history (~30 sec на repo нашего размера).
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3.12.0
@@ -88,6 +116,7 @@ jobs:
           password: ${{ secrets.GHCR_TOKEN }}
 
       - name: Build and push api-gateway
+        id: build_api_gateway
         uses: docker/build-push-action@bcafcacb16a39f128d818304e6c9c0c18556b85f # v7.1.0
         with:
           context: .
@@ -98,6 +127,7 @@ jobs:
           cache-to: type=gha,scope=api-gateway,mode=max
 
       - name: Build and push auth-service
+        id: build_auth_service
         uses: docker/build-push-action@bcafcacb16a39f128d818304e6c9c0c18556b85f # v7.1.0
         with:
           context: .
@@ -108,6 +138,7 @@ jobs:
           cache-to: type=gha,scope=auth-service,mode=max
 
       - name: Build and push academic-service
+        id: build_academic_service
         uses: docker/build-push-action@bcafcacb16a39f128d818304e6c9c0c18556b85f # v7.1.0
         with:
           context: .
@@ -118,6 +149,7 @@ jobs:
           cache-to: type=gha,scope=academic-service,mode=max
 
       - name: Build and push schedule-service
+        id: build_schedule_service
         uses: docker/build-push-action@bcafcacb16a39f128d818304e6c9c0c18556b85f # v7.1.0
         with:
           context: .
@@ -128,6 +160,7 @@ jobs:
           cache-to: type=gha,scope=schedule-service,mode=max
 
       - name: Build and push attendance-service
+        id: build_attendance_service
         uses: docker/build-push-action@bcafcacb16a39f128d818304e6c9c0c18556b85f # v7.1.0
         with:
           context: .
@@ -138,6 +171,7 @@ jobs:
           cache-to: type=gha,scope=attendance-service,mode=max
 
       - name: Build and push mobile-bff
+        id: build_mobile_bff
         uses: docker/build-push-action@bcafcacb16a39f128d818304e6c9c0c18556b85f # v7.1.0
         with:
           context: .
@@ -148,6 +182,7 @@ jobs:
           cache-to: type=gha,scope=mobile-bff,mode=max
 
       - name: Build and push document-renderer-service
+        id: build_document_renderer_service
         uses: docker/build-push-action@bcafcacb16a39f128d818304e6c9c0c18556b85f # v7.1.0
         with:
           context: .
@@ -158,6 +193,7 @@ jobs:
           cache-to: type=gha,scope=document-renderer-service,mode=max
 
       - name: Build and push notification-web
+        id: build_notification_web
         uses: docker/build-push-action@bcafcacb16a39f128d818304e6c9c0c18556b85f # v7.1.0
         with:
           context: .
@@ -168,6 +204,7 @@ jobs:
           cache-to: type=gha,scope=notification-web,mode=max
 
       - name: Build and push notification-bot
+        id: build_notification_bot
         uses: docker/build-push-action@bcafcacb16a39f128d818304e6c9c0c18556b85f # v7.1.0
         with:
           context: services/notification-bot
@@ -178,6 +215,7 @@ jobs:
           cache-to: type=gha,scope=notification-bot,mode=max
 
       - name: Build and push pwa
+        id: build_pwa_nginx
         uses: docker/build-push-action@bcafcacb16a39f128d818304e6c9c0c18556b85f # v7.1.0
         with:
           context: frontends
@@ -194,6 +232,7 @@ jobs:
           cache-to: type=gha,scope=pwa,mode=max
 
       - name: Build and push mini-app
+        id: build_mini_app_nginx
         uses: docker/build-push-action@bcafcacb16a39f128d818304e6c9c0c18556b85f # v7.1.0
         with:
           context: frontends
@@ -207,16 +246,18 @@ jobs:
           cache-to: type=gha,scope=mini-app,mode=max
 
       - name: Build and push web-panel
+        id: build_web_panel_nginx
         uses: docker/build-push-action@bcafcacb16a39f128d818304e6c9c0c18556b85f # v7.1.0
         with:
-          context: frontends/web-panel
-          file: frontends/web-panel/Dockerfile
+          context: frontends
+          file: frontends/web-vue/Dockerfile
           push: true
           tags: ghcr.io/ditekmax/rutcampustrack/web-panel-nginx:${{ env.DEPLOY_SHA }},ghcr.io/ditekmax/rutcampustrack/web-panel-nginx:latest
           cache-from: type=gha,scope=web-panel
           cache-to: type=gha,scope=web-panel,mode=max
 
       - name: Build and push landing
+        id: build_landing_nginx
         uses: docker/build-push-action@bcafcacb16a39f128d818304e6c9c0c18556b85f # v7.1.0
         with:
           context: frontends/landing
@@ -226,145 +267,155 @@ jobs:
           cache-from: type=gha,scope=landing
           cache-to: type=gha,scope=landing,mode=max
 
-  # M08 G11 (M06 defer, OWNER-ANSWERS P2-8/G11) — SBOM generation + cosign
-  # keyless signing для supply-chain attestation.
-  #
-  # Что получаем:
-  # - SBOM (SPDX json) per image, прикреплён к GHCR manifest как OCI attachment.
-  # - Cosign signature per image + per SBOM, keyless через Fulcio/Rekor (D4).
-  # - Verify на VPS: cosign verify с certificate-identity-regexp.
-  # - Дисплей в GHCR: Package → Digests → Attestations/Signatures.
-  #
-  # Actions pinned to SHA (latest stable releases 2026-04):
-  # - anchore/sbom-action@v0.24.0 (e22c389)
-  # - sigstore/cosign-installer@v4.1.1 (cad07c2)
-  sbom-sign:
-    name: SBOM + cosign sign
+      - name: Record exact build digests
+        id: manifest
+        env:
+          DIGEST_API_GATEWAY: ${{ steps.build_api_gateway.outputs.digest }}
+          DIGEST_AUTH_SERVICE: ${{ steps.build_auth_service.outputs.digest }}
+          DIGEST_ACADEMIC_SERVICE: ${{ steps.build_academic_service.outputs.digest }}
+          DIGEST_SCHEDULE_SERVICE: ${{ steps.build_schedule_service.outputs.digest }}
+          DIGEST_ATTENDANCE_SERVICE: ${{ steps.build_attendance_service.outputs.digest }}
+          DIGEST_MOBILE_BFF: ${{ steps.build_mobile_bff.outputs.digest }}
+          DIGEST_DOCUMENT_RENDERER_SERVICE: ${{ steps.build_document_renderer_service.outputs.digest }}
+          DIGEST_NOTIFICATION_WEB: ${{ steps.build_notification_web.outputs.digest }}
+          DIGEST_NOTIFICATION_BOT: ${{ steps.build_notification_bot.outputs.digest }}
+          DIGEST_PWA_NGINX: ${{ steps.build_pwa_nginx.outputs.digest }}
+          DIGEST_MINI_APP_NGINX: ${{ steps.build_mini_app_nginx.outputs.digest }}
+          DIGEST_WEB_PANEL_NGINX: ${{ steps.build_web_panel_nginx.outputs.digest }}
+          DIGEST_LANDING_NGINX: ${{ steps.build_landing_nginx.outputs.digest }}
+        run: |
+          python3 - <<'PY'
+          import importlib.util, json, os
+          from pathlib import Path
+          spec = importlib.util.spec_from_file_location('release_images', 'scripts/release-images.py')
+          images = importlib.util.module_from_spec(spec); spec.loader.exec_module(images)
+          manifest = {'source_sha': os.environ['DEPLOY_SHA'], 'images': {
+              name: images.PREFIX + name + '@' + os.environ['DIGEST_' + name.replace('-', '_').upper()]
+              for name in images.IMAGES}}
+          images.validate(manifest, os.environ['DEPLOY_SHA'])
+          value = json.dumps(manifest, separators=(',', ':'))
+          Path('release-images.json').write_text(value + '\n')
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as output: output.write('json=' + value + '\n')
+          PY
+      - name: Save safe release image manifest
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: release-images-${{ env.DEPLOY_SHA }}
+          path: release-images.json
+          if-no-files-found: error
+
+  scan-sign:
+    name: Scan and sign exact build digest
     needs: build-push
-    if: >-
-      vars.PRODUCTION_DEPLOY_ENABLED == 'true' &&
-      (github.event_name == 'workflow_dispatch' ||
-       (github.event.workflow_run.conclusion == 'success' &&
-        github.event.workflow_run.head_branch == 'main' &&
-        github.event.workflow_run.event == 'push'))
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
-      id-token: write # required for cosign keyless OIDC (Fulcio)
+      id-token: write
     strategy:
       fail-fast: false
       matrix:
-        image:
-          - api-gateway
-          - mobile-bff
-          - auth-service
-          - academic-service
-          - schedule-service
-          - attendance-service
-          - document-renderer-service
-          - notification-web
-          - notification-bot
-          - pwa-nginx
-          - mini-app-nginx
-          - web-panel-nginx
-          - landing-nginx
+        image: [api-gateway, mobile-bff, auth-service, academic-service, schedule-service, attendance-service, document-renderer-service, notification-web, notification-bot, pwa-nginx, mini-app-nginx, web-panel-nginx, landing-nginx]
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
-
       - name: Log in to GHCR
         uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3.7.0
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GHCR_TOKEN }}
-
-      # SBOM — SPDX json формат, чтобы работать с Trivy/Grype/GitHub UI.
-      # Attachment к image digest в GHCR (type: oci-dir).
-      - name: Generate + attach SBOM
+      - name: Blocking release image scan
+        uses: aquasecurity/trivy-action@a9c7b0f06e461e9d4b4d1711f154ee024b8d7ab8 # v0.36.0
+        with:
+          image-ref: ${{ fromJSON(needs.build-push.outputs.manifest).images[matrix.image] }}
+          scan-type: image
+          severity: HIGH,CRITICAL
+          exit-code: '1'
+          ignore-unfixed: true
+          format: json
+          output: release-trivy.json
+      - name: Save candidate scan report
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: release-scan-${{ matrix.image }}-${{ env.DEPLOY_SHA }}
+          path: release-trivy.json
+          if-no-files-found: warn
+      - name: Generate SBOM
         uses: anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610 # v0.24.0
         with:
-          image: ghcr.io/ditekmax/rutcampustrack/${{ matrix.image }}:${{ env.DEPLOY_SHA }}
+          image: ${{ fromJSON(needs.build-push.outputs.manifest).images[matrix.image] }}
           format: spdx-json
+          output-file: sbom.spdx.json
           upload-release-assets: false
           upload-artifact: true
           artifact-name: sbom-${{ matrix.image }}.spdx.json
-
       - name: Install cosign
         uses: sigstore/cosign-installer@cad07c2e89fa2edd6e2d7bab4c1aa38e53f76003 # v4.1.1
         with:
           cosign-release: 'v2.4.1'
-
-      # Keyless sign (D4 — без COSIGN_PRIVATE_KEY secret).
-      # OIDC token → Fulcio выдаёт short-lived cert (10мин TTL) →
-      # подпись + запись в Rekor transparency log.
-      - name: Cosign sign image (keyless)
+      - name: Sign and attest scanned digest
         env:
-          COSIGN_EXPERIMENTAL: '1'
+          IMAGE_REF: ${{ fromJSON(needs.build-push.outputs.manifest).images[matrix.image] }}
         run: |
-          cosign sign --yes \
-            ghcr.io/ditekmax/rutcampustrack/${{ matrix.image }}:${{ env.DEPLOY_SHA }}
-
-      # Подписать SBOM blob отдельно — signature attached к image через
-      # cosign attach, после этого verify может проверить SBOM origin.
-      - name: Cosign attest SBOM (keyless)
-        env:
-          COSIGN_EXPERIMENTAL: '1'
-        run: |
-          # attest использует тот же keyless-flow что и sign
-          cosign attest --yes \
-            --predicate <(find . -name 'sbom-${{ matrix.image }}.spdx.json' -print0 | head -1 | xargs -0 cat) \
-            --type spdxjson \
-            ghcr.io/ditekmax/rutcampustrack/${{ matrix.image }}:${{ env.DEPLOY_SHA }} || \
-          echo "::warning::cosign attest failed for ${{ matrix.image }} — non-blocking, проверь SBOM artifact"
+          cosign sign --yes "$IMAGE_REF"
+          cosign attest --yes --predicate sbom.spdx.json --type spdxjson "$IMAGE_REF"
 
   deploy:
     name: Deploy to VPS
-    # M08 G11 — deploy ждёт sbom-sign (нет подписи → не катим).
-    # sbom-sign fails при compromised OIDC или временном outage Fulcio →
-    # deploy блокируется. Manual rollback: workflow_dispatch с
-    # `allow_unsigned_deploy` (добавится в M09 emergency-flow).
-    needs: [build-push, sbom-sign]
+    needs: [release-gate, build-push, scan-sign]
+    if: >-
+      vars.PRODUCTION_DEPLOY_ENABLED == 'true' &&
+      (github.event_name != 'workflow_dispatch' || inputs.prepare_only == false)
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read
+      packages: read
     steps:
-      # M08 G11 — verify cosign signatures ДО SSH-deploy. Catches:
-      # 1. OIDC compromise (identity mismatch),
-      # 2. image tampering между push и deploy,
-      # 3. Rekor log gaps.
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: release-control
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          ref: ${{ env.DEPLOY_SHA }}
+          path: candidate
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Materialize safe exact build manifest
+        env:
+          RELEASE_MANIFEST: ${{ needs.build-push.outputs.manifest }}
+        run: |
+          printf '%s\n' "$RELEASE_MANIFEST" > release-images.json
+          python3 -I release-control/scripts/release-images.py release-images.json "$DEPLOY_SHA"
       - name: Install cosign for verify
         uses: sigstore/cosign-installer@cad07c2e89fa2edd6e2d7bab4c1aa38e53f76003 # v4.1.1
         with:
           cosign-release: 'v2.4.1'
-
       - name: Log in to GHCR (for verify)
         uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3.7.0
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GHCR_TOKEN }}
-
-      - name: Verify signatures (13 images)
-        env:
-          COSIGN_EXPERIMENTAL: '1'
+      - name: Verify signatures of all 13 scanned digests
         run: |
-          set -e
-          IMAGES=(api-gateway mobile-bff auth-service academic-service schedule-service attendance-service document-renderer-service notification-web notification-bot pwa-nginx mini-app-nginx web-panel-nginx landing-nginx)
-          for img in "${IMAGES[@]}"; do
-            echo "--- Verifying ghcr.io/ditekmax/rutcampustrack/${img}:${{ env.DEPLOY_SHA }} ---"
+          while IFS= read -r image; do
             cosign verify \
-              --certificate-identity-regexp="(?i)^https://github.com/ditekmax/rutcampustrack/.github/workflows/deploy\.yml@.*" \
-              --certificate-oidc-issuer="https://token.actions.githubusercontent.com" \
-              "ghcr.io/ditekmax/rutcampustrack/${img}:${{ env.DEPLOY_SHA }}"
-          done
-          echo "✓ All 13 images verified via Fulcio/Rekor"
-
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
-        with:
-          ref: ${{ env.DEPLOY_SHA }}
-          fetch-depth: 0
-
-      - name: Deliver exact revision and private inputs through pinned SSH
+              --certificate-identity="https://github.com/$GITHUB_REPOSITORY/.github/workflows/deploy.yml@refs/heads/main" \
+              --certificate-oidc-issuer="https://token.actions.githubusercontent.com" "$image" >/dev/null
+          done < <(python3 -I -c 'import json; print("\n".join(json.load(open("release-images.json"))["images"].values()))')
+      - name: Recheck current main and same-SHA checks immediately before apply
         env:
+          GH_TOKEN: ${{ github.token }}
+          PRODUCTION_DEPLOY_ENABLED: ${{ vars.PRODUCTION_DEPLOY_ENABLED }}
+        run: python3 -I release-control/scripts/release-quality-gate.py --sha "$DEPLOY_SHA" --repository "$GITHUB_REPOSITORY" --apply --wait-seconds 0
+      - name: Deliver exact revision and private inputs through pinned SSH
+        working-directory: candidate
+        env:
+          RELEASE_IMAGE_MANIFEST: ../release-images.json
           BOOTSTRAP_INITIAL_ADMIN: ${{ github.event_name == 'workflow_dispatch' && inputs.bootstrap_initial_admin == true && 'true' || 'false' }}
           INITIAL_ADMIN_REQUEST: ${{ github.event_name == 'workflow_dispatch' && inputs.bootstrap_initial_admin == true && secrets.INITIAL_ADMIN_REQUEST || '' }}
           PROD_ENV: ${{ secrets.PROD_ENV }}
@@ -376,7 +427,6 @@ jobs:
           GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
         run: |
           export -n INITIAL_ADMIN_REQUEST
-          # Fail before executing an older selected revision which ignores new inputs.
           if [[ "$BOOTSTRAP_INITIAL_ADMIN" == true ]]; then
             grep -qx '# RCT_INITIAL_ADMIN_DELIVERY_V1' scripts/deliver-release.sh || exit 2
           fi

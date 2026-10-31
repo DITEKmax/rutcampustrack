@@ -1,0 +1,56 @@
+[
+  {
+    "path": "auth-methods-smoke.safe.json",
+    "sha256": "de0e996dfb3ad74837f0facca7193ab08c43ebddbc5c979a89fe4d90cabaf2a7",
+    "original_path": "/workspace/rct-pr3-runtime/web-foundation/auth-methods-smoke.json",
+    "original_sha256": "73165a2ccb29b612b209ca0e8f5ccfa6d0b5f17a03730a77dad6b1daa6397303",
+    "projection": "only source/checks/errors/status + method/path/status; no request/response bodies, actors, credentials, OTPs or capabilities"
+  },
+  {
+    "path": "auth-positive-ui.safe.json",
+    "sha256": "e7a9db1be6593c0133ba41c09c8a64fccf25aeab8965816001e704d86a8222e1",
+    "original_path": "/workspace/rct-pr3-runtime/web-foundation/auth-positive-ui.json",
+    "original_sha256": "38602ec5bd1b5f8e569f11a96ac6fc94e4b6c517d7c31511e44dab9acecb948d",
+    "projection": "only source/checks/errors/status + method/path/status; no request/response bodies, actors, credentials, OTPs or capabilities"
+  },
+  {
+    "path": "profile-security-fresh.safe.json",
+    "sha256": "956835292d1eddb95daaef35c45c48ae8ad47ca46590997e93584491eeff9df7",
+    "original_path": "/workspace/rct-pr3-runtime/web-foundation/profile-security-fresh.json",
+    "original_sha256": "67e9c9c9b0f62b5f98ad8748bfe5d446456574e69043b406e37cbd107bd764a0",
+    "projection": "only source/checks/errors/status + method/path/status; no request/response bodies, actors, credentials, OTPs or capabilities"
+  },
+  {
+    "path": "profile-fresh-smoke.safe.json",
+    "sha256": "f4a473746e45a3e181f724b6d2db4737a5ce3b1199d6c97cb92df63e7fd78b03",
+    "original_path": "/workspace/rct-pr3-runtime/web-foundation/profile-fresh-smoke.json",
+    "original_sha256": "e5189d3b5be53e64f37487d1fc7e9a33a1062f27a7212218ba81d3b63f007b6c",
+    "projection": "only source/checks/errors/status + method/path/status; no request/response bodies, actors, credentials, OTPs or capabilities"
+  },
+  {
+    "path": "homework-browse-remainder.safe.json",
+    "sha256": "6577feb48a1bae005e790822f5acd960100bdc2832c2a711cc531ef5bc658542",
+    "original_path": "/workspace/rct-pr3-runtime/web-foundation/homework-browse-remainder.json",
+    "original_sha256": "f7aab747e195e03965e6796601ef77aaa995965d1e63e39933c0e55de1219bfe",
+    "projection": "only source/checks/errors/status + method/path/status; no request/response bodies, actors, credentials, OTPs or capabilities"
+  },
+  {
+    "path": "homework-focused-live.safe.json",
+    "sha256": "a7557c808825068d7f9bdeb48e8eb3ba16004eef92e571e936a99b632d50f241",
+    "original_path": "/workspace/rct-pr3-runtime/web-foundation/homework-focused-live.json",
+    "original_sha256": "c2da01d6336b506b08907b77375718b3ea945e71937b6531d0925d3c13460d47",
+    "projection": "only source/checks/errors/status + method/path/status; no request/response bodies, actors, credentials, OTPs or capabilities"
+  },
+  {
+    "path": "integration-hooks.json",
+    "sha256": "a8eaee353ae75b861dae3a6870367645228b3d7e9d64f9497a3f8210ef19a619",
+    "original_path": "/workspace/rct-pr3-setup/pr3-integration-hooks-20261024.json",
+    "original_sha256": "a8eaee353ae75b861dae3a6870367645228b3d7e9d64f9497a3f8210ef19a619",
+    "projection": "byte-exact final gate report; first generic-api-key fixture false-positive retained in independent security report"
+  },
+  {
+    "path": "accepted-actions.json",
+    "sha256": "b48d36f76fe03f46d526f01f786c9b75dc6b81fee82a9173913f97cc5f3a5a9a",
+    "projection": "root-derived accepted117 inventory, not author runtime raw data"
+  }
+]

@@ -190,5 +190,44 @@
       "Security": 38236931590,
       "OpenAPI": 38236931530
     }
+  },
+  "web_vue_pr3": {
+    "device_preferences": {
+      "revision": "3c02a3241c3ac228f887fdd7b5af9e20c2bf4753",
+      "source_commits": [
+        "f92cf2ba5",
+        "3c02a3241"
+      ],
+      "worktree": "/workspace/rct-worktrees/device-api",
+      "risk": "S3 auth/data/CAS/transaction",
+      "result": "PASS targeted Auth/PostgreSQL/Gateway checks; independent source+metadata reviews; matched immutable runtime and actual browser/PWA mirror",
+      "logs": [
+        "/tmp/device-api-checks-20261024-3.log",
+        "/tmp/device-api-openapi-20261024-correction.log",
+        "/tmp/device-api-final-artifacts-20261024.log",
+        "/tmp/device-api-generated-20261024.log"
+      ],
+      "artifact": "immutable runtime artifact captured in /workspace/rct-pr3-runtime/artifacts-current-20261024.json (original author build may now advance)",
+      "artifact_sha256": "1a802a0d6e9870dbcdc06179d884858170ae366ddbc7d25e5b3c584237321e92",
+      "environment": "isolated Auth Flyway/PostgreSQL16+Redis7 Testcontainers; Java21; max-workers2; existing stand untouched",
+      "root_integration_commits": [
+        "04fc51b2d",
+        "98214275e"
+      ],
+      "browser_stand_status": "PASS real browser GET/PUT/CAS409/logout/accountchange; actual PWA application mirror; no cookie weakening"
+    },
+    "first_web_flow": {
+      "revision": "a2ef210623541a1adb39253da096e06076e0430f",
+      "root_integration_through": "072edf183e0a6687b439ef3beec90686f11bd498",
+      "result": "PASS targeted web types/build/regressions and independent source review; actual UI login/homework completion/undo/logout; 20+2 runtime samples",
+      "review_manifest": "docs/validation/web-vue-pr3/review/manifest.json",
+      "gallery": "docs/validation/web-vue-pr3/runtime-gallery/index.html",
+      "limitations": [
+        "auth original Figma background blocked by www.figma.com CONNECT403",
+        "full Today and all role web functions not accepted",
+        "TMA signed host admission not runtime verified",
+        "CI/Coverage/Security/OpenAPI PAUSED manual only"
+      ]
+    }
   }
 }

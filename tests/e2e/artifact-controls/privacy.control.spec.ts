@@ -1,3 +1,4 @@
+import { beginDiagnosticCase, captureDiagnosticFailure, diagnosticCase } from '../fixtures/diagnostic-events';
 import { expect, test as unprotectedTest, type TestInfo, type WorkerInfo } from '@playwright/test';
 import { dirname, join, resolve } from 'node:path';
 import { tmpdir } from 'node:os';
@@ -56,6 +57,8 @@ const { renderTitleForCall } = require(
 test.afterEach(async ({}, info) => sanitizeTestErrors(info));
 
 test('helper mark diagnostic: closed facts reject private and inconsistent projections', async ({}, info) => {
+  const originalRunKey = process.env.RCT_PRIVATE_DIAGNOSTIC_RUN_KEY;
+  try {
   let startupGetterReads = 0;
   const hostileStartup = Object.fromEntries(['message', 'stack', 'code'].map((key) => [key, null]));
   for (const key of Object.keys(hostileStartup)) Object.defineProperty(hostileStartup, key, {
@@ -86,7 +89,7 @@ test('helper mark diagnostic: closed facts reject private and inconsistent proje
   try {
     for (const enabled of [false, true]) {
       const reporter = enabled ? new SafeReporter({ localStartupDiagnostic: true }) : new SafeReporter();
-      reporter.onBegin({ projects: [{ outputDir: startupDir }] } as never);
+      reporter.onBegin({ projects: [{ outputDir: startupDir }] } as never, { allTests: () => [] } as never);
       const attachment = join(startupDir, 'startup.safe.json');
       writeFileSync(attachment, '{}');
       const result = { status: 'failed', duration: 1, errors: [{}], annotations: [], attachments: [{ path: attachment }] };
@@ -116,7 +119,7 @@ test('helper mark diagnostic: closed facts reject private and inconsistent proje
       expect(error.message).not.toContain(marker);
       retainReportedFrameworkError(annotations, { message: `Error: ENOENT ${marker}` });
       const reporter = new SafeReporter();
-      reporter.onBegin({ projects: [{ outputDir: frameworkDir }] } as never);
+      reporter.onBegin({ projects: [{ outputDir: frameworkDir }] } as never, { allTests: () => [] } as never);
       const attachment = join(frameworkDir, 'framework.safe.json');
       writeFileSync(attachment, '{}');
       reporter.onTestEnd({ location: { file: __filename, line: 1 }, expectedStatus: 'passed', parent: { project: () => ({ name: 'control' }) } } as never,
@@ -144,7 +147,7 @@ test('helper mark diagnostic: closed facts reject private and inconsistent proje
       const error = { message: `Error: ${marker}`, stack: helperStack };
       sanitizeTestErrors({ file: __filename, line: 1, status: 'failed', annotations, errors: [error], attachments: [] } as unknown as TestInfo);
       const reporter = diagnostic ? new SafeReporter({ localStartupDiagnostic: true }) : new SafeReporter();
-      reporter.onBegin({ projects: [{ outputDir: frameworkDir }] } as never);
+      reporter.onBegin({ projects: [{ outputDir: frameworkDir }] } as never, { allTests: () => [] } as never);
       const attachment = join(frameworkDir, 'auth-frame.safe.json');
       writeFileSync(attachment, '{}');
       reporter.onTestEnd({ location: { file: __filename, line: 1 }, expectedStatus: 'passed', parent: { project: () => ({ name: 'control' }) } } as never,
@@ -161,7 +164,7 @@ test('helper mark diagnostic: closed facts reject private and inconsistent proje
       { reportedErrorClass: 'Error', reportedTransportCode: 'UNKNOWN', reportedSourceFrame: null, reportedHttpStatus: 0, raw: marker },
     ]) {
       const reporter = new SafeReporter();
-      reporter.onBegin({ projects: [{ outputDir: frameworkDir }] } as never);
+      reporter.onBegin({ projects: [{ outputDir: frameworkDir }] } as never, { allTests: () => [] } as never);
       const attachment = join(frameworkDir, 'forged.safe.json');
       writeFileSync(attachment, '{}');
       reporter.onTestEnd({ location: { file: __filename, line: 1 }, expectedStatus: 'passed', parent: { project: () => ({ name: 'control' }) } } as never,
@@ -415,6 +418,10 @@ test('helper mark diagnostic: closed facts reject private and inconsistent proje
   );
   expect(capped).toHaveLength(32);
   info.annotations.push(...hostileAnnotations);
+  } finally {
+    if (originalRunKey === undefined) delete process.env.RCT_PRIVATE_DIAGNOSTIC_RUN_KEY;
+    else process.env.RCT_PRIVATE_DIAGNOSTIC_RUN_KEY = originalRunKey;
+  }
 });
 
 if (process.env.RCT_E2E_CONTROL_STARTUP_DIAGNOSTIC === 'true') {
@@ -1895,35 +1902,46 @@ test('only the canonical dedicated reporter passes before credential creation', 
   try {
     const project = (
       facts: unknown,
-      binding: { file?: string; title?: string; status?: string } = {},
+      binding: { file?: string; title?: string; status?: string; caseId?: string; registered?: boolean } = {},
     ) => {
       const reporter = new SafeReporter();
-      reporter.onBegin({ projects: [{ outputDir: projectionDir }] } as never);
+      const annotations = binding.registered === false ? [] : [diagnosticCase(binding.caseId ?? 'D002_RECONNECT_ACCOUNT_AUTHORITY')];
+      const item = {
+        id: 'privacy-d002-projection', annotations,
+        title: binding.title ?? 'synthetic semantic projection',
+        location: { file: binding.file ?? __filename, line: 1 },
+        expectedStatus: 'passed', parent: { project: () => ({ name: 'control' }) },
+      };
+      const syntheticInfo = {
+        testId: item.id, annotations, project: { name: 'control' }, retry: 0, errors: [],
+        _failWithError(error: unknown) { this.errors.push(error as never); },
+      } as unknown as TestInfo;
+      const originalRunKey = process.env.RCT_PRIVATE_DIAGNOSTIC_RUN_KEY;
+      const originalInfo = unprotectedTest.info;
       const attachmentPath = join(projectionDir, 'context.json');
-      writeFileSync(attachmentPath, '{}');
-      reporter.onTestEnd(
-        {
-          title:
-            binding.title ??
-            'D002 reconnect rechecks changed grants and a late old feed cannot replace the new account',
-          location: {
-            file: binding.file ?? resolve(__dirname, '../specs/mobile-real-server.spec.ts'),
-            line: 3957,
-          },
-          expectedStatus: 'passed',
-          parent: { project: () => ({ name: 'chromium' }) },
-        } as never,
-        {
-          status: binding.status ?? 'failed',
-          duration: 1,
-          errors: [{ location: { file: 'mobile-real-server.spec.ts', line: 4221 } }],
-          annotations: [
-            { type: d002ReconnectObservationAnnotation, description: JSON.stringify(facts) },
-          ],
+      try {
+        reporter.onBegin({ projects: [{ outputDir: projectionDir }] } as never, { allTests: () => [item] } as never);
+        beginDiagnosticCase(syntheticInfo);
+        // Synchronous test-only context substitution exercises the real closed retainer/signer.
+        // No framework file or producer implementation is patched.
+        unprotectedTest.info = () => syntheticInfo;
+        retainD002ReconnectObservation(annotations, facts);
+        unprotectedTest.info = originalInfo;
+        const error = { message: 'Error: synthetic failure', stack: 'Error: synthetic failure', location: { file: __filename, line: 1, column: 1 } };
+        captureDiagnosticFailure(syntheticInfo, error, () => { error.message = 'safe'; error.stack = 'Error: safe'; });
+        writeFileSync(attachmentPath, '{}');
+        reporter.onTestEnd(item as never, {
+          status: binding.status ?? 'failed', retry: 0, duration: 1,
+          errors: binding.status === 'passed' ? [] : [error], annotations,
           attachments: [{ path: attachmentPath }],
-        } as never,
-      );
-      return JSON.parse(readFileSync(attachmentPath, 'utf8')).d002ReconnectObservation;
+        } as never);
+        return JSON.parse(readFileSync(attachmentPath, 'utf8')).d002ReconnectObservation;
+      } finally {
+        unprotectedTest.info = originalInfo;
+        void reporter.onEnd({ status: 'failed' } as never);
+        if (originalRunKey === undefined) delete process.env.RCT_PRIVATE_DIAGNOSTIC_RUN_KEY;
+        else process.env.RCT_PRIVATE_DIAGNOSTIC_RUN_KEY = originalRunKey;
+      }
     };
     const rejected = project(reconnectFacts('REJECTED'));
     const pending = project(reconnectFacts('PENDING'));
@@ -1937,10 +1955,9 @@ test('only the canonical dedicated reporter passes before credential creation', 
     );
     expect(rejected).toEqual(reconnectFacts('REJECTED'));
     expect(pending).toEqual(reconnectFacts('PENDING'));
-    expect(
-      project(reconnectFacts('PENDING'), { file: '/unrelated/mobile-real-server.spec.ts' }),
-    ).toBeUndefined();
-    expect(project(reconnectFacts('PENDING'), { title: 'unrelated case' })).toBeUndefined();
+    expect(project(reconnectFacts('PENDING'), { file: '/other/checkout/moved.spec.ts', title: 'renamed case' })).toEqual(reconnectFacts('PENDING'));
+    expect(project(reconnectFacts('PENDING'), { caseId: 'SEMESTER_ARCHIVE_RESTORE' })).toBeUndefined();
+    expect(project(reconnectFacts('PENDING'), { registered: false })).toBeUndefined();
     expect(project(reconnectFacts('PENDING'), { status: 'passed' })).toBeUndefined();
     const annotation = (value: unknown) => [
       {

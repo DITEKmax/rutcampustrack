@@ -1,0 +1,336 @@
+{
+  "schema": "rct-diagnostic-catalog.v1",
+  "cases": {
+    "SEMESTER_ARCHIVE_RESTORE": {
+      "events": [
+        {
+          "stageId": "FRAMEWORK",
+          "eventCode": "REPORTED_FRAMEWORK_ERROR",
+          "httpStatus": 0
+        },
+        {
+          "stageId": "DATASET_HTTP",
+          "eventCode": "DATASET_ATTENDANCE_REPORT_HTTP",
+          "httpStatus": 500
+        },
+        {
+          "stageId": "DATASET_HTTP",
+          "eventCode": "DATASET_ATTENDANCE_MARK_HTTP",
+          "httpStatus": 500
+        }
+      ]
+    },
+    "ASSIGNMENT_LIFECYCLE_API": {
+      "events": [
+        {
+          "stageId": "FRAMEWORK",
+          "eventCode": "REPORTED_FRAMEWORK_ERROR",
+          "httpStatus": 0
+        },
+        {
+          "stageId": "DATASET_HTTP",
+          "eventCode": "DATASET_LESSON_CREATE_HTTP",
+          "httpStatus": 500
+        }
+      ]
+    },
+    "HOSTED_PRIVATE_BOT_AUTHORITY": {
+      "events": [
+        {
+          "stageId": "FRAMEWORK",
+          "eventCode": "REPORTED_FRAMEWORK_ERROR",
+          "httpStatus": 0
+        },
+        {
+          "stageId": "DATASET_HTTP",
+          "eventCode": "DATASET_ATTENDANCE_MARK_HTTP",
+          "httpStatus": 500
+        }
+      ]
+    },
+    "HEADMAN_RECURRING_SLOT_HISTORY": {
+      "events": [
+        {
+          "stageId": "FRAMEWORK",
+          "eventCode": "REPORTED_FRAMEWORK_ERROR",
+          "httpStatus": 0
+        },
+        {
+          "stageId": "DATASET_HTTP",
+          "eventCode": "STUDENT_STATS_HTTP503",
+          "httpStatus": 503
+        }
+      ]
+    },
+    "STUDENT_SEMESTER_ROOM_REFRESH": {
+      "events": [
+        {
+          "stageId": "FRAMEWORK",
+          "eventCode": "REPORTED_FRAMEWORK_ERROR",
+          "httpStatus": 0
+        }
+      ]
+    },
+    "HEADMAN_LESSON_CANCEL_RESTORE": {
+      "events": [
+        {
+          "stageId": "FRAMEWORK",
+          "eventCode": "REPORTED_FRAMEWORK_ERROR",
+          "httpStatus": 0
+        }
+      ]
+    },
+    "STUDENT_MANUAL_BUDGET_AUTO_APPROVAL": {
+      "events": [
+        {
+          "stageId": "FRAMEWORK",
+          "eventCode": "REPORTED_FRAMEWORK_ERROR",
+          "httpStatus": 0
+        }
+      ]
+    },
+    "D002_RECONNECT_ACCOUNT_AUTHORITY": {
+      "events": [
+        {
+          "stageId": "FRAMEWORK",
+          "eventCode": "REPORTED_FRAMEWORK_ERROR",
+          "httpStatus": 0
+        },
+        {
+          "stageId": "DATASET_HTTP",
+          "eventCode": "DATASET_HOMEWORK_CREATE_HTTP",
+          "httpStatus": 503
+        },
+        {
+          "stageId": "D002_RECONNECT",
+          "eventCode": "OBSERVATION",
+          "httpStatus": 0
+        },
+        {
+          "stageId": "UI_ACTION",
+          "eventCode": "LOGOUT_CONTROL_MISSING",
+          "httpStatus": 0
+        },
+        {
+          "stageId": "UI_ACTION",
+          "eventCode": "LOGOUT_CONTROL_MULTIPLE",
+          "httpStatus": 0
+        },
+        {
+          "stageId": "UI_ACTION",
+          "eventCode": "LOGOUT_CONTROL_HIDDEN",
+          "httpStatus": 0
+        },
+        {
+          "stageId": "UI_ACTION",
+          "eventCode": "LOGOUT_CONTROL_DISABLED",
+          "httpStatus": 0
+        },
+        {
+          "stageId": "UI_ACTION",
+          "eventCode": "LOGOUT_CONTROL_OUTSIDE_VIEWPORT",
+          "httpStatus": 0
+        },
+        {
+          "stageId": "UI_ACTION",
+          "eventCode": "LOGOUT_CONTROL_POINTER_INTERCEPTED",
+          "httpStatus": 0
+        },
+        {
+          "stageId": "UI_ACTION",
+          "eventCode": "LOGOUT_CLICK_UNKNOWN",
+          "httpStatus": 0
+        }
+      ]
+    },
+    "ASYNC_DOCX_RESUME": {
+      "events": [
+        {
+          "stageId": "FRAMEWORK",
+          "eventCode": "REPORTED_FRAMEWORK_ERROR",
+          "httpStatus": 0
+        },
+        {
+          "stageId": "DATASET_HTTP",
+          "eventCode": "DATASET_HOMEWORK_CREATE_HTTP",
+          "httpStatus": 503
+        }
+      ]
+    },
+    "LIMITED_ADMIN_ACCOUNTS": {
+      "events": [
+        {
+          "stageId": "FRAMEWORK",
+          "eventCode": "REPORTED_FRAMEWORK_ERROR",
+          "httpStatus": 0
+        },
+        {
+          "stageId": "DATASET_HTTP",
+          "eventCode": "DATASET_HOMEWORK_CREATE_HTTP",
+          "httpStatus": 503
+        }
+      ]
+    },
+    "HOMEWORK_FOREIGN_RETRY": {
+      "events": [
+        {
+          "stageId": "FRAMEWORK",
+          "eventCode": "REPORTED_FRAMEWORK_ERROR",
+          "httpStatus": 0
+        },
+        {
+          "stageId": "DATASET_HTTP",
+          "eventCode": "DATASET_HOMEWORK_CREATE_HTTP",
+          "httpStatus": 503
+        }
+      ]
+    },
+    "SESSION_REVOKE_RECOVERY": {
+      "events": [
+        {
+          "stageId": "FRAMEWORK",
+          "eventCode": "REPORTED_FRAMEWORK_ERROR",
+          "httpStatus": 0
+        },
+        {
+          "stageId": "DATASET_HTTP",
+          "eventCode": "DATASET_HOMEWORK_CREATE_HTTP",
+          "httpStatus": 503
+        }
+      ]
+    },
+    "D003_DEVICE_REUSE_SUSPENDED_GRANT": {
+      "events": [
+        {
+          "stageId": "FRAMEWORK",
+          "eventCode": "REPORTED_FRAMEWORK_ERROR",
+          "httpStatus": 0
+        },
+        {
+          "stageId": "DATASET_HTTP",
+          "eventCode": "DATASET_HOMEWORK_CREATE_HTTP",
+          "httpStatus": 503
+        }
+      ]
+    },
+    "D003_HEADMAN_TMA_MARK": {
+      "events": [
+        {
+          "stageId": "FRAMEWORK",
+          "eventCode": "REPORTED_FRAMEWORK_ERROR",
+          "httpStatus": 0
+        },
+        {
+          "stageId": "DATASET_HTTP",
+          "eventCode": "DATASET_HOMEWORK_CREATE_HTTP",
+          "httpStatus": 503
+        }
+      ]
+    },
+    "D002_WARM_OFFLINE_REVOKED": {
+      "events": [
+        {
+          "stageId": "FRAMEWORK",
+          "eventCode": "REPORTED_FRAMEWORK_ERROR",
+          "httpStatus": 0
+        },
+        {
+          "stageId": "DATASET_HTTP",
+          "eventCode": "DATASET_HOMEWORK_CREATE_HTTP",
+          "httpStatus": 503
+        }
+      ]
+    },
+    "D002_TMA_ONLINE_ONLY": {
+      "events": [
+        {
+          "stageId": "FRAMEWORK",
+          "eventCode": "REPORTED_FRAMEWORK_ERROR",
+          "httpStatus": 0
+        },
+        {
+          "stageId": "DATASET_HTTP",
+          "eventCode": "DATASET_HOMEWORK_CREATE_HTTP",
+          "httpStatus": 503
+        }
+      ]
+    },
+    "N2_STUDENT_RETRY_ACTIVE": {
+      "events": [
+        {
+          "stageId": "FRAMEWORK",
+          "eventCode": "REPORTED_FRAMEWORK_ERROR",
+          "httpStatus": 0
+        },
+        {
+          "stageId": "DATASET_HTTP",
+          "eventCode": "DATASET_HOMEWORK_CREATE_HTTP",
+          "httpStatus": 503
+        }
+      ]
+    },
+    "N2_STUDENT_RETRY_SUSPENDED": {
+      "events": [
+        {
+          "stageId": "FRAMEWORK",
+          "eventCode": "REPORTED_FRAMEWORK_ERROR",
+          "httpStatus": 0
+        },
+        {
+          "stageId": "DATASET_HTTP",
+          "eventCode": "DATASET_HOMEWORK_CREATE_HTTP",
+          "httpStatus": 503
+        }
+      ]
+    },
+    "D002_LATE_ACCOUNT_HOMEWORK": {
+      "events": [
+        {
+          "stageId": "FRAMEWORK",
+          "eventCode": "REPORTED_FRAMEWORK_ERROR",
+          "httpStatus": 0
+        },
+        {
+          "stageId": "DATASET_HTTP",
+          "eventCode": "DATASET_HOMEWORK_CREATE_HTTP",
+          "httpStatus": 503
+        },
+        {
+          "stageId": "UI_ACTION",
+          "eventCode": "LOGOUT_CONTROL_MISSING",
+          "httpStatus": 0
+        },
+        {
+          "stageId": "UI_ACTION",
+          "eventCode": "LOGOUT_CONTROL_MULTIPLE",
+          "httpStatus": 0
+        },
+        {
+          "stageId": "UI_ACTION",
+          "eventCode": "LOGOUT_CONTROL_HIDDEN",
+          "httpStatus": 0
+        },
+        {
+          "stageId": "UI_ACTION",
+          "eventCode": "LOGOUT_CONTROL_DISABLED",
+          "httpStatus": 0
+        },
+        {
+          "stageId": "UI_ACTION",
+          "eventCode": "LOGOUT_CONTROL_OUTSIDE_VIEWPORT",
+          "httpStatus": 0
+        },
+        {
+          "stageId": "UI_ACTION",
+          "eventCode": "LOGOUT_CONTROL_POINTER_INTERCEPTED",
+          "httpStatus": 0
+        },
+        {
+          "stageId": "UI_ACTION",
+          "eventCode": "LOGOUT_CLICK_UNKNOWN",
+          "httpStatus": 0
+        }
+      ]
+    }
+  }
+}

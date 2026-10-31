@@ -1,0 +1,96 @@
+{
+  "sourceRevision": "cab3eed183d9453a6bfcc17ca12149d1894f39ba",
+  "productSourceBase": "a851d5cf780c965513e79c2334a924eaaac72cdc",
+  "productCommit": "c35c5d11e85d269fa9e7cdffa3fbf68fe7e570ed",
+  "criterion": "LOAD-PROFILE-01 boundedsharedProfile initialloading skeleton",
+  "status": "CLOSED selectedPWA300light +controlledTMA300dark root16 afterskeleton",
+  "personallyViewedBothAfterPng": true,
+  "hashIntegrity": "PWAoriginalddb/TMA534 originalSHA256 match; imagesunmodified",
+  "visualObservations": [
+    "Both300×900/root16 frames show profileavatar/card, three metadata bars andfive action-row placeholders instead of onlyvisiblecaption.",
+    "Light/dark semanticfill distinguishes shapes andsurface; title/logout/nav remainvisible andcoherent; nohorizontalclipping (scrollWidth300).",
+    "Skeletonshapes aredecorative/noninteractive; hiddenstatus/busylabel andstatic/noanimation source independentlyreviewed. No duplicatevisible loadingexplainer."
+  ],
+  "syntheticReadBoundary": "Onlybrowser outgoing GET /api/academic/users/me held afterrealAuth/profileUIentry; eachactualroutehit1. Forwardedunchanged afterPNG, actual200+loadedprofilecard observed inbothcases. Not serverlatency/outage/APIcorrectness proof.",
+  "PWA": {
+    "image": "PWA-MOBILE-PROFILE__postfix-held-read-loading__light__300__root16__cab3eed18.png",
+    "sourceRevision": "cab3eed183d9453a6bfcc17ca12149d1894f39ba",
+    "actualRead": {
+      "heldHits": 1,
+      "releasedStatus": 200,
+      "loadedAfterRelease": true
+    },
+    "rawAttemptStatus": "Original8b nativePWA logout blockedbyincorrectBearer-onlyTESTgate; UNKNOWN/terminalexit2 remainsFAIL, notrelabeledPASS.",
+    "immutableRawArchive": "profile-loading-original-unknown-cab3/preservation.json",
+    "rawReceiptSha256": "8eaaeb26a493760748e89a3e25d3b4e89c4e1e791f30bf9f360a2d608898d1a4",
+    "cleanupQualification": "Separatelyremediated sameactor3 helper normalAuth→canonicalownnewSID→DELETEexactoldSID204/ownlistabsence→normalcookie-onlyhelperlogout204/samebearer401; independentRootSQLconfirmsbothrevoked/allidentity-grants-profiles/otheruser3sessioncount+revocationdigestsunchanged. Originalnative204 NOTclaimed.",
+    "helperPublicReceipt": "profile3-own-cleanup-prep/receipt.json",
+    "helperExecution": "profile3-own-cleanup-prep/EXECUTION.json",
+    "independentPost": "/workspace/rct-pr3-runtime/restore-20261024/PROFILE3-CLEANUP-INDEPENDENT-POST.json",
+    "independentPostSha256": "95d933dff9a305beb688ee49cbc7d45ff9339ea4ce2185e69d01990d1d9d5b0d",
+    "knownTerminalClose": "profile-loading-known-close-92079.json",
+    "terminal": "92079 exit2 throughreviewedSIGTERMhandler;0liveof10capturedowneddriver/browserprocesses. No foreignprocesssignalled.",
+    "noPwaRecapture": true
+  },
+  "TMA": {
+    "image": "TMA-MOBILE-PROFILE__postfix-held-read-loading__dark__300__root16__cab3eed18.png",
+    "rawReceipt": "profile-loading-tma-remaining-receipt.json",
+    "runnerSha256": "06f954be739a74662677a4af4cf0b4eb7674e29ef70b1202f14693863e0c5c6c",
+    "tty": 16838,
+    "exitCode": 0,
+    "elapsedSeconds": 3.87,
+    "authPosts": 1,
+    "authStatus": 200,
+    "expectedOwnedActor": 4,
+    "heldReadHits": 1,
+    "releasedStatus": 200,
+    "loadedAfterRelease": true,
+    "cleanup": {
+      "exactOwnHandleCaptured": true,
+      "nativeLogoutSent": true,
+      "logoutStatus": 204,
+      "guestReadStatus": 401,
+      "fallbackUsed": false,
+      "confirmed": true,
+      "canonicalReadStatus": 200,
+      "expectedActorMatched": true,
+      "exactSidMatched": true,
+      "canonicalBearerCorrelated": true
+    },
+    "nativeLogoutForwarded": 1,
+    "nativeBearerMatched": true,
+    "privateHandleMode": "0o600",
+    "blockedWrites": [],
+    "pageErrors": [],
+    "browserClosed": true,
+    "sourceUnchanged": true,
+    "boundary": "ExistingpublicCI HMAC+injectedSDKhost/darksystemappearance; genuineAuth/session/domainAPI, no response mocks. NativeTelegramproviderunknown."
+  },
+  "loaded1440Control": {
+    "status": "REUSED prior888actualloadedoverview, NOTnewcapture/NOTnew1440runtimePASS",
+    "id": "TMA-CONTROLLED-SIGNED-MOBILE-PROFILE__actual-baseline__light__1440__888667e32",
+    "file": "TMA-CONTROLLED-SIGNED-MOBILE-PROFILE__actual-baseline__light__1440__888667e32.png",
+    "sha256": "f0c2893888fb45ecc2b5bb995605111d9b66e6a3fe7898af2c38925db3556daf",
+    "sourceRevision": "888667e32f9ae0503fc3004fa280a96c72c2861a",
+    "sourceQualification": "profile-loading-fix/loaded-source-reuse-qualification.json +profile-loading-after-prepared.json: script/equivalentnormalizedloaded-error-logout suffixunchanged; newCSS loading-prefixedonly; ports/state/foundation unchanged; newliveApprevisionwatcher nonimmediate/excludesProfile. BothnewcasesrealGET200/loadedafterrelease.",
+    "independentSourceReview": "docs/validation/web-vue-pr3/review/profile-loading-REVIEW-c35c5d11.md"
+  },
+  "limits": [
+    "OnlyselectedProfileinitialloadingpresentation; notallroles/themes/widths/states/fullscreenREADY.",
+    "Loaded300notrecaptured; old888naturalProfile300loading remainshistoricalbefore, notloadedbaselinePASS.",
+    "No new profilecommands/security/settings/browserapproval operations performed or counted.",
+    "No actualnativeTelegramprovider/mobiledevice/screenreader claim; accessibility label/busy/staticmotion reviewedsource."
+  ],
+  "readinessAccounting": {
+    "newFunctionalActions": 0,
+    "PwaObservedBaselineScreens": 37,
+    "PwaNotVisuallyCheckedScreens": 13,
+    "controlledTmaConsumerSlices": 2,
+    "sharedTmaScreens": 48,
+    "fullTmaAllStatesWidthsReady": 0,
+    "nativeProviderPostLoginScreens": 0,
+    "overallPercent": null
+  },
+  "modelRequested": "gpt-6.1-sol/high",
+  "independentRuntimeTelemetry": "unavailable"
+}

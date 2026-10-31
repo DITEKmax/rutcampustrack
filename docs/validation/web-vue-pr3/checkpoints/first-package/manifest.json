@@ -1,0 +1,17 @@
+[
+  {
+    "path": "device-api-checks-20261024.json",
+    "original_path": "/tmp/device-api-checks-20261024.json",
+    "sha256": "618a68b78f4349130e188d21b2c2bef0f3ed79c9ac16aded021fbd096526fc6d"
+  },
+  {
+    "path": "device-api-summary-20261024.md",
+    "original_path": "/tmp/device-api-summary-20261024.md",
+    "sha256": "9f863d27ba173944b025fb05baa5bc71fe1baa26ac7a1425fdf69ee9a8ae8cec"
+  },
+  {
+    "path": "pr3-first-package-hooks-20261024.json",
+    "original_path": "/workspace/rct-pr3-setup/pr3-first-package-hooks-20261024.json",
+    "sha256": "4e0fb611a1d535ae75693192637b0d02f7fb20a838268c40dbaf6acc2eb37d1b"
+  }
+]

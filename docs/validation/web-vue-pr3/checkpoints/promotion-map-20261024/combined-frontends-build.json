@@ -1,0 +1,26 @@
+{
+  "sourceRevision": "c3c08a935c223f1964a9913e299ae9e4a8d13026",
+  "scope": "sequentialstrictfrontendsaftersharedmapclient/types+WEBpageintegration",
+  "startedPackages": [
+    {
+      "package": "@rct/web-vue",
+      "exit": 0,
+      "elapsedSeconds": 17.007,
+      "log": "/workspace/rct-pr3-runtime/combined-map-build-20261024/web-vue.log"
+    },
+    {
+      "package": "@rct/pwa-vue",
+      "exit": 0,
+      "elapsedSeconds": 25.849,
+      "log": "/workspace/rct-pr3-runtime/combined-map-build-20261024/pwa-vue.log"
+    },
+    {
+      "package": "@rct/tma-vue",
+      "exit": 0,
+      "elapsedSeconds": 26.88,
+      "log": "/workspace/rct-pr3-runtime/combined-map-build-20261024/tma-vue.log"
+    }
+  ],
+  "CI": "PAUSED/no dispatch",
+  "result": "PASS"
+}

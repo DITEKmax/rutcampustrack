@@ -4,6 +4,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import ru.rutcampustrack.academic.contract.dto.threshold.ResolvedThresholdResponse;
 import ru.rutcampustrack.academic.contract.dto.threshold.SetThresholdRequest;
 import ru.rutcampustrack.academic.entity.AttendanceThreshold;
@@ -16,11 +17,15 @@ public class ThresholdService {
 
     private final AttendanceThresholdRepository thresholdRepository;
     private final RequestContext requestContext;
+    private final ru.rutcampustrack.academic.repository.SubjectRepository subjects;
 
     public ThresholdService(
-            AttendanceThresholdRepository thresholdRepository, RequestContext requestContext) {
+            AttendanceThresholdRepository thresholdRepository,
+            RequestContext requestContext,
+            ru.rutcampustrack.academic.repository.SubjectRepository subjects) {
         this.thresholdRepository = thresholdRepository;
         this.requestContext = requestContext;
+        this.subjects = subjects;
     }
 
     private void requireHeadman() {
@@ -71,6 +76,10 @@ public class ThresholdService {
     public AttendanceThreshold setSubjectThreshold(SetThresholdRequest request, Long subjectId) {
         requireHeadman();
         Long groupId = requestContext.getGroupId();
+        if (groupId == null
+                || subjectId == null
+                || !subjects.existsByIdAndGroupId(subjectId, groupId))
+            throw new AccessDeniedException("Предмет недоступен в текущей группе");
         AttendanceThreshold threshold =
                 thresholdRepository
                         .findByGroupIdAndSubjectId(groupId, subjectId)

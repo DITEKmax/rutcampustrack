@@ -1,0 +1,23 @@
+{
+  "preservedAt": "2026-10-24T21:10:49.881936+00:00",
+  "state": "OriginalPWAUNKNOWN_HOLD before any newcleanup preparation; no source/receipt successrewrite",
+  "tty": 92079,
+  "files": [
+    {
+      "file": "profile-loading-after.cjs",
+      "sha256": "8b387328e56c8d219d89c4b895f27ec5c9dea6e5fbac57b0787a3f1335e9828f",
+      "mode": "0444"
+    },
+    {
+      "file": "profile-loading-after-receipt.json",
+      "sha256": "8eaaeb26a493760748e89a3e25d3b4e89c4e1e791f30bf9f360a2d608898d1a4",
+      "mode": "0444"
+    },
+    {
+      "file": "PWA-MOBILE-PROFILE__postfix-held-read-loading__light__300__root16__cab3eed18.png",
+      "sha256": "ddb2029fae3906529fdcaa86168ec22f15a5e886318f94d0a33b08135fbcfe2d",
+      "mode": "0444"
+    }
+  ],
+  "privateGuard": "Frozenprivate/PWA-guard.json mode0400, byteequaloriginal atpreservation; values/digest excluded publicmanifest"
+}

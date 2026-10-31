@@ -7,6 +7,7 @@ import { StaleSessionGenerationError } from '../../shared/session-owner';
 import type { HeadmanJournalLesson } from './headman-journal-client';
 import type { HeadmanLessonAction } from './headman-journal-actions';
 import type { HeadmanLessonActionsApi } from './headman-journal-actions-client';
+import { teacherLessonTypeLabel as lessonTypeLabel } from '../teacher/teacher-ui-format';
 import './headman-lesson-actions-screen.pcss';
 const props = withDefaults(
   defineProps<{
@@ -83,13 +84,7 @@ function timestamp(value: string): string {
   }).format(new Date(value));
 }
 function lessonType(value: string | null): string {
-  return value === 'LECTURE'
-    ? 'Лекция'
-    : value === 'PRACTICE'
-      ? 'Практика'
-      : value === 'LAB'
-        ? 'Лабораторная'
-        : (value ?? 'Тип не указан');
+  return lessonTypeLabel(value ?? 'Тип не указан');
 }
 function changeText(item: HeadmanLessonAction): string | null {
   if (item.action === 'ROOM_CHANGED') {

@@ -1,10 +1,22 @@
+import { failureBoundary, handledWaiter, retainFirstFailure, teacherShortcutClickErrorClass, teacherShortcutClickLogReason, teacherShortcutState } from '../fixtures/failed-case-diagnostics';
+import { diagnosticCase } from '../fixtures/diagnostic-events';
 import { randomBytes, randomUUID, timingSafeEqual } from 'node:crypto';
 import { isDeepStrictEqual } from 'node:util';
 import { createServer } from 'node:http';
 import { execFileSync, spawn } from 'node:child_process';
-import { lstatSync } from 'node:fs';
+import { closeSync, constants, lstatSync, openSync, writeFileSync } from 'node:fs';
+import { isIP } from 'node:net';
+import { localSpecialLane, localSpecialService } from '../fixtures/local-special';
 import { resolve } from 'node:path';
-import type { BrowserContext, Download, Page, Request, Response, TestInfo } from '@playwright/test';
+import type {
+  BrowserContext,
+  Download,
+  JSHandle,
+  Page,
+  Request,
+  Response,
+  TestInfo,
+} from '@playwright/test';
 import {
   test as mobileTest,
   expect,
@@ -14,7 +26,7 @@ import {
 } from '../fixtures/mobile-dataset';
 import { loginPwa, logoutPwa } from '../fixtures/pwa-auth';
 import { installTelegramHost, syntheticInitData } from '../fixtures/telegram';
-import { requirePrivateArtifacts, sanitizeTestErrors } from '../fixtures/artifact-privacy';
+import { requirePrivateArtifacts, sanitizeTestErrors, retainTeacherShortcutClickError, type FailedCiRawRetention } from '../fixtures/artifact-privacy';
 import {
   datasetHttpFailure,
   createD002ReconnectObserver,
@@ -551,14 +563,15 @@ async function requireProductionWorker(page: Page): Promise<void> {
 
 // Only the CI-owned static container participates; no backend, source tree or volume is changed.
 function productionWorkerFixture() {
+  const local = localSpecialLane('production-service-worker');
   if (
     process.env.RCT_E2E_SW_LIFECYCLE !== 'true' ||
     process.env.RCT_E2E_REMAINING5 !== 'true' ||
     process.env.RCT_E2E_SYNTHETIC_SEED !== 'true' ||
-    process.env.RUNNER_ENVIRONMENT !== 'github-hosted' ||
-    process.env.CI !== 'true' ||
-    process.env.E2E_BASE_URL !== 'https://localhost:8443' ||
-    !process.env.GITHUB_WORKSPACE
+    (!local && (process.env.RUNNER_ENVIRONMENT !== 'github-hosted' ||
+      process.env.CI !== 'true' ||
+      process.env.E2E_BASE_URL !== 'https://localhost:8443' ||
+      !process.env.GITHUB_WORKSPACE))
   ) {
     throw new Error('Production worker fixture requires the owned disposable CI stack');
   }
@@ -575,12 +588,14 @@ function productionWorkerFixture() {
       throw new Error('Owned production worker fixture operation failed');
     }
   }
+  const owned = local ? localSpecialService(local, 'pwa-nginx') : undefined;
+  const networkName = local?.networkName ?? 'rct-e2e_private_net';
   const target = JSON.parse(
     docker([
       'inspect',
       '--format',
       '{"id":{{json .Id}},"labels":{{json .Config.Labels}},"networks":{{json .NetworkSettings.Networks}},"mounts":{{json .Mounts}},"readonly":{{json .HostConfig.ReadonlyRootfs}},"running":{{json .State.Running}}}',
-      'rct-e2e-pwa-nginx-1',
+      owned?.id ?? 'rct-e2e-pwa-nginx-1',
     ]).toString('utf8'),
   );
   const network = JSON.parse(
@@ -589,25 +604,35 @@ function productionWorkerFixture() {
       'inspect',
       '--format',
       '{"id":{{json .Id}},"labels":{{json .Labels}}}',
-      'rct-e2e_private_net',
+      networkName,
     ]).toString('utf8'),
   );
   if (
     !/^[a-f0-9]{64}$/.test(target.id) ||
-    target.labels?.['com.docker.compose.project'] !== 'rct-e2e' ||
+    target.labels?.['com.docker.compose.project'] !== (local?.project ?? 'rct-e2e') ||
     target.labels?.['com.docker.compose.service'] !== 'pwa-nginx' ||
-    target.labels?.['com.docker.compose.project.working_dir'] !== process.env.GITHUB_WORKSPACE ||
+    target.labels?.['com.docker.compose.project.working_dir'] !== (local?.run ?? process.env.GITHUB_WORKSPACE) ||
     target.running !== true ||
     target.readonly !== false ||
     !Array.isArray(target.mounts) ||
     target.mounts.length !== 0 ||
-    Object.keys(target.networks).join() !== 'rct-e2e_private_net' ||
-    target.networks['rct-e2e_private_net'].NetworkID !== network.id ||
-    network.labels?.['com.docker.compose.project'] !== 'rct-e2e' ||
-    network.labels?.['com.docker.compose.network'] !== 'private_net'
+    Object.keys(target.networks).join() !== networkName ||
+    target.networks[networkName].NetworkID !== network.id ||
+    network.labels?.['com.docker.compose.project'] !== (local?.project ?? 'rct-e2e') ||
+    network.labels?.['com.docker.compose.network'] !== 'private_net' ||
+    (local && (target.labels?.['rct.local.stage17'] !== local.nonce ||
+      network.labels?.['rct.local.stage17'] !== local.nonce || target.id !== owned!.id))
   ) {
     throw new Error('Production worker fixture ownership or writable-layer mismatch');
   }
+  const identity = () => {
+    if (!local) return;
+    const current = localSpecialService(local, 'pwa-nginx');
+    if (!isDeepStrictEqual(current, owned) || current.readonly !== false ||
+        !Array.isArray(current.mounts) || current.mounts.length !== 0)
+      throw new Error('Owned local production worker identity changed');
+  };
+  identity();
   const regularFiles = `
     for directory in /usr /usr/share /usr/share/nginx /usr/share/nginx/html; do
       test -d "$directory" && test ! -L "$directory"
@@ -618,6 +643,7 @@ function productionWorkerFixture() {
     test "$(wc -c < "$path")" -le 32768
   `;
   function read(name: 'sw.js' | 'version.json'): Buffer {
+    identity();
     return docker([
       'exec',
       target.id,
@@ -632,6 +658,7 @@ function productionWorkerFixture() {
   function write(name: 'sw.js' | 'version.json', bytes: Buffer): void {
     if (bytes.length === 0 || bytes.length > 32768)
       throw new Error('Invalid bounded static fixture');
+    identity();
     docker(
       [
         'exec',
@@ -1160,15 +1187,16 @@ test.describe('Current Vue roles with real synthetic domain @real-mobile', () =>
       (await dataset.request.get(attachmentPath, { headers: foreign.headers() })).status(),
     );
     await logoutPwa(page);
-    const teacherDay = page.waitForResponse((response) => {
+    const teacherDay = handledWaiter(page.waitForResponse((response) => {
       const url = new URL(response.url());
       return (
         url.pathname === '/api/v1/teacher/day' &&
         url.searchParams.get('date') === dataset.today &&
         response.request().method() === 'GET'
       );
-    });
-    const { accessToken } = await loginPwa(page, dataset.teacher);
+    }));
+    const { accessToken } = await failureBoundary(info, 'TEACHER_LOGIN',
+      () => loginPwa(page, dataset.teacher), () => ({ actor: 'TEACHER' }));
     await expect(page.locator('.teacher-feature-owner')).toBeVisible();
     const lesson = await page.request.get(
       `/api/v1/teacher/lessons/${dataset.lesson.physicalLessonId}`,
@@ -1960,29 +1988,124 @@ test.describe('Current Vue roles with real synthetic domain @real-mobile', () =>
       const shortcut = page
         .locator('[data-teacher-action="journal-open"]')
         .filter({ hasText: shortcutName });
+      // The catalog reply is only a header witness; the day/assignment projection
+      // must finish before clicking its assignment shortcut.
+      await expect(page.getByRole('main', { name: 'Сегодня у преподавателя', exact: true })).toHaveAttribute('aria-busy', 'false');
       await expect(shortcut).toHaveCount(1);
       await expect(shortcut).toContainText(groupName);
       await expect(shortcut).toContainText('Лекция');
-      const [shortcutResponse] = await Promise.all([
-        page.waitForResponse((response) => {
-          const url = new URL(response.url());
-          return (
-            response.request().method() === 'GET' &&
-            url.pathname === '/api/v1/teacher/journal' &&
-            url.searchParams.get('semesterId') === String(dataset.semester.id) &&
-            url.searchParams.get('groupId') === String(dataset.group.id) &&
-            url.searchParams.get('subjectId') === String(shortcutSubjectId) &&
-            url.searchParams
-              .getAll('lessonType')
-              .map((type) => type.toUpperCase())
-              .join() === 'LECTURE' &&
-            url.searchParams.get('pastOnly') === 'true' &&
-            url.searchParams.get('page') === '0' &&
-            url.searchParams.get('pageSize') === '100'
-          );
-        }),
-        shortcut.click(),
-      ]);
+      const beforeShortcut = await teacherShortcutState(page, shortcut);
+      const shortcutFacts = {
+        requestObserved: false,
+        requestFailed: false,
+        httpStatus: null as number | null,
+        semesterMatches: null as boolean | null,
+        groupMatches: null as boolean | null,
+        subjectMatches: null as boolean | null,
+        lessonTypeMatches: null as boolean | null,
+        pastOnlyMatches: null as boolean | null,
+        pageMatches: null as boolean | null,
+        pageSizeMatches: null as boolean | null,
+        responseObserved: false,
+        journalVisible: null as boolean | null,
+        shortcutVisible: null as boolean | null,
+        clickStarted: false,
+        clickCompleted: false,
+        clickPending: false,
+        clickErrorClass: 'NONE' as 'NONE' | ReturnType<typeof teacherShortcutClickErrorClass>,
+        clickLogReason: 'NONE' as 'NONE' | ReturnType<typeof teacherShortcutClickLogReason>,
+        clickRawRetention: 'NOT_ATTEMPTED' as 'NOT_ATTEMPTED' | FailedCiRawRetention,
+        clickSettledAfterFailure: null as boolean | null,
+        clickCompletedAfterFailure: null as boolean | null,
+        beforeCount: beforeShortcut.count,
+        beforeVisible: beforeShortcut.visible,
+        beforeEnabled: beforeShortcut.enabled,
+        beforeReceivesEvents: beforeShortcut.receivesEvents,
+        afterCount: null as number | null,
+        afterVisible: null as boolean | null,
+        afterEnabled: null as boolean | null,
+        afterReceivesEvents: null as boolean | null,
+        homeVisible: null as boolean | null,
+        navigationDetail: null as boolean | null,
+        activeTeacherRole: null as boolean | null,
+      };
+      const shortcutQueryMatches = (url: URL): boolean => {
+        const predicates = {
+          semesterMatches: url.searchParams.get('semesterId') === String(dataset.semester.id),
+          groupMatches: url.searchParams.get('groupId') === String(dataset.group.id),
+          subjectMatches: url.searchParams.get('subjectId') === String(shortcutSubjectId),
+          lessonTypeMatches: url.searchParams.getAll('lessonType').map((type) => type.toUpperCase()).join() === 'LECTURE',
+          pastOnlyMatches: url.searchParams.get('pastOnly') === 'true',
+          pageMatches: url.searchParams.get('page') === '0',
+          pageSizeMatches: url.searchParams.get('pageSize') === '100',
+        };
+        Object.assign(shortcutFacts, predicates);
+        return Object.values(predicates).every(Boolean);
+      };
+      const observeShortcutRequest = (request: Request) => {
+        const url = new URL(request.url());
+        if (request.method() !== 'GET' || url.pathname !== '/api/v1/teacher/journal') return;
+        shortcutFacts.requestObserved = true;
+        shortcutQueryMatches(url);
+      };
+      const observeShortcutFailure = (request: Request) => {
+        const url = new URL(request.url());
+        if (request.method() === 'GET' && url.pathname === '/api/v1/teacher/journal')
+          shortcutFacts.requestFailed = true;
+      };
+      page.on('request', observeShortcutRequest);
+      page.on('requestfailed', observeShortcutFailure);
+      let shortcutResponse: Response;
+      let shortcutClick: Promise<void> | undefined;
+      try {
+        const responseWaiter = handledWaiter(page.waitForResponse((response) => {
+            const url = new URL(response.url());
+            if (response.request().method() !== 'GET' || url.pathname !== '/api/v1/teacher/journal') return false;
+            shortcutFacts.responseObserved = true;
+            shortcutFacts.httpStatus = response.status();
+            const matches = shortcutQueryMatches(url);
+            return matches;
+          }));
+        shortcutFacts.clickStarted = true;
+        shortcutFacts.clickPending = true;
+        // Same 10s action budget as the real-mobile config. This also bounds draining
+        // the existing click if its response waiter rejects first; never retry it.
+        shortcutClick = handledWaiter(shortcut.click({ timeout: 10_000 }).then(() => {
+          shortcutFacts.clickCompleted = true;
+          shortcutFacts.clickPending = false;
+        }, error => {
+          shortcutFacts.clickPending = false;
+          shortcutFacts.clickErrorClass = teacherShortcutClickErrorClass(error);
+          shortcutFacts.clickLogReason = teacherShortcutClickLogReason(error);
+          shortcutFacts.clickRawRetention = retainTeacherShortcutClickError(info, error);
+          throw error;
+        }));
+        [shortcutResponse] = await Promise.all([responseWaiter, shortcutClick]);
+      } catch (error) {
+        // Freeze click state at the primary boundary before bounded read-only diagnostics.
+        const failureFacts = { ...shortcutFacts };
+        const afterShortcut = await teacherShortcutState(page, shortcut);
+        Object.assign(failureFacts, {
+          afterCount: afterShortcut.count, afterVisible: afterShortcut.visible,
+          afterEnabled: afterShortcut.enabled, afterReceivesEvents: afterShortcut.receivesEvents,
+          journalVisible: afterShortcut.journalVisible, shortcutVisible: afterShortcut.shortcutVisible,
+          homeVisible: afterShortcut.homeVisible, navigationDetail: afterShortcut.navigationDetail,
+          activeTeacherRole: afterShortcut.activeTeacherRole,
+        });
+        // Playwright click has no per-call cancellation. Settle the already bounded
+        // action before dataset teardown, preserving this exact primary exception.
+        if (shortcutClick) await shortcutClick.catch(() => {});
+        failureFacts.clickSettledAfterFailure = !shortcutFacts.clickPending;
+        failureFacts.clickCompletedAfterFailure = shortcutFacts.clickCompleted;
+        failureFacts.clickErrorClass = shortcutFacts.clickErrorClass;
+        failureFacts.clickLogReason = shortcutFacts.clickLogReason;
+        failureFacts.clickRawRetention = shortcutFacts.clickRawRetention;
+        retainFirstFailure(info, 'TEACHER_SHORTCUT', failureFacts);
+        throw error;
+      } finally {
+        page.off('request', observeShortcutRequest);
+        page.off('requestfailed', observeShortcutFailure);
+      }
       expect(shortcutResponse.status()).toBe(200);
       const shortcutJournal = await shortcutResponse.json();
       expect(shortcutJournal.lessons).toEqual([]);
@@ -2235,7 +2358,7 @@ test.describe('Current Vue roles with real synthetic domain @real-mobile', () =>
     expect(assistantPermissionCodes(await stale.json())).toEqual([]);
   });
 
-  test('LIMITED ADMIN views accounts while creation is denied by UI and server', async ({
+  test('LIMITED ADMIN views accounts while creation is denied by UI and server', { annotation: diagnosticCase('LIMITED_ADMIN_ACCOUNTS') }, async ({
     page,
     dataset,
   }) => {
@@ -2262,7 +2385,7 @@ test.describe('Current Vue roles with real synthetic domain @real-mobile', () =>
     expect(denied.status()).toBe(403);
   });
 
-  test('empty foreign-group homework and transport failure provide a real retry path', async ({
+  test('empty foreign-group homework and transport failure provide a real retry path', { annotation: diagnosticCase('HOMEWORK_FOREIGN_RETRY') }, async ({
     page,
     dataset,
   }) => {
@@ -2309,7 +2432,7 @@ test.describe('Current Vue roles with real synthetic domain @real-mobile', () =>
     await expect(page.getByText(dataset.marker, { exact: true }).first()).toBeVisible();
   });
 
-  test('another live session revokes the browser session and recovery exposes login only', async ({
+  test('another live session revokes the browser session and recovery exposes login only', { annotation: diagnosticCase('SESSION_REVOKE_RECOVERY') }, async ({
     page,
     dataset,
   }) => {
@@ -2327,7 +2450,7 @@ test.describe('Current Vue roles with real synthetic domain @real-mobile', () =>
     expect(denied.status()).toBe(401);
   });
 
-  it('D003 reuse admits twice; suspended grant yields neutral bootstrap and protected denials', async ({
+  it('D003 reuse admits twice; suspended grant yields neutral bootstrap and protected denials', { annotation: diagnosticCase('D003_DEVICE_REUSE_SUSPENDED_GRANT') }, async ({
     page,
     dataset,
     teacherGroupsSeed: secondGroup,
@@ -2706,7 +2829,7 @@ test.describe('Current Vue roles with real synthetic domain @real-mobile', () =>
 });
 
 test.describe('Signed HEADMAN Telegram entry @real-mobile', () => {
-  test('D003 signed HEADMAN TMA marks an isolated own-group roster row', async ({
+  test('D003 signed HEADMAN TMA marks an isolated own-group roster row', { annotation: diagnosticCase('D003_HEADMAN_TMA_MARK') }, async ({
     page,
     request: issuer,
     activeHeadmanDataset: dataset,
@@ -3507,7 +3630,7 @@ test.describe('Production PWA service worker D002 @real-mobile', () => {
     }
   });
 
-  test('warm offline reload remains read-only; revoked session reconnect clears the cached user', async ({
+  test('warm offline reload remains read-only; revoked session reconnect clears the cached user', { annotation: diagnosticCase('D002_WARM_OFFLINE_REVOKED') }, async ({
     page,
     context,
     dataset,
@@ -3642,7 +3765,6 @@ test.describe('Production PWA service worker D002 @real-mobile', () => {
       })
       .toBe(true);
     const another = await admit(dataset.request, dataset.student, 'STUDENT');
-    await another.call('DELETE', `/api/auth/sessions/${session.sessionId}`, undefined, [204]);
     let completionCommands = 0;
     const countCompletion = (item: Request) => {
       if (new URL(item.url()).pathname.endsWith('/completion') && item.method() === 'PUT')
@@ -3654,6 +3776,9 @@ test.describe('Production PWA service worker D002 @real-mobile', () => {
       await page.clock.setFixedTime(new Date(`${dataset.today}T20:59:59Z`));
       await context.setOffline(true);
       try {
+        await expect(page.getByText('Ты офлайн', { exact: true })).toBeVisible();
+        // Revoke only after offline so online invalidation cannot clear the saved snapshot.
+        await another.call('DELETE', `/api/auth/sessions/${session.sessionId}`, undefined, [204]);
         await page.evaluate(() => {
           Object.defineProperty(window, '__rctD002WarmOfflineReloadOldWindow', { value: true });
         });
@@ -3955,519 +4080,579 @@ test.describe('Production PWA service worker D002 @real-mobile', () => {
     }
   });
 
-  test('D002 reconnect rechecks changed grants and a late old feed cannot replace the new account', async ({
-    page,
-    context,
-    dataset,
-  }) => {
-    const marker = `${dataset.marker}-offline-owner`;
-    await publishOfflineHomework(dataset, marker);
-    const multirole = await dataset.user('TEACHER');
-    const rolePath = `/api/academic/users/${multirole.id}/roles/STUDENT`;
-    await dataset.admin.call('PUT', rolePath, {
-      status: 'ACTIVE',
-      groupId: dataset.group.id,
-      telegramId: multirole.telegramId,
-    });
-    type ReconnectKind = 'refresh' | 'current';
-    const pendingAuth = new Map<Request, ReconnectKind>();
-    const authHttp = {
-      refresh: { requested: false, responded: false, failed: false },
-      current: { requested: false, responded: false, failed: false },
-    };
-    let httpObservationUnknown = false;
-    let observingReconnect = false;
-    const priorAuth = new Set<Request>();
-    const authKind = (request: Request): ReconnectKind | undefined => {
-      const url = new URL(request.url());
-      if (url.origin !== new URL(page.url()).origin) return;
-      if (url.pathname === '/api/auth/refresh' && request.method() === 'POST') return 'refresh';
-      if (url.pathname === '/api/auth/session' && request.method() === 'GET') return 'current';
-    };
-    const observeAuthRequest = (request: Request) => {
+  test(
+    'D002 offline reload rechecks suspended grants before role selection',
+    { annotation: diagnosticCase('D002_RECONNECT_ACCOUNT_AUTHORITY') },
+    async ({ page, context, d002Dataset: dataset }) => {
+      const marker = `${dataset.marker}-offline-owner`;
+      await publishOfflineHomework(dataset, marker);
+      const multirole = await dataset.user('TEACHER');
+      const rolePath = `/api/academic/users/${multirole.id}/roles/STUDENT`;
+      await dataset.admin.call('PUT', rolePath, {
+        status: 'ACTIVE',
+        groupId: dataset.group.id,
+        telegramId: multirole.telegramId,
+      });
+      type ReconnectKind = 'refresh' | 'current';
+      const pendingAuth = new Map<Request, ReconnectKind>();
+      const authHttp = {
+        refresh: { requested: false, responded: false, failed: false },
+        current: { requested: false, responded: false, failed: false },
+      };
+      let httpObservationUnknown = false;
+      let observingReconnect = false;
+      const priorAuth = new Set<Request>();
+      const authKind = (request: Request): ReconnectKind | undefined => {
+        const url = new URL(request.url());
+        if (url.origin !== new URL(page.url()).origin) return;
+        if (url.pathname === '/api/auth/refresh' && request.method() === 'POST') return 'refresh';
+        if (url.pathname === '/api/auth/session' && request.method() === 'GET') return 'current';
+      };
+      const observeAuthRequest = (request: Request) => {
+        try {
+          const kind = authKind(request);
+          if (!kind) return;
+          // A bounded identity set observes old HTTP work without retaining its contents.
+          if (pendingAuth.size < 16) pendingAuth.set(request, kind);
+          else httpObservationUnknown = true;
+          if (observingReconnect) authHttp[kind].requested = true;
+        } catch {
+          httpObservationUnknown = true;
+        }
+      };
+      const observeAuthResponse = (response: Response) => {
+        const kind = pendingAuth.get(response.request());
+        if (observingReconnect && kind) authHttp[kind].responded = true;
+      };
+      const finishAuthRequest = (request: Request) => {
+        pendingAuth.delete(request);
+        priorAuth.delete(request);
+      };
+      const failAuthRequest = (request: Request) => {
+        const kind = pendingAuth.get(request);
+        if (observingReconnect && kind) authHttp[kind].failed = true;
+        finishAuthRequest(request);
+      };
+      const detachAuthObservation = () => {
+        page.off('request', observeAuthRequest);
+        page.off('response', observeAuthResponse);
+        page.off('requestfinished', finishAuthRequest);
+        page.off('requestfailed', failAuthRequest);
+        pendingAuth.clear();
+        priorAuth.clear();
+      };
+      // Include requests already in flight when the native page wrapper is installed.
+      page.on('request', observeAuthRequest);
+      page.on('response', observeAuthResponse);
+      page.on('requestfinished', finishAuthRequest);
+      page.on('requestfailed', failAuthRequest);
+      let rolePrimary: { error: unknown } | undefined;
       try {
-        const kind = authKind(request);
-        if (!kind) return;
-        // A bounded identity set observes old HTTP work without retaining its contents.
-        if (pendingAuth.size < 16) pendingAuth.set(request, kind);
-        else httpObservationUnknown = true;
-        if (observingReconnect) authHttp[kind].requested = true;
-      } catch {
-        httpObservationUnknown = true;
+        const logged = await loginPwa(page, multirole);
+        expect(logged.session.activeRole).toBe('STUDENT');
+        await page.getByRole('button', { name: 'Задания', exact: true }).click();
+        await expect(page.getByText(marker, { exact: true })).toBeVisible();
+        await requireProductionWorker(page);
+        await page.getByRole('button', { name: 'Профиль', exact: true }).click();
+        await page.getByRole('button', { name: 'Сменить роль', exact: true }).click();
+        const teacher = page.getByRole('button', { name: /Преподаватель/ });
+        await expect(teacher).toBeEnabled();
+        let roleCommands = 0;
+        const countRole = (item: Request) => {
+          if (
+            new URL(item.url()).pathname === '/api/auth/session/active-role' &&
+            item.method() === 'PUT'
+          )
+            roleCommands += 1;
+        };
+        const reconnectOrigin = new URL(page.url()).origin;
+        let refreshStatus: number | undefined;
+        let reconnectTimer: ReturnType<typeof setTimeout> | undefined;
+        let cancelCurrent: ((error: Error) => void) | undefined;
+        let resolveCurrent: ((response: Response) => void) | undefined;
+        let currentObserved = false;
+        let currentTimedOut = false;
+        let onlineRestored = false;
+        let offlinePrimary: { error: unknown } | undefined;
+        const observeReconnect = (response: Response) => {
+          const url = new URL(response.url());
+          if (url.origin !== reconnectOrigin) return;
+          if (url.pathname === '/api/auth/refresh' && response.request().method() === 'POST')
+            refreshStatus = response.status();
+          if (url.pathname === '/api/auth/session' && response.request().method() === 'GET') {
+            currentObserved = true;
+            resolveCurrent?.(response);
+          }
+        };
+        let reconnectObserver: JSHandle<ReturnType<typeof createD002ReconnectObserver>> | undefined;
+        page.on('request', countRole);
+        try {
+          await context.setOffline(true);
+          await expect(teacher).toBeDisabled();
+          await expect(page.getByRole('button', { name: /Студент/ })).toBeDisabled();
+          await teacher.press('Enter');
+          expect(roleCommands).toBe(0);
+          await dataset.admin.call('PUT', rolePath, { status: 'SUSPENDED' });
+          // Public completed boundary: destroy old auth work while still offline.
+          // Restored cached Student UI is read-only before any online admission.
+          await page.reload();
+          await expect(
+            page.getByRole('navigation', { name: 'Основная навигация', exact: true }),
+          ).toBeVisible();
+          await expect(page.getByText('Ты офлайн', { exact: true })).toBeVisible();
+          await expect(
+            page.getByRole('button', { name: 'Сменить роль, активная роль: студент', exact: true }),
+          ).toBeDisabled();
+          await page.getByRole('button', { name: 'Задания', exact: true }).click();
+          await expect(page.getByText(marker, { exact: true })).toBeVisible();
+          const ownOfflineHomework = page.locator('article.homework-card').filter({
+            has: page.getByText(marker, { exact: true }),
+          });
+          await expect(ownOfflineHomework).toHaveCount(1);
+          await expect(ownOfflineHomework).toBeVisible();
+          await expect(
+            ownOfflineHomework.getByRole('slider', {
+              name: `Выполнить: ${dataset.subject.name}`,
+              exact: true,
+            }),
+          ).toBeDisabled();
+          expect(roleCommands).toBe(0);
+          for (const request of pendingAuth.keys()) priorAuth.add(request);
+          observingReconnect = true;
+          reconnectObserver = await page.evaluateHandle(createD002ReconnectObserver);
+          const reconnectTimeout = test.info().project.use.actionTimeout ?? 30000;
+          if (!Number.isSafeInteger(reconnectTimeout) || reconnectTimeout <= 0)
+            throw new Error('D002 existing action timeout must be finite');
+          const current = new Promise<Response>((resolve, reject) => {
+            resolveCurrent = resolve;
+            cancelCurrent = reject;
+            reconnectTimer = setTimeout(() => {
+              currentTimedOut = true;
+              reject(new Error('D002 reconnect current session response deadline'));
+            }, reconnectTimeout);
+          });
+          void current.catch(() => undefined);
+          page.on('response', observeReconnect);
+          page.off('request', countRole);
+          await context.setOffline(false);
+          onlineRestored = true;
+          let response: Response;
+          try {
+            response = await current;
+          } catch (error) {
+            if (currentTimedOut) {
+              const timedOutRefreshStatus = refreshStatus;
+              const observed = await reconnectObserver!
+                .evaluate((value) => value.read())
+                .catch(() => null);
+              if (observed !== null)
+                retainD002ReconnectObservation(test.info().annotations, {
+                  offlineSeen: observed.offlineSeen,
+                  onlineSeen: observed.onlineSeen,
+                  online: observed.online,
+                  observationUnknown: httpObservationUnknown || observed.observationUnknown,
+                  native: observed.native,
+                  atOnline: observed.atOnline,
+                  pageHttp: authHttp,
+                  priorPending: {
+                    refresh: [...priorAuth].some((request) => pendingAuth.get(request) === 'refresh'),
+                    current: [...priorAuth].some((request) => pendingAuth.get(request) === 'current'),
+                  },
+                  refreshHttpStatus:
+                    timedOutRefreshStatus === undefined
+                      ? 'UNOBSERVED'
+                      : [200, 401, 403, 429, 503].includes(timedOutRefreshStatus)
+                        ? timedOutRefreshStatus
+                        : 'OTHER',
+                });
+              if (timedOutRefreshStatus === undefined) {
+                if (observed === null)
+                  expect.soft(false, 'D002_RECONNECT_OBSERVER_UNAVAILABLE').toBe(true);
+                else if (httpObservationUnknown || observed.observationUnknown)
+                  expect.soft(false, 'D002_RECONNECT_HTTP_OBSERVATION_UNKNOWN').toBe(true);
+                else if (!observed.offlineSeen)
+                  expect.soft(false, 'D002_RECONNECT_OFFLINE_UNOBSERVED').toBe(true);
+                else if (!observed.onlineSeen && observed.online)
+                  expect.soft(false, 'D002_RECONNECT_ONLINE_UNOBSERVED_NAVIGATOR_ONLINE').toBe(true);
+                else if (!observed.onlineSeen)
+                  expect.soft(false, 'D002_RECONNECT_ONLINE_UNOBSERVED_NAVIGATOR_OFFLINE').toBe(true);
+                else if (!observed.online)
+                  expect.soft(false, 'D002_RECONNECT_ONLINE_SEEN_NAVIGATOR_OFFLINE').toBe(true);
+                else if ([...priorAuth].some((request) => pendingAuth.get(request) === 'refresh'))
+                  expect.soft(false, 'D002_RECONNECT_PRIOR_REFRESH_HTTP_PENDING').toBe(true);
+                else if (priorAuth.size > 0)
+                  expect.soft(false, 'D002_RECONNECT_PRIOR_CURRENT_HTTP_PENDING').toBe(true);
+                else if (observed.refresh.multiple || observed.current.multiple)
+                  expect.soft(false, 'D002_RECONNECT_MULTIPLE_NATIVE_CALLS_UNKNOWN').toBe(true);
+                else if (observed.refresh.beforeOnline || observed.current.beforeOnline)
+                  expect.soft(false, 'D002_RECONNECT_PREONLINE_NATIVE_CALL_UNKNOWN').toBe(true);
+                else if (observed.current.phase === 'REJECTED')
+                  expect.soft(false, 'D002_RECONNECT_CURRENT_NATIVE_REJECTED').toBe(true);
+                else if (observed.current.phase === 'PENDING')
+                  expect.soft(false, 'D002_RECONNECT_CURRENT_NATIVE_PENDING').toBe(true);
+                else if (observed.current.phase === 'FULFILLED')
+                  expect
+                    .soft(false, 'D002_RECONNECT_CURRENT_NATIVE_FULFILLED_RESPONSE_GAP')
+                    .toBe(true);
+                else if (authHttp.current.responded)
+                  expect
+                    .soft(false, 'D002_RECONNECT_CURRENT_PAGE_RESPONSE_GAP_UNKNOWN_OLD')
+                    .toBe(true);
+                else if (authHttp.current.failed)
+                  expect.soft(false, 'D002_RECONNECT_CURRENT_PAGE_FAILED_UNKNOWN_OLD').toBe(true);
+                else if (authHttp.current.requested)
+                  expect.soft(false, 'D002_RECONNECT_CURRENT_PAGE_PENDING_UNKNOWN_OLD').toBe(true);
+                else if (observed.refresh.phase === 'REJECTED')
+                  expect.soft(false, 'D002_RECONNECT_REFRESH_NATIVE_REJECTED').toBe(true);
+                else if (observed.refresh.phase === 'PENDING')
+                  expect.soft(false, 'D002_RECONNECT_REFRESH_NATIVE_PENDING').toBe(true);
+                else if (observed.refresh.phase === 'FULFILLED')
+                  expect
+                    .soft(false, 'D002_RECONNECT_REFRESH_NATIVE_FULFILLED_RESPONSE_GAP')
+                    .toBe(true);
+                else if (authHttp.refresh.responded)
+                  expect
+                    .soft(false, 'D002_RECONNECT_REFRESH_PAGE_RESPONSE_GAP_UNKNOWN_OLD')
+                    .toBe(true);
+                else if (authHttp.refresh.failed)
+                  expect.soft(false, 'D002_RECONNECT_REFRESH_PAGE_FAILED_UNKNOWN_OLD').toBe(true);
+                else if (authHttp.refresh.requested)
+                  expect.soft(false, 'D002_RECONNECT_REFRESH_PAGE_PENDING_UNKNOWN_OLD').toBe(true);
+                else expect.soft(false, 'D002_RECONNECT_NATIVE_NOT_CALLED_UNKNOWN_OLD').toBe(true);
+              } else if (timedOutRefreshStatus === 200)
+                expect.soft(false, 'D002_RECONNECT_REFRESH_200').toBe(true);
+              else if (timedOutRefreshStatus === 401)
+                expect.soft(false, 'D002_RECONNECT_REFRESH_401').toBe(true);
+              else if (timedOutRefreshStatus === 403)
+                expect.soft(false, 'D002_RECONNECT_REFRESH_403').toBe(true);
+              else if (timedOutRefreshStatus === 429)
+                expect.soft(false, 'D002_RECONNECT_REFRESH_429').toBe(true);
+              else if (timedOutRefreshStatus === 503)
+                expect.soft(false, 'D002_RECONNECT_REFRESH_503').toBe(true);
+              else expect.soft(false, 'D002_RECONNECT_REFRESH_OTHER').toBe(true);
+            }
+            throw error;
+          } finally {
+            if (reconnectTimer !== undefined) clearTimeout(reconnectTimer);
+          }
+          expect(response.status()).toBe(200);
+          const neutral = await response.json();
+          expect(neutral.activeRole ?? null).toBeNull();
+          expect(
+            neutral.roles.some(
+              (grant: { role: string; selectable: boolean }) =>
+                grant.role === 'STUDENT' && !grant.selectable,
+            ),
+          ).toBe(true);
+          expect(
+            neutral.roles.some(
+              (grant: { role: string; selectable: boolean }) =>
+                grant.role === 'TEACHER' && grant.selectable,
+            ),
+          ).toBe(true);
+        } catch (error) {
+          offlinePrimary = { error };
+          throw error;
+        } finally {
+          page.off('request', countRole);
+          page.off('response', observeReconnect);
+          detachAuthObservation();
+          // D002_ADMISSION_CLEANUP_BEGIN
+          let observerCleanup: { error: unknown } | undefined;
+          try {
+            if (reconnectObserver) await reconnectObserver.evaluate((value) => value.restore());
+          } catch (error) {
+            observerCleanup = { error };
+            expect.soft(false, 'D002 grant OBSERVER_RESTORE_UNAVAILABLE').toBe(true);
+          }
+          try {
+            if (reconnectObserver) await reconnectObserver.dispose();
+          } catch (error) {
+            observerCleanup ??= { error };
+            expect.soft(false, 'D002 grant OBSERVER_DISPOSE_UNAVAILABLE').toBe(true);
+          }
+          if (reconnectTimer !== undefined) clearTimeout(reconnectTimer);
+          if (!currentObserved) cancelCurrent?.(new Error('D002 reconnect observation cancelled'));
+          if (!onlineRestored) {
+            try {
+              await context.setOffline(false);
+            } catch (error) {
+              expect.soft(false, 'D002 grant ONLINE_RESTORE_UNAVAILABLE').toBe(true);
+              if (!offlinePrimary) throw error;
+            }
+          }
+          if (!offlinePrimary && observerCleanup) throw observerCleanup.error;
+          // D002_ADMISSION_CLEANUP_END
+        }
+        await expect(page.getByRole('heading', { name: 'Сменить роль', exact: true })).toBeVisible();
+        await expect(page.getByRole('navigation', { name: 'Основная навигация' })).toHaveCount(0);
+        await expect(page.getByText(marker, { exact: true })).toHaveCount(0);
+        await selectPwaRole(page, 'Преподаватель');
+        await expect(page.locator('.teacher-feature-owner')).toBeVisible();
+        await logoutPwa(page);
+      } catch (error) {
+        rolePrimary = { error };
+        throw error;
+      } finally {
+        detachAuthObservation();
+        // D002_ROLE_CLEANUP_BEGIN
+        let cleanupFailure: { error: unknown } | undefined;
+        try {
+          await context.setOffline(false);
+        } catch (error) {
+          cleanupFailure = { error };
+          expect.soft(false, 'D002 grant NETWORK_CLEANUP_UNAVAILABLE').toBe(true);
+        }
+        try {
+          await dataset.admin.call('PUT', rolePath, {
+            status: 'ACTIVE',
+            groupId: dataset.group.id,
+          });
+        } catch (error) {
+          cleanupFailure ??= { error };
+          expect.soft(false, 'D002 grant ROLE_CLEANUP_UNAVAILABLE').toBe(true);
+        }
+        if (!rolePrimary && cleanupFailure) throw cleanupFailure.error;
+        // D002_ROLE_CLEANUP_END
       }
-    };
-    const observeAuthResponse = (response: Response) => {
-      const kind = pendingAuth.get(response.request());
-      if (observingReconnect && kind) authHttp[kind].responded = true;
-    };
-    const finishAuthRequest = (request: Request) => {
-      pendingAuth.delete(request);
-      priorAuth.delete(request);
-    };
-    const failAuthRequest = (request: Request) => {
-      const kind = pendingAuth.get(request);
-      if (observingReconnect && kind) authHttp[kind].failed = true;
-      finishAuthRequest(request);
-    };
-    const detachAuthObservation = () => {
-      page.off('request', observeAuthRequest);
-      page.off('response', observeAuthResponse);
-      page.off('requestfinished', finishAuthRequest);
-      page.off('requestfailed', failAuthRequest);
-      pendingAuth.clear();
-      priorAuth.clear();
-    };
-    // Include requests already in flight when the native page wrapper is installed.
-    page.on('request', observeAuthRequest);
-    page.on('response', observeAuthResponse);
-    page.on('requestfinished', finishAuthRequest);
-    page.on('requestfailed', failAuthRequest);
-    let rolePrimary: { error: unknown } | undefined;
-    try {
-      const logged = await loginPwa(page, multirole);
-      expect(logged.session.activeRole).toBe('STUDENT');
+    },
+  );
+
+  test(
+    'D002 late prior-account homework cannot replace the new account or offline snapshot',
+    { annotation: diagnosticCase('D002_LATE_ACCOUNT_HOMEWORK') },
+    async ({ page, context, d002Dataset: dataset }) => {
+      const marker = `${dataset.marker}-late-account`;
+      await publishOfflineHomework(dataset, marker);
+      await loginPwa(page, dataset.student);
       await page.getByRole('button', { name: 'Задания', exact: true }).click();
       await expect(page.getByText(marker, { exact: true })).toBeVisible();
       await requireProductionWorker(page);
-      await page.getByRole('button', { name: 'Профиль', exact: true }).click();
-      await page.getByRole('button', { name: 'Сменить роль', exact: true }).click();
-      const teacher = page.getByRole('button', { name: /Преподаватель/ });
-      await expect(teacher).toBeEnabled();
-      let roleCommands = 0;
-      const countRole = (item: Request) => {
-        if (
-          new URL(item.url()).pathname === '/api/auth/session/active-role' &&
-          item.method() === 'PUT'
-        )
-          roleCommands += 1;
-      };
-      const reconnectOrigin = new URL(page.url()).origin;
-      let refreshStatus: number | undefined;
-      let reconnectTimer: ReturnType<typeof setTimeout> | undefined;
-      let cancelCurrent: ((error: Error) => void) | undefined;
-      let resolveCurrent: ((response: Response) => void) | undefined;
-      let currentObserved = false;
-      let currentTimedOut = false;
-      let onlineRestored = false;
-      let offlinePrimary: { error: unknown } | undefined;
-      const observeReconnect = (response: Response) => {
-        const url = new URL(response.url());
-        if (url.origin !== reconnectOrigin) return;
-        if (url.pathname === '/api/auth/refresh' && response.request().method() === 'POST')
-          refreshStatus = response.status();
-        if (url.pathname === '/api/auth/session' && response.request().method() === 'GET') {
-          currentObserved = true;
-          resolveCurrent?.(response);
-        }
-      };
-      for (const request of pendingAuth.keys()) priorAuth.add(request);
-      observingReconnect = true;
-      const reconnectObserver = await page.evaluateHandle(createD002ReconnectObserver);
-      page.on('request', countRole);
-      try {
-        await context.setOffline(true);
-        await expect(teacher).toBeDisabled();
-        await expect(page.getByRole('button', { name: /Студент/ })).toBeDisabled();
-        await teacher.press('Enter');
-        expect(roleCommands).toBe(0);
-        await dataset.admin.call('PUT', rolePath, { status: 'SUSPENDED' });
-        const reconnectTimeout = test.info().project.use.actionTimeout ?? 30000;
-        if (!Number.isSafeInteger(reconnectTimeout) || reconnectTimeout <= 0)
-          throw new Error('D002 existing action timeout must be finite');
-        const current = new Promise<Response>((resolve, reject) => {
-          resolveCurrent = resolve;
-          cancelCurrent = reject;
-          reconnectTimer = setTimeout(() => {
-            currentTimedOut = true;
-            reject(new Error('D002 reconnect current session response deadline'));
-          }, reconnectTimeout);
-        });
-        void current.catch(() => undefined);
-        page.on('response', observeReconnect);
-        page.off('request', countRole);
-        await context.setOffline(false);
-        onlineRestored = true;
-        let response: Response;
-        try {
-          response = await current;
-        } catch (error) {
-          if (currentTimedOut) {
-            const timedOutRefreshStatus = refreshStatus;
-            const observed = await reconnectObserver
-              .evaluate((value) => value.read())
-              .catch(() => null);
-            if (observed !== null)
-              retainD002ReconnectObservation(test.info().annotations, {
-                offlineSeen: observed.offlineSeen,
-                onlineSeen: observed.onlineSeen,
-                online: observed.online,
-                observationUnknown: httpObservationUnknown || observed.observationUnknown,
-                native: observed.native,
-                pageHttp: authHttp,
-                priorPending: {
-                  refresh: [...priorAuth].some((request) => pendingAuth.get(request) === 'refresh'),
-                  current: [...priorAuth].some((request) => pendingAuth.get(request) === 'current'),
-                },
-                refreshHttpStatus:
-                  timedOutRefreshStatus === undefined
-                    ? 'UNOBSERVED'
-                    : [200, 401, 403, 429, 503].includes(timedOutRefreshStatus)
-                      ? timedOutRefreshStatus
-                      : 'OTHER',
-              });
-            if (timedOutRefreshStatus === undefined) {
-              if (observed === null)
-                expect.soft(false, 'D002_RECONNECT_OBSERVER_UNAVAILABLE').toBe(true);
-              else if (httpObservationUnknown || observed.observationUnknown)
-                expect.soft(false, 'D002_RECONNECT_HTTP_OBSERVATION_UNKNOWN').toBe(true);
-              else if (!observed.offlineSeen)
-                expect.soft(false, 'D002_RECONNECT_OFFLINE_UNOBSERVED').toBe(true);
-              else if (!observed.onlineSeen && observed.online)
-                expect.soft(false, 'D002_RECONNECT_ONLINE_UNOBSERVED_NAVIGATOR_ONLINE').toBe(true);
-              else if (!observed.onlineSeen)
-                expect.soft(false, 'D002_RECONNECT_ONLINE_UNOBSERVED_NAVIGATOR_OFFLINE').toBe(true);
-              else if (!observed.online)
-                expect.soft(false, 'D002_RECONNECT_ONLINE_SEEN_NAVIGATOR_OFFLINE').toBe(true);
-              else if ([...priorAuth].some((request) => pendingAuth.get(request) === 'refresh'))
-                expect.soft(false, 'D002_RECONNECT_PRIOR_REFRESH_HTTP_PENDING').toBe(true);
-              else if (priorAuth.size > 0)
-                expect.soft(false, 'D002_RECONNECT_PRIOR_CURRENT_HTTP_PENDING').toBe(true);
-              else if (observed.refresh.multiple || observed.current.multiple)
-                expect.soft(false, 'D002_RECONNECT_MULTIPLE_NATIVE_CALLS_UNKNOWN').toBe(true);
-              else if (observed.refresh.beforeOnline || observed.current.beforeOnline)
-                expect.soft(false, 'D002_RECONNECT_PREONLINE_NATIVE_CALL_UNKNOWN').toBe(true);
-              else if (observed.current.phase === 'REJECTED')
-                expect.soft(false, 'D002_RECONNECT_CURRENT_NATIVE_REJECTED').toBe(true);
-              else if (observed.current.phase === 'PENDING')
-                expect.soft(false, 'D002_RECONNECT_CURRENT_NATIVE_PENDING').toBe(true);
-              else if (observed.current.phase === 'FULFILLED')
-                expect
-                  .soft(false, 'D002_RECONNECT_CURRENT_NATIVE_FULFILLED_RESPONSE_GAP')
-                  .toBe(true);
-              else if (authHttp.current.responded)
-                expect
-                  .soft(false, 'D002_RECONNECT_CURRENT_PAGE_RESPONSE_GAP_UNKNOWN_OLD')
-                  .toBe(true);
-              else if (authHttp.current.failed)
-                expect.soft(false, 'D002_RECONNECT_CURRENT_PAGE_FAILED_UNKNOWN_OLD').toBe(true);
-              else if (authHttp.current.requested)
-                expect.soft(false, 'D002_RECONNECT_CURRENT_PAGE_PENDING_UNKNOWN_OLD').toBe(true);
-              else if (observed.refresh.phase === 'REJECTED')
-                expect.soft(false, 'D002_RECONNECT_REFRESH_NATIVE_REJECTED').toBe(true);
-              else if (observed.refresh.phase === 'PENDING')
-                expect.soft(false, 'D002_RECONNECT_REFRESH_NATIVE_PENDING').toBe(true);
-              else if (observed.refresh.phase === 'FULFILLED')
-                expect
-                  .soft(false, 'D002_RECONNECT_REFRESH_NATIVE_FULFILLED_RESPONSE_GAP')
-                  .toBe(true);
-              else if (authHttp.refresh.responded)
-                expect
-                  .soft(false, 'D002_RECONNECT_REFRESH_PAGE_RESPONSE_GAP_UNKNOWN_OLD')
-                  .toBe(true);
-              else if (authHttp.refresh.failed)
-                expect.soft(false, 'D002_RECONNECT_REFRESH_PAGE_FAILED_UNKNOWN_OLD').toBe(true);
-              else if (authHttp.refresh.requested)
-                expect.soft(false, 'D002_RECONNECT_REFRESH_PAGE_PENDING_UNKNOWN_OLD').toBe(true);
-              else expect.soft(false, 'D002_RECONNECT_NATIVE_NOT_CALLED_UNKNOWN_OLD').toBe(true);
-            } else if (timedOutRefreshStatus === 200)
-              expect.soft(false, 'D002_RECONNECT_REFRESH_200').toBe(true);
-            else if (timedOutRefreshStatus === 401)
-              expect.soft(false, 'D002_RECONNECT_REFRESH_401').toBe(true);
-            else if (timedOutRefreshStatus === 403)
-              expect.soft(false, 'D002_RECONNECT_REFRESH_403').toBe(true);
-            else if (timedOutRefreshStatus === 429)
-              expect.soft(false, 'D002_RECONNECT_REFRESH_429').toBe(true);
-            else if (timedOutRefreshStatus === 503)
-              expect.soft(false, 'D002_RECONNECT_REFRESH_503').toBe(true);
-            else expect.soft(false, 'D002_RECONNECT_REFRESH_OTHER').toBe(true);
-          }
-          throw error;
-        } finally {
-          if (reconnectTimer !== undefined) clearTimeout(reconnectTimer);
-        }
-        expect(response.status()).toBe(200);
-        const neutral = await response.json();
-        expect(neutral.activeRole ?? null).toBeNull();
-        expect(
-          neutral.roles.some(
-            (grant: { role: string; selectable: boolean }) =>
-              grant.role === 'STUDENT' && !grant.selectable,
-          ),
-        ).toBe(true);
-        expect(
-          neutral.roles.some(
-            (grant: { role: string; selectable: boolean }) =>
-              grant.role === 'TEACHER' && grant.selectable,
-          ),
-        ).toBe(true);
-      } catch (error) {
-        offlinePrimary = { error };
-        throw error;
-      } finally {
-        page.off('request', countRole);
-        page.off('response', observeReconnect);
-        detachAuthObservation();
-        let observerCleanup: { error: unknown } | undefined;
-        try {
-          await reconnectObserver.evaluate((value) => value.restore());
-        } catch (error) {
-          observerCleanup = { error };
-        }
-        try {
-          await reconnectObserver.dispose();
-        } catch (error) {
-          observerCleanup ??= { error };
-        }
-        if (reconnectTimer !== undefined) clearTimeout(reconnectTimer);
-        if (!currentObserved) cancelCurrent?.(new Error('D002 reconnect observation cancelled'));
-        if (!onlineRestored) {
-          try {
-            await context.setOffline(false);
-          } catch (error) {
-            if (!offlinePrimary) throw error;
-          }
-        }
-        if (!offlinePrimary && observerCleanup) throw observerCleanup.error;
-      }
-      await expect(page.getByRole('heading', { name: 'Сменить роль', exact: true })).toBeVisible();
-      await expect(page.getByRole('navigation', { name: 'Основная навигация' })).toHaveCount(0);
-      await expect(page.getByText(marker, { exact: true })).toHaveCount(0);
-      await selectPwaRole(page, 'Преподаватель');
-      await expect(page.locator('.teacher-feature-owner')).toBeVisible();
-      await logoutPwa(page);
-    } catch (error) {
-      rolePrimary = { error };
-      throw error;
-    } finally {
-      detachAuthObservation();
-      let cleanupFailure: { error: unknown } | undefined;
-      try {
-        await context.setOffline(false);
-      } catch (error) {
-        cleanupFailure = { error };
-      }
-      try {
-        await dataset.admin.call('PUT', rolePath, {
-          status: 'ACTIVE',
-          groupId: dataset.group.id,
-        });
-      } catch (error) {
-        cleanupFailure ??= { error };
-      }
-      if (!rolePrimary && cleanupFailure) throw cleanupFailure.error;
-    }
-
-    await loginPwa(page, dataset.student);
-    await page.getByRole('button', { name: 'Задания', exact: true }).click();
-    await expect(page.getByText(marker, { exact: true })).toBeVisible();
-    const heldFetch = await page.evaluateHandle(
-      ({ tomorrow, homeworkId }) => {
-        const descriptor = Object.getOwnPropertyDescriptor(globalThis, 'fetch');
-        if (!descriptor || typeof descriptor.value !== 'function' || !descriptor.configurable)
-          throw new Error('D002 native fetch descriptor unavailable');
-        const original = descriptor.value as typeof fetch;
-        let held = false;
-        let fetchedOwnResponse = false;
-        let nativeRejected = false;
-        let inspectionFailed = false;
-        let ownerReady = false;
-        let releasedToNewOwner = false;
-        let delivered = false;
-        let released = false;
-        let releaseGate!: () => void;
-        const gate = new Promise<void>((resolve) => {
-          releaseGate = resolve;
-        });
-        let releaseTimer: ReturnType<typeof setTimeout> | undefined;
-        const release = () => {
-          if (released) return;
-          released = true;
-          if (releaseTimer !== undefined) clearTimeout(releaseTimer);
-          releaseGate();
-        };
-        const delayed: typeof fetch = function (this: unknown, ...args) {
-          let matches = false;
-          try {
-            const [input, init] = args;
-            const request = input instanceof globalThis.Request ? input : null;
-            const method = init?.method ?? request?.method ?? 'GET';
-            const address =
-              typeof input === 'string' ? input : input instanceof URL ? input.href : request?.url;
-            if (!held && method.toUpperCase() === 'GET' && typeof address === 'string') {
-              const url = new URL(address, location.href);
-              matches =
-                url.origin === location.origin &&
-                url.pathname === '/api/v1/student/homework' &&
-                url.searchParams.get('from') === tomorrow &&
-                url.searchParams.get('to') === tomorrow;
-            }
-          } catch {
-            // Matching never changes the native call's arguments, result or error.
-          }
-          if (matches) held = true;
-          const nativePromise: ReturnType<typeof fetch> = Reflect.apply(original, this, args);
-          if (!matches) return nativePromise;
-          return nativePromise.then(
-            async (response) => {
-              try {
-                const feed = await response.clone().json();
-                fetchedOwnResponse =
-                  response.status === 200 &&
-                  Array.isArray(feed.items) &&
-                  feed.items.some((item: { id: string }) => String(item.id) === homeworkId);
-              } catch {
-                inspectionFailed = true;
+      const heldFetch = await page.evaluateHandle(
+        ({ tomorrow, homeworkId }) => {
+          const descriptor = Object.getOwnPropertyDescriptor(globalThis, 'fetch');
+          if (!descriptor || typeof descriptor.value !== 'function' || !descriptor.configurable)
+            throw new Error('D002 native fetch descriptor unavailable');
+          const original = descriptor.value as typeof fetch;
+          let held = false;
+          let fetchedOwnResponse = false;
+          let nativeRejected = false;
+          let inspectionFailed = false;
+          let ownerReady = false;
+          let releasedToNewOwner = false;
+          let delivered = false;
+          let released = false;
+          let releaseGate!: () => void;
+          const gate = new Promise<void>((resolve) => {
+            releaseGate = resolve;
+          });
+          let releaseTimer: ReturnType<typeof setTimeout> | undefined;
+          const release = () => {
+            if (released) return;
+            released = true;
+            if (releaseTimer !== undefined) clearTimeout(releaseTimer);
+            releaseGate();
+          };
+          const delayed: typeof fetch = function (this: unknown, ...args) {
+            let matches = false;
+            try {
+              const [input, init] = args;
+              const request = input instanceof globalThis.Request ? input : null;
+              const method = init?.method ?? request?.method ?? 'GET';
+              const address =
+                typeof input === 'string' ? input : input instanceof URL ? input.href : request?.url;
+              if (!held && method.toUpperCase() === 'GET' && typeof address === 'string') {
+                const url = new URL(address, location.href);
+                matches =
+                  url.origin === location.origin &&
+                  url.pathname === '/api/v1/student/homework' &&
+                  url.searchParams.get('from') === tomorrow &&
+                  url.searchParams.get('to') === tomorrow;
               }
-              if (!released) releaseTimer = setTimeout(release, 15000);
-              await gate;
-              releasedToNewOwner = ownerReady;
-              delivered = true;
-              return response;
+            } catch {
+              // Matching never changes the native call's arguments, result or error.
+            }
+            if (matches) held = true;
+            const nativePromise: ReturnType<typeof fetch> = Reflect.apply(original, this, args);
+            if (!matches) return nativePromise;
+            return nativePromise.then(
+              async (response) => {
+                try {
+                  const feed = await response.clone().json();
+                  fetchedOwnResponse =
+                    response.status === 200 &&
+                    Array.isArray(feed.items) &&
+                    feed.items.some((item: { id: string }) => String(item.id) === homeworkId);
+                } catch {
+                  inspectionFailed = true;
+                }
+                if (!released) releaseTimer = setTimeout(release, 15000);
+                await gate;
+                releasedToNewOwner = ownerReady;
+                delivered = true;
+                return response;
+              },
+              (error) => {
+                nativeRejected = true;
+                throw error;
+              },
+            );
+          };
+          const restore = () => Object.defineProperty(globalThis, 'fetch', descriptor);
+          Object.defineProperty(globalThis, 'fetch', { ...descriptor, value: delayed });
+          return {
+            read: () => ({
+              held,
+              fetchedOwnResponse,
+              nativeRejected,
+              inspectionFailed,
+              delivered,
+              releasedToNewOwner,
+            }),
+            restore: () => {
+              restore();
             },
-            (error) => {
-              nativeRejected = true;
-              throw error;
+            releaseToNewOwner: () => {
+              ownerReady = true;
+              release();
             },
-          );
-        };
-        const restore = () => Object.defineProperty(globalThis, 'fetch', descriptor);
-        Object.defineProperty(globalThis, 'fetch', { ...descriptor, value: delayed });
-        return {
-          read: () => ({
-            held,
-            fetchedOwnResponse,
-            nativeRejected,
-            inspectionFailed,
-            delivered,
-            releasedToNewOwner,
-          }),
-          restore: () => {
-            restore();
-          },
-          releaseToNewOwner: () => {
-            ownerReady = true;
-            release();
-          },
-          cleanup: () => {
-            release();
-            restore();
-          },
-        };
-      },
-      { tomorrow: dataset.tomorrow, homeworkId: String(dataset.homework.id) },
-    );
-    let fetchRestored = false;
-    let gateDisposed = false;
-    try {
+            cleanup: () => {
+              release();
+              restore();
+            },
+          };
+        },
+        { tomorrow: dataset.tomorrow, homeworkId: String(dataset.homework.id) },
+      );
+      let fetchRestored = false;
+      let gateDisposed = false;
+      let latePrimary: { error: unknown } | undefined;
       try {
-        await page.getByRole('button', { name: 'Следующий период', exact: true }).click();
         try {
-          await expect
-            .poll(
-              async () => (await heldFetch.evaluate((value) => value.read())).fetchedOwnResponse,
-            )
-            .toBe(true);
-        } catch (error) {
-          const state = await heldFetch.evaluate((value) => value.read()).catch(() => null);
-          if (state === null) expect.soft(false, 'D002 old feed GATE_UNAVAILABLE').toBe(true);
-          else if (!state.held) expect.soft(false, 'D002 old feed GATE_NOT_CLAIMED').toBe(true);
-          else if (state.nativeRejected)
-            expect.soft(false, 'D002 old feed NATIVE_REJECTED').toBe(true);
-          else if (state.inspectionFailed)
-            expect.soft(false, 'D002 old feed INSPECTION_FAILED').toBe(true);
-          else expect.soft(false, 'D002 old feed OWN_RESPONSE_MISSING').toBe(true);
-          throw error;
+          await page.getByRole('button', { name: 'Следующий период', exact: true }).click();
+          try {
+            await expect
+              .poll(
+                async () => (await heldFetch.evaluate((value) => value.read())).fetchedOwnResponse,
+              )
+              .toBe(true);
+          } catch (error) {
+            const state = await heldFetch.evaluate((value) => value.read()).catch(() => null);
+            if (state === null) expect.soft(false, 'D002 old feed GATE_UNAVAILABLE').toBe(true);
+            else if (!state.held) expect.soft(false, 'D002 old feed GATE_NOT_CLAIMED').toBe(true);
+            else if (state.nativeRejected)
+              expect.soft(false, 'D002 old feed NATIVE_REJECTED').toBe(true);
+            else if (state.inspectionFailed)
+              expect.soft(false, 'D002 old feed INSPECTION_FAILED').toBe(true);
+            else expect.soft(false, 'D002 old feed OWN_RESPONSE_MISSING').toBe(true);
+            throw error;
+          }
+        } finally {
+          try {
+            await heldFetch.evaluate((value) => value.restore());
+            fetchRestored = true;
+          } catch {
+            expect.soft(false, 'D002 old feed FETCH_GATE_RESTORE_UNAVAILABLE').toBe(true);
+          }
         }
-      } finally {
-        try {
-          await heldFetch.evaluate((value) => value.restore());
-          fetchRestored = true;
-        } catch {
-          expect.soft(false, 'D002 old feed FETCH_GATE_RESTORE_UNAVAILABLE').toBe(true);
-        }
-      }
-      expect(fetchRestored, 'D002 old feed FETCH_GATE_NOT_RESTORED').toBe(true);
-      await logoutPwa(page);
-      // Keep this document alive: loginPwa.goto would destroy the delayed callback.
-      await page.getByLabel('Логин', { exact: true }).fill(dataset.foreignStudent.login);
-      await page
-        .getByLabel('Пароль', { exact: true })
-        .and(page.locator('input[name="password"]'))
-        .fill(dataset.foreignStudent.password);
-      const [login, current] = await Promise.all([
-        page.waitForResponse(
-          (item) =>
-            new URL(item.url()).pathname === '/api/auth/login' &&
-            item.request().method() === 'POST',
-        ),
-        page.waitForResponse(
-          (item) =>
-            new URL(item.url()).pathname === '/api/auth/session' &&
-            item.request().method() === 'GET',
-        ),
-        page.getByRole('button', { name: 'Войти', exact: true }).click(),
-      ]);
-      expect(login.status()).toBe(200);
-      expect(current.status()).toBe(200);
-      expect(String((await current.json()).userId) === String(dataset.foreignStudent.id)).toBe(
-        true,
-      );
-      await page.getByRole('button', { name: 'Задания', exact: true }).click();
-      const emptyDay = page.locator('.homework-empty-day');
-      await expect(emptyDay).toHaveText('На этот день заданий нет.');
-      await expect(emptyDay).toBeVisible();
-      await expect(page.locator('.homework-card')).toHaveCount(0);
-      await heldFetch.evaluate((value) => value.releaseToNewOwner());
-      await expect
-        .poll(async () => (await heldFetch.evaluate((value) => value.read())).delivered)
-        .toBe(true);
-      expect((await heldFetch.evaluate((value) => value.read())).releasedToNewOwner).toBe(true);
-      await page.evaluate(
-        () =>
-          new Promise<void>((resolve) =>
-            requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+        expect(fetchRestored, 'D002 old feed FETCH_GATE_NOT_RESTORED').toBe(true);
+        await logoutPwa(page);
+        // Keep this document alive: loginPwa.goto would destroy the delayed callback.
+        await page.getByLabel('Логин', { exact: true }).fill(dataset.foreignStudent.login);
+        await page
+          .getByLabel('Пароль', { exact: true })
+          .and(page.locator('input[name="password"]'))
+          .fill(dataset.foreignStudent.password);
+        const [login, current] = await Promise.all([
+          page.waitForResponse(
+            (item) =>
+              new URL(item.url()).pathname === '/api/auth/login' &&
+              item.request().method() === 'POST',
           ),
-      );
-      await expect(page.getByText(marker, { exact: true })).toHaveCount(0);
-      await expect(page.getByText(dataset.marker, { exact: true })).toHaveCount(0);
-      await expect
-        .poll(() =>
-          page.evaluate(
+          page.waitForResponse(
+            (item) =>
+              new URL(item.url()).pathname === '/api/auth/session' &&
+              item.request().method() === 'GET',
+          ),
+          page.getByRole('button', { name: 'Войти', exact: true }).click(),
+        ]);
+        expect(login.status()).toBe(200);
+        expect(current.status()).toBe(200);
+        expect(String((await current.json()).userId) === String(dataset.foreignStudent.id)).toBe(
+          true,
+        );
+        await page.getByRole('button', { name: 'Задания', exact: true }).click();
+        const emptyDay = page.locator('.homework-empty-day');
+        await expect(emptyDay).toHaveText('На этот день заданий нет.');
+        await expect(emptyDay).toBeVisible();
+        await expect(page.locator('.homework-card')).toHaveCount(0);
+        await heldFetch.evaluate((value) => value.releaseToNewOwner());
+        await expect
+          .poll(async () => (await heldFetch.evaluate((value) => value.read())).delivered)
+          .toBe(true);
+        expect((await heldFetch.evaluate((value) => value.read())).releasedToNewOwner).toBe(true);
+        await page.evaluate(
+          () =>
+            new Promise<void>((resolve) =>
+              requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+            ),
+        );
+        await expect(page.getByText(marker, { exact: true })).toHaveCount(0);
+        await expect(page.getByText(dataset.marker, { exact: true })).toHaveCount(0);
+        await expect
+          .poll(() =>
+            page.evaluate(
+              (id) => localStorage.getItem('rct-student-mobile.current-owner') === id,
+              String(dataset.foreignStudent.id),
+            ),
+          )
+          .toBe(true);
+        await heldFetch.evaluate((value) => value.cleanup());
+        await heldFetch.dispose();
+        gateDisposed = true;
+        await context.setOffline(true);
+        await page.reload();
+        await page.getByRole('button', { name: 'Задания', exact: true }).click();
+        await expect(page.getByText('Ты офлайн', { exact: true })).toBeVisible();
+        await expect(page.getByText(marker, { exact: true })).toHaveCount(0);
+        await expect(page.getByText(dataset.marker, { exact: true })).toHaveCount(0);
+        expect(
+          await page.evaluate(
             (id) => localStorage.getItem('rct-student-mobile.current-owner') === id,
             String(dataset.foreignStudent.id),
           ),
-        )
-        .toBe(true);
-      await heldFetch.evaluate((value) => value.cleanup());
-      await heldFetch.dispose().catch(() => {});
-      gateDisposed = true;
-      await context.setOffline(true);
-      await page.reload();
-      await page.getByRole('button', { name: 'Задания', exact: true }).click();
-      await expect(page.getByText('Ты офлайн', { exact: true })).toBeVisible();
-      await expect(page.getByText(marker, { exact: true })).toHaveCount(0);
-      await expect(page.getByText(dataset.marker, { exact: true })).toHaveCount(0);
-      expect(
-        await page.evaluate(
-          (id) => localStorage.getItem('rct-student-mobile.current-owner') === id,
-          String(dataset.foreignStudent.id),
-        ),
-      ).toBe(true);
-    } finally {
-      if (!gateDisposed) {
-        try {
-          await heldFetch.evaluate((value) => value.cleanup());
-        } catch {
-          expect.soft(false, 'D002 old feed FETCH_GATE_CLEANUP_UNAVAILABLE').toBe(true);
-        } finally {
-          await heldFetch.dispose().catch(() => {});
+        ).toBe(true);
+      } catch (error) {
+        latePrimary = { error };
+        throw error;
+      } finally {
+        // D002_ACCOUNT_CLEANUP_BEGIN
+        let cleanupFailure: unknown;
+        if (!gateDisposed) {
+          try {
+            await heldFetch.evaluate((value) => value.cleanup());
+          } catch (error) {
+            cleanupFailure ??= error;
+            expect.soft(false, 'D002 old feed FETCH_GATE_CLEANUP_UNAVAILABLE').toBe(true);
+          } finally {
+            await heldFetch.dispose().catch((error) => {
+              cleanupFailure = error;
+              expect.soft(false, 'D002 old feed HANDLE_DISPOSE_UNAVAILABLE').toBe(true);
+            });
+          }
         }
+        try {
+          await context.setOffline(false);
+        } catch (error) {
+          cleanupFailure ??= error;
+          expect.soft(false, 'D002 old feed NETWORK_CLEANUP_UNAVAILABLE').toBe(true);
+        }
+        if (!latePrimary && cleanupFailure) throw cleanupFailure;
+        // D002_ACCOUNT_CLEANUP_END
       }
-      await context.setOffline(false);
-    }
-  });
-
-  test('D002 TMA stays online-only beside a warm PWA snapshot', async ({
+    },
+  );
+  test('D002 TMA stays online-only beside a warm PWA snapshot', { annotation: diagnosticCase('D002_TMA_ONLINE_ONLY') }, async ({
     page,
     context,
     dataset,
@@ -4703,11 +4888,17 @@ test.describe('Production PWA service worker D002 @real-mobile', () => {
     );
     expect(initial !== undefined).toBe(true);
     // The same helper bearer succeeds before replacement and is refused afterwards.
-    await helper.call('PUT', markPath, {
+    let markHttpStatus: number | null = null;
+    const expectedMarkStatus = String(initial.status ?? 'EMPTY').toUpperCase();
+    await failureBoundary(test.info(), 'HISTORICAL_MARK', () => helper.call('PUT', markPath, {
       status: 'PRESENT',
-      expectedStatus: String(initial.status ?? 'EMPTY').toUpperCase(),
+      expectedStatus: expectedMarkStatus,
       expectedRevision: initial.markRevision ?? 'EMPTY',
-    });
+    }, [200], {}, status => { markHttpStatus = status; }), () => ({
+      httpStatus: markHttpStatus,
+      expectedStatus: ['EMPTY', 'PRESENT', 'ABSENT', 'EXCUSED', 'LATE'].includes(expectedMarkStatus) ? expectedMarkStatus : 'UNKNOWN',
+      expectedRevisionPresent: typeof initial.markRevision === 'string',
+    }));
     const before = (await teacher.call('GET', reportPath)).entries.find(
       (entry: { userId: number }) => Number(entry.userId) === Number(created.id),
     );
@@ -5701,7 +5892,7 @@ asyncExportTest.describe('stage17 durable weekly export', () => {
     'Explicit disposable async report lane only',
   );
   asyncExportTest(
-    'HEADMAN resumes real eighteen-week DOCX after navigation and lost acceptance @stage17-async',
+    'HEADMAN resumes real eighteen-week DOCX after navigation and lost acceptance @stage17-async', { annotation: diagnosticCase('ASYNC_DOCX_RESUME') },
     async ({ page, dataset, weeklyExportSeed }, info) => {
       requirePrivateArtifacts(info);
       const { weeks } = weeklyExportSeed;
@@ -5940,23 +6131,23 @@ asyncExportTest.describe('stage17 durable weekly export', () => {
 
 // Native bot acceptance uses the same owned services and genuine dataset commands as the clients.
 // Only the fixture holds user/admin bearers; the Python process receives two directed bot capabilities.
-test('actual private bot menu roster and teacher Today use hosted current authority', async ({
+test('actual private bot menu roster and teacher Today use hosted current authority', { annotation: diagnosticCase('HOSTED_PRIVATE_BOT_AUTHORITY') }, async ({
   activeHeadmanDataset: dataset,
 }, info) => {
+  const local = localSpecialLane('bot');
   const run = process.env.GITHUB_RUN_ID;
   const attempt = process.env.GITHUB_RUN_ATTEMPT;
   const root = resolve(__dirname, '../../..');
   if (
     process.env.RCT_E2E_BOT_ROLE_MENU !== 'true' ||
     process.env.RCT_E2E_SYNTHETIC_SEED !== 'true' ||
-    process.env.RUNNER_ENVIRONMENT !== 'github-hosted' ||
-    process.env.CI !== 'true' ||
-    process.env.E2E_BASE_URL !== 'https://localhost:8443' ||
-    root !== process.env.GITHUB_WORKSPACE ||
-    !run ||
-    !/^[1-9][0-9]*$/.test(run) ||
-    !attempt ||
-    !/^[1-9][0-9]*$/.test(attempt) ||
+    (!local && (process.env.RUNNER_ENVIRONMENT !== 'github-hosted' ||
+      process.env.CI !== 'true' ||
+      process.env.E2E_BASE_URL !== 'https://localhost:8443' ||
+      root !== process.env.GITHUB_WORKSPACE ||
+      !run || !/^[1-9][0-9]*$/.test(run) ||
+      !attempt || !/^[1-9][0-9]*$/.test(attempt))) ||
+    (local && root !== local.root) ||
     process.getuid?.() === undefined ||
     process.getgid?.() === undefined
   )
@@ -5973,19 +6164,39 @@ test('actual private bot menu roster and teacher Today use hosted current author
       throw new Error('Owned bot fixture Docker operation failed');
     }
   }
-  const networkName = 'rct-e2e_private_net';
+  const networkName = local?.networkName ?? 'rct-e2e_private_net';
   const network = JSON.parse(docker(['network', 'inspect', networkName]).toString('utf8'))[0];
   const gateway = network.IPAM?.Config?.[0]?.Gateway;
   if (
     network.Name !== networkName ||
-    network.Labels?.['com.docker.compose.project'] !== 'rct-e2e' ||
+    network.Labels?.['com.docker.compose.project'] !== (local?.project ?? 'rct-e2e') ||
     network.Labels?.['com.docker.compose.network'] !== 'private_net' ||
     typeof gateway !== 'string' ||
-    !/^(?:10|172|192)\.(?:[0-9]{1,3}\.){2}[0-9]{1,3}$/.test(gateway)
+    !/^(?:10|172|192)\.(?:[0-9]{1,3}\.){2}[0-9]{1,3}$/.test(gateway) ||
+    (local && (network.Labels?.['rct.local.stage17'] !== local.nonce ||
+      isIP(gateway) !== 4 ||
+      !/^(?:10\.|172\.(?:1[6-9]|2\d|3[01])\.|192\.168\.)\d/.test(gateway)))
   )
     throw new Error('Owned bot fixture network identity unavailable');
-  const image = `rct/notification-bot:u20-${run}-${attempt}`;
-  const containerName = `rct-u20-bot-${run}-${attempt}`;
+  const image = local?.botImage ?? `rct/notification-bot:u20-${run}-${attempt}`;
+  const containerName = local ? `rct-local-bot-${local.nonce}` : `rct-u20-bot-${run}-${attempt}`;
+  const ownerLabel = local ? 'rct.local.special.bot' : 'rct.u20.owner';
+  const ownerValue = local?.nonce ?? `${run}-${attempt}`;
+  if (local) {
+    if (!local.botImage || !/^sha256:[a-f0-9]{64}$/.test(local.botImage))
+      throw new Error('Owned bot image pin unavailable');
+    const pinned = JSON.parse(docker(['image', 'inspect', '--format',
+      '{"id":{{json .Id}},"labels":{{json .Config.Labels}}}', image]).toString('utf8'));
+    if (pinned.id !== local.botImage || pinned.labels?.['rct.local.stage17'] !== local.nonce)
+      throw new Error('Owned bot image identity mismatch');
+    for (const service of ['auth-service', 'mobile-bff']) {
+      const target = localSpecialService(local, service);
+      if (target.networks?.[networkName]?.NetworkID !== network.Id)
+        throw new Error('Owned bot service network mismatch');
+    }
+    if (docker(['ps', '-aq', '--filter', `name=^/${containerName}$`]).toString('utf8').trim())
+      throw new Error('Owned bot name is already occupied');
+  }
   const mounts = [
     ['auth-server.crt', '/run/u20/auth.crt'],
     ['mobile-bff-server.crt', '/run/u20/read.crt'],
@@ -5993,7 +6204,7 @@ test('actual private bot menu roster and teacher Today use hosted current author
     ['auth-secrets/bot-to-read-token', '/run/u20/read-token'],
   ]
     .map(([file, target]) => {
-      const source = resolve(root, 'tests/e2e/infra/certs', file);
+      const source = resolve(local?.certsDir ?? resolve(root, 'tests/e2e/infra/certs'), file);
       const info = lstatSync(source);
       if (!info.isFile() || info.isSymbolicLink() || info.size <= 0 || info.size > 8192)
         throw new Error('Owned bot fixture capability file unavailable');
@@ -6192,13 +6403,50 @@ test('actual private bot menu roster and teacher Today use hosted current author
     const address = control.address();
     if (!address || typeof address === 'string')
       throw new Error('Owned control address unavailable');
+    if (local && !isDeepStrictEqual(localSpecialLane('bot'), local))
+      throw new Error('Owned bot admission changed before creation');
+    // The original runner imports modules before its own safe-outcome try block.
+    // Local bootstrap reports only a closed failure class; argv and the runner's oracle stay intact.
+    const bootstrap = `import json, os, runpy, sys, traceback
+path = sys.argv[1]
+sys.argv = sys.argv[1:]
+try:
+    runpy.run_path(path, run_name="__main__")
+except SystemExit:
+    raise
+except Exception as error:
+    kind = type(error).__name__
+    allowed = {"ModuleNotFoundError", "ImportError", "SyntaxError", "PermissionError", "FileNotFoundError"}
+    name = getattr(error, "name", None)
+    filename = getattr(error, "filename", None)
+    target = "OTHER"
+    if filename == path:
+        target = "RUNNER_SOURCE"
+    elif isinstance(filename, str) and (filename == "/app/bot" or filename.startswith("/app/bot/")):
+        target = "BOT_PACKAGE"
+    elif isinstance(name, str):
+        for prefix, category in (("bot", "BOT_PACKAGE"), ("aiohttp", "AIOHTTP"), ("grpc", "GRPC"),
+                                 ("aiogram", "AIOGRAM"), ("google.protobuf", "PROTOBUF"), ("google", "PROTOBUF")):
+            if name == prefix or name.startswith(prefix + "."):
+                target = category
+                break
+    access = {"appReadable": os.access("/app", os.R_OK), "appExecutable": os.access("/app", os.X_OK),
+              "botReadable": os.access("/app/bot", os.R_OK), "botExecutable": os.access("/app/bot", os.X_OK),
+              "runnerReadable": os.access(path, os.R_OK)}
+    print(json.dumps({"qualified": False, "actual_auth_tls": False, "failures": 1, "checks": 0,
+                      "phase": "setup", "startupError": kind if kind in allowed else "OTHER",
+                      "startupTarget": target, "startupAccess": access}), flush=True)
+    traceback.print_exc()
+    sys.exit(1)
+`;
     const args = [
       'run',
       '--rm',
       '--name',
       containerName,
       '--label',
-      `rct.u20.owner=${run}-${attempt}`,
+      `${ownerLabel}=${ownerValue}`,
+      ...(local ? ['--label', `rct.local.stage17=${local.nonce}`] : []),
       '--pull=never',
       '--network',
       networkName,
@@ -6241,23 +6489,143 @@ test('actual private bot menu roster and teacher Today use hosted current author
       '--entrypoint',
       'python',
       image,
+      ...(local ? ['-c', bootstrap] : []),
       '/run/u20/runner.py',
       '--hosted-role-menu',
     ];
     const output: Buffer[] = [];
     let bytes = 0;
+    const privateOutput: Buffer[] = [];
+    let privateOutputBytes = 0;
+    let stdoutTruncated = false;
+    const stderr: Buffer[] = [];
+    let stderrBytes = 0;
+    let stderrTruncated = false;
+    let stderrRetentionFailed = false;
+    let stderrFile: number | undefined;
+    if (local) {
+      const directory = lstatSync(local.laneRun);
+      if (!directory.isDirectory() || directory.isSymbolicLink() || (directory.mode & 0o777) !== 0o700)
+        throw new Error('Owned bot diagnostic directory must be private');
+      try {
+        stderrFile = openSync(resolve(local.laneRun, 'bot-child.stderr.log'),
+          constants.O_WRONLY | constants.O_CREAT | constants.O_EXCL | constants.O_NOFOLLOW, 0o600);
+      } catch {
+        throw new Error('Owned bot private diagnostic creation failed');
+      }
+    }
+    const closeStderr = () => {
+      if (stderrFile === undefined) return;
+      const descriptor = stderrFile;
+      stderrFile = undefined;
+      try { closeSync(descriptor); } catch { stderrRetentionFailed = true; }
+    };
+    const retainChildReceipt = (exit: number | null, signal: NodeJS.Signals | null) => {
+      if (!local) return;
+      closeStderr();
+      let stdoutFile: number | undefined;
+      try {
+        stdoutFile = openSync(resolve(local.laneRun, 'bot-child.stdout.log'),
+          constants.O_WRONLY | constants.O_CREAT | constants.O_EXCL | constants.O_NOFOLLOW, 0o600);
+        writeFileSync(stdoutFile, Buffer.concat(privateOutput));
+      } catch {
+        throw new Error('Owned bot private stdout retention failed');
+      } finally {
+        if (stdoutFile !== undefined) {
+          try { closeSync(stdoutFile); } catch { throw new Error('Owned bot private stdout retention failed'); }
+        }
+      }
+      let stdoutState = bytes > 8192 ? 'OVERFLOW' : bytes === 0 ? 'EMPTY' : 'INVALID_JSON';
+      let startupError = 'NONE';
+      let startupTarget: string | null = null;
+      let startupAccess: Record<string, boolean> | null = null;
+      try {
+        if (bytes > 8192) throw new Error('Bounded stdout exceeded');
+        const value = JSON.parse(Buffer.concat(output).toString('utf8'));
+        stdoutState = value !== null && typeof value === 'object' && !Array.isArray(value) ? 'OBJECT_JSON' : 'NON_OBJECT_JSON';
+        if (value !== null && typeof value === 'object' && !Array.isArray(value) &&
+            ['ModuleNotFoundError', 'ImportError', 'SyntaxError', 'PermissionError', 'FileNotFoundError', 'OTHER'].includes(value.startupError)) {
+          startupError = value.startupError;
+          if (['RUNNER_SOURCE', 'BOT_PACKAGE', 'AIOHTTP', 'GRPC', 'AIOGRAM', 'PROTOBUF', 'OTHER'].includes(value.startupTarget))
+            startupTarget = value.startupTarget;
+          const fields = ['appReadable', 'appExecutable', 'botReadable', 'botExecutable', 'runnerReadable'];
+          if (value.startupAccess !== null && typeof value.startupAccess === 'object' &&
+              !Array.isArray(value.startupAccess) && fields.every(field => typeof value.startupAccess[field] === 'boolean'))
+            startupAccess = Object.fromEntries(fields.map(field => [field, value.startupAccess[field]]));
+        }
+      } catch { /* No raw child output enters the receipt. */ }
+      const text = Buffer.concat(stderr).toString('utf8');
+      const stderrClass = ['ModuleNotFoundError', 'ImportError', 'SyntaxError', 'PermissionError', 'FileNotFoundError']
+        .find(kind => new RegExp('^' + kind + ':', 'm').test(text)) ??
+        (/^docker: Error response from daemon:/m.test(text) ? 'DOCKER_START_ERROR' :
+          /Cannot connect to the Docker daemon|permission denied while trying to connect to the Docker/m.test(text) ? 'DOCKER_DAEMON_ERROR' :
+          stderrBytes === 0 ? 'NONE' : 'OTHER');
+      const receipt = {
+        schema: 'RCT_LOCAL_BOT_CHILD_V1',
+        exit: typeof exit === 'number' && Number.isInteger(exit) && exit >= 0 && exit <= 255 ? exit : null,
+        signal: signal === null ? null : ['SIGKILL', 'SIGTERM', 'SIGABRT', 'SIGSEGV', 'SIGINT'].includes(signal) ? signal : 'OTHER',
+        stdoutState, stdoutRetainedBytes: privateOutputBytes, stdoutTruncated,
+        startupError, startupTarget, startupAccess, stderrClass, stderrRetainedBytes: stderrBytes,
+        stderrTruncated, stderrRetentionFailed,
+      };
+      let descriptor: number | undefined;
+      try {
+        descriptor = openSync(resolve(local.laneRun, 'bot-child.safe.json'),
+          constants.O_WRONLY | constants.O_CREAT | constants.O_EXCL | constants.O_NOFOLLOW, 0o600);
+        writeFileSync(descriptor, JSON.stringify(receipt) + '\n');
+      } catch {
+        throw new Error('Owned bot closed diagnostic retention failed');
+      } finally {
+        if (descriptor !== undefined) {
+          try { closeSync(descriptor); } catch { stderrRetentionFailed = true; }
+        }
+      }
+      if (stderrRetentionFailed) throw new Error('Owned bot private diagnostic retention failed');
+    };
     const childResult = new Promise<number | null>((ready, reject) => {
-      child = spawn('docker', args, {
-        env: { PATH: process.env.PATH, NP01_CONTROL_TOKEN: controlToken },
-        stdio: ['ignore', 'pipe', 'ignore'],
-      });
+      try {
+        child = spawn('docker', args, {
+          env: { PATH: process.env.PATH, NP01_CONTROL_TOKEN: controlToken },
+          stdio: ['ignore', 'pipe', local ? 'pipe' : 'ignore'],
+        });
+      } catch {
+        closeStderr();
+        reject(new Error('Hosted bot child could not start'));
+        return;
+      }
       child.stdout!.on('data', (chunk: Buffer) => {
         bytes += chunk.length;
+        if (local) {
+          const bounded = chunk.subarray(0, Math.max(0, 8192 - privateOutputBytes));
+          stdoutTruncated ||= bounded.length !== chunk.length;
+          if (bounded.length) {
+            privateOutput.push(Buffer.from(bounded));
+            privateOutputBytes += bounded.length;
+          }
+        }
         if (bytes > 8192) child!.kill('SIGKILL');
         else output.push(chunk);
       });
-      child.once('error', () => reject(new Error('Hosted bot child could not start')));
-      child.once('close', ready);
+      if (local) {
+        child.stderr!.on('data', (chunk: Buffer) => {
+          const bounded = chunk.subarray(0, Math.max(0, 32768 - stderrBytes));
+          stderrTruncated ||= bounded.length !== chunk.length;
+          if (!bounded.length) return;
+          stderr.push(Buffer.from(bounded));
+          stderrBytes += bounded.length;
+          if (stderrFile !== undefined && !stderrRetentionFailed) {
+            try { writeFileSync(stderrFile, bounded); } catch { stderrRetentionFailed = true; }
+          }
+        });
+      }
+      child.once('error', () => {
+        closeStderr();
+        reject(new Error('Hosted bot child could not start'));
+      });
+      child.once('close', (exit, signal) => {
+        try { retainChildReceipt(exit, signal); ready(exit); }
+        catch { reject(new Error('Owned bot child diagnostic retention failed')); }
+      });
       timer = setTimeout(() => {
         child!.kill('SIGKILL');
       }, 50000);
@@ -6267,6 +6635,8 @@ test('actual private bot menu roster and teacher Today use hosted current author
     let facts: Record<string, unknown>;
     try {
       facts = JSON.parse(Buffer.concat(output).toString('utf8'));
+      if (local && (facts === null || typeof facts !== 'object' || Array.isArray(facts)))
+        throw new Error('Owned bot child safe outcome must be an object');
     } catch {
       throw new Error('Hosted bot child omitted safe outcomes');
     }
@@ -6300,12 +6670,30 @@ test('actual private bot menu roster and teacher Today use hosted current author
         .toString('utf8')
         .trim();
       if (remaining) {
-        const target = JSON.parse(
-          docker(['inspect', '--format', '{{json .Config.Labels}}', remaining]).toString('utf8'),
-        );
-        if (target['rct.u20.owner'] !== `${run}-${attempt}`)
-          throw new Error('Owned bot cleanup refused');
-        docker(['rm', '-f', remaining]);
+        if (local) {
+          if (!/^[a-f0-9]{12,64}$/.test(remaining))
+            throw new Error('Owned bot cleanup identity is ambiguous');
+          const target = JSON.parse(
+            docker(['inspect', '--format',
+              '{"id":{{json .Id}},"name":{{json .Name}},"image":{{json .Image}},"labels":{{json .Config.Labels}}}', remaining]).toString('utf8'),
+          );
+          if (!/^[a-f0-9]{64}$/.test(target.id) || !target.id.startsWith(remaining) ||
+              target.labels?.[ownerLabel] !== ownerValue ||
+              target.name !== `/${containerName}` || target.image !== image ||
+              target.labels?.['rct.local.stage17'] !== local.nonce ||
+              target.labels?.['com.docker.compose.project'] !== undefined)
+            throw new Error('Owned bot cleanup refused');
+          docker(['rm', '-f', target.id]);
+          if (docker(['ps', '-aq', '--filter', `name=^/${containerName}$`]).toString('utf8').trim())
+            throw new Error('Owned bot cleanup outcome unavailable');
+        } else {
+          const target = JSON.parse(
+            docker(['inspect', '--format', '{{json .Config.Labels}}', remaining]).toString('utf8'),
+          );
+          if (target['rct.u20.owner'] !== `${run}-${attempt}`)
+            throw new Error('Owned bot cleanup refused');
+          docker(['rm', '-f', remaining]);
+        }
       }
     } catch {
       cleanupFailed = true;
@@ -6343,7 +6731,7 @@ test('actual private bot menu roster and teacher Today use hosted current author
 });
 
 for (const suspended of [false, true]) {
-  test(`N2 retained Student shell recovers through current-only retry (${suspended ? 'suspended' : 'active'})`, async ({
+  test(`N2 retained Student shell recovers through current-only retry (${suspended ? 'suspended' : 'active'})`, { annotation: diagnosticCase(suspended ? 'N2_STUDENT_RETRY_SUSPENDED' : 'N2_STUDENT_RETRY_ACTIVE') }, async ({
     page,
     dataset,
   }) => {

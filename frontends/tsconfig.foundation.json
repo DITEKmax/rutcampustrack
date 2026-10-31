@@ -16,6 +16,8 @@
     "pwa-vue/vite.config.ts",
     "pwa-vue/src/**/*.ts",
     "tma-vue/vite.config.ts",
-    "tma-vue/src/**/*.ts"
+    "tma-vue/src/**/*.ts",
+    "web-vue/vite.config.ts",
+    "web-vue/src/**/*.ts"
   ]
 }

@@ -1,0 +1,21 @@
+{
+  "observedAtUtc": "2026-10-25T02:11:21.829973+00:00",
+  "diskFreeBytes": 5299769344,
+  "memoryCurrent": 10077773824,
+  "memoryMax": 17179869184,
+  "driverSession": 35708,
+  "driverExitCode": 0,
+  "browserClosed": true,
+  "unknownHold": false,
+  "ownLoginSlots": 1,
+  "ownCapturedSids": 1,
+  "allOwnSessionsTerminal": true,
+  "ownTerminalSlots": 1,
+  "privateHandleMode": "0o600",
+  "privateDirMode": "0o700",
+  "liveChromiumObservedAtClosure": [],
+  "mainBrowserLeaseReleased": true,
+  "rootHeadUnchanged": true,
+  "source30PinsUnchanged": true,
+  "runtime12Gate": "UNCHANGED_STOP_INDEPENDENT"
+}

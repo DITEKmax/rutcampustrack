@@ -1,7 +1,34 @@
-# SLOTS — 2026-10-11
+# SLOTS — PR3,25октября2026
 
-Root sole MAIN/docs/Git integrator. Repair ACCEPTED on main source dd50cd088fadf92f6fc9879ad7379e0e619200e1: CI38154842678 SUCCESS18jobs/browser9of9PASS; Coverage38154842675 SUCCESS8; Security38154842677 SUCCESS3scanners. All10E2Ebuilds/startup/runnercleanupPASS. Final receipt only report/process metadata. Cause/evidence URLs docs/operations/ci-repair-20261011.md.
+Root+6children capacity, gpt-6.1-sol/high requested, no telemetry/fallback.
+ONEHEAVYfree; runtime finished, browsersclosed, ownNginxdown; original30unchanged.
 
-All eight assigned authors/reviewers RELEASED. WorkflowWT2c213a362/teacherAuthWTa3fe8d026 independently reviewed and integrated; other stable source revisions retained in report. No children/new coordinator layer/background agents. New work only by owner assignment. Models for new tasks gpt-6.1-sol/xhigh explicitowner11Oct; flags confirmed/runtime metadataUNKNOWN.
+| Owner | Preserved ownership | State |
+|---|---|---|
+| root | docs/Git/PR/archive integration | source240 runtimeclosed; finalpublish/handoff |
+| angular_remove | web-map Angular; independent Auth/handoff review | Angularformatter664 PASS; finalAuth receipts boundedPASS |
+| angular_review | independentAngular/localgroup review | ba8/664/4d42 PASS |
+| disk_files | headman-web solewriter Ngx package+3innerconfigs | f81/d7/82 integrated034/066/106; actualMIMEclosed |
+| disk_docker | independentcleanup/Ngx/source-scanreview |28e/e8/MIME82 PASS; no execution |
+| group_resume | group-final-delete solewriter pr3-local | e8/d464 integrated9fa/eb0, ownerlocalNOT_RUN |
+| visual_conditional | externalManual/AuthPREP | Manualrow0 knownclosed; WEBrawFAILretained/PWAactualPASS; no replay |
 
-HEAVY FREE. No local fullstack/suite duplication after passed source. Existing18514/6KEEP/1757rollbackrefs/privateenv/certs/backups untouched; BotOFF/tunnelOFF. Own testcontainer/runner resources cleaned. No manualdeploy/productionmigration/rotation. Frozen contract .agent/evidence/ci-repair-20261011/CONTRACT.md.
+Allsource/worktrees/WIP preserved. Main13/admin7running, clock5/shipping5stopped.
+Groupstart/grants/delete cloudFORBIDDEN, ownerlocal pending. No competingDBtests,
+CI/manualPAUSED, no main/merge/deploy/production/newGoal/PR/environment/globalprune.
+
+
+## Закрытый source пакет: ordinary diagnostic contract
+
+| Owner | Scope | Состояние |
+|---|---|---|
+| root | docs/Git/PR | source e0dcb3496 интегрирован; docs/final publish |
+| disk_files | sharedcatalog/Pythonvalidator+CI/local/pipeline | final4b9f6197 integrated; controls19 PASS |
+| group_resume | TSproducer/reporter/connectedspecs | final1ab878c integrated; combined7/20 PASS |
+| angular_review | linked portability audit readonly | DONE, findings переданы |
+
+До6children capacity прежняя, новые модели не назначались. ONEHEAVYfree; только
+лёгкие contract/TS/syntheticfilesystem controls. Docker/Auth/DB/browser/CI0.
+
+angular_remove: independent privacy/security +targeted corrections/shared-wiring review PASS; no repeats.
+Shared source checks passed; real service collector/owner-local NOT_RUN.

@@ -1,0 +1,43 @@
+{
+  "sourceRevision": "5e6a1843352b549f0d9a49c8a7327e00b2f62714",
+  "sourceProductCommit": "0d67f5484d9e785354a55e4186e5cb2721a78a05;Rootintegration7877",
+  "rawReceipt": "mobile-next-notification-fix3-receipt.json",
+  "command": "timeout --signal=TERM --kill-after=5s 60s node mobile-next.cjs notification-fix3",
+  "exitCode": 0,
+  "elapsedSeconds": 4.309,
+  "cases": 3,
+  "hashIntegrity": "3/3 retained original SHA256match",
+  "personallyViewedAll3": true,
+  "sourceUnchanged": true,
+  "criterion": {
+    "V-MOB-NOTIF-300": "CLOSED bounded300root16 light/dark actual populated PWAhistory; titlewhole fullrow, back/settingscircles intactvisible, filter/cardmetadata readable,no horizontal loss",
+    "MB-NOTIF-BASE": "ready bounded300both/1440light currentafter; prior1440dark reused becauseCSSnewmedia max22.5rem excludeswide",
+    "wideControl1440LightIdenticalBeforeSha256": true,
+    "actualAPI": "inbox200, normalentry/back",
+    "limits": [
+      "Onlyinitialvisibleportion of fixedinnerhistoryscroller; no wholehistory/allstatesclaim.",
+      "Increasedroot20/keyboard/settings/expandedcard/empty/error/reconnect/other6widths notchecked bythisrun.",
+      "No TMApostlogin/provider acceptance."
+    ]
+  },
+  "cleanup": [
+    {
+      "consumer": "PWA",
+      "exactOwnHandleCaptured": true,
+      "nativeLogoutSent": true,
+      "fallbackUsed": false,
+      "httpStatus": 204,
+      "guestReadStatus": 401,
+      "confirmed": true
+    }
+  ],
+  "domainMutations": [],
+  "pageErrors": [],
+  "privateOwnSIDMode": "0600confirmed",
+  "browser": "Owncontext/browserclosed byfinally; no followupbrowser",
+  "originalsPreserved": "Before4/rawfirstlocatorFAIL/Today12 unchanged; no rerun",
+  "newFunctionalActions": 0,
+  "overallReadinessPercent": null,
+  "modelRequested": "gpt-6.1-sol/high",
+  "runtimeTelemetry": "unavailable"
+}

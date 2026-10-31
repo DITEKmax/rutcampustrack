@@ -12,7 +12,7 @@ import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import ru.rutcampustrack.attendance.contract.dto.excuse.UpdateExcuseStatusRequest;
 import ru.rutcampustrack.attendance.contract.enums.ExcuseTicketStatus;
@@ -25,7 +25,13 @@ import ru.rutcampustrack.attendance.latecheckin.entity.LateCheckinRequest;
  *
  * <p>Каждый сценарий: студент/headman A → endpoint, оперирующий ресурсом группы/студента B → 403.
  */
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 class SecurityIdorIT extends AbstractAttendanceIntegrationTest {
+    @org.springframework.test.context.DynamicPropertySource
+    static void auditIsolation(org.springframework.test.context.DynamicPropertyRegistry registry) {
+        ru.rutcampustrack.attendance.integration.AuditTestIsolation.register(
+                registry, "securityidorit", 13);
+    }
 
     @Autowired private ObjectMapper objectMapper;
 
@@ -41,8 +47,8 @@ class SecurityIdorIT extends AbstractAttendanceIntegrationTest {
 
     @BeforeEach
     void seed() {
-        mongoTemplate.remove(new Query(), ExcuseTicket.class);
-        mongoTemplate.remove(new Query(), LateCheckinRequest.class);
+        mongoTemplate.getCollection("excuse_tickets").deleteMany(new org.bson.Document());
+        mongoTemplate.getCollection("late_checkin_requests").deleteMany(new org.bson.Document());
 
         // Excuse-тикет группы B (автор — studentB, SUBMITTED)
         ExcuseTicket ticket =

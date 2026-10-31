@@ -33,6 +33,8 @@ from bot.services.send_queue import TelegramSendQueue
 
 logging.disable(logging.CRITICAL)
 _phase = "setup"
+_own_homework_stage = "SETUP"
+_own_homework_cause = "OTHER"
 _checks = 0
 _headman_read_outcome = "UNKNOWN"
 _headman_read_stage = "UNKNOWN"
@@ -98,6 +100,37 @@ _auth_boundary = {"actual_auth_tls": False, "old_academic_denied": False, "old_c
 
 class BridgeFailure(RuntimeError):
     pass
+
+
+class ControlFailure(BridgeFailure):
+    def __init__(self, cause, action="NONE"):
+        super().__init__("own fixture control failed")
+        self.cause = cause
+        self.action = action
+
+
+def bridge_cause(failure):
+    if isinstance(failure, ControlFailure):
+        return failure.cause
+    if isinstance(failure, BridgeFailure):
+        return "CHECK_FAILED"
+    if isinstance(failure, AssertionError):
+        return "ASSERTION"
+    if isinstance(failure, TimeoutError):
+        return "TIMEOUT"
+    if isinstance(failure, aiohttp.ClientError):
+        return "HTTP_TRANSPORT"
+    if isinstance(failure, grpc.aio.AioRpcError):
+        return {
+            grpc.StatusCode.UNAVAILABLE: "GRPC_UNAVAILABLE",
+            grpc.StatusCode.DEADLINE_EXCEEDED: "GRPC_DEADLINE_EXCEEDED",
+            grpc.StatusCode.UNAUTHENTICATED: "GRPC_UNAUTHENTICATED",
+            grpc.StatusCode.PERMISSION_DENIED: "GRPC_PERMISSION_DENIED",
+            grpc.StatusCode.FAILED_PRECONDITION: "GRPC_FAILED_PRECONDITION",
+            grpc.StatusCode.INVALID_ARGUMENT: "GRPC_INVALID_ARGUMENT",
+            grpc.StatusCode.NOT_FOUND: "GRPC_NOT_FOUND",
+        }.get(failure.code(), "GRPC_OTHER")
+    return "OTHER"
 
 
 def check(condition):
@@ -554,7 +587,7 @@ async def main():
 
 async def own_homework_main():
     """Use the existing isolated Java/PG/TLS fixture; never contact Telegram."""
-    global _phase
+    global _phase, _own_homework_stage, _own_homework_cause
     from datetime import date
     from unittest.mock import AsyncMock
 
@@ -586,6 +619,24 @@ async def own_homework_main():
                 os.environ["NP01_CONTROL_URL"] + "/control/" + action,
                 headers={"x-np01-control": control_token},
             ) as response:
+                if response.status != 200:
+                    cause = "CONTROL_HTTP_STATUS"
+                    try:
+                        facts = await response.json()
+                        value = facts.get("controlCause") if isinstance(facts, dict) else None
+                        if value in (
+                            "ASSERTION",
+                            "DATA_INTEGRITY",
+                            "DATA_ACCESS",
+                            "AUTH_SESSION",
+                            "ARGUMENT",
+                            "STATE",
+                            "OTHER",
+                        ):
+                            cause = "CONTROL_" + value
+                    except (ValueError, aiohttp.ClientError):
+                        pass  # The non-200 response still fails with a closed category.
+                    raise ControlFailure(cause)
                 check(response.status == 200)
                 return await response.json()
 
@@ -617,6 +668,7 @@ async def own_homework_main():
 
         try:
             _phase = "own_homework_profile"
+            _own_homework_stage = "PROFILE"
             values = await arguments()
             scope = await resolve_menu_scope(menu, own["chat"])
             labels = [
@@ -630,6 +682,7 @@ async def own_homework_main():
             check(bool(items[0].title))
             title = items[0].title
             _phase = "own_homework_handlers"
+            _own_homework_stage = "HANDLERS"
             for handler in (cmd_homework_today, cmd_homework_week):
                 message = SimpleNamespace(
                     from_user=SimpleNamespace(id=own["chat"]),
@@ -646,6 +699,7 @@ async def own_homework_main():
                 check(message.answer.await_count == 1 and title in message.answer.await_args.args[0])
 
             _phase = "own_homework_transport_denials"
+            _own_homework_stage = "TRANSPORT_DENIALS"
             request = pb.BotOwnHomeworksForWeekRequest(**values)
             try:
                 await generic._stub.GetOwnBotHomeworksForWeek(request, metadata=generic._metadata, timeout=3)
@@ -687,31 +741,59 @@ async def own_homework_main():
             await denied({**values, "telegram_sender_id": fixtures["foreign"]["chat"]})
 
             _phase = "own_homework_revoked_grant"
+            _own_homework_stage = "REVOKE_CONTROL"
             await control("revoke")
+            _own_homework_stage = "REVOKED_SCOPE_ABSENT"
             check(await resolve_menu_scope(menu, own["chat"]) is None)
+            _own_homework_stage = "OLD_SCOPE_DENIED"
             await denied(values)
+            _own_homework_stage = "REACTIVATE_CONTROL"
             await control("reactivate")
+            _own_homework_stage = "FRESH_SCOPE"
             refreshed = await arguments()
+            _own_homework_stage = "ROLES_VERSION_ADVANCED"
             check(refreshed["expected_roles_version"] > values["expected_roles_version"])
+            _own_homework_stage = "HOMEWORK_RESTORED"
             check(len(await protected.homeworks(**refreshed)) == 1)
 
             _phase = "own_homework_rebound_telegram"
+            _own_homework_stage = "REBIND_CONTROL"
             await control("rebind_foreign")
+            _own_homework_stage = "REBOUND_OLD_SCOPE_DENIED"
             await denied(refreshed)
+            _own_homework_stage = "RESTORE_CONTROL"
             await control("restore_binding")
+            _own_homework_stage = "RESTORED_SCOPE"
             restored = await arguments()
+            _own_homework_stage = "BINDING_VERSION_ADVANCED"
             check(restored["expected_telegram_binding_version"] > refreshed["expected_telegram_binding_version"])
+            _own_homework_stage = "STALE_SCOPE_DENIED"
             await denied(refreshed)
+            _own_homework_stage = "RESTORED_HOMEWORK"
             check(len(await protected.homeworks(**restored)) == 1)
             _phase = "complete"
+        except BaseException as failure:
+            _own_homework_cause = bridge_cause(failure)
+            raise
         finally:
-            try:
+            primary = sys.exc_info()[1]
+            cleanup_failure = None
+            for stage, cleanup in (
+                ("CLEANUP_REACTIVATE", lambda: control("reactivate")),
+                ("CLEANUP_RESTORE_BINDING", lambda: control("restore_binding")),
+                ("CLEANUP_GENERIC", generic.close),
+                ("CLEANUP_PROTECTED", protected.close),
+                ("CLEANUP_MENU", menu.close),
+            ):
                 try:
-                    await control("reactivate")
-                finally:
-                    await control("restore_binding")
-            finally:
-                await asyncio.gather(generic.close(), protected.close(), menu.close())
+                    await cleanup()
+                except BaseException as failure:
+                    if primary is None and cleanup_failure is None:
+                        cleanup_failure = failure
+                        _own_homework_stage = stage
+                        _own_homework_cause = bridge_cause(failure)
+            if primary is None and cleanup_failure is not None:
+                raise cleanup_failure
 
 
 async def hosted_role_menu_main():
@@ -983,7 +1065,9 @@ if __name__ == "__main__":
             asyncio.run(
                 asyncio.wait_for(own_homework_main(), timeout=30) if sys.argv[1:] == ["--own-homework"] else main()
             )
-    except BaseException:
+    except BaseException as failure:
+        if sys.argv[1:] == ["--own-homework"] and _own_homework_cause == "OTHER":
+            _own_homework_cause = bridge_cause(failure)
         print(
             json.dumps(
                 {
@@ -993,6 +1077,14 @@ if __name__ == "__main__":
                     "failures": 1,
                     "checks": _checks,
                     "phase": _phase,
+                    **(
+                        {
+                            "own_homework_stage": _own_homework_stage,
+                            "own_homework_cause": _own_homework_cause,
+                        }
+                        if sys.argv[1:] == ["--own-homework"]
+                        else {}
+                    ),
                     **(
                         {
                             "headmanReadOutcome": _headman_read_outcome,

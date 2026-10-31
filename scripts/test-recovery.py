@@ -3,6 +3,8 @@
 import argparse
 import importlib.util
 import json
+import hashlib
+import stat
 import os
 import re
 import sys
@@ -69,6 +71,73 @@ FAILURE_GUARDS = {
 }
 
 
+def public_initializer(work):
+    """Copy public bytes only; a private checkout's umask must not reach PostgreSQL."""
+    source = HERE.parent / "infra/postgres/init-roles.sh"
+    flags = os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK
+    fd = os.open(source, flags)
+    try:
+        before = os.fstat(fd)
+        r.require(stat.S_ISREG(before.st_mode) and 0 < before.st_size <= 256 * 1024,
+                  "Public initializer must be a bounded regular file")
+        data = os.read(fd, 256 * 1024 + 1)
+        after = os.fstat(fd)
+        r.require(len(data) == before.st_size and
+                  (before.st_dev, before.st_ino, before.st_mode, before.st_size, before.st_mtime_ns, before.st_ctime_ns) ==
+                  (after.st_dev, after.st_ino, after.st_mode, after.st_size, after.st_mtime_ns, after.st_ctime_ns), "Public initializer changed")
+    finally:
+        os.close(fd)
+    target = work / "init-roles.public.sh"
+    fd = os.open(target, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o755)
+    try:
+        os.fchmod(fd, 0o755)
+        with os.fdopen(fd, "wb", closefd=False) as stream:
+            stream.write(data)
+            stream.flush()
+            os.fsync(fd)
+    finally:
+        os.close(fd)
+    r.require(target.read_bytes() == data and stat.S_IMODE(target.stat().st_mode) == 0o755,
+              "Public initializer copy mismatch")
+    with (work / "initializer.safe.json").open("x", encoding="utf-8") as stream:
+        json.dump({"schema": "rct-recovery-initializer.v1", "bytes": len(data),
+                   "sha256": hashlib.sha256(data).hexdigest(), "mode": "0755",
+                   "byteIdentity": True}, stream)
+    return target
+
+
+def startup(args, project):
+    diagnostics = args.work_dir / "private-diagnostics"
+    diagnostics.mkdir(mode=0o700, exist_ok=True)
+    return r.run(compose(args.work_dir, project, "up", "-d", "--pull", "never",
+                         "--wait", "--wait-timeout", "120"),
+                 diagnostic_dir=diagnostics, diagnostic_stage=args.failure_stage)
+
+
+def closure_receipt(args, projects):
+    absent = {}
+    for kind, prefix in (("containersAbsent", ["docker", "ps", "-aq"]),
+                         ("networksAbsent", ["docker", "network", "ls", "-q"]),
+                         ("volumesAbsent", ["docker", "volume", "ls", "-q"])):
+        observations = [not r.run(prefix + ["--filter", "label=com.docker.compose.project=" + project]).strip()
+                        for project in projects]
+        absent[kind] = all(observations)
+    receipt = {"schema": "rct-files-recovery-cleanup.v1", "sourceRevision": args.source_revision,
+               "nonce": args.nonce, "projectPairBound": True, "syntheticLabelsValidated": True,
+               **absent, "closed": all(absent.values()), "cleanupExit": 0 if all(absent.values()) else 1}
+    fd = os.open(args.work_dir / "cleanup.safe.json",
+                 os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o600)
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8", closefd=False) as stream:
+            json.dump(receipt, stream, sort_keys=True)
+            stream.write("\n")
+            stream.flush()
+            os.fsync(fd)
+    finally:
+        os.close(fd)
+    r.require(receipt["closed"], "Owned recovery resources remain after cleanup")
+
+
 def compose(work, project, *args):
     return ["docker", "compose", "-f", str(COMPOSE), "--env-file", str(work / (project + ".env")), "-p", project, *args]
 
@@ -103,8 +172,19 @@ def expect_refusal(callback, reason):
 def exercise(args):
     r.require(re.fullmatch(r"rct-recovery-[a-z0-9-]+", args.project_base), "Project base must start rct-recovery-")
     projects = [args.project_base + "-src", args.project_base + "-dst"]
+    r.require(args.work_dir.is_absolute() and args.work_dir.resolve() == args.work_dir,
+              "Recovery work directory must be an absolute non-link path")
+    if args.source_revision is not None or args.nonce is not None:
+        r.require(type(args.source_revision) is str and re.fullmatch(r"[0-9a-f]{40}", args.source_revision)
+                  and type(args.nonce) is str and re.fullmatch(r"[0-9a-f]{24}", args.nonce)
+                  and args.project_base == "rct-recovery-files-" + args.nonce,
+                  "Recovery source/nonce binding mismatch")
+    os.environ["RCT_RECOVERY_INIT_ROLES_FILE"] = str(args.work_dir / "init-roles.public.sh")
     if args.cleanup:
         args.failure_stage = "CLEANUP_VALIDATE"
+        info = args.work_dir.lstat()
+        r.require(stat.S_ISDIR(info.st_mode) and info.st_uid == os.getuid()
+                  and stat.S_IMODE(info.st_mode) == 0o700, "Recovery cleanup directory must remain private")
         r.require(not args.dry_run, "--cleanup and --dry-run cannot be combined")
         marker = json.loads((args.work_dir / "owned-projects.json").read_text())
         r.require(marker == projects, "Cleanup ownership marker mismatch")
@@ -135,6 +215,7 @@ def exercise(args):
         args.failure_stage = "CLEANUP_DOWN"
         for project in projects:
             r.run(compose(args.work_dir, project, "down", "--timeout", "10"))
+        closure_receipt(args, projects)
         print("PASS cleanup: only marked disposable projects removed; all artifacts retained")
         return
     r.require(not args.work_dir.exists(), "Work directory must be new")
@@ -151,6 +232,7 @@ def exercise(args):
     for image in (args.pg_image, args.mongo_image):
         r.run(["docker", "image", "inspect", image])
     args.work_dir.mkdir(parents=True, mode=0o700)
+    public_initializer(args.work_dir)
     r.write_json(args.work_dir / "owned-projects.json", projects)
     for project in projects:
         # Synthetic-only credentials, deliberately different source/target passwords.
@@ -170,7 +252,7 @@ def exercise(args):
         )
     source_project, dest_project = projects
     args.failure_stage = "SOURCE_START"
-    r.run(compose(args.work_dir, source_project, "up", "-d", "--pull", "never", "--wait", "--wait-timeout", "120"))
+    startup(args, source_project)
     args.failure_stage = "SOURCE_IDENTIFY"
     source = target(args.work_dir, source_project)
     secret = r.credentials(source.env_file)
@@ -233,7 +315,7 @@ ALTER DEFAULT PRIVILEGES REVOKE EXECUTE ON FUNCTIONS FROM PUBLIC;
     args.failure_stage = "SOURCE_STOP"
     r.run(compose(args.work_dir, source_project, "stop", "--timeout", "10"))
     args.failure_stage = "DESTINATION_START"
-    r.run(compose(args.work_dir, dest_project, "up", "-d", "--pull", "never", "--wait", "--wait-timeout", "120"))
+    startup(args, dest_project)
     args.failure_stage = "DESTINATION_IDENTIFY"
     dest = target(args.work_dir, dest_project)
     dest.bundle = source.output
@@ -313,6 +395,8 @@ def main():
     p.add_argument("--mongo-image")
     p.add_argument("--dry-run", action="store_true")
     p.add_argument("--cleanup", action="store_true")
+    p.add_argument("--source-revision")
+    p.add_argument("--nonce")
     args = p.parse_args()
     args.failure_stage = "PREFLIGHT"
     os.umask(0o077)
@@ -330,6 +414,10 @@ def main():
             ) if isinstance(error, kind)),
             "OTHER",
         )
+        diagnostic = getattr(error, "synthetic_diagnostic", None)
+        if type(diagnostic) is dict:
+            print("RECOVERY_STARTUP_CLASS:" + diagnostic["dockerClass"], file=sys.stderr)
+            print("RECOVERY_STARTUP_LOG:" + diagnostic["privateLog"], file=sys.stderr)
         guard = "OTHER"
         if isinstance(error, r.RecoveryError) and len(error.args) == 1 and type(error.args[0]) is str:
             guard = FAILURE_GUARDS.get(error.args[0], "OTHER")

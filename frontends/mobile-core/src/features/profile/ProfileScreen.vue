@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import SvgIcon from '../../../../shared/foundation/SvgIcon.vue';
 import { computed, ref, watch } from 'vue';
 import BrowserLoginApprovalForm from './BrowserLoginApprovalForm.vue';
 import type { BrowserLoginApprovalPort } from './browser-login-approval';
@@ -44,7 +45,6 @@ const props = withDefaults(
     logoutBusy: false,
     showActiveRole: true,
     showRoleSwitch: true,
-    theme: 'dark',
   },
 );
 
@@ -107,10 +107,43 @@ function logout(): void {
 
       <section
         v-if="loading"
-        class="profile-state"
-        aria-live="polite"
+        class="profile-loading"
+        aria-busy="true"
+        aria-label="Загружаем профиль"
       >
-        Загружаем профиль…
+        <span
+          class="profile-loading__status"
+          role="status"
+          >Загружаем профиль…</span
+        >
+        <div
+          class="profile-card"
+          aria-hidden="true"
+        >
+          <span class="profile-avatar profile-loading__shape" />
+          <div class="profile-card__copy profile-loading__copy">
+            <span
+              class="profile-loading__shape profile-loading__line profile-loading__line--name"
+            />
+            <span class="profile-loading__shape profile-loading__line" />
+            <span
+              class="profile-loading__shape profile-loading__line profile-loading__line--short"
+            />
+          </div>
+        </div>
+        <div
+          class="profile-screen__content"
+          aria-hidden="true"
+        >
+          <div
+            v-for="item in visibleRows"
+            :key="item.route"
+            class="profile-row profile-loading__row"
+          >
+            <span class="profile-icon profile-loading__shape" />
+            <span class="profile-loading__shape profile-loading__line" />
+          </div>
+        </div>
       </section>
       <StudentWarningBlock
         v-else-if="error"
@@ -142,8 +175,10 @@ function logout(): void {
               <template v-if="showActiveRole">
                 {{
                   snapshot.activeRole ? roleLabel(snapshot.activeRole) : 'Роль не выбрана'
-                }}
-              </template><span v-if="snapshot.groupLabel">{{ showActiveRole ? ' · ' : '' }}{{ snapshot.groupLabel }}</span>
+                }} </template
+              ><span v-if="snapshot.groupLabel"
+                >{{ showActiveRole ? ' · ' : '' }}{{ snapshot.groupLabel }}</span
+              >
             </p>
             <p class="profile-card__meta">
               Telegram ID:
@@ -159,7 +194,9 @@ function logout(): void {
         </section>
 
         <section
-          v-if="snapshot.activeRole === 'STUDENT' && !snapshot.readOnly && delegatedPermissions.length"
+          v-if="
+            snapshot.activeRole === 'STUDENT' && !snapshot.readOnly && delegatedPermissions.length
+          "
           class="profile-permissions"
           aria-label="Дополнительные права"
         >
@@ -204,12 +241,13 @@ function logout(): void {
               :aria-disabled="isBootstrapUnavailable(item.route)"
               @click="navigate(item.route)"
             >
-              <img
+              <SvgIcon
+                :width="24"
+                :height="24"
                 class="profile-icon"
                 :src="item.icon"
-                alt=""
                 aria-hidden="true"
-              >
+              />
               <span>{{ item.label }}</span>
             </button>
           </div>

@@ -1,0 +1,31 @@
+{
+  "sourceRevision": "0421d344c9697d58efc8f039b74c5bdf594c6eb4",
+  "scope": "full Compose source model with owned nonproduction synthetic bindings; service env files unresolved",
+  "command": [
+    "docker",
+    "compose",
+    "--env-file",
+    "/workspace/rct-pr3-setup/private/synthetic.env",
+    "-p",
+    "rct-pr3-release-inputs",
+    "-f",
+    "docker-compose.prod.yml",
+    "config",
+    "--no-env-resolution",
+    "--quiet"
+  ],
+  "sourceComposeSha256": "96da38adf3b78fbcf3d321aaa84a8bae52a9e17797c12009623cb0a2e0b205f0",
+  "childEnvAddedNames": [
+    "CAMPUS_MAP_USAGE_HMAC_KEY"
+  ],
+  "exitCode": 1,
+  "stdoutBytes": 0,
+  "missingVariableNames": [
+    "ACADEMIC_GRPC_TLS_AUTHORITY"
+  ],
+  "classification": "MISSING_BINDING_STOP",
+  "productionEnvironmentValidated": false,
+  "runtimeOrDeploymentValidated": false,
+  "mutations": false,
+  "preflightNote": "First wrapper attempted nested JSON path and stopped with KeyError before invoking Compose; exact dotted property used for the sole Compose invocation."
+}

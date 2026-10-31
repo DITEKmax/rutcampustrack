@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { createDeviceThemeMirror, createDeviceThemeTransport } from '../../shared/foundation';
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, shallowRef, toRaw, watch } from 'vue';
 import {
   AdminAccessApiError,
@@ -119,6 +120,7 @@ import InstallOffer from './features/install/InstallOffer.vue';
 import type { InstallPromptController } from './features/install/install-prompt';
 import { createPushController } from './features/push/push-controller';
 import { createBrowserPushPort } from './features/push/browser-push';
+import './pwa-host.pcss';
 
 const props = defineProps<{ installPrompt: InstallPromptController }>();
 const installPrompt = props.installPrompt;
@@ -180,8 +182,18 @@ const themePreference = createMobileThemePreference(() =>
 const theme =
   typeof document === 'undefined'
     ? null
-    : createMobileTheme({ mode: themePreference.read() ?? 'dark', lockedMode: 'dark' });
-const stopThemePreference = theme?.subscribe(({ mode }) => themePreference.write(mode));
+    : createMobileTheme({ mode: themePreference.read() ?? 'system', lockedMode: 'dark' });
+const resolvedTheme = ref(theme?.resolvedMode ?? 'dark');
+const stopThemeSnapshot = theme?.subscribe((snapshot) => {
+  resolvedTheme.value = snapshot.resolvedMode;
+});
+const themeMirror = theme
+  ? createDeviceThemeMirror({
+      theme,
+      preference: themePreference,
+      transport: createDeviceThemeTransport(requestFetcher),
+    })
+  : null;
 const snapshotStore = new SemesterSnapshotStore();
 
 const api = shallowRef<StudentApi | null>(null);
@@ -323,6 +335,24 @@ const authView = ref<
   | 'admin-role-switch'
 >(directPasswordRecoveryEntry ? 'password-recovery' : 'login');
 const authSnapshot = shallowRef<ProfileSnapshot | null>(null);
+watch(
+  () =>
+    [
+      auth.accessToken.value,
+      authSnapshot.value?.userId,
+      authSnapshot.value?.sessionId,
+      auth.resetGeneration.value,
+    ] as const,
+  ([accessToken, userId, sessionId, generation]) => {
+    themeMirror?.setSession(
+      accessToken && userId && sessionId
+        ? { accessToken, key: `${generation}:${userId}:${sessionId}` }
+        : null,
+    );
+  },
+  { immediate: true },
+);
+
 const authError = shallowRef<ProfileRequestError | null>(null);
 const persistedLogoutState = auth.explicitLogoutState();
 const logoutPending = ref(false);
@@ -867,7 +897,15 @@ watch(
           if (!auth.isCurrent(generation)) throw new StaleSessionGenerationError();
           return auth.accessToken.value;
         },
-        refreshFor: (generation) => auth.refreshFor(generation),
+        refreshFor: async (generation) => {
+          try {
+            await auth.refreshFor(generation);
+          } catch (cause) {
+            if (auth.isCurrent(generation) && isConfirmedOnlineAuthDenial(cause))
+              await handleOnlineAuthDenial(cause);
+            throw cause;
+          }
+        },
       },
       scope: {
         userId,
@@ -2103,6 +2141,7 @@ function goOffline(): void {
 }
 
 function goOnline(): void {
+  themeMirror?.reconcile();
   // Reconnect must verify the current session before restoring mutation
   // authority. Bootstrap mounts a fresh bound owner only after getSession and
   // schedule have passed the generation gate.
@@ -2211,7 +2250,9 @@ onBeforeUnmount(() => {
       'controllerchange',
       onServiceWorkerControllerChange,
     );
-  stopThemePreference?.();
+  stopThemeSnapshot?.();
+  themeMirror?.dispose();
+  themePreference.dispose();
   theme?.dispose();
 });
 </script>
@@ -2316,6 +2357,7 @@ onBeforeUnmount(() => {
     @proof-consumed="clearDirectPasswordResetProof"
   />
   <RoleSwitchScreen
+    :theme="resolvedTheme"
     v-else-if="authView === 'role'"
     :snapshot="authSnapshot"
     :pending-role="pendingRole"
@@ -2355,6 +2397,7 @@ onBeforeUnmount(() => {
   />
   <TeacherFeatureOwner
     v-else-if="teacherViewVisible"
+    :realtime-revision="notificationRealtimeRevision"
     ref="teacherNotificationOwner"
     :key="`teacher-${ownerRevision}`"
     :report-download="reportDownload"
@@ -2365,6 +2408,7 @@ onBeforeUnmount(() => {
     :map-client="mapClient"
     :profile-port="profilePort"
     :on-recover="openPasswordRecovery"
+    :on-logout="logout"
     :profile-role-select="selectProfileRole"
     :host="host"
     :theme-controller="theme"
@@ -2374,7 +2418,7 @@ onBeforeUnmount(() => {
   <MapScreen
     v-else-if="mapViewVisible"
     :client="mapClient"
-    theme="dark"
+    :theme="resolvedTheme"
   />
   <AdminShell
     v-else-if="adminMoreViewVisible"
@@ -2403,7 +2447,7 @@ onBeforeUnmount(() => {
       :unread-count="notificationUnread.count"
       :client="adminDashboardApi"
       :invalidation-revision="adminDashboardRevision"
-      theme="dark"
+      :theme="resolvedTheme"
       @owner-error="onOwnerError"
       @open-role-switch="openAdminRoleSwitch"
       @open-attendance="navigateAdmin('attendance')"
@@ -2442,7 +2486,7 @@ onBeforeUnmount(() => {
       :authority="adminAuthority"
       :client="adminMapClient"
       :show-back="host.backOwner === 'product'"
-      theme="dark"
+      :theme="resolvedTheme"
       @back="navigateAdmin('more')"
       @owner-error="onOwnerError"
     />
@@ -2460,7 +2504,7 @@ onBeforeUnmount(() => {
       :authority="adminAuthority"
       :client="adminMapClient"
       :show-back="host.backOwner === 'product'"
-      theme="dark"
+      :theme="resolvedTheme"
       @back="navigateAdmin('more')"
       @owner-error="onOwnerError"
     />
@@ -2478,7 +2522,7 @@ onBeforeUnmount(() => {
       ref="adminTaskOwner"
       :authority="adminAuthority"
       :client="adminSemesterApi"
-      theme="dark"
+      :theme="resolvedTheme"
       @navigation-visibility="adminNavigationVisible = $event"
       @back="navigateAdmin('more')"
       @owner-error="onOwnerError"
@@ -2499,7 +2543,7 @@ onBeforeUnmount(() => {
       :access-client="adminAccessActionsApi"
       :authority="adminAuthority"
       :client="adminUsersApi"
-      theme="dark"
+      :theme="resolvedTheme"
       @navigation-visibility="adminNavigationVisible = $event"
       @owner-error="onOwnerError"
     />
@@ -2518,7 +2562,7 @@ onBeforeUnmount(() => {
       :report-download="reportDownload"
       :authority="adminAuthority"
       :client="adminGroupsApi"
-      theme="dark"
+      :theme="resolvedTheme"
       @navigation-visibility="adminNavigationVisible = $event"
       @owner-error="onOwnerError"
     />
@@ -2582,6 +2626,7 @@ onBeforeUnmount(() => {
     @back="closeAdminRoleSwitch"
   >
     <RoleSwitchScreen
+      :theme="resolvedTheme"
       compact
       :snapshot="authSnapshot"
       :pending-role="pendingRole"
@@ -2595,6 +2640,7 @@ onBeforeUnmount(() => {
   </AdminShell>
   <StudentFeatureOwner
     v-else-if="studentViewVisible"
+    :realtime-revision="notificationRealtimeRevision"
     ref="studentNotificationOwner"
     :key="ownerKey"
     :report-download="reportDownload"
@@ -2633,7 +2679,7 @@ onBeforeUnmount(() => {
     @clear-notification-target="clearNotificationTargetIntent"
   />
   <button
-    v-if="authView === 'teacher' || authView === 'headman' || mapViewVisible"
+    v-if="authView === 'headman' || mapViewVisible"
     class="pwa-logout"
     type="button"
     :disabled="authLoading"

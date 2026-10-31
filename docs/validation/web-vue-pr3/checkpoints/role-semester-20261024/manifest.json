@@ -1,0 +1,107 @@
+{
+  "schemaVersion": 1,
+  "kind": "reviewed-role-semester-checkpoint",
+  "sourceRevision": "0421d344c9697d58efc8f039b74c5bdf594c6eb4",
+  "counts": {
+    "implemented": 116,
+    "locallyVerified": 113,
+    "active": 117,
+    "adminImplemented": 33,
+    "adminLocallyVerified": 30,
+    "adminActive": 34
+  },
+  "files": [
+    {
+      "path": "fresh-role-after.json",
+      "originalPath": "/workspace/rct-pr3-runtime/fresh-role-home/after.json",
+      "originalSha256": "e868b90133a464b2ff9238e0e48cfbe60e16f235a0b334b6cc427bc38058c4cf",
+      "publishedSha256": "7bf92f9da82248968bbb51f386fac05ac35e5db88ec4120bb10edc831c34e9f8",
+      "semanticEquality": true,
+      "projection": "final LF only; raw original retained"
+    },
+    {
+      "path": "fresh-role-before.json",
+      "originalPath": "/workspace/rct-pr3-runtime/fresh-role-home/before.json",
+      "originalSha256": "d71b4ad63b1d532e4609532100df4f2eacd5fc1a3bdc9076af259e9b4be12c96",
+      "publishedSha256": "f7d06b9bf7d0dc461d6f0ffc57868ec787e78487b1888c3890d84629251f6b28",
+      "semanticEquality": true,
+      "projection": "final LF only; raw original retained"
+    },
+    {
+      "path": "fresh-role-report.md",
+      "originalPath": "/workspace/rct-pr3-runtime/fresh-role-home/AFTER-0421-REPORT.md",
+      "originalSha256": "66b416b90fe5410bd3adbb9941c9b7625210035162bfeea787f008063a7a62eb",
+      "publishedSha256": "66b416b90fe5410bd3adbb9941c9b7625210035162bfeea787f008063a7a62eb",
+      "semanticEquality": true,
+      "projection": "final LF only; raw original retained"
+    },
+    {
+      "path": "semester-activate-postread-2.json",
+      "originalPath": "/workspace/rct-pr3-runtime/admin-isolated-20261024/evidence/SEMESTER-ACTIVATE-POSTREAD-2.json",
+      "originalSha256": "751f165bd517a363f51137513c7b973edf749bb2417fdf0015c64a040f759ad3",
+      "publishedSha256": "0e0b3d0b8219d3c48f1ac1a1c48d649b2cf01290bcfaf22dd7de0e89d0c33844",
+      "semanticEquality": false,
+      "projection": "Public field allowlist: omitted auth; raw original immutable",
+      "equalityWithinRetainedFields": true
+    },
+    {
+      "path": "semester-activate-local-acceptance.json",
+      "originalPath": "/workspace/rct-pr3-runtime/admin-isolated-20261024/evidence/SEMESTER-ACTIVATE-LOCAL-ACCEPTANCE.json",
+      "originalSha256": "7affe1c0720520997837ecbdb14a76c0150d9ed2d3d31dd3938a1765c234388a",
+      "publishedSha256": "7affe1c0720520997837ecbdb14a76c0150d9ed2d3d31dd3938a1765c234388a",
+      "semanticEquality": true,
+      "projection": "final LF only; raw original retained"
+    },
+    {
+      "path": "semester-postread-health-classification.json",
+      "originalPath": "/workspace/rct-pr3-runtime/admin-isolated-20261024/evidence/SEMESTER-POSTREAD-HEALTH-CLASSIFICATION.json",
+      "originalSha256": "ad19534785aac12d037c7a6a3e52305c1727ad59b161741c48e5f225ca78b1dd",
+      "publishedSha256": "c4b68752e595b6c2eb27c28cff0fe103af08175778a2070590faa888ecc8d87f",
+      "semanticEquality": false,
+      "projection": "Public field allowlist: omitted authOwnSessionMetadata; raw original immutable",
+      "equalityWithinRetainedFields": true
+    },
+    {
+      "path": "postsemester-exact-service-state.json",
+      "originalPath": "/workspace/rct-pr3-runtime/admin-isolated-20261024/evidence/POSTSEMESTER-EXACT-SERVICE-STATE.json",
+      "originalSha256": "8c9f7d1acc9404807a5572c09b4f78579cb9b94f8969f11b3ef0137de347e309",
+      "publishedSha256": "8c9f7d1acc9404807a5572c09b4f78579cb9b94f8969f11b3ef0137de347e309",
+      "semanticEquality": true,
+      "projection": "final LF only; raw original retained"
+    },
+    {
+      "path": "semester-native-ui.json",
+      "originalPath": "/workspace/rct-pr3-runtime/admin-native-isolated-20261024/semester_activate-2026-10-24T10-31-12-325Z/receipt.json",
+      "originalSha256": "66aba2d098464d95dec96a53fc31e8490d89971f0739f1336b5e44ca002c1aad",
+      "publishedSha256": "56333232fbfbed20fa147b779cd4b5fbaaac9dd64652310a51659671652f226e",
+      "semanticEquality": true,
+      "projection": "final LF only; raw original retained"
+    },
+    {
+      "path": "full-prod-source-model.json",
+      "originalPath": "/workspace/rct-pr3-runtime/full-prod-source-model-0421/receipt.json",
+      "originalSha256": "84256456136e31dcb539ff71e815673d10e85754cd18ad6d1c2d198a250f40be",
+      "publishedSha256": "6c41289ca3c9c7377bdca0286b26b372d29f1d39fb6a818ed92b714f7ab5ef71",
+      "semanticEquality": false,
+      "projection": "Public field allowlist: omitted ownedBindingInputSha256, privateStderrPath; raw original immutable",
+      "equalityWithinRetainedFields": true
+    },
+    {
+      "path": "full-prod-source-model.md",
+      "originalPath": "/workspace/rct-pr3-runtime/full-prod-source-model-0421/REPORT.md",
+      "originalSha256": "8f796416bc8cf8d348b181f07758d6ea93986e67ed6d967217cab11989f3b3ee",
+      "publishedSha256": "fb4d051dfdbdd8920b4cac8a721e0908a7881f6487b3966d2b89519d13696e67",
+      "semanticEquality": false,
+      "projection": "Public projection omits private binding input digest; original retained unchanged. Final LF normalized.",
+      "equalityWithinRetainedFields": true
+    }
+  ],
+  "gallery": "../../runtime-gallery/admin-native-20261024/manifest.json",
+  "reviews": "../../review/manifest.json",
+  "mapNative": "map-native-blocked.json",
+  "limits": [
+    "Raw composite semester health FAIL remains FAIL/native1; only the action semantics are qualified independently.",
+    "Role-home BEFORE observer used an incorrect admin-access path: its meReads0 is not authoritative. AFTER actual path is correct.",
+    "No whole-map UI execution, no full production Compose config PASS, no Angular removal/deploy/CI acceptance."
+  ]
+}

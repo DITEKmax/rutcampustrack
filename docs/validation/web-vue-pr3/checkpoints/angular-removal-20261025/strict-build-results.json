@@ -1,0 +1,44 @@
+[
+  {
+    "app": "web-vue",
+    "command": [
+      "npm",
+      "--prefix",
+      "frontends",
+      "run",
+      "build",
+      "--workspace",
+      "@rct/web-vue",
+      "--",
+      "--outDir",
+      "/workspace/rct-pr3-runtime/angular-removal-20261025/root-builds-ddfca530/web-vue/dist"
+    ],
+    "source": "ddfca53015cb952ffd65e96689a2cba8574084f8",
+    "exit": 0,
+    "guard": null,
+    "seconds": 17.35,
+    "freeMinimumBytes": 6524579840,
+    "cgroupMemoryMaximumBytes": 10985664512
+  },
+  {
+    "app": "tma-vue",
+    "command": [
+      "npm",
+      "--prefix",
+      "frontends",
+      "run",
+      "build",
+      "--workspace",
+      "@rct/tma-vue",
+      "--",
+      "--outDir",
+      "/workspace/rct-pr3-runtime/angular-removal-20261025/root-builds-ddfca530/tma-vue/dist"
+    ],
+    "source": "ddfca53015cb952ffd65e96689a2cba8574084f8",
+    "exit": 0,
+    "guard": null,
+    "seconds": 24.682,
+    "freeMinimumBytes": 6517182464,
+    "cgroupMemoryMaximumBytes": 11282739200
+  }
+]

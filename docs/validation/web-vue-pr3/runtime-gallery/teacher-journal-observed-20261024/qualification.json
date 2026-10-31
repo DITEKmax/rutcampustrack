@@ -1,0 +1,103 @@
+{
+  "revision": "cab3eed183d9453a6bfcc17ca12149d1894f39ba",
+  "runnerSha256": "392cd0ce381ea659026c8e69cf21a5f374eac3259686577e1d8f468943c37755",
+  "rawReceipt": "receipt.json",
+  "rawPhaseAtQualification": "ROOT_TERMINAL_CLOSED_ORIGINAL_RESULT_RETAINED",
+  "originalDriverResult": "EXIT1 retained; native cookie-guard FAIL unchanged. Root exact-own cleanup independently qualified, fresh terminal proof closed browser/context/TTY.",
+  "firstInvocationEnvironment": {
+    "code": "PREAUTH_SPAWN_SYNC_GIT_EPERM",
+    "location": "first source() before Playwright require/run reservation/browser/Auth",
+    "newAuthAttempts": 0,
+    "guardCreated": false,
+    "continuation": "same exact392 command under supported require_escalated; no source/reset/guard changes"
+  },
+  "actualCase": {
+    "ordinaryTeacherLoginPosts": 1,
+    "actualLoginStatus": 200,
+    "startupRefreshPosts": 1,
+    "startupRefreshStatus": 401,
+    "roleSelectionPuts": 0,
+    "canonicalTeacherUser2": true,
+    "frames": 6,
+    "personallyInspected": 6,
+    "hashesMatch": 6,
+    "synthetic503": 1,
+    "sameHeldRequestChecksBeforeAndAfter": true,
+    "holdWatchdogExpired": false,
+    "retrySameUrlActual200": true,
+    "settledState": "POPULATED_REAL_JOURNAL",
+    "blockedWrites": [],
+    "pageErrors": []
+  },
+  "criteria": {
+    "JOURNAL-ORDINARY-READ": {
+      "status": "PASS bounded actual consumer slice",
+      "evidence": "Real catalog/stats200 -> ordinary UI journal entry -> same query real journal200; populated synthetic students/two dates. No domain command, no fixture or permission change."
+    },
+    "JOURNAL-CONTROLLED-RECOVERY": {
+      "status": "PARTIAL: read recovery PASS, stale global error finding",
+      "evidence": "Type selection -> actual intercepted loading -> one synthetic503 -> nativeRetry sameURL actual200. Local error clears; global bootstrapError warning remains on MB04/05/06. Synthetic503 is presentation stimulus, not actual backend failure."
+    },
+    "JOURNAL-INITIAL-LOADING": {
+      "status": "OBSERVED_PLAIN_CAPTION; nested loading polish not closed",
+      "evidence": "MB02 personally viewed under qualified heldGET; visible loading caption without skeleton/progress. Does not reopen prior TeacherHome skeleton acceptance."
+    },
+    "JOURNAL-WIDTH-THEME-FOCUS": {
+      "status": "PASS bounded visible representatives, local horizontal-scroll interaction not checked",
+      "evidence": "425light /300dark /768light, root16, document scrollWidth==viewport all6, focus ring768 visible.300table is narrower than full dates; source provides local overflow:auto; no drag/wheel reachability claim."
+    },
+    "OWN-CLEANUP": {
+      "status": "ROOT_QUALIFIED_EXACT_OWN_CLEANUP_AND_BROWSER_CLOSED",
+      "originalNativeCleanup": {
+        "expectedActorMatched": true,
+        "exactSidMatched": true,
+        "cookieSubjectAndSidMatched": false,
+        "cookieHeaderMatched": false,
+        "nativeLogoutForwarded": false,
+        "logoutStatus": null,
+        "guestBearerStatus": null,
+        "confirmed": false,
+        "fallbackUsed": false,
+        "failure": {
+          "code": "OWN_REFRESH_COOKIE_UNAVAILABLE",
+          "name": "Error",
+          "phase": "OWN_NATIVE_COOKIE_LOGOUT"
+        }
+      },
+      "rootTerminalProofSha256": "d66ce15a15dcac6fe579ae0f533b5c64c0f548ec6a6f4beedf39bdd946dda369",
+      "driverRootClosed": true,
+      "browserClosed": true,
+      "ttyExitCode": 1,
+      "rootIndependentPost": "/workspace/rct-pr3-runtime/restore-20261024/TEACHER2-JOURNAL-CLEANUP-INDEPENDENT-POST.json",
+      "rootIndependentPostSha256": "f137ff851148430fb9741852a3217c39990b8e8dcf5203b0b4dc9d7d20bd1f1b",
+      "exactOldAndHelperSessionsRevoked": true,
+      "identityGrantsProfilesOtherSessionsPreserved": true,
+      "newAuthByThisDriverAfterHold": 0,
+      "nativeLogout204Claim": false,
+      "causeQualification": "TEST: Playwright URL-filtered cookies skip Secure cookie on http127 because isLocalHostname accepts only localhost/*.localhost; no inference that browser did not store/send cookie or product auth failed. No new inspection/auth needed."
+    },
+    "INVENTORY": {
+      "status": "No whole-screen/all-Teacher/action count claim",
+      "newFunctionalActions": 0,
+      "tmaCoverageUnchanged": "2 controlled consumer slices of48; native provider unchanged",
+      "pwaObservedJournalSlice": "new actual observed baseline slice with state finding; full-ready not claimed"
+    }
+  },
+  "findings": [
+    {
+      "id": "V-TJ-RECOVERY-STALE-GLOBAL-ERROR",
+      "severity": "P2",
+      "status": "ACTUAL_REPRODUCED",
+      "frames": [
+        "MB-TJ-03",
+        "MB-TJ-04",
+        "MB-TJ-05",
+        "MB-TJ-06"
+      ],
+      "trigger": "Controlled journal503 -> same-query normal UI Retry -> actual200",
+      "impact": "Journal renders real data while global message still claims action failed with the previous unavailable detail. Retry recovery presentation remains misleading.",
+      "source": "TeacherJournalScreen.vue:268-295 clears local error on successful load but emits failure upward; TeacherFeatureOwner.vue:615-616 forwards; PWA App.vue:2131-2133 stores bootstrapError, :2705-2709 renders it; no success clear for this local retry."
+    }
+  ],
+  "noFurtherCaptureOrApi": "Root-approved terminal close only; all six originals/driver error retained, no capture/auth replay."
+}

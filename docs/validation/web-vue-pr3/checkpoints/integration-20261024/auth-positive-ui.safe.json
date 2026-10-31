@@ -1,0 +1,88 @@
+{
+  "source": "ec7cae095ec5c777224c1bff3bfe5aff6ee9f358",
+  "clean": true,
+  "checks": [
+    "real-issued owned OTP -> UI verify-by-code200 -> authoritative session user10",
+    "recovery request202 exactownedchallenge -> UI realcode verify200",
+    "new password UI complete204",
+    "reset new password actual login200/user10; credential private0600 only"
+  ],
+  "errors": [],
+  "api": [
+    {
+      "method": "POST",
+      "status": 401,
+      "path": "/api/auth/refresh"
+    },
+    {
+      "method": "POST",
+      "status": 204,
+      "path": "/api/auth/otp/request"
+    },
+    {
+      "method": "POST",
+      "status": 200,
+      "path": "/api/auth/otp/verify-by-code"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "path": "/api/auth/session"
+    },
+    {
+      "method": "POST",
+      "status": 200,
+      "path": "/api/auth/ws-ticket"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "path": "/api/auth/device-preferences"
+    },
+    {
+      "method": "POST",
+      "status": 204,
+      "path": "/api/auth/logout"
+    },
+    {
+      "method": "POST",
+      "status": 202,
+      "path": "/api/auth/password-reset/request"
+    },
+    {
+      "method": "POST",
+      "status": 200,
+      "path": "/api/auth/password-reset/verify"
+    },
+    {
+      "method": "POST",
+      "status": 204,
+      "path": "/api/auth/password-reset/complete"
+    },
+    {
+      "method": "POST",
+      "status": 200,
+      "path": "/api/auth/login"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "path": "/api/auth/session"
+    },
+    {
+      "method": "POST",
+      "status": 200,
+      "path": "/api/auth/ws-ticket"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "path": "/api/auth/device-preferences"
+    }
+  ],
+  "provenance": {
+    "original_path": "/workspace/rct-pr3-runtime/web-foundation/auth-positive-ui.json",
+    "original_sha256": "38602ec5bd1b5f8e569f11a96ac6fc94e4b6c517d7c31511e44dab9acecb948d",
+    "projection": "only source/checks/errors/status + method/path/status; no request/response bodies, actors, credentials, OTPs or capabilities"
+  }
+}

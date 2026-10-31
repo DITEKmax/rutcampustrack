@@ -41,13 +41,17 @@ from bot.services.send_queue import TelegramSendQueue
 
 logging.disable(logging.CRITICAL)
 _phase = "setup"
+_failure_detail = None
+_control_failure_detail = None
 _checks = 0
+_failed_check = {}
 _worker_restarts = 0
 _worker_starts = 0
 _worker_reaps = 0
 _held_lease_expiry = False
 _held_lease_initial_pttl = 0
-_held_lease_elapsed_ms = 0
+_held_lease_monotonic_elapsed_ms = 0
+_held_lease_redis_elapsed_ms = 0
 _held_lease_redeliveries = 0
 _WORKER_INPUTS = (
     "NP01_AUTHORITY",
@@ -71,9 +75,53 @@ class BridgeFailure(RuntimeError):
     pass
 
 
-def check(condition):
-    global _checks
+class ControlFailure(BridgeFailure):
+    def __init__(self, cause, action="NONE"):
+        super().__init__("own fixture control failed")
+        self.cause = cause
+        self.action = action
+
+
+def bridge_cause(failure):
+    if isinstance(failure, ControlFailure):
+        return failure.cause
+    if isinstance(failure, BridgeFailure):
+        return "CHECK_FAILED"
+    if isinstance(failure, AssertionError):
+        return "ASSERTION"
+    if isinstance(failure, TimeoutError):
+        return "TIMEOUT"
+    if isinstance(failure, aiohttp.ClientError):
+        return "HTTP_TRANSPORT"
+    return "OTHER"
+
+
+def check(condition, *, outcomes=None):
+    global _checks, _failed_check
     if not condition:
+        if not _failed_check:
+            frame = sys._getframe(1)
+            caller = frame.f_back if frame.f_code.co_name in ("require_exact_card", "capture_new_card") else frame
+            _failed_check = {
+                "line": frame.f_lineno,
+                "call_line": caller.f_lineno,
+                "outcomes": {
+                    name: value
+                    for name, value in (outcomes or {}).items()
+                    if name
+                    in (
+                        "ack_unchanged",
+                        "pending_positive",
+                        "held_card_unchanged",
+                        "foreign_card_unchanged",
+                        "initial_pttl_ms",
+                        "monotonic_elapsed_ms",
+                        "redis_elapsed_ms",
+                        "redeliveries",
+                    )
+                    and (type(value) is bool or type(value) is int and -1 <= value <= 10_000_000)
+                },
+            }
         raise BridgeFailure("required native broker outcome failed")
     _checks += 1
 
@@ -259,8 +307,9 @@ class Provider:
 
 
 async def supervisor():
-    global _phase, _worker_restarts, _worker_starts, _worker_reaps
-    global _held_lease_expiry, _held_lease_initial_pttl, _held_lease_elapsed_ms, _held_lease_redeliveries
+    global _phase, _worker_restarts, _worker_starts, _worker_reaps, _failure_detail
+    global _held_lease_expiry, _held_lease_initial_pttl, _held_lease_redeliveries
+    global _held_lease_monotonic_elapsed_ms, _held_lease_redis_elapsed_ms
     fixtures = json.loads(os.environ["NP01_FIXTURES"])
     own, foreign = fixtures["own"], fixtures["foreign"]
     generic, protected = clients()
@@ -284,11 +333,46 @@ async def supervisor():
     async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=5)) as http:
 
         async def control(action):
+            global _control_failure_detail
             async with http.post(
                 control_url + "/control/" + action, headers={"x-np01-control": control_token}
             ) as response:
                 if response.status != 200:
-                    raise BridgeFailure("own fixture control failed")
+                    cause = "CONTROL_HTTP_STATUS"
+                    try:
+                        facts = await response.json()
+                        value = facts.get("controlCause") if isinstance(facts, dict) else None
+                        if value in (
+                            "ASSERTION",
+                            "DATA_INTEGRITY",
+                            "DATA_ACCESS",
+                            "AUTH_SESSION",
+                            "ARGUMENT",
+                            "STATE",
+                            "OTHER",
+                        ):
+                            cause = "CONTROL_" + value
+                    except (ValueError, aiohttp.ClientError):
+                        pass  # The non-200 response still fails with a closed category.
+                    name = action.partition("?")[0]
+                    if name not in (
+                        "change",
+                        "reset",
+                        "publish",
+                        "replay",
+                        "unknown_version",
+                        "new_initial",
+                        "rebind",
+                        "restore_binding",
+                        "worker_started",
+                        "worker_reaped",
+                        "facts",
+                        "verify",
+                    ):
+                        name = "OTHER"
+                    if _control_failure_detail is None:
+                        _control_failure_detail = (_phase, cause, name)
+                    raise ControlFailure(cause, name)
                 return await response.json()
 
         async def queue_facts(name=QUEUE_NAME):
@@ -309,6 +393,19 @@ async def supervisor():
 
         async def key_state(event_id):
             return await redis.get(f"consumed:{BotIdempotencyGuard.DEFAULT_CONSUMER_ID}:{event_id}")
+
+        async def lease_observation(event_id):
+            # Redis expiries use its absolute wall clock. Read only: never claim,
+            # renew, release, rewrite TTL or simulate the transition being tested.
+            value, pttl, seconds, micros = await redis.eval(
+                "local value=redis.call('get',KEYS[1]); "
+                "local pttl=redis.call('pttl',KEYS[1]); "
+                "local now=redis.call('time'); "
+                "return {value or false,pttl,now[1],now[2]}",
+                1,
+                f"consumed:{BotIdempotencyGuard.DEFAULT_CONSUMER_ID}:{event_id}",
+            )
+            return value, pttl, int(seconds) * 1_000 + int(micros) // 1_000
 
         async def start_worker():
             nonlocal child
@@ -375,10 +472,10 @@ async def supervisor():
                 value = await key_state(event_id)
                 if isinstance(value, str) and value.startswith("processing:"):
                     os.kill(child.pid, signal.SIGSTOP)
-                    current = await key_state(event_id)
-                    pttl = await redis.pttl(f"consumed:{BotIdempotencyGuard.DEFAULT_CONSUMER_ID}:{event_id}")
+                    observed_at = asyncio.get_running_loop().time()
+                    current, pttl, redis_at = await lease_observation(event_id)
                     if current == value and pttl > 0:
-                        return current, pttl, asyncio.get_running_loop().time()
+                        return current, pttl, redis_at, observed_at
                     os.kill(child.pid, signal.SIGCONT)
                 await asyncio.sleep(0.02)
             raise BridgeFailure("actual held-claim crash boundary unavailable")
@@ -577,7 +674,7 @@ async def supervisor():
             produced = await control("change")
             event_id = produced["event_id"]
             await control("publish")
-            held_value, held_pttl, observed_at = await freeze_processing_worker(event_id)
+            held_value, held_pttl, redis_observed_at, observed_at = await freeze_processing_worker(event_id)
             check(270_000 < held_pttl <= 300_000)
             _held_lease_initial_pttl = held_pttl
             unacked = await until(
@@ -615,21 +712,38 @@ async def supervisor():
             check(await key_state(event_id) == held_value)
             expiry_deadline = observed_at + BotIdempotencyGuard.DEFAULT_TTL_SECONDS + 45
             while asyncio.get_running_loop().time() < expiry_deadline:
-                first = await key_state(event_id)
+                first, _, redis_now = await lease_observation(event_id)
                 if first != held_value:
                     break
                 facts, state = await queue_facts(), await control("facts")
-                after = await key_state(event_id)
+                # Snapshot local provider state BEFORE the trailing Redis read.
+                # Its reply can arrive after expiry/provider recovery; inspecting
+                # mutable cards after that await would mislabel a valid deletion.
+                outcomes = {
+                    "ack_unchanged": facts["ack"] == baseline["ack"],
+                    "pending_positive": state["pending"] > 0,
+                    "held_card_unchanged": provider.cards.get(held_card_key) == held_card_text,
+                    "foreign_card_unchanged": provider.cards.get(new_foreign_key) == new_foreign_text,
+                }
+                after, _, redis_now = await lease_observation(event_id)
                 if after != held_value:
                     break  # Discard observations that crossed the natural expiry boundary.
-                check(facts["ack"] == baseline["ack"] and state["pending"] > 0)
-                require_exact_card(provider.cards, held_card_key, held_card_text)
-                require_exact_card(provider.cards, new_foreign_key, new_foreign_text)
+                check(outcomes["ack_unchanged"] and outcomes["pending_positive"], outcomes=outcomes)
+                check(outcomes["held_card_unchanged"], outcomes=outcomes)
+                check(outcomes["foreign_card_unchanged"], outcomes=outcomes)
                 await asyncio.sleep(0.2)
             else:
                 raise BridgeFailure("default processing lease did not naturally expire")
-            _held_lease_elapsed_ms = int((asyncio.get_running_loop().time() - observed_at) * 1000)
-            check(_held_lease_elapsed_ms >= held_pttl - 2_000)
+            _held_lease_monotonic_elapsed_ms = int((asyncio.get_running_loop().time() - observed_at) * 1000)
+            _held_lease_redis_elapsed_ms = redis_now - redis_observed_at
+            check(
+                _held_lease_redis_elapsed_ms >= held_pttl - 2_000,
+                outcomes={
+                    "initial_pttl_ms": held_pttl,
+                    "monotonic_elapsed_ms": _held_lease_monotonic_elapsed_ms,
+                    "redis_elapsed_ms": _held_lease_redis_elapsed_ms,
+                },
+            )
             _held_lease_expiry = True
             held_value = None  # Never log the actual processing claim token.
             acknowledged = await observed_ack(event_id, baseline["ack"])
@@ -660,20 +774,42 @@ async def supervisor():
             finally:
                 await channel.close()
             _phase = "completed"
+        except BaseException as failure:
+            _failure_detail = _control_failure_detail or (
+                _phase,
+                bridge_cause(failure),
+                failure.action if isinstance(failure, ControlFailure) else "NONE",
+            )
+            raise
         finally:
-            await stop_worker(force=True)
-            if provider_runner is not None and provider.delete_gate is not None:
-                provider.delete_gate.set()
+            primary = sys.exc_info()[1]
+            cleanup_failure = None
+
+            async def release_delete_gate():
+                if provider_runner is not None and provider.delete_gate is not None:
+                    provider.delete_gate.set()
+
+            cleanups = [lambda: stop_worker(force=True), release_delete_gate]
             if observer is not None:
-                await observer.close()
-            await menu.close()
-            await generic.close()
-            await protected.close()
-            await redis.aclose()
+                cleanups.append(observer.close)
+            cleanups.extend((menu.close, generic.close, protected.close, redis.aclose))
             if bot is not None:
-                await bot.session.close()
+                cleanups.append(bot.session.close)
             if provider_runner is not None:
-                await provider_runner.cleanup()
+                cleanups.append(provider_runner.cleanup)
+            for cleanup in cleanups:
+                try:
+                    await cleanup()
+                except BaseException as failure:
+                    if primary is None and cleanup_failure is None:
+                        cleanup_failure = failure
+                        _failure_detail = _control_failure_detail or (
+                            "cleanup",
+                            bridge_cause(failure),
+                            failure.action if isinstance(failure, ControlFailure) else "NONE",
+                        )
+            if primary is None and cleanup_failure is not None:
+                raise cleanup_failure
 
 
 async def run_supervisor():
@@ -704,14 +840,19 @@ if __name__ == "__main__":
     else:
         try:
             asyncio.run(run_supervisor())
-        except BaseException:
+        except BaseException as failure:
+            if _failure_detail is None:
+                _failure_detail = _control_failure_detail or (_phase, bridge_cause(failure), "NONE")
             print(
                 json.dumps(
                     {
                         "qualified": False,
                         "failures": 1,
                         "checks": _checks,
-                        "phase": _phase,
+                        "phase": _failure_detail[0] if _failure_detail else _phase,
+                        "failure_cause": _failure_detail[1] if _failure_detail else "OTHER",
+                        "control_action": _failure_detail[2] if _failure_detail else "NONE",
+                        "failed_check": _failed_check,
                         "workers_reaped": _worker_starts == _worker_reaps,
                     }
                 )
@@ -731,7 +872,8 @@ if __name__ == "__main__":
                     "workers_reaped": _worker_starts == _worker_reaps,
                     "natural_held_lease_expiry": _held_lease_expiry,
                     "held_lease_initial_pttl_ms": _held_lease_initial_pttl,
-                    "held_lease_elapsed_ms": _held_lease_elapsed_ms,
+                    "held_lease_monotonic_elapsed_ms": _held_lease_monotonic_elapsed_ms,
+                    "held_lease_redis_elapsed_ms": _held_lease_redis_elapsed_ms,
                     "held_lease_redeliveries": _held_lease_redeliveries,
                     "failures": 0,
                     "checks": _checks,

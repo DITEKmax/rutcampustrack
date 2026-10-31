@@ -1,0 +1,389 @@
+{
+  "sourceRevision": "e715bab97106c6f3b9d24f78d96c1cbc2d4b70ba",
+  "rawReceipt": "changed-nav-e715-receipt.json",
+  "qualifiedReceipt": "changed-nav-e715-qualified.json",
+  "beforeManifest": "TMA-controlled-manifest-888.json",
+  "originalsUnmodified": true,
+  "samples": [
+    {
+      "id": "PWA-MOBILE-TODAY__postfix-nav__light__300__root16__e715bab97",
+      "consumer": "PWA",
+      "screen": "MOBILE-TODAY",
+      "state": "actual visible Today state; changed shared navigation",
+      "revision": "e715bab97106c6f3b9d24f78d96c1cbc2d4b70ba",
+      "theme": "light",
+      "width": 300,
+      "height": 900,
+      "rootFont": "16px",
+      "scrollWidth": 300,
+      "navBounds": {
+        "x": 2,
+        "y": 808,
+        "width": 296,
+        "height": 76
+      },
+      "targets": [
+        {
+          "label": "Сегодня",
+          "x": 4,
+          "y": 816,
+          "width": 59.6875,
+          "height": 60,
+          "focused": false,
+          "focusVisible": false
+        },
+        {
+          "label": "Задания",
+          "x": 63.6875,
+          "y": 816,
+          "width": 60.21875,
+          "height": 60,
+          "focused": false,
+          "focusVisible": false
+        },
+        {
+          "label": "Учёт",
+          "x": 123.90625,
+          "y": 816,
+          "width": 54.203125,
+          "height": 60,
+          "focused": false,
+          "focusVisible": false
+        },
+        {
+          "label": "Ещё",
+          "x": 178.109375,
+          "y": 816,
+          "width": 54.203125,
+          "height": 60,
+          "focused": false,
+          "focusVisible": false
+        },
+        {
+          "label": "Профиль",
+          "x": 232.3125,
+          "y": 816,
+          "width": 63.6875,
+          "height": 60,
+          "focused": false,
+          "focusVisible": false
+        }
+      ],
+      "file": "PWA-MOBILE-TODAY__postfix-nav__light__300__root16__e715bab97.png",
+      "sha256": "5bdb50521500d56a240a4781bb05e7506775cd6352da0f00c2fadeb76b2c5375",
+      "syntheticCause": "browser OS light preference; real Auth/data",
+      "nativeTelegramProviderVerified": false,
+      "image": "PWA-MOBILE-TODAY__postfix-nav__light__300__root16__e715bab97.png",
+      "title": "PWA — исправленная навигация · light · 300 · root16",
+      "description": "Реальный Today завершившегося дня; пять целых подписей, минимальные цели44CSSpx сохранены. PWA через обычный собственный вход и OS light; API ответы не подменялись.",
+      "qualifiedObservedState": "actual-ended-day/twolessons/postfix-navigation",
+      "criterion": "V-MOBILE-NAV-300boundedclosed",
+      "personallyViewed": true,
+      "synthetic": false
+    },
+    {
+      "id": "PWA-MOBILE-TODAY__postfix-nav__light__300__root20__e715bab97",
+      "consumer": "PWA",
+      "screen": "MOBILE-TODAY",
+      "state": "actual visible Today state; changed shared navigation",
+      "revision": "e715bab97106c6f3b9d24f78d96c1cbc2d4b70ba",
+      "theme": "light",
+      "width": 300,
+      "height": 900,
+      "rootFont": "20px",
+      "scrollWidth": 300,
+      "navBounds": {
+        "x": 2.5,
+        "y": 785,
+        "width": 295,
+        "height": 95
+      },
+      "targets": [
+        {
+          "label": "Сегодня",
+          "x": 5,
+          "y": 795,
+          "width": 64.125,
+          "height": 75,
+          "focused": false,
+          "focusVisible": false
+        },
+        {
+          "label": "Задания",
+          "x": 69.125,
+          "y": 795,
+          "width": 64.765625,
+          "height": 75,
+          "focused": true,
+          "focusVisible": true
+        },
+        {
+          "label": "Учёт",
+          "x": 133.890625,
+          "y": 795,
+          "width": 46,
+          "height": 75,
+          "focused": false,
+          "focusVisible": false
+        },
+        {
+          "label": "Ещё",
+          "x": 179.890625,
+          "y": 795,
+          "width": 46,
+          "height": 75,
+          "focused": false,
+          "focusVisible": false
+        },
+        {
+          "label": "Профиль",
+          "x": 225.890625,
+          "y": 795,
+          "width": 69.109375,
+          "height": 75,
+          "focused": false,
+          "focusVisible": false
+        }
+      ],
+      "file": "PWA-MOBILE-TODAY__postfix-nav__light__300__root20__e715bab97.png",
+      "sha256": "36a8efb5c0d19080abafceeb6e49f66fecb9f507287661518b00f9dd79376c0f",
+      "syntheticCause": "browser OS light preference; real Auth/data; browser-only document root20 stress; normal keyboard Tab focus after nav entry",
+      "nativeTelegramProviderVerified": false,
+      "image": "PWA-MOBILE-TODAY__postfix-nav__light__300__root20__e715bab97.png",
+      "title": "PWA — исправленная навигация · light · 300 · root20",
+      "description": "Реальный Today завершившегося дня; пять целых подписей, минимальные цели44CSSpx сохранены. Browser-only root20 stress и видимый фокус после Tab. PWA через обычный собственный вход и OS light; API ответы не подменялись.",
+      "qualifiedObservedState": "actual-ended-day/twolessons/postfix-navigation/root20-keyboard-focus",
+      "criterion": "V-MOBILE-NAV-300boundedclosed",
+      "personallyViewed": true,
+      "synthetic": true
+    },
+    {
+      "id": "PWA-MOBILE-TODAY__postfix-nav__light__1440__root16__e715bab97",
+      "consumer": "PWA",
+      "screen": "MOBILE-TODAY",
+      "state": "actual visible Today state; changed shared navigation",
+      "revision": "e715bab97106c6f3b9d24f78d96c1cbc2d4b70ba",
+      "theme": "light",
+      "width": 1440,
+      "height": 900,
+      "rootFont": "16px",
+      "scrollWidth": 1440,
+      "navBounds": {
+        "x": 541,
+        "y": 808,
+        "width": 358,
+        "height": 76
+      },
+      "targets": [
+        {
+          "label": "Сегодня",
+          "x": 549,
+          "y": 816,
+          "width": 65.1875,
+          "height": 60,
+          "focused": false,
+          "focusVisible": false
+        },
+        {
+          "label": "Задания",
+          "x": 618.1875,
+          "y": 816,
+          "width": 65.203125,
+          "height": 60,
+          "focused": false,
+          "focusVisible": false
+        },
+        {
+          "label": "Учёт",
+          "x": 687.390625,
+          "y": 816,
+          "width": 65.203125,
+          "height": 60,
+          "focused": false,
+          "focusVisible": false
+        },
+        {
+          "label": "Ещё",
+          "x": 756.59375,
+          "y": 816,
+          "width": 65.203125,
+          "height": 60,
+          "focused": false,
+          "focusVisible": false
+        },
+        {
+          "label": "Профиль",
+          "x": 825.796875,
+          "y": 816,
+          "width": 65.1875,
+          "height": 60,
+          "focused": false,
+          "focusVisible": false
+        }
+      ],
+      "file": "PWA-MOBILE-TODAY__postfix-nav__light__1440__root16__e715bab97.png",
+      "sha256": "866c28d80ddf7286cce4071c04d562b379be735a4105f4fddbc7ac67879021b2",
+      "syntheticCause": "browser OS light preference; real Auth/data",
+      "nativeTelegramProviderVerified": false,
+      "image": "PWA-MOBILE-TODAY__postfix-nav__light__1440__root16__e715bab97.png",
+      "title": "PWA — исправленная навигация · light · 1440 · root16",
+      "description": "Реальный Today завершившегося дня; пять целых подписей, минимальные цели44CSSpx сохранены. PWA через обычный собственный вход и OS light; API ответы не подменялись.",
+      "qualifiedObservedState": "actual-ended-day/twolessons/postfix-navigation",
+      "criterion": "widecontrol",
+      "personallyViewed": true,
+      "synthetic": false
+    },
+    {
+      "id": "TMA-MOBILE-TODAY__postfix-nav__dark__300__root16__e715bab97",
+      "consumer": "TMA",
+      "screen": "MOBILE-TODAY",
+      "state": "actual visible Today state; changed shared navigation",
+      "revision": "e715bab97106c6f3b9d24f78d96c1cbc2d4b70ba",
+      "theme": "dark",
+      "width": 300,
+      "height": 900,
+      "rootFont": "16px",
+      "scrollWidth": 300,
+      "navBounds": {
+        "x": 2,
+        "y": 808,
+        "width": 296,
+        "height": 76
+      },
+      "targets": [
+        {
+          "label": "Сегодня",
+          "x": 4,
+          "y": 816,
+          "width": 59.6875,
+          "height": 60,
+          "focused": false,
+          "focusVisible": false
+        },
+        {
+          "label": "Задания",
+          "x": 63.6875,
+          "y": 816,
+          "width": 60.21875,
+          "height": 60,
+          "focused": false,
+          "focusVisible": false
+        },
+        {
+          "label": "Учёт",
+          "x": 123.90625,
+          "y": 816,
+          "width": 54.203125,
+          "height": 60,
+          "focused": false,
+          "focusVisible": false
+        },
+        {
+          "label": "Ещё",
+          "x": 178.109375,
+          "y": 816,
+          "width": 54.203125,
+          "height": 60,
+          "focused": false,
+          "focusVisible": false
+        },
+        {
+          "label": "Профиль",
+          "x": 232.3125,
+          "y": 816,
+          "width": 63.6875,
+          "height": 60,
+          "focused": false,
+          "focusVisible": false
+        }
+      ],
+      "file": "TMA-MOBILE-TODAY__postfix-nav__dark__300__root16__e715bab97.png",
+      "sha256": "dd53d5dbb2dd328c0fa9bbd81ead8c9da38f05453205876b8675ffbdaf4481ed",
+      "syntheticCause": "existing controlled signed Telegram host/dark system preference; real Auth/data",
+      "nativeTelegramProviderVerified": false,
+      "image": "TMA-MOBILE-TODAY__postfix-nav__dark__300__root16__e715bab97.png",
+      "title": "TMA — исправленная навигация · dark · 300 · root16",
+      "description": "Реальный Today завершившегося дня; пять целых подписей, минимальные цели44CSSpx сохранены. Синтетический Telegram SDK/host/testHMAC, действительные Auth/session/domainAPI; native provider unknown.",
+      "qualifiedObservedState": "actual-ended-day/twolessons/postfix-navigation",
+      "criterion": "V-MOBILE-NAV-300boundedclosed",
+      "personallyViewed": true,
+      "synthetic": true
+    },
+    {
+      "id": "TMA-MOBILE-TODAY__postfix-nav__dark__300__root20__e715bab97",
+      "consumer": "TMA",
+      "screen": "MOBILE-TODAY",
+      "state": "actual visible Today state; changed shared navigation",
+      "revision": "e715bab97106c6f3b9d24f78d96c1cbc2d4b70ba",
+      "theme": "dark",
+      "width": 300,
+      "height": 900,
+      "rootFont": "20px",
+      "scrollWidth": 300,
+      "navBounds": {
+        "x": 2.5,
+        "y": 785,
+        "width": 295,
+        "height": 95
+      },
+      "targets": [
+        {
+          "label": "Сегодня",
+          "x": 5,
+          "y": 795,
+          "width": 64.125,
+          "height": 75,
+          "focused": false,
+          "focusVisible": false
+        },
+        {
+          "label": "Задания",
+          "x": 69.125,
+          "y": 795,
+          "width": 64.765625,
+          "height": 75,
+          "focused": true,
+          "focusVisible": true
+        },
+        {
+          "label": "Учёт",
+          "x": 133.890625,
+          "y": 795,
+          "width": 46,
+          "height": 75,
+          "focused": false,
+          "focusVisible": false
+        },
+        {
+          "label": "Ещё",
+          "x": 179.890625,
+          "y": 795,
+          "width": 46,
+          "height": 75,
+          "focused": false,
+          "focusVisible": false
+        },
+        {
+          "label": "Профиль",
+          "x": 225.890625,
+          "y": 795,
+          "width": 69.109375,
+          "height": 75,
+          "focused": false,
+          "focusVisible": false
+        }
+      ],
+      "file": "TMA-MOBILE-TODAY__postfix-nav__dark__300__root20__e715bab97.png",
+      "sha256": "40c53dd4ac5230a80da66d900fa810fb7fc37f6c4fbaf41d41338c494020d6a4",
+      "syntheticCause": "existing controlled signed Telegram host/dark system preference; real Auth/data; browser-only document root20 stress; normal keyboard Tab focus after nav entry",
+      "nativeTelegramProviderVerified": false,
+      "image": "TMA-MOBILE-TODAY__postfix-nav__dark__300__root20__e715bab97.png",
+      "title": "TMA — исправленная навигация · dark · 300 · root20",
+      "description": "Реальный Today завершившегося дня; пять целых подписей, минимальные цели44CSSpx сохранены. Browser-only root20 stress и видимый фокус после Tab. Синтетический Telegram SDK/host/testHMAC, действительные Auth/session/domainAPI; native provider unknown.",
+      "qualifiedObservedState": "actual-ended-day/twolessons/postfix-navigation/root20-keyboard-focus",
+      "criterion": "V-MOBILE-NAV-300boundedclosed",
+      "personallyViewed": true,
+      "synthetic": true
+    }
+  ]
+}

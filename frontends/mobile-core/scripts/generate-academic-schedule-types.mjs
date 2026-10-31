@@ -1,9 +1,12 @@
 // Canonical shared Academic/Schedule contracts. Offline by default; no backend calls.
-// Academic is regenerated from committed spec blob a0df723da; Schedule preserves accepted source 586efc618.
+// Use --service=academic to regenerate only the changed Academic contract.
 import { readFile, writeFile } from 'node:fs/promises'
 import openapiTS, { astToString } from 'openapi-typescript'
 const checkOnly = process.argv.includes('--check')
-for (const service of ['academic', 'schedule']) {
+const services = process.argv.includes('--service=academic')
+  ? ['academic']
+  : ['academic', 'schedule']
+for (const service of services) {
   const specUrl = new URL(`../../../docs/openapi/${service}.json`, import.meta.url)
   const outputUrl = new URL(`../src/api/generated/${service}.types.ts`, import.meta.url)
   const spec = JSON.parse(await readFile(specUrl, 'utf8'))

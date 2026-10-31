@@ -1,0 +1,111 @@
+{
+  "case": "WEB_NATIVE_THEME_LIFECYCLE",
+  "revision": "343245083694b85298e18b578ad8a51b54af88c9",
+  "harnessSha256": "0583ee119c273d545dfe50ff12fc96bc4bb50678e04b974397cc83d5c4288351",
+  "qualification": "PARTIAL_OBSERVATIONS_RAW_FAILURE_KNOWN_OWN_TERMINAL",
+  "rawReceipt": "/workspace/rct-pr3-runtime/visual-readiness-20261024/web-theme-lifecycle-prep/run/raw-receipt-before-rootproof.json",
+  "rawReceiptSha256": "93505d191ce1e53fce0b74a2ed0c0a9b52949ba73c4267f6b8af3f4c334dbd8f",
+  "newFunctionalActions": 0,
+  "nativeThemeChoices": {
+    "light": {
+      "apiStatus": 200,
+      "revision": "1"
+    },
+    "system": {
+      "apiStatus": 200,
+      "revision": "2"
+    },
+    "dark": {
+      "apiStatus": 200,
+      "revision": "3"
+    }
+  },
+  "observed": "Manual light over OSdark; system live OSlight/dark retaining system without extra PUT; manual dark over OSlight. Three original PNG personally viewed.",
+  "notObserved": [
+    "second normal login",
+    "same-device relogin server GET dark/revision3",
+    "WT-04",
+    "middle old-bearer401",
+    "final current selfDELETE204/oldBearer401"
+  ],
+  "rawFailure": {
+    "code": "AUTH_CAPTURE_FAILED",
+    "name": "Error",
+    "phase": "NATIVE_MIDDLE_LOGOUT"
+  },
+  "captureBarrierFailure": {
+    "code": "AUTH_OR_PREF_TRANSPORT_FAILED",
+    "name": "Error",
+    "phase": "NATIVE_MIDDLE_LOGOUT"
+  },
+  "causeQualification": "Harness AUTH_OR_PREF_TRANSPORT_FAILED during middle native logout. Actual logout204 is durably ACKed; all forwarded intents ACKed. Failed request endpoint/errorText was not recorded, so no product defect or unknown-commit conclusion is supported. No retry/secondAuth/helper was performed.",
+  "knownScope": "One issued+canonical expectedStudent3 SID; second login never forwarded;3native device PUT200 revisions1/2/3; no blocked requests/pageerrors. All body/Auth/pref flight sets empty after quiesce.",
+  "cleanup": "Root independent readonly SQL proved exact sole own Student3 session revoked; fresh exact Rootproof accepted by originalTTY8063. Browserclosed and sourceunchanged; original run exit1 retained. Not selfDELETE/oldBearer401 or full native lifecycle PASS.",
+  "sourceUnchanged": true,
+  "limits": "One1440 viewport/root16. Theme states do not imply full screen/role/platform/all-state visual acceptance. PWA/TMA/backend security reuse unchanged; nativeTelegram provider unknown.",
+  "samples": [
+    {
+      "id": "WT-01",
+      "state": "manual-light-over-os-dark",
+      "file": "WEB-THEME__WT-01-manual-light-over-os-dark__light__1440__343245083.png",
+      "sha256": "fe96f2e0725f579dbad061cd55fdafe2cbd3534c66e1a25d9ef2a95d2d206294",
+      "revision": "343245083694b85298e18b578ad8a51b54af88c9",
+      "theme": "light",
+      "width": 1440,
+      "height": 1000,
+      "rootFont": "16px",
+      "scrollWidth": 1440,
+      "personallyInspected": true,
+      "pngWidth": 1440,
+      "pngHeight": 1000,
+      "bytes": 86756,
+      "inspection": "Manual light remains light after live OS dark; readable light header/home at1440; lower home subsections initially loading. Theme observation only.",
+      "inspectionAtUtc": "2026-10-24T23:29:26.202198+00:00",
+      "provenance": "Actual WEB native ThemeSelect + real API, browser OS media emulated; no API replacement or theme state injection."
+    },
+    {
+      "id": "WT-02",
+      "state": "system-follows-live-os",
+      "file": "WEB-THEME__WT-02-system-follows-live-os__dark__1440__343245083.png",
+      "sha256": "81b20f6249bff27cbe3fac8abc8d8052c045945cd91b177ef2af5879d9bb7d3c",
+      "revision": "343245083694b85298e18b578ad8a51b54af88c9",
+      "theme": "dark",
+      "width": 1440,
+      "height": 1000,
+      "rootFont": "16px",
+      "scrollWidth": 1440,
+      "personallyInspected": true,
+      "pngWidth": 1440,
+      "pngHeight": 1307,
+      "bytes": 124048,
+      "inspection": "Native system adopts OS dark and followed OS light→dark live; readable dark header/home; current-subject subsection still skeleton. Theme observation only.",
+      "inspectionAtUtc": "2026-10-24T23:29:26.202360+00:00",
+      "provenance": "Actual WEB native ThemeSelect + real API, browser OS media emulated; no API replacement or theme state injection."
+    },
+    {
+      "id": "WT-03",
+      "state": "manual-dark-over-os-light",
+      "file": "WEB-THEME__WT-03-manual-dark-over-os-light__dark__1440__343245083.png",
+      "sha256": "74c7908ae0ad116d92d5d5b953f91c43244ef71c5ead90add28750ebc187ef05",
+      "revision": "343245083694b85298e18b578ad8a51b54af88c9",
+      "theme": "dark",
+      "width": 1440,
+      "height": 1000,
+      "rootFont": "16px",
+      "scrollWidth": 1440,
+      "personallyInspected": true,
+      "pngWidth": 1440,
+      "pngHeight": 1307,
+      "bytes": 131160,
+      "inspection": "Manual dark remains dark after live OS light; readable dark home with loaded current-subject cards; no horizontal loss at1440. Theme observation only.",
+      "inspectionAtUtc": "2026-10-24T23:29:26.202599+00:00",
+      "provenance": "Actual WEB native ThemeSelect + real API, browser OS media emulated; no API replacement or theme state injection."
+    }
+  ],
+  "rootTerminalProofSha256": "09ff04399ce1beaea378fb06803b264e6927506df768ee647de27a611957b205",
+  "independentPublicPost": "/workspace/rct-pr3-runtime/restore-20261024/WEB-THEME-0583-INDEPENDENT-TERMINAL.json",
+  "independentPublicPostSha256": "a219972573b25f745a3f9dafa21dd6b7e33818b043ccd47444962330ace98b25",
+  "originalRunExitCode": 1,
+  "originalFinalPhase": "ROOT_TERMINAL_CLOSED_ORIGINAL_RESULT_RETAINED",
+  "nativeUiLifecycleComplete": false
+}

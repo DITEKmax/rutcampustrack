@@ -115,8 +115,56 @@ def require(condition, message):
         raise RecoveryError(message)
 
 
-def run(command, *, stdin=None, stdout=None, input_data=None):
+def synthetic_diagnostic_sink(command, directory, stage):
+    """Explicit synthetic startup only; ordinary backup/restore never retains raw tool output."""
+    require(stage in ("SOURCE_START", "DESTINATION_START"), "Unsupported synthetic diagnostic stage")
+    require(type(command) is list and len(command) == 15 and command[:3] == ["docker", "compose", "-f"]
+            and Path(command[3]).resolve() == Path(__file__).resolve().parent.parent / "docker-compose.test-restore.yml"
+            and command[4] == "--env-file" and command[6] == "-p"
+            and re.fullmatch(r"rct-recovery-[a-z0-9-]+-(?:src|dst)", command[7])
+            and command[8:] == ["up", "-d", "--pull", "never", "--wait", "--wait-timeout", "120"],
+            "Synthetic startup diagnostic command mismatch")
+    require(isinstance(directory, (str, Path)), "Synthetic diagnostic directory is required")
+    directory = Path(directory)
+    info = directory.lstat()
+    require(directory.is_absolute() and directory.resolve() == directory and directory.is_dir()
+            and not directory.is_symlink() and info.st_uid == os.getuid()
+            and info.st_mode & 0o777 == 0o700
+            and Path(command[5]) == directory.parent / (command[7] + ".env"),
+            "Synthetic diagnostic directory ownership mismatch")
+    return directory / (stage.lower() + ".stderr.private.log")
+
+
+def retain_synthetic_startup(result, sink, stage):
+    lowered = result.stderr.lower()
+    docker_class = next((code for marker, code in (
+        (b"permission denied", "PERMISSION_DENIED"), (b"unhealthy", "UNHEALTHY"),
+        (b"port is already allocated", "PORT_CONFLICT"), (b"address already in use", "PORT_CONFLICT"),
+        (b"no space left", "NO_SPACE"), (b"out of memory", "OUT_OF_MEMORY"),
+        (b"cannot connect to the docker daemon", "DAEMON_UNAVAILABLE"),
+        (b"context deadline exceeded", "TIMEOUT")) if marker in lowered), "OTHER")
+    status = "UNAVAILABLE"
+    try:
+        fd = os.open(sink, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o600)
+        try:
+            with os.fdopen(fd, "wb", closefd=False) as stream:
+                stream.write(result.stderr[:65536])
+                stream.flush()
+                os.fsync(fd)
+            status = "RETAINED"
+        finally:
+            os.close(fd)
+    except OSError:
+        pass
+    return {"schema": "rct-recovery-startup.v1", "stage": stage, "dockerClass": docker_class,
+            "privateLog": status, "stderrTruncated": len(result.stderr) > 65536}
+
+
+def run(command, *, stdin=None, stdout=None, input_data=None, diagnostic_dir=None, diagnostic_stage=None):
     # Do not echo commands/stderr: DB tools may print credential-bearing diagnostics.
+    sink = None
+    if diagnostic_dir is not None or diagnostic_stage is not None:
+        sink = synthetic_diagnostic_sink(command, diagnostic_dir, diagnostic_stage)
     result = subprocess.run(
         command, stdin=stdin, input=input_data, stdout=stdout or subprocess.PIPE, stderr=subprocess.PIPE
     )
@@ -134,6 +182,8 @@ def run(command, *, stdin=None, stdout=None, input_data=None):
         error = RecoveryError(f"{Path(command[0]).name} operation failed (exit {result.returncode})", hint)
         if hint == "MONGO_QUERY":
             error.mongo_code_class = native_mongo_failure_class(result.stderr)
+        if sink is not None:
+            error.synthetic_diagnostic = retain_synthetic_startup(result, sink, diagnostic_stage)
         raise error
     return result.stdout
 

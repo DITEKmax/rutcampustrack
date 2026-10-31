@@ -1,0 +1,5 @@
+# Начальная готовность D9
+
+Сохранённый run9385 подтвердил: единственное незавершённое условие — global scheduleDue=1. Очереди, ledger и memberships уже прошли. Начальные10s закончились до следующего штатного fixedDelay60000 тика. Для первоначального polling выделяется75s: один обычный период и15s на чтение/settlement. Все исходные predicates сохраняются; общий420s и резерв восстановления не меняются. При недостаточном защищённом бюджете сценарий отказывает до controlled outage.
+
+Одна owner-команда из reviewed artifact package применяет точные исходники на clean a4c066ffb8a023a260c7baed230f6b15689981e6, создаёт обычный commit и выполняет только fresh original D9 с canonical prerequisites и clock advance. Автоматический collector сохраняет весь закрытый v11, отдельный readiness witness, четыре service logs в конечной безопасной проекции и приблизительные file mtimes. Тики не доказывают завершение readiness: успех определяет исходный poll. Raw сообщения и стеки не публикуются. Старые evidence/resources не изменяются; повторных тестов нет. D9PASS требует фактического owner run; production scheduler fix этим изменением не заявляется.

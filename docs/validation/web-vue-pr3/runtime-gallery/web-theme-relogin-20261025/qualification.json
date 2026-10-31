@@ -1,0 +1,153 @@
+{
+  "case": "WEB_NATIVE_THEME_RELOGIN_SUFFIX",
+  "revision": "7d664ce89cff5813772d1923e310ad74c2706c87",
+  "harnessSha256": "e38e5e349830ff0d07c3f9d8698d936ceae78cbc37d420dcfe37a88aaba5e2b1",
+  "qualification": "NATIVE_THEME_RELOGIN_CRITERION_OBSERVED_MACHINE_EXIT1_PAGEERRORS",
+  "rawExitCode": 1,
+  "rawCompleted": false,
+  "rawFinalPhase": "KNOWN_STOP_CLEANUP_QUALIFIED",
+  "rawFinalReceipt": "/workspace/rct-pr3-runtime/visual-readiness-20261024/web-theme-lifecycle-prep/suffix-prep/run/raw-final-receipt.json",
+  "rawFinalReceiptSha256": "a10ce7197f06b2b6b850dd61bfebd01abed6f8fe32599034a102991a0f58019f",
+  "nativePersistenceCriterion": {
+    "newExclusiveDevice": true,
+    "initial": {
+      "theme": null,
+      "revision": "0"
+    },
+    "nativeDarkSetup": [
+      {
+        "theme": "dark",
+        "revision": "1",
+        "phase": "MANUAL_DARK_SETUP",
+        "loginIndex": 0
+      }
+    ],
+    "middleNativeLogout": {
+      "forwarded": true,
+      "status": 204,
+      "sameOldBearerStatus": 401,
+      "confirmed": true,
+      "fallbackUsed": false
+    },
+    "secondLogin": "real native login200, canonical expected Student3, distinct own SID",
+    "freshRequestBoundReloginGet": {
+      "theme": "dark",
+      "revision": "1",
+      "requestId": "d137aa22-b532-4462-aa8e-25349237be93",
+      "requestStartedPhase": "LOGIN_1",
+      "requestBoundLoginIndex": 1
+    },
+    "nativePreferencePutTotal": 1,
+    "phase2PreferencePuts": 0,
+    "sameDeviceCookiePreservedAcrossLogout": true,
+    "sameDeviceCookiePreservedAcrossLogin": true,
+    "oneWT04PersonallyInspected": true
+  },
+  "cleanup": {
+    "allOwnSessionsTerminal": true,
+    "ownCapturedSessionCount": 2,
+    "firstOwnSession": "nativeLogout204/same oldBearer401 confirmed",
+    "secondOwnSession": {
+      "method": "TECHNICAL_EXACT_CURRENT_OWN_SELF_SESSION_DELETE",
+      "nativeUiLogoutPass": false,
+      "selfDeleteForwarded": 1,
+      "status": 204,
+      "sameOldBearerStatus": 401,
+      "confirmed": true,
+      "fallbackUsed": false,
+      "intent": "RETURNED"
+    },
+    "noUnknownHold": true,
+    "browserClosed": true,
+    "sourceUnchanged": true,
+    "pendingForwardedAuthOrPreferences": false,
+    "remainingClientTransportEntry": [
+      {
+        "id": "985052b3-8a1f-4e81-b8e1-0a92c3b12c54",
+        "method": "POST",
+        "path": "/api/auth/refresh",
+        "phase": "TECHNICAL_EXACT_OWN_SELF_SESSION_DELETE",
+        "loginIndex": 1,
+        "canonicalAtStart": true,
+        "requiredCanonical": false,
+        "forwarded": false
+      }
+    ],
+    "remainingClientTransportQualification": "Final private inFlightAuth contains one native background refresh attempt during technical selfDELETE, explicitly forwarded:false behind sealed browser route. It was not sent to API and has no mutating intent. Browserclosed; no live HOLD or pending forwarded effect. No false claim that raw inFlight set is empty."
+  },
+  "transportDiagnosis": [
+    {
+      "id": "910bbd6a-e3a2-457a-a992-660fc5eae5ef",
+      "method": "POST",
+      "path": "/api/auth/logout",
+      "phase": "NATIVE_MIDDLE_LOGOUT",
+      "loginIndex": 0,
+      "canonicalAtStart": true,
+      "requiredCanonical": false,
+      "forwarded": true,
+      "canonicalAtForward": true,
+      "forwardedAtUtc": "2026-10-24T23:46:47.090Z",
+      "captureAckDurable": true,
+      "observedStatus": 204,
+      "category": "ABORTED",
+      "stage": "REQUEST_FAILED",
+      "outcome": "WAIT_DURABLE_INTENT_CLASSIFICATION"
+    },
+    {
+      "id": "910bbd6a-e3a2-457a-a992-660fc5eae5ef",
+      "method": "POST",
+      "path": "/api/auth/logout",
+      "phase": "NATIVE_MIDDLE_LOGOUT",
+      "loginIndex": 0,
+      "canonicalAtStart": true,
+      "requiredCanonical": false,
+      "forwarded": true,
+      "canonicalAtForward": true,
+      "forwardedAtUtc": "2026-10-24T23:46:47.090Z",
+      "captureAckDurable": true,
+      "observedStatus": 204,
+      "category": "ABORTED",
+      "stage": "AFTER_CAPTURE",
+      "outcome": "DURABLE_ACK_RETAINED"
+    }
+  ],
+  "transportResult": "Actual native POST/logout204 emitted ABORTED after durable ACK. Corrected classifier retained ACK; explicit same oldBearer401 proved terminal before second login. This new suffix cause does not retrospectively identify original0583 failed endpoint.",
+  "pageErrors": [
+    {
+      "name": "WebAuthorityChangedError"
+    },
+    {
+      "name": "WebAuthorityChangedError"
+    }
+  ],
+  "pageErrorQualification": "Two WebAuthorityChangedError events make raw completedfalse/exit1. Phase/stack not recorded, so exact call site/timing and product defect causality are unproved. Static candidate StudentHomePage load awaits Promise.all then scope.transport.assertCurrent outside a catch; this only suggests a next source review, not an actual stack. No product changes or rerun performed.",
+  "blockedRequests": [],
+  "reuse": {
+    "original0583Root343": "WT01 manual-light/OSdark, WT02 system liveOS, WT03 manual-dark/OSlight; personally viewed, actual nativeCAS revisions1/2/3, originalrawFAIL+independentRootterminal closure retained.",
+    "noRecapture": true,
+    "oldDeviceNotResumed": true,
+    "newDeviceRevision": 1
+  },
+  "readinessLimits": "Native theme/manual/system/liveOS/persistence criteria now have bounded evidence across qualified original3+suffix1. This does not clear2pageErrors, produce a zero-error/fullscreen PASS, or prove loaded StudentHome. Other widths/themes/roles/platforms/provider remain separate. Functional actions added0; CI/manualPAUSED and independent runtime12QENV STOP unchanged.",
+  "samples": [
+    {
+      "id": "WT-04",
+      "state": "suffix-same-new-device-dark-after-login",
+      "file": "WEB-THEME__WT-04-suffix-same-new-device-dark-after-login__dark__1440__7d664ce89.png",
+      "sha256": "8803e178c62380cd7efddc56a9ca279fef689bff3d592b8764824de27c9cf6be",
+      "revision": "7d664ce89cff5813772d1923e310ad74c2706c87",
+      "theme": "dark",
+      "width": 1440,
+      "height": 1000,
+      "rootFont": "16px",
+      "scrollWidth": 1440,
+      "personallyInspected": true,
+      "pngWidth": 1440,
+      "pngHeight": 1000,
+      "bytes": 36110,
+      "inspectionAtUtc": "2026-10-24T23:48:04.616206+00:00",
+      "inspection": "Dark native WEB shell and Student navigation readable at1440/root16 after second normal login; home content still natural initial skeleton. Actual same-device darkGET/revision1 verified. No loaded-home baseline or full-screen state claim.",
+      "provenance": "Real Auth/data/device API and native selector/logout/login; no response modifications; own new device, distinct from original0583 device."
+    }
+  ]
+}

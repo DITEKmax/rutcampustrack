@@ -44,6 +44,7 @@ export interface AdminUser {
 export interface AdminUserGroupOption {
   readonly id: number
   readonly name: string
+  readonly archived: boolean
 }
 export interface AdminUserGroupOptionsPage {
   readonly items: readonly AdminUserGroupOption[]
@@ -62,9 +63,11 @@ export interface AdminUsersPage {
 }
 
 export interface AdminUsersListInput {
+  readonly groupId?: number
   readonly search?: string
   readonly role?: AdminManagedRole | ''
   readonly roleStatus?: AdminRoleStatus | ''
+  readonly status?: AdminUser['status'] | ''
   readonly sortDirection?: 'asc' | 'desc'
   readonly page?: number
   readonly size?: number
@@ -355,6 +358,9 @@ export class AdminUsersClient {
     if (input.search?.trim()) params.set('search', input.search.trim())
     if (input.role) params.set('role', input.role)
     if (input.roleStatus) params.set('roleStatus', input.roleStatus)
+    if (input.status) params.set('status', input.status)
+    if (input.groupId !== undefined)
+      params.set('groupId', String(positiveInteger(input.groupId, 'groupId')))
     if (input.sortDirection) {
       for (const field of ['lastName', 'firstName', 'middleName', 'id'])
         params.append('sort', `${field},${input.sortDirection}`)
@@ -372,12 +378,14 @@ export class AdminUsersClient {
     search = '',
     page = 0,
     signal?: AbortSignal,
+    includeArchived = false,
   ): Promise<AdminUserGroupOptionsPage> {
     const params = new URLSearchParams({
       page: String(nonNegativeInteger(page, 'page')),
       size: '20',
     })
     if (search.trim()) params.set('search', search.trim())
+    if (includeArchived) params.set('includeArchived', 'true')
     const value = requiredRecord(
       await this.request<unknown>(
         `/api/academic/groups/options?${params}`,
@@ -397,9 +405,15 @@ export class AdminUsersClient {
     return {
       items: value.items.map((item) => {
         const group = requiredRecord(item, 'group')
+        // Older default-only servers return active options without this additive flag.
+        const archived = group.archived === undefined && !includeArchived ? false : group.archived
+        if (typeof archived !== 'boolean')
+          throw new Error('Не удалось подтвердить состояние группы.')
+        if (!includeArchived && archived) throw new Error('Архивная группа недоступна для новой роли.')
         return {
           id: positiveInteger(group.id, 'group.id'),
           name: requiredText(group.name, 'group.name'),
+          archived,
         }
       }),
       number,

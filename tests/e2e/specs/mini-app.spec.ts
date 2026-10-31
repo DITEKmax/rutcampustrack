@@ -1,3 +1,4 @@
+import { failureBoundary, handledWaiter } from '../fixtures/failed-case-diagnostics';
 import { expect, test } from '@playwright/test';
 import { installTelegramHost, teacherInitData } from '../fixtures/telegram';
 
@@ -29,24 +30,31 @@ test.describe('Vue Telegram entry @smoke', () => {
   }) => {
     const initData = teacherInitData();
     await installTelegramHost(page, initData);
-    const authentication = page.waitForResponse(
+    const authentication = handledWaiter(page.waitForResponse(
       (response) =>
         new URL(response.url()).pathname === '/api/auth/tma' &&
         response.request().method() === 'POST',
-    );
-    const currentSession = page.waitForResponse(
+    ));
+    const currentSession = handledWaiter(page.waitForResponse(
       (response) =>
         new URL(response.url()).pathname === '/api/auth/session' &&
         response.request().method() === 'GET',
-    );
+    ));
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto('/mini-app/');
     const authenticated = await authentication;
-    expect(authenticated.status()).toBe(200);
+    await failureBoundary(test.info(), 'TMA_AUTH', async () => {
+      expect(authenticated.status()).toBe(200);
+    }, () => ({ httpStatus: authenticated.status(), sessionStatus: null }));
     const { accessToken } = (await authenticated.json()) as { accessToken: string };
     const current = await currentSession;
-    expect(current.status()).toBe(200);
+    await failureBoundary(test.info(), 'TMA_SESSION', async () => {
+      expect(current.status()).toBe(200);
+    }, () => ({ httpStatus: current.status(), loginStatus: authenticated.status() }));
     const session = await current.json();
+    expect(session.userId).toBe('2');
+    expect(session.sessionId).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/);
+    expect(session.sessionId).not.toBe('00000000-0000-0000-0000-000000000000');
     expect(session.activeRole).toBe('TEACHER');
     expect(session.roles.some((grant: { role: string }) => grant.role === 'TEACHER')).toBe(true);
     await expect(page.getByRole('navigation', { name: 'Основная навигация' })).toBeVisible();

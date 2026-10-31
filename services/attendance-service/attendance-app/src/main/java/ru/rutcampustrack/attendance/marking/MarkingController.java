@@ -41,7 +41,9 @@ public class MarkingController implements MarkingApi {
     @RequireRole(UserRole.STUDENT)
     public ResponseEntity<EntityModel<MarkResponse>> mark(
             Long lessonId, Long userId, MarkRequest request) {
-        AttendanceDocument doc = markingService.markAttendance(lessonId, userId, request);
+        AttendanceDocument doc =
+                MarkingWriteRetry.execute(
+                        () -> markingService.markAttendance(lessonId, userId, request));
 
         MarkResponse response =
                 new MarkResponse(
@@ -60,7 +62,10 @@ public class MarkingController implements MarkingApi {
     @RequireRole(UserRole.STUDENT)
     public ResponseEntity<EntityModel<MarkResponse>> markWithFile(
             Long lessonId, Long userId, MarkRequest request, MultipartFile file) {
-        AttendanceDocument doc = markingService.markAttendance(lessonId, userId, request, file);
+        MultipartFile repeatable = RepeatableMarkingFile.of(file);
+        AttendanceDocument doc =
+                MarkingWriteRetry.execute(
+                        () -> markingService.markAttendance(lessonId, userId, request, repeatable));
         MarkResponse response =
                 new MarkResponse(
                         doc.getStatus(), doc.getLessonId(), doc.getUserId(), doc.getUpdatedAt());

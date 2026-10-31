@@ -1,0 +1,20 @@
+{
+  "scriptPersistentAuthCalls": {
+    "storageState": false,
+    "launchPersistentContext": false,
+    "userDataDir": false,
+    "recordHar": false,
+    "tracing.start": false
+  },
+  "scriptExplicitAuthHandleStorage": false,
+  "knownReceiptSensitiveKeyPaths": [],
+  "contextKind": "browser.newContext; ephemeral",
+  "processEnd": "script await context.close and browser.close; observed Node execution exit0",
+  "exactOwnSessionHandleAvailable": false,
+  "privateActorMemoryAvailable": false,
+  "normalOwnSessionListAdmissionAvailable": false,
+  "logoutHTTPObserved": null,
+  "noNewLoginForCleanup": true,
+  "noRevokeAllOrOtherSessions": true,
+  "conclusion": "Exact session7 cleanup cannot be proven or executed from retained artifacts. Normal own session API would require new admission and cannot uniquely identify session7 from these receipts. Original cleanupFAIL remains."
+}

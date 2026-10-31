@@ -44,7 +44,8 @@
   position: relative;
   overflow: hidden;
   border-radius: var(--rct-radius-xl);
-  background: var(--rct-color-surface-raised);
+  background: var(--rct-color-surface-scrim);
+  color: var(--rct-color-text-on-fill-strong);
   padding: var(--rct-space-4) var(--rct-space-3);
 }
 .headman-stats-mobile__semester img {
@@ -65,8 +66,8 @@
   font-weight: var(--rct-font-weight-medium);
   overflow-wrap: anywhere;
 }
-.headman-stats-mobile__semester span {
-  color: var(--rct-color-text-secondary);
+.headman-stats-mobile__semester > div > span {
+  color: inherit;
   font-size: var(--rct-font-size-caption);
 }
 .headman-stats-mobile__card {
@@ -250,13 +251,13 @@
   color: var(--rct-color-status-on-fill);
 }
 .headman-stats-mobile__present {
-  color: var(--rct-color-status-present-fill);
+  color: var(--rct-color-status-present-text);
 }
 .headman-stats-mobile__excused {
-  color: var(--rct-color-status-excused-fill);
+  color: var(--rct-color-status-excused-text);
 }
 .headman-stats-mobile__absent {
-  color: var(--rct-color-status-absent-fill);
+  color: var(--rct-color-status-absent-text);
 }
 .headman-stats-mobile__table-wrap {
   overflow-x: auto;
@@ -509,11 +510,12 @@
 }
 .headman-stats-mobile__semester-select .headman-stats-select__trigger {
   padding: 0;
+  color: inherit;
   font-size: var(--rct-font-size-title-screen);
   background: transparent;
 }
 .headman-stats-mobile__semester-select .headman-stats-select__trigger > span {
-  color: var(--rct-color-text-primary);
+  color: inherit;
   font-size: inherit;
   font-weight: var(--rct-font-weight-medium);
 }

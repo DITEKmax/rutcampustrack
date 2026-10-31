@@ -1,0 +1,186 @@
+{
+  "schemaVersion": 1,
+  "kind": "runtime-gallery",
+  "title": "Исправленные уведомления и skeleton",
+  "sourceRevision": "77fbd7a5e79bcaf3185f60e4ee2f18c7a3e3896b",
+  "functionalTestCount": 0,
+  "limits": [
+    "Browser-only synthetic GET/focus; actual application listener/store/UI, not backend event/STOMP/auth proof.",
+    "Initial raw postfix attempt exit1 retained; only successful slices qualified, remaining H/T receipt exit0.",
+    "All four own postfix sessions normal logout204/guest401; private session IDs excluded.",
+    "Student425light/Headman300light/Teacher1440dark loading only; not whole-role visual acceptance."
+  ],
+  "individualToastLifetimeMs": [
+    10127,
+    10089,
+    10176,
+    9987
+  ],
+  "screenshots": [
+    {
+      "id": "WEB-SHARED-NOTIFICATIONS__postfix-synthetic-toast-4__light__1440__77fbd7a5e",
+      "screen": "WEB-SHARED-NOTIFICATIONS",
+      "state": "postfix-synthetic-toast-4",
+      "title": "Уведомления: четыре новых toast сохраняются",
+      "theme": "light",
+      "width": 1440,
+      "revision": "77fbd7a5e79bcaf3185f60e4ee2f18c7a3e3896b",
+      "sha256": "f5ab7dbbcf536d3abeeff372c950a1b728dc32d7cf5f26a218ba70f8e82367f4",
+      "sourceFilesSha256": {
+        "frontends/web-vue/src/features/notifications/notifications.ts": "a080b908d591aaa08611057f67967d86df3e97ce966e8cdca8f3ae926bee8246",
+        "frontends/web-vue/src/features/notifications/NotificationHost.vue": "3b3cdb91ac1f01814e21e03c1b5de890427b59393b6b0d1b8a7f93ca4707cc3e",
+        "frontends/web-vue/src/features/notifications/NotificationsPage.vue": "17d2620bb583bf01917e041a33c1b85bb00ba0a5292881cb5f9a2f6b991b6992"
+      },
+      "description": "four fresh GET items via syntheticfocus actual app listener; all4 retained",
+      "image": "screenshots/WEB-SHARED-NOTIFICATIONS__postfix-synthetic-toast-4__light__1440__77fbd7a5e.png",
+      "pixelWidth": 1440,
+      "pixelHeight": 1280,
+      "bytes": 135436,
+      "provenance": "actual-app/synthetic-read-state",
+      "syntheticState": true,
+      "functionalActionsAdded": 0,
+      "cleanup": "own native logout204 and guestGET401 confirmed; context/browserclosed"
+    },
+    {
+      "id": "WEB-SHARED-NOTIFICATIONS__postfix-first-individual-expiry__light__1440__77fbd7a5e",
+      "screen": "WEB-SHARED-NOTIFICATIONS",
+      "state": "postfix-first-individual-expiry",
+      "title": "Уведомления: первый toast истёк, следующие остаются",
+      "theme": "light",
+      "width": 1440,
+      "revision": "77fbd7a5e79bcaf3185f60e4ee2f18c7a3e3896b",
+      "sha256": "3adbdb13d7949eddfb6b176aa214331c903cc785a51400359e18e1f16ec07dad",
+      "sourceFilesSha256": {
+        "frontends/web-vue/src/features/notifications/notifications.ts": "a080b908d591aaa08611057f67967d86df3e97ce966e8cdca8f3ae926bee8246",
+        "frontends/web-vue/src/features/notifications/NotificationHost.vue": "3b3cdb91ac1f01814e21e03c1b5de890427b59393b6b0d1b8a7f93ca4707cc3e",
+        "frontends/web-vue/src/features/notifications/NotificationsPage.vue": "17d2620bb583bf01917e041a33c1b85bb00ba0a5292881cb5f9a2f6b991b6992"
+      },
+      "description": "one toast reached ownTTL; later arrivals retained; browser-only synthetic inputs",
+      "image": "screenshots/WEB-SHARED-NOTIFICATIONS__postfix-first-individual-expiry__light__1440__77fbd7a5e.png",
+      "pixelWidth": 1440,
+      "pixelHeight": 1280,
+      "bytes": 121902,
+      "provenance": "actual-app/synthetic-read-state",
+      "syntheticState": true,
+      "functionalActionsAdded": 0,
+      "cleanup": "own native logout204 and guestGET401 confirmed; context/browserclosed"
+    },
+    {
+      "id": "WEB-SHARED-NOTIFICATIONS__postfix-all-expired-history__light__1440__77fbd7a5e",
+      "screen": "WEB-SHARED-NOTIFICATIONS",
+      "state": "postfix-all-expired-history",
+      "title": "Уведомления: toast истекли, история сохраняет четыре события",
+      "theme": "light",
+      "width": 1440,
+      "revision": "77fbd7a5e79bcaf3185f60e4ee2f18c7a3e3896b",
+      "sha256": "dd98dc660aafce054f9502bd9caa66bf717a3dd9ebf98570252462ab46dd0e6a",
+      "sourceFilesSha256": {
+        "frontends/web-vue/src/features/notifications/notifications.ts": "a080b908d591aaa08611057f67967d86df3e97ce966e8cdca8f3ae926bee8246",
+        "frontends/web-vue/src/features/notifications/NotificationHost.vue": "3b3cdb91ac1f01814e21e03c1b5de890427b59393b6b0d1b8a7f93ca4707cc3e",
+        "frontends/web-vue/src/features/notifications/NotificationsPage.vue": "17d2620bb583bf01917e041a33c1b85bb00ba0a5292881cb5f9a2f6b991b6992"
+      },
+      "description": "all4 independently expired; four actual rendered historycards retained",
+      "image": "screenshots/WEB-SHARED-NOTIFICATIONS__postfix-all-expired-history__light__1440__77fbd7a5e.png",
+      "pixelWidth": 1440,
+      "pixelHeight": 1280,
+      "bytes": 85625,
+      "provenance": "actual-app/synthetic-read-state",
+      "syntheticState": true,
+      "functionalActionsAdded": 0,
+      "cleanup": "own native logout204 and guestGET401 confirmed; context/browserclosed"
+    },
+    {
+      "id": "WEB-SHARED-NOTIFICATIONS__postfix-bell-history__light__1440__77fbd7a5e",
+      "screen": "WEB-SHARED-NOTIFICATIONS",
+      "state": "postfix-bell-history",
+      "title": "Уведомления: bell показывает три, полная история — четыре",
+      "theme": "light",
+      "width": 1440,
+      "revision": "77fbd7a5e79bcaf3185f60e4ee2f18c7a3e3896b",
+      "sha256": "98ebe8aee28da375953d05a814745ef6681601d9df419d760b5b8452fbe49378",
+      "sourceFilesSha256": {
+        "frontends/web-vue/src/features/notifications/notifications.ts": "a080b908d591aaa08611057f67967d86df3e97ce966e8cdca8f3ae926bee8246",
+        "frontends/web-vue/src/features/notifications/NotificationHost.vue": "3b3cdb91ac1f01814e21e03c1b5de890427b59393b6b0d1b8a7f93ca4707cc3e",
+        "frontends/web-vue/src/features/notifications/NotificationsPage.vue": "17d2620bb583bf01917e041a33c1b85bb00ba0a5292881cb5f9a2f6b991b6992"
+      },
+      "description": "bell preview3 and fullhistory4 after independentTTL; separate policies",
+      "image": "screenshots/WEB-SHARED-NOTIFICATIONS__postfix-bell-history__light__1440__77fbd7a5e.png",
+      "pixelWidth": 1440,
+      "pixelHeight": 1280,
+      "bytes": 94745,
+      "provenance": "actual-app/synthetic-read-state",
+      "syntheticState": true,
+      "functionalActionsAdded": 0,
+      "cleanup": "own native logout204 and guestGET401 confirmed; context/browserclosed"
+    },
+    {
+      "id": "WEB-STUDENT-REQUESTS__postfix-synthetic-loading__light__425__77fbd7a5e",
+      "screen": "WEB-STUDENT-REQUESTS",
+      "state": "postfix-synthetic-loading",
+      "title": "Начальная загрузка: skeleton",
+      "theme": "light",
+      "width": 425,
+      "revision": "77fbd7a5e79bcaf3185f60e4ee2f18c7a3e3896b",
+      "sha256": "1acf911883a90a2f9c9ce0e69d1d831c2f4fa9ccba61e43bbf1764188bbc2ee2",
+      "sourceFilesSha256": {
+        "frontends/web-vue/src/features/student/StudentNotice.vue": "a43d7c8ba4434f5a8db1346bb7b62a230437e56352c348ddc304942f0a13541a",
+        "frontends/web-vue/src/features/student/StudentRequestsPage.vue": "3851fc92873b8edcd6460762257053daa53b5d52d28866a69954887c0b1c081a"
+      },
+      "description": "actual initial GET held in browser; skeleton rendering; no backend failure claim",
+      "image": "screenshots/WEB-STUDENT-REQUESTS__postfix-synthetic-loading__light__425__77fbd7a5e.png",
+      "pixelWidth": 425,
+      "pixelHeight": 900,
+      "bytes": 10093,
+      "provenance": "actual-app/synthetic-read-state",
+      "syntheticState": true,
+      "functionalActionsAdded": 0,
+      "cleanup": "own native logout204 and guestGET401 confirmed; context/browserclosed"
+    },
+    {
+      "id": "WEB-HEADMAN-JOURNAL__postfix-synthetic-loading__light__300__77fbd7a5e",
+      "screen": "WEB-HEADMAN-JOURNAL",
+      "state": "postfix-synthetic-loading",
+      "title": "Начальная загрузка: skeleton",
+      "theme": "light",
+      "width": 300,
+      "revision": "77fbd7a5e79bcaf3185f60e4ee2f18c7a3e3896b",
+      "sha256": "2914fd5dae773be0786efb2139b1f8e09f7c12c0c9fb6fb8e46dded086c559b5",
+      "sourceFilesSha256": {
+        "frontends/web-vue/src/features/headman/HeadmanPage.vue": "bf4a0ad38774639cecab145690a3ddb0bc5b00a8921754ffb90ac675c6141eea",
+        "frontends/web-vue/src/features/headman/JournalPage.vue": "f8a4c3ff20809fa755d636bfe5b36cb7ef9a064002eea5851af54aab64de6427"
+      },
+      "description": "actual initial GET held in browser; skeleton rendering; no backend failure claim",
+      "image": "screenshots/WEB-HEADMAN-JOURNAL__postfix-synthetic-loading__light__300__77fbd7a5e.png",
+      "pixelWidth": 300,
+      "pixelHeight": 1056,
+      "bytes": 40594,
+      "provenance": "actual-app/synthetic-read-state",
+      "syntheticState": true,
+      "functionalActionsAdded": 0,
+      "cleanup": "own native logout204 and guestGET401 confirmed; context/browserclosed"
+    },
+    {
+      "id": "WEB-TEACHER-HOME__postfix-synthetic-loading__dark__1440__77fbd7a5e",
+      "screen": "WEB-TEACHER-HOME",
+      "state": "postfix-synthetic-loading",
+      "title": "Начальная загрузка: skeleton",
+      "theme": "dark",
+      "width": 1440,
+      "revision": "77fbd7a5e79bcaf3185f60e4ee2f18c7a3e3896b",
+      "sha256": "947db3254fed2cb39c21e576b18ded49ce99d7db45115a28205f4cfd7ed89191",
+      "sourceFilesSha256": {
+        "frontends/web-vue/src/features/teacher/TeacherNotice.vue": "3ccac5d321cbde70109ec7c9a7632b63c34d09da5ca41e38cba8543ebc9da8a3",
+        "frontends/web-vue/src/features/teacher/TeacherHomePage.vue": "ad7a9ee78fdac9bd099a939db1819ad7c64fece682140bec2b1ac36da0655e68"
+      },
+      "description": "actual initial GET held in browser; skeleton rendering; no backend failure claim",
+      "image": "screenshots/WEB-TEACHER-HOME__postfix-synthetic-loading__dark__1440__77fbd7a5e.png",
+      "pixelWidth": 1440,
+      "pixelHeight": 1080,
+      "bytes": 20159,
+      "provenance": "actual-app/synthetic-read-state",
+      "syntheticState": true,
+      "functionalActionsAdded": 0,
+      "cleanup": "own native logout204 and guestGET401 confirmed; context/browserclosed"
+    }
+  ]
+}

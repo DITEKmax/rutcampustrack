@@ -3,6 +3,9 @@ package ru.rutcampustrack.academic.assistant;
 import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.rutcampustrack.academic.contract.dto.assistant.AssignAssistantRequest;
@@ -13,6 +16,7 @@ import ru.rutcampustrack.academic.contract.exception.ResourceNotFoundException;
 import ru.rutcampustrack.academic.entity.Group;
 import ru.rutcampustrack.academic.entity.HeadmanAssistant;
 import ru.rutcampustrack.academic.exception.AccessDeniedException;
+import ru.rutcampustrack.academic.exception.BadRequestException;
 import ru.rutcampustrack.academic.exception.ConflictException;
 import ru.rutcampustrack.academic.repository.GroupRepository;
 import ru.rutcampustrack.academic.repository.HeadmanAssistantRepository;
@@ -233,6 +237,30 @@ public class AssistantService {
             throw new ConflictException("Помощник уже отозван");
         }
 
+        if (request.expectedPermissions() != null) {
+            var current =
+                    Arrays.stream(assistant.getPermissions())
+                            .map(value -> value.toUpperCase(Locale.ROOT))
+                            .collect(Collectors.toSet());
+            var expected =
+                    request.expectedPermissions().stream()
+                            .map(Enum::name)
+                            .collect(Collectors.toSet());
+            if (!current.equals(expected)) {
+                throw new ConflictException(
+                        "Права помощника изменились. Обнови список и подтверди изменения заново.",
+                        Map.of("code", "ASSISTANT_PERMISSIONS_CONFLICT"));
+            }
+        }
+        if (request.permissions().isEmpty()) {
+            if (request.expectedPermissions() == null)
+                throw new BadRequestException(
+                        "permissions",
+                        "Для отзыва последнего права нужен снимок expectedPermissions");
+            revokeLocked(assistant, groupId);
+            return assistant;
+        }
+
         // Convert permissions to lowercase string array (Pitfall 4)
         String[] permissionsArray =
                 request.permissions().stream()
@@ -272,6 +300,11 @@ public class AssistantService {
         if (!assistant.isActive()) {
             return;
         }
+        revokeLocked(assistant, groupId);
+    }
+
+    /** Shared revoke effects; caller holds the group and assistant locks in its transaction. */
+    private void revokeLocked(HeadmanAssistant assistant, Long groupId) {
         assistant.setActive(false);
         assistant.setRevokedAt(OffsetDateTime.now());
         assistantRepository.save(assistant);

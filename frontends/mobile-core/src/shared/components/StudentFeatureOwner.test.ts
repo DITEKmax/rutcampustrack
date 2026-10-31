@@ -549,6 +549,7 @@ vi.mock('../../features/homework/use-homework', async () => {
               isPending: ref(false),
               refetch: ownerQueryData.homeworkRefetch,
             },
+            mutation: { isPending: ref(false) },
             range: ref(null),
             periodMode: ref('day'),
             selectedDate: ref(null),
@@ -1858,6 +1859,7 @@ it('retains the mounted owner uncertain check-in through explicit connection ret
   const props = reactive({
     offline: false,
     readOnly: false,
+    realtimeRevision: 0,
     todayFallback: today,
     acquireCheckinCommand: acquire,
     onRetryConnection: async () => {
@@ -1878,6 +1880,9 @@ it('retains the mounted owner uncertain check-in through explicit connection ret
   await vi.waitFor(() => expect(checkinSubmit).toHaveBeenCalledTimes(1))
   await settleOwnerTestRender()
   const first = checkinSubmit.mock.calls[0]![0]
+  props.realtimeRevision += 1
+  await settleOwnerTestRender()
+  expect(checkinSubmit).toHaveBeenCalledTimes(1)
   expect(first.key).toEqual(expect.any(String))
   props.offline = true
   props.readOnly = true
@@ -1936,4 +1941,25 @@ it('keeps loaded profile history offline and only paginates after an explicit on
   resolvePage({ items: [{ ...record, id: 'history-b' }], nextCursor: null })
   await settleOwnerTestRender()
   expect(findOwnerTestNode(root, node => node.tag === 'button' && contents(node).includes('Показать ещё'))).toBeUndefined()
+})
+
+it('refreshes real active Student reads on a hint and cannot restore private data after owner retirement', async () => {
+  ownerQueryData.realReads = true
+  const today = { serverNow: 'initial-private', lessons: [] } as unknown as StudentToday
+  const homework = { serverNow: 'initial', from: '2026-09-08', to: '2026-09-09',
+    semester: { dateFrom: '2026-09-01', dateTo: '2026-12-31' }, items: [] } as unknown as StudentHomework
+  let resolveLate!: (value: StudentToday) => void
+  const getToday = vi.fn().mockResolvedValueOnce(today)
+    .mockImplementationOnce(() => new Promise(resolve => { resolveLate = resolve }))
+  const props = reactive({ scope: { ...scope } as StudentFeatureScope | null, realtimeRevision: 0 })
+  const root = mountOwnerTest({ getToday, getHomework: async () => homework } as unknown as StudentApi, props)
+  await vi.waitFor(() => expect(ownerTestOutput(root, 'test-today-data')).toContain('initial-private'))
+  props.realtimeRevision += 1
+  await vi.waitFor(() => expect(getToday).toHaveBeenCalledTimes(2))
+  props.scope = null
+  await settleOwnerTestRender()
+  resolveLate({ ...today, serverNow: 'late-private' })
+  await settleOwnerTestRender()
+  expect(ownerTestOutput(root, 'test-today-data')).toBe('null')
+  expect(checkinSubmit).not.toHaveBeenCalled()
 })

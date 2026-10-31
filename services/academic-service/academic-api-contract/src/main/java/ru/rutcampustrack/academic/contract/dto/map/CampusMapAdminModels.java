@@ -79,6 +79,11 @@ public final class CampusMapAdminModels {
     public record DeletionResult(
             UUID operationId, DeletionTarget targetType, String targetId, String status) {}
 
+    public enum PlanDeletionScope {
+        ALL_VERSIONS,
+        CURRENT_FORMAT
+    }
+
     public record PlanDeletionPreview(
             String buildingCode,
             String floorCode,
@@ -86,7 +91,24 @@ public final class CampusMapAdminModels {
             String label,
             long files,
             long bytes,
-            String previewDigest) {}
+            String previewDigest,
+            @JsonInclude(JsonInclude.Include.NON_NULL)
+                    @Schema(
+                            requiredMode = Schema.RequiredMode.NOT_REQUIRED,
+                            types = {"string", "null"})
+                    PlanDeletionScope deletionScope) {
+        /** Older Java callers cannot claim a capability they did not explicitly provide. */
+        public PlanDeletionPreview(
+                String buildingCode,
+                String floorCode,
+                Format format,
+                String label,
+                long files,
+                long bytes,
+                String previewDigest) {
+            this(buildingCode, floorCode, format, label, files, bytes, previewDigest, null);
+        }
+    }
 
     public record PlanDeleteRequest(
             @NotBlank @Size(max = 64) @Pattern(regexp = "[1-9][0-9]*") String buildingCode,

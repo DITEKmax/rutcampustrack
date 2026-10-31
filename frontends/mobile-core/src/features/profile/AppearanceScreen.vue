@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref, watch } from 'vue';
-import { createMobileTheme, type MobileThemeController } from '../../shared/theme';
+import { inject, onBeforeUnmount, ref, watch } from 'vue';
 import MobileIcon from '../../shared/components/MobileIcon.vue';
+import { createMobileTheme, mobileThemeSystemSourceKey } from '../../shared/theme';
 import type { ProfileResolvedTheme, ProfileTheme } from './profile-types';
 import './profile-screen.pcss';
 
@@ -19,31 +19,29 @@ const props = withDefaults(
   },
 );
 
-// The preview owns no document target; the app's validated global appearance stays dark.
-const previewResolvedTheme = ref<ProfileResolvedTheme>(props.theme === 'light' ? 'light' : 'dark');
-let preview: MobileThemeController | undefined;
-let stopPreview: (() => void) | undefined;
-onMounted(() => {
-  preview = createMobileTheme({ target: null, mode: props.theme });
-  previewResolvedTheme.value = preview.resolvedMode;
-  stopPreview = preview.subscribe(({ resolvedMode }) => {
-    previewResolvedTheme.value = resolvedMode;
-  });
-});
-watch(
-  () => props.theme,
-  (mode) => preview?.setMode(mode),
-);
-onBeforeUnmount(() => {
-  stopPreview?.();
-  preview?.dispose();
-});
-
 const options: readonly { value: ProfileTheme; label: string }[] = [
   { value: 'light', label: 'Светлая' },
   { value: 'dark', label: 'Тёмная' },
   { value: 'system', label: 'Как в системе' },
 ];
+
+// Preview only this screen; the host keeps ownership of html and persistence.
+const systemThemeSource = inject(mobileThemeSystemSourceKey, undefined);
+const preview = createMobileTheme({
+  target: null,
+  mode: props.theme,
+  ...(systemThemeSource === undefined ? {} : { systemSource: systemThemeSource }),
+});
+const previewTheme = ref<ProfileResolvedTheme>(preview.resolvedMode);
+const stopPreviewSnapshot = preview.subscribe(({ resolvedMode }) => {
+  previewTheme.value = resolvedMode;
+});
+const stopPreviewMode = watch(() => props.theme, mode => preview.setMode(mode));
+onBeforeUnmount(() => {
+  stopPreviewMode();
+  stopPreviewSnapshot();
+  preview.dispose();
+});
 
 function chooseTheme(theme: ProfileTheme): void {
   void props.onThemeChange?.(theme);
@@ -53,8 +51,8 @@ function chooseTheme(theme: ProfileTheme): void {
 <template>
   <main
     class="profile-screen profile-appearance"
-    :data-theme="previewResolvedTheme"
-    :style="{ colorScheme: previewResolvedTheme }"
+    :data-theme="previewTheme"
+    :style="{ colorScheme: previewTheme }"
     aria-labelledby="profile-appearance-title"
   >
     <div class="profile-screen__content">
@@ -75,10 +73,7 @@ function chooseTheme(theme: ProfileTheme): void {
         </h1>
       </header>
 
-      <fieldset
-        class="profile-theme-group"
-        aria-describedby="profile-theme-preview-note"
-      >
+      <fieldset class="profile-theme-group">
         <legend>Тема интерфейса</legend>
         <label
           v-for="option in options"
@@ -91,27 +86,14 @@ function chooseTheme(theme: ProfileTheme): void {
             :value="option.value"
             :checked="theme === option.value"
             @change="chooseTheme(option.value)"
-          >
+          />
           <span>{{ option.label }}</span>
         </label>
       </fieldset>
-      <section
-        class="profile-note"
-        aria-label="Предпросмотр темы"
-      >
-        <p
-          id="profile-theme-preview-note"
-          class="profile-note__body"
-        >
-          Предпросмотр темы — только на этом экране. Остальные экраны пока тёмные.
-        </p>
-        <p
-          class="profile-note__body"
-          role="status"
-        >
-          Предпросмотр: {{ previewResolvedTheme === 'light' ? 'светлая' : 'тёмная' }} тема.
-        </p>
-      </section>
+      <p class="profile-note__body">
+        Выбранная тема сохраняется и пока применяется только на этом экране.
+        Остальные экраны остаются тёмными.
+      </p>
     </div>
   </main>
 </template>

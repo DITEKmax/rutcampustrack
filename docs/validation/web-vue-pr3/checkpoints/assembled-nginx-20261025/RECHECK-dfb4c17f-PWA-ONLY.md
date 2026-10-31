@@ -1,0 +1,9 @@
+# Wire-ID correction — PWA-only targeted PASS
+
+**PASS, blocking findings0.** Final runner `dfb4c17f43719dcea69fb5a02c395e91d6063f8b507797b156e31a8fc39852b5`; source240 still exact and tracked clean. Reviewer Auth/API/browser/build/tests/replay0.
+
+Compared the actual full delta with preserved original c069 and wire-id-correction.diff: exact match, only three strict numeric1 comparisons changed to exact wire String `1`, plus a safe count/boolean checkpoint before the existing known-scope assertion. The BFF DTO declares these IDs String; current Teacher client normalizes them to UI numbers. This corrects the raw-wire oracle without coercion or a product/API change. The projection contains only array counts/booleans, no body/identity/credentials, and is saved before an assertion can lose that diagnostic. Auth/CSP/Origin/cleanup/HOLD helpers are byte-unchanged.
+
+All32 current source pins match. Origin-proof hash remains c33bb4, and final HEAD/product/source/config binding is reused from FINAL-BINDING-c0695b76 because this external runner adapter is the only new logic. `run/pwa` is absent. PREP publishes only the exact new PWA command and explicitly forbids WEB replay; original WEB reservation is retained, so the same WEB directory cannot admit another original handle via wx. Root must separately recheck current owned listener/guardian and give the PWA GO.
+
+Original WEB raw SHA `34f00f3d1b02c922407fa111f4aaa037886cbf93f9dbf0167187d0ad23c1b2fe` remains unchanged, EXIT1/completedfalse/capturefalse. Its accepted Auth/canonical/top-level schema/STOMP/cleanup slices are in WEB-c069-BOUNDED-ACCEPTANCE.md; known group/subject content is not retroactively proved. No WEB replay, new fixture, grants, passwords, provider or broad runtime acceptance is authorized. HTTP Auth/WS only; HTTPS Auth/WSS remains NOT_RUN.

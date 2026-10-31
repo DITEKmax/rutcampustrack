@@ -1,0 +1,42 @@
+{
+  "rct-pr3-setup-api-gateway-1": {
+    "id": "001071720dcf16de04e8b850df87148aae4846cd94a0caf18dfcbcf971f58a44",
+    "image": "sha256:bb1b8368a51b7754d6daf1a5a3b87aa2fc8e198becc15f585a2f44272836ea96",
+    "running": true,
+    "origins": [
+      "http://127.0.0.1:15175",
+      "http://127.0.0.1:15176",
+      "http://127.0.0.1:14210",
+      "http://127.0.0.1:14220",
+      "http://127.0.0.1:14230",
+      "http://127.0.0.1:14240",
+      "http://localhost:14210",
+      "http://localhost:14220",
+      "http://localhost:14230",
+      "http://localhost:14240"
+    ],
+    "http14240Allowed": true,
+    "https14443Allowed": false
+  },
+  "rct-pr3-setup-notification-web-1": {
+    "id": "04f879280350093cfc19c76106c093ec5181eb701ae5332c6482e597c991a900",
+    "image": "sha256:bb1b8368a51b7754d6daf1a5a3b87aa2fc8e198becc15f585a2f44272836ea96",
+    "running": true,
+    "origins": [
+      "http://127.0.0.1:14210",
+      "http://127.0.0.1:14220",
+      "http://127.0.0.1:14230",
+      "http://127.0.0.1:14240",
+      "http://127.0.0.1:15175",
+      "http://127.0.0.1:15176",
+      "http://localhost:14210",
+      "http://localhost:14220",
+      "http://localhost:14230",
+      "http://localhost:14240",
+      "http://localhost:15175",
+      "http://localhost:15176"
+    ],
+    "http14240Allowed": true,
+    "https14443Allowed": false
+  }
+}

@@ -12,7 +12,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -24,7 +26,6 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.web.servlet.request.MockMultipartHttpServletRequestBuilder;
-
 import ru.rutcampustrack.academic.grpc.GroupMembersResponse;
 import ru.rutcampustrack.academic.grpc.StudentInfo;
 import ru.rutcampustrack.attendance.checkin.AttendanceDocument;
@@ -35,10 +36,6 @@ import ru.rutcampustrack.attendance.contract.enums.ExcuseType;
 import ru.rutcampustrack.attendance.event.AttendanceEventPublisher;
 import ru.rutcampustrack.attendance.studentrequest.RequestAttachmentRepository;
 import ru.rutcampustrack.schedule.grpc.LessonResponse;
-
-import java.nio.charset.StandardCharsets;
-import java.time.LocalDate;
-import java.util.List;
 
 /**
  * Integration tests for manual attendance marking write path. Proves MARK-01, MARK-02, INFRA-06
@@ -644,5 +641,241 @@ class MarkingIT extends AbstractAttendanceIntegrationTest {
                 .andExpect(status().isNoContent());
         assertThat(mongoTemplate.findAll(AttendanceDocument.class)).isEmpty();
         assertThat(requestAttachmentRepository.findAll()).isEmpty();
+    }
+
+    @Autowired private org.springframework.data.mongodb.MongoDatabaseFactory markingMongoFactory;
+
+    private static com.mongodb.MongoException ownedTransientAbort() {
+        var failure = new com.mongodb.MongoException(112, "owned transient transaction abort");
+        failure.addLabel("TransientTransactionError");
+        return failure;
+    }
+
+    /** Inserts through real storage before throwing: Spring must roll back the whole attempt. */
+    private java.util.concurrent.atomic.AtomicInteger abortMarkedInserts(int failures) {
+        var inserts = new java.util.concurrent.atomic.AtomicInteger();
+        Mockito.doAnswer(
+                        call -> {
+                            call.callRealMethod();
+                            if ("attendance.marked".equals(call.getArgument(0))
+                                    && inserts.incrementAndGet() <= failures) {
+                                throw new org.springframework.dao.DataIntegrityViolationException(
+                                        "owned translated abort after actual writes",
+                                        ownedTransientAbort());
+                            }
+                            return null;
+                        })
+                .when(transactionalOutbox)
+                .save(
+                        org.mockito.ArgumentMatchers.anyString(),
+                        org.mockito.ArgumentMatchers.anyString());
+        return inserts;
+    }
+
+    /** At second entry the prior transaction must already have rolled back and been unbound. */
+    private List<Object> observeFreshRetry(Runnable betweenAttempts) {
+        List<Object> holders = new java.util.ArrayList<>();
+        Mockito.doAnswer(
+                        call -> {
+                            assertThat(
+                                            org.springframework.transaction.support
+                                                    .TransactionSynchronizationManager
+                                                    .isActualTransactionActive())
+                                    .isTrue();
+                            Object holder =
+                                    org.springframework.transaction.support
+                                            .TransactionSynchronizationManager.getResource(
+                                            markingMongoFactory);
+                            assertThat(holder).isNotNull();
+                            if (!holders.isEmpty()) {
+                                assertThat(holder).isNotSameAs(holders.get(0));
+                                java.util.concurrent.CompletableFuture.runAsync(
+                                                () -> {
+                                                    for (String collection :
+                                                            List.of(
+                                                                    "attendances",
+                                                                    "request_attachments",
+                                                                    "attendance_outbox",
+                                                                    "lesson_actions",
+                                                                    "student_checkin_pairs")) {
+                                                        assertThat(
+                                                                        mongoTemplate
+                                                                                .getCollection(
+                                                                                        collection)
+                                                                                .countDocuments())
+                                                                .as(
+                                                                        "rolled back before retry: "
+                                                                                + collection)
+                                                                .isZero();
+                                                    }
+                                                })
+                                        .join();
+                                betweenAttempts.run();
+                            }
+                            holders.add(holder);
+                            return buildLesson(GROUP_ID);
+                        })
+                .when(scheduleGrpcClient)
+                .requireAttendanceMutationReady(LESSON_ID, GROUP_ID);
+        return holders;
+    }
+
+    private void assertOneCommittedManualMark() {
+        assertThat(attendanceRepository.findAll()).hasSize(1);
+        assertThat(markedIntents()).hasSize(1);
+        assertThat(mongoTemplate.getCollection("lesson_actions").countDocuments()).isEqualTo(1);
+        assertThat(mongoTemplate.getCollection("attendance_outbox").countDocuments()).isEqualTo(2);
+    }
+
+    @Test
+    void retryAbortAfterRealWritesUsesFreshTransactionAndCommitsOneEffect() {
+        mockHappyPath();
+        var holders = observeFreshRetry(() -> {});
+        var inserts = abortMarkedInserts(1);
+        try {
+            assertThat(socketMark(USER_ID, AttendanceStatus.PRESENT).getStatusCode().value())
+                    .isEqualTo(200);
+            assertThat(inserts).hasValue(2);
+            assertThat(holders).hasSize(2);
+            assertOneCommittedManualMark();
+        } finally {
+            Mockito.reset(transactionalOutbox);
+        }
+    }
+
+    @Test
+    void retryMultipartRollsBackAttachmentAndCommitsExactBytesOnce() throws Exception {
+        mockHappyPath();
+        var holders = observeFreshRetry(() -> {});
+        var inserts = abortMarkedInserts(1);
+        byte[] pdf = "%PDF-1.7\nretry owned bytes\n".getBytes(StandardCharsets.US_ASCII);
+        var request =
+                new MockMultipartFile(
+                        "request",
+                        "request.json",
+                        MediaType.APPLICATION_JSON_VALUE,
+                        objectMapper.writeValueAsBytes(
+                                new MarkRequest(
+                                        AttendanceStatus.EXCUSED,
+                                        ExcuseType.ILLNESS,
+                                        "doctor note")));
+        var mark =
+                multipart("/attendance/lessons/{lessonId}/students/{userId}", LESSON_ID, USER_ID)
+                        .file(request)
+                        .file(
+                                new MockMultipartFile(
+                                        "file",
+                                        "medical.pdf",
+                                        MediaType.APPLICATION_PDF_VALUE,
+                                        pdf));
+        mark.with(
+                http -> {
+                    http.setMethod("PUT");
+                    return http;
+                });
+        try {
+            mockMvc.perform(headmanHeaders(mark)).andExpect(status().isOk());
+            assertThat(inserts).hasValue(2);
+            assertThat(holders).hasSize(2);
+            assertOneCommittedManualMark();
+            var attachments = requestAttachmentRepository.findAll();
+            assertThat(attachments).hasSize(1);
+            assertThat(attachments.get(0).getData().getData()).containsExactly(pdf);
+            assertThat(attendanceRepository.findAll().get(0).getAttachmentId())
+                    .isEqualTo(attachments.get(0).getId());
+        } finally {
+            Mockito.reset(transactionalOutbox);
+        }
+    }
+
+    @Test
+    void retryRereadsExpectedRevisionAndRejectsACompetingMark() {
+        mockHappyPath();
+        var holders =
+                observeFreshRetry(
+                        () ->
+                                java.util.concurrent.CompletableFuture.runAsync(
+                                                () ->
+                                                        mongoTemplate.save(
+                                                                AttendanceDocument.builder()
+                                                                        .lessonId(LESSON_ID)
+                                                                        .userId(USER_ID)
+                                                                        .groupId(GROUP_ID)
+                                                                        .subjectId(SUBJECT_ID)
+                                                                        .semesterId(1L)
+                                                                        .lessonNumber(1)
+                                                                        .lessonDate(
+                                                                                LocalDate.of(
+                                                                                        2026, 4, 1))
+                                                                        .status(
+                                                                                AttendanceStatus
+                                                                                        .ABSENT)
+                                                                        .source(
+                                                                                AttendanceSource
+                                                                                        .HEADMAN)
+                                                                        .markedBy(HEADMAN_USER_ID)
+                                                                        .markRevision(
+                                                                                "competing-revision")
+                                                                        .createdAt(
+                                                                                java.time.Instant
+                                                                                        .now())
+                                                                        .updatedAt(
+                                                                                java.time.Instant
+                                                                                        .now())
+                                                                        .build()))
+                                        .join());
+        var inserts = abortMarkedInserts(1);
+        try {
+            var command = new MarkRequest(AttendanceStatus.PRESENT, null, null, "EMPTY", "EMPTY");
+            var response =
+                    socket.exchange(
+                            "/attendance/lessons/" + LESSON_ID + "/students/" + USER_ID,
+                            org.springframework.http.HttpMethod.PUT,
+                            new org.springframework.http.HttpEntity<>(command, signedHeadman()),
+                            String.class);
+            assertThat(response.getStatusCode().value()).isEqualTo(409);
+            assertThat(holders).hasSize(2);
+            assertThat(inserts).hasValue(1);
+            assertThat(attendanceRepository.findAll())
+                    .singleElement()
+                    .satisfies(
+                            mark -> {
+                                assertThat(mark.getStatus()).isEqualTo(AttendanceStatus.ABSENT);
+                                assertThat(mark.getMarkRevision()).isEqualTo("competing-revision");
+                            });
+            assertThat(markedIntents()).isEmpty();
+        } finally {
+            Mockito.reset(transactionalOutbox);
+        }
+    }
+
+    @Test
+    void retryExhaustionReturnsControlled503AndLeavesNoManualWrites() throws Exception {
+        mockHappyPath();
+        var inserts = abortMarkedInserts(4);
+        try {
+            var response = socketMark(USER_ID, AttendanceStatus.PRESENT);
+            assertThat(response.getStatusCode().value()).isEqualTo(503);
+            var problem = objectMapper.readTree(response.getBody());
+            assertThat(problem.path("type").asText()).endsWith("attendance-write-busy");
+            assertThat(problem.path("detail").asText())
+                    .isEqualTo(
+                            ru.rutcampustrack.attendance.exception.AttendanceWriteBusyException
+                                    .PUBLIC_DETAIL);
+            assertThat(inserts).hasValue(4);
+            for (String collection :
+                    List.of(
+                            "attendances",
+                            "request_attachments",
+                            "attendance_outbox",
+                            "lesson_actions",
+                            "student_checkin_pairs")) {
+                assertThat(mongoTemplate.getCollection(collection).countDocuments())
+                        .as(collection)
+                        .isZero();
+            }
+        } finally {
+            Mockito.reset(transactionalOutbox);
+        }
     }
 }

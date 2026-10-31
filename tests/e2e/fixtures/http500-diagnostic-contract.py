@@ -1,112 +1,52 @@
-"""Offline controls for the existing inline HTTP500 carrier; no CI/runtime main executes."""
-
+"""Finite offline controls for shared CI/Ubuntu diagnostics; no service/runtime lane."""
 import argparse
-import ast
 import copy
-import hashlib
+import importlib.util
 import json
 import os
-import re
-import stat
-import tempfile
-import textwrap
-import time
-import unittest
 from pathlib import Path
+import shutil
+import stat
+import subprocess
+import sys
+import tempfile
+import unittest
 from unittest.mock import patch
 
+sys.dont_write_bytecode = True
 parser = argparse.ArgumentParser(description=__doc__)
-parser.add_argument("--workflow", type=Path)
-parser.add_argument("--source-root", type=Path)
-parser.add_argument("--fixture-root", type=Path, help="Read-only sparse-worktree fixture overlay")
-parser.add_argument("--hosted-spec", type=Path, help="Read-only frozen hosted source before integration")
-parser.add_argument("--baseline-red", action="store_true")
-parser.add_argument("--homework-compat-red", action="store_true")
+parser.add_argument('--source-root', type=Path)
+parser.add_argument('--producer-report', type=Path, help='Actual Node-only producer report; validate explicitly projected rows')
 args = parser.parse_args()
 source_root = (args.source_root or Path(__file__).resolve().parents[3]).resolve()
-fixture_root = (args.fixture_root or source_root / "tests/e2e/fixtures").resolve()
-hosted_spec = args.hosted_spec or source_root / "tests/e2e/specs/mobile-real-server.spec.ts"
-workflow = args.workflow or source_root / ".github/workflows/ci.yml"
-carrier = workflow.read_text()
-start = carrier.index("          import hashlib, json, os, re, selectors, stat, subprocess, time")
-end = carrier.index("          PY_HTTP500_DIAGNOSTIC", start)
-tree = ast.parse(textwrap.dedent(carrier[start:end]))
-definitions = []
-for node in tree.body:
-    if isinstance(node, ast.Assign) and any(
-        isinstance(target, ast.Name) and target.id == "result" for target in node.targets
-    ):
-        break
-    if isinstance(node, (ast.Assign, ast.FunctionDef)):
-        definitions.append(node)
+module_path = source_root / 'tests/e2e/fixtures/http500_diagnostic.py'
+spec = importlib.util.spec_from_file_location('shared_http500_diagnostic', module_path)
+diag = importlib.util.module_from_spec(spec)
+sys.modules[spec.name] = diag
+spec.loader.exec_module(diag)
+namespace = vars(diag)
+config = diag.STAGES['MARK500']
+hosted_config = diag.STAGES['HOSTED_BOT_MARK500']
+request_id = '00000000-0000-4000-8000-000000000001'
+other_id = '00000000-0000-4000-8000-000000000002'
+private = 'SYNTHETIC_PRIVATE_MARKER_NOT_FOR_OUTPUT'
 
 
-def source_path(value):
-    path = Path(value)
-    if path.as_posix() in {"tests/e2e/fixtures/mobile-dataset.ts", "tests/e2e/fixtures/semester-lifecycle.spec.ts"}:
-        return fixture_root / path.name
-    return path
+def event(case, code='DATASET_ATTENDANCE_MARK_HTTP', status=500, stage='DATASET_HTTP'):
+    return {'schema': diag.EVENT_SCHEMA, 'caseId': case, 'stageId': stage, 'eventCode': code, 'httpStatus': status}
 
 
-source_path.cwd = Path.cwd
-namespace = {"Path": source_path, "hashlib": hashlib, "json": json, "os": os, "re": re, "stat": stat, "time": time}
-# The trusted repository AST contains definitions only; the runtime block is excluded above.
-exec(compile(ast.Module(body=definitions, type_ignores=[]), "<HTTP500 definitions only>", "exec"), namespace)  # noqa: S102
-assert "result" not in namespace and "collect" in namespace
-os.chdir(source_root)
-config = namespace["STAGES"]["MARK500"]
-hosted_config = namespace["STAGES"]["HOSTED_BOT_MARK500"]
-request_id = "00000000-0000-4000-8000-000000000001"
-other_id = "00000000-0000-4000-8000-000000000002"
-private = "SYNTHETIC_PRIVATE_MARKER_NOT_FOR_OUTPUT"
+def row(case='SEMESTER_ARCHIVE_RESTORE', code='DATASET_ATTENDANCE_MARK_HTTP', status=500, failed=True):
+    return {'caseId': case, 'diagnosticEvents': [event(case, code, status)] if failed else [],
+            'project': 'chromium', 'status': 'failed' if failed else 'passed', 'expectedStatus': 'passed',
+            'durationMs': 1, 'errorCount': 1 if failed else 0, 'diagnostics': [],
+            'file': 'relocated-case.spec.ts', 'line': 321,
+            'errorLocations': [{'file': 'relocated-case.spec.ts', 'line': 399}] if failed else []}
 
 
-def current_receipt():
-    # Same closed shape as artifact12233356110, rebound to current source coordinates.
-    # Retired coordinates remain explicit negative controls; no identity or response data.
-    return {
-        "status": "failed",
-        "runnerErrors": 0,
-        "unsafeArtifact": False,
-        "suppressedStdoutBytes": 0,
-        "suppressedStderrBytes": 0,
-        "results": [
-            {
-                "file": "semester-lifecycle.spec.ts",
-                "line": 1585,
-                "project": "chromium",
-                "status": "failed",
-                "expectedStatus": "passed",
-                "durationMs": 57714,
-                "errorCount": 1,
-                "diagnostics": [
-                    {"stage": "DATASET_HTTP", "cause": "DATASET_ATTENDANCE_MARK_HTTP", "httpStatus": 500},
-                    {"stage": "UNKNOWN", "cause": "REPORTED_CLASS_ERROR", "httpStatus": 0},
-                    {"stage": "UNKNOWN", "cause": "REPORTED_FRAME_DATASET_CALL", "httpStatus": 0},
-                ],
-                "errorLocations": [{"file": "semester-lifecycle.spec.ts", "line": 1811}],
-            }
-        ],
-    }
-
-
-if args.baseline_red:
-    signature = namespace["is_target_failure"](current_receipt(), config)
-    try:
-        namespace["verify_http_sources"](config)
-        sources = True
-    except ValueError:
-        sources = False
-    print(
-        json.dumps(
-            {
-                "status": "GREEN" if sources and signature else "RED",
-                "currentSourceBindingsAccepted": sources,
-                "currentSignatureAccepted": signature,
-            }
-        )
-    )
-    raise SystemExit(0 if sources and signature else 1)
+def receipt(rows=None, failed=True):
+    return {'status': 'failed' if failed else 'passed', 'runnerErrors': 0, 'unsafeArtifact': False,
+            'suppressedStdoutBytes': 0, 'suppressedStderrBytes': 0, 'results': [row()] if rows is None else rows}
 
 
 def reconnect_observation():
@@ -126,44 +66,6 @@ def reconnect_observation():
         "refreshHttpStatus": "UNOBSERVED",
     }
 
-
-def homework_receipt(extension=False):
-    value = current_receipt()
-    homework = value["results"][0]
-    homework.update(
-        file="mobile-real-server.spec.ts",
-        line=123,
-        diagnostics=[{"stage": "DATASET_HTTP", "cause": "DATASET_HOMEWORK_CREATE_HTTP", "httpStatus": 503}],
-        errorLocations=[{"file": "mobile-real-server.spec.ts", "line": 123}],
-    )
-    reconnect = copy.deepcopy(homework)
-    reconnect.update(
-        line=3958,
-        diagnostics=[{"stage": "UNKNOWN", "cause": "REPORTED_CLASS_ERROR", "httpStatus": 0}],
-        errorLocations=[{"file": "mobile-real-server.spec.ts", "line": 3958}],
-    )
-    if extension:
-        reconnect["d002ReconnectObservation"] = reconnect_observation()
-    value["results"].append(reconnect)
-    return value
-
-
-if args.homework_compat_red:
-    homework_config = namespace["STAGES"]["HOMEWORK_CREATE503"]
-    base = namespace["is_target_failure"](homework_receipt(), homework_config)
-    extension = namespace["is_target_failure"](homework_receipt(extension=True), homework_config)
-    print(
-        json.dumps(
-            {
-                "status": "GREEN" if base and extension else "RED",
-                "legacyTwoFailedRowsAccepted": base,
-                "closedD002ExtensionAccepted": extension,
-            }
-        )
-    )
-    raise SystemExit(0 if base and extension else 1)
-
-
 def error_record(stack, *, identity=request_id, gateway=False):
     return json.dumps(
         {
@@ -178,15 +80,14 @@ def error_record(stack, *, identity=request_id, gateway=False):
         }
     ).encode()
 
-
 controller_frame = "\tat ru.rutcampustrack.attendance.marking.MarkingController.mark(MarkingController.java:44)\n"
+
 body_frame = (
     "\tat ru.rutcampustrack.attendance.event.SemesterArchiveFence.lock"
     "(SemesterArchiveFence.java:54)\n"
     "\tat ru.rutcampustrack.attendance.student.PairWriteCoordinator.lockSemesterForWrite"
     "(PairWriteCoordinator.java:51)\n"
 )
-
 
 def mongo_stack(code=112, name="WriteConflict", labels=None, site="BODY"):
     response = {
@@ -221,10 +122,8 @@ def mongo_stack(code=112, name="WriteConflict", labels=None, site="BODY"):
         + "\n\tat com.mongodb.internal.Synthetic.call(Synthetic.java:1)\n"
     )
 
-
 def classify(payload, captured=None, identity=request_id):
     return namespace["classify"](payload, config, captured, identity)
-
 
 def complete(payload):
     domain, gateway = classify(payload), classify(b"", "api-gateway")
@@ -235,629 +134,587 @@ def complete(payload):
     return namespace["finalize_ordinary_mark_result"](value)
 
 
-class MarkDiagnosticContract(unittest.TestCase):
-    def test_homework_legacy_and_exact_d002_extension_admission(self):
-        homework_config = namespace["STAGES"]["HOMEWORK_CREATE503"]
-        self.assertTrue(namespace["is_target_failure"](homework_receipt(), homework_config))
-        self.assertTrue(namespace["is_target_failure"](homework_receipt(extension=True), homework_config))
-        for field, wrong in (
-            ("line", 3959),
-            ("file", "other.spec.ts"),
-            ("project", "firefox"),
-            ("status", "passed"),
-            ("expectedStatus", "failed"),
-            ("errorCount", 0),
-        ):
-            with self.subTest(field=field):
-                value = homework_receipt(extension=True)
-                value["results"][1][field] = wrong
-                self.assertFalse(namespace["is_target_failure"](value, homework_config))
-        stale = homework_receipt(extension=True)
-        stale["results"][1]["line"] = 3959
-        stale["results"][1]["errorLocations"][0]["line"] = 3959
-        self.assertFalse(namespace["is_target_failure"](stale, homework_config))
-        for extra in ("unknownField", "nativePrimaryFailures"):
-            for extension in (False, True):
-                value = homework_receipt(extension=extension)
-                value["results"][1][extra] = []
-                self.assertFalse(namespace["is_target_failure"](value, homework_config))
-
-    def test_homework_previous_base_and_target_guards_remain(self):
-        homework_config = namespace["STAGES"]["HOMEWORK_CREATE503"]
-        for field, wrong in (
-            ("durationMs", -1),
-            ("durationMs", 1800001),
-            ("errorCount", 9),
-            ("line", True),
-            ("errorLocations", [{"file": "other.ts", "line": 1}]),
-            ("diagnostics", [{"stage": "private text", "cause": "X", "httpStatus": 0}]),
-        ):
-            for index in (0, 1):
-                with self.subTest(field=field, index=index):
-                    value = homework_receipt(extension=True)
-                    value["results"][index][field] = wrong
-                    self.assertFalse(namespace["is_target_failure"](value, homework_config))
-        for wrong in (500, 200):
-            value = homework_receipt(extension=True)
-            value["results"][0]["diagnostics"][0]["httpStatus"] = wrong
-            self.assertFalse(namespace["is_target_failure"](value, homework_config))
-        value = homework_receipt(extension=True)
-        value["results"][0]["status"] = "passed"
-        self.assertFalse(namespace["is_target_failure"](value, homework_config))
-        for field, wrong in (("status", "passed"), ("runnerErrors", 1), ("unsafeArtifact", True)):
-            value = homework_receipt(extension=True)
-            value[field] = wrong
-            self.assertFalse(namespace["is_target_failure"](value, homework_config))
-
-    def test_d002_observation_closed_flags_phases_status_and_size(self):
-        closed = namespace["closed_d002_reconnect_observation"]
-        for phase in ("NOT_CALLED", "PENDING", "FULFILLED", "REJECTED"):
-            for status in ("UNOBSERVED", "OTHER", 200, 401, 403, 429, 503):
-                value = reconnect_observation()
-                value["native"]["postOnline"]["current"]["phase"] = phase
-                value["refreshHttpStatus"] = status
-                self.assertTrue(closed(value))
-        changes = [
-            (("native", "preOnline", "refresh", "phase"), private),
-            (("native", "postOnline", "current", "phase"), "x" * 2049),
-            (("native", "postOnline", "refresh", "multiple"), 1),
-            (("pageHttp", "current", "responded"), 0),
-            (("priorPending", "refresh"), "true"),
-            (("offlineSeen",), True.__int__()),
-            (("refreshHttpStatus",), 200.0),
-            (("refreshHttpStatus",), True),
-            (("native", "preOnline"), []),
-            (("pageHttp",), None),
-        ]
-        for path, wrong in changes:
-            with self.subTest(path=path):
-                value = reconnect_observation()
-                target = value
-                for key in path[:-1]:
-                    target = target[key]
-                target[path[-1]] = wrong
-                self.assertFalse(closed(value))
-                receipt = homework_receipt(extension=True)
-                receipt["results"][1]["d002ReconnectObservation"] = value
-                self.assertFalse(namespace["is_homework_failure"](receipt))
-        for path in (
-            (),
-            ("native",),
-            ("native", "preOnline"),
-            ("native", "postOnline", "refresh"),
-            ("pageHttp", "current"),
-            ("priorPending",),
-        ):
-            value = reconnect_observation()
-            target = value
-            for key in path:
-                target = target[key]
-            target["unknownField"] = private
-            self.assertFalse(closed(value))
-        self.assertFalse(closed({}))
-        self.assertFalse(closed([]))
-        self.assertFalse(closed(None))
-
-    def test_d002_schema_source_bindings_fail_before_runtime(self):
-        namespace["verify_d002_reconnect_sources"]()
-        sources = namespace["D002_RECONNECT_SOURCES"]
-        for source in sources:
-            with self.subTest(source=source), patch.dict(sources, {source: "0" * 64}), self.assertRaises(ValueError):
-                namespace["verify_d002_reconnect_sources"]()
-        lines = hosted_spec.read_text().splitlines()
-        self.assertIn(
-            "D002 reconnect rechecks changed grants and a late old feed cannot replace the new account", lines[3957]
-        )
-
-    def test_existing_privacy_suite_is_selected_only_after_client_install(self):
-        install = carrier.index("      - name: Install Playwright + browsers")
-        check = carrier.index("      - name: Validate the existing safe artifact privacy contract for client scenarios")
-        trust = carrier.index("      - name: Trust the disposable localhost certificate for Chromium workers")
-        self.assertLess(install, check)
-        self.assertLess(check, trust)
-        block = carrier[check:trust]
-        self.assertIn("if: ${{ matrix.group == 'client' }}", block)
-        self.assertIn("working-directory: tests/e2e", block)
-        self.assertEqual(carrier.count("npm run test:artifact-privacy"), 1)
-        self.assertIn("if npm run test:artifact-privacy; then privacy_status=0; else privacy_status=$?; fi", block)
-        self.assertIn("raise SystemExit(int(sys.argv[1]))", block)
-        self.assertIn("umask 077", block)
-        self.assertIn("0 < info.st_size <= 4096", block)
-        self.assertIn("RCT_E2E_CONTROL_RECEIPT_PATH:", block)
-        self.assertIn("steps.artifact-privacy-controls.outputs.safe_receipt == 'true'", block)
-        upload = block.split("      - name: Upload only the closed existing privacy control receipt", 1)[1]
-        self.assertIn(
-            "path: ${{ runner.temp }}/rct-artifact-privacy-client-${{ github.run_id }}-${{ github.run_attempt }}.safe.json",
-            upload,
-        )
-        self.assertNotIn("*", upload)
-        self.assertIn(
-            "npm ci\n          node check-admission-retry.mjs\n          npx playwright install --with-deps chromium webkit",
-            carrier[install:check],
-        )
-
-    def test_existing_privacy_receipt_is_closed_without_running_its_suite(self):
-        check = carrier.index("      - name: Validate the existing safe artifact privacy contract for client scenarios")
-        start = carrier.index("          import json, os, re, stat, sys", check)
-        end = carrier.index("          PY_PRIVACY_RECEIPT", start)
-        tree = ast.parse(textwrap.dedent(carrier[start:end]))
-        functions = [node for node in tree.body if isinstance(node, ast.FunctionDef)]
-        self.assertEqual([node.name for node in functions], ["receipt_pairs", "closed_privacy_receipt"])
-        scope = {}
-        exec(compile(ast.Module(body=functions, type_ignores=[]), "<privacy receipt validator only>", "exec"), scope)  # noqa: S102
-        closed = scope["closed_privacy_receipt"]
-        boundary = {
-            "stage": "AUTOMATIC_CONTEXT_BEFORE_ATTACHMENT",
-            "markerAbsent": True,
-            "failureRetained": True,
-            "attachmentNotYetCreated": True,
-            "interrupted": False,
-        }
-        value = {
-            "state": "PRIVACY_BOUNDARIES_PASSED",
-            "normalChildStatus": 0,
-            "markerAbsent": True,
-            "producerBoundary": boundary,
-            "originalMetadataLeakReproduced": True,
-            "expectedFailureRetained": True,
-            "successRetained": True,
-            "interruptedChildStatus": 1,
-            "interruptedChildSignal": None,
-            "interruptionBoundary": dict(boundary, interrupted=True),
-            "interruptionPassed": True,
-            "missingGuardRejectedBeforeOperation": True,
-            "startupPassed": True,
-            "browser": "NOT_STARTED",
-            "guardControl": {
-                key: True
-                for key in (
-                    "canonicalReporterAccepted",
-                    "sameBasenameAlternateRejected",
-                    "extraReporterRejected",
-                    "traceRejected",
-                    "videoRejected",
-                    "screenshotRejected",
-                    "missingSnapshotGuardRejected",
-                    "wrongSnapshotGuardRejected",
-                )
-            },
-        }
-        self.assertTrue(closed(value))
-        failed = dict(value, state="PRIVACY_CONTROL_FAILED", producerBoundary=None, interruptionBoundary=None, startupPassed=False)
-        del failed["guardControl"]
-        self.assertTrue(closed(failed))
-        self.assertTrue(
-            closed({"state": "CONTROL_EXECUTION_ERROR", "rawErrorSuppressed": True, "browser": "NOT_STARTED"})
-        )
-        for field, wrong in (
-            ("state", private),
-            ("browser", private),
-            ("normalChildStatus", 256),
-            ("interruptedChildStatus", True),
-            ("markerAbsent", 1),
-            ("startupPassed", False),
-            ("startupPassed", 1),
-            ("interruptedChildSignal", private),
-            ("producerBoundary", dict(boundary, raw=private)),
-        ):
-            self.assertFalse(closed(dict(value, **{field: wrong})))
-        self.assertFalse(closed({key: item for key, item in value.items() if key != "startupPassed"}))
-        self.assertFalse(closed(dict(value, rawOutput=private)))
-        with self.assertRaises(ValueError):
-            json.loads(
-                '{"state":"' + private + '","state":"CONTROL_EXECUTION_ERROR"}',
-                object_pairs_hook=scope["receipt_pairs"],
-            )
-        self.assertLessEqual(len(json.dumps(value).encode()), 4096)
-
-    def test_current_signature_and_bound_sources(self):
-        self.assertTrue(namespace["is_target_failure"](current_receipt(), config))
-        namespace["verify_http_sources"](config)
-        self.assertEqual(namespace["frame_sources"](hosted_config), namespace["HOSTED_FRAME_SOURCES"])
-        self.assertNotIn("ATTENDANCE_REPORT_SERVICE", namespace["frame_sources"](config))
-
-    def test_signature_negative_controls(self):
-        for field, wrong in (
-            ("line", 1592),
-            ("file", "mobile-real-server.spec.ts"),
-            ("project", "firefox"),
-            ("status", "passed"),
-        ):
-            with self.subTest(field=field):
-                value = current_receipt()
-                value["results"][0][field] = wrong
-                self.assertFalse(namespace["is_target_failure"](value, config))
-        for line in (1818, 1883, 1884):
-            value = current_receipt()
-            value["results"][0]["errorLocations"][0]["line"] = line
-            self.assertFalse(namespace["is_target_failure"](value, config))
-        # The retired title/operation pair must remain refused after the accepted source move.
-        stale = current_receipt()
-        stale["results"][0]["line"] = 1657
-        stale["results"][0]["errorLocations"][0]["line"] = 1883
-        self.assertFalse(namespace["is_target_failure"](stale, config))
-        value = current_receipt()
-        value["results"][0]["diagnostics"][0]["httpStatus"] = 409
-        self.assertFalse(namespace["is_target_failure"](value, config))
-        self.assertFalse(namespace["is_target_failure"](current_receipt(), hosted_config))
-
-    def test_student_stats_exact_current_receipt_and_source_drift(self):
-        results = []
-        for file, line in (('mobile-attendance-requests.spec.ts', 9), ('mobile-lesson-lifecycle.spec.ts', 20),
-                           ('mobile-schedule-lifecycle.spec.ts', 411), ('mobile-schedule-lifecycle.spec.ts', 1943)):
-            target = line == 411
-            results.append({'file': file, 'line': line, 'project': 'chromium',
-                            'status': 'failed' if target else 'passed', 'expectedStatus': 'passed',
-                            'durationMs': 1, 'errorCount': 1 if target else 0, 'diagnostics': [],
-                            'errorLocations': [{'file': file, 'line': 1471}] if target else []})
-        value = {'results': results}
-        self.assertTrue(namespace['is_student_stats_failure'](value))
-        for source, digest in namespace['STATS_SOURCES'].items():
-            self.assertEqual(hashlib.sha256(Path(source).read_bytes()).hexdigest(), digest)
-        lines = Path('tests/e2e/specs/mobile-schedule-lifecycle.spec.ts').read_text().splitlines()
-        self.assertTrue(lines[410].startswith("test('HEADMAN removes and returns"))
-        self.assertTrue(lines[1942].startswith("test('STUDENT warm semester"))
-        self.assertIn("throw new Error('Student statistics HTTP 503')", lines[1470])
-        for key, changed in (('line', 397), ('line', 412), ('errorLocations', [{'file': results[2]['file'], 'line': 1457}]),
-                             ('errorLocations', [{'file': 'foreign.spec.ts', 'line': 1471}]), ('raw', private)):
-            altered = copy.deepcopy(value)
-            altered['results'][2][key] = changed
-            self.assertFalse(namespace['is_student_stats_failure'](altered))
-
-    def test_current_framework_error_extension_is_closed_for_all_consumers(self):
-        reported = {'reportedErrorClass': 'Error', 'reportedTransportCode': 'UNKNOWN',
-                    'reportedHttpStatus': 503, 'reportedSourceFrame': {'file': 'MOBILE_DATASET', 'line': 1, 'column': 1}}
-        self.assertTrue(namespace['closed_reported_framework_error'](reported))
-        mark = current_receipt()
-        hosted = current_receipt()
-        hosted['results'][0].update(file='mobile-real-server.spec.ts', line=5943,
-            errorLocations=[{'file': 'mobile-real-server.spec.ts', 'line': 6064}],
-            diagnostics=[{'stage': 'DATASET_HTTP', 'cause': 'DATASET_ATTENDANCE_MARK_HTTP', 'httpStatus': 500}])
-        stats = current_receipt()
-        stats['results'] = []
-        for file, line in (('mobile-attendance-requests.spec.ts', 9), ('mobile-lesson-lifecycle.spec.ts', 20),
-                           ('mobile-schedule-lifecycle.spec.ts', 411), ('mobile-schedule-lifecycle.spec.ts', 1943)):
-            target = line == 411
-            stats['results'].append({'file': file, 'line': line, 'project': 'chromium', 'expectedStatus': 'passed',
-                'status': 'failed' if target else 'passed', 'durationMs': 1, 'errorCount': 1 if target else 0,
-                'diagnostics': [], 'errorLocations': [{'file': file, 'line': 1471}] if target else []})
-        bad = [None, [], dict(reported, raw=private), dict(reported, reportedErrorClass=private),
-               dict(reported, reportedTransportCode=private), dict(reported, reportedHttpStatus=True),
-               dict(reported, reportedHttpStatus='503'), dict(reported, reportedHttpStatus=203),
-               dict(reported, reportedSourceFrame={'file': private, 'line': 1, 'column': 1}),
-               dict(reported, reportedSourceFrame={'file': 'MOBILE_DATASET', 'line': True, 'column': 1}),
-               dict(reported, reportedSourceFrame={'file': 'MOBILE_DATASET', 'line': 1000000, 'column': 1}),
-               dict(reported, reportedSourceFrame={'file': 'MOBILE_DATASET', 'line': 1, 'column': 1000000}),
-               dict(reported, reportedSourceFrame={'file': 'MOBILE_DATASET', 'line': 1, 'column': 1, 'raw': private})]
-        for receipt, selected in ((mark, config), (hosted, hosted_config),
-                (homework_receipt(extension=True), namespace['STAGES']['HOMEWORK_CREATE503']),
-                (stats, namespace['STAGES']['STUDENT_STATS503'])):
-            self.assertTrue(namespace['is_target_failure'](receipt, selected))
-            for index, row in enumerate(receipt['results']):
-                if row['status'] != 'failed':
-                    altered = copy.deepcopy(receipt); altered['results'][index]['reportedFrameworkError'] = reported
-                    self.assertFalse(namespace['is_target_failure'](altered, selected))
-                    continue
-                row['reportedFrameworkError'] = copy.deepcopy(reported)
-                self.assertTrue(namespace['is_target_failure'](receipt, selected))
-                altered = copy.deepcopy(receipt); altered['results'][index]['status'] = []
-                self.assertFalse(namespace['is_target_failure'](altered, selected))
-                for value in bad:
-                    altered = copy.deepcopy(receipt); altered['results'][index]['reportedFrameworkError'] = value
-                    self.assertFalse(namespace['is_target_failure'](altered, selected))
-                altered = copy.deepcopy(receipt); altered['results'][index]['raw'] = private
-                self.assertFalse(namespace['is_target_failure'](altered, selected))
-
-    def test_hosted_admission_remains_disjoint(self):
-        value = current_receipt()
-        row = value["results"][0]
-        row.update(
-            file="mobile-real-server.spec.ts",
-            line=5943,
-            errorLocations=[{"file": "mobile-real-server.spec.ts", "line": 6064}],
-            diagnostics=[{"stage": "DATASET_HTTP", "cause": "DATASET_ATTENDANCE_MARK_HTTP", "httpStatus": 500}],
-        )
-        self.assertTrue(namespace["is_target_failure"](value, hosted_config))
-        self.assertFalse(namespace["is_target_failure"](value, config))
-        self.assertEqual(namespace["exception_classes"](hosted_config), namespace["HOSTED_CLASSES"])
-        for line in (1883, 5915, 6065, 6069, 6147):
-            row["errorLocations"][0]["line"] = line
-            self.assertFalse(namespace["is_target_failure"](value, hosted_config))
-        stale = copy.deepcopy(value)
-        stale["results"][0]["line"] = 5948
-        stale["results"][0]["errorLocations"][0]["line"] = 6069
-        self.assertFalse(namespace["is_target_failure"](stale, hosted_config))
-        self.assertEqual(
-            hashlib.sha256(hosted_spec.read_bytes()).hexdigest(),
-            namespace["HOSTED_MARK_SOURCES"]["tests/e2e/specs/mobile-real-server.spec.ts"],
-        )
-        hosted_lines = hosted_spec.read_text().splitlines()
-        self.assertIn(
-            "test('actual private bot menu roster and teacher Today use hosted current authority'", hosted_lines[5942]
-        )
-        self.assertEqual(hosted_lines[6063].strip(), "await dataset.headmanActor.call(")
-        witness = (fixture_root / "mobile-dataset.ts").read_text()
-        self.assertIn("info.line !== 5943 ||", witness)
-        self.assertNotIn("info.line !== 5948 ||", witness)
-        self.assertNotIn("info.line !== 5794 ||", witness)
-        self.assertEqual(
-            hashlib.sha256(witness.encode()).hexdigest(),
-            namespace["HOSTED_MARK_SOURCES"]["tests/e2e/fixtures/mobile-dataset.ts"],
-        )
-
-    def test_changed_source_fails_closed(self):
-        sources = namespace["ORDINARY_MARK_FRAME_SOURCES"]
-        for symbol in sources:
-            with self.subTest(symbol=symbol), patch.dict(sources):
-                entry = sources[symbol]
-                sources[symbol] = (*entry[:3], "0" * 64, entry[4])
-                with self.assertRaises(ValueError):
-                    namespace["verify_http_sources"](config)
-        fixture_sources = namespace["ORDINARY_MARK_SOURCES"]
-        for source in fixture_sources:
-            with (
-                self.subTest(source=source),
-                patch.dict(fixture_sources, {source: "0" * 64}),
-                self.assertRaises(ValueError),
-            ):
-                namespace["verify_http_sources"](config)
-
+class SharedDiagnosticControls(unittest.TestCase):
     def test_mongo_chain_frame_code_labels_and_sites(self):
-        for site in ("BODY", "BEGIN", "COMMIT", "ROLLBACK"):
-            with self.subTest(site=site):
-                result = complete(error_record(mongo_stack(site=site)))
-                self.assertEqual(result["state"], "UNIQUE")
-                self.assertEqual(result["reportedOrigin"], "ATTENDANCE_MVC")
-                self.assertEqual(result["reportedExceptionChain"], ["MONGO_TRANSACTION", "MONGO"])
-                self.assertEqual(
-                    result["reportedOwnFrame"],
-                    {
-                        "symbol": "ATTENDANCE_SEMESTER_ARCHIVE_FENCE",
-                        "line": 54,
-                    }
-                    if site == "BODY"
-                    else {"symbol": "ATTENDANCE_MARKING_CONTROLLER", "line": 44},
-                )
-                self.assertEqual(
-                    result["reportedMongo"],
-                    {
-                        "state": "REPORTED",
-                        "code": "WRITE_CONFLICT",
-                        "site": site,
-                        "serverLabels": ["TRANSIENT_TRANSACTION_ERROR"],
-                    },
-                )
-                self.assertTrue(namespace["closed_ordinary_mark_result"](result))
-                serialized = json.dumps(result)
-                for forbidden in (private, request_id, "synthetic:27017", "errmsg", "stack", "requestId"):
-                    self.assertNotIn(forbidden, serialized)
+            for site in ("BODY", "BEGIN", "COMMIT", "ROLLBACK"):
+                with self.subTest(site=site):
+                    result = complete(error_record(mongo_stack(site=site)))
+                    self.assertEqual(result["state"], "UNIQUE")
+                    self.assertEqual(result["reportedOrigin"], "ATTENDANCE_MVC")
+                    self.assertEqual(result["reportedExceptionChain"], ["MONGO_TRANSACTION", "MONGO"])
+                    self.assertEqual(
+                        result["reportedOwnFrame"],
+                        {
+                            "symbol": "ATTENDANCE_SEMESTER_ARCHIVE_FENCE",
+                            "line": 54,
+                        }
+                        if site == "BODY"
+                        else {"symbol": "ATTENDANCE_MARKING_CONTROLLER", "line": 44},
+                    )
+                    self.assertEqual(
+                        result["reportedMongo"],
+                        {
+                            "state": "REPORTED",
+                            "code": "WRITE_CONFLICT",
+                            "site": site,
+                            "serverLabels": ["TRANSIENT_TRANSACTION_ERROR"],
+                        },
+                    )
+                    self.assertTrue(namespace["closed_ordinary_mark_result"](result))
+                    serialized = json.dumps(result)
+                    for forbidden in (private, request_id, "synthetic:27017", "errmsg", "stack", "requestId"):
+                        self.assertNotIn(forbidden, serialized)
 
     def test_first_request_correlation(self):
-        payload = error_record(mongo_stack(), identity=other_id)
-        self.assertEqual(classify(payload)["state"], "UNAVAILABLE_NO_ERROR_RECORD")
-        self.assertEqual(classify(payload, identity=None)["state"], "UNAVAILABLE_PRIVATE_INPUT")
-        mixed = payload + b"\n" + error_record(mongo_stack())
-        self.assertEqual(complete(mixed)["reportedMongo"]["code"], "WRITE_CONFLICT")
+            payload = error_record(mongo_stack(), identity=other_id)
+            self.assertEqual(classify(payload)["state"], "UNAVAILABLE_NO_ERROR_RECORD")
+            self.assertEqual(classify(payload, identity=None)["state"], "UNAVAILABLE_PRIVATE_INPUT")
+            mixed = payload + b"\n" + error_record(mongo_stack())
+            self.assertEqual(complete(mixed)["reportedMongo"]["code"], "WRITE_CONFLICT")
 
     def test_ambiguity_and_multiple_origins(self):
-        payload = error_record(mongo_stack())
-        double = payload + b"\n" + payload
-        self.assertEqual(complete(double)["state"], "AMBIGUOUS")
-        self.assertEqual(complete(double)["reportedMongo"]["state"], "AMBIGUOUS")
-        gateway = error_record(
-            "java.lang.IllegalStateException: " + private + "\n"
-            "\tat ru.rutcampustrack.gateway.security.InternalJwtIssuerFilter.filter"
-            "(InternalJwtIssuerFilter.java:200)\n",
-            gateway=True,
-        )
-        self.assertEqual(
-            namespace["combine"](classify(payload), classify(gateway, "api-gateway"), config)["state"], "AMBIGUOUS"
-        )
+            payload = error_record(mongo_stack())
+            double = payload + b"\n" + payload
+            self.assertEqual(complete(double)["state"], "AMBIGUOUS")
+            self.assertEqual(complete(double)["reportedMongo"]["state"], "AMBIGUOUS")
+            gateway = error_record(
+                "java.lang.IllegalStateException: " + private + "\n"
+                "\tat ru.rutcampustrack.gateway.security.InternalJwtIssuerFilter.filter"
+                "(InternalJwtIssuerFilter.java:200)\n",
+                gateway=True,
+            )
+            self.assertEqual(
+                namespace["combine"](classify(payload), classify(gateway, "api-gateway"), config)["state"], "AMBIGUOUS"
+            )
 
     def test_unknown_classes_and_driver_fields(self):
-        value = complete(error_record("example.UnknownException: " + private + "\n" + controller_frame))
-        self.assertEqual(value["exceptionCategory"], "UNKNOWN")
-        self.assertEqual(value["reportedExceptionClassChain"], ["UNKNOWN"])
-        self.assertEqual(value["reportedMongo"]["state"], "UNKNOWN")
-        for code, name, labels, expected in (
-            (999, "OtherCode", [], "OTHER"),
-            (112, "WrongName", [], "UNKNOWN"),
-            (112, "WriteConflict", [private], "UNKNOWN"),
-        ):
-            value = complete(error_record(mongo_stack(code, name, labels)))
-            self.assertEqual(value["reportedMongo"]["code"], expected)
-            self.assertNotIn(private, json.dumps(value))
+            value = complete(error_record("example.UnknownException: " + private + "\n" + controller_frame))
+            self.assertEqual(value["exceptionCategory"], "UNKNOWN")
+            self.assertEqual(value["reportedExceptionClassChain"], ["UNKNOWN"])
+            self.assertEqual(value["reportedMongo"]["state"], "UNKNOWN")
+            for code, name, labels, expected in (
+                (999, "OtherCode", [], "OTHER"),
+                (112, "WrongName", [], "UNKNOWN"),
+                (112, "WriteConflict", [private], "UNKNOWN"),
+            ):
+                value = complete(error_record(mongo_stack(code, name, labels)))
+                self.assertEqual(value["reportedMongo"]["code"], expected)
+                self.assertNotIn(private, json.dumps(value))
 
     def test_malformed_and_capture_bounds(self):
-        for payload, state in (
-            (b"{", "UNAVAILABLE_NO_ERROR_RECORD"),
-            (b"[]", "UNAVAILABLE_NO_ERROR_RECORD"),
-            (b"x" * 131073, "UNAVAILABLE_LOG_LIMIT"),
-            (b"\n".join([b"{}"] * 201), "UNAVAILABLE_LOG_LIMIT"),
-            (b"x" * (namespace["LIMIT"] + 1), "UNAVAILABLE_LOG_LIMIT"),
-            (error_record(""), "UNAVAILABLE_EXCEPTION_STACK"),
-            (error_record("x" * 131073), "UNAVAILABLE_LOG_LIMIT"),
-        ):
-            with self.subTest(size=len(payload), expected=state):
-                self.assertEqual(classify(payload)["state"], state)
-        malformed = complete(b"{\n" + error_record(mongo_stack()))
-        self.assertEqual(malformed["state"], "REPORTED_PARTIAL_LOG_FORMAT")
-        self.assertEqual(malformed["reportedMongo"]["state"], "UNKNOWN")
+            for payload, state in (
+                (b"{", "UNAVAILABLE_NO_ERROR_RECORD"),
+                (b"[]", "UNAVAILABLE_NO_ERROR_RECORD"),
+                (b"x" * 131073, "UNAVAILABLE_LOG_LIMIT"),
+                (b"\n".join([b"{}"] * 201), "UNAVAILABLE_LOG_LIMIT"),
+                (b"x" * (namespace["LIMIT"] + 1), "UNAVAILABLE_LOG_LIMIT"),
+                (error_record(""), "UNAVAILABLE_EXCEPTION_STACK"),
+                (error_record("x" * 131073), "UNAVAILABLE_LOG_LIMIT"),
+            ):
+                with self.subTest(size=len(payload), expected=state):
+                    self.assertEqual(classify(payload)["state"], state)
+            malformed = complete(b"{\n" + error_record(mongo_stack()))
+            self.assertEqual(malformed["state"], "REPORTED_PARTIAL_LOG_FORMAT")
+            self.assertEqual(malformed["reportedMongo"]["state"], "UNKNOWN")
 
     def test_duplicate_json_and_suppressed_stacks(self):
-        record = error_record(mongo_stack())
-        duplicated = record.replace(b'"level": "ERROR"', b'"level":"ERROR","level":"ERROR"')
-        self.assertEqual(classify(duplicated)["state"], "UNAVAILABLE_NO_ERROR_RECORD")
-        suppressed = error_record(mongo_stack() + "\tSuppressed: java.lang.IllegalStateException: hidden\n")
-        self.assertEqual(classify(suppressed)["state"], "AMBIGUOUS")
+            record = error_record(mongo_stack())
+            duplicated = record.replace(b'"level": "ERROR"', b'"level":"ERROR","level":"ERROR"')
+            self.assertEqual(classify(duplicated)["state"], "UNAVAILABLE_NO_ERROR_RECORD")
+            suppressed = error_record(mongo_stack() + "\tSuppressed: java.lang.IllegalStateException: hidden\n")
+            self.assertEqual(classify(suppressed)["state"], "AMBIGUOUS")
 
     def test_artifact_second_allowlist(self):
-        value = complete(error_record(mongo_stack()))
-        self.assertTrue(namespace["closed_ordinary_mark_result"](value))
-        for key, wrong in (
-            ("state", private),
-            ("sourceStage", private),
-            ("exceptionCategory", private),
-            ("reportedOrigin", private),
-            ("reportedExceptionChain", [private]),
-            ("reportedExceptionClassChain", [private]),
-            ("reportedOwnFrame", {"symbol": private, "line": 1}),
-            ("reportedMongo", {"state": "REPORTED", "code": private, "site": "BODY", "serverLabels": []}),
-        ):
-            with self.subTest(key=key):
-                changed = dict(value, **{key: wrong})
-                self.assertFalse(namespace["closed_ordinary_mark_result"](changed))
-        self.assertFalse(namespace["closed_ordinary_mark_result"](dict(value, requestId=request_id)))
-        self.assertFalse(namespace["closed_ordinary_mark_result"](dict(value, reportedExceptionChain=["MONGO"] * 17)))
-        self.assertFalse(
-            namespace["closed_ordinary_mark_result"](
-                dict(
-                    value,
-                    reportedAmbiguityEvidence=[
-                        {
-                            "capturedOrigin": "ATTENDANCE_MVC",
-                            "reasons": [private],
-                            "exceptionClasses": [],
-                            "ownFrames": [],
-                        }
-                    ],
+            value = complete(error_record(mongo_stack()))
+            self.assertTrue(namespace["closed_ordinary_mark_result"](value))
+            for key, wrong in (
+                ("state", private),
+                ("sourceStage", private),
+                ("exceptionCategory", private),
+                ("reportedOrigin", private),
+                ("reportedExceptionChain", [private]),
+                ("reportedExceptionClassChain", [private]),
+                ("reportedOwnFrame", {"symbol": private, "line": 1}),
+                ("reportedMongo", {"state": "REPORTED", "code": private, "site": "BODY", "serverLabels": []}),
+            ):
+                with self.subTest(key=key):
+                    changed = dict(value, **{key: wrong})
+                    self.assertFalse(namespace["closed_ordinary_mark_result"](changed))
+            self.assertFalse(namespace["closed_ordinary_mark_result"](dict(value, requestId=request_id)))
+            self.assertFalse(namespace["closed_ordinary_mark_result"](dict(value, reportedExceptionChain=["MONGO"] * 17)))
+            self.assertFalse(
+                namespace["closed_ordinary_mark_result"](
+                    dict(
+                        value,
+                        reportedAmbiguityEvidence=[
+                            {
+                                "capturedOrigin": "ATTENDANCE_MVC",
+                                "reasons": [private],
+                                "exceptionClasses": [],
+                                "ownFrames": [],
+                            }
+                        ],
+                    )
                 )
             )
-        )
 
     def test_whole_output_schema_and_4096_byte_cap(self):
-        value = complete(error_record(mongo_stack()))
-        self.assertEqual(value["schema"], "attendance-mark-http500.v1")
-        classes = namespace["HOSTED_CLASSES"]
-        longest = max(classes, key=len)
-        value["reportedAmbiguityEvidence"] = [
-            {
-                "capturedOrigin": origin,
-                "reasons": sorted(namespace["AMBIGUITY_REASONS"]),
-                "exceptionClasses": [longest] * len(classes),
-                "ownFrames": [],
-            }
-            for origin in ("ATTENDANCE_MVC", "GATEWAY_WEBFLUX")
-        ]
-        self.assertTrue(namespace["closed_ordinary_mark_result"](value))
-        self.assertGreater(len(json.dumps(value).encode()), 4096)
-        result = namespace["finalize_ordinary_mark_result"](value)
-        self.assertEqual(result["state"], "UNAVAILABLE_LOG_LIMIT")
-        self.assertLessEqual(len((json.dumps(result, sort_keys=True) + "\n").encode()), 4096)
-        result = namespace["finalize_ordinary_mark_result"](dict(value, requestId=request_id))
-        self.assertEqual(result["state"], "UNAVAILABLE_LOG_FORMAT")
-        self.assertNotIn(request_id, json.dumps(result))
+            value = complete(error_record(mongo_stack()))
+            self.assertEqual(value["schema"], "attendance-mark-http500.v1")
+            classes = namespace["HOSTED_CLASSES"]
+            longest = max(classes, key=len)
+            value["reportedAmbiguityEvidence"] = [
+                {
+                    "capturedOrigin": origin,
+                    "reasons": sorted(namespace["AMBIGUITY_REASONS"]),
+                    "exceptionClasses": [longest] * len(classes),
+                    "ownFrames": [],
+                }
+                for origin in ("ATTENDANCE_MVC", "GATEWAY_WEBFLUX")
+            ]
+            self.assertTrue(namespace["closed_ordinary_mark_result"](value))
+            self.assertGreater(len(json.dumps(value).encode()), 4096)
+            result = namespace["finalize_ordinary_mark_result"](value)
+            self.assertEqual(result["state"], "UNAVAILABLE_LOG_LIMIT")
+            self.assertLessEqual(len((json.dumps(result, sort_keys=True) + "\n").encode()), 4096)
+            result = namespace["finalize_ordinary_mark_result"](dict(value, requestId=request_id))
+            self.assertEqual(result["state"], "UNAVAILABLE_LOG_FORMAT")
+            self.assertNotIn(request_id, json.dumps(result))
 
     def test_private_persistence_and_witness_refusals(self):
-        with tempfile.TemporaryDirectory(prefix="rct-mark-contract-") as directory:
-            temporary = Path(directory)
-            work = temporary / "rct-semester-lifecycle-1-1"
-            work.mkdir(mode=0o700)
-            (work / "artifacts").mkdir(mode=0o700)
-            marker = work / "disposable-target"
-            marker.write_bytes(b"RCT_SEMESTER_DISPOSABLE\n")
-            marker.chmod(0o600)
-            witness = work / "mark-http500.request-id"
-            witness.write_text(request_id + "\n")
-            witness.chmod(0o600)
-            environment = {
-                "GITHUB_ACTIONS": "true",
-                "RUNNER_ENVIRONMENT": "github-hosted",
-                "RCT_E2E_SYNTHETIC_SEED": "true",
-                "GITHUB_RUN_ID": "1",
-                "GITHUB_RUN_ATTEMPT": "1",
-                "RUNNER_TEMP": directory,
-                "RCT_SEMESTER_LIFECYCLE_RUN": str(work),
-            }
-            with patch.dict(os.environ, environment):
-                value = complete(error_record(mongo_stack()))
-                self.assertEqual(namespace["load_mark_request_id"](config), request_id)
-                for invalid in ("", private, "AAAAAAAA-0000-4000-8000-000000000002"):
-                    witness.write_text(invalid + "\n")
-                    with self.assertRaises(ValueError):
-                        namespace["load_mark_request_id"](config)
-                witness.write_text(request_id + "\n")
-                witness.chmod(0o644)
-                with self.assertRaises(ValueError):
-                    namespace["load_mark_request_id"](config)
-                witness.chmod(0o600)
-                with patch("os.getuid", return_value=os.getuid() + 1):
-                    with self.assertRaises(ValueError):
-                        namespace["load_mark_request_id"](config)
-                    with self.assertRaises(ValueError):
-                        namespace["persist_ordinary_mark_result"](config, value)
-                for variable, wrong in (
-                    ("GITHUB_RUN_ID", "2"),
-                    ("GITHUB_RUN_ATTEMPT", "2"),
-                    ("RCT_E2E_SYNTHETIC_SEED", "false"),
-                    ("RUNNER_ENVIRONMENT", "self-hosted"),
-                ):
-                    with patch.dict(os.environ, {variable: wrong}), self.assertRaises(ValueError):
-                        namespace["persist_ordinary_mark_result"](config, value)
-                work.chmod(0o755)
-                with self.assertRaises(ValueError):
-                    namespace["persist_ordinary_mark_result"](config, value)
-                work.chmod(0o700)
-                artifact_directory = work / "artifacts"
-                artifact_directory.rmdir()
-                artifact_directory.symlink_to(temporary, target_is_directory=True)
-                with self.assertRaises(ValueError):
-                    namespace["persist_ordinary_mark_result"](config, value)
-                artifact_directory.unlink()
-                artifact_directory.mkdir(mode=0o700)
-                marker.write_text(private)
-                with self.assertRaises(ValueError):
-                    namespace["persist_ordinary_mark_result"](config, value)
+            with tempfile.TemporaryDirectory(prefix="rct-mark-contract-") as directory:
+                temporary = Path(directory)
+                work = temporary / "rct-semester-lifecycle-1-1"
+                work.mkdir(mode=0o700)
+                (work / "artifacts").mkdir(mode=0o700)
+                marker = work / "disposable-target"
                 marker.write_bytes(b"RCT_SEMESTER_DISPOSABLE\n")
-                with self.assertRaises(ValueError):
-                    namespace["persist_ordinary_mark_result"](hosted_config, value)
-                namespace["persist_ordinary_mark_result"](config, value)
-                output = work / "mark-http500.safe.json"
-                self.assertEqual(stat.S_IMODE(output.stat().st_mode), 0o600)
-                self.assertEqual(json.loads(output.read_text()), value)
-                self.assertLessEqual(output.stat().st_size, 4096)
-                self.assertNotIn(request_id, output.read_text())
-                with self.assertRaises(FileExistsError):
+                marker.chmod(0o600)
+                witness = work / "mark-http500.request-id"
+                witness.write_text(request_id + "\n")
+                witness.chmod(0o600)
+                environment = {
+                    "GITHUB_ACTIONS": "true",
+                    "GITHUB_WORKSPACE": str(source_root),
+                    "RUNNER_ENVIRONMENT": "github-hosted",
+                    "RCT_E2E_SYNTHETIC_SEED": "true",
+                    "GITHUB_RUN_ID": "1",
+                    "GITHUB_RUN_ATTEMPT": "1",
+                    "RUNNER_TEMP": directory,
+                    "RCT_SEMESTER_LIFECYCLE_RUN": str(work),
+                }
+                with patch.dict(os.environ, environment):
+                    value = complete(error_record(mongo_stack()))
+                    self.assertEqual(namespace["load_mark_request_id"](config), request_id)
+                    for invalid in ("", private, "AAAAAAAA-0000-4000-8000-000000000002"):
+                        witness.write_text(invalid + "\n")
+                        with self.assertRaises(ValueError):
+                            namespace["load_mark_request_id"](config)
+                    witness.write_text(request_id + "\n")
+                    witness.chmod(0o644)
+                    with self.assertRaises(ValueError):
+                        namespace["load_mark_request_id"](config)
+                    witness.chmod(0o600)
+                    with patch("os.getuid", return_value=os.getuid() + 1):
+                        with self.assertRaises(ValueError):
+                            namespace["load_mark_request_id"](config)
+                        with self.assertRaises(ValueError):
+                            namespace["persist_ordinary_mark_result"](config, value)
+                    for variable, wrong in (
+                        ("GITHUB_RUN_ID", "2"),
+                        ("GITHUB_RUN_ATTEMPT", "2"),
+                        ("RCT_E2E_SYNTHETIC_SEED", "false"),
+                        ("RUNNER_ENVIRONMENT", "self-hosted"),
+                    ):
+                        with patch.dict(os.environ, {variable: wrong}), self.assertRaises(ValueError):
+                            namespace["persist_ordinary_mark_result"](config, value)
+                    work.chmod(0o755)
+                    with self.assertRaises(ValueError):
+                        namespace["persist_ordinary_mark_result"](config, value)
+                    work.chmod(0o700)
+                    artifact_directory = work / "artifacts"
+                    artifact_directory.rmdir()
+                    artifact_directory.symlink_to(temporary, target_is_directory=True)
+                    with self.assertRaises(ValueError):
+                        namespace["persist_ordinary_mark_result"](config, value)
+                    artifact_directory.unlink()
+                    artifact_directory.mkdir(mode=0o700)
+                    marker.write_text(private)
+                    with self.assertRaises(ValueError):
+                        namespace["persist_ordinary_mark_result"](config, value)
+                    marker.write_bytes(b"RCT_SEMESTER_DISPOSABLE\n")
+                    with self.assertRaises(ValueError):
+                        namespace["persist_ordinary_mark_result"](hosted_config, value)
                     namespace["persist_ordinary_mark_result"](config, value)
-                output.unlink()
-                output.symlink_to(witness)
-                with self.assertRaises(FileExistsError):
-                    namespace["persist_ordinary_mark_result"](config, value)
-                self.assertEqual(witness.read_text(), request_id + "\n")
-                witness.unlink()
-                witness.symlink_to(marker)
-                with self.assertRaises(OSError):
-                    namespace["load_mark_request_id"](config)
+                    output = work / "mark-http500.safe.json"
+                    self.assertEqual(stat.S_IMODE(output.stat().st_mode), 0o600)
+                    self.assertEqual(json.loads(output.read_text()), value)
+                    self.assertLessEqual(output.stat().st_size, 4096)
+                    self.assertNotIn(request_id, output.read_text())
+                    with self.assertRaises(FileExistsError):
+                        namespace["persist_ordinary_mark_result"](config, value)
+                    output.unlink()
+                    output.symlink_to(witness)
+                    with self.assertRaises(FileExistsError):
+                        namespace["persist_ordinary_mark_result"](config, value)
+                    self.assertEqual(witness.read_text(), request_id + "\n")
+                    witness.unlink()
+                    witness.symlink_to(marker)
+                    with self.assertRaises(OSError):
+                        namespace["load_mark_request_id"](config)
 
-    def test_exact_artifact_upload_and_unchanged_capture_caps(self):
-        upload = carrier.split("      - name: Upload closed semester lifecycle outcome\n", 1)[1].split(
-            "      - name:", 1
-        )[0]
-        self.assertIn("${{ env.RCT_SEMESTER_LIFECYCLE_RUN }}/mark-http500.safe.json", upload)
-        self.assertNotIn("request-id", upload)
-        self.assertNotIn("*", upload)
-        self.assertIn("time.monotonic() + 15, LIMIT", carrier)
-        self.assertIn("'--since', started_at if initial_membership else '180s'", carrier)
-        self.assertIn("'--tail', '2000' if initial_membership else '200'", carrier)
-        preflight = carrier.index(
-            "      - name: Validate ordinary MARK diagnostic sources and privacy before runtime startup"
-        )
-        self.assertLess(preflight, carrier.index("      - name: Setup Gradle", carrier.index("  e2e-auth:")))
-        self.assertIn("run: python3 -B tests/e2e/fixtures/http500-diagnostic-contract.py", carrier)
+    def test_structured_identity_and_optional_coordinates(self):
+        value = receipt()
+        self.assertTrue(diag.is_target_failure(value, config))
+        shifted = copy.deepcopy(value)
+        shifted['results'][0].update(file='renamed-scenario.spec.ts', line=900000,
+                                     errorLocations=[{'file': 'moved-fixture.ts', 'line': 800000}])
+        self.assertTrue(diag.is_target_failure(shifted, config))
+        for key in ('file', 'line', 'errorLocations'):
+            shifted['results'][0].pop(key)
+        self.assertTrue(diag.is_target_failure(shifted, config))
+        for target, field, wrong in [
+            ('row', 'caseId', 'FORGED_CASE'), ('row', 'project', 'firefox'),
+            ('row', 'status', 'passed'), ('row', 'errorCount', 0), ('row', 'raw', private),
+            ('top', 'unsafeArtifact', True), ('top', 'suppressedStderrBytes', 1), ('top', 'raw', private),
+            ('top', 'diagnosticScope', 'LOCAL_CLIENT_FIRST_FAILURE'),
+            ('event', 'schema', 'rct-diagnostic-event.v99'), ('event', 'stageId', 'UNKNOWN'),
+            ('event', 'eventCode', 'DATASET_LESSON_CREATE_HTTP'), ('event', 'httpStatus', True),
+            ('event', 'httpStatus', 503), ('event', 'private', private),
+        ]:
+            with self.subTest(target=target, field=field):
+                changed = copy.deepcopy(value)
+                slot = changed if target == 'top' else changed['results'][0]
+                if target == 'event': slot = slot['diagnosticEvents'][0]
+                slot[field] = wrong
+                self.assertFalse(diag.is_target_failure(changed, config))
+        foreign = receipt([row('HOSTED_PRIVATE_BOT_AUTHORITY')])
+        self.assertTrue(diag.is_target_failure(foreign, hosted_config))
+        self.assertFalse(diag.is_target_failure(foreign, config))
+        duplicated = receipt()
+        duplicated['results'][0]['diagnosticEvents'] *= 2
+        self.assertFalse(diag.is_target_failure(duplicated, config))
+        # A human/legacy diagnostic cannot replace the authenticated machine event.
+        legacy = receipt()
+        legacy['results'][0]['diagnosticEvents'] = [event('SEMESTER_ARCHIVE_RESTORE', 'REPORTED_FRAMEWORK_ERROR', 0, 'FRAMEWORK')]
+        legacy['results'][0]['diagnostics'] = [{'stage': 'DATASET_HTTP', 'cause': 'DATASET_ATTENDANCE_MARK_HTTP', 'httpStatus': 500}]
+        self.assertFalse(diag.is_target_failure(legacy, config))
+
+    def test_current_eleven_case_client_cohort_and_foreign_rejections(self):
+        stage = diag.STAGES['HOMEWORK_CREATE503']
+        rows = [row(case, 'DATASET_HOMEWORK_CREATE_HTTP', 503, failed=index == 0)
+                for index, case in enumerate(sorted(diag.CLIENT_CASES))]
+        self.assertEqual(len(rows), 11)
+        self.assertTrue(diag.is_target_failure(receipt(rows), stage))
+        for mutation in ('duplicate', 'foreign-async', 'oversized', 'unknown-row', 'unknown-event'):
+            with self.subTest(mutation=mutation):
+                changed = copy.deepcopy(rows)
+                if mutation == 'duplicate':changed[-1] = copy.deepcopy(changed[-2])
+                elif mutation == 'foreign-async':changed[-1] = row('ASYNC_DOCX_RESUME', failed=False)
+                elif mutation == 'oversized':changed.append(copy.deepcopy(changed[-1]))
+                elif mutation == 'unknown-row':changed[-1]['raw'] = private
+                else:changed[0]['diagnosticEvents'][0]['private'] = private
+                self.assertFalse(diag.is_target_failure(receipt(changed), stage))
+        async_setup = row('ASYNC_DOCX_RESUME', 'DATASET_HOMEWORK_CREATE_HTTP', 503)
+        self.assertTrue(diag.closed_case_row(async_setup))  # Valid producer event, outside this caller's cohort.
+        self.assertFalse(diag.is_target_failure(receipt([async_setup]), stage))
+        local_first = receipt([rows[0]]);local_first['diagnosticScope'] = 'LOCAL_CLIENT_FIRST_FAILURE'
+        self.assertTrue(diag.is_target_failure(local_first, stage))
+        local_first['results'] = rows
+        self.assertFalse(diag.is_target_failure(local_first, stage))
+
+    def test_stats_companions_d002_and_async_identity(self):
+        rows = [row(case, 'STUDENT_STATS_HTTP503', 503, failed=case == 'HEADMAN_RECURRING_SLOT_HISTORY')
+                for case in sorted(diag.STATS_CASES)]
+        self.assertTrue(diag.is_target_failure(receipt(rows), diag.STAGES['STUDENT_STATS503']))
+        duplicate = copy.deepcopy(rows);duplicate[0] = copy.deepcopy(duplicate[1])
+        self.assertFalse(diag.is_target_failure(receipt(duplicate), diag.STAGES['STUDENT_STATS503']))
+        homework = row('LIMITED_ADMIN_ACCOUNTS', 'DATASET_HOMEWORK_CREATE_HTTP', 503)
+        scoped = receipt([homework]);scoped['diagnosticScope'] = 'LOCAL_CLIENT_FIRST_FAILURE'
+        self.assertTrue(diag.is_target_failure(scoped, diag.STAGES['HOMEWORK_CREATE503']))
+        scoped['results'].append(copy.deepcopy(homework))
+        self.assertFalse(diag.is_target_failure(scoped, diag.STAGES['HOMEWORK_CREATE503']))
+        reconnect = row('D002_RECONNECT_ACCOUNT_AUTHORITY', 'REPORTED_FRAMEWORK_ERROR', 0)
+        reconnect['diagnosticEvents'] = [event(reconnect['caseId'], 'REPORTED_FRAMEWORK_ERROR', 0, 'FRAMEWORK'),
+                                         event(reconnect['caseId'], 'OBSERVATION', 0, 'D002_RECONNECT')]
+        reconnect['d002ReconnectObservation'] = reconnect_observation()
+        self.assertTrue(diag.is_target_failure(receipt([homework, reconnect]), diag.STAGES['HOMEWORK_CREATE503']))
+        # New producer field is optional, finite and cannot hide a sibling 503.
+        for endpoint in ('refresh', 'current'):
+            for phase in ('UNKNOWN', 'NOT_CALLED', 'PENDING', 'FULFILLED', 'REJECTED'):
+                with self.subTest(endpoint=endpoint, phase=phase):
+                    observed = copy.deepcopy(reconnect)
+                    observed['d002ReconnectObservation']['atOnline'] = {'refresh': 'UNKNOWN', 'current': 'UNKNOWN'}
+                    observed['d002ReconnectObservation']['atOnline'][endpoint] = phase
+                    self.assertTrue(diag.closed_case_row(observed))
+                    self.assertTrue(diag.is_homework_failure(receipt([homework, observed])))
+                    self.assertTrue(diag.is_target_failure(receipt([homework, observed]), diag.STAGES['HOMEWORK_CREATE503']))
+                    self.assertFalse(diag.is_homework_failure(receipt([observed])))  # No sibling 503, no trigger.
+        for invalid in (None, True, [], {}, {'refresh': 'PENDING'},
+                        {'refresh': True, 'current': 'NOT_CALLED'},
+                        {'refresh': 'PENDING', 'current': False},
+                        {'refresh': private, 'current': 'NOT_CALLED'},
+                        {'refresh': 'PENDING', 'current': 'NOT_CALLED', 'raw': private},
+                        {'refresh': {'phase': 'PENDING'}, 'current': 'NOT_CALLED'}):
+            observed = copy.deepcopy(reconnect)
+            observed['d002ReconnectObservation']['atOnline'] = invalid
+            self.assertFalse(diag.is_homework_failure(receipt([homework, observed])))
+        observed = copy.deepcopy(reconnect)
+        observed['d002ReconnectObservation']['atOnline'] = {'refresh': 'PENDING', 'current': 'NOT_CALLED'}
+        observed['diagnosticEvents'].pop()  # Correct field cannot bypass the observation event binding.
+        self.assertFalse(diag.is_homework_failure(receipt([homework, observed])))
+        reconnect['d002ReconnectObservation']['raw'] = private
+        self.assertFalse(diag.is_target_failure(receipt([homework, reconnect]), diag.STAGES['HOMEWORK_CREATE503']))
+        good = receipt([row('ASYNC_DOCX_RESUME', failed=False)], failed=False)
+        self.assertTrue(diag.is_async_success(good))
+        good['results'][0]['caseId'] = 'LIMITED_ADMIN_ACCOUNTS'
+        self.assertFalse(diag.is_async_success(good))
+
+    def test_shared_cli_parity_relocation_and_fresh_source_manifest(self):
+        with tempfile.TemporaryDirectory(prefix='rct diagnostic relocated ') as directory:
+            relocated = Path(directory) / 'fresh checkout'
+            fixtures = relocated / 'tests/e2e/fixtures';fixtures.mkdir(parents=True)
+            copied = fixtures / module_path.name
+            original = module_path.read_bytes()
+            copied.write_bytes(original)
+            shutil.copyfile(module_path.with_name('http-diagnostic-cases.json'), fixtures / 'http-diagnostic-cases.json')
+            payload = relocated / 'input.safe.json';payload.write_text(json.dumps(receipt()));payload.chmod(0o600)
+            command = [sys.executable, '-B', str(copied), '--stage', 'MARK500', '--root', str(relocated), '--validate-report', str(payload)]
+            before = subprocess.run(command, cwd=directory, capture_output=True, text=True, timeout=10)
+            self.assertEqual(before.returncode, 0, before.stdout)
+            self.assertEqual(json.loads(before.stdout)['accepted'], diag.is_target_failure(receipt(), config))
+            # New checkout/new observation, not a copied owner.json or old runtime manifest.
+            self.assertFalse((relocated / 'owner.json').exists())
+            def fresh_manifest():
+                name = 'relocated_diagnostic_control'
+                relocated_spec = importlib.util.spec_from_file_location(name, copied)
+                relocated_module = importlib.util.module_from_spec(relocated_spec)
+                sys.modules[name] = relocated_module
+                relocated_spec.loader.exec_module(relocated_module)
+                self.assertEqual(relocated_module.ROOT, relocated)
+                return relocated_module.source_manifest()
+            first_manifest = fresh_manifest()
+            try:
+                copied.write_bytes(b'# Comment-only control moves every implementation line.\n\n' + original)
+                next_manifest = fresh_manifest()
+                self.assertNotEqual(first_manifest, next_manifest)
+                moved = subprocess.run(command, cwd=directory, capture_output=True, text=True, timeout=10)
+                self.assertEqual(moved.returncode, 0, moved.stdout)
+                self.assertEqual(json.loads(moved.stdout), json.loads(before.stdout))
+            finally:
+                copied.write_bytes(original)
+            self.assertEqual(fresh_manifest(), first_manifest)
+            changed = receipt();changed['results'][0]['diagnosticEvents'][0]['httpStatus'] = True
+            payload.write_text(json.dumps(changed))
+            rejected = subprocess.run(command, cwd=directory, capture_output=True, text=True, timeout=10)
+            self.assertNotEqual(rejected.returncode, 0)
+            self.assertFalse(json.loads(rejected.stdout)['accepted'])
+            unknown = subprocess.run([sys.executable, '-B', str(copied), '--stage', private], cwd=directory, capture_output=True, text=True, timeout=10)
+            self.assertNotEqual(unknown.returncode, 0)
+            self.assertNotIn(private, unknown.stdout + unknown.stderr)
+
+    @unittest.skipUnless(args.producer_report, 'Actual producer report supplied for boundary check')
+    def test_actual_producer_report_unit_projections_not_whole_ci_report(self):
+        actual = diag.decode(args.producer_report.read_bytes())
+        stage = diag.STAGES['HOMEWORK_CREATE503']
+        self.assertFalse(diag.is_target_failure(actual, stage))
+        counts = {'DATASET_HTTP': 0, 'FRAMEWORK': 0, 'UI_ACTION': 0}
+        with tempfile.TemporaryDirectory(prefix='rct producer consumer boundary ') as directory:
+            payload = Path(directory) / 'projection.safe.json'
+            for original in actual['results']:
+                if 'caseId' not in original:
+                    continue
+                projected = copy.deepcopy(original)
+                projected['project'] = 'chromium'  # Node-only test runner, not CI context.
+                value = receipt([projected])  # Explicit unit top-level context; original events unchanged.
+                kind = original['diagnosticEvents'][0]['stageId']
+                counts[kind] += 1
+                expected = kind == 'DATASET_HTTP'
+                self.assertEqual(diag.is_target_failure(value, stage), expected)
+                self.assertEqual(projected['diagnosticEvents'], original['diagnosticEvents'])
+                payload.write_text(json.dumps(value));payload.chmod(0o600)
+                child = subprocess.run([sys.executable, '-B', str(module_path), '--stage', 'HOMEWORK_CREATE503',
+                                        '--validate-report', str(payload)], capture_output=True, text=True, timeout=10)
+                self.assertEqual(child.returncode, 0 if expected else 1)
+                self.assertEqual(json.loads(child.stdout)['accepted'], expected)
+                mismatch = copy.deepcopy(value)
+                mismatch['results'][0]['diagnosticEvents'][0]['caseId'] = 'HOSTED_PRIVATE_BOT_AUTHORITY'
+                self.assertFalse(diag.is_target_failure(mismatch, stage))
+        self.assertEqual(counts, {'DATASET_HTTP': 2, 'FRAMEWORK': 4, 'UI_ACTION': 1})
+
+    def test_local_inventory_requires_exact_owned_cohort(self):
+        local_spec = importlib.util.spec_from_file_location('local_inventory_control', source_root / 'scripts/local_e2e_async.py')
+        local = importlib.util.module_from_spec(local_spec);local_spec.loader.exec_module(local)
+        nonce = 'a' * 24
+        project = 'rct-local-stage17-' + nonce[:12]
+        services = ('auth-service', 'academic-service', 'schedule-service', 'attendance-service',
+                    'document-renderer-service', 'mobile-bff', 'api-gateway', 'notification-web',
+                    'postgres-academic', 'postgres-schedule', 'mongo-attendance', 'redis',
+                    'rabbitmq', 'web-nginx', 'pwa-nginx', 'mini-app-nginx', 'nginx')
+        expected = [{'Config': {'Labels': {local.LABEL: nonce, 'com.docker.compose.project': project,
+                                          'com.docker.compose.service': name}}, 'State': {'Running': True}}
+                    for name in services]
+        for mutation in (None, 'missing', 'extra', 'duplicate', 'nonce', 'project', 'stopped'):
+            with self.subTest(mutation=mutation):
+                rows = copy.deepcopy(expected)
+                code = 'FOREIGN_CONTAINER'
+                if mutation == 'missing':
+                    rows = [row for row in rows if row['Config']['Labels']['com.docker.compose.service'] != 'web-nginx']
+                    code = 'COHORT_NOT_COMPLETE'
+                elif mutation == 'extra':
+                    rows.append(copy.deepcopy(rows[-1]))
+                    rows[-1]['Config']['Labels']['com.docker.compose.service'] = 'unknown-service'
+                elif mutation == 'duplicate':
+                    rows.append(copy.deepcopy(rows[-1]))
+                elif mutation in ('nonce', 'project'):
+                    label = local.LABEL if mutation == 'nonce' else 'com.docker.compose.project'
+                    rows[0]['Config']['Labels'][label] = 'foreign'
+                elif mutation == 'stopped':
+                    rows[0]['State']['Running'] = False
+                    code = 'COHORT_NOT_RUNNING'
+                ids = ['synthetic-container-' + str(index) for index in range(len(rows))]
+                # Only synthetic metadata is returned; no Docker command or signal is invoked.
+                def capture(argv):
+                    if argv[:2] == ['docker', 'ps']:
+                        self.assertEqual(argv, ['docker', 'ps', '-aq', '--no-trunc', '--filter',
+                                                'label=com.docker.compose.project=' + project])
+                        return '\n'.join(ids)
+                    self.assertEqual(argv, ['docker', 'inspect', *ids])
+                    return json.dumps(rows)
+                with patch.object(local, 'capture', side_effect=capture):
+                    if mutation:
+                        with self.assertRaises(local.AdmissionError) as caught:
+                            local.inventory(project, nonce, complete=True)
+                        self.assertEqual(str(caught.exception), code)
+                    else:
+                        self.assertEqual(local.inventory(project, nonce, complete=True), expected)
+
+    def test_local_diagnostic_terminates_own_group_on_cancel_and_timeout(self):
+        local_spec = importlib.util.spec_from_file_location('local_diagnostic_control', source_root / 'scripts/local_e2e_async.py')
+        local = importlib.util.module_from_spec(local_spec);local_spec.loader.exec_module(local)
+        from types import SimpleNamespace
+        for reason in ('cancel', 'timeout'):
+            with self.subTest(reason=reason), tempfile.TemporaryDirectory(prefix='rct local diagnostic control ') as directory:
+                handlers, killed = {}, []
+                def handler(kind, callback):
+                    previous = handlers.get(kind, 'previous')
+                    handlers[kind] = callback
+                    return previous
+                child = SimpleNamespace(pid=12345, poll=lambda: None,
+                                        wait=lambda **_: (_ for _ in ()).throw(subprocess.TimeoutExpired('synthetic', 5)))
+                def spawn(*_, **kwargs):
+                    self.assertTrue(kwargs['start_new_session'])
+                    if reason == 'cancel':handlers[local.signal.SIGTERM]()
+                    return child
+                times = iter((0, 31))
+                # SIGKILL completes the synthetic child; no real process or Docker command is invoked.
+                def kill(pid, kind):
+                    killed.append((pid, kind))
+                    if kind == local.signal.SIGKILL:child.wait = lambda **_: 0
+                runner = SimpleNamespace(mode='client', run=Path(directory), env={})
+                expected = KeyboardInterrupt if reason == 'cancel' else subprocess.TimeoutExpired
+                with patch.object(local.signal, 'signal', side_effect=handler), patch.object(local.subprocess, 'Popen', side_effect=spawn), patch.object(local.time, 'monotonic', side_effect=lambda: next(times)), patch.object(local.os, 'killpg', side_effect=kill):
+                    with self.assertRaises(expected):local.Runner.diagnose_http_failure(runner)
+                self.assertEqual(killed, [(12345, local.signal.SIGTERM), (12345, local.signal.SIGKILL)])
+                self.assertEqual(set(handlers.values()), {'previous'})
+
+    def test_local_primary_nonzero_survives_diagnostic_failure_and_cleanup(self):
+        local_spec = importlib.util.spec_from_file_location('local_primary_control', source_root / 'scripts/local_e2e_async.py')
+        local = importlib.util.module_from_spec(local_spec);local_spec.loader.exec_module(local)
+        from types import SimpleNamespace
+        with tempfile.TemporaryDirectory(prefix='rct local primary control ') as directory:
+            run = Path(directory);run.chmod(0o700)
+            calls, writes = [], {}
+            original = subprocess.CalledProcessError(17, ['synthetic-child'])
+            def fail():raise original
+            def diagnostic():
+                calls.append('diagnostic')
+                raise subprocess.TimeoutExpired('synthetic-diagnostic', 30)
+            runner = SimpleNamespace(run=run, phase='CLIENT', prepare=lambda: None, execute=fail,
+                                     diagnose_http_failure=diagnostic, preserve_logs=lambda: calls.append('logs'),
+                                     cleanup=lambda: calls.append('cleanup'))
+            previous_umask = os.umask(0o077)
+            with patch.object(local, 'RUNS', run), patch.object(local, 'preflight'), patch.object(local, 'Runner', return_value=runner), patch.object(local, 'emit'), patch.object(local, 'write', side_effect=lambda path, data: writes.update({path.name: json.loads(data)})), patch.object(sys, 'argv', ['local_e2e_async.py', 'client']):
+                try:
+                    with self.assertRaises(subprocess.CalledProcessError) as caught:local.main()
+                    self.assertIs(caught.exception, original)
+                finally:
+                    os.umask(previous_umask)
+            self.assertEqual(calls, ['diagnostic', 'logs', 'cleanup'])
+            self.assertEqual(writes['result.safe.json']['child_returncode'], 17)
+            self.assertEqual(writes['result.safe.json']['result'], 'FAIL')
+            self.assertEqual(writes['result.safe.json']['cleanup'], 'PASS')
+
+    def test_shared_privacy_receipt_duplicate_fields_and_schema(self):
+        value = {'state': 'CONTROL_EXECUTION_ERROR', 'rawErrorSuppressed': True, 'browser': 'NOT_STARTED'}
+        self.assertTrue(diag.closed_privacy_receipt(value))
+        self.assertFalse(diag.closed_privacy_receipt(dict(value, raw=private)))
+        with self.assertRaises(ValueError):diag.decode('{"caseId":"A","caseId":"B"}')
+        with self.assertRaises(ValueError):diag.decode('{"status":NaN}')
+
+    def test_capture_rechecks_exact_project_service_nonce_before_and_after(self):
+        stage = diag.STAGES['STUDENT_STATS503']
+        cid = 'a' * 64
+        class ClosedPipeChild:
+            def __init__(self, payload):
+                reader, writer = os.pipe()
+                with os.fdopen(writer, 'wb') as target:target.write(payload)
+                self.stdout = os.fdopen(reader, 'rb')
+            def __enter__(self):return self
+            def __exit__(self, *_):self.stdout.close()
+            def wait(self, **_):return 0
+            def poll(self):return 0
+        for mode in ('ci', 'local'):
+            for mutation in (None, 'project', 'service', 'running', 'nonce'):
+                with self.subTest(mode=mode, mutation=mutation):
+                    nonce = 'b' * 24 if mode == 'local' else None
+                    scope = diag.DiagnosticScope('STUDENT_STATS503', mode, Path('/unused-control-run'),
+                                                 'synthetic-project', ('docker', 'compose'), {}, nonce)
+                    inspected, captured = [], []
+                    def spawn(argv, **_):
+                        if argv[:2] == ['docker', 'inspect']:
+                            identity = [cid, scope.project, 'attendance-service', True, nonce or '']
+                            inspected.append(identity.copy())
+                            if len(inspected) == 2 and mutation:
+                                index = {'project': 1, 'service': 2, 'running': 3, 'nonce': 4}[mutation]
+                                identity[index] = False if mutation == 'running' else 'foreign'
+                            return ClosedPipeChild(json.dumps(identity).encode())
+                        if argv[:2] == ['docker', 'logs']:
+                            captured.append(True)
+                            return ClosedPipeChild(b'')
+                        return ClosedPipeChild(cid.encode())
+                    with patch.object(diag.subprocess, 'Popen', side_effect=spawn):
+                        if mutation:
+                            with self.assertRaises(ValueError):diag.collect(stage, context=scope)
+                        else:self.assertEqual(diag.collect(stage, context=scope), {'attendance-service': b''})
+                    self.assertEqual(len(inspected), 2)
+                    self.assertEqual(captured, [True])
+
+    def test_local_and_ci_contexts_do_not_masquerade(self):
+        with self.assertRaises(ValueError):diag.admit_scope(config, 'ci', environment={})
+        # Existing local validator owns source/CA/Compose/lock/container admission.
+        from types import SimpleNamespace
+        with tempfile.TemporaryDirectory(prefix='rct-local-admission-control-') as directory:
+            run = Path(directory);run.chmod(0o700)
+            calls = []
+            def validate_local(**kwargs):
+                calls.append(kwargs)
+                return {'run': str(run), 'project': 'rct-local-stage17-' + 'a'*12, 'nonce': 'a'*24, 'mode': 'client'}
+            module = SimpleNamespace(validate_local=validate_local)
+            spec = SimpleNamespace(loader=SimpleNamespace(exec_module=lambda target: None))
+            with patch.object(diag.importlib.util, 'spec_from_file_location', return_value=spec), patch.object(diag.importlib.util, 'module_from_spec', return_value=module):
+                scope = diag.admit_scope(diag.STAGES['HOMEWORK_CREATE503'], 'local', run, {'CONTROL': 'LOCAL_ONLY'})
+                self.assertEqual(calls, [{'environment': {'CONTROL': 'LOCAL_ONLY'}}])
+                self.assertEqual(scope.project, 'rct-local-stage17-' + 'a'*12)
+                self.assertEqual(scope.nonce, 'a'*24)
+                self.assertNotIn('GITHUB_ACTIONS', scope.environment)
+                self.assertIn(str(run / 'compose.json'), scope.compose)
+                with self.assertRaises(ValueError):diag.admit_scope(config, 'local', run, {})
+                with self.assertRaises(ValueError):diag.admit_scope(diag.STAGES['HOMEWORK_CREATE503'], 'local', run / 'foreign', {})
 
 
-suite = unittest.defaultTestLoader.loadTestsFromTestCase(MarkDiagnosticContract)
-result = unittest.TextTestRunner(verbosity=1).run(suite)
-print(
-    json.dumps(
-        {
-            "status": "GREEN" if result.wasSuccessful() else "RED",
-            "controls": result.testsRun,
-            "failures": len(result.failures),
-            "errors": len(result.errors),
-            "runtimeMainExecuted": False,
-            "networkOrContainerCalls": 0,
-        }
-    )
-)
+result = unittest.TextTestRunner(verbosity=1).run(unittest.defaultTestLoader.loadTestsFromTestCase(SharedDiagnosticControls))
+print(json.dumps({'schema': 'rct-diagnostic-python-controls.v1', 'passed': result.wasSuccessful(),
+                  'controls': result.testsRun, 'failures': len(result.failures), 'errors': len(result.errors),
+                  'runtimeServiceCalls': 0, 'browserDbDocker': False}))
 raise SystemExit(0 if result.wasSuccessful() else 1)

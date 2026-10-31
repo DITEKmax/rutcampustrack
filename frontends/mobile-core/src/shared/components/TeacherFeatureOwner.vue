@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { provideProjectionRevision, useProjectionRefresh } from '../projection-refresh';
 import type { NotificationAction } from '../../features/notifications/notifications-v2-models';
 import { notificationNumericId } from '../../features/notifications/notifications-actions';
 import { computed, onBeforeUnmount, ref, shallowRef, watch } from 'vue';
@@ -58,12 +59,14 @@ const props = withDefaults(
     unreadCount?: number | null | undefined;
     onNotifications?: (() => void) | undefined;
     api: TeacherApi | null;
+    realtimeRevision?: number;
     semesterId: number | null;
     mapClient?: CampusMapClient | null;
     selectedDate?: string;
     reportDownload?: ReportDownloadPort | null;
     profilePort?: ProfilePort | null;
     onRecover?: (() => void | Promise<void>) | undefined;
+    onLogout?: (() => void | Promise<void>) | undefined;
     profileRoleSelect?:
       | ((role: ProfileRole, expectedSessionVersion: string) => void | Promise<void>)
       | undefined;
@@ -72,6 +75,7 @@ const props = withDefaults(
     offline?: boolean;
   }>(),
   {
+    realtimeRevision: 0,
     unreadCount: null,
     onNotifications: undefined,
     selectedDate: '',
@@ -79,6 +83,7 @@ const props = withDefaults(
     reportDownload: null,
     profilePort: null,
     onRecover: undefined,
+    onLogout: undefined,
     profileRoleSelect: undefined,
     host: null,
     themeController: null,
@@ -216,7 +221,13 @@ watch(
   },
 );
 
-function loadTeacherContext(): Promise<void> {
+provideProjectionRevision(() => props.realtimeRevision);
+useProjectionRefresh(() => loadTeacherContext(true), {
+  revision: () => props.realtimeRevision,
+  blocked: () => props.offline,
+});
+
+function loadTeacherContext(refreshCatalog = false): Promise<void> {
   const api = props.api;
   const semesterId = props.semesterId;
   const generation = ownerGeneration.value;
@@ -225,6 +236,7 @@ function loadTeacherContext(): Promise<void> {
     return Promise.resolve();
   }
   if (
+    !refreshCatalog &&
     contextInFlight?.api === api &&
     contextInFlight.semesterId === semesterId &&
     contextInFlight.generation === generation
@@ -244,7 +256,7 @@ function loadTeacherContext(): Promise<void> {
     try {
       const requests = await Promise.allSettled([
         semester.value ? Promise.resolve(semester.value) : api.semester(),
-        catalog.value ? Promise.resolve(catalog.value) : api.catalog(semesterId),
+        catalog.value && !refreshCatalog ? Promise.resolve(catalog.value) : api.catalog(semesterId),
         lessonSlots.value.length
           ? Promise.resolve(lessonSlots.value)
           : api.lessonSlots().then((result) => result.slots),
@@ -768,7 +780,7 @@ defineExpose({ openNotificationAction });
           severity="error"
           action-label="Повторить"
           :action-disabled="teacherContextLoading"
-          @action="loadTeacherContext"
+          @action="loadTeacherContext()"
         />
         <p
           v-else
@@ -835,6 +847,7 @@ defineExpose({ openNotificationAction });
           :show-active-role="false"
           :on-retry="retryProfileSnapshot"
           :on-navigate="navigateProfile"
+          :on-logout="onLogout"
         />
         <RoleSwitchScreen
           v-else-if="route.id === 'profile/role-switch'"

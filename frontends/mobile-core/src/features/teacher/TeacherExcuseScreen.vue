@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useProjectionRefresh } from '../../shared/projection-refresh';
 import { onBeforeUnmount, ref, watch } from 'vue';
 import { teacherExcuseTypeLabel } from './teacher-ui-format';
 import MobileIcon from '../../shared/components/MobileIcon.vue';
@@ -27,20 +28,21 @@ watch(
 onBeforeUnmount(() => {
   revision += 1;
 });
-async function load(): Promise<void> {
+async function load(retainProjection = false): Promise<void> {
   const api = props.api;
   const id = props.requestId;
   const run = ++revision;
-  state.value = null;
+  if (!retainProjection) state.value = null;
   error.value = null;
   loading.value = false;
   if (!api || !id) return;
-  loading.value = true;
+  loading.value = !retainProjection;
   try {
     const value = await api.excuse(id);
     if (run === revision) state.value = value;
   } catch (cause) {
     if (run !== revision || cause instanceof StaleSessionGenerationError) return;
+    state.value = null;
     error.value =
       cause instanceof TeacherApiError ? cause.message : 'Не удалось открыть заявление.';
     emit('error', cause);
@@ -86,6 +88,7 @@ function kind(value: string): string {
 function decisionName(value: TeacherExcuseResponse): string | null {
   return value.decisionByName;
 }
+useProjectionRefresh(() => load(true));
 </script>
 <template>
   <main
@@ -119,7 +122,7 @@ function decisionName(value: TeacherExcuseResponse): string | null {
       :message="error"
       severity="error"
       action-label="Повторить"
-      @action="load"
+      @action="load()"
     />
     <template v-else-if="state">
       <article class="teacher-screen__ticket">

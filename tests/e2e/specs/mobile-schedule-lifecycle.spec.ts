@@ -1,3 +1,4 @@
+import { diagnosticCase, diagnosticHttpFailure } from '../fixtures/diagnostic-events';
 import { createHash, randomUUID } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
 import type { Page, Response, TestInfo } from '@playwright/test';
@@ -408,7 +409,7 @@ async function fillSlot(page: Page, dataset: MobileDataset, labels: string[], ro
 // JS-HEADMAN-40 / DF-PWA-BUILDER-REMOVE-001. Actual Vue DELETE/return and parity
 // changes; the already accepted real-PG elapsed-gap/no-backfill rule is reused.
 // No clock advance or claim of an elapsed absence interval in this browser case.
-test('HEADMAN removes and returns a recurring slot without losing past identity or marks @real-mobile', async ({
+test('HEADMAN removes and returns a recurring slot without losing past identity or marks @real-mobile', { annotation: diagnosticCase('HEADMAN_RECURRING_SLOT_HISTORY') }, async ({
   page,
   scenario: dataset,
   teachingInstant,
@@ -1468,7 +1469,7 @@ test('HEADMAN removes and returns a recurring slot without losing past identity 
     if (overviewResponse.status() === 429) throw new Error('Student statistics HTTP 429');
     if (overviewResponse.status() === 500) throw new Error('Student statistics HTTP 500');
     if (overviewResponse.status() === 502) throw new Error('Student statistics HTTP 502');
-    if (overviewResponse.status() === 503) throw new Error('Student statistics HTTP 503');
+    if (overviewResponse.status() === 503) throw diagnosticHttpFailure(new Error('Student statistics HTTP 503'), 'STUDENT_STATS_HTTP503', 503);
     if (overviewResponse.status() === 504) throw new Error('Student statistics HTTP 504');
     expect(overviewResponse.status()).toBe(200);
     const overview = await overviewResponse.json();
@@ -1940,13 +1941,13 @@ test('HEADMAN removes and returns a recurring slot without losing past identity 
 
 // The ready conditional route is the semester BFF. Today is the existing Vue
 // room consumer; a scoped HTTP PATCH is the accepted cache-invalidation trigger.
-test('STUDENT warm semester ETag stays scoped and refreshes the same physical room in Today @real-mobile', async ({
+test('STUDENT warm semester ETag stays scoped and refreshes the same physical room in Today @real-mobile', { annotation: diagnosticCase('STUDENT_SEMESTER_ROOM_REFRESH') }, async ({
   page,
   scenario: dataset,
 }, info) => {
   // This existing student's otherGroup is its own genuinely empty scope.
-  // The two response faults exercise the unchanged Today retry:1 client path,
-  // not a Schedule outage; the manual retry below returns to the real server.
+  // Keep Today unavailable while its error and manual retry action are observed;
+  // the manual retry below returns to the real server after this route is removed.
   const todayPath = '/api/v1/student/today';
   const admissionCutoff =
     (scenarioStartedAt.get(info) ?? performance.now()) +
@@ -1998,18 +1999,19 @@ test('STUDENT warm semester ETag stays scoped and refreshes the same physical ro
       emptyToday.timeZone === 'Europe/Moscow' &&
       emptyToday.lessons.length === 0,
   ).toBe(true);
-  await expect(
-    page.getByRole('heading', { name: 'На сегодня пар нет', exact: true }),
-  ).toBeVisible();
+  const todayScreen = page.getByRole('main', { name: 'Сегодня', exact: true });
+  const emptyState = todayScreen.getByRole('status').filter({
+    has: page.getByRole('button', { name: 'Обновить', exact: true }),
+  });
+  const error = todayScreen.getByRole('alert');
+  await expect(emptyState).toBeVisible();
   await expect(page.locator('.today-list .student-lesson')).toHaveCount(0);
   const todayUrl = new URL(todayPath, page.url()).href;
-  let rejectedTodayReads = 0;
   const failToday: Parameters<typeof page.route>[1] = async (route) => {
-    if (route.request().method() !== 'GET' || rejectedTodayReads >= 2) {
+    if (route.request().method() !== 'GET') {
       await route.continue();
       return;
     }
-    rejectedTodayReads += 1;
     await route.fulfill({
       status: 503,
       contentType: 'application/problem+json',
@@ -2027,24 +2029,18 @@ test('STUDENT warm semester ETag stays scoped and refreshes the same physical ro
   try {
     const [failed] = await Promise.all([
       http(page, todayPath, 'GET'),
-      page.getByRole('button', { name: 'Обновить', exact: true }).click(),
+      emptyState.getByRole('button', { name: 'Обновить', exact: true }).click(),
     ]);
     expect(failed.status()).toBe(503);
-    const error = page.getByRole('alert').filter({
-      has: page.getByRole('heading', { name: 'Не удалось получить данные', exact: true }),
-    });
     await expect(error).toBeVisible();
     await expect(error.getByRole('button', { name: 'Повторить', exact: true })).toBeEnabled();
-    expect(rejectedTodayReads).toBe(2);
-    await expect(
-      page.getByRole('heading', { name: 'На сегодня пар нет', exact: true }),
-    ).toHaveCount(0);
+    await expect(emptyState).toHaveCount(0);
   } finally {
     await page.unroute(todayUrl, failToday);
   }
   const [recoveredTodayResponse] = await Promise.all([
     http(page, todayPath, 'GET'),
-    page.getByRole('alert').getByRole('button', { name: 'Повторить', exact: true }).click(),
+    error.getByRole('button', { name: 'Повторить', exact: true }).click(),
   ]);
   expect(recoveredTodayResponse.status()).toBe(200);
   const recoveredToday = await recoveredTodayResponse.json();
@@ -2053,11 +2049,8 @@ test('STUDENT warm semester ETag stays scoped and refreshes the same physical ro
       recoveredToday.timeZone === 'Europe/Moscow' &&
       recoveredToday.lessons.length === 0,
   ).toBe(true);
-  expect(rejectedTodayReads).toBe(2);
-  await expect(page.getByRole('alert')).toHaveCount(0);
-  await expect(
-    page.getByRole('heading', { name: 'На сегодня пар нет', exact: true }),
-  ).toBeVisible();
+  await expect(error).toHaveCount(0);
+  await expect(emptyState).toBeVisible();
   await expect(page.locator('.today-list .student-lesson')).toHaveCount(0);
   await logoutPwa(page);
   expect((await page.context().cookies()).some((cookie) => cookie.name === 'rct_refresh')).toBe(

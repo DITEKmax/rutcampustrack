@@ -1,0 +1,21 @@
+{
+  "schema": "rct-diagnostic-controls.v1",
+  "passed": true,
+  "deliberateChildExit": 1,
+  "rows": 7,
+  "finiteNegatives": 20,
+  "consumerPassed": true,
+  "sourceRevision": "e0dcb349683522ed32444d2a552794c6b6e984c7",
+  "command": [
+    "node",
+    "tests/e2e/fixtures/diagnostic-events.control.mjs",
+    "--with-consumer"
+  ],
+  "pythonControls": 19,
+  "pythonFailures": 0,
+  "pythonErrors": 0,
+  "pythonElapsedSeconds": 1.117,
+  "runtimeServiceCalls": 0,
+  "browserDbDocker": false,
+  "CIWorkflowDispatched": false
+}

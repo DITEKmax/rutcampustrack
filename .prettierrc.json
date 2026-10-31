@@ -8,7 +8,7 @@
   "overrides": [
     { "files": "**/*.pcss", "options": { "parser": "css" } },
     {
-      "files": ["frontends/web-panel/**/*.ts", "tests/e2e/**/*.ts"],
+      "files": ["tests/e2e/**/*.ts"],
       "options": { "semi": true }
     },
     { "files": "**/*.vue", "options": { "semi": true } }

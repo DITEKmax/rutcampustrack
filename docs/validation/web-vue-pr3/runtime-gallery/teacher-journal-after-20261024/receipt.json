@@ -1,0 +1,324 @@
+{
+  "case": "PWA_TEACHER_JOURNAL_AFTER_FOUR_FRAMES",
+  "runHash": "fc4f7e5f0deda89cf67ed2cb478f9bc1188a5368c7290ec2888738f14a29c2d6",
+  "expectedActor": 2,
+  "expectedRole": "TEACHER",
+  "revision": "d69ac9159e3bfff169c4b2bd25adbcc7d9def771",
+  "productBase": "d69ac9159e3bfff169c4b2bd25adbcc7d9def771",
+  "harnessSha256": "6ff3233f55726b625f85057df0a8cd4181dad527ce1a010735623ca71e800268",
+  "startedAtUtc": "2026-10-24T22:16:12.073Z",
+  "phase": "CAPTURE_COMPLETE_CLEANUP_CONFIRMED_INSPECTION_PENDING",
+  "api": [
+    {
+      "path": "/api/auth/refresh",
+      "method": "POST",
+      "status": 401,
+      "phase": "BOOTSTRAP",
+      "atUtc": "2026-10-24T22:16:14.517Z"
+    },
+    {
+      "path": "/api/auth/login",
+      "method": "POST",
+      "status": 200,
+      "phase": "LOGIN",
+      "atUtc": "2026-10-24T22:16:14.766Z"
+    },
+    {
+      "path": "/api/auth/session",
+      "method": "GET",
+      "status": 200,
+      "phase": "LOGIN",
+      "atUtc": "2026-10-24T22:16:14.813Z"
+    },
+    {
+      "pathHash": "66be5879ef3a006f97cdf3d9fb658d6b9ab244113bbbad159c733f0fee4efb32",
+      "method": "GET",
+      "status": 200,
+      "phase": "LOGIN",
+      "atUtc": "2026-10-24T22:16:14.889Z"
+    },
+    {
+      "pathHash": "73210131bba23497370aaac45ad599d4e906cc1adb9bf61670a62a7fe244fdb6",
+      "method": "GET",
+      "status": 200,
+      "phase": "LOGIN",
+      "atUtc": "2026-10-24T22:16:14.900Z"
+    },
+    {
+      "path": "/api/auth/ws-ticket",
+      "method": "POST",
+      "status": 200,
+      "phase": "LOGIN",
+      "atUtc": "2026-10-24T22:16:14.927Z"
+    },
+    {
+      "pathHash": "6a3ed7c33ca04a6a7e68847f792e314468b713dea9c4ece627c242271898ae23",
+      "method": "GET",
+      "status": 200,
+      "phase": "LOGIN",
+      "atUtc": "2026-10-24T22:16:14.947Z"
+    },
+    {
+      "path": "/api/v1/teacher/semester",
+      "method": "GET",
+      "status": 200,
+      "phase": "LOGIN",
+      "atUtc": "2026-10-24T22:16:14.964Z"
+    },
+    {
+      "path": "/api/schedule/lesson-slots",
+      "method": "GET",
+      "status": 200,
+      "phase": "LOGIN",
+      "atUtc": "2026-10-24T22:16:15.097Z"
+    },
+    {
+      "path": "/api/v1/teacher/semester",
+      "method": "GET",
+      "status": 200,
+      "phase": "LOGIN",
+      "atUtc": "2026-10-24T22:16:15.116Z"
+    },
+    {
+      "path": "/api/v1/teacher/assignments",
+      "method": "GET",
+      "status": 200,
+      "phase": "LOGIN",
+      "atUtc": "2026-10-24T22:16:15.142Z"
+    },
+    {
+      "pathHash": "66be5879ef3a006f97cdf3d9fb658d6b9ab244113bbbad159c733f0fee4efb32",
+      "method": "GET",
+      "status": 200,
+      "phase": "LOGIN",
+      "atUtc": "2026-10-24T22:16:15.192Z"
+    },
+    {
+      "path": "/api/v1/teacher/semester",
+      "method": "GET",
+      "status": 200,
+      "phase": "NORMAL_TEACHER_STATS_ROUTE",
+      "atUtc": "2026-10-24T22:16:15.302Z"
+    },
+    {
+      "path": "/api/schedule/lesson-slots",
+      "method": "GET",
+      "status": 200,
+      "phase": "NORMAL_TEACHER_STATS_ROUTE",
+      "atUtc": "2026-10-24T22:16:15.306Z"
+    },
+    {
+      "path": "/api/v1/teacher/day",
+      "method": "GET",
+      "status": 200,
+      "phase": "NORMAL_TEACHER_STATS_ROUTE",
+      "atUtc": "2026-10-24T22:16:15.308Z"
+    },
+    {
+      "path": "/api/v1/teacher/assignments",
+      "method": "GET",
+      "status": 200,
+      "phase": "NORMAL_TEACHER_STATS_ROUTE",
+      "atUtc": "2026-10-24T22:16:15.405Z"
+    },
+    {
+      "path": "/api/v1/teacher/catalog",
+      "method": "GET",
+      "status": 200,
+      "phase": "NORMAL_TEACHER_STATS_ROUTE",
+      "atUtc": "2026-10-24T22:16:15.417Z"
+    },
+    {
+      "path": "/api/v1/teacher/day",
+      "method": "GET",
+      "status": 200,
+      "phase": "NORMAL_TEACHER_STATS_ROUTE",
+      "atUtc": "2026-10-24T22:16:15.422Z"
+    },
+    {
+      "path": "/api/v1/teacher/catalog",
+      "method": "GET",
+      "status": 200,
+      "phase": "NORMAL_TEACHER_STATS_ROUTE",
+      "atUtc": "2026-10-24T22:16:15.448Z"
+    },
+    {
+      "path": "/api/v1/teacher/catalog",
+      "method": "GET",
+      "status": 200,
+      "phase": "NORMAL_TEACHER_STATS_ROUTE",
+      "atUtc": "2026-10-24T22:16:15.502Z"
+    },
+    {
+      "path": "/api/v1/teacher/stats",
+      "method": "GET",
+      "status": 200,
+      "phase": "NORMAL_TEACHER_STATS_ROUTE",
+      "atUtc": "2026-10-24T22:16:16.356Z"
+    },
+    {
+      "path": "/api/v1/teacher/journal/export/formats",
+      "method": "GET",
+      "status": 200,
+      "phase": "JOURNAL_CONTROLLED_READ",
+      "atUtc": "2026-10-24T22:16:16.520Z"
+    },
+    {
+      "path": "/api/v1/teacher/journal",
+      "method": "GET",
+      "status": 503,
+      "phase": "JOURNAL_CONTROLLED_READ",
+      "atUtc": "2026-10-24T22:16:16.626Z"
+    },
+    {
+      "path": "/api/v1/teacher/journal",
+      "method": "GET",
+      "status": 200,
+      "phase": "JOURNAL_CONTROLLED_READ",
+      "atUtc": "2026-10-24T22:16:17.052Z"
+    }
+  ],
+  "samples": [
+    {
+      "id": "MB-TJ-AF01",
+      "consumer": "PWA",
+      "screen": "MOBILE-TEACHERJOURNAL",
+      "state": "after-held-get-skeleton",
+      "file": "PWA-MOBILE-TEACHERJOURNAL__MB-TJ-AF01-after-held-get-skeleton__light__425__d69ac9159.png",
+      "sha256": "fc5e8d7f5c284265da18d066715133b2b65f99fa7183e1ea5443d1fad5770508",
+      "theme": "light",
+      "width": 425,
+      "rootFont": "16px",
+      "scrollWidth": 425,
+      "focusVisible": false,
+      "revision": "d69ac9159e3bfff169c4b2bd25adbcc7d9def771",
+      "personallyInspected": false
+    },
+    {
+      "id": "MB-TJ-AF02",
+      "consumer": "PWA",
+      "screen": "MOBILE-TEACHERJOURNAL",
+      "state": "after-local-controlled-503",
+      "file": "PWA-MOBILE-TEACHERJOURNAL__MB-TJ-AF02-after-local-controlled-503__light__425__d69ac9159.png",
+      "sha256": "33e1b0b3fdaf3b0c58768f0707fab164de7799201b68adf1251c627f6102c348",
+      "theme": "light",
+      "width": 425,
+      "rootFont": "16px",
+      "scrollWidth": 425,
+      "focusVisible": false,
+      "revision": "d69ac9159e3bfff169c4b2bd25adbcc7d9def771",
+      "personallyInspected": false
+    },
+    {
+      "id": "MB-TJ-AF03",
+      "consumer": "PWA",
+      "screen": "MOBILE-TEACHERJOURNAL",
+      "state": "after-native-retry-real200",
+      "file": "PWA-MOBILE-TEACHERJOURNAL__MB-TJ-AF03-after-native-retry-real200__light__425__d69ac9159.png",
+      "sha256": "11607c7bfbf9b16e903cc9dc9fa4e8f14f4111cb4280cf1f288eeb118ee83aac",
+      "theme": "light",
+      "width": 425,
+      "rootFont": "16px",
+      "scrollWidth": 425,
+      "focusVisible": false,
+      "revision": "d69ac9159e3bfff169c4b2bd25adbcc7d9def771",
+      "personallyInspected": false
+    },
+    {
+      "id": "MB-TJ-AF04",
+      "consumer": "PWA",
+      "screen": "MOBILE-TEACHERJOURNAL",
+      "state": "after-same-query-recovered",
+      "file": "PWA-MOBILE-TEACHERJOURNAL__MB-TJ-AF04-after-same-query-recovered__dark__300__d69ac9159.png",
+      "sha256": "7d93570ebbbdb475158949de6cd59aab5c51c441f92273e57de5893178e7dc30",
+      "theme": "dark",
+      "width": 300,
+      "rootFont": "16px",
+      "scrollWidth": 300,
+      "focusVisible": false,
+      "revision": "d69ac9159e3bfff169c4b2bd25adbcc7d9def771",
+      "personallyInspected": false
+    }
+  ],
+  "captureAttempts": [
+    {
+      "id": "MB-TJ-AF01",
+      "file": "PWA-MOBILE-TEACHERJOURNAL__MB-TJ-AF01-after-held-get-skeleton__light__425__d69ac9159.png",
+      "state": "CAUSE_QUALIFIED_INSPECTION_PENDING",
+      "heldGetRequired": true,
+      "startedAtUtc": "2026-10-24T22:16:16.489Z",
+      "heldBeforeScreenshot": true,
+      "heldAfterScreenshot": true,
+      "finishedAtUtc": "2026-10-24T22:16:16.620Z"
+    },
+    {
+      "id": "MB-TJ-AF02",
+      "file": "PWA-MOBILE-TEACHERJOURNAL__MB-TJ-AF02-after-local-controlled-503__light__425__d69ac9159.png",
+      "state": "CAUSE_QUALIFIED_INSPECTION_PENDING",
+      "heldGetRequired": false,
+      "startedAtUtc": "2026-10-24T22:16:16.634Z",
+      "finishedAtUtc": "2026-10-24T22:16:16.725Z"
+    },
+    {
+      "id": "MB-TJ-AF03",
+      "file": "PWA-MOBILE-TEACHERJOURNAL__MB-TJ-AF03-after-native-retry-real200__light__425__d69ac9159.png",
+      "state": "CAUSE_QUALIFIED_INSPECTION_PENDING",
+      "heldGetRequired": false,
+      "startedAtUtc": "2026-10-24T22:16:17.084Z",
+      "finishedAtUtc": "2026-10-24T22:16:17.226Z"
+    },
+    {
+      "id": "MB-TJ-AF04",
+      "file": "PWA-MOBILE-TEACHERJOURNAL__MB-TJ-AF04-after-same-query-recovered__dark__300__d69ac9159.png",
+      "state": "CAUSE_QUALIFIED_INSPECTION_PENDING",
+      "heldGetRequired": false,
+      "startedAtUtc": "2026-10-24T22:16:17.227Z",
+      "finishedAtUtc": "2026-10-24T22:16:17.377Z"
+    }
+  ],
+  "blocked": [],
+  "pageErrors": [],
+  "auth": {
+    "loginForwarded": 1,
+    "startupRefreshForwarded": 1,
+    "roleForwarded": 0,
+    "loginStatus": 200,
+    "startupRefreshStatus": 401
+  },
+  "fault": {
+    "heldHits": 1,
+    "synthetic503": 1,
+    "watchdogExpired": false,
+    "queryDigest": "39be774f857c168b477c4f6c4f65992aa2b2c43d72a784029171dd7e1d0ee466",
+    "heldAtUtc": "2026-10-24T22:16:16.471Z",
+    "holdExpiresAtUtc": "2026-10-24T22:16:24.471Z"
+  },
+  "cleanup": {
+    "method": "TECHNICAL_NORMAL_AUTH_API_SELF_SESSION_DELETE",
+    "nativeUiLogoutPass": false,
+    "expectedActorMatched": true,
+    "exactSidMatched": true,
+    "selfDeleteForwarded": 1,
+    "selfDeleteStatus": 204,
+    "guestBearerStatus": 401,
+    "confirmed": true,
+    "fallbackUsed": false,
+    "intent": "RETURNED",
+    "forwardStartedAtUtc": "2026-10-24T22:16:17.420Z"
+  },
+  "captureComplete": true,
+  "completed": true,
+  "functionalActionsAdded": 0,
+  "exactOwnHandleCaptured": true,
+  "actualOwnerMatchesExpected": true,
+  "unknownHold": false,
+  "lastObservedRole": "TEACHER",
+  "actualTeacherSessionConfirmed": true,
+  "local503WithoutHostDuplicate": true,
+  "retrySameQueryActual200": true,
+  "finalReadState": "SETTLED_REAL_PROJECTION",
+  "recoveredWithoutStaleHostWarning": true,
+  "browserClosed": true,
+  "sourceUnchanged": true,
+  "finishedAtUtc": "2026-10-24T22:16:17.573Z"
+}

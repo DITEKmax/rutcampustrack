@@ -34,6 +34,7 @@ import org.springframework.data.mongodb.MongoTransactionManager;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -612,11 +613,28 @@ class StudentRequestDomainIT {
                         STUDENT, new LateCheckinSubmission(72L, "closed-missing-late-72"));
         assertThat(excuseRepository.findById(excuse.summary().id())).isPresent();
         assertThat(lateCheckinRepository.findById(late.summary().id())).isPresent();
+        assertThat(receiptRepository.findAll())
+                .hasSize(2)
+                .allSatisfy(receipt -> assertThat(receipt.getGroupId()).isEqualTo(GROUP_ID));
         long dashboardSignals = actualOutboxEvents("dashboard.invalidated").size();
         assertThat(dashboardSignals).isGreaterThanOrEqualTo(2);
-        service.submitExcuse(STUDENT, excuse(List.of(71L), "closed-missing-excuse-71", List.of()));
-        service.submitLateCheckin(
-                STUDENT, new LateCheckinSubmission(72L, "closed-missing-late-72"));
+        // Persisted receipts from before group scoping still support exact command replay.
+        mongoTemplate.updateMulti(
+                new Query(), new Update().unset("group_id"), "student_request_receipts");
+        assertThat(
+                        service.submitExcuse(
+                                        STUDENT,
+                                        excuse(List.of(71L), "closed-missing-excuse-71", List.of()))
+                                .summary()
+                                .id())
+                .isEqualTo(excuse.summary().id());
+        assertThat(
+                        service.submitLateCheckin(
+                                        STUDENT,
+                                        new LateCheckinSubmission(72L, "closed-missing-late-72"))
+                                .summary()
+                                .id())
+                .isEqualTo(late.summary().id());
         assertThat(actualOutboxEvents("dashboard.invalidated")).hasSize((int) dashboardSignals);
         assertThat(attendanceRepository.findByLessonIdAndUserId(71L, STUDENT_ID)).isEmpty();
         assertThat(attendanceRepository.findByLessonIdAndUserId(72L, STUDENT_ID)).isEmpty();

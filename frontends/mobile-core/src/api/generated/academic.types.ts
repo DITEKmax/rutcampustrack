@@ -723,6 +723,42 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/academic/groups/{id}/deletions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["confirmGroupDeletion"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/academic/groups/{id}/deletions/{operationId}/resolve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Разрешить исход удаления по исходному UUID
+         * @description Возвращает исходную принятую операцию. Если приём ещё не состоялся, атомарно сохраняет CANCELLED/NOT_ACCEPTED и исключает поздний приём этого UUID. Не отменяет уже принятую операцию. Пароль и повторное подтверждение удаления не передаются.
+         */
+        post: operations["resolveGroupDeletion"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/academic/groups/registry": {
         parameters: {
             query?: never;
@@ -946,7 +982,10 @@ export interface paths {
         delete?: never;
         options?: never;
         head?: never;
-        /** Обновить права помощника (HEADMAN/ADMIN) */
+        /**
+         * Обновить права помощника (HEADMAN/ADMIN)
+         * @description expectedPermissions задаёт условное сравнение набора прав под блокировкой. Пустые permissions со снимком отзывают помощника и возвращают active=false; без снимка пустой набор запрещён.
+         */
         patch: operations["updatePermissions"];
         trace?: never;
     };
@@ -1433,6 +1472,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/academic/groups/{id}/deletion-preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["previewGroupDeletion"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/academic/groups/options": {
         parameters: {
             query?: never;
@@ -1458,6 +1513,22 @@ export interface paths {
         };
         /** Участники группы текущего пользователя (STUDENT/HEADMAN) */
         get: operations["getMyGroupMembers"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/academic/group-deletions/{operationId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getGroupDeletionStatus"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2545,6 +2616,8 @@ export interface components {
             role?: string;
             status?: string;
             roleStatus?: string;
+            /** Format: int64 */
+            groupId?: number;
             sorts?: components["schemas"]["RegistrySort"][];
             /** @enum {string} */
             format: "docx" | "pdf" | "png" | "html" | "xlsx";
@@ -2685,6 +2758,8 @@ export interface components {
             /** @enum {string} */
             status?: "ACTIVE" | "EXPELLED" | "SUSPENDED" | "ARCHIVED";
             roleStatus?: string;
+            /** Format: int64 */
+            groupId?: number;
             sorts?: components["schemas"]["SortOrder"][];
             format: string;
         };
@@ -2854,6 +2929,22 @@ export interface components {
              * @example УИТ-311
              */
             name: string;
+        };
+        ConfirmAdminGroupDeletionRequest: {
+            password: string;
+            previewDigest: string;
+        };
+        AdminGroupDeletionOperation: {
+            /** Format: uuid */
+            operationId?: string;
+            groupId?: string;
+            /** @enum {string} */
+            phase?: "PREPARING" | "COMMITTING" | "COMPLETED" | "RELEASING" | "CANCELLED";
+            retryable?: boolean;
+            counts?: {
+                [key: string]: number;
+            };
+            failure?: string;
         };
         /** @description Создание группы в реестре ADMIN */
         CreateAdminGroupRequest: {
@@ -3186,8 +3277,10 @@ export interface components {
         };
         /** @description Запрос на обновление прав помощника старосты */
         UpdateAssistantPermissionsRequest: {
-            /** @description Новый набор прав (минимум один элемент) */
+            /** @description Новый набор прав. Пустой набор отзывает помощника только при переданном expectedPermissions. */
             permissions: ("MARK_ATTENDANCE" | "MANAGE_EXCUSES" | "MANAGE_HOMEWORK" | "CANCEL_LESSONS" | "VIEW_STATS")[];
+            /** @description Ранее прочитанный полный набор прав. Сравнение без учёта порядка атомарно; несовпадение возвращает 409 ASSISTANT_PERMISSIONS_CONFLICT. Без поля сохраняется прежнее безусловное обновление. */
+            expectedPermissions?: ("MARK_ATTENDANCE" | "MANAGE_EXCUSES" | "MANAGE_HOMEWORK" | "CANCEL_LESSONS" | "VIEW_STATS")[];
         };
         Pageable: {
             /** Format: int32 */
@@ -3410,6 +3503,8 @@ export interface components {
             /** Format: int64 */
             bytes?: number;
             previewDigest?: string;
+            /** @enum {string|null} */
+            deletionScope?: "ALL_VERSIONS" | "CURRENT_FORMAT" | null;
         };
         DeletionPreview: {
             /** @enum {string} */
@@ -3543,6 +3638,14 @@ export interface components {
             /** Format: int32 */
             assistantsToRevoke?: number;
         };
+        AdminGroupDeletionPreview: {
+            groupId?: string;
+            groupName?: string;
+            previewDigest?: string;
+            counts?: {
+                [key: string]: number;
+            };
+        };
         /** @description Страница реестра групп администратора */
         AdminGroupRegistryResponse: {
             items?: components["schemas"]["AdminGroupResponse"][];
@@ -3576,6 +3679,8 @@ export interface components {
             /** Format: int64 */
             id?: number;
             name?: string;
+            /** @description Группа архивирована */
+            archived: boolean;
         };
         /** @description Суточный прирост карточек масштаба к концу вчерашнего дня Europe/Moscow */
         DashboardDailyGrowthResponse: {
@@ -6300,6 +6405,8 @@ export interface operations {
                 role?: string;
                 status?: "ACTIVE" | "EXPELLED" | "SUSPENDED" | "ARCHIVED";
                 roleStatus?: string;
+                /** @description Положительный ID группы в сохранённой связи STUDENT/HEADMAN. Не состав на дату; неизвестный ID даёт пустой список. */
+                groupId?: number;
                 pageable: components["schemas"]["Pageable"];
                 assembler: components["schemas"]["PagedResourcesAssemblerUserResponse"];
             };
@@ -9643,6 +9750,183 @@ export interface operations {
             };
         };
     };
+    confirmGroupDeletion: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConfirmAdminGroupDeletionRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["AdminGroupDeletionOperation"];
+                };
+            };
+            /** @description Ошибка валидации запроса */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Требуется аутентификация */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Доступ запрещён */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Ресурс не найден */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Конфликт данных */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Превышен лимит запросов */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Внутренняя ошибка сервера */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    resolveGroupDeletion: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+                operationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["AdminGroupDeletionOperation"];
+                };
+            };
+            /** @description Ошибка валидации запроса */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Требуется аутентификация */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Доступ запрещён */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Ресурс не найден */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Конфликт данных */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Превышен лимит запросов */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Внутренняя ошибка сервера */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     listAdminGroups: {
         parameters: {
             query: {
@@ -11062,7 +11346,7 @@ export interface operations {
                     "*/*": components["schemas"]["EntityModelAssistantResponse"];
                 };
             };
-            /** @description Конфликт данных */
+            /** @description Помощник отозван или права изменились; extras.code=ASSISTANT_PERMISSIONS_CONFLICT при несовпадении снимка */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -13511,12 +13795,98 @@ export interface operations {
             };
         };
     };
+    previewGroupDeletion: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["AdminGroupDeletionPreview"];
+                };
+            };
+            /** @description Ошибка валидации запроса */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Требуется аутентификация */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Доступ запрещён */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Ресурс не найден */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Конфликт данных */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Превышен лимит запросов */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Внутренняя ошибка сервера */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     options: {
         parameters: {
             query?: {
                 search?: string;
                 page?: number;
                 size?: number;
+                includeArchived?: boolean;
             };
             header?: never;
             path?: never;
@@ -13644,6 +14014,91 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["PagedModelEntityModelUserResponse"];
+                };
+            };
+            /** @description Ресурс не найден */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Конфликт данных */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Превышен лимит запросов */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Внутренняя ошибка сервера */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    getGroupDeletionStatus: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                operationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["AdminGroupDeletionOperation"];
+                };
+            };
+            /** @description Ошибка валидации запроса */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Требуется аутентификация */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Доступ запрещён */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
                 };
             };
             /** @description Ресурс не найден */

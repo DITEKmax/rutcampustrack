@@ -89,22 +89,41 @@ public final class UserSpecifications {
         };
     }
 
-    /** Filters users by a durable grant rather than the legacy scalar role. */
+    /** Filters users by retained directory grants, not by the legacy scalar role/group. */
     public static Specification<User> matchesGrant(String role, String status) {
-        if (role == null || role.isBlank()) return null;
-        return (root, query, cb) -> {
-            var subquery = query.subquery(Long.class);
-            var grant = subquery.from(UserRoleGrant.class);
-            Predicate user = cb.equal(grant.get("userId"), root.get("id"));
-            Predicate roleMatch =
-                    cb.equal(cb.lower(grant.get("role")), role.toLowerCase(Locale.ROOT));
-            if (status == null || status.isBlank()) {
-                return cb.exists(subquery.select(grant.get("id")).where(user, roleMatch));
-            }
-            Predicate statusMatch =
-                    cb.equal(cb.lower(grant.get("status")), status.toLowerCase(Locale.ROOT));
-            return cb.exists(subquery.select(grant.get("id")).where(user, roleMatch, statusMatch));
-        };
+        return matchesGrant(role, status, null);
+    }
+
+    public static Specification<User> matchesGrant(String role, String status, Long groupId) {
+        String normalizedRole =
+                role == null || role.isBlank() ? null : role.trim().toLowerCase(Locale.ROOT);
+        if (normalizedRole == null && groupId == null) return null;
+        boolean groupRole = "student".equals(normalizedRole) || "headman".equals(normalizedRole);
+        Specification<User> selectedGrant =
+                (root, query, cb) -> {
+                    var subquery = query.subquery(Long.class);
+                    var grant = subquery.from(UserRoleGrant.class);
+                    var predicates = new java.util.ArrayList<Predicate>();
+                    predicates.add(cb.equal(grant.get("userId"), root.get("id")));
+                    if (normalizedRole != null)
+                        predicates.add(cb.equal(cb.lower(grant.get("role")), normalizedRole));
+                    else predicates.add(cb.lower(grant.get("role")).in("student", "headman"));
+                    if (status != null && !status.isBlank())
+                        predicates.add(
+                                cb.equal(
+                                        cb.lower(grant.get("status")),
+                                        status.trim().toLowerCase(Locale.ROOT)));
+                    if (groupId != null && (normalizedRole == null || groupRole))
+                        predicates.add(cb.equal(grant.get("groupId"), groupId));
+                    return cb.exists(
+                            subquery.select(grant.get("id"))
+                                    .where(predicates.toArray(Predicate[]::new)));
+                };
+        // For a selected non-group role, membership belongs to a separate retained grant.
+        if (groupId != null && normalizedRole != null && !groupRole) {
+            return selectedGrant.and(matchesGrant(null, null, groupId));
+        }
+        return selectedGrant;
     }
 
     /**

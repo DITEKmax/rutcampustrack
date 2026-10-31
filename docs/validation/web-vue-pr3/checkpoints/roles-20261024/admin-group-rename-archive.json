@@ -1,0 +1,11 @@
+{
+  "evidenceKind": "real-runtime-safe-projection",
+  "originalPath": "/workspace/rct-pr3-runtime/admin-web/group-rename-archive.json",
+  "originalSha256": "df2631c9e2037f333515aa98a51f54bff19548f0bec113d571253e4cd290202c",
+  "scopeNote": "Real own group3 rename/archive/restore; actor grants remained unchanged.",
+  "checks": [
+    "same open card rename then archive sends authoritative new name",
+    "group3 restored active with original name and headman9",
+    "users9/13/16 exact role/status/group snapshots preserved"
+  ]
+}

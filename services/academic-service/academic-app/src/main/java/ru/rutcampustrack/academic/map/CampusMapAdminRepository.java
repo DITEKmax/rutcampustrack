@@ -199,6 +199,16 @@ public class CampusMapAdminRepository {
                 .findFirst();
     }
 
+    public List<PlanRow> findPlans(long floorId) {
+        return jdbcTemplate.query(
+                """
+                SELECT id, floor_id, version, catalog_revision_id, label, published_at
+                FROM campus_map_plan_version WHERE floor_id = ? ORDER BY version, id
+                """,
+                (rs, rowNum) -> plan(rs),
+                floorId);
+    }
+
     public List<SlotRow> findSlots(long planId) {
         return jdbcTemplate.query(SLOTS_SQL, (rs, rowNum) -> slot(rs), planId);
     }
@@ -320,23 +330,33 @@ public class CampusMapAdminRepository {
     }
 
     public long insertPlan(long floorId, long version, long catalogRevisionId, String label) {
-        return jdbcTemplate.queryForObject(
-                """
+        long id =
+                jdbcTemplate.queryForObject(
+                        """
                 INSERT INTO campus_map_plan_version
                     (floor_id, version, catalog_revision_id, label, published_at)
                 VALUES (?, ?, ?, ?, NULL)
                 RETURNING id
                 """,
-                Long.class,
-                floorId,
+                        Long.class,
+                        floorId,
+                        version,
+                        catalogRevisionId,
+                        label);
+        jdbcTemplate.update(
+                "UPDATE campus_map_floor SET plan_version_high_water = GREATEST(plan_version_high_water, ?) WHERE id = ?",
                 version,
-                catalogRevisionId,
-                label);
+                floorId);
+        return id;
     }
 
     public long highestPlanVersion(long floorId) {
         return jdbcTemplate.queryForObject(
-                "SELECT COALESCE(MAX(version), 0) FROM campus_map_plan_version WHERE floor_id = ?",
+                """
+                SELECT GREATEST(f.plan_version_high_water,
+                    COALESCE((SELECT MAX(p.version) FROM campus_map_plan_version p WHERE p.floor_id = f.id), 0))
+                FROM campus_map_floor f WHERE f.id = ?
+                """,
                 Long.class,
                 floorId);
     }

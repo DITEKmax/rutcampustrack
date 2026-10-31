@@ -1,0 +1,39 @@
+{
+  "entries": [
+    {
+      "id": "WEB-THEME__WT-04-suffix-same-new-device-dark-after-login__dark__1440__7d664ce89",
+      "state": "suffix-same-new-device-dark-after-login",
+      "file": "WEB-THEME__WT-04-suffix-same-new-device-dark-after-login__dark__1440__7d664ce89.png",
+      "sha256": "8803e178c62380cd7efddc56a9ca279fef689bff3d592b8764824de27c9cf6be",
+      "revision": "7d664ce89cff5813772d1923e310ad74c2706c87",
+      "theme": "dark",
+      "width": 1440,
+      "height": 1000,
+      "rootFont": "16px",
+      "scrollWidth": 1440,
+      "personallyInspected": true,
+      "pngWidth": 1440,
+      "pngHeight": 1000,
+      "bytes": 36110,
+      "inspectionAtUtc": "2026-10-24T23:48:04.616206+00:00",
+      "inspection": "Dark native WEB shell and Student navigation readable at1440/root16 after second normal login; home content still natural initial skeleton. Actual same-device darkGET/revision1 verified. No loaded-home baseline or full-screen state claim.",
+      "provenance": "Real Auth/data/device API and native selector/logout/login; no response modifications; own new device, distinct from original0583 device.",
+      "caseId": "WT-04",
+      "screen": "WEB-DEVICE-THEME",
+      "title": "Тёмная тема сохранена после обычного повторного входа",
+      "description": "Native dark CAS1 → logout204/oldBearer401 → второй normal login → fresh request-bound GET dark/revision1, same device cookie, no PUT after relogin. Home still initial skeleton; theme observation only.",
+      "image": "WEB-THEME__WT-04-suffix-same-new-device-dark-after-login__dark__1440__7d664ce89.png",
+      "synthetic": true,
+      "syntheticCause": "Browser OS media only; native UI/Auth/device preferences API unchanged."
+    }
+  ],
+  "sourceRevision": "7d664ce89cff5813772d1923e310ad74c2706c87",
+  "limits": [
+    "Raw exit1 preserved: two WebAuthorityChangedError page errors; full zero-error run not claimed.",
+    "Native device-persistence criterion and both exact own SID terminal states confirmed; no replay of first three theme frames.",
+    "Source1057 fixes separately reproduced owner-cancellation bug; changed runtime check still pending."
+  ],
+  "reusedGallery": "../web-theme-observed-20261024/index.html",
+  "newImages": 1,
+  "rawZeroErrorPass": false
+}

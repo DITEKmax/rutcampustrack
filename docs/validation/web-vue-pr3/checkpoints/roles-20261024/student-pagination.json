@@ -1,0 +1,55 @@
+{
+  "evidenceKind": "real-runtime-safe-projection",
+  "originalPath": "/tmp/student-web-pagination-ui/summary.json",
+  "originalSha256": "36d97506f7401bf09c96666ae295180f8a9c0c575f3a82710e032fb4b7296fc7",
+  "scopeNote": "One bounded real archive10-to11 scenario; assertions are not separate actions.",
+  "checks": [
+    "real archive first page contains10 own requests",
+    "observer mode has no next-page button",
+    "visible archive edge automatically loads real eleventh request",
+    "automatic append contains11 unique actual request IDs",
+    "append failure retains already loaded10 real requests",
+    "explicit retry restores all11 own requests",
+    "observer-unavailable fallback appends actual eleventh request",
+    "no runtime errors"
+  ],
+  "errors": [],
+  "pages": [
+    {
+      "page": "0",
+      "status": 200
+    },
+    {
+      "page": "0",
+      "status": 200
+    },
+    {
+      "page": "1",
+      "status": 200
+    },
+    {
+      "page": "0",
+      "status": 200
+    },
+    {
+      "page": "0",
+      "status": 200
+    },
+    {
+      "page": "1",
+      "status": 200
+    },
+    {
+      "page": "0",
+      "status": 200
+    },
+    {
+      "page": "0",
+      "status": 200
+    },
+    {
+      "page": "1",
+      "status": 200
+    }
+  ]
+}

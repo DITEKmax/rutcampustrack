@@ -1,0 +1,140 @@
+{
+  "source": "f0eb2bda611dfc8eef4368d894ea0acb5769427b",
+  "clean": true,
+  "checks": [
+    "real День projection",
+    "real Неделя projection",
+    "real Месяц projection",
+    "month navigation and today reset",
+    "real STOMP publication appears during ordinary hover and checkbox reading focus",
+    "keyed existing completion DOM retains keyboard focus"
+  ],
+  "errors": [],
+  "api": [
+    {
+      "method": "POST",
+      "status": 401,
+      "path": "/api/auth/refresh"
+    },
+    {
+      "method": "POST",
+      "status": 200,
+      "path": "/api/auth/login"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "path": "/api/auth/session"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "path": "/api/auth/device-preferences"
+    },
+    {
+      "method": "POST",
+      "status": 200,
+      "path": "/api/auth/ws-ticket"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "path": "/api/academic/assistants/me/permissions"
+    },
+    {
+      "method": "POST",
+      "status": 200,
+      "path": "/api/auth/refresh"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "path": "/api/auth/session"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "path": "/api/auth/device-preferences"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "path": "/api/academic/assistants/me/permissions"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "path": "/api/v1/student/homework"
+    },
+    {
+      "method": "POST",
+      "status": 200,
+      "path": "/api/auth/ws-ticket"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "path": "/api/ws/info"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "path": "/api/v1/student/homework"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "path": "/api/academic/assistants/me/permissions"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "path": "/api/v1/student/homework"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "path": "/api/v1/student/homework"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "path": "/api/v1/student/homework"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "path": "/api/v1/student/homework"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "path": "/api/v1/student/homework"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "path": "/api/v1/student/homework"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "path": "/api/academic/assistants/me/permissions"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "path": "/api/v1/student/homework"
+    }
+  ],
+  "socket": {
+    "opened": 3,
+    "subscribed": true,
+    "messages": 1
+  },
+  "provenance": {
+    "original_path": "/workspace/rct-pr3-runtime/web-foundation/homework-focused-live.json",
+    "original_sha256": "c2da01d6336b506b08907b77375718b3ea945e71937b6531d0925d3c13460d47",
+    "projection": "only source/checks/errors/status + method/path/status; no request/response bodies, actors, credentials, OTPs or capabilities"
+  }
+}

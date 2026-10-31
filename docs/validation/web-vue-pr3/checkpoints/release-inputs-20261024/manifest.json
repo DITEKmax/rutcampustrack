@@ -1,0 +1,44 @@
+{
+  "kind": "Vue release-input source and bounded dev static acceptance",
+  "rootSource": "8e280baef7edcef1098db9fb62bcaacf3646179a",
+  "originals": [
+    "429a3a27057065d564fc677092ec9214f0dd74ad",
+    "469ec5eca1b1f5802008f80abc84b506790e2c8c"
+  ],
+  "sourceBuildReference": "c3c08a935 strict WEB/PWA/TMA builds, not rerun",
+  "files": [
+    "docker-compose.yml",
+    "docker-compose.prod.yml",
+    ".github/workflows/deploy.yml"
+  ],
+  "scope": "Existing service/image identity; Vue workspace/static inputs; readable internal public copy with unchanged readonly host dist.",
+  "CI": "Four CI/Coverage/Security/OpenAPI remain manual/PAUSED; existing deploy workflow_run+workflow_dispatch triggers preserved, no dispatch/deploy.",
+  "checks": {
+    "devCompose": "PASS actual synthetic config",
+    "changedProdWebNetworkFragment": "PASS actual synthetic config",
+    "fullProdCompose": "NOT PASS: unchanged CAMPUS_MAP_USAGE_HMAC_KEY binding absent from earlier synthetic env",
+    "staticHttp": "PASS6 after two retained probe-start failures; normal non-root worker, exact owned cleanup",
+    "browserAuthDomain": "NOT RUN by this static probe"
+  },
+  "functionalActionCount": 0,
+  "entries": [
+    {
+      "published": "WEB-DEV-READABILITY-429-PROBE-attempt1.json",
+      "source": "/workspace/rct-pr3-runtime/WEB-DEV-READABILITY-429-PROBE-attempt1.json",
+      "originalSha256": "289a383986b3de4e0839d52d7ac026262f13472ca965614e404270c24d0b48a3",
+      "publishedSha256": "7cc9a51e77370ab68e17f775756823d706118a9f86ce9e0f928ca0b823311d8f"
+    },
+    {
+      "published": "WEB-DEV-READABILITY-429-PROBE-attempt2.json",
+      "source": "/workspace/rct-pr3-runtime/WEB-DEV-READABILITY-429-PROBE-attempt2.json",
+      "originalSha256": "b94ba3967ac0fb5c6e4a3bf5f4cd6ce3d8883dc8b204a95f0183771fe550db22",
+      "publishedSha256": "7cc9a51e77370ab68e17f775756823d706118a9f86ce9e0f928ca0b823311d8f"
+    },
+    {
+      "published": "WEB-DEV-READABILITY-429-PROBE-attempt3.json",
+      "source": "/workspace/rct-pr3-runtime/WEB-DEV-READABILITY-429-PROBE-attempt3.json",
+      "originalSha256": "1ecfe930cad7ef53fb5815059345aca2e3f9b2905b50db52e2101b90c9d38173",
+      "publishedSha256": "e0ccad504cfc7cd2edc4119247a0dc74a6af6783d12ac13338241963d35e424d"
+    }
+  ]
+}

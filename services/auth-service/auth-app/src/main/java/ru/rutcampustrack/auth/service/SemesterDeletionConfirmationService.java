@@ -2,11 +2,10 @@ package ru.rutcampustrack.auth.service;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
 import ru.rutcampustrack.auth.dto.ConfirmMapDeletionRequest;
 import ru.rutcampustrack.auth.dto.ConfirmSemesterDeletionRequest;
 import ru.rutcampustrack.auth.entity.User;
@@ -17,6 +16,10 @@ import ru.rutcampustrack.auth.session.AuthSessionException;
 import ru.rutcampustrack.auth.session.model.AuthRole;
 import ru.rutcampustrack.auth.session.model.RoleStatus;
 import ru.rutcampustrack.auth.session.model.SessionSnapshot;
+
+import java.util.Objects;
+import java.util.Optional;
+import java.util.UUID;
 
 /** Rechecks one current ADMIN session and verifies its current account password. */
 @Service
@@ -85,6 +88,11 @@ public class SemesterDeletionConfirmationService {
         Objects.requireNonNull(request, "request");
         confirmPassword(
                 request.internalToken(), request.password(), request.targetId(), "USERS_ARCHIVE");
+    }
+
+    @org.springframework.transaction.annotation.Transactional
+    public void confirmGroupDeletion(String internalToken, String password) {
+        confirmPassword(internalToken, password, null, "GROUPS_MANAGE", "DATA_DELETE");
     }
 
     private void confirmPassword(

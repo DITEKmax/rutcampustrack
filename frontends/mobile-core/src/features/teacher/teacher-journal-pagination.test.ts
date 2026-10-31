@@ -9,7 +9,14 @@ import {
 } from 'vue'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import TeacherJournalScreen from './TeacherJournalScreen.vue'
-import type { TeacherApi, TeacherJournalQuery, TeacherJournalResponse } from './teacher-client'
+import {
+  TeacherApiError,
+  TeacherApi,
+  type TeacherJournalQuery,
+  type TeacherJournalResponse,
+} from './teacher-client'
+import { AuthRequestError } from '../../../../pwa-vue/src/auth-client'
+import { TmaAuthError } from '../../../../tma-vue/src/tma-auth'
 import type {
   ReportDownloadPort,
   ReportDownloadTicketRequest,
@@ -208,26 +215,31 @@ function response(subjectId = 3, name = 'Анна'): TeacherJournalResponse {
 function mount(
   options: {
     initialTypes?: string[]
+    api?: TeacherApi
+    showExport?: boolean
     journal?: (query: TeacherJournalQuery) => Promise<TeacherJournalResponse>
     report?: ReportDownloadPort
   } = {},
 ) {
   const calls: TeacherJournalQuery[] = []
   const manual: [number, number][] = []
-  const api = markRaw({
-    journal: async (query: TeacherJournalQuery) => {
-      calls.push(query)
-      return options.journal ? options.journal(query) : response()
-    },
-    journalExportFormats: async () => [
-      {
-        code: 'docx',
-        label: 'DOCX',
-        extension: 'docx',
-        contentType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  const ownerErrors: unknown[] = []
+  const api =
+    options.api ??
+    (markRaw({
+      journal: async (query: TeacherJournalQuery) => {
+        calls.push(query)
+        return options.journal ? options.journal(query) : response()
       },
-    ],
-  }) as unknown as TeacherApi
+      journalExportFormats: async () => [
+        {
+          code: 'docx',
+          label: 'DOCX',
+          extension: 'docx',
+          contentType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        },
+      ],
+    }) as unknown as TeacherApi)
   const state = shallowReactive<{ query: TeacherJournalQuery; active: boolean }>({
     query: {
       semesterId: 7,
@@ -243,6 +255,8 @@ function mount(
     render: () =>
       h(TeacherJournalScreen, {
         api,
+        showExport: options.showExport ?? true,
+        onError: (cause: unknown) => ownerErrors.push(cause),
         query: state.query,
         active: state.active,
         subjectOptions: subjects,
@@ -258,9 +272,101 @@ function mount(
   })
   apps.push(app)
   app.mount(root)
-  return { root, state, calls, manual }
+  return { root, state, calls, manual, ownerErrors }
 }
 describe('teacher journal context and navigation', () => {
+  it.each([403, 503])(
+    'keeps journal HTTP %i local and recovers the same query without a stale host error',
+    async (status) => {
+      let attempts = 0
+      const cause = new TeacherApiError(new Response(null, { status }), {
+        detail: 'Чтение недоступно',
+      })
+      const view = mount({
+        initialTypes: ['lecture'],
+        journal: async () => {
+          if (++attempts === 1) throw cause
+          return response()
+        },
+      })
+      await settle()
+      expect(attempts).toBe(1)
+      expect(view.ownerErrors).toEqual([])
+      click(view.root, 'Повторить')
+      await settle()
+      expect(attempts).toBe(2)
+      expect(view.calls[1]).toEqual(view.calls[0])
+      expect(view.ownerErrors).toEqual([])
+      expect(find(view.root, (node) => node.props.role === 'alert')).toBeUndefined()
+    },
+  )
+  it.each([
+    new AuthRequestError('refresh', 401, { detail: 'Session expired' }),
+    new TmaAuthError(401, 'Re-auth denied'),
+    new TmaAuthError(403, 'Candidate session denied'),
+  ])(
+    'forwards the current owner denial after a real journal401/onUnauthorized rejection (%s)',
+    async (cause) => {
+      const refresh = vi.fn(async () => {
+        throw cause
+      })
+      let journalReads = 0
+      const api = markRaw(
+        new TeacherApi({
+          accessToken: () => 'unit-test-bearer',
+          onUnauthorized: refresh,
+          fetcher: async (input) => {
+            if (String(input).includes('/journal?')) {
+              journalReads += 1
+              return new Response(null, { status: 401 })
+            }
+            throw new Error('Unexpected journal boundary request')
+          },
+        }),
+      )
+      const view = mount({ initialTypes: ['lecture'], api, showExport: false })
+      await settle()
+      expect(journalReads).toBe(1)
+      expect(refresh).toHaveBeenCalledTimes(1)
+      expect(view.ownerErrors).toEqual([cause])
+    },
+  )
+  it('ignores a late owner refresh denial after the real journal query has changed', async () => {
+    let reject!: (cause: unknown) => void
+    const refresh = vi.fn(
+      () =>
+        new Promise<void>((_resolve, fail) => {
+          reject = fail
+        }),
+    )
+    const queries: string[] = []
+    const api = markRaw(
+      new TeacherApi({
+        accessToken: () => 'unit-test-bearer',
+        onUnauthorized: refresh,
+        fetcher: async (input) => {
+          const url = new URL(String(input), 'https://fixture.test')
+          if (url.pathname.endsWith('/journal')) {
+            queries.push(url.searchParams.get('subjectId')!)
+            return url.searchParams.get('subjectId') === '3'
+              ? new Response(null, { status: 401 })
+              : Response.json(response(9))
+          }
+          throw new Error('Unexpected journal boundary request')
+        },
+      }),
+    )
+    const view = mount({ initialTypes: ['lecture'], api, showExport: false })
+    await settle()
+    expect(refresh).toHaveBeenCalledTimes(1)
+    view.state.query = { ...view.state.query, subjectId: 9 }
+    await settle()
+    reject(new AuthRequestError('refresh', 401, { detail: 'Old session denied' }))
+    await settle()
+    expect(queries).toEqual(['3', '9'])
+    expect(view.ownerErrors).toEqual([])
+  })
+
   it('renders server Table and Chart metrics, with selected-student reads fenced against late results', async () => {
     vi.stubGlobal('document', { createElement: () => ({ getContext: () => null }) })
     const present = { numerator: 1, denominator: 4, percent: 25 }

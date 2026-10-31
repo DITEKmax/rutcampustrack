@@ -22,6 +22,7 @@
   cursor: inherit;
 }
 .admin-checkbox__control {
+  pointer-events: none;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -33,7 +34,7 @@
   border-radius: var(--rct-space-1);
   background: var(--rct-color-surface-base);
 }
-.admin-checkbox__control img {
+.admin-checkbox__control :is(img, .rct-svg-icon) {
   display: block;
   inline-size: var(--rct-icon-size);
   block-size: var(--rct-icon-size);
@@ -41,6 +42,7 @@
 .admin-checkbox input:checked + .admin-checkbox__control {
   border-color: var(--rct-color-accent-now);
   background: var(--rct-color-accent-now);
+  color: var(--rct-color-accent-on-now);
 }
 .admin-checkbox input:focus-visible + .admin-checkbox__control {
   outline: var(--rct-focus-width) solid var(--rct-color-accent-now);

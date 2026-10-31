@@ -1,0 +1,106 @@
+{
+  "sourceRevision": "77fbd7a5e79bcaf3185f60e4ee2f18c7a3e3896b",
+  "startedAt": "2026-10-24T15:17:41.129Z",
+  "kind": "postfix remaining Headman/Teacher synthetic-read visual recheck",
+  "functionalActionsAdded": 0,
+  "samples": [
+    {
+      "id": "WEB-HEADMAN-JOURNAL__postfix-synthetic-loading__light__300__77fbd7a5e",
+      "screen": "WEB-HEADMAN-JOURNAL",
+      "state": "postfix-synthetic-loading",
+      "cause": "actual initial GET held in browser; skeleton rendering; no backend failure claim",
+      "theme": "light",
+      "width": 300,
+      "height": 900,
+      "scrollWidth": 300,
+      "image": "WEB-HEADMAN-JOURNAL__postfix-synthetic-loading__light__300__77fbd7a5e.png",
+      "sha256": "2914fd5dae773be0786efb2139b1f8e09f7c12c0c9fb6fb8e46dded086c559b5",
+      "provenance": "actual-app/synthetic-read-state"
+    },
+    {
+      "id": "WEB-TEACHER-HOME__postfix-synthetic-loading__dark__1440__77fbd7a5e",
+      "screen": "WEB-TEACHER-HOME",
+      "state": "postfix-synthetic-loading",
+      "cause": "actual initial GET held in browser; skeleton rendering; no backend failure claim",
+      "theme": "dark",
+      "width": 1440,
+      "height": 1080,
+      "scrollWidth": 1440,
+      "image": "WEB-TEACHER-HOME__postfix-synthetic-loading__dark__1440__77fbd7a5e.png",
+      "sha256": "947db3254fed2cb39c21e576b18ded49ce99d7db45115a28205f4cfd7ed89191",
+      "provenance": "actual-app/synthetic-read-state"
+    }
+  ],
+  "routeHits": [
+    {
+      "case": "HEADMAN loading",
+      "path": "/api/schedule/groups/1/lessons",
+      "hit": 1,
+      "synthetic": "held GET"
+    },
+    {
+      "case": "HEADMAN loading",
+      "path": "/api/schedule/groups/1/lessons",
+      "hit": 2,
+      "synthetic": "held GET"
+    },
+    {
+      "case": "TEACHER loading",
+      "path": "/api/v1/teacher/semester",
+      "hit": 1,
+      "synthetic": "held GET"
+    },
+    {
+      "case": "TEACHER loading",
+      "path": "/api/v1/teacher/semester",
+      "hit": 2,
+      "synthetic": "held GET"
+    }
+  ],
+  "arrivals": [],
+  "ttlTransitions": [],
+  "loading": [
+    {
+      "role": "HEADMAN",
+      "width": 300,
+      "theme": "light",
+      "realReadHits": 1,
+      "syntheticCause": "held GET",
+      "skeletonVisible": true
+    },
+    {
+      "role": "TEACHER",
+      "width": 1440,
+      "theme": "dark",
+      "realReadHits": 1,
+      "syntheticCause": "held GET",
+      "skeletonVisible": true
+    }
+  ],
+  "cleanup": [
+    {
+      "role": "HEADMAN",
+      "exactOwnSessionHandleCaptured": true,
+      "nativeLogoutSent": true,
+      "fallbackUsed": false,
+      "httpStatus": 204,
+      "guestReadStatus": 401,
+      "confirmed": true
+    },
+    {
+      "role": "TEACHER",
+      "exactOwnSessionHandleCaptured": true,
+      "nativeLogoutSent": true,
+      "fallbackUsed": false,
+      "httpStatus": 204,
+      "guestReadStatus": 401,
+      "confirmed": true
+    }
+  ],
+  "pageErrors": [],
+  "domainMutations": [],
+  "reproductionPassed": true,
+  "finishedAt": "2026-10-24T15:17:46.965Z",
+  "sourceUnchanged": true,
+  "completed": true
+}

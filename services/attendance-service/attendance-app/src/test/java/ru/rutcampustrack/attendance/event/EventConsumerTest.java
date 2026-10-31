@@ -551,9 +551,11 @@ class EventConsumerTest {
 
     @Test
     void lessonCancelled_delegatesToLessonEventService() {
+        when(lessonEventService.prepareLessonCancelledScope(1L, 3L))
+                .thenReturn(new LessonEventService.LessonCancellationScope(1, 3, 10L));
         eventConsumer.onEvent(
                 scheduleEnvelope("lesson.cancelled", Map.of("lesson_id", 1, "semester_id", 3)));
-        verify(lessonEventService).processLessonCancelled(1L, 3L);
+        verify(lessonEventService).processLessonCancelled(1L, 3L, 10L);
         verifyNoInteractions(semesterCacheService);
     }
 

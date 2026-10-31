@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import SvgIcon from '../../../../shared/foundation/SvgIcon.vue';
 import { computed, nextTick, onUnmounted, ref, watch } from 'vue';
 import type {
   ProfilePasswordPolicy,
@@ -40,7 +41,6 @@ const props = withDefaults(
     onRecover: undefined,
     recoveryLabel: 'Не помню текущий пароль',
     onChangePassword: undefined,
-    theme: 'dark',
     ownerKey: null,
   },
 );
@@ -186,11 +186,10 @@ onUnmounted(() => {
           aria-label="Назад"
           @click="onBack?.()"
         >
-          <img
+          <SvgIcon
             :src="securityPrevious"
-            alt=""
             aria-hidden="true"
-          >
+          />
         </button>
         <h1
           id="profile-security-title"
@@ -234,11 +233,12 @@ onUnmounted(() => {
               :aria-label="showCurrent ? 'Скрыть текущий пароль' : 'Показать текущий пароль'"
               @click="toggle('current')"
             >
-              <img
+              <SvgIcon
+                :width="20"
+                :height="20"
                 :src="showCurrent ? securityHide : securityShow"
-                alt=""
                 aria-hidden="true"
-              >
+              />
             </button>
           </div>
           <span
@@ -272,11 +272,12 @@ onUnmounted(() => {
               :aria-label="showNew ? 'Скрыть новый пароль' : 'Показать новый пароль'"
               @click="toggle('new')"
             >
-              <img
+              <SvgIcon
+                :width="20"
+                :height="20"
                 :src="showNew ? securityHide : securityShow"
-                alt=""
                 aria-hidden="true"
-              >
+              />
             </button>
           </div>
         </div>
@@ -304,11 +305,12 @@ onUnmounted(() => {
               "
               @click="toggle('repeat')"
             >
-              <img
+              <SvgIcon
+                :width="20"
+                :height="20"
                 :src="showRepeat ? securityHide : securityShow"
-                alt=""
                 aria-hidden="true"
-              >
+              />
             </button>
           </div>
           <span

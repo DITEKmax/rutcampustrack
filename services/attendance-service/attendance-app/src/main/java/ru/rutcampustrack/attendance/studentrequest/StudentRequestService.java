@@ -1162,6 +1162,7 @@ public class StudentRequestService {
         receiptRepository.save(
                 StudentRequestReceiptDocument.builder()
                         .studentId(studentId)
+                        .groupId(identity.groupId())
                         .commandKind(StudentRequestKind.EXCUSE.name())
                         .idempotencyKey(command.idempotencyKey())
                         .payloadHash(payloadHash)
@@ -1228,6 +1229,7 @@ public class StudentRequestService {
         receiptRepository.save(
                 StudentRequestReceiptDocument.builder()
                         .studentId(studentId)
+                        .groupId(identity.groupId())
                         .commandKind(StudentRequestKind.LATE_CHECKIN.name())
                         .idempotencyKey(command.idempotencyKey())
                         .payloadHash(payloadHash)

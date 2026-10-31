@@ -1,0 +1,15 @@
+{
+  "sourceSha": "240a1b2a86a2b2ba0cbb89647a9ed8b151007007",
+  "phase": "FINISH_REQUESTED",
+  "pollMs": 250,
+  "guard": null,
+  "ownedId": "905045edbd002ae49214d9968182daa7c1b497b1f7538ea463c963c10c1f1043",
+  "beforeAvailable": 6489534464,
+  "reasonForRepeat": "Changed runtime MIME/cache/404 config; exact accepted artifacts reused, no app build",
+  "minimumAvailable": 6383026176,
+  "original30Unchanged": true,
+  "originalCount": 30,
+  "afterCount": 30,
+  "availableAfter": 6487257088,
+  "seconds": 575.511
+}

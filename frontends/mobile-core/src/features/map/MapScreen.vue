@@ -16,7 +16,6 @@ const props = withDefaults(
     compactPresentation?: boolean;
   }>(),
   {
-    theme: 'dark',
     onBack: undefined,
     offline: false,
     compactPresentation: false,

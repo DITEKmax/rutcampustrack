@@ -2,14 +2,14 @@ name: OpenAPI Drift Guard
 
 on:
   push:
-    branches: ['**']
-    paths:
-      - 'docs/openapi/**'
-      - 'frontends/mobile-core/src/api/generated/**'
-      - 'frontends/mobile-core/scripts/generate-*.mjs'
-      - 'frontends/package.json'
-      - 'frontends/package-lock.json'
-      - '.github/workflows/openapi-drift.yml'
+    branches: ['main', 'dev']
+    paths-ignore:
+      - 'docs/**'
+      - '.planning/**'
+      - '*.md'
+      - 'SECURITY.md'
+      - 'renovate.json'
+      - '.pre-commit-config.yaml'
   pull_request:
     branches: ['**']
     paths:
@@ -19,6 +19,7 @@ on:
       - 'frontends/package.json'
       - 'frontends/package-lock.json'
       - '.github/workflows/openapi-drift.yml'
+  workflow_dispatch:
 
 jobs:
   drift-check:

@@ -824,6 +824,37 @@ class InitialAdministratorBootstrapIT {
         }
     }
 
+    private static boolean localCliContext() {
+        String revision = System.getenv("RCT_LOCAL_RELEASE_REVISION");
+        if (revision == null) return false;
+        String nonce = System.getenv("RCT_LOCAL_RELEASE_NONCE");
+        String audit = System.getenv("RCT_LOCAL_RELEASE_AUDIT");
+        if (!revision.matches("[0-9a-f]{40}")
+                || nonce == null
+                || !nonce.matches("[0-9a-f]{24}")
+                || audit == null
+                || System.getenv("GITHUB_ACTIONS") != null
+                || System.getenv("GITHUB_SHA") != null
+                || System.getenv("GITHUB_RUN_ID") != null
+                || System.getenv("GITHUB_RUN_ATTEMPT") != null
+                || System.getenv("RCT_CI_RUN_ID") != null
+                || System.getenv("RCT_CI_RUN_ATTEMPT") != null
+                || !"LOCAL_CONTROL".equals(System.getenv("RCT_CI_EVENT_NAME")))
+            throw new AssertionError("honest local bootstrap context required");
+        try {
+            Path directory = Path.of(audit);
+            if (!directory.isAbsolute()
+                    || Files.isSymbolicLink(directory)
+                    || !Files.isDirectory(directory)
+                    || !Files.getPosixFilePermissions(directory)
+                            .equals(java.nio.file.attribute.PosixFilePermissions.fromString("rwx------")))
+                throw new AssertionError("private local bootstrap audit required");
+        } catch (java.io.IOException failure) {
+            throw new AssertionError("private local bootstrap audit required");
+        }
+        return true;
+    }
+
     private static String localCliImage(String variable) {
         String reference = System.getenv(variable);
         String expected =
@@ -833,7 +864,10 @@ class InitialAdministratorBootstrapIT {
                                 "RCT_BOOTSTRAP_ACADEMIC_IMAGE",
                                 "rct/academic-service:e2e-local")
                         .get(variable);
-        if (reference == null || !reference.equals(expected))
+        if (reference == null
+                || !(localCliContext()
+                        ? reference.matches("sha256:[0-9a-f]{64}")
+                        : reference.equals(expected)))
             throw new AssertionError("current built bootstrap images required");
         String id =
                 org.testcontainers.DockerClientFactory.instance()

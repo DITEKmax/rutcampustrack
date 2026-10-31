@@ -1,9 +1,14 @@
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { failedCaseId, safeFirstFailureObservations, type FirstFailureObservation, type FailedCaseId } from './failed-case-diagnostics';
+import { DiagnosticRun, diagnosticHttpFailure, retainDiagnosticObservation, type DiagnosticEvent } from './diagnostic-events';
+import { closeSync, constants, lstatSync, mkdirSync, openSync, readFileSync, realpathSync, writeFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+import { execFileSync } from 'node:child_process';
 import { basename, dirname, isAbsolute, relative, resolve } from 'node:path';
 import { isIP } from 'node:net';
 import type {
   FullConfig,
   FullResult,
+  Suite,
   Reporter,
   TestCase,
   TestError,
@@ -38,12 +43,19 @@ export function createD002ReconnectObserver() {
   const preOnline = { refresh: makeState(), current: makeState() };
   const postOnline = { refresh: makeState(), current: makeState() };
   let observationUnknown = false;
-  let offlineSeen = false;
+  let offlineSeen = navigator.onLine === false;
   let onlineSeen = false;
+  const atOnline = { refresh: 'UNKNOWN' as Phase | 'UNKNOWN', current: 'UNKNOWN' as Phase | 'UNKNOWN' };
   const offline = () => {
     offlineSeen = true;
   };
   const online = () => {
+    if (!onlineSeen) {
+      for (const endpoint of ['refresh', 'current'] as const) {
+        const state = preOnline[endpoint];
+        atOnline[endpoint] = observationUnknown || state.multiple ? 'UNKNOWN' : state.phase;
+      }
+    }
     onlineSeen = true;
   };
   const observed: typeof fetch = function (this: unknown, ...args) {
@@ -126,6 +138,7 @@ export function createD002ReconnectObserver() {
       online: navigator.onLine,
       refresh: { ...refresh },
       current: { ...current },
+      atOnline: { ...atOnline },
       native: {
         preOnline: { refresh: { ...preOnline.refresh }, current: { ...preOnline.current } },
         postOnline: { refresh: { ...postOnline.refresh }, current: { ...postOnline.current } },
@@ -1205,7 +1218,7 @@ export function datasetHttpFailure(method: unknown, path: unknown, httpStatus: u
     return new Error('Synthetic dataset request failed');
   for (const [cause, operation] of Object.entries(datasetHttpOperations)) {
     if (method === operation.method && operation.path.test(path))
-      return new Error(`Reported synthetic dataset ${cause}: HTTP ${httpStatus}`);
+      return diagnosticHttpFailure(new Error(`Reported synthetic dataset ${cause}: HTTP ${httpStatus}`), cause, httpStatus);
   }
   return new Error('Synthetic dataset request failed');
 }
@@ -1766,8 +1779,6 @@ export function retainHeadmanCleanupFailure(
 }
 
 export const d002ReconnectObservationAnnotation = 'rct-d002-reconnect-v1';
-const d002ReconnectTitle =
-  'D002 reconnect rechecks changed grants and a late old feed cannot replace the new account';
 type D002NativeState = {
   phase: 'NOT_CALLED' | 'PENDING' | 'FULFILLED' | 'REJECTED';
   multiple: boolean;
@@ -1778,6 +1789,7 @@ export interface D002ReconnectObservation {
   onlineSeen: boolean;
   online: boolean;
   observationUnknown: boolean;
+  atOnline?: D002Endpoints<D002NativeState['phase'] | 'UNKNOWN'>;
   native: {
     preOnline: D002Endpoints<D002NativeState>;
     postOnline: D002Endpoints<D002NativeState>;
@@ -1803,8 +1815,11 @@ function closedD002ReconnectObservation(value: unknown): D002ReconnectObservatio
   const endpoints = ['refresh', 'current'] as const;
   const epochs = ['preOnline', 'postOnline'] as const;
   const topFlags = ['offlineSeen', 'onlineSeen', 'online', 'observationUnknown'] as const;
-  if (!exact(value, [...topFlags, 'native', 'pageHttp', 'priorPending', 'refreshHttpStatus']))
+  const atOnline = ownData(value, 'atOnline');
+  if (!exact(value, [...topFlags, 'native', 'pageHttp', 'priorPending', 'refreshHttpStatus', ...(atOnline === undefined ? [] : ['atOnline'])]))
     return;
+  if (atOnline !== undefined && (!exact(atOnline, endpoints) || endpoints.some(endpoint =>
+    !['UNKNOWN', 'NOT_CALLED', 'PENDING', 'FULFILLED', 'REJECTED'].includes(ownData(atOnline, endpoint) as string)))) return;
   if (topFlags.some((key) => typeof ownData(value, key) !== 'boolean')) return;
   const native = ownData(value, 'native');
   const pageHttp = ownData(value, 'pageHttp');
@@ -1847,6 +1862,10 @@ function closedD002ReconnectObservation(value: unknown): D002ReconnectObservatio
     };
   };
   return {
+    ...(atOnline === undefined ? {} : { atOnline: {
+      refresh: ownData(atOnline, 'refresh') as D002NativeState['phase'] | 'UNKNOWN',
+      current: ownData(atOnline, 'current') as D002NativeState['phase'] | 'UNKNOWN',
+    } }),
     offlineSeen: ownData(value, 'offlineSeen') as boolean,
     onlineSeen: ownData(value, 'onlineSeen') as boolean,
     online: ownData(value, 'online') as boolean,
@@ -1896,6 +1915,7 @@ export function retainD002ReconnectObservation(
   const description = JSON.stringify(closed);
   if (description.length > 2048) return;
   annotations.push({ type: d002ReconnectObservationAnnotation, description });
+  retainDiagnosticObservation();
 }
 
 const startupFixtureStages = {
@@ -2050,6 +2070,10 @@ function safeReportedFrameworkError(annotations: unknown): ReportedFrameworkErro
 }
 
 interface SafeResult {
+  failedCaseId?: FailedCaseId;
+  firstFailureObservations?: FirstFailureObservation[];
+  caseId?: string;
+  diagnosticEvents?: DiagnosticEvent[];
   reportedFrameworkError?: ReportedFrameworkError;
   file: string;
   line: number;
@@ -2067,8 +2091,283 @@ interface SafeResult {
   startupFailure?: StartupFailure;
 }
 
+const frameworkPublicFiles = [
+  'fixtures/safe-reporter.ts', 'fixtures/local-special.ts', 'fixtures/local-stage17.ts',
+  'fixtures/mobile-dataset.ts', 'fixtures/artifact-privacy.ts', 'fixtures/teaching-clock.ts',
+  'fixtures/semester-lifecycle.spec.ts', 'fixtures/assignment-lifecycle.spec.ts', 'fixtures/application-recovery.spec.ts',
+  'specs/mobile-real-server.spec.ts', 'specs/cloud-accepted-auth-security.spec.ts', 'specs/cloud-accepted-registry-export.spec.ts',
+  'clock-specs/teaching-clock-geo.spec.ts', 'playwright.local-special.config.ts', 'playwright.semester-lifecycle.config.ts',
+  'playwright.assignment-lifecycle.config.ts', 'playwright.application-recovery.config.ts', 'playwright.teaching-clock.config.ts',
+  'playwright.real-mobile.config.ts', 'playwright.registry-export.config.ts', 'playwright.config.ts',
+  'playwright.local-lifecycle-prerequisites.config.ts', 'local-lifecycle-prerequisites.spec.ts',
+] as const;
+type FrameworkFrame = { file: string; line: number; column: number };
+type FrameworkSnapshot = { message: string; stack: string; name: string; code: string; truncated: boolean };
+
+function frameworkText(value: unknown, limit: number): { text: string; truncated: boolean } {
+  if (typeof value !== 'string') return { text: '', truncated: false };
+  const prefix = value.slice(0, limit);
+  let low = 0; let high = prefix.length;
+  while (low < high) {
+    const middle = Math.ceil((low + high) / 2);
+    if (Buffer.byteLength(prefix.slice(0, middle)) <= limit) low = middle;
+    else high = middle - 1;
+  }
+  const text = prefix.slice(0, low);
+  return { text, truncated: text.length !== value.length };
+}
+
+function frameworkMethod(value: unknown, key: string): ((...args: never[]) => unknown) | undefined {
+  let current = value;
+  try {
+    for (let depth = 0; current && typeof current === 'object' && depth < 8; depth++) {
+      const descriptor = Object.getOwnPropertyDescriptor(current, key);
+      if (descriptor) return typeof descriptor.value === 'function' ? descriptor.value : undefined;
+      current = Object.getPrototypeOf(current);
+    }
+  } catch { /* Accessors and hostile prototypes add no observation. */ }
+  return undefined;
+}
+
+/** Supplemental local observations. This never changes the legacy safe-results payload. */
+class LocalFrameworkDiagnostic {
+  private output = '';
+  private kind: 'DISCOVERY' | 'EXECUTION';
+  private preparation: boolean;
+  private modeValid: boolean;
+  private beginSeen = false;
+  private errors: FrameworkSnapshot[] = [];
+  private observed = 0;
+  private privateLines: string[] = [];
+  private privateBytes = 0;
+  private privateErrors = 0;
+  private privateTruncated = false;
+  private identities: { file: string; line: number; project: 'chromium' }[] = [];
+  private discovered = 0;
+  private rejected = 0;
+  private discoveryTruncated = false;
+  private verified = new Map<string, { file: string; lines: string[] }>();
+  private revision: string | null = null;
+  private bound = false;
+  private geometry: { output: string; privateFile: string } | undefined;
+
+  constructor(options: unknown) {
+    const discovery = ownData(options, 'localDiscoveryDiagnostic') === true;
+    this.preparation = ownData(options, 'localPreparationDiagnostic') === true;
+    this.kind = discovery ? 'DISCOVERY' : 'EXECUTION';
+    this.modeValid = discovery ? ownData(options, '_mode') === 'list' && process.env.RCT_LOCAL_SPECIAL_DISCOVERY === 'true'
+      : ownData(options, '_mode') !== 'list' && process.env.RCT_LOCAL_SPECIAL_DISCOVERY !== 'true';
+    const preparationFlag = process.env.RCT_LOCAL_SPECIAL_PREPARATION ?? '';
+    this.modeValid &&= ['', 'true'].includes(preparationFlag) &&
+      (this.preparation ? preparationFlag === 'true' && !discovery : preparationFlag !== 'true');
+    const output = ownData(options, 'localDiagnosticOutputDir');
+    if (typeof output === 'string') this.output = output;
+  }
+
+  private appendPrivate(record: Record<string, unknown>, error = false) {
+    let entry = { ...record };
+    const remaining = Math.min(16384, 65536 - this.privateBytes);
+    if (remaining < 256) { this.privateTruncated = true; return; }
+    let line = JSON.stringify(entry) + '\n';
+    while (Buffer.byteLength(line) > remaining) {
+      this.privateTruncated = true;
+      let shortened = false;
+      for (const key of ['stack', 'message', 'text', 'name', 'code']) {
+        const value = entry[key];
+        if (typeof value === 'string' && value.length > 0) {
+          entry[key] = value.slice(0, Math.floor(value.length / 2));
+          shortened = true;
+        }
+      }
+      if (!shortened) return;
+      line = JSON.stringify(entry) + '\n';
+    }
+    this.privateLines.push(line); this.privateBytes += Buffer.byteLength(line);
+    if (error) this.privateErrors++;
+  }
+
+  error(value: unknown) {
+    this.observed = Math.min(1000000, this.observed + 1);
+    if (this.errors.length >= 16) { this.privateTruncated = true; return; }
+    const fields = { message: 8192, stack: 16384, name: 128, code: 128 } as const;
+    const snapshot: FrameworkSnapshot = { message: '', stack: '', name: '', code: '', truncated: false };
+    for (const [key, limit] of Object.entries(fields)) {
+      const clipped = frameworkText(ownData(value, key), limit);
+      snapshot[key as keyof typeof fields] = clipped.text;
+      snapshot.truncated ||= clipped.truncated;
+    }
+    this.privateTruncated ||= snapshot.truncated;
+    this.errors.push(snapshot);
+    this.appendPrivate({ kind: 'GLOBAL_ERROR', ...snapshot }, true);
+  }
+
+  private directory(path: string) {
+    const info = lstatSync(path);
+    if (!info.isDirectory() || info.isSymbolicLink() || info.uid !== process.getuid?.() || (info.mode & 0o777) !== 0o700)
+      throw new Error('Local framework directory refused');
+    if (realpathSync(path) !== path) throw new Error('Local framework directory refused');
+  }
+
+  private configure() {
+    if (process.platform !== 'linux' || !this.modeValid) return;
+    const root = resolve(__dirname, '../../..');
+    const nonce = process.env.RCT_LOCAL_STAGE17_NONCE;
+    const lane = process.env.RCT_LOCAL_SPECIAL_LANE;
+    const phase = process.env.RCT_LOCAL_SPECIAL_PHASE;
+    const lanes = ['bot', 'production-service-worker', 'password-recovery', 'registry-native-pdf', 'semester-metadata',
+      'subject-deletion', 'assignment', 'today', 'semester-reconciliation', 'application-recovery', 'semester-archive'];
+    if (!nonce || !/^[a-f0-9]{24}$/.test(nonce) || !lane || !lanes.includes(lane) ||
+        !phase || !['main', 'prepare', 'pending', 'resume', 'seed', 'admit', 'attachment'].includes(phase) ||
+        process.env.RCT_LOCAL_STAGE17_MODE !== 'special13') return;
+    const run = resolve(root, '.agent/evidence/local-runs', `rct-local-stage17-${nonce.slice(0, 12)}`);
+    const manifest = resolve(run, 'owner.json');
+    if (process.env.RCT_LOCAL_STAGE17_MANIFEST !== manifest) return;
+    this.directory(dirname(run)); this.directory(run);
+    const info = lstatSync(manifest);
+    if (!info.isFile() || info.isSymbolicLink() || info.nlink !== 1 || info.uid !== process.getuid?.() ||
+        (info.mode & 0o777) !== 0o600 || info.size <= 0 || info.size > 8 * 1024 ** 2) return;
+    const owner = JSON.parse(readFileSync(manifest, 'utf8'));
+    if (ownData(owner, 'root') !== root || ownData(owner, 'run') !== run || ownData(owner, 'nonce') !== nonce ||
+        ownData(owner, 'uid') !== process.getuid?.() || ownData(owner, 'mode') !== 'special13') return;
+    if (this.preparation && (lane !== 'semester-metadata' || phase !== 'main' || ownData(owner, 'special_cohort') !== 'lifecycle')) return;
+    const parent = this.preparation ? resolve(run, 'prerequisites') : resolve(run, this.kind === 'DISCOVERY' ? 'discovery' : 'lanes', lane);
+    const output = resolve(parent, 'artifacts', ...(!this.preparation && this.kind === 'EXECUTION' && phase !== 'main' ? [phase] : []));
+    if (this.output !== output) return;
+    for (let path = parent; path !== run; path = dirname(path)) this.directory(path);
+    for (let path = output; path !== parent; path = dirname(path)) this.directory(path);
+    const privateDirectory = resolve(run, 'framework-private', this.preparation ? 'lifecycle-prerequisites' : lane, phase);
+    for (let path = privateDirectory; path !== run; path = dirname(path)) this.directory(path);
+    this.geometry = { output, privateFile: resolve(privateDirectory, `${this.kind === 'DISCOVERY' ? 'discovery' : 'execution'}.jsonl`) };
+    const revision = ownData(owner, 'source_sha');
+    const sources = ownData(owner, 'sources');
+    if (typeof revision !== 'string' || !/^[a-f0-9]{40}$/.test(revision) || !sources || typeof sources !== 'object') return;
+    const git = (args: string[]) => execFileSync('git', args, { cwd: root, encoding: 'utf8', timeout: 5000,
+      env: { PATH: process.env.PATH, LANG: 'C.UTF-8', GIT_CONFIG_NOSYSTEM: '1', GIT_CONFIG_GLOBAL: '/dev/null' },
+      maxBuffer: 16384, stdio: ['ignore', 'pipe', 'pipe'] });
+    if (git(['rev-parse', '--show-toplevel']).trim() !== root || git(['rev-parse', 'HEAD']).trim() !== revision) return;
+    const paths = frameworkPublicFiles.map(file => `tests/e2e/${file}`);
+    const records = git(['ls-tree', '-z', revision, '--', ...paths]).split('\0');
+    const blobs = new Map<string, string>();
+    for (const record of records) {
+      const match = /^100644 blob ([a-f0-9]{40})\t(tests\/e2e\/[A-Za-z0-9_./-]+)$/.exec(record);
+      if (match && paths.includes(match[2])) blobs.set(match[2], match[1]);
+    }
+    for (const path of paths) {
+      const expected = ownData(sources, path);
+      if (typeof expected !== 'string' || !/^[a-f0-9]{64}$/.test(expected) || !blobs.has(path)) continue;
+      const file = resolve(root, path);
+      const stat = lstatSync(file);
+      if (!stat.isFile() || stat.isSymbolicLink() || stat.nlink !== 1 || stat.size > 2 * 1024 ** 2 || realpathSync(file) !== file) continue;
+      const bytes = readFileSync(file);
+      if (createHash('sha256').update(bytes).digest('hex') !== expected ||
+          createHash('sha1').update(`blob ${bytes.length}\0`).update(bytes).digest('hex') !== blobs.get(path)) continue;
+      this.verified.set(file, { file: basename(file), lines: bytes.toString('utf8').split('\n') });
+    }
+    if (!this.verified.has(resolve(__dirname, 'safe-reporter.ts'))) { this.verified.clear(); return; }
+    this.bound = true; this.revision = revision;
+  }
+
+  begin(config: FullConfig, suite: Suite) {
+    this.beginSeen = true;
+    const projects = ownData(config, 'projects');
+    const first = ownData(projects, '0');
+    const configuredOutput = ownData(first, 'outputDir');
+    if (!this.output && typeof configuredOutput === 'string') this.output = configuredOutput;
+    if (configuredOutput !== this.output) this.modeValid = false;
+    try { this.configure(); } catch { this.bound = false; }
+    const allTests = frameworkMethod(suite, 'allTests');
+    let tests: unknown;
+    try { tests = allTests ? Reflect.apply(allTests, suite, []) : undefined; } catch { tests = undefined; }
+    if (!Array.isArray(tests)) { this.rejected = 1; return; }
+    const length = ownData(tests, 'length');
+    if (typeof length !== 'number' || !Number.isInteger(length) || length < 0) { this.rejected = 1; return; }
+    this.discovered = Math.min(1000000, length);
+    this.discoveryTruncated = length > 256;
+    for (let index = 0; index < Math.min(length, 256); index++) {
+      const test = ownData(tests, String(index));
+      const location = ownData(test, 'location');
+      const file = ownData(location, 'file'); const line = ownData(location, 'line');
+      const parent = ownData(test, 'parent'); const method = frameworkMethod(parent, 'project');
+      let project: unknown;
+      try { project = method ? ownData(Reflect.apply(method, parent, []), 'name') : undefined; } catch { project = undefined; }
+      const known = typeof file === 'string' ? this.verified.get(file) : undefined;
+      if (!this.bound || !known || typeof line !== 'number' || !Number.isInteger(line) || line < 1 || line > 1000000 ||
+          line > known.lines.length || project !== 'chromium') { this.rejected++; continue; }
+      this.identities.push({ file: known.file, line, project: 'chromium' });
+    }
+  }
+
+  private frame(error: FrameworkSnapshot): FrameworkFrame | null {
+    if (!this.bound) return null;
+    for (const line of error.stack.split('\n').slice(0, 64)) {
+      if (line.length > 1024) continue;
+      const frame = /^    at (?:[^()\r\n]{1,128} )?\(([^()\r\n]+):([1-9][0-9]{0,5}):([1-9][0-9]{0,3})\)$/.exec(line)
+        ?? /^    at ([^()\r\n]+):([1-9][0-9]{0,5}):([1-9][0-9]{0,3})$/.exec(line);
+      if (!frame) continue;
+      const known = this.verified.get(frame[1]); const row = Number(frame[2]); const column = Number(frame[3]);
+      if (known && row <= known.lines.length && column <= 4096 && column <= known.lines[row - 1].length + 1)
+        return { file: known.file, line: row, column };
+    }
+    return null;
+  }
+
+  private closed(error: FrameworkSnapshot) {
+    const classes = ['Error', 'TypeError', 'RangeError', 'ReferenceError', 'SyntaxError', 'TimeoutError'];
+    const prefix = /^(Error|TypeError|RangeError|ReferenceError|SyntaxError|TimeoutError):/.exec(error.message)
+      ?? /^(Error|TypeError|RangeError|ReferenceError|SyntaxError|TimeoutError):/.exec(error.stack);
+    const errorClass = classes.includes(error.name) ? error.name : prefix?.[1] ?? 'UNKNOWN';
+    const text = error.message;
+    const rules: [string, RegExp][] = [
+      ['DUPLICATE_TITLE', /duplicate test title/i],
+      ['UNEXPECTED_TEST', /Playwright Test did not expect test(?:\.describe)?\(\) to be called here|test\(\) can only be called/],
+      ['UNEXPECTED_HOOK', /Playwright Test did not expect test\.(?:beforeAll|afterAll|beforeEach|afterEach)\(\) to be called here/],
+      ['UNEXPECTED_USE', /Playwright Test did not expect test\.use\(\) to be called here|Cannot use test\.use/],
+      ['UNKNOWN_FIXTURE', /unknown fixture|has unknown parameter/i], ['NO_TESTS', /No tests found/],
+      ['MODULE_NOT_FOUND', /Cannot find module|Cannot find package|ERR_MODULE_NOT_FOUND|MODULE_NOT_FOUND/],
+      ['SYNTAX_ERROR', /^SyntaxError:/],
+      ['CONFIG_ERROR', /Configuration file must export a single object|config\.testDir|config\.projects/],
+      ['ADMISSION_ERROR', /Local special resource admission failed|Local special context was rejected|Local disposable cohort lane admission failed/],
+    ];
+    const frameworkCode = rules.find(([, rule]) => rule.test(text))?.[0]
+      ?? (['MODULE_NOT_FOUND', 'ERR_MODULE_NOT_FOUND'].includes(error.code) ? 'MODULE_NOT_FOUND'
+        : errorClass === 'SyntaxError' ? 'SYNTAX_ERROR' : 'UNKNOWN');
+    return { errorClass, frameworkCode, sourceFrame: this.frame(error) };
+  }
+
+  private exclusive(path: string, value: string) {
+    let descriptor: number | undefined;
+    try {
+      descriptor = openSync(path, constants.O_WRONLY | constants.O_CREAT | constants.O_EXCL | constants.O_NOFOLLOW, 0o600);
+      writeFileSync(descriptor, value);
+    } finally { if (descriptor !== undefined) closeSync(descriptor); }
+  }
+
+  end(result: FullResult): boolean {
+    if (!this.geometry) { try { this.configure(); } catch { /* No raw errors escape. */ } }
+    if (!this.geometry) return false;
+    let retention: 'WRITTEN' | 'REFUSED' | 'FAILED' = this.bound ? 'WRITTEN' : 'REFUSED';
+    if (this.bound) {
+      try { this.exclusive(this.geometry.privateFile, this.privateLines.join('')); } catch { retention = 'FAILED'; }
+    }
+    const status = ownData(result, 'status');
+    const receipt = {
+      schema: 'RCT_LOCAL_FRAMEWORK_DIAGNOSTIC_V1', kind: this.kind, sourceBound: this.bound, sourceRevision: this.revision,
+      beginSeen: this.beginSeen, runnerStatus: ['passed', 'failed', 'timedout', 'interrupted'].includes(status as string) ? status : 'UNKNOWN',
+      globalErrors: { observed: this.observed, retained: this.errors.length, truncated: this.observed > this.errors.length || this.errors.some(error => error.truncated), items: this.errors.map(error => this.closed(error)) },
+      privateRetention: { status: retention, retainedErrors: retention === 'WRITTEN' ? this.privateErrors : 0, bytes: retention === 'WRITTEN' ? this.privateBytes : 0, truncated: this.privateTruncated },
+      discovery: { observed: this.discovered, retained: this.identities.length, truncated: this.discoveryTruncated,
+        rejected: this.rejected, identities: this.identities },
+    };
+    try { this.exclusive(resolve(this.geometry.output, 'framework.safe.json'), JSON.stringify(receipt, null, 2)); }
+    catch { return false; }
+    return retention === 'WRITTEN' && this.bound;
+  }
+}
+
+
 /** Allowlist output only. Raw step titles, errors, attachments and worker output are never serialized. */
 export default class SafeReporter implements Reporter {
+  private diagnosticRun = new DiagnosticRun();
   private outputDir = '';
   private results: SafeResult[] = [];
   private runnerErrors = 0;
@@ -2076,18 +2375,22 @@ export default class SafeReporter implements Reporter {
   private suppressedStderrBytes = 0;
   private unsafeArtifact = false;
   private startupDiagnostic: boolean;
+  private frameworkDiagnostic: LocalFrameworkDiagnostic | undefined;
   private startup = new WeakMap<TestResult, { completed: StartupStage[]; failure?: StartupFailure }>();
 
   constructor(options: unknown = {}) {
     this.startupDiagnostic = ownData(options, 'localStartupDiagnostic') === true;
+    if (ownData(options, 'localFrameworkDiagnostic') === true) this.frameworkDiagnostic = new LocalFrameworkDiagnostic(options);
   }
 
   printsToStdio() {
     return true;
   }
-  onBegin(config: FullConfig) {
+  onBegin(config: FullConfig, suite: Suite) {
+    this.diagnosticRun.begin(suite);
     this.outputDir = config.projects[0].outputDir;
     mkdirSync(this.outputDir, { recursive: true });
+    this.frameworkDiagnostic?.begin(config, suite);
   }
   onStdOut(chunk: string | Buffer) {
     this.suppressedStdoutBytes += Buffer.byteLength(chunk);
@@ -2095,8 +2398,9 @@ export default class SafeReporter implements Reporter {
   onStdErr(chunk: string | Buffer) {
     this.suppressedStderrBytes += Buffer.byteLength(chunk);
   }
-  onError(_error: TestError) {
+  onError(error: TestError) {
     this.runnerErrors++;
+    this.frameworkDiagnostic?.error(error);
   }
   onStepEnd(_test: TestCase, result: TestResult, step: TestStep) {
     if (!this.startupDiagnostic) return;
@@ -2124,6 +2428,14 @@ export default class SafeReporter implements Reporter {
         error.location ? [{ file: basename(error.location.file), line: error.location.line }] : [],
       ),
     };
+    const selectedCase = failedCaseId(test.title);
+    if (selectedCase) row.failedCaseId = selectedCase;
+    const firstFailures = safeFirstFailureObservations(result.annotations);
+    if (firstFailures.length) row.firstFailureObservations = firstFailures;
+    const caseId = this.diagnosticRun.caseId(test);
+    const events = this.diagnosticRun.read(test, result);
+    if (caseId) { row.caseId = caseId; row.diagnosticEvents = events; }
+    if (this.diagnosticRun.invalid) this.unsafeArtifact = true;
     const transferObservation = safeTransferObservation(result.annotations);
     if (transferObservation) row.transferObservation = transferObservation;
     const identityFailure = safeOwnedContainerIdentityFailure(result.annotations);
@@ -2137,14 +2449,15 @@ export default class SafeReporter implements Reporter {
     }
     if (startupFailure && result.status !== 'passed' && result.status !== 'skipped') row.startupFailure = startupFailure;
     if (
-      test.location.file === resolve(__dirname, '../specs/mobile-real-server.spec.ts') &&
-      test.title === d002ReconnectTitle &&
+      caseId === 'D002_RECONNECT_ACCOUNT_AUTHORITY' &&
+      events.some(event => event.stageId === 'D002_RECONNECT' && event.eventCode === 'OBSERVATION') &&
       test.expectedStatus === 'passed' &&
       result.status === 'failed' &&
       result.errors.length > 0
     ) {
       const reconnect = safeD002ReconnectObservation(result.annotations);
       if (reconnect) row.d002ReconnectObservation = reconnect;
+      else this.unsafeArtifact = true;
     }
     this.results.push(row);
     // Automatic error contexts are created during worker teardown, after afterEach.
@@ -2166,7 +2479,12 @@ export default class SafeReporter implements Reporter {
     process.stdout.write(`${row.project} ${row.file}:${row.line} ${row.status}\n`);
   }
   async onEnd(result: FullResult) {
+    let supplementalHealthy = true;
+    try { if (this.frameworkDiagnostic) supplementalHealthy = this.frameworkDiagnostic.end(result); }
+    catch { supplementalHealthy = false; }
     if (!this.outputDir) return { status: 'failed' as const };
+    this.diagnosticRun.close();
+    if (this.diagnosticRun.invalid) this.unsafeArtifact = true;
     const status = this.unsafeArtifact ? 'failed' : result.status;
     writeFileSync(
       resolve(this.outputDir, 'safe-results.json'),
@@ -2187,6 +2505,6 @@ export default class SafeReporter implements Reporter {
     process.stdout.write(
       `real-mobile ${status}; ${this.results.length} results; ${this.runnerErrors} runner errors\n`,
     );
-    return { status };
+    return { status: supplementalHealthy || status !== 'passed' ? status : 'failed' as const };
   }
 }

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import SvgIcon from '../../../../shared/foundation/SvgIcon.vue';
 import statsIcon from './assets/headman-more-statistics.svg';
 import homeworkIcon from './assets/headman-more-homework.svg';
 import mapIcon from './assets/headman-more-map.svg';
@@ -134,11 +135,12 @@ function select(destination: HeadmanMoreDestination): void {
             @click="select(item.id)"
           >
             <span class="headman-more__icon-tile">
-              <img
+              <SvgIcon
+                :width="24"
+                :height="24"
                 :src="item.icon"
-                alt=""
                 aria-hidden="true"
-              >
+              />
             </span>
             <span class="headman-more__copy">
               <span class="headman-more__label">{{ item.label }}</span>
@@ -147,12 +149,11 @@ function select(destination: HeadmanMoreDestination): void {
                 class="headman-more__status"
               >Недоступно</span>
             </span>
-            <img
+            <SvgIcon
               class="headman-more__next"
               :src="nextIcon"
-              alt=""
               aria-hidden="true"
-            >
+            />
           </button>
           <p
             v-if="!availability[item.id]"

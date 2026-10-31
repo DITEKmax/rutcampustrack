@@ -9,9 +9,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-
 import jakarta.validation.Valid;
-
+import java.util.List;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.CollectionModel;
@@ -27,7 +26,6 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-
 import ru.rutcampustrack.academic.contract.dto.IdentityOperationHttpModels;
 import ru.rutcampustrack.academic.contract.dto.user.CreateUserRequest;
 import ru.rutcampustrack.academic.contract.dto.user.PatchUserRequest;
@@ -41,8 +39,6 @@ import ru.rutcampustrack.academic.contract.dto.user.UserResponse;
 import ru.rutcampustrack.academic.contract.dto.user.UserSummaryResponse;
 import ru.rutcampustrack.academic.contract.enums.AccountStatus;
 import ru.rutcampustrack.shared.web.api.exception.ErrorResponse;
-
-import java.util.List;
 
 /**
  * REST API contract for user management. Mappings are defined here only — the controller class
@@ -185,6 +181,11 @@ public interface UserApi {
             @RequestParam(required = false) String role,
             @RequestParam(required = false) AccountStatus status,
             @RequestParam(required = false) String roleStatus,
+            @Parameter(
+                            description =
+                                    "Положительный ID группы в сохранённой связи STUDENT/HEADMAN. Не состав на дату; неизвестный ID даёт пустой список.")
+                    @RequestParam(required = false)
+                    Long groupId,
             Pageable pageable,
             PagedResourcesAssembler<UserResponse> assembler);
 
@@ -932,7 +933,7 @@ public interface UserApi {
             summary = "Поиск преподавателей для предмета",
             description =
                     "Постраничный поиск по фрагменту ФИО или табельного номера. Возвращает только"
-                        + " пользователей с действующим durable TEACHER grant; доступно студентам.")
+                            + " пользователей с действующим durable TEACHER grant; доступно студентам.")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Страница преподавателей"),
         @ApiResponse(responseCode = "403", description = "Нет прав доступа")
@@ -949,10 +950,10 @@ public interface UserApi {
             summary = "Batch-резолв display-имён пользователей по ID",
             description =
                     "Возвращает только {id, fullName} для каждого найденного пользователя. Доступно"
-                        + " STUDENT/TEACHER/ADMIN — намеренно не отдаёт PII"
-                        + " (login/email/telegramId/role). Используется для подстановки имён в"
-                        + " audit-местах (cancelledBy, и т.п.). Cap: max 100 ids на один запрос."
-                        + " Несуществующие ID молча пропускаются.")
+                            + " STUDENT/TEACHER/ADMIN — намеренно не отдаёт PII"
+                            + " (login/email/telegramId/role). Используется для подстановки имён в"
+                            + " audit-местах (cancelledBy, и т.п.). Cap: max 100 ids на один запрос."
+                            + " Несуществующие ID молча пропускаются.")
     @ApiResponses({
         @ApiResponse(
                 responseCode = "200",

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useProjectionRefresh } from '../../shared/projection-refresh';
 import NotificationsEntryButton from '../notifications/NotificationsEntryButton.vue';
 import { teacherLessonTypeLabel } from './teacher-ui-format';
 import { computed, onBeforeUnmount, ref, watch } from 'vue';
@@ -107,17 +108,16 @@ onBeforeUnmount(() => {
   revision += 1;
   if (dateOpen.value) emit('calendar-open', false);
 });
-async function load(): Promise<void> {
+async function load(retainProjection = false): Promise<void> {
   const api = props.api;
   const semesterId = props.semesterId;
   const date = props.selectedDate;
   const run = ++revision;
-  lessons.value = [];
-  assignments.value = [];
+  if (!retainProjection) { lessons.value = []; assignments.value = []; }
   error.value = null;
   loading.value = false;
   if (!api || !semesterId || !date) return;
-  loading.value = true;
+  loading.value = !retainProjection;
   try {
     const [day, assigned] = await Promise.all([
       api.day(semesterId, date),
@@ -151,6 +151,7 @@ function openAssignment(assignment: TeacherAssignment): void {
     pageSize: 100,
   });
 }
+useProjectionRefresh(() => load(true));
 </script>
 <template>
   <main
@@ -236,7 +237,7 @@ function openAssignment(assignment: TeacherAssignment): void {
       :message="error"
       severity="error"
       action-label="Повторить"
-      @action="load"
+      @action="load()"
     />
     <p
       v-else-if="!timeline.length"

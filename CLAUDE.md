@@ -55,12 +55,12 @@ Production reverse-proxy nginx на `https://ruttrack.site`:
 | Путь | Обслуживает | Назначение |
 |------|-------------|------------|
 | `/` | 301 → `/login` | INFRA-v9-01 — единая точка входа |
-| `/login` | web-panel (Angular SPA, baseHref `/`) | AUTH-v9-01 |
-| `/admin/*` | web-panel lazy feature | роль ADMIN |
-| `/teacher/*` | web-panel lazy feature | роль TEACHER |
-| `/student/*` | web-panel lazy feature | роль STUDENT (включая headman) |
-| `/headman/*` | web-panel lazy feature | STUDENT + `is_headman=true` |
-| `/app/` | PWA (React + Vite) | INFRA-v9-03 — мобильный клиент |
+| `/login` | Vue WEB (root SPA) | AUTH-v9-01 |
+| `/admin/*` | Vue WEB role route | роль ADMIN |
+| `/teacher/*` | Vue WEB role route | роль TEACHER |
+| `/student/*` | Vue WEB role route | роль STUDENT (включая headman) |
+| `/headman/*` | Vue WEB role route | действующий grant HEADMAN |
+| `/app/` | PWA (Vue + Vite) | INFRA-v9-03 — мобильный клиент |
 | `/presentation/` | Landing (static HTML) | INFRA-v9-02 — описание проекта |
 | `/api/*` | API Gateway (proxy pass) | backend REST + STOMP WebSocket |
 
@@ -206,9 +206,11 @@ rutcampustrack/
 │   │   └── notification-app/          ← stateful history store + STOMP
 │   └── notification-bot/              ← Python Aiogram 3 (Telegram bot)
 ├── frontends/
-│   ├── mini-app/                       ← React (Telegram Mini App)
-│   ├── pwa/                            ← React PWA «RutTrack» (мобильный клиент)
-│   ├── web-panel/                      ← Angular 19 (admin/teacher/student/headman, single SPA после v9.0)
+│   ├── tma-vue/                        ← Vue Telegram Mini App
+│   ├── pwa-vue/                        ← Vue PWA «RutTrack» (мобильный клиент)
+│   ├── mobile-core/                    ← Общие API/domain contracts мобильных клиентов
+│   ├── shared/                         ← Общие Vue components, styles и theme tokens
+│   ├── web-vue/                        ← Vue WEB (admin/teacher/student/headman)
 │   └── landing/                        ← Static HTML/CSS/JS (no bundler, dist/ = canonical source)
 ├── tests/
 │   ├── e2e/                            ← Playwright (8 specs + axe a11y)
@@ -221,7 +223,7 @@ rutcampustrack/
 - `ADMIN` — управление пользователями, группами, семестрами
 - `TEACHER` — read-only журнал, статистика. БЕЗ Telegram
 - `STUDENT` — геоотметка, excuse-тикеты, ДЗ трекер
-- `STUDENT + is_headman=true` — расширенные права старосты
+- `HEADMAN` — действующий grant старосты; ограничения и group scope сохраняются
 - Помощник старосты — студент с делегированными правами (`headman_assistants`)
 
 ## Статусы посещаемости

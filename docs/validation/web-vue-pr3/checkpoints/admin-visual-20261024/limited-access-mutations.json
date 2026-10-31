@@ -1,0 +1,54 @@
+{
+  "actionId": "ACT-ADMIN-ACCESS",
+  "result": "MUTATIONS_AND_STATE_PASS_EFFECTIVE_ACCESS_PENDING",
+  "sourceRevision": "10d8b908ae9801b22018881389f21ef5c0188583",
+  "syntheticRealm": "rct-pr3-admin-isolated",
+  "target": "synthetic teacher2",
+  "commands": [
+    {
+      "method": "PUT",
+      "status": 200,
+      "mode": "LIMITED",
+      "permissions": [
+        "USERS_VIEW"
+      ],
+      "profileVersion": 1
+    },
+    {
+      "method": "PUT",
+      "status": 200,
+      "mode": "LIMITED",
+      "permissions": [
+        "USERS_VIEW",
+        "GROUPS_VIEW"
+      ],
+      "profileVersion": 2
+    },
+    {
+      "method": "DELETE",
+      "status": 204,
+      "assigned": false,
+      "profileVersion": 3
+    }
+  ],
+  "originalOperations": "All three SUCCEEDED, one original command each; no blind retry",
+  "preserved": [
+    "TEACHER ACTIVE",
+    "account",
+    "credentials",
+    "other actors",
+    "map and semester state"
+  ],
+  "independentStateChecks": 24,
+  "finalRolesVersion": 4,
+  "finalCatalog": 12,
+  "ownLogout": 204,
+  "ownGuest": 401,
+  "browserClosed": true,
+  "nativeReceiptSha256": "b01d842525ed33c2e4566a81f31c20834a53d1de718d490d767b3a68aba164a2",
+  "postReadSha256": "728191156dcfc18199a8b44dec0fc2b9152c3baec292ed2695503e4c83e21494",
+  "limits": [
+    "Original case did not log target2 in, so actual Users/Groups admission and open-page withdrawal remain pending.",
+    "Additional effective-access packet is required by the owner; no full action local verification added here."
+  ]
+}

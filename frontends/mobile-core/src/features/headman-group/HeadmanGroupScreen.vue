@@ -69,6 +69,7 @@ interface PermissionIntent {
   memberId: number;
   assistantId: number | null;
   permissions: readonly HeadmanAssistantPermission[];
+  before: readonly HeadmanAssistantPermission[];
 }
 const intent = ref<PermissionIntent | null>(null);
 const confirmationFlow = new PermissionConfirmationFlow();
@@ -269,7 +270,7 @@ function credentialLabel(studentId: number): string {
   const value = credentials.values.value[studentId];
   if (value?.state === 'STUDENT_CHANGED') return 'Пароль сменён студентом';
   if (value?.state === 'GENERATED')
-    return `${value.origin === 'initial' ? 'Начальный пароль' : 'Сброшен старостой'}: ${value.password}`;
+    return `${value.origin === 'initial' ? 'Начальный пароль' : value.origin === 'admin_reset' ? 'Сброшен администратором' : 'Сброшен старостой'}: ${value.password}`;
   return 'Пароль недоступен';
 }
 function confirmCredential(action: 'generate' | 'link'): void {
@@ -679,6 +680,7 @@ async function commit(): Promise<void> {
     memberId: member.value.id,
     assistantId: confirmed.assistantId,
     permissions: [...confirmed.after],
+    before: [...confirmed.before],
   };
   if (!pending.permissions.length && pending.assistantId === null) return;
   closeDialog();
@@ -687,9 +689,8 @@ async function commit(): Promise<void> {
   error.value = null;
   notice.value = null;
   try {
-    if (!pending.permissions.length) await api.revokeAssistant(pending.assistantId!);
-    else if (pending.assistantId !== null)
-      await api.updatePermissions(pending.assistantId, pending.permissions);
+    if (pending.assistantId !== null)
+      await api.updatePermissions(pending.assistantId, pending.permissions, pending.before);
     else await api.assignAssistant(groupId, pending.memberId, pending.permissions);
     if (owner !== ownerRevision || disposed) return;
     if (!props.offline) await load();

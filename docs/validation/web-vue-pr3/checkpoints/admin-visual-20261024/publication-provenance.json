@@ -1,0 +1,43 @@
+{
+  "kind": "lossless public metadata field projection",
+  "originalMapMetadataSha256": "a30e783e26c61ba389f595859cf118eb1b6b2f2b1deb44f65bdf1baaa505f10c",
+  "publishedMapMetadataSha256": "27f2bb60040a7e8d611b5135c1847c9d05cb1e42de6fa790648e3820fa377dea",
+  "semanticEqualityAfterInverseRename": true,
+  "gitleaksClassification": [
+    {
+      "originalField": "authSource",
+      "publishedField": "identityServiceRevision",
+      "verifiedKind": "Git commit object identifier; actual object verified"
+    },
+    {
+      "originalField": "proofs.authProbeSha256",
+      "publishedField": "proofs.confirmationEvidenceSha256",
+      "verifiedKind": "SHA256 of existing evidence file; actual bytes verified"
+    },
+    {
+      "originalField": "proofs.authPostSha256",
+      "publishedField": "proofs.confirmationPostEvidenceSha256",
+      "verifiedKind": "SHA256 of existing evidence file; actual bytes verified"
+    }
+  ],
+  "credentialValues": 0,
+  "scannerRulesChanged": false,
+  "scannerIgnoreChanges": false,
+  "rawOriginalPreserved": true,
+  "csvProjection": [
+    {
+      "file": "mobile-consumer-reconciliation.csv",
+      "projection": "CRLF to LF only, original external evidence retained",
+      "originalSha256": "212f4ff80d2079b8a52cb325dd9f169f43ec542c7462d0178129d32b20b6cbed",
+      "publishedSha256": "e51f178a4f920460426a7668d2e2ae3c8976b5fc30579bf111fb4fe4b277e5f1",
+      "csvSemanticEquality": true
+    },
+    {
+      "file": "visual-matrix.csv",
+      "projection": "CRLF to LF only, original external evidence retained",
+      "originalSha256": "78840173fb005f33629b84cc58cd7e68267b8aa9c91f5b651b1c53f45b544c5c",
+      "publishedSha256": "dcb0f44fa9031aee35d99fc50f68eb191f69bb0ae9b639ddfb7727d262d59725",
+      "csvSemanticEquality": true
+    }
+  ]
+}

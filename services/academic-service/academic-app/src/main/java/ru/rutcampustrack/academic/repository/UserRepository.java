@@ -1,17 +1,14 @@
 package ru.rutcampustrack.academic.repository;
 
-
+import java.util.List;
+import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-
 import ru.rutcampustrack.academic.entity.User;
-
-import java.util.List;
-import java.util.Optional;
 
 public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificationExecutor<User> {
 
@@ -38,6 +35,12 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
                 SELECT 1 FROM academic_role_directory g
                  WHERE g.user_id = u.id AND g.role = :role
                    AND (CAST(:roleStatus AS text) IS NULL OR g.status = :roleStatus)))
+            AND (CAST(:groupId AS bigint) IS NULL OR EXISTS (
+                SELECT 1 FROM academic_role_directory gg
+                 WHERE gg.user_id = u.id AND gg.role IN ('student', 'headman')
+                   AND gg.group_id = :groupId
+                   AND (CAST(:role AS text) IS NULL OR :role NOT IN ('student', 'headman') OR gg.role = :role)
+                   AND (CAST(:roleStatus AS text) IS NULL OR :role IN ('teacher', 'admin') OR gg.status = :roleStatus)))
             AND (CAST(:accountStatus AS text) IS NULL OR CAST(u.status AS text) = :accountStatus)
             """;
 
@@ -56,6 +59,7 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
             @Param("role") String role,
             @Param("roleStatus") String roleStatus,
             @Param("accountStatus") String accountStatus,
+            @Param("groupId") Long groupId,
             Pageable pageable);
 
     Optional<User> findByLogin(String login);
@@ -83,14 +87,14 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
     @Query(
             value =
                     "SELECT EXISTS (SELECT 1 FROM academic_user_directory WHERE telegram_id ="
-                        + " :telegramId)",
+                            + " :telegramId)",
             nativeQuery = true)
     boolean existsByTelegramId(@Param("telegramId") Long telegramId);
 
     @Query(
             value =
                     "SELECT EXISTS (SELECT 1 FROM academic_user_directory WHERE employee_number ="
-                        + " :employeeNumber)",
+                            + " :employeeNumber)",
             nativeQuery = true)
     boolean existsByEmployeeNumber(@Param("employeeNumber") String employeeNumber);
 
@@ -140,9 +144,9 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
     @Query(
             value =
                     "SELECT g.user_id FROM academic_role_eligibility g JOIN academic_user_directory"
-                        + " u ON u.id = g.user_id WHERE g.role = 'HEADMAN' AND g.status = 'ACTIVE'"
-                        + " AND g.group_id = :groupId AND u.status <> 'archived' ORDER BY"
-                        + " g.user_id",
+                            + " u ON u.id = g.user_id WHERE g.role = 'HEADMAN' AND g.status = 'ACTIVE'"
+                            + " AND g.group_id = :groupId AND u.status <> 'archived' ORDER BY"
+                            + " g.user_id",
             nativeQuery = true)
     List<Long> findActiveHeadmanIdsByGrantGroupId(@Param("groupId") Long groupId);
 
@@ -157,15 +161,15 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
                             + " u.middle_name COLLATE \"ru_icu\"",
             countQuery =
                     "SELECT COUNT(*) FROM academic_user_directory u JOIN academic_role_eligibility"
-                        + " g ON g.user_id = u.id WHERE g.role = 'STUDENT' AND g.status = 'ACTIVE'"
-                        + " AND g.group_id = :groupId AND u.status <> 'archived'",
+                            + " g ON g.user_id = u.id WHERE g.role = 'STUDENT' AND g.status = 'ACTIVE'"
+                            + " AND g.group_id = :groupId AND u.status <> 'archived'",
             nativeQuery = true)
     Page<User> findActiveStudentsByGrantGroupId(@Param("groupId") Long groupId, Pageable pageable);
 
     @Query(
             value =
                     "SELECT g.group_id FROM academic_role_eligibility g WHERE g.user_id = :userId"
-                        + " AND g.role = 'STUDENT' AND g.status = 'ACTIVE'",
+                            + " AND g.role = 'STUDENT' AND g.status = 'ACTIVE'",
             nativeQuery = true)
     Optional<Long> findActiveStudentGrantGroupId(@Param("userId") Long userId);
 
@@ -178,7 +182,7 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
                             + " COLLATE \"ru_icu\", middle_name COLLATE \"ru_icu\"",
             countQuery =
                     "SELECT COUNT(*) FROM academic_user_directory WHERE group_id = :groupId AND"
-                        + " status <> 'archived'",
+                            + " status <> 'archived'",
             nativeQuery = true)
     Page<User> findByGroupId(@Param("groupId") Long groupId, Pageable pageable);
 
@@ -191,14 +195,14 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
                             + " first_name COLLATE \"ru_icu\", middle_name COLLATE \"ru_icu\"",
             countQuery =
                     "SELECT COUNT(*) FROM academic_user_directory WHERE role = cast(:role AS"
-                        + " user_role) AND status <> 'archived'",
+                            + " user_role) AND status <> 'archived'",
             nativeQuery = true)
     Page<User> findByRole(@Param("role") String role, Pageable pageable);
 
     @Query(
             value =
                     "SELECT COUNT(*) FROM academic_user_directory WHERE role = cast(:role AS"
-                        + " user_role) AND status <> 'archived'",
+                            + " user_role) AND status <> 'archived'",
             nativeQuery = true)
     long countByRole(@Param("role") String role);
 
@@ -212,7 +216,7 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
                             + " middle_name COLLATE \"ru_icu\"",
             countQuery =
                     "SELECT COUNT(*) FROM academic_user_directory WHERE group_id = :groupId AND"
-                        + " role = cast(:role AS user_role) AND status <> 'archived'",
+                            + " role = cast(:role AS user_role) AND status <> 'archived'",
             nativeQuery = true)
     Page<User> findByGroupIdAndRole(
             @Param("groupId") Long groupId, @Param("role") String role, Pageable pageable);

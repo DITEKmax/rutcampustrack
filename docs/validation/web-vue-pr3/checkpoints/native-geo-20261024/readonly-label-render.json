@@ -1,0 +1,135 @@
+{
+  "startedAt": "2026-10-24T05:41:33.778Z",
+  "revision": "43b7f6451fc5b9dc7de72827de41d222af469149",
+  "studentLabelRevision": "a1a6bd944cfcf6e47f6974bc67f2f00315cef435",
+  "semantics": "ONE readonly current Home render after real native mark atROOT1aea; label-only source followup, no second functional acceptance count",
+  "studentPosts": [],
+  "errors": [],
+  "http": [
+    {
+      "path": "/api/v1/student/session",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/student/session",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/student/today",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/student/requests/options",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/student/homework",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/student/homework",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/student/attendance",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/student/session",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/student/today",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/student/statistics/subjects/4",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/auth/logout",
+      "status": 204,
+      "method": "POST"
+    }
+  ],
+  "cleanup": {
+    "logout204": true,
+    "guest": true,
+    "contextClosed": true,
+    "browserClosed": true
+  },
+  "oldNativePngSha256Before": "16cb8f37751a9870605640c8e64aecc04f1c3ed8dfb545e7252918099f503825",
+  "actualReadback": {
+    "authority": {
+      "userId": "15",
+      "groupId": "4",
+      "semesterId": "2",
+      "readOnly": false
+    },
+    "status": 200,
+    "serverNow": "2026-10-24T05:41:36.404636883Z",
+    "lesson64": {
+      "schedule": {
+        "id": "64",
+        "date": "2026-10-24",
+        "lessonNumber": 1,
+        "startsAt": "08:30:00",
+        "endsAt": "09:50:00",
+        "status": "ACTIVE",
+        "subject": {
+          "id": "4",
+          "name": "PR3 proof drill teacher scope",
+          "type": "LECTURE"
+        },
+        "room": {
+          "current": "PR3 student15 owned Today planned",
+          "previous": null,
+          "changeState": "UNKNOWN"
+        }
+      },
+      "attendance": {
+        "status": "PRESENT",
+        "source": "STUDENT_GEO",
+        "markedAt": "2026-10-24T05:34:25.710Z"
+      },
+      "checkinEligibility": {
+        "allowed": false,
+        "reason": "ALREADY_PRESENT",
+        "retryAt": null
+      },
+      "request": null
+    }
+  },
+  "geometry": {
+    "viewportWidth": 1440,
+    "viewportHeight": 1000,
+    "documentWidth": 1440,
+    "documentHeight": 1307,
+    "rootFont": "16px",
+    "fontFamily": "\"Onest Variable\", Onest, sans-serif",
+    "onestLoaded": true,
+    "theme": "light",
+    "geolocationPermission": "denied",
+    "isSecureContext": true
+  },
+  "image": {
+    "path": "/tmp/student-web-geo-current-label/student-home-present64-light-1440-label.png",
+    "sha256": "95a0d585a4a863b12ef655f5e3c74d9696c74d1250006892e830240e62539510",
+    "width": 1440,
+    "height": 1307
+  },
+  "result": "READONLY_RENDER_PASS",
+  "oldNativePngSha256After": "16cb8f37751a9870605640c8e64aecc04f1c3ed8dfb545e7252918099f503825",
+  "oldNativePngUnchanged": true,
+  "finishedAt": "2026-10-24T05:41:36.846Z"
+}

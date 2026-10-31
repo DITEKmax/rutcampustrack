@@ -1,0 +1,148 @@
+{
+  "source": "2dae67d32e91be4ff6cb98ce93a9f5c65cff25ae",
+  "clean": true,
+  "checks": [
+    "own password mutation204 with lostresponse reconciles revoked session and shows unknown outcome",
+    "new password actual login200 authoritative user11",
+    "logout-all204 ends both isolated user11 sessions; other browser refresh401"
+  ],
+  "errors": [],
+  "passwordCommittedStatus": 204,
+  "api": [
+    {
+      "method": "POST",
+      "status": 401,
+      "path": "/api/auth/refresh"
+    },
+    {
+      "method": "POST",
+      "status": 200,
+      "path": "/api/auth/login"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "path": "/api/auth/session"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "path": "/api/auth/device-preferences"
+    },
+    {
+      "method": "POST",
+      "status": 200,
+      "path": "/api/auth/ws-ticket"
+    },
+    {
+      "method": "POST",
+      "status": 200,
+      "path": "/api/auth/refresh"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "path": "/api/auth/session"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "path": "/api/auth/device-preferences"
+    },
+    {
+      "method": "POST",
+      "status": 200,
+      "path": "/api/auth/ws-ticket"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "path": "/api/auth/session"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "path": "/api/auth/account-history"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "path": "/api/auth/sessions"
+    },
+    {
+      "method": "GET",
+      "status": 401,
+      "path": "/api/auth/session"
+    },
+    {
+      "method": "POST",
+      "status": 401,
+      "path": "/api/auth/refresh"
+    },
+    {
+      "method": "POST",
+      "status": 200,
+      "path": "/api/auth/login"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "path": "/api/auth/session"
+    },
+    {
+      "method": "POST",
+      "status": 200,
+      "path": "/api/auth/ws-ticket"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "path": "/api/auth/device-preferences"
+    },
+    {
+      "method": "POST",
+      "status": 200,
+      "path": "/api/auth/refresh"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "path": "/api/auth/session"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "path": "/api/auth/device-preferences"
+    },
+    {
+      "method": "POST",
+      "status": 200,
+      "path": "/api/auth/ws-ticket"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "path": "/api/auth/session"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "path": "/api/auth/sessions"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "path": "/api/auth/account-history"
+    },
+    {
+      "method": "POST",
+      "status": 204,
+      "path": "/api/auth/logout-all"
+    }
+  ],
+  "provenance": {
+    "original_path": "/workspace/rct-pr3-runtime/web-foundation/profile-security-fresh.json",
+    "original_sha256": "67e9c9c9b0f62b5f98ad8748bfe5d446456574e69043b406e37cbd107bd764a0",
+    "projection": "only source/checks/errors/status + method/path/status; no request/response bodies, actors, credentials, OTPs or capabilities"
+  }
+}

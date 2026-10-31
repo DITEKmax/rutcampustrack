@@ -41,9 +41,9 @@ import ru.rutcampustrack.academic.entity.Group;
 import ru.rutcampustrack.academic.entity.Semester;
 import ru.rutcampustrack.academic.entity.Subject;
 import ru.rutcampustrack.academic.entity.User;
+import ru.rutcampustrack.academic.exception.ConflictException;
 import ru.rutcampustrack.academic.group.GroupService;
 import ru.rutcampustrack.academic.grpc.ScheduleGrpcClient;
-import ru.rutcampustrack.academic.history.HistoricalMembershipException;
 import ru.rutcampustrack.academic.homework.HomeworkService;
 import ru.rutcampustrack.academic.repository.GroupHistoryCoverageRepository;
 import ru.rutcampustrack.academic.repository.GroupRepository;
@@ -402,13 +402,7 @@ class EventIT extends AbstractAcademicEventIntegrationTest {
     void deleteGroup_withManagedCoverageIsRejected() {
         useCurrentAdministrator();
         assertThatThrownBy(() -> groupService.deleteGroup(groupA.getId()))
-                .isInstanceOfSatisfying(
-                        HistoricalMembershipException.class,
-                        error ->
-                                assertThat(error.code())
-                                        .isEqualTo(
-                                                HistoricalMembershipException.Code
-                                                        .UNSUPPORTED_MUTATION));
+                .isInstanceOf(ConflictException.class);
         assertThat(groupRepository.findById(groupA.getId())).isPresent();
     }
 

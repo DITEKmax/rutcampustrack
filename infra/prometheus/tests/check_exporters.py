@@ -16,8 +16,8 @@ import shlex
 import shutil
 import subprocess
 import sys
-import tempfile
 import time
+import traceback
 import urllib.parse
 import urllib.request
 import uuid
@@ -27,6 +27,9 @@ from pathlib import Path
 import yaml
 
 ROOT = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(ROOT / "scripts"))
+from local_release_context import runtime_context
+from local_release_evidence import evidence_directory, evidence_file
 _STATE = {"phase": "PRECHECK_OR_CONFIG", "cleanup": "NOT_STARTED"}
 
 
@@ -260,7 +263,7 @@ def prepared_transaction_contract(docker):
             os.sched_setaffinity(0, {min(os.sched_getaffinity(0))})
             resource.setrlimit(resource.RLIMIT_FSIZE, (4 * 1024**2, 4 * 1024**2))
 
-        with tempfile.TemporaryFile() as output, tempfile.TemporaryFile() as errors:
+        with evidence_file(prefix="rct-prepared-stdout-") as output, evidence_file(prefix="rct-prepared-stderr-") as errors:
             _STATE["phase"] = "PREPARED_TRANSACTION_NATIVE_CHILD_RUN"
             completed = subprocess.run(
                 [sys.executable, "-B", "-m", "tests.prepared_broker_probe"],
@@ -328,11 +331,11 @@ def prepared_transaction_contract(docker):
 
 
 def main():
-    assert os.environ.get("RCT_MONITORING_RUNTIME") == "isolated-ci", "dedicated CI runtime required"
+    context = runtime_context("RCT_MONITORING_RUNTIME")
     assert shutil.disk_usage("/tmp").free >= 4 * 1024**3, "4GiB disk floor required"
     production = yaml.safe_load((ROOT / "docker-compose.prod.yml").read_text())
     project = "rct-obsv-" + uuid.uuid4().hex[:12]
-    with tempfile.TemporaryDirectory(prefix=project + "-") as tmp:
+    with evidence_directory(prefix=project + "-") as tmp:
         td = Path(tmp)
         config = {"services": {}, "networks": {"private_net": {}}, "volumes": {"mongo-test": {}}, "secrets": {}}
         databases = [
@@ -1019,6 +1022,32 @@ def main():
                 "redis_probe": _STATE["redis_probe"],
                 "redis_exporter": _STATE["redis_exporter"],
             }
+        except BaseException as error:
+            # Preserve the original failure before down removes the owned containers.
+            # Diagnostics are private and optional; they never replace that failure.
+            def private_diagnostic(name, value):
+                if value is None:
+                    return
+                try:
+                    raw = value if isinstance(value, bytes) else str(value).encode()
+                    descriptor = os.open(td / name, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+                    with os.fdopen(descriptor, "wb") as output:
+                        output.write(raw[:2 * 1024**2])
+                except Exception:
+                    pass
+
+            private_diagnostic("exporter-traceback.private.log", traceback.format_exc())
+            if isinstance(error, subprocess.SubprocessError):
+                private_diagnostic("exporter-command.stdout.private.log", getattr(error, "stdout", None))
+                private_diagnostic("exporter-command.stderr.private.log", getattr(error, "stderr", None))
+            try:
+                logs = docker("--profile", "rabbit-metrics-contract", "logs", "--no-color", "--tail", "100",
+                              check=False, seconds=15)
+                private_diagnostic("exporter-containers.stdout.private.log", logs.stdout)
+                private_diagnostic("exporter-containers.stderr.private.log", logs.stderr)
+            except Exception:
+                pass
+            raise
         finally:
             primary = sys.exc_info()[0]
             _STATE["cleanup"] = "STARTED"

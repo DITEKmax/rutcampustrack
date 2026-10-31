@@ -1,0 +1,22 @@
+{
+  "name": "@rct/web-vue",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc -p tsconfig.json --noEmit && vite build",
+    "typecheck": "vue-tsc -p tsconfig.json --noEmit",
+    "lint": "eslint src vite.config.ts --max-warnings=0"
+  },
+  "dependencies": {
+    "@fontsource-variable/onest": "5.2.8",
+    "@rct/mobile-core": "0.1.0",
+    "qrcode": "1.5.4",
+    "vue": "3.5.42",
+    "vue-router": "4.6.4"
+  },
+  "devDependencies": {
+    "@types/qrcode": "1.5.6"
+  }
+}

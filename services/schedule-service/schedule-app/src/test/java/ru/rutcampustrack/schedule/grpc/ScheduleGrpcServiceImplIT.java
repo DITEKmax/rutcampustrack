@@ -5,14 +5,15 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 import io.grpc.stub.StreamObserver;
-
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.OffsetDateTime;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-
 import ru.rutcampustrack.schedule.contract.enums.LessonStatus;
 import ru.rutcampustrack.schedule.contract.enums.WeekType;
 import ru.rutcampustrack.schedule.integration.AbstractScheduleIntegrationTest;
@@ -20,10 +21,6 @@ import ru.rutcampustrack.schedule.item.entity.ScheduleItem;
 import ru.rutcampustrack.schedule.item.repository.ScheduleItemRepository;
 import ru.rutcampustrack.schedule.lesson.entity.Lesson;
 import ru.rutcampustrack.schedule.lesson.repository.LessonRepository;
-
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.OffsetDateTime;
 
 /**
  * Integration tests for ScheduleGrpcServiceImpl covering all 3 gRPC RPCs.
@@ -38,7 +35,11 @@ import java.time.OffsetDateTime;
  */
 @org.springframework.context.annotation.Import(TestGrpcTransport.Config.class)
 @org.springframework.test.context.TestPropertySource(
-        properties = {"grpc.server.port=0", "grpc.auth.secret=synthetic-test-grpc"})
+        properties = {
+            "grpc.server.port=0",
+            "grpc.server.address=127.0.0.1",
+            "grpc.auth.secret=synthetic-test-grpc"
+        })
 class ScheduleGrpcServiceImplIT extends AbstractScheduleIntegrationTest {
 
     @Autowired ScheduleGrpcServiceImpl grpcService;

@@ -5,14 +5,15 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 import io.grpc.stub.StreamObserver;
-
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.OffsetDateTime;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-
 import ru.rutcampustrack.schedule.contract.enums.LessonStatus;
 import ru.rutcampustrack.schedule.contract.enums.WeekType;
 import ru.rutcampustrack.schedule.integration.AbstractScheduleIntegrationTest;
@@ -20,10 +21,6 @@ import ru.rutcampustrack.schedule.item.entity.ScheduleItem;
 import ru.rutcampustrack.schedule.item.repository.ScheduleItemRepository;
 import ru.rutcampustrack.schedule.lesson.entity.Lesson;
 import ru.rutcampustrack.schedule.lesson.repository.LessonRepository;
-
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.OffsetDateTime;
 
 /**
  * Phase 61 D-04: Integration tests for {@link ScheduleGrpcServiceImpl#resolveLesson}.
@@ -38,7 +35,11 @@ import java.time.OffsetDateTime;
  */
 @org.springframework.context.annotation.Import(TestGrpcTransport.Config.class)
 @org.springframework.test.context.TestPropertySource(
-        properties = {"grpc.server.port=0", "grpc.auth.secret=synthetic-test-grpc"})
+        properties = {
+            "grpc.server.port=0",
+            "grpc.server.address=127.0.0.1",
+            "grpc.auth.secret=synthetic-test-grpc"
+        })
 class ScheduleGrpcResolveLessonIT extends AbstractScheduleIntegrationTest {
 
     @Autowired ScheduleGrpcServiceImpl grpcService;
@@ -62,7 +63,7 @@ class ScheduleGrpcResolveLessonIT extends AbstractScheduleIntegrationTest {
     }
 
     @Test
-    void resolveLesson_returnsLesson_whenExists() {
+    void resolveLesson_returnsLesson_whenExists() throws Exception {
         ScheduleItem item = createScheduleItem(10L, 42L, (short) 3, "A101");
         Lesson lesson = createLesson(item.getId(), LocalDate.of(2026, 5, 1), LessonStatus.PLANNED);
 
@@ -88,6 +89,20 @@ class ScheduleGrpcResolveLessonIT extends AbstractScheduleIntegrationTest {
         assertThat(response.getLessonNumber()).isEqualTo(3);
         assertThat(response.getStatus()).isEqualTo("planned");
         assertThat(response.getDate()).isEqualTo("2026-05-01");
+
+        try (var transport = new TestGrpcTransport(grpcPort)) {
+            assertThat(transport.stub.resolveLesson(request)).isEqualTo(response);
+        }
+        for (String secret : new String[] {null, "wrong-synthetic-secret"}) {
+            try (var transport = new TestGrpcTransport(grpcPort, secret)) {
+                var failure =
+                        org.junit.jupiter.api.Assertions.assertThrows(
+                                io.grpc.StatusRuntimeException.class,
+                                () -> transport.stub.resolveLesson(request));
+                assertThat(failure.getStatus().getCode())
+                        .isEqualTo(io.grpc.Status.Code.UNAUTHENTICATED);
+            }
+        }
     }
 
     @Test

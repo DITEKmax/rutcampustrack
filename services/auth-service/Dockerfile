@@ -49,7 +49,6 @@ COPY --from=extractor /app/application/ ./
 # Runtime OpenSSL generation avoids the cold musl/JDK RSA entropy path.
 RUN apk add --no-cache openssl && mkdir -p /keys && chown app:app /keys && chmod 755 /keys
 COPY --chmod=755 services/auth-service/docker-entrypoint.sh /usr/local/bin/auth-entrypoint
-ENV JWT_KEY_DIR=/keys
 
 USER app
 EXPOSE 9090

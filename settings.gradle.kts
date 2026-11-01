@@ -1,3 +1,11 @@
+pluginManagement {
+    repositories {
+        // Resolve Central-hosted plugin libraries without the Portal redirect.
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+
 rootProject.name = "rutcampustrack"
 
 // === Shared modules (M01 — foundations для всех сервисов) ===

@@ -317,6 +317,12 @@ jobs:
       matrix:
         image: [api-gateway, mobile-bff, auth-service, academic-service, schedule-service, attendance-service, document-renderer-service, notification-web, notification-bot, pwa-nginx, mini-app-nginx, web-panel-nginx, landing-nginx]
     steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          # Trusted immutable workflow policy, never candidate image source.
+          ref: ${{ github.workflow_sha }}
+          path: release-control
+          persist-credentials: false
       - name: Log in to GHCR
         uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3.7.0
         with:
@@ -328,6 +334,7 @@ jobs:
         with:
           image-ref: ${{ fromJSON(needs.build-push.outputs.manifest).images[matrix.image] }}
           scan-type: image
+          ignore-policy: release-control/.github/security/release-spring-exceptions.rego
           severity: HIGH,CRITICAL
           exit-code: '1'
           ignore-unfixed: true

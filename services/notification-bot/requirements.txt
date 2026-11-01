@@ -8,11 +8,12 @@ pydantic==2.9.2
 pydantic-settings==2.6.1
 grpcio==1.73.0
 grpcio-tools==1.73.0
-protobuf==6.31.0
+# CVE-2025-4565 and CVE-2026-0994: keep the fixed protobuf 6.x runtime.
+protobuf==6.33.5
 redis[hiredis]==5.2.1
 # M04 Группа 7 — observability (JSON-логи + distributed tracing).
 # OTel 1.41+ обязателен: более ранние версии требуют protobuf<5, а
-# grpcio-tools 1.73 тянет protobuf 6.31.
+# grpcio-tools 1.73 требует protobuf>=6.30,<7.
 structlog==24.4.0
 prometheus-client==0.22.1
 opentelemetry-api==1.41.0

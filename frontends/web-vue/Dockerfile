@@ -25,7 +25,8 @@ COPY web-vue web-vue
 # WEB remains the root SPA; only its own dist is shipped, not PWA/TMA public files.
 RUN npm run build --workspace @rct/web-vue
 
-FROM nginx:1.27-alpine
+FROM nginx:1.30.6-alpine3.24@sha256:0e52bd054126cdc040b1276c0af347aeb02a41b9cfe305d6094767ac30e97949
+RUN apk upgrade --no-cache brotli-libs curl libcurl
 
 COPY --from=builder /workspace/web-vue/dist /usr/share/nginx/html
 RUN chmod -R a+rX /usr/share/nginx/html

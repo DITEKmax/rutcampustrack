@@ -55,20 +55,18 @@ dependencies {
     runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.12.6")
 
     // NEW: Web Push delivery
-    implementation("nl.martijndwars:web-push:5.1.2")
-    implementation("org.bouncycastle:bcprov-jdk15on:1.70")
+    implementation("nl.martijndwars:web-push:5.1.2") {
+        // PushService uses Apache HttpClient; AHC belongs only to the unused
+        // PushAsyncService API. Keep that vulnerable alternate client absent.
+        exclude(group = "org.asynchttpclient", module = "async-http-client")
+        exclude(group = "org.bouncycastle", module = "bcprov-jdk15on")
+    }
+    implementation("org.bouncycastle:bcprov-jdk18on")
     // Apache HttpClient and jose4j transitively pulled by web-push at runtime;
     // needed at compile time because WebPushDeliveryService catches HttpResponseException (410)
     // and PushService.send() throws JoseException as a checked exception
     implementation("org.apache.httpcomponents:httpclient:4.5.13")
     implementation("org.bitbucket.b_c:jose4j:0.9.6")
-
-    // Security repair: web-push 5.1.2 brings the vulnerable 2.12.4 client family.
-    // Keep the transitive client and its Netty utility module on one fixed release.
-    constraints {
-        implementation("org.asynchttpclient:async-http-client:2.15.0")
-        implementation("org.asynchttpclient:async-http-client-netty-utils:2.15.0")
-    }
 
     // NEW: MongoDB for push_subscriptions
     implementation("org.springframework.boot:spring-boot-starter-data-mongodb")

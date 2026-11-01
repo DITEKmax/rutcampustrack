@@ -85,8 +85,20 @@ subprojects {
     // for every Boot application and shared module that imports its BOM.
     extra["netty.version"] = "4.1.137.Final"
     extra["tomcat.version"] = "10.1.59"
-    extra["rabbit-amqp-client.version"] = "5.33.1"
+    extra["rabbit-amqp-client.version"] = "5.34.0"
     extra["postgresql.version"] = "42.7.12"
+    extra["jackson-bom.version"] = "2.21.7"
+
+    // These libraries are not managed by Boot's BOM. Constraints also cover
+    // their transitive uses, without replacing the platform's version policy.
+    dependencies {
+        constraints {
+            add("implementation", "com.google.guava:guava:33.7.2-jre")
+            add("implementation", "org.bouncycastle:bcprov-jdk18on:1.85")
+            add("implementation", "org.bouncycastle:bcpkix-jdk18on:1.85")
+            add("implementation", "org.bouncycastle:bcutil-jdk18on:1.85")
+        }
+    }
 
     // Diagnostic coverage reports; test failures remain blocking.
     apply(plugin = "jacoco")

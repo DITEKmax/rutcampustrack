@@ -35,7 +35,8 @@ ENV VITE_MOBILE_FIXTURE_MODE=$VITE_MOBILE_FIXTURE_MODE
 
 RUN npm run build --workspace @rct/pwa-vue
 
-FROM nginx:1.27-alpine
+FROM nginx:1.30.6-alpine3.24@sha256:0e52bd054126cdc040b1276c0af347aeb02a41b9cfe305d6094767ac30e97949
+RUN apk upgrade --no-cache brotli-libs curl libcurl
 
 COPY --from=builder /workspace/pwa-vue/dist /usr/share/nginx/html
 RUN chmod -R a+rX /usr/share/nginx/html

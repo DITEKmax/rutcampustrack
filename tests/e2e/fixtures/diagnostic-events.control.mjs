@@ -85,9 +85,23 @@ base('finite private verifier controls', async()=>{
 });
 `
 writeFileSync(join(out, 'controls.spec.ts'), source)
+const todayStatuses = [0, 200, 304, 503]
+writeFileSync(join(out, 'today.spec.ts'), String.raw`
+import {test} from ${JSON.stringify(join(here, 'artifact-privacy.ts'))};
+import {diagnosticCase, diagnosticHttpFailure} from ${JSON.stringify(join(here, 'diagnostic-events.ts'))};
+test('Today failure keeps its closed observation', {annotation:diagnosticCase('STUDENT_SEMESTER_ROOM_REFRESH')}, async()=>{
+ const status=Number(test.info().project.name.slice('today-'.length));
+ const code=status<300?'STUDENT_TODAY_SYNTHETIC_READ':'STUDENT_TODAY_RECOVERY_READ';
+ throw diagnosticHttpFailure(new Error('private '+${JSON.stringify(canary)}),code,status);
+});
+`)
+const projects = [
+  { name: 'synthetic', testMatch: 'controls.spec.ts' },
+  ...todayStatuses.map((status) => ({ name: `today-${status}`, testMatch: 'today.spec.ts' })),
+]
 writeFileSync(
   join(out, 'playwright.config.cjs'),
-  `module.exports={testDir:${JSON.stringify(out)},testMatch:'controls.spec.ts',outputDir:${JSON.stringify(join(out, 'artifacts'))},workers:1,retries:0,reporter:[[${JSON.stringify(join(here, 'safe-reporter.ts'))}]],use:{trace:'off',video:'off',screenshot:'off'}};`,
+  `module.exports={testDir:${JSON.stringify(out)},projects:${JSON.stringify(projects)},outputDir:${JSON.stringify(join(out, 'artifacts'))},workers:1,retries:0,reporter:[[${JSON.stringify(join(here, 'safe-reporter.ts'))}]],use:{trace:'off',video:'off',screenshot:'off'}};`,
 )
 const child = spawnSync(
   process.execPath,
@@ -113,7 +127,19 @@ const report = JSON.parse(text)
 assert.equal(report.status, 'failed')
 assert.equal(report.unsafeArtifact, false)
 assert.equal(report.runnerErrors, 0)
-assert.equal(report.results.length, 8)
+assert.equal(report.results.length, 8 + todayStatuses.length)
+for (const status of todayStatuses) {
+  const row = report.results.find((r) => r.project === `today-${status}`)
+  assert.equal(row.status, 'failed')
+  assert.equal(row.errorCount, 1)
+  assert.deepEqual(row.diagnosticEvents, [{
+    schema: 'rct-diagnostic-event.v1',
+    caseId: 'STUDENT_SEMESTER_ROOM_REFRESH',
+    stageId: 'DATASET_HTTP',
+    eventCode: status < 300 ? 'STUDENT_TODAY_SYNTHETIC_READ' : 'STUDENT_TODAY_RECOVERY_READ',
+    httpStatus: status,
+  }])
+}
 for (const id of ['LIMITED_ADMIN_ACCOUNTS', 'HOMEWORK_FOREIGN_RETRY']) {
   const row = report.results.find((r) => r.caseId === id)
   assert.equal(row.status, 'failed')
@@ -199,7 +225,7 @@ console.log(
     schema: 'rct-diagnostic-controls.v1',
     passed: true,
     deliberateChildExit: child.status,
-    rows: 8,
+    rows: report.results.length,
     finiteNegatives: 20,
     ...(withConsumer ? { consumerPassed: true } : {}),
     report: join(out, 'artifacts/safe-results.json'),

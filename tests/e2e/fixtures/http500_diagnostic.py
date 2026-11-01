@@ -210,13 +210,16 @@ def load_catalog():
     for case, item in value['cases'].items():
         if (not re.fullmatch('[A-Z][A-Z0-9_]{0,63}', case) or type(item) is not dict
                 or set(item) != {'events'} or type(item['events']) is not list
-                or not 1 <= len(item['events']) <= (10 if case in {'D002_RECONNECT_ACCOUNT_AUTHORITY', 'D002_LATE_ACCOUNT_HOMEWORK'} else 8)):
+                # Catalog alternatives are not the events emitted by one failed run.
+                # Reports remain bounded to eight exact catalog tuples below.
+                or not 1 <= len(item['events']) <= 64):
             raise ValueError('Catalog case')
         for event in item['events']:
             if (type(event) is not dict or set(event) != {'stageId', 'eventCode', 'httpStatus'}
                     or event['stageId'] not in {'DATASET_HTTP', 'FRAMEWORK', 'D002_RECONNECT', 'UI_ACTION'}
                     or type(event['eventCode']) is not str or not re.fullmatch('[A-Z][A-Z0-9_]{0,63}', event['eventCode'])
-                    or type(event['httpStatus']) is not int or event['httpStatus'] not in {0, 500, 503}):
+                    or type(event['httpStatus']) is not int
+                    or not (event['httpStatus'] == 0 or 100 <= event['httpStatus'] <= 599)):
                 raise ValueError('Catalog event')
     return value['cases']
 

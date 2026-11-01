@@ -423,6 +423,42 @@ class SharedDiagnosticControls(unittest.TestCase):
         local_first['results'] = rows
         self.assertFalse(diag.is_target_failure(local_first, stage))
 
+    def test_catalog_alternatives_do_not_expand_runtime_observations(self):
+        case = 'STUDENT_SEMESTER_ROOM_REFRESH'
+        for definition in diag.CATALOG[case]['events']:
+            with self.subTest(definition=definition):
+                observed = row(case, definition['eventCode'], definition['httpStatus'])
+                observed['diagnosticEvents'][0]['stageId'] = definition['stageId']
+                self.assertTrue(diag.closed_case_row(observed))
+                for target in diag.STAGES.values():
+                    self.assertFalse(diag.is_target_failure(receipt([observed]), target))
+        observed = row(case, 'STUDENT_TODAY_SYNTHETIC_READ', 200)
+        for field, value in (('httpStatus', 418), ('httpStatus', True),
+                             ('eventCode', 'STUDENT_TODAY_FOREIGN_READ'),
+                             ('caseId', 'LIMITED_ADMIN_ACCOUNTS'), ('raw', private)):
+            changed = copy.deepcopy(observed)
+            changed['diagnosticEvents'][0][field] = value
+            self.assertFalse(diag.closed_case_row(changed))
+        observed['diagnosticEvents'] = [dict(schema=diag.EVENT_SCHEMA, caseId=case, **definition)
+                                        for definition in diag.CATALOG[case]['events'][:9]]
+        self.assertFalse(diag.closed_case_row(observed))
+
+        catalog = {'schema': 'rct-diagnostic-catalog.v1', 'cases': copy.deepcopy(diag.CATALOG)}
+        for status in (0, 100, 599):
+            changed = copy.deepcopy(catalog)
+            changed['cases'][case]['events'][0]['httpStatus'] = status
+            with patch.object(Path, 'read_bytes', return_value=json.dumps(changed).encode()):
+                self.assertEqual(diag.load_catalog(), changed['cases'])
+        for status in (-1, 99, 600, True, '200'):
+            changed = copy.deepcopy(catalog)
+            changed['cases'][case]['events'][0]['httpStatus'] = status
+            with patch.object(Path, 'read_bytes', return_value=json.dumps(changed).encode()):
+                with self.assertRaises(ValueError):diag.load_catalog()
+        changed = copy.deepcopy(catalog)
+        changed['cases'][case]['events'] = [changed['cases'][case]['events'][0]] * 65
+        with patch.object(Path, 'read_bytes', return_value=json.dumps(changed).encode()):
+            with self.assertRaises(ValueError):diag.load_catalog()
+
     def test_stats_companions_d002_and_async_identity(self):
         rows = [row(case, 'STUDENT_STATS_HTTP503', 503, failed=case == 'HEADMAN_RECURRING_SLOT_HISTORY')
                 for case in sorted(diag.STATS_CASES)]
@@ -529,7 +565,8 @@ class SharedDiagnosticControls(unittest.TestCase):
                 value = receipt([projected])  # Explicit unit top-level context; original events unchanged.
                 kind = original['diagnosticEvents'][0]['stageId']
                 counts[kind] += 1
-                expected = kind == 'DATASET_HTTP'
+                self.assertTrue(diag.closed_case_row(projected))
+                expected = (kind == 'DATASET_HTTP' and original['caseId'] in diag.CLIENT_CASES)
                 self.assertEqual(diag.is_target_failure(value, stage), expected)
                 self.assertEqual(projected['diagnosticEvents'], original['diagnosticEvents'])
                 payload.write_text(json.dumps(value));payload.chmod(0o600)
@@ -540,7 +577,7 @@ class SharedDiagnosticControls(unittest.TestCase):
                 mismatch = copy.deepcopy(value)
                 mismatch['results'][0]['diagnosticEvents'][0]['caseId'] = 'HOSTED_PRIVATE_BOT_AUTHORITY'
                 self.assertFalse(diag.is_target_failure(mismatch, stage))
-        self.assertEqual(counts, {'DATASET_HTTP': 2, 'FRAMEWORK': 4, 'UI_ACTION': 1})
+        self.assertEqual(counts, {'DATASET_HTTP': 6, 'FRAMEWORK': 4, 'UI_ACTION': 1})
 
     def test_local_inventory_requires_exact_owned_cohort(self):
         local_spec = importlib.util.spec_from_file_location('local_inventory_control', source_root / 'scripts/local_e2e_async.py')

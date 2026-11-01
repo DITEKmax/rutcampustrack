@@ -45,43 +45,11 @@ COPY --from=extractor /app/spring-boot-loader/ ./
 COPY --from=extractor /app/snapshot-dependencies/ ./
 COPY --from=extractor /app/application/ ./
 
-# M13 G25.9 — pre-create /keys с owner=app до volume mount.
-# Docker при первом mount пустого named volume на существующий каталог
-# в image копирует ownership/mode каталога в volume. Без этого
-# JwtService.writeKeyToFile падает AccessDeniedException на чистом VPS
-# (root:root mount, USER app не имеет write).
-#
-# M13 G25.15 — pre-generate RSA keys at build time через openssl.
-# JDK KeyPairGenerator на alpine musl JDK 21 hang'ает на холодном GitHub
-# Actions Azure runner: ВСЕ JDK PRNG provider'ы (NativePRNG/Blocking,
-# DRBG, SHA1PRNG re-seed) под капотом упираются в /dev/random для
-# entropy при RSA prime generation, игнорируя `-Djava.security.egd` flag
-# и явный SecureRandom seed (G25.13/G25.14 не помогли). openssl genrsa
-# использует /dev/urandom напрямую через libcrypto, что non-blocking.
-#
-# Build-time generation acceptable для CI/e2e (все контейнеры одного
-# билда получают одинаковые ключи — это OK для e2e). Для prod на VPS
-# named volume `jwt-keys` mount копирует image content при первом
-# запуске, далее JwtService видит существующие keys и пропускает
-# regeneration. Если VPS owner хочет уникальные prod keys — генерит
-# вручную в volume перед первым `docker compose up`.
-# JwtService.loadPrivateKey использует PKCS8EncodedKeySpec → ключ
-# должен быть в PKCS#8 формате (BEGIN PRIVATE KEY), не PKCS#1
-# (BEGIN RSA PRIVATE KEY). `openssl genrsa` выдаёт PKCS#1 → конвертируем
-# через `openssl pkcs8 -topk8 -nocrypt`. Public key через `-pubout`
-# уже выходит в SPKI/X.509 формате — совместим с X509EncodedKeySpec.
-# kid.txt — JwtService.init читает именно `kid.txt` (см. JwtService:56).
-RUN mkdir -p /keys && \
-    apk add --no-cache openssl && \
-    openssl genrsa -out /keys/private.key.pkcs1 3072 && \
-    openssl pkcs8 -topk8 -nocrypt -in /keys/private.key.pkcs1 -out /keys/private.key && \
-    openssl rsa -in /keys/private.key -pubout -out /keys/public.key && \
-    rm /keys/private.key.pkcs1 && \
-    head -c 4 /dev/urandom | od -A n -t x1 | tr -d ' \n' > /keys/kid.txt && \
-    chown -R app:app /keys && \
-    chmod 600 /keys/private.key /keys/kid.txt && \
-    chmod 644 /keys/public.key && \
-    apk del openssl
+# Keep volume copy-up ownership, but never distribute signing material in image layers.
+# Runtime OpenSSL generation avoids the cold musl/JDK RSA entropy path.
+RUN apk add --no-cache openssl && mkdir -p /keys && chown app:app /keys && chmod 755 /keys
+COPY --chmod=755 services/auth-service/docker-entrypoint.sh /usr/local/bin/auth-entrypoint
+ENV JWT_KEY_DIR=/keys
 
 USER app
 EXPOSE 9090
@@ -89,4 +57,4 @@ EXPOSE 9090
 HEALTHCHECK --interval=30s --timeout=5s --start-period=45s --retries=3 \
     CMD wget -qO- http://localhost:9090/actuator/health || exit 1
 
-ENTRYPOINT ["java", "org.springframework.boot.loader.launch.JarLauncher"]
+ENTRYPOINT ["/usr/local/bin/auth-entrypoint", "java", "org.springframework.boot.loader.launch.JarLauncher"]

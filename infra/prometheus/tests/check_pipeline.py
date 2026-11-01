@@ -49,20 +49,6 @@ PROM_UID = "PBFA97CFB590B2093"
 PYTHON_IMAGE = "python:3.12.12-slim-bookworm@sha256:593bd06efe90efa80dc4eee3948be7c0fde4134606dd40d8dd8dbcade98e669c"
 
 
-_BACKGROUND_NATIVE_SOURCE_HASHES = {
-    "build.gradle.kts": "d093c2b7f7ac52044f4ecb62934e645e18078fe7909e5684137059647cc9111f",
-    "settings.gradle.kts": "0da039246607505fbd6c8c3c2340345dab96f4051f6a5fc49e475c864a7b0617",
-    "services/attendance-service/attendance-app/build.gradle.kts": "87292858ef502bf581d90dd3334f915368482f7f100f0c358b1b9dda1a744502",
-    "services/attendance-service/attendance-api-contract/build.gradle.kts": "e2c1d174ecd031671cbd78326566ca3bda1eea875ef3ecf1eee2d62b6c674038",
-    "services/shared/shared-web/build.gradle.kts": "3b763bce4032f304d1f43fdd226c0bfbe14531f35a2a056578aa348b247e0bd3",
-    "services/shared/shared-web-api/build.gradle.kts": "88c458ed5bac640ad3034b1c89b33a331e5540f51521ce7215aee28eafd7f5ee",
-    "services/shared/shared-outbox/build.gradle.kts": "83f7f7084fd46ac9300a81c12ebd871c15fbb1e8647bcf95a1c80e1d4b387faf",
-    "services/shared/shared-events/build.gradle.kts": "f97f06fa555c9fe561f011f511bbb9ddf24f92c2e51619fdea4097a7ef7a7396",
-    "services/shared/shared-security/build.gradle.kts": "1d07782717df2ac9a82495805d45606abec1721fc536f9bc3005a22ba34ced8c",
-    "services/shared/shared-observability/build.gradle.kts": "866b614d975477b5acbe96e5b07143543d34ae180a5d72606c5ee12527bb3083",
-    "services/shared/shared-logback/build.gradle.kts": "c61998f894025cc45afa4206d2e7e54b389d8565059cf8ac8d58e941acabf25a",
-    "services/shared/shared-test-containers/build.gradle.kts": "53def03edcae049b0adb06bb13b16ebe3cde52014f9148b0d38162ce9a01ebed"
-}
 _BACKGROUND_NATIVE_TASK_STAGES = {
     "Execution failed for task ':services:attendance-service:attendance-app:compileJava'.": "ATTENDANCE_MAIN_COMPILE_TASK",
     "Execution failed for task ':services:attendance-service:attendance-api-contract:compileJava'.": "CONTRACT_MAIN_COMPILE_TASK",
@@ -83,17 +69,11 @@ _BACKGROUND_NATIVE_TASK_STAGES = {
 }
 
 
-def background_native_failure(raw, sources):
-    """Recognize a bound terminal failed-task signature, never its first cause."""
+def background_native_failure(raw):
+    """Project a bounded terminal task signature to fixed enums, never a first cause."""
     unknown = {"category": "UNKNOWN", "source_stage": "UNKNOWN"}
-    if type(raw) is not bytes or len(raw) > 65536 or type(sources) is not dict:
+    if type(raw) is not bytes or len(raw) > 65536:
         return unknown
-    if set(sources) != set(_BACKGROUND_NATIVE_SOURCE_HASHES):
-        return unknown
-    for name, expected in _BACKGROUND_NATIVE_SOURCE_HASHES.items():
-        source = sources[name]
-        if type(source) is not bytes or len(source) > 65536 or hashlib.sha256(source).hexdigest() != expected:
-            return unknown
     try:
         text = raw.decode("utf-8").replace("\r\n", "\n")
         if not text.endswith("\n") or any(
@@ -1984,11 +1964,7 @@ def main(host_and_bot_only=False, remaining_infra_only=False):
                             try:
                                 with (td / filename).open("rb") as native_log:
                                     native_raw = native_log.read(65537)
-                                native_sources = {}
-                                for name in _BACKGROUND_NATIVE_SOURCE_HASHES:
-                                    with (ROOT / name).open("rb") as public_source:
-                                        native_sources[name] = public_source.read(65537)
-                                _STATE["native_failure"] = background_native_failure(native_raw, native_sources)
+                                _STATE["native_failure"] = background_native_failure(native_raw)
                             except Exception:  # noqa: BLE001 -- optional diagnostics must not replace the child failure
                                 pass
                         raise subprocess.CalledProcessError(result, command)

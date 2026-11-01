@@ -179,7 +179,7 @@ class NativeFailureProjectionControls(unittest.TestCase):
     def setUpClass(cls):
         cls.probe_source = (ROOT / 'services/notification-bot/tests/prepared_broker_probe.py').read_bytes()
         tree = ast.parse((ROOT / 'infra/prometheus/tests/check_pipeline.py').read_text())
-        names = {'_BACKGROUND_NATIVE_SOURCE_HASHES', '_BACKGROUND_NATIVE_TASK_STAGES',
+        names = {'_BACKGROUND_NATIVE_TASK_STAGES',
                  '_BACKGROUND_TEST_CLASS', '_BACKGROUND_TEST_METHOD', '_BACKGROUND_TEST_SOURCE',
                  '_BACKGROUND_TEST_SOURCE_HASH', '_BACKGROUND_TEST_REPORT'}
         selected = [node for node in tree.body if
@@ -189,8 +189,6 @@ class NativeFailureProjectionControls(unittest.TestCase):
                      {'background_native_failure', 'background_test_failure', 'read_background_test_failure'})]
         cls.pipeline = {'hashlib': hashlib, 're': re, 'ET': ET, 'os': os, 'stat': stat, 'time': time, 'ROOT': ROOT}
         exec(compile(ast.Module(body=selected, type_ignores=[]), '<pure-native-projection>', 'exec'), cls.pipeline)
-        cls.gradle_sources = {name: (ROOT / name).read_bytes()
-                              for name in cls.pipeline['_BACKGROUND_NATIVE_SOURCE_HASHES']}
         cls.test_source = (ROOT / cls.pipeline['_BACKGROUND_TEST_SOURCE']).read_bytes()
         cls.gradle_parent = next(node for node in ast.walk(tree) if isinstance(node, ast.FunctionDef)
                                  and node.name == 'run_application_gradle')
@@ -273,32 +271,55 @@ class NativeFailureProjectionControls(unittest.TestCase):
     def test_gradle_positive_all_exact_tasks_and_private_messages(self):
         classify = self.pipeline['background_native_failure']
         for task, stage in self.pipeline['_BACKGROUND_NATIVE_TASK_STAGES'].items():
-            result = classify(self.gradle(task), self.gradle_sources)
+            result = classify(self.gradle(task))
             self.assertEqual(result, {'category': 'FAILED_TASK', 'source_stage': stage})
             self.assert_closed(result)
-        self.assertEqual(classify(self.gradle().replace(b'\n', b'\r\n'), self.gradle_sources)['category'], 'FAILED_TASK')
+        self.assertEqual(classify(self.gradle().replace(b'\n', b'\r\n'))['category'], 'FAILED_TASK')
+        # Terminal task enums remain useful after dependency/format changes,
+        # including a checkout without the other former fingerprinted sources.
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source_root = root / 'source'
+            source_root.mkdir()
+            for build_source in [b'extra["jackson-bom.version"] = "2.21.7"\n', b'  // unrelated whitespace\n\n']:
+                (source_root / 'build.gradle.kts').write_bytes(build_source)
+                state = {'phase': 'ACTUAL_BACKGROUND_GRADLE'}
+                no_report = {'category': 'NO_CURRENT_RESULT', 'source_stage': 'UNKNOWN',
+                             'admission_reason': 'NO_CURRENT_RESULT'}
+                namespace = dict(self.pipeline, td=root, ROOT=source_root, _STATE=state,
+                                 subprocess=subprocess, remaining_infra_only=False,
+                                 read_background_test_failure=lambda started: no_report)
+                exec(compile(ast.Module(body=[self.gradle_parent], type_ignores=[]), '<existing-parent-control>', 'exec'), namespace)
+                def child(command, **options):
+                    options['stdout'].write(self.gradle())
+                    options['stdout'].flush()
+                    return SimpleNamespace(wait=lambda **kwargs: 13, poll=lambda: 13)
+                with patch.dict(self.pipeline, ROOT=source_root), patch.object(subprocess, 'Popen', side_effect=child):
+                    with self.assertRaises(subprocess.CalledProcessError) as caught:
+                        namespace['run_application_gradle'](['never-executed'], {}, 'background-gradle.private.log', 600)
+                self.assertEqual(caught.exception.returncode, 13)
+                self.assertEqual(state['native_failure'], {'category': 'FAILED_TASK',
+                                                          'source_stage': 'ATTENDANCE_MAIN_COMPILE_TASK'})
+                self.assert_closed(state['native_failure'])
 
-    def test_gradle_unknown_forged_malformed_hash_and_cutoff(self):
+    def test_gradle_unknown_forged_malformed_and_cutoff(self):
         classify = self.pipeline['background_native_failure']
         unknown = {'category': 'UNKNOWN', 'source_stage': 'UNKNOWN'}
         raw = self.gradle()
         task = next(iter(self.pipeline['_BACKGROUND_NATIVE_TASK_STAGES'])).encode()
-        cases = [b'', b'> Task :private:invented FAILED\n', b'\xff\n', raw[:-1], b'\x00' + raw,
+        cases = [None, '', bytearray(raw), b'', b'> Task :private:invented FAILED\n', b'\xff\n', raw[:-1], b'\x00' + raw,
                  b'\x1b[31m' + raw, raw + b'private trailing text\n', b'x' * 65537,
                  self.gradle("Execution failed for task ':private:invented'."),
                  raw.replace(task, task + b'\n' + task), raw.replace(b'* What went wrong:\n', b''),
                  raw.replace(b'BUILD FAILED in 2m 15s', b'BUILD FAILED'),
                  raw.replace(b'FAILURE:', b'FAILURE: duplicate\nFAILURE:')]
         for malformed in cases:
-            self.assertEqual(classify(malformed, self.gradle_sources), unknown)
-        for name in self.gradle_sources:
-            changed = dict(self.gradle_sources)
-            changed[name] += b' '
-            self.assertEqual(classify(raw, changed), unknown)
-        self.assertEqual(classify(raw, {}), unknown)
+            self.assertEqual(classify(malformed), unknown)
+        for control in [b'\x7f', b'\xc2\x85', b'\xe2\x80\xa8', b'\xe2\x80\xa9']:
+            self.assertEqual(classify(control + raw), unknown)
         at_limit = b'x' * (65536 - len(raw) - 1) + b'\n' + raw
-        self.assertEqual(classify(at_limit, self.gradle_sources)['category'], 'FAILED_TASK')
-        self.assertEqual(classify(b'x' + at_limit, self.gradle_sources), unknown)
+        self.assertEqual(classify(at_limit)['category'], 'FAILED_TASK')
+        self.assertEqual(classify(b'x' + at_limit), unknown)
 
     def test_optional_diagnostic_io_failure_keeps_original_parent_failures(self):
         with patch.dict(contract._STATE, {'probe_returncode': 13}):

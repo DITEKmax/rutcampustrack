@@ -252,6 +252,15 @@ class OwnershipControls(unittest.TestCase):
 class Response(io.BytesIO):
     status = 200
 
+    def isclosed(self):
+        return False
+
+    @property
+    def fp(self):
+        return types.SimpleNamespace(
+            raw=types.SimpleNamespace(_sock=types.SimpleNamespace(settimeout=lambda seconds: None))
+        )
+
 
 class FinalizationControls(unittest.TestCase):
     @unittest.skipUnless(sys.platform == "linux", "Linux private filesystem/lock semantics required")
@@ -324,46 +333,61 @@ class FinalizationControls(unittest.TestCase):
 
 
 class OpenapiControls(unittest.TestCase):
-    producers = {"auth-service", "academic-service", "schedule-service", "attendance-service", "notification-service", "mobile-bff"}
+    producers = {
+        "auth-service",
+        "academic-service",
+        "schedule-service",
+        "attendance-service",
+        "notification-service",
+        "mobile-bff",
+    }
 
     def document(self, producer):
-        value = {"openapi": "3.0.1" if producer == "mobile-bff" else "3.1.0",
-                 "servers": [{"url": "/" if producer == "mobile-bff" else "/api"}],
-                 "paths": {"/example": {"get": {"security": [{"bearerAuth": []}]}}},
-                 "components": {"securitySchemes": {"bearerAuth": {"type": "http", "scheme": "bearer"}}}}
+        value = {
+            "openapi": "3.0.1" if producer == "mobile-bff" else "3.1.0",
+            "servers": [{"url": "/" if producer == "mobile-bff" else "/api"}],
+            "paths": {"/example": {"get": {"security": [{"bearerAuth": []}]}}},
+            "components": {"securitySchemes": {"bearerAuth": {"type": "http", "scheme": "bearer"}}},
+        }
         if producer == "academic-service":
             fields = {"jobId", "state", "suggestedFilename", "expiresAt", "errorCode"}
-            value["paths"]["/academic/export-jobs"] = {"post": {"security": [{"bearerAuth": []}], "responses": {"202": {}, "503": {}}}}
-            value["components"]["schemas"] = {"Status": {"properties": {name: {} for name in fields}, "required": sorted(fields)}}
+            value["paths"]["/academic/export-jobs"] = {
+                "post": {"security": [{"bearerAuth": []}], "responses": {"202": {}, "503": {}}}
+            }
+            value["components"]["schemas"] = {
+                "Status": {"properties": {name: {} for name in fields}, "required": sorted(fields)}
+            }
             value["components"]["schemas"]["Status"]["properties"]["errorCode"] = {"type": ["string", "null"]}
         if producer == "auth-service":
             value["paths"]["/auth/login"] = {"post": {"security": []}}
         return value
 
-    def execute(self, mutate=None):
+    def execute(self, mutate=None, target="academic-service"):
         calls = []
+
         def request(request, timeout):
-            self.assertEqual(timeout, 5)
+            self.assertEqual(timeout, 15)
             calls.append(request.full_url)
             if request.full_url.endswith("swagger-config"):
                 value = {"urls": [{"url": "/openapi/" + name} for name in sorted(self.producers)]}
             else:
                 producer = request.full_url.rsplit("/", 1)[1]
                 value = self.document(producer)
-                if producer == "academic-service" and mutate:
+                if producer == target and mutate:
                     value = mutate(value)
             return Response(value if isinstance(value, bytes) else json.dumps(value).encode())
+
         opener = types.SimpleNamespace(open=request)
         docker = lambda *args: types.SimpleNamespace(stdout=("a" * 64 + "\n") if args[0] == "ps" else "172.30.0.12\n")
         safe = {}
         with patch("urllib.request.build_opener", return_value=opener):
             try:
                 openapi(docker, safe, "rct-local-stage17-owned")
-            except (AssertionError, ValueError, KeyError, TimeoutError):
+            except (AssertionError, ValueError, KeyError, OSError):
                 return safe, calls, False
         return safe, calls, True
 
-    def test_exact_seven_gets_keep_strict_timeout(self):
+    def test_exact_seven_gets_keep_bounded_cold_read(self):
         safe, calls, passed = self.execute()
         self.assertTrue(passed)
         self.assertEqual(len(calls), 7)
@@ -373,9 +397,12 @@ class OpenapiControls(unittest.TestCase):
         def malformed(value):
             value["components"]["schemas"]["Status"]["properties"]["errorCode"] = {"type": "string", "nullable": True}
             return value
+
         safe, _, passed = self.execute(malformed)
         self.assertFalse(passed)
-        self.assertEqual(safe["gateway_openapi"]["documents"]["academic-service"]["stage"], "ACADEMIC_ERROR_CODE_NULLABLE_TYPE")
+        self.assertEqual(
+            safe["gateway_openapi"]["documents"]["academic-service"]["stage"], "ACADEMIC_ERROR_CODE_NULLABLE_TYPE"
+        )
 
     def test_json_failure_classified_without_raw_body(self):
         safe, _, passed = self.execute(lambda _: b"PRIVATE_SENTINEL not JSON")
@@ -386,12 +413,67 @@ class OpenapiControls(unittest.TestCase):
     def test_timeout_before_headers_has_no_status_and_keeps_primary_failure(self):
         def timeout(_):
             raise TimeoutError("PRIVATE_SENTINEL")
+
         safe, _, passed = self.execute(timeout)
         self.assertFalse(passed)
         observed = safe["gateway_openapi"]["documents"]["academic-service"]
         self.assertIsNone(observed["status"])
         self.assertEqual((observed["stage"], observed["error_kind"]), ("HTTP_HEADERS", "TIMEOUT"))
         self.assertNotIn("PRIVATE_SENTINEL", json.dumps(safe))
+
+    def test_terminal_status_does_not_retry_or_parse_contract(self):
+        for status in (401, 403, 404, 429, 500, 503):
+
+            def reject(_, status=status):
+                raise urllib.error.HTTPError("http://PRIVATE_SENTINEL", status, "PRIVATE_SENTINEL", {}, None)
+
+            safe, calls, passed = self.execute(reject)
+            self.assertFalse(passed)
+            self.assertEqual(len(calls), 2)
+            observed = safe["gateway_openapi"]["documents"]["academic-service"]
+            self.assertEqual((observed["status"], observed["error_kind"]), (status, "HTTP_STATUS"))
+            self.assertFalse(observed["contract_valid"])
+            self.assertNotIn("PRIVATE_SENTINEL", json.dumps(safe))
+
+    def test_duplicate_keys_and_auth_contract_remain_terminal(self):
+        safe, calls, passed = self.execute(lambda _: b'{"openapi":"3.1.0","openapi":"3.1.0"}')
+        self.assertFalse(passed)
+        self.assertEqual(len(calls), 2)
+
+        def authenticated_login(value):
+            value["paths"]["/auth/login"]["post"]["security"] = [{"bearerAuth": []}]
+            return value
+
+        safe, calls, passed = self.execute(authenticated_login, target="auth-service")
+        self.assertFalse(passed)
+        self.assertEqual(len(calls), 4)
+        self.assertEqual(safe["gateway_openapi"]["documents"]["auth-service"]["stage"], "AUTH_LOGIN_SECURITY")
+
+    def test_absolute_document_budget_cannot_accept_late_valid_headers(self):
+        clock = [0.0]
+
+        def late(value):
+            clock[0] = 20.0
+            return value
+
+        with patch.object(time, "monotonic", lambda: clock[0]):
+            safe, calls, passed = self.execute(late)
+        self.assertFalse(passed)
+        self.assertEqual(len(calls), 2)
+        observed = safe["gateway_openapi"]["documents"]["academic-service"]
+        self.assertEqual((observed["stage"], observed["error_kind"], observed["status"]), ("HTTP_HEADERS", "TIMEOUT", None))
+        self.assertEqual(observed["deadline_budget_ms"], 20000)
+
+    def test_empty_oversized_and_security_scheme_bodies_fail(self):
+        def bad_scheme(value):
+            value["components"]["securitySchemes"]["bearerAuth"]["scheme"] = "basic"
+            return value
+
+        for mutate in (lambda _: b"", lambda _: b"x" * (2 * 1024**2 + 1), bad_scheme):
+            safe, calls, passed = self.execute(mutate)
+            self.assertFalse(passed)
+            self.assertEqual(len(calls), 2)
+            self.assertFalse(safe["gateway_openapi"]["documents"]["academic-service"]["contract_valid"])
 
 
 if __name__ == "__main__":

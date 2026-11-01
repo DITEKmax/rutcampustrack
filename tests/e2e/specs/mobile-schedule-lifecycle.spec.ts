@@ -1,10 +1,11 @@
 import { diagnosticCase, diagnosticHttpFailure } from '../fixtures/diagnostic-events';
 import { createHash, randomUUID } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
-import type { Page, Response, TestInfo } from '@playwright/test';
+import type { Page, Request, Response, TestInfo } from '@playwright/test';
 import { Actor, admit, expect, test as base, MobileDataset } from '../fixtures/mobile-dataset';
 import { http, registerPrivateSuite, selectRole } from '../fixtures/cloud-accepted-support';
 import { loginPwa, logoutPwa } from '../fixtures/pwa-auth';
+import { todayAfterAction } from '../fixtures/student-today-response';
 import { requireLocalLane } from '../fixtures/local-stage17';
 import {
   retainLifecycleCleanupFailure,
@@ -2007,11 +2008,14 @@ test('STUDENT warm semester ETag stays scoped and refreshes the same physical ro
   await expect(emptyState).toBeVisible();
   await expect(page.locator('.today-list .student-lesson')).toHaveCount(0);
   const todayUrl = new URL(todayPath, page.url()).href;
+  let interceptedToday: Request | undefined;
+  let failedStatus = 0;
   const failToday: Parameters<typeof page.route>[1] = async (route) => {
     if (route.request().method() !== 'GET') {
       await route.continue();
       return;
     }
+    interceptedToday ??= route.request();
     await route.fulfill({
       status: 503,
       contentType: 'application/problem+json',
@@ -2027,22 +2031,37 @@ test('STUDENT warm semester ETag stays scoped and refreshes the same physical ro
   };
   await page.route(todayUrl, failToday);
   try {
-    const [failed] = await Promise.all([
-      http(page, todayPath, 'GET'),
-      emptyState.getByRole('button', { name: 'Обновить', exact: true }).click(),
-    ]);
+    const failed = await todayAfterAction(
+      page,
+      () => emptyState.getByRole('button', { name: 'Обновить', exact: true }).click(),
+      () => interceptedToday,
+    );
+    failedStatus = failed.status();
     expect(failed.status()).toBe(503);
     await expect(error).toBeVisible();
     await expect(error.getByRole('button', { name: 'Повторить', exact: true })).toBeEnabled();
     await expect(emptyState).toHaveCount(0);
+  } catch (primary) {
+    if (primary instanceof Error)
+      throw diagnosticHttpFailure(primary, 'STUDENT_TODAY_SYNTHETIC_READ', failedStatus);
+    throw primary;
   } finally {
     await page.unroute(todayUrl, failToday);
   }
-  const [recoveredTodayResponse] = await Promise.all([
-    http(page, todayPath, 'GET'),
-    error.getByRole('button', { name: 'Повторить', exact: true }).click(),
-  ]);
-  expect(recoveredTodayResponse.status()).toBe(200);
+  let recoveredTodayResponse: Response;
+  let recoveredStatus = 0;
+  try {
+    recoveredTodayResponse = await todayAfterAction(
+      page,
+      () => error.getByRole('button', { name: 'Повторить', exact: true }).click(),
+    );
+    recoveredStatus = recoveredTodayResponse.status();
+    expect(recoveredTodayResponse.status()).toBe(200);
+  } catch (primary) {
+    if (primary instanceof Error)
+      throw diagnosticHttpFailure(primary, 'STUDENT_TODAY_RECOVERY_READ', recoveredStatus);
+    throw primary;
+  }
   const recoveredToday = await recoveredTodayResponse.json();
   expect(
     recoveredToday.date === dataset.today &&

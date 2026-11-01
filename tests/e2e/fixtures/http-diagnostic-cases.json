@@ -68,6 +68,236 @@
           "stageId": "FRAMEWORK",
           "eventCode": "REPORTED_FRAMEWORK_ERROR",
           "httpStatus": 0
+        },
+        {
+          "stageId": "DATASET_HTTP",
+          "eventCode": "STUDENT_TODAY_SYNTHETIC_READ",
+          "httpStatus": 0
+        },
+        {
+          "stageId": "DATASET_HTTP",
+          "eventCode": "STUDENT_TODAY_SYNTHETIC_READ",
+          "httpStatus": 200
+        },
+        {
+          "stageId": "DATASET_HTTP",
+          "eventCode": "STUDENT_TODAY_SYNTHETIC_READ",
+          "httpStatus": 201
+        },
+        {
+          "stageId": "DATASET_HTTP",
+          "eventCode": "STUDENT_TODAY_SYNTHETIC_READ",
+          "httpStatus": 202
+        },
+        {
+          "stageId": "DATASET_HTTP",
+          "eventCode": "STUDENT_TODAY_SYNTHETIC_READ",
+          "httpStatus": 204
+        },
+        {
+          "stageId": "DATASET_HTTP",
+          "eventCode": "STUDENT_TODAY_SYNTHETIC_READ",
+          "httpStatus": 301
+        },
+        {
+          "stageId": "DATASET_HTTP",
+          "eventCode": "STUDENT_TODAY_SYNTHETIC_READ",
+          "httpStatus": 302
+        },
+        {
+          "stageId": "DATASET_HTTP",
+          "eventCode": "STUDENT_TODAY_SYNTHETIC_READ",
+          "httpStatus": 303
+        },
+        {
+          "stageId": "DATASET_HTTP",
+          "eventCode": "STUDENT_TODAY_SYNTHETIC_READ",
+          "httpStatus": 304
+        },
+        {
+          "stageId": "DATASET_HTTP",
+          "eventCode": "STUDENT_TODAY_SYNTHETIC_READ",
+          "httpStatus": 307
+        },
+        {
+          "stageId": "DATASET_HTTP",
+          "eventCode": "STUDENT_TODAY_SYNTHETIC_READ",
+          "httpStatus": 308
+        },
+        {
+          "stageId": "DATASET_HTTP",
+          "eventCode": "STUDENT_TODAY_SYNTHETIC_READ",
+          "httpStatus": 400
+        },
+        {
+          "stageId": "DATASET_HTTP",
+          "eventCode": "STUDENT_TODAY_SYNTHETIC_READ",
+          "httpStatus": 401
+        },
+        {
+          "stageId": "DATASET_HTTP",
+          "eventCode": "STUDENT_TODAY_SYNTHETIC_READ",
+          "httpStatus": 403
+        },
+        {
+          "stageId": "DATASET_HTTP",
+          "eventCode": "STUDENT_TODAY_SYNTHETIC_READ",
+          "httpStatus": 404
+        },
+        {
+          "stageId": "DATASET_HTTP",
+          "eventCode": "STUDENT_TODAY_SYNTHETIC_READ",
+          "httpStatus": 409
+        },
+        {
+          "stageId": "DATASET_HTTP",
+          "eventCode": "STUDENT_TODAY_SYNTHETIC_READ",
+          "httpStatus": 412
+        },
+        {
+          "stageId": "DATASET_HTTP",
+          "eventCode": "STUDENT_TODAY_SYNTHETIC_READ",
+          "httpStatus": 422
+        },
+        {
+          "stageId": "DATASET_HTTP",
+          "eventCode": "STUDENT_TODAY_SYNTHETIC_READ",
+          "httpStatus": 429
+        },
+        {
+          "stageId": "DATASET_HTTP",
+          "eventCode": "STUDENT_TODAY_SYNTHETIC_READ",
+          "httpStatus": 500
+        },
+        {
+          "stageId": "DATASET_HTTP",
+          "eventCode": "STUDENT_TODAY_SYNTHETIC_READ",
+          "httpStatus": 502
+        },
+        {
+          "stageId": "DATASET_HTTP",
+          "eventCode": "STUDENT_TODAY_SYNTHETIC_READ",
+          "httpStatus": 503
+        },
+        {
+          "stageId": "DATASET_HTTP",
+          "eventCode": "STUDENT_TODAY_SYNTHETIC_READ",
+          "httpStatus": 504
+        },
+        {
+          "stageId": "DATASET_HTTP",
+          "eventCode": "STUDENT_TODAY_RECOVERY_READ",
+          "httpStatus": 0
+        },
+        {
+          "stageId": "DATASET_HTTP",
+          "eventCode": "STUDENT_TODAY_RECOVERY_READ",
+          "httpStatus": 200
+        },
+        {
+          "stageId": "DATASET_HTTP",
+          "eventCode": "STUDENT_TODAY_RECOVERY_READ",
+          "httpStatus": 201
+        },
+        {
+          "stageId": "DATASET_HTTP",
+          "eventCode": "STUDENT_TODAY_RECOVERY_READ",
+          "httpStatus": 202
+        },
+        {
+          "stageId": "DATASET_HTTP",
+          "eventCode": "STUDENT_TODAY_RECOVERY_READ",
+          "httpStatus": 204
+        },
+        {
+          "stageId": "DATASET_HTTP",
+          "eventCode": "STUDENT_TODAY_RECOVERY_READ",
+          "httpStatus": 301
+        },
+        {
+          "stageId": "DATASET_HTTP",
+          "eventCode": "STUDENT_TODAY_RECOVERY_READ",
+          "httpStatus": 302
+        },
+        {
+          "stageId": "DATASET_HTTP",
+          "eventCode": "STUDENT_TODAY_RECOVERY_READ",
+          "httpStatus": 303
+        },
+        {
+          "stageId": "DATASET_HTTP",
+          "eventCode": "STUDENT_TODAY_RECOVERY_READ",
+          "httpStatus": 304
+        },
+        {
+          "stageId": "DATASET_HTTP",
+          "eventCode": "STUDENT_TODAY_RECOVERY_READ",
+          "httpStatus": 307
+        },
+        {
+          "stageId": "DATASET_HTTP",
+          "eventCode": "STUDENT_TODAY_RECOVERY_READ",
+          "httpStatus": 308
+        },
+        {
+          "stageId": "DATASET_HTTP",
+          "eventCode": "STUDENT_TODAY_RECOVERY_READ",
+          "httpStatus": 400
+        },
+        {
+          "stageId": "DATASET_HTTP",
+          "eventCode": "STUDENT_TODAY_RECOVERY_READ",
+          "httpStatus": 401
+        },
+        {
+          "stageId": "DATASET_HTTP",
+          "eventCode": "STUDENT_TODAY_RECOVERY_READ",
+          "httpStatus": 403
+        },
+        {
+          "stageId": "DATASET_HTTP",
+          "eventCode": "STUDENT_TODAY_RECOVERY_READ",
+          "httpStatus": 404
+        },
+        {
+          "stageId": "DATASET_HTTP",
+          "eventCode": "STUDENT_TODAY_RECOVERY_READ",
+          "httpStatus": 409
+        },
+        {
+          "stageId": "DATASET_HTTP",
+          "eventCode": "STUDENT_TODAY_RECOVERY_READ",
+          "httpStatus": 412
+        },
+        {
+          "stageId": "DATASET_HTTP",
+          "eventCode": "STUDENT_TODAY_RECOVERY_READ",
+          "httpStatus": 422
+        },
+        {
+          "stageId": "DATASET_HTTP",
+          "eventCode": "STUDENT_TODAY_RECOVERY_READ",
+          "httpStatus": 429
+        },
+        {
+          "stageId": "DATASET_HTTP",
+          "eventCode": "STUDENT_TODAY_RECOVERY_READ",
+          "httpStatus": 500
+        },
+        {
+          "stageId": "DATASET_HTTP",
+          "eventCode": "STUDENT_TODAY_RECOVERY_READ",
+          "httpStatus": 502
+        },
+        {
+          "stageId": "DATASET_HTTP",
+          "eventCode": "STUDENT_TODAY_RECOVERY_READ",
+          "httpStatus": 503
+        },
+        {
+          "stageId": "DATASET_HTTP",
+          "eventCode": "STUDENT_TODAY_RECOVERY_READ",
+          "httpStatus": 504
         }
       ]
     },

@@ -639,6 +639,9 @@ def e2e_live_panel_queries(query, expected, safe):
 
 def e2e_gateway_openapi(docker, safe, project="rct-e2e"):
     """Seven unauthenticated GETs on the owned Gateway origin, not public ingress."""
+    import http.client
+    import socket
+    import threading
     ids = docker(
         "ps",
         "--quiet",
@@ -659,7 +662,6 @@ def e2e_gateway_openapi(docker, safe, project="rct-e2e"):
         def redirect_request(self, req, fp, code, msg, headers, newurl):
             return None
 
-    opener = urllib.request.build_opener(urllib.request.ProxyHandler({}), NoRedirect())
 
     def unique_pairs(items):
         value = {}
@@ -676,25 +678,89 @@ def e2e_gateway_openapi(docker, safe, project="rct-e2e"):
     safe["gateway_openapi"] = result
 
     def get(path, observed):
-        observed.update(stage="HTTP_HEADERS", error_kind=None)
+        # Actuator readiness does not generate Springdoc's first document. Give
+        # this single cold metadata GET 15s for headers, within a 20s total bound.
+        observed.update(
+            stage="HTTP_HEADERS",
+            error_kind=None,
+            header_budget_ms=15000,
+            deadline_budget_ms=20000,
+            body_idle_budget_ms=5000,
+        )
         started = time.monotonic()
+        deadline = started + 20
         request = urllib.request.Request("http://" + host + ":8080" + path, headers={"Accept": "application/json"})
+        pending = {"socket": None, "expired": False}
+
+        def expire():
+            pending["expired"] = True
+            transport = pending["socket"]
+            if transport is not None:
+                try:
+                    transport.shutdown(socket.SHUT_RDWR)
+                except OSError:
+                    pass
+
+        class DeadlineConnection(http.client.HTTPConnection):
+            def connect(self):
+                super().connect()
+                pending["socket"] = self.sock
+                if pending["expired"]:
+                    expire()
+
+        class DeadlineHandler(urllib.request.HTTPHandler):
+            def http_open(self, request):
+                return self.do_open(DeadlineConnection, request)
+
+        opener = urllib.request.build_opener(urllib.request.ProxyHandler({}), NoRedirect(), DeadlineHandler())
+        watchdog = threading.Timer(20, expire)
+        watchdog.daemon = True
+        watchdog.start()
         try:
-            with opener.open(request, timeout=5) as response:
+            with opener.open(request, timeout=15) as response:
+                observed["headers_elapsed_ms"] = round((time.monotonic() - started) * 1000)
+                if pending["expired"] or time.monotonic() >= deadline:
+                    raise TimeoutError("OpenAPI header deadline")
                 observed["status"] = response.status if 100 <= response.status <= 599 else None
                 assert response.status == 200
                 observed["stage"] = "HTTP_BODY"
-                raw = response.read(2 * 1024**2 + 1)
-                assert 0 < len(raw) <= 2 * 1024**2
+                # urllib's response is an HTTPResponse. Retain its socket before
+                # EOF closes fp; read1 performs one bounded transport read, so a
+                # slow-drip body cannot restart the absolute document deadline.
+                transport = response.fp.raw._sock
+                chunks, size = [], 0
+                while True:
+                    remaining = deadline - time.monotonic()
+                    if remaining <= 0:
+                        raise TimeoutError("OpenAPI document deadline")
+                    transport.settimeout(min(5, remaining))
+                    chunk = response.read1(min(65536, 2 * 1024**2 + 1 - size))
+                    if time.monotonic() >= deadline:
+                        raise TimeoutError("OpenAPI document deadline")
+                    if not chunk:
+                        break
+                    chunks.append(chunk)
+                    size += len(chunk)
+                    assert size <= 2 * 1024**2
+                    if response.isclosed():
+                        break
+                raw = b"".join(chunks)
+                assert raw
         except urllib.error.HTTPError as error:
             observed["status"] = error.code if type(error.code) is int and 100 <= error.code <= 599 else None
             error.close()
             observed["error_kind"] = "HTTP_STATUS"
             raise
-        except (OSError, ValueError, AssertionError) as error:
-            observed["error_kind"] = "TIMEOUT" if isinstance(error, TimeoutError) else "TRANSPORT_OR_BODY"
+        except (OSError, http.client.HTTPException, ValueError, AssertionError) as error:
+            timed_out = pending["expired"] or isinstance(error, TimeoutError) or time.monotonic() >= deadline
+            observed["error_kind"] = "TIMEOUT" if timed_out else "TRANSPORT_OR_BODY"
+            if timed_out and not isinstance(error, TimeoutError):
+                raise TimeoutError("OpenAPI document deadline") from error
             raise
         finally:
+            watchdog.cancel()
+            watchdog.join()
+            pending["socket"] = None
             observed["elapsed_ms"] = round((time.monotonic() - started) * 1000)
         observed["stage"] = "JSON_SYNTAX"
         try:

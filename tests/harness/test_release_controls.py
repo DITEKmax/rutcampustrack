@@ -133,6 +133,80 @@ class ImageCounterexamples(unittest.TestCase):
 
 
 class WorkflowPrivilegeBoundaries(unittest.TestCase):
+    def test_actual_delivery_keeps_public_mounts_readable_and_private_inputs_private(self):
+        self.assertNotEqual(os.geteuid(), 0, 'Delivery permission control requires a non-root user')
+        with tempfile.TemporaryDirectory(prefix='rct-delivery-modes-') as tmp:
+            root = Path(tmp)
+            repository, bindir, remote = root / 'repository', root / 'bin', root / 'remote'
+            repository.mkdir(); bindir.mkdir()
+            scripts = repository / 'scripts'; scripts.mkdir()
+            for name in ('deliver-release.sh', 'release-images.py'):
+                (scripts / name).write_bytes((ROOT / 'scripts' / name).read_bytes())
+            # Only the unrelated private-input validator and service entrypoint are synthetic.
+            # The entire real delivery script, Git archive, SSH payload and tar still execute.
+            (scripts / 'deployment-secrets.py').write_text('raise SystemExit(0)\n')
+            (scripts / 'deploy-release.sh').write_text('''#!/usr/bin/env bash
+set -eu
+python3 - "$2" <<'PY'
+import json, os, stat, sys
+from pathlib import Path
+incoming = Path(sys.argv[1])
+Path('.env.prod').write_text('synthetic-only')
+Path('private-after-directory').mkdir()
+mode = lambda path: stat.S_IMODE(path.stat().st_mode)
+public = {name: mode(Path(name)) for name in ('infra', 'infra/loki', 'infra/loki/loki.yml', 'public-tool')}
+private = {name: mode(incoming / name) for name in ('PROD_ENV', 'PROD_SECRET_FILES_B64', 'GHCR_TOKEN')}
+Path(os.environ['RCT_TEST_RECEIPT']).write_text(json.dumps({'public': public, 'private': private,
+    'release': mode(Path('.')), 'incoming': mode(incoming), 'privateAfter': mode(Path('.env.prod')),
+    'directoryAfter': mode(Path('private-after-directory'))}))
+PY
+''')
+            (repository / 'infra/loki').mkdir(parents=True)
+            (repository / 'infra/loki/loki.yml').write_text('auth_enabled: false\n')
+            executable = repository / 'public-tool'
+            executable.write_text('#!/bin/sh\nexit 0\n'); executable.chmod(0o755)
+            for command in (['git', 'init', '-q'], ['git', 'add', '.'],
+                            ['git', '-c', 'user.name=Control', '-c', 'user.email=control@example.invalid',
+                             'commit', '-qm', 'Synthetic public source']):
+                subprocess.run(command, cwd=repository, check=True, capture_output=True, timeout=10)
+            sha = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=repository, text=True).strip()
+            (repository / 'release-images.json').write_text(json.dumps(dict(manifest(), source_sha=sha)))
+            (bindir / 'ssh').write_text('''#!/usr/bin/python3
+import os, subprocess, sys
+# Redirect only the fixed deployment root into this newly owned POSIX fixture.
+command = sys.argv[-1].replace('/opt/rutcampustrack', os.environ['RCT_TEST_REMOTE'])
+raise SystemExit(subprocess.run(['bash', '-e', '-c', command]).returncode)
+''')
+            (bindir / 'scp').write_text('''#!/usr/bin/python3
+import os, shutil, sys
+from pathlib import Path
+args = sys.argv[1:]
+while args[0].startswith('-'):
+    args = args[2:]  # The real sender supplies only -i and -o option/value pairs.
+destination = Path(args[-1].split(':', 1)[1].replace('/opt/rutcampustrack', os.environ['RCT_TEST_REMOTE']))
+for source in args[:-1]:
+    shutil.copyfile(source, destination / Path(source).name)
+''')
+            for tool in ('ssh', 'scp'):
+                (bindir / tool).chmod(0o700)
+            receipt = root / 'receipt.json'
+            environment = dict(os.environ, PATH=str(bindir) + os.pathsep + os.environ['PATH'],
+                DEPLOY_SHA=sha, VPS_HOST='synthetic.invalid', VPS_USER='synthetic', GITHUB_RUN_ID='1',
+                GITHUB_RUN_ATTEMPT='1', BOOTSTRAP_INITIAL_ADMIN='false', RCT_TEST_REMOTE=str(remote),
+                RCT_TEST_RECEIPT=str(receipt), RELEASE_IMAGE_MANIFEST=str(repository / 'release-images.json'))
+            environment.update({name: 'synthetic-only' for name in
+                ('PROD_ENV', 'PROD_SECRET_FILES_B64', 'SSH_KNOWN_HOSTS', 'SSH_PRIVATE_KEY', 'GHCR_TOKEN')})
+            result = subprocess.run(['bash', 'scripts/deliver-release.sh'], cwd=repository,
+                                    env=environment, capture_output=True, timeout=20)
+            self.assertEqual(result.returncode, 0, result.stderr.decode())
+            observed = json.loads(receipt.read_text())
+            self.assertEqual(observed['public'], {'infra': 0o755, 'infra/loki': 0o755,
+                                                  'infra/loki/loki.yml': 0o644, 'public-tool': 0o755})
+            self.assertEqual(set(observed['private'].values()), {0o600})
+            self.assertEqual((observed['release'], observed['incoming'], observed['directoryAfter']),
+                             (0o700, 0o700, 0o700))
+            self.assertEqual(observed['privateAfter'], 0o600)
+
     def test_counterfeit_candidate_helper_cannot_approve_initial_or_final_gate(self):
         workflow = (ROOT / '.github/workflows/deploy.yml').read_text()
         release = workflow.split('  release-gate:\n', 1)[1].split('  build-push:\n', 1)[0]

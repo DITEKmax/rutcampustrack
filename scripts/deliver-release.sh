@@ -67,5 +67,6 @@ files=("$private/release-images.json" "$private/source.tar" "$private/REVISION" 
 if [[ "$bootstrap" == true ]]; then files+=("$private/INITIAL_ADMIN_REQUEST"); fi
 scp "${ssh_opts[@]}" "${files[@]}" "$remote:$incoming/"
 # No git pull: release configs/scripts and IMAGE_TAG refer to the same revision.
+# Public bind-mounted configs must be readable by image users; private work keeps umask 077.
 # shellcheck disable=SC2029 # Validated SHA/run identifiers; no secret interpolation.
-ssh "${ssh_opts[@]}" "$remote" "set -eu; umask 077; mkdir '$release'; tar -xf '$incoming/source.tar' -C '$release'; cd '$release'; bash scripts/deploy-release.sh '$DEPLOY_SHA' '$incoming' '$bootstrap'"
+ssh "${ssh_opts[@]}" "$remote" "set -eu; umask 077; mkdir '$release'; (umask 022; tar -xf '$incoming/source.tar' -C '$release'); cd '$release'; bash scripts/deploy-release.sh '$DEPLOY_SHA' '$incoming' '$bootstrap'"

@@ -54,6 +54,7 @@ const catalog = shallowRef<NotificationCatalog | null>(null);
 const preferences = shallowRef<NotificationPreferencesV2 | null>(null);
 const draft = shallowRef<NotificationPreferencesV2 | null>(null);
 const preferencesBusy = ref(false);
+const preferencesRefreshing = ref(false);
 const preferencesError = ref<string | null>(null);
 const preferencesBlocked = ref(false);
 const catalogChangedMessage =
@@ -141,6 +142,7 @@ async function loadPreferences(preserveDraft = false): Promise<void> {
   const run = epoch,
     request = ++prefsRequest;
   preferencesBusy.value = true;
+  preferencesRefreshing.value = preserveDraft && preferences.value !== null;
   preferencesError.value = null;
   try {
     const [nextCatalog, saved] = await Promise.all([
@@ -186,7 +188,10 @@ async function loadPreferences(preserveDraft = false): Promise<void> {
       preferencesError.value = fail(cause);
     }
   } finally {
-    if (!disposed && run === epoch && request === prefsRequest) preferencesBusy.value = false;
+    if (!disposed && run === epoch && request === prefsRequest) {
+      preferencesBusy.value = false;
+      preferencesRefreshing.value = false;
+    }
   }
 }
 async function savePreferences(update: NotificationPreferencesV2Update): Promise<void> {
@@ -524,6 +529,7 @@ onBeforeUnmount(() => {
             :preferences="preferences"
             :draft="draft"
             :busy="preferencesBusy"
+            :refreshing="preferencesRefreshing"
             :blocked="preferencesBlocked"
             :error="preferencesError"
             :error-tone="preferencesErrorTone"

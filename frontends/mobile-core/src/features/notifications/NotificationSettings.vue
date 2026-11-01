@@ -25,6 +25,7 @@ const props = defineProps<{
   draft: NotificationPreferencesV2 | null;
   blocked?: boolean;
   busy?: boolean;
+  refreshing?: boolean;
   error?: string | null;
   errorTone?: 'warning' | 'error';
   conflict?: NotificationPreferencesV2 | null;
@@ -53,8 +54,14 @@ const catalogChanged = computed(
         Object.keys(props.conflict.types),
       )),
 );
-const disabled = computed(() =>
-  Boolean(props.busy || props.offline || props.conflict || props.blocked || !compatible.value),
+const editingBlocked = computed(() =>
+  Boolean(props.offline || props.conflict || props.blocked || !compatible.value),
+);
+const disabled = computed(() => Boolean(props.busy || editingBlocked.value));
+// A background read must not disable an already confirmed checkbox under the pointer.
+// Saving and channel-mode changes still wait for the read's current CAS revision.
+const deliveryDisabled = computed(() =>
+  Boolean((props.busy && !props.refreshing) || editingBlocked.value),
 );
 const groups = computed(() =>
   compatible.value
@@ -113,7 +120,7 @@ function setDelivery(
   channel: NotificationDeliveryChannel,
   enabled: boolean,
 ): void {
-  if (disabled.value || choiceOpen.value) return;
+  if (deliveryDisabled.value || choiceOpen.value) return;
   emit('update:draft', changeNotificationDelivery(value.value, id, channel, enabled));
 }
 </script>
@@ -289,7 +296,7 @@ function setDelivery(
               <AdminCheckbox
                 :model-value="type.preferences.appPush"
                 :label="`${type.label}: ${value.splitChannels ? 'TMA/PWA' : 'TMA/PWA и Telegram'}`"
-                :disabled="disabled || choiceOpen"
+                :disabled="deliveryDisabled || choiceOpen"
                 @update:model-value="setDelivery(type.id, 'appPush', $event)"
               />
             </td>
@@ -300,7 +307,7 @@ function setDelivery(
               <AdminCheckbox
                 :model-value="type.preferences.telegram"
                 :label="`${type.label}: Telegram`"
-                :disabled="disabled || choiceOpen"
+                :disabled="deliveryDisabled || choiceOpen"
                 @update:model-value="setDelivery(type.id, 'telegram', $event)"
               />
             </td>

@@ -78,12 +78,6 @@ async function settle(): Promise<void> {
     await nextTick()
   }
 }
-async function click(root: Node, label: string): Promise<void> {
-  const button = nodes(root).find((node) => node.tag === 'button' && text(node).trim() === label)
-  expect(button).toBeDefined()
-  ;(button!.props.onClick as () => void)()
-  await settle()
-}
 
 function profile(
   ids: readonly string[] = models.notificationTypeIds,
@@ -241,6 +235,53 @@ describe('host catalog/profile/CAS compatibility', () => {
     expect(greySelected(view.root)).toBe(true)
     expect(view.api.updatePreferences).not.toHaveBeenCalled()
   })
+  it.each(['p1', 'p2'])('keeps delivery edits during a background read of %s and saves only the confirmed CAS revision', async revision => {
+    const view = host()
+    await settle(); await activate(view.root, 'Настройки уведомлений')
+    let resolve!: (value: NotificationPreferencesV2) => void
+    view.api.getPreferences.mockReturnValueOnce(new Promise(done => { resolve = done }))
+    await refresh(view)
+    const delivery = nodes(view.root).find(node => node.tag === 'input' && text(node.parent!).includes('HOMEWORK_UPDATED'))!
+    expect(delivery.props.disabled).not.toBe(true)
+    expect(button(view.root, 'Сохраняем…')?.props.disabled).toBe(true)
+    expect(nodes(view.root).find(node => node.props.role === 'switch')?.props.disabled).toBe(true)
+    expect(view.api.updatePreferences).not.toHaveBeenCalled()
+    ;(delivery.props.onChange as (event: unknown) => void)({ target: { checked: true } })
+    await settle()
+    expect(delivery.props.checked).toBe(true)
+    resolve(profile(undefined, revision))
+    await settle()
+    expect(delivery.props.checked).toBe(true)
+    let resolveSave!: (value: NotificationPreferencesV2) => void
+    view.api.updatePreferences.mockImplementationOnce(() => new Promise(done => { resolveSave = done }))
+    if (revision === 'p2') {
+      expect(delivery.props.disabled).toBe(true)
+      expect(button(view.root, 'Сохранить настройки')?.props.disabled).toBe(true)
+      await activate(view.root, 'Применить мой выбор')
+    } else {
+      expect(delivery.props.disabled).not.toBe(true)
+      const form = nodes(view.root).find(node => node.tag === 'form')!
+      ;(form.props.onSubmit as (event: unknown) => void)({ preventDefault() {} })
+    }
+    await settle()
+    expect(view.api.updatePreferences).toHaveBeenCalledTimes(1)
+    expect(view.api.updatePreferences.mock.calls[0]![0]).toMatchObject({
+      expectedRevision: revision, types: { HOMEWORK_UPDATED: { appPush: true, telegram: true, colorId: 'red' } },
+    })
+    expect(view.api.updatePreferences.mock.calls[0]![0]).not.toHaveProperty('mutedUntil')
+    expect(delivery.props.disabled).toBe(true)
+    resolveSave({ ...profile(undefined, 'p3'), types: view.api.updatePreferences.mock.calls[0]![0].types })
+    await settle()
+    expect(delivery.props.disabled).not.toBe(true)
+    expect(delivery.props.checked).toBe(true)
+  })
+  it.each([{ busy: true }, { busy: true, refreshing: true, offline: true }, { busy: true, refreshing: true, blocked: true }])(
+    'keeps delivery blocked for a mutation or denied editing state %j', async state => {
+      const view = mount(NotificationSettings, { catalog: catalog(), preferences: profile(), draft: null, ...state })
+      await settle()
+      expect(nodes(view.root).filter(node => node.tag === 'input').every(node => node.props.disabled === true)).toBe(true)
+    },
+  )
   it('discards a late profile pair when context changes before resolution', async () => {
     const view = host()
     await settle(); await colors(view.root)

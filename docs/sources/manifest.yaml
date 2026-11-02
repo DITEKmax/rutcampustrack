@@ -1,4 +1,16 @@
 {
+  "owner_manual_deploy_20261102": {
+    "source_id": "owner:manual-deploy-20261102",
+    "canonical_path": "docs/operations/deploy/ci-cd.md",
+    "status": "accepted",
+    "decision_owner": "repository owner",
+    "decision_date": "2026-11-02",
+    "supersedes": [
+      "694acaabe administrator automation and prior AUTO-DEPLOY-CONTRACT",
+      "historical workflow_run automatic Deploy trigger and bootstrap_initial_admin checkbox"
+    ],
+    "scope": "manual workflow_dispatch only; PRODUCTION_BOOTSTRAP_INITIAL_ADMIN exactly true opts into existing private protocol on non-prepare apply; both repository flags remain false; no VPS operation"
+  },
   "delivery_final_doc_receipt_equivalence_20261012": {
     "source_id": "owner:cloud-validation-Q009-20261012",
     "canonical_path": "docs/product/decisions/2026-10-12-final-doc-receipt-equivalence.md",

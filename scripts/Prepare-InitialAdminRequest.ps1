@@ -129,7 +129,7 @@ Upload using PowerShell 7, after the owner approves the selected release:
 Check the native exit code. Do not use --body or print the JSON/password.
 Copy password locally without terminal output:
   Set-Clipboard -Value ((Get-Content -LiteralPath .\INITIAL_ADMIN_REQUEST -Raw -Encoding utf8 | ConvertFrom-Json).initialPassword)
-A future manual Deploy needs bootstrap_initial_admin=true; automatic Deploy never uses this request.
+A future manual Deploy needs prepare_only=false and repository variable PRODUCTION_BOOTSTRAP_INITIAL_ADMIN=true; prepare-only never uses this request.
 After confirmed login and password change, owner may delete the GitHub secret and clear the clipboard.
 No automatic password-change enforcement or automatic secret deletion is claimed.
 "@

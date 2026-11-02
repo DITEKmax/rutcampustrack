@@ -81,7 +81,8 @@ docker buildx imagetools inspect gcr.io/cadvisor/cadvisor:v0.49.1
      breaking changes, CVE-фиксы;
    - если minor+ — запускает integration-тест вручную (`docker compose
      up -d --wait`).
-3. Merge → `deploy.yml` auto-deploy на main.
+3. Merge → quality checks; затем отдельный ручной Deploy на точный SHA
+   по [ci-cd.md](ci-cd.md).
 4. На VPS `docker compose pull` подтягивает новый digest → auto-restart
    cadvisor/promtail.
 

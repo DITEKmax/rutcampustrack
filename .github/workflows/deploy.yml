@@ -2,10 +2,6 @@ name: Deploy
 
 # One exact source revision: quality gate → build digests → blocking scan/sign → explicit apply.
 on:
-  workflow_run:
-    workflows: [CI]
-    types: [completed]
-    branches: [main]
   workflow_dispatch:
     inputs:
       commit_sha:
@@ -16,11 +12,6 @@ on:
         description: 'Build, scan and sign only; never use production inputs or SSH'
         required: false
         default: true
-        type: boolean
-      bootstrap_initial_admin:
-        description: 'Однократно создать первого FULL администратора из INITIAL_ADMIN_REQUEST'
-        required: false
-        default: false
         type: boolean
       reason:
         description: 'Release audit reason (never bypasses quality checks)'
@@ -36,18 +27,12 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  DEPLOY_SHA: ${{ github.event.inputs.commit_sha || github.event.workflow_run.head_sha || github.sha }}
+  DEPLOY_SHA: ${{ github.event.inputs.commit_sha }}
 
 jobs:
   release-gate:
     name: Require all same-SHA quality checks
-    if: >-
-      github.event_name == 'workflow_dispatch' ||
-      (vars.PRODUCTION_DEPLOY_ENABLED == 'true' &&
-       github.event.workflow_run.conclusion == 'success' &&
-       github.event.workflow_run.head_branch == 'main' &&
-       github.event.workflow_run.event == 'push' &&
-       github.event.workflow_run.head_repository.full_name == github.repository)
+    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     timeout-minutes: 65
     permissions:
@@ -372,7 +357,7 @@ jobs:
     needs: [release-gate, build-push, scan-sign]
     if: >-
       vars.PRODUCTION_DEPLOY_ENABLED == 'true' &&
-      (github.event_name != 'workflow_dispatch' || inputs.prepare_only == false)
+      github.event_name == 'workflow_dispatch' && inputs.prepare_only == false
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -415,16 +400,22 @@ jobs:
               --certificate-oidc-issuer="https://token.actions.githubusercontent.com" "$image" >/dev/null
           done < <(python3 -I -c 'import json; print("\n".join(json.load(open("release-images.json"))["images"].values()))')
       - name: Recheck current main and same-SHA checks immediately before apply
+        id: apply-inputs
         env:
           GH_TOKEN: ${{ github.token }}
           PRODUCTION_DEPLOY_ENABLED: ${{ vars.PRODUCTION_DEPLOY_ENABLED }}
-        run: python3 -I release-control/scripts/release-quality-gate.py --sha "$DEPLOY_SHA" --repository "$GITHUB_REPOSITORY" --apply --wait-seconds 0
+          RAW_BOOTSTRAP_INITIAL_ADMIN: ${{ vars.PRODUCTION_BOOTSTRAP_INITIAL_ADMIN }}
+        run: |
+          python3 -I release-control/scripts/release-quality-gate.py --sha "$DEPLOY_SHA" --repository "$GITHUB_REPOSITORY" --apply --wait-seconds 0
+          bootstrap=false
+          if [[ "$RAW_BOOTSTRAP_INITIAL_ADMIN" == true ]]; then bootstrap=true; fi
+          printf 'bootstrap_initial_admin=%s\n' "$bootstrap" >> "$GITHUB_OUTPUT"
       - name: Deliver exact revision and private inputs through pinned SSH
         working-directory: candidate
         env:
           RELEASE_IMAGE_MANIFEST: ../release-images.json
-          BOOTSTRAP_INITIAL_ADMIN: ${{ ((github.event_name == 'workflow_dispatch' && inputs.bootstrap_initial_admin == true) || (github.event_name == 'workflow_run' && vars.PRODUCTION_BOOTSTRAP_INITIAL_ADMIN == 'true' && github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main' && github.event.workflow_run.event == 'push' && github.event.workflow_run.head_repository.full_name == github.repository)) && 'true' || 'false' }}
-          INITIAL_ADMIN_REQUEST: ${{ ((github.event_name == 'workflow_dispatch' && inputs.bootstrap_initial_admin == true) || (github.event_name == 'workflow_run' && vars.PRODUCTION_BOOTSTRAP_INITIAL_ADMIN == 'true' && github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main' && github.event.workflow_run.event == 'push' && github.event.workflow_run.head_repository.full_name == github.repository)) && secrets.INITIAL_ADMIN_REQUEST || '' }}
+          BOOTSTRAP_INITIAL_ADMIN: ${{ github.event_name == 'workflow_dispatch' && inputs.prepare_only == false && steps.apply-inputs.outputs.bootstrap_initial_admin == 'true' && 'true' || 'false' }}
+          INITIAL_ADMIN_REQUEST: ${{ github.event_name == 'workflow_dispatch' && inputs.prepare_only == false && steps.apply-inputs.outputs.bootstrap_initial_admin == 'true' && secrets.INITIAL_ADMIN_REQUEST || '' }}
           PROD_ENV: ${{ secrets.PROD_ENV }}
           PROD_SECRET_FILES_B64: ${{ secrets.PROD_SECRET_FILES_B64 }}
           SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}

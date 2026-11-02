@@ -106,27 +106,41 @@ os.execv(%r, [%r] + sys.argv[1:])
         self.assertEqual(list((root / "private").iterdir()), [], "runner files must be removed")
         return result
 
-    def test_workflow_default_and_conditional_secret_never_authorize_automatic_event(self):
+    def test_workflow_variable_and_conditional_secret_require_manual_nonprepare(self):
         workflow = (ROOT / ".github/workflows/deploy.yml").read_text()
-        flag = workflow.split("      bootstrap_initial_admin:\n", 1)[1].split("      reason:", 1)[0]
-        self.assertIn("default: false", flag)
+        self.assertNotIn("workflow_run:", workflow)
+        self.assertNotIn("      bootstrap_initial_admin:", workflow)
         expressions = {}
         for name in ("BOOTSTRAP_INITIAL_ADMIN", "INITIAL_ADMIN_REQUEST"):
             expressions[name] = re.search(r"          " + name + r": \$\{\{ (.+) \}\}", workflow)[1]
-        for event, enabled in (("workflow_run", True), ("workflow_dispatch", False),
-                               ("workflow_dispatch", True)):
-            values = {}
-            for name, expression in expressions.items():
-                expression = (expression.replace("github.event_name", repr(event))
-                              .replace("inputs.bootstrap_initial_admin", repr(enabled))
-                              .replace("secrets.INITIAL_ADMIN_REQUEST", repr(PASSWORD))
-                              .replace("true", "True").replace("false", "False")
-                              .replace("&&", " and ").replace("||", " or "))
-                # The evaluated expression is the fixed checked-in boolean/string policy, no input code.
-                values[name] = eval(expression, {"__builtins__": {}}, {})
-            authorized = event == "workflow_dispatch" and enabled
-            self.assertEqual(values["BOOTSTRAP_INITIAL_ADMIN"], "True" if authorized else "False")
-            self.assertEqual(values["INITIAL_ADMIN_REQUEST"], PASSWORD if authorized else "")
+        recheck = workflow.split("      - name: Recheck current main and same-SHA checks", 1)[1]
+        run = recheck.split("        run: |\n", 1)[1].split("      - name:", 1)[0]
+        # Execute actual shell normalization after the unchanged quality command.
+        normalization = "\n".join(line[10:] for line in run.splitlines()[1:])
+        for event, enabled, prepare in (
+                ("workflow_run", "true", False), ("workflow_dispatch", "", False),
+                ("workflow_dispatch", "false", False), ("workflow_dispatch", "TRUE", False),
+                ("workflow_dispatch", "true", True), ("workflow_dispatch", "true", False)):
+            with self.subTest(event=event, enabled=enabled, prepare=prepare), tempfile.TemporaryDirectory() as tmp:
+                output = Path(tmp) / "output"
+                normalized = subprocess.run(["bash", "-e", "-c", normalization], capture_output=True,
+                    env=dict(os.environ, RAW_BOOTSTRAP_INITIAL_ADMIN=enabled, GITHUB_OUTPUT=str(output)), timeout=5)
+                self.assertEqual(normalized.returncode, 0, normalized.stderr.decode())
+                flag = output.read_text().strip().removeprefix("bootstrap_initial_admin=")
+                self.assertEqual(flag, "true" if enabled == "true" else "false")
+                values = {}
+                for name, expression in expressions.items():
+                    expression = (expression.replace("github.event_name", repr(event))
+                                  .replace("inputs.prepare_only", repr(prepare))
+                                  .replace("steps.apply-inputs.outputs.bootstrap_initial_admin", repr(flag))
+                                  .replace("secrets.INITIAL_ADMIN_REQUEST", repr(PASSWORD))
+                                  .replace(" == false", " == False")
+                                  .replace("&&", " and ").replace("||", " or "))
+                    # Expressions compare only normalized booleans; raw case policy ran in Bash.
+                    values[name] = eval(expression, {"__builtins__": {}}, {})
+                authorized = event == "workflow_dispatch" and enabled == "true" and not prepare
+                self.assertEqual(values["BOOTSTRAP_INITIAL_ADMIN"], "true" if authorized else "false")
+                self.assertEqual(values["INITIAL_ADMIN_REQUEST"], PASSWORD if authorized else "")
 
     def test_disabled_ignores_present_malformed_request_and_does_not_transfer_it(self):
         with tempfile.TemporaryDirectory() as tmp:

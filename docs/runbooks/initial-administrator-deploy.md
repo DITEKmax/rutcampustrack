@@ -1,8 +1,10 @@
 # Первый FULL администратор при ручном Deploy
 
 Операция создаёт первый FULL аккаунт через существующий bootstrap Auth/Academic.
-Она доступна только будущему ручному Deploy с явным bootstrap_initial_admin=true.
-По умолчанию флаг выключен; автоматический workflow_run не получает запрос.
+Она доступна только ручному Deploy с prepare_only=false и repository variable
+PRODUCTION_BOOTSTRAP_INITIAL_ADMIN ровно 'true'. Отсутствующая переменная, 'false'
+и любое другое значение не передают INITIAL_ADMIN_REQUEST и не запускают
+bootstrap. Deploy запускается только вручную; отдельного checkbox для администратора нет.
 Подготовка файлов и загрузка GitHub Secret сами по себе не создают аккаунт
 и не запускают Deploy.
 
@@ -58,7 +60,10 @@ Actions variables, обычный .env, artifacts или production bundle.
 Не выводи запрос через Get-Content без pipe и не публикуй снимки его содержимого.
 
 При будущем разрешённом ручном запуске workflow **Deploy** укажи полный
-commit_sha, причину и bootstrap_initial_admin=true. Выбранная revision должна
+commit_sha, причину и prepare_only=false. До запуска явно установи repository
+variables PRODUCTION_DEPLOY_ENABLED=true и PRODUCTION_BOOTSTRAP_INITIAL_ADMIN=true
+для разрешённого выпуска. prepare_only=true только готовит образы и не получает
+production inputs, даже при включённой переменной bootstrap. Выбранная revision должна
 поддерживать эту операцию: старый/отсутствующий delivery script отклоняется до SSH.
 Неверный, пустой, слишком большой или нестрогий JSON также отклоняется до SSH.
 Флаг не отменяет общий production gate, проверки подписей и готовности сервисов.
@@ -87,6 +92,7 @@ Set-Clipboard -Value ((Get-Content -LiteralPath $requestFile -Raw -Encoding utf8
 Войди как rootadmin, подтверди доступ и смени временный пароль средствами
 приложения. Эта инструкция не обещает автоматического принуждения к смене пароля.
 После подтверждённого входа и смены пароля владелец может удалить GitHub Secret
-INITIAL_ADMIN_REQUEST, очистить буфер (Set-Clipboard -Value '') и определить
+INITIAL_ADMIN_REQUEST, вернуть PRODUCTION_BOOTSTRAP_INITIAL_ADMIN=false,
+очистить буфер (Set-Clipboard -Value '') и определить
 защищённое хранение/удаление локального исходного запроса. Не удаляй единственный
 исходный запрос во время частичного сбоя.

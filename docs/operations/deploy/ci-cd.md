@@ -9,8 +9,8 @@ M06 Группа 5 (NEW-105).
 ┌──────────────────────────────────────────────────────────────────┐
 │  GitHub Actions (.github/workflows/)                              │
 │                                                                   │
-│  ┌──────────┐    workflow_run    ┌──────────┐                    │
-│  │  ci.yml  │ ──────(success)───> │deploy.yml│                    │
+│  ┌──────────┐    manual dispatch ┌──────────┐                    │
+│  │  ci.yml  │ ── quality gate ──> │deploy.yml│                    │
 │  │(M06 G7)  │                     │          │                    │
 │  └──────────┘                     └──────────┘                    │
 │       │                                 │                         │
@@ -56,26 +56,28 @@ M06 Группа 5 (NEW-105).
 
 ### deploy.yml — продакшен-деплой
 
-- Trigger: `on: workflow_run: workflows: [CI]: types: [completed]:
-  branches: [main]` + `if: github.event.workflow_run.conclusion ==
-  'success'` (M06 G7, C0-8).
-- Gated — deploy.yml стартует только после зелёного `ci.yml`.
-- Steps:
-  1. `docker/login-action@v3` → GHCR с `GHCR_TOKEN`.
-  2. 11 × `docker/build-push-action@v7` — build+push с tags
-     `:${{ github.sha }}` + `:latest` (M06 G2, QD1).
-     PWA build получает `VITE_APP_VERSION=1-${DEPLOY_SHA}` и генерирует
-     forced `version.json`; контракт описан в
-     [pwa-forced-updates.md](pwa-forced-updates.md).
-  3. `appleboy/ssh-action@v1` → VPS:
-     - `git pull --ff-only`.
-     - JWT-keys volume init (openssl genrsa 3072 если отсутствуют).
-     - `export IMAGE_TAG=${{ github.sha }}`.
-     - `docker compose pull` + `up -d --wait --wait-timeout 120`.
-     - Observability config reload (если `infra/*` изменился).
-     - `nginx -s reload` + smoke `GET /login`.
-- Rollback: `IMAGE_TAG=<old_sha> docker compose up -d`
-  (см. `/opt/rutcampustrack/.deployed-sha`).
+- Trigger: только `workflow_dispatch` на main. Решение владельца 2026-11-02
+  отменяет автоматический Deploy после CI; merge/push и успешный CI его не запускают.
+- Укажи полный `commit_sha` и причину. Все четыре quality workflows
+  (CI, Coverage, Security, OpenAPI) должны успешно пройти на этом SHA;
+  перед apply повторно проверяются current main и тот же SHA.
+- `prepare_only=true` по умолчанию: build, blocking scan и подписи всех 13
+  image digests без production inputs или SSH.
+- Apply требует `prepare_only=false` и repository variable
+  `PRODUCTION_DEPLOY_ENABLED` ровно `true`. Отсутствующее/другое значение запрещает apply.
+- Создание первого FULL администратора — отдельная repository variable
+  `PRODUCTION_BOOTSTRAP_INITIAL_ADMIN` ровно `true` при ручном non-prepare apply.
+  Checkbox отсутствует. При отсутствующей/выключенной переменной запрос
+  `INITIAL_ADMIN_REQUEST` не передаётся, admin DB-логика не запускается.
+  При включённой используется существующий приватный идемпотентный протокол
+  после readiness Compose и проверки served web. См.
+  [initial-administrator-deploy.md](../../runbooks/initial-administrator-deploy.md).
+- На 2026-11-02 обе repository variables выключены. Документация и commit
+  сами по себе их не включают и не разрешают работу на VPS.
+- Release доставляется по проверенным digest/signatures и точной revision.
+  Ошибка readiness/web/bootstrap не записывает `.deployed-sha`.
+- PWA build получает `VITE_APP_VERSION=1-${DEPLOY_SHA}` и генерирует
+  forced `version.json`; см. [pwa-forced-updates.md](pwa-forced-updates.md).
 
 ### security.yml — supply-chain (M06 G6, QD5)
 
@@ -122,21 +124,21 @@ Validate: `npx --package renovate -- renovate-config-validator`.
 - Allow force pushes: **off**.
 - Allow deletions: **off**.
 
-После включения `deploy.yml` физически не может запуститься на failing
-CI — `workflow_run` проверка.
+Ручной Deploy не обходит same-SHA quality gate: failing, missing или pending
+результат любого из четырёх обязательных workflows блокирует выпуск.
 
 ## Release process (QD7, manual)
 
-1. Feature merge в main → auto-deploy как dev-release.
+1. Feature merge в main → quality workflows. Deploy запускается владельцем
+   отдельно через workflow_dispatch после их успешного завершения на точном SHA.
 2. Для semver-тэга `vX.Y.Z`:
    - `CHANGELOG.md` → перенести `[Unreleased]` → `[vX.Y.Z] - YYYY-MM-DD`.
    - Commit: `chore(release): vX.Y.Z`.
    - `git tag vX.Y.Z && git push --tags`.
    - GitHub → Releases → «Create release from tag» → скопировать
      CHANGELOG-раздел.
-3. `deploy.yml` триггерится по `push: tags v*` (опционально — добавляется
-   в M06/M09) — GHCR image с тегом `vX.Y.Z` как фиксированная точка
-   rollback.
+3. Ручной Deploy выбирает точный commit_sha; semver tag и GitHub Release
+   не запускают его автоматически.
 
 ## Откат (rollback)
 
@@ -157,7 +159,7 @@ IMAGE_TAG=<previous_sha> docker compose \
 ```bash
 git revert <bad-commit-sha>
 git push origin main
-# deploy.yml триггерится через workflow_run → CI → deploy
+# После quality checks запусти Deploy вручную с точным SHA revert commit.
 ```
 
 ## История изменений

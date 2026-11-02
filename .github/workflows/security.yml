@@ -107,6 +107,9 @@ jobs:
   trivy-images:
     name: Trivy (built images)
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
     # Только на schedule — weekly deep scan GHCR-образов. На push/PR
     # используется Trivy fs (быстрее, не требует pull всех 11 образов).
     if: github.event_name == 'schedule'

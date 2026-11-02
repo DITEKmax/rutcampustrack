@@ -146,7 +146,7 @@ scrape_configs:
       environment: production
       service: prometheus
 - job_name: grafana
-  metrics_path: /metrics
+  metrics_path: /grafana/metrics
   static_configs:
   - targets:
     - grafana:3000

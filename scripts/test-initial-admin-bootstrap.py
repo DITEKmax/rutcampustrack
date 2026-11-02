@@ -13,6 +13,9 @@ from xml.etree import ElementTree
 SPEC = importlib.util.spec_from_file_location("initial_admin", Path(__file__).with_name("bootstrap-initial-admin.py"))
 BOOTSTRAP = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(BOOTSTRAP)
+STATUS_SPEC = importlib.util.spec_from_file_location("initial_admin_status", Path(__file__).with_name("initial-admin-status.py"))
+STATUS = importlib.util.module_from_spec(STATUS_SPEC)
+STATUS_SPEC.loader.exec_module(STATUS)
 
 
 def request():
@@ -22,6 +25,81 @@ def request():
 
 
 class InitialAdministratorOperatorTest(unittest.TestCase):
+    def test_durable_completion_survives_later_demotion_without_ready_queries_or_commands(self):
+        reads = []
+        binding = {'operation': request()['operationId'], 'user': 41, 'command': 'a' * 64,
+                   'profile': 'b' * 64, 'catalog': 2}
+
+        def read(database, query):
+            reads.append((database, query))
+            if query == STATUS.AUTH_COUNTS:
+                return json.dumps(dict(receipts=1, operations=1, administrators=0))
+            if query == STATUS.ACADEMIC_COUNTS:
+                return json.dumps(dict(receipts=1, administrators=0))
+            if query == STATUS.AUTH_BINDING:
+                return json.dumps(binding)
+            if 'academic_initial_admin_bootstrap' in query:
+                expected = BOOTSTRAP.hashlib.sha256(BOOTSTRAP.canonical({
+                    'version': 1, 'operationId': binding['operation'], 'commandHash': binding['command'],
+                    'profileDigest': binding['profile'], 'userId': 41, 'rolesVersion': 1,
+                    'academicRevision': 1})).hexdigest()
+                self.assertIn(expected, query)
+                self.assertIn('b.finalized_catalog_version=2', query)
+                return '1'
+            self.fail('Historical completion must not query current account readiness')
+
+        self.assertEqual(STATUS.completion(read), 'COMPLETE')
+        self.assertEqual(len(reads), 4)
+
+    def test_absent_partial_mismatched_and_fresh_not_ready_states_fail_closed(self):
+        binding = {'operation': request()['operationId'], 'user': 41, 'command': 'a' * 64,
+                   'profile': 'b' * 64, 'catalog': 2}
+        for auth, academic, matched, ready, expected in [
+            (dict(receipts=0, operations=0, administrators=0), dict(receipts=0, administrators=0), '0', False, 'ABSENT'),
+            (dict(receipts=1, operations=1, administrators=0), dict(receipts=0, administrators=0), '0', False, 'HOLD'),
+            (dict(receipts=0, operations=0, administrators=1), dict(receipts=0, administrators=0), '0', False, 'HOLD'),
+            (dict(receipts=1, operations=1, administrators=1), dict(receipts=1, administrators=1), '0', False, 'HOLD'),
+            (dict(receipts=1, operations=1, administrators=1), dict(receipts=1, administrators=1), '1', False, 'HOLD'),
+            (dict(receipts=1, operations=1, administrators=1), dict(receipts=1, administrators=1), '1', True, 'COMPLETE'),
+        ]:
+            with self.subTest(auth=auth, academic=academic, matched=matched, ready=ready):
+                def read(database, query):
+                    if query == STATUS.AUTH_COUNTS: return json.dumps(auth)
+                    if query == STATUS.ACADEMIC_COUNTS: return json.dumps(academic)
+                    if query == STATUS.AUTH_BINDING: return json.dumps(binding)
+                    if 'academic_initial_admin_bootstrap' in query: return matched
+                    return '1' if ready else '0'
+                if expected == 'ABSENT':
+                    self.assertEqual(STATUS.completion(read), 'ABSENT')
+                    with self.assertRaises(STATUS.Hold): STATUS.completion(read, require_ready=True)
+                elif expected == 'HOLD':
+                    with self.assertRaises(STATUS.Hold): STATUS.completion(read, require_ready=matched == '1')
+                else:
+                    self.assertEqual(STATUS.completion(read, require_ready=True), 'COMPLETE')
+        for invalid in ({**binding, 'operation': "x'; SELECT 1;--"}, {**binding, 'user': True},
+                        {**binding, 'command': 'not-a-digest'}, {**binding, 'catalog': 0}):
+            def read(database, query):
+                if query == STATUS.AUTH_COUNTS: return json.dumps(dict(receipts=1, operations=1, administrators=1))
+                if query == STATUS.ACADEMIC_COUNTS: return json.dumps(dict(receipts=1, administrators=1))
+                return json.dumps(invalid)
+            with self.assertRaises(STATUS.Hold): STATUS.completion(read)
+
+    def test_status_transport_is_read_only_and_never_forwards_private_child_output(self):
+        private = b'private database diagnostic and binding'
+        result = type('Result', (), {'returncode': 1, 'stdout': private, 'stderr': private})()
+        with patch.object(STATUS.subprocess, 'run', return_value=result) as run:
+            with self.assertRaises(STATUS.Hold): STATUS.sql('auth_db', 'SELECT 1')
+        command, options = run.call_args.args[0], run.call_args.kwargs
+        self.assertIn('rct_bootstrap', command)
+        self.assertTrue(options['input'].startswith(b'BEGIN READ ONLY;'))
+        self.assertNotIn('password', options['input'].decode().lower())
+        output, errors = io.StringIO(), io.StringIO()
+        with patch.object(STATUS, 'completion', side_effect=STATUS.Hold('DB_READ')), \
+                contextlib.redirect_stdout(output), contextlib.redirect_stderr(errors):
+            self.assertEqual(STATUS.main([]), 2)
+        self.assertEqual(output.getvalue(), 'HOLD\n')
+        self.assertEqual(errors.getvalue(), 'INITIAL_ADMIN_STATUS_V1 state=HOLD reason=DB_READ\n')
+
     def test_protected_file_denies_links_fifo_permissions_duplicates_and_size(self):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory, "request.json")

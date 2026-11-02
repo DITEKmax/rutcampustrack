@@ -423,8 +423,8 @@ jobs:
         working-directory: candidate
         env:
           RELEASE_IMAGE_MANIFEST: ../release-images.json
-          BOOTSTRAP_INITIAL_ADMIN: ${{ github.event_name == 'workflow_dispatch' && inputs.bootstrap_initial_admin == true && 'true' || 'false' }}
-          INITIAL_ADMIN_REQUEST: ${{ github.event_name == 'workflow_dispatch' && inputs.bootstrap_initial_admin == true && secrets.INITIAL_ADMIN_REQUEST || '' }}
+          BOOTSTRAP_INITIAL_ADMIN: ${{ ((github.event_name == 'workflow_dispatch' && inputs.bootstrap_initial_admin == true) || (github.event_name == 'workflow_run' && vars.PRODUCTION_BOOTSTRAP_INITIAL_ADMIN == 'true' && github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main' && github.event.workflow_run.event == 'push' && github.event.workflow_run.head_repository.full_name == github.repository)) && 'true' || 'false' }}
+          INITIAL_ADMIN_REQUEST: ${{ ((github.event_name == 'workflow_dispatch' && inputs.bootstrap_initial_admin == true) || (github.event_name == 'workflow_run' && vars.PRODUCTION_BOOTSTRAP_INITIAL_ADMIN == 'true' && github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main' && github.event.workflow_run.event == 'push' && github.event.workflow_run.head_repository.full_name == github.repository)) && secrets.INITIAL_ADMIN_REQUEST || '' }}
           PROD_ENV: ${{ secrets.PROD_ENV }}
           PROD_SECRET_FILES_B64: ${{ secrets.PROD_SECRET_FILES_B64 }}
           SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}

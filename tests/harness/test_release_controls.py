@@ -133,6 +133,103 @@ class ImageCounterexamples(unittest.TestCase):
 
 
 class WorkflowPrivilegeBoundaries(unittest.TestCase):
+    def test_delivery_bootstrap_accepts_only_the_two_supported_workflow_events(self):
+        source = (ROOT / 'scripts/deliver-release.sh').read_text()
+        guard = source.split('[[ "${DEPLOY_SHA:-}"', 1)[0]
+        for event, expected in (('workflow_dispatch', 0), ('workflow_run', 0),
+                                ('pull_request', 2), ('schedule', 2), ('', 2)):
+            with self.subTest(event=event):
+                result = subprocess.run(['bash', '-c', guard], cwd=ROOT, capture_output=True, timeout=5,
+                    env=dict(os.environ, BOOTSTRAP_INITIAL_ADMIN='true', GITHUB_EVENT_NAME=event))
+                self.assertEqual(result.returncode, expected)
+
+    def test_bootstrap_request_and_boolean_share_explicit_manual_or_trusted_auto_guard(self):
+        workflow = (ROOT / '.github/workflows/deploy.yml').read_text()
+        boolean = re.search(r'BOOTSTRAP_INITIAL_ADMIN: \$\{\{ (.+?) \}\}', workflow)[1]
+        request = re.search(r'INITIAL_ADMIN_REQUEST: \$\{\{ (.+?) \}\}', workflow)[1]
+        guard = boolean.removesuffix(" && 'true' || 'false'")
+        self.assertEqual(request, guard + " && secrets.INITIAL_ADMIN_REQUEST || ''")
+        fields = {'github.event_name': 'event', 'vars.PRODUCTION_BOOTSTRAP_INITIAL_ADMIN': 'flag',
+                  'github.event.workflow_run.conclusion': 'conclusion',
+                  'github.event.workflow_run.head_branch': 'branch',
+                  'github.event.workflow_run.event': 'source_event',
+                  'github.event.workflow_run.head_repository.full_name': 'source_repository',
+                  'github.repository': 'repository'}
+        policy = guard.replace('inputs.bootstrap_initial_admin == true', 'manual is True')
+        for key, value in fields.items():
+            policy = policy.replace(key, value)
+        policy = policy.replace('&&', ' and ').replace('||', ' or ')
+        base = dict(event='workflow_run', flag='true', manual=False, conclusion='success',
+                    branch='main', source_event='push', source_repository=REPOSITORY, repository=REPOSITORY)
+        cases = [({}, True), ({'event': 'workflow_dispatch', 'manual': True, 'flag': ''}, True),
+                 ({'event': 'workflow_dispatch'}, False), ({'flag': 'false'}, False),
+                 ({'flag': ''}, False), ({'flag': 'TRUE'}, False), ({'event': 'schedule'}, False),
+                 ({'event': 'pull_request'}, False), ({'conclusion': 'failure'}, False),
+                 ({'branch': 'feature'}, False), ({'source_event': 'pull_request'}, False),
+                 ({'source_repository': 'fork/repository'}, False)]
+        for changes, expected in cases:
+            with self.subTest(changes=changes):
+                self.assertEqual(bool(eval(policy, {'__builtins__': {}}, dict(base, **changes))), expected)
+
+    def test_actual_deploy_tail_never_recreates_completed_admin_or_bypasses_readiness(self):
+        source = (ROOT / 'scripts/deploy-release.sh').read_text()
+        tail = source[source.index('"${compose[@]}" up -d --pull never --no-build --wait'):]
+        cases = [
+            # historical COMPLETE is enough, even if an operator later changed the live account.
+            ('true', 'COMPLETE', 'COMPLETE', '', 0, True),
+            ('false', 'COMPLETE', 'COMPLETE', '', 0, True),
+            ('true', 'ABSENT', 'COMPLETE', '', 1, True),
+            ('false', 'ABSENT', 'COMPLETE', '', 0, True),
+            ('true', 'HOLD', 'COMPLETE', '', 0, False),
+            ('true', 'ABSENT', 'HOLD', '', 1, False),
+            ('true', 'ABSENT', 'COMPLETE', 'create', 1, False),
+            ('true', 'ABSENT', 'COMPLETE', 'compose', 0, False),
+            ('true', 'ABSENT', 'COMPLETE', 'nginx', 0, False),
+            ('true', 'ABSENT', 'COMPLETE', 'web', 0, False),
+        ]
+        for bootstrap, state, post_state, failure, creates, deployed in cases:
+            with self.subTest(bootstrap=bootstrap, state=state, post=post_state, failure=failure), \
+                    tempfile.TemporaryDirectory(prefix='rct-admin-deploy-tail-') as tmp:
+                root = Path(tmp); bindir = root / 'bin'; bindir.mkdir()
+                events, marker = root / 'events', root / 'deployed'
+                driver = '''#!/usr/bin/python3
+import os, sys
+from pathlib import Path
+name = Path(sys.argv[0]).name
+if name == 'python3':
+    script = Path(sys.argv[1]).name
+    stage = {'verify-served-web-panel.py': 'web', 'bootstrap-initial-admin.py': 'create',
+             'initial-admin-status.py': 'postcheck' if '--require-ready' in sys.argv else 'status'}[script]
+else:
+    stage = 'nginx' if name == 'docker' else name
+with open(os.environ['EVENTS'], 'a') as stream: stream.write(stage + '\\n')
+if os.environ['FAIL_STAGE'] == stage: raise SystemExit(31)
+if stage in ('status', 'postcheck'):
+    state = os.environ['POST_STATE' if stage == 'postcheck' else 'ADMIN_STATE']
+    print(state)
+    if state == 'HOLD': raise SystemExit(2)
+'''
+                for tool in ('python3', 'docker', 'compose'):
+                    path = bindir / tool; path.write_text(driver); path.chmod(0o700)
+                actual = tail.replace('/opt/rutcampustrack/.deployed-sha', str(marker))
+                command = 'set -euo pipefail\ncompose=(compose)\nsha=' + SHA + '\nincoming=/synthetic\n' + actual
+                result = subprocess.run(['bash', '-c', command], cwd=root, capture_output=True, timeout=10,
+                    env=dict(os.environ, PATH=str(bindir) + os.pathsep + os.environ['PATH'],
+                             bootstrap=bootstrap, ADMIN_STATE=state, POST_STATE=post_state,
+                             FAIL_STAGE=failure, EVENTS=str(events)))
+                observed = events.read_text().splitlines()
+                self.assertEqual(observed.count('create'), creates)
+                self.assertEqual(marker.exists(), deployed)
+                self.assertEqual(result.returncode == 0, deployed)
+                if failure in ('compose', 'nginx', 'web'):
+                    self.assertNotIn('status', observed)
+                if state == 'COMPLETE':
+                    self.assertNotIn('postcheck', observed)
+                if deployed and creates:
+                    self.assertLess(observed.index('web'), observed.index('status'))
+                    self.assertLess(observed.index('status'), observed.index('create'))
+                    self.assertLess(observed.index('create'), observed.index('postcheck'))
+
     def test_actual_delivery_keeps_public_mounts_readable_and_private_inputs_private(self):
         self.assertNotEqual(os.geteuid(), 0, 'Delivery permission control requires a non-root user')
         with tempfile.TemporaryDirectory(prefix='rct-delivery-modes-') as tmp:

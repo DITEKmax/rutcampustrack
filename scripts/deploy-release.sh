@@ -83,9 +83,20 @@ cmp -s "$incoming/jwt-candidate/derived-public.key" "$incoming/jwt-candidate/ins
 docker exec rct-nginx nginx -t
 docker exec rct-nginx nginx -s reload
 python3 scripts/verify-served-web-panel.py https://ruttrack.site "$sha"
-if [[ "$bootstrap" == true ]]; then
-  python3 scripts/bootstrap-initial-admin.py --request-file "$incoming/INITIAL_ADMIN_REQUEST" \
-    --project-name rutcampustrack --env-file .env.prod --image-tag "$sha" \
-    --compose-file docker-compose.prod.yml --compose-file docker-compose.operator.yml
-fi
+admin_state="$(python3 scripts/initial-admin-status.py)"
+case "$admin_state" in
+  COMPLETE)
+    echo 'Initial administrator bootstrap already complete; creation skipped'
+    ;;
+  ABSENT)
+    if [[ "$bootstrap" == true ]]; then
+      python3 scripts/bootstrap-initial-admin.py --request-file "$incoming/INITIAL_ADMIN_REQUEST" \
+        --project-name rutcampustrack --env-file .env.prod --image-tag "$sha" \
+        --compose-file docker-compose.prod.yml --compose-file docker-compose.operator.yml
+      # A successful protocol command is not a substitute for its durable, ready result.
+      [[ "$(python3 scripts/initial-admin-status.py --require-ready)" == COMPLETE ]] || exit 2
+    fi
+    ;;
+  *) echo 'Initial administrator state is unresolved; deployment held' >&2; exit 2 ;;
+esac
 printf '%s\n' "$sha" > /opt/rutcampustrack/.deployed-sha

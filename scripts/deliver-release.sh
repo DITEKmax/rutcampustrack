@@ -8,7 +8,7 @@ export -n INITIAL_ADMIN_REQUEST
 bootstrap="${BOOTSTRAP_INITIAL_ADMIN:-false}"
 [[ "$bootstrap" == true || "$bootstrap" == false ]] || exit 2
 if [[ "$bootstrap" == true ]]; then
-  [[ "${GITHUB_EVENT_NAME:-}" == workflow_dispatch ]] || exit 2
+  [[ "${GITHUB_EVENT_NAME:-}" == workflow_dispatch || "${GITHUB_EVENT_NAME:-}" == workflow_run ]] || exit 2
   grep -qx '# RCT_INITIAL_ADMIN_DEPLOY_V1' scripts/deploy-release.sh || exit 2
 fi
 [[ "${DEPLOY_SHA:-}" =~ ^[0-9a-f]{40}$ ]] || exit 2

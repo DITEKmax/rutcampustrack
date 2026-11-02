@@ -222,21 +222,6 @@ onBeforeUnmount(() => {
         </dd>
       </div>
     </dl>
-    <p
-      v-if="stats"
-      class="admin-dashboard-screen__note"
-    >
-      Студенты и преподаватели считаются по ролям. Один аккаунт может иметь несколько ролей,
-      поэтому сумма этих показателей не является числом уникальных аккаунтов.
-    </p>
-    <div class="admin-dashboard-screen__period">
-      <button
-        type="button"
-        @click="emit('open-attendance')"
-      >
-        Посещаемость групп
-      </button>
-    </div>
     <section
       class="admin-dashboard-screen__activity"
       aria-labelledby="admin-dashboard-activity-title"
@@ -265,26 +250,6 @@ onBeforeUnmount(() => {
           Всё время
         </button>
       </div>
-      <div
-        class="admin-dashboard-screen__period"
-        role="group"
-        aria-label="Шаг графика"
-      >
-        <button
-          type="button"
-          :aria-pressed="bucket === 'day'"
-          @click="bucket = 'day'"
-        >
-          По дням
-        </button>
-        <button
-          type="button"
-          :aria-pressed="bucket === 'week'"
-          @click="bucket = 'week'"
-        >
-          По неделям
-        </button>
-      </div>
       <p
         v-if="activityLoading"
         class="admin-dashboard-screen__note"
@@ -307,6 +272,74 @@ onBeforeUnmount(() => {
           </button>
         </template>
       </AdminNotice>
+      <dl
+        v-if="activity"
+        class="admin-dashboard-screen__stats admin-dashboard-screen__stats--activity"
+        aria-label="Итоги активности"
+      >
+        <div
+          v-for="code in ADMIN_ACTIVITY_METRICS"
+          :key="code"
+          class="admin-dashboard-screen__stat"
+          :data-admin-activity-metric="code"
+          :data-state="activity.summary.metrics[code].state"
+        >
+          <dt>{{ adminActivityLabels[code] }}</dt><dd>
+            <span
+              :aria-label="
+                activity.summary.metrics[code].state === 'AVAILABLE' &&
+                  !(code === 'geoMarks' && activity.summary.metrics[code].percent === null)
+                  ? undefined
+                  : 'Данные недоступны'
+              "
+            >{{ adminActivityValue(activity.summary.metrics[code], code) }}</span>
+            <small
+              v-if="
+                code === 'geoMarks' &&
+                  activity.summary.metrics[code].state === 'AVAILABLE' &&
+                  activity.summary.metrics[code].numerator !== null &&
+                  activity.summary.metrics[code].denominator !== null
+              "
+            >
+              {{ formatCount(activity.summary.metrics[code].numerator!) }} из
+              {{ formatCount(activity.summary.metrics[code].denominator!) }}
+            </small>
+            <small
+              class="admin-dashboard-screen__delta"
+              :data-tone="adminActivityDelta(activity.summary.metrics[code], code).tone"
+              :aria-label="adminActivityDelta(activity.summary.metrics[code], code).description"
+            >{{ adminActivityDelta(activity.summary.metrics[code], code).text }}</small>
+          </dd>
+        </div>
+      </dl>
+      <div class="admin-dashboard-screen__period admin-dashboard-screen__period--attendance">
+        <button
+          type="button"
+          @click="emit('open-attendance')"
+        >
+          Посещаемость групп
+        </button>
+      </div>
+      <div
+        class="admin-dashboard-screen__period"
+        role="group"
+        aria-label="Шаг графика"
+      >
+        <button
+          type="button"
+          :aria-pressed="bucket === 'day'"
+          @click="bucket = 'day'"
+        >
+          По дням
+        </button>
+        <button
+          type="button"
+          :aria-pressed="bucket === 'week'"
+          @click="bucket = 'week'"
+        >
+          По неделям
+        </button>
+      </div>
       <template v-if="activity">
         <div class="admin-dashboard-screen__metric-picker">
           <span>Показатель графика</span>
@@ -371,47 +404,18 @@ onBeforeUnmount(() => {
             }}
           </p>
         </AdminNotice>
-        <dl
-          class="admin-dashboard-screen__stats admin-dashboard-screen__stats--activity"
-          aria-label="Итоги активности"
-        >
-          <div
-            v-for="code in ADMIN_ACTIVITY_METRICS"
-            :key="code"
-            class="admin-dashboard-screen__stat"
-            :data-admin-activity-metric="code"
-            :data-state="activity.summary.metrics[code].state"
-          >
-            <dt>{{ adminActivityLabels[code] }}</dt><dd>
-              <span
-                :aria-label="
-                  activity.summary.metrics[code].state === 'AVAILABLE' &&
-                    !(code === 'geoMarks' && activity.summary.metrics[code].percent === null)
-                    ? undefined
-                    : 'Данные недоступны'
-                "
-              >{{ adminActivityValue(activity.summary.metrics[code], code) }}</span>
-              <small
-                v-if="
-                  code === 'geoMarks' &&
-                    activity.summary.metrics[code].state === 'AVAILABLE' &&
-                    activity.summary.metrics[code].numerator !== null &&
-                    activity.summary.metrics[code].denominator !== null
-                "
-              >
-                {{ formatCount(activity.summary.metrics[code].numerator!) }} из
-                {{ formatCount(activity.summary.metrics[code].denominator!) }}
-              </small>
-              <small
-                class="admin-dashboard-screen__delta"
-                :data-tone="adminActivityDelta(activity.summary.metrics[code], code).tone"
-                :aria-label="adminActivityDelta(activity.summary.metrics[code], code).description"
-              >{{ adminActivityDelta(activity.summary.metrics[code], code).text }}</small>
-            </dd>
-          </div>
-        </dl>
       </template>
     </section>
+    <details
+      v-if="stats"
+      class="admin-dashboard-screen__explanation"
+    >
+      <summary>Как считаются аккаунты</summary>
+      <p class="admin-dashboard-screen__note">
+        Студенты и преподаватели считаются по ролям. Один аккаунт может иметь несколько ролей,
+        поэтому сумма этих показателей не является числом уникальных аккаунтов.
+      </p>
+    </details>
     <button
       class="admin-dashboard-screen__refresh"
       type="button"

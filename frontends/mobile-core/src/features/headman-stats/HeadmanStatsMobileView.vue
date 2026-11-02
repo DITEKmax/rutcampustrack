@@ -153,95 +153,6 @@ function toggleType(code: string): void {
           <strong v-else>{{ semester.semesterName || 'Нет активного семестра' }}</strong><span>{{ headmanStatsSemesterDates(semester.semesterFrom, semester.semesterTo) }}</span>
         </div>
       </section>
-      <nav
-        class="headman-stats-mobile__tabs"
-        aria-label="Раздел статистики"
-      >
-        <button
-          type="button"
-          :aria-pressed="block === 'group'"
-          @click="emit('block', 'group')"
-        >
-          Индивидуально
-        </button><button
-          type="button"
-          :aria-pressed="block === 'subject'"
-          @click="emit('block', 'subject')"
-        >
-          По предметам
-        </button>
-      </nav>
-      <slot name="toolbar" />
-      <section
-        v-if="block === 'group'"
-        class="headman-stats-mobile__card"
-        aria-label="Динамика посещаемости группы"
-      >
-        <p
-          v-if="trendLoading"
-          role="status"
-        >
-          Загружаем график…
-        </p><StudentWarningBlock
-          v-else-if="trendError"
-          title="График недоступен"
-          :message="trendError"
-          action-label="Повторить"
-          @action="emit('retry')"
-        /><HeadmanStatsTrendChart
-          v-else
-          :points="trend?.points ?? []"
-          mode="SEMESTER"
-          :from="semester?.semesterFrom"
-          :to="semester?.semesterTo"
-          present-label="Чистая «+»"
-          present-or-excused-label="С учётом «у»"
-        />
-        <nav
-          class="headman-stats-mobile__ranges"
-          aria-label="Период графика"
-        >
-          <button
-            type="button"
-            :aria-pressed="range === 'days'"
-            @click="emit('range', 'days')"
-          >
-            Дни
-          </button><button
-            type="button"
-            :aria-pressed="range === 'weeks'"
-            @click="emit('range', 'weeks')"
-          >
-            Недели
-          </button>
-        </nav>
-      </section>
-      <section
-        v-if="block === 'group' && metrics"
-        class="headman-stats-mobile__card"
-      >
-        <h2>Состав посещаемости</h2><div
-          class="headman-stats-mobile__composition"
-          role="img"
-          :aria-label="`Присутствовал ${headmanStatsPercent(metrics.present)}, уважительно ${headmanStatsPercent(metrics.excused)}, отсутствовал ${headmanStatsPercent(metrics.absent)}`"
-        >
-          <span
-            v-for="kind in ['present', 'excused', 'absent'] as const"
-            :key="kind"
-            :class="'headman-stats-mobile__composition--' + kind"
-            :style="{ flexGrow: metrics[kind].numerator }"
-          />
-        </div><div class="headman-stats-mobile__status-cards">
-          <article
-            v-for="kind in ['present', 'excused', 'absent'] as const"
-            :key="kind"
-          >
-            <span :class="'headman-stats-mobile__status headman-stats-mobile__status--' + kind">{{
-              { present: '+', excused: 'у', absent: 'н' }[kind]
-            }}</span><strong>{{ headmanStatsPercent(metrics[kind]) }}</strong><small>{{ metrics[kind].numerator }} из {{ metrics[kind].denominator }}</small>
-          </article>
-        </div>
-      </section>
       <section
         v-if="block === 'group' && metrics"
         class="headman-stats-mobile__summary"
@@ -278,27 +189,25 @@ function toggleType(code: string): void {
           />
         </article>
       </section>
-      <section
-        v-if="block === 'group' && response"
-        class="headman-stats-mobile__card"
-        aria-label="Поданные уважительные причины"
+      <nav
+        class="headman-stats-mobile__tabs"
+        aria-label="Раздел статистики"
       >
-        <h2>Поданные уважительные причины</h2>
-        <p v-if="response.reasonCounts == null">
-          Разбивка причин недоступна.
-        </p>
-        <p v-else-if="!response.reasonCounts.length">
-          Уважительные причины пока не подавали.
-        </p>
-        <ul v-else>
-          <li
-            v-for="reason in response.reasonCounts"
-            :key="reason.code"
-          >
-            {{ reason.label }} · {{ reason.count }}
-          </li>
-        </ul>
-      </section>
+        <button
+          type="button"
+          :aria-pressed="block === 'group'"
+          @click="emit('block', 'group')"
+        >
+          Индивидуально
+        </button><button
+          type="button"
+          :aria-pressed="block === 'subject'"
+          @click="emit('block', 'subject')"
+        >
+          По предметам
+        </button>
+      </nav>
+      <slot name="toolbar" />
       <template v-if="block === 'subject'">
         <section
           v-if="subjectId === null"
@@ -439,6 +348,61 @@ function toggleType(code: string): void {
           </li>
         </ul>
       </section>
+      <details
+        v-if="block === 'group' && (metrics || response)"
+        class="headman-stats-mobile__details"
+      >
+        <summary>Подробная сводка</summary>
+        <div class="headman-stats-mobile__details-content">
+          <section
+            v-if="block === 'group' && metrics"
+            class="headman-stats-mobile__card"
+          >
+            <h2>Состав посещаемости</h2><div
+              class="headman-stats-mobile__composition"
+              role="img"
+              :aria-label="`Присутствовал ${headmanStatsPercent(metrics.present)}, уважительно ${headmanStatsPercent(metrics.excused)}, отсутствовал ${headmanStatsPercent(metrics.absent)}`"
+            >
+              <span
+                v-for="kind in ['present', 'excused', 'absent'] as const"
+                :key="kind"
+                :class="'headman-stats-mobile__composition--' + kind"
+                :style="{ flexGrow: metrics[kind].numerator }"
+              />
+            </div><div class="headman-stats-mobile__status-cards">
+              <article
+                v-for="kind in ['present', 'excused', 'absent'] as const"
+                :key="kind"
+              >
+                <span :class="'headman-stats-mobile__status headman-stats-mobile__status--' + kind">{{
+                  { present: '+', excused: 'у', absent: 'н' }[kind]
+                }}</span><strong>{{ headmanStatsPercent(metrics[kind]) }}</strong><small>{{ metrics[kind].numerator }} из {{ metrics[kind].denominator }}</small>
+              </article>
+            </div>
+          </section>
+          <section
+            v-if="block === 'group' && response"
+            class="headman-stats-mobile__card"
+            aria-label="Поданные уважительные причины"
+          >
+            <h2>Поданные уважительные причины</h2>
+            <p v-if="response.reasonCounts == null">
+              Разбивка причин недоступна.
+            </p>
+            <p v-else-if="!response.reasonCounts.length">
+              Уважительные причины пока не подавали.
+            </p>
+            <ul v-else>
+              <li
+                v-for="reason in response.reasonCounts"
+                :key="reason.code"
+              >
+                {{ reason.label }} · {{ reason.count }}
+              </li>
+            </ul>
+          </section>
+        </div>
+      </details>
     </template>
     <template v-else-if="!historyOpen">
       <p

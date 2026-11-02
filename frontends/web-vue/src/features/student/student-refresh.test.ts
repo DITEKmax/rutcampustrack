@@ -16,6 +16,7 @@ const server = vi.hoisted(() => ({
   requestsVisible: false,
   attendanceReads: 0,
   requestReads: 0,
+  routeWrites: 0,
   subjectTypes: [] as string[][],
   rankingPages: [] as (number | null)[],
   invalidate: () => {},
@@ -51,7 +52,7 @@ vi.mock('vue-router', () => ({
     query: { view: 'subjects', subject: '4', type: 'LECTURE', kind: 'EXCUSE', lesson: '64' },
     params: {},
   }),
-  useRouter: () => ({ replace: async () => {} }),
+  useRouter: () => ({ replace: async () => { server.routeWrites++ } }),
   onBeforeRouteLeave() {},
 }))
 const fixture = {
@@ -275,6 +276,8 @@ class TestNode {
     testDocument.activeElement = this
   }
   scrollIntoView() {}
+  setCustomValidity(message: string) { this.props.validationMessage = message }
+  matches() { return false }
   contains(node: TestNode) {
     return flatten(this).includes(node)
   }
@@ -374,7 +377,7 @@ function button(root: TestNode, label: string) {
 }
 function mark(root: TestNode) {
   const node = flatten(root).find((node) =>
-    String(node.props.class).includes('student-mark-button'),
+    String(node.props.class).includes('student-attendance-mark'),
   )
   if (!node) throw Error('No mark')
   return node
@@ -391,6 +394,7 @@ beforeEach(async () => {
   server.requestsVisible = false
   server.attendanceReads = 0
   server.requestReads = 0
+  server.routeWrites = 0
   server.subjectTypes = []
   server.rankingPages = []
   testDocument.activeElement = null
@@ -417,8 +421,7 @@ afterEach(() => {
 })
 
 describe('student SFC live reading and retained selections', () => {
-  it('retires an awaited Home read without an unhandled watch error or overwriting the successor page', async () => {
-    const { default: Home } = await import('./StudentHomePage.vue')
+  it('retires an awaited attendance read without an unhandled watch error or overwriting the successor page', async () => {
     const { default: Attendance } = await import('./StudentAttendancePage.vue')
     const { webSession } = await import('../../auth/session')
     const { createWebTransport, WebAuthorityChangedError } = await import('../../app/api')
@@ -434,7 +437,7 @@ describe('student SFC live reading and retained selections', () => {
     }
     const errors: unknown[] = []
     const transport = createWebTransport()
-    mount(Home, errors)
+    mount(Attendance, errors)
     await waiting
     ;(webSession.identity as Ref<string | null>).value = 'student-successor-owner'
     ;(webSession.generation as Ref<number>).value++
@@ -453,13 +456,24 @@ describe('student SFC live reading and retained selections', () => {
   it('ignores a queued attendance filter from a retired owner without leaking a rejected action', async () => {
     const { default: Page } = await import('./StudentAttendancePage.vue')
     const { webSession } = await import('../../auth/session')
-    const root = mount(Page)
+    const errors: unknown[] = []
+    const root = mount(Page, errors)
     await settle()
-    const filter = flatten(root).find((node) => node.tag === 'select')!
+    const filter = flatten(root).find((node) => node.tag === 'input' && node.value === 'PRACTICE')!
+    expect(filter.props.disabled).toBe(false)
+    expect(filter.checked).toBe(false)
     ;(webSession.identity as Ref<string | null>).value = 'student-successor-owner'
     ;(webSession.generation as Ref<number>).value++
+    const reads = server.subjectTypes.length
+    const routes = server.routeWrites
+    filter.checked = true
+    filter.events.get('change')?.({ target: filter })
     const pending = (filter.props.onChange as () => Promise<void>)()
-    await expect(pending).resolves.toBeUndefined()
+    await expect(Promise.resolve(pending)).resolves.toBeUndefined()
+    await settle()
+    expect(server.subjectTypes).toHaveLength(reads)
+    expect(server.routeWrites).toBe(routes)
+    expect(errors).toEqual([])
   })
 
   it('updates the authoritative mark under ordinary hover/focus without replacing its focused cell or selected type', async () => {
@@ -533,9 +547,9 @@ describe('student SFC live reading and retained selections', () => {
     expect(text(root)).toContain('Участник 1')
     await click(button(root, 'Следующие участники'))
     expect(text(root)).toContain('Участник 45')
-    expect(flatten(root).filter((node) => node.tag === 'li')).toHaveLength(45)
+    expect(flatten(root).filter((node) => node.tag === 'li' && node.props['aria-hidden'] !== 'true')).toHaveLength(45)
     await click(button(root, 'К моей позиции'))
-    expect(flatten(root).filter((node) => node.tag === 'li')).toHaveLength(20)
+    expect(flatten(root).filter((node) => node.tag === 'li' && node.props['aria-hidden'] !== 'true')).toHaveLength(20)
     expect(server.rankingPages).toEqual([null, 0, 2, null])
   })
 })

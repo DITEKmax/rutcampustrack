@@ -68,7 +68,7 @@ const cancelled = computed(() => props.lesson.schedule.status === 'CANCELLED');
       </component>
       <p class="student-lesson__meta">
         <MobileIcon name="room" />
-        <span
+        <span class="student-lesson__room-details"><span class="student-lesson__room-values"><span
           :class="{
             'student-lesson__room--changed': lesson.schedule.room.changeState === 'CHANGED',
           }"
@@ -77,7 +77,10 @@ const cancelled = computed(() => props.lesson.schedule.status === 'CANCELLED');
           v-if="lesson.schedule.room.previous"
           class="student-lesson__previous-room"
           :aria-label="`Прежняя аудитория: ${lesson.schedule.room.previous}`"
-        >{{ lesson.schedule.room.previous }}</s>
+        >{{ lesson.schedule.room.previous }}</s></span><strong
+          v-if="lesson.schedule.room.changeState === 'CHANGED'"
+          class="student-lesson__room-notice"
+        >Аудитория изменена</strong></span>
       </p>
       <p class="student-lesson__meta">
         <MobileIcon name="lesson" /><span>{{ kind }}</span>

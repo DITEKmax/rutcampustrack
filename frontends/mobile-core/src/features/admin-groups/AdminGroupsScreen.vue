@@ -1835,30 +1835,6 @@ onBeforeUnmount(() => {
       aria-label="Реестр групп"
     >
       <div
-        v-if="canManage"
-        class="admin-groups-management"
-      >
-        <button
-          class="admin-groups-action admin-groups-create"
-          type="button"
-          @click="
-            formVisible = true;
-            error = null;
-            notice = null;
-          "
-        >
-          <MobileIcon name="plus" />Создать группу
-        </button><button
-          v-if="status !== 'ARCHIVED'"
-          class="admin-groups-table__action"
-          type="button"
-          :disabled="promotionMutationPending || counts.active + counts.draft === 0"
-          @click="openPromotion()"
-        >
-          Перевести все группы на следующий курс
-        </button>
-      </div>
-      <div
         class="admin-groups-tabs"
         role="tablist"
         aria-label="Статус группы"
@@ -1913,14 +1889,6 @@ onBeforeUnmount(() => {
           ×
         </button>
       </form>
-      <ExportButton
-        :port="reportDownload"
-        :formats="() => client.exportFormats()"
-        :request="exportRequest"
-        :scope-key="exportScope"
-        :disabled="!canView"
-        @error="emit('ownerError', $event)"
-      />
       <div class="admin-groups-filterbar">
         <button
           type="button"
@@ -2093,6 +2061,38 @@ onBeforeUnmount(() => {
           />
         </button>
       </footer>
+      <div
+        v-if="canManage"
+        class="admin-groups-management"
+      >
+        <button
+          class="admin-groups-action admin-groups-create"
+          type="button"
+          @click="
+            formVisible = true;
+            error = null;
+            notice = null;
+          "
+        >
+          <MobileIcon name="plus" />Создать группу
+        </button><button
+          v-if="status !== 'ARCHIVED'"
+          class="admin-groups-table__action"
+          type="button"
+          :disabled="promotionMutationPending || counts.active + counts.draft === 0"
+          @click="openPromotion()"
+        >
+          Перевести все группы на следующий курс
+        </button>
+      </div>
+      <ExportButton
+        :port="reportDownload"
+        :formats="() => client.exportFormats()"
+        :request="exportRequest"
+        :scope-key="exportScope"
+        :disabled="!canView"
+        @error="emit('ownerError', $event)"
+      />
     </section>
     <section
       v-if="promotionPanelVisible && !renameGroup"

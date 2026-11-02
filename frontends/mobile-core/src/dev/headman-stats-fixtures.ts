@@ -221,6 +221,13 @@ export function headmanStatsFixtureResponse(
     state === 'tickets-unavailable'
       ? null
       : { lateCheckin: sumTickets('lateCheckin'), excuse: sumTickets('excuse') }
+  const submitted = summaryTickets?.excuse.submitted ?? 0
+  const illness = Math.ceil(submitted * .6), order = Math.floor(submitted * .3)
+  const reasonCounts = summaryTickets === null ? null : [
+    { code: 'ILLNESS', label: 'Болезнь', count: illness },
+    { code: 'UNIVERSITY_ORDER', label: 'Приказ университета', count: order },
+    { code: 'OTHER', label: 'Другая причина', count: submitted - illness - order },
+  ].filter(reason => reason.count > 0).sort((left, right) => right.count - left.count || left.code.localeCompare(right.code))
   const totalElements = rows.length
   const size = query.size
   const page = query.page
@@ -230,6 +237,7 @@ export function headmanStatsFixtureResponse(
     context: context(state, query.subjectId, query.semesterId),
     summary: metrics(...totals),
     summaryTickets,
+    reasonCounts,
     filteredStudents: totalElements,
     rows,
     subjects: [

@@ -321,8 +321,8 @@ function description(point: StatisticsSeriesPoint): string {
           </svg>
         </div>
       </div>
-      <p class="statistics-chart__legend">
-        Моя посещаемость — сплошная линия. Средняя своей группы — пунктир.
+      <p class="statistics-visually-hidden">
+        Моя посещаемость и средняя посещаемость своей группы.
         <span v-if="!geometry.groupPaths.length">Для сравнения с группой нет данных.</span>
       </p>
       <div

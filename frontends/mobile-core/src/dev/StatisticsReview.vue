@@ -2,6 +2,7 @@
 import { computed, onBeforeUnmount, ref, watch } from 'vue';
 import { StudentApi } from '../api/student-client';
 import StatisticsScreen from '../features/statistics/StatisticsScreen.vue';
+import type { StatisticsReadState, StatisticsRankingData } from '../features/statistics/statistics-view-model';
 import { useStatistics } from '../features/statistics/use-statistics';
 import MobileShell from '../shared/components/MobileShell.vue';
 import StudentWarningBlock from '../shared/components/StudentWarningBlock.vue';
@@ -122,6 +123,43 @@ const fetcher: typeof fetch = async (input, init) => {
 };
 const api = new StudentApi({ accessToken: () => 'synthetic-review-token', fetcher });
 const controller = useStatistics(api, scope, offline);
+const rankingVisible = ref(query.get('ranking') === '1');
+const rankingPage = ref(0);
+// Local presentation fixture, deliberately separate from the StudentApi transport.
+const rankingState = computed<StatisticsReadState<StatisticsRankingData>>(() => {
+  if (offline.value) return { status: 'offline' };
+  const overview = controller.overviewState.value;
+  if (overview.status !== 'ready') return { status: 'empty' };
+  const rank = overview.data.ownRank;
+  if (!rank.available || rank.position === null) return { status: 'empty' };
+  const size = 10;
+  const percentage = overview.data.metrics.present.percent ?? 0;
+  const rows = Array.from({ length: rank.participantCount }, (_, index) => {
+    const position = index + 1;
+    const isSelf = position === rank.position;
+    return {
+      id: isSelf ? 'review-self' : `review-student-${position}`,
+      name: isSelf ? 'Анна Смирнова' : `Студент ${position}`,
+      position,
+      percentage: Math.max(0, Math.min(100, percentage + (rank.position! - position) * 2)),
+      isSelf,
+    };
+  });
+  return { status: 'ready', data: {
+    available: true, page: rankingPage.value, size, total: rows.length,
+    ownPosition: rank.position,
+    rows: rows.slice(rankingPage.value * size, (rankingPage.value + 1) * size),
+  } };
+});
+function toggleRanking(): void {
+  rankingVisible.value = !rankingVisible.value;
+  rankingPage.value = 0;
+}
+function setRankingPage(page: number): void {
+  if (rankingState.value.status !== 'ready') return;
+  const { total, size } = rankingState.value.data;
+  rankingPage.value = Math.max(0, Math.min(page, Math.ceil(total / size) - 1));
+}
 const navItems = createStudentNavigationItems({
   homeworkEnabled: true,
   attendanceEnabled: true,
@@ -294,6 +332,10 @@ onBeforeUnmount(() => {
       :semester-starts-on="semester.startsOn"
       :semester-ends-on="semester.endsOn"
       :terminal="offline"
+      :ranking-visible="rankingVisible"
+      :ranking-state="rankingState"
+      @open-ranking="toggleRanking"
+      @ranking-page="setRankingPage"
       @open-subject="controller.openSubject"
       @set-range="controller.setRange"
       @set-types="controller.setTypes"

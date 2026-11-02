@@ -2,11 +2,10 @@
   --student-table-min-width: 32rem;
   --student-subject-table-min-width: 44rem;
   --student-subject-name-width: 14rem;
-  --student-current-min-height: 21.875rem;
   --student-metric-min-height: 9.1875rem;
   --student-metric-narrow-min-height: 10.1875rem;
   --student-attendance-column-width: 4.25rem;
-  --student-attendance-subject-height: 9rem;
+  --student-attendance-subject-height: 13.3125rem;
   --student-chart-height: 15rem;
   --student-metric-min-width: 8rem;
   --student-lesson-time-width: 7rem;
@@ -23,7 +22,9 @@
 }
 .student-attendance-table {
   border-collapse: collapse;
-  min-inline-size: 100%;
+  inline-size: 100%;
+  min-inline-size: max(100%, calc(var(--student-attendance-lesson-count) * var(--student-attendance-column-width)));
+  table-layout: fixed;
   font-size: var(--font-size-micro);
 }
 .student-attendance-table th,
@@ -35,21 +36,63 @@
 }
 .student-attendance-table thead {
   background: var(--color-surface-raised);
+  color: var(--color-text-secondary);
+}
+.student-attendance-weekdays th,
+.student-attendance-dates th {
+  block-size: var(--space-8);
+  font-weight: var(--font-weight-medium);
+  overflow-wrap: anywhere;
+}
+.student-attendance-table:not(.has-compact-dates) .is-day-end {
+  border-inline-end: calc(var(--web-border) * 2) solid var(--color-border-strong);
+}
+.student-attendance-table.has-compact-dates .student-attendance-dates th {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.student-attendance-table .student-attendance-lesson {
+  padding: 0;
 }
 .student-attendance-subject {
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  block-size: var(--student-attendance-subject-height);
+  padding: var(--space-3);
+  font-weight: var(--font-weight-medium);
+}
+.student-attendance-subject > span {
   writing-mode: vertical-rl;
   rotate: 180deg;
-  block-size: auto;
-  min-block-size: var(--student-attendance-column-width);
-  inline-size: var(--student-attendance-subject-height);
-  text-align: start;
-  margin: auto;
-  padding: var(--space-3);
+  max-inline-size: 100%;
+  text-align: center;
 }
-.student-attendance-table th .web-caption {
-  display: block;
-  margin-block-start: var(--space-2);
+.student-attendance-types-row th {
+  block-size: var(--space-8);
+  font-weight: var(--font-weight-regular);
+}
+.student-attendance-types-row abbr {
+  text-decoration: none;
+}
+.student-attendance-mark {
+  display: inline-grid;
+  place-items: center;
+  inline-size: 100%;
+  min-block-size: var(--control-height);
+  padding: 0;
+  border-radius: var(--radius-md);
+  background: transparent;
+}
+.student-attendance-mark .student-mark {
+  min-inline-size: var(--space-5);
+  inline-size: var(--space-5);
+  block-size: var(--space-5);
+  font-size: var(--font-size-micro);
+}
+.student-attendance-mark .student-mark[data-tone='none'] {
+  color: var(--color-status-none-on-fill);
 }
 .student-mark-button {
   border: 0;
@@ -72,6 +115,9 @@
   margin: 0;
   display: grid;
   gap: var(--space-2);
+  min-inline-size: 0;
+  max-block-size: var(--student-chart-height);
+  overflow: auto;
 }
 .student-ranking-list li {
   display: flex;
@@ -81,8 +127,12 @@
   padding: var(--space-2);
 }
 .student-ranking-list .is-self {
-  background: var(--color-accent-soft);
+  background: var(--color-accent-now);
+  color: var(--color-accent-on-now);
   border-radius: var(--radius-md);
+}
+.student-ranking-list > .student-auto-edge {
+  padding: 0;
 }
 .student-auto-edge {
   display: block;
@@ -97,20 +147,139 @@
   padding: var(--space-6);
   border-block: var(--web-border) solid var(--color-border-subtle);
 }
+.student-requests-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-6);
+  min-block-size: min(calc(var(--student-chart-height) * 2), calc(100dvh - var(--control-height) * 6));
+  padding: var(--space-8) var(--space-4);
+  color: var(--color-text-secondary);
+  text-align: center;
+}
+.student-requests-empty > p {
+  max-inline-size: calc(var(--control-height) * 12);
+}
+.student-attendance-filter-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-6);
+  min-block-size: calc(var(--student-chart-height) * 2);
+  padding: var(--space-8) var(--space-4);
+  color: var(--color-text-secondary);
+  text-align: center;
+}
 .student-request-lessons {
   max-block-size: calc(var(--student-chart-height) * 2);
   overflow: auto;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  border: var(--web-border) solid var(--color-border-subtle);
+  border-radius: var(--radius-xl);
+  background: var(--color-surface-raised);
 }
 .student-request-option {
   display: flex;
   align-items: start;
   gap: var(--space-3);
   padding: var(--space-3);
+  border: var(--web-border) solid var(--color-border-subtle);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-base);
+  color: var(--color-text-primary);
+  cursor: pointer;
+}
+.student-request-option > span {
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
+}
+.student-request-option > input {
+  appearance: none;
+  display: grid;
+  place-content: center;
+  flex: 0 0 var(--space-5);
+  inline-size: var(--space-5);
+  block-size: var(--space-5);
+  margin: var(--space-half) 0 0;
+  padding: 0;
+  border: var(--web-border) solid var(--color-border-strong);
+  border-radius: var(--radius-full);
+  background: var(--color-surface-raised);
+  color: var(--color-accent-now);
+  cursor: inherit;
+}
+.student-request-option:has(> input:checked) {
+  border-color: var(--color-accent-now);
+  background: var(--color-accent-now);
+  color: var(--color-accent-on-now);
+}
+.student-request-option:has(> input:checked) .web-caption {
+  color: inherit;
+}
+.student-request-option > input:checked {
+  border-color: var(--color-accent-on-now);
+  background: var(--color-accent-on-now);
+}
+.student-request-option > input[type='checkbox']:checked::before {
+  content: '';
+  inline-size: var(--space-2);
+  block-size: var(--space-1);
+  border-inline-start: var(--focus-width) solid currentColor;
+  border-block-end: var(--focus-width) solid currentColor;
+  rotate: -45deg;
+}
+.student-request-option > input[type='radio']:checked::before {
+  content: '';
+  inline-size: var(--space-2);
+  block-size: var(--space-2);
+  border-radius: var(--radius-full);
+  background: currentColor;
+}
+.student-request-option:has(> input:disabled) {
+  border-color: var(--color-border-subtle);
+  background: var(--color-surface-base);
+  color: var(--color-text-muted);
+  cursor: default;
+}
+.student-request-option > input:disabled {
+  border-color: var(--color-disabled-border);
+  background: var(--color-disabled-surface);
+  color: var(--color-disabled-text);
+}
+.student-request-option:has(> input:focus-visible) {
+  outline: var(--focus-width) solid var(--color-border-focus);
+  outline-offset: var(--focus-offset);
+}
+.student-request-option > input:focus-visible {
+  outline: none;
 }
 .student-request-form fieldset {
   border: 0;
   margin: 0;
   padding: 0;
+}
+.student-request-form .student-request-day {
+  display: grid;
+  gap: var(--space-2);
+  min-inline-size: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+.student-request-day + .student-request-day {
+  padding-block-start: var(--space-4);
+  border-block-start: var(--web-border) solid var(--color-border-subtle);
+}
+.student-request-day > legend {
+  margin-block-end: var(--space-3);
+  padding-inline: 0;
+  color: var(--color-text-primary);
+  font-size: var(--font-size-dense);
+  font-weight: var(--font-weight-bold);
 }
 .student-request-card h2 {
   overflow-wrap: anywhere;
@@ -118,12 +287,29 @@
 .student-request-card {
   scroll-margin-block: var(--space-6);
 }
+.student-request-meta {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-caption);
+}
+.student-request-budget {
+  display: grid;
+  gap: var(--space-1);
+  padding-block: var(--space-3);
+  text-align: center;
+}
 .student-request-status {
-  padding: var(--space-1) var(--space-2);
+  display: inline-flex;
+  align-items: center;
+  min-block-size: var(--control-height);
+  padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-full);
   background: var(--color-surface-float);
   color: var(--color-text-secondary);
   font-size: var(--font-size-micro);
+  white-space: nowrap;
+}
+.student-request-expand[aria-expanded='true'] > .mobile-icon {
+  rotate: 180deg;
 }
 .student-request-status[data-tone='warning'] {
   background: var(--color-state-info-bg);
@@ -148,6 +334,54 @@
   text-align: center;
   align-items: center;
 }
+.student-request-files {
+  align-self: stretch;
+  min-inline-size: 0;
+}
+.student-request-files > .student-dropzone {
+  flex: 1;
+  justify-content: center;
+  min-block-size: calc(var(--control-height) * 5);
+  background-image: repeating-linear-gradient(
+    135deg,
+    transparent,
+    transparent var(--space-1),
+    color-mix(in srgb, var(--color-border-default) 25%, transparent) var(--space-1),
+    color-mix(in srgb, var(--color-border-default) 25%, transparent) calc(var(--space-1) + var(--web-border))
+  );
+}
+.student-file-picker {
+  position: relative;
+  display: inline-flex;
+  cursor: pointer;
+}
+.student-file-picker > .web-button {
+  min-inline-size: calc(var(--control-height) * 4);
+}
+.student-file-picker:focus-within > .web-button {
+  outline: var(--focus-width) solid var(--color-border-focus);
+  outline-offset: var(--focus-offset);
+}
+.student-file-picker:has(input:disabled) {
+  cursor: default;
+}
+.student-file-picker:has(input:disabled) > .web-button {
+  border-color: var(--color-disabled-border);
+  background: var(--color-disabled-surface);
+  color: var(--color-disabled-text);
+}
+.student-request-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+  inline-size: 100%;
+}
+.student-request-actions > .web-button {
+  inline-size: 100%;
+}
+.student-request-actions > .student-request-retry {
+  grid-column: 1 / -1;
+}
 .student-attachment-image {
   max-inline-size: 100%;
   max-block-size: calc(var(--student-chart-height) * 2);
@@ -162,8 +396,8 @@
 .student-request-form .web-field {
   min-inline-size: 0;
 }
-.student-request-form textarea {
-  border-radius: var(--radius-xl);
+.student-request-form .web-field textarea {
+  border-radius: var(--radius-2xl);
 }
 .student-mark-detail:focus-visible {
   outline: var(--focus-width) solid var(--color-border-focus);
@@ -178,10 +412,48 @@
   gap: var(--space-6);
 }
 .student-dashboard-bottom {
+  margin-block-start: var(--space-8);
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--space-6);
   align-items: start;
+}
+.student-statistics-trend {
+  margin-block: var(--space-8);
+}
+html:has(.student-statistics-summary) {
+  scrollbar-gutter: stable;
+}
+.student-statistics-summary {
+  align-items: stretch;
+}
+.student-statistics-summary .student-ranking-toggle {
+  margin-block-start: auto;
+}
+.student-ranking-toggle-labels {
+  display: grid;
+  min-inline-size: 0;
+}
+.student-ranking-toggle-labels > span {
+  grid-area: 1 / 1;
+}
+.student-ranking-toggle-labels > [aria-hidden='true'] {
+  visibility: hidden;
+}
+.student-statistics-summary.has-expanded-ranking .student-statistics-ranking-card {
+  border-end-start-radius: 0;
+  border-end-end-radius: 0;
+  border-block-end-color: var(--color-surface-raised);
+}
+.student-statistics-ranking-details {
+  grid-column: 2;
+  min-inline-size: 0;
+  margin-block-start: calc(-1 * var(--space-6));
+  padding: 0 var(--space-4) var(--space-4);
+  border: var(--web-border) solid var(--color-border-default);
+  border-block-start: 0;
+  border-radius: 0 0 var(--radius-2xl) var(--radius-2xl);
+  background: var(--color-surface-raised);
 }
 .student-actions {
   display: flex;
@@ -190,7 +462,7 @@
   gap: var(--space-3);
 }
 .student-current {
-  min-block-size: var(--student-current-min-height);
+  align-self: start;
   padding: var(--space-6);
   border: var(--web-border) solid var(--color-border-accent);
   border-radius: var(--radius-2xl);
@@ -199,8 +471,22 @@
 .student-current > .web-button {
   inline-size: 100%;
 }
-.student-current > .web-button:first-of-type {
-  margin-block-start: auto;
+.student-current-stats {
+  align-self: stretch;
+  gap: var(--space-3);
+  min-block-size: 0;
+}
+.student-current-stats > .student-metrics {
+  flex: 1;
+  min-block-size: 0;
+  grid-template-rows: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+.student-current-stats .student-metric {
+  min-block-size: 0;
+  padding: var(--space-3);
+  padding-inline-start: var(--space-6);
+  gap: var(--space-1);
 }
 .student-featured-content {
   gap: var(--space-2);
@@ -228,6 +514,21 @@
 .student-lesson-time {
   min-inline-size: var(--student-lesson-time-width);
 }
+.student-room-current, .student-room-change {
+  color: var(--color-state-danger-text);
+  font-size: var(--font-size-title-block);
+  font-weight: var(--font-weight-bold);
+}
+.student-room-previous {
+  margin-inline-start: var(--space-2);
+  color: var(--color-text-muted);
+}
+.student-lesson.is-current :is(.student-room-current, .student-room-change) {
+  color: color-mix(in srgb, var(--color-state-danger-fill) 25%, var(--color-accent-on-now));
+}
+.student-lesson.is-current .student-room-previous {
+  color: color-mix(in srgb, var(--color-accent-on-now) 85%, var(--color-accent-now));
+}
 .student-lesson.is-current {
   background: var(--color-accent-now);
   color: var(--color-accent-on-now);
@@ -242,13 +543,6 @@
 .student-lesson.is-cancelled h3,
 .student-lesson.is-cancelled .student-lesson-time {
   text-decoration: line-through;
-}
-.student-lesson-details {
-  border-block-start: var(--web-border) solid var(--color-border-subtle);
-  padding-block-start: var(--space-2);
-}
-.student-lesson-details summary {
-  cursor: pointer;
 }
 .student-lesson-list {
   list-style: none;
@@ -291,6 +585,7 @@
 .student-metrics.has-count {
   grid-template-columns: repeat(5, minmax(0, 1fr));
 }
+.student-metric-absences { grid-column: 1 / -1; }
 .student-metric {
   min-block-size: var(--student-metric-min-height);
   padding: var(--space-4);
@@ -320,14 +615,143 @@
   flex: 1;
   min-inline-size: min(100%, var(--student-metric-min-width));
 }
+.student-attendance-filters {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+}
+.student-attendance-subject-filter .web-field-trigger {
+  padding-inline-start: var(--space-3);
+  padding-inline-end: var(--space-6);
+}
+.student-attendance-types {
+  min-inline-size: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.student-attendance-types legend {
+  margin-block-end: var(--space-1);
+  padding: 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-caption);
+}
+.student-attendance-type-options {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-2);
+}
+.student-attendance-type {
+  position: relative;
+  min-inline-size: 0;
+}
+.student-attendance-type-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-block-size: var(--control-height);
+  padding: var(--space-2) var(--space-3);
+  border: var(--web-border) solid var(--color-border-default);
+  border-radius: var(--radius-full);
+  background: var(--color-surface-raised);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-dense);
+  cursor: pointer;
+}
+.student-attendance-type input:checked + .student-attendance-type-label {
+  border-color: var(--color-accent-now);
+  background: var(--color-accent-now);
+  color: var(--color-accent-on-now);
+}
+.student-attendance-type input:disabled + .student-attendance-type-label {
+  border-color: var(--color-disabled-border);
+  background: var(--color-disabled-surface);
+  color: var(--color-disabled-text);
+  cursor: default;
+}
+.student-attendance-type input:focus-visible + .student-attendance-type-label {
+  outline: var(--focus-width) solid var(--color-border-focus);
+  outline-offset: var(--space-1);
+}
 .student-period-context {
+  display: grid;
+  grid-template-columns: var(--control-height) minmax(0, 1fr) repeat(2, var(--control-height));
+  align-items: center;
+  gap: var(--space-2);
+  inline-size: min(100%, calc(var(--control-height) * 14));
+  padding: var(--space-2);
+  background: var(--color-surface-raised);
+  border: var(--web-border) solid var(--color-border-default);
+  border-radius: var(--radius-2xl);
+}
+.student-period-label {
+  min-inline-size: 0;
+  padding-inline: var(--space-2);
+  text-align: center;
+  font-size: var(--font-size-dense);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+.student-homework-period,
+.student-attendance-period { inline-size: 100%; }
+.student-schedule-day + .student-schedule-day {
+  padding-block-start: var(--space-4);
+  border-block-start: var(--web-border) solid var(--color-border-subtle);
+}
+.student-period-arrow {
+  block-size: var(--control-height);
+  border: var(--web-border) solid var(--color-border-default);
+  border-radius: var(--radius-full);
+  background: var(--color-surface-base);
+}
+.student-period-reset {
+  block-size: var(--control-height);
+  border-color: var(--color-border-default);
+  border-radius: var(--radius-full);
+  background: var(--color-surface-float);
+}
+.student-chart-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  inline-size: 100%;
+  padding: var(--space-2);
+  border: var(--web-border) solid var(--color-border-default);
+  border-radius: var(--radius-2xl);
+  background: var(--color-surface-raised);
+}
+.student-chart-toolbar .student-period-context,
+.student-chart-period-label {
+  flex: 1 1 calc(var(--control-height) * 8);
+  min-inline-size: 0;
+  inline-size: auto;
+}
+.student-chart-toolbar .student-period-context {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+.student-chart-period-label { padding-inline: var(--space-3); text-align: center; font-size: var(--font-size-dense); overflow-wrap: anywhere; }
+.student-chart-range { margin-inline-start: auto; gap: var(--space-1); }
+.student-chart-controls {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
   gap: var(--space-3);
+  margin-inline-start: auto;
 }
-.student-period-context > span {
-  margin-inline: auto;
+.student-chart-controls .student-chart-range {
+  margin-inline-start: 0;
+}
+.student-chart-comparison {
+  gap: var(--space-1);
+}
+.student-chart-controls.has-comparison .student-chart-range {
+  padding-inline-start: var(--space-3);
+  border-inline-start: var(--web-border) solid var(--color-border-strong);
 }
 .student-progress {
   inline-size: 100%;
@@ -339,39 +763,140 @@
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--space-6);
 }
+.student-trend-comparison {
+  grid-column: 1 / -1;
+  inline-size: 100%;
+  gap: var(--space-1);
+  padding: var(--space-2);
+  border: var(--web-border) solid var(--color-border-default);
+  border-radius: var(--radius-full);
+  background: var(--color-surface-raised);
+}
 .student-chart {
   min-inline-size: 0;
 }
 .student-chart-plot {
+  display: block;
   inline-size: 100%;
-  block-size: var(--student-chart-height);
+  block-size: var(--student-chart-height, 15rem);
   overflow: visible;
 }
 .student-chart-frame {
   position: relative;
-  padding-inline-start: var(--space-8);
+  display: grid;
+  grid-template-columns: var(--space-8) minmax(0, 1fr);
+}
+.student-chart-scroll {
+  min-inline-size: 0;
+  overflow-x: auto;
+  padding-block-end: var(--space-2);
+}
+:is(.student-chart-scroll, .student-chart-data, .student-attendance-scroll, .student-ranking-list, .student-request-lessons, .student-request-form textarea) {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--color-border-accent) 55%, transparent) transparent;
+  overscroll-behavior: contain;
+}
+:is(.student-chart-scroll, .student-chart-data, .student-attendance-scroll, .student-ranking-list, .student-request-lessons, .student-request-form textarea)::-webkit-scrollbar {
+  inline-size: var(--space-1);
+  block-size: var(--space-1);
+}
+:is(.student-chart-scroll, .student-chart-data, .student-attendance-scroll, .student-ranking-list, .student-request-lessons, .student-request-form textarea)::-webkit-scrollbar-track,
+:is(.student-chart-scroll, .student-chart-data, .student-attendance-scroll, .student-ranking-list, .student-request-lessons, .student-request-form textarea)::-webkit-scrollbar-corner {
+  background: transparent;
+}
+:is(.student-chart-scroll, .student-chart-data, .student-attendance-scroll, .student-ranking-list, .student-request-lessons, .student-request-form textarea)::-webkit-scrollbar-thumb {
+  border-radius: var(--radius-full);
+  background: color-mix(in srgb, var(--color-border-accent) 55%, transparent);
+}
+:is(.student-chart-scroll, .student-chart-data, .student-attendance-scroll, .student-ranking-list, .student-request-lessons, .student-request-form textarea)::-webkit-scrollbar-button {
+  display: none;
+  inline-size: 0;
+  block-size: 0;
+}
+@supports selector(::-webkit-scrollbar) {
+  :is(.student-chart-scroll, .student-chart-data, .student-attendance-scroll, .student-ranking-list, .student-request-lessons, .student-request-form textarea) {
+    scrollbar-width: auto;
+    scrollbar-color: auto;
+  }
+}
+:is(.student-chart-scroll, .student-chart-data, .student-attendance-scroll, .student-ranking-list, .student-request-lessons, .student-request-form textarea):focus-visible {
+  outline: var(--focus-width) solid var(--color-border-focus);
+  outline-offset: var(--space-1);
+}
+.student-chart-canvas {
+  position: relative;
+  min-inline-size: calc(var(--student-chart-point-count) * var(--control-height) / 0.9);
+}
+.student-chart-targets {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline: 0;
+  block-size: var(--student-chart-height, 15rem);
+}
+.student-chart-target {
+  position: absolute;
+  inset-block: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  cursor: pointer;
+}
+.student-chart-target:focus-visible {
+  outline: var(--focus-width) solid var(--color-border-focus);
+  outline-offset: calc(-1 * var(--focus-width));
+}
+.student-chart-detail {
+  position: absolute;
+  z-index: 1;
+  inset-block-start: var(--space-2);
+  inset-inline-end: var(--space-2);
+  display: grid;
+  gap: var(--space-1);
+  max-inline-size: calc(100% - var(--space-8) - var(--space-2));
+  padding: var(--space-3);
+  padding-inline-end: calc(var(--control-height) + var(--space-3));
+  border: var(--web-border) solid var(--color-border-strong);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-float);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-micro);
+  overflow-wrap: anywhere;
+}
+.student-chart-detail-close {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-end: 0;
+  border: 0;
+  background: transparent;
 }
 .student-chart-y-axis {
-  position: absolute;
-  inset-block: 9.5% 14.3%;
-  inset-inline-start: 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
+  position: relative;
+  block-size: var(--student-chart-height, 15rem);
   font-size: var(--font-size-micro);
   color: var(--color-text-muted);
+}
+.student-chart-y-axis > span {
+  position: absolute;
+  inset-inline-start: 0;
+  transform: translateY(-50%);
 }
 .student-chart-x-axis {
-  display: flex;
-  justify-content: space-between;
-  gap: var(--space-3);
-  padding-inline: var(--space-4);
+  position: relative;
+  block-size: var(--space-6);
   font-size: var(--font-size-micro);
   color: var(--color-text-muted);
 }
-.student-chart-plot text {
-  fill: var(--color-text-muted);
-  font-size: var(--font-size-dense);
+.student-chart-x-axis > span {
+  position: absolute;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+.student-chart-x-axis > .student-chart-axis-probe {
+  position: static;
+  display: inline-block;
+  visibility: hidden;
+  transform: none;
 }
 .student-chart-grid {
   stroke: var(--color-border-subtle);
@@ -381,39 +906,55 @@
 .student-chart-line {
   fill: none;
   stroke: currentColor;
-  stroke-width: var(--web-border);
+  stroke-width: calc(var(--web-border) * 2);
+  stroke-linejoin: round;
+  stroke-linecap: round;
   vector-effect: non-scaling-stroke;
 }
-.student-chart-plot circle {
-  fill: currentColor;
+.student-chart-point {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: calc(var(--space-1) * 1.5);
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
 }
 .student-series-primary {
   color: var(--color-status-present-text);
 }
 .student-series-secondary {
   color: var(--color-status-excused-text);
-  stroke-dasharray: var(--space-2) var(--space-1);
+}
+.student-series-group {
+  color: var(--color-status-none-text);
 }
 .student-chart-selection {
-  stroke: var(--color-border-focus);
+  stroke: var(--color-accent-now);
   stroke-width: var(--web-border);
   vector-effect: non-scaling-stroke;
 }
-.student-chart-legend {
-  display: flex;
-  gap: var(--space-4);
-  justify-content: center;
-  flex-wrap: wrap;
-  font-size: var(--font-size-caption);
+.student-series-swatch {
+  display: inline-block;
+  inline-size: var(--space-2);
+  block-size: var(--space-2);
+  margin-inline-end: var(--space-1);
+  border-radius: var(--radius-full);
+  background: currentColor;
 }
 .student-chart-data {
   overflow: auto;
-  max-block-size: calc(var(--student-chart-height) * 1.5);
+  max-block-size: calc(var(--student-chart-height, 15rem) * 1.5);
+}
+.student-chart-data .student-table tr > th:first-child {
+  inline-size: 36%;
+  white-space: nowrap;
+}
+.student-chart-data .student-text-button {
+  white-space: nowrap;
 }
 .student-table {
   border-collapse: collapse;
   inline-size: 100%;
-  min-inline-size: var(--student-table-min-width);
+  min-inline-size: var(--student-table-min-width, 32rem);
   font-size: var(--font-size-dense);
 }
 .student-subjects-table {
@@ -430,6 +971,13 @@
 }
 .student-table .is-selected {
   background: var(--color-accent-soft);
+}
+.student-chart-data .is-selected {
+  background: var(--color-accent-now);
+  color: var(--color-accent-on-now);
+}
+.student-chart-data .is-selected :is(th, td, button, .web-caption) {
+  color: inherit;
 }
 .student-text-button {
   padding: 0;
@@ -461,12 +1009,24 @@
   }
 }
 @media (max-width: 40rem) {
+  .student-statistics-ranking-details {
+    grid-column: 1;
+    padding-inline: var(--space-3);
+    padding-block-end: var(--space-3);
+  }
+  .student-attendance-filters {
+    grid-template-columns: minmax(0, 1fr);
+  }
   .student-dashboard-pair,
   .student-dashboard-bottom {
     grid-template-columns: minmax(0, 1fr);
   }
   .student-current {
     padding: var(--space-4);
+  }
+  .student-current-stats > .student-metrics {
+    flex: none;
+    grid-template-rows: none;
   }
   .student-metric {
     padding: var(--space-3);
@@ -475,3 +1035,7 @@
     font-size: var(--font-size-title-screen);
   }
 }
+
+.student-trend.has-area .student-series-primary { color: var(--color-status-present-fill); }
+.student-trend.has-area .student-series-secondary { color: var(--color-status-excused-fill); }
+.student-chart-area { fill: currentColor; stroke: none; pointer-events: none; }

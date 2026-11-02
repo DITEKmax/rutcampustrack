@@ -17,7 +17,10 @@ const owner = vi.hoisted(() => ({
 }))
 vi.mock('../../app/live', () => ({ useWebLiveRefresh: () => {} }))
 vi.mock('../../auth/session', () => ({ webSession: { generation: { value: 1 } } }))
-vi.mock('vue-router', () => ({ onBeforeRouteLeave: () => {} }))
+vi.mock('vue-router', async () => {
+  const { defineComponent, h } = await import('vue')
+  return { onBeforeRouteLeave: () => {}, RouterLink: defineComponent({ setup: (_props, { slots }) => () => h('a', slots.default?.()) }) }
+})
 vi.mock('./use-admin', async () => {
   const { ref } = await import('vue')
   return {

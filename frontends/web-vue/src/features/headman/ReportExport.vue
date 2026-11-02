@@ -15,6 +15,7 @@ const props = defineProps<{
   report: ReportDownloadTicketRequest | null;
   scope: string;
   disabled?: boolean;
+  newIntentDisabled?: boolean;
   label?: string;
 }>();
 interface Intent {
@@ -97,7 +98,7 @@ const tickets = new ReportDownloadClient({
 });
 const browser = createBrowserReportDownloadPort(tickets, props.transport.fetcher);
 async function download() {
-  if (busy.value || props.disabled) return;
+  if (busy.value || props.disabled || (!intent.value && props.newIntentDisabled)) return;
   busy.value = true;
   error.value = null;
   try {
@@ -137,7 +138,7 @@ async function download() {
   >
     <button
       class="web-button"
-      :disabled="disabled || busy || (!report && !intent)"
+      :disabled="disabled || busy || (!intent && (newIntentDisabled || !report))"
       @click="download"
       >{{
         busy

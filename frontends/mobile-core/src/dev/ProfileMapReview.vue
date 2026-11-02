@@ -22,6 +22,7 @@ import {
 import iconAsset from '../features/profile/assets/more-map.svg';
 import MobileShell from '../shared/components/MobileShell.vue';
 import type { MobileHostAdapter } from '../shared/host';
+import { createMobileTheme } from '../shared/theme';
 import {
   createHeadmanNavigationItems,
   createStudentNavigationItems,
@@ -81,7 +82,13 @@ const headmanAvailability = {
   schedule: scenario !== 'headman-more-partial',
   lessons: scenario !== 'headman-more-partial',
 };
-const theme = ref<ProfileTheme>('dark');
+const themeController = createMobileTheme({ mode: query.get('theme') === 'light' ? 'light' : 'dark' });
+const theme = ref<ProfileTheme>(themeController.mode);
+const resolvedTheme = ref(themeController.resolvedMode);
+const unsubscribeTheme = themeController.subscribe(snapshot => {
+  theme.value = snapshot.mode;
+  resolvedTheme.value = snapshot.resolvedMode;
+});
 const pendingRole = ref<ProfileRole | null>(null);
 const status = ref('');
 const mapRequests = ref(0);
@@ -202,7 +209,7 @@ const port: ProfilePort = {
     status.value = 'Fixture: переход к восстановлению пароля запрошен';
   },
   setTheme(value) {
-    theme.value = value;
+    themeController.setMode(value);
   },
   isOnline: () => !offline.value,
 };
@@ -373,6 +380,8 @@ document.title =
   ' · API fixture';
 onBeforeUnmount(() => {
   disposed = true;
+  unsubscribeTheme();
+  themeController.dispose();
   for (const [id, resolve] of timers) {
     window.clearTimeout(id);
     resolve();
@@ -466,11 +475,11 @@ onBeforeUnmount(() => {
     <AppearanceScreen
       v-else-if="active === 'appearance'"
       :theme="theme"
-      resolved-theme="dark"
+      :resolved-theme="resolvedTheme"
       :on-back="back"
       :on-theme-change="
         (value) => {
-          theme = value;
+          themeController.setMode(value);
         }
       "
     />
@@ -518,7 +527,7 @@ onBeforeUnmount(() => {
     >
       <p>
         {{ "API fixture · owner " }}{{ owner }} · map requests {{ mapRequests }} · opens {{ opens }} ·
-        theme preference {{ theme }}{{ " · dark display" }}
+        theme preference {{ theme }} · {{ resolvedTheme }} display
       </p>
       <p role="status">
         {{ status }}

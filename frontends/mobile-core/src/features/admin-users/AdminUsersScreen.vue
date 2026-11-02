@@ -2185,14 +2185,6 @@ onBeforeUnmount(() => {
           />
         </button>
       </form>
-      <ExportButton
-        :port="reportDownload"
-        :formats="() => client.exportFormats()"
-        :request="exportRequest"
-        :scope-key="exportScope"
-        :disabled="!adminHasPermission(authority, 'USERS_VIEW') || loading || !appliedListQuery"
-        @error="ownerError"
-      />
       <div class="admin-users-tools">
         <button
           class="admin-users-action admin-users-action--secondary"
@@ -2303,6 +2295,14 @@ onBeforeUnmount(() => {
           />
         </button>
       </nav>
+      <ExportButton
+        :port="reportDownload"
+        :formats="() => client.exportFormats()"
+        :request="exportRequest"
+        :scope-key="exportScope"
+        :disabled="!adminHasPermission(authority, 'USERS_VIEW') || loading || !appliedListQuery"
+        @error="ownerError"
+      />
     </template>
 
     <form

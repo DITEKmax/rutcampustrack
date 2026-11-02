@@ -63,7 +63,7 @@ const active = computed(() =>
           ? 'more'
           : 'home',
 );
-const theme = createMobileTheme({ mode: 'dark', lockedMode: 'dark' });
+const theme = createMobileTheme({ mode: query.get('theme') === 'light' ? 'light' : 'dark' });
 const originalRootFont = document.documentElement.style.fontSize;
 if (query.get('rootFont') === '20') document.documentElement.style.fontSize = '20px';
 const host: MobileHostAdapter = {

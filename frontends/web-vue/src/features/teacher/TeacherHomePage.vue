@@ -4,7 +4,6 @@ import { RouterLink } from 'vue-router';
 import type {
   TeacherAssignment,
   TeacherDayResponse,
-  TeacherSearchResponse,
 } from '../../../../mobile-core/src/features/teacher/teacher-client';
 import { teacherLessonTypeLabel } from '../../../../mobile-core/src/features/teacher/teacher-ui-format';
 import { shortDate, today, useTeacherResource, useTeacherScope } from './teacher-state';
@@ -14,11 +13,8 @@ import TeacherDayPanel from './TeacherDayPanel.vue';
 
 const scope = useTeacherScope();
 const assignments = useTeacherResource<readonly TeacherAssignment[]>(scope);
-const search = useTeacherResource<TeacherSearchResponse>(scope);
 const day = useTeacherResource<TeacherDayResponse>(scope);
 const date = ref(today());
-const query = ref('');
-const searchValidation = ref('');
 const groups = computed(() => scope.catalog.value?.groups ?? []);
 function loadAssignments(background = false) {
   const semester = scope.semester.value;
@@ -42,17 +38,6 @@ function loadDay(background = false) {
     previous.lessons.every(lesson => scope.catalog.value?.groups.some(group => group.id === lesson.groupId));
   void day.load(() => scope.api.day(semester.id, date.value), undefined, !!retain);
 }
-function find() {
-  const semester = scope.semester.value;
-  searchValidation.value = '';
-  if (!semester) return;
-  if (query.value.trim().length < 2) {
-    searchValidation.value = 'Введи не менее двух символов.';
-    return;
-  }
-  const requested = query.value.trim();
-  void search.load(() => scope.api.search(semester.id, requested));
-}
 watch(
   () => scope.refreshed.value,
   () => {
@@ -66,7 +51,6 @@ watch(
             : date.value;
     loadAssignments(scope.backgroundRefresh.value);
     loadDay(scope.backgroundRefresh.value);
-    search.clear();
   },
 );
 watch(date, () => loadDay());
@@ -76,7 +60,6 @@ watch(
     if (!value) {
       assignments.clear();
       day.clear();
-      search.clear();
     }
   },
 );
@@ -176,80 +159,6 @@ watch(
               </tbody>
             </table>
           </div>
-        </section>
-        <section
-          class="teacher-panel web-stack"
-          aria-label="Поиск по доступным группам и студентам"
-        >
-          <form
-            class="teacher-toolbar"
-            @submit.prevent="find"
-          >
-            <label class="web-field">Поиск группы или студента<input
-              v-model="query"
-              type="search"
-              maxlength="128"
-              @input="
-                search.clear();
-                searchValidation = '';
-              "
-            ></label><button
-              class="web-button"
-              :disabled="search.loading.value"
-            >
-              Найти
-            </button>
-          </form>
-          <p
-            v-if="searchValidation"
-            class="web-error"
-            role="alert"
-          >
-            {{ searchValidation }}
-          </p>
-          <TeacherNotice
-            :loading="search.loading.value"
-            :error="search.error.value"
-            :empty="
-              search.data.value &&
-                !search.data.value.groups.length &&
-                !search.data.value.students.length
-                ? 'Ничего не найдено в доступных группах.'
-                : ''
-            "
-            @retry="find"
-          />
-          <template v-if="search.data.value">
-            <ul class="teacher-links">
-              <li
-                v-for="group in search.data.value.groups"
-                :key="group.id"
-              >
-                <RouterLink :to="{ name: 'teacher-stats', query: { group: group.id } }">
-                  {{
-                    group.name
-                  }}
-                </RouterLink>
-              </li><li
-                v-for="student in search.data.value.students"
-                :key="student.id"
-              >
-                <RouterLink
-                  :to="{
-                    name: 'teacher-stats',
-                    query: { group: student.groupId, studentName: student.displayName },
-                  }"
-                >
-                  {{ student.displayName }} · {{ student.groupName }}
-                </RouterLink>
-              </li>
-            </ul><p
-              v-if="search.data.value.truncated"
-              class="web-caption"
-            >
-              Показаны не все результаты. Уточни запрос.
-            </p>
-          </template>
         </section>
       </div>
       <section

@@ -32,6 +32,26 @@
   font-size: var(--rct-font-size-body);
   line-height: var(--rct-leading-snug);
 }
+.teacher-stats__tools {
+  min-inline-size: 0;
+  border-block-start: var(--rct-border-hairline) solid var(--rct-color-border-default);
+}
+.teacher-stats__tools > summary {
+  min-block-size: var(--rct-control-min-touch);
+  padding-block: var(--rct-space-3);
+  color: var(--rct-color-text-secondary);
+  font-size: var(--rct-font-size-caption);
+  font-weight: var(--rct-font-weight-bold);
+  overflow-wrap: anywhere;
+  cursor: pointer;
+  @mixin rct-focus-ring;
+}
+.teacher-stats__tools-content {
+  display: grid;
+  gap: var(--rct-space-4);
+  min-inline-size: 0;
+  padding-block-end: var(--rct-space-3);
+}
 .teacher-stats__tabs {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

@@ -752,20 +752,6 @@ useProjectionRefresh(refreshProjection);
     aria-labelledby="teacher-stats-title"
     :aria-busy="loading"
   >
-    <ExportButton
-      v-if="api && statsQuery"
-      :port="reportDownload"
-      :formats="() => api!.statsExportFormats()"
-      :request="
-        (format) => ({
-          kind: 'TEACHER_STATS',
-          teacherStats: toTeacherStatsReportSelector(statsQuery!, format),
-        })
-      "
-      :scope-key="JSON.stringify(statsQuery)"
-      :disabled="loading || !!error"
-      @error="emit('error', $event)"
-    />
     <h1 id="teacher-stats-title">
       Статистика
     </h1>
@@ -774,105 +760,6 @@ useProjectionRefresh(refreshProjection);
       title="Отбор восстановлен"
       :message="routeNotice"
     />
-    <form
-      class="teacher-stats__directory"
-      role="search"
-      aria-label="Поиск групп и студентов"
-      @submit.prevent="loadDirectorySearch"
-    >
-      <label
-        class="teacher-stats__field"
-        for="teacher-stats-directory"
-      ><span>Поиск групп и студентов</span><input
-        id="teacher-stats-directory"
-        ref="directoryInput"
-        v-model="directoryQuery"
-        type="search"
-        autocomplete="off"
-        :disabled="!api || !semesterId"
-        :aria-invalid="Boolean(directoryValidation)"
-        :aria-describedby="directoryValidation ? 'teacher-stats-directory-error' : undefined"
-        placeholder="Название группы или полное имя"
-      ></label>
-      <button
-        v-if="directoryQuery"
-        class="teacher-stats__icon-button"
-        type="button"
-        aria-label="Очистить поиск"
-        @click="clearDirectorySearch(true)"
-      >
-        <MobileIcon name="close" />
-      </button>
-      <p
-        v-if="directoryValidation"
-        id="teacher-stats-directory-error"
-        class="teacher-stats__field-error"
-        role="status"
-      >
-        {{ directoryValidation }}
-      </p>
-    </form>
-    <section
-      v-if="directoryLoading || directoryError || directoryResult"
-      class="teacher-stats__directory-results"
-      aria-label="Результаты поиска"
-      :aria-busy="directoryLoading"
-    >
-      <p
-        v-if="directoryLoading"
-        role="status"
-      >
-        Ищем группы и студентов…
-      </p>
-      <StudentWarningBlock
-        v-else-if="directoryError"
-        title="Поиск недоступен"
-        :message="directoryError"
-        severity="error"
-        action-label="Повторить поиск"
-        @action="loadDirectorySearch"
-      />
-      <template v-else-if="directoryResult">
-        <section aria-label="Найденные группы">
-          <h2>Группы</h2><button
-            v-for="group in directoryResult.groups"
-            :key="group.id"
-            type="button"
-            :disabled="!canChooseContext"
-            @click="chooseDirectoryGroup(group.id)"
-          >
-            {{ group.name }}
-          </button><p
-            v-if="!directoryResult.groups.length"
-            role="status"
-          >
-            Групп не найдено.
-          </p>
-        </section>
-        <section aria-label="Найденные студенты">
-          <h2>Студенты</h2><button
-            v-for="student in directoryResult.students"
-            :key="`${student.groupId}:${student.id}`"
-            type="button"
-            :disabled="!canChooseContext"
-            @click="chooseDirectoryGroup(student.groupId)"
-          >
-            <span>{{ student.displayName }}</span><span>{{ student.groupName }}</span>
-          </button><p
-            v-if="!directoryResult.students.length"
-            role="status"
-          >
-            Студентов не найдено.
-          </p>
-        </section>
-        <p
-          v-if="directoryResult.truncated"
-          role="status"
-        >
-          Показаны первые совпадения. Уточни запрос.
-        </p>
-      </template>
-    </section>
     <div
       class="teacher-stats__tabs"
       aria-label="Разрез статистики"
@@ -938,119 +825,6 @@ useProjectionRefresh(refreshProjection);
         {{ lessonTypeLabel(type) }}
       </button>
     </fieldset>
-    <div
-      class="teacher-stats__toolbar"
-      data-teacher-action="stats-sort"
-    >
-      <HeadmanStatsSelect
-        label="Сортировка"
-        :disabled="!canChooseContext"
-        :model-value="`${visibleSorts[0]?.descending ? '-' : ''}${visibleSorts[0]?.column}`"
-        :options="sortOptions(0)"
-        @update:model-value="changeSort(0, $event)"
-      />
-      <button
-        type="button"
-        class="teacher-stats__icon-button"
-        aria-label="Фильтры"
-        :disabled="!canChooseContext"
-        data-teacher-action="stats-filters"
-        :aria-expanded="filtersOpen"
-        aria-controls="teacher-stats-filters"
-        :data-active="filtersOpen || activeCriteria"
-        @click="filtersOpen = !filtersOpen"
-      >
-        <MobileIcon name="filter" />
-      </button>
-    </div>
-    <div
-      v-for="(sort, index) in visibleSorts.slice(1)"
-      :key="sort.column"
-      class="teacher-stats__toolbar"
-    >
-      <HeadmanStatsSelect
-        :label="`Условие сортировки ${index + 2}`"
-        :disabled="!canChooseContext"
-        :model-value="`${sort.descending ? '-' : ''}${sort.column}`"
-        :options="sortOptions(index + 1)"
-        @update:model-value="changeSort(index + 1, $event)"
-      />
-      <button
-        type="button"
-        class="teacher-stats__icon-button"
-        :aria-label="`Удалить условие ${index + 2}`"
-        :disabled="!canChooseContext"
-        @click="removeSort(index + 1)"
-      >
-        <MobileIcon name="close" />
-      </button>
-    </div>
-    <button
-      v-if="visibleSorts.length < teacherStatsSortColumns(scope).length"
-      type="button"
-      class="teacher-stats__add-sort"
-      :disabled="!canChooseContext"
-      @click="addSort"
-    >
-      <MobileIcon name="plus" />Добавить условие сортировки
-    </button>
-    <form
-      v-if="filtersOpen"
-      id="teacher-stats-filters"
-      class="teacher-stats__filters"
-      @submit.prevent="applyFilters"
-    >
-      <h2>Фильтры</h2>
-      <fieldset
-        v-for="column in numericColumns"
-        :key="column"
-        class="teacher-stats__range"
-        :aria-invalid="Boolean(fieldErrors[column])"
-        :aria-describedby="fieldErrors[column] ? `teacher-stats-${column}-error` : undefined"
-        :disabled="!canChooseContext"
-      >
-        <legend>{{ columnLabel(column) }}{{ column === 'lessonsCount' ? '' : ', %' }}</legend><label :for="`teacher-stats-${column}-min`"><span>От</span><input
-          :id="`teacher-stats-${column}-min`"
-          v-model="rangeDraft(column).minimum"
-          inputmode="decimal"
-          :aria-invalid="Boolean(fieldErrors[column])"
-          :aria-describedby="
-            fieldErrors[column] ? `teacher-stats-${column}-error` : undefined
-          "
-        ></label><label :for="`teacher-stats-${column}-max`"><span>До</span><input
-          :id="`teacher-stats-${column}-max`"
-          v-model="rangeDraft(column).maximum"
-          inputmode="decimal"
-          :aria-invalid="Boolean(fieldErrors[column])"
-          :aria-describedby="
-            fieldErrors[column] ? `teacher-stats-${column}-error` : undefined
-          "
-        ></label><p
-          v-if="fieldErrors[column]"
-          :id="`teacher-stats-${column}-error`"
-          class="teacher-stats__field-error"
-        >
-          {{ fieldErrors[column] }}
-        </p>
-      </fieldset>
-      <div class="teacher-stats__filter-actions">
-        <button
-          type="button"
-          class="teacher-stats__icon-button"
-          aria-label="Сбросить фильтры и сортировку"
-          :disabled="!canChooseContext || !canReset"
-          @click="resetCriteria"
-        >
-          <MobileIcon name="retry" />
-        </button><button
-          type="submit"
-          class="teacher-stats__apply"
-          :disabled="!canChooseContext"
-        >
-          Применить
-        </button>
-      </div>
-    </form>
     <StudentWarningBlock
       v-if="error || projectionError"
       title="Статистика недоступна"
@@ -1178,5 +952,236 @@ useProjectionRefresh(refreshProjection);
         </button>
       </div>
     </template>
+    <details class="teacher-stats__tools">
+      <summary>Поиск, фильтры и экспорт</summary>
+      <div class="teacher-stats__tools-content">
+        <form
+          class="teacher-stats__directory"
+          role="search"
+          aria-label="Поиск групп и студентов"
+          @submit.prevent="loadDirectorySearch"
+        >
+          <label
+            class="teacher-stats__field"
+            for="teacher-stats-directory"
+          ><span>Поиск групп и студентов</span><input
+            id="teacher-stats-directory"
+            ref="directoryInput"
+            v-model="directoryQuery"
+            type="search"
+            autocomplete="off"
+            :disabled="!api || !semesterId"
+            :aria-invalid="Boolean(directoryValidation)"
+            :aria-describedby="directoryValidation ? 'teacher-stats-directory-error' : undefined"
+            placeholder="Название группы или полное имя"
+          ></label>
+          <button
+            v-if="directoryQuery"
+            class="teacher-stats__icon-button"
+            type="button"
+            aria-label="Очистить поиск"
+            @click="clearDirectorySearch(true)"
+          >
+            <MobileIcon name="close" />
+          </button>
+          <p
+            v-if="directoryValidation"
+            id="teacher-stats-directory-error"
+            class="teacher-stats__field-error"
+            role="status"
+          >
+            {{ directoryValidation }}
+          </p>
+        </form>
+        <section
+          v-if="directoryLoading || directoryError || directoryResult"
+          class="teacher-stats__directory-results"
+          aria-label="Результаты поиска"
+          :aria-busy="directoryLoading"
+        >
+          <p
+            v-if="directoryLoading"
+            role="status"
+          >
+            Ищем группы и студентов…
+          </p>
+          <StudentWarningBlock
+            v-else-if="directoryError"
+            title="Поиск недоступен"
+            :message="directoryError"
+            severity="error"
+            action-label="Повторить поиск"
+            @action="loadDirectorySearch"
+          />
+          <template v-else-if="directoryResult">
+            <section aria-label="Найденные группы">
+              <h2>Группы</h2><button
+                v-for="group in directoryResult.groups"
+                :key="group.id"
+                type="button"
+                :disabled="!canChooseContext"
+                @click="chooseDirectoryGroup(group.id)"
+              >
+                {{ group.name }}
+              </button><p
+                v-if="!directoryResult.groups.length"
+                role="status"
+              >
+                Групп не найдено.
+              </p>
+            </section>
+            <section aria-label="Найденные студенты">
+              <h2>Студенты</h2><button
+                v-for="student in directoryResult.students"
+                :key="`${student.groupId}:${student.id}`"
+                type="button"
+                :disabled="!canChooseContext"
+                @click="chooseDirectoryGroup(student.groupId)"
+              >
+                <span>{{ student.displayName }}</span><span>{{ student.groupName }}</span>
+              </button><p
+                v-if="!directoryResult.students.length"
+                role="status"
+              >
+                Студентов не найдено.
+              </p>
+            </section>
+            <p
+              v-if="directoryResult.truncated"
+              role="status"
+            >
+              Показаны первые совпадения. Уточни запрос.
+            </p>
+          </template>
+        </section>
+        <div
+          class="teacher-stats__toolbar"
+          data-teacher-action="stats-sort"
+        >
+          <HeadmanStatsSelect
+            label="Сортировка"
+            :disabled="!canChooseContext"
+            :model-value="`${visibleSorts[0]?.descending ? '-' : ''}${visibleSorts[0]?.column}`"
+            :options="sortOptions(0)"
+            @update:model-value="changeSort(0, $event)"
+          />
+          <button
+            type="button"
+            class="teacher-stats__icon-button"
+            aria-label="Фильтры"
+            :disabled="!canChooseContext"
+            data-teacher-action="stats-filters"
+            :aria-expanded="filtersOpen"
+            aria-controls="teacher-stats-filters"
+            :data-active="filtersOpen || activeCriteria"
+            @click="filtersOpen = !filtersOpen"
+          >
+            <MobileIcon name="filter" />
+          </button>
+        </div>
+        <div
+          v-for="(sort, index) in visibleSorts.slice(1)"
+          :key="sort.column"
+          class="teacher-stats__toolbar"
+        >
+          <HeadmanStatsSelect
+            :label="`Условие сортировки ${index + 2}`"
+            :disabled="!canChooseContext"
+            :model-value="`${sort.descending ? '-' : ''}${sort.column}`"
+            :options="sortOptions(index + 1)"
+            @update:model-value="changeSort(index + 1, $event)"
+          />
+          <button
+            type="button"
+            class="teacher-stats__icon-button"
+            :aria-label="`Удалить условие ${index + 2}`"
+            :disabled="!canChooseContext"
+            @click="removeSort(index + 1)"
+          >
+            <MobileIcon name="close" />
+          </button>
+        </div>
+        <button
+          v-if="visibleSorts.length < teacherStatsSortColumns(scope).length"
+          type="button"
+          class="teacher-stats__add-sort"
+          :disabled="!canChooseContext"
+          @click="addSort"
+        >
+          <MobileIcon name="plus" />Добавить условие сортировки
+        </button>
+        <form
+          v-if="filtersOpen"
+          id="teacher-stats-filters"
+          class="teacher-stats__filters"
+          @submit.prevent="applyFilters"
+        >
+          <h2>Фильтры</h2>
+          <fieldset
+            v-for="column in numericColumns"
+            :key="column"
+            class="teacher-stats__range"
+            :aria-invalid="Boolean(fieldErrors[column])"
+            :aria-describedby="fieldErrors[column] ? `teacher-stats-${column}-error` : undefined"
+            :disabled="!canChooseContext"
+          >
+            <legend>{{ columnLabel(column) }}{{ column === 'lessonsCount' ? '' : ', %' }}</legend><label :for="`teacher-stats-${column}-min`"><span>От</span><input
+              :id="`teacher-stats-${column}-min`"
+              v-model="rangeDraft(column).minimum"
+              inputmode="decimal"
+              :aria-invalid="Boolean(fieldErrors[column])"
+              :aria-describedby="
+                fieldErrors[column] ? `teacher-stats-${column}-error` : undefined
+              "
+            ></label><label :for="`teacher-stats-${column}-max`"><span>До</span><input
+              :id="`teacher-stats-${column}-max`"
+              v-model="rangeDraft(column).maximum"
+              inputmode="decimal"
+              :aria-invalid="Boolean(fieldErrors[column])"
+              :aria-describedby="
+                fieldErrors[column] ? `teacher-stats-${column}-error` : undefined
+              "
+            ></label><p
+              v-if="fieldErrors[column]"
+              :id="`teacher-stats-${column}-error`"
+              class="teacher-stats__field-error"
+            >
+              {{ fieldErrors[column] }}
+            </p>
+          </fieldset>
+          <div class="teacher-stats__filter-actions">
+            <button
+              type="button"
+              class="teacher-stats__icon-button"
+              aria-label="Сбросить фильтры и сортировку"
+              :disabled="!canChooseContext || !canReset"
+              @click="resetCriteria"
+            >
+              <MobileIcon name="retry" />
+            </button><button
+              type="submit"
+              class="teacher-stats__apply"
+              :disabled="!canChooseContext"
+            >
+              Применить
+            </button>
+          </div>
+        </form>
+        <ExportButton
+          v-if="api && statsQuery"
+          :port="reportDownload"
+          :formats="() => api!.statsExportFormats()"
+          :request="
+            (format) => ({
+              kind: 'TEACHER_STATS',
+              teacherStats: toTeacherStatsReportSelector(statsQuery!, format),
+            })
+          "
+          :scope-key="JSON.stringify(statsQuery)"
+          :disabled="loading || !!error"
+          @error="emit('error', $event)"
+        />
+      </div>
+    </details>
   </main>
 </template>

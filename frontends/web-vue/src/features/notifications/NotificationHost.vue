@@ -22,6 +22,9 @@ function close() {
   if (popover.value?.matches(':popover-open')) popover.value.hidePopover();
 }
 watch(webSession.identity, close);
+function notificationDate(value: string) {
+  return new Intl.DateTimeFormat('ru', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }).format(new Date(value));
+}
 </script>
 <template>
   <button
@@ -46,33 +49,35 @@ watch(webSession.identity, close);
     class="web-notification-popover web-stack"
     @toggle="toggled"
   >
-    <h2 :id="id + '-title'">
-      Уведомления
-    </h2><NotificationRecovery /><p
+    <div class="web-notification-heading">
+      <h2 :id="id + '-title'">Уведомления</h2>
+      <span v-if="n?.count.value" class="web-notification-total" aria-hidden="true">{{ n.count.value }}</span>
+    </div><NotificationRecovery /><p
       v-if="n?.error.value"
       class="web-error"
       role="alert"
     >
       {{ n.error.value }}
     </p><p
-      v-if="n?.count.value !== null"
-      class="web-caption"
-    >
-      Непрочитанных: {{ n?.count.value }}
-    </p><p
       v-if="n && !n.loading.value && !n.error.value && !n.items.value.length"
       class="web-caption"
     >
       Уведомлений пока нет.
-    </p><ul class="web-profile-list">
+    </p><ul class="web-notification-preview">
       <li
         v-for="item in n?.items.value.slice(0, 3)"
         :key="item.id"
+        :class="{ 'is-unread': item.readAt === null }"
       >
-        {{ item.heading }}
+        <div class="web-notification-preview-heading">
+          <h3>{{ item.heading }}<span v-if="item.readAt === null" class="web-sr-only"> · Не прочитано</span></h3>
+          <span v-if="item.readAt === null" class="web-notification-unread-dot" aria-hidden="true" />
+        </div>
+        <p v-if="item.summary && item.summary !== item.heading" class="web-notification-summary">{{ item.summary }}</p>
+        <time class="web-caption" :datetime="item.sentAt">{{ notificationDate(item.sentAt) }}</time>
       </li>
     </ul><RouterLink
-      class="web-button"
+      class="web-button web-notification-history"
       :to="{ name: 'notifications' }"
       @click="close"
     >
@@ -102,11 +107,11 @@ watch(webSession.identity, close);
         >
           Открыть
         </RouterLink><button
-          class="web-button"
+          class="web-button web-icon-button web-notification-close"
           :aria-label="'Закрыть уведомление ' + toast.item.heading"
           @click="n.dismiss(toast.item.id)"
         >
-          Закрыть
+          <MobileIcon name="close" />
         </button>
       </div>
     </article>

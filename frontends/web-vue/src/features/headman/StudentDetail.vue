@@ -2,12 +2,11 @@
 import { onMounted, ref, shallowRef, watch } from 'vue';
 import { message } from '../../auth/session';
 import type { HeadmanFeature } from './context';
-import { dateLabel, lessonTypes, markLabels, sourceLabel } from './context';
+import { dateLabel } from './context';
 import type {
   HeadmanStatsStudentDetailResponse,
   HeadmanStatsTrendResponse,
 } from '../../../../mobile-core/src/features/headman-stats/headman-stats-client';
-import type { HeadmanStatsLessonPage } from '../../../../mobile-core/src/features/headman-stats/headman-stats-history-client';
 import TrendChart from './TrendChart.vue';
 const props = defineProps<{
   feature: HeadmanFeature;
@@ -15,16 +14,15 @@ const props = defineProps<{
   semesterId?: number | undefined;
 }>();
 const detail = shallowRef<HeadmanStatsStudentDetailResponse | null>(null),
-  lessons = shallowRef<HeadmanStatsLessonPage | null>(null),
   trend = shallowRef<HeadmanStatsTrendResponse | null>(null);
 const loading = ref(false),
   error = ref<string | null>(null),
-  lessonPage = ref(0),
   latePage = ref(0),
   excusePage = ref(0);
 let run = 0;
 const percent = (value: number | null) =>
   value === null ? 'Нет данных' : `${value.toLocaleString('ru-RU', { maximumFractionDigits: 1 })}%`;
+const statusLabel = (status: string) => ({ PENDING: 'На рассмотрении', SUBMITTED: 'На рассмотрении', APPROVED: 'Одобрена', REJECTED: 'Отклонена', CANCELLED: 'Отменена', DRAFT: 'Черновик' } as Readonly<Record<string, string>>)[status] ?? 'Статус недоступен';
 async function load() {
   const revision = ++run;
   loading.value = true;
@@ -32,17 +30,12 @@ async function load() {
   const semester = props.semesterId ? { semesterId: props.semesterId } : {};
   try {
     if (!props.feature.allowed('VIEW_STATS')) throw new Error('Нет права просмотра статистики.');
-    const [personal, history, dynamics] = await Promise.all([
+    const [personal, dynamics] = await Promise.all([
       props.feature.stats.studentDetail(props.studentId, {
         ...semester,
         latePage: latePage.value,
         excusePage: excusePage.value,
         size: 10,
-      }),
-      props.feature.stats.studentLessons(props.studentId, {
-        ...semester,
-        page: lessonPage.value,
-        size: 20,
       }),
       props.feature.stats.studentTrend(props.studentId, {
         ...semester,
@@ -53,7 +46,6 @@ async function load() {
     props.feature.assertCurrent();
     if (revision !== run) return;
     detail.value = personal;
-    lessons.value = history;
     trend.value = dynamics;
   } catch (cause) {
     if (revision === run) error.value = message(cause);
@@ -64,7 +56,7 @@ async function load() {
 watch(
   () => `${props.studentId}:${props.semesterId}`,
   () => {
-    lessonPage.value = latePage.value = excusePage.value = 0;
+    latePage.value = excusePage.value = 0;
     void load();
   },
 );
@@ -92,9 +84,6 @@ onMounted(load);
       ></p
     >
     <template v-if="detail"
-      ><p
-        >{{ detail.context.semesterName }} · {{ dateLabel(detail.context.semesterFrom) }} —
-        {{ dateLabel(detail.context.semesterTo) }}</p
       ><div class="headman-grid"
         ><div
           v-for="[key, label] in [
@@ -139,67 +128,10 @@ onMounted(load);
         :from="trend.context.semesterFrom"
         :to="trend.context.semesterTo"
       />
-      <h3>История посещаемости</h3
-      ><div
-        v-if="lessons"
-        class="headman-table-scroll"
-        ><table class="headman-table"
-          ><thead
-            ><tr><th>Дата</th><th>Предмет / пара</th><th>Отметка</th><th>Источник</th></tr></thead
-          ><tbody
-            ><tr
-              v-for="lesson in lessons.items"
-              :key="lesson.lessonId"
-              ><th>{{ dateLabel(lesson.lessonDate) }}</th
-              ><td
-                >{{ lesson.subjectName }} · {{ lessonTypes[lesson.lessonType] }} ·
-                {{ lesson.lessonNumber }}</td
-              ><td>{{ markLabels[lesson.status ?? 'EMPTY'] }}</td
-              ><td
-                >{{ sourceLabel(lesson.source)
-                }}<RouterLink
-                  v-if="lesson.approvedTicket"
-                  :to="{ name: 'headman-requests', query: { request: lesson.approvedTicket.id } }"
-                >
-                  Одобренная заявка</RouterLink
-                ></td
-              ></tr
-            ></tbody
-          ></table
-        ></div
-      ><div
-        v-if="lessons && lessons.totalPages > 1"
-        class="headman-actions"
-        ><button
-          class="web-button"
-          :disabled="!lessons.hasPrevious || loading"
-          @click="
-            lessonPage--;
-            load();
-          "
-          >Назад</button
-        ><span>{{ lessons.page + 1 }} / {{ lessons.totalPages }}</span
-        ><button
-          class="web-button"
-          :disabled="!lessons.hasNext || loading"
-          @click="
-            lessonPage++;
-            load();
-          "
-          >Далее</button
-        ></div
-      >
       <h3>Апелляции</h3
-      ><ul class="headman-list"
-        ><li
-          v-for="ticket in detail.lateCheckins.items"
-          :key="ticket.id"
-          >{{ dateLabel(ticket.lessonDate) }} · {{ ticket.subjectName }} · {{ ticket.status
-          }}<RouterLink :to="{ name: 'headman-requests', query: { request: ticket.id } }">
-            Открыть</RouterLink
-          ></li
-        ></ul
-      ><div
+      ><p v-if="!detail.lateCheckins.items.length" class="web-caption">Нет заявок.</p>
+      <ul v-else class="headman-list headman-student-requests"><li v-for="ticket in detail.lateCheckins.items" :key="ticket.id"><RouterLink class="headman-student-request-number" :to="{ name: 'headman-requests', query: { request: ticket.id } }">№ {{ ticket.id }}</RouterLink><p class="web-caption">{{ dateLabel(ticket.lessonDate) }} · {{ ticket.subjectName }} · {{ statusLabel(ticket.status) }}</p></li></ul>
+      <div
         v-if="detail.lateCheckins.totalPages > 1"
         class="headman-actions"
         ><button
@@ -221,16 +153,9 @@ onMounted(load);
         ></div
       >
       <h3>Уважительные причины</h3
-      ><ul class="headman-list"
-        ><li
-          v-for="ticket in detail.excuses.items"
-          :key="ticket.id"
-          >{{ dateLabel(ticket.submittedAt) }} · {{ ticket.status }} · пар {{ ticket.lessons.length
-          }}<RouterLink :to="{ name: 'headman-requests', query: { request: ticket.id } }">
-            Открыть</RouterLink
-          ></li
-        ></ul
-      ><div
+      ><p v-if="!detail.excuses.items.length" class="web-caption">Нет заявок.</p>
+      <ul v-else class="headman-list headman-student-requests"><li v-for="ticket in detail.excuses.items" :key="ticket.id"><RouterLink class="headman-student-request-number" :to="{ name: 'headman-requests', query: { request: ticket.id } }">№ {{ ticket.id }}</RouterLink><p class="web-caption">{{ dateLabel(ticket.submittedAt) }} · {{ statusLabel(ticket.status) }} · пар {{ ticket.lessons.length }}</p></li></ul>
+      <div
         v-if="detail.excuses.totalPages > 1"
         class="headman-actions"
         ><button

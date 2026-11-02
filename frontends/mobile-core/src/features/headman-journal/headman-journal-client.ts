@@ -127,6 +127,8 @@ export interface HeadmanJournalRosterEntry {
   readonly markRevision: string | null
   readonly approvedTicket: HeadmanJournalApprovedTicket | null
   readonly source: string | null
+  /** Last persisted mark update, when supplied by the server. */
+  readonly timestamp?: string | null
   readonly excuseReason: string | null
   readonly excuseType: string | null
   readonly comment: string | null
@@ -841,6 +843,15 @@ function isoDateValue(value: unknown): string | null {
   return typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value) ? value : null
 }
 
+function isoInstantValue(value: unknown): string | null {
+  if (typeof value !== 'string') return null
+  const match = /^(\d{4}-\d{2}-\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.\d{1,9})?(Z|[+-]\d{2}:\d{2})$/.exec(value)
+  if (!match || Number(match[2]) > 23 || Number(match[3]) > 59 || Number(match[4]) > 59) return null
+  const civil = new Date(`${match[1]}T00:00:00Z`)
+  if (!Number.isFinite(civil.getTime()) || civil.toISOString().slice(0, 10) !== match[1]) return null
+  return Number.isFinite(Date.parse(value)) ? value : null
+}
+
 function filenameFromContentDisposition(value: string | null, fallback: string): string {
   if (!value) return fallback
   const utf8 = /filename\*\s*=\s*UTF-8''([^;]+)/i.exec(value)?.[1]
@@ -918,6 +929,7 @@ function normalizeEntry(value: unknown, reportEditable: boolean): HeadmanJournal
     markRevision: stringValue(value.markRevision),
     approvedTicket: normalizeApprovedTicket(value.approvedTicket),
     source: stringValue(value.source),
+    timestamp: status === 'EMPTY' ? null : isoInstantValue(value.timestamp),
     excuseReason: stringValue(value.excuseReason),
     excuseType: stringValue(value.excuseType),
     comment: stringValue(value.comment),

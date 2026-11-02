@@ -11,6 +11,7 @@ defineProps<{
   uncertain: boolean;
 }>();
 const emit = defineEmits<{ more: []; retry: []; revoke: [id: string] }>();
+defineSlots<{ actions?: () => unknown }>();
 const confirming = ref<string | null>(null);
 function revoke(id: string) {
   confirming.value = null;
@@ -96,5 +97,6 @@ function date(value: string) {
     >
       Показать ещё
     </button>
+    <slot name="actions" />
   </section>
 </template>

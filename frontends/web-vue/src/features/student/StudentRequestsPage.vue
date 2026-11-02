@@ -17,10 +17,22 @@ import StudentNotice from './StudentNotice.vue';
 import StudentRequestForm from './StudentRequestForm.vue';
 import StudentRequestCard from './StudentRequestCard.vue';
 import ConfirmDialog from '../../shared/ConfirmDialog.vue';
+import { serverDate } from './student-format';
+import EmptyInboxIllustration from '../../../../shared/illustrations/EmptyInboxIllustration.vue';
 const scope = useStudentScope(),
   requests = useStudentRequests(scope),
   route = useRoute();
 const target = useStudentResource<RequestDetail>(scope);
+const emptyMessage = computed(() => requests.view.bucket === 'open' ? 'Нет заявок на рассмотрении.' : 'Архив заявок пуст.');
+const emptyPage = computed(() => Boolean(
+  scope.session.value && !scope.loading.value && !scope.error.value &&
+  requests.bucket.value.page >= 0 && !requests.bucket.value.requests.length &&
+  !requests.bucket.value.loading && !requests.bucket.value.loadingMore && !requests.bucket.value.error &&
+  !requests.view.optionsLoading && !requests.view.optionsError &&
+  !requests.form.value && !route.params.requestId && !target.data.value && !target.loading.value && !target.error.value &&
+  !requests.busy.value && !requests.error.value && !requests.view.mutationError && !requests.message.value &&
+  !requests.ambiguous.value && !requests.uncertainCancellation.value && !requests.cancelling.value
+));
 const initialLesson = typeof route.query.lesson === 'string' ? route.query.lesson : undefined;
 if (route.query.kind === 'EXCUSE' || route.query.kind === 'LATE_CHECKIN')
   requests.form.value = route.query.kind;
@@ -100,6 +112,8 @@ async function checkCancellationAndRefresh() {
       <div class="student-actions">
         <button
           class="web-button"
+          :class="{ 'web-button-selected': requests.form.value === 'EXCUSE' }"
+          :aria-pressed="requests.form.value === 'EXCUSE'"
           :disabled="
             scope.readOnly.value ||
               !scope.session.value.semester ||
@@ -111,6 +125,8 @@ async function checkCancellationAndRefresh() {
           Подать на «у»
         </button><button
           class="web-button"
+          :class="{ 'web-button-selected': requests.form.value === 'LATE_CHECKIN' }"
+          :aria-pressed="requests.form.value === 'LATE_CHECKIN'"
           :disabled="
             scope.readOnly.value ||
               !scope.session.value.semester ||
@@ -123,14 +139,18 @@ async function checkCancellationAndRefresh() {
           Оспорить «н»
         </button><button
           class="web-button"
-          :aria-pressed="requests.view.bucket === 'open'"
-          @click="requests.selectBucket('open')"
+          :aria-pressed="!requests.form.value && requests.view.bucket === 'open'"
+          :disabled="requests.busy.value || requests.ambiguous.value"
+          :class="{ 'web-button-selected': !requests.form.value && requests.view.bucket === 'open' }"
+          @click="requests.form.value = null; requests.selectBucket('open')"
         >
           На рассмотрении{{ openCount === null ? '' : ` (${openCount})` }}
         </button><button
           class="web-button"
-          :aria-pressed="requests.view.bucket === 'archive'"
-          @click="requests.selectBucket('archive')"
+          :aria-pressed="!requests.form.value && requests.view.bucket === 'archive'"
+          :disabled="requests.busy.value || requests.ambiguous.value"
+          :class="{ 'web-button-selected': !requests.form.value && requests.view.bucket === 'archive' }"
+          @click="requests.form.value = null; requests.selectBucket('archive')"
         >
           Архив
         </button>
@@ -160,6 +180,7 @@ async function checkCancellationAndRefresh() {
         :ambiguous="requests.ambiguous.value"
         :read-only="scope.readOnly.value"
         :initial-lesson="initialLesson"
+        :today="serverDate(scope.session.value.serverNow) ?? undefined"
         @close="requests.form.value = null"
         @submit="submit"
       />
@@ -208,19 +229,22 @@ async function checkCancellationAndRefresh() {
           @retry="loadTarget"
         />
       </template>
-      <template v-else>
+      <template v-else-if="!requests.form.value">
         <StudentNotice
           :loading="requests.bucket.value.loading"
           :error="requests.bucket.value.error ?? ''"
           :empty="
-            !requests.bucket.value.loading && !requests.bucket.value.requests.length
-              ? requests.view.bucket === 'open'
-                ? 'Нет заявок на рассмотрении.'
-                : 'Архив заявок пуст.'
+            !emptyPage && !requests.bucket.value.loading && !requests.bucket.value.requests.length
+              ? emptyMessage
               : ''
           "
           @retry="requests.load"
-        /><StudentRequestCard
+        />
+        <div v-if="emptyPage" class="student-requests-empty">
+          <EmptyInboxIllustration />
+          <p role="status">{{ emptyMessage }}</p>
+        </div>
+        <StudentRequestCard
           v-for="request in requests.bucket.value.requests"
           :key="request.summary.id"
           :request="request"

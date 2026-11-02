@@ -1,0 +1,16 @@
+@import '../shared/foundation/tokens.pcss';
+
+body { margin: 0; padding: var(--space-6); font-family: var(--font-family-sans); font-size: var(--font-size-body); color: var(--color-text-primary); background: var(--color-surface-base); }
+a { color: var(--color-border-accent); }
+h1, h2 { font-weight: var(--font-weight-medium); }
+h1 { font-size: var(--font-size-title-screen); }
+h2 { font-size: var(--font-size-title-block); }
+.pwa-review-layout { display: flex; align-items: flex-start; gap: var(--space-8); }
+.pwa-review-layout > nav { flex: 0 0 calc(var(--control-height) * 9); }
+.pwa-review-layout > nav > section + section { margin-block-start: var(--space-6); }
+.pwa-review-layout li { margin-block: var(--space-2); }
+.pwa-review-layout details { margin-block-start: var(--space-2); }
+.pwa-review-layout details > ul { max-block-size: calc(var(--control-height) * 5); overflow: auto; }
+.pwa-review-viewport { min-inline-size: 0; }
+/* HTML width/height attributes hold the requested CSS-pixel audit viewport. */
+.pwa-review-frame { display: block; border: 0; flex: none; }

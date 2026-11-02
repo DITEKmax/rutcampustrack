@@ -68,6 +68,9 @@ const current = computed(
   () => ordered.value.find((lesson) => !lesson.cancelled && lesson.status === 'ACTIVE') ?? null,
 );
 const timeline = computed(() => teacherDayTimeline(ordered.value, props.lessonSlots));
+const otherTimeline = computed(() =>
+  timeline.value.filter((item) => item.kind !== 'lesson' || item.lesson.id !== current.value?.id),
+);
 const dateTrigger = ref<HTMLButtonElement | null>(null);
 const extraAssignments = computed(() =>
   assignments.value.filter(
@@ -254,17 +257,18 @@ useProjectionRefresh(() => load(true));
         @open="emit('open-lesson', $event)"
       />
       <h2
-        v-if="current && timeline.length"
+        v-if="current && otherTimeline.length"
         class="teacher-screen__section-title"
       >
         Другие пары
       </h2>
       <ol
+        v-if="otherTimeline.length"
         class="teacher-screen__list"
         aria-label="Пары выбранного дня"
       >
         <li
-          v-for="item in timeline"
+          v-for="item in otherTimeline"
           :key="
             item.kind === 'lesson' ? 'lesson-' + item.lesson.id : 'window-' + item.slot.lessonNumber
           "

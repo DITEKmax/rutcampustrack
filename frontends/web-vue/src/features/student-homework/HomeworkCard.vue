@@ -47,16 +47,10 @@ watch(() => props.item.description, async () => {
   >
     <header class="web-homework-heading">
       <div>
+        <p v-if="item.title && item.title !== item.subject.name" class="web-caption web-homework-subject">{{ item.subject.name }}</p>
         <h3 tabindex="-1">
           {{ item.title || item.subject.name }}
-        </h3><p class="web-caption">
-          {{ item.subject.name }} ·
-          <time :datetime="item.lessonDate">{{
-            new Intl.DateTimeFormat('ru', { day: 'numeric', month: 'long' }).format(
-              new Date(`${item.lessonDate}T12:00:00Z`),
-            )
-          }}</time><span v-if="item.lessonNumber"> · {{ item.lessonNumber }} пара</span>
-        </p>
+        </h3>
       </div>
       <span
         v-if="item.archived"
@@ -65,13 +59,14 @@ watch(() => props.item.description, async () => {
       <label
         v-else
         class="web-completion"
+        :title="`Выполнено: ${item.title || item.subject.name}`"
       ><input
         type="checkbox"
         :checked="item.completed"
         :disabled="pending || readOnly || uncertain"
         :aria-label="`Выполнено: ${item.title || item.subject.name}`"
         @change="$emit('complete', ($event.target as HTMLInputElement).checked)"
-      ><span>Выполнено</span></label>
+      ></label>
     </header>
     <div
       ref="description"

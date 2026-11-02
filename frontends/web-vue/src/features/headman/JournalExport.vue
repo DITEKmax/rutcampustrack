@@ -13,6 +13,7 @@ import type {
   ReportFormatOption,
 } from '../../../../mobile-core/src/shared/report-download-client';
 import ReportExport from './ReportExport.vue';
+import WebSelect from '../../shared/WebSelect.vue';
 const props = defineProps<{
   feature: HeadmanFeature;
   subjectId: number;
@@ -28,6 +29,7 @@ const options = shallowRef<HeadmanWeeklyExportOptions | null>(null),
   formats = shallowRef<readonly ReportFormatOption[]>([]);
 const weeks = ref<string[]>([]),
   format = ref<ReportDownloadFormat>('xlsx');
+const formatOptions = computed(() => (props.mode === 'subject' ? formats.value : options.value?.formats ?? []).map(item => ({ value: item.code, label: item.label })));
 const report = computed<ReportDownloadTicketRequest | null>(() => {
   if (!options.value || !weeks.value.length) return null;
   if (props.mode === 'subject')
@@ -84,41 +86,31 @@ async function open() {
         class="web-error"
         role="alert"
         >{{ error }}</p
-      ><p v-if="options">{{ options.semesterName }}</p
-      ><fieldset v-if="options"
+      ><fieldset v-if="options" class="headman-journal-export-weeks"
         ><legend>Недели</legend
-        ><div class="headman-actions"
+        ><div class="headman-journal-export-grid"
           ><label
             v-for="week in options.weeks"
             :key="week.weekStart"
+            class="headman-choice"
             ><input
               v-model="weeks"
               type="checkbox"
               :value="week.weekStart"
-            />{{ dateLabel(week.weekStart) }} — {{ dateLabel(week.weekEnd) }}</label
+            /><span>{{ dateLabel(week.weekStart) }} — {{ dateLabel(week.weekEnd) }}</span></label
           ></div
         ></fieldset
-      ><label class="web-field"
-        >Формат<select v-model="format"
-          ><option
-            v-for="item in mode === 'subject' ? formats : options?.formats"
-            :key="item.code"
-            :value="item.code"
-            >{{ item.label }}</option
-          ></select
-        ></label
-      ><p
+      > <WebSelect v-model="format" label="Формат" :options="formatOptions" :disabled="loading" />
+      <p
         v-if="mode === 'subject' && (!subjectId || !lessonTypes.length)"
         class="web-notice"
         >Выбери предмет и тип занятия для предметного журнала.</p
-      ><ReportExport
+      ><div class="headman-journal-export-download"><ReportExport
         :key="`journal-${mode}`"
         :transport="feature.transport"
         :scope="`journal-${mode}`"
         :report="report"
         :disabled="!active || loading"
-        :label="
-          mode === 'subject' ? 'Скачать предметный журнал' : 'Скачать выбранные недели'
-        " /></div
+        label="Скачать" /></div></div
   ></div>
 </template>

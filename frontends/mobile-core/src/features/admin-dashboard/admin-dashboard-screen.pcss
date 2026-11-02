@@ -90,6 +90,17 @@
   color: var(--rct-color-accent-on-now);
   background: var(--rct-color-accent-now);
 }
+.admin-dashboard-screen__period--attendance {
+  grid-template-columns: minmax(0, 1fr);
+}
+.admin-dashboard-screen__explanation > summary {
+  min-block-size: var(--rct-control-min-touch);
+  padding-block: var(--rct-space-3);
+  color: var(--rct-color-text-secondary);
+  font-size: var(--rct-font-size-caption);
+  cursor: pointer;
+  @mixin rct-focus-ring;
+}
 .admin-dashboard-screen__stats--activity {
   gap: var(--rct-space-1-half);
 }

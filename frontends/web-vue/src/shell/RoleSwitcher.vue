@@ -11,8 +11,8 @@ import { roleLabels, webSession } from '../auth/session';
       <button
         v-for="grant in webSession.roles.value"
         :key="grant.grantId"
-        class="web-button"
-        :class="{ 'web-button-primary': grant.role === webSession.snapshot.value?.activeRole }"
+        class="web-button web-role-option"
+        :class="{ 'is-selected': grant.role === webSession.snapshot.value?.activeRole }"
         :aria-pressed="grant.role === webSession.snapshot.value?.activeRole"
         :disabled="webSession.busy.value || !grant.selectable"
         @click="webSession.selectRole(grant.role)"
@@ -22,7 +22,7 @@ import { roleLabels, webSession } from '../auth/session';
     </template>
     <span
       v-else-if="webSession.roles.value[0]"
-      class="web-role-label"
+      class="web-role-label is-selected"
     >{{ roleLabels[webSession.roles.value[0].role]
     }}<span v-if="webSession.roles.value[0].readOnly"> · Только чтение</span></span>
   </div>

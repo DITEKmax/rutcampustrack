@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import WebSelect from '../../shared/WebSelect.vue';
 import type {
   AdminAccessCatalog,
   AdminAccessMode,
@@ -35,7 +36,7 @@ function toggle(code: string, checked: boolean) {
     :disabled="disabled"
   >
     <legend>Административные права</legend>
-    <label class="web-field">Профиль<select v-model="mode"><option value="LIMITED">Ограниченный</option><option value="FULL">Полный доступ</option></select></label>
+    <WebSelect v-model="mode" label="Профиль" :options="[{ value: 'LIMITED', label: 'Ограниченный' }, { value: 'FULL', label: 'Полный доступ' }]" :disabled="disabled" />
     <p
       v-if="mode === 'FULL'"
       class="web-caption"

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { StudentAttendanceMetricSet } from '../../../../mobile-core/src/api/types';
 import { percent } from './student-format';
-defineProps<{ metrics: StudentAttendanceMetricSet; compact?: boolean; showCount?: boolean }>();
+defineProps<{ metrics: StudentAttendanceMetricSet; compact?: boolean; showCount?: boolean; showAbsences?: boolean }>();
 const labels = [
   { key: 'present', label: 'Посещено' },
   { key: 'excused', label: 'Уважительная причина пропуска' },
@@ -30,6 +30,11 @@ const compactLabels = [
       <dd class="web-caption">
         {{ metrics[metric.key].count }} / {{ metrics.held }}
       </dd>
+    </div>
+    <div v-if="compact && showAbsences" class="student-metric student-metric-absences web-stack">
+      <dt>Доля «н»</dt>
+      <dd class="student-metric-value">{{ percent(metrics.absent.percent) }}</dd>
+      <dd class="web-caption">{{ metrics.absent.count }} / {{ metrics.held }}</dd>
     </div>
     <div
       v-if="showCount"

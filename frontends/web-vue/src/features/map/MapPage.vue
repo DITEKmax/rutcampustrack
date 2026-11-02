@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, ref, useId, watch } from 'vue';
 import type { MapFormat } from '../../../../mobile-core/src/api/types';
+import MapUnavailableIllustration from '../../../../shared/illustrations/MapUnavailableIllustration.vue';
 import { useWebMap } from './use-map';
+import WebSelect from '../../shared/WebSelect.vue';
 import './map.pcss';
 
 const map = useWebMap();
@@ -13,6 +15,7 @@ const imageError = ref(false);
 const label = computed(() => `${map.building.value?.label ?? ''}, ${map.floor.value?.label ?? ''}`);
 const formats = ['png', 'svg'] as const;
 const ready = computed(() => imageReady.value && !imageError.value);
+const emptyError = computed(() => Boolean(map.error.value && !map.manifest.value && !map.buildings.value.length && !map.plan.value && !map.preview.value));
 let revision = 0;
 let drag: { pointer: number; x: number; y: number; left: number; top: number } | null = null;
 function stopDrag() {
@@ -137,8 +140,13 @@ function formatStatus(format: MapFormat) {
     >
       Загружаем список корпусов…
     </p>
+    <div v-if="emptyError" class="web-map-empty-error">
+      <MapUnavailableIllustration />
+      <p class="web-map-empty-error-message" role="alert">{{ map.error.value }}</p>
+      <button class="web-button" type="button" :disabled="map.loading.value" @click="map.load">Повторить</button>
+    </div>
     <p
-      v-if="map.error.value"
+      v-else-if="map.error.value"
       class="web-error"
       role="alert"
     >
@@ -152,39 +160,19 @@ function formatStatus(format: MapFormat) {
     </p>
     <template v-if="map.buildings.value.length">
       <div class="web-map-pickers">
-        <div class="web-field">
-          <label :for="`${id}-building`">Корпус</label>
-          <select
-            :id="`${id}-building`"
-            :value="map.buildingId.value"
-            @change="map.selectBuilding(($event.target as HTMLSelectElement).value)"
-          >
-            <option
-              v-for="building in map.buildings.value"
-              :key="building.id"
-              :value="building.id"
-            >
-              {{ building.label }}
-            </option>
-          </select>
-        </div>
-        <div class="web-field">
-          <label :for="`${id}-floor`">Этаж</label>
-          <select
-            :id="`${id}-floor`"
-            :value="map.floorId.value"
-            :disabled="!map.floors.value.length"
-            @change="map.selectFloor(($event.target as HTMLSelectElement).value)"
-          >
-            <option
-              v-for="floor in map.floors.value"
-              :key="floor.id"
-              :value="floor.id"
-            >
-              {{ floor.label }}
-            </option>
-          </select>
-        </div>
+        <WebSelect
+          label="Корпус"
+          :model-value="map.buildingId.value"
+          :options="map.buildings.value.map(building => ({ value: building.id, label: building.label }))"
+          @update:model-value="map.selectBuilding"
+        />
+        <WebSelect
+          label="Этаж"
+          :model-value="map.floorId.value"
+          :options="map.floors.value.map(floor => ({ value: floor.id, label: floor.label }))"
+          :disabled="!map.floors.value.length"
+          @update:model-value="map.selectFloor"
+        />
       </div>
       <p
         class="web-sr-only"
@@ -331,13 +319,6 @@ function formatStatus(format: MapFormat) {
           Загрузить файлы повторно
         </button>
       </template>
-      <p
-        v-if="map.usageError.value"
-        class="web-notice"
-        role="status"
-      >
-        {{ map.usageError.value }}
-      </p>
     </template>
     <p
       v-else-if="!map.loading.value && !map.error.value"

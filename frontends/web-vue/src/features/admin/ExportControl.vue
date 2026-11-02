@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import WebSelect from '../../shared/WebSelect.vue';
 import { onMounted, ref, shallowRef } from 'vue';
 import { AdminUsersClient } from '../../../../mobile-core/src/features/admin-users/admin-users-client';
 import { AdminGroupsClient } from '../../../../mobile-core/src/features/admin-groups/admin-groups-client';
@@ -18,6 +19,7 @@ import { createBrowserReportDownloadPort } from '../../../../mobile-core/src/sha
 import { useAdmin } from './use-admin';
 const props = defineProps<{
   kind: 'users' | 'groups' | 'attendance';
+  disabled?: boolean;
   selector:
     | Omit<AdminUsersReportSelector, 'format'>
     | Omit<AdminGroupsReportSelector, 'format'>
@@ -83,6 +85,7 @@ function newRequest(): ReportDownloadTicketRequest {
   );
 }
 async function save() {
+  if (props.disabled && !pending.value) return;
   const request = pending.value ?? newRequest();
   await admin.run(
     async () => {
@@ -130,16 +133,9 @@ onMounted(() =>
 <template>
   <div class="admin-export">
     <div class="admin-actions">
-      <label class="web-field">Формат выгрузки<select
-        v-model="format"
-        :disabled="busy || !!pending || !formats.length"
-      ><option
-        v-for="option in formats"
-        :key="option.code"
-        :value="option.code"
-      >{{ option.label }}</option></select></label><button
+      <WebSelect v-model="format" class="admin-export-format" label="Формат выгрузки" :options="formats.map(option => ({ value: option.code, label: option.label }))" :disabled="busy || !!pending || !formats.length || disabled" /><button
         class="web-button"
-        :disabled="busy || !formats.length"
+        :disabled="busy || !formats.length || (!pending && disabled)"
         @click="save"
       >
         {{ busy ? 'Готовим файл…' : pending ? 'Проверить прежнюю выгрузку' : 'Экспортировать' }}

@@ -1,34 +1,28 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import type {
-  StudentAttendanceResponse,
   StudentStatisticsSubjectDetailResponse,
   StudentToday,
   StudentRequestOptions,
 } from '../../../../mobile-core/src/api/types';
 import { useStudentResource, useStudentScope } from './student-state';
 import { useStudentCheckin } from './use-student-checkin';
-import { formatLessonDate, lessonTypeLabel, monday, serverDate, shiftDate } from './student-format';
+import { formatLessonDate } from './student-format';
 import StudentRegion from './StudentRegion.vue';
 import StudentNotice from './StudentNotice.vue';
 import StudentLesson from './StudentLesson.vue';
 import StudentMetrics from './StudentMetrics.vue';
 import StudentPwaBanner from './StudentPwaBanner.vue';
 import StudentHomeworkDay from './StudentHomeworkDay.vue';
-import StudentTrend from './StudentTrend.vue';
-import StudentPeriodPager from './StudentPeriodPager.vue';
 import { canRequestLesson } from '../../../../mobile-core/src/features/requests/state';
 const scope = useStudentScope();
 const today = useStudentResource<StudentToday>(scope);
-const attendance = useStudentResource<StudentAttendanceResponse>(scope);
 const subject = useStudentResource<StudentStatisticsSubjectDetailResponse>(scope);
 const options = useStudentResource<StudentRequestOptions>(scope);
 const receivedAt = ref(Date.now());
 watch(today.data, () => {
   receivedAt.value = Date.now();
 });
-const week = ref(''),
-  range = ref<'week' | 'semester'>('week');
 const hero = computed(
   () =>
     today.data.value?.lessons.find((l) => l.schedule.status === 'ACTIVE') ??
@@ -39,21 +33,16 @@ async function load() {
   const semester = scope.session.value?.semester;
   if (!semester) {
     today.clear();
-    attendance.clear();
     subject.clear();
     options.clear();
     return;
   }
-  if (!week.value)
-    week.value = monday(serverDate(scope.session.value?.serverNow) ?? semester.startsOn);
   await Promise.all([
     today.load(() => scope.api.getToday(), true),
-    attendance.load(() => scope.api.getAttendance(semester.id), true),
     options.load(() => scope.api.getRequestOptions(), true),
   ]);
   if (!scope.current()) return;
   scope.transport.assertCurrent();
-  if (!week.value && today.data.value) week.value = monday(today.data.value.date);
   await loadSubject();
 }
 watch(scope.refreshed, load);
@@ -75,20 +64,10 @@ async function loadSubject() {
 watch(scope.session, (value) => {
   if (!value) {
     today.clear();
-    attendance.clear();
     subject.clear();
   }
 });
 const checkin = useStudentCheckin(scope, load);
-const graph = computed(() =>
-  range.value === 'semester'
-    ? (attendance.data.value?.graph.weeks ?? [])
-    : !week.value
-      ? []
-      : (attendance.data.value?.graph.days.filter(
-          (p) => p.dateFrom >= week.value && p.dateFrom <= shiftDate(week.value, 6),
-        ) ?? []),
-);
 const progress = computed(() => {
   const lesson = hero.value?.schedule,
     value = today.data.value;
@@ -204,18 +183,12 @@ const progress = computed(() => {
           </p>
         </section>
         <section
-          class="web-stack"
+          class="web-stack student-current-stats"
           aria-labelledby="student-current-stats-title"
         >
           <h2 id="student-current-stats-title">
             По текущему предмету
           </h2>
-          <p
-            v-if="hero"
-            class="web-caption"
-          >
-            {{ hero.schedule.subject.name }} · {{ lessonTypeLabel(hero.schedule.subject.type) }}
-          </p>
           <StudentNotice
             :loading="subject.loading.value"
             :error="subject.error.value"
@@ -226,49 +199,10 @@ const progress = computed(() => {
             v-if="subject.data.value"
             :metrics="subject.data.value.selectedAggregate"
             compact
+            show-absences
           />
         </section>
       </div>
-      <section
-        v-if="attendance.data.value"
-        class="web-stack"
-      >
-        <div class="web-page-header">
-          <h2>Динамика посещаемости</h2><div
-            class="student-actions"
-            role="group"
-            aria-label="Период графика"
-          >
-            <button
-              v-for="item in [
-                { id: 'week', label: 'Эта неделя' },
-                { id: 'semester', label: 'Весь период' },
-              ] as const"
-              :key="item.id"
-              class="web-button"
-              :aria-pressed="range === item.id"
-              :class="{ 'web-button-selected': range === item.id }"
-              @click="range = item.id"
-            >
-              {{ item.label }}
-            </button>
-          </div>
-        </div>
-        <StudentPeriodPager
-          v-if="range === 'week'"
-          :label="`${formatLessonDate(week)} — ${formatLessonDate(shiftDate(week, 6))}`"
-          unit="период графика"
-          :previous-disabled="week <= monday(attendance.data.value.semester.startsOn)"
-          :next-disabled="shiftDate(week, 7) > attendance.data.value.semester.endsOn"
-          @step="week = shiftDate(week, $event * 7)"
-          @reset="week = monday(today.data.value?.date ?? attendance.data.value.semester.startsOn)"
-        />
-        <StudentTrend :points="graph" />
-      </section>
-      <StudentNotice
-        :error="attendance.error.value"
-        @retry="load"
-      />
       <div
         v-if="today.data.value"
         class="student-dashboard-bottom"

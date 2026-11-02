@@ -24,14 +24,17 @@ class HostNode {
   value = ''
   _value: unknown
   selected = false
-  selectedIndex = -1
+  get selectedIndex() { return this.options.findIndex(n => n.props['aria-selected'] === true) }
   checked = false
   constructor(readonly tag: string) { markRaw(this) }
-  get options() { return this.children.filter(n => n.tag === 'option') }
+  get options() { return this.props['aria-haspopup'] === 'listbox' && this.parent ? nodes(this.parent).filter(n => n.props.role === 'option') : this.children.filter(n => n.tag === 'option') }
   get type() { return this.props.type ?? 'text' }
   get tagName() { return this.tag.toUpperCase() }
   get isConnected(): boolean { return this.tag === 'root' || !!this.parent?.isConnected }
   getRootNode() { return document }
+  matches() { return false }
+  setCustomValidity(message: string) { this.props.validationMessage = message }
+  querySelector(selector: string) { return nodes(this).find(n => n.tag === selector) ?? null }
   focus() {
     document.activeElement = this
     this.focusIn()
@@ -113,6 +116,7 @@ async function mounted(screen: 'stats' | 'journal' = 'stats', journalPages = 1) 
   let catalog = initialCatalog
   let catalogFailure = 0, statsFailure = 0
   let catalogHold: Promise<void> | null = null, statsHold: Promise<void> | null = null
+  let exportHold: Promise<void> | null = null
   let projection = 'Прежняя студентка контроля'
   const exports: Array<{ requestId: string; report: unknown }> = []
   const journalQueries: URLSearchParams[] = []
@@ -149,6 +153,7 @@ async function mounted(screen: 'stats' | 'journal' = 'stats', journalPages = 1) 
     }
     if (url.pathname === '/api/auth/export-jobs') {
       exports.push(JSON.parse(String(init?.body)))
+      await exportHold
       throw new TypeError('Synthetic lost export acknowledgement')
     }
     throw new Error('Unexpected fixture request')
@@ -167,11 +172,11 @@ async function mounted(screen: 'stats' | 'journal' = 'stats', journalPages = 1) 
   app = renderer.createApp(Page); app.use(router); app.mount(root)
   await settle()
   expect(text(root)).toContain(projection)
-  const group = () => nodes(root).find(n => n.tag === 'select' && n.options.some(o => text(o) === 'Контрольная группа'))!
+  const group = () => nodes(root).find(n => n.props['aria-haspopup'] === 'listbox' && n.options.some(o => text(o).trim() === 'Контрольная группа'))!
   const openDraft = async () => {
-    click(root, 'Фильтр: Присутствия'); await nextTick()
-    const field = nodes(root).find(n => n.tag === 'input' && n.props.type === 'number')!
+    const field = nodes(root).find(n => n.tag === 'input' && n.props.type === 'search')!
     field.input('37'); field.focus(); await nextTick()
+    await new Promise(resolve => setTimeout(resolve, 270)); await settle()
     return field
   }
   return {
@@ -184,6 +189,7 @@ async function mounted(screen: 'stats' | 'journal' = 'stats', journalPages = 1) 
     denyStats: (status: number) => { statsFailure = status },
     holdCatalog: () => { let release!: () => void; catalogHold = new Promise<void>(resolve => { release = resolve }); return () => { catalogHold = null; release() } },
     holdStats: () => { let release!: () => void; statsHold = new Promise<void>(resolve => { release = resolve }); return () => { statsHold = null; release() } },
+    holdExport: () => { let release!: () => void; exportHold = new Promise<void>(resolve => { release = resolve }); return () => { exportHold = null; release() } },
     holdJournalPage: (page: number) => { let release!: () => void; journalHolds.set(page, new Promise<void>(resolve => { release = resolve })); return () => { journalHolds.delete(page); release() } },
   }
 }
@@ -191,16 +197,16 @@ async function mounted(screen: 'stats' | 'journal' = 'stats', journalPages = 1) 
 describe('teacher live reads while a mounted filter is focused', () => {
   it('removes the deleted target option and refreshes the authorized control without replacing its draft, focus or unknown export', async () => {
     const f = await mounted()
+    const field = await f.openDraft(), group = f.group()
     click(f.root, 'Экспортировать'); await settle()
     const originalExport = f.exports[0]!
-    const field = await f.openDraft(), group = f.group()
     const releaseCatalog = f.holdCatalog(), releaseStats = f.holdStats()
     f.removeOtherGroup(); f.projection('Обновлённая студентка контроля'); f.changed(); await settle()
     expect(group.props.disabled).toBe(false)
     expect(document.activeElement).toBe(field)
     releaseCatalog(); await settle()
-    expect(group.options.map(text)).not.toContain('Удаляемая группа')
-    expect(group.options[group.selectedIndex]?.value).toBe('10')
+    expect(group.options.map(n => text(n).trim())).not.toContain('Удаляемая группа')
+    expect(text(group.options[group.selectedIndex]!).trim()).toBe('Контрольная группа')
     expect(field.isConnected).toBe(true)
     expect(field.value).toBe('37')
     expect(document.activeElement).toBe(field)
@@ -216,13 +222,13 @@ describe('teacher live reads while a mounted filter is focused', () => {
     expect(f.exports[1]).toEqual(originalExport)
   })
 
-  it('retires the cached roster and focused private draft when the catalog proves its scope is gone', async () => {
+  it('retires the cached roster and group options when the catalog proves its scope is gone', async () => {
     const f = await mounted(), field = await f.openDraft()
     f.removeCurrentScope(); f.changed(); await settle()
     expect(text(f.root)).not.toContain('Прежняя студентка контроля')
     expect(text(f.root)).not.toContain('Удаляемая группа')
-    expect(field.isConnected).toBe(false)
-    expect(document.activeElement).not.toBe(field)
+    expect(field.isConnected).toBe(true)
+    expect(f.group()).toBeUndefined()
   })
 
   it.each(['catalog', 'stats'] as const)('withdraws the private projection after a background %s denial despite focus', async target => {
@@ -231,27 +237,32 @@ describe('teacher live reads while a mounted filter is focused', () => {
     else f.denyStats(403)
     f.changed(); await settle()
     expect(text(f.root)).not.toContain('Прежняя студентка контроля')
-    expect(field.isConnected).toBe(false)
+    expect(field.isConnected).toBe(target === 'stats')
   })
 
   it('clears a lost current scope before waiting for the alternative authorized roster', async () => {
     const f = await mounted(), field = await f.openDraft(), release = f.holdStats()
     f.removeCurrentScope(true); f.changed(); await settle()
     expect(text(f.root)).not.toContain('Прежняя студентка контроля')
-    expect(field.isConnected).toBe(false)
+    expect(field.isConnected).toBe(true)
+    expect(f.group()).toBeUndefined()
     f.projection('Студентка другой доступной группы'); release(); await settle()
     expect(text(f.root)).toContain('Студентка другой доступной группы')
   })
 
   it('preserves a focused filter and its original unknown export through a transient read failure', async () => {
     const f = await mounted()
+    const field = await f.openDraft()
+    const releaseExport = f.holdExport()
     click(f.root, 'Экспортировать'); await settle()
-    const original = f.exports[0]!, field = await f.openDraft()
+    const original = f.exports[0]!
     f.denyStats(503); f.changed(); await settle()
     expect(text(f.root)).toContain('Прежняя студентка контроля')
     expect(field.isConnected).toBe(true)
     expect(field.value).toBe('37')
     expect(document.activeElement).toBe(field)
+    expect(f.exports).toEqual([original])
+    releaseExport(); await settle()
     click(f.root, 'Проверить выгрузку'); await settle()
     expect(f.exports[1]).toEqual(original)
     f.denyStats(0); f.projection('Восстановленная студентка контроля'); f.changed(); await settle()
@@ -261,13 +272,13 @@ describe('teacher live reads while a mounted filter is focused', () => {
 
   it('refreshes the applied journal query while an unapplied date draft stays dirty and focused', async () => {
     const f = await mounted('journal')
-    const field = nodes(f.root).find(n => n.tag === 'input' && n.props.type === 'date')!
-    field.input('2026-10-01'); field.focus(); await nextTick()
+    const field = nodes(f.root).find(n => n.tag === 'input' && n.props.placeholder === 'ДД.ММ.ГГГГ')!
+    field.input('01.10.2026'); field.focus(); await nextTick()
     f.removeOtherGroup(); f.projection('Обновлённая студентка контроля'); f.changed(); await settle()
     expect(f.group().options.map(text)).not.toContain('Удаляемая группа')
     expect(text(f.root)).toContain('Обновлённая студентка контроля')
     expect(field.isConnected).toBe(true)
-    expect(field.value).toBe('2026-10-01')
+    expect(field.value).toBe('01.10.2026')
     expect(document.activeElement).toBe(field)
     expect(f.journalQueries.at(-1)?.get('groupId')).toBe('10')
     expect(f.journalQueries.at(-1)?.has('dateFrom')).toBe(false)

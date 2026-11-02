@@ -20,6 +20,7 @@ const label = computed(() =>
       Домашнее задание
     </h2>
     <StudentPeriodPager
+      class="student-homework-period"
       :label="label"
       unit="день заданий"
       :previous-disabled="!h.canStep(-1)"

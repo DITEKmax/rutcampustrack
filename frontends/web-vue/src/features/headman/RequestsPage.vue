@@ -16,15 +16,16 @@ import {
   updateRequestExclusions,
   type FrozenRequestDecision,
 } from '../../../../mobile-core/src/features/headman-requests/request-decision';
+import MobileIcon from '../../../../mobile-core/src/shared/components/MobileIcon.vue';
 import HeadmanPage from './HeadmanPage.vue';
 import { restoreRequestDecision, serializeRequestDecision } from './request-decision-state';
+import HeadmanRequestCard from './HeadmanRequestCard.vue';
+import HeadmanRequestDetails from './HeadmanRequestDetails.vue';
+import WebSelect from '../../shared/WebSelect.vue';
+import WebDateField from '../../shared/WebDateField.vue';
+import './headman-workflows.pcss';
 import {
   useHeadmanFeature,
-  dateLabel,
-  lessonTypes,
-  lessonTypeCode,
-  markLabels,
-  reasonLabel,
   saveBlob,
 } from './context';
 const feature = useHeadmanFeature(),
@@ -51,6 +52,11 @@ const proposed = ref<'APPROVED' | 'REJECTED' | null>(null);
 const replayReady = shallowRef<FrozenRequestDecision | null>(null);
 const decisionActor = webSession.snapshot.value?.userId;
 const decisionStorage = `rct:web:headman:request-decision:${webSession.identity.value}`;
+const locked = computed(() => busy.value || loading.value || !!pending.value);
+const detachedDetail = computed(() => detail.value && !page.value?.content.some(item => item.id === detail.value?.summary.id) ? detail.value : null);
+function selectBucket(bucket: HeadmanRequestBucket) { if (busy.value || pending.value) return; detail.value = null; filters.bucket = bucket; filters.page = 0; page.value = null; void load(); }
+function applyFilters() { if (busy.value || pending.value) return; detail.value = null; filters.page = 0; void load(); }
+function toggle(id: string) { if (busy.value || pending.value) return; if (detail.value?.summary.id === id) detail.value = null; else void open(id); }
 let restored = false;
 function persistDecision(value: FrozenRequestDecision | null) {
   feature.assertCurrent();
@@ -59,12 +65,6 @@ function persistDecision(value: FrozenRequestDecision | null) {
   pending.value = value;
   replayReady.value = null;
 }
-const statuses = {
-  PENDING: 'На рассмотрении',
-  APPROVED: 'Одобрена',
-  REJECTED: 'Отклонена',
-  CANCELLED: 'Отозвана',
-};
 const affected = computed(
   () => detail.value?.currentAffectedLessons ?? detail.value?.lessons ?? [],
 );
@@ -263,247 +263,22 @@ useWebLiveRefresh(load, {
 });
 </script>
 <template>
-  <HeadmanPage
-    title="Заявки и тикеты"
-    :loading="loading"
-    :error="error"
-    @reload="load"
-  >
-    <p
-      v-if="pending"
-      class="web-notice"
-      >Сохранено исходное решение по заявке:
-      {{ pending.decision === 'APPROVED' ? 'одобрить' : 'отклонить'
-      }}{{ pending.reason ? ` · ${pending.reason}` : '' }}. Новая команда заблокирована до проверки
-      результата.
-      <button
-        class="web-button"
-        :disabled="busy"
-        @click="reconcile"
-        >Проверить результат</button
-      >
-      <button
-        v-if="replayReady === pending"
-        class="web-button"
-        :disabled="busy || !feature.writable('MANAGE_EXCUSES')"
-        @click="sendPending(true)"
-        >Продолжить исходное сохранение</button
-      >
-    </p>
-    <form
-      class="headman-panel headman-toolbar"
-      @submit.prevent="
-        filters.page = 0;
-        load();
-      "
-    >
-      <label class="web-field"
-        >Очередь<select v-model="filters.bucket"
-          ><option value="OPEN">Открытые</option
-          ><option value="ARCHIVE">Архив</option></select
-        ></label
-      >
-      <label class="web-field"
-        >Тип<select v-model="filters.type"
-          ><option value="">Все</option
-          ><option value="EXCUSE">Уважительная причина</option
-          ><option value="LATE_CHECKIN">Апелляция отметки</option></select
-        ></label
-      >
-      <label class="web-field"
-        >Студент<input
-          v-model="filters.name"
-          type="search" /></label
-      ><label class="web-field"
-        >С даты<input
-          v-model="filters.from"
-          type="date" /></label
-      ><label class="web-field"
-        >По дату<input
-          v-model="filters.to"
-          type="date" /></label
-      ><button
-        class="web-button"
-        :disabled="loading"
-        >Показать</button
-      >
+  <HeadmanPage title="Заявки и тикеты" class="headman-workflows" hide-title :error="error" @reload="load">
+    <p v-if="pending" class="web-notice" role="status">Сохранено исходное решение по заявке: {{ pending.decision === 'APPROVED' ? 'одобрить' : 'отклонить' }}{{ pending.reason ? ` · ${pending.reason}` : '' }}. Новая команда заблокирована до проверки результата. <button type="button" class="web-button" :disabled="busy" @click="reconcile">Проверить результат</button><button v-if="replayReady === pending" type="button" class="web-button" :disabled="busy || !feature.writable('MANAGE_EXCUSES')" @click="sendPending(true)">Продолжить исходное сохранение</button></p>
+    <div class="headman-flow-tabs" role="group" aria-label="Очередь заявок"><button type="button" class="web-button" :class="{ 'web-button-selected': filters.bucket === 'OPEN' }" :aria-pressed="filters.bucket === 'OPEN'" :disabled="locked" @click="selectBucket('OPEN')">На рассмотрении</button><button type="button" class="web-button" :class="{ 'web-button-selected': filters.bucket === 'ARCHIVE' }" :aria-pressed="filters.bucket === 'ARCHIVE'" :disabled="locked" @click="selectBucket('ARCHIVE')">Архив</button></div>
+    <form class="headman-flow-filter-grid headman-request-filters" @submit.prevent="applyFilters">
+      <WebSelect v-model="filters.type" label="Тип заявки" :options="[{ value: '', label: 'Все заявки' }, { value: 'EXCUSE', label: 'Уважительная причина' }, { value: 'LATE_CHECKIN', label: 'Апелляция отметки' }]" :disabled="locked" @change="applyFilters" />
+      <label class="web-field">Студент<input v-model="filters.name" type="search" :disabled="locked" /></label><WebDateField v-model="filters.from" label="Пары с даты" :max="filters.to || undefined" :disabled="locked" /><WebDateField v-model="filters.to" label="Пары по дату" :min="filters.from || undefined" :disabled="locked" /><button type="submit" class="web-button web-icon-button" aria-label="Показать заявки по фильтрам" title="Показать заявки по фильтрам" :disabled="locked"><MobileIcon name="search" /></button>
     </form>
-    <p
-      v-if="page && !page.content.length"
-      class="web-notice"
-      >Заявок по этим условиям нет.</p
-    >
-    <div
-      v-if="page?.content.length"
-      class="headman-table-scroll"
-      ><table class="headman-table"
-        ><thead
-          ><tr
-            ><th>Студент</th><th>Тип / причина</th><th>Период</th><th>Пары</th><th>Статус</th
-            ><th>Детали</th></tr
-          ></thead
-        ><tbody
-          ><tr
-            v-for="request in page.content"
-            :key="request.id"
-            ><th scope="row">{{ request.studentName }}</th
-            ><td
-              >{{ request.kind === 'EXCUSE' ? 'Уважительная причина' : 'Апелляция отметки'
-              }}<p>{{ reasonLabel(request.reason) }}</p></td
-            ><td>{{ dateLabel(request.coverageStart) }} — {{ dateLabel(request.coverageEnd) }}</td
-            ><td
-              >{{ request.lessonCount
-              }}<span v-if="request.alreadyMarkedCount">
-                · уже отмечено {{ request.alreadyMarkedCount }}</span
-              ></td
-            ><td>{{ statuses[request.status] }}</td
-            ><td
-              ><button
-                class="web-button"
-                :disabled="busy || !!pending"
-                @click="open(request.id)"
-                >Открыть</button
-              ></td
-            ></tr
-          ></tbody
-        ></table
-      ></div
-    >
-    <div
-      v-if="page && page.totalPages > 1"
-      class="headman-actions"
-      ><button
-        class="web-button"
-        :disabled="filters.page === 0 || loading"
-        @click="
-          filters.page--;
-          load();
-        "
-        >Назад</button
-      ><span>{{ page.page + 1 }} / {{ page.totalPages }} · всего {{ page.totalElements }}</span
-      ><button
-        class="web-button"
-        :disabled="page.page + 1 >= page.totalPages || loading"
-        @click="
-          filters.page++;
-          load();
-        "
-        >Далее</button
-      ></div
-    >
-    <section
-      v-if="detail"
-      class="headman-panel web-stack"
-    >
-      <div class="headman-heading"
-        ><h2>{{ detail.summary.studentName }} · {{ statuses[detail.summary.status] }}</h2
-        ><button
-          class="web-button"
-          :disabled="busy || !!pending"
-          @click="detail = null"
-          >Закрыть</button
-        ></div
-      ><p>{{ reasonLabel(detail.summary.reason) }}</p
-      ><p v-if="detail.summary.comment">{{ detail.summary.comment }}</p
-      ><p v-if="detail.summary.decisionComment">Решение: {{ detail.summary.decisionComment }}</p
-      ><p class="headman-muted"
-        >Одобрение применяется к текущему составу пар. Уже стоящая отметка «Был» сохраняется.</p
-      >
-      <div class="headman-table-scroll"
-        ><table class="headman-table"
-          ><thead
-            ><tr
-              ><th>Дата / пара</th><th>Предмет</th><th>Отметка</th
-              ><th v-if="detail.summary.kind === 'EXCUSE' && decisionAvailable"
-                >Исключить из одобрения</th
-              ></tr
-            ></thead
-          ><tbody
-            ><tr
-              v-for="(lesson, index) in affected"
-              :key="lesson.occurrenceId ?? index"
-              ><td>{{ dateLabel(lesson.date) }} · {{ lesson.lessonNumber }}</td
-              ><td
-                >{{ lesson.subjectName }} ·
-                {{ lessonTypes[lessonTypeCode(lesson.subjectType)] ?? 'Тип недоступен' }}</td
-              ><td>{{
-                markLabels[lesson.attendanceStatus ?? ''] ?? lesson.attendanceStatus ?? '—'
-              }}</td
-              ><td v-if="detail.summary.kind === 'EXCUSE' && decisionAvailable"
-                ><label v-if="lesson.occurrenceId"
-                  ><input
-                    type="checkbox"
-                    :checked="excluded.includes(lesson.occurrenceId)"
-                    :disabled="busy || !!pending || !feature.writable('MANAGE_EXCUSES')"
-                    @change="
-                      exclude(lesson.occurrenceId, ($event.target as HTMLInputElement).checked)
-                    "
-                  />
-                  Исключить</label
-                ></td
-              ></tr
-            ></tbody
-          ></table
-        ></div
-      >
-      <div class="headman-actions"
-        ><button
-          v-for="attachment in detail.attachments"
-          :key="attachment.id"
-          class="web-button"
-          @click="download(attachment.id, attachment.name)"
-          >{{ attachment.name ?? 'Подтверждение' }} ·
-          {{ Math.ceil(attachment.size / 1024) }} КБ</button
-        ></div
-      >
-      <p
-        v-if="detail.summary.status === 'PENDING' && !decisionAvailable"
-        class="web-notice"
-        >{{
-          ownRequest
-            ? 'Свою заявку обрабатывает другой уполномоченный участник группы.'
-            : 'Решение недоступно: сервер не подтвердил текущий состав и версию заявки.'
-        }}
-        <button
-          v-if="!ownRequest"
-          class="web-button"
-          :disabled="busy || !!pending"
-          @click="open(detail.summary.id)"
-          >Обновить заявку</button
-        >
-      </p>
-      <form
-        v-if="decisionAvailable && !pending"
-        class="web-stack"
-        @submit.prevent="decide"
-        ><label class="web-field"
-          >Решение<select
-            v-model="proposed"
-            required
-            ><option
-              :value="null"
-              disabled
-              >Выбери решение</option
-            ><option value="APPROVED">Одобрить</option
-            ><option value="REJECTED">Отклонить</option></select
-          ></label
-        ><label
-          v-if="proposed === 'REJECTED'"
-          class="web-field"
-          >Причина отказа<textarea
-            v-model="reason"
-            required
-            maxlength="300"
-          /></label
-        ><p v-if="proposed === 'APPROVED'"
-          >Пар в решении: {{ affected.length - excluded.length }}. Исключено:
-          {{ excluded.length }}.</p
-        ><button
-          class="web-button web-button-primary"
-          :disabled="busy || !proposed"
-          >Подтвердить решение</button
-        ></form
-      >
-    </section>
+    <p v-if="loading && !page" class="web-caption" role="status">Загрузка заявок…</p><p v-if="page && !page.content.length && !error" class="headman-flow-empty">Заявок по этим условиям нет.</p>
+    <div v-if="page?.content.length" class="headman-request-list">
+      <HeadmanRequestCard v-for="request in page.content" :key="request.id" :request="detail?.summary.id === request.id ? detail.summary : request" :expanded="detail?.summary.id === request.id" :locked="locked" @toggle="toggle(request.id)">
+        <HeadmanRequestDetails v-if="detail?.summary.id === request.id" v-model:proposed="proposed" v-model:reason="reason" :detail="detail" :affected="affected" :excluded="excluded" :busy="busy" :pending="!!pending" :decision-available="decisionAvailable" :own-request="ownRequest" :writable="feature.writable('MANAGE_EXCUSES')" @exclude="exclude" @download="download" @refresh="open(detail.summary.id)" @decide="decide" />
+      </HeadmanRequestCard>
+    </div>
+    <HeadmanRequestCard v-if="detachedDetail" :request="detachedDetail.summary" expanded :locked="locked" @toggle="detail = null">
+      <HeadmanRequestDetails v-model:proposed="proposed" v-model:reason="reason" :detail="detachedDetail" :affected="affected" :excluded="excluded" :busy="busy" :pending="!!pending" :decision-available="decisionAvailable" :own-request="ownRequest" :writable="feature.writable('MANAGE_EXCUSES')" @exclude="exclude" @download="download" @refresh="open(detachedDetail.summary.id)" @decide="decide" />
+    </HeadmanRequestCard>
+    <div v-if="page && page.totalPages > 1" class="headman-actions"><button class="web-button" :disabled="filters.page === 0 || locked" @click="detail = null; filters.page--; load()">Назад</button><span class="web-caption">{{ page.page + 1 }} / {{ page.totalPages }} · всего {{ page.totalElements }}</span><button class="web-button" :disabled="page.page + 1 >= page.totalPages || locked" @click="detail = null; filters.page++; load()">Далее</button></div>
   </HeadmanPage>
 </template>

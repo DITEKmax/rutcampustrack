@@ -335,10 +335,17 @@ function lessonKind(lesson: TodayLesson): string {
           </p>
           <h2>{{ hero.schedule.subject.name }}</h2>
           <div class="today-hero__metadata">
-            <p>
-              <MobileIcon name="room" /><span>{{
-                hero.schedule.room.current ?? 'Аудитория уточняется'
-              }}</span>
+            <p class="today-hero__room" :data-changed="hero.schedule.room.changeState === 'CHANGED'">
+              <MobileIcon name="room" /><span class="today-hero__room-details"><span class="today-hero__room-values"><span
+                :class="{ 'today-hero__room--changed': hero.schedule.room.changeState === 'CHANGED' }"
+              >{{ hero.schedule.room.current ?? 'Аудитория уточняется' }}</span><s
+                v-if="hero.schedule.room.previous"
+                class="today-hero__previous-room"
+                :aria-label="`Прежняя аудитория: ${hero.schedule.room.previous}`"
+              >{{ hero.schedule.room.previous }}</s></span><strong
+                v-if="hero.schedule.room.changeState === 'CHANGED'"
+                class="today-hero__room-notice"
+              >Аудитория изменена</strong></span>
             </p><p>
               <MobileIcon name="lesson" /><span>{{ lessonKind(hero) }}</span>
             </p>

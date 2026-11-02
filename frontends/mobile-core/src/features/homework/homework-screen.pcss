@@ -171,6 +171,8 @@
 }
 
 .homework-card {
+  position: relative;
+  isolation: isolate;
   display: grid;
   gap: var(--rct-space-2-half);
   inline-size: 100%;
@@ -180,8 +182,32 @@
   color: var(--rct-color-text-primary);
   background: var(--rct-color-surface-raised);
 }
+.homework-card[data-completion='completed'] {
+  background-color: var(--rct-color-surface-base);
+}
+.homework-card[data-completion='completed']::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: inherit;
+  pointer-events: none;
+  background-image: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent calc(var(--rct-space-1) - var(--rct-border-hairline) * 1.5),
+    color-mix(in srgb, var(--rct-color-border-default) 55%, transparent) calc(var(--rct-space-1) - var(--rct-border-hairline) * 1.5),
+    color-mix(in srgb, var(--rct-color-border-default) 55%, transparent) var(--rct-space-1)
+  );
+}
+.homework-card[data-completion='completed'] .homework-completion,
+.homework-card[data-completion='completed'] :is(a, button):focus-visible {
+  position: relative;
+  z-index: 2;
+}
 
 .homework-card h3,
+.homework-card__subject,
 .homework-card__title,
 .homework-card__description,
 .homework-card__error,
@@ -191,12 +217,13 @@
 
 .homework-card h3 {
   overflow-wrap: anywhere;
+  color: var(--rct-color-text-primary);
   font-size: var(--rct-font-size-body);
   font-weight: var(--rct-font-weight-bold);
   line-height: 1.35;
 }
 
-.homework-card__title,
+.homework-card__subject,
 .homework-card__description {
   overflow-wrap: anywhere;
   color: var(--rct-color-text-secondary);
@@ -211,7 +238,7 @@
   @mixin rct-focus-ring;
 }
 
-.homework-card__title {
+.homework-card__subject {
   font-size: var(--rct-font-size-caption);
 }
 

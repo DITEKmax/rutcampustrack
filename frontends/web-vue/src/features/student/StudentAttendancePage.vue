@@ -13,6 +13,8 @@ import StudentNotice from './StudentNotice.vue';
 import StudentMetrics from './StudentMetrics.vue';
 import StudentAttendanceTable from './StudentAttendanceTable.vue';
 import StudentPeriodPager from './StudentPeriodPager.vue';
+import WebSelect from '../../shared/WebSelect.vue';
+import AttendanceFilterIllustration from '../../../../shared/illustrations/AttendanceFilterIllustration.vue';
 const scope = useStudentScope(),
   attendance = useStudentResource<StudentAttendanceResponse>(scope),
   subjectStats = useStudentResource<StudentStatisticsSubjectDetailResponse>(scope);
@@ -28,6 +30,9 @@ const date = ref(
 );
 const subject = ref(typeof route.query.subject === 'string' ? route.query.subject : '');
 const types = ref<StudentLessonType[]>([]);
+const filterEmpty = computed(() => mode.value === 'subjects' && (!subject.value || !types.value.length) &&
+  Boolean(attendance.data.value) && !scope.loading.value && !scope.error.value && !attendance.loading.value && !attendance.error.value &&
+  !subjectStats.loading.value && !subjectStats.error.value && !subjectStats.data.value);
 let restoredTypes = false;
 const pendingQueries = new Set<string>();
 function queryIdentity(query: Record<string, unknown>) {
@@ -196,6 +201,7 @@ function step(direction: -1 | 1) {
       </div>
       <template v-if="mode === 'weeks' && week">
         <StudentPeriodPager
+          class="student-attendance-period"
           :label="`${formatLessonDate(week)} — ${formatLessonDate(shiftDate(week, 6))}`"
           unit="период посещаемости"
           :previous-disabled="week <= monday(attendance.data.value.semester.startsOn)"
@@ -216,21 +222,23 @@ function step(direction: -1 | 1) {
       </template>
       <div
         v-else-if="mode === 'subjects'"
-        class="student-filter"
+        class="student-filter student-attendance-filters"
       >
-        <label class="web-field">Предмет<select
+        <WebSelect
           v-model="subject"
+          class="student-attendance-subject-filter"
+          label="Предмет"
+          :options="[{ value: '', label: 'Выбери предмет' }, ...attendance.data.value.subjects.map((item) => ({ value: item.id, label: item.name }))]"
           @change="chooseSubject"
-        ><option value="">Выбери предмет</option><option
-          v-for="item in attendance.data.value.subjects"
-          :key="item.id"
-          :value="item.id"
-        >{{ item.name }}</option></select></label><fieldset class="student-actions">
-          <legend>Типы занятий</legend><label
+        /><fieldset class="student-attendance-types">
+          <legend>Типы занятий</legend><div class="student-attendance-type-options"><label
             v-for="type in allTypes"
             :key="type"
+            class="student-attendance-type"
+            :title="!availableTypes.includes(type) ? 'Этот тип занятий недоступен у выбранного предмета' : undefined"
           ><input
             v-model="types"
+            class="web-sr-only"
             type="checkbox"
             :value="type"
             :disabled="!availableTypes.includes(type)"
@@ -238,36 +246,26 @@ function step(direction: -1 | 1) {
               remember();
               loadSubject();
             "
-          >{{ lessonTypeLabel(type)
-          }}<span
-            v-if="!availableTypes.includes(type)"
-            class="web-caption"
-          >
-            · нет занятий</span></label>
+          ><span class="student-attendance-type-label">{{ lessonTypeLabel(type) }}</span></label></div>
         </fieldset>
       </div>
       <StudentNotice
         :loading="subjectStats.loading.value"
         :error="subjectStats.error.value"
-        :empty="
-          mode === 'subjects' && (!subject || !types.length)
-            ? 'Выбери предмет и хотя бы один тип занятия.'
-            : ''
-        "
         @retry="loadSubject"
       />
+      <div v-if="filterEmpty" class="student-attendance-filter-empty">
+        <AttendanceFilterIllustration />
+        <p role="status">Выбери предмет и хотя бы один тип занятия.</p>
+      </div>
       <template v-if="mode === 'weeks' || (subject && types.length)">
         <StudentMetrics
           v-if="metrics"
           :metrics="metrics"
           show-count
-        /><p
-          v-if="metrics"
-          class="web-caption"
-        >
-          Прошедших учитываемых пар: {{ metrics.held }}. Будущие пары в проценты не входят.
-        </p><StudentAttendanceTable
+        /><StudentAttendanceTable
           :lessons="lessons"
+          :compact-dates="mode === 'subjects'"
           :read-only="scope.readOnly.value || attendance.data.value.terminalReadOnly"
         />
       </template>

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
+import MobileIcon from '../../../../mobile-core/src/shared/components/MobileIcon.vue';
 import type { RequestDetail } from '../../../../mobile-core/src/features/requests/types';
 import {
   canCancelRequest,
@@ -41,6 +42,16 @@ const reasons: Record<string, string> = {
   UNIVERSITY_ORDER: 'Распоряжение университета',
   SUMMONS: 'Повестка',
 };
+const kindAndReason = computed(() => {
+  const kind = requestKindLabel(props.request.summary.kind);
+  const reason = props.request.reason;
+  if (!reason) return kind;
+  const friendly = reasons[reason];
+  const label = typeof friendly === 'string'
+    ? friendly.charAt(0).toLocaleLowerCase('ru') + friendly.slice(1)
+    : reason;
+  return `${kind}: ${label}`;
+});
 </script>
 <template>
   <article
@@ -50,30 +61,24 @@ const reasons: Record<string, string> = {
   >
     <header class="web-page-header">
       <div class="web-stack">
-        <h2>Заявка {{ request.summary.id }}</h2><p>{{ requestKindLabel(request.summary.kind) }}</p>
+        <h2>Заявка {{ request.summary.id }}</h2><p>{{ kindAndReason }}</p>
       </div><div class="student-actions">
         <span
           class="student-request-status"
           :data-tone="requestStatusTone(request.summary.status)"
         >{{ requestStatusLabel(request.summary.status) }}</span><button
-          class="web-button"
+          class="web-button web-icon-button student-request-expand"
+          type="button"
           :aria-expanded="expanded"
           :aria-label="`${expanded ? 'Свернуть' : 'Раскрыть'} заявку ${request.summary.id}`"
           @click="expanded = !expanded"
         >
-          {{ expanded ? 'Свернуть' : 'Подробнее' }}
+          <MobileIcon name="chevron-down" />
         </button>
       </div>
     </header>
-    <p v-if="request.reason">
-      {{ reasons[request.reason] ?? request.reason }}
-    </p><p v-if="request.comment">
+    <p v-if="request.comment">
       {{ request.comment }}
-    </p><p class="web-caption">
-      Пар в заявке: {{ request.summary.lessons?.length ?? 0
-      }}<template v-if="request.summary.origin === 'AUTO_GEO_FAILURE'">
-        · Создана автоматически после геопроверки
-      </template>
     </p>
     <div
       v-if="expanded"
@@ -132,20 +137,17 @@ const reasons: Record<string, string> = {
     </div>
     <p v-if="request.decision?.comment">
       Решение: {{ request.decision.comment }}
-    </p><p
-      v-if="request.decision?.decidedAt"
-      class="web-caption"
-    >
-      <time :datetime="request.decision.decidedAt">{{ formatRequestDate(request.decision.decidedAt, 'Решение принято') }},
-        {{ requestTime(request.decision.decidedAt) }} МСК</time>
     </p>
     <footer class="web-page-header">
-      <p class="web-caption">
+      <p class="student-request-meta">
+        Пар: {{ request.summary.lessons?.length ?? 0 }}<template v-if="request.summary.createdAt"> · </template>
         <time
           v-if="request.summary.createdAt"
           :datetime="request.summary.createdAt"
         >{{ formatRequestDate(request.summary.createdAt) }},
           {{ requestTime(request.summary.createdAt) }} МСК</time>
+        <template v-if="request.decision?.decidedAt"> · <time :datetime="request.decision.decidedAt">{{ formatRequestDate(request.decision.decidedAt, 'Решение принято') }}, {{ requestTime(request.decision.decidedAt) }} МСК</time></template>
+        <template v-if="request.summary.origin === 'AUTO_GEO_FAILURE'"> · Создана автоматически после геопроверки</template>
       </p><button
         v-if="canCancel"
         class="web-button web-button-danger"

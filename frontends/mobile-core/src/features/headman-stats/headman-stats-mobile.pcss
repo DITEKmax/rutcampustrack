@@ -81,6 +81,25 @@
   display: grid;
   gap: var(--rct-space-2);
 }
+.headman-stats-mobile__details {
+  min-inline-size: 0;
+  border-block-start: var(--rct-border-hairline) solid var(--rct-color-border-default);
+}
+.headman-stats-mobile__details > summary {
+  min-block-size: var(--rct-control-min-touch);
+  padding-block: var(--rct-space-3);
+  color: var(--rct-color-text-secondary);
+  font-size: var(--rct-font-size-caption);
+  font-weight: var(--rct-font-weight-bold);
+  overflow-wrap: anywhere;
+  cursor: pointer;
+  @mixin rct-focus-ring;
+}
+.headman-stats-mobile__details-content {
+  display: grid;
+  min-inline-size: 0;
+  gap: var(--rct-space-2);
+}
 .headman-stats-mobile__metric p {
   margin: 0 0 var(--rct-space-1);
   color: var(--rct-color-text-secondary);

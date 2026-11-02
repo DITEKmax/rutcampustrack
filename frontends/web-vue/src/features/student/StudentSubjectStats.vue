@@ -8,6 +8,7 @@ import { type StudentScope, useStudentResource } from './student-state';
 import { lessonTypeLabel, percent, studentMark } from './student-format';
 import StudentTrend from './StudentTrend.vue';
 import StudentNotice from './StudentNotice.vue';
+import WebSelect from '../../shared/WebSelect.vue';
 const props = defineProps<{ scope: StudentScope; subjectId: string }>();
 const detail = useStudentResource<StudentStatisticsSubjectDetailResponse>(props.scope);
 const range = ref<'days' | 'weeks'>('weeks'),
@@ -61,11 +62,13 @@ watch(
             class="web-caption"
           >
             · нет занятий</span></label>
-        </fieldset><label class="web-field">Период графика<select
+        </fieldset><WebSelect
           v-model="range"
+          label="Период графика"
+          :options="[{ value: 'days', label: 'По дням' }, { value: 'weeks', label: 'По неделям' }] as const"
           :disabled="detail.loading.value"
           @change="load"
-        ><option value="days">По дням</option><option value="weeks">По неделям</option></select></label>
+        />
       </div>
       <StudentTrend
         v-if="types.length"

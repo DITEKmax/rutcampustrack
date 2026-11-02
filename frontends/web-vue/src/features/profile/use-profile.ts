@@ -1,21 +1,13 @@
-import { computed, reactive, ref, shallowRef } from 'vue'
+import { computed, reactive, ref, shallowRef, watch } from 'vue'
 import { createAuthClient, AuthRequestError } from '../../../../pwa-vue/src/auth-client'
 import { ProfileState } from '../../../../mobile-core/src/features/profile/profile-state'
-import {
-  ownProfileTelegramId,
-  ProfileRequestError,
-} from '../../../../mobile-core/src/features/profile/profile-types'
-import type { components } from '../../../../mobile-core/src/api/generated/academic.types'
+import { ProfileRequestError } from '../../../../mobile-core/src/features/profile/profile-types'
 import { createWebTransport, WebAuthorityChangedError } from '../../app/api'
 import { useWebLiveRefresh } from '../../app/live'
 import { reauthenticationReceipt } from '../../auth/reauthentication-receipt'
-import { webSession, message } from '../../auth/session'
+import { webSession } from '../../auth/session'
 import { webAssistantAccess } from '../../app/assistant'
-type OwnDto = Pick<
-  components['schemas']['EntityModelUserResponse'],
-  'id' | 'firstName' | 'lastName' | 'middleName' | 'telegramId' | 'avatarId'
->
-type OwnProfile = { [K in keyof OwnDto]-?: OwnDto[K] | undefined }
+import { useOwnProfile } from './own-profile'
 export function useWebProfile(dirty: () => boolean) {
   const transport = createWebTransport()
   const owner = webSession.snapshot.value!
@@ -23,15 +15,21 @@ export function useWebProfile(dirty: () => boolean) {
     fetcher: transport.fetcher,
     accessToken: transport.accessToken,
   })
-  const own = shallowRef<OwnProfile | null>(null)
-  const ownError = ref('')
+  const ownProfile = useOwnProfile()
+  const { own, ownError } = ownProfile
   const notice = ref('')
+  const success = shallowRef<{ message: string } | null>(null)
+  watch(webSession.identity, () => { success.value = null }, { flush: 'sync' })
+  function showSuccess(message: string) {
+    transport.assertCurrent()
+    notice.value = ''
+    success.value = { message }
+  }
   const uncertain = ref(false)
   const avatarBusy = ref(false)
   const historyBusy = ref(false)
   let historyTail: Promise<unknown> = Promise.resolve()
   let historyReads = 0
-  let readRevision = 0
   async function read<T>(operation: () => Promise<T>): Promise<T> {
     try {
       const data = await operation()
@@ -79,7 +77,7 @@ export function useWebProfile(dirty: () => boolean) {
             transport.assertCurrent()
             if (!all.items.some((item) => item.sessionId === targetSessionId)) {
               uncertain.value = false
-              notice.value = 'Вход завершён.'
+              showSuccess('Вход завершён.')
               return
             }
           } catch {
@@ -134,35 +132,7 @@ export function useWebProfile(dirty: () => boolean) {
       historyBusy.value = historyReads > 0
     })
   }
-  async function loadOwn() {
-    const revision = ++readRevision
-    ownError.value = ''
-    try {
-      const response = await transport.fetcher('/api/academic/users/me', { cache: 'no-store' })
-      if (!response.ok) throw new Error('Не удалось загрузить профиль')
-      const value: unknown = await response.json()
-      transport.assertCurrent()
-      ownProfileTelegramId(value, owner.userId)
-      const profile = value as OwnProfile
-      if (
-        [profile.firstName, profile.lastName].some((value) => typeof value !== 'string') ||
-        (profile.avatarId != null && !/^avatar_[0-9]{2}$/.test(profile.avatarId))
-      )
-        throw new Error('Некорректные данные профиля')
-      if (revision === readRevision)
-        own.value = {
-          id: profile.id,
-          firstName: profile.firstName,
-          lastName: profile.lastName,
-          middleName: profile.middleName,
-          telegramId: profile.telegramId,
-          avatarId: profile.avatarId,
-        }
-    } catch (cause) {
-      if (revision === readRevision && !(cause instanceof WebAuthorityChangedError))
-        ownError.value = message(cause)
-    }
-  }
+  const loadOwn = () => ownProfile.load()
   async function load() {
     try {
       await state.loadSnapshot()
@@ -180,7 +150,7 @@ export function useWebProfile(dirty: () => boolean) {
     if (avatarBusy.value || uncertain.value) return
     avatarBusy.value = true
     ownError.value = ''
-    ++readRevision
+    ownProfile.invalidateReads()
     try {
       const response = await transport.fetcher('/api/academic/users/me/avatar', {
         method: 'PATCH',
@@ -194,14 +164,14 @@ export function useWebProfile(dirty: () => boolean) {
             : 'Аватар не сохранён. Проверь данные и повтори действие.'
         return
       }
-      await loadOwn()
+      await ownProfile.load(true)
       if (own.value?.avatarId === (avatarId || null) || (!own.value?.avatarId && !avatarId))
-        notice.value = 'Аватар сохранён.'
+        showSuccess('Аватар сохранён.')
       else ownError.value = 'Не удалось подтвердить выбранный аватар. Обнови профиль.'
     } catch (cause) {
       if (!(cause instanceof WebAuthorityChangedError)) {
-        await loadOwn()
-        if (own.value?.avatarId === (avatarId || null)) notice.value = 'Аватар сохранён.'
+        await ownProfile.load(true)
+        if (own.value?.avatarId === (avatarId || null)) showSuccess('Аватар сохранён.')
         else
           ownError.value = 'Результат сохранения неизвестен. Проверь профиль перед новой попыткой.'
       }
@@ -219,6 +189,7 @@ export function useWebProfile(dirty: () => boolean) {
     own,
     ownError,
     notice,
+    success,
     uncertain,
     avatarBusy,
     busy,

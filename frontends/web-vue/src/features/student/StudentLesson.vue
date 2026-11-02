@@ -1,13 +1,7 @@
 <script setup lang="ts">
 import type { LessonSchedule, TodayLesson } from '../../../../mobile-core/src/api/types';
 import { lessonTypeLabel, studentMark } from './student-format';
-const props = defineProps<{ lesson: LessonSchedule; today?: TodayLesson; featured?: boolean }>();
-const statuses = {
-  PLANNED: 'Пара запланирована',
-  ACTIVE: 'Пара идёт',
-  CLOSED: 'Пара завершена',
-  CANCELLED: 'Пара отменена',
-};
+defineProps<{ lesson: LessonSchedule; today?: TodayLesson; featured?: boolean }>();
 </script>
 <template>
   <article
@@ -25,13 +19,11 @@ const statuses = {
       <h3>{{ lesson.subject.name }}</h3>
       <p>Тип: {{ lessonTypeLabel(lesson.subject.type) }}</p>
       <p>Время: {{ lesson.startsAt.slice(0, 5) }}–{{ lesson.endsAt.slice(0, 5) }}</p>
-      <p v-if="lesson.room.current">
-        Аудитория: {{ lesson.room.current }}
+      <p v-if="lesson.room.current || (lesson.room.changeState === 'CHANGED' && lesson.room.previous)">
+        Аудитория: <template v-if="lesson.room.changeState === 'CHANGED'"><span v-if="lesson.room.current" class="student-room-current">{{ lesson.room.current }}</span><s v-if="lesson.room.previous" class="student-room-previous">{{ lesson.room.previous }}</s></template><template v-else>{{ lesson.room.current }}</template>
       </p>
-      <p v-if="lesson.room.changeState === 'CHANGED'">
-        Аудитория изменена<template v-if="lesson.room.previous">
-          : раньше {{ lesson.room.previous }}
-        </template>
+      <p v-if="lesson.room.changeState === 'CHANGED'" class="student-room-change">
+        Аудитория изменена
       </p>
     </div>
     <div
@@ -45,17 +37,15 @@ const statuses = {
         <h3>{{ lesson.subject.name }}</h3>
         <p>
           {{ lessonTypeLabel(lesson.subject.type)
-          }}<template v-if="lesson.room.current">
-            · {{ lesson.room.current }}
+          }}<template v-if="lesson.room.current || (lesson.room.changeState === 'CHANGED' && lesson.room.previous)">
+            · <template v-if="lesson.room.changeState === 'CHANGED'"><span v-if="lesson.room.current" class="student-room-current">{{ lesson.room.current }}</span><s v-if="lesson.room.previous" class="student-room-previous">{{ lesson.room.previous }}</s></template><template v-else>{{ lesson.room.current }}</template>
           </template>
         </p>
         <p
           v-if="lesson.room.changeState === 'CHANGED'"
           class="student-room-change"
         >
-          Аудитория изменена<template v-if="lesson.room.previous">
-            : раньше {{ lesson.room.previous }}
-          </template>
+          Аудитория изменена
         </p>
         <p v-if="lesson.status === 'CANCELLED'">
           Пара отменена
@@ -68,20 +58,12 @@ const statuses = {
         :aria-label="studentMark(today.attendance.status).label"
       >{{ studentMark(today.attendance.status).symbol }}</span>
     </div>
-    <details
-      v-if="!featured"
-      class="student-lesson-details"
-    >
-      <summary>Детали пары</summary>
-      <p>{{ statuses[props.lesson.status] }}</p>
-      <p v-if="today?.attendance">
-        {{ studentMark(today.attendance.status).label }}
-      </p>
+    <template v-if="!featured">
       <p v-if="today?.request?.status === 'PENDING'">
         Заявка на подтверждении у старосты
       </p>
       <slot name="actions" />
-    </details>
+    </template>
     <slot />
   </article>
 </template>

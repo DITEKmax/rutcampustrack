@@ -13,13 +13,30 @@
   flex-wrap: wrap;
   gap: var(--rct-space-6);
 }
+.web-map-empty-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-6);
+  min-block-size: min(var(--web-map-height), calc(100dvh - var(--control-height) * 4));
+  padding: var(--space-8) var(--space-4);
+  text-align: center;
+}
+.web-map-empty-error-message {
+  max-inline-size: calc(var(--control-height) * 12);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-body);
+  text-wrap: balance;
+}
 .web-map-pickers .web-field {
   flex: 0 1 var(--web-map-picker-width);
   min-inline-size: 0;
   margin: 0;
 }
-.web-map-pickers select {
-  inline-size: 100%;
+.web-map-pickers .web-field-trigger {
+  padding-inline-start: var(--space-3);
+  padding-inline-end: var(--space-6);
 }
 .web-map-viewer {
   position: relative;

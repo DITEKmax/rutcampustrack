@@ -7,6 +7,7 @@ import StudentRegion from './StudentRegion.vue';
 import StudentNotice from './StudentNotice.vue';
 import StudentLesson from './StudentLesson.vue';
 import StudentPeriodPager from './StudentPeriodPager.vue';
+import WebDateField from '../../shared/WebDateField.vue';
 const scope = useStudentScope(),
   schedule = useStudentResource<StudentSemesterSchedule>(scope);
 const date = ref(''),
@@ -36,6 +37,7 @@ const first = computed(() =>
 const last = computed(() =>
   first.value ? shiftDate(first.value, mode.value === 'day' ? 0 : 6) : '',
 );
+const periodLabel = computed(() => `${formatLessonDate(first.value)}${mode.value === 'week' ? ` — ${formatLessonDate(last.value)}` : ''}`);
 const days = computed(() =>
   !first.value
     ? []
@@ -66,9 +68,27 @@ function step(direction: -1 | 1) {
       @retry="scope.load"
     />
     <template v-if="schedule.data.value && date">
-      <div class="student-filter">
+      <div class="student-chart-toolbar">
+        <StudentPeriodPager
+          :label="periodLabel"
+          unit="период расписания"
+          :previous-disabled="first <= schedule.data.value.semester.startsOn"
+          :next-disabled="last >= schedule.data.value.semester.endsOn"
+          @step="step"
+          @reset="date = serverDate(scope.session.value?.serverNow) ?? schedule.data.value.semester.startsOn"
+        >
+          <WebDateField
+            v-model="date"
+            label="Дата расписания"
+            :trigger-label="periodLabel"
+            :min="schedule.data.value.semester.startsOn"
+            :max="schedule.data.value.semester.endsOn"
+            :today="serverDate(scope.session.value?.serverNow) ?? undefined"
+            required
+          />
+        </StudentPeriodPager>
         <div
-          class="student-actions"
+          class="student-actions student-chart-range"
           role="group"
           aria-label="Разрез расписания"
         >
@@ -85,27 +105,12 @@ function step(direction: -1 | 1) {
           >
             {{ item.label }}
           </button>
-        </div><label class="web-field">Дата<input
-          v-model="date"
-          type="date"
-          :min="schedule.data.value.semester.startsOn"
-          :max="schedule.data.value.semester.endsOn"
-        ></label>
+        </div>
       </div>
-      <StudentPeriodPager
-        :label="`${formatLessonDate(first)}${mode === 'week' ? ` — ${formatLessonDate(last)}` : ''}`"
-        unit="период расписания"
-        :previous-disabled="first <= schedule.data.value.semester.startsOn"
-        :next-disabled="last >= schedule.data.value.semester.endsOn"
-        @step="step"
-        @reset="
-          date = serverDate(scope.session.value?.serverNow) ?? schedule.data.value.semester.startsOn
-        "
-      />
       <section
         v-for="day in days"
         :key="day.date"
-        class="web-stack"
+        class="web-stack student-schedule-day"
       >
         <h2>{{ formatLessonDate(day.date) }}</h2><p
           v-if="!day.lessons.length"

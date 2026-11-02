@@ -383,11 +383,11 @@ const subject: HeadmanSubject = {
 }
 interface SubjectState {
   selected: HeadmanSubject
-  draft: { from: string; replacingId: number; teacherId: number }
+  editor: boolean
   replacement: unknown
   locked: boolean
   error: string | null
-  replace(recover?: boolean): Promise<void>
+  replace(recover?: boolean, selection?: { assignment: NonNullable<HeadmanSubject['assignments']>[number]; teacher: { id: number; fullName: string; employeeNumber: null }; from: string }): Promise<void>
 }
 function subjectApi() {
   const fetcher = vi.fn<typeof fetch>().mockResolvedValue(
@@ -427,16 +427,15 @@ describe('actual replacement preflight', () => {
     const state = mount<SubjectState>(SubjectsPage)
     await settle()
     state.selected = subject
-    state.draft.replacingId = 10
-    state.draft.teacherId = 7
-    state.draft.from = ''
-    await state.replace()
+    state.editor = true
+    const selection = { assignment: subject.assignments![0]!, teacher: { id: 7, fullName: 'Другой', employeeNumber: null }, from: '' }
+    await state.replace(false, selection)
     expect(fetcher).not.toHaveBeenCalled()
     expect(storage.length).toBe(0)
     expect(state.locked).toBe(false)
     expect(state.replacement).toBeNull()
-    state.draft.from = '2026-10-25'
-    await state.replace()
+    selection.from = '2026-10-25'
+    await state.replace(false, selection)
     expect(fetcher).toHaveBeenCalledTimes(1)
     expect(state.replacement).toBeNull()
     expect(state.locked).toBe(false)

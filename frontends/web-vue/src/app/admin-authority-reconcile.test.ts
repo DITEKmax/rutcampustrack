@@ -264,7 +264,7 @@ describe('idle authority on a mounted ADMIN page', () => {
     await vi.advanceTimersByTimeAsync(15000)
     await settle()
     expect(f.reads('/session')).toBe(4)
-    expect(f.groupsReads()).toBe(1)
+    expect(f.groupsReads()).toBe(2)
     expect(f.webSession.generation.value).toBe(generation)
     expect(f.search()).toBe(field)
     expect(field.value).toBe('Несохранённый фильтр')
@@ -283,7 +283,7 @@ describe('idle authority on a mounted ADMIN page', () => {
     expect(f.controls()).toHaveLength(0)
     expect(text(f.root)).not.toContain('Группы не найдены.')
     expect(nodes(f.root)).not.toContain(field)
-    expect(f.groupsReads()).toBe(1)
+    expect(f.groupsReads()).toBe(2)
   })
 
   it('preserves the mounted form when an expired bearer refreshes to the same authority', async () => {
@@ -307,7 +307,7 @@ describe('idle authority on a mounted ADMIN page', () => {
     expect(f.search()).toBe(field)
     expect(field.value).toBe('Несохранённый фильтр')
     expect(document.activeElement).toBe(field)
-    expect(f.groupsReads()).toBe(1)
+    expect(f.groupsReads()).toBe(2)
   })
 
   it('reconciles a revoked old ADMIN bearer through normal refresh without navigation or a focus signal', async () => {

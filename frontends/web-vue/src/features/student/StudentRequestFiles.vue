@@ -4,7 +4,7 @@ import type {
   RequestFileLimits,
   RequestFileRef,
 } from '../../../../mobile-core/src/features/requests/types';
-import { requestAttachmentFormatHint } from '../../../../mobile-core/src/features/requests/attachment-validation';
+import { acceptsRequestFile } from '../../../../mobile-core/src/features/requests/attachment-validation';
 import { RequestAttachmentPreviewUrls } from '../../../../mobile-core/src/features/requests/request-attachment-preview';
 const props = defineProps<{
   files: readonly RequestFileRef[];
@@ -29,6 +29,22 @@ onBeforeUnmount(() => urls.clear());
 const accept = computed(() =>
   [...(props.limits?.contentTypes ?? []), ...(props.limits?.extensions ?? [])].join(','),
 );
+const fileHint = computed(() => {
+  const formats = [
+    { label: 'JPG', type: 'image/jpeg', names: ['file.jpg', 'file.jpeg'] },
+    { label: 'PNG', type: 'image/png', names: ['file.png'] },
+    { label: 'PDF', type: 'application/pdf', names: ['file.pdf'] },
+  ].filter((format) => format.names.some((name) => acceptsRequestFile({ name, type: format.type }, props.limits)))
+    .map((format) => format.label).join(', ');
+  const parts = formats ? [formats] : [];
+  const count = props.limits?.maxFiles;
+  if (count !== null && count !== undefined)
+    parts.push(`до ${count} ${count % 10 === 1 && count % 100 !== 11 ? 'файла' : 'файлов'}`);
+  const bytes = props.limits?.maxBytesPerFile;
+  if (bytes !== null && bytes !== undefined)
+    parts.push(`до ${new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 2 }).format(bytes / 1024 / 1024)} МБ каждый`);
+  return parts.join(' · ');
+});
 function add(files: FileList | null) {
   if (!files || props.disabled) return;
   emit('change', [
@@ -51,7 +67,7 @@ function openPreview(id: string) {
 </script>
 <template>
   <section
-    class="web-stack"
+    class="web-stack student-request-files"
     aria-label="Вложения заявки"
   >
     <div
@@ -59,21 +75,16 @@ function openPreview(id: string) {
       @dragover.prevent
       @drop.prevent="add($event.dataTransfer?.files ?? null)"
     >
-      <p>Добавь подтверждающие файлы перетаскиванием или выбери их с компьютера.</p><p class="web-caption">
-        {{ requestAttachmentFormatHint(limits)
-        }}<template v-if="limits?.maxFiles !== undefined">
-          · не более {{ limits?.maxFiles }} файлов
-        </template><template v-if="limits?.maxBytesPerFile">
-          · до {{ Math.floor(limits.maxBytesPerFile / 1024 / 1024) }} МБ каждый
-        </template>
-      </p><label class="web-field">Выбрать файлы<input
+      <p>Перетащи файлы сюда</p><p v-if="fileHint" class="web-caption">{{ fileHint }}</p>
+      <label class="student-file-picker"><input
         ref="input"
+        class="web-sr-only"
         type="file"
         multiple
         :accept="accept"
         :disabled="disabled"
         @change="add(($event.target as HTMLInputElement).files)"
-      ></label>
+      ><span class="web-button">Выбрать файлы</span></label>
     </div>
     <article
       v-for="file in files"

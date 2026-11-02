@@ -251,7 +251,7 @@ onBeforeUnmount(() => {
 });
 </script>
 <template>
-  <section class="notifications-review-controls">
+  <section v-if="params.get('capture') !== '1'" class="notifications-review-controls">
     <p>DEV · синтетический {{ shell }} API · не подтверждает доставку или backend ACL.</p>
     <button
       v-for="next in ['STUDENT', 'HEADMAN', 'TEACHER', 'ADMIN'] as const"

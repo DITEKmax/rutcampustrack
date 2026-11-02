@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, reactive, ref, shallowRef, watch } from 'vue';
+import { computed, nextTick, onBeforeUnmount, reactive, ref, shallowRef, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import {
   toTeacherStatsReportSelector,
@@ -37,6 +37,43 @@ const memory = reactive<
 const requestedName = typeof route.query.studentName === 'string' ? route.query.studentName.trim().slice(0, 128) : '';
 if (requestedName) memory.students.filters = [{ column: 'displayName', contains: requestedName }];
 const loadedQuery = shallowRef<TeacherStatsQuery | null>(null);
+const nameColumn = computed(() => kind.value === 'groups' ? 'groupName' : 'displayName');
+const search = computed({
+  get: () => memory[kind.value].filters.find(filter => filter.column === nameColumn.value)?.contains ?? '',
+  set: (value: string) => {
+    const filters = memory[kind.value].filters.filter(filter => filter.column !== nameColumn.value);
+    if (value) filters.push({ column: nameColumn.value, contains: value });
+    memory[kind.value].filters = filters;
+  },
+});
+const searchPending = ref(false);
+let searchTimer: ReturnType<typeof setTimeout> | null = null;
+let loadRevision = 0;
+let alive = true;
+function cancelSearch() {
+  if (searchTimer !== null) clearTimeout(searchTimer);
+  searchTimer = null;
+  searchPending.value = false;
+}
+function scheduleSearch() {
+  cancelSearch();
+  loadRevision++;
+  loadedQuery.value = null;
+  stats.clear();
+  if (!alive) return;
+  searchPending.value = true;
+  searchTimer = setTimeout(() => {
+    searchTimer = null;
+    if (alive) void load();
+  }, 250);
+}
+watch(search, scheduleSearch, { flush: 'sync' });
+onBeforeUnmount(() => {
+  alive = false;
+  cancelSearch();
+  loadRevision++;
+  stats.clear();
+});
 const allTypes = computed(() => [
   ...new Set(
     scope.catalog.value?.taughtSubjectOptions.flatMap((option) => option.lessonTypes) ?? [],
@@ -58,10 +95,15 @@ const query = computed<TeacherStatsQuery | null>(() => {
       : {}),
     lessonTypes: [...types],
     sorts: memory[kind.value].sorts.map((sort) => ({ ...sort })),
-    filters: memory[kind.value].filters.map((filter) => ({ ...filter })),
+    filters: memory[kind.value].filters
+      .filter(filter => filter.contains === undefined || filter.contains.trim())
+      .map(filter => ({ ...filter, ...(filter.contains !== undefined ? { contains: filter.contains.trim() } : {}) })),
   };
 });
 async function load(background = false) {
+  cancelSearch();
+  const run = ++loadRevision;
+  if (!alive) return;
   const requested = query.value;
   const previous = loadedQuery.value;
   const sameContext = previous && requested && previous.semesterId === requested.semesterId && previous.scope === requested.scope &&
@@ -77,7 +119,7 @@ async function load(background = false) {
   await stats.load(async () => {
     const data = await scope.api.stats(requested);
     scope.transport.assertCurrent();
-    if (JSON.stringify(query.value) === JSON.stringify(requested)) loadedQuery.value = requested;
+    if (alive && run === loadRevision && JSON.stringify(query.value) === JSON.stringify(requested)) loadedQuery.value = requested;
     return data;
   }, sameContext ? (_old, next) => next : undefined, retain);
 }
@@ -127,14 +169,12 @@ function sort(column: string) {
   else memory[kind.value].sorts = sorts.filter((item) => item.column !== column);
   load();
 }
-function filters(values: TeacherStatsFilter[]) {
-  memory[kind.value].filters = values;
-  load();
-}
-function reset() {
-  memory[kind.value].sorts = [];
-  memory[kind.value].filters = [];
-  load();
+function toggleGroupType(type: string) {
+  if (scope.loading.value) return;
+  memory.groups.types = memory.groups.types.includes(type)
+    ? memory.groups.types.filter(value => value !== type)
+    : [...memory.groups.types, type];
+  void load();
 }
 watch(
   () => scope.refreshed.value,
@@ -150,13 +190,16 @@ watch(
   () => scope.catalog.value,
   (value) => {
     if (!value) {
+      cancelSearch();
+      loadRevision++;
       stats.clear();
       loadedQuery.value = null;
     }
   },
 );
 const exportRequest = computed(() =>
-  stats.data.value && loadedQuery.value && !stats.loading.value
+  stats.data.value && loadedQuery.value && !searchPending.value && !stats.loading.value && !scope.loading.value && !stats.error.value &&
+  JSON.stringify(query.value) === JSON.stringify(loadedQuery.value)
     ? (format: Parameters<typeof toTeacherStatsReportSelector>[1]) => ({
         kind: 'TEACHER_STATS' as const,
         teacherStats: toTeacherStatsReportSelector(loadedQuery.value!, format),
@@ -167,6 +210,7 @@ const exportRequest = computed(() =>
 <template>
   <TeacherRegion
     :scope="scope"
+    class="teacher-statistics-page"
     screen="WEB-TEACHER-STATISTICS"
   >
     <h1 class="web-sr-only">
@@ -222,48 +266,44 @@ const exportRequest = computed(() =>
         :disabled="scope.loading.value"
         @change="load"
       />
-      <fieldset
-        v-else
-        class="teacher-types"
-      >
-        <legend>Типы занятий в моих группах</legend><label
-          v-for="type in allTypes"
-          :key="type"
-        ><input
-           v-model="memory.groups.types"
-           type="checkbox"
-           :value="type"
-           @change="load()"
-         >
-          {{ teacherLessonTypeLabel(type) }}</label>
-      </fieldset>
+      <div v-else class="teacher-types teacher-statistics-group-types" role="group" aria-label="Типы занятий">
+        <span class="teacher-types-label" aria-hidden="true">Типы занятий</span>
+        <div class="teacher-type-buttons">
+          <button
+            v-for="type in allTypes"
+            :key="type"
+            type="button"
+            class="web-button"
+            :aria-pressed="memory.groups.types.includes(type)"
+            :disabled="scope.loading.value"
+            @click="toggleGroupType(type)"
+          >{{ teacherLessonTypeLabel(type) }}</button>
+        </div>
+      </div>
+      <label class="web-field teacher-statistics-search">{{ kind === 'students' ? 'Найти студента' : 'Найти группу' }}<input
+        v-model="search"
+        type="search"
+        maxlength="128"
+        :placeholder="kind === 'students' ? 'ФИО студента' : 'Название группы'"
+        :disabled="scope.loading.value"
+        autocomplete="off"
+      ></label>
       <TeacherNotice
-        :loading="stats.loading.value"
+        :loading="stats.loading.value || searchPending"
         :error="stats.error.value"
         :empty="!query ? 'Выбери хотя бы один тип занятия.' : ''"
         @retry="load"
       />
       <template v-if="stats.data.value">
-        <p
-          class="web-caption"
-          role="status"
-        >
-          {{ kind === 'students' ? 'По студентам группы' : 'По моим группам' }} ·
-          {{ scope.semester.value?.name }} ·
-          {{ stats.data.value.periodFrom ?? 'Начало семестра' }} —
-          {{ stats.data.value.periodTo ?? 'Текущая дата' }} · учтено пар:
-          {{ stats.data.value.lessonsCount }}
-        </p><TeacherStatsTable
+        <TeacherStatsTable
           ref="statsTable"
           :key="kind"
           :data="stats.data.value"
           :sorts="memory[kind].sorts"
-          :filters="memory[kind].filters"
-          :busy="stats.loading.value || scope.loading.value"
+          :filters="query?.filters ?? []"
+          :busy="stats.loading.value || scope.loading.value || searchPending"
           @group="openGroup"
           @sort="sort"
-          @filter="filters"
-          @reset="reset"
         />
       </template>
       <TeacherExport

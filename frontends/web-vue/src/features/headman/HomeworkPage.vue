@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref, shallowRef } from 'vue';
+import { computed, onBeforeUnmount, onMounted, reactive, ref, shallowRef, watch } from 'vue';
 import { message, webSession } from '../../auth/session';
 import { useWebLiveRefresh } from '../../app/live';
 import { useHeadmanFeature, today, dateLabel, lessonTypes } from './context';
@@ -22,6 +22,7 @@ import {
   homeworkDateWritable,
   homeworkSubjectTypes,
   homeworkLessonEligible,
+  homeworkLessonOrder,
   canReselectHomeworkCreate,
 } from '../../../../mobile-core/src/features/homework/headman-homework-state';
 import { readPublishedHomeworks } from '../../../../mobile-core/src/features/homework/headman-published-homework';
@@ -31,7 +32,11 @@ import {
   homeworkPlacementChanged,
   canonicalHomeworkText,
 } from './homework-edit-state';
+import HomeworkHistory from './HomeworkHistory.vue';
 import LinkifiedText from '../../shared/LinkifiedText.vue';
+import WebSelect from '../../shared/WebSelect.vue';
+import WebDateField from '../../shared/WebDateField.vue';
+import './headman-workflows.pcss';
 
 const feature = useHeadmanFeature();
 const loading = ref(false),
@@ -52,7 +57,9 @@ const semester = computed(
 const editor = ref(false),
   editing = shallowRef<HeadmanManagedHomework | null>(null),
   history = shallowRef<readonly HeadmanHomeworkHistory[] | null>(null),
-  historyTitle = ref('');
+  historyId = ref(0),
+  historyLoading = ref(false),
+  historyError = ref<string | null>(null);
 const draft = reactive({
   title: '',
   description: '',
@@ -63,7 +70,23 @@ const draft = reactive({
   bound: true,
 });
 const nextLesson = shallowRef<HeadmanJournalLesson | null>(null),
-  placementLoading = ref(false);
+  placementLoading = ref(false),
+  placementTouched = ref(false),
+  dateValid = ref(true),
+  placementError = ref<string | null>(null),
+  placementLessons = shallowRef<readonly HeadmanJournalLesson[]>([]);
+const placementDates = computed(() => [...new Set([
+  ...placementLessons.value.map(lesson => lesson.date),
+  ...(editing.value && !placementTouched.value ? [editing.value.lessonDate] : []),
+])]);
+const dateLessons = computed(() => placementLessons.value.filter(lesson => lesson.date === draft.date));
+const selectedLessonId = computed({
+  get: () => nextLesson.value?.id ?? 0,
+  set: (id: number) => {
+    placementTouched.value = true;
+    nextLesson.value = dateLessons.value.find(lesson => lesson.id === id) ?? null;
+  },
+});
 const types = computed(() => {
   const subject = subjects.value.find((item) => item.id === draft.subjectId);
   return subject && semester.value
@@ -87,6 +110,14 @@ const visible = computed(() =>
         a.lessonDate.localeCompare(b.lessonDate) || (a.lessonNumber ?? 0) - (b.lessonNumber ?? 0),
     ),
 );
+const grouped = computed(() => {
+  const groups = new Map<string, HeadmanManagedHomework[]>();
+  for (const item of visible.value) { const group = groups.get(item.lessonDate) ?? []; group.push(item); groups.set(item.lessonDate, group); }
+  return [...groups].map(([date, items]) => ({ date, items }));
+});
+function closeEditor() { if (busy.value || pending.value) return; placementRun++; placementLoading.value = false; nextLesson.value = null; editor.value = false; }
+function selectSection(archived: boolean) { if (busy.value || pending.value) return; closeHistory(); closeEditor(); if (archive.value !== archived) rows.value = []; archive.value = archived; void load(); }
+function publisher(id: number | null) { return id === null ? null : String(id) === webSession.snapshot.value?.userId ? webSession.snapshot.value.displayName : `Пользователь № ${id}`; }
 type Pending =
   | {
       kind: 'create';
@@ -98,7 +129,8 @@ type Pending =
 const pending = shallowRef<Pending | null>(null);
 const recoveryKey = `rct:web:headman:homework:${webSession.identity.value}`;
 let run = 0,
-  placementRun = 0;
+  placementRun = 0, historyRun = 0;
+let alive = true;
 function persist(value: Pending | null) {
   feature.assertCurrent();
   if (value && value.kind !== 'delete') canonicalHomeworkText(value.input);
@@ -164,8 +196,11 @@ async function load() {
 }
 function openEditor(item: HeadmanManagedHomework | null = null) {
   if (!writable.value || busy.value || pending.value || item?.archived) return;
+  closeHistory();
   editing.value = item;
   editor.value = true;
+  placementTouched.value = false;
+  dateValid.value = true;
   draft.title = item?.title ?? '';
   draft.description = item?.description ?? '';
   draft.link = item?.link ?? '';
@@ -175,44 +210,64 @@ function openEditor(item: HeadmanManagedHomework | null = null) {
   draft.bound = item ? item.bindingMode === 'LESSON' : true;
   nextLesson.value = null;
   error.value = null;
-  if (!item) void findNext();
+  void loadPlacement(!item);
+}
+function placementContext() {
+  return JSON.stringify([feature.groupId, semester.value?.id, draft.subjectId, draft.lessonType, draft.bound, editing.value?.id]);
+}
+function changePlacementContext() {
+  placementTouched.value = true;
+  void loadPlacement(true);
+}
+function dateValidity(valid: boolean) {
+  dateValid.value = valid;
+  if (!valid) { placementTouched.value = true; nextLesson.value = null; }
+}
+function chooseDate() {
+  placementTouched.value = true;
+  nextLesson.value = dateValid.value && dateLessons.value.length === 1 ? dateLessons.value[0]! : null;
 }
 async function findNext() {
+  placementTouched.value = true;
+  await loadPlacement(true);
+}
+async function loadPlacement(nearest = false) {
   const revision = ++placementRun;
   nextLesson.value = null;
+  placementLessons.value = [];
+  placementError.value = null;
   placementLoading.value = false;
-  if (!draft.bound || !draft.subjectId || !semester.value) return;
+  if (!draft.bound || !draft.subjectId || !semester.value || !writable.value || !editor.value) return;
+  const availableTypes = types.value;
+  if (!availableTypes.includes(draft.lessonType)) draft.lessonType = availableTypes[0] ?? 'LECTURE';
+  const captured = placementContext();
+  const period = semester.value, subjectId = draft.subjectId, type = draft.lessonType;
+  const from = today() > period.dateFrom ? today() : period.dateFrom;
+  if (from > period.dateTo) return;
   placementLoading.value = true;
   try {
-    const availableTypes = types.value;
-    if (!availableTypes.includes(draft.lessonType))
-      draft.lessonType = availableTypes[0] ?? 'LECTURE';
-    const lesson = await feature.homework.nextHomeworkLesson(
-      feature.groupId,
-      semester.value.id,
-      draft.subjectId,
-      draft.lessonType,
-      today(),
-    );
+    const [lessons, closest] = await Promise.all([
+      feature.journal.listLessons(feature.groupId, from, period.dateTo),
+      nearest ? feature.homework.nextHomeworkLesson(feature.groupId, period.id, subjectId, type, today()) : Promise.resolve(null),
+    ]);
     feature.assertCurrent();
-    if (revision !== placementRun) return;
-    if (
-      lesson &&
-      homeworkLessonEligible(lesson, {
-        groupId: feature.groupId,
-        subjectId: draft.subjectId,
-        type: draft.lessonType,
-        semester: semester.value,
-        now: new Date(),
-      })
-    ) {
-      nextLesson.value = lesson;
-      draft.date = lesson.date;
+    if (!alive || revision !== placementRun || captured !== placementContext() || !editor.value) return;
+    const context = { groupId: feature.groupId, subjectId, type, semester: period, now: new Date() };
+    placementLessons.value = lessons.filter(lesson => homeworkLessonEligible(lesson, context)).slice().sort(homeworkLessonOrder);
+    if (nearest && closest) {
+      const confirmed = placementLessons.value.find(lesson => lesson.id === closest.id && lesson.occurrenceId === closest.occurrenceId && lesson.occurrenceRevision === closest.occurrenceRevision && lesson.date === closest.date && lesson.lessonNumber === closest.lessonNumber);
+      if (!confirmed || !homeworkLessonEligible(closest, context)) {
+        placementLessons.value = [];
+        throw new Error('Расписание изменилось. Обнови выбор пары.');
+      }
+      nextLesson.value = confirmed;
+      draft.date = confirmed.date;
+      dateValid.value = true;
     }
   } catch (cause) {
-    if (revision === placementRun) error.value = message(cause);
+    if (alive && revision === placementRun && captured === placementContext()) placementError.value = message(cause);
   } finally {
-    if (revision === placementRun) placementLoading.value = false;
+    if (alive && revision === placementRun) placementLoading.value = false;
   }
 }
 function placement(): HeadmanHomeworkPlacementInput {
@@ -228,8 +283,8 @@ function placement(): HeadmanHomeworkPlacementInput {
       lessonType: draft.lessonType,
     };
   const lesson = nextLesson.value;
-  if (!lesson?.occurrenceId || !lesson.occurrenceRevision)
-    throw new Error('Выбери подтверждённую ближайшую пару.');
+  if (!lesson?.occurrenceId || !lesson.occurrenceRevision || lesson.date !== draft.date || !homeworkLessonEligible(lesson, { groupId: feature.groupId, subjectId: draft.subjectId, type: draft.lessonType, semester: semester.value, now: new Date() }))
+    throw new Error('Выбери подтверждённую пару на указанную дату.');
   return {
     bindingMode: 'LESSON',
     lessonDate: lesson.date,
@@ -242,10 +297,17 @@ function placement(): HeadmanHomeworkPlacementInput {
 async function save() {
   if (!writable.value || busy.value || pending.value || !semester.value) return;
   try {
+    if (placementLoading.value || !dateValid.value) throw new Error('Подтверди корректную дату размещения.');
+    if (draft.bound && placementTouched.value && !nextLesson.value) throw new Error('Выбери подтверждённую пару на указанную дату.');
     const text = canonicalHomeworkText(draft);
     if (editing.value) {
       if (!editing.value.revision) throw new Error('Версия задания не подтверждена.');
-      const candidate: HeadmanHomeworkPlacementInput = {
+      const candidate: HeadmanHomeworkPlacementInput = !placementTouched.value ? {
+        bindingMode: editing.value.bindingMode,
+        lessonDate: editing.value.lessonDate,
+        lessonNumber: editing.value.lessonNumber,
+        lessonType: editing.value.lessonType ?? null,
+      } : {
         bindingMode: draft.bound ? 'LESSON' : 'DATE',
         lessonDate: draft.date,
         lessonNumber: draft.bound
@@ -385,326 +447,81 @@ async function remove(item: HeadmanManagedHomework) {
   persist({ kind: 'delete', id: item.id, semesterId: item.semesterId });
   await execute(false);
 }
+function closeHistory() {
+  historyRun++;
+  historyId.value = 0;
+  history.value = null;
+  historyError.value = null;
+  historyLoading.value = false;
+}
 async function showHistory(item: HeadmanManagedHomework) {
+  if (historyId.value === item.id) { closeHistory(); return; }
+  closeHistory();
+  const revision = ++historyRun;
+  historyId.value = item.id;
+  historyLoading.value = true;
   try {
     const result = await feature.homework.history(item.id);
     feature.assertCurrent();
-    history.value = result;
-    historyTitle.value = item.title;
+    if (alive && revision === historyRun && historyId.value === item.id && !editor.value) history.value = result;
   } catch (cause) {
-    error.value = message(cause);
+    if (alive && revision === historyRun) historyError.value = message(cause);
+  } finally {
+    if (alive && revision === historyRun) historyLoading.value = false;
   }
 }
-function historyFields(snapshot: unknown) {
-  if (!snapshot || typeof snapshot !== 'object') return [];
-  const value = snapshot as Record<string, unknown>;
-  const fields = [
-    ['title', 'Заголовок'],
-    ['description', 'Описание'],
-    ['link', 'Ссылка'],
-    ['bindingMode', 'Размещение'],
-    ['lessonDate', 'Дата'],
-    ['lessonNumber', 'Номер пары'],
-    ['lessonType', 'Тип занятия'],
-  ] as const;
-  return fields
-    .filter(([key]) => key in value)
-    .map(([key, label]) => {
-      const item = value[key];
-      const text =
-        item === null || item === ''
-          ? 'Не указано'
-          : key === 'bindingMode'
-            ? item === 'LESSON'
-              ? 'На пару'
-              : 'На дату'
-            : key === 'lessonDate' && typeof item === 'string'
-              ? dateLabel(item)
-              : key === 'lessonType' && typeof item === 'string'
-                ? (lessonTypes[item] ?? item)
-                : typeof item === 'string' || typeof item === 'number'
-                  ? String(item)
-                  : 'Неизвестное значение';
-      return { key, label, text };
-    });
-}
-function historyAction(action: string) {
-  return (
-    (
-      {
-        CREATED: 'Опубликовано',
-        EDITED: 'Изменено',
-        DELETED: 'Удалено',
-        ARCHIVED: 'В архиве',
-      } as Record<string, string>
-    )[action] ?? action
-  );
-}
+watch(() => [semesterId.value, archive.value, subjectFilter.value, from.value, to.value, search.value], closeHistory);
+onBeforeUnmount(() => { alive = false; run++; placementRun++; historyRun++; });
 onMounted(load);
 useWebLiveRefresh(load, {
   blocked: () => busy.value || loading.value || editor.value || !!pending.value,
 });
 </script>
 <template>
-  <HeadmanPage
-    title="Домашнее задание"
-    :loading="loading"
-    :error="error"
-    @reload="load"
-    ><template #actions
-      ><button
-        class="web-button web-button-primary"
-        :disabled="!writable || busy || !!pending"
-        @click="openEditor()"
-        >Добавить</button
-      ></template
-    >
-    <p
-      v-if="pending"
-      class="web-notice"
-      >Сохранено незавершённое изменение. Новая запись заблокирована до проверки результата.
-      <button
-        class="web-button"
-        :disabled="busy"
-        @click="execute(true)"
-        >Проверить результат</button
-      ></p
-    >
-    <form
-      class="headman-panel headman-toolbar"
-      @submit.prevent="load"
-      ><label class="web-field"
-        >Семестр<select
-          v-model.number="semesterId"
-          :disabled="editor || busy || !!pending"
-          ><option
-            v-for="item in semesters"
-            :key="item.id"
-            :value="item.id"
-            >{{ item.name }}{{ item.active ? '' : ' · архив' }}</option
-          ></select
-        ></label
-      ><label class="web-field"
-        >Раздел<select v-model="archive"
-          ><option :value="false">Актуальные</option
-          ><option :value="true">Архив</option></select
-        ></label
-      ><button
-        class="web-button"
-        :disabled="loading"
-        >Показать</button
-      ><label class="web-field"
-        >Предмет<select v-model.number="subjectFilter"
-          ><option :value="0">Все</option
-          ><option
-            v-for="subject in subjects"
-            :key="subject.id"
-            :value="subject.id"
-            >{{ subject.name }}</option
-          ></select
-        ></label
-      ><label class="web-field"
-        >С даты<input
-          v-model="from"
-          type="date" /></label
-      ><label class="web-field"
-        >По дату<input
-          v-model="to"
-          type="date" /></label
-      ><label class="web-field"
-        >Поиск<input
-          v-model="search"
-          type="search" /></label
-    ></form>
-    <form
-      v-if="editor"
-      class="headman-panel web-stack"
-      @submit.prevent="save"
-      ><h2>{{ editing ? 'Изменить задание' : 'Добавить задание' }}</h2
-      ><fieldset :disabled="busy || !!pending"
-        ><label class="web-field"
-          >Предмет<select
-            v-model.number="draft.subjectId"
-            :disabled="!!editing"
-            required
-            @change="findNext"
-            ><option
-              v-for="subject in subjects"
-              :key="subject.id"
-              :value="subject.id"
-              >{{ subject.name }}</option
-            ></select
-          ></label
-        ><label class="web-field"
-          >Тип занятия<select
-            v-model="draft.lessonType"
-            required
-            @change="findNext"
-            ><option
-              v-for="type in types"
-              :key="type"
-              :value="type"
-              >{{ lessonTypes[type] }}</option
-            ></select
-          ></label
-        ><label
-          ><input
-            v-model="draft.bound"
-            type="checkbox"
-            @change="findNext"
-          />
-          Привязать к паре</label
-        ><p v-if="draft.bound">{{
-          placementLoading
-            ? 'Поиск ближайшей пары…'
-            : nextLesson
-              ? `Ближайшая пара: ${dateLabel(nextLesson.date)} · №${nextLesson.lessonNumber}`
-              : editing && !nextLesson
-                ? 'Сохранение прежней привязки. Для новой привязки выбери ближайшую пару.'
-                : 'Подходящей будущей пары нет.'
-        }}</p
-        ><button
-          v-if="draft.bound"
-          type="button"
-          class="web-button"
-          :disabled="placementLoading"
-          @click="findNext"
-          >Выбрать ближайшую пару</button
-        ><label class="web-field"
-          >Дата<input
-            v-model="draft.date"
-            type="date"
-            :readonly="draft.bound"
-            :min="today()"
-            :max="semester?.dateTo"
-            required /></label
-        ><label class="web-field"
-          >Заголовок<input
-            v-model="draft.title"
-            maxlength="255"
-            required /></label
-        ><label class="web-field"
-          >Описание<textarea
-            v-model="draft.description"
-            maxlength="4000"
-            rows="6"
-          /></label
-        ><label class="web-field"
-          >Основная ссылка<input
-            v-model="draft.link"
-            type="url"
-            maxlength="2048"
-            placeholder="https://" /></label></fieldset
-      ><div class="headman-actions"
-        ><button
-          class="web-button web-button-primary"
-          :disabled="busy || !!pending || placementLoading"
-          >{{ editing ? 'Сохранить' : 'Опубликовать' }}</button
-        ><button
-          type="button"
-          class="web-button"
-          :disabled="busy || !!pending"
-          @click="editor = false"
-          >Отмена</button
-        ></div
-      ></form
-    >
-    <div class="web-stack"
-      ><article
-        v-for="item in visible"
-        :key="item.id"
-        class="headman-panel web-stack"
-        ><div class="headman-heading"
-          ><h2>{{ item.title }}</h2
-          ><span v-if="item.archived">Архив</span></div
-        ><p class="web-caption"
-          >{{ subjects.find((subject) => subject.id === item.subjectId)?.name }} ·
-          {{ lessonTypes[item.lessonType ?? ''] }} · {{ dateLabel(item.lessonDate)
-          }}{{ item.lessonNumber ? ` · пара №${item.lessonNumber}` : '' }} ·
-          {{ item.bindingMode === 'LESSON' ? 'К паре' : 'На дату' }}</p
-        ><LinkifiedText
-          v-if="item.description"
-          :text="item.description"
-        /><a
-          v-if="item.link"
-          :href="item.link"
-          target="_blank"
-          rel="noopener noreferrer"
-          >{{ item.link }}</a
-        ><p class="web-caption"
-          >Автор №{{ item.publishedBy ?? '—' }} · версия {{ item.revision ?? '—' }}</p
-        ><div class="headman-actions"
-          ><button
-            class="web-button"
-            @click="showHistory(item)"
-            >История</button
-          ><template v-if="!item.archived && writable"
-            ><button
-              class="web-button"
-              :disabled="busy || !!pending"
-              @click="openEditor(item)"
-              >Изменить</button
-            ><button
-              class="web-button"
-              :disabled="busy || !!pending"
-              @click="remove(item)"
-              >Удалить</button
-            ></template
-          ></div
-        ></article
-      ></div
-    ><p
-      v-if="!loading && !visible.length"
-      class="web-notice"
-      >Заданий по этим условиям нет.</p
-    >
-    <section
-      v-if="history"
-      class="headman-panel web-stack"
-      ><div class="headman-heading"
-        ><h2>История · {{ historyTitle }}</h2
-        ><button
-          class="web-button"
-          @click="history = null"
-          >Закрыть</button
-        ></div
-      ><ol class="headman-list"
-        ><li
-          v-for="entry in history"
-          :key="entry.id"
-          ><p
-            >{{ new Date(entry.occurredAt).toLocaleString('ru-RU') }} ·
-            {{
-              entry.actorDisplayName ?? (entry.actorId ? `Автор №${entry.actorId}` : 'Система')
-            }}
-            · {{ historyAction(entry.action) }} · версия {{ entry.revision }}</p
-          ><details
-            ><summary>Изменения</summary
-            ><div class="headman-work-grid">
-              <section
-                v-for="[snapshot, label] in [
-                  [entry.before, 'До изменения'],
-                  [entry.after, 'После изменения'],
-                ]"
-                :key="String(label)"
-              >
-                <h3>{{ label }}</h3>
-                <dl
-                  v-if="historyFields(snapshot).length"
-                  class="headman-facts"
-                >
-                  <template
-                    v-for="field in historyFields(snapshot)"
-                    :key="field.key"
-                    ><dt>{{ field.label }}</dt
-                    ><dd><LinkifiedText :text="field.text" /></dd
-                  ></template> </dl
-                ><p v-else>Нет записи</p>
-              </section>
-            </div>
-          </details></li
-        ></ol
-      ><p v-if="!history.length">История пока пуста.</p></section
-    >
+  <HeadmanPage title="Домашнее задание" class="headman-workflows" hide-title :error="error" @reload="load">
+    <div class="headman-flow-tabs" role="group" aria-label="Домашнее задание">
+      <button type="button" class="web-button" :class="{ 'web-button-selected': editor }" :aria-pressed="editor" :disabled="!writable || busy || !!pending" @click="!editor && openEditor()">{{ editing && editor ? 'Редактирование' : 'Добавить' }}</button>
+      <button type="button" class="web-button" :class="{ 'web-button-selected': !editor && !archive }" :aria-pressed="!editor && !archive" :disabled="loading || busy || !!pending" @click="selectSection(false)">Актуальное</button>
+      <button type="button" class="web-button" :class="{ 'web-button-selected': !editor && archive }" :aria-pressed="!editor && archive" :disabled="loading || busy || !!pending" @click="selectSection(true)">Архив</button>
+    </div>
+    <p v-if="pending" class="web-notice" role="status">Сохранено незавершённое изменение. Новая запись заблокирована до проверки результата. <button class="web-button" :disabled="busy" @click="execute(true)">Проверить результат</button></p>
+    <form v-if="editor" class="headman-homework-composer web-stack" @submit.prevent="save">
+      <h2>{{ editing ? 'Изменить задание' : 'Добавить задание' }}</h2>
+      <fieldset :disabled="busy || !!pending" class="headman-flow-fields">
+        <WebSelect v-model="draft.subjectId" label="Предмет" :options="subjects.map(item => ({ value: item.id, label: item.name }))" :disabled="!!editing || busy || !!pending" required @change="changePlacementContext" />
+        <WebSelect v-model="draft.lessonType" label="Тип занятия" :options="types.map(type => ({ value: type, label: lessonTypes[type] ?? type }))" :disabled="busy || !!pending" required @change="changePlacementContext" />
+        <label class="headman-flow-toggle"><input v-model="draft.bound" type="checkbox" @change="changePlacementContext" /><span>{{ draft.bound ? 'Привязано к паре' : 'На выбранную дату' }}</span></label>
+        <div class="headman-homework-placement-row">
+          <button v-if="draft.bound" type="button" class="web-button" :disabled="placementLoading || busy || !!pending" @click="findNext">Ближайшая пара</button>
+          <WebDateField v-model="draft.date" label="Дата" :min="editing && !placementTouched && editing.lessonDate < today() ? editing.lessonDate : today()" :max="semester?.dateTo" :today="today()" :allowed-dates="draft.bound ? placementDates : undefined" :disabled="busy || !!pending || (draft.bound && placementLoading)" required @change="chooseDate" @validity="dateValidity" />
+        </div>
+        <WebSelect v-if="draft.bound && dateLessons.length > 1" v-model="selectedLessonId" label="Пара" :options="[{ value: 0, label: 'Выбери пару' }, ...dateLessons.map(lesson => ({ value: lesson.id, label: `№${lesson.lessonNumber} · ${lesson.startTime?.slice(0, 5) ?? '—'} — ${lesson.endTime?.slice(0, 5) ?? '—'}` }))]" :disabled="busy || !!pending || placementLoading" required />
+        <p v-if="placementLoading" class="web-caption" role="status">Загрузка расписания…</p>
+        <p v-else-if="placementError" class="web-error" role="alert">{{ placementError }}</p>
+        <p v-else-if="draft.bound && !nextLesson" class="web-caption">{{ editing && !placementTouched ? 'Сохранение прежней привязки.' : placementLessons.length ? 'Выбери дату и пару в расписании.' : 'Подходящих будущих пар нет.' }}</p>
+        <label class="web-field">Заголовок<input v-model="draft.title" maxlength="255" required /></label>
+        <label class="web-field">Основная ссылка<input v-model="draft.link" type="url" maxlength="2048" placeholder="https://" /></label>
+        <label class="web-field">Описание<textarea v-model="draft.description" maxlength="4000" rows="6" /></label>
+      </fieldset>
+      <div class="headman-flow-form-actions"><button type="button" class="web-button" :disabled="busy || !!pending" @click="closeEditor">Отмена</button><button class="web-button web-button-primary" :disabled="busy || !!pending || placementLoading || !dateValid || (draft.bound && (!editing || placementTouched) && !nextLesson)">{{ editing ? 'Сохранить' : 'Опубликовать' }}</button></div>
+    </form>
+    <template v-else>
+      <form class="headman-flow-filter-grid headman-homework-filters" @submit.prevent="load">
+        <WebSelect v-model="semesterId" label="Семестр" :options="semesters.map(item => ({ value: item.id, label: item.name + (item.active ? '' : ' · архив') }))" :disabled="busy || !!pending" />
+        <WebSelect v-model="subjectFilter" label="Предмет" :options="[{ value: 0, label: 'Все предметы' }, ...subjects.map(item => ({ value: item.id, label: item.name }))]" />
+        <WebDateField v-model="from" label="С даты" :max="to || semester?.dateTo" :today="today()" /><WebDateField v-model="to" label="По дату" :min="from || semester?.dateFrom" :today="today()" />
+        <label class="web-field">Поиск<input v-model="search" type="search" /></label>
+      </form>
+      <section v-for="group in grouped" :key="group.date" class="headman-homework-group web-stack"><h2>{{ group.date === today() ? 'Сегодня, ' : '' }}{{ dateLabel(group.date) }}</h2>
+        <div v-for="item in group.items" :key="item.id" class="headman-homework-entry"><article class="headman-flow-card headman-homework-card">
+          <div class="headman-heading"><div class="web-stack"><p v-if="item.title" class="web-caption">{{ subjects.find(subject => subject.id === item.subjectId)?.name ?? 'Предмет недоступен' }}</p><h3>{{ item.title || subjects.find(subject => subject.id === item.subjectId)?.name }}</h3></div><span v-if="item.archived" class="headman-flow-status" data-status="CANCELLED">Архив</span></div>
+          <p v-if="item.description" class="headman-flow-description"><LinkifiedText :text="item.description" /></p><a v-if="item.link" :href="item.link" target="_blank" rel="noopener noreferrer" :title="item.link">Основная ссылка<span class="web-sr-only"> (откроется в новой вкладке)</span></a>
+          <div class="headman-flow-card-footer"><p v-if="publisher(item.publishedBy)" class="web-caption">{{ publisher(item.publishedBy) }}</p><div class="headman-actions"><button type="button" class="web-button" :aria-expanded="historyId === item.id" :aria-controls="`homework-history-${item.id}`" @click="showHistory(item)">История</button><template v-if="!item.archived && writable"><button type="button" class="web-button" :disabled="busy || !!pending" @click="openEditor(item)">Изменить</button><button type="button" class="web-button" :disabled="busy || !!pending" @click="remove(item)">Удалить</button></template></div></div>
+        </article>
+        <HomeworkHistory v-if="historyId === item.id" :id="`homework-history-${item.id}`" :title="item.title" :entries="history" :loading="historyLoading" :error="historyError" @close="closeHistory" />
+        </div>
+      </section>
+      <p v-if="!loading && !error && !visible.length" class="headman-flow-empty">Заданий по этим условиям нет.</p><p v-if="loading && !rows.length" class="web-caption" role="status">Загрузка заданий…</p>
+    </template>
   </HeadmanPage>
 </template>

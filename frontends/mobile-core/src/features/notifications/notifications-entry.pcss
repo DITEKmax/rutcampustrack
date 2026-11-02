@@ -44,6 +44,30 @@
   justify-content: space-between;
   gap: var(--rct-space-3);
 }
+.teacher-home__role-header.notifications-role-header,
+.headman-home__header.notifications-role-header,
+.admin-dashboard-screen > .notifications-role-header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+}
+.teacher-home__role-header > .teacher-home__role,
+.headman-home__header > .headman-home__role,
+.notifications-role-header > .admin-dashboard-screen__role {
+  grid-column: 2;
+  grid-row: 1;
+  justify-self: center;
+  min-inline-size: 0;
+  min-block-size: var(--rct-control-min-touch);
+  margin: 0;
+}
+.teacher-home__role-header > .notifications-entry,
+.headman-home__header > .notifications-entry,
+.admin-dashboard-screen > .notifications-role-header > .notifications-entry {
+  grid-column: 3;
+  grid-row: 1;
+  justify-self: end;
+}
 
 .notification-launch-notice {
   position: fixed;

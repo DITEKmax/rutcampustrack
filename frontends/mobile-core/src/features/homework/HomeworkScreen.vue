@@ -680,15 +680,16 @@ onBeforeUnmount(() => {
                         : 'unsafe'
                   "
                 >
+                  <p class="homework-card__subject">
+                    {{ item.subject.name }}
+                  </p>
                   <h3
                     :ref="(element) => setCardHeadingRef(item.id, element)"
+                    class="homework-card__title"
                     tabindex="-1"
                   >
-                    {{ item.subject.name }}
-                  </h3>
-                  <p class="homework-card__title">
                     {{ item.title }}
-                  </p>
+                  </h3>
                   <p
                     v-if="hasDescription(item) && isExpanded(item.id)"
                     :id="`homework-description-${item.id}`"

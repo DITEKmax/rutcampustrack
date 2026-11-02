@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import WebSelect from '../../shared/WebSelect.vue';
 import { computed, nextTick, onMounted, ref, shallowRef, watch } from 'vue';
 import { onBeforeRouteLeave, onBeforeRouteUpdate, useRoute, useRouter } from 'vue-router';
 import { useWebLiveRefresh } from '../../app/live';
@@ -37,6 +38,17 @@ const users = new AdminUsersClient(admin.options);
 bindAdminRecovery(admin.options, 'users', users);
 const page = shallowRef<AdminUsersPage | null>(null);
 const selected = shallowRef<AdminUser | null>(null);
+const registryItems = computed(() => {
+  const items = page.value?.items ?? [];
+  const current = selected.value;
+  if (!current || creating.value) return items;
+  return items.some(user => user.id === current.id)
+    ? items.map(user => user.id === current.id ? current : user)
+    : [...items, current];
+});
+const pinnedUserId = computed(() => selected.value && !page.value?.items.some(user => user.id === selected.value?.id) ? selected.value.id : undefined);
+const filtersDirty = computed(() => JSON.stringify(draftQuery()) !== JSON.stringify(applied.value));
+
 const route = useRoute(),
   router = useRouter();
 const initialQuery = readUserRegistryQuery(route.query);
@@ -74,6 +86,7 @@ const password = ref('');
 const archiveRecovery = ref(false);
 const initialReceipt = shallowRef<{ login: string; password: string } | null>(null);
 let loadRevision = 0;
+const loadedQueryKey = ref('');
 const locked = computed(() => busy.value || pending.value || childLocked.value);
 admin.guardUnfinished(() => locked.value);
 const canManage = computed(() => admin.can('USERS_MANAGE'));
@@ -87,10 +100,14 @@ const applicableStatuses = computed(
 const exportSelector = computed(() => userRegistryExportSelector(applied.value));
 
 async function load(number = 0) {
-  const own = ++loadRevision;
+  const own = ++loadRevision, key = JSON.stringify(applied.value);
+  loadedQueryKey.value = '';
   const value = await users.listUsers({ ...applied.value, page: number, size: 30 }, admin.signal);
   admin.assertCurrent();
-  if (own === loadRevision) page.value = value;
+  if (own === loadRevision && key === JSON.stringify(applied.value) && admin.can('USERS_VIEW')) {
+    page.value = value;
+    loadedQueryKey.value = key;
+  }
 }
 function draftQuery(): UserRegistryFilters {
   return {
@@ -464,12 +481,7 @@ useWebLiveRefresh(
   >
     <header class="admin-heading">
       <div>
-        <h1>Пользователи</h1><p
-          v-if="page"
-          class="web-caption"
-        >
-          {{ page.totalElements.toLocaleString('ru-RU') }} учётных записей
-        </p>
+        <h1>Пользователи</h1>
       </div><button
         v-if="canManage"
         class="web-button web-button-primary"
@@ -486,82 +498,44 @@ useWebLiveRefresh(
       :notice="notice"
       @retry="admin.run(() => load())"
     />
-    <GroupFilter
+    <form
+      v-if="admin.can('USERS_VIEW')"
+      class="admin-toolbar"
+      @submit.prevent="apply"
+    >
+      <GroupFilter
       v-if="admin.can('USERS_VIEW')"
       v-model="filterGroupId"
       :client="users"
       :assert-current="admin.assertCurrent"
       :disabled="locked"
     />
-    <form
-      v-if="admin.can('USERS_VIEW')"
-      class="admin-toolbar"
-      @submit.prevent="apply"
-    >
       <label class="web-field">Поиск<input
         v-model="search"
         type="search"
         placeholder="ФИО, логин или Telegram ID"
-      ></label><label class="web-field">Роль<select
-        v-model="role"
-        @change="roleStatus = ''"
-      ><option value="">Все роли</option><option
-        v-for="(label, value) in roleLabels"
-        :key="value"
-        :value="value"
-      >{{ label }}</option></select></label><label class="web-field">Статус роли<select
-        v-model="roleStatus"
-        :disabled="!role"
-      ><option value="">Все статусы</option><option
-        v-for="(label, value) in statusLabels"
-        :key="value"
-        :value="value"
-      >{{ label }}</option></select></label><label class="web-field">Учётная запись<select v-model="accountStatus"><option value="">{{
-        roleStatus === 'ARCHIVED' ? 'Все состояния записи' : 'Без архивных записей'
-      }}</option><option value="ACTIVE">Активные</option><option value="EXPELLED">Отчисленные</option><option value="SUSPENDED">Приостановленные</option><option value="ARCHIVED">Архивные</option></select></label><label class="web-field">ФИО<select v-model="sortDirection"><option value="asc">От А до Я</option><option value="desc">От Я до А</option></select></label><button
+      ></label><WebSelect v-model="role" label="Роль" :options="[{ value: '', label: 'Все роли' }, ...Object.entries(roleLabels).map(([value, label]) => ({ value: value as typeof role, label }))]" :disabled="locked" @change="roleStatus = ''" /><WebSelect v-model="roleStatus" label="Статус роли" :options="[{ value: '', label: 'Все статусы' }, ...Object.entries(statusLabels).map(([value, label]) => ({ value: value as AdminRoleStatus, label }))]" :disabled="locked || !role" /><WebSelect v-model="accountStatus" label="Учётная запись" :options="[{ value: '', label: roleStatus === 'ARCHIVED' ? 'Все состояния записи' : 'Без архивных записей' }, { value: 'ACTIVE', label: 'Активные' }, { value: 'EXPELLED', label: 'Отчисленные' }, { value: 'SUSPENDED', label: 'Приостановленные' }, { value: 'ARCHIVED', label: 'Архивные' }]" :disabled="locked" /><WebSelect v-model="sortDirection" label="ФИО" :options="[{ value: 'asc', label: 'От А до Я' }, { value: 'desc', label: 'От Я до А' }]" :disabled="locked" /><button
         class="web-button"
         :disabled="locked"
       >
         Найти
       </button>
     </form>
-    <template v-if="page && admin.can('USERS_VIEW')">
+    <template v-if="admin.can('USERS_VIEW')">
       <UserRegistryTable
-        v-if="page.items.length"
-        :items="page.items"
+        v-if="registryItems.length || creating"
+        :items="registryItems"
+        :selected-id="selected?.id"
+        :pinned-id="pinnedUserId"
+        :creating="creating"
         :disabled="locked"
         @open="open"
-      /><p
-        v-else
-        role="status"
       >
-        Пользователи не найдены. Измени поиск или фильтры.
-      </p>
-      <div class="admin-pager">
-        <div class="admin-actions">
-          <button
-            class="web-button"
-            :disabled="locked || page.number === 0"
-            @click="navigate(page!.number - 1)"
-          >
-            Назад
-          </button><span v-if="page.totalPages">{{ page.number + 1 }} / {{ page.totalPages }}</span><button
-            class="web-button"
-            :disabled="locked || page.number + 1 >= page.totalPages"
-            @click="navigate(page!.number + 1)"
-          >
-            Дальше
-          </button>
-        </div><ExportControl
-          kind="users"
-          :selector="exportSelector"
-        />
-      </div>
-    </template>
+        <template #editor>
     <section
       v-if="(creating || selected) && admin.can('USERS_VIEW')"
       ref="editor"
-      class="admin-panel"
+      class="admin-panel admin-inline-editor"
       :inert="busy || (pending && !archiveRecovery)"
       tabindex="-1"
       :aria-label="creating ? 'Создание пользователя' : selected!.fullName"
@@ -599,24 +573,20 @@ useWebLiveRefresh(
       >
         <dt>Логин</dt><dd>{{ selected.login }}</dd><dt>Состояние</dt><dd>{{ statusLabels[selected.status] }}</dd>
       </dl>
+      <div class="admin-editor-sections" :class="{ 'is-creating': creating }">
       <form
         v-if="canManage"
         class="admin-form web-stack"
         @submit.prevent="save"
       >
+        <h3 v-if="!creating">Профиль</h3>
         <fieldset
           class="admin-form-grid"
           :disabled="locked"
         >
           <legend class="web-sr-only">
             Данные пользователя
-          </legend><label
-            v-if="creating"
-            class="web-field"
-          >Роль<select v-model="createRole"><option value="STUDENT">Студент</option><option value="TEACHER">Преподаватель</option><option
-            v-if="full"
-            value="ADMIN"
-          >Администратор</option></select></label><label class="web-field">Фамилия<input
+          </legend><WebSelect v-if="creating" v-model="createRole" label="Роль" :options="[{ value: 'STUDENT', label: 'Студент' }, { value: 'TEACHER', label: 'Преподаватель' }, ...(full ? [{ value: 'ADMIN' as const, label: 'Администратор' }] : [])]" :disabled="locked" /><label class="web-field">Фамилия<input
             v-model="lastName"
             required
             maxlength="128"
@@ -675,26 +645,12 @@ useWebLiveRefresh(
             class="web-stack"
             @submit.prevent="updateRole"
           >
-            <label class="web-field">Роль<select
-              v-model="roleToUpdate"
-              :disabled="locked"
-              @change="chooseRole"
-            ><option value="STUDENT">Студент</option><option value="TEACHER">Преподаватель</option><option
-              v-if="full"
-              value="ADMIN"
-            >Администратор</option></select></label><p
+            <WebSelect v-model="roleToUpdate" label="Роль" :options="[{ value: 'STUDENT', label: 'Студент' }, { value: 'TEACHER', label: 'Преподаватель' }, ...(full ? [{ value: 'ADMIN' as const, label: 'Администратор' }] : [])]" :disabled="locked" @change="chooseRole" /><p
               v-if="activeGrant?.blockedReason"
               class="admin-warning"
             >
               {{ activeGrant.blockedReason }}
-            </p><label class="web-field">Статус<select
-              v-model="targetStatus"
-              :disabled="locked"
-            ><option
-              v-for="status in applicableStatuses"
-              :key="status"
-              :value="status"
-            >{{ statusLabels[status] }}</option></select></label><GroupPicker
+            </p><WebSelect v-model="targetStatus" label="Статус" :options="applicableStatuses.map(status => ({ value: status, label: statusLabels[status] }))" :disabled="locked" /><GroupPicker
               v-if="roleToUpdate === 'STUDENT' && !activeGrant"
               v-model="targetGroupId"
               :client="users"
@@ -805,7 +761,37 @@ useWebLiveRefresh(
           </div>
         </form>
       </template>
+      </div>
     </section>
+        </template>
+      </UserRegistryTable><p
+        v-else-if="page"
+        role="status"
+      >
+        Пользователи не найдены. Измени поиск или фильтры.
+      </p>
+      <div v-if="page" class="admin-pager">
+        <div class="admin-actions">
+          <button
+            class="web-button"
+            :disabled="locked || page.number === 0"
+            @click="navigate(page!.number - 1)"
+          >
+            Назад
+          </button><span v-if="page.totalPages">{{ page.number + 1 }} / {{ page.totalPages }}</span><button
+            class="web-button"
+            :disabled="locked || page.number + 1 >= page.totalPages"
+            @click="navigate(page!.number + 1)"
+          >
+            Дальше
+          </button>
+        </div><ExportControl
+          kind="users"
+          :selector="exportSelector"
+          :disabled="locked || filtersDirty || loadedQueryKey !== JSON.stringify(applied)"
+        />
+      </div>
+    </template>
     <form
       v-if="archiveRecovery && archive && canArchive"
       class="admin-panel admin-form"

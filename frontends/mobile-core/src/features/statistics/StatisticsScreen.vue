@@ -193,7 +193,7 @@ function rankLabel(rank: StatisticsOverviewData['ownRank']): string {
                 <span>{{ row.position ?? '—' }}</span>
                 <span>{{ row.name }}<strong
                   v-if="row.isSelf"
-                  class="statistics-ranking__self"
+                  class="statistics-visually-hidden"
                 >Это я</strong></span>
                 <span>{{ displayPercent(row.percentage) }}</span>
               </li>
@@ -248,7 +248,8 @@ function rankLabel(rank: StatisticsOverviewData['ownRank']): string {
             aria-hidden="true"
           >+</span>
           <span>{{ displayPercent(data.metrics.present.percent) }}</span>
-          <span class="statistics-metric__count">был, {{ data.metrics.present.count }}</span>
+          <span class="statistics-metric__count" aria-hidden="true">{{ data.metrics.present.count }} / {{ data.metrics.held }}</span>
+          <span class="statistics-visually-hidden">Был, {{ data.metrics.present.count }} из {{ data.metrics.held }} проведённых пар</span>
         </article>
         <article class="statistics-metric statistics-metric--combined">
           <span
@@ -256,7 +257,8 @@ function rankLabel(rank: StatisticsOverviewData['ownRank']): string {
             aria-hidden="true"
           >+ и у</span>
           <span>{{ displayPercent(data.metrics.presentOrExcused.percent) }}</span>
-          <span class="statistics-metric__count">был или уважительная причина, {{ data.metrics.presentOrExcused.count }}</span>
+          <span class="statistics-metric__count" aria-hidden="true">{{ data.metrics.presentOrExcused.count }} / {{ data.metrics.held }}</span>
+          <span class="statistics-visually-hidden">Был или уважительная причина, {{ data.metrics.presentOrExcused.count }} из {{ data.metrics.held }} проведённых пар</span>
         </article>
         <article class="statistics-metric statistics-metric--absent">
           <span
@@ -264,7 +266,8 @@ function rankLabel(rank: StatisticsOverviewData['ownRank']): string {
             aria-hidden="true"
           >н</span>
           <span>{{ displayPercent(data.metrics.absent.percent) }}</span>
-          <span class="statistics-metric__count">не был, {{ data.metrics.absent.count }}</span>
+          <span class="statistics-metric__count" aria-hidden="true">{{ data.metrics.absent.count }} / {{ data.metrics.held }}</span>
+          <span class="statistics-visually-hidden">Не был, {{ data.metrics.absent.count }} из {{ data.metrics.held }} проведённых пар</span>
         </article>
         <article class="statistics-metric statistics-metric--excused">
           <span
@@ -272,11 +275,12 @@ function rankLabel(rank: StatisticsOverviewData['ownRank']): string {
             aria-hidden="true"
           >у</span>
           <span>{{ displayPercent(data.metrics.excused.percent) }}</span>
-          <span class="statistics-metric__count">уважительная причина, {{ data.metrics.excused.count }}</span>
+          <span class="statistics-metric__count" aria-hidden="true">{{ data.metrics.excused.count }} / {{ data.metrics.held }}</span>
+          <span class="statistics-visually-hidden">Уважительная причина, {{ data.metrics.excused.count }} из {{ data.metrics.held }} проведённых пар</span>
         </article>
       </section>
 
-      <p class="statistics-counted">
+      <p class="statistics-visually-hidden">
         Проведено {{ data.metrics.held }} из {{ data.metrics.planned }} пар
       </p>
 

@@ -57,22 +57,18 @@ onBeforeUnmount(() => preview.dispose());
     :aria-label="attachment.fileName"
     :aria-busy="state.status === 'loading'"
   >
-    <div class="teacher-toolbar">
-      <SvgIcon :src="documentIcon" /><strong>{{ attachment.fileName }}</strong><span class="web-caption">{{ Math.ceil(attachment.size / 1024) }} КБ</span><button
-        v-if="!state.url"
-        class="web-button"
-        :disabled="expired || state.status === 'loading'"
-        @click="preview.load()"
-      >
-        {{
-          state.status === 'loading'
-            ? 'Загружаем…'
-            : state.error
-              ? 'Повторить загрузку'
-              : 'Открыть вложение'
-        }}
-      </button>
-    </div>
+    <button
+      class="teacher-attachment-header"
+      type="button"
+      :disabled="expired || state.status === 'loading'"
+      :aria-label="`${state.url ? 'Открыть в новой вкладке' : state.error ? 'Повторить загрузку' : 'Открыть'}: ${attachment.fileName}`"
+      @click="state.url ? open() : preview.load()"
+    >
+      <SvgIcon :src="documentIcon" />
+      <strong>{{ attachment.fileName }}</strong>
+      <span class="web-caption">{{ Math.ceil(attachment.size / 1024) }} КБ</span>
+      <span v-if="state.status === 'loading' || state.error" class="teacher-attachment-header-state">{{ state.status === 'loading' ? 'Загружаем…' : expired ? 'Срок хранения истёк' : 'Повторить загрузку' }}</span>
+    </button>
     <p
       v-if="expired"
       class="web-caption"

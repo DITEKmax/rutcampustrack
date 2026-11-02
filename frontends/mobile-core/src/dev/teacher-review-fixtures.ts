@@ -426,17 +426,19 @@ export function createTeacherReviewFixtures(state: TeacherReviewState) {
       const selectedGroup = url.searchParams.get('groupId')
       const selectedSubject = url.searchParams.get('subjectId')
       const selectedTypes = url.searchParams.getAll('lessonType')
-      if (
-        !['101', '102'].includes(selectedGroup ?? '') ||
-        !historicalSubjectOptions.some(
+      const allGroups = url.searchParams.get('scope') === 'groups' && selectedGroup === null && selectedSubject === null
+      const authorised = allGroups || (['101', '102'].includes(selectedGroup ?? '') &&
+        historicalSubjectOptions.some(
           (option) =>
             String(option.groupId) === selectedGroup &&
             String(option.subjectId) === selectedSubject,
-        ) ||
+        ))
+      if (
+        !authorised ||
         !selectedTypes.length ||
         selectedTypes.some((type) => !['lecture', 'practice', 'lab'].includes(type))
       )
-        throw new Error('Synthetic stats require complete authorised explicit context')
+        throw new Error('Synthetic stats require an authorised group scope or complete student context')
     }
     const target = state.split('-')[0]
     const targetRequest =
@@ -550,6 +552,7 @@ export function createTeacherReviewFixtures(state: TeacherReviewState) {
     }
     if (path === '/stats') {
       const scope = url.searchParams.get('scope') ?? 'groups'
+      const allGroups = scope === 'groups' && !url.searchParams.has('groupId') && !url.searchParams.has('subjectId')
       const empty = state === 'stats-empty' || state === 'stats-no-groups'
       const selected =
         empty || state === 'stats-zero'
@@ -558,8 +561,8 @@ export function createTeacherReviewFixtures(state: TeacherReviewState) {
               (lesson) =>
                 lesson.status === 'CLOSED' &&
                 !lesson.cancelled &&
-                lesson.groupId === Number(url.searchParams.get('groupId')) &&
-                lesson.subjectId === Number(url.searchParams.get('subjectId')) &&
+                (allGroups || lesson.groupId === Number(url.searchParams.get('groupId'))) &&
+                (allGroups || lesson.subjectId === Number(url.searchParams.get('subjectId'))) &&
                 url.searchParams.getAll('lessonType').includes(lesson.lessonType),
             )
       return response({
@@ -578,7 +581,7 @@ export function createTeacherReviewFixtures(state: TeacherReviewState) {
             : [],
         groups:
           scope === 'groups' && !empty
-            ? [Number(url.searchParams.get('groupId'))].map((groupId) => {
+            ? (allGroups ? [101, 102] : [Number(url.searchParams.get('groupId'))]).map((groupId) => {
                 const groupLessons = selected.filter((lesson) => lesson.groupId === groupId)
                 return {
                   groupId,

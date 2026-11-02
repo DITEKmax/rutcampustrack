@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { RouterLink } from 'vue-router';
+import WebDateField from '../../shared/WebDateField.vue';
+import MobileIcon from '../../../../mobile-core/src/shared/components/MobileIcon.vue';
 import type {
   TeacherDayResponse,
   TeacherSemester,
@@ -45,13 +47,16 @@ function reset() {
     >
       <SvgIcon :src="previousIcon" />
     </button>
-    <label class="web-field"><span class="web-sr-only">Дата пар</span><input
+    <WebDateField
       v-model="model"
-      type="date"
+      label="Дата пар"
+      :trigger-label="shortDate(model)"
       :min="semester?.dateFrom"
       :max="semester?.dateTo"
-      :disabled="loading"
-    ></label>
+      :today="today()"
+      :disabled="loading || !semester"
+      required
+    />
     <button
       class="web-button web-icon-button"
       aria-label="Следующий день"
@@ -61,10 +66,13 @@ function reset() {
       <SvgIcon :src="nextIcon" />
     </button>
     <button
-      class="web-button"
+      class="web-button web-icon-button"
+      aria-label="Сегодня"
+      title="Сегодня"
+      :disabled="loading || !semester"
       @click="reset"
     >
-      Сегодня
+      <MobileIcon name="retry" />
     </button>
   </div>
   <TeacherNotice
@@ -82,7 +90,7 @@ function reset() {
       :key="lesson.id"
       :class="{
         'teacher-day-cancelled': lesson.cancelled,
-        'teacher-day-active': lesson.status === 'ACTIVE',
+        'teacher-day-active': !lesson.cancelled && lesson.status === 'ACTIVE',
       }"
     >
       <time>{{ lesson.startsAt?.slice(0, 5) ?? `Пара ${lesson.lessonNumber}`
@@ -94,7 +102,7 @@ function reset() {
           }}
         </RouterLink><span>{{ teacherLessonTypeLabel(lesson.lessonType) }} ·
           {{ lesson.room ?? 'Аудитория не указана' }} · {{ lesson.groupName }}</span><span v-if="lesson.cancelled">Отменена<template v-if="lesson.cancellationReason">
-          · {{ lesson.cancellationReason }}</template></span><span v-else-if="lesson.moved">Перенесена</span><span v-else-if="lesson.oneOff">Разовая</span><span v-else-if="lesson.status === 'ACTIVE'">Сейчас</span><span v-else>{{ lesson.status === 'CLOSED' ? 'Завершена' : 'По расписанию' }}</span>
+          · {{ lesson.cancellationReason }}</template></span><strong v-if="lesson.moved" class="teacher-day-exception">Перенесена</strong><strong v-if="lesson.oneOff" class="teacher-day-exception">Разовая</strong><span v-if="!lesson.cancelled && !lesson.moved && !lesson.oneOff">{{ lesson.status === 'ACTIVE' ? 'Сейчас' : lesson.status === 'CLOSED' ? 'Завершена' : 'По расписанию' }}</span>
       </div>
     </li>
   </ol>

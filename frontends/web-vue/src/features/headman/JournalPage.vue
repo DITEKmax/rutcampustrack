@@ -1,9 +1,12 @@
 <script setup lang="ts">
-import { computed, nextTick, onMounted, reactive, ref, shallowRef, watch } from 'vue';
+import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, shallowRef, watch, watchPostEffect } from 'vue';
 import { useRoute } from 'vue-router';
 import { message } from '../../auth/session';
+import AttendanceFilterIllustration from '../../../../shared/illustrations/AttendanceFilterIllustration.vue';
 import { useWebLiveRefresh } from '../../app/live';
 import {
+  HeadmanJournalApiError,
+  type HeadmanJournalMarkCondition,
   type HeadmanJournalLesson,
   type HeadmanJournalReport,
   type HeadmanJournalRosterEntry,
@@ -15,21 +18,26 @@ import type {
   HeadmanSemester,
 } from '../../../../mobile-core/src/features/headman-subjects/headman-subjects-client';
 import type { HeadmanLessonAction } from '../../../../mobile-core/src/features/headman-journal/headman-journal-actions';
+import { academicWeekOrdinal, type AcademicWeekPolicy } from '../../../../mobile-core/src/domain/academic-week';
 import {
   addDays,
   dateLabel,
   lessonTypes,
   lessonTypeCode,
-  markLabels,
-  sourceLabel,
   actionLabel,
-  markSymbols,
   today,
   useHeadmanFeature,
   weekStart,
 } from './context';
 import HeadmanPage from './HeadmanPage.vue';
 import JournalExport from './JournalExport.vue';
+import HeadmanJournalGrid from './HeadmanJournalGrid.vue';
+import StudentPeriodPager from '../student/StudentPeriodPager.vue';
+import WebSelect from '../../shared/WebSelect.vue';
+import WebDateField from '../../shared/WebDateField.vue';
+import MobileIcon from '../../../../mobile-core/src/shared/components/MobileIcon.vue';
+import '../student/student.pcss';
+import './headman-analytics.pcss';
 import { initialExcuseType, markReadbackMatches, LessonActionsReader } from './journal-state';
 
 const feature = useHeadmanFeature();
@@ -46,11 +54,23 @@ const start = ref(
   ),
   mode = ref<'week' | 'subject'>('week'),
   subjectId = ref(0),
-  type = ref('');
+  selectedTypes = ref<readonly string[] | null>(null);
 const subjects = shallowRef<readonly HeadmanSubject[]>([]),
   semesters = shallowRef<readonly HeadmanSemester[]>([]);
 const semesterId = ref(0);
 const semester = computed(() => semesters.value.find((item) => item.id === semesterId.value));
+const weekPolicy = shallowRef<AcademicWeekPolicy | null>(null);
+const weekPolicyContext = ref('');
+const ordinalDate = computed(() => {
+  const from = semester.value?.dateFrom;
+  return from && start.value < from && addDays(start.value, 6) >= from ? from : start.value;
+});
+const weekLabel = computed(() => {
+  const ordinal = academicWeekOrdinal(ordinalDate.value, semester.value?.dateFrom ?? null, semester.value?.dateTo ?? null);
+  const policy = weekPolicyContext.value === `${semesterId.value}/${start.value}` ? weekPolicy.value : null;
+  const parity = policy ? `${policy.parityNumber} (${policy.weekType === 'ODD' ? 'нечётная' : 'чётная'})` : 'чётность —';
+  return `${dateLabel(start.value)} — ${dateLabel(addDays(start.value, 6))} · ${ordinal === null ? 'неделя —' : `${ordinal}-я неделя`} · ${parity}`;
+});
 const lessons = shallowRef<readonly HeadmanJournalLesson[]>([]);
 const reports = shallowRef<ReadonlyMap<number, HeadmanJournalReport>>(new Map());
 const selected = shallowRef<{
@@ -62,18 +82,51 @@ const audit = shallowRef<readonly HeadmanLessonAction[]>([]),
   cursor = ref<string | null>(null);
 const draft = reactive({
   status: 'PRESENT',
-  excuseType: 'ILLNESS' as HeadmanJournalExcuseType | '',
+  excuseType: '' as HeadmanJournalExcuseType | '',
   comment: '',
   file: null as File | null,
 });
-const uncertain = ref(false),
-  detail = ref<HTMLElement | null>(null);
-let revision = 0;
+type JournalStatus = 'PRESENT' | 'EXCUSED' | 'ABSENT';
+type MarkIntent = Readonly<{ lesson: HeadmanJournalLesson; entry: HeadmanJournalRosterEntry; command: HeadmanJournalMarkCommand | null; condition: HeadmanJournalMarkCondition }>;
+const uncertain = ref(false), detail = ref<HTMLDialogElement | null>(null);
+const modalOpen = ref(false), inlineRequest = ref(false), markReadback = shallowRef<MarkIntent | null>(null), pendingMark = shallowRef<MarkIntent | null>(null);
+const canAcceptMark = computed(() => !!pendingMark.value && markReadback.value === pendingMark.value && !busy.value);
+const clock = ref(Date.now()), timingRefreshing = ref(false);
+let clockTimer: ReturnType<typeof setInterval> | null = null;
+const startedLessons = computed<ReadonlySet<number>>((previous) => {
+  const now = clock.value;
+  const next = new Set(lessons.value.filter(lesson => lesson.startTime && Number.isFinite(Date.parse(`${lesson.date}T${lesson.startTime}+03:00`)) && Date.parse(`${lesson.date}T${lesson.startTime}+03:00`) <= now).map(lesson => lesson.id));
+  return previous && previous.size === next.size && [...next].every(id => previous.has(id)) ? previous : next;
+});
+const hasStarted = (lesson: HeadmanJournalLesson) => startedLessons.value.has(lesson.id);
+watchPostEffect(() => {
+  if (modalOpen.value && !detail.value?.open) detail.value?.showModal();
+  else if (!modalOpen.value && detail.value?.open) detail.value.close();
+});
+let revision = 0, journalAlive = true;
+let loadedContext = '';
+const locked = computed(() => busy.value || uncertain.value || loading.value || modalOpen.value || timingRefreshing.value);
+const subjectOptions = computed(() => [{ value: 0, label: 'Все предметы' }, ...subjects.value.map(subject => ({ value: subject.id, label: subject.name }))]);
+const typeCodes = ['LECTURE', 'PRACTICE', 'LAB'] as const;
+const availableTypes = computed<readonly string[]>(() => subjectId.value ? subjects.value.find(subject => subject.id === subjectId.value)?.lessonTypes ?? [] : [...typeCodes]);
+const exportTypes = computed(() => selectedTypes.value ?? availableTypes.value);
+function toggleType(code: string, checked: boolean) {
+  if (locked.value || !availableTypes.value.includes(code)) return;
+  const next = new Set(selectedTypes.value ?? availableTypes.value);
+  if (checked) next.add(code); else next.delete(code);
+  selectedTypes.value = [...next];
+}
+const reasonOptions = [
+  { value: 'ILLNESS', label: 'Болезнь' }, { value: 'MEDICAL_EXAMINATION', label: 'Медосмотр' },
+  { value: 'COMPETITION_PARTICIPATION', label: 'Соревнование' }, { value: 'FAMILY_CIRCUMSTANCES', label: 'Семейные обстоятельства' },
+  { value: 'SUMMONS', label: 'Повестка' }, { value: 'UNIVERSITY_ORDER', label: 'Приказ университета' }, { value: 'EXEMPTION', label: 'Освобождение' }, { value: 'OTHER', label: 'Другое' },
+];
+function stepWeek(direction: -1 | 1) { start.value = addDays(start.value, direction * 7); void load(); }
 const visible = computed(() =>
   lessons.value.filter(
     (lesson) =>
       (!subjectId.value || lesson.subjectId === subjectId.value) &&
-      (!type.value || lessonTypeCode(lesson.lessonType) === type.value),
+      (selectedTypes.value === null || selectedTypes.value.includes(lessonTypeCode(lesson.lessonType))),
   ),
 );
 const roster = computed(() => {
@@ -90,20 +143,94 @@ function subjectName(id: number | null) {
 }
 function canEdit(lesson: HeadmanJournalLesson, entry: HeadmanJournalRosterEntry) {
   return (
-    feature.writable('MARK_ATTENDANCE') &&
+    feature.writable(entry.status === 'EXCUSED' ? 'MANAGE_EXCUSES' : 'MARK_ATTENDANCE') &&
     !!semester.value?.active &&
-    lesson.current &&
+    lesson.current && hasStarted(lesson) && lesson.groupId === feature.groupId && lesson.transferState !== 'PENDING' &&
+    lesson.date >= semester.value!.dateFrom && lesson.date <= semester.value!.dateTo &&
+    reports.value.get(lesson.id)?.lessonId === lesson.id &&
+    (reports.value.get(lesson.id)?.groupId === null || reports.value.get(lesson.id)?.groupId === feature.groupId) &&
+    (reports.value.get(lesson.id)?.lessonDate === null || reports.value.get(lesson.id)?.lessonDate === lesson.date) &&
+    (reports.value.get(lesson.id)?.semesterId === null || reports.value.get(lesson.id)?.semesterId === semester.value!.id) &&
     reports.value.get(lesson.id)?.editable &&
     entry.editable &&
     !['CANCELLED', 'TRANSFERRED', 'UNSUPPORTED'].includes(lesson.status) &&
     !entry.approvedTicket &&
-    !!entry.markRevision &&
+    (entry.status === 'EMPTY' || !!entry.markRevision) &&
     ['EMPTY', 'PRESENT', 'ABSENT', 'EXCUSED'].includes(entry.status)
   );
 }
+type StartedInvalidation = Readonly<{ lesson: HeadmanJournalLesson; run: number; context: string }>;
+const startedInvalidations = new Map<number, StartedInvalidation>();
+function viewContext() {
+  const from = mode.value === 'subject' ? semester.value?.dateFrom : start.value;
+  const to = mode.value === 'subject' ? semester.value?.dateTo : addDays(start.value, 6);
+  return `${mode.value}/${semesterId.value}/${from}/${to}/${mode.value === 'subject' ? subjectId.value : 0}`;
+}
+function queueStartedReport(lesson: HeadmanJournalLesson) {
+  startedInvalidations.set(lesson.id, { lesson, run: revision, context: loadedContext });
+}
+async function flushStartedReports() {
+  if (!journalAlive || timingRefreshing.value || loading.value || busy.value || uncertain.value || modalOpen.value || !startedInvalidations.size) return;
+  timingRefreshing.value = true;
+  try {
+    while (startedInvalidations.size && journalAlive && !loading.value && !busy.value && !uncertain.value && !modalOpen.value) {
+      const batch = [...startedInvalidations.values()].slice(0, 8);
+      for (const item of batch) startedInvalidations.delete(item.lesson.id);
+      const valid = (item: StartedInvalidation) => journalAlive && item.run === revision && item.context === loadedContext && item.context === viewContext() && lessons.value.some(lesson => lesson.id === item.lesson.id && lesson.date === item.lesson.date && lesson.occurrenceId === item.lesson.occurrenceId && lesson.occurrenceRevision === item.lesson.occurrenceRevision);
+      const results = await Promise.all(batch.map(async item => {
+        if (!valid(item)) return null;
+        try {
+          const report = await feature.journal.getLessonAttendance(item.lesson.id);
+          feature.assertCurrent();
+          if (!valid(item)) return null;
+          if (report.lessonId !== item.lesson.id || (report.groupId !== null && report.groupId !== item.lesson.groupId) || (report.lessonDate !== null && report.lessonDate !== item.lesson.date) || (report.semesterId !== null && report.semesterId !== semesterId.value)) throw new Error('Сервер вернул доступность другой пары.');
+          return [item, report] as const;
+        } catch (cause) {
+          if (valid(item) && !error.value) error.value = `Не удалось обновить доступность начавшейся пары. ${message(cause)}`;
+          return null;
+        }
+      }));
+      const next = new Map(reports.value);
+      let published = false;
+      for (const result of results) if (result && valid(result[0])) { next.set(result[0].lesson.id, result[1]); published = true; }
+      if (published) reports.value = next;
+    }
+  } finally { timingRefreshing.value = false; }
+}
+watch(clock, (now, previous) => {
+  if (now <= previous) return;
+  for (const lesson of lessons.value) {
+    const instant = lesson.startTime ? Date.parse(`${lesson.date}T${lesson.startTime}+03:00`) : NaN;
+    if (instant > previous && instant <= now) queueStartedReport(lesson);
+  }
+  void flushStartedReports();
+});
+watch([busy, uncertain, modalOpen, loading], () => { void flushStartedReports(); });
+function canChooseStatus(lesson: HeadmanJournalLesson, entry: HeadmanJournalRosterEntry, status: JournalStatus) {
+  return !!canEdit(lesson, entry) && feature.writable(entry.status === 'EXCUSED' || status === 'EXCUSED' ? 'MANAGE_EXCUSES' : 'MARK_ATTENDANCE');
+}
+async function readWeekPolicy(run: number) {
+  const selectedStart = start.value, selectedSemester = semesterId.value, date = ordinalDate.value;
+  try {
+    const policy = await feature.schedule.academicWeekPolicy(date);
+    feature.assertCurrent();
+    if (run !== revision || mode.value !== 'week' || start.value !== selectedStart || semesterId.value !== selectedSemester || policy.weekStart !== selectedStart) return;
+    weekPolicy.value = policy;
+    weekPolicyContext.value = `${selectedSemester}/${selectedStart}`;
+  } catch {
+    // Missing parity must not prevent the attendance journal from loading.
+    if (run === revision && start.value === selectedStart && semesterId.value === selectedSemester) {
+      weekPolicy.value = null;
+      weekPolicyContext.value = '';
+    }
+  }
+}
 async function load() {
-  if (busy.value) return;
-  const run = ++revision;
+  if (busy.value || uncertain.value || modalOpen.value) return;
+  const run = ++revision, loadClock = clock.value;
+  startedInvalidations.clear();
+  weekPolicy.value = null;
+  weekPolicyContext.value = '';
   loading.value = true;
   error.value = null;
   selected.value = null;
@@ -125,6 +252,9 @@ async function load() {
     const from = mode.value === 'subject' ? semester.value?.dateFrom : start.value;
     const to = mode.value === 'subject' ? semester.value?.dateTo : addDays(start.value, 6);
     if (!from || !to) throw new Error('Нет доступного семестра.');
+    if (mode.value === 'week') void readWeekPolicy(run);
+    const context = `${mode.value}/${semesterId.value}/${from}/${to}/${mode.value === 'subject' ? subjectId.value : 0}`;
+    if (context !== loadedContext) { lessons.value = []; reports.value = new Map(); loadedContext = context; }
     const result = await feature.journal.listLessons(feature.groupId, from, to);
     feature.assertCurrent();
     const relevant = result.filter(
@@ -148,6 +278,11 @@ async function load() {
     if (run !== revision) return;
     lessons.value = result;
     reports.value = attendance;
+    // A start may cross while the initial batch is in flight, before its lessons were published.
+    for (const lesson of result) {
+      const instant = lesson.startTime ? Date.parse(`${lesson.date}T${lesson.startTime}+03:00`) : NaN;
+      if (instant > loadClock && instant <= clock.value) queueStartedReport(lesson);
+    }
     const linked = Number(route.query.lesson);
     if (linked && result.some((lesson) => lesson.id === linked)) {
       await loadAudit(linked);
@@ -163,91 +298,125 @@ async function load() {
   }
 }
 async function choose(lesson: HeadmanJournalLesson, entry: HeadmanJournalRosterEntry) {
-  if (busy.value || uncertain.value) return;
+  if (busy.value || uncertain.value || timingRefreshing.value) return;
   selected.value = { lesson, entry };
-  draft.status = entry.status === 'EMPTY' ? 'PRESENT' : entry.status;
-  draft.excuseType = initialExcuseType(entry);
-  draft.comment = entry.comment ?? '';
+  inlineRequest.value = false;
+  draft.status = 'EXCUSED';
+  draft.excuseType = entry.status === 'EXCUSED' ? initialExcuseType(entry) : '';
+  draft.comment = entry.status === 'EXCUSED' ? entry.comment ?? '' : '';
   draft.file = null;
   error.value = null;
+  modalOpen.value = true;
   await nextTick();
-  detail.value?.focus();
+  detail.value?.querySelector<HTMLButtonElement>('.web-field-trigger')?.focus({ preventScroll: true });
+}
+function closeMark() {
+  if (busy.value || uncertain.value) return;
+  modalOpen.value = false;
+  selected.value = null;
+}
+async function chooseStatus(lesson: HeadmanJournalLesson, entry: HeadmanJournalRosterEntry, status: JournalStatus) {
+  if (locked.value || !canChooseStatus(lesson, entry, status)) return;
+  if (status === 'EXCUSED') { await choose(lesson, entry); return; }
+  selected.value = { lesson, entry };
+  inlineRequest.value = true;
+  draft.status = status;
+  draft.file = null;
+  await save(entry.status === status);
+  if (!uncertain.value) { selected.value = null; inlineRequest.value = false; }
+}
+async function readMarkResult(intent: MarkIntent) {
+  const report = await feature.journal.getLessonAttendance(intent.lesson.id);
+  feature.assertCurrent();
+  if (pendingMark.value !== intent) return false;
+  if (report.lessonId !== intent.lesson.id || (report.groupId !== null && report.groupId !== intent.lesson.groupId) || (report.lessonDate !== null && report.lessonDate !== intent.lesson.date))
+    throw new Error('Сервер вернул отметки другой пары.');
+  reports.value = new Map(reports.value).set(intent.lesson.id, report);
+  const entry = report.entries.find(item => item.userId === intent.entry.userId);
+  if (entry) selected.value = { lesson: intent.lesson, entry };
+  markReadback.value = intent;
+  if (!markReadbackMatches(entry, intent.command)) {
+    uncertain.value = true;
+    error.value = entry ? 'Изменение пока не подтверждено. Показана текущая отметка сервера.' : 'Студент отсутствует в текущем составе пары. Проверь результат или прими показанное состояние.';
+    return false;
+  }
+  pendingMark.value = null;
+  markReadback.value = null;
+  uncertain.value = false;
+  error.value = null;
+  modalOpen.value = false;
+  selected.value = null;
+  return true;
 }
 async function refreshSelected() {
-  const owner = selected.value;
-  if (!owner) return;
+  const intent = pendingMark.value;
+  if (!intent || busy.value) return;
   busy.value = true;
-  try {
-    const report = await feature.journal.getLessonAttendance(owner.lesson.id);
-    feature.assertCurrent();
-    reports.value = new Map(reports.value).set(owner.lesson.id, report);
-    const entry = report.entries.find((item) => item.userId === owner.entry.userId);
-    selected.value = entry ? { lesson: owner.lesson, entry } : null;
-    if (uncertain.value)
-      error.value =
-        'Показана текущая отметка сервера. Проверь её и прими как новый черновик перед следующим изменением.';
-    else error.value = null;
-  } catch (cause) {
-    error.value = message(cause);
-  } finally {
-    busy.value = false;
+  markReadback.value = null;
+  let confirmed = false;
+  try { confirmed = await readMarkResult(intent); }
+  catch (cause) { error.value = `${message(cause)} Результат изменения остаётся неизвестным.`; }
+  finally { busy.value = false; }
+  if (confirmed && auditLesson.value === intent.lesson.id) void loadAudit(intent.lesson.id);
+}
+function acceptCurrentMark() {
+  if (!canAcceptMark.value) return;
+  pendingMark.value = null;
+  markReadback.value = null;
+  uncertain.value = false;
+  error.value = null;
+  if (!modalOpen.value) { selected.value = null; inlineRequest.value = false; return; }
+  if (selected.value) {
+    draft.status = 'EXCUSED';
+    draft.excuseType = selected.value.entry.status === 'EXCUSED' ? initialExcuseType(selected.value.entry) : '';
+    draft.comment = selected.value.entry.status === 'EXCUSED' ? selected.value.entry.comment ?? '' : '';
+    draft.file = null;
   }
 }
 async function save(clear = false) {
   const owner = selected.value;
-  if (!owner || busy.value || uncertain.value || !canEdit(owner.lesson, owner.entry)) return;
+  if (!owner || busy.value || uncertain.value || timingRefreshing.value || !canEdit(owner.lesson, owner.entry)) return;
   const expectedStatus = owner.entry.status;
   if (!['PRESENT', 'ABSENT', 'EXCUSED', 'EMPTY'].includes(expectedStatus)) return;
-  if (!clear && draft.status === 'EXCUSED' && !draft.excuseType) {
-    error.value = 'Выбери поддерживаемую причину перед сохранением.';
-    return;
-  }
-  const command: HeadmanJournalMarkCommand | null = clear
-    ? null
-    : draft.status === 'EXCUSED'
-      ? {
-          status: 'EXCUSED',
-          excuseType: draft.excuseType as HeadmanJournalExcuseType,
-          comment: draft.comment,
-          file: draft.file,
-        }
-      : { status: draft.status as 'PRESENT' | 'ABSENT' };
+  const targetStatus = clear ? expectedStatus : draft.status;
+  if (!canChooseStatus(owner.lesson, owner.entry, targetStatus as JournalStatus)) return;
+  const current = entryFor(owner.lesson.id, owner.entry.userId);
+  if (!current || current.status !== expectedStatus || current.markRevision !== owner.entry.markRevision || current.approvedTicket) { error.value = 'Отметка изменилась. Обнови журнал перед следующим действием.'; return; }
+  if (clear && expectedStatus === 'EMPTY') return;
+  if (!clear && draft.status === 'EXCUSED' && !draft.excuseType) { error.value = 'Выбери причину уважительного отсутствия.'; return; }
+  const command: HeadmanJournalMarkCommand | null = clear ? null : draft.status === 'EXCUSED'
+    ? { status: 'EXCUSED', excuseType: draft.excuseType as HeadmanJournalExcuseType, comment: draft.comment, file: draft.file }
+    : { status: draft.status as 'PRESENT' | 'ABSENT' };
+  const intent: MarkIntent = Object.freeze({ lesson: owner.lesson, entry: Object.freeze({ ...owner.entry }), command: command ? Object.freeze(command) : null, condition: Object.freeze({ expectedStatus: expectedStatus as HeadmanJournalMarkCondition['expectedStatus'], expectedRevision: expectedStatus === 'EMPTY' ? 'EMPTY' : owner.entry.markRevision! }) });
+  pendingMark.value = intent;
+  markReadback.value = null;
   busy.value = true;
   error.value = null;
+  let acknowledged = false, confirmed = false;
   try {
     feature.assertCurrent();
-    if (clear) {
-      if (expectedStatus === 'EMPTY') return;
-      await feature.journal.clear(owner.lesson.id, owner.entry.userId, {
-        expectedStatus: expectedStatus as 'PRESENT' | 'ABSENT' | 'EXCUSED',
-        expectedRevision: owner.entry.markRevision!,
-      });
+    if (intent.command) {
+      const ack = await feature.journal.mark(intent.lesson.id, intent.entry.userId, intent.command, intent.condition);
+      acknowledged = true;
+      if (ack.lessonId !== intent.lesson.id || ack.userId !== intent.entry.userId || ack.status !== intent.command.status) throw new Error('Сервер вернул подтверждение другой отметки.');
     } else {
-      await feature.journal.mark(owner.lesson.id, owner.entry.userId, command!, {
-        expectedStatus: expectedStatus as 'EMPTY' | 'PRESENT' | 'ABSENT' | 'EXCUSED',
-        expectedRevision: owner.entry.markRevision!,
-      });
+      await feature.journal.clear(intent.lesson.id, intent.entry.userId, { expectedStatus: expectedStatus as 'PRESENT' | 'ABSENT' | 'EXCUSED', expectedRevision: intent.condition.expectedRevision });
+      acknowledged = true;
     }
     feature.assertCurrent();
-    await refreshSelected();
+    confirmed = await readMarkResult(intent);
   } catch (cause) {
-    // Readback resolves an uncertain write. The original command is never replayed.
-    uncertain.value = true;
-    try {
-      const report = await feature.journal.getLessonAttendance(owner.lesson.id);
-      feature.assertCurrent();
-      reports.value = new Map(reports.value).set(owner.lesson.id, report);
-      const entry = report.entries.find((item) => item.userId === owner.entry.userId);
-      selected.value = entry ? { lesson: owner.lesson, entry } : null;
-      uncertain.value = !markReadbackMatches(entry, command);
-      if (uncertain.value)
-        error.value = `${message(cause)}. Сервер не подтвердил отправленные причину, комментарий или файл. Показана текущая отметка.`;
-    } catch {
-      error.value = 'Результат изменения неизвестен. Проверь отметку перед следующей записью.';
+    if (!acknowledged && cause instanceof HeadmanJournalApiError && [400, 401, 403, 404, 409, 410, 415, 422].includes(cause.response.status)) {
+      pendingMark.value = null;
+      uncertain.value = false;
+      error.value = message(cause);
+    } else {
+      uncertain.value = true;
+      try { confirmed = await readMarkResult(intent); }
+      catch { error.value = 'Результат изменения неизвестен. Проверь отметку перед следующей записью.'; }
     }
-  } finally {
-    busy.value = false;
-  }
+  } finally { busy.value = false; }
+  if (confirmed && auditLesson.value === intent.lesson.id) void loadAudit(intent.lesson.id);
 }
 const actionsReader = new LessonActionsReader(feature.actions);
 async function loadAudit(id: number, more = false) {
@@ -274,297 +443,66 @@ async function loadAudit(id: number, more = false) {
 watch([mode, semesterId], () => {
   if (semesters.value.length && !loading.value) void load();
 });
-onMounted(load);
+onMounted(() => { void load(); clockTimer = setInterval(() => { clock.value = Date.now(); }, 1000); });
+onBeforeUnmount(() => { journalAlive = false; revision++; startedInvalidations.clear(); if (clockTimer !== null) clearInterval(clockTimer); });
 useWebLiveRefresh(load, {
-  blocked: () => busy.value || loading.value || !!selected.value || uncertain.value,
+  blocked: () => busy.value || loading.value || !!selected.value || uncertain.value || timingRefreshing.value,
 });
 </script>
 <template>
   <HeadmanPage
     title="Посещаемость"
+    class="headman-analytics headman-attendance-page"
+    hide-title
     :loading="loading"
     :error="error"
     @reload="load"
   >
-    <form
-      class="headman-panel headman-toolbar"
-      @submit.prevent="load"
-    >
-      <label class="web-field"
-        >Срез<select v-model="mode"
-          ><option value="week">По неделе</option
-          ><option value="subject">По предмету</option></select
-        ></label
-      >
-      <label class="web-field"
-        >Семестр<select v-model.number="semesterId"
-          ><option
-            v-for="item in semesters"
-            :key="item.id"
-            :value="item.id"
-            >{{ item.name }}{{ item.active ? '' : ' · архив' }}</option
-          ></select
-        ></label
-      >
-      <label
-        v-if="mode === 'week'"
-        class="web-field"
-        >Начало недели<input
-          v-model="start"
-          type="date"
-          required
-      /></label>
-      <label class="web-field"
-        >Предмет<select v-model.number="subjectId"
-          ><option :value="0">Все предметы</option
-          ><option
-            v-for="subject in subjects"
-            :key="subject.id"
-            :value="subject.id"
-            >{{ subject.name }}</option
-          ></select
-        ></label
-      >
-      <label class="web-field"
-        >Тип занятия<select v-model="type"
-          ><option value="">Все типы</option
-          ><option
-            v-for="(label, code) in lessonTypes"
-            :key="code"
-            :value="code"
-            >{{ label }}</option
-          ></select
-        ></label
-      >
-      <button
-        class="web-button"
-        :disabled="loading || busy"
-        >Показать</button
-      >
-    </form>
-    <div
-      v-if="mode === 'week'"
-      class="headman-actions"
-      ><button
-        class="web-button"
-        :disabled="busy || loading"
-        @click="
-          start = addDays(start, -7);
-          load();
-        "
-        >Предыдущая неделя</button
-      ><span>{{ dateLabel(start) }} — {{ dateLabel(addDays(start, 6)) }}</span
-      ><button
-        class="web-button"
-        :disabled="busy || loading"
-        @click="
-          start = addDays(start, 7);
-          load();
-        "
-        >Следующая неделя</button
-      ><button
-        class="web-button"
-        :disabled="busy || loading"
-        @click="
-          start = weekStart(today());
-          load();
-        "
-        >Текущая неделя</button
-      ></div
-    >
+    <div class="headman-period-toolbar">
+      <StudentPeriodPager v-if="mode === 'week'" :label="weekLabel" unit="период журнала" :busy="locked" :previous-disabled="!!semester && addDays(start, -7) < weekStart(semester.dateFrom)" :next-disabled="!!semester && addDays(start, 7) > semester.dateTo" @step="stepWeek" @reset="start = weekStart(today()); load()">
+        <WebDateField v-model="start" class="headman-journal-date" label="Дата недели журнала" :trigger-label="weekLabel" :min="semester ? weekStart(semester.dateFrom) : undefined" :max="semester?.dateTo" :today="today()" :disabled="locked" required @change="start = weekStart(start); load()" />
+      </StudentPeriodPager>
+      <p v-else class="headman-period-title">{{ semester?.name ?? 'Журнал по предмету' }}</p>
+      <div class="headman-actions" role="group" aria-label="Режим журнала"><button type="button" class="web-button" :class="{ 'web-button-selected': mode === 'week' }" :aria-pressed="mode === 'week'" :disabled="locked" @click="mode = 'week'">По неделе</button><button type="button" class="web-button" :class="{ 'web-button-selected': mode === 'subject' }" :aria-pressed="mode === 'subject'" :disabled="locked" @click="mode = 'subject'">По предмету</button></div>
+    </div>
+    <div class="headman-filter-bar">
+      <WebSelect v-model="semesterId" label="Семестр" :options="semesters.map(item => ({ value: item.id, label: item.name + (item.active ? '' : ' · архив') }))" :disabled="locked" />
+      <WebSelect v-model="subjectId" label="Предмет" :options="subjectOptions" :disabled="locked" @change="selectedTypes = null; load()" />
+      <fieldset class="headman-type-picker headman-journal-types" :disabled="locked"><legend>Тип занятия</legend><div><button type="button" class="web-button" :class="{ 'web-button-selected': selectedTypes === null }" :aria-pressed="selectedTypes === null" @click="selectedTypes = null">Все типы</button><label v-for="code in typeCodes" :key="code" class="headman-choice"><input type="checkbox" :checked="selectedTypes === null ? availableTypes.includes(code) : selectedTypes.includes(code)" :disabled="!availableTypes.includes(code)" @change="toggleType(code, ($event.target as HTMLInputElement).checked)" /><span>{{ lessonTypes[code] }}</span></label></div></fieldset>
+    </div>
     <p
       v-if="semester && !semester.active"
       class="web-notice"
       >Архивный семестр · только чтение</p
     >
+    <HeadmanJournalGrid v-if="visible.length" :lessons="visible" :reports="reports" :roster="roster" :subjects="subjects" :compact="mode === 'subject'" :locked="locked" :has-started="hasStarted" :can-mark="canChooseStatus" @choose="choose" @mark="chooseStatus" @audit="loadAudit" />
     <div
-      v-if="visible.length"
-      class="headman-table-scroll"
-      tabindex="0"
-      aria-label="Журнал группы, горизонтальная прокрутка"
-    >
-      <table
-        class="headman-table headman-journal"
-        :style="{ '--headman-columns': visible.length }"
-        ><caption class="web-sr-only">Журнал посещаемости</caption
-        ><thead
-          ><tr
-            ><th scope="col">Студенты</th
-            ><th
-              v-for="lesson in visible"
-              :key="lesson.id"
-              scope="col"
-              :class="{ 'is-current': lesson.status === 'ACTIVE' }"
-              ><button
-                class="web-button"
-                @click="loadAudit(lesson.id)"
-                >{{ dateLabel(lesson.date) }} · {{ lesson.lessonNumber }}</button
-              ><div>{{ subjectName(lesson.subjectId) }}</div
-              ><span
-                >{{ lessonTypes[lessonTypeCode(lesson.lessonType)] ?? lesson.lessonType }} ·
-                {{ lesson.status === 'CANCELLED' ? 'Отменено' : (lesson.room ?? '—') }}</span
-              ></th
-            ></tr
-          ></thead
-        ><tbody
-          ><tr
-            v-for="[userId, name] in roster"
-            :key="userId"
-            ><th scope="row">{{ name }}</th
-            ><td
-              v-for="lesson in visible"
-              :key="lesson.id"
-              ><template v-if="entryFor(lesson.id, userId)"
-                ><button
-                  class="headman-mark"
-                  :data-status="entryFor(lesson.id, userId)!.status"
-                  :class="{
-                    'is-auto':
-                      entryFor(lesson.id, userId)!.source === 'AUTO' ||
-                      entryFor(lesson.id, userId)!.source === 'AUTO_ABSENT',
-                  }"
-                  :aria-label="`${name}, ${dateLabel(lesson.date)}, ${subjectName(lesson.subjectId)}: ${markLabels[entryFor(lesson.id, userId)!.status]}`"
-                  :disabled="busy || uncertain"
-                  @click="choose(lesson, entryFor(lesson.id, userId)!)"
-                  >{{ markSymbols[entryFor(lesson.id, userId)!.status] }}</button
-                ></template
-              ><span v-else>—</span></td
-            ></tr
-          ></tbody
-        ></table
-      >
-    </div>
-    <p
       v-else-if="!loading && !error"
-      class="web-notice"
-      >В выбранном периоде пар нет.</p
+      class="headman-journal-empty"
+      role="status"
     >
+      <AttendanceFilterIllustration />
+      <p>В выбранном периоде пар нет.</p>
+    </div>
     <JournalExport
       :feature="feature"
       :subject-id="subjectId"
-      :lesson-types="
-        type ? [type] : (subjects.find((subject) => subject.id === subjectId)?.lessonTypes ?? [])
-      "
+      :lesson-types="exportTypes"
       :active="!!semester?.active"
       :mode="mode"
       :week-start="start"
     />
-    <section
-      v-if="selected"
-      ref="detail"
-      class="headman-panel headman-detail web-stack"
-      tabindex="-1"
-      aria-label="Отметка студента"
-    >
-      <div class="headman-heading"
-        ><h2>{{ selected.entry.displayName }} · {{ dateLabel(selected.lesson.date) }}</h2
-        ><button
-          class="web-button"
-          :disabled="busy || uncertain"
-          @click="selected = null"
-          >Закрыть</button
-        ></div
-      >
-      <p
-        >{{ subjectName(selected.lesson.subjectId) }} · {{ markLabels[selected.entry.status]
-        }}{{ selected.entry.source ? ` · ${sourceLabel(selected.entry.source)}` : '' }}</p
-      >
-      <p
-        v-if="selected.entry.approvedTicket"
-        class="web-notice"
-        >Отметка связана с одобренной заявкой.
-        <RouterLink
-          :to="{ name: 'headman-requests', query: { request: selected.entry.approvedTicket.id } }"
-          >Открыть заявку</RouterLink
-        ></p
-      >
-      <p
-        v-if="uncertain"
-        class="web-notice"
-        >Результат неизвестен.
-        <button
-          class="web-button"
-          :disabled="busy"
-          @click="refreshSelected"
-          >Проверить отметку</button
-        ></p
-      >
-      <button
-        v-if="uncertain && selected"
-        class="web-button"
-        :disabled="busy"
-        @click="
-          draft.status = selected.entry.status;
-          draft.excuseType = initialExcuseType(selected.entry);
-          draft.comment = selected.entry.comment ?? '';
-          draft.file = null;
-          uncertain = false;
-          error = null;
-        "
-        >Использовать показанную отметку как новый черновик</button
-      >
-      <form
-        v-if="canEdit(selected.lesson, selected.entry)"
-        class="web-stack"
-        @submit.prevent="save()"
-        ><fieldset :disabled="busy || uncertain"
-          ><legend>Отметка</legend
-          ><div class="headman-actions"
-            ><label
-              v-for="status in ['PRESENT', 'EXCUSED', 'ABSENT']"
-              :key="status"
-              ><input
-                v-model="draft.status"
-                type="radio"
-                :value="status"
-              />
-              {{ markLabels[status] }}</label
-            ></div
-          ><template v-if="draft.status === 'EXCUSED'"
-            ><label class="web-field"
-              >Причина<select v-model="draft.excuseType"
-                ><option value="ILLNESS">Болезнь</option
-                ><option value="MEDICAL_EXAMINATION">Медосмотр</option
-                ><option value="COMPETITION_PARTICIPATION">Соревнование</option
-                ><option value="FAMILY_CIRCUMSTANCES">Семейные обстоятельства</option
-                ><option value="SUMMONS">Повестка</option
-                ><option value="UNIVERSITY_ORDER">Приказ университета</option
-                ><option value="EXEMPTION">Освобождение</option
-                ><option value="OTHER">Другое</option></select
-              ></label
-            ><label class="web-field"
-              >Комментарий<textarea
-                v-model="draft.comment"
-                maxlength="512"
-              /></label
-            ><label class="web-field"
-              >Подтверждение<input
-                type="file"
-                accept="image/jpeg,image/png,application/pdf"
-                @change="
-                  draft.file = ($event.target as HTMLInputElement).files?.[0] ?? null
-                " /></label></template></fieldset
-        ><div class="headman-actions"
-          ><button
-            class="web-button web-button-primary"
-            :disabled="busy || uncertain"
-            >Сохранить отметку</button
-          ><button
-            v-if="selected.entry.status !== 'EMPTY'"
-            type="button"
-            class="web-button"
-            :disabled="busy || uncertain"
-            @click="save(true)"
-            >Снять отметку</button
-          ></div
-        ></form
-      >
-      <p
-        v-else
-        class="headman-muted"
-        >Только чтение. Изменение этой отметки недоступно.</p
-      >
-    </section>
+    <div v-if="uncertain && !modalOpen" class="web-notice headman-journal-recovery" role="alert"><p>{{ selected?.entry.displayName }} · результат изменения неизвестен.</p><div class="headman-actions"><button type="button" class="web-button" :disabled="busy" @click="refreshSelected">Проверить отметку</button><button v-if="canAcceptMark" type="button" class="web-button" @click="acceptCurrentMark">Принять текущее состояние</button></div></div>
+    <dialog ref="detail" class="web-confirm-dialog headman-journal-excuse-dialog web-stack" aria-labelledby="headman-journal-mark-title" :aria-busy="busy" @cancel.prevent="closeMark">
+      <template v-if="selected"><div class="headman-heading"><h2 id="headman-journal-mark-title">{{ selected.entry.displayName }}</h2><button type="button" class="web-button web-icon-button" aria-label="Закрыть отметку студента" :disabled="busy || uncertain" @click="closeMark"><MobileIcon name="close" /></button></div>
+        <p class="web-caption">{{ subjectName(selected.lesson.subjectId) }} · {{ dateLabel(selected.lesson.date) }} · {{ selected.lesson.lessonNumber }} пара</p>
+        <p v-if="selected.entry.approvedTicket" class="web-notice">Отметка связана с одобренной заявкой. <RouterLink :to="{ name: 'headman-requests', query: { request: selected.entry.approvedTicket.id } }">Заявка № {{ selected.entry.approvedTicket.id }}</RouterLink></p>
+        <p v-if="error" class="web-error" role="alert">{{ error }}</p>
+        <div v-if="uncertain" class="web-notice web-stack"><p>Результат изменения неизвестен.</p><div class="headman-actions"><button type="button" class="web-button" :disabled="busy" @click="refreshSelected">Проверить отметку</button><button v-if="canAcceptMark" type="button" class="web-button" @click="acceptCurrentMark">Принять текущее состояние</button></div></div>
+        <form v-if="canChooseStatus(selected.lesson, selected.entry, 'EXCUSED')" class="web-stack" @submit.prevent="save()"><fieldset :disabled="busy || uncertain" class="headman-journal-excuse-fields"><WebSelect v-model="draft.excuseType" label="Причина уважительного отсутствия" :options="reasonOptions" :disabled="busy || uncertain" required /><label class="web-field">Комментарий<textarea v-model="draft.comment" maxlength="512" /></label><label class="web-field">Подтверждение<input type="file" accept="image/jpeg,image/png,application/pdf" @change="draft.file = ($event.target as HTMLInputElement).files?.[0] ?? null" /></label></fieldset><button v-if="selected.entry.status === 'EXCUSED'" type="button" class="web-button" :disabled="busy || uncertain" @click="save(true)">Снять «у»</button><div class="web-confirm-actions"><button type="button" class="web-button" :disabled="busy || uncertain" @click="closeMark">Отмена</button><button class="web-button web-button-primary" :disabled="busy || uncertain || !draft.excuseType">Сохранить «у»</button></div></form>
+        <p v-else class="web-caption">Изменение этой отметки недоступно.</p>
+      </template>
+    </dialog>
     <section
       v-if="auditLesson"
       class="headman-panel web-stack"
@@ -575,12 +513,12 @@ useWebLiveRefresh(load, {
           v-for="action in audit"
           :key="action.id"
           ><time>{{ new Date(action.occurredAt).toLocaleString('ru-RU') }}</time> ·
-          {{ action.actor?.displayName ?? 'Система' }} · {{ actionLabel(action.action) }} ·
+          {{ action.actor?.displayName ?? 'Система' }} · {{ actionLabel(action.action).startsWith('Другое действие') ? 'Другое действие' : actionLabel(action.action) }} ·
           {{ action.outcome === 'APPLIED' ? 'Применено' : 'Отклонено'
           }}<span v-if="action.student"> · {{ action.student.displayName }}</span
-          ><p v-if="action.errorCode">{{ action.errorCode }}</p
+          ><p v-if="action.errorCode">Сервер отклонил действие.</p
           ><p v-if="action.geo"
-            >Геопроверка: {{ action.geo.verdict }} · расстояние
+            >Геопроверка · расстояние
             {{ action.geo.distanceMeters ?? '—' }} м · радиус
             {{ action.geo.radiusMeters ?? '—' }} м</p
           ></li

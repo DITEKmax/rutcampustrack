@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, shallowRef, watch } from 'vue';
+import { computed, nextTick, ref, shallowRef, watch } from 'vue';
 import { RouterLink } from 'vue-router';
 import {
   toTeacherJournalReportRequest,
@@ -22,6 +22,7 @@ import { teacherAttendanceLabel } from './teacher-mark';
 import TeacherExcusePanel from './TeacherExcusePanel.vue';
 import TeacherExport from './TeacherExport.vue';
 import { useJournalPagination } from './use-journal-pagination';
+import WebDateField from '../../shared/WebDateField.vue';
 
 const scope = useTeacherScope();
 const selection = useTeacherSelection(scope);
@@ -31,14 +32,41 @@ const pagination = useJournalPagination(scope, journal.data, journal.loading, lo
 const { region: journalRegion, edge: journalEdge } = pagination;
 const from = ref(''),
   to = ref('');
+const fromField = ref<InstanceType<typeof WebDateField> | null>(null),
+  toField = ref<InstanceType<typeof WebDateField> | null>(null);
+const fromValid = ref(false),
+  toValid = ref(false),
+  fromEmpty = ref(true),
+  toEmpty = ref(true);
+const datesValid = computed(() => (fromValid.value || fromEmpty.value) && (toValid.value || toEmpty.value));
+async function dateValidity(field: 'from' | 'to', valid: boolean) {
+  (field === 'from' ? fromValid : toValid).value = valid;
+  // Optional blank and invalid draft both emit false. A calendar clear of an
+  // already-empty model emits no change, so read its rendered draft after validation.
+  await nextTick();
+  const root = (field === 'from' ? fromField : toField).value?.$el;
+  const input = root instanceof HTMLElement ? root.querySelector<HTMLInputElement>('.web-date-input') : null;
+  if (input) (field === 'from' ? fromEmpty : toEmpty).value = input.value === '';
+}
+function dateInput(field: 'from' | 'to', event: Event) {
+  if (!(event.target instanceof HTMLInputElement)) return;
+  (field === 'from' ? fromEmpty : toEmpty).value = event.target.value === '';
+  scope.dirty.value = true;
+}
+function dateChanged(field: 'from' | 'to', value: string) {
+  (field === 'from' ? fromEmpty : toEmpty).value = value === '';
+  scope.dirty.value = true;
+}
 const pastOnly = ref(false);
 const ticketId = ref<string | null>(null);
 const activeStudent = ref<number | null>(null),
   activeLesson = ref<number | null>(null);
 const validation = computed(() =>
-  (from.value || to.value) && (!from.value || !to.value || from.value > to.value)
-    ? 'Укажи начало и конец периода в правильном порядке.'
-    : '',
+  !datesValid.value
+    ? 'Исправь дату периода.'
+    : (from.value || to.value) && (!from.value || !to.value || from.value > to.value)
+      ? 'Укажи начало и конец периода в правильном порядке.'
+      : '',
 );
 const query = computed<TeacherJournalQuery | null>(() =>
   selection.ready.value && scope.semester.value && !validation.value
@@ -96,6 +124,7 @@ watch(
   },
 );
 const exportRequest = computed(() =>
+  !validation.value &&
   journal.data.value?.lessons.length &&
   loadedQuery.value &&
   !journal.loading.value &&
@@ -136,19 +165,27 @@ function metric(studentId: number, column: 'present' | 'presentOrExcused' | 'exc
         class="teacher-toolbar"
         @submit.prevent="load()"
       >
-        <label class="web-field">С даты<input
+        <WebDateField
+          ref="fromField"
           v-model="from"
-          type="date"
+          label="С даты"
           :min="scope.semester.value?.dateFrom"
           :max="scope.semester.value?.dateTo"
-          @input="scope.dirty.value = true"
-        ></label><label class="web-field">По дату<input
+          @input="dateInput('from', $event)"
+          @change="dateChanged('from', $event)"
+          @validity="dateValidity('from', $event)"
+        />
+        <WebDateField
+          ref="toField"
           v-model="to"
-          type="date"
+          label="По дату"
           :min="scope.semester.value?.dateFrom"
           :max="scope.semester.value?.dateTo"
-          @input="scope.dirty.value = true"
-        ></label><label><input
+          @input="dateInput('to', $event)"
+          @change="dateChanged('to', $event)"
+          @validity="dateValidity('to', $event)"
+        />
+        <label class="teacher-checkbox"><input
           v-model="pastOnly"
           type="checkbox"
           @change="scope.dirty.value = true"
@@ -201,37 +238,36 @@ function metric(studentId: number, column: 'present' | 'presentOrExcused' | 'exc
             Посещаемость, только чтение
           </caption><thead>
             <tr>
+              <th class="teacher-sticky-name" scope="col" rowspan="3">Студенты</th>
               <th
-                class="teacher-sticky-name"
-                scope="col"
-              >
-                Студенты
-              </th><th
                 v-for="lesson in journal.data.value.lessons"
                 :key="lesson.id"
                 scope="col"
                 :class="{ 'teacher-cross': activeLesson === lesson.id }"
               >
-                <RouterLink :to="{ name: 'teacher-lesson', params: { lessonId: lesson.id } }">
-                  {{ shortDate(lesson.date) }}<br><span class="web-caption">{{ lesson.startsAt?.slice(0, 5) ?? lesson.lessonNumber
-                  }}<template v-if="selection.lessonTypes.value.length > 1"><br>{{ teacherLessonTypeLabel(lesson.lessonType) }}</template></span>
-                </RouterLink><span
-                  v-if="lesson.cancelled"
-                  class="web-caption"
-                >
-                  · отменена</span>
-              </th><th scope="col">
-                Присутствия
-              </th><th scope="col">
-                Присутствия и ув.
-              </th><th scope="col">
-                Уважительные
-              </th><th
-                ref="journalEdge"
-                scope="col"
-              >
-                Отсутствия
+                <RouterLink :to="{ name: 'teacher-lesson', params: { lessonId: lesson.id } }">{{ shortDate(lesson.date) }}</RouterLink>
+                <span v-if="lesson.cancelled" class="web-caption"> · отменена</span>
               </th>
+              <th scope="col" rowspan="3">Присутствия</th>
+              <th scope="col" rowspan="3">Присутствия и ув.</th>
+              <th scope="col" rowspan="3">Уважительные</th>
+              <th ref="journalEdge" scope="col" rowspan="3">Отсутствия</th>
+            </tr>
+            <tr>
+              <th
+                v-for="lesson in journal.data.value.lessons"
+                :key="lesson.id"
+                scope="col"
+                :class="{ 'teacher-cross': activeLesson === lesson.id }"
+              >{{ lesson.startsAt?.slice(0, 5) ?? `Пара ${lesson.lessonNumber}` }}<template v-if="lesson.endsAt">–{{ lesson.endsAt.slice(0, 5) }}</template></th>
+            </tr>
+            <tr>
+              <th
+                v-for="lesson in journal.data.value.lessons"
+                :key="lesson.id"
+                scope="col"
+                :class="{ 'teacher-cross': activeLesson === lesson.id }"
+              >{{ teacherLessonTypeLabel(lesson.lessonType) }}</th>
             </tr>
           </thead>
           <tbody>
@@ -283,10 +319,7 @@ function metric(studentId: number, column: 'present' | 'presentOrExcused' | 'exc
         v-if="journal.data.value"
         class="teacher-toolbar"
       >
-        <p class="web-caption">
-          Показано {{ journal.data.value.lessons.length }} из
-          {{ journal.data.value.totalLessons }} пар
-        </p><button
+        <button
           v-if="journal.data.value.hasMore && !pagination.automatic && !pagination.error.value"
           class="web-button"
           :disabled="pagination.loading.value || pagination.refreshing.value"
@@ -300,10 +333,6 @@ function metric(studentId: number, column: 'present' | 'presentOrExcused' | 'exc
         :error="pagination.error.value"
         @retry="pagination.more"
       />
-      <p class="web-caption">
-        + — присутствовал · у — уважительная причина · н — отсутствовал · — — нет отметки · • —
-        заявка на рассмотрении. Отметки ведёт староста.
-      </p>
       <TeacherExport
         :scope="scope"
         :request="exportRequest"

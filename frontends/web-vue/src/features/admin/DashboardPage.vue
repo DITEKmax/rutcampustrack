@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import WebSelect from '../../shared/WebSelect.vue';
 import {
   computed,
   effectScope,
@@ -26,7 +27,6 @@ import {
   adminActivityDelta,
   adminActivityChartPoints,
   adminActivityMoscowDate,
-  adminActivityObservedAt,
 } from '../../../../mobile-core/src/features/admin-dashboard/admin-dashboard-activity-view';
 import AdminActivityChart from '../../../../mobile-core/src/features/admin-dashboard/AdminActivityChart.vue';
 import { useAdmin } from './use-admin';
@@ -145,21 +145,11 @@ onBeforeUnmount(() => live?.stop());
       <section class="admin-panel">
         <header class="admin-heading">
           <h2>Активность</h2><div class="admin-actions">
-            <label class="web-field">Период<select
-              v-model="period"
-              :disabled="busy"
-              @change="admin.run(load)"
-            ><option value="today">Сегодня</option><option value="all_time">Вся сохранённая история</option></select></label><label class="web-field">Шаг<select
-              v-model="bucket"
-              :disabled="busy"
-              @change="admin.run(load)"
-            ><option value="day">Дни</option><option value="week">Недели</option></select></label>
+            <WebSelect v-model="period" label="Период" :options="[{ value: 'today', label: 'Сегодня' }, { value: 'all_time', label: 'Вся сохранённая история' }]" :disabled="busy" @change="admin.run(load)" /><WebSelect v-model="bucket" label="Шаг" :options="[{ value: 'day', label: 'Дни' }, { value: 'week', label: 'Недели' }]" :disabled="busy" @change="admin.run(load)" />
           </div>
         </header>
         <template v-if="activity">
-          <p class="web-caption">
-            По состоянию на {{ adminActivityObservedAt(activity.observedAt) }}
-          </p><div class="admin-metrics">
+<div class="admin-metrics">
             <article
               v-for="code in ADMIN_ACTIVITY_METRICS"
               :key="code"
@@ -183,11 +173,7 @@ onBeforeUnmount(() => live?.stop());
               </template>
             </article>
           </div>
-          <label class="web-field">Показатель графика<select v-model="metric"><option
-            v-for="code in ADMIN_ACTIVITY_METRICS"
-            :key="code"
-            :value="code"
-          >{{ adminActivityLabels[code] }}</option></select></label><AdminActivityChart
+          <WebSelect v-model="metric" label="Показатель графика" :options="ADMIN_ACTIVITY_METRICS.map(code => ({ value: code, label: adminActivityLabels[code] }))" /><AdminActivityChart
             v-if="points.length"
             :title="adminActivityLabels[metric]"
             :points="points"

@@ -1,7 +1,8 @@
 <script setup lang="ts">
+import WebSelect from '../../shared/WebSelect.vue';
 import { useWebLiveRefresh } from '../../app/live';
 import { computed, onBeforeUnmount, onMounted, ref, shallowRef } from 'vue';
-import { onBeforeRouteLeave } from 'vue-router';
+import { onBeforeRouteLeave, RouterLink } from 'vue-router';
 import { AdminMapClient, MapApiError } from '../../../../mobile-core/src/api/map-client';
 import type {
   AdminMapBuildingResponse,
@@ -367,7 +368,7 @@ useWebLiveRefresh(
     :aria-busy="busy"
   >
     <header class="admin-heading">
-      <h1>Карта — схемы корпусов</h1><button
+      <h1>Карта — схемы корпусов</h1><RouterLink class="web-button" to="/map">Открыть карту</RouterLink><button
         v-if="admin.can('CAMPUS_MAP_MANAGE')"
         class="web-button web-button-primary"
         :disabled="locked"
@@ -456,11 +457,7 @@ useWebLiveRefresh(
           </button>
         </div>
       </form>
-      <label class="web-field">Корпус<select v-model="selectedBuilding"><option value="">Все корпуса</option><option
-        v-for="building in inventory"
-        :key="building.id"
-        :value="building.id"
-      >{{ building.label }} · {{ building.code }}</option></select></label><div
+      <WebSelect v-model="selectedBuilding" label="Корпус" :options="[{ value: '', label: 'Все корпуса' }, ...inventory.map(building => ({ value: building.id, label: building.label + ' · ' + building.code }))]" :disabled="locked" /><div
         v-if="rows.length"
         class="admin-table-wrap"
         role="region"
@@ -649,11 +646,7 @@ useWebLiveRefresh(
           >
             Сервер не подтвердил выбранный объём удаления. Подтверждение недоступно.
             Для удаления всей истории нужен предпросмотр всех версий и файлов.
-          </p><label class="web-field">Удалить<select
-            v-model="deleteFormat"
-            :disabled="locked"
-            @change="deletionPreview = null; password = ''"
-          ><option value="">Всю схему: все версии PNG и SVG</option><option value="png">PNG текущей версии</option><option value="svg">SVG текущей версии</option></select></label><button
+          </p><WebSelect v-model="deleteFormat" label="Удалить" :options="[{ value: '', label: 'Всю схему: все версии PNG и SVG' }, { value: 'png', label: 'PNG текущей версии' }, { value: 'svg', label: 'SVG текущей версии' }]" :disabled="locked" @change="deletionPreview = null; password = ''" /><button
             class="web-button web-button-danger"
             :disabled="locked"
             @click="previewDeletion"

@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { computed, nextTick, onMounted, ref, shallowRef } from 'vue';
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, shallowRef } from 'vue';
 import { message, webSession } from '../../auth/session';
 import { HeadmanGroupApiError } from '../../../../mobile-core/src/features/headman-group/headman-group-client';
-import { useHeadmanFeature, dateLabel } from './context';
+import { useHeadmanFeature } from './context';
 import type {
   HeadmanAssistant,
   HeadmanAssistantPermission,
@@ -22,7 +22,9 @@ import type { HeadmanSemester } from '../../../../mobile-core/src/features/headm
 import type { ReportDownloadFormat } from '../../../../mobile-core/src/shared/report-download-client';
 import HeadmanPage from './HeadmanPage.vue';
 import ReportExport from './ReportExport.vue';
-import StudentDetail from './StudentDetail.vue';
+import WebSelect from '../../shared/WebSelect.vue';
+import MobileIcon from '../../../../mobile-core/src/shared/components/MobileIcon.vue';
+import './headman-management.pcss';
 const feature = useHeadmanFeature();
 const members = shallowRef<readonly HeadmanGroupMember[]>([]),
   assistants = shallowRef<readonly HeadmanAssistant[]>([]),
@@ -33,9 +35,13 @@ const loading = ref(false),
   error = ref<string | null>(null),
   uncertain = ref(false),
   search = ref(''),
-  selectedId = ref(0),
-  selectedTab = ref<'rights' | 'access' | 'budget' | 'statistics'>('rights');
+  selectedId = ref(0);
 const selected = computed(() => members.value.find((member) => member.id === selectedId.value));
+function roleLabel(member: HeadmanGroupMember) {
+  if (member.roles?.some(grant => grant.role === 'HEADMAN' && grant.status === 'ACTIVE' && grant.groupId === feature.groupId)) return 'Староста';
+  return assistants.value.some(item => item.studentId === member.id && item.active) ? 'Помощник старосты' : 'Студент';
+}
+function statusLabel(status: string) { return ({ ACTIVE: 'Активен', ARCHIVED: 'В архиве', BLOCKED: 'Заблокирован', PENDING: 'Ожидает активации' } as Readonly<Record<string, string>>)[status] ?? 'Статус недоступен'; }
 const assistant = computed(() =>
   assistants.value.find((item) => item.studentId === selectedId.value && item.active),
 );
@@ -66,9 +72,13 @@ const credentialConfirmation = shallowRef<{
   version: string;
 } | null>(null);
 const credentialDialog = ref<HTMLDialogElement | null>(null);
+function refreshCredential() {
+  if (loading.value || busy.value || budgetIntent.value || confirmation.value || credentialConfirmation.value || credentials.busy.value || credentials.loading.value || !feature.writable() || !credentialEligible.value) return;
+  void credentials.refresh();
+}
 async function confirmCredential(action: 'generate' | 'link') {
   const value = credential.value;
-  if (!value || !credentials.available.value || !selected.value) return;
+  if (!value || !credentials.available.value || !selected.value || managementLocked.value) return;
   credentialConfirmation.value = {
     studentId: selected.value.id,
     action,
@@ -78,6 +88,7 @@ async function confirmCredential(action: 'generate' | 'link') {
   credentialDialog.value?.showModal();
 }
 async function commitCredential() {
+  if (loading.value || busy.value || uncertain.value || budgetIntent.value || confirmation.value || credentials.busy.value || credentials.uncertain.value) return;
   const pending = credentialConfirmation.value;
   credentialConfirmation.value = null;
   credentialDialog.value?.close();
@@ -88,13 +99,19 @@ const draft = ref<HeadmanAssistantPermission[]>([]),
   confirmation = shallowRef<PermissionConfirmationState | null>(null),
   flow = new PermissionConfirmationFlow(),
   dialog = ref<HTMLDialogElement | null>(null);
-const budget = shallowRef<HeadmanLateCheckinBudget | null>(null),
-  increase = ref(1),
+type BudgetState = { value: HeadmanLateCheckinBudget | null; loading: boolean; error: string | null };
+const budgets = shallowRef<Readonly<Record<number, BudgetState>>>({});
+const budget = computed(() => budgets.value[selectedId.value]?.value ?? null);
+const increase = ref(1),
   budgetIntent = shallowRef<(HeadmanBudgetIncrease & { studentId: number }) | null>(null);
 const rosterFormats = shallowRef<readonly HeadmanRosterFormat[]>([]),
   format = ref<ReportDownloadFormat>('xlsx');
 const budgetStorage = `rct:web:headman:budget:${webSession.identity.value}`;
-let revision = 0;
+let revision = 0, loadRun = 0, budgetEpoch = 0, budgetSemester = 0, activeBudgetReads = 0;
+let alive = true;
+const budgetTokens = new Map<number, number>();
+const budgetReads = new Map<number, Promise<void>>();
+const budgetQueue: Array<() => void> = [];
 const credentials = useHeadmanCredentials(() => ({
   api: feature.group,
   groupId: feature.groupId,
@@ -102,14 +119,16 @@ const credentials = useHeadmanCredentials(() => ({
   enabled:
     feature.writable() &&
     credentialEligible.value &&
-    !!selected.value &&
-    selectedTab.value === 'access',
+    !!selected.value,
   memberIds: selected.value ? [selected.value.id] : [],
 }));
 const credential = computed(() => credentials.values.value[selectedId.value]);
 const semesterId = computed(() => semesters.value.find((semester) => semester.active)?.id);
+const credentialLocked = computed(() => credentials.busy.value || credentials.uncertain.value || !!credentialConfirmation.value);
+const managementLocked = computed(() => loading.value || busy.value || uncertain.value || !!budgetIntent.value || credentialLocked.value || !!confirmation.value);
 async function load() {
-  if (busy.value) return;
+  if (busy.value || credentials.busy.value || credentialConfirmation.value || confirmation.value) return;
+  const currentRun = ++loadRun;
   loading.value = true;
   error.value = null;
   try {
@@ -123,12 +142,19 @@ async function load() {
       feature.group.listRosterFormats(),
     ]);
     feature.assertCurrent();
+    if (!alive || currentRun !== loadRun) return;
     revision++;
     members.value = roster;
     assistants.value = helpers;
     options.value = catalog;
     semesters.value = periods;
     rosterFormats.value = formats;
+    if ((semesterId.value ?? 0) !== budgetSemester) {
+      budgetSemester = semesterId.value ?? 0;
+      budgetEpoch++;
+      budgets.value = {};
+      budgetReads.clear();
+    }
     const savedBudget = sessionStorage.getItem(budgetStorage);
     if (savedBudget && !budgetIntent.value) {
       const value: unknown = JSON.parse(savedBudget);
@@ -149,24 +175,32 @@ async function load() {
       )
         throw new Error('Не удалось восстановить исходное увеличение бюджета.');
       budgetIntent.value = value as HeadmanBudgetIncrease & { studentId: number };
+      credentials.clear();
       selectedId.value = value.studentId;
-      selectedTab.value = 'budget';
-      await readBudget();
+      await readBudget(value.studentId, true);
     }
+    if (!alive || currentRun !== loadRun) return;
+    for (const member of roster) void readBudget(member.id, true);
     uncertain.value = false;
     if (selected.value) draft.value = [...(assistant.value?.permissions ?? [])];
   } catch (cause) {
-    error.value = message(cause);
+    if (alive && currentRun === loadRun) error.value = message(cause);
   } finally {
-    loading.value = false;
+    if (alive && currentRun === loadRun) loading.value = false;
   }
 }
 function choose(member: HeadmanGroupMember) {
-  if (busy.value || uncertain.value || budgetIntent.value) return;
+  if (managementLocked.value) return;
+  closeConfirmation();
+  credentials.clear();
   selectedId.value = member.id;
-  selectedTab.value = 'rights';
   draft.value = [...(assistant.value?.permissions ?? [])];
-  budget.value = null;
+  void readBudget(member.id, true);
+}
+function closeMember() {
+  if (managementLocked.value) return;
+  closeConfirmation();
+  selectedId.value = 0;
   credentials.clear();
 }
 function context(): PermissionConfirmationContext | null {
@@ -185,7 +219,7 @@ function context(): PermissionConfirmationContext | null {
 }
 async function startConfirmation() {
   const current = context();
-  if (!current || !rightsWritable.value || busy.value || uncertain.value) return;
+  if (!current || !rightsWritable.value || managementLocked.value) return;
   confirmation.value = flow.start(current, options.value);
   if (!confirmation.value) return;
   await nextTick();
@@ -198,7 +232,7 @@ function closeConfirmation() {
 }
 async function confirm() {
   const current = context();
-  if (!current || !rightsWritable.value) {
+  if (!current || !rightsWritable.value || loading.value || busy.value || budgetIntent.value || credentialLocked.value) {
     closeConfirmation();
     return;
   }
@@ -257,26 +291,59 @@ async function confirm() {
     }
   }
 }
-async function readBudget() {
-  if (!selected.value) return;
-  busy.value = true;
-  try {
-    const value = await feature.group.getLateCheckinBudget(selected.value.id);
-    feature.assertCurrent();
-    budget.value = value;
-    selectedTab.value = 'budget';
-  } catch (cause) {
-    error.value = message(cause);
-  } finally {
-    busy.value = false;
-  }
+function budgetState(studentId: number) {
+  return budgets.value[studentId];
+}
+function pumpBudgets() {
+  while (alive && activeBudgetReads < 3 && budgetQueue.length) budgetQueue.shift()!();
+}
+function storeBudget(value: HeadmanLateCheckinBudget) {
+  budgetTokens.set(value.studentId, (budgetTokens.get(value.studentId) ?? 0) + 1);
+  budgetReads.delete(value.studentId);
+  budgets.value = { ...budgets.value, [value.studentId]: { value, loading: false, error: null } };
+}
+function readBudget(studentId: number, force = false): Promise<void> {
+  if (!alive || !members.value.some(member => member.id === studentId)) return Promise.resolve();
+  const existing = budgetReads.get(studentId);
+  if (existing) return existing;
+  if (!force && budgets.value[studentId]?.value) return Promise.resolve();
+  const epoch = budgetEpoch, semester = budgetSemester;
+  const token = (budgetTokens.get(studentId) ?? 0) + 1;
+  budgetTokens.set(studentId, token);
+  budgets.value = { ...budgets.value, [studentId]: { value: budgets.value[studentId]?.value ?? null, loading: true, error: null } };
+  const current = () => alive && epoch === budgetEpoch && token === budgetTokens.get(studentId) && members.value.some(member => member.id === studentId);
+  let finish!: () => void;
+  const promise = new Promise<void>(resolve => { finish = resolve; });
+  budgetReads.set(studentId, promise);
+  budgetQueue.push(() => {
+    if (!current()) { if (budgetReads.get(studentId) === promise) budgetReads.delete(studentId); finish(); return; }
+    activeBudgetReads++;
+    void (async () => {
+      try {
+        const value = await feature.group.getLateCheckinBudget(studentId);
+        feature.assertCurrent();
+        if (!current()) return;
+        if (value.studentId !== studentId || (semester && value.semesterId !== semester)) throw new Error('Бюджет не подтверждён для текущего студента и семестра.');
+        budgets.value = { ...budgets.value, [studentId]: { value, loading: false, error: null } };
+      } catch (cause) {
+        if (current()) budgets.value = { ...budgets.value, [studentId]: { value: budgets.value[studentId]?.value ?? null, loading: false, error: message(cause) } };
+      } finally {
+        activeBudgetReads--;
+        if (budgetReads.get(studentId) === promise) budgetReads.delete(studentId);
+        finish();
+        pumpBudgets();
+      }
+    })();
+  });
+  pumpBudgets();
+  return promise;
 }
 async function increaseBudget(recover = false) {
-  if (!feature.writable() || busy.value || !selected.value || !budget.value) return;
-  if (!recover && budgetIntent.value) return;
+  if (!feature.writable() || loading.value || busy.value || uncertain.value || credentialLocked.value || confirmation.value || !selected.value) return;
+  if (recover ? !budgetIntent.value : !!budgetIntent.value || !budget.value) return;
   const pending = budgetIntent.value ?? {
     studentId: selected.value.id,
-    semesterId: budget.value.semesterId,
+    semesterId: budget.value!.semesterId,
     increase: increase.value,
     requestKey: crypto.randomUUID(),
   };
@@ -288,11 +355,13 @@ async function increaseBudget(recover = false) {
     return;
   }
   busy.value = true;
+  let confirmed = false;
   try {
     if (recover) {
-      const actual = await feature.group.getLateCheckinBudget(pending.studentId);
+      await readBudget(pending.studentId, true);
       feature.assertCurrent();
-      budget.value = actual;
+      const actual = budgets.value[pending.studentId]?.value;
+      if (!actual || budgets.value[pending.studentId]?.error) throw new Error('Не удалось подтвердить текущий бюджет.');
       if (actual.semesterId !== pending.semesterId)
         throw new Error('Семестр изменился. Предыдущую команду нельзя повторить.');
       // An unrelated increase proves no result for our command. The original key below
@@ -300,123 +369,45 @@ async function increaseBudget(recover = false) {
     }
     const result = await feature.group.increaseLateCheckinBudget(pending.studentId, pending);
     feature.assertCurrent();
-    budget.value = result;
+    storeBudget(result);
+    confirmed = true;
     budgetIntent.value = null;
     sessionStorage.removeItem(budgetStorage);
-    const latest = await feature.group.getLateCheckinBudget(pending.studentId);
+    await readBudget(pending.studentId, true);
     feature.assertCurrent();
-    budget.value = latest;
+    if (budgets.value[pending.studentId]?.error) throw new Error('Не удалось обновить показанный бюджет.');
     error.value = null;
   } catch (cause) {
-    error.value = `${message(cause)}. Сохранена исходная команда увеличения бюджета.`;
+    error.value = confirmed ? `Увеличение подтверждено. ${message(cause)}` : `${message(cause)}. Сохранена исходная команда увеличения бюджета.`;
   } finally {
     busy.value = false;
   }
 }
+onBeforeUnmount(() => { alive = false; loadRun++; budgetEpoch++; credentials.clear(); while (budgetQueue.length) budgetQueue.shift()!(); });
 onMounted(load);
 </script>
 <template>
   <HeadmanPage
     title="Группа"
+    class="headman-management"
+    hide-title
     :loading="loading"
     :error="error"
     @reload="load"
-    ><div class="headman-toolbar"
-      ><label class="web-field"
-        >Найти студента<input
-          v-model="search"
-          type="search" /></label
-      ><label class="web-field"
-        >Формат состава<select v-model="format"
-          ><option
-            v-for="item in rosterFormats"
-            :key="item.code"
-            :value="item.code"
-            >{{ item.label }}</option
-          ></select
-        ></label
-      ><ReportExport
-        :transport="feature.transport"
-        scope="roster"
-        :report="{ kind: 'HEADMAN_GROUP_COMPOSITION', headmanGroupComposition: { format } }"
-        :disabled="loading"
-        label="Скачать состав группы"
-    /></div>
-    <div class="headman-table-scroll"
-      ><table class="headman-table"
-        ><thead
-          ><tr
-            ><th>Студент</th><th>Логин</th><th>Статус</th><th>Полномочия</th><th>Действия</th></tr
-          ></thead
-        ><tbody
-          ><tr
-            v-for="member in visible"
-            :key="member.id"
-            ><th scope="row">{{ member.fullName }}</th
-            ><td>{{ member.login }}</td
-            ><td>{{ member.status }}</td
-            ><td>{{
-              assistants
-                .find((item) => item.studentId === member.id && item.active)
-                ?.permissions.map(
-                  (code) => options.find((option) => option.code === code)?.label ?? code,
-                )
-                .join(' · ') || 'Без прав помощника'
-            }}</td
-            ><td
-              ><button
-                class="web-button"
-                :disabled="busy || uncertain || !!budgetIntent"
-                @click="choose(member)"
-                >Подробнее</button
-              ></td
-            ></tr
-          ></tbody
-        ></table
-      ></div
-    ><p v-if="!loading && !visible.length">Студентов по этому запросу нет.</p>
-    <section
+>
+    <div class="headman-management-toolbar headman-group-toolbar"><label class="web-field">Найти студента<input v-model="search" type="search" /></label><WebSelect v-model="format" label="Формат состава" :options="rosterFormats.map(item => ({ value: item.code, label: item.label }))" /><ReportExport class="headman-group-export" :transport="feature.transport" scope="roster" :report="{ kind: 'HEADMAN_GROUP_COMPOSITION', headmanGroupComposition: { format } }" :disabled="loading" label="Скачать состав группы" /></div>
+    <div class="headman-management-scroll" role="region" aria-label="Состав группы" tabindex="0"><table class="headman-management-table headman-members-table"><thead><tr><th scope="col">№</th><th scope="col">ФИО</th><th scope="col">Логин</th><th scope="col">Статус</th><th scope="col">Дополнительные права</th><th scope="col">Бюджет заявок</th><th scope="col">Действия</th></tr></thead><tbody>
+      <template v-for="(member, index) in visible" :key="member.id"><tr :class="{ 'is-selected': selectedId === member.id }"><td>{{ index + 1 }}</td><th scope="row"><span>{{ member.fullName }}</span><small>{{ roleLabel(member) }}</small></th><td><span class="headman-member-login">{{ member.login }}</span></td><td>{{ statusLabel(member.status) }}</td><td><ul class="headman-member-rights"><li v-for="code in assistants.find(item => item.studentId === member.id && item.active)?.permissions ?? []" :key="code">{{ options.find(option => option.code === code)?.label ?? 'Неизвестное право' }}</li></ul><span v-if="!assistants.find(item => item.studentId === member.id && item.active)?.permissions.length" class="web-caption">—</span></td><td><span v-if="budgetState(member.id)?.error" class="web-error">{{ budgetState(member.id)?.error }}</span><span v-else-if="budgetState(member.id)?.loading" class="web-caption" role="status">Загрузка…</span><span v-else-if="budgetState(member.id)?.value" :aria-label="`Осталось заявок: ${budgetState(member.id)?.value?.remaining} из ${budgetState(member.id)?.value?.limit}`">{{ budgetState(member.id)?.value?.remaining }} / {{ budgetState(member.id)?.value?.limit }}</span><span v-else class="web-caption">Недоступен</span></td><td><button type="button" class="web-button web-icon-button" :aria-label="`Настройки: ${member.fullName}`" :aria-expanded="selectedId === member.id" :disabled="managementLocked" @click="choose(member)"><MobileIcon name="settings" /></button></td></tr>
+      <tr v-if="selectedId === member.id" class="headman-member-reveal"><td colspan="7">    <section
       v-if="selected"
-      class="headman-panel web-stack"
-      ><div class="headman-heading"
-        ><h2>{{ selected.fullName }}</h2
-        ><button
-          class="web-button"
-          :disabled="busy || uncertain || !!budgetIntent"
-          @click="
-            selectedId = 0;
-            credentials.clear();
-          "
-          >Закрыть</button
-        ></div
-      ><div class="headman-actions"
-        ><button
-          class="web-button"
-          :disabled="busy || !!budgetIntent"
-          @click="selectedTab = 'rights'"
-          >Права помощника</button
-        ><button
-          class="web-button"
-          :disabled="busy || !!budgetIntent || !feature.writable() || !credentialEligible"
-          @click="selectedTab = 'access'"
-          >Доступ</button
-        ><button
-          class="web-button"
-          :disabled="busy || !!budgetIntent"
-          @click="readBudget"
-          >Бюджет заявок</button
-        ><button
-          class="web-button"
-          :disabled="busy || !!budgetIntent"
-          @click="selectedTab = 'statistics'"
-          >Статистика</button
-        ></div
-      >
+      class="headman-member-detail web-stack"
+      :aria-label="`Настройки: ${selected.fullName}`"
+      ><button type="button" class="web-button web-icon-button headman-member-close" aria-label="Закрыть настройки студента" :disabled="managementLocked" @click="closeMember"><MobileIcon name="close" /></button>
+      <div class="headman-member-panels">
       <form
-        v-if="selectedTab === 'rights'"
-        class="web-stack"
+        class="web-stack headman-member-panel"
         @submit.prevent="startConfirmation"
-        ><fieldset :disabled="busy || uncertain || !rightsWritable"
+        ><fieldset :disabled="managementLocked || !rightsWritable"
           ><legend>Права помощника</legend
           ><div class="headman-list"
             ><label
@@ -432,7 +423,7 @@ onMounted(load);
           ></fieldset
         ><button
           class="web-button"
-          :disabled="busy || uncertain || !rightsWritable"
+          :disabled="managementLocked || !rightsWritable"
           >Сохранить права</button
         ><p
           v-if="uncertain"
@@ -447,9 +438,8 @@ onMounted(load);
         ></form
       >
       <div
-        v-if="selectedTab === 'access'"
-        class="web-stack"
-        ><p v-if="credentials.loading.value">Проверка доступа…</p
+        class="web-stack headman-member-panel"
+        ><h3>Доступ</h3><p v-if="!feature.writable() || !credentialEligible" class="web-caption">Доступ к реквизитам недоступен.</p><p v-if="credentials.loading.value">Проверка доступа…</p
         ><p
           v-if="credentials.error.value"
           class="web-error"
@@ -466,12 +456,12 @@ onMounted(load);
           ><p class="web-caption">Новый пароль заменит текущий доступ студента.</p
           ><button
             class="web-button"
-            :disabled="!credentials.available.value"
+            :disabled="!credentials.available.value || managementLocked"
             @click="confirmCredential('generate')"
             >Сгенерировать новый пароль</button
           ><button
             class="web-button"
-            :disabled="!credentials.available.value"
+            :disabled="!credentials.available.value || managementLocked"
             @click="confirmCredential('link')"
             >Выдать ссылку сброса</button
           ></template
@@ -485,47 +475,41 @@ onMounted(load);
         ><button
           v-if="credentials.uncertain.value || !credential"
           class="web-button"
-          :disabled="credentials.busy.value || credentials.loading.value"
-          @click="credentials.refresh"
+          :disabled="loading || busy || !!budgetIntent || !!confirmation || !!credentialConfirmation || credentials.busy.value || credentials.loading.value || !feature.writable() || !credentialEligible"
+          @click="refreshCredential"
           >Проверить данные доступа</button
         ></div
       >
       <form
-        v-if="selectedTab === 'budget' && budget"
-        class="web-stack"
+        class="web-stack headman-member-panel"
         @submit.prevent="increaseBudget()"
-        ><p
-          >Семестр №{{ budget.semesterId }} · использовано {{ budget.used }} из {{ budget.limit }} ·
-          осталось {{ budget.remaining }}</p
-        ><template v-if="!budgetIntent"
+        ><h3>Бюджет заявок</h3><p v-if="budgetState(selected.id)?.loading" class="web-caption" role="status">Загрузка бюджета…</p><p v-else-if="budgetState(selected.id)?.error" class="web-error">{{ budgetState(selected.id)?.error }}</p><p v-else-if="budget" :aria-label="`Осталось заявок: ${budget.remaining} из ${budget.limit}`">{{ budget.remaining }} / {{ budget.limit }}</p><p v-else class="web-caption">Бюджет недоступен.</p><template v-if="budget && !budgetIntent"
           ><label class="web-field"
             >Увеличить лимит на<input
               v-model.number="increase"
+              :disabled="managementLocked"
               type="number"
               min="1"
               max="2147483647"
               required /></label
           ><button
             class="web-button"
-            :disabled="busy || !feature.writable()"
+            :disabled="managementLocked || !feature.writable()"
             >Увеличить бюджет</button
           ></template
         ><button
-          v-else
+          v-else-if="budgetIntent"
           type="button"
           class="web-button"
-          :disabled="busy"
+          :disabled="busy || credentialLocked || !!confirmation"
           @click="increaseBudget(true)"
           >Проверить сохранённое увеличение</button
         ></form
       >
-      <StudentDetail
-        v-if="selectedTab === 'statistics'"
-        :feature="feature"
-        :student-id="selected.id"
-        :semester-id="semesterId"
-      />
+      </div>
     </section>
+</td></tr></template>
+    </tbody></table></div><p v-if="!loading && !error && !visible.length" class="web-caption">Студентов по этому запросу нет.</p>
     <dialog
       ref="credentialDialog"
       class="headman-dialog"

@@ -1,24 +1,33 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
-import type { StudentStatisticsOverviewResponse } from '../../../../mobile-core/src/api/types';
+import type { StudentAttendanceResponse, StudentStatisticsOverviewResponse, StudentStatisticsSeriesPoint } from '../../../../mobile-core/src/api/types';
 import { useStudentResource, useStudentScope } from './student-state';
-import { percent } from './student-format';
+import { formatLessonDate, monday, percent, serverDate, shiftDate } from './student-format';
 import StudentRegion from './StudentRegion.vue';
 import StudentNotice from './StudentNotice.vue';
 import StudentMetrics from './StudentMetrics.vue';
 import StudentTrend from './StudentTrend.vue';
 import StudentRanking from './StudentRanking.vue';
 import StudentSubjectStats from './StudentSubjectStats.vue';
+import StudentPeriodPager from './StudentPeriodPager.vue';
 const scope = useStudentScope(),
-  stats = useStudentResource<StudentStatisticsOverviewResponse>(scope);
+  stats = useStudentResource<StudentStatisticsOverviewResponse>(scope),
+  attendance = useStudentResource<StudentAttendanceResponse>(scope);
+const range = ref<'week' | 'semester'>('semester');
+const week = ref('');
+const chartSemester = computed(() => attendance.data.value?.semester ?? scope.session.value?.semester);
+const graph = computed<readonly StudentStatisticsSeriesPoint[]>(() => range.value === 'semester'
+  ? stats.data.value?.semesterSeries ?? []
+  : attendance.data.value?.graph.days.filter((point) => point.dateFrom >= week.value && point.dateFrom <= shiftDate(week.value, 6)) ?? []);
+const comparison = ref<'personal' | 'group'>('personal');
+const canCompare = computed(() => graph.value.some((point) => point.groupPresent != null));
+watch(canCompare, (available) => { if (!available) comparison.value = 'personal'; });
 const ranking = ref(false),
-  expanded = ref<string[]>([]),
-  search = ref('');
+  expanded = ref<string[]>([]);
 type Column = 'name' | 'present' | 'presentOrExcused' | 'excused' | 'absent';
 const sorts = ref<{ column: Column; descending: boolean }[]>([]);
 const rows = computed(() =>
   [...(stats.data.value?.subjects ?? [])]
-    .filter((s) => s.name.toLocaleLowerCase('ru').includes(search.value.toLocaleLowerCase('ru')))
     .sort((a, b) => {
       for (const sort of sorts.value) {
         const compare =
@@ -38,19 +47,32 @@ function sort(column: Column) {
 }
 function sortLabel(column: Column) {
   const index = sorts.value.findIndex((s) => s.column === column);
-  return index < 0 ? '' : `${index + 1}${sorts.value[index]!.descending ? '↓' : '↑'}`;
+  return index < 0 ? '' : sorts.value[index]!.descending ? '↓' : '↑';
 }
 async function load() {
   const semester = scope.session.value?.semester;
   if (!semester) {
     stats.clear();
+    attendance.clear();
     return;
   }
-  await stats.load(() => scope.api.getStatistics(semester.id), true);
+  if (!week.value) week.value = monday(serverDate(scope.session.value?.serverNow) ?? semester.startsOn);
+  await Promise.all([
+    stats.load(() => scope.api.getStatistics(semester.id), true),
+    loadAttendance(),
+  ]);
+}
+async function loadAttendance() {
+  const semester = scope.session.value?.semester;
+  if (semester) await attendance.load(() => scope.api.getAttendance(semester.id), true);
+  else attendance.clear();
 }
 watch(scope.refreshed, load);
 watch(scope.session, (s) => {
-  if (!s) stats.clear();
+  if (!s) {
+    stats.clear();
+    attendance.clear();
+  }
 });
 function toggle(id: string) {
   expanded.value = expanded.value.includes(id)
@@ -72,9 +94,9 @@ function toggle(id: string) {
       @retry="scope.load"
     />
     <template v-if="stats.data.value">
-      <div class="student-dashboard-pair">
+      <div class="student-dashboard-pair student-statistics-summary" :class="{ 'has-expanded-ranking': ranking }">
         <StudentMetrics :metrics="stats.data.value.metrics" /><section
-          class="student-metric web-stack"
+          class="student-metric web-stack student-statistics-ranking-card"
         >
           <h2>Рейтинг за семестр</h2><p class="student-metric-value">
             {{
@@ -88,21 +110,55 @@ function toggle(id: string) {
           >
             Позиция появится после учитываемых пар.
           </p><button
-            class="web-button"
+            class="web-button student-ranking-toggle"
             :aria-expanded="ranking"
             @click="ranking = !ranking"
           >
-            {{ ranking ? 'Скрыть рейтинг группы' : 'Рейтинг моей группы' }}
-          </button><StudentRanking
-            v-if="ranking"
-            :scope="scope"
-          />
+            <span class="student-ranking-toggle-labels">
+              <span :aria-hidden="ranking">Рейтинг моей группы</span>
+              <span :aria-hidden="!ranking">Скрыть рейтинг группы</span>
+            </span>
+          </button>
         </section>
+        <div v-if="ranking" class="student-statistics-ranking-details">
+          <StudentRanking :scope="scope" />
+        </div>
       </div>
-      <h2>Динамика за семестр</h2><StudentTrend
-        :points="stats.data.value.semesterSeries"
-        compare
-      />
+      <section class="web-stack student-statistics-trend" aria-labelledby="student-dynamics-title">
+        <h2 id="student-dynamics-title">Динамика посещаемости</h2>
+        <div v-if="chartSemester" class="student-chart-toolbar">
+          <StudentPeriodPager
+            v-if="range === 'week'"
+            :label="`${formatLessonDate(week)} — ${formatLessonDate(shiftDate(week, 6))}`"
+            unit="период графика"
+            :previous-disabled="week <= monday(chartSemester.startsOn)"
+            :next-disabled="shiftDate(week, 7) > chartSemester.endsOn"
+            @step="week = shiftDate(week, $event * 7)"
+            @reset="week = monday(serverDate(attendance.data.value?.serverNow ?? scope.session.value?.serverNow) ?? chartSemester.startsOn)"
+          />
+          <p v-else class="student-chart-period-label" role="status">
+            {{ formatLessonDate(chartSemester.startsOn) }} — {{ formatLessonDate(chartSemester.endsOn) }}
+          </p>
+          <div class="student-chart-controls" :class="{ 'has-comparison': canCompare }">
+            <div v-if="canCompare" class="student-actions student-chart-comparison" role="group" aria-label="Сравнение графика">
+              <button
+                v-for="item in [{ id: 'personal', label: 'Личная' }, { id: 'group', label: 'С группой' }] as const"
+                :key="item.id" class="web-button" :aria-pressed="comparison === item.id"
+                :class="{ 'web-button-selected': comparison === item.id }" @click="comparison = item.id"
+              >{{ item.label }}</button>
+            </div>
+            <div class="student-actions student-chart-range" role="group" aria-label="Период графика">
+              <button
+                v-for="item in [{ id: 'week', label: 'Эта неделя' }, { id: 'semester', label: 'Весь период' }] as const"
+                :key="item.id" class="web-button" :aria-pressed="range === item.id"
+                :class="{ 'web-button-selected': range === item.id }" @click="range = item.id"
+              >{{ item.label }}</button>
+            </div>
+          </div>
+        </div>
+        <StudentNotice v-if="range === 'week'" :loading="attendance.loading.value" :error="attendance.error.value" @retry="loadAttendance" />
+        <StudentTrend v-if="range === 'semester' || attendance.data.value" v-model:comparison="comparison" :points="graph" compare />
+      </section>
       <section
         class="web-stack"
         aria-labelledby="student-subjects-title"
@@ -110,14 +166,8 @@ function toggle(id: string) {
         <div class="web-page-header">
           <h2 id="student-subjects-title">
             По предметам
-          </h2><label class="web-field">Найти предмет<input
-            v-model="search"
-            type="search"
-          ></label>
-        </div><p class="web-caption">
-          {{ scope.session.value?.semester?.name }} · показатели рассчитаны сервером по завершённым
-          учитываемым парам.
-        </p><div
+          </h2>
+        </div><div
           class="student-table-scroll"
           tabindex="0"
           aria-label="Статистика по предметам"
@@ -183,7 +233,7 @@ function toggle(id: string) {
                 </tr>
               </template><tr v-if="!rows.length">
                 <td colspan="5">
-                  Предметов с такими условиями нет.
+                  Предметов пока нет.
                 </td>
               </tr>
             </tbody>

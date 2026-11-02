@@ -7,6 +7,12 @@ import ThemeSelect from '../shared/ThemeSelect.vue';
 import RoleSwitcher from './RoleSwitcher.vue';
 import { useRoute } from 'vue-router';
 import AssistantRouteBoundary from './AssistantRouteBoundary.vue';
+import MobileIcon from '../../../mobile-core/src/shared/components/MobileIcon.vue';
+import SvgIcon from '../../../shared/foundation/SvgIcon.vue';
+import menuIcon from '../shared/assets/header-menu.svg';
+import logoutIcon from '../shared/assets/log-out.svg';
+import WebAvatar from '../shared/WebAvatar.vue';
+import { webOwnProfile } from '../features/profile/own-profile';
 
 const route = useRoute();
 const expanded = ref(false);
@@ -20,7 +26,28 @@ const initials = computed(
       .map((part) => part[0])
       .join('') ?? '',
 );
-const navigation = computed(() => webFeatures.filter(canShowFeature));
+const studentNavigationOrder = [
+  'student-home', 'student-attendance', 'student-statistics', 'student-homework',
+  'map', 'student-requests', 'student-schedule',
+];
+const headmanNavigationOrder = [
+  'headman-home', 'headman-attendance', 'headman-statistics', 'headman-homework',
+  'map', 'headman-requests', 'headman-group', 'headman-subjects',
+  'headman-schedule', 'headman-lessons',
+];
+const teacherNavigationOrder = ['teacher-home', 'teacher-journal', 'teacher-stats', 'map'];
+const adminNavigationOrder = ['admin-dashboard', 'admin-users', 'admin-groups', 'admin-semesters', 'admin-map'];
+const navigation = computed(() => {
+  const role = webSession.snapshot.value?.activeRole;
+  const visible = webFeatures.filter(feature => canShowFeature(feature) && !(role === 'ADMIN' && feature.name === 'map'));
+  const order = role === 'STUDENT' ? studentNavigationOrder : role === 'HEADMAN' ? headmanNavigationOrder : role === 'TEACHER' ? teacherNavigationOrder : role === 'ADMIN' ? adminNavigationOrder : null;
+  if (!order) return visible;
+  const rank = (name: unknown) => {
+    const index = order.indexOf(String(name));
+    return index < 0 ? order.length : index;
+  };
+  return visible.sort((left, right) => rank(left.name) - rank(right.name));
+});
 </script>
 
 <template>
@@ -38,13 +65,13 @@ const navigation = computed(() => webFeatures.filter(canShowFeature));
           aria-label="Разделы"
           @click="expanded = !expanded"
         >
-          ☰
+          <SvgIcon :src="menuIcon" />
         </button>
         <RouterLink
           class="web-brand"
           to="/"
           aria-label="RutTrack — главная"
-        />
+        ><span class="web-brand-monogram" aria-hidden="true">РТ</span></RouterLink>
         <div class="web-header-role">
           <RoleSwitcher />
         </div>
@@ -53,13 +80,14 @@ const navigation = computed(() => webFeatures.filter(canShowFeature));
           <ThemeSelect />
           <div class="web-profile">
             <button
-              class="web-button"
+              class="web-button web-profile-trigger"
               :aria-label="`Профиль: ${webSession.snapshot.value?.displayName}`"
               :aria-expanded="profile"
               aria-controls="web-profile-menu"
               @click="profile = !profile"
             >
-              {{ initials }}
+              <span class="web-profile-avatar"><WebAvatar :avatar-id="webOwnProfile?.own.value?.avatarId" :initials="initials" /></span>
+              <MobileIcon name="chevron-down" />
             </button>
             <div
               v-if="profile"
@@ -67,21 +95,27 @@ const navigation = computed(() => webFeatures.filter(canShowFeature));
               class="web-profile-menu web-stack"
               @keydown.esc="profile = false"
             >
+              <span v-if="webSession.snapshot.value?.groupLabel" class="web-caption web-profile-group">{{ webSession.snapshot.value.groupLabel }}</span>
+              <div class="web-profile-actions">
               <RouterLink
-                class="web-button"
+                class="web-button web-icon-button"
+                aria-label="Настройки"
+                title="Настройки"
                 :to="{ name: 'settings' }"
                 @click="profile = false"
               >
-                Настройки
+                <MobileIcon name="settings" />
               </RouterLink>
-              <span>{{ webSession.snapshot.value?.groupLabel }}</span>
               <button
-                class="web-button"
+                class="web-button web-icon-button"
+                aria-label="Выйти"
+                title="Выйти"
                 :disabled="webSession.busy.value"
                 @click="webSession.logout"
               >
-                Выйти
+                <SvgIcon :src="logoutIcon" :width="20" :height="20" />
               </button>
+              </div>
             </div>
           </div>
         </div>
@@ -95,15 +129,23 @@ const navigation = computed(() => webFeatures.filter(canShowFeature));
         <div class="web-nav-role">
           <RoleSwitcher />
         </div>
-        <RouterLink
+        <template
           v-for="feature in navigation"
           :key="feature.path"
-          :to="feature.path"
-          class="web-button"
-          @click="expanded = false"
         >
-          {{ feature.meta?.label }}
-        </RouterLink>
+          <span
+            v-if="webSession.snapshot.value?.activeRole === 'HEADMAN' && feature.name === 'headman-group'"
+            class="web-nav-management-divider"
+            aria-hidden="true"
+          />
+          <RouterLink
+            :to="feature.path"
+            class="web-button"
+            @click="expanded = false"
+          >
+            {{ feature.meta?.label }}
+          </RouterLink>
+        </template>
       </nav>
     </header>
     <main

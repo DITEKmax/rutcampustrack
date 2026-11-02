@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import './headman.pcss';
-defineProps<{ title: string; loading?: boolean; error?: string | null }>();
+defineProps<{ title: string; loading?: boolean; error?: string | null; hideTitle?: boolean }>();
 defineEmits<{ reload: [] }>();
 </script>
 <template>
@@ -8,9 +8,10 @@ defineEmits<{ reload: [] }>();
     class="headman-page web-stack"
     :aria-busy="loading"
   >
-    <div class="headman-heading">
+    <div v-if="!hideTitle" class="headman-heading">
       <h1>{{ title }}</h1><slot name="actions" />
     </div>
+    <h1 v-else class="web-sr-only">{{ title }}</h1>
     <div
       v-if="error"
       class="web-notice web-error"

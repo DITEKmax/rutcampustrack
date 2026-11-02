@@ -81,6 +81,25 @@
   display: grid;
   gap: var(--space-2);
 }
+.admin-page .web-field-trigger { padding-inline-start: var(--space-3); padding-inline-end: var(--space-6); }
+.admin-export-format > label { position: absolute; inline-size: var(--rct-border-hairline); block-size: var(--rct-border-hairline); margin: calc(-1 * var(--rct-border-hairline)); padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.admin-export-format { min-inline-size: calc(var(--control-height) * 3); max-inline-size: calc(var(--control-height) * 6); }
+.admin-group-combobox { min-inline-size: 0; }
+.admin-combobox-control { position: relative; min-inline-size: 0; }
+.admin-combobox-control > input { inline-size: 100%; padding-inline-end: calc(var(--control-height) + var(--space-2)); }
+.admin-combobox-control > .mobile-icon { position: absolute; inset-inline-end: var(--space-4); inset-block-start: 50%; transform: translateY(-50%); pointer-events: none; color: var(--color-text-muted); }
+.admin-combobox-options { padding: var(--space-2); }
+.admin-combobox-options:popover-open { display: grid; gap: var(--space-2); }
+.admin-combobox-options .admin-check { padding: var(--space-2); }
+.admin-registry { display: grid; gap: var(--space-4); min-inline-size: 0; }
+.admin-detail-row > td { padding: var(--space-5); background: var(--color-surface-base); font-weight: var(--font-weight-regular); }
+.admin-detail-row .admin-inline-editor { padding: 0; border: 0; border-radius: 0; }
+.admin-editor-sections { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; gap: var(--space-5); min-inline-size: 0; }
+.admin-editor-sections > .admin-form { inline-size: 100%; max-inline-size: none; }
+.admin-editor-sections > :is(.admin-actions, .web-notice) { grid-column: 1 / -1; }
+.admin-editor-sections.is-creating { grid-template-columns: minmax(0, 1fr); }
+.admin-editor-sections.is-creating > .admin-form { max-inline-size: var(--admin-panel-width); }
+@media (max-width: 64rem) { .admin-editor-sections { grid-template-columns: minmax(0, 1fr); } }
 .admin-form-grid {
   display: grid;
   gap: var(--space-4);

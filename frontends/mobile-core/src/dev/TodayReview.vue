@@ -2,6 +2,17 @@
 import { computed, onBeforeUnmount, nextTick, ref, shallowRef, watch } from 'vue';
 import type { TodayLesson } from '../api/types';
 import TodayScreen from '../features/today/TodayScreen.vue';
+import NotificationsScreen from '../features/notifications/NotificationsScreen.vue';
+import { NotificationsUnreadState } from '../features/notifications/notifications-unread';
+import { NotificationsConflictError } from '../features/notifications/notifications-v2-client';
+import {
+  legacyNotificationTypeIds,
+  notificationPaletteIds,
+  type NotificationCatalog,
+  type NotificationItem,
+  type NotificationPreferencesV2,
+  type NotificationsV2Api,
+} from '../features/notifications/notifications-v2-models';
 import ExcuseRequestScreen from '../features/requests/ExcuseRequestScreen.vue';
 import LateCheckinRequestScreen from '../features/requests/LateCheckinRequestScreen.vue';
 import type { RequestFileRef, RequestKind } from '../features/requests/types';
@@ -34,6 +45,95 @@ const scenario = shallowRef<TodayReviewScenario>(
 );
 const status = ref('');
 const roleDialogOpen = ref(false);
+const notificationsOpen = ref(query.get('notificationsOpen') === '1');
+const notificationContext = 'today-review-student';
+const notificationRows: NotificationItem[] = query.get('notifications') === 'empty' ? [] : [
+  {
+    id: 'today-review-homework', type: 'HOMEWORK_PUBLISHED',
+    heading: 'Опубликовано домашнее задание', summary: 'Программирование · Практика',
+    sentAt: new Date().toISOString(), orderAt: new Date().toISOString(),
+    readAt: null, revision: '1',
+    details: [{ label: 'Задание', value: 'Реализовать алгоритм поиска' }], action: null,
+  },
+  {
+    id: 'today-review-excuse', type: 'EXCUSE_APPROVED',
+    heading: 'Уважительная причина одобрена',
+    sentAt: new Date(Date.now() - 3600000).toISOString(),
+    orderAt: new Date(Date.now() - 3600000).toISOString(),
+    readAt: new Date().toISOString(), revision: '1',
+    details: [{ label: 'Решение', value: 'Заявка на две пары одобрена' }], action: null,
+  },
+];
+const notificationLabels: Record<(typeof legacyNotificationTypeIds)[number], string> = {
+  EXCUSE_REQUESTED: 'Новая заявка на уважительную причину',
+  EXCUSE_APPROVED: 'Уважительная причина одобрена',
+  EXCUSE_REJECTED: 'Уважительная причина отклонена', EXCUSE_CANCELLED: 'Заявка отменена',
+  LATE_CHECKIN_REQUESTED: 'Новая заявка на отметку опоздания',
+  LATE_CHECKIN_APPROVED: 'Отметка опоздания одобрена',
+  LATE_CHECKIN_REJECTED: 'Отметка опоздания отклонена',
+  LATE_CHECKIN_CANCELLED: 'Заявка на отметку отменена',
+  LESSON_STARTED: 'Занятие началось', LESSON_CLOSED: 'Занятие завершено',
+  LESSON_CANCELLED: 'Занятие отменено', LESSON_REMINDER: 'Напоминание об отметке',
+  LESSON_BLOCKED: 'Самостоятельная отметка закрыта',
+  LESSON_ONE_OFF_CREATED: 'Добавлено разовое занятие',
+  HOMEWORK_PUBLISHED: 'Опубликовано домашнее задание',
+  HOMEWORK_UPDATED: 'Домашнее задание обновлено',
+  HOMEWORK_WEEKLY_DIGEST: 'Домашние задания на неделю',
+  HOMEWORK_DUE_REMINDER: 'Срок домашнего задания подходит',
+  ATTENDANCE_MARKED_BY_HEADMAN: 'Староста отметил посещаемость',
+  GROUP_RENAMED: 'Название группы изменено', GROUP_ARCHIVED: 'Группа архивирована',
+};
+const notificationCatalog: NotificationCatalog = {
+  schemaVersion: 2, revision: 'today-review-1',
+  groups: [{ id: 'student', label: 'Уведомления студента' }],
+  types: legacyNotificationTypeIds.map((id) => ({
+    id, label: notificationLabels[id], groupId: 'student', roles: ['STUDENT'],
+  })),
+  palette: notificationPaletteIds.map((id, index) => ({ id, label: `Цвет ${index + 1}` })),
+};
+let notificationPreferences: NotificationPreferencesV2 = {
+  revision: '1', splitChannels: false, mutedUntil: null, telegramLinked: false,
+  types: Object.fromEntries(legacyNotificationTypeIds.map((id) => [
+    id, { appPush: true, telegram: false, colorId: 'violet' },
+  ])) as NotificationPreferencesV2['types'],
+};
+const countUnread = () => notificationRows.filter((item) => item.readAt === null).length;
+// Every operation stays inside this disposable local fixture, including read/settings changes.
+const notificationFixture: NotificationsV2Api = {
+  async catalog() { return structuredClone(notificationCatalog); },
+  async inbox(options = {}) {
+    return { role: 'STUDENT', nextCursor: null,
+      items: structuredClone(notificationRows.filter((item) => !options.unreadOnly || !item.readAt)) };
+  },
+  async unreadCount() { return countUnread(); },
+  async setReadState(item, read) {
+    const row = notificationRows.find((value) => value.id === item.id);
+    if (!row || row.revision !== item.revision) throw new Error('Уведомление изменилось');
+    row.readAt = read ? new Date().toISOString() : null;
+    row.revision += 'n';
+    return { role: 'STUDENT', item: structuredClone(row), unreadCount: countUnread() };
+  },
+  async markAllRead() {
+    for (const row of notificationRows) row.readAt = new Date().toISOString();
+    return { role: 'STUDENT', unreadCount: countUnread() };
+  },
+  async getPreferences() { return structuredClone(notificationPreferences); },
+  async updatePreferences(value) {
+    if (value.expectedRevision !== notificationPreferences.revision)
+      throw new NotificationsConflictError(structuredClone(notificationPreferences));
+    notificationPreferences = { ...notificationPreferences,
+      revision: notificationPreferences.revision + 'n', splitChannels: value.splitChannels,
+      types: structuredClone(value.types),
+      mutedUntil: value.mutedUntil === undefined ? notificationPreferences.mutedUntil : value.mutedUntil,
+    };
+    return structuredClone(notificationPreferences);
+  },
+};
+const unreadOwner = new NotificationsUnreadState();
+const unreadCount = ref<number | null>(null);
+unreadOwner.bind(notificationContext, notificationFixture);
+const stopUnread = unreadOwner.subscribe(() => { unreadCount.value = unreadOwner.view.count; });
+void unreadOwner.refresh();
 const roleSnapshot = ref<ProfileSnapshot | null>(createRoleReviewSnapshot());
 const expandedLessonId = ref<string | null>(null);
 const lessonIds = ref<string[]>([]);
@@ -109,6 +209,8 @@ watch(
   { immediate: true },
 );
 onBeforeUnmount(() => {
+  stopUnread();
+  unreadOwner.bind(null, null);
   document.documentElement.style.fontSize = previousRootFont;
 });
 
@@ -215,6 +317,8 @@ function retryOptions(): void {
       v-else-if="scenario.kind === 'today'"
       :today="scenario.today"
       :role-switch-disabled="false"
+      :on-notifications="() => notificationsOpen = true"
+      :unread-count="unreadCount"
       :loading="scenario.loading ?? false"
       :error="scenario.error ?? null"
       :offline="scenario.offline ?? false"
@@ -310,6 +414,17 @@ function retryOptions(): void {
       :on-select-role="simulateRoleSelection"
       @close="roleDialogOpen = false"
     />
+    <Teleport to="body">
+      <NotificationsScreen
+        v-if="notificationsOpen && !catalogVisible"
+        :api="notificationFixture"
+        :context-key="notificationContext"
+        :unread-owner="unreadOwner"
+        :host="host"
+        :can-open-target="false"
+        @close="notificationsOpen = false"
+      />
+    </Teleport>
     <p
       v-if="scenario.diagnostic && !catalogVisible"
       class="today-review-status"

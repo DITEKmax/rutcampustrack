@@ -14,7 +14,7 @@ const shell = query.get('shell') === 'tma' ? 'tma' : 'pwa';
 const fixtures = createAdminMapFixtures(state);
 const authority = shallowRef(fixtures.authority);
 const moreRoute = shallowRef('more');
-const theme = createMobileTheme({ mode: 'dark', lockedMode: 'dark' });
+const theme = createMobileTheme({ mode: query.get('theme') === 'light' ? 'light' : 'dark' });
 const host: MobileHostAdapter = {
   backOwner: shell === 'tma' ? 'host' : 'product',
   primaryActionOwner: 'product',

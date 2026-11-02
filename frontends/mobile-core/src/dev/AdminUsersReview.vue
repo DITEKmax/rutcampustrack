@@ -509,6 +509,7 @@ onBeforeUnmount(() => {
     <AdminRoleNavigation
       v-if="navigationVisible"
       active="users"
+      :authority="authority"
     />
   </div>
 </template>

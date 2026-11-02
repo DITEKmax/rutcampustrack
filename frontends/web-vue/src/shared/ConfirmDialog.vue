@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, useId, watchPostEffect } from 'vue';
-const props = defineProps<{ open: boolean; title: string; confirmLabel: string; busy?: boolean; danger?: boolean }>();
+const props = defineProps<{ open: boolean; title: string; confirmLabel: string; cancelLabel?: string; busy?: boolean; danger?: boolean }>();
 const emit = defineEmits<{ confirm: []; cancel: [] }>();
 const titleId = useId();
 const dialog = ref<HTMLDialogElement | null>(null);
@@ -28,7 +28,7 @@ watchPostEffect(() => {
         autofocus
         @click="emit('cancel')"
       >
-        Отмена
+        {{ cancelLabel ?? 'Отмена' }}
       </button><button
         class="web-button"
         :class="danger ? 'web-button-danger' : 'web-button-primary'"

@@ -1,12 +1,13 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, shallowRef, watch } from 'vue';
+import WebSelect from '../../shared/WebSelect.vue';
+import { computed, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue';
+import MobileIcon from '../../../../mobile-core/src/shared/components/MobileIcon.vue';
 import { onBeforeRouteLeave, RouterLink } from 'vue-router';
 import { useWebLiveRefresh } from '../../app/live';
 import { webSession } from '../../auth/session';
 import {
   AdminGroupsClient,
   AdminGroupsApiError,
-  adminGroupProgramTypes,
   type AdminGroup,
   type AdminGroupsPage,
   type AdminGroupStatus,
@@ -22,6 +23,7 @@ import { useAdmin } from './use-admin';
 import AdminState from './AdminState.vue';
 import ExportControl from './ExportControl.vue';
 import GroupDeletionPanel from './GroupDeletionPanel.vue';
+import GroupRegistryTable from './GroupRegistryTable.vue';
 import './admin.pcss';
 const admin = useAdmin();
 const owner = webSession.identity.value;
@@ -41,7 +43,25 @@ const status = ref<AdminGroupStatus>('ACTIVE'),
   educationLevel = ref<AdminGroupEducationLevel | ''>(''),
   sort = ref<AdminGroupSort>('name,asc');
 const applied = shallowRef(query());
+const loadedQueryKey = ref('');
+const filterPending = ref(false);
+let filterTimer: ReturnType<typeof setTimeout> | null = null;
+let queryQueued = false, listRevision = 0, alive = true;
+function cancelFilterTimer() {
+  if (filterTimer !== null) clearTimeout(filterTimer);
+  filterTimer = null;
+}
+const filtersDirty = computed(() => JSON.stringify(query()) !== JSON.stringify(applied.value));
 const selected = shallowRef<AdminGroup | null>(null);
+const registryItems = computed(() => {
+  const items = page.value?.items ?? [];
+  const current = selected.value;
+  if (!current || creating.value) return items;
+  return items.some(group => group.id === current.id)
+    ? items.map(group => group.id === current.id ? current : group)
+    : [...items, current];
+});
+const pinnedGroupId = computed(() => selected.value && !page.value?.items.some(group => group.id === selected.value?.id) ? selected.value.id : undefined);
 const creating = ref(false),
   alphabeticCode = ref(''),
   numericCode = ref(''),
@@ -54,6 +74,7 @@ const roster = shallowRef<HeadmanRoster | null>(null),
   headmanPreview = shallowRef<HeadmanAssignmentPreview | null>(null);
 const candidateId = ref<number>(),
   promotion = shallowRef<PromotionSummary | null>(null);
+const candidateValue = computed({ get: () => candidateId.value ?? '' as const, set: (value: number | '') => { candidateId.value = value === '' ? undefined : value; } });
 const canView = computed(() => currentOwner.value && admin.can('GROUPS_VIEW'));
 const canManage = computed(() => canView.value && admin.can('GROUPS_MANAGE'));
 const deletionLocked = ref(false);
@@ -67,6 +88,10 @@ watch(
   () => [canView.value, canManage.value],
   ([canView, manage]) => {
     if (!canView) {
+      cancelFilterTimer();
+      queryQueued = false;
+      filterPending.value = false;
+      listRevision++;
       page.value = null;
       selected.value = null;
     }
@@ -96,18 +121,47 @@ function query() {
   };
 }
 async function load(number = 0) {
+  const own = ++listRevision, key = JSON.stringify(applied.value);
   const value = await client.listGroups({ ...applied.value, page: number, size: 30 }, admin.signal);
   admin.assertCurrent();
+  if (!alive || own !== listRevision || key !== JSON.stringify(applied.value) || !canView.value) return;
   page.value = value;
+  loadedQueryKey.value = key;
 }
-function apply() {
-  if (locked.value) return;
+async function apply() {
+  cancelFilterTimer();
+  queryQueued = true;
+  if (!alive || !canView.value || locked.value) return;
+  queryQueued = false;
+  filterPending.value = false;
   applied.value = query();
   selected.value = null;
+  creating.value = false;
   roster.value = null;
+  headmanPreview.value = null;
   promotion.value = null;
-  void admin.run(() => load());
+  confirmArchive.value = false;
+  page.value = null;
+  loadedQueryKey.value = '';
+  await admin.refresh(() => load());
 }
+function scheduleApply() {
+  queryQueued = true;
+  filterPending.value = true;
+  listRevision++;
+  cancelFilterTimer();
+  filterTimer = setTimeout(() => { filterTimer = null; void apply(); }, 250);
+}
+function resetFilters() {
+  search.value = ''; status.value = 'ACTIVE'; course.value = '';
+  studyMode.value = ''; educationLevel.value = ''; sort.value = 'name,asc';
+  void apply();
+}
+watch(() => JSON.stringify(query()), scheduleApply, { flush: 'sync' });
+watch(() => !locked.value && canView.value, ready => {
+  if (ready && queryQueued && filterTimer === null) void apply();
+});
+onBeforeUnmount(() => { alive = false; listRevision++; cancelFilterTimer(); });
 function open(group: AdminGroup) {
   if (locked.value) return;
   selected.value = group;
@@ -383,13 +437,7 @@ useWebLiveRefresh(
   >
     <header class="admin-heading">
       <div>
-        <h1>Группы</h1><p
-          v-if="page"
-          class="web-caption"
-        >
-          Активные: {{ page.activeCount }} · Черновики: {{ page.draftCount }} · Архив:
-          {{ page.archivedCount }}
-        </p>
+        <h1>Группы</h1>
       </div><div
         v-if="canManage"
         class="admin-actions"
@@ -425,105 +473,28 @@ useWebLiveRefresh(
         v-model="search"
         type="search"
         placeholder="Код группы"
-      ></label><label class="web-field">Состояние<select v-model="status"><option value="ACTIVE">Активные</option><option value="DRAFT">Черновики</option><option value="ARCHIVED">Архивные</option></select></label><label class="web-field">Курс<select v-model="course"><option value="">Все курсы</option><option
-        v-for="n in 5"
-        :key="n"
-        :value="n"
-      >{{ n }}</option></select></label><label class="web-field">Форма обучения<select v-model="studyMode"><option value="">Все формы</option><option value="FULL_TIME">Очная</option><option value="PART_TIME">Очно-заочная</option><option value="EXTRAMURAL">Заочная</option></select></label><label class="web-field">Образование<select v-model="educationLevel"><option value="">Все уровни</option><option value="BACHELOR">Бакалавриат</option><option value="SPECIALIST">Специалитет</option><option value="MASTER">Магистратура</option></select></label><label class="web-field">Сортировка<select v-model="sort"><option value="name,asc">По коду А–Я</option><option value="name,desc">По коду Я–А</option><option value="currentCourse,asc">По курсу</option><option value="programType,asc">По программе</option></select></label><button
-        class="web-button"
-        :disabled="locked"
-      >
-        Найти
-      </button>
+        :disabled="pending || unknownWrite || deletionLocked"
+      ></label><WebSelect v-model="status" label="Состояние" :options="[{ value: 'ACTIVE', label: 'Активные' }, { value: 'DRAFT', label: 'Черновики' }, { value: 'ARCHIVED', label: 'Архивные' }]" :disabled="pending || unknownWrite || deletionLocked" /><WebSelect v-model="course" label="Курс" :options="[{ value: '' as const, label: 'Все курсы' }, ...[1, 2, 3, 4, 5].map(value => ({ value, label: String(value) }))]" :disabled="pending || unknownWrite || deletionLocked" /><WebSelect v-model="studyMode" label="Форма обучения" :options="[{ value: '', label: 'Все формы' }, { value: 'FULL_TIME', label: 'Очная' }, { value: 'PART_TIME', label: 'Очно-заочная' }, { value: 'EXTRAMURAL', label: 'Заочная' }]" :disabled="pending || unknownWrite || deletionLocked" /><WebSelect v-model="educationLevel" label="Образование" :options="[{ value: '', label: 'Все уровни' }, { value: 'BACHELOR', label: 'Бакалавриат' }, { value: 'SPECIALIST', label: 'Специалитет' }, { value: 'MASTER', label: 'Магистратура' }]" :disabled="pending || unknownWrite || deletionLocked" /><WebSelect v-model="sort" label="Сортировка" :options="[{ value: 'name,asc', label: 'По коду А–Я' }, { value: 'name,desc', label: 'По коду Я–А' }, { value: 'currentCourse,asc', label: 'По курсу' }, { value: 'programType,asc', label: 'По программе' }]" :disabled="pending || unknownWrite || deletionLocked" /><button
+        type="button"
+        class="web-button web-icon-button"
+        aria-label="Сбросить поиск и фильтры групп"
+        title="Сбросить поиск и фильтры"
+        :disabled="pending || unknownWrite || deletionLocked"
+        @click="resetFilters"
+      ><MobileIcon name="close" /></button>
     </form>
-    <template v-if="page && canView">
-      <div
-        v-if="page.items.length"
-        class="admin-table-wrap"
-        role="region"
-        aria-label="Реестр групп"
-        tabindex="0"
+    <template v-if="canView">
+      <GroupRegistryTable
+        :items="registryItems"
+        :selected-id="selected?.id"
+        :pinned-id="pinnedGroupId"
+        :creating="creating"
+        :disabled="locked"
+        @open="open"
       >
-        <table class="admin-table">
-          <caption class="web-sr-only">
-            Реестр групп
-          </caption><thead>
-            <tr>
-              <th scope="col">
-                Группа
-              </th><th scope="col">
-                Курс / срок
-              </th><th scope="col">
-                Программа
-              </th><th scope="col">
-                Студенты
-              </th><th scope="col">
-                Староста
-              </th><th scope="col">
-                Действия
-              </th>
-            </tr>
-          </thead><tbody>
-            <tr
-              v-for="group in page.items"
-              :key="group.id"
-            >
-              <td>
-                {{ group.name
-                }}<span
-                  v-if="group.draftReason"
-                  class="admin-subtext"
-                >{{ group.draftReason }}</span>
-              </td><td>
-                {{ group.currentCourse ?? '—' }} /
-                {{ group.trainingDurationYears ?? 'Не указан' }}
-              </td><td>
-                {{
-                  adminGroupProgramTypes.find((p) => p.digit === group.programTypeDigit)?.label ??
-                    'Не указана'
-                }}
-              </td><td>{{ group.studentCount }}</td><td>{{ group.headmanFio ?? 'Не назначен' }}</td><td>
-                <button
-                  class="web-button"
-                  :disabled="locked"
-                  :aria-label="`Открыть группу ${group.name}`"
-                  @click="open(group)"
-                >
-                  Открыть
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div><p
-        v-else
-        role="status"
-      >
-        Группы не найдены.
-      </p><div class="admin-pager">
-        <div class="admin-actions">
-          <button
-            class="web-button"
-            :disabled="locked || page.number === 0"
-            @click="admin.run(() => load(page!.number - 1))"
-          >
-            Назад
-          </button><span v-if="page.totalPages">{{ page.number + 1 }} / {{ page.totalPages }}</span><button
-            class="web-button"
-            :disabled="locked || page.number + 1 >= page.totalPages"
-            @click="admin.run(() => load(page!.number + 1))"
-          >
-            Дальше
-          </button>
-        </div><ExportControl
-          kind="groups"
-          :selector="exportSelector"
-        />
-      </div>
-    </template>
-    <section
+        <template #editor>    <section
       v-if="(creating || selected) && canView"
-      class="admin-panel"
+      class="admin-panel admin-inline-editor"
     >
       <header class="admin-heading">
         <h2>{{ creating ? 'Новая группа' : selected!.name }}</h2><button
@@ -644,18 +615,7 @@ useWebLiveRefresh(
           v-if="roster"
           class="admin-panel admin-form"
         >
-          <h3>Староста группы</h3><label class="web-field">Студент<select
-            v-model="candidateId"
-            :disabled="locked"
-            @change="headmanPreview = null"
-          ><option
-            :value="undefined"
-            disabled
-          >Выбери студента</option><option
-            v-for="candidate in roster.candidates"
-            :key="candidate.id"
-            :value="candidate.id"
-          >{{ candidate.fio }}{{ candidate.current ? ' — текущий староста' : '' }}</option></select></label><p v-if="!roster.candidates.length">
+          <h3>Староста группы</h3><WebSelect v-model="candidateValue" label="Студент" :options="[{ value: '' as const, label: 'Выбери студента', disabled: true }, ...roster.candidates.map(candidate => ({ value: candidate.id, label: candidate.fio + (candidate.current ? ' — текущий староста' : '') }))]" :disabled="locked" @change="headmanPreview = null" /><p v-if="!roster.candidates.length">
             В группе нет подходящих кандидатов.
           </p><button
             class="web-button"
@@ -687,6 +647,34 @@ useWebLiveRefresh(
         </section>
       </template>
     </section>
+</template>
+      </GroupRegistryTable><p
+        v-if="page && !registryItems.length"
+        role="status"
+      >
+        Группы не найдены.
+      </p><div v-if="page" class="admin-pager">
+        <div class="admin-actions">
+          <button
+            class="web-button"
+            :disabled="locked || page.number === 0"
+            @click="admin.run(() => load(page!.number - 1))"
+          >
+            Назад
+          </button><span v-if="page.totalPages">{{ page.number + 1 }} / {{ page.totalPages }}</span><button
+            class="web-button"
+            :disabled="locked || page.number + 1 >= page.totalPages"
+            @click="admin.run(() => load(page!.number + 1))"
+          >
+            Дальше
+          </button>
+        </div><ExportControl
+          kind="groups"
+          :selector="exportSelector"
+          :disabled="busy || filterPending || filtersDirty || loadedQueryKey !== JSON.stringify(applied)"
+        />
+      </div>
+    </template>
     <GroupDeletionPanel
       :group="canView ? selected : null"
       :admin="admin"

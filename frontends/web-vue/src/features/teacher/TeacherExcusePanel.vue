@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import MobileIcon from '../../../../mobile-core/src/shared/components/MobileIcon.vue';
 import { RouterLink } from 'vue-router';
 import type { TeacherExcuseResponse } from '../../../../mobile-core/src/features/teacher/teacher-client';
 import {
@@ -21,6 +22,12 @@ const statusLabels: Record<string, string> = {
   PENDING: 'На рассмотрении',
   CANCELLED: 'Отменена',
 };
+const typeLabel = computed(() => teacherExcuseTypeLabel(excuse.data.value?.excuseType ?? null));
+const normalizedReason = (value: string) => value.trim().replace(/\s+/gu, ' ').toLocaleLowerCase('ru');
+const extraReason = computed(() => {
+  const reason = excuse.data.value?.reason?.trim();
+  return reason && normalizedReason(reason) !== normalizedReason(typeLabel.value) ? reason : null;
+});
 let trigger: HTMLElement | null = null;
 function load(background = false) {
   void excuse.load(() => props.scope.api.excuse(props.ticketId), undefined, background === true);
@@ -40,7 +47,7 @@ onBeforeUnmount(() => {
     class="teacher-panel teacher-excuse web-stack"
     aria-labelledby="teacher-excuse-heading"
   >
-    <div class="teacher-toolbar">
+    <div class="teacher-excuse-header">
       <h2
         id="teacher-excuse-heading"
         ref="heading"
@@ -48,10 +55,12 @@ onBeforeUnmount(() => {
       >
         Заявка
       </h2><button
-        class="web-button"
+        class="web-button web-icon-button"
+        type="button"
+        aria-label="Закрыть заявку"
         @click="$emit('close')"
       >
-        Закрыть заявку
+        <MobileIcon name="close" />
       </button>
     </div>
     <TeacherNotice
@@ -66,10 +75,7 @@ onBeforeUnmount(() => {
         </template>
       </p>
       <p>
-        {{ teacherExcuseTypeLabel(excuse.data.value.excuseType)
-        }}<template v-if="excuse.data.value.reason">
-          · {{ excuse.data.value.reason }}
-        </template>
+        Уважительная причина: {{ typeLabel.toLocaleLowerCase('ru') }}<template v-if="extraReason"> · {{ extraReason }}</template>
       </p>
       <p v-if="excuse.data.value.comment">
         Комментарий: {{ excuse.data.value.comment }}
@@ -102,10 +108,6 @@ onBeforeUnmount(() => {
           <dt>Комментарий к решению</dt><dd>{{ excuse.data.value.decisionComment }}</dd>
         </div>
       </dl>
-      <p class="web-caption">
-        Показаны только пары и вложения, доступные тебе по текущим назначениям. Управление заявкой
-        выполняет староста.
-      </p>
       <ul class="teacher-links">
         <li
           v-for="lesson in excuse.data.value.lessons"

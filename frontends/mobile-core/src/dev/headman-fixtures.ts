@@ -5,6 +5,7 @@ import { HeadmanLessonActionsApi } from '../features/headman-journal/headman-jou
 import { HeadmanJournalApi } from '../features/headman-journal/headman-journal-client'
 import { HeadmanSubjectsApi } from '../features/headman-subjects/headman-subjects-client'
 import { HeadmanHomeworkApi } from '../features/homework/headman-homework-client'
+import { createRequestsReviewApi } from './headman-requests-review-fixtures'
 
 export const headmanReviewStates = [
   'journal-tools-dialog',
@@ -128,6 +129,11 @@ export function createHeadmanReviewApis(state: string) {
       transferState: null,
     },
   ]
+  // The ongoing card reads the real current date independently of the selected
+  // historical example. Give its synthetic occurrence a separate stable id.
+  const ongoingDate = new Intl.DateTimeFormat('sv', { timeZone: 'Europe/Moscow', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date())
+  const ongoingLesson = { ...lessons[1]!, id: Number(ongoingDate.replaceAll('-', '')) * 10 + 3, date: ongoingDate }
+  const requestExamples = createRequestsReviewApi('queue', () => undefined)
   const json = (value: unknown, status = 200) =>
     new Response(JSON.stringify(value), { status, headers: { 'Content-Type': 'application/json' } })
   const page = (name: string, items: unknown[]) =>
@@ -138,6 +144,15 @@ export function createHeadmanReviewApis(state: string) {
   const fetcher: typeof fetch = async (input, init) => {
     const url = new URL(String(input), 'http://fixture.invalid')
     await new Promise((resolve) => setTimeout(resolve, 30))
+    if (url.pathname === '/api/attendance/requests' && (init?.method ?? 'GET') === 'GET') {
+      const type = url.searchParams.get('type')
+      return json(await requestExamples.list({
+        bucket: url.searchParams.get('bucket') === 'ARCHIVE' ? 'ARCHIVE' : 'OPEN',
+        ...(type === 'EXCUSE' || type === 'LATE_CHECKIN' ? { type } : {}),
+        page: Number(url.searchParams.get('page') ?? 0),
+        size: Number(url.searchParams.get('size') ?? 20),
+      }))
+    }
     if (url.pathname === '/api/schedule/academic-week-policy') {
       const weeks = [
         {
@@ -299,17 +314,21 @@ export function createHeadmanReviewApis(state: string) {
         nextCursor: null,
       })
     }
-    if (url.pathname.includes('/reports/lesson/'))
+    if (url.pathname.includes('/reports/lesson/')) {
+      const lessonId = Number(url.pathname.split('/').at(-1))
+      const lesson = lessonId === ongoingLesson.id ? ongoingLesson : lessons.find(item => item.id === lessonId)
+      if (!lesson) return json({ detail: 'Synthetic lesson not found' }, 404)
       return json({
-        lessonId: Number(url.pathname.split('/').at(-1)),
+        lessonId,
         groupId: 4,
-        subjectId: 1,
+        subjectId: lesson.subjectId,
         semesterId: 1,
-        lessonDate: '2026-10-06',
-        lessonStatus: 'ACTIVE',
+        lessonDate: lesson.date,
+        lessonStatus: lesson.status,
         editable: true,
         entries: rosterEntries,
       })
+    }
     if (url.pathname.match(/\/lessons\/\d+\/students\/\d+$/)) {
       const userId = Number(url.pathname.split('/').at(-1))
       const entry = rosterEntries.find((item) => item.userId === userId)
@@ -413,8 +432,11 @@ export function createHeadmanReviewApis(state: string) {
       })
     }
     if (url.pathname.endsWith('/attachment')) return syntheticAttachmentResponse('pdf')
-    if (url.pathname.includes('/schedule/groups/'))
-      return page('lessonResponseList', state === 'today-empty' ? [] : lessons)
+    if (url.pathname.includes('/schedule/groups/')) {
+      const from = url.searchParams.get('dateFrom') ?? '2026-10-06', to = url.searchParams.get('dateTo') ?? from
+      const candidates = ongoingDate === '2026-10-06' ? lessons : [...lessons, ongoingLesson]
+      return page('lessonResponseList', state === 'today-empty' ? [] : candidates.filter(lesson => lesson.date >= from && lesson.date <= to))
+    }
     if (url.pathname === '/api/academic/subjects')
       return page('subjectResponseList', [
         {

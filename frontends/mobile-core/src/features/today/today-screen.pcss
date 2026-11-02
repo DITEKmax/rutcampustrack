@@ -10,13 +10,16 @@
   background: var(--rct-color-surface-base);
   @mixin rct-type-body;
 }
-.today-topbar {
+.today-topbar.notifications-role-header {
   display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
   justify-items: center;
   min-block-size: var(--rct-today-role-height);
   margin-block-end: var(--rct-space-3);
 }
 .today-role {
+  grid-column: 2;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -31,6 +34,10 @@
   cursor: pointer;
   @mixin rct-type-role;
   @mixin rct-focus-ring;
+}
+.today-topbar > .notifications-entry {
+  grid-column: 3;
+  justify-self: end;
 }
 .today-role:disabled {
   opacity: 1;
@@ -124,6 +131,37 @@
 .today-hero__metadata span {
   min-inline-size: 0;
 }
+.today-hero__room-values {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--rct-space-1);
+}
+.today-hero__room-details {
+  display: grid;
+  min-inline-size: 0;
+  gap: var(--rct-space-1);
+}
+.today-hero__metadata .today-hero__room[data-changed='true'] {
+  align-items: flex-start;
+  border-radius: var(--rct-radius-lg);
+  padding: var(--rct-space-2);
+  color: var(--rct-color-text-primary);
+  background: var(--rct-color-surface-raised);
+}
+.today-hero__room--changed,
+.today-hero__room-notice {
+  color: var(--rct-color-danger-text);
+  font-size: var(--rct-font-size-body);
+  font-weight: var(--rct-font-weight-bold);
+  line-height: var(--rct-today-present-leading);
+}
+.today-hero__previous-room {
+  color: var(--rct-color-text-muted);
+  font-size: var(--rct-today-room-old-size);
+  font-weight: var(--rct-font-weight-regular);
+  line-height: var(--rct-today-room-old-leading);
+}
 .today-hero__action,
 .today-secondary-action {
   display: inline-flex;
@@ -135,8 +173,8 @@
   border: 0;
   border-radius: var(--rct-radius-2xl);
   padding: var(--rct-space-3) var(--rct-space-4);
-  color: var(--rct-color-text-primary);
-  background: var(--rct-today-action-gradient);
+  color: var(--rct-color-text-on-inverse);
+  background: var(--rct-color-surface-inverse);
   text-align: center;
   overflow-wrap: anywhere;
   cursor: pointer;

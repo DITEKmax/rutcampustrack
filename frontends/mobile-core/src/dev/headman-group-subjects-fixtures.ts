@@ -207,6 +207,20 @@ export function createGroupSubjectsApis(state: string) {
       key: new Headers(init?.headers).get('Idempotency-Key'),
     })
     document.documentElement.dataset.groupSubjectsRequests = JSON.stringify(requests)
+    const credential = url.pathname.match(/^\/api\/auth\/headman\/students\/(\d+)\/initial-password$/)
+    if (credential && method === 'GET') {
+      const studentId = Number(credential[1])
+      return members.some(member => member.id === studentId)
+        ? json({ studentId: String(studentId), credentialsVersion: '1', state: 'STUDENT_CHANGED', origin: null, password: null })
+        : json({ detail: 'Синтетический студент не найден.' }, 404)
+    }
+    const budget = url.pathname.match(/^\/api\/attendance\/requests\/students\/(\d+)\/late-checkin-budget$/)
+    if (budget && method === 'GET') {
+      const studentId = Number(budget[1])
+      return members.some(member => member.id === studentId)
+        ? json({ studentId, semesterId: 1, limit: 4, used: 1, remaining: 3 })
+        : json({ detail: 'Синтетический студент не найден.' }, 404)
+    }
     if (url.pathname === '/api/academic/groups/my/members')
       return state === 'group-read-error'
         ? json({ detail: 'Синтетический сбой чтения состава группы.' }, 503)

@@ -2,6 +2,7 @@
 import { nextTick, onBeforeUnmount, onMounted, ref } from 'vue';
 import TeacherFeatureOwner from '../shared/components/TeacherFeatureOwner.vue';
 import type { MobileHostAdapter } from '../shared/host';
+import type { ReportDownloadPort } from '../shared/report-download-client';
 import { createMobileTheme } from '../shared/theme';
 import {
   createTeacherReviewFixtures,
@@ -20,6 +21,14 @@ const state: TeacherReviewState = teacherReviewStates.includes(requested as Teac
   : 'home';
 const shell = query.get('shell') === 'tma' ? 'tma' : 'pwa';
 const fixtures = createTeacherReviewFixtures(state);
+const reportDownload: ReportDownloadPort | null = state.startsWith('stats-export-') ? {
+  async download(request, isCurrent) {
+    if (!isCurrent()) return 'stale';
+    document.documentElement.dataset.teacherReportRequest = JSON.stringify(request);
+    if (state === 'stats-export-error') throw new Error('Не удалось подготовить синтетический отчёт.');
+    return 'unsupported';
+  },
+} : null;
 const theme = createMobileTheme({ mode: query.get('theme') === 'light' ? 'light' : 'dark' });
 const recoveryOpen = ref(false);
 const recoveryFetcher: typeof fetch = async () => {
@@ -126,8 +135,7 @@ function back(): boolean {
   return click('Назад');
 }
 const target = state.split('-')[0];
-const groupJournal =
-  target === 'journal' || target === 'group' || state.startsWith('stats-export-');
+const groupJournal = target === 'journal' || target === 'group';
 let journalReturnContext: { scrollLeft: number; selectedTypes: string; requests: number } | null =
   null;
 if (target === 'attendance') {
@@ -336,6 +344,20 @@ if (state === 'attendance-group-options' || state === 'stats-group-options')
   actions.push(() => click('Группа'));
 if (state === 'attendance-subject-options' || state === 'stats-subject-options')
   actions.push(() => click('Предмет'));
+const needsStatsTools =
+  state.startsWith('stats-sort') ||
+  state.startsWith('stats-filter') ||
+  state.startsWith('stats-multisort') ||
+  state.startsWith('stats-search-') ||
+  state.startsWith('stats-export-');
+if (needsStatsTools)
+  actions.push(() => {
+    const tools = document.querySelector<HTMLDetailsElement>('.teacher-stats__tools');
+    const summary = tools?.querySelector<HTMLElement>(':scope > summary');
+    if (!tools || !summary || summary.getClientRects().length === 0) return false;
+    if (!tools.open) summary.click();
+    return tools.open;
+  });
 // Initial scope is pinned above; changing scope here would clear explicit context.
 if (state === 'stats-sort' || state === 'stats-sort-students')
   actions.push(() => action('stats-sort') || click('Сортировка'));
@@ -385,11 +407,12 @@ if (state.startsWith('stats-search-')) {
     );
 }
 if (state.startsWith('lesson-export-')) actions.push(() => click('Скачать посещаемость этой пары'));
-if (state.endsWith('export-options') && !state.startsWith('lesson-export-'))
+if (state.startsWith('stats-export-')) actions.push(() => click('Выгрузка'));
+if (state.endsWith('export-options') && !state.startsWith('lesson-export-') && !state.startsWith('stats-export-'))
   actions.push(() => action('export-select') || click('Формат выгрузки'));
 if (state.endsWith('export-loading') || state.endsWith('export-error'))
   actions.push(() =>
-    state.startsWith('lesson-export-') ? click('Word') : action('export-download'),
+    state.startsWith('lesson-export-') ? click('Word') : state.startsWith('stats-export-') ? click('Скачать') : action('export-download'),
   );
 async function advance(): Promise<void> {
   if (
@@ -424,9 +447,14 @@ async function advance(): Promise<void> {
       return;
     if (
       state.endsWith('options') &&
-      !main.querySelector('[role="listbox"], .teacher-lesson-export__popup')
+      !main.querySelector(
+        state.startsWith('stats-export-')
+          ? '.rct-export__options select option'
+          : '[role="listbox"], .teacher-lesson-export__popup',
+      )
     )
       return;
+    if (state === 'stats-export-error' && !main.querySelector('.rct-export [role="alert"]')) return;
     if (
       ['excuse', 'excuse-pdf', 'excuse-pending'].includes(state) &&
       !main.querySelector('[data-pdf-ready="true"]')
@@ -587,6 +615,7 @@ onBeforeUnmount(() => {
     :semester-id="7"
     :selected-date="teacherReviewDate"
     :profile-port="fixtures.profile"
+    :report-download="reportDownload"
     :on-recover="openRecovery"
     :map-client="fixtures.map"
     :theme-controller="theme"

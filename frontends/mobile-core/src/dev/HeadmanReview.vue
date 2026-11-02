@@ -287,6 +287,7 @@ onBeforeUnmount(() => {
       v-else-if="view === 'today'"
       :week-policy-api="apis.schedule"
       :api="apis.journal"
+      :requests-api="apis.requests"
       :subjects-api="apis.subjects"
       :homework-api="apis.homework"
       :group-id="4"

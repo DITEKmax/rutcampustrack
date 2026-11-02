@@ -16,6 +16,7 @@ import {
   today,
   addDays,
   dateLabel,
+  weekStart,
   lessonTypes,
   lessonTypeCode,
 } from './context';
@@ -28,6 +29,11 @@ import {
 import type { HeadmanJournalLesson } from '../../../../mobile-core/src/features/headman-journal/headman-journal-client';
 import { isOneOffDateWithinSemester } from '../../../../mobile-core/src/features/schedule/headman-schedule-client';
 import HeadmanPage from './HeadmanPage.vue';
+import WebSelect from '../../shared/WebSelect.vue';
+import WebDateField from '../../shared/WebDateField.vue';
+import StudentPeriodPager from '../student/StudentPeriodPager.vue';
+import MobileIcon from '../../../../mobile-core/src/shared/components/MobileIcon.vue';
+import './headman-schedule.pcss';
 const feature = useHeadmanFeature();
 const session = webSession.snapshot.value!;
 const state = shallowReactive(
@@ -71,14 +77,99 @@ const assignments = computed(() =>
   ),
 );
 const slot = computed(() => state.catalog?.slots.find((item) => item.lessonNumber === form.number));
-const locked = computed(() => state.locked || geoBusy.value || !!geoUnknown.value);
+const navigationBusy = ref(false);
+const locked = computed(() => state.locked || geoBusy.value || !!geoUnknown.value || navigationBusy.value);
+const weekLessons = shallowRef<readonly HeadmanJournalLesson[]>([]);
+const weekError = ref<string | null>(null);
+const weekLoading = ref(false);
+const publishedWeek = ref('');
+const weekFrom = computed(() => weekStart(date.value));
+const weekDays = computed(() => Array.from({ length: 6 }, (_, index) => addDays(weekFrom.value, index)));
+const weekLabel = computed(() => `${dateLabel(weekFrom.value)} — ${dateLabel(addDays(weekFrom.value, 5))}`);
+const weekday = new Intl.DateTimeFormat('ru-RU', { weekday: 'long', timeZone: 'UTC' });
+const lessonStatus: Readonly<Record<string, string>> = { PLANNED: 'Предстоит', ACTIVE: 'Идёт', CLOSED: 'Завершена', CANCELLED: 'Отменена', TRANSFERRED: 'Перенесена', UNSUPPORTED: 'Статус недоступен' };
+function isTransferred(lesson: HeadmanJournalLesson) {
+  return lesson.status !== 'CANCELLED' && (lesson.status === 'TRANSFERRED' || !!lesson.transferOperationId);
+}
+function cardStatus(lesson: HeadmanJournalLesson) {
+  if (lesson.status === 'CANCELLED') return 'Отменена';
+  if (isTransferred(lesson))
+    return lesson.status === 'UNSUPPORTED' ? 'Перенесена · Статус недоступен' : 'Перенесена';
+  return lesson.status === 'UNSUPPORTED' ? lessonStatus[lesson.status] : '';
+}
+function lessonsInSlot(day: string, number: number) {
+  return weekLessons.value
+    .filter((lesson) => lesson.date === day && lesson.lessonNumber === number)
+    .sort((left, right) => Number(right.status === 'CANCELLED') - Number(left.status === 'CANCELLED'));
+}
+function lessonLabel(lesson: HeadmanJournalLesson) {
+  return [
+    weekday.format(new Date(`${lesson.date}T12:00:00Z`)),
+    dateLabel(lesson.date),
+    `${lesson.lessonNumber} пара`,
+    subjectName(lesson),
+    lessonTypes[lessonTypeCode(lesson.lessonType)] ?? 'Тип не указан',
+    lesson.room ? `Аудитория ${lesson.room}` : 'Аудитория не указана',
+    cardStatus(lesson) || lessonStatus[lesson.status],
+  ].join(', ');
+}
+let weekRevision = 0;
+async function readWeek() {
+  const revision = ++weekRevision;
+  const from = weekFrom.value;
+  weekLoading.value = true;
+  weekError.value = null;
+  if (publishedWeek.value !== from) weekLessons.value = [];
+  try {
+    const result = await feature.journal.listLessons(feature.groupId, from, addDays(from, 5));
+    feature.assertCurrent();
+    if (revision !== weekRevision || from !== weekFrom.value) return;
+    weekLessons.value = result.filter(lesson => lesson.groupId === feature.groupId && lesson.current && lesson.date >= from && lesson.date <= addDays(from, 5));
+    publishedWeek.value = from;
+  } catch (cause) {
+    if (revision === weekRevision) weekError.value = message(cause);
+  } finally {
+    if (revision === weekRevision) weekLoading.value = false;
+  }
+}
+async function showDate(value: string) {
+  if (locked.value || state.loading || task.value) return;
+  date.value = value;
+  selected.value = null;
+  await load();
+}
+async function chooseWeekLesson(lesson: HeadmanJournalLesson) {
+  if (locked.value || state.loading || task.value) return;
+  selected.value = null;
+  date.value = lesson.date;
+  await load();
+  // A display-only week response must never become a mutation target.
+  const actual = state.lessons.find(item => item.id === lesson.id && item.date === date.value);
+  if (!state.error && actual) open(actual);
+}
+async function createWeekSlot(day: string, number: number) {
+  if (locked.value || state.loading || task.value || !feature.writable()) return;
+  selected.value = null;
+  date.value = day;
+  await load();
+  if (state.error || date.value !== day) return;
+  form.number = number;
+  await begin('ONE_OFF');
+}
+function subjectName(lesson: HeadmanJournalLesson) {
+  return state.assignments.find(assignment => assignment.subjectId === lesson.subjectId)?.subjectName ?? `Предмет №${lesson.subjectId ?? '—'}`;
+}
 let read = 0;
 async function load() {
+  if (navigationBusy.value) return;
+  navigationBusy.value = true;
+  error.value = null;
   try {
     await feature.initialize();
     if (!feature.allowed('CANCEL_LESSONS')) throw new Error('Нет права управления парами.');
     await state.load(date.value);
     feature.assertCurrent();
+    void readWeek();
     if (selected.value)
       selected.value = state.lessons.find((lesson) => lesson.id === selected.value?.id) ?? null;
     else if (!task.value && route.query.lesson)
@@ -86,6 +177,8 @@ async function load() {
         state.lessons.find((lesson) => lesson.id === Number(route.query.lesson)) ?? null;
   } catch (cause) {
     error.value = message(cause);
+  } finally {
+    navigationBusy.value = false;
   }
 }
 function open(lesson: HeadmanJournalLesson) {
@@ -274,7 +367,7 @@ async function checkBlock() {
   }
 }
 onMounted(load);
-onBeforeUnmount(() => state.dispose());
+onBeforeUnmount(() => { weekRevision++; state.dispose(); });
 useWebLiveRefresh(load, { blocked: () => locked.value || state.loading || !!task.value });
 </script>
 <template>
@@ -294,24 +387,12 @@ useWebLiveRefresh(load, { blocked: () => locked.value || state.loading || !!task
         "
         >Добавить разовую пару</button
       ></template
-    ><form
-      class="headman-panel headman-toolbar"
-      @submit.prevent="load"
-      ><label class="web-field"
-        >Дата<input
-          v-model="date"
-          type="date"
-          :disabled="locked || !!task"
-          required /></label
-      ><button
-        class="web-button"
-        :disabled="locked || !!task"
-        >Показать</button
-      ><span v-if="state.policy"
-        >{{ dateLabel(state.policy.weekStart) }} — {{ dateLabel(state.policy.weekEnd) }} ·
-        {{ state.policy.label }}</span
-      ></form
-    >
+    ><div class="headman-lesson-period">
+      <div class="headman-lesson-context"><span>Группа <strong>{{ feature.groupId }}</strong></span><span v-if="state.policy">Неделя <strong>{{ state.policy.label }}</strong></span></div>
+      <StudentPeriodPager :label="weekLabel" unit="неделя" :busy="locked || state.loading || !!task" @step="showDate(addDays(date, $event * 7))" @reset="showDate(today())">
+        <WebDateField :model-value="date" label="Дата управления парами" :trigger-label="weekLabel" :disabled="locked || state.loading || !!task" required @update:model-value="showDate" />
+      </StudentPeriodPager>
+    </div>
     <p
       v-if="state.notice"
       role="status"
@@ -337,78 +418,23 @@ useWebLiveRefresh(load, { blocked: () => locked.value || state.loading || !!task
         >Проверить блокировку</button
       ></p
     >
-    <div class="headman-table-scroll"
-      ><table class="headman-table"
-        ><thead
-          ><tr
-            ><th>Пара / время</th><th>Предмет</th><th>Аудитория</th><th>Статус</th
-            ><th>Действия</th></tr
-          ></thead
-        ><tbody
-          ><template
-            v-for="item in state.catalog?.slots"
-            :key="item.lessonNumber"
-            ><tr
-              v-for="lesson in state.lessons.filter(
-                (value) => value.lessonNumber === item.lessonNumber,
-              )"
-              :key="lesson.id"
-              ><th scope="row"
-                >{{ item.lessonNumber }} · {{ item.startTime.slice(0, 5) }} —
-                {{ item.endTime.slice(0, 5) }}</th
-              ><td
-                >{{
-                  state.assignments.find((assignment) => assignment.subjectId === lesson.subjectId)
-                    ?.subjectName ?? `Предмет №${lesson.subjectId}`
-                }}
-                · {{ lessonTypes[lessonTypeCode(lesson.lessonType)] }}</td
-              ><td>{{ lesson.room ?? '—' }}</td
-              ><td>{{
-                {
-                  PLANNED: 'Предстоит',
-                  ACTIVE: 'Идёт',
-                  CLOSED: 'Завершена',
-                  CANCELLED: 'Отменена',
-                  TRANSFERRED: 'Перенесена',
-                  UNSUPPORTED: 'Неизвестно',
-                }[lesson.status]
-              }}</td
-              ><td
-                ><button
-                  class="web-button"
-                  :disabled="locked"
-                  @click="open(lesson)"
-                  >Действия пары</button
-                ></td
-              ></tr
-            ><tr v-if="!state.lessons.some((lesson) => lesson.lessonNumber === item.lessonNumber)"
-              ><th scope="row"
-                >{{ item.lessonNumber }} · {{ item.startTime.slice(0, 5) }} —
-                {{ item.endTime.slice(0, 5) }}</th
-              ><td colspan="3">Свободно</td
-              ><td
-                ><button
-                  v-if="feature.isHeadman"
-                  class="web-button"
-                  :disabled="locked || !feature.writable()"
-                  @click="
-                    selected = null;
-                    form.number = item.lessonNumber;
-                    begin('ONE_OFF');
-                  "
-                  >Добавить пару</button
-                ></td
-              ></tr
-            ></template
-          ></tbody
-        ></table
-      ></div
-    >
-    <section
+    <p v-if="weekError" class="web-error" role="alert">{{ weekError }} <button type="button" class="web-button" :disabled="weekLoading" @click="readWeek">Повторить</button></p>
+    <div class="headman-timetable-scroll" :aria-busy="weekLoading">
+      <table class="headman-timetable headman-timetable-management">
+        <thead><tr><th><span class="web-sr-only">Пара и время</span></th><th v-for="day in weekDays" :key="day" scope="col"><strong>{{ weekday.format(new Date(`${day}T12:00:00Z`)) }}</strong><small>{{ dateLabel(day) }}</small></th></tr></thead>
+        <tbody><template v-for="item in state.catalog?.slots" :key="item.lessonNumber"><tr>
+          <th scope="row">{{ item.lessonNumber }} пара<small>{{ item.startTime.slice(0, 5) }} — {{ item.endTime.slice(0, 5) }}</small></th>
+          <td v-for="day in weekDays" :key="day"><div class="headman-timetable-cell">
+            <button v-for="lesson in lessonsInSlot(day, item.lessonNumber)" :key="lesson.id" type="button" class="headman-timetable-lesson" :class="{ 'is-selected': selected?.id === lesson.id, 'is-current': lesson.status === 'ACTIVE', 'is-cancelled': lesson.status === 'CANCELLED', 'is-transferred': isTransferred(lesson) }" :aria-pressed="selected?.id === lesson.id" :aria-label="lessonLabel(lesson)" :title="lessonLabel(lesson)" :disabled="locked || state.loading || !!task" @click="chooseWeekLesson(lesson)">
+              <strong>{{ subjectName(lesson) }}</strong><span>{{ lessonTypes[lessonTypeCode(lesson.lessonType)] ?? 'Тип не указан' }}<template v-if="lesson.room"> · {{ lesson.room }}</template></span><small v-if="cardStatus(lesson)">{{ cardStatus(lesson) }}</small>
+            </button>
+            <button v-if="feature.isHeadman && publishedWeek === weekFrom && !weekLessons.some(value => value.date === day && value.lessonNumber === item.lessonNumber)" type="button" class="headman-timetable-free" :disabled="locked || state.loading || weekLoading || !!task || !feature.writable()" :aria-label="`Добавить пару: ${dateLabel(day)}, ${item.lessonNumber} пара`" @click="createWeekSlot(day, item.lessonNumber)"><MobileIcon name="plus" /></button>
+          </div></td>
+        </tr><tr v-if="selected && !task && selected.lessonNumber === item.lessonNumber"><td colspan="7" class="headman-timetable-reveal">    <section
       v-if="selected && !task"
-      class="headman-panel web-stack"
-      ><h2>Пара №{{ selected.lessonNumber }} · {{ dateLabel(selected.date) }}</h2
-      ><p v-if="typeof selected.blockedByHeadman === 'boolean'"
+      class="headman-panel web-stack headman-lesson-detail"
+      ><div class="headman-lesson-detail-heading"><h2>Пара №{{ selected.lessonNumber }} · {{ dateLabel(selected.date) }}</h2><button type="button" class="web-button web-icon-button" aria-label="Закрыть действия пары" :disabled="locked" @click="selected = null"><MobileIcon name="close" /></button></div><p>{{ subjectName(selected) }} · {{ selected.room ?? 'Аудитория не указана' }}</p>
+      <p v-if="typeof selected.blockedByHeadman === 'boolean'"
         >Взаимодействие студентов {{ selected.blockedByHeadman ? 'заблокировано' : 'разрешено' }}.
         Блокировка оставляет только заявку на уважительную причину.</p
       ><div class="headman-actions"
@@ -452,10 +478,12 @@ useWebLiveRefresh(load, { blocked: () => locked.value || state.loading || !!task
           >Журнал и история</RouterLink
         ></div
       ></section
-    >
+    ></td></tr></template></tbody>
+      </table>
+    </div>
     <form
       v-if="task"
-      class="headman-panel web-stack"
+      class="headman-panel web-stack headman-timetable-editor"
       @submit.prevent="submit"
       ><h2>{{
         {
@@ -486,43 +514,8 @@ useWebLiveRefresh(load, { blocked: () => locked.value || state.loading || !!task
             required
           /></label
         ><template v-if="task === 'TRANSFER' || task === 'ONE_OFF'"
-          ><label class="web-field"
-            >Дата<input
-              v-model="form.date"
-              type="date"
-              :min="task === 'TRANSFER' ? addDays(today(), 1) : today()"
-              :max="state.semester?.dateTo"
-              required
-              @change="loadTarget" /></label
-          ><label class="web-field"
-            >Свободная пара<select
-              v-model.number="form.number"
-              required
-              ><option
-                v-for="item in state.catalog?.slots"
-                :key="item.lessonNumber"
-                :value="item.lessonNumber"
-                :disabled="unavailable(item.lessonNumber)"
-                >{{ item.lessonNumber }} · {{ item.startTime.slice(0, 5) }} —
-                {{ item.endTime.slice(0, 5)
-                }}{{ unavailable(item.lessonNumber) ? ' · занято' : '' }}</option
-              ></select
-            ></label
-          ><label
-            v-if="task === 'ONE_OFF'"
-            class="web-field"
-            >Предмет, тип и преподаватель<select
-              v-model.number="form.assignmentId"
-              required
-              ><option
-                v-for="assignment in assignments"
-                :key="assignment.id"
-                :value="assignment.id"
-                >{{ assignment.subjectName }} · {{ lessonTypes[assignment.lessonType ?? ''] }} ·
-                {{ assignment.teacherName }}</option
-              ></select
-            ></label
-          ></template
+          ><WebDateField class="web-field" v-model="form.date" label="Дата пары" :min="task === 'TRANSFER' ? addDays(today(), 1) : today()" :max="state.semester?.dateTo ?? undefined" :disabled="locked" required @change="loadTarget"  /><WebSelect class="web-field" v-model="form.number" label="Свободная пара" :options="(state.catalog?.slots ?? []).map(item => ({ value: item.lessonNumber, label: `${item.lessonNumber} · ${item.startTime.slice(0,5)} — ${item.endTime.slice(0,5)}${unavailable(item.lessonNumber) ? ' · занято' : ''}`, disabled: unavailable(item.lessonNumber) }))" :disabled="locked || targetBusy" required  /><WebSelect v-if="task === 'ONE_OFF'"
+            class="web-field" v-model="form.assignmentId" label="Предмет, тип и преподаватель" :options="assignments.flatMap(assignment => assignment.id ? [{ value: assignment.id, label: `${assignment.subjectName} · ${lessonTypes[assignment.lessonType ?? ''] ?? 'Тип не указан'} · ${assignment.teacherName}` }] : [])" :disabled="locked" required  /></template
         ><label
           v-if="['ROOM', 'TRANSFER', 'ONE_OFF'].includes(task)"
           class="web-field"

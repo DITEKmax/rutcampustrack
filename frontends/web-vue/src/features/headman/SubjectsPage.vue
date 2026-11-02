@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, reactive, ref, shallowRef } from 'vue';
+import { computed, onBeforeUnmount, onMounted, reactive, ref, shallowRef, watch } from 'vue';
 import { useWebLiveRefresh } from '../../app/live';
 import { message, webSession } from '../../auth/session';
 import { useHeadmanFeature, today, lessonTypes, dateLabel, addDays } from './context';
@@ -24,6 +24,10 @@ import { createSubjectSaveFlow } from '../../../../mobile-core/src/features/head
 import HeadmanPage from './HeadmanPage.vue';
 import { assertReplacementWire, replacementDraftInput } from './subject-replacement-state';
 import SubjectDeletion from './SubjectDeletion.vue';
+import WebSelect from '../../shared/WebSelect.vue';
+import TeacherAssignmentPanel from './TeacherAssignmentPanel.vue';
+import MobileIcon from '../../../../mobile-core/src/shared/components/MobileIcon.vue';
+import './headman-management.pcss';
 const feature = useHeadmanFeature(),
   session = webSession.snapshot.value!;
 const loading = ref(false),
@@ -43,16 +47,10 @@ const draft = reactive({
   name: '',
   types: ['LECTURE'] as HeadmanSubjectType[],
   initial: [] as HeadmanSubjectInitialAssignment[],
-  search: '',
-  teacherId: 0,
-  type: 'LECTURE' as HeadmanSubjectType,
-  from: today(),
-  until: '',
-  replacingId: 0,
 });
-const searchPage = ref(0),
-  searchMore = ref(false),
-  searchBusy = ref(false);
+const enabledTypes = computed(() => (['LECTURE', 'PRACTICE', 'LAB'] as const).filter(type => draft.types.includes(type)));
+const editorRevision = ref(0);
+let assignmentOperation = false;
 const intent = shallowRef<SubjectEditIntent | null>(null),
   selectedRecoveryId = ref(0);
 interface Replacement {
@@ -65,9 +63,11 @@ const replacement = shallowRef<Replacement | null>(null);
 const storageKey = subjectEditStorageKey(session.userId, feature.groupId),
   replacementKey = `${storageKey}:web-replacement`;
 const writable = computed(() => feature.writable() && !!semester.value?.active && !denied.value);
-const locked = computed(() => busy.value || !!intent.value || !!replacement.value);
-let alive = true,
-  searchRevision = 0;
+const locked = computed(() => loading.value || busy.value || !!intent.value || !!replacement.value);
+let alive = true;
+function rememberTeachers(values: readonly HeadmanTeacher[]) {
+  teachers.value = [...new Map([...teachers.value, ...values].map(teacher => [teacher.id, teacher])).values()];
+}
 function teacherName(id: number) {
   return teachers.value.find((teacher) => teacher.id === id)?.fullName ?? `Преподаватель №${id}`;
 }
@@ -131,7 +131,8 @@ const flow = createSubjectSaveFlow({
     denied.value = value;
   },
   completed: () => {
-    editor.value = false;
+    if (!assignmentOperation) editor.value = false;
+    assignmentOperation = false;
   },
   failed: () => undefined,
 });
@@ -176,67 +177,29 @@ async function load() {
 }
 function open(subject: HeadmanSubject | null = null) {
   if (locked.value || !writable.value) return;
+  editorRevision.value++;
+  assignmentOperation = false;
   selected.value = subject;
   editor.value = true;
   draft.name = subject?.name ?? '';
   draft.types = [...(subject?.lessonTypes ?? ['LECTURE'])];
   draft.initial = [];
-  draft.from = today() < (semester.value?.dateFrom ?? '') ? semester.value!.dateFrom : today();
-  draft.until = '';
-  draft.replacingId = 0;
   error.value = null;
 }
-async function search(more = false) {
-  const revision = ++searchRevision;
-  searchBusy.value = true;
-  try {
-    if (!more) searchPage.value = 0;
-    const result = await feature.subjects.searchTeachers(draft.search, searchPage.value);
-    feature.assertCurrent();
-    if (revision !== searchRevision) return;
-    teachers.value = [
-      ...new Map(
-        [...teachers.value, ...result.items].map((teacher) => [teacher.id, teacher]),
-      ).values(),
-    ];
-    searchMore.value = result.totalPages !== null && result.page + 1 < result.totalPages;
-    if (!draft.teacherId) draft.teacherId = result.items[0]?.id ?? 0;
-  } catch (cause) {
-    error.value = message(cause);
-  } finally {
-    if (revision === searchRevision) searchBusy.value = false;
-  }
+function validDate(value: string) {
+  return /^\d{4}-\d{2}-\d{2}$/.test(value) && Number.isFinite(Date.parse(`${value}T12:00:00Z`)) && new Date(`${value}T12:00:00Z`).toISOString().slice(0, 10) === value;
 }
-function assignment(): HeadmanSubjectInitialAssignment {
-  if (
-    !semester.value ||
-    !draft.types.includes(draft.type) ||
-    !teachers.value.some((teacher) => teacher.id === draft.teacherId)
-  )
-    throw new Error('Выбери преподавателя и тип занятия.');
-  if (
-    draft.from < (today() > semester.value.dateFrom ? today() : semester.value.dateFrom) ||
-    draft.from > semester.value.dateTo ||
-    (draft.until && (draft.until <= draft.from || draft.until > addDays(semester.value.dateTo, 1)))
-  )
-    throw new Error('Проверь период назначения в семестре.');
-  return {
-    teacherId: draft.teacherId,
-    semesterId: semester.value.id,
-    lessonType: draft.type,
-    validFrom: draft.from,
-    validUntilExclusive: draft.until || null,
-  };
+function assignment(teacher: HeadmanTeacher, value: HeadmanSubjectInitialAssignment): HeadmanSubjectInitialAssignment {
+  const until = value.validUntilExclusive ?? null;
+  if (!semester.value || value.semesterId !== semester.value.id || !draft.types.includes(value.lessonType) || value.teacherId !== teacher.id || !teachers.value.some(item => item.id === teacher.id)) throw new Error('Выбери преподавателя и тип занятия.');
+  if (!validDate(value.validFrom) || value.validFrom < (today() > semester.value.dateFrom ? today() : semester.value.dateFrom) || value.validFrom > semester.value.dateTo || (until !== null && (!validDate(until) || until <= value.validFrom || until > addDays(semester.value.dateTo, 1)))) throw new Error('Проверь период назначения в семестре.');
+  return { ...value, validUntilExclusive: until };
 }
-function addInitial() {
-  try {
-    const value = assignment();
-    if (!draft.initial.some((item) => JSON.stringify(item) === JSON.stringify(value)))
-      draft.initial.push(value);
-  } catch (cause) {
-    error.value = message(cause);
-  }
+function removeInitial(value: HeadmanSubjectInitialAssignment) {
+  if (locked.value || !writable.value) return;
+  draft.initial = draft.initial.filter(item => JSON.stringify(item) !== JSON.stringify(value));
 }
+watch(() => [...draft.types], types => { draft.initial = draft.initial.filter(item => types.includes(item.lessonType)); }, { flush: 'sync' });
 function plan(
   subject: HeadmanSubject | null,
   assignments: readonly HeadmanSubjectInitialAssignment[] = [],
@@ -264,43 +227,36 @@ async function save() {
     error.value = 'Укажи название и хотя бы один тип занятия.';
     return;
   }
-  const value = plan(selected.value, selected.value ? [] : draft.initial);
+  assignmentOperation = false;
+  const value = plan(selected.value, selected.value ? [] : draft.initial.filter(item => draft.types.includes(item.lessonType)));
   if (persist({ ...value, name: draft.name, lessonTypes: [...draft.types] })) await flow.send(true);
 }
-async function addTeacher() {
-  if (!selected.value || locked.value || !writable.value) return;
+async function addTeacher(teacher: HeadmanTeacher, input: HeadmanSubjectInitialAssignment) {
+  if (locked.value || !writable.value || !editor.value) return;
   try {
-    if (persist(plan(selected.value, [assignment()], 1))) await flow.send(true);
-  } catch (cause) {
-    error.value = message(cause);
-  }
+    const value = assignment(teacher, input);
+    if (!selected.value) {
+      if (!draft.initial.some(item => JSON.stringify(item) === JSON.stringify(value))) draft.initial.push(value);
+      return;
+    }
+    if (!selected.value.lessonTypes.includes(value.lessonType)) throw new Error('Сначала сохрани новый тип занятия в предмете.');
+    if (persist(plan(selected.value, [value], 1))) { assignmentOperation = true; await flow.send(true); }
+  } catch (cause) { error.value = message(cause); }
 }
-async function removeTeacher(value: HeadmanSubjectAssignment) {
-  if (
-    !selected.value ||
-    locked.value ||
-    !writable.value ||
-    !window.confirm(
-      `Завершить назначение «${teacherName(value.teacherId)}» с ${dateLabel(draft.from)}? Прошедшая история сохранится.`,
-    )
-  )
-    return;
+function ownedAssignment(value: HeadmanSubjectAssignment) {
+  return selected.value?.assignments.find(item => item.id === value.id && item.teacherId === value.teacherId && item.lessonType === value.lessonType && item.semesterId === semesterId.value && draft.types.includes(item.lessonType));
+}
+async function removeTeacher(value: HeadmanSubjectAssignment, from: string) {
+  if (!selected.value || locked.value || !writable.value || !editor.value) return;
+  const target = ownedAssignment(value);
+  if (!target || !semester.value || !validDate(from) || from < semester.value.dateFrom || from > semester.value.dateTo) { error.value = 'Проверь назначение и дату завершения.'; return; }
+  if (!window.confirm(`Завершить назначение «${teacherName(target.teacherId)}» с ${dateLabel(from)}? Прошедшая история сохранится.`)) return;
   const current = plan(selected.value, [], 1);
-  if (
-    persist({
-      ...current,
-      removals: [
-        {
-          subjectId: selected.value.id,
-          teacherId: value.teacherId,
-          assignmentId: value.id,
-          validUntilExclusive: draft.from,
-          requestKey: crypto.randomUUID(),
-        },
-      ],
-    })
-  )
-    await flow.send(true);
+  if (persist({ ...current, removals: [{ subjectId: selected.value.id, teacherId: target.teacherId, assignmentId: target.id, validUntilExclusive: from, requestKey: crypto.randomUUID() }] })) { assignmentOperation = true; await flow.send(true); }
+}
+function replaceTeacher(value: HeadmanSubjectAssignment, teacher: HeadmanTeacher, from: string) {
+  const target = ownedAssignment(value);
+  if (target) void replace(false, { assignment: target, teacher, from });
 }
 function persistReplacement(value: Replacement | null) {
   feature.assertCurrent();
@@ -308,24 +264,25 @@ function persistReplacement(value: Replacement | null) {
   else sessionStorage.removeItem(replacementKey);
   replacement.value = value;
 }
-async function replace(recover = false) {
-  if (busy.value || !writable.value || intent.value) return;
+async function replace(recover = false, selection?: { assignment: HeadmanSubjectAssignment; teacher: HeadmanTeacher; from: string }) {
+  if (loading.value || busy.value || !writable.value || intent.value) return;
   let pending = replacement.value;
   if (!pending) {
+    if (!selection || !editor.value || !ownedAssignment(selection.assignment)) return;
     let input: AssignmentReplacementInput;
     try {
       const payload = replacementDraftInput(
         selected.value,
         semester.value,
         feature.groupId,
-        draft.replacingId,
-        draft.teacherId,
+        selection.assignment.id,
+        selection.teacher.id,
         teachers.value.map((teacher) => teacher.id),
-        draft.from,
+        selection.from,
         today(),
       );
       input = { ...payload, requestKey: crypto.randomUUID() };
-      assertReplacementWire(input, draft.replacingId);
+      assertReplacementWire(input, selection.assignment.id);
     } catch (cause) {
       error.value = message(cause);
       return;
@@ -333,13 +290,13 @@ async function replace(recover = false) {
     if (!selected.value) return;
     pending = {
       subjectId: selected.value.id,
-      assignmentId: draft.replacingId,
+      assignmentId: selection.assignment.id,
       input,
       receipt: null,
     };
     if (
       !window.confirm(
-        `Заменить преподавателя с ${dateLabel(draft.from)}? Будущие пары перейдут новому назначению, прошедшая история сохранится.`,
+        `Заменить преподавателя с ${dateLabel(selection.from)}? Будущие пары перейдут новому назначению, прошедшая история сохранится.`,
       )
     )
       return;
@@ -362,7 +319,6 @@ async function replace(recover = false) {
     persistReplacement({ ...pending, receipt });
     if (receipt.state === 'COMMITTED') {
       persistReplacement(null);
-      draft.replacingId = 0;
       await read();
       error.value = null;
     } else error.value = 'Замена принята, но ещё не завершена. Проверь исходную операцию.';
@@ -390,36 +346,13 @@ useWebLiveRefresh(load, {
 <template>
   <HeadmanPage
     title="Предметы"
+    class="headman-management"
+    hide-title
     :loading="loading"
     :error="error"
     @reload="load"
-    ><template #actions
-      ><button
-        class="web-button web-button-primary"
-        :disabled="locked || !writable"
-        @click="open()"
-        >Добавить предмет</button
-      ></template
-    ><form
-      class="headman-toolbar"
-      @submit.prevent="load"
-      ><label class="web-field"
-        >Семестр<select
-          v-model.number="semesterId"
-          :disabled="locked || editor || !!deleting"
-          ><option
-            v-for="period in semesters"
-            :key="period.id"
-            :value="period.id"
-            >{{ period.name }}{{ period.active ? '' : ' · архив' }}</option
-          ></select
-        ></label
-      ><button
-        class="web-button"
-        :disabled="locked || editor"
-        >Показать</button
-      ></form
-    >
+>
+    <div class="headman-management-toolbar headman-subject-toolbar"><WebSelect v-model="semesterId" label="Семестр" :options="semesters.map(period => ({ value: period.id, label: period.name + (period.active ? '' : ' · архив') }))" :disabled="locked || editor || !!deleting" @change="load" /><button type="button" class="web-button web-button-primary" :disabled="locked || !writable" @click="open()">Добавить предмет</button></div>
     <section
       v-if="intent"
       class="web-notice web-stack"
@@ -427,17 +360,7 @@ useWebLiveRefresh(load, {
         >Сохранено незавершённое изменение «{{ intent.name }}». Подтверждено шагов:
         {{ intent.step }}.</p
       ><template v-if="intent.subjectId === null && intent.createdId === null && intent.unknown"
-        ><label class="web-field"
-          >Проверить конкретный созданный предмет<select v-model.number="selectedRecoveryId"
-            ><option :value="0">Выбери результат на сервере</option
-            ><option
-              v-for="subject in subjects"
-              :key="subject.id"
-              :value="subject.id"
-              >{{ subject.name }} · №{{ subject.id }}</option
-            ></select
-          ></label
-        ><button
+        ><WebSelect v-model="selectedRecoveryId" label="Проверить конкретный созданный предмет" :options="[{ value: 0, label: 'Выбери результат на сервере' }, ...subjects.map(subject => ({ value: subject.id, label: subject.name + ' · №' + subject.id }))]" :disabled="busy" /><button
           class="web-button"
           :disabled="busy || !selectedRecoveryId"
           @click="flow.reconcile(selectedRecoveryId, true)"
@@ -472,233 +395,22 @@ useWebLiveRefresh(load, {
         >Проверить замену</button
       ></p
     >
-    <div class="headman-table-scroll"
-      ><table class="headman-table"
-        ><thead
-          ><tr
-            ><th>Предмет</th><th>Тип занятия</th><th>Преподаватели</th><th>Пройдено / всего</th
-            ><th>Действия</th></tr
-          ></thead
-        ><tbody
-          ><template
-            v-for="subject in subjects"
-            :key="subject.id"
-            ><tr
-              v-for="type in subject.lessonTypes"
-              :key="type"
-              ><th scope="row">{{ subject.name }}</th
-              ><td>{{ lessonTypes[type] }}</td
-              ><td>{{
-                subject.assignments
-                  .filter(
-                    (assignment) =>
-                      assignment.semesterId === semesterId &&
-                      assignment.lessonType === type &&
-                      (!assignment.validUntilExclusive || assignment.validUntilExclusive > today()),
-                  )
-                  .map((assignment) => teacherName(assignment.teacherId))
-                  .join(' · ') || 'Нет назначения'
-              }}</td
-              ><td
-                ><template
-                  v-if="
-                    progress?.items.find(
-                      (item) => item.subjectId === subject.id && item.lessonType === type,
-                    )
-                  "
-                  >{{
-                    progress.items.find(
-                      (item) => item.subjectId === subject.id && item.lessonType === type,
-                    )!.done
-                  }}
-                  /
-                  {{
-                    progress.items.find(
-                      (item) => item.subjectId === subject.id && item.lessonType === type,
-                    )!.total
-                  }}</template
-                ><span v-else>Нет данных</span></td
-              ><td
-                ><div class="headman-actions"
-                  ><button
-                    class="web-button"
-                    :disabled="locked || !writable"
-                    @click="open(subject)"
-                    >Изменить</button
-                  ><button
-                    class="web-button"
-                    :disabled="locked || !writable"
-                    @click="
-                      deleting = subject.id;
-                      editor = false;
-                    "
-                    >Удалить</button
-                  ></div
-                ></td
-              ></tr
-            ></template
-          ></tbody
-        ></table
-      ></div
-    >
-    <form
-      v-if="editor"
-      class="headman-panel web-stack"
-      @submit.prevent="save"
-      ><h2>{{ selected ? 'Изменить предмет' : 'Добавить предмет' }}</h2
-      ><fieldset :disabled="locked"
-        ><label class="web-field"
-          >Название предмета<input
-            v-model="draft.name"
-            required
-            maxlength="255" /></label
-        ><fieldset
-          ><legend>Типы занятий</legend
-          ><label
-            v-for="(label, code) in lessonTypes"
-            :key="code"
-            ><input
-              v-model="draft.types"
-              type="checkbox"
-              :value="code"
-            />
-            {{ label }}</label
-          ></fieldset
-        ></fieldset
-      ><div class="headman-actions"
-        ><button
-          class="web-button web-button-primary"
-          :disabled="locked || !writable"
-          >Сохранить предмет</button
-        ><button
-          type="button"
-          class="web-button"
-          :disabled="locked"
-          @click="editor = false"
-          >Отмена</button
-        ></div
-      >
-      <h3>Преподаватели</h3
-      ><div class="headman-toolbar"
-        ><label class="web-field"
-          >Найти по имени или табельному номеру<input
-            v-model="draft.search"
-            type="search"
-            :disabled="locked" /></label
-        ><button
-          type="button"
-          class="web-button"
-          :disabled="locked || searchBusy"
-          @click="search()"
-          >Найти</button
-        ><button
-          v-if="searchMore"
-          type="button"
-          class="web-button"
-          :disabled="locked || searchBusy"
-          @click="
-            searchPage++;
-            search(true);
-          "
-          >Ещё преподаватели</button
-        ></div
-      ><fieldset :disabled="locked"
-        ><label class="web-field"
-          >Преподаватель<select v-model.number="draft.teacherId"
-            ><option :value="0">Выбери преподавателя</option
-            ><option
-              v-for="teacher in teachers"
-              :key="teacher.id"
-              :value="teacher.id"
-              >{{ teacher.fullName
-              }}{{ teacher.employeeNumber ? ` · ${teacher.employeeNumber}` : '' }}</option
-            ></select
-          ></label
-        ><label class="web-field"
-          >Тип занятия<select v-model="draft.type"
-            ><option
-              v-for="type in draft.types"
-              :key="type"
-              :value="type"
-              >{{ lessonTypes[type] }}</option
-            ></select
-          ></label
-        ><label class="web-field"
-          >С даты<input
-            v-model="draft.from"
-            type="date"
-            :min="semester?.dateFrom"
-            :max="semester?.dateTo"
-            required /></label
-        ><label class="web-field"
-          >До даты, не включая<input
-            v-model="draft.until"
-            type="date" /></label
-        ><button
-          type="button"
-          class="web-button"
-          @click="selected ? addTeacher() : addInitial()"
-          >{{ selected ? 'Назначить преподавателя' : 'Добавить в новый предмет' }}</button
-        ></fieldset
-      ><ul
-        v-if="!selected"
-        class="headman-list"
-        ><li
-          v-for="(item, index) in draft.initial"
-          :key="index"
-          >{{ teacherName(item.teacherId) }} · {{ lessonTypes[item.lessonType] }} ·
-          {{ dateLabel(item.validFrom)
-          }}<button
-            type="button"
-            class="web-button"
-            :disabled="locked"
-            @click="draft.initial.splice(index, 1)"
-            >Убрать из черновика</button
-          ></li
-        ></ul
-      ><div
-        v-else
-        class="headman-table-scroll"
-        ><table class="headman-table"
-          ><thead
-            ><tr><th>Преподаватель</th><th>Тип / период</th><th>Действия</th></tr></thead
-          ><tbody
-            ><tr
-              v-for="assignment in selected.assignments.filter(
-                (item) => item.semesterId === semesterId,
-              )"
-              :key="assignment.id"
-              ><th>{{ teacherName(assignment.teacherId) }}</th
-              ><td
-                >{{ lessonTypes[assignment.lessonType] }} · {{ dateLabel(assignment.validFrom) }} —
-                {{ dateLabel(assignment.validUntilExclusive) }}</td
-              ><td
-                ><button
-                  type="button"
-                  class="web-button"
-                  :disabled="locked"
-                  @click="removeTeacher(assignment)"
-                  >Снять с выбранной даты</button
-                ><button
-                  type="button"
-                  class="web-button"
-                  :disabled="locked"
-                  @click="draft.replacingId = assignment.id"
-                  >Заменить с выбранной даты</button
-                ></td
-              ></tr
-            ></tbody
-          ></table
-        ></div
-      ><button
-        v-if="draft.replacingId"
-        type="button"
-        class="web-button"
-        :disabled="locked || !draft.teacherId"
-        @click="replace()"
-        >Подтвердить замену на {{ teacherName(draft.teacherId) }}</button
-      > </form
-    ><SubjectDeletion
+    <div class="headman-management-scroll" tabindex="0" role="region" aria-label="Предметы группы"><table class="headman-management-table headman-subjects-table"><colgroup><col /><col /><col /><col /><col class="headman-subject-progress-column" /><col class="headman-subject-action" /><col class="headman-subject-action" /></colgroup><thead><tr><th scope="col">№</th><th scope="col">Предмет</th><th scope="col">Тип занятия</th><th scope="col">Преподаватели</th><th scope="col">Пройдено / всего</th><th scope="colgroup" colspan="2">Действия</th></tr></thead><tbody>
+      <template v-for="(subject, index) in subjects" :key="subject.id"><tr v-for="(type, typeIndex) in subject.lessonTypes" :key="type" :class="{ 'is-selected': editor && selected?.id === subject.id }"><td v-if="typeIndex === 0" :rowspan="subject.lessonTypes.length">{{ index + 1 }}</td><th v-if="typeIndex === 0" scope="rowgroup" :rowspan="subject.lessonTypes.length">{{ subject.name }}</th><td>{{ lessonTypes[type] }}</td><td>{{ subject.assignments.filter(assignment => assignment.semesterId === semesterId && assignment.lessonType === type && (!assignment.validUntilExclusive || assignment.validUntilExclusive > today())).map(assignment => teacherName(assignment.teacherId)).join(' · ') || 'Нет назначения' }}</td>
+        <td class="headman-subject-progress-cell"><div v-if="progress?.items.some(item => item.subjectId === subject.id && item.lessonType === type)" class="headman-subject-progress"><div><span>{{ progress.items.find(item => item.subjectId === subject.id && item.lessonType === type)!.done }}</span><small>{{ progress.items.find(item => item.subjectId === subject.id && item.lessonType === type)!.total }}</small></div><progress v-if="progress.items.find(item => item.subjectId === subject.id && item.lessonType === type)!.total > 0" :value="progress.items.find(item => item.subjectId === subject.id && item.lessonType === type)!.done" :max="progress.items.find(item => item.subjectId === subject.id && item.lessonType === type)!.total" :aria-label="`${subject.name}, ${lessonTypes[type]}: пройдено ${progress.items.find(item => item.subjectId === subject.id && item.lessonType === type)!.done} из ${progress.items.find(item => item.subjectId === subject.id && item.lessonType === type)!.total}`" /></div><span v-else class="web-caption">Нет данных</span></td>
+        <td v-if="typeIndex === 0" :rowspan="subject.lessonTypes.length" class="headman-subject-action"><button type="button" class="web-button web-icon-button" :aria-label="`Изменить предмет ${subject.name}`" :title="`Изменить ${subject.name}`" :disabled="locked || !writable" @click="open(subject)"><MobileIcon name="edit" /></button></td><td v-if="typeIndex === 0" :rowspan="subject.lessonTypes.length" class="headman-subject-action"><button type="button" class="web-button web-icon-button" :aria-label="`Удалить предмет ${subject.name}`" :title="`Удалить ${subject.name}`" :disabled="locked || !writable" @click="deleting = subject.id; editor = false"><MobileIcon name="trash" /></button></td>
+      </tr></template>
+    </tbody></table></div><p v-if="!loading && !error && !subjects.length" class="web-caption">Предметов пока нет.</p>
+    <section v-if="editor && semester" class="headman-panel headman-subject-editor web-stack" aria-label="Редактор предмета">
+      <h2>{{ selected ? 'Изменить предмет' : 'Добавить предмет' }}</h2>
+      <p v-if="!selected" class="web-caption">Добавленные назначения сохранятся вместе с предметом.</p>
+      <fieldset :disabled="locked" class="headman-subject-top"><label class="web-field">Название предмета<input v-model="draft.name" required maxlength="255" @keydown.enter.prevent /></label><fieldset><legend>Типы занятий</legend><div class="headman-subject-types"><label v-for="(label, code) in lessonTypes" :key="code" class="headman-subject-type"><input v-model="draft.types" type="checkbox" :value="code" /><span>{{ label }}</span></label></div></fieldset></fieldset>
+      <div class="headman-subject-panels" :class="`has-${draft.types.length}`">
+        <TeacherAssignmentPanel v-for="type in enabledTypes" :key="`${editorRevision}:${type}`" :feature="feature" :semester="semester" :type="type" :label="lessonTypes[type] ?? type" :teachers="teachers" :assignments="selected?.assignments.filter(item => item.semesterId === semesterId && item.lessonType === type) ?? []" :staged="draft.initial.filter(item => item.lessonType === type)" :existing="!!selected" :locked="locked || !writable" :assignment-enabled="!selected || selected.lessonTypes.includes(type)" @remember="rememberTeachers" @add="addTeacher" @remove="removeTeacher" @replace="replaceTeacher" @unstage="removeInitial" />
+      </div>
+      <div class="headman-actions headman-subject-form-actions"><button type="button" class="web-button" :disabled="locked" @click="editor = false">Отмена</button><button type="button" class="web-button web-button-primary" :disabled="locked || !writable" @click="save">Сохранить предмет</button></div>
+    </section>
+    <SubjectDeletion
       v-if="deleting"
       :key="deleting"
       :feature="feature"

@@ -29,6 +29,9 @@ import {
 } from '../../../../mobile-core/src/features/schedule/headman-recurring-create';
 import type { AcademicWeekPolicy } from '../../../../mobile-core/src/domain/academic-week';
 import HeadmanPage from './HeadmanPage.vue';
+import WebSelect from '../../shared/WebSelect.vue';
+import MobileIcon from '../../../../mobile-core/src/shared/components/MobileIcon.vue';
+import './headman-schedule.pcss';
 const feature = useHeadmanFeature(),
   session = webSession.snapshot.value!;
 const loading = ref(false),
@@ -73,14 +76,48 @@ const writable = computed(
     !loading.value &&
     publishedSemester.value === semesterId.value,
 );
-function canAdd(day: number, number: number) {
-  const cell = rows.value.filter(
+function cellItems(day: number, number: number) {
+  return rows.value.filter(
     (item) => item.active && item.dayOfWeek === day && item.lessonNumber === number,
   );
-  return (
-    !cell.some((item) => item.weekType === 'ALL') &&
-    !(cell.some((item) => item.weekType === 'ODD') && cell.some((item) => item.weekType === 'EVEN'))
-  );
+}
+function availableWeek(day: number, number: number) {
+  const cell = cellItems(day, number);
+  if (cell.some((item) => item.weekType === 'ALL')) return null;
+  const odd = cell.some((item) => item.weekType === 'ODD'),
+    even = cell.some((item) => item.weekType === 'EVEN');
+  return odd && even ? null : odd ? 'EVEN' : even ? 'ODD' : 'ALL';
+}
+function cellEntries(day: number, number: number) {
+  const entries: { week: HeadmanScheduleItem['weekType']; item: HeadmanScheduleItem | null }[] =
+    cellItems(day, number).map((item) => ({ week: item.weekType, item }));
+  const freeWeek = availableWeek(day, number);
+  if (freeWeek) entries.push({ week: freeWeek, item: null });
+  return entries.sort((left, right) => Number(left.week === 'EVEN') - Number(right.week === 'EVEN'));
+}
+function assignmentFor(item: HeadmanScheduleItem) {
+  return assignments.value.find((assignment) => assignment.id === item.assignmentId);
+}
+function subjectName(item: HeadmanScheduleItem) {
+  return assignmentFor(item)?.subjectName ?? `Предмет №${item.subjectId}`;
+}
+function lessonType(item: HeadmanScheduleItem) {
+  return lessonTypes[assignmentFor(item)?.lessonType ?? ''] ?? 'Тип не указан';
+}
+function weekLabel(week: string | null | undefined) {
+  return week === 'ODD' ? '1 неделя' : week === 'EVEN' ? '2 неделя' : 'Обе недели';
+}
+function lessonLabel(item: HeadmanScheduleItem) {
+  return [
+    days[(item.dayOfWeek ?? 1) - 1],
+    `${item.lessonNumber} пара`,
+    semester.value?.name,
+    weekLabel(item.weekType),
+    subjectName(item),
+    lessonType(item),
+    assignmentFor(item)?.teacherName,
+    item.room ? `Аудитория ${item.room}` : 'Аудитория не указана',
+  ].filter(Boolean).join(', ');
 }
 const days = ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'];
 let readRevision = 0;
@@ -150,30 +187,14 @@ async function load() {
 }
 function open(day: number, number: number, item: HeadmanScheduleItem | null = null) {
   if (locked.value || !writable.value) return;
+  const freeWeek = availableWeek(day, number);
+  if (!item && !freeWeek) return;
   editor.value = true;
   selected.value = item;
   form.day = day;
   form.number = number;
   form.assignmentId = item?.assignmentId ?? assignments.value[0]?.id ?? 0;
-  form.week =
-    item?.weekType ??
-    (rows.value.some(
-      (row) =>
-        row.active &&
-        row.dayOfWeek === day &&
-        row.lessonNumber === number &&
-        row.weekType === 'ODD',
-    )
-      ? 'EVEN'
-      : rows.value.some(
-            (row) =>
-              row.active &&
-              row.dayOfWeek === day &&
-              row.lessonNumber === number &&
-              row.weekType === 'EVEN',
-          )
-        ? 'ODD'
-        : 'ALL');
+  form.week = item?.weekType ?? freeWeek ?? 'ALL';
   form.room = item?.room ?? '';
   preview.value = null;
 }
@@ -312,7 +333,7 @@ async function apply(recover = false) {
     editor.value = false;
     notice.value =
       intent.action === 'DELETE'
-        ? 'Будущие пары убраны. Прошедшая история сохранена.'
+        ? 'Регулярное занятие удалено из расписания. Начавшиеся, прошедшие и перенесённые вручную пары сохранены.'
         : 'Будущие пары изменены. Прошедшая история сохранена.';
     await read();
   } catch (cause) {
@@ -340,29 +361,11 @@ useWebLiveRefresh(load, { blocked: () => loading.value || locked.value || editor
     :loading="loading"
     :error="error"
     @reload="load"
-    ><form
-      class="headman-toolbar"
-      @submit.prevent="load"
-      ><label class="web-field"
-        >Семестр<select
-          v-model.number="semesterId"
-          :disabled="locked || editor"
-          @change="load"
-          ><option
-            v-for="item in semesters"
-            :key="item.id"
-            :value="item.id"
-            >{{ item.name }}{{ item.active ? '' : ' · архив' }}</option
-          ></select
-        ></label
-      ><button
-        class="web-button"
-        :disabled="locked || editor"
-        >Показать</button
-      ><p v-if="policy"
-        >Текущая неделя · {{ policy.label }} · {{ policy.weekStart }} — {{ policy.weekEnd }}</p
-      ></form
-    ><p
+    ><div class="headman-constructor-toolbar">
+      <WebSelect class="web-field" v-model="semesterId" label="Семестр" :options="semesters.flatMap(item => item.id ? [{ value: item.id, label: item.name + (item.active ? '' : ' · архив') }] : [])" :disabled="locked || editor || loading" @change="load" />
+      <span v-if="policy" class="web-caption">Текущая неделя · {{ policy.label }}</span>
+    </div>
+    <p
       v-if="notice"
       role="status"
       >{{ notice }}</p
@@ -387,14 +390,16 @@ useWebLiveRefresh(load, { blocked: () => loading.value || locked.value || editor
         >Проверить создание серии</button
       ></p
     >
-    <div class="headman-table-scroll"
-      ><table class="headman-table headman-schedule"
+    <p class="web-caption headman-constructor-legend">Сверху — 1 неделя · снизу — 2 неделя</p>
+    <div class="headman-timetable-scroll"
+      ><table class="headman-timetable headman-timetable-constructor"
         ><thead
           ><tr
             ><th>Пара</th
             ><th
               v-for="day in days"
               :key="day"
+              scope="col"
               >{{ day }}</th
             ></tr
           ></thead
@@ -403,46 +408,44 @@ useWebLiveRefresh(load, { blocked: () => loading.value || locked.value || editor
             v-for="slot in catalog?.slots"
             :key="slot.lessonNumber"
             ><th scope="row"
-              >{{ slot.lessonNumber }} пара<p
-                >{{ slot.startTime.slice(0, 5) }} — {{ slot.endTime.slice(0, 5) }}</p
+              >{{ slot.lessonNumber }} пара<small
+                >{{ slot.startTime.slice(0, 5) }} — {{ slot.endTime.slice(0, 5) }}</small
               ></th
             ><td
               v-for="(_, day) in days"
               :key="day"
-              ><div class="web-stack"
+              ><div class="headman-timetable-cell"
+                ><template
+                  v-for="entry in cellEntries(day + 1, slot.lessonNumber)"
+                  :key="entry.item?.id ?? entry.week ?? 'ALL'"
                 ><button
-                  v-for="item in rows.filter(
-                    (row) =>
-                      row.active &&
-                      row.dayOfWeek === day + 1 &&
-                      row.lessonNumber === slot.lessonNumber,
-                  )"
-                  :key="item.id"
-                  class="headman-slot"
+                  v-if="entry.item"
+                  class="headman-timetable-lesson"
+                  :class="{
+                    'is-selected': selected?.id === entry.item.id && editor,
+                    'is-odd-week': entry.week === 'ODD',
+                    'is-even-week': entry.week === 'EVEN',
+                    'is-both-weeks': entry.week === 'ALL',
+                  }"
+                  :aria-pressed="selected?.id === entry.item.id && editor"
+                  :aria-label="lessonLabel(entry.item)"
+                  :title="lessonLabel(entry.item)"
                   :disabled="locked || !writable"
-                  @click="open(day + 1, slot.lessonNumber, item)"
-                  >{{
-                    assignments.find((assignment) => assignment.id === item.assignmentId)
-                      ?.subjectName ?? `Предмет №${item.subjectId}`
-                  }}<span>{{
-                    assignments.find((assignment) => assignment.id === item.assignmentId)
-                      ?.teacherName
-                  }}</span
-                  ><span
-                    >{{
-                      policy?.weekTypes.find((week) => week.weekType === item.weekType)?.label ??
-                      item.weekType
-                    }}
-                    · {{ item.room ?? '—' }}</span
-                  ></button
+                  @click="open(day + 1, slot.lessonNumber, entry.item)"
+                  ><strong>{{ subjectName(entry.item) }}</strong><span>{{ lessonType(entry.item) }}</span></button
                 ><button
-                  v-if="canAdd(day + 1, slot.lessonNumber)"
-                  class="headman-slot headman-slot-free"
+                  v-else
+                  class="headman-timetable-free"
+                  :class="{
+                    'is-odd-week': entry.week === 'ODD',
+                    'is-even-week': entry.week === 'EVEN',
+                    'is-both-weeks': entry.week === 'ALL',
+                  }"
                   :disabled="locked || !writable"
-                  :aria-label="`Добавить: ${days[day]}, ${slot.lessonNumber} пара`"
+                  :aria-label="`Добавить: ${days[day]}, ${slot.lessonNumber} пара, ${weekLabel(entry.week)}, ${semester?.name ?? ''}`"
                   @click="open(day + 1, slot.lessonNumber)"
-                  >Добавить</button
-                ></div
+                  ><MobileIcon name="plus" /></button
+                ></template></div
               ></td
             ></tr
           ></tbody
@@ -451,37 +454,13 @@ useWebLiveRefresh(load, { blocked: () => loading.value || locked.value || editor
     >
     <form
       v-if="editor"
-      class="headman-panel web-stack"
+      class="headman-panel web-stack headman-timetable-editor"
       @submit.prevent="selected ? calculate('UPDATE') : create()"
       ><h2
         >{{ selected ? 'Изменить регулярный слот' : 'Добавить регулярный слот' }} ·
         {{ days[form.day - 1] }} · {{ form.number }} пара</h2
       ><fieldset :disabled="locked"
-        ><label class="web-field"
-          >Предмет, тип и преподаватель<select
-            v-model.number="form.assignmentId"
-            :disabled="!!selected"
-            required
-            ><option
-              v-for="assignment in assignments"
-              :key="assignment.id"
-              :value="assignment.id"
-              >{{ assignment.subjectName }} · {{ lessonTypes[assignment.lessonType ?? ''] }} ·
-              {{ assignment.teacherName }}</option
-            ></select
-          ></label
-        ><label class="web-field"
-          >Недели<select
-            v-model="form.week"
-            @change="preview = null"
-            ><option
-              v-for="week in policy?.weekTypes"
-              :key="week.weekType"
-              :value="week.weekType"
-              >{{ week.label }}</option
-            ></select
-          ></label
-        ><label class="web-field"
+        ><WebSelect class="web-field" v-model="form.assignmentId" label="Предмет, тип и преподаватель" :options="assignments.flatMap(assignment => assignment.id ? [{ value: assignment.id, label: `${assignment.subjectName} · ${lessonTypes[assignment.lessonType ?? ''] ?? 'Тип не указан'} · ${assignment.teacherName}` }] : [])" :disabled="locked || !!selected" required  /><WebSelect class="web-field" v-model="form.week" label="Недели" :options="(policy?.weekTypes ?? []).map(week => ({ value: week.weekType, label: week.label }))" :disabled="locked" @change="preview = null"  /><label class="web-field"
           >Аудитория<input
             v-model="form.room"
             maxlength="64"
@@ -497,7 +476,7 @@ useWebLiveRefresh(load, { blocked: () => loading.value || locked.value || editor
           class="web-button"
           :disabled="locked"
           @click="calculate('DELETE')"
-          >Убрать будущий слот</button
+          >Удалить из расписания</button
         ><button
           type="button"
           class="web-button"
@@ -512,19 +491,32 @@ useWebLiveRefresh(load, { blocked: () => loading.value || locked.value || editor
         v-if="preview"
         class="web-notice web-stack"
         ><h3>{{
-          preview.action === 'DELETE' ? 'Убрать будущие пары?' : 'Применить изменение серии?'
+          preview.action === 'DELETE' ? 'Удалить регулярное занятие из расписания?' : 'Применить изменение серии?'
         }}</h3
         ><p
+          v-if="preview.action === 'DELETE'"
+          >Регулярное занятие будет удалено из конструктора. Будущих пар к отмене:
+          {{ preview.result.removedCount }}. Начавшиеся и прошедшие пары сохранятся.
+          Перенесённые вручную пары не меняются.</p
+        ><p
+          v-else
           >Будет изменено {{ preview.result.updatedCount }}, убрано
           {{ preview.result.removedCount }}, восстановлено {{ preview.result.restoredCount }},
           создано {{ preview.result.createdCount }}. Прошедшая история сохранится.</p
-        ><button
+        ><div class="headman-actions"><button
           type="button"
           class="web-button web-button-primary"
           :disabled="locked"
           @click="apply()"
-          >Подтвердить расчёт</button
-        ></section
+          >{{ preview.action === 'DELETE' ? 'Удалить из расписания' : 'Подтвердить расчёт' }}</button
+        ><button
+          v-if="preview.action === 'DELETE'"
+          type="button"
+          class="web-button"
+          :disabled="locked"
+          @click="preview = null"
+          >Отмена удаления</button
+        ></div></section
       ></form
     >
   </HeadmanPage>

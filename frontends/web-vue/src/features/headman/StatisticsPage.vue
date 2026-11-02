@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref, shallowRef } from 'vue';
+import { computed, onBeforeUnmount, onMounted, reactive, ref, shallowRef, watch } from 'vue';
 import { message } from '../../auth/session';
 import { useWebLiveRefresh } from '../../app/live';
 import { useHeadmanFeature, dateLabel, today, weekStart, addDays } from './context';
@@ -20,6 +20,13 @@ import HeadmanPage from './HeadmanPage.vue';
 import ReportExport from './ReportExport.vue';
 import TrendChart from './TrendChart.vue';
 import StudentDetail from './StudentDetail.vue';
+import HeadmanMetricCards from './HeadmanMetricCards.vue';
+import StudentPeriodPager from '../student/StudentPeriodPager.vue';
+import WebSelect from '../../shared/WebSelect.vue';
+import WebDateField from '../../shared/WebDateField.vue';
+import MobileIcon from '../../../../mobile-core/src/shared/components/MobileIcon.vue';
+import '../student/student.pcss';
+import './headman-analytics.pcss';
 const feature = useHeadmanFeature();
 const loading = ref(false),
   error = ref<string | null>(null);
@@ -31,10 +38,8 @@ const draft = reactive({
   semesterId: 0,
   subjectId: 0,
   types: [] as string[],
-  field: 'displayName',
+  sortField: 'displayName',
   contains: '',
-  minimum: '',
-  maximum: '',
   descending: false,
   page: 0,
   mode: 'SEMESTER' as 'SEMESTER' | 'WEEK' | 'SUBJECT',
@@ -46,8 +51,6 @@ const applied = shallowRef<HeadmanStatsQuery | null>(null),
 const format = ref<ReportDownloadFormat>('xlsx'),
   trendFormat = ref<'png' | 'html'>('png'),
   selected = ref(0);
-const columns = computed(() => data.value?.columns ?? []);
-const currentField = computed(() => columns.value.find((column) => column.field === draft.field));
 const subjects = computed(() => data.value?.subjects ?? []);
 const types = computed(
   () => subjects.value.find((subject) => subject.id === draft.subjectId)?.lessonTypes ?? [],
@@ -62,12 +65,64 @@ const trendReport = computed(() =>
 );
 const appliedDraft = ref('');
 const dirty = computed(() => appliedDraft.value !== JSON.stringify(draft));
-let run = 0;
+const selectedSemester = computed(() => catalog.value?.semesters.find(item => item.id === draft.semesterId));
+const subjectOptions = computed(() => [{ value: 0, label: 'Вся группа' }, ...subjects.value.map(item => ({ value: item.id, label: item.label }))]);
+function chooseSubject() { draft.types = []; if (!draft.subjectId && draft.mode === 'SUBJECT') draft.mode = 'SEMESTER'; }
+function sortBy(field: string) { draft.descending = draft.sortField === field ? !draft.descending : false; draft.sortField = field; void load(true); }
+function stepWeek(direction: -1 | 1) { draft.week = addDays(draft.week, direction * 7); void load(); }
+function sortIndicator(field: string) { const sort = applied.value?.sorts[0]; return sort?.field === field ? sort.descending ? '↓' : '↑' : ''; }
+function sortAria(field: string): 'none' | 'ascending' | 'descending' { const sort = applied.value?.sorts[0]; return sort?.field === field ? sort.descending ? 'descending' : 'ascending' : 'none'; }
+let run = 0, alive = true, suppressAutoApply = false;
+let applyTimer: ReturnType<typeof setTimeout> | null = null;
+let catalogRequest: Promise<void> | null = null;
+function clearApplyTimer() {
+  if (applyTimer !== null) clearTimeout(applyTimer);
+  applyTimer = null;
+}
+function scheduleApply(delay: number) {
+  if (!alive || suppressAutoApply) return;
+  clearApplyTimer();
+  // Invalidate the previous request before the debounce delay, not when its successor starts.
+  run++;
+  draft.page = 0;
+  applyTimer = setTimeout(() => { applyTimer = null; void load(); }, delay);
+}
+function resetFilters() {
+  suppressAutoApply = true;
+  draft.contains = '';
+  draft.subjectId = 0;
+  draft.types = [];
+  draft.sortField = 'displayName';
+  draft.descending = false;
+  draft.page = 0;
+  if (draft.mode === 'SUBJECT') draft.mode = 'SEMESTER';
+  suppressAutoApply = false;
+  // Semester and the current week/bucket remain the chosen context.
+  void load(true);
+}
+async function ensureCatalog() {
+  if (catalog.value) return;
+  if (!catalogRequest) catalogRequest = (async () => {
+    const [semesters, summary] = await Promise.all([feature.stats.semesters(), feature.stats.overview()]);
+    feature.assertCurrent();
+    if (!alive) return;
+    catalog.value = semesters;
+    overview.value = summary;
+    if (!draft.semesterId) {
+      suppressAutoApply = true;
+      draft.semesterId = semesters.activeSemesterId ?? semesters.semesters[0]?.id ?? 0;
+      suppressAutoApply = false;
+    }
+  })().finally(() => { catalogRequest = null; });
+  await catalogRequest;
+}
 const percent = (value: number, denominator: number) =>
   denominator === 0
     ? 'Нет данных'
     : `${value.toLocaleString('ru-RU', { maximumFractionDigits: 1 })}%`;
 async function load(reset = false) {
+  if (!alive) return;
+  clearApplyTimer();
   const revision = ++run;
   loading.value = true;
   error.value = null;
@@ -75,16 +130,9 @@ async function load(reset = false) {
   try {
     await feature.initialize();
     if (!feature.allowed('VIEW_STATS')) throw new Error('Нет права просмотра статистики группы.');
-    if (!catalog.value) {
-      const [semesters, summary] = await Promise.all([
-        feature.stats.semesters(),
-        feature.stats.overview(),
-      ]);
-      feature.assertCurrent();
-      catalog.value = semesters;
-      overview.value = summary;
-      draft.semesterId = semesters.activeSemesterId ?? semesters.semesters[0]?.id ?? 0;
-    }
+    if (!alive || revision !== run) return;
+    await ensureCatalog();
+    if (!alive || revision !== run) return;
     const frozenDraft = JSON.stringify(draft);
     const query: HeadmanStatsQuery = {
       ...(draft.semesterId ? { semesterId: draft.semesterId } : {}),
@@ -92,25 +140,12 @@ async function load(reset = false) {
       lessonTypes: draft.subjectId ? [...draft.types] : [],
       page: draft.page,
       size: 30,
-      sorts: [{ field: draft.field, descending: draft.descending }],
-      filters:
-        draft.contains || draft.minimum || draft.maximum
-          ? [
-              {
-                field: draft.field,
-                ...(currentField.value?.filterKind === 'TEXT'
-                  ? { contains: draft.contains }
-                  : {
-                      ...(draft.minimum ? { minimum: Number(draft.minimum) } : {}),
-                      ...(draft.maximum ? { maximum: Number(draft.maximum) } : {}),
-                    }),
-              },
-            ]
-          : [],
+      sorts: [{ field: draft.sortField, descending: draft.descending }],
+      filters: draft.contains.trim() ? [{ field: 'displayName', contains: draft.contains.trim() }] : [],
     };
     const trendQuery: HeadmanStatsTrendQuery = {
       ...(draft.semesterId ? { semesterId: draft.semesterId } : {}),
-      bucketUnit: draft.bucket,
+      bucketUnit: draft.mode === 'WEEK' ? 'DAY' : draft.bucket,
       ...(draft.mode === 'WEEK'
         ? { mode: 'WEEK', weekStart: draft.week }
         : draft.mode === 'SUBJECT' && draft.subjectId
@@ -122,309 +157,64 @@ async function load(reset = false) {
       feature.stats.trend(trendQuery),
     ]);
     feature.assertCurrent();
-    if (revision !== run) return;
+    if (!alive || revision !== run || frozenDraft !== JSON.stringify(draft)) return;
     data.value = result;
+    if (selected.value && !result.rows.some(row => row.studentId === selected.value)) selected.value = 0;
     trend.value = dynamics;
     applied.value = query;
     appliedTrend.value = trendQuery;
     appliedDraft.value = frozenDraft;
   } catch (cause) {
-    if (revision === run) error.value = message(cause);
+    if (alive && revision === run) error.value = message(cause);
   } finally {
-    if (revision === run) loading.value = false;
+    if (alive && revision === run) loading.value = false;
   }
 }
+watch(() => JSON.stringify([draft.semesterId, draft.subjectId, draft.types]), () => scheduleApply(0), { flush: 'sync' });
+watch(() => draft.contains, () => scheduleApply(300), { flush: 'sync' });
 onMounted(() => load());
+onBeforeUnmount(() => { alive = false; run++; clearApplyTimer(); });
 useWebLiveRefresh(() => load(), {
   blocked: () => loading.value || dirty.value || !!selected.value,
 });
 </script>
 <template>
-  <HeadmanPage
-    title="Статистика"
-    :loading="loading"
-    :error="error"
-    @reload="load()"
-  >
-    <p v-if="overview"
-      >Активных студентов: {{ overview.membership.active }} из {{ overview.membership.total }} ·
-      сегодня {{ dateLabel(overview.today.date) }}: были
-      {{
-        overview.today.present.percent === null
-          ? 'нет данных'
-          : `${overview.today.present.percent}%`
-      }}
-      ({{ overview.today.present.numerator }}/{{ overview.today.present.denominator }})</p
-    >
-    <form
-      class="headman-panel headman-toolbar"
-      @submit.prevent="load(true)"
-      ><label class="web-field"
-        >Семестр<select v-model.number="draft.semesterId"
-          ><option
-            v-for="semester in catalog?.semesters"
-            :key="semester.id"
-            :value="semester.id"
-            >{{ semester.name }}{{ semester.archived ? ' · архив' : '' }}</option
-          ></select
-        ></label
-      ><label class="web-field"
-        >Предмет<select
-          v-model.number="draft.subjectId"
-          @change="draft.types = []"
-          ><option :value="0">Вся группа</option
-          ><option
-            v-for="subject in subjects"
-            :key="subject.id"
-            :value="subject.id"
-            >{{ subject.label }}</option
-          ></select
-        ></label
-      ><fieldset v-if="types.length"
-        ><legend>Типы занятий</legend
-        ><label
-          v-for="type in types"
-          :key="type.code"
-          ><input
-            v-model="draft.types"
-            type="checkbox"
-            :value="type.code"
-          />{{ type.label }}</label
-        ></fieldset
-      ><button
-        class="web-button"
-        :disabled="loading"
-        >Применить</button
-      ></form
-    >
-    <template v-if="data"
-      ><p
-        >{{ data.context.semesterName }} · {{ dateLabel(data.context.semesterFrom) }} —
-        {{ dateLabel(data.context.semesterTo) }} · {{ data.context.lessonsCount }} завершённых
-        пар</p
-      ><div class="headman-grid"
-        ><section
-          v-for="[key, label] in [
-            ['present', 'Доля отметок «+»'],
-            ['presentOrExcused', 'Доля отметок «+» и «у»'],
-            ['excused', 'Доля отметок «у»'],
-            ['absent', 'Доля отметок «н»'],
-          ] as const"
-          :key="key"
-          class="headman-panel web-stack"
-          ><h2>{{ label }}</h2
-          ><strong class="headman-metric">{{
-            percent(data.summary[key].percent, data.summary[key].denominator)
-          }}</strong
-          ><p>{{ data.summary[key].numerator }}/{{ data.summary[key].denominator }}</p></section
-        ></div
-      >
-      <form
-        class="headman-toolbar"
-        @submit.prevent="load(true)"
-        ><label class="web-field"
-          >Поле фильтра и сортировки<select
-            v-model="draft.field"
-            @change="draft.contains = draft.minimum = draft.maximum = ''"
-            ><option
-              v-for="column in columns"
-              :key="column.field"
-              :value="column.field"
-              >{{ column.label }}</option
-            ></select
-          ></label
-        ><label
-          v-if="currentField?.filterKind === 'TEXT'"
-          class="web-field"
-          >Содержит<input
-            v-model="draft.contains"
-            type="search" /></label
-        ><template v-else
-          ><label class="web-field"
-            >От<input
-              v-model="draft.minimum"
-              type="number"
-              min="0" /></label
-          ><label class="web-field"
-            >До<input
-              v-model="draft.maximum"
-              type="number"
-              min="0" /></label></template
-        ><label
-          ><input
-            v-model="draft.descending"
-            type="checkbox"
-          />
-          По убыванию</label
-        ><button
-          class="web-button"
-          :disabled="loading"
-          >Применить</button
-        ><button
-          type="button"
-          class="web-button"
-          :disabled="loading"
-          @click="
-            draft.contains = draft.minimum = draft.maximum = '';
-            draft.descending = false;
-            load(true);
-          "
-          >Сбросить</button
-        ></form
-      >
-      <div class="headman-table-scroll"
-        ><table class="headman-table"
-          ><thead
-            ><tr
-              ><th>Студент</th><th>Были «+»</th><th>«+» и «у»</th><th>«у»</th><th>«н»</th
-              ><th>Апелляции</th><th>Уважительные причины</th><th>Источники «+»</th></tr
-            ></thead
-          ><tbody
-            ><tr
-              v-for="row in data.rows"
-              :key="row.studentId"
-              ><th scope="row"
-                ><button
-                  class="web-button"
-                  :aria-expanded="selected === row.studentId"
-                  @click="selected = selected === row.studentId ? 0 : row.studentId"
-                  >{{ row.displayName }}</button
-                ></th
-              ><td
-                v-for="key in ['present', 'presentOrExcused', 'excused', 'absent'] as const"
-                :key="key"
-                >{{ percent(row.metrics[key].percent, row.metrics[key].denominator)
-                }}<p class="web-caption"
-                  >{{ row.metrics[key].numerator }}/{{ row.metrics[key].denominator }}</p
-                ></td
-              ><td
-                >{{ row.lateCheckin.submitted }} / {{ row.lateCheckin.approved }} /
-                {{ row.lateCheckin.rejected }}</td
-              ><td
-                >{{ row.excuse.submitted }} / {{ row.excuse.approved }} /
-                {{ row.excuse.rejected }}</td
-              ><td
-                >Гео {{ row.sources.studentGeo }} · апелляция {{ row.sources.manualRequest }} · сбой
-                гео {{ row.sources.autoAfterGeoFailure }} · староста
-                {{ row.sources.headmanManual }}</td
-              ></tr
-            ></tbody
-          ></table
-        ></div
-      ><p
-        v-if="!data.rows.length"
-        class="web-notice"
-        >{{
-          data.emptyState === 'FILTERED_EMPTY'
-            ? 'Никто не подходит под фильтры.'
-            : 'Нет завершённых пар или студентов для расчёта.'
-        }}</p
-      ><p class="web-caption">Заявки: подано / одобрено / отклонено</p>
-      <div class="headman-actions"
-        ><button
-          class="web-button"
-          :disabled="!data.hasPrevious || loading"
-          @click="
-            draft.page--;
-            load();
-          "
-          >Назад</button
-        ><span
-          >{{ data.page + 1 }} / {{ Math.max(1, data.totalPages) }} · найдено
-          {{ data.totalElements }}</span
-        ><button
-          class="web-button"
-          :disabled="!data.hasNext || loading"
-          @click="
-            draft.page++;
-            load();
-          "
-          >Далее</button
-        ></div
-      >
-      <StudentDetail
-        v-if="selected"
-        :key="`${selected}:${applied?.semesterId}`"
-        :feature="feature"
-        :student-id="selected"
-        :semester-id="applied?.semesterId"
-      />
-      <div class="headman-actions"
-        ><label class="web-field"
-          >Формат<select v-model="format"
-            ><option
-              v-for="item in data.formats"
-              :key="item.code"
-              :value="item.code"
-              >{{ item.label }}</option
-            ></select
-          ></label
-        ><ReportExport
-          :transport="feature.transport"
-          scope="statistics"
-          :report="exportReport"
-          :disabled="loading"
-          label="Скачать текущий срез"
-      /></div>
-    </template>
-    <section class="headman-panel web-stack"
-      ><h2>Динамика посещаемости</h2
-      ><form
-        class="headman-toolbar"
-        @submit.prevent="load()"
-        ><label class="web-field"
-          >Период<select v-model="draft.mode"
-            ><option value="SEMESTER">За семестр</option
-            ><option value="WEEK">Неделя</option
-            ><option
-              value="SUBJECT"
-              :disabled="!draft.subjectId"
-              >По выбранному предмету</option
-            ></select
-          ></label
-        ><label
-          v-if="draft.mode === 'WEEK'"
-          class="web-field"
-          >Начало недели<input
-            v-model="draft.week"
-            type="date"
-            required /></label
-        ><label class="web-field"
-          >Шаг<select v-model="draft.bucket"
-            ><option value="DAY">Дни</option
-            ><option value="WEEK">Недели</option></select
-          ></label
-        ><button
-          class="web-button"
-          :disabled="loading"
-          >Показать динамику</button
-        ></form
-      ><TrendChart
-        v-if="trend"
-        :points="trend.points"
-        :from="appliedTrend?.mode === 'WEEK' ? appliedTrend.weekStart : trend.context.semesterFrom"
-        :to="
-          appliedTrend?.mode === 'WEEK'
-            ? addDays(appliedTrend.weekStart, 6)
-            : trend.context.semesterTo
-        " /><div
-        v-if="trend"
-        class="headman-actions"
-        ><label class="web-field"
-          >Формат графика<select v-model="trendFormat"
-            ><option
-              v-for="item in trend.formats"
-              :key="item.code"
-              :value="item.code"
-              >{{ item.label }}</option
-            ></select
-          ></label
-        ><ReportExport
-          :transport="feature.transport"
-          scope="trend"
-          :report="trendReport"
-          :disabled="loading"
-          label="Скачать динамику" /></div
-    ></section>
+  <HeadmanPage title="Статистика" class="headman-analytics headman-statistics-page" hide-title :error="error" @reload="load()">
+    <HeadmanMetricCards v-if="data" :metrics="data.summary" :context="data.context.subjectName || ''" />
+    <div class="headman-filter-bar headman-statistics-filters">
+      <WebSelect v-model="draft.semesterId" label="Семестр" :options="(catalog?.semesters ?? []).map(item => ({ value: item.id, label: item.name + (item.archived ? ' · архив' : '') }))" :disabled="!catalog" />
+      <WebSelect v-model="draft.subjectId" label="Предмет" :options="subjectOptions" :disabled="!data" @change="chooseSubject" />
+      <fieldset v-if="types.length" class="headman-type-picker headman-statistics-types"><legend>Типы занятий</legend><div><label v-for="type in types" :key="type.code" class="headman-choice"><input v-model="draft.types" type="checkbox" :value="type.code" /><span>{{ type.label }}</span></label></div></fieldset>
+      <label class="web-field headman-statistics-search">Поиск студента<input v-model="draft.contains" type="search" placeholder="ФИО студента" autocomplete="off" /></label>
+      <button type="button" class="web-button headman-statistics-reset" @click="resetFilters">Сбросить</button>
+    </div>
+    <section v-if="data" class="web-stack headman-statistics-results">
+      <h2>{{ data.context.subjectId ? 'Статистика по предмету' : 'Статистика по группе' }}</h2>
+      <div class="headman-analytics-scroll headman-stats-viewport" tabindex="0" role="region" aria-label="Статистика студентов группы">
+        <table class="headman-statistics-table"><thead>
+          <tr><th rowspan="2" scope="col" class="headman-stats-name" :aria-sort="sortAria('displayName')"><button type="button" :disabled="loading" @click="sortBy('displayName')">ФИО {{ sortIndicator('displayName') }}</button></th>
+            <th rowspan="2" scope="col" :aria-sort="sortAria('presentPercent')"><button type="button" :disabled="loading" @click="sortBy('presentPercent')">% «+» {{ sortIndicator('presentPercent') }}</button></th><th rowspan="2" scope="col">% «+» и «у»</th><th rowspan="2" scope="col" :aria-sort="sortAria('excusedPercent')"><button type="button" :disabled="loading" @click="sortBy('excusedPercent')">% «у» {{ sortIndicator('excusedPercent') }}</button></th><th rowspan="2" scope="col" :aria-sort="sortAria('absentPercent')"><button type="button" :disabled="loading" @click="sortBy('absentPercent')">% «н» {{ sortIndicator('absentPercent') }}</button></th><th colspan="3" scope="colgroup">Апелляции</th><th colspan="3" scope="colgroup">Уважительные причины</th><th colspan="4" scope="colgroup">Источники «+»</th></tr>
+          <tr><th scope="col">Подано</th><th scope="col">Одобрено</th><th scope="col">Отклонено</th><th scope="col">Подано</th><th scope="col">Одобрено</th><th scope="col">Отклонено</th><th scope="col">Геоотметка</th><th scope="col">Апелляция</th><th scope="col">Сбой гео</th><th scope="col">Староста</th></tr>
+        </thead><tbody><template v-for="row in data.rows" :key="row.studentId">
+          <tr :class="{ 'is-selected': selected === row.studentId }"><th scope="row" class="headman-stats-name"><button type="button" class="headman-student-trigger" :aria-expanded="selected === row.studentId" @click="selected = selected === row.studentId ? 0 : row.studentId"><span>{{ row.displayName }}</span><MobileIcon name="chevron-down" /></button></th><td v-for="key in ['present', 'presentOrExcused', 'excused', 'absent'] as const" :key="key"><strong>{{ percent(row.metrics[key].percent, row.metrics[key].denominator) }}</strong><small>{{ row.metrics[key].numerator }}/{{ row.metrics[key].denominator }}</small></td><td>{{ row.lateCheckin.submitted }}</td><td>{{ row.lateCheckin.approved }}</td><td>{{ row.lateCheckin.rejected }}</td><td>{{ row.excuse.submitted }}</td><td>{{ row.excuse.approved }}</td><td>{{ row.excuse.rejected }}</td><td>{{ row.sources.studentGeo }}</td><td>{{ row.sources.manualRequest }}</td><td>{{ row.sources.autoAfterGeoFailure }}</td><td>{{ row.sources.headmanManual }}</td></tr>
+          <tr v-if="selected === row.studentId" class="headman-student-reveal"><td colspan="15"><StudentDetail :key="`${selected}:${applied?.semesterId}`" :feature="feature" :student-id="selected" :semester-id="applied?.semesterId" /></td></tr>
+        </template></tbody></table>
+      </div>
+      <p v-if="!data.rows.length" class="web-notice">{{ data.emptyState === 'FILTERED_EMPTY' ? 'Никто не подходит под фильтры.' : 'Нет завершённых пар или студентов для расчёта.' }}</p>
+      <div class="headman-analytics-footer headman-statistics-table-footer"><div class="headman-actions"><button class="web-button" :disabled="!data.hasPrevious || loading" @click="draft.page--; load()">Назад</button><span class="web-caption">{{ data.page + 1 }} / {{ Math.max(1, data.totalPages) }} · {{ data.totalElements }} студентов</span><button class="web-button" :disabled="!data.hasNext || loading" @click="draft.page++; load()">Далее</button></div>
+        <div class="headman-actions headman-statistics-export-controls"><WebSelect v-model="format" class="headman-statistics-format" label="Формат" :options="data.formats.map(item => ({ value: item.code, label: item.label }))" /><ReportExport :transport="feature.transport" scope="statistics" :report="exportReport" :disabled="loading" :new-intent-disabled="dirty" label="Скачать срез" /></div>
+      </div>
+    </section>
+    <section class="web-stack">
+      <h2>Динамика посещаемости группы</h2>
+      <div class="headman-period-toolbar">
+        <StudentPeriodPager v-if="draft.mode === 'WEEK'" :label="`${dateLabel(draft.week)} — ${dateLabel(addDays(draft.week, 6))}`" unit="период динамики" :busy="loading" :previous-disabled="!!selectedSemester && addDays(draft.week, -7) < weekStart(selectedSemester.dateFrom)" :next-disabled="!!selectedSemester && addDays(draft.week, 7) > selectedSemester.dateTo" @step="stepWeek" @reset="draft.week = weekStart(today()); load()"><WebDateField v-model="draft.week" label="Неделя динамики" :trigger-label="`${dateLabel(draft.week)} — ${dateLabel(addDays(draft.week, 6))}`" :min="selectedSemester ? weekStart(selectedSemester.dateFrom) : undefined" :max="selectedSemester?.dateTo" :today="today()" required :disabled="loading" @change="draft.week = weekStart(draft.week); load()" /></StudentPeriodPager>
+        <p v-else class="headman-period-title">{{ draft.mode === 'SUBJECT' ? data?.context.subjectName : selectedSemester?.name }}</p>
+        <div class="headman-actions" role="group" aria-label="Период динамики"><button v-for="item in [{ value: 'SEMESTER', label: 'За семестр' }, { value: 'WEEK', label: 'Неделя' }, { value: 'SUBJECT', label: 'По предмету' }] as const" :key="item.value" type="button" class="web-button" :class="{ 'web-button-selected': draft.mode === item.value }" :aria-pressed="draft.mode === item.value" :disabled="loading || (item.value === 'SUBJECT' && !draft.subjectId)" @click="draft.mode = item.value; load()">{{ item.label }}</button></div>
+      </div>
+      <div class="headman-analytics-footer"><WebSelect v-if="draft.mode !== 'WEEK'" v-model="draft.bucket" label="Шаг графика" :options="[{ value: 'DAY', label: 'Дни' }, { value: 'WEEK', label: 'Недели' }]" :disabled="loading" @change="load()" /><div v-if="trend" class="headman-actions headman-statistics-export-controls headman-statistics-trend-download"><WebSelect v-model="trendFormat" class="headman-statistics-format" label="Формат" :options="trend.formats.map(item => ({ value: item.code, label: item.label }))" /><ReportExport :transport="feature.transport" scope="trend" :report="trendReport" :disabled="loading" :new-intent-disabled="dirty" label="Скачать динамику" /></div></div>
+      <TrendChart v-if="trend" :points="trend.points" :from="appliedTrend?.mode === 'WEEK' ? appliedTrend.weekStart : trend.context.semesterFrom" :to="appliedTrend?.mode === 'WEEK' ? addDays(appliedTrend.weekStart, 6) : trend.context.semesterTo" />
+      <p v-else class="web-caption">{{ loading ? 'Загрузка динамики…' : 'Динамика пока недоступна.' }}</p>
+    </section>
   </HeadmanPage>
 </template>

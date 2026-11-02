@@ -96,8 +96,6 @@ const { edge, supported } = useStudentAutoPage(canAppend, () => load('next'));
         Рейтинг пока недоступен: нет учитываемых пар.
       </p><p v-else-if="page.ownPosition === null">
         Твоя позиция пока не определена.
-      </p><p v-else>
-        Твоя позиция: {{ page.ownPosition }} из {{ page.total }}
       </p><p
         v-if="!page.rows.length"
         class="web-caption"
@@ -123,21 +121,20 @@ const { edge, supported } = useStudentAutoPage(canAppend, () => load('next'));
       </div><ol
         ref="list"
         class="student-ranking-list"
+        tabindex="0"
+        aria-label="Рейтинг группы"
       >
         <li
           v-for="row in page.rows"
           :key="row.id"
           :class="{ 'is-self': row.isSelf }"
+          :aria-current="row.isSelf ? 'true' : undefined"
         >
-          <span>{{ row.position ?? '—' }}. {{ row.name }}{{ row.isSelf ? ' · Ты' : '' }}</span><strong>{{ percent(row.percentage) }}</strong>
+          <span>{{ row.position ?? '—' }}. {{ row.name }}</span><strong>{{ percent(row.percentage) }}</strong>
         </li>
+        <li ref="edge" class="student-auto-edge" aria-hidden="true" />
       </ol>
     </template>
-    <span
-      ref="edge"
-      class="student-auto-edge"
-      aria-hidden="true"
-    />
     <button
       v-if="hasMore && !supported"
       class="web-button"

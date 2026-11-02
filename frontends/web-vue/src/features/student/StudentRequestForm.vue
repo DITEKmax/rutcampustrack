@@ -18,6 +18,8 @@ import {
   validateLateCheckinPayload,
 } from '../../../../mobile-core/src/features/requests/requests-controller';
 import ConfirmDialog from '../../shared/ConfirmDialog.vue';
+import WebDateField from '../../shared/WebDateField.vue';
+import WebSelect from '../../shared/WebSelect.vue';
 import StudentRequestFiles from './StudentRequestFiles.vue';
 const props = defineProps<{
   kind: RequestKind;
@@ -26,12 +28,13 @@ const props = defineProps<{
   ambiguous: boolean;
   readOnly: boolean;
   initialLesson?: string | undefined;
+  today?: string | undefined;
 }>();
 const emit = defineEmits<{
   submit: [payload: ExcuseRequestPayload | { lessonId: string }];
   close: [];
 }>();
-const selected = ref<string[]>(props.initialLesson ? [props.initialLesson] : []),
+const selected = ref<string[]>([]),
   reason = ref(''),
   comment = ref(''),
   files = ref<RequestFileRef[]>([]),
@@ -39,6 +42,10 @@ const selected = ref<string[]>(props.initialLesson ? [props.initialLesson] : [])
   to = ref(''),
   confirm = ref(false),
   error = ref('');
+const fromValid = ref(false), toValid = ref(false);
+let datesEdited = false;
+let initialApplied = false;
+let pendingInitial: string | null = null;
 const form = ref<HTMLElement | null>(null);
 watch(
   () => props.kind,
@@ -49,14 +56,37 @@ watch(
   { immediate: true },
 );
 const disabled = computed(() => props.busy || props.ambiguous || props.readOnly);
+const rangeReady = computed(() => Boolean(fromValid.value && toValid.value && from.value && to.value && from.value <= to.value));
+function editDates() {
+  datesEdited = true;
+  pendingInitial = null;
+  confirm.value = false;
+}
+watch(() => [props.initialLesson, props.options], () => {
+  if (initialApplied || datesEdited || from.value || to.value || !props.initialLesson) return;
+  const date = props.options?.lessons?.find((option) => option.lesson?.id === props.initialLesson)?.lesson?.date;
+  if (!date) return;
+  initialApplied = true;
+  pendingInitial = props.initialLesson;
+  from.value = date;
+  to.value = date;
+}, { immediate: true });
 const lessons = computed(
   () =>
-    props.options?.lessons?.filter(
-      (o) =>
-        (!from.value || (o.lesson?.date ?? '') >= from.value) &&
-        (!to.value || (o.lesson?.date ?? '') <= to.value),
-    ) ?? [],
+    rangeReady.value ? props.options?.lessons?.filter(
+      (option) => Boolean(option.lesson?.date) && option.lesson!.date! >= from.value && option.lesson!.date! <= to.value,
+    ) ?? [] : [],
 );
+watch([lessons, rangeReady, disabled], () => {
+  if (disabled.value) return;
+  confirm.value = false;
+  const visible = new Set(lessons.value.flatMap((option) => option.lesson ? [option.lesson.id] : []));
+  selected.value = selected.value.filter((id) => visible.has(id));
+  if (pendingInitial && rangeReady.value && visible.has(pendingInitial)) {
+    selected.value = [pendingInitial];
+    pendingInitial = null;
+  }
+}, { flush: 'sync' });
 const days = computed(() =>
   [...new Set(lessons.value.map((l) => l.lesson?.date ?? ''))]
     .sort()
@@ -90,6 +120,15 @@ function select(id: string, checked: boolean) {
         : selected.value.filter((v) => v !== id);
 }
 function prepare() {
+  if (disabled.value) return;
+  if (!rangeReady.value) {
+    error.value = 'Укажи корректные даты начала и конца периода.';
+    return;
+  }
+  if (selected.value.some((id) => !lessons.value.some((option) => option.lesson?.id === id))) {
+    error.value = 'Выбери пары в указанном периоде.';
+    return;
+  }
   const errors =
     props.kind === 'EXCUSE'
       ? validateExcusePayload(payload.value as ExcuseRequestPayload, props.options)
@@ -98,6 +137,7 @@ function prepare() {
   if (!errors.length) confirm.value = true;
 }
 function submit() {
+  if (disabled.value || !rangeReady.value) return;
   confirm.value = false;
   emit('submit', payload.value);
 }
@@ -110,30 +150,42 @@ function submit() {
     @submit.prevent="prepare"
   >
     <h2>{{ kind === 'EXCUSE' ? 'Уважительная причина' : 'Оспорить отсутствие' }}</h2>
-    <p
+    <div
       v-if="kind === 'LATE_CHECKIN'"
-      class="web-notice"
+      class="student-request-budget"
+      role="status"
     >
-      Доступно попыток: {{ budgetLabel(options?.budget) }}. Одна отправка расходует одну попытку.
-      После отмены или отклонения попытка не возвращается.
-    </p>
+      <template v-if="options?.budget?.remaining != null && options.budget.limit != null">
+        <p class="student-metric-value">{{ options.budget.remaining }} / {{ options.budget.limit }}</p>
+        <p class="web-caption">доступных попыток</p>
+      </template>
+      <p v-else class="web-caption">{{ budgetLabel(options?.budget) }}</p>
+    </div>
     <div class="student-filter">
-      <label class="web-field">С даты<input
+      <WebDateField
         v-model="from"
-        type="date"
+        label="С даты"
+        :today="today"
         :disabled="disabled"
-      ></label><label class="web-field">По дату<input
+        @validity="fromValid = $event"
+        @input="editDates"
+        @change="editDates"
+      /><WebDateField
         v-model="to"
-        type="date"
+        label="По дату"
+        :today="today"
         :min="from || undefined"
         :disabled="disabled"
-      ></label>
+        @validity="toValid = $event"
+        @input="editDates"
+        @change="editDates"
+      />
     </div>
-    <div class="student-request-lessons web-notice web-stack">
+    <div v-if="rangeReady" class="student-request-lessons web-stack" tabindex="0" aria-label="Пары для заявки">
       <fieldset
         v-for="day in days"
         :key="day.date"
-        class="web-stack"
+        class="student-request-day"
       >
         <legend>{{ day.date ? formatLessonDate(day.date) : 'Дата не указана' }}</legend><label
           v-for="option in day.lessons"
@@ -164,37 +216,17 @@ function submit() {
       </p>
     </div>
     <div
-      v-if="selected.length"
-      class="web-stack"
-    >
-      <p role="status">
-        Выбрано пар: {{ selected.length }}
-      </p><button
-        v-for="id in selected"
-        :key="id"
-        type="button"
-        class="web-button"
-        :disabled="disabled"
-        @click="selected = selected.filter((value) => value !== id)"
-      >
-        Убрать пару
-        {{ options?.lessons?.find((o) => o.lesson?.id === id)?.lesson?.subjectName ?? id }}
-      </button>
-    </div>
-    <div
       v-if="kind === 'EXCUSE'"
       class="student-dashboard-bottom"
     >
       <div class="web-stack">
-        <label class="web-field">Причина<select
+        <WebSelect
           v-model="reason"
+          label="Причина"
+          :options="[{ value: '', label: 'Выбери причину' }, ...(options?.reasons ?? []).map((option) => ({ value: option.code, label: option.label }))]"
           :disabled="disabled"
           required
-        ><option value="">Выбери причину</option><option
-          v-for="option in options?.reasons ?? []"
-          :key="option.code"
-          :value="option.code"
-        >{{ option.label }}</option></select></label><label class="web-field">Комментарий<textarea
+        /><label class="web-field">Комментарий<textarea
           v-model="comment"
           rows="6"
           maxlength="4000"
@@ -216,7 +248,7 @@ function submit() {
     >
       {{ error }}
     </p>
-    <div class="student-actions">
+    <div class="student-request-actions">
       <button
         type="button"
         class="web-button"
@@ -233,7 +265,7 @@ function submit() {
       </button><button
         v-if="ambiguous"
         type="button"
-        class="web-button"
+        class="web-button student-request-retry"
         :disabled="busy || readOnly"
         @click="emit('submit', payload)"
       >

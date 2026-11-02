@@ -85,16 +85,34 @@
 .student-lesson__meta span {
   min-inline-size: 0;
 }
-.student-lesson__room--changed {
-  color: var(--rct-color-danger-text);
-  @mixin rct-type-status;
+.student-lesson__room-details {
+  display: grid;
+  min-inline-size: 0;
+  gap: var(--rct-space-1);
 }
-.student-lesson[data-current='true'] .student-lesson__room--changed {
-  color: inherit;
+.student-lesson__room-values {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--rct-space-1);
+}
+.student-lesson__room--changed,
+.student-lesson__room-notice {
+  color: var(--rct-color-danger-text);
+  font-size: var(--rct-font-size-body);
+  font-weight: var(--rct-font-weight-bold);
+  line-height: var(--rct-today-present-leading);
 }
 .student-lesson__previous-room {
   color: var(--rct-color-text-muted);
-  @mixin rct-type-lesson-end;
+  font-size: var(--rct-today-room-old-size);
+  font-weight: var(--rct-font-weight-regular);
+  line-height: var(--rct-today-room-old-leading);
+}
+.student-lesson[data-current='true'] .student-lesson__room-details:has(.student-lesson__room--changed) {
+  border-radius: var(--rct-radius-lg);
+  padding: var(--rct-space-2);
+  background: var(--rct-color-surface-raised);
 }
 
 .student-lesson__status,

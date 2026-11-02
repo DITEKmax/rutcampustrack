@@ -1323,11 +1323,17 @@ test('HEADMAN removes and returns a recurring slot without losing past identity 
             completeTransfer(observedTransfer.terminal);
           terminalTransfer = transferReceipt;
           if (transferReceipt.state === 'PENDING') {
-            // Preserve the existing response-wait bound after POST is known.
+            // Command and participant ACKs cross separate 5s outbox publisher ticks;
+            // their completion is not a UI action bounded by actionTimeout (10s).
+            // Keep the async wait capped and reserve the existing case cleanup budget.
+            const completionBudget = Math.max(
+              0,
+              Math.min(60000, admissionCutoff - performance.now()),
+            );
             observationTimer = setTimeout(() => {
               transferObservation.observationOutcome = 'TIMEOUT';
               failTransfer(new Error('Own transfer completion was not observed.'));
-            }, info.project.use.actionTimeout ?? 30000);
+            }, completionBudget);
             terminalTransfer = await terminalObserved;
           }
           transferObservation.observationOutcome = 'RETURNED';

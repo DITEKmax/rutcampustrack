@@ -274,6 +274,8 @@ ACADEMIC_JDBC_SOURCES = {
         ("notification.NotificationAudienceIT", "notification/NotificationAudienceIT.java"),
     )
 }
+SCHEDULE_JDBC_CLASS = "ru.rutcampustrack.schedule.security.ScheduleUserContextFilterStrictModeIT"
+SCHEDULE_JDBC_SOURCE = "services/schedule-service/schedule-app/src/test/java/ru/rutcampustrack/schedule/security/ScheduleUserContextFilterStrictModeIT.java"
 ACADEMIC_JDBC_DIAGNOSTIC_CHARS = 65536
 ACADEMIC_JDBC_EXCEPTION = "org.postgresql.util.PSQLException"
 ACADEMIC_JDBC_HEADER = re.compile(
@@ -1038,6 +1040,18 @@ def collect(root: Path, service: str, task: str, environment: dict[str, str]) ->
                     and known["source"] == ACADEMIC_JDBC_SOURCES[raw_class]
                     and raw_class not in jdbc_diagnosed
                 ):
+                    safe["failureDiagnostic"] = academic_jdbc_failure_diagnostic(case)
+                    jdbc_diagnosed.add(raw_class)
+                if (
+                    service == "schedule-service"
+                    and task == "integrationTest"
+                    and status == "FAILED"
+                    and safe["identity"] == "SOURCE_METHOD"
+                    and raw_class == SCHEDULE_JDBC_CLASS
+                    and known["source"] == SCHEDULE_JDBC_SOURCE
+                    and raw_class not in jdbc_diagnosed
+                ):
+                    # Reuse the closed PostgreSQL vocabulary; messages/hosts stay private.
                     safe["failureDiagnostic"] = academic_jdbc_failure_diagnostic(case)
                     jdbc_diagnosed.add(raw_class)
                 if (

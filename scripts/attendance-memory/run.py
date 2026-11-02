@@ -27,6 +27,20 @@ ARM_SECONDS = 1800
 LOG_BOUND = 512 * 1024**2
 CANCELLED = False
 
+# Project fixed markers only. Paths, coordinates, exception messages and raw output
+# remain in the private log, including when Gradle exits before any test JVM starts.
+GRADLE_FAILURE_MARKERS = {
+    'BUILD_FAILURE': rb'(?m)^FAILURE: Build failed with an exception\.[ \t]*\r?$',
+    'INITIALIZATION_SCRIPT': rb'(?m)^Initialization script [^\r\n]{1,2048}\r?$',
+    'KOTLIN_COMPILATION': rb'org\.jetbrains\.kotlin\.gradle\.tasks\.CompilationErrorException:',
+    'JAVA_COMPILATION': rb'org\.gradle\.api\.internal\.tasks\.compile\.CompilationFailedException:',
+    'DEPENDENCY_RESOLUTION': rb'org\.gradle\.api\.internal\.artifacts\.ivyservice\.(?:TypedResolveException|DefaultLenientConfiguration\$ArtifactResolveException):',
+    'TOOLCHAIN_SELECTION': rb'org\.gradle\.jvm\.toolchain\.internal\.(?:NoToolchainAvailableException|ToolchainDownloadFailedException):',
+    'DAEMON_DISAPPEARED': rb'org\.gradle\.launcher\.daemon\.client\.DaemonDisappearedException:',
+    'TEST_FAILURE': rb'org\.gradle\.api\.internal\.exceptions\.MarkedVerificationException:',
+    'UNKNOWN_PROPERTY': rb'groovy\.lang\.MissingPropertyException:',
+}
+
 
 def request_cancel(*_):
     global CANCELLED
@@ -92,7 +106,7 @@ def native(arm, heap, jar, environment):
     telemetry = arm / 'jvm'
     telemetry.mkdir(mode=0o700)
     command = [str(ROOT / 'gradlew'), MODULE + ':test', MODULE + ':integrationTest', MODULE + ':jacocoTestReport',
-               '--no-daemon', '--max-workers=4', f'-Prct.attendance.heapMiB={heap}',
+               '--no-daemon', '--console=plain', '--stacktrace', '--max-workers=4', f'-Prct.attendance.heapMiB={heap}',
                f'-Prct.attendance.memoryAgent={jar}', f'-Prct.attendance.memoryDir={telemetry}']
     approved = {p.relative_to(APP / 'src/test/java').with_suffix('').as_posix().replace('/', '.') for p in (APP / 'src/test/java').rglob('*.java')}
     progress, samples, pending, total = [], [], b'', 0
@@ -214,6 +228,7 @@ def collect_arm(directory, result, environment):
 
 
 def project_arm(directory, heap, result):
+    failure_markers = set()
     with (directory / 'gradle.private.log').open('rb') as log:
         previous = b''
         while chunk := log.read(1024 * 1024):
@@ -221,7 +236,12 @@ def project_arm(directory, heap, result):
             result['javaHeapOom'] |= b'java.lang.OutOfMemoryError: Java heap space' in raw or b'java.lang.OutOfMemoryError: GC overhead limit exceeded' in raw
             result['nativeMemoryFailure'] |= any(marker in raw for marker in (b'unable to create native thread', b'OutOfMemoryError: Metaspace', b'OutOfMemoryError: Direct buffer memory'))
             result['probeFailureMarker'] |= bool(re.search(rb'RCT_MEMORY_PROBE_(?:ARGUMENTS|PATH|IO|MONITOR|SIZE_LIMIT)', raw))
-            previous = raw[-256:]
+            failure_markers.update(name for name, pattern in GRADLE_FAILURE_MARKERS.items() if re.search(pattern, raw))
+            previous = raw[-4096:]
+    result['nativeFailureDiagnostic'] = {
+        'stage': 'TEST_TASK_ENTERED' if result.get('actualWorkerPolicy') else 'BEFORE_TEST_TASKS',
+        'markers': sorted(failure_markers),
+    }
     details = {}
     for task in ('test', 'integrationTest'):
         try:

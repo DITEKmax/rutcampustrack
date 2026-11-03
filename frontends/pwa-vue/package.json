@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc -p tsconfig.json --noEmit && vite build",
-    "typecheck": "vue-tsc -p tsconfig.json --noEmit",
+    "typecheck": "vue-tsc -p tsconfig.json --noEmit && npm run typecheck:dev",
+    "typecheck:dev": "vue-tsc -p tsconfig.dev.json --noEmit",
     "lint": "eslint src vite.config.ts --max-warnings=0"
   },
   "dependencies": {

@@ -8,5 +8,6 @@
       "@rct/mobile-core": ["../mobile-core/src/index.ts"]
     }
   },
-  "include": ["src/**/*.ts", "src/**/*.vue", "vite.config.ts"]
+  "include": ["src/**/*.ts", "src/**/*.vue", "vite.config.ts"],
+  "exclude": ["src/dev"]
 }

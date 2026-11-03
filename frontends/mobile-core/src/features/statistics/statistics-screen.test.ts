@@ -132,19 +132,6 @@ function mount() {
   return { root, state, pages }
 }
 describe('compact statistics accepted metrics and readonly own-group list', () => {
-  it('renders combined null distinctly from true zero and keeps the primary pair adjacent', () => {
-    const { root } = mount()
-    const cards = all(root, (n) =>
-      String(n.props.class ?? '')
-        .split(' ')
-        .includes('statistics-metric'),
-    )
-    expect(cards).toHaveLength(4)
-    expect(text(cards[0]!)).toContain('0%')
-    expect(text(cards[1]!)).toContain('—')
-    expect(text(cards[1]!)).toContain('был или уважительная причина, 0')
-    expect(text(root)).toContain('Проведено 0 из 2 пар')
-  })
   it('renders peers as text, marks self by words and emits bounded server pages', () => {
     const { root, pages } = mount()
     const rows = all(

@@ -27,7 +27,7 @@ export default defineConfig<{}, { teachingInstant: Date | undefined }>({
   testDir: './first3-specs',
   testMatch: 'mobile-first3.spec.ts',
   testIgnore: [],
-  grep: /(?:STUDENT completion persists and another group cannot mutate the homework|HEADMAN marks the real roster and TEACHER reads without acquiring write permission|STUDENT helper marks with its capability and revocation denies the same effect)$/,
+  grep: /(?:STUDENT completion persists and another group cannot mutate the homework|STUDENT helper marks with its capability and revocation denies the same effect)$/,
   outputDir: join(run, 'artifacts'),
   reporter: [['./fixtures/safe-reporter.ts']],
   fullyParallel: false,

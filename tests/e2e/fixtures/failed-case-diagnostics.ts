@@ -3,6 +3,7 @@ import type { Locator, Page, TestInfo } from '@playwright/test';
 export const failedCases = {
   TMA_SIGNED_ENTRY: { lane: 'auth-smoke', title: 'signed teacher entry loads the real session and shared profile with host Back' },
   TMA_TAMPERED_ENTRY: { lane: 'auth-smoke', title: 'tampered Telegram proof cannot expose role data or navigation' },
+  // Retired browser case: retained only as a synthetic privacy-control identity.
   HEADMAN_TEACHER_READ: { lane: 'first3', title: 'HEADMAN marks the real roster and TEACHER reads without acquiring write permission' },
   ADMIN_HISTORICAL_MARK: { lane: 'admin', title: 'ADMIN creates a multirole headman and restores the archived account without old authority' },
   FULL_ADMIN_RIGHTS: { lane: 'role-security-export', title: 'FULL multirole ADMIN assigns updates and revokes LIMITED rights through Vue without foreign-role calls @cloud-accepted' },

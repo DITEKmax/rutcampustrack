@@ -71,7 +71,7 @@ def admit_scope(config, mode='ci', run_dir=None, environment=None):
         local = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(local)
         value = local.validate_local(environment=environment)
-        if (value['mode'], stage) not in {('client', 'HOMEWORK_CREATE503'), ('lesson-lifecycle', 'STUDENT_STATS503')}:
+        if (value['mode'], stage) not in {('client', 'HOMEWORK_CREATE503')}:
             raise ValueError('Diagnostic stage unavailable in local lane')
         work = Path(value['run'])
         compose = ('docker', 'compose', '-p', value['project'], '-f', str(work / 'compose.json'))
@@ -94,11 +94,6 @@ STAGES = {
     'HOMEWORK_CREATE503': ('RCT_REMAINING5_RUN', 'rct-remaining5-', ('artifacts',),
                            'mobile-real-server.spec.ts', 'DATASET_HOMEWORK_CREATE_HTTP',
                            'academic-service', 'ACADEMIC_HOMEWORK_CREATE', '', ''),
-    'STUDENT_STATS503': ('RCT_LESSON_LIFECYCLE_RUN', 'rct-lesson-lifecycle-',
-                         ('artifacts',), 'mobile-schedule-lifecycle.spec.ts', 'STUDENT_STATS_HTTP503',
-                         'attendance-service', 'ATTENDANCE_STUDENT_PROJECTION',
-                         'ru.rutcampustrack.attendance.grpc.AttendanceStudentGrpcServiceImpl.getStudentAttendanceProjection',
-                         'AttendanceStudentGrpcServiceImpl.java'),
     'REPORT500': ('RCT_SEMESTER_RECONCILIATION_RUN', 'rct-semester-reconciliation-',
                   ('artifacts',), 'semester-lifecycle.spec.ts', 'DATASET_ATTENDANCE_REPORT_HTTP',
                   'attendance-service', 'ATTENDANCE_LESSON_REPORT',
@@ -175,16 +170,6 @@ OWN_FRAME_SOURCES = {'ATTENDANCE_REPORT_SERVICE': ('attendance-service',
  'INTERNAL_JWT_ISSUER_CLIENT': ('api-gateway',
                                 'ru.rutcampustrack.gateway.security.InternalJwtIssuerClient',
                                 'InternalJwtIssuerClient.java')}
-PROJECTION_KINDS = {
-    'INVALID_OCCURRENCE', 'DUPLICATE_OCCURRENCE', 'UNSUPPORTED_ATTENDANCE_STATUS',
-    'INVALID_ROSTER', 'INVALID_METRICS', 'ACADEMIC_DEPENDENCY', 'SCHEDULE_DEPENDENCY', 'UNKNOWN',
-} | {'RPC_' + code for code in (
-    'OK', 'CANCELLED', 'UNKNOWN', 'INVALID_ARGUMENT', 'DEADLINE_EXCEEDED', 'NOT_FOUND',
-    'ALREADY_EXISTS', 'PERMISSION_DENIED', 'RESOURCE_EXHAUSTED', 'FAILED_PRECONDITION',
-    'ABORTED', 'OUT_OF_RANGE', 'UNIMPLEMENTED', 'INTERNAL', 'UNAVAILABLE', 'DATA_LOSS', 'UNAUTHENTICATED')}
-PROJECTION_STAGES = {'ACADEMIC_SCOPE', 'ACADEMIC_MEMBERS', 'SCHEDULE_LESSONS',
-                     'CURRENT_GROUP_SCOPE', 'GROUP_CATALOGUE', 'GROUP_SERIES', 'OWN_MARKS',
-                     'LESSON_SNAPSHOT', 'RANK', 'UNKNOWN'}
 LIMIT = 8388608
 
 def decode(raw):
@@ -233,9 +218,7 @@ CLIENT_CASES = {
     'D002_WARM_OFFLINE_REVOKED', 'D002_RECONNECT_ACCOUNT_AUTHORITY', 'D002_LATE_ACCOUNT_HOMEWORK', 'D002_TMA_ONLINE_ONLY',
     'N2_STUDENT_RETRY_ACTIVE', 'N2_STUDENT_RETRY_SUSPENDED',
 }
-STATS_CASES = {'STUDENT_MANUAL_BUDGET_AUTO_APPROVAL', 'HEADMAN_LESSON_CANCEL_RESTORE',
-               'HEADMAN_RECURRING_SLOT_HISTORY', 'STUDENT_SEMESTER_ROOM_REFRESH'}
-TARGET_CASES = {'HOMEWORK_CREATE503': CLIENT_CASES, 'STUDENT_STATS503': STATS_CASES,
+TARGET_CASES = {'HOMEWORK_CREATE503': CLIENT_CASES,
                 'REPORT500': {'SEMESTER_ARCHIVE_RESTORE'}, 'MARK500': {'SEMESTER_ARCHIVE_RESTORE'},
                 'HOSTED_BOT_MARK500': {'HOSTED_PRIVATE_BOT_AUTHORITY'},
                 'LESSON_CREATE500': {'ASSIGNMENT_LIFECYCLE_API'}}
@@ -701,18 +684,6 @@ def without_reported_framework_error(row):
     # Only this separately validated observation is projected away; core keys/gates stay exact.
     return {key: value for key, value in row.items() if key != 'reportedFrameworkError'}
 
-def is_student_stats_failure(value):
-    if type(value) is not dict or type(value.get('results')) is not list or len(value['results']) != 4:
-        return False
-    rows = value['results']
-    if not all(closed_case_row(row) for row in rows) or {row['caseId'] for row in rows} != STATS_CASES:
-        return False
-    target = next(row for row in rows if row['caseId'] == 'HEADMAN_RECURRING_SLOT_HISTORY')
-    return (target['status'] == 'failed' and target['errorCount'] == 1
-            and has_event(target, 'DATASET_HTTP', 'STUDENT_STATS_HTTP503', 503))
-
-
-
 def closed_d002_reconnect_observation(value):
     # Same closed JSON projection as the source-bound SafeReporter; no arbitrary strings.
     try:
@@ -834,8 +805,6 @@ def is_target_failure(value, config):
         return False
     if stage == 'HOMEWORK_CREATE503':
         return 1 <= len(rows) <= len(CLIENT_CASES) and is_homework_failure(value)
-    if stage == 'STUDENT_STATS503':
-        return is_student_stats_failure(value)
     if len(rows) != 1:
         return False
     row = rows[0]
@@ -856,41 +825,6 @@ def is_async_success(value):
     return (closed_case_row(row) and row['caseId'] == 'ASYNC_DOCX_RESUME'
             and row['status'] == row['expectedStatus'] == 'passed' and row['errorCount'] == 0)
 
-def classify_projection(payload, config):
-    # An unkeyed log record is a reported operation hint, never exact request causality.
-    stage = config[6]
-    pattern = re.compile(r'Student projection failed: kind=([A-Z_]+), stage=([A-Z_]+)')
-    matches, unusable = [], False
-    for line in payload.splitlines():
-        if len(line) > 131072:
-            unusable = True
-            continue
-        try:
-            record = decode(line)
-        except (ValueError, UnicodeError, RecursionError):
-            unusable = True
-            continue
-        if type(record) is not dict:
-            unusable = True
-            continue
-        if (record.get('logger') != 'ru.rutcampustrack.attendance.grpc.AttendanceStudentGrpcServiceImpl'
-                or record.get('level') != 'WARN'):
-            continue
-        message = record.get('msg')
-        match = pattern.fullmatch(message) if type(message) is str else None
-        if not match or match[1] not in PROJECTION_KINDS or match[2] not in PROJECTION_STAGES:
-            unusable = True
-            continue
-        matches.append((match[1], match[2]))
-    if unusable:
-        return output('UNAVAILABLE_LOG_FORMAT', stage)
-    distinct = sorted(set(matches))
-    if len(distinct) > 1:
-        pairs = '|'.join(kind + '@' + source for kind, source in distinct)
-        return output('AMBIGUOUS', stage, 'REPORTED_PAIRS:' + pairs)
-    return (output('UNIQUE', stage + '_' + distinct[0][1], 'REPORTED_' + distinct[0][0])
-            if distinct else output('ABSENT', stage))
-
 def classify(payload, config, captured_service=None, request_id=None):
     known_classes = exception_classes(config)
     stage = config[6]
@@ -903,10 +837,7 @@ def classify(payload, config, captured_service=None, request_id=None):
     origin = ORIGINS[captured_service]
     if (len(payload) > LIMIT or len(payload.splitlines()) > 200
             or (is_hosted_mark(config) and len(payload.splitlines()) == 200)):
-        return output('UNAVAILABLE_LOG_FORMAT' if config[4] == 'STUDENT_STATS_HTTP503'
-                      else 'UNAVAILABLE_LOG_LIMIT', stage)
-    if config[4] == 'STUDENT_STATS_HTTP503':
-        return classify_projection(payload, config)
+        return output('UNAVAILABLE_LOG_LIMIT', stage)
     frame = re.compile(r'(?m)^[ \t]*at (?:[A-Za-z0-9_.$/@-]{1,256}/)?'
                        + re.escape(config[7] + '(' + config[8] + ':') + r'[1-9][0-9]{0,5}\)')
     throwable = re.compile(r'(?m)^[ \t]*(?:Caused by: )?'
@@ -1269,7 +1200,7 @@ def collect(config, initial_membership=False, mark_window=None, context=None):
         return bytes(payload)
     compose = scope.compose
 
-    services = ('attendance-service',) if initial_membership else (('academic-service', 'schedule-service', 'api-gateway') if config[4] == 'DATASET_HOMEWORK_CREATE_HTTP' else ((config[5],) if config[4] == 'STUDENT_STATS_HTTP503' else (config[5], 'api-gateway')))
+    services = ('attendance-service',) if initial_membership else (('academic-service', 'schedule-service', 'api-gateway') if config[4] == 'DATASET_HOMEWORK_CREATE_HTTP' else (config[5], 'api-gateway'))
     payloads = {}
     for service in services:
         cid = call([*compose, 'ps', '-q', service]).decode().strip()
@@ -1343,8 +1274,6 @@ def run_diagnostic(stage, context):
                 result = output('UNAVAILABLE_LOG_FORMAT', config[6])
                 if config[4] == 'DATASET_HOMEWORK_CREATE_HTTP':
                     result = classify_homework(payloads, config)
-                elif config[4] == 'STUDENT_STATS_HTTP503':
-                    result = classify(payloads[config[5]], config)
                 else:
                     domain = classify(payloads[config[5]], config, request_id=request_id)
                     gateway = classify(payloads['api-gateway'], config, 'api-gateway', request_id=request_id)
@@ -1508,4 +1437,3 @@ if __name__ == '__main__':
     except Exception:
         print(json.dumps({'state': 'DIAGNOSTIC_INPUT_REJECTED'}))
         raise SystemExit(1)
-

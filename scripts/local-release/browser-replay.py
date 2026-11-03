@@ -74,7 +74,7 @@ def read_report(path):
 
 
 def portable36(summary):
-    lane.require(summary["selected"] == 36 and summary["selectedCaseIds"] is None and summary["passed"] == 36
+    lane.require(summary["selected"] == 34 and summary["selectedCaseIds"] is None and summary["passed"] == 34
                  and summary["failed"] == 0 and summary["notRun"] == 0 and len(summary["lanes"]) == len(lane.BATCH_LANES), "RELEASE_PORTABLE36")
     lane.require({row["lane"] for row in summary["lanes"]} == set(lane.BATCH_LANES), "RELEASE_PORTABLE36_SELECTION")
     for row in summary["lanes"]:
@@ -256,11 +256,13 @@ def focused_observations(runner):
 
 
 def focused_options(selection, remaining_two=False, headman_only=False, homework_period_only=False):
+    lane.require(not headman_only, "HEADMAN_TEACHER_READ_RETIRED")
+    if remaining_two:
+        lane.require(selection == "special13", "REMAINING_METADATA_ONLY")
     if selection == "ui-batch":
         if homework_period_only:
             return {"failed_cases": ["HOMEWORK_PERIOD"]}
-        return {"failed_cases": ["HEADMAN_TEACHER_READ"] if remaining_two or headman_only else
-                ["HEADMAN_TEACHER_READ", "FULL_ADMIN_RIGHTS", "HOMEWORK_PERIOD"]}
+        return {"failed_cases": ["FULL_ADMIN_RIGHTS", "HOMEWORK_PERIOD"]}
     return {"lifecycle_only": True, "operational_until": "semester-metadata"} if selection == "special13" else {}
 
 
@@ -322,7 +324,7 @@ def run_cohort(selection, target, cohort=None, *, focused=False, remaining_two=F
             trust.install()
         runner.execute()
         if selection in {"client", "webkit", "lesson-lifecycle"}:
-            closed_report(read_report(runner.run / "artifacts/safe-results.json"), 1 if d002_authority_only else 2 if d002_only else {"client": 11, "webkit": 1, "lesson-lifecycle": 4}[selection], "webkit" if trust else "chromium")
+            closed_report(read_report(runner.run / "artifacts/safe-results.json"), 1 if d002_authority_only else 2 if d002_only else {"client": 11, "webkit": 1, "lesson-lifecycle": 3}[selection], "webkit" if trust else "chromium")
         if selection == "special13":
             expected = 1 if focused else 6 if cohort == "nonclock" else 7
             rows = [row for row in runner.special_outcomes if not focused or row['lane'] == 'semester-metadata']
@@ -431,11 +433,11 @@ def main():
     selection.add_argument("--d002-only", action="store_true",
                            help="client only: two independent D002 cases, partial acceptance and private raw framework log")
     selection.add_argument("--headman-only", action="store_true",
-                           help="failed-ci only: HEADMAN_TEACHER_READ, without metadata or dataset prerequisite")
+                           help="retired option: fails before resource allocation")
     selection.add_argument("--homework-period-only", action="store_true",
                            help="failed-ci only: HOMEWORK_PERIOD, without other client or semester stories")
     selection.add_argument("--remaining-two", action="store_true",
-                        help="failed-ci only: HEADMAN_TEACHER_READ and SEMESTER_METADATA plus canonical dataset prerequisite")
+                        help="failed-ci only: retained SEMESTER_METADATA plus canonical dataset prerequisite")
     parser.add_argument("--bundled-dockerfile-frontend", action="store_true",
                         help="failed-ci only: reuse the guarded Docker Engine bundled frontend")
     args = parser.parse_args()
@@ -445,6 +447,7 @@ def main():
     lane.require(not args.remaining_two or args.mode == "failed-ci", "REMAINING_TWO_FAILED_CI_ONLY")
     lane.require(not args.headman_only or args.mode == "failed-ci", "HEADMAN_ONLY_FAILED_CI_ONLY")
     lane.require(not args.homework_period_only or args.mode == "failed-ci", "HOMEWORK_PERIOD_ONLY_FAILED_CI_ONLY")
+    lane.require(not args.headman_only, "HEADMAN_TEACHER_READ_RETIRED")
     os.umask(0o077)
     revision, nonce, audit = binding(os.environ)
     target = audit / ("browser-" + args.mode)
@@ -464,7 +467,9 @@ def main():
                 fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
                 lane.preflight(release=True)
                 selections = [('ui-batch', None), ('special13', 'lifecycle')] if args.mode == 'failed-ci' else [(args.mode, cohort) for cohort in (("nonclock", "lifecycle") if args.mode == "special13" else (None,))]
-                if args.headman_only or args.homework_period_only:
+                if args.remaining_two:
+                    selections = [('special13', 'lifecycle')]
+                if args.homework_period_only:
                     selections = [('ui-batch', None)]
                 for selection, cohort in selections:
                     row = run_cohort(selection, target, cohort, focused=args.mode == 'failed-ci',

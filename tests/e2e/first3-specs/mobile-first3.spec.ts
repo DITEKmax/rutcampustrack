@@ -18,5 +18,5 @@ test.afterEach(async ({}, info) => {
   if (current) await current.finish(info);
 });
 
-// Register the unchanged accepted assertions; the explicit config selects only the first three.
+// Register the unchanged accepted assertions; the explicit config selects the two retained focused cases.
 require('../specs/mobile-real-server.spec.ts');

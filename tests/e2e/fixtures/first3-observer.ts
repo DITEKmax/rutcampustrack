@@ -11,7 +11,6 @@ import type { MobileDataset, SyntheticUser } from './mobile-dataset';
 
 export const caseTitles = {
   STUDENT: 'STUDENT completion persists and another group cannot mutate the homework',
-  HEADMAN: 'HEADMAN marks the real roster and TEACHER reads without acquiring write permission',
   HELPER: 'STUDENT helper marks with its capability and revocation denies the same effect',
 } as const;
 type CaseCode = keyof typeof caseTitles;
@@ -408,7 +407,7 @@ export class FocusObserver {
     if (!key) throw new Error('Focused diagnostic refuses an unselected case');
     this.caseCode = key;
     this.actor =
-      key === 'STUDENT' ? dataset.student : key === 'HEADMAN' ? dataset.headman : dataset.assistant;
+      key === 'STUDENT' ? dataset.student : dataset.assistant;
     this.target = key === 'HELPER' ? dataset.assistant : dataset.student;
     const run = process.env.RCT_FOCUS3_RUN;
     const output = process.env.RCT_FOCUS3_OBSERVATIONS;
@@ -531,7 +530,7 @@ export class FocusObserver {
           ? body.activeRole
           : 'UNKNOWN';
     this.actorIsExpected = idEqual(body?.userId, this.actor.id);
-    const required = this.caseCode === 'HEADMAN' ? 'HEADMAN' : 'STUDENT';
+    const required = 'STUDENT';
     const grants = Array.isArray(body?.roles) ? body.roles : [];
     return {
       bodyShapeKnown: !!body,

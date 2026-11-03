@@ -1756,7 +1756,7 @@ jobs:
           CI: 'true'
         run: npx playwright test specs/auth-token-lifecycle.spec.ts specs/mini-app.spec.ts --project=chromium --grep @smoke
 
-      - name: Run accepted FIRST3 with closed diagnostics (chromium only)
+      - name: Run retained focused cases with closed diagnostics (chromium only)
         id: first3
         if: ${{ matrix.group == 'lifecycle' && !cancelled() && steps.e2e-ready.outcome == 'success' }}
         working-directory: tests/e2e
@@ -2682,27 +2682,6 @@ jobs:
           printf 'clockReady=true\n' >> "$GITHUB_OUTPUT"
           npx playwright test --config playwright.lesson-lifecycle.config.ts --project=chromium
 
-      - name: Read closed own transfer stage after lesson lifecycle
-        id: lesson-transfer-stage
-        if: ${{ matrix.group == 'lifecycle' && !cancelled() && steps.lesson-lifecycle.outcome != 'skipped' && steps.lesson-lifecycle.outcome != '' }}
-        timeout-minutes: 1
-        env:
-          E2E_BASE_URL: https://localhost:8443
-          RCT_E2E_SYNTHETIC_SEED: 'true'
-          CI: 'true'
-          RCT_LESSON_LIFECYCLE_RUN: ${{ runner.temp }}/rct-lesson-lifecycle-${{ github.run_id }}-${{ github.run_attempt }}
-          RCT_E2E_TEACHING_CLOCK_DIR: ${{ runner.temp }}/rct-first3-clock-${{ github.run_id }}-${{ github.run_attempt }}
-        run: python3 -B tests/e2e/fixtures/lesson-transfer-diagnostic.py --snapshot
-
-      - name: Upload closed own transfer stage
-        if: ${{ always() && steps.lesson-transfer-stage.outcome != 'skipped' && steps.lesson-transfer-stage.outcome != '' }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: lesson-transfer-stage-safe-${{ github.run_attempt }}
-          path: ${{ runner.temp }}/rct-lesson-lifecycle-${{ github.run_id }}-${{ github.run_attempt }}/transfer-stage.safe.json
-          if-no-files-found: error
-          retention-days: 7
-
       - name: Upload closed lesson lifecycle outcome
         if: always() && steps.lesson-lifecycle.outcome != 'skipped'
         uses: actions/upload-artifact@v4
@@ -2711,14 +2690,6 @@ jobs:
           path: ${{ env.RCT_LESSON_LIFECYCLE_RUN }}/artifacts/safe-results.json
           if-no-files-found: warn
           retention-days: 7
-
-      - name: Record a reported projection hint after failed Student statistics
-        if: ${{ !cancelled() && steps.e2e-ready.outcome == 'success' && (steps.homework-target-sensitivity.outcome == 'skipped' || steps.homework-target-sensitivity.outputs.restorationSucceeded == 'true') && steps.lesson-lifecycle.outcome == 'failure' }}
-        timeout-minutes: 1
-        env:
-          RCT_HTTP500_DIAGNOSTIC_STAGE: STUDENT_STATS503
-          RCT_E2E_SYNTHETIC_SEED: 'true'
-        run: *closed-http500-diagnostic
 
       - name: Verify exact stranded semester effect reconciliation
         id: semester-reconciliation

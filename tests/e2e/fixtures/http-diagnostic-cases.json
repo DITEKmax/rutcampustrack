@@ -48,20 +48,6 @@
         }
       ]
     },
-    "HEADMAN_RECURRING_SLOT_HISTORY": {
-      "events": [
-        {
-          "stageId": "FRAMEWORK",
-          "eventCode": "REPORTED_FRAMEWORK_ERROR",
-          "httpStatus": 0
-        },
-        {
-          "stageId": "DATASET_HTTP",
-          "eventCode": "STUDENT_STATS_HTTP503",
-          "httpStatus": 503
-        }
-      ]
-    },
     "STUDENT_SEMESTER_ROOM_REFRESH": {
       "events": [
         {

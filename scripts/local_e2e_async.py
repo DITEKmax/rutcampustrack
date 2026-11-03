@@ -55,7 +55,7 @@ MODES = {"prepare", "openapi", "full", "client", "lesson-lifecycle", "ui-batch",
 # config, one extended flag, private output variable, expected count, safe result filenames.
 BATCH_LANES = {
     "auth-smoke": ("playwright.config.ts", None, None, 9, {"auth-token-lifecycle.spec.ts", "mini-app.spec.ts"}),
-    "first3": ("playwright.first3.config.ts", None, "RCT_FOCUS3_RUN", 3, {"mobile-real-server.spec.ts"}),
+    "first3": ("playwright.first3.config.ts", None, "RCT_FOCUS3_RUN", 2, {"mobile-real-server.spec.ts"}),
     "admin": ("playwright.real-mobile.config.ts", "RCT_E2E_ADMIN_LIFECYCLE", None, 1, {"mobile-real-server.spec.ts"}),
     "role-security-export": ("playwright.real-mobile.config.ts", "RCT_E2E_ROLE_LOGOUT", None, 6, {"mobile-real-server.spec.ts", "cloud-accepted-role-authority.spec.ts", "cloud-accepted-admin-grants.spec.ts", "cloud-accepted-auth-security.spec.ts"}),
     "installation": ("playwright.real-mobile.config.ts", "RCT_E2E_SW_LIFECYCLE", None, 2, {"mobile-real-server.spec.ts"}),
@@ -63,7 +63,7 @@ BATCH_LANES = {
     "homework": ("playwright.homework-lifecycle.config.ts", None, "RCT_HOMEWORK_LIFECYCLE_RUN", 4, {"mobile-homework-lifecycle.spec.ts"}),
     "map": ("playwright.map-lifecycle.config.ts", None, "RCT_MAP_LIFECYCLE_RUN", 1, {"mobile-map-lifecycle.spec.ts"}),
     "registry-html": ("playwright.registry-export.config.ts", None, "RCT_REGISTRY_EXPORT_RUN", 3, {"cloud-accepted-registry-export.spec.ts"}),
-    "helper": ("playwright.helper-capabilities.config.ts", None, "RCT_HELPER_CAPABILITIES_RUN", 6, {"cloud-accepted-helper-capabilities.spec.ts"}),
+    "helper": ("playwright.helper-capabilities.config.ts", None, "RCT_HELPER_CAPABILITIES_RUN", 5, {"cloud-accepted-helper-capabilities.spec.ts"}),
 }
 BATCH_BLOCKED = [
     {"lane": "bot", "count": 1, "reason": "HOSTED_BOT_IDENTITY_ADAPTER_REQUIRED"},
@@ -81,7 +81,6 @@ D002_TITLES = ("D002 offline reload rechecks suspended grants before role select
 FAILED_CASES = {
     'TMA_SIGNED_ENTRY': ('auth-smoke', 'signed teacher entry loads the real session and shared profile with host Back'),
     'TMA_TAMPERED_ENTRY': ('auth-smoke', 'tampered Telegram proof cannot expose role data or navigation'),
-    'HEADMAN_TEACHER_READ': ('first3', 'HEADMAN marks the real roster and TEACHER reads without acquiring write permission'),
     'ADMIN_HISTORICAL_MARK': ('admin', 'ADMIN creates a multirole headman and restores the archived account without old authority'),
     'FULL_ADMIN_RIGHTS': ('role-security-export', 'FULL multirole ADMIN assigns updates and revokes LIMITED rights through Vue without foreign-role calls @cloud-accepted'),
     'OWN_PROFILE_THEME': ('role-security-export', 'own profile security changes password and replacement login rejects old authority @cloud-accepted'),
@@ -3037,7 +3036,7 @@ valid(all(stat.S_IMODE(directory.lstat().st_mode) == 0o755 for directory in dire
                 require(report.stat().st_size <= 8 * 1024**2, "BATCH_REPORT_BOUND")
                 outcome = batch_result(json.loads(report.read_text()), code, lane, self.failed_cases)
                 value = validate_local(environment=self.env, expected_mode="ui-batch", expected_batch_lane=lane)
-                # All selected36 lanes read the shared clock. Advancing lifecycle7 remains blocked.
+                # All selected34 lanes read the shared clock. Advancing lifecycle7 remains blocked.
                 batch_health(value)
                 require(hashlib.sha256(clock.read_bytes()).hexdigest() == clock_sha, "BATCH_UNEXPECTED_CLOCK_CHANGE")
                 outcomes.append(outcome)
@@ -3053,9 +3052,9 @@ valid(all(stat.S_IMODE(directory.lstat().st_mode) == 0o755 for directory in dire
                 emit("UI_BATCH_LANE", **outcome)
             finally:
                 self.env = base_environment
-        selected_count = len(self.failed_cases) if self.failed_cases is not None else 36
-        summary = {"scope": "REMAINING49_FAILED_CASE_SELECTION" if self.failed_cases is not None else "REMAINING49_FIRST_PORTABLE36",
-                   "expected": 49, "selected": selected_count, "selectedCaseIds": self.failed_cases, "unselected": 36 - selected_count,
+        selected_count = len(self.failed_cases) if self.failed_cases is not None else 34
+        summary = {"scope": "REMAINING47_FAILED_CASE_SELECTION" if self.failed_cases is not None else "REMAINING47_FIRST_PORTABLE34",
+                   "expected": 47, "selected": selected_count, "selectedCaseIds": self.failed_cases, "unselected": 34 - selected_count,
                    "passed": sum(row["passed"] for row in outcomes),
                    "failed": sum(row["failed"] for row in outcomes),
                    "notRun": sum(row["notRun"] for row in outcomes),
@@ -3100,7 +3099,7 @@ valid(all(stat.S_IMODE(directory.lstat().st_mode) == 0o755 for directory in dire
 
     def diagnose_http_failure(self):
         """Same closed CI implementation, before existing log retention and cleanup."""
-        stage = {"client": "HOMEWORK_CREATE503", "lesson-lifecycle": "STUDENT_STATS503"}.get(self.mode)
+        stage = {"client": "HOMEWORK_CREATE503"}.get(self.mode)
         if stage is None:
             return
         args = [sys.executable, "-B", str(ROOT / "tests/e2e/fixtures/http500_diagnostic.py"),

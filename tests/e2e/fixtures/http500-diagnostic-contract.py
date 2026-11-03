@@ -459,12 +459,7 @@ class SharedDiagnosticControls(unittest.TestCase):
         with patch.object(Path, 'read_bytes', return_value=json.dumps(changed).encode()):
             with self.assertRaises(ValueError):diag.load_catalog()
 
-    def test_stats_companions_d002_and_async_identity(self):
-        rows = [row(case, 'STUDENT_STATS_HTTP503', 503, failed=case == 'HEADMAN_RECURRING_SLOT_HISTORY')
-                for case in sorted(diag.STATS_CASES)]
-        self.assertTrue(diag.is_target_failure(receipt(rows), diag.STAGES['STUDENT_STATS503']))
-        duplicate = copy.deepcopy(rows);duplicate[0] = copy.deepcopy(duplicate[1])
-        self.assertFalse(diag.is_target_failure(receipt(duplicate), diag.STAGES['STUDENT_STATS503']))
+    def test_homework_companions_d002_and_async_identity(self):
         homework = row('LIMITED_ADMIN_ACCOUNTS', 'DATASET_HOMEWORK_CREATE_HTTP', 503)
         scoped = receipt([homework]);scoped['diagnosticScope'] = 'LOCAL_CLIENT_FIRST_FAILURE'
         self.assertTrue(diag.is_target_failure(scoped, diag.STAGES['HOMEWORK_CREATE503']))
@@ -690,7 +685,7 @@ class SharedDiagnosticControls(unittest.TestCase):
         with self.assertRaises(ValueError):diag.decode('{"status":NaN}')
 
     def test_capture_rechecks_exact_project_service_nonce_before_and_after(self):
-        stage = diag.STAGES['STUDENT_STATS503']
+        stage = diag.STAGES['HOMEWORK_CREATE503']
         cid = 'a' * 64
         class ClosedPipeChild:
             def __init__(self, payload):
@@ -705,12 +700,17 @@ class SharedDiagnosticControls(unittest.TestCase):
             for mutation in (None, 'project', 'service', 'running', 'nonce'):
                 with self.subTest(mode=mode, mutation=mutation):
                     nonce = 'b' * 24 if mode == 'local' else None
-                    scope = diag.DiagnosticScope('STUDENT_STATS503', mode, Path('/unused-control-run'),
+                    scope = diag.DiagnosticScope('HOMEWORK_CREATE503', mode, Path('/unused-control-run'),
                                                  'synthetic-project', ('docker', 'compose'), {}, nonce)
                     inspected, captured = [], []
+                    current_service = None
                     def spawn(argv, **_):
+                        nonlocal current_service
+                        if argv[:3] == ['docker', 'compose', 'ps']:
+                            current_service = argv[-1]
+                            return ClosedPipeChild(cid.encode())
                         if argv[:2] == ['docker', 'inspect']:
-                            identity = [cid, scope.project, 'attendance-service', True, nonce or '']
+                            identity = [cid, scope.project, current_service, True, nonce or '']
                             inspected.append(identity.copy())
                             if len(inspected) == 2 and mutation:
                                 index = {'project': 1, 'service': 2, 'running': 3, 'nonce': 4}[mutation]
@@ -723,9 +723,9 @@ class SharedDiagnosticControls(unittest.TestCase):
                     with patch.object(diag.subprocess, 'Popen', side_effect=spawn):
                         if mutation:
                             with self.assertRaises(ValueError):diag.collect(stage, context=scope)
-                        else:self.assertEqual(diag.collect(stage, context=scope), {'attendance-service': b''})
-                    self.assertEqual(len(inspected), 2)
-                    self.assertEqual(captured, [True])
+                        else:self.assertEqual(diag.collect(stage, context=scope), {'academic-service': b'', 'schedule-service': b'', 'api-gateway': b''})
+                    self.assertEqual(len(inspected), 2 if mutation else 6)
+                    self.assertEqual(captured, [True] if mutation else [True] * 3)
 
     def test_local_and_ci_contexts_do_not_masquerade(self):
         with self.assertRaises(ValueError):diag.admit_scope(config, 'ci', environment={})

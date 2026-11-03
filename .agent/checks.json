@@ -229,5 +229,50 @@
         "CI/Coverage/Security/OpenAPI PAUSED manual only"
       ]
     }
+  },
+  "remove-failed-e2e-1103": {
+    "task": "remove-failed-e2e-1103",
+    "revision": "4d960d283d2832d543f37b7f075780b29c19fe5a",
+    "environment": "Windows; Node24.14.0; Python3.12.10; readonly original modules",
+    "status": "SOURCE_READY",
+    "checks": [
+      {
+        "command": "node verify-preservation.cjs",
+        "exit_code": 0,
+        "evidence": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\web-visual-1102\\.agent\\evidence\\remove-failed-e2e-1103\\preservation-final.log"
+      },
+      {
+        "command": "playwright test --config collection.config.cjs --list",
+        "exit_code": 0,
+        "evidence": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\web-visual-1102\\.agent\\evidence\\remove-failed-e2e-1103\\playwright-list-final.log"
+      },
+      {
+        "command": "existing pure HTTP diagnostic controls subset",
+        "exit_code": 0,
+        "evidence": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\web-visual-1102\\.agent\\evidence\\remove-failed-e2e-1103\\http-pure-controls-1.log"
+      },
+      {
+        "command": "failed-case diagnostics control with NODE_PATH",
+        "exit_code": 0,
+        "evidence": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\web-visual-1102\\.agent\\evidence\\remove-failed-e2e-1103\\failed-case-control-2.log"
+      },
+      {
+        "command": "teacher shortcut generic privacy control",
+        "exit_code": 0,
+        "evidence": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\web-visual-1102\\.agent\\evidence\\remove-failed-e2e-1103\\shortcut-control-1.log"
+      },
+      {
+        "command": "YAML/Python syntax and lane counts",
+        "exit_code": 0,
+        "evidence": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\web-visual-1102\\.agent\\evidence\\remove-failed-e2e-1103\\config-checks-final.log"
+      },
+      {
+        "command": "git diff --check",
+        "exit_code": 0,
+        "evidence": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\web-visual-1102\\.agent\\evidence\\remove-failed-e2e-1103\\diff-check-final.log"
+      }
+    ],
+    "runtime": "collection only; backend/e2e NOT_RUN; Linux-specific controls NOT_RUN",
+    "summary": "C:\\Users\\maksd\\IntelliJIDEA\\rutcampustrack\\.agent\\worktrees\\web-visual-1102\\.agent\\evidence\\remove-failed-e2e-1103\\SUMMARY.md"
   }
 }

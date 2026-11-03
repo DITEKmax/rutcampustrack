@@ -265,8 +265,7 @@ except module.GateFailure:
         # No parser package or runner-global Python dependency is needed by this control.
         workflow = (ROOT / '.github/workflows/deploy.yml').read_text()
         release = workflow.split('  release-gate:\n', 1)[1].split('  build-push:\n', 1)[0]
-        build = workflow.split('  build-push:\n', 1)[1].split('  scan-sign:\n', 1)[0]
-        scan = workflow.split('  scan-sign:\n', 1)[1].split('  deploy:\n', 1)[0]
+        build = workflow.split('  build-push:\n', 1)[1].split('  deploy:\n', 1)[0]
         deploy = workflow.split('  deploy:\n', 1)[1]
         guard = textwrap.dedent(release.split('        run: |\n', 1)[1].split('      - uses:', 1)[0])
         expression = ' '.join(deploy.split('    if: >-\n', 1)[1].split('    runs-on:', 1)[0].split())
@@ -286,25 +285,18 @@ except module.GateFailure:
                           .replace('&&', ' and ').replace('||', ' or '))
                 self.assertEqual(bool(eval(policy, {'__builtins__': {}}, {})), not prepare and enabled == 'true')
         needs = re.search(r'    needs: \[([^\]]+)\]', deploy)[1]
-        self.assertEqual({value.strip() for value in needs.split(',')}, {'release-gate', 'build-push', 'scan-sign'})
-        self.assertNotIn('always()', expression, 'a failed scan must retain default success() dependency gating')
-        self.assertIn('      fail-fast: false', scan)
-        inventory = re.search(r'        image: \[([^\]]+)\]', scan)[1]
-        self.assertEqual({value.strip() for value in inventory.split(',')}, set(images.IMAGES))
-        blocking = scan.split('      - name: Blocking release image scan\n', 1)[1].split('      - name:', 1)[0]
-        self.assertIn("          exit-code: '1'", blocking)
-        digest_expression = '${{ fromJSON(needs.build-push.outputs.manifest).images[matrix.image] }}'
-        self.assertIn('          image-ref: ' + digest_expression, blocking)
-        self.assertIn('          IMAGE_REF: ' + digest_expression, scan)
+        self.assertEqual({value.strip() for value in needs.split(',')}, {'release-gate', 'build-push'})
+        self.assertNotIn('always()', expression, 'failed quality or build jobs must retain default success() dependency gating')
+        # Owner decision 2026-11-03 removes the entire Deploy scan/sign/SBOM stage.
+        for removed in ('  scan-sign:', 'aquasecurity/trivy-action@', 'anchore/sbom-action@', 'cosign'):
+            self.assertNotIn(removed, workflow)
         # Preserve weekly :latest consumers without treating those tags as release proof.
         tags = re.findall(r'          tags: (.+)', build)
         self.assertEqual(len(tags), len(images.IMAGES))
         for name in images.IMAGES:
             self.assertIn(images.PREFIX + name + ':${{ env.DEPLOY_SHA }},' + images.PREFIX + name + ':latest', tags)
-        self.assertNotIn('continue-on-error', blocking)
-        self.assertNotIn('continue-on-error', scan)
         # Production inputs exist only in the apply job, not in any preparation job.
-        for definition in (release, build, scan):
+        for definition in (release, build):
             for secret in ('PROD_ENV', 'PROD_SECRET_FILES_B64', 'SSH_PRIVATE_KEY', 'INITIAL_ADMIN_REQUEST', 'VPS_HOST'):
                 self.assertNotIn('secrets.' + secret, definition)
 

@@ -1,6 +1,7 @@
 name: Deploy
 
-# One exact source revision: quality gate → build digests → blocking scan/sign → explicit apply.
+# One exact source revision: quality gate → build digests → explicit apply.
+# Owner decision 2026-11-03: Deploy scan/sign/SBOM temporarily removed.
 on:
   workflow_dispatch:
     inputs:
@@ -9,7 +10,7 @@ on:
         required: true
         type: string
       prepare_only:
-        description: 'Build, scan and sign only; never use production inputs or SSH'
+        description: 'Build and push only; never use production inputs or SSH'
         required: false
         default: true
         type: boolean
@@ -65,7 +66,7 @@ jobs:
         run: |
           args=()
           if [[ "$PREPARE_ONLY" != true ]]; then args+=(--apply); fi
-          python3 -I release-control/scripts/release-quality-gate.py --sha "$DEPLOY_SHA" --repository "$GITHUB_REPOSITORY" "${args[@]}"
+          python3 -I release-control/scripts/release-quality-gate.py --sha "$DEPLOY_SHA" --repository "$GITHUB_REPOSITORY" --wait-seconds 3600 "${args[@]}"
       - name: Save safe quality receipt
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
@@ -289,72 +290,9 @@ jobs:
           path: release-images.json
           if-no-files-found: error
 
-  scan-sign:
-    name: Scan and sign exact build digest
-    needs: build-push
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
-      id-token: write
-    strategy:
-      fail-fast: false
-      matrix:
-        image: [api-gateway, mobile-bff, auth-service, academic-service, schedule-service, attendance-service, document-renderer-service, notification-web, notification-bot, pwa-nginx, mini-app-nginx, web-panel-nginx, landing-nginx]
-    steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
-        with:
-          # Trusted immutable workflow policy, never candidate image source.
-          ref: ${{ github.workflow_sha }}
-          path: release-control
-          persist-credentials: false
-      - name: Log in to GHCR
-        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3.7.0
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GHCR_TOKEN }}
-      - name: Blocking release image scan
-        uses: aquasecurity/trivy-action@a9c7b0f06e461e9d4b4d1711f154ee024b8d7ab8 # v0.36.0
-        with:
-          image-ref: ${{ fromJSON(needs.build-push.outputs.manifest).images[matrix.image] }}
-          scan-type: image
-          ignore-policy: release-control/.github/security/release-spring-exceptions.rego
-          severity: HIGH,CRITICAL
-          exit-code: '1'
-          ignore-unfixed: true
-          format: json
-          output: release-trivy.json
-      - name: Save candidate scan report
-        if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
-        with:
-          name: release-scan-${{ matrix.image }}-${{ env.DEPLOY_SHA }}
-          path: release-trivy.json
-          if-no-files-found: warn
-      - name: Generate SBOM
-        uses: anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610 # v0.24.0
-        with:
-          image: ${{ fromJSON(needs.build-push.outputs.manifest).images[matrix.image] }}
-          format: spdx-json
-          output-file: sbom.spdx.json
-          upload-release-assets: false
-          upload-artifact: true
-          artifact-name: sbom-${{ matrix.image }}.spdx.json
-      - name: Install cosign
-        uses: sigstore/cosign-installer@cad07c2e89fa2edd6e2d7bab4c1aa38e53f76003 # v4.1.1
-        with:
-          cosign-release: 'v2.4.1'
-      - name: Sign and attest scanned digest
-        env:
-          IMAGE_REF: ${{ fromJSON(needs.build-push.outputs.manifest).images[matrix.image] }}
-        run: |
-          cosign sign --yes "$IMAGE_REF"
-          cosign attest --yes --predicate sbom.spdx.json --type spdxjson "$IMAGE_REF"
-
   deploy:
     name: Deploy to VPS
-    needs: [release-gate, build-push, scan-sign]
+    needs: [release-gate, build-push]
     if: >-
       vars.PRODUCTION_DEPLOY_ENABLED == 'true' &&
       github.event_name == 'workflow_dispatch' && inputs.prepare_only == false
@@ -382,23 +320,6 @@ jobs:
         run: |
           printf '%s\n' "$RELEASE_MANIFEST" > release-images.json
           python3 -I release-control/scripts/release-images.py release-images.json "$DEPLOY_SHA"
-      - name: Install cosign for verify
-        uses: sigstore/cosign-installer@cad07c2e89fa2edd6e2d7bab4c1aa38e53f76003 # v4.1.1
-        with:
-          cosign-release: 'v2.4.1'
-      - name: Log in to GHCR (for verify)
-        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3.7.0
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GHCR_TOKEN }}
-      - name: Verify signatures of all 13 scanned digests
-        run: |
-          while IFS= read -r image; do
-            cosign verify \
-              --certificate-identity="https://github.com/$GITHUB_REPOSITORY/.github/workflows/deploy.yml@refs/heads/main" \
-              --certificate-oidc-issuer="https://token.actions.githubusercontent.com" "$image" >/dev/null
-          done < <(python3 -I -c 'import json; print("\n".join(json.load(open("release-images.json"))["images"].values()))')
       - name: Recheck current main and same-SHA checks immediately before apply
         id: apply-inputs
         env:

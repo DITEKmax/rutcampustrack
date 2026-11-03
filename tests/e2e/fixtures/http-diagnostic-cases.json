@@ -415,20 +415,6 @@
         }
       ]
     },
-    "D003_DEVICE_REUSE_SUSPENDED_GRANT": {
-      "events": [
-        {
-          "stageId": "FRAMEWORK",
-          "eventCode": "REPORTED_FRAMEWORK_ERROR",
-          "httpStatus": 0
-        },
-        {
-          "stageId": "DATASET_HTTP",
-          "eventCode": "DATASET_HOMEWORK_CREATE_HTTP",
-          "httpStatus": 503
-        }
-      ]
-    },
     "D003_HEADMAN_TMA_MARK": {
       "events": [
         {

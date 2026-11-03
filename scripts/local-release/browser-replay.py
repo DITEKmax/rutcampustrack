@@ -324,7 +324,7 @@ def run_cohort(selection, target, cohort=None, *, focused=False, remaining_two=F
             trust.install()
         runner.execute()
         if selection in {"client", "webkit", "lesson-lifecycle"}:
-            closed_report(read_report(runner.run / "artifacts/safe-results.json"), 1 if d002_authority_only else 2 if d002_only else {"client": 11, "webkit": 1, "lesson-lifecycle": 3}[selection], "webkit" if trust else "chromium")
+            closed_report(read_report(runner.run / "artifacts/safe-results.json"), 1 if d002_authority_only else 2 if d002_only else {"client": 10, "webkit": 1, "lesson-lifecycle": 3}[selection], "webkit" if trust else "chromium")
         if selection == "special13":
             expected = 1 if focused else 6 if cohort == "nonclock" else 7
             rows = [row for row in runner.special_outcomes if not focused or row['lane'] == 'semester-metadata']

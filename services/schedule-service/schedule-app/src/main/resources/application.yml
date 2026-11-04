@@ -72,9 +72,26 @@ grpc:
     academic-to-schedule-token: ${ACADEMIC_TO_SCHEDULE_SERVICE_TOKEN:}
     schedule-to-academic-token: ${SCHEDULE_TO_ACADEMIC_SERVICE_TOKEN:}
   client:
+    constructor-attendance:
+      address: ${CONSTRUCTOR_ATTENDANCE_GRPC_ADDRESS:dns:///attendance-service:19093}
+      negotiation-type: TLS
+      security:
+        authority-override: ${CONSTRUCTOR_ATTENDANCE_GRPC_AUTHORITY:attendance-service}
+        trust-cert-collection: ${CONSTRUCTOR_ATTENDANCE_GRPC_CA_PATH:}
+    constructor-academic:
+      address: ${CONSTRUCTOR_ACADEMIC_GRPC_ADDRESS:dns:///academic-service:19091}
+      negotiation-type: TLS
+      security:
+        authority-override: ${CONSTRUCTOR_ACADEMIC_GRPC_AUTHORITY:academic-service}
+        trust-cert-collection: ${CONSTRUCTOR_ACADEMIC_GRPC_CA_PATH:}
     academic-service:
       address: dns:///academic-service:19091
       negotiation-type: plaintext
+
+constructor:
+  rpc:
+    schedule-to-attendance-token-file: ${CONSTRUCTOR_RPC_SCHEDULE_TO_ATTENDANCE_TOKEN_FILE:}
+    schedule-to-academic-token-file: ${CONSTRUCTOR_RPC_SCHEDULE_TO_ACADEMIC_TOKEN_FILE:}
 
 rutcampustrack:
   security:

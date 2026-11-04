@@ -6,6 +6,9 @@ import static org.mockito.Mockito.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.github.dockerjava.api.model.ExposedPort;
+import com.github.dockerjava.api.model.PortBinding;
+import com.github.dockerjava.api.model.Ports;
 import io.micrometer.core.instrument.Counter;
 import java.time.*;
 import java.util.*;
@@ -81,7 +84,21 @@ import ru.rutcampustrack.shared.outbox.mongo.MongoOutboxStorage;
     LessonActionAuditIT.Config.class
 })
 class LessonActionAuditIT {
-    @Container static final MongoDBContainer MONGO = new MongoDBContainer("mongo:7.0");
+    @Container
+    static final MongoDBContainer MONGO =
+            new MongoDBContainer("mongo:7.0")
+                    .withReuse(false)
+                    .withLabel("rct.fixture.scope", "lesson-action-audit")
+                    .withCreateContainerCmdModifier(
+                            command ->
+                                    command.getHostConfig()
+                                            .withMemory(1024L * 1024 * 1024)
+                                            .withPortBindings(
+                                                    new PortBinding(
+                                                            Ports.Binding.bindIpAndPort(
+                                                                    "127.0.0.1", 0),
+                                                            ExposedPort.tcp(27017)))
+                                            .withPublishAllPorts(false));
 
     @DynamicPropertySource
     static void properties(DynamicPropertyRegistry r) {

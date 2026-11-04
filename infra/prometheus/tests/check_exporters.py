@@ -414,10 +414,13 @@ def main():
                 "MONGO_PASSWORD": "synthetic-application-only",
                 "MONGO_NOTIFICATION_USER": "fixture_notification",
                 "MONGO_NOTIFICATION_PASSWORD": "synthetic-notification-only",
+                "RCT_MONITOR_TOPOLOGY_SCRATCH_ONLY": "1",
             },
             volumes=[
                 "mongo-test:/bitnami/mongodb",
                 str(ROOT / "infra/mongo/init-mongo.js") + ":/docker-entrypoint-initdb.d/init-mongo.js:ro",
+                str(ROOT / "infra/mongo/monitor-topology-role.js") + ":/monitor-topology-role.js:ro",
+                str(ROOT / "infra/prometheus/tests/mongo_topology_cases.js") + ":/mongo-topology-cases.js:ro",
             ],
             mem_limit="512m",
             cpus=1,
@@ -788,6 +791,11 @@ def main():
             # Only an authentication-not-ready observation retries; wrong-role/unknown fails.
             _STATE["phase"] = "MONGO_MONITOR_AUTH_READINESS"
             wait(mongo_monitor_ready)
+            _STATE["phase"] = "MONGO_TOPOLOGY_ROLE_IDEMPOTENCE"
+            role_cases = execute("mongo-attendance", mongo_cli + ['load("/mongo-topology-cases.js")'])
+            assert all("PASS topology_" + case in role_cases.stdout for case in (
+                "existing_correct", "missing_grant", "repeated_install", "unexpected_privilege_rejected"
+            ))
             _STATE["phase"] = "MONGO_TOPOLOGY_METADATA_READ"
             topology = execute(
                 "mongo-attendance",

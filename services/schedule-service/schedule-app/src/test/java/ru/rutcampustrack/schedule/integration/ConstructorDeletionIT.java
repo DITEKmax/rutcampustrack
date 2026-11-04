@@ -185,6 +185,7 @@ class ConstructorDeletionIT extends AbstractScheduleIntegrationTest {
         JsonNode preview = preview(item);
         assertThat(preview.path("deletable").asBoolean()).isFalse();
         assertThat(preview.path("protectedCount").asLong()).isOne();
+        assertThat(preview.path("removableCount").asLong()).isEqualTo(2);
         mvc.perform(
                         actor(delete("/schedule/items/{id}", item))
                                 .header("Idempotency-Key", UUID.randomUUID())
@@ -239,7 +240,7 @@ VALUES(?,42,?,decode(repeat('00',32),'hex'),?,'DELETE','{}'::jsonb,NOW())
             String stored =
                     jdbcTemplate.queryForObject(
                             "SELECT state FROM constructor_deletion_operations WHERE"
-                                + " operation_id=?",
+                                    + " operation_id=?",
                             String.class,
                             UUID.fromString(command.getOperationId()));
             assertThat(stored)

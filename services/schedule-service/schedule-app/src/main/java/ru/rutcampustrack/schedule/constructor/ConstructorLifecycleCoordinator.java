@@ -61,6 +61,7 @@ public class ConstructorLifecycleCoordinator {
             ConstructorDeletionCommand academic,
             String revision,
             long protectedCount,
+            long removableCount,
             List<ConstructorProtectedReason> reasons,
             ScheduleSemesterArchiveWriteFence.PreparedBusinessWrite prepared) {}
 
@@ -69,13 +70,13 @@ public class ConstructorLifecycleCoordinator {
         return new ScheduleItemLifecyclePreviewResponse(
                 preview.revision(),
                 0,
-                preview.local().removableCount(),
+                preview.removableCount(),
                 0,
                 0,
                 "DELETE_UNUSED_SERIES",
                 preview.protectedCount() == 0,
                 preview.protectedCount(),
-                preview.local().removableCount(),
+                preview.removableCount(),
                 preview.reasons());
     }
 
@@ -219,6 +220,11 @@ public class ConstructorLifecycleCoordinator {
                 command.toBuilder().setParticipantDigest(homework.getParticipantDigest()).build(),
                 ConstructorHashes.hex(revision),
                 protectedIds.size(),
+                local.scope().getLessonsList().stream()
+                        .map(lesson -> lesson.getOccurrenceId())
+                        .distinct()
+                        .filter(occurrence -> !protectedIds.contains(occurrence))
+                        .count(),
                 reasons.entrySet().stream()
                         .map(
                                 entry ->

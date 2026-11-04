@@ -16,12 +16,14 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 import ru.rutcampustrack.schedule.contract.dto.item.CreateScheduleItemRequest;
+import ru.rutcampustrack.schedule.constructor.SemesterMaterializationWriter;
 import ru.rutcampustrack.schedule.contract.enums.LessonSlot;
 import ru.rutcampustrack.schedule.contract.enums.LessonStatus;
 import ru.rutcampustrack.schedule.event.ScheduleActionRecordedEvent;
@@ -45,6 +47,12 @@ public class RecurringScheduleItemWriter {
     private final Clock clock;
     private final ScheduleSemesterArchiveWriteFence archiveWriteFence;
     private final ApplicationEventPublisher events;
+    private SemesterMaterializationWriter semesterMaterialization;
+
+    @Autowired
+    public void setSemesterMaterialization(SemesterMaterializationWriter writer) {
+        this.semesterMaterialization = writer;
+    }
 
     public RecurringScheduleItemWriter(
             JdbcTemplate jdbc,
@@ -128,7 +136,9 @@ public class RecurringScheduleItemWriter {
         dates.removeIf(replacementAlreadyCovered(request, authority, fenceCap));
         Long replacementTemplateId = replacementTemplateId(request);
         if (replacementTemplateId != null) {
-            dates.removeIf(date -> occurrenceExists(replacementTemplateId, date));
+            Set<LocalDate> covered = semesterMaterialization == null ? Set.of()
+                    : semesterMaterialization.coveredDates(semesterMaterialization.familyIds(replacementTemplateId));
+            dates.removeIf(date -> covered.contains(date) || occurrenceExists(replacementTemplateId, date));
         }
         OffsetDateTime createdAt = OffsetDateTime.now(clock.withZone(ZoneOffset.UTC));
         LocalDate generatedFrom = dates.isEmpty() ? null : dates.get(0);
@@ -144,6 +154,10 @@ public class RecurringScheduleItemWriter {
                                     generatedFrom,
                                     generatedUntil)
                             : replacementTemplateId;
+            if (semesterMaterialization == null)
+                throw new RecurringProtocolConflictException("semester materialization authority is unavailable");
+            UUID materialization = semesterMaterialization.begin(
+                    scheduleItemId, actorId, requestKey, authority, semesterStart, semesterEnd);
             for (LocalDate date : dates) {
                 long occurrenceId = insertOccurrence(scheduleItemId, date, authority, createdAt);
                 long lessonId =
@@ -174,6 +188,7 @@ public class RecurringScheduleItemWriter {
                 ScheduleActionRecordedEvent.publish(
                         jdbc, events, "LESSON_CREATED", lessonId, actorId, null, createdAt);
             }
+            semesterMaterialization.finish(materialization);
 
             jdbc.update(
                     """
@@ -595,6 +610,8 @@ public class RecurringScheduleItemWriter {
             LocalDate date,
             RecurringAssignmentAuthority authority,
             OffsetDateTime createdAt) {
+        if (semesterMaterialization != null && semesterMaterialization.admitted())
+            return semesterMaterialization.insertOccurrence(scheduleItemId, date, authority, createdAt);
         Long id =
                 jdbc.queryForObject(
                         """
@@ -629,6 +646,8 @@ public class RecurringScheduleItemWriter {
             LessonStatus status,
             OffsetDateTime createdAt,
             Long closedAtEpochMillis) {
+        if (semesterMaterialization != null && semesterMaterialization.admitted())
+            return semesterMaterialization.insertPhysicalLesson(occurrenceId, createdAt);
         OffsetDateTime closedAt =
                 closedAtEpochMillis == null
                         ? null

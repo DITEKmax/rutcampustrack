@@ -35,7 +35,11 @@ class DeploymentSecrets(unittest.TestCase):
     def test_complete_bundle_and_native_cert_validation(self):
         M.validate(self.values, self.files, self.local / 'files')
         self.assertLess(len(self.bundle), 48 * 1024)
-        self.assertEqual(len(self.files), 41)
+        self.assertEqual(len(self.files), 43)
+        self.assertEqual(M.FILES['CONSTRUCTOR_RPC_SCHEDULE_TO_ATTENDANCE_TOKEN_FILE'],
+                         'constructor-rpc-schedule-to-attendance-token')
+        self.assertEqual(M.FILES['CONSTRUCTOR_RPC_SCHEDULE_TO_ACADEMIC_TOKEN_FILE'],
+                         'constructor-rpc-schedule-to-academic-token')
 
     def test_malicious_file_sets_and_duplicate_keys_are_rejected(self):
         original = json.loads(base64.b64decode(self.bundle))
@@ -57,6 +61,15 @@ class DeploymentSecrets(unittest.TestCase):
         files[M.FILES['PG_SCHEDULE_RUNTIME_PASSWORD_FILE']] = files[M.FILES['PG_AUTH_RUNTIME_PASSWORD_FILE']]
         with self.assertRaisesRegex(ValueError, 'INDEPENDENT'):
             M.validate(self.values, files, self.local / 'files')
+        for key in ('CONSTRUCTOR_RPC_SCHEDULE_TO_ATTENDANCE_TOKEN_FILE',
+                    'CONSTRUCTOR_RPC_SCHEDULE_TO_ACADEMIC_TOKEN_FILE'):
+            files = dict(self.files)
+            files[M.FILES[key]] = files[M.FILES['BOT_TO_READ_SERVICE_TOKEN_FILE']]
+            with self.subTest(key=key), self.assertRaisesRegex(ValueError, 'DIRECTED_TOKENS_NOT_INDEPENDENT'):
+                M.validate(self.values, files, self.local / 'files')
+            files[M.FILES[key]] = b'A' * 42 + b'B'
+            with self.subTest(key=key), self.assertRaisesRegex(ValueError, 'DIRECTED_TOKEN_FORMAT'):
+                M.validate(self.values, files, self.local / 'files')
         files = dict(self.files)
         files[M.FILES['REDIS_SERVER_ACL_FILE']] = b'user default on nopass +@all\n'
         with self.assertRaisesRegex(ValueError, 'ACL_MAP'):
@@ -165,7 +178,7 @@ class DeploymentSecrets(unittest.TestCase):
             self.assertTrue(all(len(value) >= 43 for value in credentials))
             self.assertEqual(len(list((destination / 'files').iterdir())), 3)
             self.assertFalse((destination / 'PROD_SECRET_FILES_B64').exists())
-            self.assertEqual(len(M.ALLOWED), 41)
+            self.assertEqual(len(M.ALLOWED), 43)
             inventories.append(credentials)
         self.assertFalse(set(inventories[0]).intersection(inventories[1]))
 

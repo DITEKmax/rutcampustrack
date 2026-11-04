@@ -218,11 +218,6 @@ public class RecurringScheduleItemLifecycleWriter {
                     || !Objects.equals(creation.inactiveTemplateId(request), itemId)) {
                 throw new ConflictException("Продолжение серии не совпадает с текущим назначением");
             }
-            if (!creationCap(request.assignmentId())
-                    .isAfter(LocalDate.now(clock.withZone(MOSCOW)))) {
-                throw new ConflictException(
-                        "Назначение завершено; выбери текущее назначение преподавателя");
-            }
             UpdateScheduleItemRequest change =
                     new UpdateScheduleItemRequest(
                             request.subjectId(),
@@ -240,8 +235,9 @@ public class RecurringScheduleItemLifecycleWriter {
             OffsetDateTime now = OffsetDateTime.now(clock);
             for (Map<String, Object> current : items) {
                 boolean active =
-                        creationCap(number(current.get("assignment_id")))
-                                .isAfter(LocalDate.now(clock.withZone(MOSCOW)));
+                        number(current.get("id")) == itemId
+                                || creationCap(number(current.get("assignment_id")))
+                                        .isAfter(LocalDate.now(clock.withZone(MOSCOW)));
                 jdbc.update(
                         """
                         UPDATE schedule_items SET is_active = ?, room = ?,
@@ -356,7 +352,8 @@ public class RecurringScheduleItemLifecycleWriter {
             }
             long assignment = number(current.get("assignment_id"));
             RecurringAssignmentAuthority authority = authorities.get(assignment);
-            LocalDate lower = from.isAfter(now.toLocalDate()) ? from : now.toLocalDate();
+            LocalDate lower =
+                    reactivate || from.isAfter(now.toLocalDate()) ? from : now.toLocalDate();
             if (!reactivate && current.get("generation_not_before") != null) {
                 LocalDate floor =
                         timestamp(current.get("generation_not_before"))
@@ -416,7 +413,7 @@ public class RecurringScheduleItemLifecycleWriter {
                 for (LocalDate day : allDesired) {
                     Map<String,Object> current=targetForDate(items,desired,day,true,reactivate);
                     if (current==null) continue;
-                    if (!day.atTime(time(current.get("start_time"))).isAfter(now)
+                    if ((!reactivate && !day.atTime(time(current.get("start_time"))).isAfter(now))
                             || covered.contains(day)) continue;
                     covered.add(day);
                     plan.created.add(

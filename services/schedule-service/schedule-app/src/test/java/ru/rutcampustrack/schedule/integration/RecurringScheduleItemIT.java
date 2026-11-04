@@ -217,6 +217,40 @@ class RecurringScheduleItemIT extends AbstractScheduleIntegrationTest {
     }
 
     @Test
+    void createOnLegacyInactiveSlotFillsWholePastSemesterAfterTeacherPeriodEnded() throws Exception {
+        LocalDate start=LocalDate.of(2026,2,16),end=LocalDate.of(2026,2,17);
+        when(clock.instant()).thenReturn(Instant.parse("2026-02-23T09:00:00Z"));
+        when(academicGrpcClient.getAssignmentsByIds(List.of(ASSIGNMENT_ID))).thenReturn(List.of(
+                assignment(ASSIGNMENT_ID,GROUP_ID,SUBJECT_ID,SEMESTER_ID,start,end)));
+        jdbcTemplate.update("INSERT INTO schedule_assignment_fences(assignment_id,group_id,subject_id,semester_id,assigned_teacher_id,lesson_type,valid_from,cap_until_exclusive,creation_cap_until_exclusive) VALUES(?,?,?,?,?,'lecture',?,?,?)",
+                ASSIGNMENT_ID,GROUP_ID,SUBJECT_ID,SEMESTER_ID,TEACHER_ID,start,end,end);
+        var item=new ru.rutcampustrack.schedule.item.entity.ScheduleItem();
+        item.setAssignmentId(ASSIGNMENT_ID);item.setGroupId(GROUP_ID);item.setSubjectId(SUBJECT_ID);item.setSemesterId(SEMESTER_ID);
+        item.setDayOfWeek((short)1);item.setLessonNumber((short)1);item.setWeekType(WeekType.ALL);item.setRoom("A-101");
+        long itemId=saveFixtureScheduleItem(item).getId();
+        var lesson=new ru.rutcampustrack.schedule.lesson.entity.Lesson();lesson.setScheduleItemId(itemId);lesson.setDate(start);
+        lesson.setStatus(ru.rutcampustrack.schedule.contract.enums.LessonStatus.PLANNED);
+        long cancelled=saveFixtureLesson(lesson).getId();
+        lessonLifecycle.cancel(cancelled,"Сохранённое ручное исключение",ACTOR_ID);
+        jdbcTemplate.update("UPDATE schedule_items SET is_active=false,deactivated_at=? WHERE id=?",java.time.OffsetDateTime.now(clock),itemId);
+        UUID key=UUID.randomUUID();var request=request(1,1,"A-101",ASSIGNMENT_ID,GROUP_ID,SUBJECT_ID,SEMESTER_ID);
+        var response=objectMapper.readTree(postCreate(key,request).getResponse().getContentAsString());
+        var ids=jdbcTemplate.queryForList("SELECT id FROM lessons ORDER BY id",Long.class);
+        postCreate(key,request);
+        assertThat(response.path("id").asLong()).isEqualTo(itemId);
+        assertThat(response.path("lifecycleResult").path("createdCount").asLong()).isEqualTo(2L);
+        assertThat(jdbcTemplate.queryForList("SELECT date FROM lessons ORDER BY date",LocalDate.class))
+                .containsExactly(LocalDate.of(2026,2,2),LocalDate.of(2026,2,9),LocalDate.of(2026,2,16));
+        assertThat(jdbcTemplate.queryForList("SELECT id FROM lessons ORDER BY id",Long.class)).containsExactlyElementsOf(ids);
+        assertThat(jdbcTemplate.queryForObject("SELECT status::text FROM lessons WHERE id=?",String.class,cancelled)).isEqualTo("cancelled");
+        assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM lessons WHERE assignment_id IS NULL AND assigned_teacher_id IS NULL AND status='closed'",Long.class)).isEqualTo(2L);
+        assertThat(jdbcTemplate.queryForObject("SELECT is_active FROM schedule_items WHERE id=?",Boolean.class,itemId)).isTrue();
+        assertThat(jdbcTemplate.queryForObject("SELECT sum(lesson_count) FROM constructor_materialization_work",Long.class)).isEqualTo(2L);
+        assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM schedule_outbox WHERE event_type IN('lesson.started','lesson.closed','lesson.reminder')",Long.class)).isZero();
+        assertThat(jdbcTemplate.queryForObject("SELECT creation_cap_until_exclusive FROM schedule_assignment_fences WHERE assignment_id=?",LocalDate.class,ASSIGNMENT_ID)).isEqualTo(end);
+    }
+
+    @Test
     void lostMaterializationReplyRetriesSameCommittedBytesWithoutRegeneratingLessons() throws Exception {
         createLifecycleItem();
         byte[] original=jdbcTemplate.queryForObject("SELECT command FROM constructor_materialization_work LIMIT 1",byte[].class);
@@ -300,7 +334,24 @@ class RecurringScheduleItemIT extends AbstractScheduleIntegrationTest {
         String revision=jdbcTemplate.queryForObject("SELECT revision::text FROM lesson_occurrences WHERE current_lesson_id=?",String.class,future);
         var moved=transferWriter.transfer(future,ACTOR_ID,new ru.rutcampustrack.schedule.contract.dto.lesson.TransferLessonRequest(
                 monday.plusDays(1),2,null,null,"A-102",revision,UUID.randomUUID()));
-        assertThat(jdbcTemplate.queryForObject("SELECT assignment_id IS NULL AND assigned_teacher_id IS NULL FROM lessons WHERE id=?",Boolean.class,Long.parseLong(moved.targetLessonId()))).isTrue();
+        long firstTarget=Long.parseLong(moved.targetLessonId());
+        completeTransfer(moved.operationId());
+        assertThat(jdbcTemplate.queryForObject("SELECT assignment_unassigned_origin(?)",Long.class,Long.parseLong(moved.occurrenceId()))).isEqualTo(ASSIGNMENT_ID);
+        lessonLifecycle.cancel(firstTarget,"Повторное ручное исключение",ACTOR_ID);
+        assertThat(lessonLifecycle.restore(firstTarget,ACTOR_ID)).isEqualTo(firstTarget);
+        String nextRevision=jdbcTemplate.queryForObject("SELECT revision::text FROM lesson_occurrences WHERE current_lesson_id=?",String.class,firstTarget);
+        var second=transferWriter.transfer(firstTarget,ACTOR_ID,new ru.rutcampustrack.schedule.contract.dto.lesson.TransferLessonRequest(
+                monday.plusDays(2),3,null,null,"A-103",nextRevision,UUID.randomUUID()));
+        completeTransfer(second.operationId());
+        long current=Long.parseLong(second.targetLessonId());
+        assertThat(jdbcTemplate.queryForObject("SELECT assignment_id IS NULL AND assigned_teacher_id IS NULL AND generation=3 FROM lessons WHERE id=?",Boolean.class,current)).isTrue();
+        assertThat(jdbcTemplate.queryForObject("SELECT assignment_unassigned_origin(?)",Long.class,Long.parseLong(second.occurrenceId()))).isEqualTo(ASSIGNMENT_ID);
+        String currentRevision=jdbcTemplate.queryForObject("SELECT revision::text FROM lesson_occurrences WHERE current_lesson_id=?",String.class,current);
+        long count=jdbcTemplate.queryForObject("SELECT COUNT(*) FROM lessons",Long.class);
+        assertThatThrownBy(()->transferWriter.transfer(current,ACTOR_ID,new ru.rutcampustrack.schedule.contract.dto.lesson.TransferLessonRequest(
+                monday.plusDays(7),4,null,null,null,currentRevision,UUID.randomUUID())))
+                .isInstanceOf(ru.rutcampustrack.schedule.exception.ConflictException.class);
+        assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM lessons",Long.class)).isEqualTo(count);
     }
 
     @Test

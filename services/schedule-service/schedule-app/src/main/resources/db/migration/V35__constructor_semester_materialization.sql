@@ -210,17 +210,74 @@ END $$;
 
 ALTER FUNCTION assignment_unassigned_origin(BIGINT) RENAME TO assignment_unassigned_origin_legacy;
 CREATE FUNCTION constructor_natural_unassigned_origin(occurrence_value BIGINT) RETURNS BIGINT LANGUAGE SQL STABLE AS $$
-    SELECT origin.origin_assignment_id FROM constructor_generation_origins origin
-    JOIN constructor_semester_materializations operation ON operation.operation_id=origin.operation_id
-    JOIN lesson_occurrences occurrence ON occurrence.id=origin.occurrence_id
-    WHERE occurrence.id=occurrence_value AND origin.initial_assignment_id IS NULL
-      AND origin.initial_teacher_id IS NULL AND occurrence.assignment_id IS NULL
-      AND occurrence.assigned_teacher_id IS NULL AND operation.state<>'GENERATING'
-      AND occurrence.group_id=origin.group_id AND occurrence.subject_id=origin.subject_id
-      AND occurrence.semester_id=origin.semester_id AND occurrence.lesson_type=origin.lesson_type
-      AND occurrence.occurrence_date=origin.occurrence_date
-      AND NOT EXISTS(SELECT 1 FROM schedule_assignment_binding_ledger earlier
-          WHERE earlier.occurrence_id=occurrence.id AND earlier.after_assignment_id IS NOT NULL)
+    WITH RECURSIVE admitted AS (
+        SELECT origin.*,operation.semester_from,operation.semester_until_exclusive,
+               occurrence.current_lesson_id,occurrence.generation AS current_generation,
+               occurrence.occurrence_date AS current_date
+          FROM constructor_generation_origins origin
+          JOIN constructor_semester_materializations operation ON operation.operation_id=origin.operation_id
+          JOIN lesson_occurrences occurrence ON occurrence.id=origin.occurrence_id
+         WHERE occurrence.id=occurrence_value AND origin.initial_assignment_id IS NULL
+           AND origin.initial_teacher_id IS NULL AND occurrence.assignment_id IS NULL
+           AND occurrence.assigned_teacher_id IS NULL AND operation.state<>'GENERATING'
+           AND occurrence.schedule_item_id=origin.schedule_item_id
+           AND occurrence.group_id=origin.group_id AND occurrence.subject_id=origin.subject_id
+           AND occurrence.semester_id=origin.semester_id AND occurrence.lesson_type=origin.lesson_type
+           AND occurrence.occurrence_date>=operation.semester_from
+           AND occurrence.occurrence_date<operation.semester_until_exclusive
+           AND NOT EXISTS(SELECT 1 FROM schedule_assignment_binding_ledger earlier
+               WHERE earlier.occurrence_id=occurrence.id AND earlier.after_assignment_id IS NOT NULL)
+    ), proven(lesson_id,generation,lesson_date) AS (
+        -- The original physical identity is immutable even after it becomes transferred.
+        SELECT origin.lesson_id,1::bigint,origin.occurrence_date
+          FROM admitted origin JOIN lessons lesson ON lesson.id=origin.lesson_id
+         WHERE lesson.occurrence_id=origin.occurrence_id AND lesson.generation=1
+           AND lesson.schedule_item_id=origin.schedule_item_id AND lesson.date=origin.occurrence_date
+           AND lesson.group_id=origin.group_id AND lesson.subject_id=origin.subject_id
+           AND lesson.semester_id=origin.semester_id AND lesson.lesson_type=origin.lesson_type
+           AND lesson.lesson_number=origin.lesson_number
+           AND lesson.start_time=origin.start_time AND lesson.end_time=origin.end_time
+           AND lesson.room_snapshot IS NOT DISTINCT FROM origin.room_snapshot
+           AND lesson.week_type_snapshot=origin.week_type_snapshot::text
+           AND lesson.assignment_id IS NULL AND lesson.assigned_teacher_id IS NULL
+        UNION
+        SELECT transfer.target_lesson_id,transfer.target_generation,authority.target_date
+          FROM proven source CROSS JOIN admitted origin
+          JOIN lesson_transfer_operations transfer ON transfer.occurrence_id=origin.occurrence_id
+           AND transfer.source_lesson_id=source.lesson_id AND transfer.source_generation=source.generation
+          JOIN lesson_transfer_authorities authority ON authority.operation_id=transfer.operation_id
+           AND authority.occurrence_id=transfer.occurrence_id
+           AND authority.source_lesson_id=transfer.source_lesson_id
+           AND authority.target_lesson_id=transfer.target_lesson_id
+           AND authority.actor_id=transfer.actor_id AND authority.operation_hash=transfer.operation_hash
+           AND authority.expected_generation=transfer.source_generation
+           AND authority.expected_occurrence_revision=transfer.expected_occurrence_revision
+          JOIN lessons lesson ON lesson.id=source.lesson_id AND lesson.occurrence_id=origin.occurrence_id
+           AND lesson.generation=source.generation AND lesson.date=source.lesson_date
+         WHERE transfer.state IN('PENDING','COMPLETED')
+           AND transfer.target_generation=source.generation+1
+           AND lesson.status='transferred'
+           AND lesson.revision=authority.expected_lesson_revision+1
+           AND (transfer.operation_id=NULLIF(current_setting('rutcampustrack.lesson_transfer_operation_id',TRUE),'')::uuid
+               OR EXISTS(SELECT 1 FROM lesson_lifecycle_entries accepted
+                   WHERE accepted.transfer_operation_id=transfer.operation_id
+                     AND accepted.occurrence_id=origin.occurrence_id AND accepted.action='TRANSFERRED'
+                     AND accepted.lesson_id=transfer.source_lesson_id
+                     AND accepted.target_lesson_id=transfer.target_lesson_id
+                     AND accepted.generation=transfer.target_generation
+                     AND accepted.revision=transfer.result_occurrence_revision
+                     AND accepted.actor_id=transfer.actor_id))
+           AND lesson.schedule_item_id=origin.schedule_item_id
+           AND lesson.group_id=origin.group_id AND lesson.subject_id=origin.subject_id
+           AND lesson.semester_id=origin.semester_id AND lesson.lesson_type=origin.lesson_type
+           AND lesson.assignment_id IS NULL AND lesson.assigned_teacher_id IS NULL
+           AND authority.target_date>=origin.semester_from
+           AND authority.target_date<origin.semester_until_exclusive
+    )
+    SELECT origin.origin_assignment_id FROM admitted origin JOIN proven current_identity
+      ON current_identity.lesson_id=origin.current_lesson_id
+     AND current_identity.generation=origin.current_generation
+     AND current_identity.lesson_date=origin.current_date
 $$;
 CREATE FUNCTION assignment_unassigned_origin(occurrence_value BIGINT) RETURNS BIGINT LANGUAGE SQL STABLE AS $$
     SELECT COALESCE(assignment_unassigned_origin_legacy(occurrence_value),

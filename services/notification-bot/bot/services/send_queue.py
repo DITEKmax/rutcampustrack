@@ -27,6 +27,7 @@ class DeliveryBatch:
     def __init__(self):
         self.tasks = []
         self.futures = []
+        self.settled = {}
         self.cancelled = asyncio.Event()
         self.failure = None
 
@@ -46,6 +47,11 @@ class DeliveryBatch:
         except BaseException:
             self.cancel()
             raise
+
+    async def settle(self):
+        """Wait until cancelled workers can no longer write recipient receipts."""
+        self.cancel()
+        await asyncio.gather(*self.settled.values())
 
 
 def group_audience(academic_client, group_id, user_id, chat_id, *, headman=False):
@@ -129,6 +135,7 @@ class TelegramSendQueue:
         # changing what a broker-owned batch's waiter observes.
         future.add_done_callback(lambda done: done.exception() if not done.cancelled() else None)
         batch.futures.append(future)
+        batch.settled[future] = asyncio.get_running_loop().create_future()
         self._queue.put_nowait((task, batch, future))
 
     @asynccontextmanager
@@ -208,6 +215,9 @@ class TelegramSendQueue:
                 await asyncio.gather(
                     *(child for child in (sending, cancelled) if child is not None), return_exceptions=True
                 )
+                settlement = batch.settled[future]
+                if not settlement.done():
+                    settlement.set_result(None)
                 self._queue.task_done()
 
     async def _consume_token(self) -> None:

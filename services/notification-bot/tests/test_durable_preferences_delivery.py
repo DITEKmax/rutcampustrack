@@ -248,7 +248,7 @@ async def test_consumer_outage_release_failure_and_busy_lease_retry_until_one_co
     assert channel.default_exchange.publish.await_count == 2
     replacements = [call.args[0] for call in channel.default_exchange.publish.await_args_list]
     assert all(json.loads(replacement.body)["event_id"] == "event-1" for replacement in replacements)
-    assert all(replacement.headers[consumer.RETRY_HEADER] == 1 for replacement in replacements)
+    assert [replacement.headers[consumer.RETRY_HEADER] for replacement in replacements] == [1, 0]
     guard.complete.assert_awaited_once_with("event-1", "lease-2")
     assert sends._queue.qsize() == 0
     assert factory.await_count == 2

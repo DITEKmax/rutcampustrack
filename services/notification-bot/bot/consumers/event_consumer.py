@@ -175,6 +175,8 @@ async def start_consumer(
             if body is not None and "_bot_prepared" in body:
                 try:
                     async with asyncio.timeout(min(8, budget)):
+                        if batch is not None:
+                            await batch.settle()
                         snapshot = await dispatcher.snapshot_progress(body)
                     replacement_body = json.dumps(snapshot, ensure_ascii=False).encode("utf-8")
                 except BaseException:
@@ -185,9 +187,12 @@ async def start_consumer(
             reason, terminal = (reason, False) if reason is not None else failure_reason(error)
             headers = dict(getattr(message, "headers", None) or {})
             attempt = headers.get(RETRY_HEADER, 0)
+            coordination_wait = reason == "lease_busy"
             if type(attempt) is not int or not 0 <= attempt <= MAX_RETRIES:
-                reason, terminal, attempt = "invalid_retry_metadata", True, MAX_RETRIES
-            parked = terminal or attempt >= MAX_RETRIES
+                attempt = MAX_RETRIES
+                if not coordination_wait:
+                    reason, terminal = "invalid_retry_metadata", True
+            parked = not coordination_wait and (terminal or attempt >= MAX_RETRIES)
             EVENT_FAILURES.labels(reason).inc()
             cause = error
             seen = set()
@@ -209,12 +214,14 @@ async def start_consumer(
             )
             if not parked:
                 try:
-                    await asyncio.sleep(RETRY_DELAYS[attempt])
+                    await asyncio.sleep(RETRY_DELAYS[-1] if coordination_wait else RETRY_DELAYS[attempt])
                 except asyncio.CancelledError:
                     preparation["outcome"] = "cancelled"
                     await requeue(message, delay=False)
                     raise
-                headers[RETRY_HEADER] = attempt + 1
+                # Waiting for an active owner is not another handler failure. Do not
+                # park its duplicate before that owner can finish writing receipts.
+                headers[RETRY_HEADER] = attempt if coordination_wait else attempt + 1
             headers["x-bot-recovery-reason"] = reason
             replacement = aio_pika.Message(
                 replacement_body,

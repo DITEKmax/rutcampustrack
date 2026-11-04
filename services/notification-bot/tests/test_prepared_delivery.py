@@ -94,11 +94,11 @@ def broker(
             raise publish_error
 
     async def select(**kwargs):
-        assert kwargs == {"timeout": 8}
+        assert kwargs == {"timeout": min(8, guard._ttl)}
         operations.append("select")
 
     async def commit(**kwargs):
-        assert kwargs == {"timeout": 8}
+        assert kwargs == {"timeout": min(8, guard._ttl)}
         operations.append("commit")
         if fail_commit:
             raise RuntimeError("synthetic commit unavailable")
@@ -401,6 +401,122 @@ async def test_partial_progress_survives_retry_parking_and_redrive_after_receipt
         guard.complete.assert_awaited_once()
     finally:
         await queue.shutdown()
+
+
+@pytest.mark.parametrize("settles", [True, False])
+async def test_parking_snapshot_waits_for_inflight_receipt_writer_cleanup(monkeypatch, fake_redis, settles):
+    from bot.notifications.audience import NotificationDeliveryState
+    from bot.services.send_queue import SendTask, TelegramSendQueue
+
+    prepared = {
+        **PREPARED,
+        "_bot_prepared": {
+            **PREPARED["_bot_prepared"],
+            "recipients": [{"user_id": uid, "roles": ["STUDENT"]} for uid in (1, 2)],
+        },
+    }
+    receipts = NotificationDeliveryState(fake_redis)
+    entered, cancelling, finish_receipt = asyncio.Event(), asyncio.Event(), asyncio.Event()
+    queue = TelegramSendQueue()
+    queue.start()
+
+    async def first_recipient():
+        entered.set()
+        try:
+            await asyncio.Event().wait()
+        except asyncio.CancelledError:
+            cancelling.set()
+            await finish_receipt.wait()
+            await receipts.complete(EVENT["event_id"], 1)
+
+    async def second_recipient():
+        await entered.wait()
+        raise NotificationPreferencesUnavailable("synthetic authority failure")
+
+    async def release_receipt():
+        await cancelling.wait()
+        if not settles:
+            await asyncio.Event().wait()
+        await asyncio.sleep(0.02)  # Receipt writer is deliberately later than a raw snapshot read.
+        finish_receipt.set()
+
+    async def dispatch(body):
+        async with queue.staged() as batch:
+            await queue.put(SendTask(first_recipient, system_alert=True))
+            await queue.put(SendTask(second_recipient, system_alert=True))
+        return batch
+
+    state, _, _, _, guard = broker(
+        monkeypatch,
+        event=prepared,
+        prepared_transport=True,
+        headers={RETRY_HEADER: MAX_RETRIES},
+    )
+    if not settles:
+        guard._ttl = 1
+    writer = asyncio.create_task(release_receipt())
+    try:
+        await asyncio.wait_for(
+            start_consumer(
+                "amqp://synthetic",
+                SimpleNamespace(dispatch=dispatch, snapshot_progress=receipts.snapshot),
+                guard,
+            ),
+            3,
+        )
+        if settles:
+            assert state.replacements[0][0] == PARKING_QUEUE_NAME
+            assert state.published[0]["_bot_prepared"]["delivered_user_ids"] == [1]
+        else:
+            assert state.requeued and not state.acked and not state.published and not state.rejected
+    finally:
+        finish_receipt.set()
+        writer.cancel()
+        await asyncio.gather(writer, return_exceptions=True)
+        await queue.shutdown()
+
+
+@pytest.mark.parametrize("handoff", ["completed", "expired"])
+async def test_busy_owner_does_not_park_before_late_receipts_or_lease_handoff(monkeypatch, fake_redis, handoff):
+    from bot.notifications.audience import NotificationDeliveryState
+    from bot.services.idempotency_guard import BotIdempotencyGuard
+
+    receipts = NotificationDeliveryState(fake_redis)
+    guard = BotIdempotencyGuard(redis_client=fake_redis)
+    guard.release = AsyncMock(return_value=True)
+    await fake_redis.set(guard._key(EVENT["event_id"]), "processing:other-owner", ex=300)
+    dispatcher = SimpleNamespace(
+        dispatch=AsyncMock(side_effect=NotificationPreferencesUnavailable("authority failure")),
+        snapshot_progress=receipts.snapshot,
+    )
+    state, _, _, _, _ = broker(
+        monkeypatch,
+        event=PREPARED,
+        prepared_transport=True,
+        headers={RETRY_HEADER: MAX_RETRIES},
+    )
+    await asyncio.wait_for(start_consumer("amqp://synthetic", dispatcher, guard), 3)
+    route, body, headers = state.replacements[0]
+    assert route == QUEUE_NAME and headers[RETRY_HEADER] == MAX_RETRIES
+    dispatcher.dispatch.assert_not_awaited()
+    # The active owner confirms progress only after the waiting duplicate was republished.
+    await receipts.complete(EVENT["event_id"], 1)
+    if handoff == "completed":
+        await fake_redis.set(guard._key(EVENT["event_id"]), "completed", ex=7 * 24 * 3600)
+    else:
+        await fake_redis.pexpire(guard._key(EVENT["event_id"]), 1)
+        await asyncio.sleep(0.02)
+        assert await fake_redis.get(guard._key(EVENT["event_id"])) is None
+    state, _, _, _, _ = broker(monkeypatch, event=body, prepared_transport=True, headers=headers)
+    await asyncio.wait_for(start_consumer("amqp://synthetic", dispatcher, guard), 3)
+    assert state.acked
+    if handoff == "completed":
+        assert not state.published
+        dispatcher.dispatch.assert_not_awaited()
+    else:
+        dispatcher.dispatch.assert_awaited_once()
+        assert state.replacements[0][0] == PARKING_QUEUE_NAME
+        assert state.published[0]["_bot_prepared"]["delivered_user_ids"] == [1]
 
 
 async def test_cancel_during_retry_backoff_keeps_original_on_main_queue(monkeypatch):

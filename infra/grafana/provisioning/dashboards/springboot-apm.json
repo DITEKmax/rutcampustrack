@@ -231,7 +231,7 @@
     },
     {
       "datasource": { "uid": "PBFA97CFB590B2093" },
-      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" }, "custom": { "drawStyle": "line", "fillOpacity": 10, "lineWidth": 1, "showPoints": "never" }, "mappings": [], "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": 0 }] }, "unit": "short",
+      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" }, "custom": { "drawStyle": "line", "fillOpacity": 10, "lineWidth": 1, "showPoints": "never" }, "mappings": [], "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": 0 }] }, "unit": "bytes",
         "noValue": "NO DATA" }, "overrides": [] },
       "gridPos": { "h": 7, "w": 12, "x": 0, "y": 39 },
       "id": 82,
@@ -246,7 +246,7 @@
     },
     {
       "datasource": { "uid": "PBFA97CFB590B2093" },
-      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" }, "custom": { "drawStyle": "line", "fillOpacity": 10, "lineWidth": 1, "showPoints": "never" }, "mappings": [], "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": 0 }] }, "unit": "short",
+      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" }, "custom": { "drawStyle": "line", "fillOpacity": 10, "lineWidth": 1, "showPoints": "never" }, "mappings": [], "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": 0 }] }, "unit": "bytes",
         "noValue": "NO DATA" }, "overrides": [] },
       "gridPos": { "h": 7, "w": 12, "x": 12, "y": 39 },
       "id": 83,
@@ -312,16 +312,16 @@
     },
     {
       "datasource": { "uid": "PBFA97CFB590B2093" },
-      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" }, "custom": { "drawStyle": "line", "fillOpacity": 10, "lineWidth": 1, "showPoints": "never" }, "mappings": [], "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": 0 }] }, "unit": "s",
+      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" }, "custom": { "drawStyle": "line", "fillOpacity": 10, "lineWidth": 1, "showPoints": "never" }, "mappings": [], "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": 0 }] }, "unit": "percentunit",
         "noValue": "NO DATA" }, "overrides": [] },
       "gridPos": { "h": 10, "w": 12, "x": 12, "y": 55 },
       "id": 76,
       "options": { "legend": { "calcs": ["mean","max","min","sum"], "displayMode": "table", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "none" } },
       "pluginVersion": "12.4.2",
       "targets": [{ "datasource": { "uid": "PBFA97CFB590B2093" }, "expr": "irate(jvm_gc_pause_seconds_sum{instance=~\"$instance\", application=\"$application\"}[5m])", "legendFormat": "{{action}} [{{cause}}]", "refId": "A" }],
-      "title": "GC pause time per second",
+      "title": "GC pause time / elapsed time (s/s)",
       "type": "timeseries",
-      "description": "Seconds spent paused per second, not a per-GC latency."
+      "description": "GC pause seconds per elapsed second; 100% = one pause second per second. This is a rate, not an individual pause duration."
     },
     {
       "collapsed": false,

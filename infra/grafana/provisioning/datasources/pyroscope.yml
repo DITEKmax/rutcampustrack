@@ -1,11 +1,6 @@
-# Enable only when Grafana is attached to the standalone observer network.
+# Base deployment has no profiling backend. Remove any stale provisioned entry.
+# The optional observability ingress overlay replaces this file with the datasource.
 apiVersion: 1
-datasources:
+deleteDatasources:
   - name: Pyroscope
-    uid: pyroscope
-    type: grafana-pyroscope-datasource
-    access: proxy
-    url: http://pyroscope:4040
-    editable: false
-    jsonData:
-      minStep: 10s
+    orgId: 1

@@ -1615,7 +1615,7 @@ def main(host_and_bot_only=False, remaining_infra_only=False):
                     "GF_PATHS_PROVISIONING": "/etc/grafana/provisioning",
                 }
                 if name == "grafana"
-                else {}
+                else copy.deepcopy(service.get("environment", {}))
             )
             mounts = []
             for volume in service.get("volumes", []):
@@ -1652,7 +1652,7 @@ def main(host_and_bot_only=False, remaining_infra_only=False):
             # Use production images, collectors, host mounts and capabilities exactly.
             # Host capability absence is a failed precondition, never synthetic data.
             _STATE["phase"] = "HOST_EXPORTER_PRECONDITIONS"
-            host_paths = ["/proc", "/sys", "/var/run/dbus", "/var/lib/docker", "/dev/disk", "/dev/kmsg"]
+            host_paths = ["/proc", "/sys", "/var/run/dbus", "/var/lib/docker", "/dev/disk", "/dev/kmsg", "/run/containerd/containerd.sock"]
             missing_host_paths = [path for path in host_paths if not Path(path).exists()]
             _STATE["missing_host_paths"] = missing_host_paths
             assert not missing_host_paths, "host-exporter required mounts/devices unavailable: " + ",".join(

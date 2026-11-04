@@ -12,12 +12,18 @@ ROOT = Path(__file__).resolve().parents[3]
 DASH = ROOT / "infra/grafana/provisioning/dashboards"
 
 
-def dashboard_expr(name, panel_id):
-    data = json.loads((DASH / name).read_text())
+def dashboard_expr(name, panel_id, target=0):
+    data = json.loads((DASH / name).read_text(encoding="utf-8"))
+    def panels(items):
+        for item in items:
+            yield item
+            yield from panels(item.get("panels", []))
     return (
-        next(p for p in data["panels"] if p["id"] == panel_id)["targets"][0]["expr"]
+        next(p for p in panels(data["panels"]) if p["id"] == panel_id)["targets"][target]["expr"]
+        .replace("$__rate_interval", "5m")
+        .replace("$node", "host:9100")
         .replace("$environment", ".*")
-        .replace("$job", ".*")
+        .replace("$job", "node-exporter" if name == "node-exporter.json" else ".*")
         .replace("$instance", ".*")
     )
 
@@ -130,6 +136,45 @@ def long_window_fixture():
 
 def main():
     tests = []
+    # Zero denominator means unavailable, including valid zero disk activity.
+    node_labels = 'instance="host:9100",job="node-exporter",device="ens1"'
+    for id, numerator, denominator, expected in [
+        (300, "node_cooling_device_cur_state", "node_cooling_device_max_state", 50),
+        (37, "node_disk_read_time_seconds_total", "node_disk_reads_completed_total", 0.5),
+        (338, "node_network_receive_bytes_total", "node_network_speed_bytes", 0.5),
+    ]:
+        expr = dashboard_expr("node-exporter.json", id)
+        # The network numerator is a counter while link speed is a gauge.
+        num = "0+30x6" if id in (37, 338) else "50x6"
+        den = "0+60x6" if id == 37 else ("1x6" if id == 338 else "100x6")
+        tests.append(case([series(numerator + "{" + node_labels + "}", num),
+                           series(denominator + "{" + node_labels + "}", den)], expr,
+                          [sample("{" + node_labels + "}", expected)]))
+        tests.append(case([series(numerator + "{" + node_labels + "}", "0x6"),
+                           series(denominator + "{" + node_labels + "}", "0x6")], expr, []))
+    fs = alert_expr("telemetry-pipeline.yml", "FilesystemHeadroomLow")
+    fs_inputs = []
+    for mount, size, available in [("/boot", 2 * 1024**3, 1.8 * 1024**3),
+                                  ("/small-full", 2 * 1024**3, 0.1 * 1024**3),
+                                  ("/large-full", 100 * 1024**3, 3 * 1024**3)]:
+        labels = 'instance="host:9100",fstype="ext4",mountpoint="' + mount + '"'
+        fs_inputs.extend([series("node_filesystem_size_bytes{" + labels + "}", str(size) + "x6"),
+                          series("node_filesystem_avail_bytes{" + labels + "}", str(available) + "x6")])
+    tests.append(case(fs_inputs, fs, [
+        sample('node_filesystem_avail_bytes{instance="host:9100",fstype="ext4",mountpoint="/small-full"}', 0.1 * 1024**3),
+        sample('node_filesystem_avail_bytes{instance="host:9100",fstype="ext4",mountpoint="/large-full"}', 3 * 1024**3),
+    ]))
+    task_down = alert_expr("telemetry-pipeline.yml", "NotificationBotTaskDown")
+    tests.append(case([series('notification_bot_task_alive{task="keyboard_sync"}', "0x6"),
+                       series('notification_bot_task_alive{task="watchdog"}', "1x6"),
+                       series('notification_bot_task_alive{task="polling"}', "1x6"),
+                       series('notification_bot_consumer_connected', "1x6")], task_down, []))
+    coverage = alert_expr("telemetry-pipeline.yml", "CadvisorContainerMetricsMissing")
+    cad = 'job="cadvisor",instance="cadvisor:8080",environment="synthetic"'
+    tests.append(case([series('up{' + cad + '}', "1x6")], coverage,
+                      [sample('up{' + cad + '}', 1)]))
+    tests.append(case([series('up{' + cad + '}', "1x6"),
+                       series('container_last_seen{' + cad + ',name="rct-worker"}', "300x6")], coverage, []))
     disk = dashboard_expr("docker-monitoring.json", 26)
     tests.append(
         case(

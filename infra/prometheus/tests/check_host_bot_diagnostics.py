@@ -167,7 +167,7 @@ class HostBotControls(unittest.TestCase):
 
         original_exists = Path.exists
         original_read = Path.read_text
-        host_paths = {"/proc", "/sys", "/var/run/dbus", "/var/lib/docker", "/dev/disk", "/dev/kmsg"}
+        host_paths = {"/proc", "/sys", "/var/run/dbus", "/var/lib/docker", "/dev/disk", "/dev/kmsg", "/run/containerd/containerd.sock"}
         def exists(path):
             return True if str(path) in host_paths else original_exists(path)
         def read(path, *args, **kwargs):

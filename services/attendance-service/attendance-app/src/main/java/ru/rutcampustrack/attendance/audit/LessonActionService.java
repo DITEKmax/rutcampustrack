@@ -21,6 +21,12 @@ public class LessonActionService {
     private final Clock clock;
     private final OutboxStorage outbox;
     private final ObjectMapper mapper;
+    private ru.rutcampustrack.attendance.student.PairWriteCoordinator pairs;
+
+    @org.springframework.beans.factory.annotation.Autowired
+    public void setPairs(ru.rutcampustrack.attendance.student.PairWriteCoordinator pairs) {
+        this.pairs = pairs;
+    }
 
     public LessonActionService(
             MongoTemplate mongo, Clock clock, OutboxStorage outbox, ObjectMapper mapper) {
@@ -105,6 +111,13 @@ public class LessonActionService {
         if (!TransactionSynchronizationManager.isActualTransactionActive()) {
             throw new IllegalStateException(
                     "Lesson action must share the domain Mongo transaction");
+        }
+        if (pairs != null && payload.get("lesson_id") instanceof Number lesson) {
+            long semester = ((Number) payload.get("semester_id")).longValue();
+            long group = ((Number) payload.get("group_id")).longValue();
+            // Also covers independent rejected-attempt audit after its domain transaction rolled back.
+            pairs.lockAcceptedScheduleEffectLessons(semester, java.util.List.of(lesson.longValue()), group, at);
+            if (pairs.isSubjectDeleted(lesson.longValue(), semester, group)) return;
         }
         LessonActionDocument row = new LessonActionDocument();
         row.setId(id);

@@ -80,6 +80,10 @@ class ReportServiceTest {
 
     @BeforeEach
     void setUp() {
+        reportService.lessonTeacherAssignments(semester -> ru.rutcampustrack.teacher.grpc.TeacherAssignmentsResponse.newBuilder()
+                .addAssignments(ru.rutcampustrack.teacher.grpc.TeacherAssignment.newBuilder().setAssignmentId(900).setTeacherId(USER_ID)
+                        .setGroupId(GROUP_ID).setSubjectId(SUBJECT_ID_1).setSemesterId(SEMESTER_ID).setLessonType("lecture")
+                        .setValidFrom("2026-02-01").setValidUntilExclusive("2026-07-01")).build());
         lenient().when(requestContext.getUserId()).thenReturn(USER_ID);
         lenient().when(requestContext.getRole()).thenReturn(UserRole.STUDENT);
         lenient().when(requestContext.isHeadman()).thenReturn(true);
@@ -661,20 +665,20 @@ class ReportServiceTest {
         LessonAttendanceResponse response = reportService.getLessonAttendance(LESSON_ID);
 
         assertThat(response.getEntries()).isEmpty();
-        verify(academicGrpcClient).getCurrentTeacherSubjects(USER_ID);
+        verify(academicGrpcClient, never()).getCurrentTeacherSubjects(USER_ID);
     }
 
     @Test
-    void authorizeTeacherWithHistoricalDifferentSubjectAllowsCurrentGroup() {
-        assertThatCode(
+    void authorizeTeacherWithDifferentHistoricalTeacherDeniesCurrentGroup() {
+        assertThatThrownBy(
                         () ->
                                 reportService.authorizeTeacherLesson(
                                         lesson(SUBJECT_ID_1, GROUP_ID).toBuilder()
                                                 .setAssignedTeacherId(USER_ID + 1)
                                                 .build(),
                                         USER_ID))
-                .doesNotThrowAnyException();
-        verify(academicGrpcClient).getCurrentTeacherSubjects(USER_ID);
+                .isInstanceOf(AccessDeniedException.class);
+        verify(academicGrpcClient, never()).getCurrentTeacherSubjects(USER_ID);
     }
 
     @Test
@@ -690,19 +694,27 @@ class ReportServiceTest {
     @Test
     void authorizeTeacherWithDifferentGroupDeniesLesson() {
         when(requestContext.getRole()).thenReturn(UserRole.TEACHER);
-        when(academicGrpcClient.getCurrentTeacherSubjects(USER_ID))
-                .thenReturn(
-                        TeacherSubjectsResponse.newBuilder()
-                                .addSubjects(
-                                        TeacherSubjectInfo.newBuilder()
-                                                .setGroupId(GROUP_ID + 1)
-                                                .build())
-                                .build());
         when(scheduleGrpcClient.getLessonById(LESSON_ID))
-                .thenReturn(lesson(SUBJECT_ID_1, GROUP_ID));
+                .thenReturn(lesson(SUBJECT_ID_1, GROUP_ID + 1));
 
         assertThatThrownBy(() -> reportService.getLessonAttendance(LESSON_ID))
                 .isInstanceOf(AccessDeniedException.class);
+    }
+
+    @Test
+    void ownEndedPastAssignmentAllowsItsExactDatesButNotOutsideOrUnassigned() {
+        // Both bounds ended before now; the current-only subject API must not be consulted.
+        reportService.lessonTeacherAssignments(semester -> ru.rutcampustrack.teacher.grpc.TeacherAssignmentsResponse.newBuilder()
+                .addAssignments(ru.rutcampustrack.teacher.grpc.TeacherAssignment.newBuilder().setAssignmentId(900).setTeacherId(USER_ID)
+                        .setGroupId(GROUP_ID).setSubjectId(SUBJECT_ID_1).setSemesterId(SEMESTER_ID).setLessonType("lecture")
+                        .setValidFrom("2026-02-01").setValidUntilExclusive("2026-03-01")).build());
+        var past = lesson(SUBJECT_ID_1, GROUP_ID).toBuilder().setDate("2026-02-15").setStatus("closed").build();
+        assertThatCode(() -> reportService.authorizeTeacherLesson(past, USER_ID)).doesNotThrowAnyException();
+        for (var denied : List.of(past.toBuilder().setDate("2026-01-31").build(), past.toBuilder().setDate("2026-03-01").build(),
+                past.toBuilder().clearAssignmentId().clearAssignedTeacherId().build(), past.toBuilder().setAssignedTeacherId(USER_ID+1).build())) {
+            assertThatThrownBy(() -> reportService.authorizeTeacherLesson(denied, USER_ID)).isInstanceOf(AccessDeniedException.class);
+        }
+        verify(academicGrpcClient, never()).getCurrentTeacherSubjects(USER_ID);
     }
 
     @Test

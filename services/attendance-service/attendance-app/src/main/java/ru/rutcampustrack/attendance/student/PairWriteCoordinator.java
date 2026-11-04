@@ -110,14 +110,14 @@ public class PairWriteCoordinator {
                 .distinct()
                 .sorted(Comparator.naturalOrder())
                 .forEach(semesterId -> lockSemesterForWrite(semesterId, now));
-        lockLessonFences(lessonIds, groupId, now);
+        lockLessonFences(lessonIds, groupId, now, false);
     }
 
     /** Acquires the same fences for a trusted Schedule outbox effect before pair/domain locks. */
     public void lockAcceptedScheduleEffectLessons(
             long semesterId, Collection<Long> lessonIds, Long groupId, Instant now) {
         semesterArchiveFence.lockAcceptedScheduleEffect(semesterId, now);
-        lockLessonFences(lessonIds, groupId, now);
+        lockLessonFences(lessonIds, groupId, now, true);
     }
 
     @org.springframework.beans.factory.annotation.Autowired
@@ -125,7 +125,7 @@ public class PairWriteCoordinator {
                     ru.rutcampustrack.attendance.groupdeletion.GroupDeletionMongoFence>
             groupDeletion;
 
-    private void lockLessonFences(Collection<Long> lessonIds, Long groupId, Instant now) {
+    private void lockLessonFences(Collection<Long> lessonIds, Long groupId, Instant now, boolean acceptedEffect) {
         if (groupId != null && groupDeletion != null && groupDeletion.getIfAvailable() != null)
             groupDeletion.getObject().write(groupId);
         if (lessonIds == null || lessonIds.isEmpty()) {
@@ -159,6 +159,12 @@ public class PairWriteCoordinator {
                                     update,
                                     FindAndModifyOptions.options().upsert(true).returnNew(true),
                                     CheckinPairStateDocument.class);
+                            org.bson.Document constructor = mongoTemplate.findById(
+                                    lessonFenceId(lessonId), org.bson.Document.class, "student_checkin_pairs");
+                            if (constructor != null && constructor.get("constructor_delete_operation") != null
+                                    && !(acceptedEffect && Boolean.TRUE.equals(constructor.getBoolean("constructor_delete_committed")))) {
+                                throw new ConflictException("Пара закрыта для удаления; обнови данные");
+                            }
                             if (mongoTemplate.exists(
                                     Query.query(
                                             Criteria.where("_id")
@@ -181,6 +187,14 @@ public class PairWriteCoordinator {
         org.bson.Document row =
                 mongoTemplate.findById(
                         lessonFenceId(lessonId), org.bson.Document.class, "student_checkin_pairs");
+        if (row != null && Boolean.TRUE.equals(row.getBoolean("constructor_delete_committed"))) {
+            Object semester = row.get("constructor_delete_semester_id");
+            Object owner = row.get("constructor_delete_group_id");
+            if (!(semester instanceof Number n) || n.longValue() != semesterId
+                    || groupId != null && (!(owner instanceof Number g) || g.longValue() != groupId))
+                throw new ConflictException("Удалённая пара принадлежит другому scope");
+            return true;
+        }
         if (row == null || !Boolean.TRUE.equals(row.getBoolean("subject_delete_committed")))
             return false;
         Object semester = row.get("subject_delete_semester_id");

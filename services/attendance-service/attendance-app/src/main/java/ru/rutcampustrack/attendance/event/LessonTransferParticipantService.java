@@ -88,6 +88,12 @@ public class LessonTransferParticipantService {
                 event.groupId(),
                 now);
 
+        if (pairWriteCoordinator.isSubjectDeleted(event.source().lessonId(), event.semesterId(), event.groupId())
+                || pairWriteCoordinator.isSubjectDeleted(event.target().lessonId(), event.semesterId(), event.groupId())) {
+            completeError(event, "SOURCE_STATE_CONFLICT", now);
+            return;
+        }
+
         LessonTransferFenceDocument sourceFence = findFence(event.source().lessonId());
         LessonTransferFenceDocument targetFence = findFence(event.target().lessonId());
         if (sourceFence != null || targetFence != null) {

@@ -85,6 +85,16 @@ public class ReportService {
     private final Clock clock;
     private final JournalAttachmentPort journalAttachmentPort;
     private final HeadmanApprovedTicketResolver approvedTicketResolver;
+    private ru.rutcampustrack.attendance.report.planned.TeacherAssignmentReadPort lessonTeacherAssignments;
+
+    @Autowired
+    public void setLessonTeacherAssignments(ru.rutcampustrack.attendance.grpc.TeacherAcademicGrpcClient client) {
+        lessonTeacherAssignments = client::fullSemesterAssignments;
+    }
+
+    void lessonTeacherAssignments(ru.rutcampustrack.attendance.report.planned.TeacherAssignmentReadPort authority) {
+        lessonTeacherAssignments = authority;
+    }
 
     public ReportService(
             AttendanceReadPort attendanceReadPort,
@@ -170,7 +180,7 @@ public class ReportService {
     }
 
     public ReportService forPlan(AdmittedReportPlan plan) {
-        return new ReportService(
+        ReportService result = new ReportService(
                 attendanceReadPort,
                 plan,
                 plan,
@@ -179,6 +189,8 @@ public class ReportService {
                 plan.clock(),
                 journalAttachmentPort,
                 approvedTicketResolver);
+        result.lessonTeacherAssignments = plan;
+        return result;
     }
 
     private String statusSymbol(AttendanceStatus s) {
@@ -1853,9 +1865,8 @@ public class ReportService {
     }
 
     /**
-     * Reusable concrete-lesson gate for the dedicated teacher read boundary. Current active
-     * group+subject authority grants historical access within that subject, while the immutable
-     * Schedule snapshot supplies historical lesson data.
+     * Exact dated assignment gate. Full-semester authority includes a teacher's ended periods;
+     * current group/subject membership alone cannot authorize a concrete physical lesson.
      */
     public void authorizeTeacherLesson(LessonResponse lesson, Long teacherId) {
         if (lesson == null
@@ -1867,10 +1878,21 @@ public class ReportService {
                 || lesson.getAssignedTeacherId() <= 0
                 || lesson.getLessonType() == null
                 || lesson.getLessonType().isBlank()
-                || teacherId == null) {
+                || teacherId == null || teacherId <= 0 || lesson.getAssignedTeacherId() != teacherId
+                || lessonTeacherAssignments == null) {
             throw new AccessDeniedException("Teacher cannot read this lesson");
         }
-        authorizeTeacherSubject(lesson.getGroupId(), lesson.getSubjectId(), teacherId);
+        LocalDate date;
+        try { date = LocalDate.parse(lesson.getDate()); }
+        catch (RuntimeException invalid) { throw new AccessDeniedException("Teacher lesson date unavailable"); }
+        var authority = lessonTeacherAssignments.fullSemesterAssignments(lesson.getSemesterId());
+        if (authority == null || authority.getAssignmentsList().stream().noneMatch(info -> {
+            if (info.getTeacherId() != teacherId || info.getAssignmentId() != lesson.getAssignmentId()
+                    || info.getSemesterId() != lesson.getSemesterId() || info.getGroupId() != lesson.getGroupId()
+                    || info.getSubjectId() != lesson.getSubjectId() || !info.getLessonType().equalsIgnoreCase(lesson.getLessonType())) return false;
+            try { return !date.isBefore(LocalDate.parse(info.getValidFrom())) && date.isBefore(LocalDate.parse(info.getValidUntilExclusive())); }
+            catch (RuntimeException invalid) { return false; }
+        })) throw new AccessDeniedException("Teacher cannot read outside the dated assignment");
     }
 
     private void authorizeTeacherSubject(long groupId, long subjectId, long teacherId) {

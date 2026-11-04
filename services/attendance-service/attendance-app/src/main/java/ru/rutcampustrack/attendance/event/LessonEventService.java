@@ -162,6 +162,7 @@ public class LessonEventService {
         if ("transferred".equalsIgnoreCase(lesson.getStatus())) {
             pairWriteCoordinator.lockAcceptedScheduleEffectLessons(
                     eventSemesterId, java.util.List.of(lessonId), groupId, Instant.now());
+        if (pairWriteCoordinator.isSubjectDeleted(lessonId, eventSemesterId, groupId)) return;
             log.info(
                     "lesson.closed: transferred source {}, leaving attendance unchanged", lessonId);
             return;
@@ -169,6 +170,7 @@ public class LessonEventService {
 
         pairWriteCoordinator.lockAcceptedScheduleEffectLessons(
                 eventSemesterId, java.util.List.of(lessonId), groupId, Instant.now());
+        if (pairWriteCoordinator.isSubjectDeleted(lessonId, eventSemesterId, groupId)) return;
         validateLessonAttendanceSemesterScope(lessonId, eventSemesterId);
         validateCancellationMarkerSemesterScope(lessonId, eventSemesterId);
         resolveLegacyLessonAttendanceScope(lessonId, eventSemesterId);
@@ -219,6 +221,7 @@ public class LessonEventService {
                 List.of(snapshot.lessonId()),
                 snapshot.groupId(),
                 Instant.now());
+        if (pairWriteCoordinator.isSubjectDeleted(snapshot.lessonId(), snapshot.semesterId(), snapshot.groupId())) return;
         Query unknownScope =
                 Query.query(
                         new Criteria()
@@ -354,6 +357,7 @@ public class LessonEventService {
         requirePositive(semesterId, "semesterId");
         pairWriteCoordinator.lockAcceptedScheduleEffectLessons(
                 semesterId, java.util.List.of(lessonId), groupId, Instant.now());
+        if (pairWriteCoordinator.isSubjectDeleted(lessonId, semesterId, groupId)) return;
         if ("transferred".equalsIgnoreCase(snapshot.lesson().getStatus())) {
             return;
         }
@@ -476,6 +480,7 @@ public class LessonEventService {
         requirePositive(semesterId, "semesterId");
         pairWriteCoordinator.lockAcceptedScheduleEffectLessons(
                 semesterId, java.util.List.of(lessonId), groupId, Instant.now());
+        if (pairWriteCoordinator.isSubjectDeleted(lessonId, semesterId, groupId)) return;
         if (pairWriteCoordinator.isTransferredSource(lessonId)) {
             log.info(
                     "lesson.cancelled: transferred source {}, leaving moved attendance unchanged",
@@ -508,6 +513,7 @@ public class LessonEventService {
         requirePositive(semesterId, "semesterId");
         pairWriteCoordinator.lockAcceptedScheduleEffectLessons(
                 semesterId, java.util.List.of(lessonId), groupId, Instant.now());
+        if (pairWriteCoordinator.isSubjectDeleted(lessonId, semesterId, groupId)) return;
         if (pairWriteCoordinator.isTransferredSource(lessonId)) {
             return;
         }
@@ -689,6 +695,8 @@ public class LessonEventService {
         if (lessonIds.isEmpty()) return;
         pairWriteCoordinator.lockAcceptedScheduleEffectLessons(
                 semesterId, lessonIds, null, Instant.now());
+        lessonIds = lessonIds.stream().filter(id -> !pairWriteCoordinator.isSubjectDeleted(id, semesterId, null)).toList();
+        if (lessonIds.isEmpty()) return;
         validateDeletedAttendanceSemesterScopes(lessonIds, semesterId);
         java.util.List<AttendanceDocument> rows =
                 mongoTemplate.find(
@@ -719,6 +727,8 @@ public class LessonEventService {
         if (lessonIds.isEmpty()) return;
         pairWriteCoordinator.lockAcceptedScheduleEffectLessons(
                 semesterId, lessonIds, null, Instant.now());
+        lessonIds = lessonIds.stream().filter(id -> !pairWriteCoordinator.isSubjectDeleted(id, semesterId, null)).toList();
+        if (lessonIds.isEmpty()) return;
         validateDeletedAttendanceSemesterScopes(lessonIds, semesterId);
     }
 

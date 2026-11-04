@@ -1,3 +1,7 @@
+constructor:
+  rpc:
+    schedule-to-attendance-token-file: ${CONSTRUCTOR_RPC_SCHEDULE_TO_ATTENDANCE_TOKEN_FILE:}
+
 server:
   port: 9093
   tomcat:

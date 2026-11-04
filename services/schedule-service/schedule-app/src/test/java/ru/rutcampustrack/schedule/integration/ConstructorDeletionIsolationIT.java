@@ -20,6 +20,7 @@ import ru.rutcampustrack.schedule.contract.enums.LessonStatus;
 import ru.rutcampustrack.schedule.contract.enums.WeekType;
 import ru.rutcampustrack.schedule.grpc.AcademicGrpcClient;
 import ru.rutcampustrack.schedule.grpc.ScheduleSemesterArchiveWriteFence;
+import ru.rutcampustrack.schedule.grpc.ScheduleSemesterDeletionSnapshotReader;
 import ru.rutcampustrack.schedule.item.entity.ScheduleItem;
 import ru.rutcampustrack.schedule.lesson.LessonStatusTransitionJob;
 import ru.rutcampustrack.schedule.lesson.entity.Lesson;
@@ -42,6 +43,7 @@ class ConstructorDeletionIsolationIT extends AbstractScheduleIntegrationTest {
     @MockitoBean Clock clock;
     @Autowired PlatformTransactionManager transactions;
     @Autowired LessonStatusTransitionJob job;
+    @Autowired ScheduleSemesterDeletionSnapshotReader semesterSnapshots;
 
     @BeforeEach
     void prepare() {
@@ -215,12 +217,24 @@ VALUES(?,42,?,'DELETE_UNUSED_SERIES',?,?,100,1,ARRAY[?]::bigint[],
     }
 
     private void insertBarrier(String state) {
+        var snapshot = semesterSnapshots.read(1);
+        boolean deleting = state.startsWith("DELETE_") || state.equals("DELETED");
+        boolean sealed = state.equals("DELETE_SEALED") || state.equals("DELETED");
         jdbcTemplate.update(
-                "INSERT INTO"
-                    + " schedule_semester_archive_barriers(semester_id,operation_id,state_version,participant_state)"
-                    + " VALUES(1,?,1,?)",
+                """
+                INSERT INTO schedule_semester_archive_barriers
+                    (semester_id,operation_id,state_version,participant_state,
+                     expected_participant_digest,participant_digest,
+                     schedule_templates_count,one_off_lessons_count,lessons_count)
+                VALUES(1,?,1,?,?,?,?,?,?)
+                """,
                 UUID.randomUUID(),
-                state);
+                state,
+                deleting ? snapshot.participantDigest() : null,
+                sealed ? snapshot.participantDigest() : null,
+                sealed ? snapshot.scheduleTemplates() : null,
+                sealed ? snapshot.oneOffLessons() : null,
+                sealed ? snapshot.lessons() : null);
     }
 
     private void transition(UUID operation, String state) {

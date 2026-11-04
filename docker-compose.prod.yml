@@ -815,6 +815,10 @@ services:
       GRPC_SECRET: ${GRPC_SECRET}
       SCHEDULE_GRPC_TLS_ENABLED: 'true'
       SCHEDULE_GRPC_TLS_CA_PATH: /run/rct-schedule-tls/schedule-server.crt
+      ATTENDANCE_GRPC_HOST: attendance-service
+      ATTENDANCE_GRPC_PORT: '19093'
+      ATTENDANCE_GRPC_TLS_ENABLED: 'true'
+      ATTENDANCE_GRPC_TLS_CA_PATH: /run/rct-attendance-tls/attendance-server.crt
       AUTH_SERVICE_HOST: auth-service
       AUTH_SERVICE_PORT: '9090'
       API_GATEWAY_URL: http://api-gateway:8080
@@ -833,6 +837,7 @@ services:
       - ${AUTH_GRPC_TLS_DIR:?AUTH_GRPC_TLS_DIR must be set}/auth-server.crt:/run/rct-auth-tls/auth-server.crt:ro
       - ${SCHEDULE_GRPC_TLS_DIR:?SCHEDULE_GRPC_TLS_DIR must be set}/schedule-server.crt:/run/rct-schedule-tls/schedule-server.crt:ro
       - ${ACADEMIC_GRPC_TLS_DIR:?ACADEMIC_GRPC_TLS_DIR must be set}/academic-server.crt:/run/rct-academic-tls/academic-server.crt:ro
+      - ${ATTENDANCE_GRPC_TLS_DIR:?ATTENDANCE_GRPC_TLS_DIR must be set}/attendance-server.crt:/run/rct-attendance-tls/attendance-server.crt:ro
     networks:
       - private_net
     depends_on:

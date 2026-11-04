@@ -328,6 +328,41 @@ class RecurringScheduleItemIT extends AbstractScheduleIntegrationTest {
     }
 
     @Test
+    void initialNaturalPointerRejectsForeignPhysicalIdentityAndMissingGenerationAuthority() throws Exception {
+        createLifecycleItem();
+        long foreign=lessonOn("2026-02-02");long naturalAssignment=502L;
+        var template=new ru.rutcampustrack.schedule.item.entity.ScheduleItem();
+        template.setAssignmentId(naturalAssignment);template.setGroupId(GROUP_ID);template.setSubjectId(SUBJECT_ID);template.setSemesterId(SEMESTER_ID);
+        template.setDayOfWeek((short)4);template.setLessonNumber((short)2);template.setWeekType(WeekType.ALL);template.setRoom("B-202");
+        long item=saveFixtureScheduleItem(template).getId();
+        LocalDate validFrom=LocalDate.of(2026,2,16),validTo=LocalDate.of(2026,2,17);
+        jdbcTemplate.update("INSERT INTO schedule_assignment_fences(assignment_id,group_id,subject_id,semester_id,assigned_teacher_id,lesson_type,valid_from,cap_until_exclusive,creation_cap_until_exclusive) VALUES(?,?,?,?,?,'lecture',?,?,?)",
+                naturalAssignment,GROUP_ID,SUBJECT_ID,SEMESTER_ID,TEACHER_ID,validFrom,validTo,validTo);
+        var authority=assignmentAuthority(naturalAssignment,GROUP_ID,SUBJECT_ID,SEMESTER_ID,validFrom,validTo);
+        var retained=jdbcTemplate.queryForList("SELECT id FROM lessons ORDER BY id",Long.class);
+        long origins=jdbcTemplate.queryForObject("SELECT COUNT(*) FROM constructor_generation_origins",Long.class);
+        for (boolean missingAuthority:List.of(false,true)) {
+            var rejectedAtPointer=new java.util.concurrent.atomic.AtomicBoolean();
+            assertThatThrownBy(()->new TransactionTemplate(transactionManager).executeWithoutResult(status->{
+                materializationWriter.begin(item,ACTOR_ID,UUID.randomUUID(),authority,SEMESTER_FROM,SEMESTER_TO);
+                var at=java.time.OffsetDateTime.now(clock);
+                long occurrence=materializationWriter.insertOccurrence(item,LocalDate.of(2026,2,5),authority,at);
+                long physical=materializationWriter.insertPhysicalLesson(occurrence,at);
+                if (missingAuthority) jdbcTemplate.queryForObject(
+                        "SELECT set_config('rutcampustrack.constructor_materialization_operation_id','',TRUE)",String.class);
+                try {
+                    jdbcTemplate.update("UPDATE lesson_occurrences SET current_lesson_id=? WHERE id=?",missingAuthority?physical:foreign,occurrence);
+                } catch (DataAccessException rejected) {
+                    rejectedAtPointer.set(true);throw rejected;
+                }
+            })).isInstanceOf(DataAccessException.class);
+            assertThat(rejectedAtPointer).isTrue();
+        }
+        assertThat(jdbcTemplate.queryForList("SELECT id FROM lessons ORDER BY id",Long.class)).containsExactlyElementsOf(retained);
+        assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM constructor_generation_origins",Long.class)).isEqualTo(origins);
+    }
+
+    @Test
     void naturalUnassignedFutureCancellationRestoreAndTransferStayInsideSemester() throws Exception {
         LocalDate monday=configureRealDateFutureSemester();
         when(academicGrpcClient.getAssignmentsByIds(List.of(ASSIGNMENT_ID))).thenReturn(List.of(
@@ -547,7 +582,7 @@ class RecurringScheduleItemIT extends AbstractScheduleIntegrationTest {
                                         GROUP_ID,
                                         SUBJECT_ID,
                                         SEMESTER_ID)))
-                .andExpect(status().isConflict());
+                .andExpect(status().isForbidden());
 
         assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM schedule_items", Long.class))
                 .isEqualTo(0L);

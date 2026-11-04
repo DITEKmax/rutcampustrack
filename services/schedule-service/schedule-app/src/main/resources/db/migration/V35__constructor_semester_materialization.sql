@@ -195,7 +195,25 @@ CREATE FUNCTION constructor_lesson_insert_authorized(value JSONB) RETURNS BOOLEA
           AND (value->>'generation')::bigint=1 AND (value->>'revision')::bigint=1)
 $$;
 
--- Preserve both established functions verbatim, adding only a narrowly proven
+CREATE FUNCTION constructor_initial_pointer_authorized(before_value JSONB,after_value JSONB)
+RETURNS BOOLEAN LANGUAGE SQL STABLE AS $$
+    SELECT before_value->>'current_lesson_id' IS NULL
+       AND after_value->>'current_lesson_id' IS NOT NULL
+       AND before_value->>'one_off_lesson_id' IS NULL
+       AND (before_value-'current_lesson_id')=(after_value-'current_lesson_id')
+       AND constructor_occurrence_insert_authorized(before_value)
+       AND EXISTS(SELECT 1 FROM constructor_generation_origins origin
+           JOIN constructor_semester_materializations operation ON operation.operation_id=origin.operation_id
+           JOIN lessons lesson ON lesson.id=origin.lesson_id AND lesson.occurrence_id=origin.occurrence_id
+           WHERE origin.operation_id=NULLIF(current_setting('rutcampustrack.constructor_materialization_operation_id',TRUE),'')::uuid
+             AND operation.state='GENERATING'
+             AND origin.occurrence_id=(before_value->>'id')::bigint
+             AND origin.lesson_id=(after_value->>'current_lesson_id')::bigint
+             AND lesson.one_off_lesson_id IS NULL
+             AND constructor_lesson_insert_authorized(to_jsonb(lesson)))
+$$;
+
+-- Preserve the established functions verbatim, adding only a narrowly proven
 -- initial semester-origin branch before the existing assignment fence checks.
 DO $$ DECLARE definition TEXT; anchor INTEGER; BEGIN
     SELECT pg_get_functiondef('validate_recurring_occurrence_fence()'::regprocedure) INTO definition;
@@ -206,6 +224,10 @@ DO $$ DECLARE definition TEXT; anchor INTEGER; BEGIN
     anchor:=strpos(definition,'BEGIN');
     IF anchor=0 THEN RAISE EXCEPTION 'constructor physical admission anchor changed'; END IF;
     EXECUTE overlay(definition PLACING E'BEGIN\n IF TG_OP=''INSERT'' AND constructor_lesson_insert_authorized(to_jsonb(NEW)) THEN RETURN NEW; END IF;\n' FROM anchor FOR 5);
+    SELECT pg_get_functiondef('protect_occurrence_identity()'::regprocedure) INTO definition;
+    anchor:=strpos(definition,'BEGIN');
+    IF anchor=0 THEN RAISE EXCEPTION 'constructor initial pointer admission anchor changed'; END IF;
+    EXECUTE overlay(definition PLACING E'BEGIN\n IF TG_OP=''UPDATE'' AND constructor_initial_pointer_authorized(to_jsonb(OLD),to_jsonb(NEW)) THEN RETURN NEW; END IF;\n' FROM anchor FOR 5);
 END $$;
 
 ALTER FUNCTION assignment_unassigned_origin(BIGINT) RENAME TO assignment_unassigned_origin_legacy;

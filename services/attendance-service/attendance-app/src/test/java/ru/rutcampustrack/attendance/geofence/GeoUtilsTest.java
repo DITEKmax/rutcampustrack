@@ -12,6 +12,24 @@ import org.junit.jupiter.api.Test;
 class GeoUtilsTest {
 
     @Test
+    void isWithinRadius_includesExactComputedBoundaryAndRejectsSmallerRadius() {
+        double boundaryLat = 55.788328 + Math.toDegrees(200.0 / 6_371_000.0);
+        double distance = GeoUtils.distanceMeters(boundaryLat, 37.606637, 55.788328, 37.606637);
+
+        assertThat(distance).isCloseTo(200.0, within(0.000001));
+        assertThat(GeoUtils.isWithinRadius(boundaryLat, 37.606637, 55.788328, 37.606637, distance))
+                .isTrue();
+        assertThat(
+                        GeoUtils.isWithinRadius(
+                                boundaryLat,
+                                37.606637,
+                                55.788328,
+                                37.606637,
+                                Math.nextDown(distance)))
+                .isFalse();
+    }
+
+    @Test
     void distanceMeters_samePoint_returnsZero() {
         double distance = GeoUtils.distanceMeters(55.7558, 37.6173, 55.7558, 37.6173);
         assertThat(distance).isCloseTo(0.0, within(0.001));

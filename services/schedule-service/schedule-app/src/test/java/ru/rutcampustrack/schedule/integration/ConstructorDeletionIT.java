@@ -22,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
@@ -51,6 +52,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 /** Real SQL manifests, durable phase boundaries and public replay authorization. */
 @AutoConfigureMockMvc
+@TestPropertySource(properties = "server.address=127.0.0.1")
 class ConstructorDeletionIT extends AbstractScheduleIntegrationTest {
     @MockitoBean AcademicGrpcClient academic;
     @MockitoBean ConstructorParticipantClients participants;
@@ -170,6 +172,17 @@ class ConstructorDeletionIT extends AbstractScheduleIntegrationTest {
                                 .asText())
                 .isEqualTo("COMMITTING");
         assertThat(count("lessons")).isEqualTo(3);
+        for (String barrier : List.of("READY", "DELETE_PREPARING")) {
+            assertThatThrownBy(
+                            () ->
+                                    jdbcTemplate.update(
+                                            "INSERT INTO"
+                                                + " schedule_semester_archive_barriers(semester_id,operation_id,state_version,participant_state)"
+                                                + " VALUES(30,?,1,?)",
+                                            UUID.randomUUID(),
+                                            barrier))
+                    .isInstanceOf(DataAccessException.class);
+        }
         mvc.perform(
                         actor(delete("/schedule/items/{id}", item))
                                 .header("Idempotency-Key", key)

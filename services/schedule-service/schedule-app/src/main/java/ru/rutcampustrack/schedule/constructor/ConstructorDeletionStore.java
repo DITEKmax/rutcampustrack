@@ -226,7 +226,7 @@ SELECT to_jsonb(origin)::text AS data FROM constructor_generation_origins origin
             if (lesson.path("is_geo_blocked").asBoolean()
                     || lesson.path("is_blocked_by_headman").asBoolean())
                 protect(reasons, "USER_ACTION", occurrence);
-            for (Long occurrence :
+            for (Long protectedOccurrence :
                     jdbc.query(
                             "SELECT DISTINCT occurrence_id FROM schedule_assignment_binding_ledger"
                                     + " WHERE occurrence_id=ANY(?::bigint[]) UNION SELECT DISTINCT"
@@ -234,11 +234,12 @@ SELECT to_jsonb(origin)::text AS data FROM constructor_generation_origins origin
                                     + " occurrence_id=ANY(?::bigint[])",
                             (rs, index) -> rs.getLong(1),
                             array(occurrenceIds),
-                            array(occurrenceIds))) protect(reasons, "USER_ACTION", occurrence);
+                            array(occurrenceIds)))
+                protect(reasons, "USER_ACTION", protectedOccurrence);
             // The authoritative local outbox closes the gap before Attendance consumes
             // an edit audit. Binding/replacement ledgers above retain this evidence
             // after outbox retention has removed already delivered events.
-            for (Long occurrence :
+            for (Long protectedOccurrence :
                     jdbc.query(
                             "SELECT DISTINCT lesson.occurrence_id FROM schedule_outbox event JOIN"
                                     + " lessons lesson ON"
@@ -248,7 +249,8 @@ SELECT to_jsonb(origin)::text AS data FROM constructor_generation_origins origin
                                     + " event.payload->'payload'->>'action' NOT"
                                     + " IN('LESSON_CREATED','LESSON_CANCELLED')",
                             (rs, index) -> rs.getLong(1),
-                            array(occurrenceIds))) protect(reasons, "USER_ACTION", occurrence);
+                            array(occurrenceIds)))
+                protect(reasons, "USER_ACTION", protectedOccurrence);
             if ("transferred".equals(lesson.path("status").asText()))
                 protect(reasons, "TRANSFER", occurrence);
             long expectedRevision =
@@ -551,6 +553,20 @@ VALUES(?,?,?,'DELETE_UNUSED_SERIES',?,?,?,?,?::bigint[],?,?,?::jsonb,?,?,'PREPAR
                         + " IN('COMPLETED','RELEASED') AND next_attempt_at<=NOW() ORDER BY"
                         + " next_attempt_at LIMIT 4",
                 (rs, index) -> rs.getObject(1, UUID.class));
+    }
+
+    /**
+     * Called after the status job holds the same semester locks as deletion admission. Completed
+     * tombstones also cover entities loaded before concurrent physical deletion.
+     */
+    public Set<Long> fencedScheduleItemsInSemesters(Set<Long> semesters) {
+        if (semesters.isEmpty()) return Set.of();
+        return Set.copyOf(
+                jdbc.query(
+                        "SELECT DISTINCT unnest(family_ids) FROM constructor_deletion_operations"
+                                + " WHERE semester_id=ANY(?::bigint[]) AND state<>'RELEASED'",
+                        (rs, index) -> rs.getLong(1),
+                        array(semesters.stream().sorted().toList())));
     }
 
     public void assertCreateNotDeleted(long actor, UUID key, byte[] payloadHash, long group) {

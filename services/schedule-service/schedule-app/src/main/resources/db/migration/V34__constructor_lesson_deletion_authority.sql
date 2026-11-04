@@ -77,6 +77,14 @@ $$;
 
 CREATE FUNCTION guard_constructor_deletion_operation() RETURNS TRIGGER LANGUAGE plpgsql AS $$
 BEGIN
+    IF TG_OP='INSERT' THEN
+        PERFORM pg_advisory_xact_lock(5452097,(NEW.semester_id % 2147483647)::integer);
+        IF EXISTS(SELECT 1 FROM schedule_semester_archive_barriers
+            WHERE semester_id=NEW.semester_id AND participant_state<>'RELEASED') THEN
+            RAISE EXCEPTION 'semester archive or deletion already admitted';
+        END IF;
+        RETURN NEW;
+    END IF;
     IF TG_OP='DELETE' THEN RAISE EXCEPTION 'constructor control receipt must be retained'; END IF;
     IF (to_jsonb(NEW)-ARRAY['state','deleted_count','protected_count','error_code','attempts',
             'next_attempt_at','updated_at']) IS DISTINCT FROM
@@ -93,8 +101,22 @@ BEGIN
     RETURN NEW;
 END $$;
 CREATE TRIGGER constructor_deletion_operation_guard
-    BEFORE UPDATE OR DELETE ON constructor_deletion_operations
+    BEFORE INSERT OR UPDATE OR DELETE ON constructor_deletion_operations
     FOR EACH ROW EXECUTE FUNCTION guard_constructor_deletion_operation();
+
+CREATE FUNCTION guard_constructor_deletion_archive_race() RETURNS TRIGGER LANGUAGE plpgsql AS $$
+BEGIN
+    PERFORM pg_advisory_xact_lock(5452097,(NEW.semester_id % 2147483647)::integer);
+    IF NEW.participant_state<>'RELEASED' AND EXISTS(
+        SELECT 1 FROM constructor_deletion_operations WHERE semester_id=NEW.semester_id
+            AND state IN('PREPARING','SEALED','COMMITTING','RELEASING')) THEN
+        RAISE EXCEPTION 'constructor deletion is not complete';
+    END IF;
+    RETURN NEW;
+END $$;
+CREATE TRIGGER a0_constructor_delete_archive_race
+    BEFORE INSERT OR UPDATE ON schedule_semester_archive_barriers
+    FOR EACH ROW EXECUTE FUNCTION guard_constructor_deletion_archive_race();
 
 CREATE FUNCTION guard_constructor_scope_write() RETURNS TRIGGER LANGUAGE plpgsql AS $$
 DECLARE value JSONB; target_item BIGINT;

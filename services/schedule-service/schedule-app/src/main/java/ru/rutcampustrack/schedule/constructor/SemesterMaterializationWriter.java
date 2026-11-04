@@ -47,19 +47,37 @@ public class SemesterMaterializationWriter {
             RecurringAssignmentAuthority authority,
             LocalDate from,
             LocalDate until) {
+        return begin(itemId, actor, key, authority, from, until, "USER", "CREATE");
+    }
+
+    public UUID replay(Long actor, UUID key, String source, String kind, long item) {
+        var rows = jdbc.queryForList(
+                "SELECT operation_id,requested_item_id,request_kind FROM constructor_semester_materializations "
+                        + "WHERE actor_id IS NOT DISTINCT FROM ? AND request_key=? AND source_kind=?",
+                actor, key, source);
+        if (rows.isEmpty()) return null;
+        var row = rows.getFirst();
+        if (((Number) row.get("requested_item_id")).longValue() != item || !kind.equals(row.get("request_kind")))
+            throw ConstructorLifecycleException.conflict("MATERIALIZATION_KEY_CONFLICT");
+        return (UUID) row.get("operation_id");
+    }
+
+    public UUID begin(
+            long itemId, Long actor, UUID key, RecurringAssignmentAuthority authority,
+            LocalDate from, LocalDate until, String source, String kind) {
         requireTransaction();
         UUID operation = UUID.nameUUIDFromBytes(
-                ("SEMESTER_MATERIALIZATION|" + actor + "|" + key).getBytes(StandardCharsets.UTF_8));
+                ("SEMESTER_MATERIALIZATION|" + source + "|" + actor + "|" + key).getBytes(StandardCharsets.UTF_8));
         List<Long> family = familyIds(itemId);
         jdbc.update(
                 """
                 INSERT INTO constructor_semester_materializations
                     (operation_id,actor_id,request_key,requested_item_id,group_id,subject_id,
-                     semester_id,family_ids,semester_from,semester_until_exclusive,state)
-                VALUES (?,?,?,?,?,?,?,?::bigint[],?,?,'GENERATING')
+                     semester_id,family_ids,semester_from,semester_until_exclusive,state,source_kind,request_kind)
+                VALUES (?,?,?,?,?,?,?,?::bigint[],?,?,'GENERATING',?,?)
                 """,
                 operation, actor, key, itemId, authority.groupId(), authority.subjectId(),
-                authority.semesterId(), array(family), from, until.plusDays(1));
+                authority.semesterId(), array(family), from, until.plusDays(1), source, kind);
         jdbc.queryForObject("SELECT set_config(?,?,TRUE)", String.class, SETTING, operation.toString());
         return operation;
     }
@@ -118,7 +136,7 @@ public class SemesterMaterializationWriter {
                 occurrence, activeOperation());
         LocalDate day = date(origin.get("occurrence_date"));
         LocalTime start = time(origin.get("start_time")), end = time(origin.get("end_time"));
-        LocalDateTime now = LocalDateTime.ofInstant(clock.instant(), MOSCOW);
+        LocalDateTime now = at.atZoneSameInstant(MOSCOW).toLocalDateTime();
         String status = !day.atTime(end).plusMinutes(5).isAfter(now) ? "closed"
                 : !day.atTime(start).isAfter(now) ? "active" : "planned";
         jdbc.update(
@@ -126,9 +144,9 @@ public class SemesterMaterializationWriter {
                 INSERT INTO lessons
                     (id,schedule_item_id,occurrence_id,assignment_id,group_id,subject_id,semester_id,
                      assigned_teacher_id,lesson_type,lesson_number,day_of_week,start_time,end_time,
-                     room_snapshot,week_type_snapshot,generation,revision,date,status,is_geo_blocked,
+                    room_snapshot,week_type_snapshot,generation,revision,date,status,is_geo_blocked,
                      created_at,closed_at)
-                OVERRIDING SYSTEM VALUE VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?::week_type,1,1,?,?::lesson_status,FALSE,?,?)
+                OVERRIDING SYSTEM VALUE VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,1,1,?,?::lesson_status,FALSE,?,?)
                 """,
                 origin.get("lesson_id"), origin.get("schedule_item_id"), occurrence,
                 origin.get("initial_assignment_id"), origin.get("group_id"), origin.get("subject_id"),
@@ -174,8 +192,9 @@ public class SemesterMaterializationWriter {
             byte[] hash = ConstructorHashes.sha256(command.build().toByteArray());
             command.setBatchHash(ByteString.copyFrom(hash));
             jdbc.update(
-                    "INSERT INTO constructor_materialization_work(operation_id,batch_index,command,batch_hash) VALUES(?,?,?,?)",
-                    operation, batch, command.build().toByteArray(), hash);
+                    "INSERT INTO constructor_materialization_work(operation_id,batch_index,command,batch_hash,lesson_count,lesson_ids) VALUES(?,?,?,?,?,?::bigint[])",
+                    operation, batch, command.build().toByteArray(), hash, command.getLessonsCount(),
+                    array(command.getLessonsList().stream().map(PastLessonIdentity::getLessonId).toList()));
         }
         jdbc.update("UPDATE constructor_semester_materializations SET state=? WHERE operation_id=?",
                 batches == 0 ? "COMPLETED" : "PENDING", operation);

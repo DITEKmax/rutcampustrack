@@ -36,6 +36,12 @@ public class RecurringScheduleItemLifecycleWriter {
     private final LessonTransferWriter transfers;
     private final ScheduleSemesterArchiveWriteFence archiveFence;
     private final ApplicationEventPublisher events;
+    private ru.rutcampustrack.schedule.lesson.RecurringLessonLifecycleWriter naturalLifecycle;
+
+    @org.springframework.beans.factory.annotation.Autowired
+    public void setNaturalLifecycle(ru.rutcampustrack.schedule.lesson.RecurringLessonLifecycleWriter writer) {
+        this.naturalLifecycle=writer;
+    }
 
     public RecurringScheduleItemLifecycleWriter(
             JdbcTemplate jdbc,
@@ -164,7 +170,10 @@ public class RecurringScheduleItemLifecycleWriter {
                         number(current.get("id")),
                         number(current.get("lifecycle_revision")));
             }
+            UUID materialization=creation.beginLifecycleMaterialization(itemId,actor,key,
+                    authorities.get(number(requested.get("assignment_id"))),from,to);
             List<TransferLessonResponse> accepted = apply(plan, operation, actor, prepared, now);
+            creation.finishLifecycleMaterialization(materialization);
             ScheduleItemResponse response = response(itemId);
             response.setTransfers(accepted);
             response.setLifecycleResult(
@@ -243,7 +252,10 @@ public class RecurringScheduleItemLifecycleWriter {
                         now,
                         number(current.get("id")));
             }
+            UUID materialization=creation.beginLifecycleMaterialization(itemId,actor,key,
+                    authorities.get(number(requested.get("assignment_id"))),from,to);
             List<TransferLessonResponse> accepted = apply(plan, operation, actor, prepared, now);
+            creation.finishLifecycleMaterialization(materialization);
             List<LocalDate> generated = new ArrayList<>();
             plan.created.forEach(c -> generated.add(c.date));
             plan.restored.forEach(r -> generated.add(date(r.get("occurrence_date"))));
@@ -374,13 +386,9 @@ public class RecurringScheduleItemLifecycleWriter {
             covered.add(day);
             if (!day.atTime(time(row.get("start_time"))).isAfter(now)
                     || Boolean.TRUE.equals(row.get("manual_transfer"))) continue;
-            Map<String, Object> target = null;
-            for (Map<String, Object> candidate : items) {
-                if (desired.get(number(candidate.get("id"))).contains(day)) {
-                    target = candidate;
-                    break;
-                }
-            }
+            Map<String, Object> target = targetForDate(items,desired,day,false,reactivate);
+            if (row.get("assignment_id")==null && desired.get(number(row.get("schedule_item_id"))).contains(day))
+                target=item(items,number(row.get("schedule_item_id")));
             String status = String.valueOf(row.get("status"));
             if ("planned".equals(status)) {
                 if (Boolean.TRUE.equals(row.get("pending_transfer")))
@@ -403,11 +411,11 @@ public class RecurringScheduleItemLifecycleWriter {
                         array(itemIds(items)))) {
             covered.add(date(lesson.get("date")));
         }
-        if (!delete)
-            for (Map<String, Object> current : items) {
-                if (!reactivate && !Boolean.TRUE.equals(current.get("is_active"))) continue;
-                for (LocalDate day :
-                        desired.get(number(current.get("id"))).stream().sorted().toList()) {
+        if (!delete) {
+                Set<LocalDate> allDesired=new java.util.TreeSet<>();desired.values().forEach(allDesired::addAll);
+                for (LocalDate day : allDesired) {
+                    Map<String,Object> current=targetForDate(items,desired,day,true,reactivate);
+                    if (current==null) continue;
                     if (!day.atTime(time(current.get("start_time"))).isAfter(now)
                             || covered.contains(day)) continue;
                     covered.add(day);
@@ -418,8 +426,23 @@ public class RecurringScheduleItemLifecycleWriter {
                                     authorities.get(number(current.get("assignment_id"))),
                                     createRequest(current, request)));
                 }
-            }
+        }
         return plan;
+    }
+
+    private Map<String,Object> targetForDate(List<Map<String,Object>> items,Map<Long,Set<LocalDate>> desired,
+            LocalDate day,boolean creating,boolean reactivate) {
+        Map<String,Object> fallback=null;
+        for (var candidate:items) {
+            if (!desired.get(number(candidate.get("id"))).contains(day)
+                    || creating && !reactivate && !Boolean.TRUE.equals(candidate.get("is_active"))) continue;
+            fallback=candidate;
+            var fence=jdbc.queryForMap("SELECT valid_from,creation_cap_until_exclusive FROM schedule_assignment_fences WHERE assignment_id=?",
+                    number(candidate.get("assignment_id")));
+            if (!day.isBefore(date(fence.get("valid_from"))) && day.isBefore(date(fence.get("creation_cap_until_exclusive"))))
+                return candidate;
+        }
+        return fallback;
     }
 
     private List<TransferLessonResponse> apply(
@@ -453,7 +476,22 @@ public class RecurringScheduleItemLifecycleWriter {
                             operation,
                             prepared));
         }
-        for (Map<String, Object> row : plan.restored) restore(row, operation, actor, now);
+        for (Map<String, Object> row : plan.restored) {
+            if (row.get("assignment_id")==null) {
+                if (naturalLifecycle==null) throw new ConflictException("Не подтверждено восстановление пары без назначения");
+                long restored=naturalLifecycle.restore(number(row.get("current_lesson_id")),actor);
+                @SuppressWarnings("unchecked") var observedTarget=(Map<String,Object>)row.get("target_item");
+                // The template room has already changed in this transaction.
+                var target=readItems(List.of(number(observedTarget.get("id")))).getFirst();
+                if (!Objects.equals(row.get("room_snapshot"),target.get("room"))) {
+                    String revision=String.valueOf(jdbc.queryForObject("SELECT revision FROM lesson_occurrences WHERE id=?",Long.class,row.get("id")));
+                    accepted.add(transfers.transferForTemplate(restored,actor,new TransferLessonRequest(
+                            date(row.get("occurrence_date")),(int)number(row.get("lesson_number")),
+                            time(row.get("start_time")),time(row.get("end_time")),(String)target.get("room"),revision,
+                            UUID.nameUUIDFromBytes((operation+":restore:"+row.get("id")).getBytes(StandardCharsets.UTF_8))),operation,prepared));
+                }
+            } else restore(row, operation, actor, now);
+        }
         for (NewDate generated : plan.created) {
             long itemId = number(generated.item.get("id"));
             long occurrence =

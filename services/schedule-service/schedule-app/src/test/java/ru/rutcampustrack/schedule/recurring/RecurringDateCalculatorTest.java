@@ -14,7 +14,7 @@ import ru.rutcampustrack.schedule.lesson.LessonGenerationService;
 class RecurringDateCalculatorTest {
 
     @Test
-    void midpointCreationKeepsEarlierSemesterDatesAndStopsAtExclusiveCap() {
+    void midpointCreationCoversWholeSemesterIndependentlyOfAssignmentCap() {
         CreateScheduleItemRequest request = request(WeekType.ALL);
         RecurringAssignmentAuthority authority =
                 authority(LocalDate.of(2026, 8, 20), LocalDate.of(2026, 10, 1));
@@ -28,9 +28,9 @@ class RecurringDateCalculatorTest {
                         LocalDate.of(2026, 10, 1));
 
         assertThat(dates).contains(LocalDate.of(2026, 9, 7), LocalDate.of(2026, 9, 28));
-        assertThat(dates).doesNotContain(LocalDate.of(2026, 10, 5));
+        assertThat(dates).contains(LocalDate.of(2026, 10, 5), LocalDate.of(2026, 10, 12));
         assertThat(dates).isSorted();
-        assertThat(dates.getLast()).isBefore(LocalDate.of(2026, 10, 1));
+        assertThat(dates.getLast()).isEqualTo(LocalDate.of(2026, 10, 12));
     }
 
     @Test

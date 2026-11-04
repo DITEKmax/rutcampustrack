@@ -2,7 +2,9 @@
 -- A natural unassigned origin is not a fabricated CLOSE_UNASSIGN operation.
 CREATE TABLE constructor_semester_materializations (
     operation_id UUID PRIMARY KEY,
-    actor_id BIGINT NOT NULL CHECK(actor_id>0),
+    actor_id BIGINT,
+    source_kind VARCHAR(24) NOT NULL DEFAULT 'USER' CHECK(source_kind IN('USER','SYSTEM_BACKFILL')),
+    request_kind VARCHAR(16) NOT NULL DEFAULT 'CREATE' CHECK(request_kind IN('CREATE','BACKFILL')),
     request_key UUID NOT NULL,
     requested_item_id BIGINT NOT NULL CHECK(requested_item_id>0),
     group_id BIGINT NOT NULL CHECK(group_id>0),
@@ -13,8 +15,36 @@ CREATE TABLE constructor_semester_materializations (
     semester_until_exclusive DATE NOT NULL CHECK(semester_until_exclusive>semester_from),
     state VARCHAR(32) NOT NULL CHECK(state IN('GENERATING','PENDING','COMPLETED','COVERAGE_UNAVAILABLE')),
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    UNIQUE(actor_id,request_key)
+    CHECK((source_kind='USER' AND actor_id IS NOT NULL AND actor_id>0) OR (source_kind='SYSTEM_BACKFILL' AND actor_id IS NULL AND request_kind='BACKFILL'))
 );
+CREATE UNIQUE INDEX constructor_materialization_request_key ON constructor_semester_materializations
+    (source_kind,COALESCE(actor_id,0),request_key);
+
+CREATE TABLE constructor_system_materialization_runs (
+    operation_id UUID PRIMARY KEY,
+    group_id BIGINT NOT NULL CHECK(group_id>0),
+    semester_id BIGINT NOT NULL CHECK(semester_id>0),
+    item_ids BIGINT[] NOT NULL CHECK(cardinality(item_ids) BETWEEN 1 AND 128),
+    scope_hash BYTEA NOT NULL CHECK(octet_length(scope_hash)=32),
+    state VARCHAR(16) NOT NULL DEFAULT 'PENDING' CHECK(state IN('PENDING','COMPLETED')),
+    attempts INTEGER NOT NULL DEFAULT 0 CHECK(attempts>=0),
+    next_attempt_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE FUNCTION guard_constructor_system_run() RETURNS TRIGGER LANGUAGE plpgsql AS $$
+BEGIN
+    IF TG_OP='DELETE' OR OLD.state<>'PENDING'
+       OR (to_jsonb(NEW)-ARRAY['state','attempts','next_attempt_at','updated_at']) IS DISTINCT FROM
+          (to_jsonb(OLD)-ARRAY['state','attempts','next_attempt_at','updated_at']) THEN
+        RAISE EXCEPTION 'system materialization admission is immutable';
+    END IF;
+    RETURN NEW;
+END $$;
+
+
+CREATE TRIGGER constructor_system_run_guard BEFORE UPDATE OR DELETE ON constructor_system_materialization_runs
+    FOR EACH ROW EXECUTE FUNCTION guard_constructor_system_run();
 
 CREATE TABLE constructor_generation_origins (
     occurrence_id BIGINT PRIMARY KEY CHECK(occurrence_id>0),
@@ -45,6 +75,9 @@ CREATE TABLE constructor_materialization_work (
     batch_index INTEGER NOT NULL CHECK(batch_index>=0),
     command BYTEA NOT NULL,
     batch_hash BYTEA NOT NULL CHECK(octet_length(batch_hash)=32),
+    lesson_ids BIGINT[] NOT NULL CHECK(cardinality(lesson_ids) BETWEEN 1 AND 128),
+    lesson_count INTEGER NOT NULL CHECK(lesson_count=cardinality(lesson_ids)),
+    coverage_unavailable_count INTEGER NOT NULL DEFAULT 0 CHECK(coverage_unavailable_count BETWEEN 0 AND lesson_count),
     state VARCHAR(32) NOT NULL DEFAULT 'PENDING' CHECK(state IN('PENDING','APPLIED','COVERAGE_UNAVAILABLE')),
     attempts INTEGER NOT NULL DEFAULT 0 CHECK(attempts>=0),
     lease_token UUID,
@@ -67,8 +100,8 @@ BEGIN
             RAISE EXCEPTION 'constructor materialization identity or transition changed';
         END IF;
     ELSE
-        IF (to_jsonb(NEW)-ARRAY['state','attempts','lease_token','lease_until','next_attempt_at','updated_at'])
-            IS DISTINCT FROM (to_jsonb(OLD)-ARRAY['state','attempts','lease_token','lease_until','next_attempt_at','updated_at'])
+        IF (to_jsonb(NEW)-ARRAY['state','attempts','lease_token','lease_until','next_attempt_at','updated_at','coverage_unavailable_count'])
+            IS DISTINCT FROM (to_jsonb(OLD)-ARRAY['state','attempts','lease_token','lease_until','next_attempt_at','updated_at','coverage_unavailable_count'])
            OR OLD.state<>'PENDING' OR NEW.state NOT IN('PENDING','APPLIED','COVERAGE_UNAVAILABLE') THEN
             RAISE EXCEPTION 'constructor materialization batch identity or transition changed';
         END IF;
@@ -88,8 +121,8 @@ DECLARE operation constructor_semester_materializations%ROWTYPE;
 BEGIN
     IF TG_OP<>'INSERT' THEN RAISE EXCEPTION 'constructor generation origin is immutable'; END IF;
     SELECT * INTO operation FROM constructor_semester_materializations WHERE operation_id=NEW.operation_id;
-    SELECT * INTO item FROM schedule_items WHERE id=NEW.schedule_item_id;
-    SELECT * INTO fence FROM schedule_assignment_fences WHERE assignment_id=NEW.origin_assignment_id;
+    SELECT * INTO fence FROM schedule_assignment_fences WHERE assignment_id=NEW.origin_assignment_id FOR UPDATE;
+    SELECT * INTO item FROM schedule_items WHERE id=NEW.schedule_item_id FOR UPDATE;
     IF operation.operation_id IS NULL OR operation.state<>'GENERATING'
        OR operation.operation_id IS DISTINCT FROM NULLIF(current_setting('rutcampustrack.constructor_materialization_operation_id',TRUE),'')::uuid
        OR item.id IS NULL OR fence.assignment_id IS NULL OR NOT(item.id=ANY(operation.family_ids))
@@ -105,6 +138,11 @@ BEGIN
        OR NEW.lesson_number<>item.lesson_number OR NEW.start_time<>item.start_time OR NEW.end_time<>item.end_time
        OR NEW.room_snapshot IS DISTINCT FROM item.room OR NEW.week_type_snapshot<>item.week_type THEN
         RAISE EXCEPTION 'constructor generation requires its exact semester origin';
+    END IF;
+    IF EXISTS(SELECT 1 FROM lesson_occurrences existing WHERE existing.schedule_item_id=ANY(operation.family_ids)
+        AND existing.occurrence_date=NEW.occurrence_date) OR EXISTS(SELECT 1 FROM lessons existing
+        WHERE existing.schedule_item_id=ANY(operation.family_ids) AND existing.date=NEW.occurrence_date) THEN
+        RAISE EXCEPTION 'constructor family date is already covered, including retained exceptions';
     END IF;
     assigned:=NEW.occurrence_date>=fence.valid_from AND NEW.occurrence_date<fence.creation_cap_until_exclusive;
     IF assigned AND (NEW.initial_assignment_id IS DISTINCT FROM fence.assignment_id
@@ -150,6 +188,10 @@ CREATE FUNCTION constructor_lesson_insert_authorized(value JSONB) RETURNS BOOLEA
           AND origin.week_type_snapshot::text=value->>'week_type_snapshot'
           AND origin.initial_assignment_id IS NOT DISTINCT FROM NULLIF(value->>'assignment_id','')::bigint
           AND origin.initial_teacher_id IS NOT DISTINCT FROM NULLIF(value->>'assigned_teacher_id','')::bigint
+          AND value->>'status'=CASE
+              WHEN origin.occurrence_date+origin.end_time+interval '5 minutes' <= origin.created_at AT TIME ZONE 'Europe/Moscow' THEN 'closed'
+              WHEN origin.occurrence_date+origin.start_time <= origin.created_at AT TIME ZONE 'Europe/Moscow' THEN 'active'
+              ELSE 'planned' END
           AND (value->>'generation')::bigint=1 AND (value->>'revision')::bigint=1)
 $$;
 
@@ -177,6 +219,8 @@ CREATE FUNCTION constructor_natural_unassigned_origin(occurrence_value BIGINT) R
       AND occurrence.group_id=origin.group_id AND occurrence.subject_id=origin.subject_id
       AND occurrence.semester_id=origin.semester_id AND occurrence.lesson_type=origin.lesson_type
       AND occurrence.occurrence_date=origin.occurrence_date
+      AND NOT EXISTS(SELECT 1 FROM schedule_assignment_binding_ledger earlier
+          WHERE earlier.occurrence_id=occurrence.id AND earlier.after_assignment_id IS NOT NULL)
 $$;
 CREATE FUNCTION assignment_unassigned_origin(occurrence_value BIGINT) RETURNS BIGINT LANGUAGE SQL STABLE AS $$
     SELECT COALESCE(assignment_unassigned_origin_legacy(occurrence_value),
@@ -195,15 +239,25 @@ CREATE FUNCTION constructor_natural_adoption_authorized(value JSONB) RETURNS BOO
               WHERE earlier.occurrence_id=occurrence.id AND earlier.after_assignment_id IS NOT NULL)
           AND occurrence.group_id=operation.group_id AND occurrence.subject_id=operation.subject_id
           AND occurrence.semester_id=operation.semester_id AND occurrence.lesson_type=operation.lesson_type
+          AND (value->>'semester_id')::bigint=occurrence.semester_id
+          AND (value->>'occurrence_date')::date=occurrence.occurrence_date
           AND occurrence.occurrence_date>=operation.requested_cutoff
           AND occurrence.occurrence_date<operation.valid_until_exclusive
+          AND EXISTS(SELECT 1 FROM schedule_assignment_fences target WHERE target.assignment_id=operation.target_assignment_id
+              AND target.assigned_teacher_id=operation.target_teacher_id AND target.group_id=occurrence.group_id
+              AND target.subject_id=occurrence.subject_id AND target.semester_id=occurrence.semester_id
+              AND target.lesson_type=occurrence.lesson_type AND occurrence.occurrence_date>=target.valid_from
+              AND occurrence.occurrence_date<target.creation_cap_until_exclusive)
           AND NULLIF(value->>'before_assignment_id','') IS NULL AND NULLIF(value->>'before_teacher_id','') IS NULL
           AND (value->>'after_assignment_id')::bigint=operation.target_assignment_id
           AND (value->>'after_teacher_id')::bigint=operation.target_teacher_id
           AND (value->>'expected_occurrence_revision')::bigint=occurrence.revision
           AND (value->>'after_occurrence_revision')::bigint=occurrence.revision+1
           AND NULLIF(value->>'lesson_id','')::bigint IS NOT DISTINCT FROM occurrence.current_lesson_id
-          AND (lesson.id IS NULL OR lesson.assignment_id IS NULL AND lesson.assigned_teacher_id IS NULL
+          AND (lesson.id IS NULL AND occurrence.occurrence_date>(NOW() AT TIME ZONE 'Europe/Moscow')::date
+              OR lesson.assignment_id IS NULL AND lesson.assigned_teacher_id IS NULL
+              AND (lesson.status='closed' OR lesson.status NOT IN('active','closed')
+                  AND (lesson.date+lesson.start_time) AT TIME ZONE 'Europe/Moscow'>NOW())
               AND (value->>'expected_lesson_revision')::bigint=lesson.revision
               AND (value->>'after_lesson_revision')::bigint=lesson.revision+1)
           AND (value->>'accepted_at')::timestamptz=NOW())
@@ -213,4 +267,44 @@ DO $$ DECLARE definition TEXT; anchor INTEGER; BEGIN
     anchor:=strpos(definition,'BEGIN');
     IF anchor=0 THEN RAISE EXCEPTION 'constructor retrospective adoption anchor changed'; END IF;
     EXECUTE overlay(definition PLACING E'BEGIN\n IF TG_OP=''INSERT'' AND constructor_natural_adoption_authorized(to_jsonb(NEW)) THEN RETURN NEW; END IF;\n' FROM anchor FOR 5);
+END $$;
+
+-- Every committed past generation has durable exact delivery work, even on an early return.
+CREATE FUNCTION require_constructor_materialization_finished() RETURNS TRIGGER LANGUAGE plpgsql AS $$
+DECLARE operation constructor_semester_materializations%ROWTYPE;
+BEGIN
+    SELECT * INTO operation FROM constructor_semester_materializations WHERE operation_id=NEW.operation_id;
+    IF operation.state='GENERATING' OR EXISTS(SELECT 1 FROM constructor_generation_origins origin
+        WHERE origin.operation_id=operation.operation_id
+          AND origin.occurrence_date+origin.end_time+interval '5 minutes'<=origin.created_at AT TIME ZONE 'Europe/Moscow'
+          AND NOT EXISTS(SELECT 1 FROM constructor_materialization_work work
+              WHERE work.operation_id=operation.operation_id AND origin.lesson_id=ANY(work.lesson_ids))) THEN
+        RAISE EXCEPTION 'semester generation cannot commit without exact durable historical delivery work';
+    END IF;
+    IF TG_OP='INSERT' AND EXISTS(SELECT 1 FROM constructor_generation_origins origin
+        WHERE origin.operation_id=operation.operation_id AND NOT EXISTS(
+            SELECT 1 FROM lesson_occurrences occurrence JOIN lessons lesson
+              ON lesson.id=occurrence.current_lesson_id AND lesson.occurrence_id=occurrence.id
+            WHERE occurrence.id=origin.occurrence_id AND lesson.id=origin.lesson_id
+              AND occurrence.schedule_item_id=origin.schedule_item_id
+              AND lesson.schedule_item_id=origin.schedule_item_id)) THEN
+        RAISE EXCEPTION 'semester generation cannot commit an incomplete occurrence or physical lesson';
+    END IF;
+    RETURN NEW;
+END $$;
+CREATE CONSTRAINT TRIGGER constructor_materialization_finished AFTER INSERT OR UPDATE ON constructor_semester_materializations
+    DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION require_constructor_materialization_finished();
+
+-- Natural initial absence is bounded by the semester, not the teacher interval.
+-- Preserve the legacy closure branch and every existing exact transfer check.
+DO $$ DECLARE definition TEXT; old_text TEXT; new_text TEXT; BEGIN
+    SELECT pg_get_functiondef('validate_lesson_transfer_authority_insert()'::regprocedure) INTO definition;
+    old_text:='IF NOT FOUND OR NEW.target_date<fence_row.valid_from OR NEW.target_date>=fence_row.cap_until_exclusive';
+    new_text:='IF NOT FOUND OR (constructor_natural_unassigned_origin(occurrence_row.id) IS NULL AND (NEW.target_date<fence_row.valid_from OR NEW.target_date>=fence_row.cap_until_exclusive))
+        OR (constructor_natural_unassigned_origin(occurrence_row.id) IS NOT NULL AND NOT EXISTS (
+            SELECT 1 FROM constructor_generation_origins origin JOIN constructor_semester_materializations operation
+              ON operation.operation_id=origin.operation_id WHERE origin.occurrence_id=occurrence_row.id
+              AND NEW.target_date>=operation.semester_from AND NEW.target_date<operation.semester_until_exclusive))';
+    IF strpos(definition,old_text)=0 THEN RAISE EXCEPTION 'natural transfer admission anchor changed'; END IF;
+    EXECUTE replace(definition,old_text,new_text);
 END $$;

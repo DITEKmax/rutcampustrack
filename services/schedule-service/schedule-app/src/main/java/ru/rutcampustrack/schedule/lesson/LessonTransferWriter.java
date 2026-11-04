@@ -1092,6 +1092,15 @@ SELECT physical.id FROM lessons physical
             String lessonType,
             long occurrenceId) {
         boolean unassigned = assignmentId == null && teacherId == null;
+        if (unassigned && jdbc.queryForObject("SELECT constructor_natural_unassigned_origin(?) IS NOT NULL",Boolean.class,occurrenceId)) {
+            Boolean admitted=jdbc.queryForObject(
+                    "SELECT EXISTS(SELECT 1 FROM constructor_generation_origins origin JOIN constructor_semester_materializations operation ON operation.operation_id=origin.operation_id "
+                            + "WHERE origin.occurrence_id=? AND origin.group_id=? AND origin.subject_id=? AND origin.semester_id=? AND origin.lesson_type=? "
+                            + "AND ?::date>=operation.semester_from AND ?::date<operation.semester_until_exclusive)",
+                    Boolean.class,occurrenceId,groupId,subjectId,semesterId,lessonType,targetDate,targetDate);
+            if (!Boolean.TRUE.equals(admitted)) throw new ConflictException("Новая дата выходит за подтверждённый семестр пары");
+            return;
+        }
         if (unassigned)
             assignmentId =
                     ru.rutcampustrack.schedule.replacement.UnassignedBindingAuthority

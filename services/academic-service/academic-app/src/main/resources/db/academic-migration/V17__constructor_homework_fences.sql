@@ -75,14 +75,14 @@ BEGIN
     END LOOP;
 END $$;
 
-CREATE FUNCTION academic_constructor_mentions(value jsonb, lesson jsonb, natural boolean)
+CREATE FUNCTION academic_constructor_mentions(value jsonb, lesson jsonb, include_natural boolean)
 RETURNS boolean LANGUAGE plpgsql IMMUTABLE AS $$
 DECLARE item jsonb; pair text[];
 BEGIN
     IF EXISTS(SELECT 1 FROM academic_constructor_ids(value) value_id
         WHERE value_id.kind='lesson' AND value_id.id=(lesson->>'lesson_id')::bigint
            OR value_id.kind='occurrence' AND value_id.id=(lesson->>'occurrence_id')::bigint) THEN RETURN true; END IF;
-    IF NOT natural THEN RETURN false; END IF;
+    IF NOT include_natural THEN RETURN false; END IF;
     IF jsonb_typeof(value)='array' THEN
         FOR item IN SELECT * FROM jsonb_array_elements(value) LOOP
             IF academic_constructor_mentions(item,lesson,true) THEN RETURN true; END IF;

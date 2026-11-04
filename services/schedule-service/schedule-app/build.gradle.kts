@@ -86,6 +86,9 @@ dependencies {
 }
 
 sourceSets {
+    test {
+        resources.srcDir(rootProject.file("proto/fixtures"))
+    }
     main {
         proto {
             srcDir(rootProject.file("proto"))

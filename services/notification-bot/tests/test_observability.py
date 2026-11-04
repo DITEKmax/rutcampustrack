@@ -280,11 +280,24 @@ def test_durable_w3c_parent_and_request_correlation_log_matches_exported_span(sd
         structlog.get_logger("test").info("consume")
     payload = json.loads(buf.getvalue())
     (exported,) = exporter.get_finished_spans()
-    assert payload["traceId"] == "0123456789abcdef0123456789abcdef"
+    assert payload["traceId"] != "0123456789abcdef0123456789abcdef"
     assert payload["spanId"] == format(exported.context.span_id, "016x")
-    assert exported.parent.span_id == int("0123456789abcdef", 16)
-    assert exported.context.span_id != exported.parent.span_id
+    assert exported.parent is None
+    assert exported.links[0].context.trace_id == int("0123456789abcdef0123456789abcdef", 16)
+    assert exported.links[0].context.span_id == int("0123456789abcdef", 16)
     assert exported.attributes["requestId"] == payload["requestId"] == request_id
     assert payload["trace_id"] == "0123456789abcdef"
     assert not trace.get_current_span().get_span_context().is_valid
     assert structlog.contextvars.get_contextvars() == {}
+
+
+def test_repeated_deliveries_link_to_producer_without_growing_one_trace(sdk):
+    _, exporter = sdk
+    envelope = {"traceparent": "00-0123456789abcdef0123456789abcdef-0123456789abcdef-01"}
+    for _ in range(20):
+        with event_trace_context(envelope):
+            pass
+    spans = exporter.get_finished_spans()
+    assert len({span.context.trace_id for span in spans}) == 20
+    assert all(span.parent is None for span in spans)
+    assert all(span.links[0].context.trace_id == int("0123456789abcdef0123456789abcdef", 16) for span in spans)

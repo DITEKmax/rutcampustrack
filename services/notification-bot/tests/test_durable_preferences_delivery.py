@@ -162,7 +162,7 @@ async def test_http_retry_reuses_absolute_command_body_and_callback_identity():
     assert calls[0][2]["json"] == {"requestKey": "callback-1", "operation": "MUTE_FOR", "durationSeconds": 86400}
 
 
-async def test_consumer_outage_release_failure_and_busy_lease_requeue_until_one_completion(monkeypatch):
+async def test_consumer_outage_release_failure_and_busy_lease_retry_until_one_completion(monkeypatch):
     import json
     from contextlib import asynccontextmanager
 
@@ -217,7 +217,8 @@ async def test_consumer_outage_release_failure_and_busy_lease_requeue_until_one_
 
     queue = SimpleNamespace(bind=AsyncMock(), iterator=lambda: Iterator())
     channel = SimpleNamespace(
-        set_qos=AsyncMock(), declare_exchange=AsyncMock(), declare_queue=AsyncMock(return_value=queue)
+        set_qos=AsyncMock(), declare_exchange=AsyncMock(), declare_queue=AsyncMock(return_value=queue),
+        default_exchange=SimpleNamespace(publish=AsyncMock()),
     )
     channel.transaction = lambda: SimpleNamespace(select=AsyncMock(), commit=AsyncMock(), rollback=AsyncMock())
     connection = SimpleNamespace(channel=AsyncMock(return_value=channel), close=AsyncMock())
@@ -243,7 +244,11 @@ async def test_consumer_outage_release_failure_and_busy_lease_requeue_until_one_
         return batch
 
     await start_consumer("amqp://synthetic", SimpleNamespace(dispatch=dispatch), guard)
-    assert [(m.acked, m.nacked) for m in messages] == [(False, True), (False, True), (True, False), (True, False)]
+    assert [(m.acked, m.nacked) for m in messages] == [(True, False)] * 4
+    assert channel.default_exchange.publish.await_count == 2
+    replacements = [call.args[0] for call in channel.default_exchange.publish.await_args_list]
+    assert all(json.loads(replacement.body)["event_id"] == "event-1" for replacement in replacements)
+    assert all(replacement.headers[consumer.RETRY_HEADER] == 1 for replacement in replacements)
     guard.complete.assert_awaited_once_with("event-1", "lease-2")
     assert sends._queue.qsize() == 0
     assert factory.await_count == 2

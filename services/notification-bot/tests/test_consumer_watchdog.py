@@ -10,6 +10,7 @@ import pytest
 import bot.__main__ as main_module
 from bot.__main__ import health_handler, run_with_watchdog
 from bot.consumers.event_consumer import start_consumer
+from bot.observability import STARTUP_COMPLETED, STARTUP_FAILED, TASK_ALIVE
 
 # ---------------------------------------------------------------------------
 # Watchdog behaviour tests
@@ -144,6 +145,33 @@ async def test_health_down_when_watchdog_dead():
 # ---------------------------------------------------------------------------
 
 
+@pytest.mark.parametrize("outcome", ["pending", "success", "failure", "cancelled"])
+async def test_one_shot_keyboard_task_metrics_distinguish_completion_failure_and_shutdown(outcome):
+    original = main_module._keyboard_sync_task
+
+    async def startup():
+        if outcome == "failure":
+            raise RuntimeError("synthetic failure")
+        if outcome in {"pending", "cancelled"}:
+            await asyncio.Event().wait()
+
+    task = asyncio.create_task(startup())
+    main_module._keyboard_sync_task = task
+    try:
+        await asyncio.sleep(0)
+        if outcome == "cancelled":
+            task.cancel()
+            await asyncio.gather(task, return_exceptions=True)
+        await main_module.metrics_handler(MagicMock())
+        assert STARTUP_COMPLETED.labels("keyboard_sync")._value.get() == int(outcome == "success")
+        assert STARTUP_FAILED.labels("keyboard_sync")._value.get() == int(outcome == "failure")
+        assert TASK_ALIVE.labels("keyboard_sync")._value.get() == int(outcome == "pending")
+    finally:
+        task.cancel()
+        await asyncio.gather(task, return_exceptions=True)
+        main_module._keyboard_sync_task = original
+
+
 async def test_prefetch_count_set():
     """One unacknowledged event owns the serialized broker transaction channel."""
     mock_connection = AsyncMock()
@@ -157,7 +185,7 @@ async def test_prefetch_count_set():
     mock_queue = AsyncMock()
 
     mock_channel.declare_exchange.side_effect = [mock_exchange, mock_dlq_exchange]
-    mock_channel.declare_queue.side_effect = [mock_dlq_queue, mock_queue]
+    mock_channel.declare_queue.side_effect = [mock_dlq_queue, AsyncMock(), mock_queue]
 
     # Mock queue.iterator() to raise CancelledError so start_consumer exits
     mock_queue_iter_cm = MagicMock()

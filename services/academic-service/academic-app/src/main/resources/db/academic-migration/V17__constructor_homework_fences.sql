@@ -149,41 +149,41 @@ RETURNS TABLE(kind text,data jsonb,unknown_scope boolean) LANGUAGE sql STABLE AS
 $$;
 
 CREATE FUNCTION guard_constructor_homework_write() RETURNS TRIGGER LANGUAGE plpgsql AS $$
-DECLARE value jsonb; homework jsonb; edit jsonb; target_group bigint; target_subject bigint; target_semester bigint;
+DECLARE row_value jsonb; homework jsonb; edit jsonb; target_group bigint; target_subject bigint; target_semester bigint;
 BEGIN
-    FOR value IN SELECT v FROM unnest(ARRAY[CASE WHEN TG_OP<>'INSERT' THEN to_jsonb(OLD) END,
+    FOR row_value IN SELECT v FROM unnest(ARRAY[CASE WHEN TG_OP<>'INSERT' THEN to_jsonb(OLD) END,
         CASE WHEN TG_OP<>'DELETE' THEN to_jsonb(NEW) END]) v WHERE v IS NOT NULL LOOP
         homework:=NULL; edit:=NULL;
-        IF value->>'homework_id' IS NOT NULL THEN
-            SELECT to_jsonb(h) INTO homework FROM homeworks h WHERE h.id=(value->>'homework_id')::bigint;
+        IF row_value->>'homework_id' IS NOT NULL THEN
+            SELECT to_jsonb(h) INTO homework FROM homeworks h WHERE h.id=(row_value->>'homework_id')::bigint;
         ELSIF TG_TABLE_NAME IN('homework_binding_archives','academic_semester_archive_publication_admissions','academic_semester_archive_effect_receipts') THEN
-            SELECT to_jsonb(h) INTO homework FROM homeworks h WHERE h.binding_id=(value->>'binding_id')::bigint;
+            SELECT to_jsonb(h) INTO homework FROM homeworks h WHERE h.binding_id=(row_value->>'binding_id')::bigint;
         END IF;
-        IF value->>'edit_operation_id' IS NOT NULL THEN
-            SELECT to_jsonb(e) INTO edit FROM homework_edit_operations e WHERE e.operation_id=(value->>'edit_operation_id')::uuid;
+        IF row_value->>'edit_operation_id' IS NOT NULL THEN
+            SELECT to_jsonb(e) INTO edit FROM homework_edit_operations e WHERE e.operation_id=(row_value->>'edit_operation_id')::uuid;
         END IF;
-        target_group:=COALESCE((value->>'group_id')::bigint,(homework->>'group_id')::bigint,(edit->>'group_id')::bigint);
-        target_subject:=COALESCE((value->>'subject_id')::bigint,(homework->>'subject_id')::bigint,(edit->>'subject_id')::bigint);
-        target_semester:=COALESCE((value->>'semester_id')::bigint,(homework->>'semester_id')::bigint,(edit->>'semester_id')::bigint);
+        target_group:=COALESCE((row_value->>'group_id')::bigint,(homework->>'group_id')::bigint,(edit->>'group_id')::bigint);
+        target_subject:=COALESCE((row_value->>'subject_id')::bigint,(homework->>'subject_id')::bigint,(edit->>'subject_id')::bigint);
+        target_semester:=COALESCE((row_value->>'semester_id')::bigint,(homework->>'semester_id')::bigint,(edit->>'semester_id')::bigint);
         PERFORM academic_constructor_lock_scope(target_semester,target_subject);
-        value:=jsonb_build_object('record',value,'homework',homework,'edit',edit);
-        PERFORM academic_constructor_lock_lessons(value);
+        row_value:=jsonb_build_object('record',row_value,'homework',homework,'edit',edit);
+        PERFORM academic_constructor_lock_lessons(row_value);
         IF EXISTS(SELECT 1 FROM academic_constructor_deletion_participants operation
             WHERE operation.state IN('PREPARED','SEALED','DELETED')
-              AND EXISTS(SELECT 1 FROM jsonb_array_elements(operation.lesson_scope) lesson
-                WHERE academic_constructor_mentions(value,lesson,false)
+              AND EXISTS(SELECT 1 FROM jsonb_array_elements(operation.lesson_scope) AS scope_element(lesson)
+                WHERE academic_constructor_mentions(row_value,lesson,false)
                    OR operation.state<>'DELETED' AND operation.group_id=target_group AND operation.subject_id=target_subject
                       AND operation.semester_id=target_semester AND (
-                        academic_constructor_mentions(value,lesson,true)
+                        academic_constructor_mentions(row_value,lesson,true)
                         OR TG_TABLE_NAME='homework_edit_history' AND (
-                            NOT academic_constructor_has_locator(value->'record'->'before_snapshot')
-                            OR NOT academic_constructor_has_locator(value->'record'->'after_snapshot'))
-                        OR TG_TABLE_NAME='homework_edit_receipts' AND NOT academic_constructor_has_locator(value->'record'->'result_snapshot')
+                            NOT academic_constructor_has_locator(row_value->'record'->'before_snapshot')
+                            OR NOT academic_constructor_has_locator(row_value->'record'->'after_snapshot'))
+                        OR TG_TABLE_NAME='homework_edit_receipts' AND NOT academic_constructor_has_locator(row_value->'record'->'result_snapshot')
                         OR TG_TABLE_NAME='homework_edit_operations' AND (
-                            NOT academic_constructor_has_locator(value->'record'->'before_snapshot')
-                            OR NOT academic_constructor_has_locator(value->'record'->'desired_snapshot'))
+                            NOT academic_constructor_has_locator(row_value->'record'->'before_snapshot')
+                            OR NOT academic_constructor_has_locator(row_value->'record'->'desired_snapshot'))
                         OR TG_TABLE_NAME IN('homework_binding_archives','academic_semester_archive_effect_receipts','academic_semester_archive_publication_admissions')
-                            AND NOT EXISTS(SELECT 1 FROM academic_constructor_ids(value))))) THEN
+                            AND NOT EXISTS(SELECT 1 FROM academic_constructor_ids(row_value))))) THEN
             RAISE EXCEPTION 'homework lesson is fenced for constructor deletion' USING ERRCODE='23514';
         END IF;
     END LOOP;

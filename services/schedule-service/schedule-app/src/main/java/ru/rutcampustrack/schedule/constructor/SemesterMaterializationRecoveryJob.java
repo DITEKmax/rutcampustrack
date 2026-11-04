@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -30,6 +31,7 @@ public class SemesterMaterializationRecoveryJob {
     }
 
     @Scheduled(fixedDelay=5000)
+    @SchedulerLock(name="constructor-semester-materialization-recovery",lockAtMostFor="PT5M",lockAtLeastFor="PT5S")
     public void recover() {
         coordinator.resumeSystemRuns();
         for (int i=0;i<8;i++) {

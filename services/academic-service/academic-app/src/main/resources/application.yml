@@ -193,3 +193,8 @@ management:
       percentiles-histogram:
         http.server.requests: true
         grpc.client.duration: true
+
+# Dedicated Schedule caller; no shared service token fallback.
+constructor:
+  rpc:
+    schedule-to-academic-token-file: ${CONSTRUCTOR_RPC_SCHEDULE_TO_ACADEMIC_TOKEN_FILE:}

@@ -51,8 +51,8 @@ public class ConstructorAcademicParticipant {
         var scope = command.getScope();
         // The same lock is acquired by the homework write trigger, before any
         // eligibility snapshot can be accepted or released.
-        jdbc.queryForObject("SELECT pg_advisory_xact_lock(1129270868, (? % 2147483647)::integer)",
-                Object.class, scope.getSubjectId());
+        jdbc.queryForList("SELECT academic_constructor_lock_scope(?,?)", scope.getSemesterId(), scope.getSubjectId());
+        jdbc.queryForList("SELECT academic_constructor_lock_lessons(?::jsonb)", scopeJson(command));
         List<Map<String, Object>> epochs = jdbc.queryForList(
                 "SELECT * FROM academic_constructor_deletion_participants WHERE operation_id=? FOR UPDATE", operation);
         Map<String, Object> epoch = epochs.isEmpty() ? null : epochs.getFirst();
@@ -119,7 +119,13 @@ public class ConstructorAcademicParticipant {
                 """
                 SELECT subject.group_id,subject.semester_id,semester.date_from,semester.date_to
                   FROM subjects subject JOIN semesters semester ON semester.id=subject.semester_id
+                  JOIN groups target_group ON target_group.id=subject.group_id AND target_group.is_active
                  WHERE subject.id=? AND subject.group_id=? AND subject.semester_id=?
+                   AND semester.is_active AND NOT semester.is_archived AND semester.archive_transition='NONE' AND NOT semester.archive_release_pending
+                   AND NOT EXISTS (SELECT 1 FROM academic_group_availability_guards guard WHERE guard.group_id=subject.group_id)
+                   AND NOT EXISTS (SELECT 1 FROM academic_semester_archive_barriers barrier WHERE barrier.semester_id=semester.id AND barrier.participant_state NOT IN ('RELEASED'))
+                   AND NOT EXISTS (SELECT 1 FROM group_deletion_operations op WHERE op.group_id=subject.group_id AND op.phase NOT IN ('COMPLETED','CANCELLED'))
+                   AND NOT EXISTS (SELECT 1 FROM subject_deletion_operations op WHERE op.subject_id=subject.id AND op.phase NOT IN ('COMPLETED','CANCELLED'))
                 """, scope.getSubjectId(), scope.getGroupId(), scope.getSemesterId());
         if (rows.size() != 1) throw conflict();
         LocalDate from = ((java.sql.Date) rows.getFirst().get("date_from")).toLocalDate();
@@ -133,11 +139,16 @@ public class ConstructorAcademicParticipant {
     private Snapshot snapshot(ConstructorDeletionCommand command) {
         var scope = command.getScope();
         List<Map<String, Object>> rows = new ArrayList<>();
-        collect(rows, "homeworks", "SELECT to_jsonb(h)::text AS data FROM homeworks h WHERE h.group_id=? AND h.subject_id=? AND h.semester_id=? LIMIT 10001", command);
-        collect(rows, "homework_edit_history", "SELECT to_jsonb(e)::text AS data FROM homework_edit_history e JOIN homeworks h ON h.id=e.homework_id WHERE h.group_id=? AND h.subject_id=? AND h.semester_id=? LIMIT 10001", command);
-        collect(rows, "homework_edit_operations", "SELECT to_jsonb(e)::text AS data FROM homework_edit_operations e WHERE e.group_id=? AND e.subject_id=? AND e.semester_id=? LIMIT 10001", command);
-        collect(rows, "homework_binding_transfer_history", "SELECT to_jsonb(e)::text AS data FROM homework_binding_transfer_history e WHERE e.group_id=? AND e.subject_id=? AND e.semester_id=? LIMIT 10001", command);
-        collect(rows, "homework_binding_transfer_markers", "SELECT to_jsonb(e)::text AS data FROM homework_binding_transfer_markers e WHERE e.group_id=? AND e.subject_id=? AND e.semester_id=? LIMIT 10001", command);
+        for (var row : jdbc.queryForList(
+                "SELECT kind,data::text AS data,unknown_scope FROM academic_constructor_history_rows(?,?,?,?::jsonb) LIMIT 10001",
+                scope.getGroupId(), scope.getSubjectId(), scope.getSemesterId(), scopeJson(command))) {
+            try {
+                rows.add(Map.of("kind", row.get("kind"), "data", JSON.readTree((String) row.get("data")),
+                        "unknown_scope", row.get("unknown_scope")));
+            } catch (Exception invalid) {
+                throw conflict();
+            }
+        }
         Set<Long> protectedOccurrences = new HashSet<>();
         boolean unknown = rows.size() > 10000;
         List<Object> relevant = new ArrayList<>();
@@ -150,9 +161,7 @@ public class ConstructorAcademicParticipant {
                     matched = true;
                 }
             }
-            if ("homeworks".equals(row.get("kind")) && (data.path("lesson_date").isNull()
-                    || data.path("lesson_date").isMissingNode() || data.path("lesson_number").isNull()
-                    || data.path("lesson_number").isMissingNode())) unknown = true;
+            if (Boolean.TRUE.equals(row.get("unknown_scope"))) unknown = true;
             if (matched) relevant.add(row);
         }
         if (unknown) scope.getLessonsList().forEach(lesson -> protectedOccurrences.add(lesson.getOccurrenceId()));
@@ -163,40 +172,42 @@ public class ConstructorAcademicParticipant {
         return new Snapshot(digest, protectedOccurrences.size(), unknown);
     }
 
-    private void collect(List<Map<String, Object>> target, String kind, String sql, ConstructorDeletionCommand command) {
-        var scope = command.getScope();
-        for (String row : jdbc.query(sql, (rs, index) -> rs.getString(1), scope.getGroupId(), scope.getSubjectId(), scope.getSemesterId())) {
-            try {
-                target.add(Map.of("kind", kind, "data", JSON.readTree(row)));
-            } catch (Exception invalid) {
-                throw conflict();
-            }
-        }
-    }
-
-    private static boolean mentions(JsonNode value, ConstructorLessonScope lesson) {
+    // The SQL fence uses the same recursive aliases. Natural DATE-mode content
+    // protects every logical lesson on that date; no physical ID is guessed.
+    static boolean mentions(JsonNode value, ConstructorLessonScope lesson) {
         if (value == null || value.isNull()) return false;
         if (value.isArray()) {
             for (JsonNode item : value) if (mentions(item, lesson)) return true;
             return false;
         }
         if (!value.isObject()) return false;
-        for (String key : List.of("lesson_id", "lessonId", "source_lesson_id", "target_lesson_id"))
-            if (value.path(key).isNumber() && value.path(key).longValue() == lesson.getLessonId()) return true;
-        for (String key : List.of("occurrence_id", "target_occurrence_id"))
-            if (value.path(key).isNumber() && value.path(key).longValue() == lesson.getOccurrenceId()) return true;
-        for (String prefix : List.of("", "source_", "target_")) {
-            String dateKey = prefix.isEmpty() ? "lesson_date" : prefix + "date";
-            String numberKey = prefix + "lesson_number";
-            if (lesson.getLessonDate().equals(value.path(dateKey).asText())
-                    && value.path(numberKey).asInt(-1) == lesson.getLessonNumber()) return true;
+        var fields = value.fields();
+        while (fields.hasNext()) {
+            var field = fields.next();
+            String key = field.getKey().replace("_", "").toLowerCase(java.util.Locale.ROOT);
+            JsonNode id = field.getValue();
+            if (id.isIntegralNumber() && (
+                    LESSON_KEYS.contains(key) && id.longValue() == lesson.getLessonId()
+                    || OCCURRENCE_KEYS.contains(key) && id.longValue() == lesson.getOccurrenceId())) return true;
         }
-        if (lesson.getLessonDate().equals(value.path("lessonDate").asText())
-                && value.path("lessonNumber").asInt(-1) == lesson.getLessonNumber()) return true;
+        for (String[] pair : List.of(
+                new String[] {"lesson_date", "lesson_number"}, new String[] {"lessonDate", "lessonNumber"},
+                new String[] {"source_date", "source_lesson_number"}, new String[] {"target_date", "target_lesson_number"},
+                new String[] {"date", "lessonNumber"})) {
+            JsonNode number = value.path(pair[1]);
+            if (lesson.getLessonDate().equals(value.path(pair[0]).asText())
+                    && (number.isMissingNode() || number.isNull() || number.asInt(-1) == lesson.getLessonNumber())) return true;
+        }
         var nested = value.elements();
         while (nested.hasNext()) if (mentions(nested.next(), lesson)) return true;
         return false;
     }
+
+    private static final Set<String> LESSON_KEYS = Set.of(
+            "lessonid", "sourcelessonid", "targetlessonid", "originallessonid", "snapshotlessonid", "placementlessonid", "currentlessonid");
+    private static final Set<String> OCCURRENCE_KEYS = Set.of(
+            "occurrenceid", "targetoccurrenceid", "sourceoccurrenceid", "originaloccurrenceid", "snapshotoccurrenceid",
+            "placementoccurrenceid", "selectedoccurrenceid", "scheduleoccurrenceid");
 
     private static ConstructorParticipantReceipt receipt(
             ConstructorDeletionCommand command, byte[] digest, String state, long count, boolean unknown) {
@@ -232,6 +243,8 @@ public class ConstructorAcademicParticipant {
                     || command.getScopeHash().size() != 32 || !command.hasScope()
                     || command.getScope().getGroupId() <= 0 || command.getScope().getSubjectId() <= 0
                     || command.getScope().getSemesterId() <= 0 || command.getScope().getScheduleItemIdsCount() == 0
+                    || command.getScope().getScheduleItemIdsList().stream().anyMatch(id -> id <= 0)
+                    || new HashSet<>(command.getScope().getScheduleItemIdsList()).size() != command.getScope().getScheduleItemIdsCount()
                     || command.getScope().getLessonsCount() > MAX_LESSONS
                     || !MessageDigest.isEqual(ConstructorHashes.sha256(command.getScope().toByteArray()), command.getScopeHash().toByteArray())
                     || command.getAction() != ConstructorDeletionAction.CONSTRUCTOR_DELETION_PREVIEW

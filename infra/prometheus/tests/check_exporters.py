@@ -788,6 +788,19 @@ def main():
             # Only an authentication-not-ready observation retries; wrong-role/unknown fails.
             _STATE["phase"] = "MONGO_MONITOR_AUTH_READINESS"
             wait(mongo_monitor_ready)
+            _STATE["phase"] = "MONGO_TOPOLOGY_METADATA_READ"
+            topology = execute(
+                "mongo-attendance",
+                [
+                    "mongosh", "--quiet", "--username", "rct_monitor",
+                    "--password", "synthetic-mongo-monitor-only-0123456789abcdef",
+                    "--authenticationDatabase", "admin", "--eval",
+                    'const result=db.getSiblingDB("admin").runCommand({find:"system.version",filter:{_id:"shardIdentity"},limit:1,singleBatch:true});'
+                    'if(result.ok!==1)quit(1);print("TOPOLOGY_METADATA_READ_OK");',
+                ],
+                check=False,
+            )
+            assert topology.returncode == 0 and "TOPOLOGY_METADATA_READ_OK" in topology.stdout
             _STATE["phase"] = "MONGO_APPLICATION_READ_DENIAL"
             denied = execute(
                 "mongo-attendance",

@@ -31,7 +31,12 @@ public class ConstructorSystemBackfillJob {
         Path path=Path.of(manifestPath);
         if (manifestPath.isBlank() || !Files.isRegularFile(path,LinkOption.NOFOLLOW_LINKS) || Files.size(path)>8192)
             throw new IllegalArgumentException("A bounded readonly system backfill manifest is required");
-        var manifest=json.readTree(Files.readAllBytes(path));
+        byte[] bytes;
+        try (var input=Files.newInputStream(path,LinkOption.NOFOLLOW_LINKS)) {
+            bytes=input.readNBytes(8193);
+        }
+        if (bytes.length>8192) throw new IllegalArgumentException("System backfill manifest exceeds the bounded size");
+        var manifest=json.readTree(bytes);
         var fields=new java.util.HashSet<String>();manifest.fieldNames().forEachRemaining(fields::add);
         if (!fields.equals(Set.of("operationId","groupId","semesterId","itemIds"))
                 || !manifest.path("groupId").isIntegralNumber() || !manifest.path("semesterId").isIntegralNumber()

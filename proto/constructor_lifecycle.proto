@@ -72,6 +72,9 @@ message ConstructorParticipantReceipt {
   string state = 5;
   int64 protected_count = 6;
   repeated ConstructorProtectedReason protected_reasons = 7;
+  // Sorted distinct logical occurrences already present in the supplied scope.
+  // Source validates count and membership, then unions participants without double counting.
+  repeated int64 protected_occurrence_ids = 8;
 }
 
 message PastLessonIdentity {

@@ -17,6 +17,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.transaction.support.TransactionTemplate;
 import ru.rutcampustrack.academic.integration.AbstractAcademicIntegrationTest;
 import ru.rutcampustrack.constructor.grpc.*;
@@ -29,6 +31,11 @@ class ConstructorAcademicParticipantIT extends AbstractAcademicIntegrationTest {
     @Autowired ConstructorAcademicParticipant participant;
     @Autowired PlatformTransactionManager transactions;
     private static final ByteString HASH = ByteString.copyFrom(new byte[32]);
+
+    @DynamicPropertySource
+    static void constructorProperties(DynamicPropertyRegistry registry) {
+        registry.add("server.address", () -> "127.0.0.1");
+    }
 
     @Test
     void acceptedRecoveryIsImmutableAndDeletedIdsCannotBeRepopulated() throws Exception {
@@ -180,6 +187,9 @@ class ConstructorAcademicParticipantIT extends AbstractAcademicIntegrationTest {
     @Test
     void previewRequiresSignedOwnGroupAndCommitRequiresPreparedIdentity() throws Exception {
         var command = command();
+        assertThatThrownBy(() -> Context.current().withValue(ServicePrincipal.CONTEXT_KEY,ServicePrincipal.SCHEDULE_SERVICE)
+                .call(() -> participant.apply(command))).isInstanceOf(StatusRuntimeException.class)
+                .satisfies(error -> assertThat(((StatusRuntimeException) error).getStatus().getCode()).isEqualTo(Status.Code.PERMISSION_DENIED));
         assertThatThrownBy(() -> apply(command, false)).isInstanceOf(StatusRuntimeException.class)
                 .satisfies(error -> assertThat(((StatusRuntimeException) error).getStatus().getCode()).isEqualTo(Status.Code.UNAUTHENTICATED));
         var foreign = new InternalJwtClaims(command.getOriginalActorId(), UUID.randomUUID(), 1, 1,
@@ -237,7 +247,8 @@ class ConstructorAcademicParticipantIT extends AbstractAcademicIntegrationTest {
         return context.call(() -> participant.apply(command));
     }
 
-    private Context serviceContext() { return Context.current().withValue(ServicePrincipal.CONTEXT_KEY,ServicePrincipal.SCHEDULE_SERVICE); }
+    private Context serviceContext() { return Context.current().withValue(ServicePrincipal.CONTEXT_KEY,ServicePrincipal.SCHEDULE_SERVICE)
+                .withValue(ConstructorServiceIdentityInterceptor.VERIFIED_SCHEDULE,true); }
     private TransactionTemplate tx() { var tx=new TransactionTemplate(transactions); tx.setTimeout(10); return tx; }
     private static ConstructorDeletionCommand action(ConstructorDeletionCommand command,ConstructorDeletionAction action) {
         return command.toBuilder().setAction(action).build();

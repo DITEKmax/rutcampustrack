@@ -22,7 +22,6 @@ import ru.rutcampustrack.constructor.grpc.ConstructorLessonScope;
 import ru.rutcampustrack.constructor.grpc.ConstructorParticipantReceipt;
 import ru.rutcampustrack.constructor.grpc.ConstructorProtectedReason;
 import ru.rutcampustrack.shared.security.InternalJwtClaims;
-import ru.rutcampustrack.shared.security.grpc.ServicePrincipal;
 
 /** Empty-homework witness. This participant never removes or rewrites academic business history. */
 @Service
@@ -40,7 +39,7 @@ public class ConstructorAcademicParticipant {
     @Transactional(isolation = Isolation.READ_COMMITTED)
     public ConstructorParticipantReceipt apply(ConstructorDeletionCommand command) {
         validate(command);
-        if (!ServicePrincipal.SCHEDULE_SERVICE.equals(ServicePrincipal.CONTEXT_KEY.get()))
+        if (!ConstructorServiceIdentityInterceptor.admitted(ConstructorServiceIdentityInterceptor.METHOD))
             throw Status.PERMISSION_DENIED.asRuntimeException();
         var action = command.getAction();
         InternalJwtClaims actor = ConstructorServiceIdentityInterceptor.ACTOR.get();

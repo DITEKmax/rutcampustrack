@@ -14,6 +14,8 @@ import java.util.List;
 import java.util.Map;
 import net.devh.boot.grpc.server.interceptor.GrpcGlobalServerInterceptor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import ru.rutcampustrack.shared.security.InternalJwtClaims;
 import ru.rutcampustrack.shared.security.InternalJwtValidator;
 import ru.rutcampustrack.shared.security.grpc.DirectedServiceCredential;
@@ -22,10 +24,12 @@ import ru.rutcampustrack.shared.security.grpc.ServicePrincipal;
 
 /** The dedicated Schedule pair is the accepted-command recovery authority, never a shared token. */
 @GrpcGlobalServerInterceptor
+@Order(Ordered.HIGHEST_PRECEDENCE)
 public class ConstructorServiceIdentityInterceptor implements ServerInterceptor {
     static final String METHOD =
             "rutcampustrack.constructor.ConstructorAcademicParticipant/ApplyDeletion";
     static final Context.Key<InternalJwtClaims> ACTOR = Context.key("constructor-academic-actor");
+    static final Context.Key<Boolean> VERIFIED_SCHEDULE = Context.key("constructor-academic-verified-schedule");
     private static final Metadata.Key<String> TOKEN =
             Metadata.Key.of("x-internal-token", Metadata.ASCII_STRING_MARSHALLER);
     private final ServiceIdentityServerInterceptor delegate;
@@ -42,20 +46,26 @@ public class ConstructorServiceIdentityInterceptor implements ServerInterceptor 
                         ServicePrincipal.ACADEMIC_SERVICE, load(file)).map(List::of).orElseGet(List::of));
     }
 
+    public static boolean admitted(String method) {
+        return METHOD.equals(method) && Boolean.TRUE.equals(VERIFIED_SCHEDULE.get())
+                && ServicePrincipal.SCHEDULE_SERVICE.equals(ServicePrincipal.CONTEXT_KEY.get());
+    }
+
     @Override
     public <Q, S> ServerCall.Listener<Q> interceptCall(
             ServerCall<Q, S> call, Metadata headers, ServerCallHandler<Q, S> next) {
         if (!METHOD.equals(call.getMethodDescriptor().getFullMethodName()))
             return next.startCall(call, headers);
         return delegate.interceptCall(call, headers, (verifiedCall, verifiedHeaders) -> {
+            Context verified = Context.current().withValue(VERIFIED_SCHEDULE, true);
             Iterable<String> tokens = verifiedHeaders.getAll(TOKEN);
-            if (tokens == null) return next.startCall(verifiedCall, verifiedHeaders);
+            if (tokens == null) return Contexts.interceptCall(verified, verifiedCall, verifiedHeaders, next);
             var values = new java.util.ArrayList<String>();
             tokens.forEach(values::add);
             try {
                 if (values.size() != 1) throw new IllegalArgumentException();
                 InternalJwtClaims claims = validator.validate(values.getFirst());
-                return Contexts.interceptCall(Context.current().withValue(ACTOR, claims),
+                return Contexts.interceptCall(verified.withValue(ACTOR, claims),
                         verifiedCall, verifiedHeaders, next);
             } catch (RuntimeException invalid) {
                 verifiedCall.close(Status.UNAUTHENTICATED.withDescription("valid signed constructor actor required"), new Metadata());

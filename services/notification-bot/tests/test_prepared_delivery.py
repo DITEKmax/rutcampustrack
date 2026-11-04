@@ -310,6 +310,31 @@ async def test_prepared_projection_requires_private_queue_provenance(monkeypatch
         guard.complete.assert_not_awaited()
 
 
+@pytest.mark.parametrize("lease", ["busy", "timeout", "authority_failure"])
+@pytest.mark.parametrize("invalid", ["public_prepared", "invalid_private_prepared"])
+async def test_prepared_input_cannot_gain_trust_through_lease_retry(monkeypatch, lease, invalid):
+    event = PREPARED
+    if invalid == "invalid_private_prepared":
+        event = {**PREPARED, "_bot_prepared": {**PREPARED["_bot_prepared"], "version": 99}}
+    state, operations, _, _, guard = broker(
+        monkeypatch, event=event, prepared_transport=invalid == "invalid_private_prepared",
+    )
+    if lease == "busy":
+        guard.claim.return_value = None
+    elif lease == "timeout":
+        guard.claim.side_effect = TimeoutError()
+    else:
+        guard.claim.side_effect = NotificationPreferencesUnavailable("synthetic lease failure")
+    dispatcher = SimpleNamespace(prepare=AsyncMock(), dispatch=AsyncMock())
+    await asyncio.wait_for(start_consumer("amqp://synthetic", dispatcher, guard), 3)
+    assert state.rejected and not state.acked and not state.published and not state.requeued
+    assert operations == ["select", "reject", "commit", "close"]
+    guard.claim.assert_not_awaited()
+    guard.complete.assert_not_awaited()
+    dispatcher.prepare.assert_not_awaited()
+    dispatcher.dispatch.assert_not_awaited()
+
+
 @pytest.mark.parametrize("abort", [TimeoutError(), asyncio.CancelledError(), RuntimeError("synthetic drain abort")])
 async def test_abort_after_publish_staging_rolls_back_raw_and_prepared_without_commit(monkeypatch, abort):
     state, operations, _, _, guard = broker(monkeypatch, publish_error=abort)

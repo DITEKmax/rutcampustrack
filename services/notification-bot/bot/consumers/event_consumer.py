@@ -231,6 +231,15 @@ async def start_consumer(
                     event_id = body.get("event_id")
                     event_type = telemetry_event_type(body.get("event_type"))
                     with bind_trace_context(body.get("trace_id"), event_type=event_type, event_id=event_id):
+                        # Validate before any lease lookup: even a busy/failed claim must
+                        # never launder public prepared roles into our private retry route.
+                        is_prepared = "_bot_prepared" in body
+                        if is_prepared:
+                            if message.exchange != "" or message.routing_key != QUEUE_NAME:
+                                raise ValueError("Prepared audience has invalid transport provenance")
+                            from bot.notifications.audience import prepared_audience
+
+                            prepared_audience(body)
                         if idempotency_guard is not None:
                             claim = getattr(idempotency_guard, "claim", None)
                             if claim is None:
@@ -246,14 +255,7 @@ async def start_consumer(
                                     return
                                 if getattr(idempotency_guard, "renew", None) is not None:
                                     heartbeat = asyncio.create_task(renew())
-                        if "_bot_prepared" in body:
-                            # Only the bot's private default-exchange same-queue projection carries roles.
-                            if message.exchange != "" or message.routing_key != QUEUE_NAME:
-                                raise ValueError("Prepared audience has invalid transport provenance")
-                            from bot.notifications.audience import prepared_audience
-
-                            prepared_audience(body)
-                        elif dispatcher and getattr(dispatcher, "prepare", None) is not None:
+                        if not is_prepared and dispatcher and getattr(dispatcher, "prepare", None) is not None:
                             prepared = await dispatcher.prepare(body)
                             if prepared is not None:
                                 projection = aio_pika.Message(

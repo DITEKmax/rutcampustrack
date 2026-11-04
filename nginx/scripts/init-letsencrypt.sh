@@ -49,6 +49,9 @@ fi
 if [ -f nginx/conf.d/http-only.conf.bak ]; then
   mv nginx/conf.d/http-only.conf.bak nginx/conf.d/http-only.conf
   echo ">>> Restored http-only.conf from .bak"
+elif [ ! -f nginx/conf.d/http-only.conf ]; then
+  cp nginx/bootstrap/http-only.conf nginx/conf.d/http-only.conf
+  echo ">>> Activated HTTP-only bootstrap template"
 fi
 
 # Step 3: Start nginx with HTTP-only config
@@ -58,13 +61,13 @@ sleep 5
 
 # Step 4: Test with staging cert first (no rate limit risk)
 echo ">>> Requesting STAGING certificate (test run)..."
-"${COMPOSE[@]}" run --rm certbot certonly \
+"${COMPOSE[@]}" run --rm --entrypoint certbot certbot certonly \
   --webroot \
   --webroot-path /var/www/certbot \
   --email "$CERTBOT_EMAIL" \
   --agree-tos \
   --no-eff-email \
-  --cert-name rutcampustrack \
+  --cert-name ruttrack.site \
   --staging \
   -d "$DOMAIN"
 
@@ -80,13 +83,13 @@ fi
 
 # Step 5: Issue real production certificate
 echo ">>> Requesting PRODUCTION certificate..."
-"${COMPOSE[@]}" run --rm certbot certonly \
+"${COMPOSE[@]}" run --rm --entrypoint certbot certbot certonly \
   --webroot \
   --webroot-path /var/www/certbot \
   --email "$CERTBOT_EMAIL" \
   --agree-tos \
   --no-eff-email \
-  --cert-name rutcampustrack \
+  --cert-name ruttrack.site \
   --force-renewal \
   -d "$DOMAIN"
 

@@ -126,6 +126,28 @@ public class ConstructorDeletionStore {
             }
         }
         var occurrenceIds = occurrences.keySet().stream().sorted().toList();
+        boolean templateAction =
+                Boolean.TRUE.equals(
+                        jdbc.queryForObject(
+                                "SELECT EXISTS(SELECT 1 FROM schedule_recurring_lifecycle_replay"
+                                    + " WHERE schedule_item_id=ANY(?::bigint[]) AND"
+                                    + " action<>'DELETE') OR EXISTS(SELECT 1 FROM"
+                                    + " schedule_assignment_template_close_ledger WHERE"
+                                    + " schedule_item_id=ANY(?::bigint[])) OR EXISTS(SELECT 1 FROM"
+                                    + " schedule_assignment_replacement_templates WHERE"
+                                    + " source_schedule_item_id=ANY(?::bigint[]) OR"
+                                    + " target_schedule_item_id=ANY(?::bigint[]))",
+                                Boolean.class,
+                                array(family),
+                                array(family),
+                                array(family),
+                                array(family)));
+        if (templateAction) {
+            // A recorded template edit is history even if no physical date was
+            // changed and therefore no lesson audit was emitted.
+            if (occurrenceIds.isEmpty()) protect(reasons, "USER_ACTION", -itemId);
+            else occurrenceIds.forEach(occurrence -> protect(reasons, "USER_ACTION", occurrence));
+        }
         for (var entry : lifecycle) {
             long occurrence = entry.path("occurrence_id").asLong();
             String action = entry.path("action").asText();
@@ -207,9 +229,9 @@ SELECT to_jsonb(origin)::text AS data FROM constructor_generation_origins origin
             for (Long occurrence :
                     jdbc.query(
                             "SELECT DISTINCT occurrence_id FROM schedule_assignment_binding_ledger"
-                                + " WHERE occurrence_id=ANY(?::bigint[]) UNION SELECT DISTINCT"
-                                + " occurrence_id FROM schedule_assignment_rebind_ledger WHERE"
-                                + " occurrence_id=ANY(?::bigint[])",
+                                    + " WHERE occurrence_id=ANY(?::bigint[]) UNION SELECT DISTINCT"
+                                    + " occurrence_id FROM schedule_assignment_rebind_ledger WHERE"
+                                    + " occurrence_id=ANY(?::bigint[])",
                             (rs, index) -> rs.getLong(1),
                             array(occurrenceIds),
                             array(occurrenceIds))) protect(reasons, "USER_ACTION", occurrence);
@@ -219,12 +241,12 @@ SELECT to_jsonb(origin)::text AS data FROM constructor_generation_origins origin
             for (Long occurrence :
                     jdbc.query(
                             "SELECT DISTINCT lesson.occurrence_id FROM schedule_outbox event JOIN"
-                                + " lessons lesson ON"
-                                + " lesson.id=(event.payload->'payload'->>'lesson_id')::bigint"
-                                + " WHERE event.event_type='schedule.action-recorded' AND"
-                                + " lesson.occurrence_id=ANY(?::bigint[]) AND"
-                                + " event.payload->'payload'->>'action' NOT"
-                                + " IN('LESSON_CREATED','LESSON_CANCELLED')",
+                                    + " lessons lesson ON"
+                                    + " lesson.id=(event.payload->'payload'->>'lesson_id')::bigint"
+                                    + " WHERE event.event_type='schedule.action-recorded' AND"
+                                    + " lesson.occurrence_id=ANY(?::bigint[]) AND"
+                                    + " event.payload->'payload'->>'action' NOT"
+                                    + " IN('LESSON_CREATED','LESSON_CANCELLED')",
                             (rs, index) -> rs.getLong(1),
                             array(occurrenceIds))) protect(reasons, "USER_ACTION", occurrence);
             if ("transferred".equals(lesson.path("status").asText()))

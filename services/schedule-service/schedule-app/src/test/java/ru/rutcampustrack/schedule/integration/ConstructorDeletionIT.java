@@ -267,6 +267,26 @@ VALUES(?,42,?,decode(repeat('00',32),'hex'),?,'DELETE','{}'::jsonb,NOW())
         assertThat(count("lessons")).isEqualTo(3);
     }
 
+    @Test
+    void recordedTemplateUpdateProtectsEvenWithoutPhysicalMutationAudit() throws Exception {
+        long item = create(UUID.randomUUID());
+        jdbcTemplate.update(
+                """
+INSERT INTO schedule_recurring_lifecycle_replay
+  (operation_id,actor_id,request_key,payload_hash,schedule_item_id,action,response_snapshot,accepted_at)
+VALUES(?,42,?,decode(repeat('01',32),'hex'),?,'UPDATE','{}'::jsonb,NOW())
+""",
+                UUID.randomUUID(),
+                UUID.randomUUID(),
+                item);
+        JsonNode preview = preview(item);
+        assertThat(preview.path("deletable").asBoolean()).isFalse();
+        assertThat(preview.path("protectedCount").asLong()).isEqualTo(3);
+        assertThat(preview.path("removableCount").asLong()).isZero();
+        assertThat(count("constructor_deletion_operations")).isZero();
+        assertThat(count("lessons")).isEqualTo(3);
+    }
+
     private ConstructorParticipantReceipt reply(ConstructorDeletionCommand command) {
         actions.add(command.getAction());
         if (command.getAction() == ConstructorDeletionAction.CONSTRUCTOR_DELETION_PREPARE

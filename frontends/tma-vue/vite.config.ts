@@ -24,6 +24,11 @@ export default defineConfig(({ mode }) => ({
   css: {
     postcss: '../postcss.config.mjs',
   },
+  build: {
+    // Keep fonts compatible with CSP font-src 'self'; retain Vite defaults for other assets.
+    assetsInlineLimit: (filePath) =>
+      /\.(?:woff2?|ttf|otf|eot)$/i.test(filePath) ? false : undefined,
+  },
   server: {
     ...developmentServer(
       loadEnv(mode, '.', ''),

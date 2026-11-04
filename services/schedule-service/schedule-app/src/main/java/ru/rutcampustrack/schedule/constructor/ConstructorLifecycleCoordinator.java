@@ -39,6 +39,7 @@ public class ConstructorLifecycleCoordinator {
     private final RequestContext actor;
     private final ScheduleItemRepository items;
     private final ScheduleSemesterArchiveWriteFence archive;
+    private final ConstructorWriteAdmission writeAdmission;
 
     public ConstructorLifecycleCoordinator(
             ConstructorDeletionStore store,
@@ -46,13 +47,15 @@ public class ConstructorLifecycleCoordinator {
             AcademicGrpcClient academic,
             RequestContext actor,
             ScheduleItemRepository items,
-            ScheduleSemesterArchiveWriteFence archive) {
+            ScheduleSemesterArchiveWriteFence archive,
+            ConstructorWriteAdmission writeAdmission) {
         this.store = store;
         this.participants = participants;
         this.academic = academic;
         this.actor = actor;
         this.items = items;
         this.archive = archive;
+        this.writeAdmission = writeAdmission;
     }
 
     private record Preview(
@@ -102,6 +105,7 @@ public class ConstructorLifecycleCoordinator {
             throw ConstructorLifecycleException.conflict("PREVIEW_STALE");
         if (preview.protectedCount() > 0)
             throw ConstructorLifecycleException.conflict("CONSTRUCTOR_HISTORY_PROTECTED");
+        writeAdmission.requireEnabled();
         UUID operation = UUID.randomUUID();
         var attendance = accepted(preview.attendance(), operation, user, requestHash);
         var academicCommand = accepted(preview.academic(), operation, user, requestHash);

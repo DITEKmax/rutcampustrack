@@ -154,7 +154,6 @@ public class ScheduleItemService {
     }
 
     public ConstructorOperationResponse deleteScheduleItem(Long id, UUID key, String revision) {
-        writeAdmission.requireEnabled();
         return constructorLifecycle.delete(id, key, revision);
     }
 
@@ -172,7 +171,6 @@ public class ScheduleItemService {
     }
 
     public SemesterMaterializationResponse materializeSemester(Long id, UUID key) {
-        writeAdmission.requireEnabled();
         var service = materialization.getIfAvailable();
         if (service == null)
             throw new RecurringLifecycleNotReadyException("semester materialization unavailable");

@@ -99,9 +99,9 @@ public class ConstructorDeletionStore {
             Boolean created =
                     jdbc.queryForObject(
                             "SELECT EXISTS(SELECT 1 FROM schedule_recurring_create_replay WHERE"
-                                + " schedule_item_id=?) OR EXISTS(SELECT 1 FROM"
-                                + " schedule_assignment_replacement_templates WHERE"
-                                + " target_schedule_item_id=?)",
+                                    + " schedule_item_id=?) OR EXISTS(SELECT 1 FROM"
+                                    + " schedule_assignment_replacement_templates WHERE"
+                                    + " target_schedule_item_id=?)",
                             Boolean.class,
                             item.get("id"),
                             item.get("id"));
@@ -111,7 +111,7 @@ public class ConstructorDeletionStore {
         var rows =
                 jdbc.queryForList(
                         "SELECT kind,data::text AS data FROM constructor_deletion_rows(?::bigint[])"
-                            + " ORDER BY kind,data::text",
+                                + " ORDER BY kind,data::text",
                         array(family));
         var lessons = new ArrayList<JsonNode>();
         var occurrences = new HashMap<Long, JsonNode>();
@@ -148,19 +148,19 @@ public class ConstructorDeletionStore {
         for (Long occurrence :
                 jdbc.query(
                         "SELECT DISTINCT occurrence_id FROM lesson_homework_bindings WHERE"
-                            + " occurrence_id=ANY(?::bigint[])",
+                                + " occurrence_id=ANY(?::bigint[])",
                         (rs, index) -> rs.getLong(1),
                         array(occurrenceIds))) protect(reasons, "HOMEWORK", occurrence);
         for (Long occurrence :
                 jdbc.query(
                         "SELECT DISTINCT occurrence_id FROM lesson_transfer_operations WHERE"
-                            + " occurrence_id=ANY(?::bigint[])",
+                                + " occurrence_id=ANY(?::bigint[])",
                         (rs, index) -> rs.getLong(1),
                         array(occurrenceIds))) protect(reasons, "TRANSFER", occurrence);
         for (Long occurrence :
                 jdbc.query(
                         "SELECT DISTINCT occurrence_id FROM lesson_room_change_ledger WHERE"
-                            + " occurrence_id=ANY(?::bigint[])",
+                                + " occurrence_id=ANY(?::bigint[])",
                         (rs, index) -> rs.getLong(1),
                         array(occurrenceIds))) protect(reasons, "USER_ACTION", occurrence);
         var scope =
@@ -204,6 +204,29 @@ SELECT to_jsonb(origin)::text AS data FROM constructor_generation_origins origin
             if (lesson.path("is_geo_blocked").asBoolean()
                     || lesson.path("is_blocked_by_headman").asBoolean())
                 protect(reasons, "USER_ACTION", occurrence);
+            for (Long occurrence :
+                    jdbc.query(
+                            "SELECT DISTINCT occurrence_id FROM schedule_assignment_binding_ledger"
+                                + " WHERE occurrence_id=ANY(?::bigint[]) UNION SELECT DISTINCT"
+                                + " occurrence_id FROM schedule_assignment_rebind_ledger WHERE"
+                                + " occurrence_id=ANY(?::bigint[])",
+                            (rs, index) -> rs.getLong(1),
+                            array(occurrenceIds),
+                            array(occurrenceIds))) protect(reasons, "USER_ACTION", occurrence);
+            // The authoritative local outbox closes the gap before Attendance consumes
+            // an edit audit. Binding/replacement ledgers above retain this evidence
+            // after outbox retention has removed already delivered events.
+            for (Long occurrence :
+                    jdbc.query(
+                            "SELECT DISTINCT lesson.occurrence_id FROM schedule_outbox event JOIN"
+                                + " lessons lesson ON"
+                                + " lesson.id=(event.payload->'payload'->>'lesson_id')::bigint"
+                                + " WHERE event.event_type='schedule.action-recorded' AND"
+                                + " lesson.occurrence_id=ANY(?::bigint[]) AND"
+                                + " event.payload->'payload'->>'action' NOT"
+                                + " IN('LESSON_CREATED','LESSON_CANCELLED')",
+                            (rs, index) -> rs.getLong(1),
+                            array(occurrenceIds))) protect(reasons, "USER_ACTION", occurrence);
             if ("transferred".equals(lesson.path("status").asText()))
                 protect(reasons, "TRANSFER", occurrence);
             long expectedRevision =
@@ -220,13 +243,13 @@ SELECT to_jsonb(origin)::text AS data FROM constructor_generation_origins origin
             Long bindingRevisions =
                     jdbc.queryForObject(
                             "SELECT count(*) FROM schedule_assignment_binding_ledger WHERE"
-                                + " lesson_id=?",
+                                    + " lesson_id=?",
                             Long.class,
                             id);
             Long replacementRevisions =
                     jdbc.queryForObject(
                             "SELECT count(*) FROM schedule_assignment_rebind_ledger WHERE"
-                                + " lesson_id=? AND result='MOVED'",
+                                    + " lesson_id=? AND result='MOVED'",
                             Long.class,
                             id);
             expectedRevision += bindingRevisions == null ? 0 : bindingRevisions;
@@ -287,7 +310,7 @@ SELECT to_jsonb(origin)::text AS data FROM constructor_generation_origins origin
         for (byte[] hash :
                 jdbc.query(
                         "SELECT payload_hash FROM constructor_system_audit_proofs WHERE"
-                            + " lesson_id=ANY(?::bigint[])",
+                                + " lesson_id=ANY(?::bigint[])",
                         (rs, index) -> rs.getBytes(1),
                         array(ids))) hashes.put(ConstructorHashes.hex(hash), hash);
         // Legacy constructor effects can be proven from the authoritative local
@@ -369,7 +392,7 @@ SELECT to_jsonb(origin)::text AS data FROM constructor_generation_origins origin
         if (Boolean.TRUE.equals(
                 jdbc.queryForObject(
                         "SELECT EXISTS(SELECT 1 FROM constructor_deletion_operations WHERE"
-                            + " family_ids && ?::bigint[] AND state<>'RELEASED')",
+                                + " family_ids && ?::bigint[] AND state<>'RELEASED')",
                         Boolean.class,
                         array(current.familyIds()))))
             throw ConstructorLifecycleException.conflict("CONSTRUCTOR_OPERATION_PENDING");
@@ -400,8 +423,8 @@ VALUES(?,?,?,'DELETE_UNUSED_SERIES',?,?,?,?,?::bigint[],?,?,?::jsonb,?,?,'PREPAR
     public boolean state(UUID id, String expected, String next, String error) {
         return jdbc.update(
                         "UPDATE constructor_deletion_operations SET"
-                            + " state=?,error_code=?,updated_at=NOW() WHERE operation_id=? AND"
-                            + " state=?",
+                                + " state=?,error_code=?,updated_at=NOW() WHERE operation_id=? AND"
+                                + " state=?",
                         next,
                         error,
                         id,
@@ -437,7 +460,7 @@ VALUES(?,?,?,'DELETE_UNUSED_SERIES',?,?,?,?,?::bigint[],?,?,?::jsonb,?,?,'PREPAR
         long deleted =
                 jdbc.queryForObject(
                         "SELECT count(*) FROM lesson_occurrences WHERE"
-                            + " schedule_item_id=ANY(?::bigint[])",
+                                + " schedule_item_id=ANY(?::bigint[])",
                         Long.class,
                         array(operation.familyIds()));
         jdbc.queryForObject(
@@ -447,7 +470,7 @@ VALUES(?,?,?,'DELETE_UNUSED_SERIES',?,?,?,?,?::bigint[],?,?,?::jsonb,?,?,'PREPAR
         jdbc.execute("SET CONSTRAINTS ALL DEFERRED");
         jdbc.update(
                 "DELETE FROM lesson_lifecycle_entries WHERE occurrence_id IN(SELECT id FROM"
-                    + " lesson_occurrences WHERE schedule_item_id=ANY(?::bigint[]))",
+                        + " lesson_occurrences WHERE schedule_item_id=ANY(?::bigint[]))",
                 array(operation.familyIds()));
         jdbc.update(
                 "DELETE FROM lessons WHERE schedule_item_id=ANY(?::bigint[])",
@@ -469,7 +492,7 @@ VALUES(?,?,?,'DELETE_UNUSED_SERIES',?,?,?,?,?::bigint[],?,?,?::jsonb,?,?,'PREPAR
         return operation(
                 jdbc.queryForList(
                         "SELECT * FROM constructor_deletion_operations WHERE actor_id=? AND"
-                            + " request_key=?",
+                                + " request_key=?",
                         actor,
                         key));
     }
@@ -478,7 +501,7 @@ VALUES(?,?,?,'DELETE_UNUSED_SERIES',?,?,?,?,?::bigint[],?,?,?::jsonb,?,?,'PREPAR
         if (Boolean.TRUE.equals(
                 jdbc.queryForObject(
                         "SELECT EXISTS(SELECT 1 FROM schedule_recurring_lifecycle_replay WHERE"
-                            + " actor_id=? AND request_key=?)",
+                                + " actor_id=? AND request_key=?)",
                         Boolean.class,
                         actor,
                         key))) {
@@ -496,15 +519,15 @@ VALUES(?,?,?,'DELETE_UNUSED_SERIES',?,?,?,?,?::bigint[],?,?,?::jsonb,?,?,'PREPAR
         return operation(
                 jdbc.queryForList(
                         "SELECT * FROM constructor_deletion_operations WHERE operation_id=? FOR"
-                            + " UPDATE",
+                                + " UPDATE",
                         id));
     }
 
     public List<UUID> recoverable() {
         return jdbc.query(
                 "SELECT operation_id FROM constructor_deletion_operations WHERE state NOT"
-                    + " IN('COMPLETED','RELEASED') AND next_attempt_at<=NOW() ORDER BY"
-                    + " next_attempt_at LIMIT 4",
+                        + " IN('COMPLETED','RELEASED') AND next_attempt_at<=NOW() ORDER BY"
+                        + " next_attempt_at LIMIT 4",
                 (rs, index) -> rs.getObject(1, UUID.class));
     }
 
@@ -531,12 +554,12 @@ SELECT replay.payload_hash,operation.group_id FROM schedule_recurring_create_rep
         for (Long assignment :
                 jdbc.query(
                         "SELECT DISTINCT assignment_id FROM schedule_items WHERE"
-                            + " id=ANY(?::bigint[]) ORDER BY assignment_id",
+                                + " id=ANY(?::bigint[]) ORDER BY assignment_id",
                         (rs, index) -> rs.getLong(1),
                         array(family)))
             jdbc.queryForObject(
                     "SELECT assignment_id FROM schedule_assignment_fences WHERE assignment_id=? FOR"
-                        + " UPDATE",
+                            + " UPDATE",
                     Long.class,
                     assignment);
         jdbc.queryForList(
@@ -544,11 +567,11 @@ SELECT replay.payload_hash,operation.group_id FROM schedule_recurring_create_rep
                 array(family));
         jdbc.queryForList(
                 "SELECT id FROM lesson_occurrences WHERE schedule_item_id=ANY(?::bigint[]) ORDER BY"
-                    + " id FOR UPDATE",
+                        + " id FOR UPDATE",
                 array(family));
         jdbc.queryForList(
                 "SELECT id FROM lessons WHERE schedule_item_id=ANY(?::bigint[]) ORDER BY"
-                    + " occurrence_id,id FOR UPDATE",
+                        + " occurrence_id,id FOR UPDATE",
                 array(family));
         jdbc.queryForList(
                 "SELECT binding_id FROM lesson_homework_bindings WHERE occurrence_id IN(SELECT id"

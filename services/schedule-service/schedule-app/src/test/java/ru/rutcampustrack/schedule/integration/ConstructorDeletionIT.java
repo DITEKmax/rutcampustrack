@@ -58,6 +58,8 @@ class ConstructorDeletionIT extends AbstractScheduleIntegrationTest {
     @MockitoBean Clock clock;
     @Autowired MockMvc mvc;
     @Autowired ObjectMapper json;
+    @Autowired org.springframework.context.ApplicationEventPublisher events;
+    @Autowired org.springframework.transaction.PlatformTransactionManager transactions;
 
     private final List<ConstructorDeletionAction> actions = new ArrayList<>();
     private final AtomicBoolean loseCommitReply = new AtomicBoolean();
@@ -228,6 +230,38 @@ VALUES(?,42,?,decode(repeat('00',32),'hex'),?,'DELETE','{}'::jsonb,NOW())
                         actor(delete("/schedule/items/{id}", item))
                                 .header("Idempotency-Key", oldKey)
                                 .header("If-Match", preview(item).path("revision").asText()))
+                .andExpect(status().isConflict());
+        assertThat(count("constructor_deletion_operations")).isZero();
+        assertThat(count("lessons")).isEqualTo(3);
+    }
+
+    @Test
+    void pendingLocalUserAuditProtectsBeforeAttendanceReceivesIt() throws Exception {
+        long item = create(UUID.randomUUID());
+        long lesson =
+                jdbcTemplate.queryForObject(
+                        "SELECT min(id) FROM lessons WHERE schedule_item_id=?", Long.class, item);
+        new org.springframework.transaction.support.TransactionTemplate(transactions)
+                .executeWithoutResult(
+                        transaction ->
+                                ru.rutcampustrack.schedule.event.ScheduleActionRecordedEvent
+                                        .publish(
+                                                jdbcTemplate,
+                                                events,
+                                                "LESSON_EDITED",
+                                                lesson,
+                                                42L,
+                                                ru.rutcampustrack.schedule.event
+                                                        .ScheduleActionRecordedEvent.snapshot(
+                                                        jdbcTemplate, lesson),
+                                                java.time.OffsetDateTime.now(clock)));
+        JsonNode preview = preview(item);
+        assertThat(preview.path("protectedCount").asLong()).isOne();
+        assertThat(preview.path("protectedReasons").toString()).contains("USER_ACTION");
+        mvc.perform(
+                        actor(delete("/schedule/items/{id}", item))
+                                .header("Idempotency-Key", UUID.randomUUID())
+                                .header("If-Match", preview.path("revision").asText()))
                 .andExpect(status().isConflict());
         assertThat(count("constructor_deletion_operations")).isZero();
         assertThat(count("lessons")).isEqualTo(3);

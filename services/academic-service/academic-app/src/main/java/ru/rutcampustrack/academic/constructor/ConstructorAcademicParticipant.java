@@ -35,7 +35,7 @@ public class ConstructorAcademicParticipant {
         this.jdbc = jdbc;
     }
 
-    private record Snapshot(byte[] digest, long protectedCount, boolean unknown) {}
+    private record Snapshot(byte[] digest, List<Long> protectedOccurrences, boolean unknown) {}
 
     @Transactional(isolation = Isolation.READ_COMMITTED)
     public ConstructorParticipantReceipt apply(ConstructorDeletionCommand command) {
@@ -61,40 +61,40 @@ public class ConstructorAcademicParticipant {
             throw conflict();
         if (epoch != null && "DELETED".equals(epoch.get("state"))) {
             if (action != ConstructorDeletionAction.CONSTRUCTOR_DELETION_COMMIT) throw conflict();
-            return receipt(command, (byte[]) epoch.get("participant_digest"), "DELETED", 0, false);
+            return receipt(command, (byte[]) epoch.get("participant_digest"), "DELETED", List.of(), false);
         }
         if (epoch != null && "RELEASED".equals(epoch.get("state"))) {
             if (action != ConstructorDeletionAction.CONSTRUCTOR_DELETION_RELEASE) throw conflict();
-            return receipt(command, (byte[]) epoch.get("participant_digest"), "RELEASED", 0, false);
+            return receipt(command, (byte[]) epoch.get("participant_digest"), "RELEASED", List.of(), false);
         }
         if (action == ConstructorDeletionAction.CONSTRUCTOR_DELETION_RELEASE) {
             if (epoch == null) insert(command, "RELEASED");
             else jdbc.update("UPDATE academic_constructor_deletion_participants SET state='RELEASED' WHERE operation_id=?", operation);
-            return receipt(command, command.getParticipantDigest().toByteArray(), "RELEASED", 0, false);
+            return receipt(command, command.getParticipantDigest().toByteArray(), "RELEASED", List.of(), false);
         }
         validateCanonicalScope(command);
         Snapshot current = snapshot(command);
         if (action == ConstructorDeletionAction.CONSTRUCTOR_DELETION_PREVIEW)
-            return receipt(command, current.digest(), "PREVIEW", current.protectedCount(), current.unknown());
-        if (current.protectedCount() > 0 || !MessageDigest.isEqual(current.digest(), command.getParticipantDigest().toByteArray()))
+            return receipt(command, current.digest(), "PREVIEW", current.protectedOccurrences(), current.unknown());
+        if (!current.protectedOccurrences().isEmpty() || !MessageDigest.isEqual(current.digest(), command.getParticipantDigest().toByteArray()))
             throw conflict();
         if (action == ConstructorDeletionAction.CONSTRUCTOR_DELETION_PREPARE) {
             // The dedicated Schedule capability delegates authority for a source
             // admission already committed with fresh HTTP authorization. Recovery
             // deliberately has no stored/renewed user JWT.
             if (epoch == null) insert(command, "PREPARED");
-            return receipt(command, current.digest(), epoch == null ? "PREPARED" : (String) epoch.get("state"), 0, false);
+            return receipt(command, current.digest(), epoch == null ? "PREPARED" : (String) epoch.get("state"), List.of(), false);
         }
         if (epoch == null) throw conflict();
         if (action == ConstructorDeletionAction.CONSTRUCTOR_DELETION_SEAL) {
             if (!List.of("PREPARED", "SEALED").contains(epoch.get("state"))) throw conflict();
             jdbc.update("UPDATE academic_constructor_deletion_participants SET state='SEALED' WHERE operation_id=?", operation);
-            return receipt(command, current.digest(), "SEALED", 0, false);
+            return receipt(command, current.digest(), "SEALED", List.of(), false);
         }
         if (action == ConstructorDeletionAction.CONSTRUCTOR_DELETION_COMMIT) {
             if (!"SEALED".equals(epoch.get("state"))) throw conflict();
             jdbc.update("UPDATE academic_constructor_deletion_participants SET state='DELETED' WHERE operation_id=?", operation);
-            return receipt(command, current.digest(), "DELETED", 0, false);
+            return receipt(command, current.digest(), "DELETED", List.of(), false);
         }
         throw conflict();
     }
@@ -169,7 +169,7 @@ public class ConstructorAcademicParticipant {
         byte[] digest = ConstructorHashes.json(Map.of(
                 "group", scope.getGroupId(), "subject", scope.getSubjectId(), "semester", scope.getSemesterId(),
                 "rows", relevant, "unknown", unknown));
-        return new Snapshot(digest, protectedOccurrences.size(), unknown);
+        return new Snapshot(digest, protectedOccurrences.stream().sorted().toList(), unknown);
     }
 
     // The SQL fence uses the same recursive aliases. Natural DATE-mode content
@@ -210,13 +210,14 @@ public class ConstructorAcademicParticipant {
             "placementoccurrenceid", "selectedoccurrenceid", "scheduleoccurrenceid");
 
     private static ConstructorParticipantReceipt receipt(
-            ConstructorDeletionCommand command, byte[] digest, String state, long count, boolean unknown) {
+            ConstructorDeletionCommand command, byte[] digest, String state, List<Long> protectedOccurrences, boolean unknown) {
         var result = ConstructorParticipantReceipt.newBuilder()
                 .setOperationId(command.getOperationId()).setRequestHash(command.getRequestHash())
                 .setScopeHash(command.getScopeHash()).setParticipantDigest(ByteString.copyFrom(digest))
-                .setState(state).setProtectedCount(count);
-        if (count > 0) result.addProtectedReasons(ConstructorProtectedReason.newBuilder()
-                .setCode(unknown ? "UNKNOWN_HISTORY" : "HOMEWORK").setCount(count));
+                .setState(state).setProtectedCount(protectedOccurrences.size())
+                .addAllProtectedOccurrenceIds(protectedOccurrences);
+        if (!protectedOccurrences.isEmpty()) result.addProtectedReasons(ConstructorProtectedReason.newBuilder()
+                .setCode(unknown ? "UNKNOWN_HISTORY" : "HOMEWORK").setCount(protectedOccurrences.size()));
         return result.build();
     }
 

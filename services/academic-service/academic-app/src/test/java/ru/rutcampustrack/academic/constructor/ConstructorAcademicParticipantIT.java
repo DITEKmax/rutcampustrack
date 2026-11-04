@@ -35,6 +35,7 @@ class ConstructorAcademicParticipantIT extends AbstractAcademicIntegrationTest {
         var command = command();
         var preview = apply(command, true);
         assertThat(preview.getProtectedCount()).isZero();
+        assertThat(preview.getProtectedOccurrenceIdsList()).isEmpty();
         command = command.toBuilder().setParticipantDigest(preview.getParticipantDigest()).build();
         var prepare = action(command, ConstructorDeletionAction.CONSTRUCTOR_DELETION_PREPARE);
         assertThat(apply(prepare, false).getState()).isEqualTo("PREPARED");
@@ -80,6 +81,7 @@ class ConstructorAcademicParticipantIT extends AbstractAcademicIntegrationTest {
                 "{\"lessonDate\":\""+LocalDate.parse(command.getScope().getLessons(0).getLessonDate()).plusDays(1)+"\",\"lessonNumber\":1}");
         var protectedPreview = apply(command, true);
         assertThat(protectedPreview.getProtectedCount()).isEqualTo(1);
+        assertThat(protectedPreview.getProtectedOccurrenceIdsList()).containsExactly(2001L);
         assertThat(protectedPreview.getProtectedReasons(0).getCode()).isEqualTo("HOMEWORK");
         var prepare = action(command.toBuilder().setParticipantDigest(protectedPreview.getParticipantDigest()).build(),
                 ConstructorDeletionAction.CONSTRUCTOR_DELETION_PREPARE);
@@ -104,6 +106,7 @@ class ConstructorAcademicParticipantIT extends AbstractAcademicIntegrationTest {
                 "{\"placementLessonId\":9001}","{\"selectedOccurrenceId\":2001}");
         var preview = apply(command,true);
         assertThat(preview.getProtectedCount()).isEqualTo(1);
+        assertThat(preview.getProtectedOccurrenceIdsList()).containsExactly(2001L);
         assertThat(preview.getProtectedReasons(0).getCode()).isEqualTo("HOMEWORK");
     }
 
@@ -118,6 +121,7 @@ class ConstructorAcademicParticipantIT extends AbstractAcademicIntegrationTest {
                 """,homework,command.getScope().getSemesterId(),command.getOriginalActorId());
         var preview=apply(command,true);
         assertThat(preview.getProtectedCount()).isEqualTo(1);
+        assertThat(preview.getProtectedOccurrenceIdsList()).containsExactly(2001L);
         assertThat(preview.getProtectedReasons(0).getCode()).isEqualTo("UNKNOWN_HISTORY");
         assertThat(apply(command(),true).getProtectedCount()).isZero();
     }

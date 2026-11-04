@@ -217,7 +217,9 @@ async def test_consumer_outage_release_failure_and_busy_lease_retry_until_one_co
 
     queue = SimpleNamespace(bind=AsyncMock(), iterator=lambda: Iterator())
     channel = SimpleNamespace(
-        set_qos=AsyncMock(), declare_exchange=AsyncMock(), declare_queue=AsyncMock(return_value=queue),
+        set_qos=AsyncMock(),
+        declare_exchange=AsyncMock(),
+        declare_queue=AsyncMock(return_value=queue),
         default_exchange=SimpleNamespace(publish=AsyncMock()),
     )
     channel.transaction = lambda: SimpleNamespace(select=AsyncMock(), commit=AsyncMock(), rollback=AsyncMock())

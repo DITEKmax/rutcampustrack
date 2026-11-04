@@ -459,8 +459,13 @@ async def test_durable_progress_survives_receipt_expiry_and_preserves_remaining_
     try:
         async with queue.staged() as batch:
             await handle_business(
-                snapshot, bot=bot, academic=authority, queue=queue,
-                reminders=reminders, config=None, state=state,
+                snapshot,
+                bot=bot,
+                academic=authority,
+                queue=queue,
+                reminders=reminders,
+                config=None,
+                state=state,
             )
         await asyncio.wait_for(batch.wait(), 2)
         chats = [call.kwargs["chat_id"] for call in bot.send_message.await_args_list]

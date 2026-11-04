@@ -88,21 +88,27 @@ TASK_ALIVE = Gauge(
 for _task in ("watchdog", "polling", "keyboard_sync"):
     TASK_ALIVE.labels(_task).set(0)
 STARTUP_COMPLETED = Gauge(
-    "notification_bot_startup_completed", "One-shot startup task returned successfully", ["task"],
+    "notification_bot_startup_completed",
+    "One-shot startup task returned successfully",
+    ["task"],
     registry=METRICS_REGISTRY,
 )
 STARTUP_FAILED = Gauge(
-    "notification_bot_startup_failed", "One-shot startup task raised an exception", ["task"],
+    "notification_bot_startup_failed",
+    "One-shot startup task raised an exception",
+    ["task"],
     registry=METRICS_REGISTRY,
 )
 STARTUP_COMPLETED.labels("keyboard_sync").set(0)
 STARTUP_FAILED.labels("keyboard_sync").set(0)
 KEYBOARD_SYNC_USERS_FAILED = Counter(
-    "notification_bot_keyboard_sync_users_failed", "Users still pending after startup retry exhaustion",
+    "notification_bot_keyboard_sync_users_failed",
+    "Users still pending after startup retry exhaustion",
     registry=METRICS_REGISTRY,
 )
 KEYBOARD_SYNC_REGISTRY_AVAILABLE = Gauge(
-    "notification_bot_keyboard_sync_registry_available", "Last startup registry read succeeded; -1 means not attempted",
+    "notification_bot_keyboard_sync_registry_available",
+    "Last startup registry read succeeded; -1 means not attempted",
     registry=METRICS_REGISTRY,
 )
 KEYBOARD_SYNC_REGISTRY_AVAILABLE.set(-1)

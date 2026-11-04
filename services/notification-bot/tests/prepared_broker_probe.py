@@ -259,24 +259,35 @@ async def recovery_progress(url):
 
     prefix = "audit.recovery." + uuid4().hex
     names = dict(
-        QUEUE_NAME=prefix, EXCHANGE_NAME=prefix + ".events", DLQ_QUEUE_NAME=prefix + ".dlq",
-        DLQ_EXCHANGE_NAME=prefix + ".dead", DLQ_ROUTING_KEY=prefix + ".dead-key",
+        QUEUE_NAME=prefix,
+        EXCHANGE_NAME=prefix + ".events",
+        DLQ_QUEUE_NAME=prefix + ".dlq",
+        DLQ_EXCHANGE_NAME=prefix + ".dead",
+        DLQ_ROUTING_KEY=prefix + ".dead-key",
         PARKING_QUEUE_NAME=prefix + ".parked",
     )
     observer = await aio_pika.connect(url)
     channel = await observer.channel()
     source = await channel.declare_exchange(names["EXCHANGE_NAME"], aio_pika.ExchangeType.FANOUT, durable=True)
     dead = await channel.declare_exchange(names["DLQ_EXCHANGE_NAME"], aio_pika.ExchangeType.DIRECT, durable=True)
-    queue = await channel.declare_queue(prefix, durable=True, arguments={
-        "x-dead-letter-exchange": names["DLQ_EXCHANGE_NAME"],
-        "x-dead-letter-routing-key": names["DLQ_ROUTING_KEY"],
-    })
+    queue = await channel.declare_queue(
+        prefix,
+        durable=True,
+        arguments={
+            "x-dead-letter-exchange": names["DLQ_EXCHANGE_NAME"],
+            "x-dead-letter-routing-key": names["DLQ_ROUTING_KEY"],
+        },
+    )
     await queue.bind(source)
     parking = await channel.declare_queue(names["PARKING_QUEUE_NAME"], durable=True)
-    events = {mode: {**EVENT, "event_id": str(uuid4()), "payload": {"mode": mode}}
-              for mode in ("terminal", "healthy", "transient", "exhausted")}
+    events = {
+        mode: {**EVENT, "event_id": str(uuid4()), "payload": {"mode": mode}}
+        for mode in ("terminal", "healthy", "transient", "exhausted")
+    }
     events["exhausted"]["_bot_prepared"] = {
-        "version": 1, "event_id": events["exhausted"]["event_id"], "event_type": EVENT["event_type"],
+        "version": 1,
+        "event_id": events["exhausted"]["event_id"],
+        "event_type": EVENT["event_type"],
         "recipients": [{"user_id": uid, "roles": ["STUDENT"]} for uid in (1, 2)],
     }
     for mode in ("terminal", "healthy", "transient", "exhausted", "healthy"):
@@ -335,12 +346,16 @@ async def recovery_progress(url):
         deliveries.append(mode)
 
     guard = SimpleNamespace(
-        _ttl=30, claim=claim, release=release, complete=complete,
+        _ttl=30,
+        claim=claim,
+        release=release,
+        complete=complete,
         is_completed=AsyncMock(side_effect=lambda event_id: event_id in completed),
     )
     try:
         with (
-            patch.multiple(consumer, **names), patch.object(consumer.aio_pika, "connect_robust", connect),
+            patch.multiple(consumer, **names),
+            patch.object(consumer.aio_pika, "connect_robust", connect),
             patch.object(consumer, "RETRY_DELAYS", (0,) * consumer.MAX_RETRIES),
         ):
             dispatcher = SimpleNamespace(dispatch=dispatch, snapshot_progress=snapshot_progress)
@@ -371,8 +386,12 @@ async def recovery_progress(url):
             parked.append(mode)
             await message.ack()
         assert sorted(parked) == ["exhausted", "terminal"]
-        return {"parked": sorted(parked), "provider_deliveries": deliveries, "attempts": attempts,
-                "confirmed_progress_retained": True}
+        return {
+            "parked": sorted(parked),
+            "provider_deliveries": deliveries,
+            "attempts": attempts,
+            "confirmed_progress_retained": True,
+        }
     finally:
         if connection is not None:
             await connection.close()

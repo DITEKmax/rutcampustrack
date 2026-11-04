@@ -39,9 +39,16 @@ def failure_reason(error):
             code = cause.code()
             reason = "grpc_" + code.name.lower()
             if reason not in {
-                "grpc_unavailable", "grpc_deadline_exceeded", "grpc_unknown", "grpc_internal",
-                "grpc_resource_exhausted", "grpc_aborted", "grpc_unauthenticated",
-                "grpc_permission_denied", "grpc_not_found", "grpc_invalid_argument",
+                "grpc_unavailable",
+                "grpc_deadline_exceeded",
+                "grpc_unknown",
+                "grpc_internal",
+                "grpc_resource_exhausted",
+                "grpc_aborted",
+                "grpc_unauthenticated",
+                "grpc_permission_denied",
+                "grpc_not_found",
+                "grpc_invalid_argument",
             }:
                 reason = "grpc_other"
             return reason, code in {grpc.StatusCode.NOT_FOUND, grpc.StatusCode.INVALID_ARGUMENT}
@@ -209,8 +216,12 @@ async def start_consumer(
                 traceback = traceback.tb_next
             logger.warning(
                 "Event recovery reason=%s cause=%s origin=%s attempt=%d action=%s event_id=%s",
-                reason, type(cause).__name__ if cause is not None else "LeaseBusy", origin, attempt,
-                "parked" if parked else "deferred", telemetry_id(event_id) or "unknown",
+                reason,
+                type(cause).__name__ if cause is not None else "LeaseBusy",
+                origin,
+                attempt,
+                "parked" if parked else "deferred",
+                telemetry_id(event_id) or "unknown",
             )
             if not parked:
                 try:
@@ -236,7 +247,9 @@ async def start_consumer(
             preparation["publish_started"] = True
             async with asyncio.timeout(min(8, budget)):
                 await channel.default_exchange.publish(
-                    replacement, routing_key=PARKING_QUEUE_NAME if parked else QUEUE_NAME, mandatory=True,
+                    replacement,
+                    routing_key=PARKING_QUEUE_NAME if parked else QUEUE_NAME,
+                    mandatory=True,
                 )
             preparation["outcome"] = "parked" if parked else "deferred"
             return release

@@ -87,7 +87,9 @@ def broker(monkeypatch, count=1):
 
     queue = SimpleNamespace(bind=AsyncMock(), iterator=Iterator)
     channel = SimpleNamespace(
-        set_qos=AsyncMock(), declare_exchange=AsyncMock(), declare_queue=AsyncMock(return_value=queue),
+        set_qos=AsyncMock(),
+        declare_exchange=AsyncMock(),
+        declare_queue=AsyncMock(return_value=queue),
         default_exchange=SimpleNamespace(publish=AsyncMock()),
     )
     channel.transaction = lambda: SimpleNamespace(select=AsyncMock(), commit=AsyncMock(), rollback=AsyncMock())

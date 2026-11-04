@@ -612,6 +612,7 @@ class LessonActionAuditIT {
         assertThat(checkin.checkin(identity, studentLesson(), "geo-accepted-key-0001", coordinates))
                 .isEqualTo(ack);
         assertThat(count()).isEqualTo(3);
+        verify(geofence, times(1)).evaluate(55.75, 37.61);
         assertThat(reads.read(1L, null, 20).items())
                 .anySatisfy(
                         action -> {
@@ -629,8 +630,8 @@ class LessonActionAuditIT {
                         Query.query(Criteria.where("payload.geo.verdict").is("ACCEPTED")),
                         LessonActionDocument.class);
         Map<?, ?> acceptedGeo = (Map<?, ?>) acceptedAction.getPayload().get("geo");
-        assertThat(acceptedGeo.containsKey("latitude")).isFalse();
-        assertThat(acceptedGeo.containsKey("longitude")).isFalse();
+        assertThat(acceptedGeo.get("latitude")).isEqualTo(55.75);
+        assertThat(acceptedGeo.get("longitude")).isEqualTo(37.61);
         Instant observed = Instant.parse("2026-09-06T07:15:01Z");
         var activityQuery =
                 ru.rutcampustrack.attendance.grpc.AdminActivityQuery.newBuilder()

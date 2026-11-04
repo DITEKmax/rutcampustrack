@@ -205,9 +205,15 @@ class ConstructorAcademicParticipantIT extends AbstractAcademicIntegrationTest {
 
     private ConstructorDeletionCommand command() {
         var c = identityFixture.canonical();
-        long subject = jdbc.queryForObject("INSERT INTO subjects(name,type,group_id,semester_id) VALUES('constructor fence','lecture',?,?) RETURNING id",
-                Long.class,c.groupId(),c.semesterId());
-        jdbc.update("INSERT INTO subject_lesson_types(subject_id,lesson_type) VALUES(?,'lecture')", subject);
+        long subject = jdbc.queryForObject("""
+                WITH subject AS (
+                    INSERT INTO subjects(name,type,group_id,semester_id)
+                    VALUES('constructor fence','lecture',?,?) RETURNING id
+                ), types AS (
+                    INSERT INTO subject_lesson_types(subject_id,lesson_type)
+                    SELECT id,'lecture' FROM subject RETURNING subject_id
+                ) SELECT subject_id FROM types
+                """,Long.class,c.groupId(),c.semesterId());
         LocalDate day = jdbc.queryForObject("SELECT date_from FROM semesters WHERE id=?",LocalDate.class,c.semesterId());
         var lesson = ConstructorLessonScope.newBuilder().setLessonId(1001).setOccurrenceId(2001).setScheduleItemId(3001)
                 .setLessonDate(day.toString()).setLessonNumber(1).setLessonType("lecture").setGeneration(1)

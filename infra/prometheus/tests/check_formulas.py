@@ -169,6 +169,10 @@ def main():
                        series('notification_bot_task_alive{task="watchdog"}', "1x6"),
                        series('notification_bot_task_alive{task="polling"}', "1x6"),
                        series('notification_bot_consumer_connected', "1x6")], task_down, []))
+    keyboard_failed = alert_expr("telemetry-pipeline.yml", "NotificationBotKeyboardSyncUsersFailed")
+    tests.append(case([series('notification_bot_keyboard_sync_users_failed_total', "0x6")], keyboard_failed, []))
+    tests.append(case([series('notification_bot_keyboard_sync_users_failed_total', "1x6")], keyboard_failed,
+                      [sample('notification_bot_keyboard_sync_users_failed_total', 1)]))
     coverage = alert_expr("telemetry-pipeline.yml", "CadvisorContainerMetricsMissing")
     cad = 'job="cadvisor",instance="cadvisor:8080",environment="synthetic"'
     tests.append(case([series('up{' + cad + '}', "1x6")], coverage,

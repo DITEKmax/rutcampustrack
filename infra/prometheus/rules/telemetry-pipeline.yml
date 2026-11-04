@@ -233,6 +233,15 @@ groups:
       summary: Notification bot keyboard startup task failed
       description: The one-shot task finished with an exception. A completed task is not required to remain alive; successful task completion does not prove every recipient keyboard was updated. Inspect safe startup diagnostics.
       runbook_url: https://github.com/DITEKmax/rutcampustrack/blob/main/docs/operations/monitoring/observability.md
+  - alert: NotificationBotKeyboardSyncUsersFailed
+    expr: notification_bot_keyboard_sync_users_failed_total > 0
+    labels:
+      severity: warning
+      owner: platform
+    annotations:
+      summary: Notification bot startup exhausted keyboard sync for a recipient
+      description: At least one recipient exhausted the bounded startup retries. Successful task completion alone does not prove all recipient keyboards were synchronized. The process counter resets on restart; inspect retained registry progress before retrying.
+      runbook_url: https://github.com/DITEKmax/rutcampustrack/blob/main/docs/operations/monitoring/observability.md
   - alert: NotificationBotSendExhausted
     expr: notification_bot_send_tasks_exhausted_total > 0
     for: 0m

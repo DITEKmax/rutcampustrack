@@ -94,7 +94,16 @@ class ConstructorAttendanceIT {
 
     @Test void autoOnlyFamilyDeletesAllGenerationsAndLateEventsCannotRepopulate() {
         materializer.apply(batch());
+        Document materialized = mongo.findOne(Query.query(Criteria.where("lesson_id").is(11L)), Document.class, "attendances");
+        assertThat(materialized.getString("source")).isEqualTo("auto_scheduler");
+        assertThat(materialized.getString("status")).isEqualTo("absent");
+        transactions.executeWithoutResult(s -> lessons.processLessonCancelled(11L, 9L, 7L));
+        Document cancelled = mongo.findOne(Query.query(Criteria.where("lesson_id").is(11L)), Document.class, "attendances");
+        assertThat(cancelled.getString("source")).isEqualTo("auto_scheduler");
+        assertThat(cancelled.getString("status")).isEqualTo("cancelled");
+        // Historical uppercase BSON remains eligible alongside real converted lowercase rows.
         mongo.insert(mark("old-generation", 12, "ABSENT", "AUTO_SCHEDULER"), "attendances");
+        mongo.insert(mark("old-cancelled-generation", 12, "CANCELLED", "AUTO_SCHEDULER").append("user_id", 22L), "attendances");
         var preparedSnapshot = lessons.prepareLessonClosed(11L, 7L, 9L);
         var c = preview();
         assertThat(c.getParticipantDigest()).hasSize(32);
@@ -236,7 +245,7 @@ class ConstructorAttendanceIT {
         return new Document("_id", id).append("lesson_id", lesson).append("user_id", 21L).append("group_id", 7L).append("subject_id", 8L).append("semester_id", 9L).append("status", status).append("source", source);
     }
     private static Map<String,Object> scheduleEvent(String id) {
-        var scope = Map.of("group_id",7L,"semester_id",9L,"lesson_id",11L);
+        Map<String,Object> scope = Map.of("group_id",7L,"semester_id",9L,"lesson_id",11L);
         var p = LessonActionService.payload(7L,9L,11L,"LESSON_CREATED",LessonActionService.person(3L,"HEADMAN",null),null,null,scope,null,null,null,1);
         return Map.of("event_id",id,"event_type","schedule.action-recorded","event_version",1,"source","schedule-service","trace_id","test","occurred_at",NOW.toString(),"payload",p);
     }

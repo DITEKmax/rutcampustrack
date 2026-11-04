@@ -125,12 +125,14 @@ public class ConstructorDeletionParticipant {
                 String reason = null;
                 if (!scope(row, c, collection)) reason = "UNKNOWN_HISTORY";
                 else if (collection.equals("attendances")) {
-                    if (!(row.get("source") instanceof String source) || !Set.of("STUDENT_GEO", "HEADMAN", "AUTO_SCHEDULER", "LATE_CHECKIN", "HEADMAN_EXCUSE").contains(source)) reason = "UNKNOWN_HISTORY";
+                    String source = knownEnumCode(row.get("source"), ru.rutcampustrack.attendance.contract.enums.AttendanceSource.class);
+                    String status = knownEnumCode(row.get("status"), ru.rutcampustrack.attendance.contract.enums.AttendanceStatus.class);
+                    if (source == null || status == null) reason = "UNKNOWN_HISTORY";
                     else if (!"AUTO_SCHEDULER".equals(source) || row.get("marked_by") != null
                             || row.get("attachment_id") != null || row.get("excuse_reason") != null
                             || row.get("excuse_type") != null || row.get("excuse_comment") != null
-                            || !("ABSENT".equals(row.get("status")) || "CANCELLED".equals(row.get("status")))) {
-                        reason = row.getString("source") != null && row.getString("source").contains("GEO") ? "GEO" : "MANUAL_ATTENDANCE";
+                            || !("ABSENT".equals(status) || "CANCELLED".equals(status))) {
+                        reason = source.contains("GEO") ? "GEO" : "MANUAL_ATTENDANCE";
                     }
                 } else if (collection.equals("late_checkin_requests")) reason = "REQUEST";
                 else if (collection.equals("student_checkin_receipts")) reason = "GEO";
@@ -242,6 +244,11 @@ public class ConstructorDeletionParticipant {
         return HexFormat.of().formatHex(ConstructorHashes.bytes(c.toBuilder().setAction(ConstructorDeletionAction.CONSTRUCTOR_DELETION_PREPARE).build().toByteArray()).toByteArray());
     }
     private static long number(Object value) { return value instanceof Number n && n.doubleValue() == n.longValue() ? n.longValue() : 0; }
+    private static <E extends Enum<E>> String knownEnumCode(Object value, Class<E> type) {
+        if (!(value instanceof String code)) return null;
+        try { return Enum.valueOf(type, code.toUpperCase(Locale.ROOT)).name(); }
+        catch (IllegalArgumentException unknown) { return null; }
+    }
     private static IllegalStateException conflict() { return new IllegalStateException("Constructor deletion scope or history conflict"); }
     private static Document epoch(ConstructorDeletionCommand c, String state) {
         return new Document("_id", c.getOperationId()).append("identity", identity(c)).append("state", state)

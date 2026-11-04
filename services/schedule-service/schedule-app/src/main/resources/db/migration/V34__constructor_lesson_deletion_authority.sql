@@ -32,6 +32,22 @@ CREATE INDEX constructor_deletion_recovery
     WHERE state NOT IN ('COMPLETED','RELEASED');
 CREATE INDEX constructor_deletion_family ON constructor_deletion_operations USING gin(family_ids);
 
+CREATE TABLE constructor_system_audit_proofs (
+    payload_hash BYTEA PRIMARY KEY CHECK(octet_length(payload_hash)=32),
+    lesson_id BIGINT NOT NULL CHECK(lesson_id>0),
+    occurrence_id BIGINT NOT NULL CHECK(occurrence_id>0),
+    lifecycle_entry_id BIGINT CHECK(lifecycle_entry_id>0),
+    origin_operation_id UUID,
+    source_kind VARCHAR(24) NOT NULL DEFAULT 'USER' CHECK(source_kind IN('USER','SYSTEM_BACKFILL')),
+    action VARCHAR(32) NOT NULL CHECK(action IN('LESSON_CREATED','LESSON_CANCELLED')),
+    CHECK(source_kind='USER' AND lifecycle_entry_id IS NOT NULL AND origin_operation_id IS NULL
+       OR source_kind='SYSTEM_BACKFILL' AND lifecycle_entry_id IS NULL AND origin_operation_id IS NOT NULL
+          AND action='LESSON_CREATED')
+);
+CREATE TRIGGER constructor_system_audit_proof_immutable
+    BEFORE UPDATE OR DELETE ON constructor_system_audit_proofs
+    FOR EACH ROW EXECUTE FUNCTION reject_schedule_transfer_replay_mutation();
+
 CREATE FUNCTION constructor_deletion_rows(BIGINT[])
 RETURNS TABLE(kind TEXT, data JSONB) LANGUAGE SQL STABLE AS $rows$
     SELECT 'schedule_items'::text, to_jsonb(t) FROM schedule_items t WHERE id = ANY($1)

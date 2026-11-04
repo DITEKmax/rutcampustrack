@@ -262,7 +262,8 @@ public class ConstructorDeletionParticipant {
     private record Snapshot(ByteString digest, List<Row> rows, Map<String, Set<Long>> reasons, Set<Long> protectedLessons) {
         ConstructorParticipantReceipt receipt(ConstructorDeletionCommand c, String state) {
             var b = ConstructorParticipantReceipt.newBuilder().setOperationId(c.getOperationId()).setRequestHash(c.getRequestHash())
-                    .setScopeHash(c.getScopeHash()).setParticipantDigest(digest).setState(state).setProtectedCount(protectedLessons.size());
+                    .setScopeHash(c.getScopeHash()).setParticipantDigest(digest).setState(state).setProtectedCount(protectedLessons.size())
+                    .addAllProtectedOccurrenceIds(protectedLessons.stream().sorted().toList());
             reasons.forEach((code, ids) -> b.addProtectedReasons(ConstructorProtectedReason.newBuilder().setCode(code).setCount(ids.size())));
             return b.build();
         }

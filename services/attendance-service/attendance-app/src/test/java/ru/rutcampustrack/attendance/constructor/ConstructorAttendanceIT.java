@@ -136,6 +136,8 @@ class ConstructorAttendanceIT {
             mongo.insert(histories.get(i), collection);
             var receipt = deletion.apply(command(ConstructorDeletionAction.CONSTRUCTOR_DELETION_PREVIEW));
             assertThat(receipt.getProtectedCount()).isEqualTo(1); // two physical generations, one occurrence
+            assertThat(receipt.getProtectedOccurrenceIdsList()).containsExactly(100L);
+            assertThat(receipt.getProtectedCount()).isEqualTo(receipt.getProtectedOccurrenceIdsCount());
             var prepare = command(ConstructorDeletionAction.CONSTRUCTOR_DELETION_PREPARE).toBuilder().setParticipantDigest(receipt.getParticipantDigest()).build();
             assertThatThrownBy(() -> deletion.apply(prepare)).isInstanceOf(IllegalStateException.class);
             assertThat(mongo.count(new Query(), collection)).isEqualTo(1);
@@ -217,6 +219,7 @@ class ConstructorAttendanceIT {
         var c = command(ConstructorDeletionAction.CONSTRUCTOR_DELETION_PREVIEW);
         var preview = deletion.apply(c);
         assertThat(preview.getProtectedCount()).isZero();
+        assertThat(preview.getProtectedOccurrenceIdsList()).isEmpty();
         return c.toBuilder().setAction(ConstructorDeletionAction.CONSTRUCTOR_DELETION_PREPARE).setParticipantDigest(preview.getParticipantDigest()).build();
     }
     private void finish(ConstructorDeletionCommand c) {

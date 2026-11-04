@@ -1,15 +1,12 @@
 package ru.rutcampustrack.schedule.recurring;
 
-import java.time.LocalDate;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
 import ru.rutcampustrack.academic.grpc.AssignmentInfo;
 import ru.rutcampustrack.academic.grpc.GroupResponse;
 import ru.rutcampustrack.academic.grpc.SemesterResponse;
+import ru.rutcampustrack.schedule.constructor.ConstructorLifecycleCoordinator;
 import ru.rutcampustrack.schedule.contract.dto.item.CreateScheduleItemRequest;
 import ru.rutcampustrack.schedule.contract.dto.item.ScheduleItemLifecyclePreviewResponse;
 import ru.rutcampustrack.schedule.contract.dto.item.ScheduleItemResponse;
@@ -23,6 +20,12 @@ import ru.rutcampustrack.schedule.grpc.ScheduleSemesterArchiveWriteFence;
 import ru.rutcampustrack.schedule.item.entity.ScheduleItem;
 import ru.rutcampustrack.schedule.item.repository.ScheduleItemRepository;
 import ru.rutcampustrack.schedule.security.RequestContext;
+
+import java.time.LocalDate;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 /**
  * Non-transactional authority/authentication coordinator. The separate writer bean starts the local
@@ -38,6 +41,7 @@ public class RecurringScheduleItemCoordinator {
 
     private final RecurringScheduleItemLifecycleWriter lifecycle;
     private final ScheduleSemesterArchiveWriteFence archiveFence;
+    @Autowired private ConstructorLifecycleCoordinator constructorLifecycle;
 
     @Autowired
     public RecurringScheduleItemCoordinator(
@@ -69,6 +73,11 @@ public class RecurringScheduleItemCoordinator {
                     "groupId is required and must be positive");
         }
         requireHeadmanForGroup(request.groupId());
+        if (constructorLifecycle != null)
+            constructorLifecycle.assertCreateNotDeleted(
+                    request.groupId(),
+                    requestKey,
+                    RecurringScheduleItemWriter.payloadHash(request));
         if (request.assignmentId() == null || request.assignmentId() <= 0) {
             throw new RecurringProtocolConflictException("assignmentId must be positive");
         }
@@ -151,6 +160,12 @@ public class RecurringScheduleItemCoordinator {
 
     public ScheduleItemLifecyclePreviewResponse preview(
             long id, UpdateScheduleItemRequest request, boolean delete) {
+        if (delete) {
+            if (constructorLifecycle == null)
+                throw new ru.rutcampustrack.schedule.exception.RecurringLifecycleNotReadyException(
+                        "constructor deletion unavailable");
+            return constructorLifecycle.preview(id);
+        }
         ScheduleItem item = authorizeItem(id);
         SemesterResponse semester = activeSemester(item);
         archiveFence.prepareBusinessWrite(item.getSemesterId());
@@ -168,7 +183,10 @@ public class RecurringScheduleItemCoordinator {
     }
 
     public void delete(long id, UUID key, String revision) {
-        mutate(id, null, true, revision, key);
+        if (constructorLifecycle == null)
+            throw new ru.rutcampustrack.schedule.exception.RecurringLifecycleNotReadyException(
+                    "constructor deletion unavailable");
+        constructorLifecycle.delete(id, key, revision);
     }
 
     private ScheduleItemResponse mutate(

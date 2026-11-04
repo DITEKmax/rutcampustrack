@@ -1,15 +1,20 @@
 package ru.rutcampustrack.schedule.item;
 
-import java.time.Clock;
-import java.util.UUID;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import ru.rutcampustrack.schedule.constructor.ConstructorLifecycleCoordinator;
+import ru.rutcampustrack.schedule.constructor.ConstructorWriteAdmission;
+import ru.rutcampustrack.schedule.constructor.SemesterMaterializationOperations;
+import ru.rutcampustrack.schedule.contract.dto.item.ConstructorOperationResponse;
 import ru.rutcampustrack.schedule.contract.dto.item.CreateScheduleItemRequest;
 import ru.rutcampustrack.schedule.contract.dto.item.ScheduleItemLifecyclePreviewResponse;
 import ru.rutcampustrack.schedule.contract.dto.item.ScheduleItemResponse;
+import ru.rutcampustrack.schedule.contract.dto.item.SemesterMaterializationResponse;
 import ru.rutcampustrack.schedule.contract.dto.item.UpdateScheduleItemRequest;
 import ru.rutcampustrack.schedule.contract.enums.UserRole;
 import ru.rutcampustrack.schedule.exception.AccessDeniedException;
@@ -21,6 +26,9 @@ import ru.rutcampustrack.schedule.item.repository.ScheduleItemRepository;
 import ru.rutcampustrack.schedule.lesson.LessonGenerationService;
 import ru.rutcampustrack.schedule.recurring.RecurringScheduleItemCoordinator;
 import ru.rutcampustrack.schedule.security.RequestContext;
+
+import java.time.Clock;
+import java.util.UUID;
 
 /**
  * Template access and lifecycle gates. Recurring creation delegates to a non-transactional
@@ -40,6 +48,9 @@ public class ScheduleItemService {
     private final Clock clock;
 
     private final RecurringScheduleItemCoordinator recurringCoordinator;
+    @Autowired private ConstructorLifecycleCoordinator constructorLifecycle;
+    @Autowired private ObjectProvider<SemesterMaterializationOperations> materialization;
+    @Autowired private ConstructorWriteAdmission writeAdmission;
 
     @Autowired
     public ScheduleItemService(
@@ -101,6 +112,7 @@ public class ScheduleItemService {
     }
 
     public ScheduleItem createScheduleItem(CreateScheduleItemRequest request, UUID idempotencyKey) {
+        if (writeAdmission != null) writeAdmission.requireEnabled();
         if (recurringCoordinator == null) {
             requireHeadmanForGroup(request.groupId());
             throw new RecurringLifecycleNotReadyException("recurring coordinator unavailable");
@@ -120,18 +132,30 @@ public class ScheduleItemService {
 
     @Transactional(readOnly = true)
     public Page<ScheduleItem> listScheduleItems(Long groupId, Long semesterId, Pageable pageable) {
+        return listScheduleItems(groupId, semesterId, false, pageable);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<ScheduleItem> listScheduleItems(
+            Long groupId, Long semesterId, boolean includeInactive, Pageable pageable) {
         requireGroupReadAccess(groupId);
+        if (includeInactive) {
+            constructorLifecycle.authorizeInactiveRead(groupId);
+            return scheduleItemRepository.findByGroupIdAndSemesterId(groupId, semesterId, pageable);
+        }
         return scheduleItemRepository.findByGroupIdAndSemesterIdAndIsActiveTrue(
                 groupId, semesterId, pageable);
     }
 
     public ScheduleItemResponse updateScheduleItem(
             Long id, UpdateScheduleItemRequest request, UUID key) {
+        writeAdmission.requireEnabled();
         return recurringCoordinator.update(id, request, key);
     }
 
-    public void deleteScheduleItem(Long id, UUID key, String revision) {
-        recurringCoordinator.delete(id, key, revision);
+    public ConstructorOperationResponse deleteScheduleItem(Long id, UUID key, String revision) {
+        writeAdmission.requireEnabled();
+        return constructorLifecycle.delete(id, key, revision);
     }
 
     public ScheduleItemLifecyclePreviewResponse previewScheduleItem(
@@ -141,6 +165,25 @@ public class ScheduleItemService {
 
     public ScheduleItemResponse createReplayResponse(UUID key) {
         return recurringCoordinator.createReplayResponse(key);
+    }
+
+    public ConstructorOperationResponse constructorOperation(UUID id) {
+        return constructorLifecycle.operation(id);
+    }
+
+    public SemesterMaterializationResponse materializeSemester(Long id, UUID key) {
+        writeAdmission.requireEnabled();
+        var service = materialization.getIfAvailable();
+        if (service == null)
+            throw new RecurringLifecycleNotReadyException("semester materialization unavailable");
+        return service.materializeExisting(id, key);
+    }
+
+    public SemesterMaterializationResponse materializationOperation(UUID id) {
+        var service = materialization.getIfAvailable();
+        if (service == null)
+            throw new RecurringLifecycleNotReadyException("semester materialization unavailable");
+        return service.operation(id);
     }
 
     /**

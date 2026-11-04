@@ -1,12 +1,14 @@
 package ru.rutcampustrack.schedule.item.repository;
 
-import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+
 import ru.rutcampustrack.schedule.item.entity.ScheduleItem;
+
+import java.util.List;
 
 public interface ScheduleItemRepository extends JpaRepository<ScheduleItem, Long> {
 
@@ -14,6 +16,8 @@ public interface ScheduleItemRepository extends JpaRepository<ScheduleItem, Long
 
     Page<ScheduleItem> findByGroupIdAndSemesterIdAndIsActiveTrue(
             Long groupId, Long semesterId, Pageable pageable);
+
+    Page<ScheduleItem> findByGroupIdAndSemesterId(Long groupId, Long semesterId, Pageable pageable);
 
     /**
      * Returns ALL schedule items for a group regardless of active status. Used by the view endpoint
@@ -40,17 +44,17 @@ public interface ScheduleItemRepository extends JpaRepository<ScheduleItem, Long
     @Query(
             value =
                     """
-            SELECT EXISTS (
-                SELECT 1 FROM schedule_items
-                 WHERE group_id = :groupId
-                   AND lesson_number = :lessonNumber
-                   AND day_of_week = :dayOfWeek
-                   AND semester_id = :semesterId
-                   AND is_active = true
-                   AND (week_type = 'all'::week_type
-                        OR week_type = CAST(:weekType AS week_type))
-            )
-            """,
+                    SELECT EXISTS (
+                        SELECT 1 FROM schedule_items
+                         WHERE group_id = :groupId
+                           AND lesson_number = :lessonNumber
+                           AND day_of_week = :dayOfWeek
+                           AND semester_id = :semesterId
+                           AND is_active = true
+                           AND (week_type = 'all'::week_type
+                                OR week_type = CAST(:weekType AS week_type))
+                    )
+                    """,
             nativeQuery = true)
     boolean existsActiveTemplateSlot(
             @Param("groupId") Long groupId,

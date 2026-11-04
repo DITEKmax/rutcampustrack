@@ -89,6 +89,8 @@ grpc:
       negotiation-type: plaintext
 
 constructor:
+  writes:
+    enabled: ${CONSTRUCTOR_WRITES_ENABLED:true}
   rpc:
     schedule-to-attendance-token-file: ${CONSTRUCTOR_RPC_SCHEDULE_TO_ATTENDANCE_TOKEN_FILE:}
     schedule-to-academic-token-file: ${CONSTRUCTOR_RPC_SCHEDULE_TO_ACADEMIC_TOKEN_FILE:}

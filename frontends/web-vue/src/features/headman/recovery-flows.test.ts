@@ -11,6 +11,9 @@ import SchedulePage from './SchedulePage.vue'
 import RequestsPage from './RequestsPage.vue'
 import SubjectsPage from './SubjectsPage.vue'
 import HeadmanSubjectsScreen from '../../../../mobile-core/src/features/headman-subjects/HeadmanSubjectsScreen.vue'
+import { HeadmanScheduleApi, type HeadmanScheduleItem, type HeadmanLifecyclePreview } from '../../../../mobile-core/src/features/schedule/headman-schedule-client'
+import type { RecurringIntent } from '../../../../mobile-core/src/features/schedule/headman-recurring-intent'
+import { freezeRecurringCreate, recurringCreateScope, type RecurringCreateIntent } from '../../../../mobile-core/src/features/schedule/headman-recurring-create'
 const box = vi.hoisted(() => ({ feature: {} as Record<string, unknown>, writable: true }))
 vi.mock('../../auth/session', () => ({
   webSession: {
@@ -135,6 +138,89 @@ interface ScheduleState {
   load(): Promise<void>
   read(): Promise<void>
 }
+
+interface ConstructorMutationState extends ScheduleState {
+  selected: HeadmanScheduleItem | null
+  preview: { action: 'DELETE'; input: null; result: HeadmanLifecyclePreview } | null
+  pending: RecurringIntent | null
+  createPending: RecurringCreateIntent | null
+  notice: string | null
+  apply(recover?: boolean): Promise<void>
+  create(recover?: boolean): Promise<void>
+  acknowledgeRemovedCreate(): void
+}
+function constructorApi(fetcher: typeof fetch) {
+  const api = new HeadmanScheduleApi({ accessToken: () => null, fetcher })
+  vi.spyOn(api, 'listSemesters').mockResolvedValue([semester])
+  vi.spyOn(api, 'listScheduleItems').mockResolvedValue([])
+  vi.spyOn(api, 'listAssignments').mockResolvedValue([])
+  vi.spyOn(api, 'lessonSlots').mockResolvedValue({ timezone: 'Europe/Moscow', slots: [] })
+  vi.spyOn(api, 'academicWeekPolicy').mockResolvedValue({} as never)
+  return api
+}
+
+describe('actual constructor deletion and tombstone recovery', () => {
+  const preview: HeadmanLifecyclePreview = { revision: 'a'.repeat(64), updatedCount: 0, removedCount: 3, restoredCount: 0, createdCount: 0, operationKind: 'DELETE_UNUSED_SERIES', deletable: true, protectedCount: 0, removableCount: 3, protectedReasons: [] }
+  const target = { id: 31, groupId: 1, semesterId: semester.id, active: true }
+  it('cannot send deletion from a protected preview', async () => {
+    const fetcher = vi.fn<typeof fetch>()
+    box.feature = feature({ schedule: constructorApi(fetcher) })
+    const state = mount<ConstructorMutationState>(SchedulePage)
+    await settle()
+    state.selected = target
+    state.preview = { action: 'DELETE', input: null, result: { ...preview, deletable: false, protectedCount: 1, protectedReasons: [{ code: 'MANUAL_ATTENDANCE', count: 1 }] } }
+    await state.apply()
+    expect(fetcher).not.toHaveBeenCalled()
+    expect(storage.length).toBe(0)
+    expect(state.error).toContain('ручные отметки')
+  })
+  it.each(['COMPLETED', 'RELEASED'] as const)('persists pending deletion then handles terminal %s without requiring an inactive item', async (terminal) => {
+    const requests: { path: string; method: string }[] = []
+    const operationId = 'aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee'
+    const api = constructorApi(async (path, init) => {
+      requests.push({ path: String(path), method: init?.method ?? 'GET' })
+      const state = requests.length === 1 ? 'COMMITTING' : terminal
+      const receipt = { operationId, state, deletedCount: state === 'COMPLETED' ? 3 : 0, protectedCount: state === 'RELEASED' ? 1 : 0, errorCode: state === 'RELEASED' ? 'CONSTRUCTOR_HISTORY_PROTECTED' : null }
+      return new Response(JSON.stringify(receipt), { status: requests.length === 1 ? 202 : 200 })
+    })
+    box.feature = feature({ schedule: api })
+    const state = mount<ConstructorMutationState>(SchedulePage)
+    await settle()
+    state.selected = target
+    state.preview = { action: 'DELETE', input: null, result: preview }
+    await state.apply()
+    expect(state.pending?.operationId).toBe(operationId)
+    const key = state.pending?.key
+    expect(state.notice).toContain('ещё выполняется')
+    await state.apply(true)
+    expect(state.pending).toBeNull()
+    expect(storage.length).toBe(0)
+    expect(requests).toEqual([{ path: '/api/schedule/items/31', method: 'DELETE' }, { path: `/api/schedule/items/operations/${operationId}`, method: 'GET' }])
+    expect(key).not.toBe(operationId)
+    if (terminal === 'COMPLETED') expect(state.notice).toContain('полностью удалены')
+    else expect(state.error).toContain('Данные сохранены')
+  })
+  it('retains the original CREATE key and payload after a deleted-series tombstone', async () => {
+    const fetcher = vi.fn<typeof fetch>().mockResolvedValue(new Response(JSON.stringify({ extras: { code: 'CONSTRUCTOR_SERIES_DELETED' } }), { status: 410 }))
+    box.feature = feature({ schedule: constructorApi(fetcher) })
+    const state = mount<ConstructorMutationState>(SchedulePage)
+    await settle()
+    const intent = freezeRecurringCreate({ userId: '3', sessionId: 'own-session', groupId: 1, semesterId: semester.id }, '11111111-1111-4111-8111-111111111111', { groupId: 1, semesterId: semester.id, assignmentId: 1, subjectId: 2, dayOfWeek: 1, lessonNumber: 1, startTime: '09:00:00', endTime: '10:30:00', weekType: 'ALL' })
+    storage.setItem(recurringCreateScope(intent.owner), JSON.stringify(intent))
+    state.createPending = intent
+    state.acknowledgeRemovedCreate()
+    expect(state.createPending).toEqual(intent)
+    await state.create(true)
+    expect(fetcher).toHaveBeenCalledOnce()
+    expect(state.createPending).toEqual(intent)
+    expect(JSON.parse(storage.getItem(recurringCreateScope(intent.owner))!)).toEqual(intent)
+    expect(state.error).toContain('уже удалена')
+    state.acknowledgeRemovedCreate()
+    expect(state.createPending).toBeNull()
+    expect(storage.length).toBe(0)
+    expect(fetcher).toHaveBeenCalledOnce()
+  })
+})
 describe('actual schedule semester reads', () => {
   it('discards a slow archive response after the active response', async () => {
     const oldRows = deferred<{ id: number; semesterId: number }[]>(),

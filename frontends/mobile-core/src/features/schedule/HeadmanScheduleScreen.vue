@@ -11,6 +11,7 @@ import {
   readRecurringCreate,
   recurringCreateScope,
   submitRecurringCreate,
+  recurringGenerationNotice,
   type RecurringCreateIntent,
 } from './headman-recurring-create';
 import type { HeadmanLessonSlotCatalog } from './headman-schedule-client';
@@ -76,6 +77,9 @@ import { profileOwnerStaleMessage } from '../../shared/profile-owner-status';
 import { createProfileViewPublication } from '../../shared/components/profile-view-publication';
 import {
   HeadmanScheduleApiError,
+  canDeleteUnusedSeries,
+  seriesDeletionProtection,
+  scheduleProblemCode,
   canCorrectRejectedOneOff,
   isOneOffDateWithinSemester,
   persistOneOffIntent,
@@ -98,6 +102,7 @@ import {
   recurringScope,
   recurringUpdate,
   retainRecurringBack,
+  continueRecurringDeletion,
   type RecurringIntent,
   type RecurringOwner,
 } from './headman-recurring-intent';
@@ -186,6 +191,9 @@ const error = ref<string | null>(null);
 const denied = ref(false);
 const assignments = shallowRef<readonly HeadmanScheduleAssignment[]>([]);
 const scheduleItems = shallowRef<readonly HeadmanScheduleItem[]>([]);
+const includeInactive = ref(false);
+const createRemoved = ref(false);
+const inactiveItems = computed(() => scheduleItems.value.filter((item) => item.active === false));
 const oneOffLessons = shallowRef<readonly HeadmanOneOffLesson[]>([]);
 const createMode = ref<'RECURRING' | 'ONE_OFF'>('RECURRING');
 const oneOffDate = ref(moscowToday());
@@ -233,6 +241,7 @@ const headmanOwner = computed(
 const formLocked = computed(
   () =>
     formBusy.value ||
+    editTarget.value?.active === false ||
     recurringCreateIntent.value !== null ||
     (createMode.value === 'ONE_OFF' && oneOffIntent.value !== null),
 );
@@ -822,7 +831,7 @@ const selectedAssignment = computed(
 );
 const dayItems = computed(() =>
   scheduleItems.value
-    .filter((item) => item.dayOfWeek === selectedDay.value)
+    .filter((item) => item.active !== false && item.dayOfWeek === selectedDay.value)
     .slice()
     .sort((left, right) => (left.lessonNumber ?? 0) - (right.lessonNumber ?? 0)),
 );
@@ -836,7 +845,7 @@ const stateMessage = computed(() => {
   if (denied.value) return 'Нет доступа к расписанию этой группы.';
   if (semester.value === null && !loading.value)
     return 'Нет активного семестра для заполнения расписания.';
-  if (activeAssignments.value.length === 0 && scheduleItems.value.length === 0 && !loading.value)
+  if (!formOpen.value && activeAssignments.value.length === 0 && scheduleItems.value.length === 0 && !loading.value)
     return 'Для группы пока нет назначений преподавателей.';
   return null;
 });
@@ -1009,6 +1018,7 @@ function buildInput(): HeadmanScheduleCreateInput | HeadmanOneOffCreateInput | n
 
 async function save(): Promise<void> {
   if (!headmanOwner.value || denied.value || removalDialogOpen.value) return;
+  if (editTarget.value?.active === false) return;
   if (editTarget.value) {
     if (recurringIntent.value && !recurringIntent.value.rejected) await applyRecurring();
     else if (lifecyclePreview.value?.action === 'UPDATE') await applyRecurring();
@@ -1043,6 +1053,7 @@ async function save(): Promise<void> {
     revision === commandRevision &&
     api === props.api;
   const firstRecurringAttempt = mode === 'RECURRING' && recurringCreateIntent.value === null;
+  createRemoved.value = false;
   const input =
     mode === 'ONE_OFF' && oneOffIntent.value
       ? oneOffIntent.value.input
@@ -1079,13 +1090,13 @@ async function save(): Promise<void> {
         freezeRecurringCreate(owner, key, input as HeadmanScheduleCreateInput);
       // Freeze memory too before the durable write; storage refusal cannot reach POST.
       recurringCreateIntent.value = intent;
-      await submitRecurringCreate(sessionStorage, intent, (payload, key) =>
+      const receipt = await submitRecurringCreate(sessionStorage, intent, (payload, key) =>
         api.createScheduleItem(payload, key),
       );
       if (!isCurrent()) return;
       sessionStorage.removeItem(recurringCreateScope(owner));
       recurringCreateIntent.value = null;
-      notice.value = 'Слот сохранён. Расписание обновлено с сервера.';
+      notice.value = recurringGenerationNotice(receipt);
     }
     commandKey.value = null;
     commandFingerprint.value = null;
@@ -1095,6 +1106,11 @@ async function save(): Promise<void> {
   } catch (cause) {
     if (!isCurrent() || cause instanceof StaleSessionGenerationError) return;
     if (handleScheduleDenied(cause)) return;
+    if (mode === 'RECURRING' && cause instanceof HeadmanScheduleApiError && cause.response.status === 410 && scheduleProblemCode(cause) === 'CONSTRUCTOR_SERIES_DELETED') {
+      createRemoved.value = true;
+      formError.value = 'Эта серия уже удалена. Исходный запрос не создаст её повторно.';
+      return;
+    }
     if (mode === 'RECURRING' && canCorrectRejectedOneOff(cause, firstRecurringAttempt)) {
       const owner = currentRecurringOwner();
       if (owner) {
@@ -1131,6 +1147,7 @@ async function save(): Promise<void> {
 }
 
 function restoreRecurringCreateEditor(intent: RecurringCreateIntent): void {
+  createRemoved.value = false;
   recurringCreateIntent.value = intent;
   editTarget.value = null;
   createMode.value = 'RECURRING';
@@ -1206,6 +1223,23 @@ function restoreRecurringEditor(intent: RecurringIntent): void {
     ? 'Запрос отклонён. Обнови расчёт и подтверди изменения заново.'
     : 'Сохранён исходный запрос. Повтори его, чтобы проверить результат.';
   navigation.push(nestedRoute('headman-more', scheduleFormRouteId, 'editor'));
+}
+
+function acknowledgeRemovedCreate(): void {
+  const intent = recurringCreateIntent.value;
+  const owner = currentRecurringOwner();
+  if (!createRemoved.value || formBusy.value || !intent || !owner || recurringCreateScope(intent.owner) !== recurringCreateScope(owner)) return;
+  try {
+    sessionStorage.removeItem(recurringCreateScope(intent.owner));
+    recurringCreateIntent.value = null;
+    createRemoved.value = false;
+    commandKey.value = null;
+    commandFingerprint.value = null;
+    notice.value = 'Запрос удалённой серии закрыт. Новую серию можно создать отдельным действием.';
+    closeForm();
+  } catch {
+    formError.value = 'Не удалось закрыть сохранённый запрос. Проверь доступ к хранилищу.';
+  }
 }
 
 function editRecurring(item: HeadmanScheduleItem): void {
@@ -1322,7 +1356,7 @@ watch(
 );
 
 async function confirmRemoval(): Promise<void> {
-  if (removalDialogOpen.value && removalPreview.value) await applyRecurring();
+  if (removalDialogOpen.value && removalPreview.value && canDeleteUnusedSeries(removalPreview.value)) await applyRecurring();
 }
 
 async function applyRecurring(): Promise<void> {
@@ -1341,6 +1375,10 @@ async function applyRecurring(): Promise<void> {
   const existing = recurringIntent.value;
   const preview = lifecyclePreview.value;
   if ((!existing || existing.rejected) && !preview) return;
+  if (preview?.action === 'DELETE' && !canDeleteUnusedSeries(preview.result)) {
+    formError.value = seriesDeletionProtection(preview.result);
+    return;
+  }
   const revision = commandRevision;
   const isCurrent = (): boolean =>
     !disposed &&
@@ -1374,9 +1412,26 @@ async function applyRecurring(): Promise<void> {
     }
     persistRecurringIntent(sessionStorage, intent);
     recurringIntent.value = intent;
-    if (intent.action === 'DELETE')
-      await api.deleteScheduleItem(target.id, intent.preview.revision, intent.key);
-    else {
+    if (intent.action === 'DELETE') {
+      const deletion = await continueRecurringDeletion(api, intent, isCurrent, (next) => {
+        persistRecurringIntent(sessionStorage, next);
+        recurringIntent.value = next;
+      });
+      if (!deletion) return;
+      intent = deletion.intent;
+      acknowledged = true;
+      if (deletion.operation && deletion.operation.state !== 'COMPLETED') {
+        if (deletion.operation.state === 'RELEASED') {
+          sessionStorage.removeItem(recurringScope(owner));
+          recurringIntent.value = null;
+          lifecyclePreview.value = null;
+          removalDialogOpen.value = false;
+          throw new Error('Удаление не выполнено. Данные сохранены; обнови расчёт перед новой попыткой.');
+        }
+        formError.value = 'Полное удаление ещё выполняется. Исходная операция сохранена; проверь её состояние.';
+        return;
+      }
+    } else {
       const accepted = await api.updateScheduleItem(target.id, intent.input!, intent.key);
       if (!isCurrent()) return;
       intent = {
@@ -1385,34 +1440,32 @@ async function applyRecurring(): Promise<void> {
       };
       persistRecurringIntent(sessionStorage, intent);
       recurringIntent.value = intent;
-    }
-    acknowledged = true;
-    if (!isCurrent()) return;
-    const readback = await api.getScheduleItem(target.id);
-    if (!isCurrent()) return;
-    if (
-      readback.id !== target.id ||
-      readback.groupId !== owner.groupId ||
-      readback.semesterId !== owner.semesterId ||
-      (intent.action === 'DELETE'
-        ? readback.active !== false
-        : readback.active !== true ||
-          readback.weekType !== intent.input!.weekType ||
-          (readback.room ?? null) !== intent.input!.room)
-    ) {
-      throw new Error(
-        'Изменение ещё не подтверждено текущим расписанием. Повтори исходный запрос.',
+      acknowledged = true;
+      if (!isCurrent()) return;
+      const readback = await api.getScheduleItem(target.id);
+      if (!isCurrent()) return;
+      if (
+        readback.id !== target.id ||
+        readback.groupId !== owner.groupId ||
+        readback.semesterId !== owner.semesterId ||
+        readback.active !== true ||
+        readback.weekType !== intent.input!.weekType ||
+        (readback.room ?? null) !== intent.input!.room
+      ) {
+        throw new Error(
+          'Изменение ещё не подтверждено текущим расписанием. Повтори исходный запрос.',
+        );
+      }
+      const transfers = await Promise.all(
+        intent.transferIds.map((id) => api.getRecurringTransfer(id)),
       );
-    }
-    const transfers = await Promise.all(
-      intent.transferIds.map((id) => api.getRecurringTransfer(id)),
-    );
-    if (!isCurrent()) return;
-    if (transfers.some((transfer) => transfer.state !== 'COMPLETED')) {
-      formError.value = transfers.some((transfer) => transfer.state === 'ERROR')
-        ? 'Слот сохранён, перенос связанных данных завершился с ошибкой. Повтори проверку исходного запроса.'
-        : 'Слот сохранён, перенос связанных данных ещё выполняется (PENDING). Повтори проверку исходного запроса.';
-      return;
+      if (!isCurrent()) return;
+      if (transfers.some((transfer) => transfer.state !== 'COMPLETED')) {
+        formError.value = transfers.some((transfer) => transfer.state === 'ERROR')
+          ? 'Слот сохранён, перенос связанных данных завершился с ошибкой. Повтори проверку исходного запроса.'
+          : 'Слот сохранён, перенос связанных данных ещё выполняется (PENDING). Повтори проверку исходного запроса.';
+        return;
+      }
     }
     sessionStorage.removeItem(recurringScope(owner));
     recurringIntent.value = null;
@@ -1421,7 +1474,7 @@ async function applyRecurring(): Promise<void> {
     formBusy.value = false;
     notice.value =
       intent.action === 'DELETE'
-        ? 'Слот деактивирован. Прошедшие пары и их данные сохранены.'
+        ? 'Шаблон и все пары этой серии полностью удалены.'
         : 'Изменение будущих пар подтверждено сервером. Прошедшие пары сохранены.';
     closeForm();
     await load();
@@ -1485,7 +1538,7 @@ async function load(): Promise<void> {
     }
     const [nextAssignments, nextItems, nextOneOff, catalog] = await Promise.all([
       props.api.listAssignments(props.groupId, current.id),
-      props.api.listScheduleItems(props.groupId, current.id),
+      props.api.listScheduleItems(props.groupId, current.id, includeInactive.value),
       current.dateFrom && current.dateTo
         ? props.api.listOneOffLessons(props.groupId, current.dateFrom, current.dateTo)
         : Promise.resolve([]),
@@ -1573,6 +1626,7 @@ watch(
     formBusy.value = false;
     oneOffIntent.value = null;
     recurringCreateIntent.value = null;
+    createRemoved.value = false;
     recurringIntent.value = null;
     editTarget.value = null;
     lifecyclePreview.value = null;
@@ -2093,7 +2147,7 @@ defineExpose({ openNotificationAction });
         </button>
         <h1>
           {{
-            formOpen ? (editTarget ? 'Изменить пару' : 'Добавить пару') : 'Конструктор расписания'
+            formOpen ? (editTarget?.active === false ? 'Ранее убранный шаблон' : editTarget ? 'Изменить пару' : 'Добавить пару') : 'Конструктор расписания'
           }}
         </h1>
         <p
@@ -2123,6 +2177,7 @@ defineExpose({ openNotificationAction });
       >
         {{ notice }}
       </p>
+      <button v-if="!formOpen && semester && headmanOwner" type="button" class="headman-schedule__secondary" :aria-pressed="includeInactive" :disabled="loading || formBusy || offline" @click="includeInactive = !includeInactive; load()">Ранее убранные шаблоны</button>
       <p
         v-if="loading"
         role="status"
@@ -2135,6 +2190,11 @@ defineExpose({ openNotificationAction });
         :message="stateMessage"
       />
       <template v-else-if="!formOpen">
+        <section v-if="includeInactive" class="headman-schedule__list" aria-label="Ранее убранные шаблоны">
+          <p>Полное удаление ранее убранного шаблона доступно после проверки истории.</p>
+          <p v-if="!inactiveItems.length">Ранее убранных шаблонов нет.</p>
+          <button v-for="item in inactiveItems" :key="item.id" type="button" class="headman-schedule__slot" :disabled="offline || readOnly || !headmanOwner || intentRecoveryBlocked" @click="editRecurring(item)"><strong>{{ assignments.find((a) => a.id === item.assignmentId)?.subjectName || 'Предмет' }}</strong><span>{{ days.find((day) => day.value === item.dayOfWeek)?.name }} · {{ item.lessonNumber }} пара</span><span>Проверить полное удаление</span></button>
+        </section>
         <div
           class="headman-schedule__days"
           role="tablist"
@@ -2229,7 +2289,7 @@ defineExpose({ openNotificationAction });
           {{ days.find((d) => d.value === selectedDay)?.name
           }}<small>{{
             editTarget
-              ? 'Изменение будущих пар, история сохранится'
+              ? editTarget.active === false ? 'Полное удаление после проверки истории' : 'Изменение будущих пар, история сохранится'
               : 'Повторяется по выбранным учебным неделям'
           }}</small>
         </p>
@@ -2321,6 +2381,7 @@ defineExpose({ openNotificationAction });
           title="Проверь сохранение"
           :message="formError"
         />
+        <button v-if="createRemoved && recurringCreateIntent" type="button" class="headman-schedule__secondary" :disabled="formBusy || offline || !headmanOwner" @click="acknowledgeRemovedCreate">Закрыть запрос удалённой серии</button>
         <footer class="headman-schedule__footer">
           <button
             ref="removalTrigger"
@@ -2336,6 +2397,7 @@ defineExpose({ openNotificationAction });
             type="button"
             :disabled="
               formBusy ||
+                editTarget?.active === false ||
                 recurringIntent?.action === 'DELETE' ||
                 offline ||
                 readOnly ||
@@ -2375,13 +2437,13 @@ defineExpose({ openNotificationAction });
     </header>
     <div class="mobile-tools-sheet__content">
       <p :id="removalDescriptionId">
-        Будущие пары этого шаблона перестанут создаваться. Прошедшие пары, отметки и домашние задания сохранятся. Если вернёшь такой же слот, серия продолжится.
+        Шаблон и все пары серии будут полностью удалены. Автоматические отметки «н» не мешают удалению. При наличии реальных действий серия сохраняется целиком.
       </p>
       <p
         v-if="removalPreview"
         role="status"
       >
-        Будущих пар будет убрано: {{ removalPreview.removedCount }}.
+        <template v-if="canDeleteUnusedSeries(removalPreview)">Пар к удалению: {{ removalPreview.removableCount }}.</template><template v-else>Полное удаление недоступно: {{ seriesDeletionProtection(removalPreview) }}.</template>
       </p>
       <StudentWarningBlock
         v-if="formError"
@@ -2400,10 +2462,10 @@ defineExpose({ openNotificationAction });
       <button
         type="button"
         class="headman-schedule__primary headman-schedule__delete"
-        :disabled="formBusy || !removalPreview || !headmanOwner || offline || intentRecoveryBlocked"
+        :disabled="formBusy || !removalPreview || !canDeleteUnusedSeries(removalPreview) || !headmanOwner || offline || intentRecoveryBlocked"
         @click="confirmRemoval"
       >
-        {{ formBusy ? 'Удаляем…' : 'Удалить пару' }}
+        {{ formBusy ? 'Проверяем…' : recurringIntent?.operationId ? 'Проверить удаление' : 'Удалить серию полностью' }}
       </button>
     </div>
   </dialog>

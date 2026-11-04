@@ -18,6 +18,14 @@ const MAX_PAGE_REQUESTS = 100
 export type HeadmanScheduleItem = Omit<ScheduleItem, 'transfers'> & {
   transfers?: readonly HeadmanRecurringTransfer[]
 }
+export type HeadmanRecurringCreateReceipt = Omit<
+  HeadmanScheduleItem,
+  'generatedCount' | 'generatedFrom' | 'generatedUntil'
+> & {
+  readonly generatedCount: number
+  readonly generatedFrom: string | null
+  readonly generatedUntil: string | null
+}
 // Feature-local transfer fields are required after response validation.
 export interface HeadmanRecurringTransfer {
   operationId: string
@@ -30,6 +38,57 @@ export interface HeadmanLifecyclePreview {
   removedCount: number
   restoredCount: number
   createdCount: number
+  operationKind?: 'DELETE_UNUSED_SERIES'
+  deletable?: boolean
+  protectedCount?: number
+  removableCount?: number
+  protectedReasons?: readonly { readonly code: string; readonly count: number }[]
+}
+export interface HeadmanSeriesDeletionOperation {
+  readonly operationId: string
+  readonly state: 'PREPARING' | 'SEALED' | 'COMMITTING' | 'COMPLETED' | 'RELEASING' | 'RELEASED'
+  readonly deletedCount: number
+  readonly protectedCount: number
+  readonly errorCode: string | null
+}
+
+export function canDeleteUnusedSeries(preview: HeadmanLifecyclePreview): boolean {
+  return (
+    preview.operationKind === 'DELETE_UNUSED_SERIES' &&
+    preview.deletable === true &&
+    preview.protectedCount === 0 &&
+    Number.isSafeInteger(preview.removableCount) &&
+    (preview.removableCount ?? -1) >= 0 &&
+    Array.isArray(preview.protectedReasons) &&
+    preview.protectedReasons.length === 0
+  )
+}
+
+export function seriesDeletionProtection(preview: HeadmanLifecyclePreview): string {
+  const labels: Readonly<Record<string, string>> = {
+    GEO: 'попытки геоотметки',
+    MANUAL_ATTENDANCE: 'ручные отметки, в том числе удалённые',
+    REQUEST: 'заявки',
+    HOMEWORK: 'домашние задания',
+    TRANSFER: 'ручные переносы',
+    MANUAL_CANCELLATION: 'ручные отмены пар',
+    USER_ACTION: 'действия пользователей',
+    UNKNOWN_HISTORY: 'неподтверждённая история',
+  }
+  return (
+    (preview.protectedReasons ?? [])
+      .map((reason) => `${labels[reason.code] ?? 'данные, требующие сохранения'}: ${reason.count}`)
+      .join('; ') || 'Сервер не подтвердил возможность полного удаления.'
+  )
+}
+
+export function scheduleProblemCode(cause: unknown): string | null {
+  return cause instanceof HeadmanScheduleApiError &&
+    isRecord(cause.problem) &&
+    isRecord(cause.problem.extras) &&
+    typeof cause.problem.extras.code === 'string'
+    ? cause.problem.extras.code
+    : null
 }
 export interface HeadmanScheduleUpdateInput {
   subjectId: number
@@ -234,7 +293,11 @@ export class HeadmanScheduleApi {
     return normalizeLessonSlotCatalog(await this.request<unknown>('/api/schedule/lesson-slots'))
   }
 
-  listScheduleItems(groupId: number, semesterId: number): Promise<readonly HeadmanScheduleItem[]> {
+  listScheduleItems(
+    groupId: number,
+    semesterId: number,
+    includeInactive = false,
+  ): Promise<readonly HeadmanScheduleItem[]> {
     assertNumericId(groupId, 'groupId')
     assertNumericId(semesterId, 'semesterId')
     return this.requestPaged<unknown>((page) => {
@@ -244,6 +307,7 @@ export class HeadmanScheduleApi {
         page: String(page),
         size: '100',
       })
+      if (includeInactive) query.set('includeInactive', 'true')
       return `/api/schedule/items?${query.toString()}`
     }, 'scheduleItemResponseList').then((items) => items.map(scheduleItem))
   }
@@ -275,7 +339,7 @@ export class HeadmanScheduleApi {
   async createScheduleItem(
     input: HeadmanScheduleCreateInput,
     idempotencyKey: string,
-  ): Promise<HeadmanScheduleItem> {
+  ): Promise<HeadmanRecurringCreateReceipt> {
     validateOneOffKey(idempotencyKey)
     const item = scheduleItem(
       await this.request<unknown>('/api/schedule/items', {
@@ -300,7 +364,18 @@ export class HeadmanScheduleApi {
       (item.room ?? null) !== (input.room ?? null)
     )
       throw new Error('Сервер не подтвердил исходное создание пары.')
-    return item
+    const { generatedCount, generatedFrom, generatedUntil } = item
+    if (
+      !Number.isSafeInteger(generatedCount) ||
+      (generatedCount ?? -1) < 0 ||
+      (generatedCount === 0
+        ? generatedFrom !== null || generatedUntil !== null
+        : !validReceiptDate(generatedFrom) ||
+          !validReceiptDate(generatedUntil) ||
+          generatedFrom > generatedUntil)
+    )
+      throw new Error('Сервер не подтвердил число и период созданных пар. Сохранён исходный запрос.')
+    return item as HeadmanRecurringCreateReceipt
   }
 
   getScheduleItem(id: number): Promise<HeadmanScheduleItem> {
@@ -328,6 +403,22 @@ export class HeadmanScheduleApi {
     ) {
       throw new Error('Сервер не вернул корректный предварительный расчёт.')
     }
+    if (
+      input === null &&
+      (value.operationKind !== 'DELETE_UNUSED_SERIES' ||
+        typeof value.deletable !== 'boolean' ||
+        !Number.isSafeInteger(value.protectedCount) ||
+        (value.protectedCount ?? -1) < 0 ||
+        !Number.isSafeInteger(value.removableCount) ||
+        (value.removableCount ?? -1) < 0 ||
+        !Array.isArray(value.protectedReasons) ||
+        value.protectedReasons.some((reason) =>
+          !isRecord(reason) || typeof reason.code !== 'string' || !reason.code ||
+          !Number.isSafeInteger(reason.count) || Number(reason.count) <= 0,
+        ) ||
+        (value.deletable && (value.protectedCount !== 0 || value.protectedReasons.length !== 0)))
+    )
+      throw new Error('Сервер не подтвердил безопасное полное удаление серии. Обнови расчёт после обновления сервера.')
     return value
   }
 
@@ -350,14 +441,33 @@ export class HeadmanScheduleApi {
     })
   }
 
-  deleteScheduleItem(id: number, revision: string, key: string): Promise<void> {
+  async deleteScheduleItem(
+    id: number,
+    revision: string,
+    key: string,
+  ): Promise<HeadmanSeriesDeletionOperation | void> {
     assertNumericId(id, 'id')
     validateOneOffKey(key)
     if (!/^[0-9a-f]{64}$/.test(revision)) throw new Error('Нужен новый предварительный расчёт.')
-    return this.request(`/api/schedule/items/${id}`, {
-      method: 'DELETE',
-      headers: { 'Idempotency-Key': key, 'If-Match': revision },
-    })
+    const value = await this.request<unknown>(
+      `/api/schedule/items/${id}`,
+      { method: 'DELETE', headers: { 'Idempotency-Key': key, 'If-Match': revision } },
+      false,
+      [202, 204],
+    )
+    if (value !== undefined) return seriesDeletionOperation(value)
+  }
+
+  async getScheduleItemOperation(operationId: string): Promise<HeadmanSeriesDeletionOperation> {
+    validateOneOffKey(operationId)
+    const operation = seriesDeletionOperation(
+      await this.request<unknown>(
+        `/api/schedule/items/operations/${operationId}`, undefined, false, [200],
+      ),
+    )
+    if (operation.operationId !== operationId)
+      throw new Error('Сервер вернул другую операцию удаления.')
+    return operation
   }
 
   async getRecurringTransfer(operationId: string): Promise<HeadmanRecurringTransfer> {
@@ -424,7 +534,12 @@ export class HeadmanScheduleApi {
     throw new Error('Сервер вернул слишком много страниц расписания')
   }
 
-  private async request<T>(path: string, init?: RequestInit, retried = false): Promise<T> {
+  private async request<T>(
+    path: string,
+    init?: RequestInit,
+    retried = false,
+    expectedStatuses?: readonly number[],
+  ): Promise<T> {
     const token = this.options.accessToken()
     const headers = new Headers(init?.headers)
     if (!headers.has('Accept')) headers.set('Accept', 'application/json')
@@ -434,6 +549,8 @@ export class HeadmanScheduleApi {
     const response = await this.fetcher(path, { ...init, headers, credentials: 'include' })
     this.options.assertCurrent?.()
     if (response.ok) {
+      if (expectedStatuses && !expectedStatuses.includes(response.status))
+        throw new Error('Сервер не подтвердил состояние операции. Исходный запрос сохранён.')
       if (response.status === 204) return undefined as T
       const value = (await response.json()) as T
       this.options.assertCurrent?.()
@@ -441,7 +558,7 @@ export class HeadmanScheduleApi {
     }
     if (response.status === 401 && !retried && this.options.onUnauthorized) {
       await this.options.onUnauthorized()
-      return this.request<T>(path, init, true)
+      return this.request<T>(path, init, true, expectedStatuses)
     }
 
     let problem: unknown = null
@@ -452,6 +569,26 @@ export class HeadmanScheduleApi {
     }
     throw new HeadmanScheduleApiError(response, problem)
   }
+}
+
+function seriesDeletionOperation(value: unknown): HeadmanSeriesDeletionOperation {
+  if (!isRecord(value) || typeof value.operationId !== 'string') throw new Error('Сервер не подтвердил операцию удаления.')
+  validateOneOffKey(value.operationId)
+  if (
+    !['PREPARING', 'SEALED', 'COMMITTING', 'COMPLETED', 'RELEASING', 'RELEASED'].includes(String(value.state)) ||
+    !Number.isSafeInteger(value.deletedCount) || Number(value.deletedCount) < 0 ||
+    !Number.isSafeInteger(value.protectedCount) || Number(value.protectedCount) < 0 ||
+    (value.errorCode !== null && (typeof value.errorCode !== 'string' || !value.errorCode)) ||
+    (value.state === 'COMPLETED' && (value.protectedCount !== 0 || value.errorCode !== null)) ||
+    (value.state === 'RELEASED' && typeof value.errorCode !== 'string')
+  ) throw new Error('Сервер вернул неизвестное состояние удаления. Исходная операция сохранена.')
+  return value as unknown as HeadmanSeriesDeletionOperation
+}
+
+function validReceiptDate(value: unknown): value is string {
+  if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false
+  const parsed = new Date(`${value}T00:00:00Z`)
+  return Number.isFinite(parsed.getTime()) && parsed.toISOString().slice(0, 10) === value
 }
 
 export interface HeadmanScheduleApiGenerationOwner {

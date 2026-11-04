@@ -6,6 +6,8 @@ import {
   readRecurringIntent,
   recurringUpdate,
   retainRecurringBack,
+  continueRecurringDeletion,
+  type RecurringIntent,
 } from './headman-recurring-intent'
 import { createMobileNavigationStack, nestedRoute, rootRoute } from '../../shared/navigation'
 import {
@@ -16,6 +18,9 @@ import {
   createGenerationBoundHeadmanScheduleApi,
   persistOneOffIntent,
   readOneOffIntent,
+  canDeleteUnusedSeries,
+  scheduleProblemCode,
+  type HeadmanScheduleCreateInput,
   type HeadmanOneOffCreateInput,
 } from './headman-schedule-client'
 
@@ -41,6 +46,106 @@ const canonical = {
 }
 const json = (body: unknown): Response =>
   new Response(JSON.stringify(body), { headers: { 'Content-Type': 'application/json' } })
+
+const deleteIntent = (): RecurringIntent => ({
+  owner: { userId: '5', sessionId: 'session1', groupId: 7, semesterId: 10 },
+  target: { id: 31, groupId: 7, semesterId: 10, subjectId: 9 },
+  action: 'DELETE', input: null, key, rejected: false, transferIds: [],
+  preview: { revision: 'a'.repeat(64), updatedCount: 0, removedCount: 4, restoredCount: 0, createdCount: 0, operationKind: 'DELETE_UNUSED_SERIES', deletable: true, protectedCount: 0, removableCount: 4, protectedReasons: [] },
+})
+
+describe('complete unused constructor series deletion', () => {
+  it('fails closed for an old preview and exposes real protection without confusing automatic absence with manual history', async () => {
+    const preview = deleteIntent().preview
+    const old = { ...preview, operationKind: undefined }
+    const api = new HeadmanScheduleApi({ accessToken: () => null, fetcher: async () => json(old) })
+    await expect(api.previewScheduleItem(31, null)).rejects.toThrow('полное удаление')
+    const protectedPreview = { ...preview, deletable: false, protectedCount: 1, protectedReasons: [{ code: 'MANUAL_ATTENDANCE', count: 1 }] }
+    const protectedApi = new HeadmanScheduleApi({ accessToken: () => null, fetcher: async () => json(protectedPreview) })
+    const result = await protectedApi.previewScheduleItem(31, null)
+    expect(canDeleteUnusedSeries(result)).toBe(false)
+    expect(result.protectedReasons).toEqual([{ code: 'MANUAL_ATTENDANCE', count: 1 }])
+    expect(() => readRecurringIntent({ getItem: () => JSON.stringify({ ...deleteIntent(), preview: old }) }, deleteIntent().owner)).toThrow()
+  })
+
+  it('recovers a lost 202 with the identical key, persists the separate operation ID and completes without reading a deleted item', async () => {
+    const durable = new Map<string, string>()
+    const storage = { getItem: (scope: string) => durable.get(scope) ?? null, setItem: (scope: string, value: string) => { durable.set(scope, value) } }
+    const intent = deleteIntent()
+    persistRecurringIntent(storage, intent)
+    const requests: { path: string; method: string; key: string | null; revision: string | null }[] = []
+    const operationId = 'aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee'
+    const api = new HeadmanScheduleApi({ accessToken: () => null, fetcher: async (path, init) => {
+      const headers = new Headers(init?.headers)
+      requests.push({ path: String(path), method: init?.method ?? 'GET', key: headers.get('Idempotency-Key'), revision: headers.get('If-Match') })
+      if (requests.length === 1) throw new TypeError('accepted response lost')
+      const receipt = { operationId, state: requests.length === 2 ? 'COMMITTING' : 'COMPLETED', deletedCount: requests.length === 2 ? 0 : 4, protectedCount: 0, errorCode: null }
+      return requests.length === 2 ? new Response(JSON.stringify(receipt), { status: 202 }) : json(receipt)
+    } })
+    const persist = (next: RecurringIntent) => persistRecurringIntent(storage, next)
+    await expect(continueRecurringDeletion(api, intent, () => true, persist)).rejects.toThrow('lost')
+    const restored = readRecurringIntent(storage, intent.owner)!
+    const pending = await continueRecurringDeletion(api, restored, () => true, persist)
+    expect(pending?.operation?.state).toBe('COMMITTING')
+    expect(readRecurringIntent(storage, intent.owner)?.operationId).toBe(operationId)
+    expect(readRecurringIntent(storage, { ...intent.owner, userId: '6' })).toBeNull()
+    const complete = await continueRecurringDeletion(api, readRecurringIntent(storage, intent.owner)!, () => true, persist)
+    expect(complete?.operation?.state).toBe('COMPLETED')
+    expect(requests[1]).toEqual(requests[0])
+    expect(requests[2]?.path).toBe(`/api/schedule/items/operations/${operationId}`)
+    expect(requests.map((request) => request.method)).toEqual(['DELETE', 'DELETE', 'GET'])
+  })
+
+  it('does not accept an unknown operation, a generic 200 deletion ACK or a stale owner as completed deletion', async () => {
+    const intent = deleteIntent()
+    const unknown = new HeadmanScheduleApi({ accessToken: () => null, fetcher: async () => new Response('{}', { status: 404 }) })
+    await expect(unknown.getScheduleItemOperation(key)).rejects.toBeInstanceOf(HeadmanScheduleApiError)
+    const malformed = new HeadmanScheduleApi({ accessToken: () => null, fetcher: async () => json({}) })
+    await expect(malformed.deleteScheduleItem(31, intent.preview.revision, key)).rejects.toThrow('состояние')
+    let persisted = false
+    const complete = new HeadmanScheduleApi({ accessToken: () => null, fetcher: async () => new Response(null, { status: 204 }) })
+    expect(await continueRecurringDeletion(complete, intent, () => false, () => { persisted = true })).toBeNull()
+    expect(persisted).toBe(false)
+  })
+
+  it('requests legacy inactive templates only when explicitly selected', async () => {
+    const paths: string[] = []
+    const api = new HeadmanScheduleApi({ accessToken: () => null, fetcher: async (path) => {
+      paths.push(String(path))
+      return json({ _embedded: { scheduleItemResponseList: [] }, page: { totalPages: 1 } })
+    } })
+    await api.listScheduleItems(7, 10)
+    await api.listScheduleItems(7, 10, true)
+    expect(paths[0]).not.toContain('includeInactive')
+    expect(paths[1]).toContain('includeInactive=true')
+  })
+})
+
+describe('constructor generation receipts', () => {
+  const input: HeadmanScheduleCreateInput = { assignmentId: 501, groupId: 7, subjectId: 9, semesterId: 10, dayOfWeek: 1, lessonNumber: 3, startTime: '12:00:00', endTime: '13:30:00', weekType: 'ALL' }
+  it.each([
+    { generatedCount: 0, generatedFrom: null, generatedUntil: null },
+    { generatedCount: 22, generatedFrom: '2026-09-01', generatedUntil: '2027-01-26' },
+  ])('keeps the confirmed generation extent %j', async (receipt) => {
+    const api = new HeadmanScheduleApi({ accessToken: () => null, fetcher: async () => json({ id: 31, ...input, ...receipt }) })
+    expect(await api.createScheduleItem(input, key)).toMatchObject(receipt)
+  })
+  it.each([
+    {},
+    { generatedCount: null, generatedFrom: null, generatedUntil: null },
+    { generatedCount: 0 },
+    { generatedCount: -1, generatedFrom: null, generatedUntil: null },
+    { generatedCount: 1, generatedFrom: '2026-09-31', generatedUntil: '2026-10-01' },
+    { generatedCount: 1, generatedFrom: '2026-10-01', generatedUntil: '2026-09-01' },
+  ])('refuses missing or malformed generation metadata %j', async (receipt) => {
+    const api = new HeadmanScheduleApi({ accessToken: () => null, fetcher: async () => json({ id: 31, ...input, ...receipt }) })
+    await expect(api.createScheduleItem(input, key)).rejects.toThrow('число и период')
+  })
+  it('recognizes the deleted-series tombstone in the existing problem extras', () => {
+    const error = new HeadmanScheduleApiError(new Response('{}', { status: 410 }), { extras: { code: 'CONSTRUCTOR_SERIES_DELETED' } })
+    expect(scheduleProblemCode(error)).toBe('CONSTRUCTOR_SERIES_DELETED')
+  })
+})
 
 describe('recurring lifecycle durable ownership', () => {
   it('hides denied preview/apply/readback data, releases Back and retains the exact uncertain command only for its owner', async () => {
@@ -222,6 +327,7 @@ describe('recurring lifecycle durable ownership', () => {
       action: 'DELETE',
       input: null,
       key: deletionKey,
+      preview: { ...recovered.preview, operationKind: 'DELETE_UNUSED_SERIES', deletable: true, protectedCount: 0, removableCount: 1, protectedReasons: [] },
     })
     const deletion = readRecurringIntent(storage, owner)!
     await expect(

@@ -3,6 +3,7 @@ package ru.rutcampustrack.schedule.integration;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -163,6 +164,10 @@ class RecurringScheduleItemIT extends AbstractScheduleIntegrationTest {
                                         SEMESTER_ID,
                                         SEMESTER_FROM,
                                         ASSIGNMENT_END)));
+        when(participants.attendance(any(),nullable(String.class)))
+                .thenAnswer(call->inspectionReceipt(call.getArgument(0)));
+        when(participants.academic(any(),nullable(String.class)))
+                .thenAnswer(call->inspectionReceipt(call.getArgument(0)));
     }
 
     @Test
@@ -938,7 +943,7 @@ RETURNING id
                         SEMESTER_FROM,
                         SEMESTER_TO);
 
-        assertThat(second.generatedUntil()).isEqualTo(LocalDate.of(2026, 2, 10));
+        assertThat(second.generatedUntil()).isEqualTo(LocalDate.of(2026, 2, 17));
         assertThat(
                         jdbcTemplate.queryForObject(
                                 "SELECT cap_until_exclusive FROM schedule_assignment_fences WHERE"
@@ -949,7 +954,13 @@ RETURNING id
         assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM schedule_items", Long.class))
                 .isEqualTo(2L);
         assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM lessons", Long.class))
-                .isEqualTo(4L);
+                .isEqualTo(6L);
+        assertThat(jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM lessons WHERE date>=? AND assignment_id IS NULL AND assigned_teacher_id IS NULL",
+                Long.class,localCap)).isEqualTo(2L);
+        assertThat(jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM lessons WHERE date>=? AND assignment_id IS NOT NULL",
+                Long.class,localCap)).isZero();
     }
 
     @Test
@@ -1732,7 +1743,7 @@ SELECT occurrence_id, 3, 'RESTORED', id, id, 2, ?, CURRENT_TIMESTAMP, ? FROM les
     }
 
     @Test
-    void deletingAndReturningSameSeriesNeverBackfillsAbsenceAndRoomIsNotIdentity()
+    void legacyInactiveSeriesReturnPreservesHistoryAndRoomIsNotIdentity()
             throws Exception {
         when(academicGrpcClient.getActiveSemester())
                 .thenReturn(ACTIVE_SEMESTER.toBuilder().setDateTo("2026-03-08").build());
@@ -1749,16 +1760,7 @@ SELECT occurrence_id, 3, 'RESTORED', id, id, 2, ?, CURRENT_TIMESTAMP, ? FROM les
         long item = createLifecycleItem(),
                 history = lessonOn("2026-02-02"),
                 absent = lessonOn("2026-02-16");
-        UUID deletionKey = UUID.randomUUID();
-        String revision = preview(item, null, true).get("revision").asText();
-        mockMvc.perform(
-                        mutationHeaders(delete("/schedule/items/{id}", item), deletionKey)
-                                .header("If-Match", revision))
-                .andExpect(status().isNoContent());
-        mockMvc.perform(
-                        mutationHeaders(delete("/schedule/items/{id}", item), deletionKey)
-                                .header("If-Match", revision))
-                .andExpect(status().isNoContent());
+        seedLegacyTemplateCancellation(item);
         when(clock.instant()).thenReturn(Instant.parse("2026-02-17T09:00:00Z"));
         UUID restoreKey = UUID.randomUUID();
         CreateScheduleItemRequest restored =
@@ -1940,12 +1942,17 @@ SELECT occurrence_id, 3, 'RESTORED', id, id, 2, ?, CURRENT_TIMESTAMP, ? FROM les
                                 "1",
                                 UUID.randomUUID()));
         long moved = Long.parseLong(transfer.targetLessonId());
+        completeTransfer(transfer.operationId());
         JsonNode preview = preview(item, null, true);
-        assertThat(preview.path("removedCount").asLong()).isZero();
+        assertThat(preview.path("deletable").asBoolean()).isFalse();
+        assertThat(preview.path("protectedCount").asLong()).isPositive();
+        var retainedIds=jdbcTemplate.queryForList("SELECT id FROM lessons ORDER BY id",Long.class);
         mockMvc.perform(
                         mutationHeaders(delete("/schedule/items/{id}", item), UUID.randomUUID())
                                 .header("If-Match", preview.path("revision").asText()))
-                .andExpect(status().isNoContent());
+                .andExpect(status().isConflict());
+        assertThat(jdbcTemplate.queryForList("SELECT id FROM lessons ORDER BY id",Long.class))
+                .containsExactlyElementsOf(retainedIds);
         assertThat(
                         jdbcTemplate.queryForObject(
                                 "SELECT status::text FROM lessons WHERE id = ?",
@@ -1991,11 +1998,7 @@ SELECT occurrence_id, 3, 'RESTORED', id, id, 2, ?, CURRENT_TIMESTAMP, ? FROM les
     @Test
     void concurrentDifferentCreateKeysCannotEditAlreadyResumedSeries() throws Exception {
         long item = createLifecycleItem();
-        String revision = preview(item, null, true).path("revision").asText();
-        mockMvc.perform(
-                        mutationHeaders(delete("/schedule/items/{id}", item), UUID.randomUUID())
-                                .header("If-Match", revision))
-                .andExpect(status().isNoContent());
+        seedLegacyInactiveTemplate(item);
         var prepared = archiveFence.prepareBusinessWrite(SEMESTER_ID);
         var authority =
                 Map.of(
@@ -2087,7 +2090,7 @@ SELECT occurrence_id, 3, 'RESTORED', id, id, 2, ?, CURRENT_TIMESTAMP, ? FROM les
     @Test
     void concurrentLifecycleRequestsAcceptExactlyOneObservedRevision() throws Exception {
         long item = createLifecycleItem();
-        String revision = preview(item, null, true).get("revision").asText();
+        String revision = preview(item, updateRequest("RACE-ROOM",WeekType.ALL,null), false).get("revision").asText();
         var prepared = archiveFence.prepareBusinessWrite(SEMESTER_ID);
         Map<Long, RecurringAssignmentAuthority> authority =
                 Map.of(
@@ -2110,8 +2113,8 @@ SELECT occurrence_id, 3, 'RESTORED', id, id, 2, ?, CURRENT_TIMESTAMP, ? FROM les
                                         () ->
                                                 lifecycle.mutate(
                                                         item,
-                                                        null,
-                                                        true,
+                                                        updateRequest("RACE-ROOM",WeekType.ALL,null),
+                                                        false,
                                                         revision,
                                                         UUID.randomUUID(),
                                                         ACTOR_ID,
@@ -2128,8 +2131,8 @@ SELECT occurrence_id, 3, 'RESTORED', id, id, 2, ?, CURRENT_TIMESTAMP, ? FROM les
                                         () ->
                                                 lifecycle.mutate(
                                                         item,
-                                                        null,
-                                                        true,
+                                                        updateRequest("RACE-ROOM",WeekType.ALL,null),
+                                                        false,
                                                         revision,
                                                         UUID.randomUUID(),
                                                         ACTOR_ID,
@@ -2160,24 +2163,24 @@ SELECT occurrence_id, 3, 'RESTORED', id, id, 2, ?, CURRENT_TIMESTAMP, ? FROM les
         assertThat(
                         jdbcTemplate.queryForObject(
                                 "SELECT COUNT(*) FROM lesson_lifecycle_entries WHERE action ="
-                                        + " 'CANCELLED'",
+                                        + " 'TRANSFERRED'",
                                 Long.class))
                 .isEqualTo(1);
     }
 
     @Test
-    void manuallyCancelledFutureLessonIsNeverResumedByTemplateReturn() throws Exception {
+    void manuallyCancelledFutureLessonBlocksDeletionAndSurvivesBackfill() throws Exception {
         long item = createLifecycleItem(), future = lessonOn("2026-02-16");
         lessonLifecycle.cancel(future, "Ручное исключение", ACTOR_ID);
         JsonNode preview = preview(item, null, true);
-        assertThat(preview.path("removedCount").asLong()).isZero();
+        assertThat(preview.path("deletable").asBoolean()).isFalse();
+        assertThat(preview.path("protectedCount").asLong()).isPositive();
         mockMvc.perform(
                         mutationHeaders(delete("/schedule/items/{id}", item), UUID.randomUUID())
                                 .header("If-Match", preview.path("revision").asText()))
-                .andExpect(status().isNoContent());
-        postCreate(
-                UUID.randomUUID(),
-                request(1, 1, "A-101", ASSIGNMENT_ID, GROUP_ID, SUBJECT_ID, SEMESTER_ID));
+                .andExpect(status().isConflict());
+        mockMvc.perform(mutationHeaders(post("/schedule/items/{id}/semester-materialization",item),UUID.randomUUID()))
+                .andExpect(status().isAccepted());
         assertThat(
                         jdbcTemplate.queryForObject(
                                 "SELECT status::text FROM lessons WHERE id = ?",
@@ -2200,13 +2203,7 @@ SELECT occurrence_id, 3, 'RESTORED', id, id, 2, ?, CURRENT_TIMESTAMP, ? FROM les
         long sourceItem = createLifecycleItem(),
                 oldFuture = lessonOn("2026-02-16"),
                 history = lessonOn("2026-02-02");
-        String revision = preview(sourceItem, null, true).path("revision").asText();
-        mockMvc.perform(
-                        mutationHeaders(
-                                        delete("/schedule/items/{id}", sourceItem),
-                                        UUID.randomUUID())
-                                .header("If-Match", revision))
-                .andExpect(status().isNoContent());
+        seedLegacyTemplateCancellation(sourceItem);
         UUID operation = UUID.randomUUID();
         var authority =
                 ru.rutcampustrack.academic.grpc.PreparedAssignmentCloseResponse.newBuilder()
@@ -2342,6 +2339,49 @@ SELECT occurrence_id, 3, 'RESTORED', id, id, 2, ?, CURRENT_TIMESTAMP, ? FROM les
         assertThat(moved.getAssignmentId()).isEqualTo(502L);
         assertThat(moved.getCurrent()).isTrue();
         assertThat(moved.getGeneration()).isGreaterThan(superseded.getGeneration());
+    }
+
+    /** Empty remote history; local SQL history still decides protected deletion. */
+    private ru.rutcampustrack.constructor.grpc.ConstructorParticipantReceipt inspectionReceipt(
+            ru.rutcampustrack.constructor.grpc.ConstructorDeletionCommand command) {
+        assertThat(command.getAction()).isEqualTo(
+                ru.rutcampustrack.constructor.grpc.ConstructorDeletionAction.CONSTRUCTOR_DELETION_PREVIEW);
+        return ru.rutcampustrack.constructor.grpc.ConstructorParticipantReceipt.newBuilder()
+                .setOperationId(command.getOperationId()).setRequestHash(command.getRequestHash())
+                .setScopeHash(command.getScopeHash()).setState("PREVIEW")
+                .setParticipantDigest(com.google.protobuf.ByteString.copyFrom(
+                        ru.rutcampustrack.schedule.constructor.ConstructorHashes.sha256(new byte[]{1})))
+                .build();
+    }
+
+    /** Retained pre-hard-delete template metadata, not a current DELETE operation. */
+    private void seedLegacyInactiveTemplate(long item) {
+        jdbcTemplate.update("UPDATE schedule_items SET is_active=false,deactivated_at=?,lifecycle_revision=lifecycle_revision+1 WHERE id=?",
+                java.time.OffsetDateTime.now(clock),item);
+    }
+
+    /** Exact retained V27 cancellation receipt and rows, seeded without an HTTP DELETE. */
+    private void seedLegacyTemplateCancellation(long item) {
+        UUID operation=UUID.randomUUID();var now=java.time.OffsetDateTime.now(clock);
+        var prepared=archiveFence.prepareBusinessWrite(SEMESTER_ID);
+        new TransactionTemplate(transactionManager).executeWithoutResult(status->{
+            archiveFence.lockPreparedBusinessWrite(prepared);
+            jdbcTemplate.queryForMap("SELECT id FROM schedule_items WHERE id=? FOR UPDATE",item);
+            jdbcTemplate.update("INSERT INTO schedule_recurring_lifecycle_replay(operation_id,actor_id,request_key,payload_hash,schedule_item_id,action,response_snapshot,accepted_at) VALUES(?,?,?,?,?,'DELETE',?::jsonb,?)",
+                    operation,ACTOR_ID,UUID.randomUUID(),new byte[32],item,"{\"id\":"+item+",\"active\":false}",now);
+            var rows=jdbcTemplate.queryForList("SELECT occurrence.id,occurrence.revision,occurrence.generation,lesson.id AS lesson_id,lesson.revision AS lesson_revision "
+                    + "FROM lesson_occurrences occurrence JOIN lessons lesson ON lesson.id=occurrence.current_lesson_id "
+                    + "WHERE occurrence.schedule_item_id=? AND lesson.status='planned' AND lesson.date+lesson.start_time>? FOR UPDATE OF occurrence,lesson",
+                    item,now.atZoneSameInstant(ZoneId.of("Europe/Moscow")).toLocalDateTime());
+            for (var row:rows) {
+                jdbcTemplate.update("UPDATE lessons SET status='cancelled',cancel_reason='Слот убран из будущего расписания',cancelled_by=?,cancelled_at=?,revision=revision+1 WHERE id=? AND revision=?",
+                        ACTOR_ID,now,row.get("lesson_id"),row.get("lesson_revision"));
+                jdbcTemplate.update("UPDATE lesson_occurrences SET revision=revision+1 WHERE id=? AND revision=?",row.get("id"),row.get("revision"));
+                jdbcTemplate.update("INSERT INTO lesson_lifecycle_entries(occurrence_id,revision,action,lesson_id,generation,actor_id,occurred_at,template_operation_id) VALUES(?,?,'CANCELLED',?,?,?,?,?)",
+                        row.get("id"),((Number)row.get("revision")).longValue()+1,row.get("lesson_id"),row.get("generation"),ACTOR_ID,now,operation);
+            }
+            seedLegacyInactiveTemplate(item);
+        });
     }
 
     private LessonResponse publicLesson(long id) {

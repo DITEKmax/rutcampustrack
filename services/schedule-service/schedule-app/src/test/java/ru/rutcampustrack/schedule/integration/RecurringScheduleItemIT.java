@@ -180,6 +180,18 @@ class RecurringScheduleItemIT extends AbstractScheduleIntegrationTest {
     }
 
     @Test
+    void ongoingSemesterSlotStartsOnceAndReplayDoesNotPublishHistoricalTransitions() throws Exception {
+        when(clock.instant()).thenReturn(Instant.parse("2026-02-09T06:00:00Z"));
+        UUID key=UUID.randomUUID();
+        var request=request(1,1,"A-101",ASSIGNMENT_ID,GROUP_ID,SUBJECT_ID,SEMESTER_ID);
+        postCreate(key,request);postCreate(key,request);
+        assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM lessons WHERE status='active' AND date=DATE '2026-02-09'",Long.class)).isEqualTo(1L);
+        assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM schedule_outbox WHERE event_type='lesson.started'",Long.class)).isEqualTo(1L);
+        assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM schedule_outbox WHERE event_type IN('lesson.closed','lesson.reminder')",Long.class)).isZero();
+        assertThat(jdbcTemplate.queryForObject("SELECT sum(lesson_count) FROM constructor_materialization_work",Long.class)).isEqualTo(1L);
+    }
+
+    @Test
     void explicitSystemBackfillPreservesLegacyManualCancellationAndReplaysWithoutImpersonation() {
         LocalDate start=LocalDate.of(2026,2,16),end=LocalDate.of(2026,2,17);
         when(academicGrpcClient.getAssignmentsByIds(List.of(ASSIGNMENT_ID))).thenReturn(List.of(

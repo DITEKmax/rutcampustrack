@@ -152,6 +152,13 @@ def main():
                           [sample("{" + node_labels + "}", expected)]))
         tests.append(case([series(numerator + "{" + node_labels + "}", "0x6"),
                            series(denominator + "{" + node_labels + "}", "0x6")], expr, []))
+    # A virtual NIC reports unknown link speed as -125000 bytes/s, not capacity.
+    # Keep actual traffic separate; do not invent zero or a nominal speed.
+    for target, direction in enumerate(("receive", "transmit")):
+        network = dashboard_expr("node-exporter.json", 338, target)
+        traffic = series("node_network_" + direction + "_bytes_total{" + node_labels + "}", "0+30x6")
+        tests.append(case([traffic, series("node_network_speed_bytes{" + node_labels + "}", "-125000x6")], network, []))
+        tests.append(case([traffic], network, []))
     fs = alert_expr("telemetry-pipeline.yml", "FilesystemHeadroomLow")
     fs_inputs = []
     for mount, size, available in [("/boot", 2 * 1024**3, 1.8 * 1024**3),

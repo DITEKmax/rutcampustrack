@@ -1405,9 +1405,10 @@ services:
       timeout: 5s
       retries: 5
       start_period: 45s
-    # M18: Tempo compaction + WAL replay need more headroom than 128m.
+    # Measured memory pressure/restart: reserve headroom for compaction and WAL replay.
     # App services still do not depend on Tempo health.
-    mem_limit: 256m
+    mem_limit: 512m
+    memswap_limit: 768m
     mem_reservation: 192m
     restart: unless-stopped
 

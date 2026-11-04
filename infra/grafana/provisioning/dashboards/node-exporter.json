@@ -2584,7 +2584,7 @@
             "type": "prometheus",
             "uid": "${ds_prometheus}"
           },
-          "description": "Network interface utilization as a percentage of its maximum capacity",
+          "description": "Загрузка показывается только при известной положительной пропускной способности интерфейса. У виртуального интерфейса скорость может быть неизвестна: отсутствие данных здесь не означает нулевой трафик. Фактический приём и передача доступны на графиках трафика.",
           "fieldConfig": {
             "defaults": {
               "color": {

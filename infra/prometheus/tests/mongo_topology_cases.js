@@ -3,6 +3,7 @@ if (process.env.RCT_MONITOR_TOPOLOGY_SCRATCH_ONLY !== '1') {
   throw new Error('Topology role cases require the explicit isolated scratch marker')
 }
 (() => {
+  const assert = require('node:assert/strict')
   const admin = db.getSiblingDB('admin')
   const roleName = 'rct_monitor_topology'
   const roleRef = { role: roleName, db: 'admin' }
@@ -16,15 +17,15 @@ if (process.env.RCT_MONITOR_TOPOLOGY_SCRATCH_ONLY !== '1') {
   const originalRoles = roles()
   const originalRole = JSON.stringify(metadataRole())
   load(helper)
-  assert.eq(roles(), originalRoles)
-  assert.eq(JSON.stringify(metadataRole()), originalRole)
+  assert.strictEqual(roles(), originalRoles)
+  assert.strictEqual(JSON.stringify(metadataRole()), originalRole)
   print('PASS topology_existing_correct')
 
   // Existing correct role with missing user grant must recover the grant only.
   admin.revokeRolesFromUser('rct_monitor', [roleRef])
   load(helper)
   assert(granted())
-  assert.eq(JSON.stringify(metadataRole()), originalRole)
+  assert.strictEqual(JSON.stringify(metadataRole()), originalRole)
   print('PASS topology_missing_grant')
 
   // Recover a missing role, then execute again in the same shell context.
@@ -34,8 +35,8 @@ if (process.env.RCT_MONITOR_TOPOLOGY_SCRATCH_ONLY !== '1') {
   const recreatedRole = JSON.stringify(metadataRole())
   const recreatedRoles = roles()
   load(helper)
-  assert.eq(JSON.stringify(metadataRole()), recreatedRole)
-  assert.eq(roles(), recreatedRoles)
+  assert.strictEqual(JSON.stringify(metadataRole()), recreatedRole)
+  assert.strictEqual(roles(), recreatedRoles)
   assert(granted())
   print('PASS topology_repeated_install')
 
@@ -49,8 +50,8 @@ if (process.env.RCT_MONITOR_TOPOLOGY_SCRATCH_ONLY !== '1') {
     rejected = error.message.includes('Existing topology role differs from the approved metadata-only privilege')
   }
   assert(rejected)
-  assert.eq(JSON.stringify(metadataRole()), unexpectedRole)
-  assert.eq(roles(), beforeRejectedGrant)
+  assert.strictEqual(JSON.stringify(metadataRole()), unexpectedRole)
+  assert.strictEqual(roles(), beforeRejectedGrant)
   admin.updateRole(roleName, { privileges: [privilege], roles: [] })
   load(helper)
   assert(granted())

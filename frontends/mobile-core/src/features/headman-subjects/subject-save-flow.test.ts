@@ -267,24 +267,29 @@ describe('subject save recovery preserves admitted data and operation identity',
   })
   it('does not infer adoption COMMITTED from an admitted assignment after a lost add response', async () => {
     let resumes = 0
-    const f = fixture(plan(), (url) => {
+    const closedPeriod = { ...assignment, validFrom: '2026-09-01', validUntilExclusive: '2026-10-01' }
+    const f = fixture(plan({ assignments: [closedPeriod] }), (url) => {
       if (url.pathname.endsWith('/teachers/103')) {
         f.subjects[0] = {
           ...subject(),
           teacherIds: [103],
-          assignments: [{ id: 500, ...assignment }],
+          assignments: [{ id: 500, ...closedPeriod }],
         }
         throw new TypeError('response lost')
       }
       if (url.pathname.endsWith('/resume-adoption')) {
         resumes++
-        return json({ id: 500, ...assignment, subjectId: 1, groupId: 4 })
+        return json({ id: 500, ...closedPeriod, subjectId: 1, groupId: 4 })
       }
       return json(subject())
     })
     await f.flow.send(true)
     expect(f.intent?.unknown).toBe(true)
     expect(f.completed).toBe(false)
+    f.intent = parseSubjectEditIntent(JSON.stringify(f.intent), '10', 4)
+    expect(f.intent?.editId).toBe(key)
+    expect(f.intent?.assignments).toEqual([closedPeriod])
+    f.flow.reset()
     await f.flow.reconcile()
     expect(resumes).toBe(1)
     expect(f.writes.filter((w) => w.path.includes('/teachers/'))).toHaveLength(1)

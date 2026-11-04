@@ -4,11 +4,13 @@ import { HeadmanRequestsApi } from '../../../../mobile-core/src/features/headman
 import {
   HeadmanSubjectsApi,
   type HeadmanSubject,
+  type HeadmanSubjectInitialAssignment,
 } from '../../../../mobile-core/src/features/headman-subjects/headman-subjects-client'
 import { subjectEditStorageKey } from '../../../../mobile-core/src/features/headman-subjects/subject-edit-intent'
 import SchedulePage from './SchedulePage.vue'
 import RequestsPage from './RequestsPage.vue'
 import SubjectsPage from './SubjectsPage.vue'
+import HeadmanSubjectsScreen from '../../../../mobile-core/src/features/headman-subjects/HeadmanSubjectsScreen.vue'
 const box = vi.hoisted(() => ({ feature: {} as Record<string, unknown>, writable: true }))
 vi.mock('../../auth/session', () => ({
   webSession: {
@@ -20,6 +22,7 @@ vi.mock('../../auth/session', () => ({
 vi.mock('../../app/live', () => ({ useWebLiveRefresh: () => undefined }))
 vi.mock('vue-router', () => ({ useRoute: () => ({ query: {} }) }))
 vi.mock('./HeadmanPage.vue', () => ({ default: { render: () => null } }))
+vi.mock('../../../../mobile-core/src/shared/components/MobileToolsSheet.vue', () => ({ default: { render: () => null } }))
 vi.mock('./context', () => ({
   useHeadmanFeature: () => box.feature,
   today: () => '2026-10-24',
@@ -51,8 +54,8 @@ const renderer = createRenderer<Host, Host>({
   nextSibling: () => null,
 })
 let dispose: (() => void) | undefined
-function mount<T>(component: Component): T {
-  const app = renderer.createApp(component)
+function mount<T>(component: Component, props?: Record<string, unknown>): T {
+  const app = renderer.createApp(component, props)
   app.config.warnHandler = () => undefined
   const vm = app.mount(node())
   dispose = () => app.unmount()
@@ -115,7 +118,7 @@ beforeEach(() => {
   storage = new MemoryStorage()
   box.writable = true
   vi.stubGlobal('sessionStorage', storage)
-  vi.stubGlobal('window', { confirm: () => true })
+  vi.stubGlobal('window', { confirm: () => true, localStorage: storage, addEventListener: () => undefined, removeEventListener: () => undefined })
 })
 afterEach(() => {
   dispose?.()
@@ -387,6 +390,7 @@ interface SubjectState {
   replacement: unknown
   locked: boolean
   error: string | null
+  assignment(teacher: { id: number; fullName: string; employeeNumber: null }, value: HeadmanSubjectInitialAssignment): HeadmanSubjectInitialAssignment
   replace(recover?: boolean, selection?: { assignment: NonNullable<HeadmanSubject['assignments']>[number]; teacher: { id: number; fullName: string; employeeNumber: null }; from: string }): Promise<void>
 }
 function subjectApi() {
@@ -421,6 +425,51 @@ function subjectApi() {
   return { api, fetcher }
 }
 describe('actual replacement preflight', () => {
+  it('defaults the shared mobile picker to the semester and durably retains a shorter past period after a lost create', async () => {
+    const { api } = subjectApi()
+    vi.spyOn(api, 'searchTeachers').mockResolvedValue({ items: [], page: 0, totalPages: 0 })
+    const create = vi.spyOn(api, 'createSubject').mockRejectedValue(new TypeError('lost response'))
+    const state = mount<{
+      subjectName: string; selectedTypes: string[]; pickerValidFrom: string; pickerValidThrough: string;
+      pickerTeacher: { id: number; fullName: string; employeeNumber: null };
+      selectedTeachers: Record<string, { id: number; fullName: string; employeeNumber: null }[]>;
+      removeCandidate: unknown;
+      requestRemove(type: string, teacher: { id: number; fullName: string; employeeNumber: null }): void;
+      openCreate(): void; openPicker(type: string): void; addTeacherDraft(): void; saveSubject(): Promise<void>;
+    }>({ ...HeadmanSubjectsScreen, render: () => null }, { api, groupId: 1, actorUserId: '3' })
+    await settle()
+    state.openCreate()
+    state.subjectName = 'Прошедший период'
+    state.selectedTypes = ['LECTURE']
+    state.openPicker('LECTURE')
+    expect([state.pickerValidFrom, state.pickerValidThrough]).toEqual([semester.dateFrom, semester.dateTo])
+    state.pickerTeacher = { id: 7, fullName: 'Другой', employeeNumber: null }
+    state.pickerValidThrough = '2026-10-23'
+    state.addTeacherDraft()
+    state.requestRemove('LECTURE', state.selectedTeachers.LECTURE![0]!)
+    expect(state.removeCandidate).not.toBeNull()
+    state.removeCandidate = null
+    await state.saveSubject()
+    const period = { teacherId: 7, semesterId: semester.id, lessonType: 'LECTURE', validFrom: '2026-10-23', validUntilExclusive: '2026-10-24' }
+    expect(create).toHaveBeenCalledOnce()
+    expect(create.mock.calls[0]?.[0].initialAssignments).toEqual([period])
+    const saved = JSON.parse(storage.getItem(subjectEditStorageKey('3', 1))!)
+    expect(saved.assignments).toEqual([period])
+    expect(saved.unknown).toBe(true)
+    expect(saved.actorUserId).toBe('3')
+    expect(saved.groupId).toBe(1)
+  })
+  it('accepts an already completed period in the current semester and rejects inverted or outside dates', async () => {
+    const { api } = subjectApi()
+    box.feature = feature({ subjects: api })
+    const state = mount<SubjectState>(SubjectsPage)
+    await settle()
+    const teacher = { id: 7, fullName: 'Другой', employeeNumber: null }
+    const input: HeadmanSubjectInitialAssignment = { teacherId: 7, semesterId: semester.id, lessonType: 'LECTURE', validFrom: '2026-10-23', validUntilExclusive: '2026-10-24' }
+    expect(state.assignment(teacher, input)).toEqual(input)
+    expect(() => state.assignment(teacher, { ...input, validFrom: '2026-10-22' })).toThrow()
+    expect(() => state.assignment(teacher, { ...input, validUntilExclusive: input.validFrom })).toThrow()
+  })
   it('keeps an invalid date editable without fetch and sends only after correction', async () => {
     const { api, fetcher } = subjectApi()
     box.feature = feature({ subjects: api })

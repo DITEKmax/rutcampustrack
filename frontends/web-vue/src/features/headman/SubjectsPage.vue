@@ -2,7 +2,7 @@
 import { computed, onBeforeUnmount, onMounted, reactive, ref, shallowRef, watch } from 'vue';
 import { useWebLiveRefresh } from '../../app/live';
 import { message, webSession } from '../../auth/session';
-import { useHeadmanFeature, today, lessonTypes, dateLabel, addDays } from './context';
+import { useHeadmanFeature, today, lessonTypes, dateLabel } from './context';
 import type {
   HeadmanSubject,
   HeadmanSemester,
@@ -21,6 +21,7 @@ import {
   type SubjectEditIntent,
 } from '../../../../mobile-core/src/features/headman-subjects/subject-edit-intent';
 import { createSubjectSaveFlow } from '../../../../mobile-core/src/features/headman-subjects/subject-save-flow';
+import { subjectAssignmentPeriod, subjectAssignmentPeriodLabel, shiftAssignmentDate } from '../../../../mobile-core/src/features/headman-subjects/subject-editor-state';
 import HeadmanPage from './HeadmanPage.vue';
 import { assertReplacementWire, replacementDraftInput } from './subject-replacement-state';
 import SubjectDeletion from './SubjectDeletion.vue';
@@ -192,7 +193,7 @@ function validDate(value: string) {
 function assignment(teacher: HeadmanTeacher, value: HeadmanSubjectInitialAssignment): HeadmanSubjectInitialAssignment {
   const until = value.validUntilExclusive ?? null;
   if (!semester.value || value.semesterId !== semester.value.id || !draft.types.includes(value.lessonType) || value.teacherId !== teacher.id || !teachers.value.some(item => item.id === teacher.id)) throw new Error('Выбери преподавателя и тип занятия.');
-  if (!validDate(value.validFrom) || value.validFrom < (today() > semester.value.dateFrom ? today() : semester.value.dateFrom) || value.validFrom > semester.value.dateTo || (until !== null && (!validDate(until) || until <= value.validFrom || until > addDays(semester.value.dateTo, 1)))) throw new Error('Проверь период назначения в семестре.');
+  subjectAssignmentPeriod(semester.value, value.validFrom, until === null ? semester.value.dateTo : shiftAssignmentDate(until, -1));
   return { ...value, validUntilExclusive: until };
 }
 function removeInitial(value: HeadmanSubjectInitialAssignment) {
@@ -396,7 +397,7 @@ useWebLiveRefresh(load, {
       ></p
     >
     <div class="headman-management-scroll" tabindex="0" role="region" aria-label="Предметы группы"><table class="headman-management-table headman-subjects-table"><colgroup><col /><col /><col /><col /><col class="headman-subject-progress-column" /><col class="headman-subject-action" /><col class="headman-subject-action" /></colgroup><thead><tr><th scope="col">№</th><th scope="col">Предмет</th><th scope="col">Тип занятия</th><th scope="col">Преподаватели</th><th scope="col">Пройдено / всего</th><th scope="colgroup" colspan="2">Действия</th></tr></thead><tbody>
-      <template v-for="(subject, index) in subjects" :key="subject.id"><tr v-for="(type, typeIndex) in subject.lessonTypes" :key="type" :class="{ 'is-selected': editor && selected?.id === subject.id }"><td v-if="typeIndex === 0" :rowspan="subject.lessonTypes.length">{{ index + 1 }}</td><th v-if="typeIndex === 0" scope="rowgroup" :rowspan="subject.lessonTypes.length">{{ subject.name }}</th><td>{{ lessonTypes[type] }}</td><td>{{ subject.assignments.filter(assignment => assignment.semesterId === semesterId && assignment.lessonType === type && (!assignment.validUntilExclusive || assignment.validUntilExclusive > today())).map(assignment => teacherName(assignment.teacherId)).join(' · ') || 'Нет назначения' }}</td>
+      <template v-for="(subject, index) in subjects" :key="subject.id"><tr v-for="(type, typeIndex) in subject.lessonTypes" :key="type" :class="{ 'is-selected': editor && selected?.id === subject.id }"><td v-if="typeIndex === 0" :rowspan="subject.lessonTypes.length">{{ index + 1 }}</td><th v-if="typeIndex === 0" scope="rowgroup" :rowspan="subject.lessonTypes.length">{{ subject.name }}</th><td>{{ lessonTypes[type] }}</td><td><template v-for="assignment in subject.assignments.filter(item => item.semesterId === semesterId && item.lessonType === type)" :key="assignment.id"><div>{{ teacherName(assignment.teacherId) }}<small class="web-caption"> · {{ subjectAssignmentPeriodLabel(assignment.validFrom, assignment.validUntilExclusive, today()) }}</small></div></template><span v-if="!subject.assignments.some(item => item.semesterId === semesterId && item.lessonType === type)">Нет назначения</span></td>
         <td class="headman-subject-progress-cell"><div v-if="progress?.items.some(item => item.subjectId === subject.id && item.lessonType === type)" class="headman-subject-progress"><div><span>{{ progress.items.find(item => item.subjectId === subject.id && item.lessonType === type)!.done }}</span><small>{{ progress.items.find(item => item.subjectId === subject.id && item.lessonType === type)!.total }}</small></div><progress v-if="progress.items.find(item => item.subjectId === subject.id && item.lessonType === type)!.total > 0" :value="progress.items.find(item => item.subjectId === subject.id && item.lessonType === type)!.done" :max="progress.items.find(item => item.subjectId === subject.id && item.lessonType === type)!.total" :aria-label="`${subject.name}, ${lessonTypes[type]}: пройдено ${progress.items.find(item => item.subjectId === subject.id && item.lessonType === type)!.done} из ${progress.items.find(item => item.subjectId === subject.id && item.lessonType === type)!.total}`" /></div><span v-else class="web-caption">Нет данных</span></td>
         <td v-if="typeIndex === 0" :rowspan="subject.lessonTypes.length" class="headman-subject-action"><button type="button" class="web-button web-icon-button" :aria-label="`Изменить предмет ${subject.name}`" :title="`Изменить ${subject.name}`" :disabled="locked || !writable" @click="open(subject)"><MobileIcon name="edit" /></button></td><td v-if="typeIndex === 0" :rowspan="subject.lessonTypes.length" class="headman-subject-action"><button type="button" class="web-button web-icon-button" :aria-label="`Удалить предмет ${subject.name}`" :title="`Удалить ${subject.name}`" :disabled="locked || !writable" @click="deleting = subject.id; editor = false"><MobileIcon name="trash" /></button></td>
       </tr></template>

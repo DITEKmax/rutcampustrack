@@ -294,8 +294,8 @@ services:
       AUTH_GRPC_PRIVATE_KEY: file:/run/rct-auth-tls/auth-server.key
       ACADEMIC_GRPC_TRUST_CERT_COLLECTION: file:/run/rct-academic-tls/academic-server.crt
       ACADEMIC_GRPC_TLS_AUTHORITY: ${ACADEMIC_GRPC_TLS_AUTHORITY:?ACADEMIC_GRPC_TLS_AUTHORITY must be set}
-      # M09 G7 (NEW-157) — heap = 0.75 × mem_limit. См. docs/resource-limits.md.
-      JAVA_TOOL_OPTIONS: '-XX:MaxRAMPercentage=75.0 -XX:InitialRAMPercentage=50.0 -XX:+UseG1GC -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp'
+      # Preserve the measured previous heap; cgroup RAM also covers native memory.
+      JAVA_TOOL_OPTIONS: '-Xms192m -Xmx288m -XX:+UseG1GC -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp'
     secrets:
     - source: mobile-bff-to-auth-service-token
       target: /run/rct-directed/grpc.service-identity.mobile-bff-to-auth-token
@@ -344,7 +344,9 @@ services:
     # JVM heap 75% от 256m = 192m, плюс non-heap (metaspace, native, OTel
     # instrumentation, RabbitMQ NIO buffers, Hikari pool overhead, Spring
     # Boot reflective bytecode) → > 256m. 384m даёт безопасный margin.
-    mem_limit: 384m
+    # Measured resident+swap budget; preserve previous heap sizing independently.
+    mem_limit: 896m
+    memswap_limit: 1152m
     mem_reservation: 256m
     restart: unless-stopped
     healthcheck:
@@ -403,7 +405,7 @@ services:
       ATTENDANCE_GRPC_TLS_AUTHORITY: attendance-service
       SCHEDULE_GRPC_TRUST_CERT_COLLECTION: file:/run/rct-schedule-tls/schedule-server.crt
       # M09 G7 (NEW-157).
-      JAVA_TOOL_OPTIONS: '-XX:MaxRAMPercentage=75.0 -XX:InitialRAMPercentage=50.0 -XX:+UseG1GC -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp'
+      JAVA_TOOL_OPTIONS: '-Xms256m -Xmx384m -XX:+UseG1GC -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp'
     secrets:
     - source: academic-to-auth-service-token
       target: /run/rct-directed/grpc.service-identity.academic-to-auth-token
@@ -443,7 +445,9 @@ services:
       rabbitmq:
         condition: service_healthy
     # M09 G7 (NEW-157).
-    mem_limit: 512m
+    # Measured resident+swap budget; preserve previous heap sizing independently.
+    mem_limit: 1152m
+    memswap_limit: 1408m
     mem_reservation: 384m
     restart: unless-stopped
     healthcheck:
@@ -493,7 +497,7 @@ services:
       SCHEDULE_GRPC_PRIVATE_KEY: file:/run/rct-schedule-tls/schedule-server.key
       TZ: Europe/Moscow
       # M09 G7 (NEW-157).
-      JAVA_TOOL_OPTIONS: '-XX:MaxRAMPercentage=75.0 -XX:InitialRAMPercentage=50.0 -XX:+UseG1GC -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp'
+      JAVA_TOOL_OPTIONS: '-Xms256m -Xmx384m -XX:+UseG1GC -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp'
     secrets:
     - source: mobile-bff-to-schedule-service-token
       target: /run/rct-directed/grpc.service-identity.mobile-bff-to-schedule-token
@@ -522,7 +526,9 @@ services:
       rabbitmq:
         condition: service_healthy
     # M09 G7 (NEW-157).
-    mem_limit: 512m
+    # Measured resident+swap budget; preserve previous heap sizing independently.
+    mem_limit: 1024m
+    memswap_limit: 1280m
     mem_reservation: 384m
     restart: unless-stopped
     healthcheck:
@@ -724,7 +730,7 @@ services:
       # M10 G1 D4 — retention для notification_history (дней).
       NOTIFICATION_HISTORY_TTL_DAYS: ${NOTIFICATION_HISTORY_TTL_DAYS:-30}
       # M09 G7 (NEW-157).
-      JAVA_TOOL_OPTIONS: '-XX:MaxRAMPercentage=75.0 -XX:InitialRAMPercentage=50.0 -XX:+UseG1GC -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp'
+      JAVA_TOOL_OPTIONS: '-Xms192m -Xmx288m -XX:+UseG1GC -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp'
     secrets:
       - source: notification-to-academic-service-token
         target: /run/rct-directed/grpc.service-identity.notification-to-academic-token
@@ -746,7 +752,9 @@ services:
     # M09 G7 (NEW-157). M15 hotfix: 256m → 384m. Идентичная OOM проблема как у
     # auth-service: heap 75% от 256m = 192m + non-heap (metaspace, OTel, STOMP
     # WebSocket buffers, MongoDB driver, RabbitMQ NIO, Caffeine cache) > 256m.
-    mem_limit: 384m
+    # Measured resident+swap budget; preserve previous heap sizing independently.
+    mem_limit: 896m
+    memswap_limit: 1152m
     mem_reservation: 256m
     restart: unless-stopped
     healthcheck:
@@ -885,7 +893,7 @@ services:
       SCHEDULE_GRPC_TLS_AUTHORITY: schedule-service
       ACADEMIC_GRPC_TRUST_CERT_COLLECTION: file:/run/rct-academic-tls/academic-server.crt
       ACADEMIC_GRPC_TLS_AUTHORITY: ${ACADEMIC_GRPC_TLS_AUTHORITY:?ACADEMIC_GRPC_TLS_AUTHORITY must be set}
-      JAVA_TOOL_OPTIONS: '-XX:MaxRAMPercentage=75.0 -XX:InitialRAMPercentage=50.0 -XX:+UseG1GC -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp'
+      JAVA_TOOL_OPTIONS: '-Xms192m -Xmx288m -XX:+UseG1GC -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp'
     secrets:
       - source: bot-to-read-service-token
         target: /run/rct-directed/grpc.service-identity.bot-to-mobile-bff-token
@@ -918,7 +926,9 @@ services:
         condition: service_healthy
       attendance-service:
         condition: service_healthy
-    mem_limit: 384m
+    # Measured resident+swap budget; preserve previous heap sizing independently.
+    mem_limit: 640m
+    memswap_limit: 896m
     mem_reservation: 256m
     restart: unless-stopped
     healthcheck:
@@ -969,7 +979,7 @@ services:
       PWA_VERSION_POLICY_LATEST: 1-${IMAGE_TAG:-0.0.0}
       PWA_VERSION_POLICY_FORCE: 'true'
       # M09 G7 (NEW-157).
-      JAVA_TOOL_OPTIONS: '-XX:MaxRAMPercentage=75.0 -XX:InitialRAMPercentage=50.0 -XX:+UseG1GC -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp'
+      JAVA_TOOL_OPTIONS: '-Xms192m -Xmx288m -XX:+UseG1GC -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp'
     expose:
       - '8080'
     networks:
@@ -993,7 +1003,9 @@ services:
     # peak: Reactor Netty + Redis + RSA pub key fetch + OTel SDK + Spring
     # Security + WebFlux. После warmup ~150m steady-state, но cold start
     # пробивает 256m mem_limit → exit 137 → restart loop.
-    mem_limit: 384m
+    # Measured resident+swap budget; preserve previous heap sizing independently.
+    mem_limit: 768m
+    memswap_limit: 1024m
     mem_reservation: 256m
     restart: unless-stopped
     healthcheck:

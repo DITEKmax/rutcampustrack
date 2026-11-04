@@ -65,6 +65,7 @@ class ConstructorAttendanceIT {
         @Bean MongoOutboxStorage outbox(MongoTemplate m) { return new MongoOutboxStorage(m, "constructor_test_outbox"); }
         @Bean ScheduleGrpcClient schedule() { return mock(ScheduleGrpcClient.class); }
         @Bean AcademicGrpcClient academic() { return mock(AcademicGrpcClient.class); }
+        @Bean ru.rutcampustrack.attendance.security.RequestContext requestContext() { return mock(ru.rutcampustrack.attendance.security.RequestContext.class); }
         @Bean LessonEventService lessons(MongoTemplate mongo, ScheduleGrpcClient schedule, AcademicGrpcClient academic, PairWriteCoordinator pairs, LessonActionService actions) {
             var service = new LessonEventService(mongo, schedule, academic, mock(ru.rutcampustrack.attendance.semester.SemesterCacheService.class), Runnable::run, pairs,
                     mock(ru.rutcampustrack.attendance.marking.AttendanceAttachmentService.class));

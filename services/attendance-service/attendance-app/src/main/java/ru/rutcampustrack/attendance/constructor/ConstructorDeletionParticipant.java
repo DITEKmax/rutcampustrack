@@ -28,7 +28,7 @@ public class ConstructorDeletionParticipant {
         this.mongo = mongo; this.pairs = pairs; this.clock = clock; this.outbox = outbox; this.mapper = mapper;
     }
 
-    /** Used only by the transport: recovery needs the exact previously admitted immutable command. */
+    /** Exact persisted admission, also observable by direct recovery/rollback checks. */
     public boolean isAdmitted(ConstructorDeletionCommand command) {
         validate(command);
         Document epoch = mongo.findById(command.getOperationId(), Document.class, OPERATIONS);
@@ -230,7 +230,7 @@ public class ConstructorDeletionParticipant {
         if (s.getAllowedSystemAuditHashesList().stream().anyMatch(hash -> hash.size() != 32)) throw conflict();
         Map<Long, ConstructorLessonScope> lessons = new TreeMap<>();
         for (var l : s.getLessonsList()) {
-            if (l.getLessonId() <= 0 || l.getOccurrenceId() <= 0 || !templates.contains(l.getScheduleItemId()) || l.getGeneration() < 0
+            if (l.getLessonId() <= 0 || l.getOccurrenceId() <= 0 || !templates.contains(l.getScheduleItemId()) || l.getGeneration() <= 0
                     || l.getLessonRevision() <= 0 || l.getOccurrenceRevision() <= 0 || l.getLessonNumber() <= 0 || l.getLessonType().isBlank()
                     || l.getOriginProvenanceHash().size() != 32 || lessons.put(l.getLessonId(), l) != null) throw conflict();
             try { LocalDate.parse(l.getLessonDate()); } catch (RuntimeException bad) { throw conflict(); }

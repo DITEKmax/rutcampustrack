@@ -62,7 +62,7 @@ public class ActionEventHandler {
         if (p.get("lesson_id") instanceof Number lesson) {
             long semester = ((Number) p.get("semester_id")).longValue();
             long group = ((Number) p.get("group_id")).longValue();
-            pairs.lockAcceptedScheduleEffectLessons(semester, java.util.List.of(lesson.longValue()), group, at);
+            pairs.lockActionHistoryLessons(java.util.List.of(lesson.longValue()), group, at);
             // This check shares the deletion fence and Mongo transaction with append.
             if (pairs.isSubjectDeleted(lesson.longValue(), semester, group)) return;
         }

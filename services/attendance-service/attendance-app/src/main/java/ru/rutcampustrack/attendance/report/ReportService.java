@@ -274,8 +274,7 @@ public class ReportService {
 
     /**
      * Reads one concrete lesson for a teacher identity supplied by the dedicated teacher gRPC
-     * boundary. The schedule snapshot remains the historical lesson authority; current active group
-     * assignments authorize reading attendance recorded before the teacher's assignment.
+     * boundary. The exact historical lesson must belong to this teacher's dated assignment.
      */
     public LessonAttendanceResponse getTeacherLessonAttendance(Long lessonId, long teacherId) {
         LessonResponse lesson = scheduleGrpcClient.getLessonById(lessonId);

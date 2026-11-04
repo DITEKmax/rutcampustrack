@@ -120,6 +120,11 @@ public class PairWriteCoordinator {
         lockLessonFences(lessonIds, groupId, now, true);
     }
 
+    /** History may arrive after a semester archive; only its lesson deletion scope is fenced. */
+    public void lockActionHistoryLessons(Collection<Long> lessonIds, Long groupId, Instant now) {
+        lockLessonFences(lessonIds, groupId, now, true);
+    }
+
     @org.springframework.beans.factory.annotation.Autowired
     private org.springframework.beans.factory.ObjectProvider<
                     ru.rutcampustrack.attendance.groupdeletion.GroupDeletionMongoFence>

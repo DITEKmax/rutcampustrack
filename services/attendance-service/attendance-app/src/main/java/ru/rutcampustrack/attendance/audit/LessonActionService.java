@@ -116,7 +116,7 @@ public class LessonActionService {
             long semester = ((Number) payload.get("semester_id")).longValue();
             long group = ((Number) payload.get("group_id")).longValue();
             // Also covers independent rejected-attempt audit after its domain transaction rolled back.
-            pairs.lockAcceptedScheduleEffectLessons(semester, java.util.List.of(lesson.longValue()), group, at);
+            pairs.lockActionHistoryLessons(java.util.List.of(lesson.longValue()), group, at);
             if (pairs.isSubjectDeleted(lesson.longValue(), semester, group)) return;
         }
         LessonActionDocument row = new LessonActionDocument();

@@ -150,6 +150,18 @@ class ConstructorAttendanceIT {
         assertThat(ConstructorHashes.hash(drift)).isNotEqualTo(ConstructorHashes.hash(payload));
     }
 
+    @Test void lateAuditRetainsExistingArchivedSemesterSemanticsButStillHonorsConstructorFence() {
+        mongo.insert(new Document("_id", "9").append("semester_id", 9L).append("barrier_state", "ARCHIVE_SEALED"), "semester_archive_fences");
+        transactions.executeWithoutResult(s -> events.accept(scheduleEvent("archived-audit")));
+        assertThat(mongo.findById("archived-audit", Document.class, "lesson_actions")).isNotNull();
+        mongo.dropCollection("semester_archive_fences");
+        mongo.dropCollection("lesson_actions");
+        var c = preview(); deletion.apply(c);
+        assertThatThrownBy(() -> transactions.executeWithoutResult(s -> events.accept(scheduleEvent("fenced-audit"))))
+                .isInstanceOf(ru.rutcampustrack.attendance.exception.ConflictException.class);
+        assertThat(mongo.findById("fenced-audit", Document.class, "lesson_actions")).isNull();
+    }
+
     @Test void releasedDenialBlocksDelayedPrepareAndRollbackLeavesNeitherFenceNorPartialBusinessDelete() {
         var c = preview();
         assertThat(deletion.apply(c.toBuilder().setAction(ConstructorDeletionAction.CONSTRUCTOR_DELETION_RELEASE).build()).getState()).isEqualTo("RELEASED");

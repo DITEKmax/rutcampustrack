@@ -19,7 +19,7 @@ export interface HeadmanLessonAction {
     readonly distanceMeters: number | null
     readonly radiusMeters: number | null
     readonly accuracyMeters: number | null
-    readonly verdict: string
+    readonly verdict: string | null
   } | null
   readonly ticket: { readonly kind: string; readonly id: string; readonly status: string } | null
   readonly homework: { readonly id: string; readonly revision: number | null } | null
@@ -38,6 +38,10 @@ const id = (value: unknown): string | null =>
     : text(value)
 const number = (value: unknown): number | null =>
   typeof value === 'number' && Number.isFinite(value) ? value : null
+const rangedNumber = (value: unknown, min: number, max = Infinity): number | null => {
+  const parsed = number(value)
+  return parsed !== null && parsed >= min && parsed <= max ? parsed : null
+}
 export function normalizeLessonActionsPage(value: unknown): HeadmanLessonActionsPage {
   if (
     !record(value) ||
@@ -79,17 +83,16 @@ export function normalizeLessonActionsPage(value: unknown): HeadmanLessonActions
       student,
       before: record(entry.before) ? entry.before : null,
       after: record(entry.after) ? entry.after : null,
-      geo:
-        record(entry.geo) && text(entry.geo.verdict)
-          ? {
-              latitude: number(entry.geo.latitude),
-              longitude: number(entry.geo.longitude),
-              distanceMeters: number(entry.geo.distanceMeters),
-              radiusMeters: number(entry.geo.radiusMeters),
-              accuracyMeters: number(entry.geo.accuracyMeters),
-              verdict: String(entry.geo.verdict),
-            }
-          : null,
+      geo: record(entry.geo)
+        ? {
+            latitude: rangedNumber(entry.geo.latitude, -90, 90),
+            longitude: rangedNumber(entry.geo.longitude, -180, 180),
+            distanceMeters: rangedNumber(entry.geo.distanceMeters, 0),
+            radiusMeters: rangedNumber(entry.geo.radiusMeters, 0),
+            accuracyMeters: rangedNumber(entry.geo.accuracyMeters, 0),
+            verdict: text(entry.geo.verdict),
+          }
+        : null,
       ticket:
         record(entry.ticket) &&
         id(entry.ticket.id) &&

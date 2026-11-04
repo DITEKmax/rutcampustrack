@@ -142,3 +142,97 @@ it('retains only supplied finite geo coordinates and preserves legacy unavailabl
   expect(invalid.geo?.latitude).toBeNull()
   expect(invalid.geo?.longitude).toBeNull()
 })
+
+it.each(['CHECKIN_COOLDOWN', 'IDEMPOTENCY_PAYLOAD_MISMATCH'])(
+  'retains authorized rejected coordinates without a verdict for %s',
+  (errorCode) => {
+    const page = normalizeLessonActionsPage({
+      items: [
+        {
+          id: 'rejected-geo',
+          occurredAt: '2026-10-06T15:10:00Z',
+          action: 'GEO_ATTEMPT',
+          outcome: 'REJECTED',
+          errorCode,
+          geo: { latitude: 55.7901, longitude: 37.6086 },
+        },
+      ],
+      nextCursor: null,
+    })
+    expect(page.items[0]?.geo).toEqual({
+      latitude: 55.7901,
+      longitude: 37.6086,
+      distanceMeters: null,
+      radiusMeters: null,
+      accuracyMeters: null,
+      verdict: null,
+    })
+  },
+)
+
+it('preserves redacted successful coordinates and a genuine zero distance', () => {
+  const page = normalizeLessonActionsPage({
+    items: [
+      {
+        id: 'applied-geo',
+        occurredAt: '2026-10-06T15:10:00Z',
+        action: 'GEO_ATTEMPT',
+        outcome: 'APPLIED',
+        geo: { verdict: 'ACCEPTED', latitude: null, longitude: null, distanceMeters: 0 },
+      },
+    ],
+    nextCursor: null,
+  })
+  expect(page.items[0]?.geo).toEqual({
+    latitude: null,
+    longitude: null,
+    distanceMeters: 0,
+    radiusMeters: null,
+    accuracyMeters: null,
+    verdict: 'ACCEPTED',
+  })
+})
+
+it('keeps missing geo unavailable and discards invalid geo values without coercion', () => {
+  const entry = { id: 'geo', occurredAt: '2026-10-06T15:10:00Z', action: 'GEO_ATTEMPT' }
+  const page = normalizeLessonActionsPage({
+    items: [
+      entry,
+      { ...entry, geo: null },
+      { ...entry, geo: [] },
+      {
+        ...entry,
+        geo: {
+          latitude: 91,
+          longitude: -181,
+          distanceMeters: -1,
+          radiusMeters: Infinity,
+          accuracyMeters: '0',
+          verdict: 1,
+        },
+      },
+      {
+        ...entry,
+        geo: {
+          latitude: NaN,
+          longitude: '37.6086',
+          distanceMeters: Infinity,
+          radiusMeters: -1,
+          accuracyMeters: -1,
+        },
+      },
+    ],
+    nextCursor: null,
+  })
+  expect(page.items.slice(0, 3).map((item) => item.geo)).toEqual([null, null, null])
+  for (const item of page.items.slice(3)) {
+    expect(item.geo).toEqual({
+      latitude: null,
+      longitude: null,
+      distanceMeters: null,
+      radiusMeters: null,
+      accuracyMeters: null,
+      verdict: null,
+    })
+  }
+})

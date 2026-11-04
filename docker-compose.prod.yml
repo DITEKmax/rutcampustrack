@@ -840,8 +840,9 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
-    # M09 G7 (NEW-157). Python ~80-120MB RSS, 256M — с запасом.
-    mem_limit: 256m
+    # Observed249MiB resident+149MiB swap; 512m includes about25% headroom.
+    mem_limit: 512m
+    memswap_limit: 768m
     mem_reservation: 128m
     restart: unless-stopped
     healthcheck:

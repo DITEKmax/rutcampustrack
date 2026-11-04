@@ -97,6 +97,15 @@ STARTUP_FAILED = Gauge(
 )
 STARTUP_COMPLETED.labels("keyboard_sync").set(0)
 STARTUP_FAILED.labels("keyboard_sync").set(0)
+KEYBOARD_SYNC_USERS_FAILED = Counter(
+    "notification_bot_keyboard_sync_users_failed", "Users still pending after startup retry exhaustion",
+    registry=METRICS_REGISTRY,
+)
+KEYBOARD_SYNC_REGISTRY_AVAILABLE = Gauge(
+    "notification_bot_keyboard_sync_registry_available", "Last startup registry read succeeded; -1 means not attempted",
+    registry=METRICS_REGISTRY,
+)
+KEYBOARD_SYNC_REGISTRY_AVAILABLE.set(-1)
 
 
 class SendQueueCollector:

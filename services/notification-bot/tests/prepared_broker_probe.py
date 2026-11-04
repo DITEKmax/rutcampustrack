@@ -255,6 +255,8 @@ async def main():
 
 async def recovery_progress(url):
     """Real broker FIFO/parking with synthetic authority and completion receipts."""
+    from bot.notifications.audience import NotificationDeliveryState
+
     prefix = "audit.recovery." + uuid4().hex
     names = dict(
         QUEUE_NAME=prefix, EXCHANGE_NAME=prefix + ".events", DLQ_QUEUE_NAME=prefix + ".dlq",
@@ -273,11 +275,31 @@ async def recovery_progress(url):
     parking = await channel.declare_queue(names["PARKING_QUEUE_NAME"], durable=True)
     events = {mode: {**EVENT, "event_id": str(uuid4()), "payload": {"mode": mode}}
               for mode in ("terminal", "healthy", "transient", "exhausted")}
+    events["exhausted"]["_bot_prepared"] = {
+        "version": 1, "event_id": events["exhausted"]["event_id"], "event_type": EVENT["event_type"],
+        "recipients": [{"user_id": uid, "roles": ["STUDENT"]} for uid in (1, 2)],
+    }
     for mode in ("terminal", "healthy", "transient", "exhausted", "healthy"):
-        await source.publish(aio_pika.Message(json.dumps(events[mode]).encode(), delivery_mode=2), routing_key="")
+        exchange = channel.default_exchange if mode == "exhausted" else source
+        await exchange.publish(
+            aio_pika.Message(json.dumps(events[mode]).encode(), delivery_mode=2),
+            routing_key=prefix if mode == "exhausted" else "",
+        )
     completed, owned, deliveries, attempts, order = set(), set(), [], {}, []
     original_connect = aio_pika.connect_robust
     connection = task = None
+    receipt_available = True
+
+    async def mget(keys):
+        return ["sent" if receipt_available and key.endswith(":1") else None for key in keys]
+
+    receipts = NotificationDeliveryState(SimpleNamespace(mget=mget))
+
+    async def snapshot_progress(body):
+        nonlocal receipt_available
+        result = await receipts.snapshot(body)
+        receipt_available = False  # Simulated Redis TTL expiry after first durable retry snapshot.
+        return result
 
     async def connect(*args, **kwargs):
         nonlocal connection
@@ -321,7 +343,8 @@ async def recovery_progress(url):
             patch.multiple(consumer, **names), patch.object(consumer.aio_pika, "connect_robust", connect),
             patch.object(consumer, "RETRY_DELAYS", (0,) * consumer.MAX_RETRIES),
         ):
-            task = asyncio.create_task(consumer.start_consumer(url, SimpleNamespace(dispatch=dispatch), guard))
+            dispatcher = SimpleNamespace(dispatch=dispatch, snapshot_progress=snapshot_progress)
+            task = asyncio.create_task(consumer.start_consumer(url, dispatcher, guard))
             async with asyncio.timeout(10):
                 while True:
                     await parking.declare()
@@ -340,12 +363,16 @@ async def recovery_progress(url):
             message = await parking.get(timeout=2)
             body = json.loads(message.body)
             mode = body["payload"]["mode"]
-            assert body == events[mode]
+            expected = events[mode]
+            if mode == "exhausted":
+                expected = {**expected, "_bot_prepared": {**expected["_bot_prepared"], "delivered_user_ids": [1]}}
+            assert body == expected
             assert (message.headers or {}).get(consumer.RETRY_HEADER, 0) == (8 if mode == "exhausted" else 0)
             parked.append(mode)
             await message.ack()
         assert sorted(parked) == ["exhausted", "terminal"]
-        return {"parked": sorted(parked), "provider_deliveries": deliveries, "attempts": attempts}
+        return {"parked": sorted(parked), "provider_deliveries": deliveries, "attempts": attempts,
+                "confirmed_progress_retained": True}
     finally:
         if connection is not None:
             await connection.close()

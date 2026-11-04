@@ -140,6 +140,7 @@ async def start_consumer(
 
     async def process_in_transaction(message, preparation):
         event_id = claim_token = batch = heartbeat = None
+        body = None
         lease_lost = False
         owner = asyncio.current_task()
 
@@ -170,6 +171,17 @@ async def start_consumer(
                 owner.cancel()
 
         async def defer(error=None, *, reason=None):
+            replacement_body = message.body
+            if body is not None and "_bot_prepared" in body:
+                try:
+                    async with asyncio.timeout(min(8, budget)):
+                        snapshot = await dispatcher.snapshot_progress(body)
+                    replacement_body = json.dumps(snapshot, ensure_ascii=False).encode("utf-8")
+                except BaseException:
+                    # No ACK/DLQ if confirmed progress cannot be safely persisted.
+                    # Roll back and retain the original and its lease for recovery.
+                    preparation["publish_started"] = True
+                    raise
             reason, terminal = (reason, False) if reason is not None else failure_reason(error)
             headers = dict(getattr(message, "headers", None) or {})
             attempt = headers.get(RETRY_HEADER, 0)
@@ -205,7 +217,7 @@ async def start_consumer(
                 headers[RETRY_HEADER] = attempt + 1
             headers["x-bot-recovery-reason"] = reason
             replacement = aio_pika.Message(
-                message.body,
+                replacement_body,
                 headers=headers,
                 delivery_mode=aio_pika.DeliveryMode.PERSISTENT,
                 content_type=getattr(message, "content_type", None) or "application/json",

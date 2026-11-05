@@ -125,12 +125,48 @@ public class PairWriteCoordinator {
         lockLessonFences(lessonIds, groupId, now, true);
     }
 
+    /** Only the committing subject deletion may append history for its retained mixed-ticket lesson. */
+    public void lockAcceptedSubjectDeletionHistoryLesson(
+            String operationId, long semesterId, long lessonId, long groupId, Instant now) {
+        if (!org.springframework.transaction.support.TransactionSynchronizationManager
+                .isActualTransactionActive()) {
+            throw new IllegalStateException("Subject deletion history must share its Mongo transaction");
+        }
+        org.bson.Document epoch = operationId == null ? null : mongoTemplate.findById(
+                operationId, org.bson.Document.class, "subject_deletion_participants");
+        if (epoch == null
+                || !"DELETED".equals(epoch.getString("state"))
+                || !(epoch.get("semester_id") instanceof Number semester)
+                || semester.longValue() != semesterId
+                || !(epoch.get("group_id") instanceof Number group)
+                || group.longValue() != groupId
+                || !(epoch.get("fence_ids") instanceof java.util.List<?> fences)
+                || fences.stream().noneMatch(id -> id instanceof Number number && number.longValue() == lessonId)) {
+            throw new ConflictException("История удаления вне принятой операции");
+        }
+        org.bson.Document fence = mongoTemplate.findById(
+                lessonFenceId(lessonId), org.bson.Document.class, "student_checkin_pairs");
+        if (fence == null
+                || !operationId.equals(fence.get("subject_delete_operation"))
+                || Boolean.TRUE.equals(fence.getBoolean("subject_delete_committed"))
+                || !(fence.get("group_id") instanceof Number owner)
+                || owner.longValue() != groupId) {
+            throw new ConflictException("История удаления вне сохранённой пары");
+        }
+        lockLessonFences(java.util.List.of(lessonId), groupId, now, true, operationId);
+    }
+
     @org.springframework.beans.factory.annotation.Autowired
     private org.springframework.beans.factory.ObjectProvider<
                     ru.rutcampustrack.attendance.groupdeletion.GroupDeletionMongoFence>
             groupDeletion;
 
     private void lockLessonFences(Collection<Long> lessonIds, Long groupId, Instant now, boolean acceptedEffect) {
+        lockLessonFences(lessonIds, groupId, now, acceptedEffect, null);
+    }
+
+    private void lockLessonFences(Collection<Long> lessonIds, Long groupId, Instant now, boolean acceptedEffect,
+            String acceptedSubjectDeletion) {
         if (groupId != null && groupDeletion != null && groupDeletion.getIfAvailable() != null)
             groupDeletion.getObject().write(groupId);
         if (lessonIds == null || lessonIds.isEmpty()) {
@@ -170,13 +206,9 @@ public class PairWriteCoordinator {
                                     && !(acceptedEffect && Boolean.TRUE.equals(constructor.getBoolean("constructor_delete_committed")))) {
                                 throw new ConflictException("Пара закрыта для удаления; обнови данные");
                             }
-                            if (mongoTemplate.exists(
-                                    Query.query(
-                                            Criteria.where("_id")
-                                                    .is(lessonFenceId(lessonId))
-                                                    .and("subject_delete_operation")
-                                                    .exists(true)),
-                                    CheckinPairStateDocument.class)) {
+                            if (constructor != null && constructor.containsKey("subject_delete_operation")
+                                    && (acceptedSubjectDeletion == null
+                                            || !acceptedSubjectDeletion.equals(constructor.get("subject_delete_operation")))) {
                                 throw new ConflictException(
                                         "Предмет закрыт для удаления; обнови данные");
                             }

@@ -191,19 +191,11 @@ public class AttendanceSubjectDeletionParticipant {
                                 command.getActorId(),
                                 clock.instant())) throw conflict();
                         mongo.save(ticket);
-                        actions.local(
-                                ticket.getGroupId(),
-                                ticket.getSemesterId(),
-                                ExcuseSubjectCoverage.originals(ticket).getFirst(),
-                                "REQUEST_COVERAGE_CHANGED",
-                                LessonActionService.person(command.getActorId(), "HEADMAN", null),
-                                LessonActionService.person(
-                                        ticket.getStudentId(), "STUDENT", ticket.getStudentName()),
+                        actions.subjectDeletionCoverageChanged(
+                                command.getOperationId(),
+                                command.getActorId(),
+                                ticket,
                                 before,
-                                RequestActionRecorder.snapshot(ticket),
-                                null,
-                                RequestActionRecorder.reference(
-                                        "EXCUSE", ticket.getId(), ticket.getStatus().name()),
                                 clock.instant());
                         continue;
                     }

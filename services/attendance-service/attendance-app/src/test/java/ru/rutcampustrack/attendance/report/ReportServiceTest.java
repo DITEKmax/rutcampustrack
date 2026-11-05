@@ -80,10 +80,6 @@ class ReportServiceTest {
 
     @BeforeEach
     void setUp() {
-        reportService.lessonTeacherAssignments(semester -> ru.rutcampustrack.teacher.grpc.TeacherAssignmentsResponse.newBuilder()
-                .addAssignments(ru.rutcampustrack.teacher.grpc.TeacherAssignment.newBuilder().setAssignmentId(900).setTeacherId(USER_ID)
-                        .setGroupId(GROUP_ID).setSubjectId(SUBJECT_ID_1).setSemesterId(SEMESTER_ID).setLessonType("lecture")
-                        .setValidFrom("2026-02-01").setValidUntilExclusive("2026-07-01")).build());
         lenient().when(requestContext.getUserId()).thenReturn(USER_ID);
         lenient().when(requestContext.getRole()).thenReturn(UserRole.STUDENT);
         lenient().when(requestContext.isHeadman()).thenReturn(true);
@@ -665,19 +661,33 @@ class ReportServiceTest {
         LessonAttendanceResponse response = reportService.getLessonAttendance(LESSON_ID);
 
         assertThat(response.getEntries()).isEmpty();
-        verify(academicGrpcClient, never()).getCurrentTeacherSubjects(USER_ID);
+        verify(academicGrpcClient).getCurrentTeacherSubjects(USER_ID);
     }
 
     @Test
-    void authorizeTeacherWithDifferentHistoricalTeacherDeniesCurrentGroup() {
-        assertThatThrownBy(
-                        () ->
-                                reportService.authorizeTeacherLesson(
-                                        lesson(SUBJECT_ID_1, GROUP_ID).toBuilder()
-                                                .setAssignedTeacherId(USER_ID + 1)
-                                                .build(),
-                                        USER_ID))
-                .isInstanceOf(AccessDeniedException.class);
+    void authorizeCurrentSubjectTeacherReadsReplacedHistoricalTeacherAndOtherLessonType() {
+        var historical = lesson(SUBJECT_ID_1, GROUP_ID).toBuilder()
+                .setAssignedTeacherId(USER_ID + 1)
+                .setAssignmentId(901L)
+                .setLessonType("practice")
+                .setDate("2025-09-01")
+                .setSemesterId(SEMESTER_ID + 1)
+                .build();
+        assertThatCode(() -> reportService.authorizeTeacherLesson(historical, USER_ID))
+                .doesNotThrowAnyException();
+        verify(academicGrpcClient).getCurrentTeacherSubjects(USER_ID);
+    }
+
+    @Test
+    void authorizeTeacherRejectsIncompleteHistoricalSnapshot() {
+        var historical = lesson(SUBJECT_ID_1, GROUP_ID);
+        for (var incomplete : List.of(
+                historical.toBuilder().setDate("not-a-date").build(),
+                historical.toBuilder().clearDate().build(),
+                historical.toBuilder().clearLessonType().build())) {
+            assertThatThrownBy(() -> reportService.authorizeTeacherLesson(incomplete, USER_ID))
+                    .isInstanceOf(AccessDeniedException.class);
+        }
         verify(academicGrpcClient, never()).getCurrentTeacherSubjects(USER_ID);
     }
 
@@ -702,19 +712,16 @@ class ReportServiceTest {
     }
 
     @Test
-    void ownEndedPastAssignmentAllowsItsExactDatesButNotOutsideOrUnassigned() {
-        // Both bounds ended before now; the current-only subject API must not be consulted.
-        reportService.lessonTeacherAssignments(semester -> ru.rutcampustrack.teacher.grpc.TeacherAssignmentsResponse.newBuilder()
-                .addAssignments(ru.rutcampustrack.teacher.grpc.TeacherAssignment.newBuilder().setAssignmentId(900).setTeacherId(USER_ID)
-                        .setGroupId(GROUP_ID).setSubjectId(SUBJECT_ID_1).setSemesterId(SEMESTER_ID).setLessonType("lecture")
-                        .setValidFrom("2026-02-01").setValidUntilExclusive("2026-03-01")).build());
-        var past = lesson(SUBJECT_ID_1, GROUP_ID).toBuilder().setDate("2026-02-15").setStatus("closed").build();
-        assertThatCode(() -> reportService.authorizeTeacherLesson(past, USER_ID)).doesNotThrowAnyException();
-        for (var denied : List.of(past.toBuilder().setDate("2026-01-31").build(), past.toBuilder().setDate("2026-03-01").build(),
-                past.toBuilder().clearAssignmentId().clearAssignedTeacherId().build(), past.toBuilder().setAssignedTeacherId(USER_ID+1).build())) {
-            assertThatThrownBy(() -> reportService.authorizeTeacherLesson(denied, USER_ID)).isInstanceOf(AccessDeniedException.class);
-        }
-        verify(academicGrpcClient, never()).getCurrentTeacherSubjects(USER_ID);
+    void revokedTeacherCannotReadEvenTheirOwnHistoricalAssignment() {
+        when(academicGrpcClient.getCurrentTeacherSubjects(USER_ID))
+                .thenReturn(TeacherSubjectsResponse.getDefaultInstance());
+        var past = lesson(SUBJECT_ID_1, GROUP_ID).toBuilder()
+                .setDate("2026-02-15")
+                .setStatus("closed")
+                .build();
+        assertThatThrownBy(() -> reportService.authorizeTeacherLesson(past, USER_ID))
+                .isInstanceOf(AccessDeniedException.class);
+        verify(academicGrpcClient).getCurrentTeacherSubjects(USER_ID);
     }
 
     @Test

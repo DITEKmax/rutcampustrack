@@ -107,17 +107,61 @@ public class LessonActionService {
                         null));
     }
 
+    /** Fixed coverage-change audit; authority is restricted to the persisted committing operation. */
+    public void subjectDeletionCoverageChanged(
+            String operationId,
+            Long actorId,
+            ru.rutcampustrack.attendance.excuse.entity.ExcuseTicket ticket,
+            Map<String, Object> before,
+            Instant at) {
+        if (operationId == null || operationId.isBlank()) {
+            throw new IllegalArgumentException("Subject deletion operation is required");
+        }
+        var retained = ru.rutcampustrack.attendance.subjectdeletion.ExcuseSubjectCoverage.originals(ticket);
+        append(
+                UUID.randomUUID().toString(),
+                at,
+                "attendance-service",
+                payload(
+                        ticket.getGroupId(),
+                        ticket.getSemesterId(),
+                        retained.getFirst(),
+                        "REQUEST_COVERAGE_CHANGED",
+                        person(actorId, "HEADMAN", null),
+                        person(ticket.getStudentId(), "STUDENT", ticket.getStudentName()),
+                        before,
+                        RequestActionRecorder.snapshot(ticket),
+                        null,
+                        RequestActionRecorder.reference("EXCUSE", ticket.getId(), ticket.getStatus().name()),
+                        null,
+                        null),
+                operationId);
+    }
+
     public void append(String id, Instant at, String source, Map<String, Object> payload) {
+        append(id, at, source, payload, null);
+    }
+
+    private void append(String id, Instant at, String source, Map<String, Object> payload,
+            String subjectDeletionOperation) {
         if (!TransactionSynchronizationManager.isActualTransactionActive()) {
             throw new IllegalStateException(
                     "Lesson action must share the domain Mongo transaction");
+        }
+        if (subjectDeletionOperation != null && pairs == null) {
+            throw new IllegalStateException("Subject deletion history authority unavailable");
         }
         if (pairs != null && payload.get("lesson_id") instanceof Number lesson) {
             long semester = ((Number) payload.get("semester_id")).longValue();
             long group = ((Number) payload.get("group_id")).longValue();
             // Also covers independent rejected-attempt audit after its domain transaction rolled back.
-            pairs.lockActionHistoryLessons(java.util.List.of(lesson.longValue()), group, at);
-            if (pairs.isSubjectDeleted(lesson.longValue(), semester, group)) return;
+            if (subjectDeletionOperation == null) {
+                pairs.lockActionHistoryLessons(java.util.List.of(lesson.longValue()), group, at);
+                if (pairs.isSubjectDeleted(lesson.longValue(), semester, group)) return;
+            } else {
+                pairs.lockAcceptedSubjectDeletionHistoryLesson(
+                        subjectDeletionOperation, semester, lesson.longValue(), group, at);
+            }
         }
         LessonActionDocument row = new LessonActionDocument();
         row.setId(id);

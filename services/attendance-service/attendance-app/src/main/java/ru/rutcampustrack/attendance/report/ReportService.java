@@ -85,16 +85,6 @@ public class ReportService {
     private final Clock clock;
     private final JournalAttachmentPort journalAttachmentPort;
     private final HeadmanApprovedTicketResolver approvedTicketResolver;
-    private ru.rutcampustrack.attendance.report.planned.TeacherAssignmentReadPort lessonTeacherAssignments;
-
-    @Autowired
-    public void setLessonTeacherAssignments(ru.rutcampustrack.attendance.grpc.TeacherAcademicGrpcClient client) {
-        lessonTeacherAssignments = client::fullSemesterAssignments;
-    }
-
-    void lessonTeacherAssignments(ru.rutcampustrack.attendance.report.planned.TeacherAssignmentReadPort authority) {
-        lessonTeacherAssignments = authority;
-    }
 
     public ReportService(
             AttendanceReadPort attendanceReadPort,
@@ -189,7 +179,6 @@ public class ReportService {
                 plan.clock(),
                 journalAttachmentPort,
                 approvedTicketResolver);
-        result.lessonTeacherAssignments = plan;
         return result;
     }
 
@@ -274,7 +263,7 @@ public class ReportService {
 
     /**
      * Reads one concrete lesson for a teacher identity supplied by the dedicated teacher gRPC
-     * boundary. The exact historical lesson must belong to this teacher's dated assignment.
+     * boundary. Current group and subject authority also permits historical lesson reads.
      */
     public LessonAttendanceResponse getTeacherLessonAttendance(Long lessonId, long teacherId) {
         LessonResponse lesson = scheduleGrpcClient.getLessonById(lessonId);
@@ -1838,9 +1827,8 @@ public class ReportService {
     }
 
     /**
-     * Authorizes a concrete lesson read. The Schedule snapshot carries the historical assignment
-     * identity; a rich Academic assignment projection is matched when it is available so a current
-     * assignment cannot cross into a different date/type/semester.
+     * Authorizes a concrete lesson read using current group and subject authority. Historical
+     * assignment identity remains independent of read access (D023).
      */
     private void authorizeHeadmanOrTeacher(LessonResponse lesson) {
         Long groupId = lesson.getGroupId();
@@ -1863,35 +1851,22 @@ public class ReportService {
         authorizeTeacherLesson(lesson, requestContext.getUserId());
     }
 
-    /**
-     * Exact dated assignment gate. Full-semester authority includes a teacher's ended periods;
-     * current group/subject membership alone cannot authorize a concrete physical lesson.
-     */
+    /** Current group and subject authority permits historical reading, including replaced teachers. */
     public void authorizeTeacherLesson(LessonResponse lesson, Long teacherId) {
         if (lesson == null
                 || lesson.getId() <= 0
-                || lesson.getGroupId() <= 0
-                || lesson.getSubjectId() <= 0
-                || lesson.getAssignmentId() <= 0
                 || lesson.getSemesterId() <= 0
-                || lesson.getAssignedTeacherId() <= 0
-                || lesson.getLessonType() == null
                 || lesson.getLessonType().isBlank()
-                || teacherId == null || teacherId <= 0 || lesson.getAssignedTeacherId() != teacherId
-                || lessonTeacherAssignments == null) {
+                || teacherId == null
+                || teacherId <= 0) {
             throw new AccessDeniedException("Teacher cannot read this lesson");
         }
-        LocalDate date;
-        try { date = LocalDate.parse(lesson.getDate()); }
-        catch (RuntimeException invalid) { throw new AccessDeniedException("Teacher lesson date unavailable"); }
-        var authority = lessonTeacherAssignments.fullSemesterAssignments(lesson.getSemesterId());
-        if (authority == null || authority.getAssignmentsList().stream().noneMatch(info -> {
-            if (info.getTeacherId() != teacherId || info.getAssignmentId() != lesson.getAssignmentId()
-                    || info.getSemesterId() != lesson.getSemesterId() || info.getGroupId() != lesson.getGroupId()
-                    || info.getSubjectId() != lesson.getSubjectId() || !info.getLessonType().equalsIgnoreCase(lesson.getLessonType())) return false;
-            try { return !date.isBefore(LocalDate.parse(info.getValidFrom())) && date.isBefore(LocalDate.parse(info.getValidUntilExclusive())); }
-            catch (RuntimeException invalid) { return false; }
-        })) throw new AccessDeniedException("Teacher cannot read outside the dated assignment");
+        try {
+            LocalDate.parse(lesson.getDate());
+        } catch (RuntimeException invalid) {
+            throw new AccessDeniedException("Teacher lesson date unavailable");
+        }
+        authorizeTeacherSubject(lesson.getGroupId(), lesson.getSubjectId(), teacherId);
     }
 
     private void authorizeTeacherSubject(long groupId, long subjectId, long teacherId) {

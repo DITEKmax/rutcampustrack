@@ -356,6 +356,37 @@ BOT_BRIDGE_MARKER = re.compile(
     r"(?:(?:java\.lang\.AssertionError|org\.opentest4j\.AssertionFailedError):[ \t]{0,8})?"
     r"\[NP01_BRIDGE branch=(OWN_HOMEWORK|CREDENTIALS) phase=(" + "|".join(BOT_BRIDGE_PHASES) + r")\] ?"
 )
+BROKER_BRIDGE_CLASS = "ru.rutcampustrack.academic.botcredentials.BotCredentialBrokerBridgeIT"
+BROKER_BRIDGE_METHOD = "actualProducerBrokerClaimAckRetryRestartAndDlqPreserveExactCards"
+BROKER_BRIDGE_SOURCE = "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/botcredentials/BotCredentialBrokerBridgeIT.java"
+BROKER_BRIDGE_PHASES = (
+    "setup", "actual_auth_change_outbox_confirm_consumer_ack", "same_real_event_completed_dedup_ack",
+    "actual_unlinked_reset_original_uid_cleanup", "uncertain_provider_keeps_real_claim_retry_without_ack",
+    "actual_worker_death_durable_redelivery_recovery", "worker_death_while_default_processing_lease_held",
+    "held_lease_blocks_premature_ack_until_natural_expiry", "unknown_version_real_dlq_releases_claim",
+    "completed", "cleanup", "OTHER",
+)
+BROKER_BRIDGE_CAUSES = (
+    "CHECK_FAILED", "ASSERTION", "TIMEOUT", "HTTP_TRANSPORT", "GRPC_UNAVAILABLE",
+    "GRPC_DEADLINE_EXCEEDED", "GRPC_UNAUTHENTICATED", "GRPC_PERMISSION_DENIED",
+    "GRPC_FAILED_PRECONDITION", "GRPC_INVALID_ARGUMENT", "GRPC_NOT_FOUND", "GRPC_OTHER",
+    "CONTROL_ASSERTION", "CONTROL_DATA_INTEGRITY", "CONTROL_DATA_ACCESS", "CONTROL_AUTH_SESSION",
+    "CONTROL_ARGUMENT", "CONTROL_STATE", "CONTROL_OTHER", "CONTROL_HTTP_STATUS", "OTHER",
+)
+BROKER_BRIDGE_ACTIONS = (
+    "change", "reset", "publish", "replay", "unknown_version", "new_initial", "rebind",
+    "restore_binding", "worker_started", "worker_reaped", "facts", "verify", "NONE", "OTHER",
+)
+BROKER_BRIDGE_BOOLS = {"ack_unchanged", "pending_positive", "held_card_unchanged", "foreign_card_unchanged"}
+BROKER_BRIDGE_INTS = {"initial_pttl_ms", "monotonic_elapsed_ms", "redis_elapsed_ms", "redeliveries"}
+BROKER_BRIDGE_MARKER = re.compile(
+    r"(?:(?:java\.lang\.AssertionError|org\.opentest4j\.AssertionFailedError):[ \t]{0,8})?"
+    r"BRIDGE_DETAIL_V1 kind=BROKER phase=(" + "|".join(BROKER_BRIDGE_PHASES) + r") "
+    r"cause=(" + "|".join(BROKER_BRIDGE_CAUSES) + r") "
+    r"action=(" + "|".join(BROKER_BRIDGE_ACTIONS) + r") "
+    r"checks=(-?[0-9]{1,6}) workers_reaped=(true|false|UNKNOWN) "
+    r"check_line=(-?[0-9]{1,6}) check_call_line=(-?[0-9]{1,6}) observations=([^\s]{1,512})"
+)
 BOOTSTRAP_CLI_CLASS = "ru.rutcampustrack.academic.bootstrap.InitialAdministratorBootstrapIT"
 BOOTSTRAP_CLI_METHOD = "operatorCliLoadsPrivateConfigAndCommitsFirstAdministrator"
 BOOTSTRAP_CLI_SOURCE = "services/academic-service/academic-app/src/test/java/ru/rutcampustrack/academic/bootstrap/InitialAdministratorBootstrapIT.java"
@@ -859,6 +890,52 @@ def bot_bridge_failure_diagnostic(case: ElementTree.Element) -> dict:
     return result
 
 
+def broker_bridge_failure_diagnostic(case: ElementTree.Element) -> dict:
+    unknown = {"state": "ABSENT_OR_UNRECOGNIZED"}
+    failures = case.findall("failure")
+    if len(failures) != 1 or failures[0].get("type") not in {
+        "java.lang.AssertionError", "org.opentest4j.AssertionFailedError"
+    }:
+        return unknown
+    failure = failures[0]
+    # JUnit mirrors the message in its first stack line. Admit whole original lines only;
+    # never scan native stack tails/streams or accept a marker prefix before private text.
+    candidates = [value for value in (
+        failure.get("message", ""), (failure.text or "").partition("\n")[0].removesuffix("\r")
+    ) if value]
+    markers = set()
+    for candidate in candidates:
+        if len(candidate) > 1024 or not (match := BROKER_BRIDGE_MARKER.fullmatch(candidate)):
+            return unknown
+        markers.add(match.groups())
+    if len(markers) != 1:
+        return unknown
+    phase, cause, action, checks, workers, line, call, observations = markers.pop()
+    if not all(-1 <= int(value) <= 100_000 for value in (checks, line, call)):
+        return unknown
+    values = {}
+    if observations != "NONE":
+        parts = observations.split(",")
+        if len(parts) > 8:
+            return unknown
+        for part in parts:
+            key, separator, value = part.partition("=")
+            if not separator or key in values:
+                return unknown
+            if key in BROKER_BRIDGE_BOOLS and value in {"true", "false"}:
+                values[key] = value == "true"
+            elif (key in BROKER_BRIDGE_INTS and re.fullmatch(r"-?[0-9]{1,8}", value)
+                  and -1 <= int(value) <= 10_000_000):
+                values[key] = int(value)
+            else:
+                return unknown
+    return {
+        "state": "CLOSED_MARKER", "kind": "BROKER", "phase": phase, "cause": cause,
+        "action": action, "checks": int(checks), "workersReaped": {"true": True, "false": False, "UNKNOWN": None}[workers],
+        "checkLine": int(line), "checkCallLine": int(call), "observations": values,
+    }
+
+
 def bootstrap_cli_failure_diagnostic(case: ElementTree.Element, source: str) -> dict:
     result = {
         "state": "ABSENT_OR_UNRECOGNIZED",
@@ -1074,6 +1151,16 @@ def collect(root: Path, service: str, task: str, environment: dict[str, str]) ->
                     and known["source"] == BOT_BRIDGE_SOURCE
                 ):
                     safe["failureDiagnostic"] = bot_bridge_failure_diagnostic(case)
+                if (
+                    service == "academic-service"
+                    and task == "integrationTest"
+                    and status == "FAILED"
+                    and safe["identity"] == "SOURCE_METHOD"
+                    and raw_class == BROKER_BRIDGE_CLASS
+                    and method == BROKER_BRIDGE_METHOD
+                    and known["source"] == BROKER_BRIDGE_SOURCE
+                ):
+                    safe["failureDiagnostic"] = broker_bridge_failure_diagnostic(case)
                 if (
                     service == "academic-service"
                     and task == "integrationTest"

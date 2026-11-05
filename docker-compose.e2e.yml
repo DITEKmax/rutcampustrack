@@ -242,6 +242,7 @@ services:
       AUTH_GRPC_TRUST_CERT_COLLECTION: file:/run/rct-auth-tls/auth-server.crt
       AUTH_GRPC_TLS_AUTHORITY: auth-service
       SPRING_CONFIG_IMPORT: configtree:/run/rct-db/,configtree:/run/rct-directed/
+      CONSTRUCTOR_RPC_SCHEDULE_TO_ACADEMIC_TOKEN_FILE: /run/rct-directed/constructor-rpc-schedule-to-academic-token
       SPRING_FLYWAY_USER: rct_migrator
       SPRING_FLYWAY_LOCATIONS: classpath:db/academic-migration
       SPRING_PROFILES_ACTIVE: prod
@@ -262,6 +263,8 @@ services:
       ATTENDANCE_GRPC_TRUST_CERT_COLLECTION: file:/run/rct-attendance-tls/attendance-server.crt
       ATTENDANCE_GRPC_TLS_AUTHORITY: attendance-service
     secrets:
+      - source: constructor-rpc-schedule-to-academic-token
+        target: /run/rct-directed/constructor-rpc-schedule-to-academic-token
       - source: academic-to-auth-service-token
         target: /run/rct-directed/grpc.service-identity.academic-to-auth-token
       - source: auth-to-academic-presentation-service-token
@@ -312,6 +315,14 @@ services:
     environment:
       SPRING_CONFIG_IMPORT: configtree:/run/rct-directed/
       SPRING_PROFILES_ACTIVE: prod
+      CONSTRUCTOR_ATTENDANCE_GRPC_ADDRESS: dns:///attendance-service:19093
+      CONSTRUCTOR_ATTENDANCE_GRPC_CA_PATH: file:/run/rct-attendance-tls/attendance-server.crt
+      CONSTRUCTOR_ATTENDANCE_GRPC_AUTHORITY: attendance-service
+      CONSTRUCTOR_ACADEMIC_GRPC_ADDRESS: dns:///academic-service:19091
+      CONSTRUCTOR_ACADEMIC_GRPC_CA_PATH: file:/run/rct-academic-tls/academic-server.crt
+      CONSTRUCTOR_ACADEMIC_GRPC_AUTHORITY: academic-service
+      CONSTRUCTOR_RPC_SCHEDULE_TO_ATTENDANCE_TOKEN_FILE: /run/rct-directed/constructor-rpc-schedule-to-attendance-token
+      CONSTRUCTOR_RPC_SCHEDULE_TO_ACADEMIC_TOKEN_FILE: /run/rct-directed/constructor-rpc-schedule-to-academic-token
       POSTGRES_SCHEDULE_PASSWORD: ${POSTGRES_SCHEDULE_PASSWORD}
       RABBITMQ_USER: ${RABBITMQ_USER}
       RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
@@ -325,6 +336,10 @@ services:
       TZ: Europe/Moscow
       JAVA_TOOL_OPTIONS: '-XX:MaxRAMPercentage=75.0 -XX:InitialRAMPercentage=50.0 -XX:+UseG1GC'
     secrets:
+      - source: constructor-rpc-schedule-to-attendance-token
+        target: /run/rct-directed/constructor-rpc-schedule-to-attendance-token
+      - source: constructor-rpc-schedule-to-academic-token
+        target: /run/rct-directed/constructor-rpc-schedule-to-academic-token
       - source: mobile-bff-to-schedule-service-token
         target: /run/rct-directed/grpc.service-identity.mobile-bff-to-schedule-token
       - source: attendance-bot-read-to-schedule-service-token
@@ -335,6 +350,7 @@ services:
       - ${SCHEDULE_GRPC_TLS_DIR:-./tests/e2e/infra/certs}/schedule-server.crt:/run/rct-schedule-tls/schedule-server.crt:ro
       - ${SCHEDULE_GRPC_TLS_DIR:-./tests/e2e/infra/certs}/schedule-server.key:/run/rct-schedule-tls/schedule-server.key:ro
       - ${ACADEMIC_GRPC_TLS_DIR:-./tests/e2e/infra/certs}/academic-server.crt:/run/rct-academic-tls/academic-server.crt:ro
+      - ${ATTENDANCE_GRPC_TLS_DIR:-./tests/e2e/infra/certs}/attendance-server.crt:/run/rct-attendance-tls/attendance-server.crt:ro
     expose:
       - '9092'
     networks:
@@ -359,6 +375,7 @@ services:
       dockerfile: services/attendance-service/attendance-app/Dockerfile
     image: rct/attendance-service:${IMAGE_TAG:-e2e-local}
     environment:
+      CONSTRUCTOR_RPC_SCHEDULE_TO_ATTENDANCE_TOKEN_FILE: /run/rct-directed/constructor-rpc-schedule-to-attendance-token
       ATTENDANCE_BOT_READ_AUTH_GRPC_CA_PATH: file:/run/rct-auth-tls/auth-server.crt
       ATTENDANCE_BOT_READ_ACADEMIC_GRPC_CA_PATH: file:/run/rct-academic-tls/academic-server.crt
       ATTENDANCE_BOT_READ_SCHEDULE_GRPC_CA_PATH: file:/run/rct-schedule-tls/schedule-server.crt
@@ -378,6 +395,8 @@ services:
       ATTENDANCE_GRPC_CERTIFICATE_CHAIN: file:/run/rct-attendance-tls/attendance-server.crt
       ATTENDANCE_GRPC_PRIVATE_KEY: file:/run/rct-attendance-tls/attendance-server.key
     secrets:
+      - source: constructor-rpc-schedule-to-attendance-token
+        target: /run/rct-directed/constructor-rpc-schedule-to-attendance-token
       - source: attendance-to-auth-service-token
         target: /run/rct-directed/grpc.service-identity.attendance-to-auth-token
       - source: mobile-bff-to-attendance-service-token
@@ -684,6 +703,10 @@ volumes:
 
 # Generated synthetic token stays in a private host directory, not .env.ci.
 secrets:
+  constructor-rpc-schedule-to-attendance-token:
+    file: ${CONSTRUCTOR_RPC_SCHEDULE_TO_ATTENDANCE_TOKEN_FILE:-./tests/e2e/infra/certs/auth-secrets/constructor-rpc-schedule-to-attendance-token}
+  constructor-rpc-schedule-to-academic-token:
+    file: ${CONSTRUCTOR_RPC_SCHEDULE_TO_ACADEMIC_TOKEN_FILE:-./tests/e2e/infra/certs/auth-secrets/constructor-rpc-schedule-to-academic-token}
   bot-to-auth-service-token:
     file: ${BOT_TO_AUTH_SERVICE_TOKEN_FILE:-./tests/e2e/infra/certs/auth-secrets/bot-to-auth-token}
   e2e-pg-legacy-runtime-password:

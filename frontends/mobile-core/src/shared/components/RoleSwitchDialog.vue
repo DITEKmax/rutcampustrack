@@ -6,6 +6,7 @@ import type {
   ProfileSnapshot,
 } from '../../features/profile/profile-types';
 import { roleInitial, roleLabel } from '../../features/profile/profile-types';
+import type { MobileThemeResolvedMode } from '../theme';
 import MobileIcon from './MobileIcon.vue';
 import './role-switch-dialog.pcss';
 import { acquireInert } from '../inert-lease';
@@ -13,6 +14,7 @@ import { acquireInert } from '../inert-lease';
 const props = withDefaults(
   defineProps<{
     studentUi?: boolean;
+    theme?: MobileThemeResolvedMode;
     compact?: boolean;
     fullWidth?: boolean;
     dismissible?: boolean;
@@ -143,6 +145,7 @@ onBeforeUnmount(() => {
     <div
       class="role-dialog-backdrop"
       :data-student-ui="studentUi ? '' : undefined"
+      :data-theme="studentUi ? theme : undefined"
       :data-compact="compact"
       :data-full-width="fullWidth"
       @click.self="close"

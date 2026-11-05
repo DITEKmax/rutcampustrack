@@ -213,24 +213,21 @@
   );
 }
 
-/* Accepted Student warning surfaces use the saturated warning palette. */
-[data-theme='light'] [data-student-ui],
-[data-student-ui][data-theme='light'] {
-  --rct-warning-surface: var(--rct-color-state-warning-bg);
-}
-
-/* Accepted Student5 light palette. The canonical palettes for auth/other roles stay intact. */
 [data-student-ui] {
   --rct-homework-calendar-dot-completed-selected: #525252;
 }
-[data-theme='light'] [data-student-ui],
-[data-student-ui][data-theme='light'] {
+
+/* Nested screen themes redeclare canonical tokens, so apply the light Student palette there too. */
+[data-theme='light'] [data-student-ui]:not([data-theme]),
+[data-student-ui][data-theme='light'],
+[data-student-ui] [data-theme='light'] {
   --rct-color-surface-base: #f2f2f4;
   --rct-color-state-warning-fill: #f4bf22;
   --rct-color-state-warning-bg: #ffe08a;
   --rct-color-state-warning-border: #d99a00;
   --rct-color-state-warning-text: #5c3b00;
   --rct-color-state-warning-on-fill: #3b2a00;
+  --rct-warning-surface: var(--rct-color-state-warning-bg);
   --rct-color-status-present-fill: #68dbb2;
   --rct-color-status-present-text: #075a45;
   --rct-color-status-excused-fill: #ffc85c;

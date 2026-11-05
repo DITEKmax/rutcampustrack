@@ -1841,6 +1841,7 @@ onBeforeUnmount(() => {
     :on-notifications="openNotifications"
     :unread-count="notificationUnread.count"
     :on-logout="logout"
+    :on-recover="openPasswordRecovery"
     :assistant-permissions="assistantPermissions"
     :assistant-permission-options="assistantPermissionsVerified ? assistantPermissionOptions : []"
     :assistant-journal-api="assistantJournalApi"

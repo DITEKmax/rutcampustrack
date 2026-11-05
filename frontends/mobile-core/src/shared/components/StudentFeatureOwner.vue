@@ -2685,6 +2685,7 @@ defineExpose({ openNotificationAction });
       v-if="homeRoleDialogOpen"
       full-width
       student-ui
+      :theme="resolvedTheme"
       :snapshot="profileView.snapshot"
       :pending-role="profilePendingRole"
       :error="homeRoleError ?? profileView.snapshotError"

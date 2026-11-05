@@ -2,6 +2,7 @@
 import ast
 import os
 from pathlib import Path
+import re
 import subprocess
 import tempfile
 import unittest
@@ -49,12 +50,29 @@ class SensitivityAdmissionControls(unittest.TestCase):
             return scope
 
     def test_each_domain_accepts_unrelated_java_edit_and_builds_real_counterexamples(self):
+        def frames(proof):
+            result = {}
+            for key, value in proof.items():
+                if isinstance(value, dict):
+                    result.update({key + '.' + nested: frame for nested, frame in frames(value).items()})
+                elif key in {'ruleFrame', 'helperFrame'}:
+                    result[key] = value
+            return result
+
         for service in ('schedule-service', 'attendance-service', 'academic-service',
                         'notification-service', 'auth-service'):
             with self.subTest(service=service):
-                scope = self.admit(service, lambda path, data: data + b'\n// unrelated committed edit\n'
+                original_frames = frames(self.admit(service)['proof'])
+                scope = self.admit(service, lambda path, data: b'// unrelated committed edit\n' + data
                                    if path.suffix == '.java' else data)
                 self.assertTrue(scope['proof']['counterexample'])
+                shifted_frames = frames(scope['proof'])
+                self.assertTrue(original_frames)
+                self.assertEqual(original_frames.keys(), shifted_frames.keys())
+                for key, frame in original_frames.items():
+                    match = re.fullmatch(r'(.*\.java:)([1-9][0-9]*)\)', frame)
+                    self.assertIsNotNone(match)
+                    self.assertEqual(shifted_frames[key], match[1] + str(int(match[2]) + 1) + ')')
 
     def test_missing_or_ambiguous_mutation_anchor_is_refused(self):
         anchor = b'long increased = (long) before.limit() + command.increase();'

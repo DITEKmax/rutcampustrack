@@ -40,7 +40,7 @@ def snapshot_source(path):
     return data
 
 
-def method_oracle_line(source, method, oracle):
+def method_oracle_line(source, method, oracle, *, last_line=True):
     text = source.decode()
     # Preserve offsets while masking Java literals/comments for balanced method braces.
     masked = re.sub(r'"""[\s\S]*?"""|"(?:\\.|[^"\\])*"|\'(?:\\.|[^\'\\])*\'|//[^\n]*|/\*[\s\S]*?\*/',
@@ -55,7 +55,9 @@ def method_oracle_line(source, method, oracle):
         end += 1
     region = text[start:end]
     assert region.count(oracle) == 1
-    return text[:start + region.index(oracle) + len(oracle)].count('\n') + 1
+    oracle = oracle.rstrip('\n')
+    offset = len(oracle) if last_line else 0
+    return text[:start + region.index(oracle) + offset].count('\n') + 1
 
 
 try:
@@ -87,11 +89,9 @@ try:
         progress_test = snapshot_source(progress_source)
         assert progress_test == subprocess.check_output(['git', 'show', 'HEAD:' + progress_source.as_posix()])
         assert subprocess.check_output(['git', 'status', '--porcelain', '--', str(progress_source)]) == b''
-        progress_lines = progress_test.decode().splitlines()
-        assert progress_lines[202].strip() == 'void semesterProgressCountsFullPhysicalSemesterWithoutChangingDefaultLessonPage()'
         progress_oracle = '.andExpect(jsonPath("$.semesterProgress.items[0].done").value(1))'
-        assert sum(progress_oracle in line for line in progress_lines) == 1
-        assert progress_lines[246].strip() == progress_oracle
+        progress_line = method_oracle_line(progress_test,
+            'semesterProgressCountsFullPhysicalSemesterWithoutChangingDefaultLessonPage', progress_oracle)
         progress_production = app / 'src/main/java/ru/rutcampustrack/schedule/lesson/repository/LessonRepository.java'
         progress_current = snapshot_source(progress_production)
         progress_anchor = b'AND l.date + l.start_time <= CAST(:moscowNow AS timestamp)'
@@ -109,7 +109,7 @@ try:
             'testSourceSha256': hashlib.sha256(progress_test).hexdigest(),
             'productionSourceSha256': hashlib.sha256(progress_current).hexdigest(),
             'counterexampleSourceSha256': hashlib.sha256(progress_negative).hexdigest(),
-            'ruleFrame': progress['package'] + '.' + progress['method'] + '(LessonApiIT.java:247)'}
+            'ruleFrame': progress['package'] + '.' + progress['method'] + '(LessonApiIT.java:' + str(progress_line) + ')'}
     elif service == 'academic-service':
         package = 'ru.rutcampustrack.academic.integration.UserArchiveLifecycleIT'
         method = 'protectedArchiveReceiptRollsBackAndRestoreRequiresFreshRoleAssignment'
@@ -139,7 +139,7 @@ try:
 '''
         negative = source.replace(anchor, archive + update + oracle)
         assert negative.count(archive + update + oracle) == 1
-        rule_line = negative[:negative.index(archive + update + oracle)].count(b'\n') + len((archive + update + oracle).splitlines())
+        rule_line = method_oracle_line(negative, method, (archive + update + oracle).decode())
         replacements = {test_source: negative}
         proof.update(counterexample='CHANGED_RETAINED_COMPLETION_TIMESTAMP',
                      ruleFrame=package + '.' + method + '(UserArchiveLifecycleIT.java:' + str(rule_line) + ')')
@@ -157,10 +157,9 @@ try:
         identity_update = "        assertThat(\n                        jdbcTemplate.update(\n                                \"UPDATE academic_profiles SET first_name=first_name || '-rct-identity-red' WHERE id=?\",\n                                studentId))\n                .isEqualTo(1);\n".encode()
         assert identity_current.count(identity_oracle) == 1
         identity_negative = identity_current.replace(identity_oracle, identity_update + identity_oracle)
-        identity_line = (identity_negative[:identity_negative.index(identity_update + identity_oracle)].count(b'\n')
-                         + len((identity_update + identity_oracle).splitlines()))
         identity_package = 'ru.rutcampustrack.academic.integration.RestApiIT'
         identity_method = 'duplicateIdentityResolvesToExistingAccountAndRoleFailuresLeaveCommittedStateUnchanged'
+        identity_line = method_oracle_line(identity_negative, identity_method, identity_oracle.decode())
         additional = {'package': identity_package, 'method': identity_method, 'source': identity_source}
         replacements[identity_source] = identity_negative
         proof['additionalRule'] = {
@@ -174,8 +173,8 @@ try:
         audit_test = snapshot_source(audit_source)
         audit_oracle = b'        assertThat(payload.path("actor").path("user_id").asLong()).isEqualTo(actor);\n'
         assert audit_test.count(audit_oracle) == 1
-        audit_line = audit_test[:audit_test.index(audit_oracle)].count(b'\n') + 1
-        assert audit_line == 1334
+        audit_line = method_oracle_line(audit_test,
+            'nonAuthorAssistantDeletePreservesCreatorHistoryAndActualActorOutboxOnReplay', audit_oracle.decode())
         audit_production = app / 'src/main/java/ru/rutcampustrack/academic/homework/HomeworkBindingArchiveCoordinator.java'
         audit_current = snapshot_source(audit_production)
         audit_anchor = (b'            HomeworkActionRecordedEvent.publish(\n'
@@ -209,8 +208,9 @@ try:
                         b'                        () -> reports.read(semesterId, "", Sort.GROUP_NAME, Direction.ASC, 0, 25))\n'
                         b'                .isInstanceOf(AdminAccessException.class);\n')
         assert admin_test.count(admin_oracle) == 1
-        admin_line = admin_test[:admin_test.index(admin_oracle)].count(b'\n') + 1
-        assert admin_line == 223
+        admin_line = method_oracle_line(admin_test,
+            'otherRegistryGrantsCannotReadAndRevocationDuringRemoteReadReturnsNoRows',
+            admin_oracle.decode(), last_line=False)
         admin_production = app / 'src/main/java/ru/rutcampustrack/academic/adminattendance/AdminAttendanceReportService.java'
         admin_current = snapshot_source(admin_production)
         admin_anchor = (b'            rows.sort(comparator(sort, direction));\n'
@@ -239,8 +239,7 @@ try:
         auth_test = snapshot_source(test_source)
         auth_oracle = b'        assertThat(delivered == null).isTrue();\n'
         assert auth_test.count(auth_oracle) == 1
-        rule_line = auth_test[:auth_test.index(auth_oracle)].count(b'\n') + 1
-        assert rule_line == 442
+        rule_line = method_oracle_line(auth_test, method, auth_oracle.decode())
         auth_repository = app / 'src/main/java/ru/rutcampustrack/auth/repository/UserRepository.java'
         snapshot_source(auth_repository)
         # Preserve current Auth-owned identity/fence SQL; vary only reset admin guards.
@@ -278,12 +277,12 @@ try:
         assert digest_current.count(digest_anchor) == 1
         digest_negative = digest_current.replace(digest_anchor, digest_changed)
         assert digest_negative.replace(digest_changed, digest_anchor) == digest_current
-        digest_lines = digest_test.decode().splitlines()
         digest_package = 'ru.rutcampustrack.auth.integration.SubjectDeletionProofHttpIT'
         digest_method = 'passwordAndExactPurposeScopedProofProduceOneDurableReplayableReceipt'
-        assert digest_lines[40].strip() == 'void ' + digest_method + '() throws Exception {'
-        assert digest_lines[66].strip() == 'assertPrivate(call("verify", new VerifyRequest(token, changedDigest, id, code)), 409);'
-        assert digest_lines[405].strip() == 'assertThat(response.getStatusCode().value()).isEqualTo(expected);'
+        digest_line = method_oracle_line(digest_test, digest_method,
+            'assertPrivate(call("verify", new VerifyRequest(token, changedDigest, id, code)), 409);')
+        helper_line = method_oracle_line(digest_test, 'assertPrivate',
+            'assertThat(response.getStatusCode().value()).isEqualTo(expected);')
         subject_digest = {'package': digest_package, 'method': digest_method,
                           'source': digest_test_source, 'production': digest_source}
         replacements[digest_source] = digest_negative
@@ -293,8 +292,8 @@ try:
             'testSourceSha256': hashlib.sha256(digest_test).hexdigest(),
             'productionSourceSha256': hashlib.sha256(digest_current).hexdigest(),
             'counterexampleSourceSha256': hashlib.sha256(digest_negative).hexdigest(),
-            'ruleFrame': digest_package + '.' + digest_method + '(SubjectDeletionProofHttpIT.java:67)',
-            'helperFrame': digest_package + '.assertPrivate(SubjectDeletionProofHttpIT.java:406)'}
+            'ruleFrame': digest_package + '.' + digest_method + '(SubjectDeletionProofHttpIT.java:' + str(digest_line) + ')',
+            'helperFrame': digest_package + '.assertPrivate(SubjectDeletionProofHttpIT.java:' + str(helper_line) + ')'}
 
     elif service == 'notification-service':
         package = 'ru.rutcampustrack.notification.history.NotificationStateV2IT'
@@ -307,9 +306,10 @@ try:
         assert source.count(original) == 1
         negative = source.replace(original, "if ((status >= 200 && status < 300) || status == 404 || status == 410 || status == 503) {".encode())
         replacements = {path: negative}
-        assert test_source.read_text().splitlines()[924].strip() == 'assertThat(pending.getString("state")).isEqualTo("PENDING");'
+        notification_line = method_oracle_line(snapshot_source(test_source), method,
+            'assertThat(pending.getString("state")).isEqualTo("PENDING");')
         proof.update(counterexample='HTTP503_ACKNOWLEDGED_AS_SUCCESS',
-                     ruleFrame=package + '.' + method + '(NotificationStateV2IT.java:925)')
+                     ruleFrame=package + '.' + method + '(NotificationStateV2IT.java:' + str(notification_line) + ')')
     else:
         package = 'ru.rutcampustrack.attendance.studentrequest.StudentRequestDomainIT'
         method = 'headmanIncreasePreservesUsedAndHasOnePermanentExactReplayReceipt'
@@ -333,13 +333,13 @@ try:
         assert student_current.count(student_anchor) == 1
         student_negative = student_current.replace(student_anchor, student_changed)
         assert student_negative.replace(student_changed, student_anchor) == student_current
-        student_lines = student_test.decode().splitlines()
-        assert student_lines[450].strip() == 'void studentWeeklyGroupComparisonUsesPersistedHistoricalCellsAndRejectsForeignCatalogue() {'
-        assert student_lines[588].strip() == 'assertThatThrownBy(() -> projection.project(claims, SEMESTER_ID, null, "weeks", List.of()))'
+        student_line = method_oracle_line(student_test,
+            'studentWeeklyGroupComparisonUsesPersistedHistoricalCellsAndRejectsForeignCatalogue',
+            'assertThatThrownBy(() -> projection.project(claims, SEMESTER_ID, null, "weeks", List.of()))')
         scoped_read = {'package': package,
                        'method': 'studentWeeklyGroupComparisonUsesPersistedHistoricalCellsAndRejectsForeignCatalogue',
                        'source': student_source, 'production': student_production, 'file': 'StudentRequestDomainIT.java',
-                       'proofKey': 'studentGroupRule', 'ruleLine': 589,
+                       'proofKey': 'studentGroupRule', 'ruleLine': student_line,
                        'testSha': hashlib.sha256(student_test).hexdigest(),
                        'productionSha': hashlib.sha256(student_current).hexdigest(),
                        'negative': student_negative, 'counterexample': 'OMITTED_CURRENT_GROUP_CATALOGUE_MISMATCH'}
@@ -352,11 +352,9 @@ try:
         for path in (backfill_source, backfill_production):
             assert snapshot_source(path) == subprocess.check_output(['git', 'show', 'HEAD:' + path.as_posix()])
             assert subprocess.check_output(['git', 'status', '--porcelain', '--', str(path)]) == b''
-        backfill_lines = backfill_test.decode().splitlines()
-        assert backfill_lines[692].strip() == 'void lateInitialMembershipBackfillsOnlyDatedTargetAfterCommittedCloseAndReplaysAfterSeal()'
-        assert backfill_lines[789].strip() == 'assertThat(inserted != null)'
-        assert backfill_lines[790].strip() == '.as("late initial member must have a stored attendance record")'
-        assert backfill_lines[791].strip() == '.isTrue();'
+        backfill_line = method_oracle_line(backfill_test,
+            'lateInitialMembershipBackfillsOnlyDatedTargetAfterCommittedCloseAndReplaysAfterSeal',
+            'assertThat(inserted != null)\n                .as("late initial member must have a stored attendance record")\n                .isTrue();')
         backfill_anchor = b'                        lessons.applyInitialMembership(snapshot);'
         backfill_changed = b'                        // Deliberate sensitivity fault: omit the admitted target effect.'
         assert backfill_current.count(backfill_anchor) == 1
@@ -364,7 +362,7 @@ try:
         assert backfill_negative.replace(backfill_changed, backfill_anchor) == backfill_current
         initial_membership = {'package': 'ru.rutcampustrack.attendance.integration.EventConsumerIT',
                               'method': 'lateInitialMembershipBackfillsOnlyDatedTargetAfterCommittedCloseAndReplaysAfterSeal',
-                              'source': backfill_source, 'production': backfill_production}
+                              'source': backfill_source, 'production': backfill_production, 'ruleLine': backfill_line}
         replacements[backfill_production] = backfill_negative
         proof['initialMembershipRule'] = {
             'counterexample': 'OMITTED_INITIAL_MEMBERSHIP_TARGET_EFFECT',
@@ -372,16 +370,16 @@ try:
             'testSourceSha256': hashlib.sha256(backfill_test).hexdigest(),
             'productionSourceSha256': hashlib.sha256(backfill_current).hexdigest(),
             'counterexampleSourceSha256': hashlib.sha256(backfill_negative).hexdigest(),
-            'ruleFrame': initial_membership['package'] + '.' + initial_membership['method'] + '(EventConsumerIT.java:792)'}
+            'ruleFrame': initial_membership['package'] + '.' + initial_membership['method'] + '(EventConsumerIT.java:' + str(backfill_line) + ')'}
 
     if service == 'academic-service':
         spring_source = app / 'src/test/java/ru/rutcampustrack/academic/group/GroupPromotionCycleIT.java'
         spring_test = snapshot_source(spring_source)
         assert spring_test == subprocess.check_output(['git', 'show', 'HEAD:' + spring_source.as_posix()])
         assert subprocess.check_output(['git', 'status', '--porcelain', '--', str(spring_source)]) == b''
-        spring_lines = spring_test.decode().splitlines()
-        assert spring_lines[1073].strip() == 'void unfinishedSpringRejectsSignedManualPreviewAndExecutionWithoutChangingDurableState()'
-        assert spring_lines[1131].strip() == 'assertThat(unfinishedPreview.getResponse().getStatus()).isEqualTo(409);'
+        spring_line = method_oracle_line(spring_test,
+            'unfinishedSpringRejectsSignedManualPreviewAndExecutionWithoutChangingDurableState',
+            'assertThat(unfinishedPreview.getResponse().getStatus()).isEqualTo(409);')
         spring_service = app / 'src/main/java/ru/rutcampustrack/academic/group/GroupPromotionService.java'
         spring_repository = app / 'src/main/java/ru/rutcampustrack/academic/repository/SemesterRepository.java'
         spring_faults = {
@@ -402,14 +400,14 @@ try:
             replacements[path] = negative
         spring_completion = {'package': 'ru.rutcampustrack.academic.group.GroupPromotionCycleIT',
                              'method': 'unfinishedSpringRejectsSignedManualPreviewAndExecutionWithoutChangingDurableState',
-                             'source': spring_source, 'production': spring_faults}
+                             'source': spring_source, 'production': spring_faults, 'ruleLine': spring_line}
         proof['springCompletionRule'] = {
             'counterexample': 'OMITTED_SPRING_COMPLETION_VALIDATION',
             'testMethod': spring_completion['package'] + '.' + spring_completion['method'],
             'testSourceSha256': hashlib.sha256(spring_test).hexdigest(),
             'productionSourceSha256': {str(path): hashlib.sha256(source_snapshots[path]).hexdigest() for path in spring_faults},
             'counterexampleSourceSha256': {str(path): hashlib.sha256(replacements[path]).hexdigest() for path in spring_faults},
-            'ruleFrame': spring_completion['package'] + '.' + spring_completion['method'] + '(GroupPromotionCycleIT.java:1132)'}
+            'ruleFrame': spring_completion['package'] + '.' + spring_completion['method'] + '(GroupPromotionCycleIT.java:' + str(spring_line) + ')'}
 
         # Captured teacher pairs moved to Academic; T008 grant policy is unchanged.
         teacher_source = app / 'src/test/java/ru/rutcampustrack/academic/exportjobs/AcademicExportJobsIT.java'
@@ -419,13 +417,13 @@ try:
         teacher_anchor = '                    if (ready && !current.containsAll(identity.teacherScope())) throw denied();\n'.encode()
         assert teacher_current.count(teacher_anchor) == 1
         teacher_negative = teacher_current.replace(teacher_anchor, b'', 1)
-        teacher_lines = teacher_test.decode().splitlines()
-        assert teacher_lines[510].strip() == 'void teacherReadyArtifactRequiresEveryCapturedCurrentAssignmentAfterScopeShrinks() {'
-        assert teacher_lines[560].strip() == 'assertThatThrownBy(() -> local.require(captured, true))'
+        teacher_line = method_oracle_line(teacher_test,
+            'teacherReadyArtifactRequiresEveryCapturedCurrentAssignmentAfterScopeShrinks',
+            'assertThatThrownBy(() -> local.require(captured, true))')
         scoped_read = {'package': 'ru.rutcampustrack.academic.exportjobs.AcademicExportJobsIT',
                        'method': 'teacherReadyArtifactRequiresEveryCapturedCurrentAssignmentAfterScopeShrinks',
                        'source': teacher_source, 'production': teacher_production, 'file': 'AcademicExportJobsIT.java',
-                       'proofKey': 'teacherReadyRule', 'ruleLine': 561,
+                       'proofKey': 'teacherReadyRule', 'ruleLine': teacher_line,
                        'testSha': hashlib.sha256(teacher_test).hexdigest(),
                        'productionSha': hashlib.sha256(teacher_current).hexdigest(),
                        'negative': teacher_negative, 'counterexample': 'OMITTED_CAPTURED_TEACHER_PAIRS_REAUTHORIZATION'}
@@ -464,7 +462,7 @@ try:
             'counterexample': 'OMITTED_CHALLENGE_SCOPED_SUBJECT_PROOF_CODE_GUARD',
             'ruleSource': 'assertPrivate(denied, 409);',
             'messagePattern': '\\s*expected:\\s*409\\s+but was:\\s*200\\s*',
-            'helperLine': 406,
+            'helperOracle': 'assertThat(response.getStatusCode().value()).isEqualTo(expected);',
         },
         'academic-service': {
             'package': 'ru.rutcampustrack.academic.admin.AdminAccessAuthorityIT',
@@ -495,6 +493,9 @@ try:
         proof['sourceAdmissionCheck'] = 'FRAME'
         accepted_boundary['ruleLine'] = method_oracle_line(
             boundary_source, accepted_boundary['method'], accepted_boundary['ruleSource'])
+        if 'helperOracle' in accepted_boundary:
+            accepted_boundary['helperLine'] = method_oracle_line(
+                boundary_source, 'assertPrivate', accepted_boundary['helperOracle'])
         # Flyway migration bytes remain an immutable integrity boundary.
         if accepted_boundary['production'].suffix == '.sql':
             assert hashlib.sha256(boundary_current).hexdigest() == '8d02720f48b67e21c78373b214adb414a2f435a8016c35987839d330b6042fcc'
@@ -991,7 +992,7 @@ try:
             r'(?m)^[ \t]*at[ \t]+(?:[^ \t\r\n()]{1,256}/)?'
             + re.escape(initial_membership['package'] + '.' + initial_membership['method'])
             + r'\(EventConsumerIT\.java:([1-9][0-9]{0,5})\)[ \t]*$', backfill_failure.text or '')
-        assert backfill_named_lines == ['792']
+        assert backfill_named_lines == [str(initial_membership['ruleLine'])]
         proof['initialMembershipRule'].update(
             state='EXPECTED_RULE_FAILURE', namedMethodFrameCount=1, expectedRuleFrameMatched=True,
             tests=1, failures=1, errors=0, skipped=0,
@@ -1021,7 +1022,7 @@ try:
             + r'\(GroupPromotionCycleIT\.java:([1-9][0-9]{0,5})\)[ \t]*$', spring_failure.text or '')
         spring_status = re.fullmatch(r'Status expected:<([1-5][0-9]{2})> but was:<([1-5][0-9]{2})>', spring_message)
         spring_kind = 'MOCKMVC_HTTP_STATUS' if spring_status is not None else 'OTHER'
-        if spring_status is None and spring_observed_lines == ['1132']:
+        if spring_status is None and spring_observed_lines == [str(spring_completion['ruleLine'])]:
             spring_status = re.fullmatch(r'\s*expected:\s*([1-5][0-9]{2})\s+but was:\s*([1-5][0-9]{2})\s*', spring_message)
             if spring_status is not None:
                 spring_kind = 'ASSERTJ_INTEGER_STATUS'
@@ -1035,7 +1036,7 @@ try:
             r'(?m)^[ \t]*at[ \t]+(?:[^ \t\r\n()]{1,256}/)?'
             + re.escape(spring_completion['package'] + '.' + spring_completion['method'])
             + r'\(GroupPromotionCycleIT\.java:([1-9][0-9]{0,5})\)[ \t]*$', spring_failure.text or '')
-        assert spring_named_lines == ['1132']
+        assert spring_named_lines == [str(spring_completion['ruleLine'])]
         proof['springCompletionRule'].update(
             state='EXPECTED_RULE_FAILURE', namedMethodFrameCount=1, expectedRuleFrameMatched=True,
             tests=1, failures=1, errors=0, skipped=0,

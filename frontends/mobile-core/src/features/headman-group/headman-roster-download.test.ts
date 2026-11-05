@@ -5,6 +5,7 @@ import HeadmanGroupScreen from './HeadmanGroupScreen.vue'
 import {
   createGenerationBoundHeadmanGroupApi,
   HeadmanGroupApi,
+  HeadmanGroupApiError,
   type HeadmanRosterFormat,
 } from './headman-group-client'
 import { StaleSessionGenerationError } from '../../shared/session-owner'
@@ -83,7 +84,7 @@ async function settle(): Promise<void> {
 }
 
 describe('personal roster session boundary', () => {
-  it('lets the current headman increase their own student budget without configuring their own helper rights', async () => {
+  it('retries an uncertain +1 with the same key and confirms the refreshed counter before reporting success', async () => {
     const api = markRaw(new HeadmanGroupApi({ accessToken: () => 'synthetic' }))
     vi.spyOn(api, 'listMembers').mockResolvedValue([
       {
@@ -99,12 +100,17 @@ describe('personal roster session boundary', () => {
     vi.spyOn(api, 'listAssistants').mockResolvedValue([])
     vi.spyOn(api, 'listRosterFormats').mockResolvedValue([])
     const before = { studentId: 101, semesterId: 30, limit: 5, used: 5, remaining: 0 }
-    const after = { ...before, limit: 7, remaining: 2 }
+    const after = { ...before, limit: 6, remaining: 1 }
     const read = vi
       .spyOn(api, 'getLateCheckinBudget')
       .mockResolvedValueOnce(before)
+      .mockRejectedValueOnce(new HeadmanGroupApiError(new Response(null, { status: 503 }), null))
+      .mockResolvedValueOnce(before)
       .mockResolvedValueOnce(after)
-    const increase = vi.spyOn(api, 'increaseLateCheckinBudget').mockResolvedValue(after)
+    const increase = vi
+      .spyOn(api, 'increaseLateCheckinBudget')
+      .mockRejectedValueOnce(new Error('Не получен ответ'))
+      .mockResolvedValueOnce(after)
     class HostDocument {
       activeElement = null
       addEventListener(): void {}
@@ -112,6 +118,7 @@ describe('personal roster session boundary', () => {
     }
     vi.stubGlobal('Document', HostDocument)
     vi.stubGlobal('document', new HostDocument())
+    const onError = vi.fn()
     const root = new HostNode('root')
     const app = renderer.createApp(HeadmanGroupScreen, {
       api,
@@ -119,6 +126,7 @@ describe('personal roster session boundary', () => {
       actorUserId: '101',
       actorHeadman: true,
       assistantPermissions: null,
+      onError,
     })
     try {
       app.mount(root)
@@ -128,27 +136,56 @@ describe('personal roster session boundary', () => {
       ;(member!.props.onClick as () => void)()
       await settle()
       expect(text(root)).toContain('Осталось попыток: 0 из 5')
+      expect(text(root)).not.toContain('Использовано')
       expect(text(root)).not.toContain('Настроить права')
+      function button(label: string): HostNode {
+        const result = find(root, (node) => node.tag === 'button' && text(node).trim() === label)
+        expect(result).toBeDefined()
+        return result!
+      }
+      const press = (node: HostNode) => (node.props.onClick as () => void)()
       const input = find(root, (node) => node.props.inputmode === 'numeric')
       expect(input).toBeDefined()
       expect(input!.props.disabled).toBe(false)
-      ;(input!.props['onUpdate:modelValue'] as (value: string) => void)('2')
+      expect(button('Увеличить лимит').props.disabled).toBe(true)
+      const type = input!.props['onUpdate:modelValue'] as (value: string) => void
+      type('0')
       await settle()
-      const button = find(
-        root,
-        (node) => node.tag === 'button' && text(node).trim() === 'Увеличить лимит',
-      )
-      expect(button).toBeDefined()
-      expect(button!.props.disabled).toBe(false)
-      ;(button!.props.onClick as () => void)()
+      expect(button('Увеличить лимит').props.disabled).toBe(true)
+      type('1')
+      await settle()
+      press(button('Увеличить лимит'))
       await settle()
       expect(increase).toHaveBeenCalledExactlyOnceWith(101, {
         semesterId: 30,
-        increase: 2,
+        increase: 1,
         requestKey: expect.any(String),
       })
+      expect(text(root)).not.toContain('Лимит увеличен')
+      press(button('Повторить увеличение'))
+      await settle()
+      expect(increase).toHaveBeenCalledTimes(2)
+      expect(increase.mock.calls[1]).toEqual(increase.mock.calls[0])
       expect(read).toHaveBeenCalledTimes(2)
-      expect(text(root)).toContain('Осталось попыток: 2 из 7')
+      expect(text(root)).not.toContain('Лимит увеличен')
+      expect(text(root)).toContain('Лимит не подтверждён')
+      expect(onError).not.toHaveBeenCalled()
+      press(button('Проверить лимит'))
+      await settle()
+      expect(increase).toHaveBeenCalledTimes(2)
+      expect(read).toHaveBeenCalledTimes(3)
+      expect(text(root)).not.toContain('Лимит увеличен')
+      press(button('Проверить лимит'))
+      await settle()
+      expect(increase).toHaveBeenCalledTimes(2)
+      expect(read).toHaveBeenCalledTimes(4)
+      expect(text(root)).toContain('Осталось попыток: 1 из 6')
+      expect(text(root).match(/Лимит увеличен/g)).toHaveLength(1)
+      const dismiss = find(root, (node) => node.props['aria-label'] === 'Закрыть сообщение об увеличении лимита')
+      expect(dismiss).toBeDefined()
+      press(dismiss!)
+      await settle()
+      expect(text(root)).not.toContain('Лимит увеличен')
       expect(text(root)).not.toContain('Настроить права')
     } finally {
       app.unmount()

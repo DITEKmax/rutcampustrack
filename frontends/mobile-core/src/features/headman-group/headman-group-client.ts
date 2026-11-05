@@ -119,6 +119,16 @@ export class HeadmanGroupApi {
     this.fetcher = options.fetcher ?? ((input, init) => globalThis.fetch(input, init))
   }
 
+  isCurrentGeneration(): boolean {
+    try {
+      this.options.assertCurrent?.()
+      return true
+    } catch (cause) {
+      if (cause instanceof StaleSessionGenerationError) return false
+      throw cause
+    }
+  }
+
   async readCredential(studentId: number): Promise<HeadmanCredentialView> {
     assertPositiveInteger(studentId, 'studentId')
     return normalizeCredential(

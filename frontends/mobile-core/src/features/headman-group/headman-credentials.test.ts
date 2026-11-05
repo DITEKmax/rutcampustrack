@@ -1,5 +1,6 @@
-import { effectScope, nextTick, reactive } from 'vue'
+import { effectScope, nextTick, reactive, ref } from 'vue'
 import { describe, expect, it, vi } from 'vitest'
+import { StaleSessionGenerationError } from '../../shared/session-owner'
 import {
   HeadmanGroupApi,
   HeadmanGroupApiError,
@@ -24,13 +25,32 @@ const settle = async () => {
   }
 }
 function fixture() {
-  const api = new HeadmanGroupApi({ accessToken: () => 'synthetic' })
-  const context = reactive({ api, groupId: 8, actorUserId: '1', enabled: true, memberIds: [2] })
+  const generation = ref(0)
+  const api = new HeadmanGroupApi({
+    accessToken: () => 'synthetic',
+    assertCurrent: () => {
+      if (generation.value !== 0) throw new StaleSessionGenerationError()
+    },
+  })
+  const context = reactive({
+    api,
+    groupId: 8,
+    actorUserId: '1',
+    enabled: true,
+    memberIds: [2],
+    detailStudentId: 2,
+  })
   const read = vi.spyOn(api, 'readCredential').mockResolvedValue(generated())
   const scope = effectScope()
   const state = scope.run(() => useHeadmanCredentials(() => ({ ...context, api })))!
-  return { api, context, read, scope, state }
+  return { api, context, generation, read, scope, state }
 }
+const syntheticUrl = 'https://client.example.test/password-reset#resetTicket=synthetic'
+const recoveryLink = (ms: number) => ({
+  url: syntheticUrl,
+  expiresAt: new Date(Date.now() + ms).toISOString(),
+  expiresInSeconds: 3600,
+})
 
 describe('own-group credential RAM and authority boundary', () => {
   it('discards an old member read after the current member changes and clears on offline/unmount', async () => {
@@ -137,6 +157,105 @@ describe('own-group credential RAM and authority boundary', () => {
       expect(f.state.link.value).not.toBeNull()
     } finally {
       f.scope.stop()
+    }
+  })
+
+  it.each(['member', 'generation', 'permission', 'expiry'])(
+    'clears the old link and ignores clipboard completion after %s changes',
+    async (change) => {
+      vi.useFakeTimers()
+      const f = fixture()
+      try {
+        await settle()
+        const issue = vi.spyOn(f.api, 'issueRecoveryLink').mockResolvedValue(recoveryLink(1000))
+        let release!: () => void
+        const write = vi.fn(
+          () =>
+            new Promise<void>((resolve) => {
+              release = resolve
+            }),
+        )
+        vi.stubGlobal('navigator', { clipboard: { writeText: write } })
+        await f.state.perform(2, 'link')
+        await f.state.copyLink(3)
+        expect(write).not.toHaveBeenCalled()
+        const copying = f.state.copyLink(2)
+        expect(write).toHaveBeenCalledExactlyOnceWith(syntheticUrl)
+        if (change === 'member') f.context.detailStudentId = 3
+        if (change === 'generation') f.generation.value++
+        if (change === 'permission') f.context.enabled = false
+        if (change === 'expiry') await vi.advanceTimersByTimeAsync(1000)
+        release()
+        await copying
+        expect(f.state.link.value).toBeNull()
+        expect(f.state.copyFeedback.value).toBeNull()
+        expect(f.state.copyBusy.value).toBe(false)
+        expect(issue).toHaveBeenCalledTimes(1)
+      } finally {
+        f.scope.stop()
+        vi.unstubAllGlobals()
+        vi.useRealTimers()
+      }
+    },
+  )
+
+  it('does not fall back to copying after the absolute expiry while waiting for clipboard permission', async () => {
+    vi.useFakeTimers()
+    const f = fixture()
+    try {
+      await settle()
+      vi.spyOn(f.api, 'issueRecoveryLink').mockResolvedValue(recoveryLink(1000))
+      const fallback = vi.fn(() => true)
+      vi.stubGlobal('document', { body: {}, execCommand: fallback })
+      let reject!: () => void
+      vi.stubGlobal('navigator', {
+        clipboard: {
+          writeText: () => new Promise<void>((_, fail) => (reject = () => fail(new Error()))),
+        },
+      })
+      await f.state.perform(2, 'link')
+      const copying = f.state.copyLink(2)
+      // Simulate a suspended/throttled expiry timer.
+      vi.setSystemTime(Date.now() + 1000)
+      reject()
+      await copying
+      expect(fallback).not.toHaveBeenCalled()
+      expect(f.state.link.value).toBeNull()
+      expect(f.state.linkExpired.value).toBe(true)
+      expect(f.state.copyFeedback.value).toBeNull()
+    } finally {
+      f.scope.stop()
+      vi.unstubAllGlobals()
+      vi.useRealTimers()
+    }
+  })
+
+  it('offers manual selection if clipboard copy is unconfirmed and trusts only a successful fallback', async () => {
+    const f = fixture()
+    try {
+      await settle()
+      vi.spyOn(f.api, 'issueRecoveryLink').mockResolvedValue(recoveryLink(3600000))
+      vi.stubGlobal('navigator', {
+        clipboard: { writeText: () => Promise.reject(new Error()) },
+      })
+      const field = { focus: vi.fn(), select: vi.fn(), setSelectionRange: vi.fn(), remove: vi.fn(), value: '' }
+      const fallback = vi.fn(() => false)
+      vi.stubGlobal('document', {
+        body: { append: vi.fn() },
+        createElement: () => field,
+        execCommand: fallback,
+      })
+      await f.state.perform(2, 'link')
+      await f.state.copyLink(2)
+      expect(f.state.copyFeedback.value).toBe('manual')
+      fallback.mockImplementation(() => field.value === syntheticUrl)
+      await f.state.copyLink(2)
+      expect(f.state.copyFeedback.value).toBe('copied')
+      expect(field.value).toBe('')
+      expect(field.remove).toHaveBeenCalledTimes(2)
+    } finally {
+      f.scope.stop()
+      vi.unstubAllGlobals()
     }
   })
 

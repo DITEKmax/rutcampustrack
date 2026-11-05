@@ -83,7 +83,11 @@ const budgetLoading = ref(false),
 const budgetError = ref<string | null>(null),
   budgetNotice = ref<string | null>(null);
 const budgetIncrease = ref('');
-const budgetIntent = ref<(HeadmanBudgetIncrease & { studentId: number }) | null>(null);
+const budgetIntent = ref<{
+  studentId: number;
+  command: HeadmanBudgetIncrease;
+  acknowledgedLimit: number | null;
+} | null>(null);
 let budgetRevision = 0;
 const baselineAssistantId = ref<number | null>(null);
 let loadRevision = 0,
@@ -291,6 +295,7 @@ const credentials = useHeadmanCredentials(() => ({
     !props.offline &&
     !props.readOnly &&
     !denied.value,
+  detailStudentId: view.value === 'detail' ? memberId.value : null,
   memberIds: (view.value === 'list' ? members.value : member.value ? [member.value] : [])
     .filter(credentialEligible)
     .map((item) => item.id),
@@ -340,6 +345,7 @@ watch(
 
 const budgetWritable = computed(
   () =>
+    view.value === 'detail' &&
     !props.offline &&
     !props.readOnly &&
     !denied.value &&
@@ -352,15 +358,23 @@ const budgetWritable = computed(
     !intent.value &&
     member.value?.status === 'ACTIVE' &&
     member.value.groupId === props.groupId &&
+    !credentialConfirmation.value &&
+    !credentials.busy.value &&
     !budgetLoading.value &&
     !budgetBusy.value &&
-    budget.value !== null,
+    (budget.value !== null || budgetIntent.value !== null),
 );
-const increaseValue = computed(() =>
-  /^[1-9]\d*$/.test(budgetIncrease.value) && Number(budgetIncrease.value) <= 2147483647
-    ? Number(budgetIncrease.value)
-    : null,
-);
+const increaseValue = computed(() => {
+  if (!budget.value || !/^[1-9]\d*$/.test(budgetIncrease.value)) return null;
+  const increase = Number(budgetIncrease.value);
+  return increase <= 2147483647 - budget.value.limit ? increase : null;
+});
+const budgetActionLabel = computed(() => {
+  if (budgetBusy.value) return 'Сохраняем…';
+  if (budgetLoading.value) return 'Проверяем лимит…';
+  if (budgetIntent.value?.acknowledgedLimit != null) return 'Проверить лимит';
+  return budgetIntent.value ? 'Повторить увеличение' : 'Увеличить лимит';
+});
 
 async function loadBudget(): Promise<void> {
   const revision = ++budgetRevision,
@@ -368,6 +382,7 @@ async function loadBudget(): Promise<void> {
   const api = props.api,
     target = member.value?.id;
   budget.value = null;
+  budgetError.value = null;
   if (
     !api ||
     !target ||
@@ -377,17 +392,31 @@ async function loadBudget(): Promise<void> {
     props.offline ||
     props.readOnly ||
     denied.value ||
-    member.value?.status !== 'ACTIVE'
+    member.value?.status !== 'ACTIVE' ||
+    member.value.groupId !== props.groupId
   ) {
     budgetLoading.value = false;
     return;
   }
   budgetLoading.value = true;
-  budgetError.value = null;
   try {
     const next = await api.getLateCheckinBudget(target);
     if (owner !== ownerRevision || revision !== budgetRevision || disposed || props.offline) return;
     budget.value = next;
+    const pending = budgetIntent.value;
+    if (pending?.studentId === target && pending.acknowledgedLimit !== null) {
+      if (next.semesterId !== pending.command.semesterId) {
+        budgetIntent.value = null;
+        budgetIncrease.value = '';
+        budgetError.value = 'Семестр изменился. Показан лимит нового семестра.';
+      } else if (next.limit < pending.acknowledgedLimit) {
+        budgetError.value = 'Обновлённый лимит пока не подтверждён. Проверь лимит ещё раз.';
+      } else {
+        budgetIntent.value = null;
+        budgetIncrease.value = '';
+        budgetNotice.value = 'Лимит увеличен.';
+      }
+    }
   } catch (cause) {
     if (
       owner !== ownerRevision ||
@@ -396,55 +425,50 @@ async function loadBudget(): Promise<void> {
       cause instanceof StaleSessionGenerationError
     )
       return;
+    budgetError.value = cause instanceof Error ? cause.message : 'Не удалось загрузить лимит.';
     if (cause instanceof HeadmanGroupApiError && [401, 403].includes(cause.response.status)) {
       denied.value = true;
       budgetIntent.value = null;
+      budgetIncrease.value = '';
+      emit('error', cause);
     }
-    budgetError.value = cause instanceof Error ? cause.message : 'Не удалось загрузить лимит.';
-    emit('error', cause);
   } finally {
     if (owner === ownerRevision && revision === budgetRevision) budgetLoading.value = false;
   }
 }
 
 async function increaseBudget(): Promise<void> {
-  if (
-    credentials.busy.value ||
-    !budgetWritable.value ||
-    !member.value ||
-    !props.api ||
-    !budget.value
-  )
-    return;
+  if (!budgetWritable.value || !member.value || !props.api) return;
   if (!budgetIntent.value) {
-    if (increaseValue.value === null) return;
+    if (!budget.value || increaseValue.value === null) return;
     budgetIntent.value = {
       studentId: member.value.id,
-      semesterId: budget.value.semesterId,
-      increase: increaseValue.value,
-      requestKey: crypto.randomUUID(),
+      command: {
+        semesterId: budget.value.semesterId,
+        increase: increaseValue.value,
+        requestKey: crypto.randomUUID(),
+      },
+      acknowledgedLimit: null,
     };
   }
-  const pending = budgetIntent.value,
-    api = props.api,
+  const pending = budgetIntent.value;
+  if (pending.studentId !== member.value.id) return;
+  if (pending.acknowledgedLimit !== null) {
+    await loadBudget();
+    return;
+  }
+  const api = props.api,
     owner = ownerRevision;
   const revision = budgetRevision;
   budgetBusy.value = true;
   budgetError.value = null;
   budgetNotice.value = null;
   try {
-    await api.increaseLateCheckinBudget(pending.studentId, {
-      semesterId: pending.semesterId,
-      increase: pending.increase,
-      requestKey: pending.requestKey,
-    });
+    const acknowledged = await api.increaseLateCheckinBudget(pending.studentId, pending.command);
     if (owner !== ownerRevision || revision !== budgetRevision || disposed) return;
+    budgetIntent.value = { ...pending, acknowledgedLimit: acknowledged.limit };
     // An exact replay returns the original snapshot; only a fresh read is the current counter.
     await loadBudget();
-    if (owner !== ownerRevision || disposed || !budget.value) return;
-    budgetIntent.value = null;
-    budgetIncrease.value = '';
-    budgetNotice.value = 'Лимит увеличен. Остаток подтверждён сервером.';
   } catch (cause) {
     if (
       owner !== ownerRevision ||
@@ -459,13 +483,14 @@ async function increaseBudget(): Promise<void> {
       cause.response.status < 500
     ) {
       budgetIntent.value = null;
+      budgetError.value = cause.message;
       if ([401, 403].includes(cause.response.status)) {
         denied.value = true;
         budget.value = null;
+        budgetIncrease.value = '';
+        emit('error', cause);
       }
-      budgetError.value = cause.message;
     } else budgetError.value = 'Ответ не подтверждён. Повтори увеличение с тем же запросом.';
-    emit('error', cause);
   } finally {
     if (owner === ownerRevision && !disposed) budgetBusy.value = false;
   }
@@ -481,13 +506,13 @@ function isMemberHeadman(item: HeadmanGroupMember | null): boolean {
     props.actorHeadman && String(item.id) === props.actorUserId && item.groupId === props.groupId
   );
 }
-function roleLabel(item: HeadmanGroupMember): string {
+function roleLabel(item: HeadmanGroupMember): 'Староста' | 'Помощник' | 'Студент' {
   return isMemberHeadman(item)
     ? 'Староста'
     : assistants.value.some(
           (value) => value.active && value.groupId === props.groupId && value.studentId === item.id,
         )
-      ? 'Помощник старосты'
+      ? 'Помощник'
       : 'Студент';
 }
 function openMember(item: HeadmanGroupMember): void {
@@ -761,6 +786,7 @@ watch(
     budgetError.value = null;
     budgetNotice.value = null;
     if (!props.actorHeadman || !isHeadman.value || props.readOnly) budgetIntent.value = null;
+    if (!budgetIntent.value) budgetIncrease.value = '';
     if (!props.offline) void loadBudget();
   },
   { flush: 'sync' },
@@ -940,7 +966,18 @@ defineExpose({ back });
           :data-role="roleLabel(item)"
           @click="openMember(item)"
         >
-          <span><strong>{{ item.fullName }}</strong><small v-if="roleLabel(item) !== 'Студент'">{{ roleLabel(item) }}</small><small v-if="isHeadman && actorHeadman && !offline && !readOnly && !denied">{{ credentialLabel(item.id) }}</small></span><MobileIcon name="chevron-down" />
+          <span class="headman-group__member-label">
+            <span class="headman-group__member-name">
+              <strong>{{ item.fullName }}</strong>
+              <span
+                v-if="roleLabel(item) !== 'Студент'"
+                class="headman-group__role-badge"
+                :data-role="roleLabel(item)"
+              >{{ roleLabel(item) }}</span>
+            </span>
+            <small v-if="isHeadman && actorHeadman && !offline && !readOnly && !denied">{{ credentialLabel(item.id) }}</small>
+          </span>
+          <MobileIcon name="chevron-down" />
         </button>
       </div>
       <p v-if="!loading && !filteredMembers.length">
@@ -949,7 +986,13 @@ defineExpose({ back });
     </template>
     <template v-else-if="member">
       <section class="headman-group__identity">
-        <h2>{{ member.fullName }}</h2><p>{{ roleLabel(member) }}</p>
+        <h2>{{ member.fullName }}</h2>
+        <p v-if="roleLabel(member) === 'Студент'">Студент</p>
+        <span
+          v-else
+          class="headman-group__role-badge"
+          :data-role="roleLabel(member)"
+        >{{ roleLabel(member) }}</span>
       </section>
       <template v-if="view === 'detail'">
         <section
@@ -961,7 +1004,7 @@ defineExpose({ back });
           <h2 id="headman-credentials-title">
             Доступ студента
           </h2>
-          <p>{{ credentials.loading.value ? 'Загружаем данные доступа…' : credentialLabel(member.id) }}</p>
+          <p class="headman-group__credential-status">{{ credentials.loading.value ? 'Загружаем данные доступа…' : credentialLabel(member.id) }}</p>
           <StudentWarningBlock
             v-if="credentials.error.value"
             title="Доступ не подтверждён"
@@ -971,37 +1014,73 @@ defineExpose({ back });
             :action-disabled="credentials.busy.value"
             @action="credentials.refresh"
           />
-          <button
-            type="button"
-            class="headman-group__configure"
-            :disabled="!credentials.available.value || !credentials.values.value[member.id] || budgetBusy || Boolean(budgetIntent)"
-            @click="confirmCredential('generate')"
-          >
-            Сбросить пароль
-          </button>
-          <button
-            type="button"
-            class="headman-group__configure"
-            :disabled="!credentials.available.value || !credentials.values.value[member.id] || budgetBusy || Boolean(budgetIntent)"
-            @click="confirmCredential('link')"
-          >
-            Выдать ссылку сброса
-          </button>
+          <div class="headman-group__credential-actions">
+            <button
+              type="button"
+              class="headman-group__primary"
+              :disabled="!credentials.available.value || !credentials.values.value[member.id] || budgetBusy || Boolean(budgetIntent)"
+              @click="confirmCredential('generate')"
+            >
+              Сбросить пароль
+            </button>
+            <button
+              type="button"
+              class="headman-group__primary"
+              :disabled="!credentials.available.value || !credentials.values.value[member.id] || budgetBusy || Boolean(budgetIntent)"
+              @click="confirmCredential('link')"
+            >
+              Выдать ссылку сброса
+            </button>
+          </div>
           <template v-if="credentials.link.value">
-            <label class="headman-group__field">Ссылка для студента<input
-              :value="credentials.link.value.url"
-              readonly
-              type="text"
-              autocomplete="off"
-              spellcheck="false"
-            ></label>
-            <p>Ссылка действует до {{ new Date(credentials.link.value.expiresAt).toLocaleString('ru-RU') }}. После её использования студент задаст свой пароль.</p>
+            <button
+              type="button"
+              class="headman-group__recovery-copy"
+              aria-label="Скопировать ссылку для студента"
+              :aria-busy="credentials.copyBusy.value"
+              :disabled="credentials.copyBusy.value"
+              @click="credentials.copyLink(member.id)"
+              @copy="credentials.guardManualCopy(member.id, $event)"
+            >
+              <span>
+                <span>Ссылка для студента</span>
+                <strong>{{ credentials.link.value.url }}</strong>
+              </span>
+              <MobileIcon name="copy" />
+            </button>
+            <p>Действует до {{ new Date(credentials.link.value.expiresAt).toLocaleString('ru-RU') }}.</p>
+            <AdminNotice
+              v-if="credentials.copyFeedback.value === 'copied'"
+              tone="success"
+              title="Ссылка скопирована"
+            />
+            <template v-else-if="credentials.copyFeedback.value === 'manual'">
+              <AdminNotice
+                tone="warning"
+                title="Не удалось скопировать"
+              >Выдели ссылку и скопируй её вручную.</AdminNotice>
+              <label class="headman-group__field">Ссылка для ручного копирования<input
+                :value="credentials.link.value.url"
+                readonly
+                type="text"
+                autocomplete="off"
+                spellcheck="false"
+                @focus="credentials.selectLink(member.id, $event.target as HTMLInputElement)"
+                @copy="credentials.guardManualCopy(member.id, $event)"
+              ></label>
+            </template>
           </template>
+          <AdminNotice
+            v-else-if="credentials.linkExpired.value"
+            tone="warning"
+            title="Срок ссылки истёк"
+          >Выдай новую ссылку.</AdminNotice>
         </section>
         <section
           v-if="isHeadman && actorHeadman"
           class="headman-group__summary"
           aria-labelledby="headman-budget-title"
+          :aria-busy="budgetLoading || budgetBusy"
         >
           <h2 id="headman-budget-title">
             Ручные запросы на отметку
@@ -1016,45 +1095,42 @@ defineExpose({ back });
             v-if="budget"
             role="status"
           >
-            Осталось попыток: {{ budget.remaining }} из {{ budget.limit }}. Использовано:
-            {{ budget.used }}.
+            Осталось попыток: {{ budget.remaining }} из {{ budget.limit }}.
           </p>
           <StudentWarningBlock
             v-if="budgetError"
             severity="error"
             title="Лимит не подтверждён"
             :message="budgetError"
-            action-label="Обновить лимит"
+            :action-label="budgetIntent ? '' : 'Обновить лимит'"
             :action-disabled="offline || budgetLoading || budgetBusy"
             @action="loadBudget"
           />
-          <p
-            v-if="budgetNotice"
-            role="status"
-          >
-            {{ budgetNotice }}
-          </p>
-          <label class="headman-group__field">Добавить попытки<input
-            v-model="budgetIncrease"
-            inputmode="numeric"
-            pattern="[1-9][0-9]*"
-            type="text"
-            :disabled="!budgetWritable || Boolean(budgetIntent)"
-            aria-describedby="budget-increase-hint"
-          ></label>
-          <p id="budget-increase-hint">
-            Добавь положительное целое число. Использованные попытки сохранятся.
-          </p>
+          <label class="headman-group__field headman-group__budget-amount">
+            <span>Количество дополнительных попыток</span>
+            <input
+              v-model="budgetIncrease"
+              inputmode="numeric"
+              pattern="[1-9][0-9]*"
+              type="text"
+              :disabled="!budgetWritable || Boolean(budgetIntent) || budget?.limit === 2147483647"
+            >
+          </label>
           <button
             type="button"
             class="headman-group__primary"
             :disabled="!budgetWritable || (!budgetIntent && increaseValue === null)"
             @click="increaseBudget"
           >
-            {{
-              budgetBusy ? 'Сохраняем…' : budgetIntent ? 'Повторить увеличение' : 'Увеличить лимит'
-            }}
+            {{ budgetActionLabel }}
           </button>
+          <AdminNotice
+            v-if="budgetNotice"
+            tone="success"
+            :title="budgetNotice"
+            dismiss-label="Закрыть сообщение об увеличении лимита"
+            @dismiss="budgetNotice = null"
+          />
         </section>
         <section class="headman-group__summary">
           <h2>Права помощника</h2><p>
@@ -1066,7 +1142,7 @@ defineExpose({ back });
         <button
           v-if="!isMemberHeadman(member)"
           type="button"
-          class="headman-group__configure"
+          class="headman-group__configure headman-group__primary"
           @click="openPermissions"
         >
           Настроить права<MobileIcon name="chevron-down" />

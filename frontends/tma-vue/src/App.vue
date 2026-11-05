@@ -463,10 +463,6 @@ const notificationsEntryVisible = computed(
     authView.value !== 'role',
 );
 const studentViewVisible = computed(() => authView.value === 'student' && api.value !== null);
-// The accepted Student surface unlocks the existing theme owner; all other roles stay dark.
-watch(studentViewVisible, (visible) => theme?.setLockedMode?.(visible ? undefined : 'dark'), {
-  immediate: true,
-});
 const canOpenNotificationTarget = computed(
   () => notificationsEntryVisible.value && notificationsApi.value !== null && !offline.value,
 );
@@ -475,6 +471,11 @@ const teacherViewVisible = computed(
 );
 const headmanViewVisible = computed(
   () => authView.value === 'headman' && headmanApi.value !== null,
+);
+watch(
+  () => studentViewVisible.value || headmanViewVisible.value,
+  (visible) => theme?.setLockedMode?.(visible ? undefined : 'dark'),
+  { immediate: true },
 );
 const ownerKey = computed(
   () =>

@@ -15370,6 +15370,11 @@
             "type" : "integer",
             "format" : "int64"
           },
+          "semesterId" : {
+            "type" : [ "integer", "null" ],
+            "description" : "Сохранённая привязка к семестру. Null для предметов без привязки",
+            "format" : "int64"
+          },
           "lessonTypes" : {
             "type" : "array",
             "items" : {
@@ -15411,6 +15416,14 @@
             "type" : "array",
             "items" : {
               "$ref" : "#/components/schemas/PendingClosureResponse"
+            }
+          },
+          "pendingSemesterIds" : {
+            "type" : "array",
+            "description" : "Семестры незавершённых назначений и снятий преподавателя для старосты группы",
+            "items" : {
+              "type" : "integer",
+              "format" : "int64"
             }
           },
           "_links" : {

@@ -6,7 +6,11 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import org.slf4j.Logger;
@@ -15,6 +19,8 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -369,13 +375,51 @@ public class AssignmentClosureService {
                 applicationFrame);
     }
 
+    @Transactional(readOnly = true, propagation = Propagation.MANDATORY)
+    public Map<Long, List<Long>> pendingSemesterIds(List<Long> pageSubjectIds) {
+        if (!canReadPendingSubjectOperations() || pageSubjectIds.isEmpty()) return Map.of();
+        String placeholders = String.join(", ", Collections.nCopies(pageSubjectIds.size(), "?"));
+        List<Object> parameters = new ArrayList<>();
+        parameters.add(context.getGroupId());
+        parameters.addAll(pageSubjectIds);
+        return jdbc.query(
+                """
+                SELECT DISTINCT assignment.subject_id, assignment.semester_id
+                  FROM assignments assignment
+                  JOIN assignment_replacement_operations operation
+                    ON (operation.operation_kind = 'ADOPT_UNASSIGNED'
+                        AND operation.target_assignment_id = assignment.id)
+                    OR (operation.operation_kind = 'CLOSE_UNASSIGN'
+                        AND operation.source_assignment_id = assignment.id)
+                 WHERE assignment.group_id = ?
+                   AND assignment.subject_id IN (%s)
+                   AND operation.state IN ('PREPARED', 'APPLIED')
+                 ORDER BY assignment.subject_id, assignment.semester_id
+                """
+                        .formatted(placeholders),
+                rows -> {
+                    Map<Long, List<Long>> semesters = new HashMap<>();
+                    while (rows.next()) {
+                        semesters
+                                .computeIfAbsent(rows.getLong(1), id -> new ArrayList<>())
+                                .add(rows.getLong(2));
+                    }
+                    return semesters;
+                },
+                parameters.toArray());
+    }
+
+    private boolean canReadPendingSubjectOperations() {
+        return context.getInternalToken() != null
+                && !context.getInternalToken().isBlank()
+                && context.isHeadman()
+                && context.getGroupId() != null
+                && context.getUserId() != null;
+    }
+
     public List<ru.rutcampustrack.academic.contract.dto.subject.PendingAdoptionResponse>
             pendingSubject(Long subjectId) {
-        if (context.getInternalToken() == null
-                || context.getInternalToken().isBlank()
-                || !context.isHeadman()
-                || context.getGroupId() == null
-                || context.getUserId() == null) return null;
+        if (!canReadPendingSubjectOperations()) return null;
         return transaction.execute(
                 tx ->
                         jdbc.query(
@@ -410,11 +454,7 @@ public class AssignmentClosureService {
 
     public List<ru.rutcampustrack.academic.contract.dto.subject.PendingClosureResponse>
             pendingClosures(Long subjectId) {
-        if (context.getInternalToken() == null
-                || context.getInternalToken().isBlank()
-                || !context.isHeadman()
-                || context.getGroupId() == null
-                || context.getUserId() == null) return null;
+        if (!canReadPendingSubjectOperations()) return null;
         return transaction.execute(
                 tx ->
                         jdbc.query(

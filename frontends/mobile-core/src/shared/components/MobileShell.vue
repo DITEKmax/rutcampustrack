@@ -24,6 +24,7 @@ const props = withDefaults(
     host?: MobileHostAdapter | null;
     backLabel?: string;
     customBack?: boolean;
+    showTaskDock?: boolean;
     hostBackAction?: (() => void) | undefined;
   }>(),
   {
@@ -34,6 +35,7 @@ const props = withDefaults(
     keyboardVisible: undefined as never,
     backLabel: 'Назад',
     customBack: false,
+    showTaskDock: false,
     hostBackAction: undefined,
     host: null,
   },
@@ -59,7 +61,11 @@ const currentRoute = computed<MobileRoute>(() => {
 
 const activeId = computed(() => props.activeId ?? currentRoute.value.root);
 const keyboardVisible = computed(() => props.keyboardVisible ?? hostKeyboardVisible.value);
-const dockVisible = computed(() => shouldShowMobileDock(currentRoute.value, keyboardVisible.value));
+const dockVisible = computed(
+  () =>
+    !keyboardVisible.value &&
+    (props.showTaskDock || shouldShowMobileDock(currentRoute.value, false)),
+);
 const productBackVisible = computed(
   () =>
     !props.customBack &&

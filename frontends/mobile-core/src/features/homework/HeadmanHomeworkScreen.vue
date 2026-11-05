@@ -2,6 +2,7 @@
 import SvgIcon from '../../../../shared/foundation/SvgIcon.vue';
 import { computed, onBeforeUnmount, ref, shallowRef, watch } from 'vue';
 import type { MobileHostAdapter } from '../../shared/host';
+import AdminNotice from '../../shared/components/AdminNotice.vue';
 import StudentWarningBlock from '../../shared/components/StudentWarningBlock.vue';
 import { StaleSessionGenerationError } from '../../shared/session-owner';
 import { validateHomeworkLink } from '../../domain/homework';
@@ -40,6 +41,8 @@ import {
   homeworkSubjectTypes,
   homeworkLessonEligible,
   homeworkLessonOrder,
+  matchesHomeworkLesson,
+  type HeadmanHomeworkLessonContext,
   homeworkTypeLabels,
   homeworkTextSegments,
 } from './headman-homework-state';
@@ -64,7 +67,7 @@ const props = withDefaults(
     openMaterial?: ((url: string) => void) | undefined;
     /** Production uses actual Moscow time; review can freeze its clock. */
     now?: () => Date;
-    initialCreate?: boolean;
+    initialLessonContext?: HeadmanHomeworkLessonContext | null;
   }>(),
   {
     offline: false,
@@ -72,12 +75,12 @@ const props = withDefaults(
     host: null,
     openMaterial: undefined,
     now: () => new Date(),
-    initialCreate: false,
+    initialLessonContext: null,
   },
 );
 const emit = defineEmits<{
   error: [cause: unknown];
-  viewChange: [view: 'calendar' | 'detail' | 'wizard' | 'history'];
+  landingChange: [landing: boolean];
 }>();
 const today = () => props.now().toLocaleDateString('en-CA', { timeZone: 'Europe/Moscow' });
 const view = ref<'calendar' | 'detail' | 'wizard' | 'history'>('calendar');
@@ -96,6 +99,7 @@ const nextLoading = ref(false);
 const busy = ref(false);
 const error = ref<string | null>(null);
 const notice = ref<string | null>(null);
+const success = ref<string | null>(null);
 const denied = ref(false);
 const detail = shallowRef<HeadmanManagedHomework | null>(null);
 const history = shallowRef<readonly HeadmanHomeworkHistory[]>([]);
@@ -121,6 +125,7 @@ const conflict = ref(false);
 const conflictCurrent = shallowRef<HeadmanManagedHomework | null>(null);
 const subjectListOpen = ref(true);
 const typeListOpen = ref(true);
+let initialLessonContext = props.initialLessonContext;
 let ownerRevision = 0;
 let calendarRevision = 0;
 let nextRevision = 0;
@@ -237,7 +242,7 @@ const dateValid = computed(
     (!anyDate.value
       ? originalPlacementUnchanged.value ||
         (chosenLesson.value !== null &&
-          eligibleLessons.value.some((item) => item.id === chosenLesson.value?.id))
+          eligibleLessons.value.some((item) => matchesHomeworkLesson(item, chosenLesson.value)))
       : homeworkDateWritable(chosenDate.value, semester.value, today()) &&
         selectedSubject.value !== null &&
         props.groupId !== null &&
@@ -375,6 +380,7 @@ function reportError(cause: unknown, revision: number): void {
     cause.response.status === 403
   ) {
     denied.value = true;
+    success.value = null;
     homeworks.value = [];
     dayLoaded.value = false;
     detail.value = null;
@@ -411,9 +417,12 @@ async function load(): Promise<void> {
   detailRevision += 1;
   busy.value = false;
   loading.value = true;
+  calendarLoading.value = false;
+  nextLoading.value = false;
   denied.value = false;
   error.value = null;
   notice.value = null;
+  success.value = null;
   homeworks.value = [];
   dayLoaded.value = false;
   dayLoading.value = false;
@@ -441,8 +450,11 @@ async function load(): Promise<void> {
     semester.value = active;
     subjects.value = available.filter((item) => item.groupId === groupId);
     semesterOptions.value = semesters.map((item) => ({ ...item }));
-    if (props.initialCreate) openCreate();
-    else if (readIntent.value !== null) {
+    if (initialLessonContext) {
+      const context = initialLessonContext;
+      initialLessonContext = null;
+      await openContextualCreate(context, revision);
+    } else if (readIntent.value !== null) {
       await loadDayHomeworks(selectedDate.value);
       if (!disposed && revision === ownerRevision) await loadCalendar(selectedDate.value, false);
     }
@@ -494,11 +506,13 @@ function selectReadIntent(intent: 'current' | 'archive'): void {
   readIntent.value = intent;
   error.value = null;
   notice.value = null;
+  success.value = null;
   void loadDayHomeworks(selectedDate.value);
   void loadCalendar(selectedDate.value, false);
 }
 function selectRootDate(value: string): void {
   selectedDate.value = value;
+  success.value = null;
   void loadCalendar(value, false);
   void loadDayHomeworks(value);
 }
@@ -546,6 +560,7 @@ async function loadDayHomeworks(date: string): Promise<void> {
   }
 }
 async function openDetail(item: HeadmanManagedHomework): Promise<void> {
+  success.value = null;
   detail.value = item;
   view.value = 'detail';
   history.value = [];
@@ -627,7 +642,53 @@ function openCreate(): void {
   subjectListOpen.value = true;
   typeListOpen.value = true;
   notice.value = null;
+  success.value = null;
 }
+
+async function openContextualCreate(
+  context: HeadmanHomeworkLessonContext,
+  owner: number,
+): Promise<void> {
+  if (!writeAllowed.value || !semester.value) return;
+  const { lesson, semesterId } = context;
+  const type = lesson.lessonType;
+  const unavailable =
+    'Пара с экрана «Сегодня» больше недоступна. Выбери актуальную пару или дату.';
+  openCreate();
+  if (
+    !Number.isSafeInteger(lesson.id) ||
+    lesson.id <= 0 ||
+    lesson.groupId !== props.groupId ||
+    lesson.subjectId === null ||
+    (type !== 'LECTURE' && type !== 'PRACTICE' && type !== 'LAB') ||
+    (semesterId !== null && semesterId !== semester.value.id) ||
+    !homeworkDateWritable(lesson.date, semester.value, today())
+  ) {
+    notice.value = unavailable;
+    return;
+  }
+
+  await loadCalendar(lesson.date, true);
+  if (disposed || owner !== ownerRevision || !writeAllowed.value || view.value !== 'wizard') return;
+  subjectId.value = lesson.subjectId;
+  lessonType.value = type;
+  const verified = eligibleLessons.value.find((candidate) =>
+    matchesHomeworkLesson(candidate, lesson),
+  );
+  if (!verified) {
+    subjectId.value = null;
+    lessonType.value = null;
+    notice.value = unavailable;
+    return;
+  }
+
+  chosenDate.value = verified.date;
+  monthDate.value = verified.date;
+  chosenLesson.value = verified;
+  explicitLesson.value = true;
+  step.value = 3;
+}
+
 async function openEdit(): Promise<void> {
   const item = detail.value;
   if (
@@ -722,7 +783,12 @@ function selectWizardDate(value: string): void {
     return;
   }
   const choices = eligibleLessons.value.filter((item) => item.date === value);
-  if (!choices.length) return;
+  if (
+    !choices.length ||
+    (value === chosenDate.value &&
+      choices.some((choice) => matchesHomeworkLesson(choice, chosenLesson.value)))
+  )
+    return;
   chosenDate.value = value;
   explicitLesson.value = choices.length === 1;
   chosenLesson.value = choices.length === 1 ? choices[0]! : null;
@@ -852,16 +918,14 @@ async function primaryAction(): Promise<void> {
         return;
       }
     }
-    const items = await api.listHomeworks(props.groupId!, semester.value!.id);
-    if (disposed || owner !== ownerRevision) return;
-    homeworks.value = items;
     readIntent.value = 'current';
     selectedDate.value = chosenDate.value;
     clearDraft();
     view.value = 'calendar';
-    notice.value = item ? 'Изменения сохранены.' : 'Задание опубликовано.';
-    await loadCalendar(selectedDate.value, false);
+    success.value = item ? 'Изменения сохранены' : 'Задание опубликовано';
     await loadDayHomeworks(selectedDate.value);
+    if (!disposed && owner === ownerRevision && !denied.value)
+      await loadCalendar(selectedDate.value, false);
   } catch (cause) {
     if (disposed || owner !== ownerRevision || cause instanceof StaleSessionGenerationError) return;
     const status = cause instanceof HeadmanHomeworkApiError ? cause.response.status : null;
@@ -952,7 +1016,11 @@ function openUrl(url: string | null): void {
   const result = validateHomeworkLink(url);
   if (!props.offline && result.supported) props.openMaterial?.(result.original);
 }
-watch(view, (value) => emit('viewChange', value), { immediate: true });
+watch(
+  () => view.value === 'calendar' && readIntent.value === null,
+  (landing) => emit('landingChange', landing),
+  { immediate: true },
+);
 watch(
   () =>
     [
@@ -1023,10 +1091,7 @@ defineExpose({ back, openCreate, selectRootDate, openDetail });
     :aria-busy="loading || busy"
     aria-labelledby="headman-homework-title"
   >
-    <header
-      class="headman-homework__header"
-      :class="{ 'headman-homework__header--task': view !== 'calendar' }"
-    >
+    <header class="headman-homework__header">
       <h1 id="headman-homework-title">
         {{
           view === 'history'
@@ -1056,6 +1121,13 @@ defineExpose({ back, openCreate, selectRootDate, openDetail });
       :message="error"
       v-bind="view === 'calendar' ? { actionLabel: 'Повторить' } : {}"
       @action="load"
+    />
+    <AdminNotice
+      v-if="success"
+      tone="success"
+      :title="success"
+      dismiss-label="Закрыть уведомление"
+      @dismiss="success = null"
     />
     <p
       v-if="notice"
@@ -1401,11 +1473,13 @@ defineExpose({ back, openCreate, selectRootDate, openDetail });
             <h2>{{ selectedSubject?.name }} · {{ typeName(lessonType) }}</h2><p>
               {{
                 step === 3
-                  ? formatDate(chosenDate)
+                  ? chosenLesson
+                    ? `${formatDate(chosenDate)} · ${lessonLabel(chosenLesson)}`
+                    : formatDate(chosenDate)
                   : anyDate
                     ? 'Свободная дата включена'
                     : chosenLesson
-                      ? `Ближайшая: ${formatDate(chosenLesson.date)}, ${chosenLesson.startTime?.slice(0, 5) ?? 'время не указано'}`
+                      ? lessonLabel(chosenLesson)
                       : 'Выбери актуальную пару или разреши любую дату'
               }}
             </p>

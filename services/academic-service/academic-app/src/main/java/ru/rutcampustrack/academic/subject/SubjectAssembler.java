@@ -101,15 +101,18 @@ public class SubjectAssembler
         List<Long> teacherIds =
                 assignments.stream().map(Assignment::getTeacherId).distinct().sorted().toList();
         List<Long> assignmentIds = assignments.stream().map(Assignment::getId).toList();
-        return new SubjectResponse(
-                subject.getId(),
-                subject.getName(),
-                subject.getType(),
-                subject.getGroupId(),
-                types,
-                teacherIds,
-                summaries,
-                assignmentIds,
-                subject.getCreatedAt());
+        SubjectResponse response =
+                new SubjectResponse(
+                        subject.getId(),
+                        subject.getName(),
+                        subject.getType(),
+                        subject.getGroupId(),
+                        types,
+                        teacherIds,
+                        summaries,
+                        assignmentIds,
+                        subject.getCreatedAt());
+        response.setSemesterId(subject.getSemesterId());
+        return response;
     }
 }

@@ -9,6 +9,7 @@ import type {
   HeadmanScheduleSemester,
 } from '../schedule/headman-schedule-client';
 import { readPublishedHomeworks } from '../homework/headman-published-homework';
+import type { HeadmanHomeworkLessonContext } from '../homework/headman-homework-state';
 import { moscowDate } from '../../domain/homework';
 import { StaleSessionGenerationError } from '../../shared/session-owner';
 import {
@@ -69,7 +70,7 @@ const props = withDefaults(
 );
 const emit = defineEmits<{
   openLesson: [lesson: HeadmanJournalLesson];
-  openHomework: [];
+  openHomework: [context: HeadmanHomeworkLessonContext];
   openLog: [lesson: HeadmanJournalLesson];
   selectDate: [date: string];
   error: [cause: unknown];
@@ -485,6 +486,27 @@ async function loadAttendance(rowRefresh = false): Promise<HeadmanJournalReport 
   } finally {
     if (revision === rosterRevision) detailLoading.value = false;
   }
+}
+
+function openSelectedHomework(): void {
+  const lesson = selectedLesson.value;
+  if (
+    !lesson ||
+    lesson.groupId !== props.groupId ||
+    lesson.date !== selectedDate.value ||
+    props.offline ||
+    props.readOnly ||
+    !props.homeworkEnabled
+  )
+    return;
+  const attendance = report.value;
+  const semesterId =
+    attendance &&
+    attendance.subjectId === lesson.subjectId &&
+    reportMatchesLesson(attendance, lesson, props.groupId, selectedDate.value)
+      ? attendance.semesterId
+      : null;
+  emit('openHomework', { lesson, semesterId });
 }
 
 function clearHomework(): void {
@@ -941,8 +963,8 @@ onBeforeUnmount(() => {
       <div class="headman-home__actions">
         <button
           type="button"
-          :disabled="offline || !homeworkEnabled"
-          @click="emit('openHomework')"
+          :disabled="offline || readOnly || !homeworkEnabled"
+          @click="openSelectedHomework"
         >
           Выдать ДЗ
         </button><button

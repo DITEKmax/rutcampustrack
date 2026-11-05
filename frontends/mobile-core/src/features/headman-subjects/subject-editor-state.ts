@@ -1,9 +1,41 @@
 import type {
   HeadmanSemester,
+  HeadmanSemesterProgress,
   HeadmanSubject,
   HeadmanSubjectAssignment,
   HeadmanSubjectType,
 } from './headman-subjects-client'
+
+export function partitionSubjectCatalog(
+  subjects: readonly HeadmanSubject[],
+  semester: HeadmanSemester | null,
+  progress: HeadmanSemesterProgress | null,
+): { scoped: HeadmanSubject[]; unscoped: HeadmanSubject[] } {
+  const scoped: HeadmanSubject[] = []
+  const unscoped: HeadmanSubject[] = []
+  const progressSubjectIds = new Set(
+    (progress && progress.semesterId === semester?.id ? progress.items : [])
+      .filter((item) => item.total > 0)
+      .map((item) => item.subjectId),
+  )
+  for (const subject of subjects) {
+    if (subject.semesterId != null) {
+      if (subject.semesterId === semester?.id) scoped.push(subject)
+      continue
+    }
+    if (
+      semester &&
+      (subject.assignments.some((item) => item.semesterId === semester.id) ||
+        subject.pendingSemesterIds?.includes(semester.id) ||
+        subject.pendingAdoptions?.some((item) => item.semesterId === semester.id) ||
+        subject.pendingClosures?.some((item) => item.semesterId === semester.id) ||
+        progressSubjectIds.has(subject.id))
+    )
+      scoped.push(subject)
+    else if (!semester || semester.active) unscoped.push(subject)
+  }
+  return { scoped, unscoped }
+}
 
 export function shiftAssignmentDate(value: string, days: number): string {
   const date = new Date(`${value}T00:00:00Z`)

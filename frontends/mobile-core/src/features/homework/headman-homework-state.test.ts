@@ -3,6 +3,7 @@ import {
   canReselectHomeworkCreate,
   homeworkDateWritable,
   homeworkLessonEligible,
+  matchesHomeworkLesson,
   homeworkMonth,
   homeworkSubjectTypes,
   homeworkTextSegments,
@@ -71,6 +72,15 @@ describe('homework actual calendar eligibility', () => {
         { attempts: 1, everUncertain: false, hasReceipt: false },
       ),
     ).toBe(false)
+  })
+  it('keeps the selected physical pair and revision among lessons of the same type and day', () => {
+    const sameDay = { ...lesson, id: 31, occurrenceId: '72', lessonNumber: 7 }
+    expect(homeworkLessonEligible(sameDay, context)).toBe(true)
+    expect(
+      [sameDay, { ...lesson }].find((candidate) => matchesHomeworkLesson(candidate, lesson)),
+    ).toEqual(lesson)
+    expect(matchesHomeworkLesson({ ...lesson, occurrenceRevision: '4' }, lesson)).toBe(false)
+    expect(matchesHomeworkLesson({ ...lesson, groupId: 9 }, lesson)).toBe(false)
   })
   it('uses actual physical identity and the Moscow end+5 cutoff', () => {
     expect(homeworkLessonEligible(lesson, context)).toBe(true)

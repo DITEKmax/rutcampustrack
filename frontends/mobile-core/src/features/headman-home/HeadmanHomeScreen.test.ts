@@ -1,6 +1,7 @@
 import { createRenderer, h, markRaw, nextTick, shallowReactive, type App } from 'vue'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import HeadmanHomeScreen from './HeadmanHomeScreen.vue'
+import type { HeadmanHomeworkLessonContext } from '../homework/headman-homework-state'
 import type {
   HeadmanHomeworkApi,
   HeadmanManagedHomework,
@@ -124,7 +125,14 @@ function report(id: number, marked: boolean, groupId = 7, date = today): Headman
     })),
   }
 }
-function mount(api: HeadmanJournalApi, extra: { homeworkApi?: HeadmanHomeworkApi } = {}) {
+function mount(
+  api: HeadmanJournalApi,
+  extra: {
+    homeworkApi?: HeadmanHomeworkApi
+    homeworkEnabled?: boolean
+    onOpenHomework?: (context: HeadmanHomeworkLessonContext) => void
+  } = {},
+) {
   vi.useFakeTimers({ toFake: ['Date'] })
   vi.setSystemTime(new Date('2026-10-15T06:00:00Z'))
   const props = shallowReactive({ api, groupId: 7, selectedDate: today, offline: false, ...extra })
@@ -200,6 +208,25 @@ describe('Today uses the selected lesson report', () => {
     expect(byClass(root, 'headman-home')?.props['data-lesson-id']).toBe(3)
     expect(byClass(root, 'headman-manual-roster')).toBeUndefined()
     expect(text(root)).toContain('Сервер вернул состав другой пары.')
+  })
+
+  it('hands the selected same-day pair and its semester to homework creation', async () => {
+    const first = { ...lesson(1, 'ACTIVE'), occurrenceId: '71' }
+    const selected = { ...lesson(2, 'PLANNED'), occurrenceId: '72', occurrenceRevision: '4' }
+    const api = {
+      listLessons: async () => [first, selected],
+      getLessonAttendance: async (id: number) => report(id, false),
+      writable: false,
+    } as unknown as HeadmanJournalApi
+    const onOpenHomework = vi.fn()
+    const { root } = mount(api, { homeworkEnabled: true, onOpenHomework })
+    await flush()
+    const next = all(root, (node) => node.props['aria-label'] === 'Следующая пара')[0]!
+    ;(next.props.onClick as () => void)()
+    await flush()
+    const homework = all(root, (node) => node.tag === 'button' && text(node).trim() === 'Выдать ДЗ')[0]!
+    ;(homework.props.onClick as () => void)()
+    expect(onOpenHomework).toHaveBeenCalledExactlyOnceWith({ lesson: selected, semesterId: 1 })
   })
 
   it('keeps selected lesson homework read-only and filters out other dates', async () => {

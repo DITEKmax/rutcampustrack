@@ -217,6 +217,15 @@
   --rct-homework-calendar-dot-completed-selected: #525252;
 }
 
+[data-headman-ui] {
+  --rct-mobile-dock-opacity: 64%;
+}
+
+[data-headman-ui][data-theme='light'],
+[data-headman-ui] [data-theme='light'] {
+  --rct-color-surface-base: #f2f2f4;
+}
+
 /* Nested screen themes redeclare canonical tokens, so apply the light Student palette there too. */
 [data-theme='light'] [data-student-ui]:not([data-theme]),
 [data-student-ui][data-theme='light'],

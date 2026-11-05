@@ -5,6 +5,28 @@ import type {
 } from '../headman-subjects/headman-subjects-client'
 import type { HeadmanHomeworkSemester } from './headman-homework-client'
 
+export interface HeadmanHomeworkLessonContext {
+  readonly lesson: HeadmanJournalLesson
+  readonly semesterId: number | null
+}
+
+export function matchesHomeworkLesson(
+  candidate: HeadmanJournalLesson,
+  selected: HeadmanJournalLesson | null,
+): boolean {
+  return (
+    selected !== null &&
+    candidate.id === selected.id &&
+    candidate.groupId === selected.groupId &&
+    candidate.subjectId === selected.subjectId &&
+    candidate.lessonType === selected.lessonType &&
+    candidate.date === selected.date &&
+    candidate.lessonNumber === selected.lessonNumber &&
+    candidate.occurrenceId === selected.occurrenceId &&
+    candidate.occurrenceRevision === selected.occurrenceRevision
+  )
+}
+
 export const homeworkTypeLabels: Record<HeadmanSubjectType, string> = {
   LECTURE: 'Лекция',
   PRACTICE: 'Практика',

@@ -37,14 +37,16 @@
   line-height: var(--rct-leading-tight);
   font-weight: var(--rct-font-weight-bold);
 }
-.headman-homework__header--task {
+[data-headman-ui] .headman-homework__header,
+.headman-homework:not([data-view='calendar']) .headman-homework__header {
   display: grid;
   place-items: center;
   min-block-size: var(--rct-control-min-touch);
   margin-block-end: var(--rct-space-1);
   padding-inline: var(--rct-control-min-touch);
 }
-.headman-homework__header--task h1 {
+[data-headman-ui] .headman-homework__header h1,
+.headman-homework:not([data-view='calendar']) .headman-homework__header h1 {
   font-size: var(--rct-today-hero-title-size);
   text-align: center;
 }

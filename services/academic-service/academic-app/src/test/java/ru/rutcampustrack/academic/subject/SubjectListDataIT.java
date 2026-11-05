@@ -2,6 +2,7 @@ package ru.rutcampustrack.academic.subject;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -23,9 +24,12 @@ import org.springframework.boot.test.autoconfigure.web.servlet.MockMvcPrint;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
+import org.springframework.test.util.AopTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
+import ru.rutcampustrack.academic.assignment.AssignmentClosureService;
 import ru.rutcampustrack.academic.exception.ScheduleServiceUnavailableException;
 import ru.rutcampustrack.academic.grpc.ScheduleGrpcClient;
 import ru.rutcampustrack.academic.integration.AbstractAssignmentAuthorityIT;
@@ -45,6 +49,7 @@ class SubjectListDataIT extends AbstractAssignmentAuthorityIT {
     @Autowired private MockMvc mockMvc;
     @Autowired private EntityManagerFactory entityManagerFactory;
     @MockitoBean private ScheduleGrpcClient schedule;
+    @MockitoSpyBean private AssignmentClosureService closureService;
 
     private Fixture fixture;
     private List<Long> priorActiveSemesters;
@@ -136,6 +141,54 @@ class SubjectListDataIT extends AbstractAssignmentAuthorityIT {
     }
 
     @Test
+    void unassignedSubjectsKeepTheirOriginalSemesterAcrossActiveSemesterChanges() throws Exception {
+        Fixture other = newFixture("subject-scope-other-group");
+        long firstSemester = ensureCurrentActiveSemester();
+        JsonNode first = createUnassignedSubject("Scoped unassigned A");
+        assertThat(first.path("semesterId").asLong()).isEqualTo(firstSemester);
+
+        long secondSemester = fixture.semesterId();
+        restoreActiveSemesterIds(List.of(secondSemester));
+        JsonNode second = createUnassignedSubject("Scoped unassigned B");
+        assertThat(second.path("semesterId").asLong()).isEqualTo(secondSemester);
+        long legacy = insertSubject(fixture.groupId(), "Legacy unassigned", "lecture");
+
+        JsonNode page =
+                response(
+                        mockMvc.perform(own(get("/academic/subjects").param("sort", "id,asc")))
+                                .andExpect(status().isOk())
+                                .andReturn()
+                                .getResponse()
+                                .getContentAsString());
+        JsonNode rows = page.path("_embedded").path("subjectResponseList");
+        assertThat(rows).hasSize(3);
+        assertThat(rows.get(0).path("id").asLong()).isEqualTo(first.path("id").asLong());
+        assertThat(rows.get(0).path("semesterId").asLong()).isEqualTo(firstSemester);
+        assertThat(rows.get(1).path("id").asLong()).isEqualTo(second.path("id").asLong());
+        assertThat(rows.get(1).path("semesterId").asLong()).isEqualTo(secondSemester);
+        assertThat(rows.get(2).path("id").asLong()).isEqualTo(legacy);
+        assertThat(rows.get(2).path("semesterId").isNull()).isTrue();
+        for (JsonNode row : rows) {
+            long id = row.path("id").asLong();
+            assertThat(row.path("assignments")).isEmpty();
+            JsonNode detail =
+                    response(
+                            mockMvc.perform(own(get("/academic/subjects/{id}", id)))
+                                    .andExpect(status().isOk())
+                                    .andReturn()
+                                    .getResponse()
+                                    .getContentAsString());
+            assertThat(detail.path("semesterId")).isEqualTo(row.path("semesterId"));
+        }
+        mockMvc.perform(
+                        signedHeadman(
+                                get("/academic/subjects/{id}", first.path("id").asLong()),
+                                other.headmanId(),
+                                other.groupId()))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
     void teacherListDoesNotPublishPendingAdoptionBeforeExactResume() throws Exception {
         long semesterId = ensureCurrentActiveSemester();
         long subjectId = insertSubject(fixture.groupId(), "L05 pending teacher subject", "lecture");
@@ -163,6 +216,24 @@ class SubjectListDataIT extends AbstractAssignmentAuthorityIT {
         assertThat(ownPending.get("pendingAdoptions").get(0).get("targetAssignmentId").asLong())
                 .isEqualTo(assignmentId);
 
+        AssignmentClosureService closureSpy = AopTestUtils.getUltimateTargetObject(closureService);
+        doAnswer(
+                        call -> {
+                            assertThat(jdbcTemplate.queryForObject("SHOW transaction_isolation", String.class))
+                                    .isEqualTo("repeatable read");
+                            assertThat(jdbcTemplate.queryForObject("SHOW transaction_read_only", String.class))
+                                    .isEqualTo("on");
+                            return call.callRealMethod();
+                        })
+                .when(closureSpy)
+                .pendingSemesterIds(List.of(subjectId));
+        JsonNode pendingListRow = ownSubjectListRow(subjectId);
+        assertThat(pendingListRow.path("semesterId").isNull()).isTrue();
+        assertThat(longValues(pendingListRow.path("pendingSemesterIds"))).containsExactly(semesterId);
+        assertThat(pendingListRow.path("assignments")).isEmpty();
+        assertThat(pendingListRow.path("teacherIds")).isEmpty();
+        assertThat(pendingListRow.hasNonNull("pendingAdoptions")).isFalse();
+        assertThat(pendingListRow.toString()).doesNotContain(operationId);
         assertThat(teacherListIds())
                 .as("uncommitted adoption must not publish teacher subject authority")
                 .doesNotContain(subjectId);
@@ -180,6 +251,7 @@ class SubjectListDataIT extends AbstractAssignmentAuthorityIT {
                                         .param("operationId", operationId)))
                 .andExpect(status().isOk());
         assertThat(teacherListIds()).contains(subjectId);
+        assertThat(ownSubjectListRow(subjectId).has("pendingSemesterIds")).isFalse();
         assertThat(
                         jdbcTemplate.queryForObject(
                                 "SELECT COUNT(*) FROM assignments WHERE subject_id=?",
@@ -193,6 +265,24 @@ class SubjectListDataIT extends AbstractAssignmentAuthorityIT {
                                 String.class,
                                 operationId))
                 .isEqualTo("COMMITTED");
+    }
+
+    private JsonNode createUnassignedSubject(String name) throws Exception {
+        String body =
+                """
+                {"name":"%s","type":"LECTURE","lessonTypes":["LECTURE"],"initialAssignments":[]}
+                """
+                        .formatted(name);
+        return response(
+                mockMvc.perform(
+                                own(
+                                        post("/academic/subjects")
+                                                .contentType(MediaType.APPLICATION_JSON)
+                                                .content(body)))
+                        .andExpect(status().isCreated())
+                        .andReturn()
+                        .getResponse()
+                        .getContentAsString());
     }
 
     private JsonNode createAssignment(
@@ -224,6 +314,20 @@ class SubjectListDataIT extends AbstractAssignmentAuthorityIT {
                         .getContentAsString());
     }
 
+    private JsonNode ownSubjectListRow(long subjectId) throws Exception {
+        JsonNode page =
+                response(
+                        mockMvc.perform(own(get("/academic/subjects").param("size", "50")))
+                                .andExpect(status().isOk())
+                                .andReturn()
+                                .getResponse()
+                                .getContentAsString());
+        for (JsonNode row : page.path("_embedded").path("subjectResponseList")) {
+            if (row.path("id").asLong() == subjectId) return row;
+        }
+        throw new AssertionError("Missing subject from own list: " + subjectId);
+    }
+
     private List<Long> teacherListIds() throws Exception {
         JsonNode page =
                 response(
@@ -238,7 +342,11 @@ class SubjectListDataIT extends AbstractAssignmentAuthorityIT {
         List<Long> ids = new ArrayList<>();
         page.path("_embedded")
                 .path("subjectResponseList")
-                .forEach(row -> ids.add(row.get("id").asLong()));
+                .forEach(
+                        row -> {
+                            assertThat(row.has("pendingSemesterIds")).isFalse();
+                            ids.add(row.get("id").asLong());
+                        });
         return ids;
     }
 

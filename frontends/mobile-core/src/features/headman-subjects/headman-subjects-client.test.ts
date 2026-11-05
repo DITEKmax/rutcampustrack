@@ -4,6 +4,29 @@ import { HeadmanGroupApi } from '../headman-group/headman-group-client'
 const key = '11111111-1111-4111-8111-111111111111'
 const json = (value: unknown, status = 200) => new Response(JSON.stringify(value), { status })
 describe('mutation transport preserves receipts and authority', () => {
+  it('reads explicit subject semester identity and legacy null without inferring from assignments', async () => {
+    const subject = { id: 3, name: 'Предмет', type: 'LECTURE', groupId: 1, assignments: [] }
+    let semesterId: unknown = 42
+    let pendingSemesterIds: unknown = [91, 92]
+    const api = new HeadmanSubjectsApi({
+      accessToken: () => 'synthetic',
+      fetcher: async () => json({ ...subject, semesterId, pendingSemesterIds }),
+    })
+    expect(await api.getSubject(3)).toMatchObject({ semesterId: 42, pendingSemesterIds: [91, 92] })
+    semesterId = null
+    expect((await api.getSubject(3)).semesterId).toBeNull()
+    semesterId = undefined
+    expect((await api.getSubject(3)).semesterId).toBeNull()
+    semesterId = -1
+    await expect(api.getSubject(3)).rejects.toThrow('subject.semesterId')
+    semesterId = null
+    pendingSemesterIds = undefined
+    expect((await api.getSubject(3)).pendingSemesterIds).toEqual([])
+    pendingSemesterIds = [0]
+    await expect(api.getSubject(3)).rejects.toThrow('subject.pendingSemesterIds')
+    pendingSemesterIds = '91'
+    await expect(api.getSubject(3)).rejects.toThrow('subject.pendingSemesterIds')
+  })
   it('reads server semester progress without interpreting the paged lessons as totals', async () => {
     let progress: unknown = {
       semesterId: 2,

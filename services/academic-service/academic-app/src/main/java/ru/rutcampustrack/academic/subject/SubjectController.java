@@ -1,6 +1,8 @@
 package ru.rutcampustrack.academic.subject;
 
 import java.time.LocalDate;
+import java.util.List;
+import java.util.Map;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
@@ -8,6 +10,8 @@ import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RestController;
 import ru.rutcampustrack.academic.assignment.AssignmentAssembler;
 import ru.rutcampustrack.academic.contract.api.SubjectApi;
@@ -58,10 +62,15 @@ public class SubjectController implements SubjectApi {
     }
 
     @Override
+    @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
     public ResponseEntity<PagedModel<EntityModel<SubjectResponse>>> listSubjects(
             Pageable pageable, PagedResourcesAssembler<SubjectResponse> assembler) {
-        Page<SubjectResponse> responsePage =
-                subjectAssembler.toResponsePage(subjectService.listSubjects(pageable));
+        Page<Subject> subjects = subjectService.listSubjects(pageable);
+        Map<Long, List<Long>> pendingSemesters =
+                closureService.pendingSemesterIds(subjects.stream().map(Subject::getId).toList());
+        Page<SubjectResponse> responsePage = subjectAssembler.toResponsePage(subjects);
+        responsePage.forEach(
+                response -> response.setPendingSemesterIds(pendingSemesters.get(response.getId())));
         return ResponseEntity.ok(assembler.toModel(responsePage, EntityModel::of));
     }
 

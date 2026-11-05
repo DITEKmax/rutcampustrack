@@ -43,6 +43,7 @@ import type {
 import { DEFAULT_PASSWORD_POLICY, ProfileRequestError } from '../profile/profile-types';
 import { ProfileState } from '../profile/profile-state';
 import ProfileScreen from '../profile/ProfileScreen.vue';
+import BrowserLoginScreen from '../profile/BrowserLoginScreen.vue';
 import RoleSwitchScreen from '../profile/RoleSwitchScreen.vue';
 import AppearanceScreen from '../profile/AppearanceScreen.vue';
 import SecurityScreen from '../profile/SecurityScreen.vue';
@@ -70,7 +71,9 @@ import HeadmanHomeScreen from '../headman-home/HeadmanHomeScreen.vue';
 import HeadmanMoreScreen from '../headman-home/HeadmanMoreScreen.vue';
 import HeadmanHomeworkScreen from '../homework/HeadmanHomeworkScreen.vue';
 import homeworkBackIcon from '../../assets/headman-homework-previous.svg';
+import scheduleEmptyDay from '../../assets/headman-schedule-empty-day.svg?raw';
 import type { HeadmanHomeworkApi } from '../homework/headman-homework-client';
+import type { HeadmanHomeworkLessonContext } from '../homework/headman-homework-state';
 import type { ReportDownloadPort } from '../../shared/report-download-client';
 import { profileOwnerStaleMessage } from '../../shared/profile-owner-status';
 import { createProfileViewPublication } from '../../shared/components/profile-view-publication';
@@ -304,8 +307,9 @@ const commandFingerprint = ref<string | null>(null);
 const actionLogLesson = shallowRef<HeadmanJournalLesson | null>(null);
 const actionLogSubject = ref('Занятие группы');
 const actionLogRouteId = 'headman-today/actions' as const;
-const homeworkStartCreate = ref(false);
-const homeworkView = ref<'calendar' | 'archive' | 'detail' | 'wizard' | 'history'>('calendar');
+const homeworkStartContext = shallowRef<HeadmanHomeworkLessonContext | null>(null);
+const homeworkFromMore = ref(false);
+const homeworkLanding = ref(false);
 const homeworkScreen = ref<InstanceType<typeof HeadmanHomeworkScreen> | null>(null);
 const homeTaskOpen = ref(false);
 const homeScreen = ref<InstanceType<typeof HeadmanHomeScreen> | null>(null);
@@ -317,6 +321,8 @@ const groupRouteId = 'headman-more/group' as const;
 const subjectsRouteId = 'headman-more/subjects' as const;
 const statsRouteId = 'headman-more/stats' as const;
 const homeworkRouteId = 'headman-more/homework' as const;
+const mapRouteId = 'headman-more/map' as const;
+const browserLoginRouteId = 'profile/browser-login' as const;
 const lessonManagementRouteId = 'headman-more/lessons' as const;
 const scheduleRouteId = 'headman-more/schedule/list' as const;
 const scheduleFormRouteId = 'headman-more/schedule/form' as const;
@@ -335,6 +341,39 @@ const profilePublication = createProfileViewPublication(
 const profileView = profilePublication.view;
 const publishProfileView = profilePublication.publish;
 const profileOwnerStatus = computed(() => profileOwnerStaleMessage(route.value, props.offline));
+const profileOwnerKey = computed(() => {
+  const profile = props.profile;
+  return profile?.activeRole === 'HEADMAN' && props.groupId !== null
+    ? JSON.stringify([
+        profile.userId,
+        profile.sessionId,
+        profile.sessionVersion,
+        profile.rolesVersion,
+        props.groupId,
+      ])
+    : null;
+});
+const browserLoginApproval = computed(() => {
+  const snapshot = profileView.value.snapshot;
+  const profile = props.profile;
+  if (
+    !profile ||
+    !profileOwnerKey.value ||
+    props.offline ||
+    props.readOnly ||
+    profileOwnerStatus.value ||
+    profileView.value.snapshotStatus !== 'ready' ||
+    !snapshot ||
+    snapshot.readOnly ||
+    snapshot.activeRole !== 'HEADMAN' ||
+    snapshot.userId !== profile.userId ||
+    snapshot.sessionId !== profile.sessionId ||
+    snapshot.sessionVersion !== profile.sessionVersion ||
+    snapshot.rolesVersion !== profile.rolesVersion
+  )
+    return null;
+  return props.profilePort?.browserLoginApproval ?? null;
+});
 const homeRoleSwitchDisabled = computed(
   () =>
     props.offline ||
@@ -411,29 +450,21 @@ function handleShellBack(): void {
   else if (journalTaskOpen.value) journalScreen.value?.back();
 }
 const shellRoute = computed(() =>
-  route.value.id === scheduleRouteId
-    ? nestedRoute('headman-more', scheduleRouteId, 'overview')
-    : route.value.id === lessonManagementRouteId
-      ? nestedRoute(
-          'headman-more',
-          lessonManagementRouteId,
-          managementView.value === 'agenda' ? 'overview' : 'editor',
-        )
-      : requestsOpen.value && !['queue', 'archive'].includes(requestsView.value)
-        ? nestedRoute('headman-requests', 'headman-requests/detail', 'editor')
-        : route.value.id === homeworkRouteId
-          ? nestedRoute(
-              'headman-more',
-              homeworkRouteId,
-              homeworkView.value === 'calendar' ? 'overview' : 'editor',
-            )
-          : homeTaskOpen.value
-            ? nestedRoute('headman-today', 'headman-today/reason', 'editor')
-            : journalTaskOpen.value
-              ? nestedRoute('headman-attendance', 'headman-attendance/reason', 'editor')
-            : statsOpen.value && statsView.value !== 'overview'
-              ? nestedRoute('headman-more', statsRouteId, 'detail')
-              : route.value,
+  route.value.id === lessonManagementRouteId
+    ? nestedRoute(
+        'headman-more',
+        lessonManagementRouteId,
+        managementView.value === 'agenda' ? 'overview' : 'editor',
+      )
+    : requestsOpen.value && !['queue', 'archive'].includes(requestsView.value)
+      ? nestedRoute('headman-requests', 'headman-requests/detail', 'editor')
+      : homeTaskOpen.value
+        ? nestedRoute('headman-today', 'headman-today/reason', 'editor')
+        : journalTaskOpen.value
+          ? nestedRoute('headman-attendance', 'headman-attendance/reason', 'editor')
+          : statsOpen.value && statsView.value !== 'overview'
+            ? nestedRoute('headman-more', statsRouteId, 'detail')
+            : route.value,
 );
 watch(statsOpen, (open) => {
   if (!open) statsView.value = 'overview';
@@ -442,6 +473,11 @@ let stopNavigation = navigation.subscribe(() => {
   const next = navigation.current;
   route.value = next;
   if (next.id !== 'headman-today') homeTaskOpen.value = false;
+  if (next.id !== homeworkRouteId) {
+    homeworkStartContext.value = null;
+    homeworkFromMore.value = false;
+    homeworkLanding.value = false;
+  }
   if (next.root !== 'headman-attendance') journalTaskOpen.value = false;
   journalOpen.value = next.root === 'headman-attendance';
   requestsOpen.value = next.id === requestsRouteId;
@@ -545,6 +581,11 @@ function navigateProfile(
   routeName: ProfileRoute,
   options: { preserveHistory?: boolean } = {},
 ): void {
+  if (routeName === 'browser-login') {
+    if (!disposed && route.value.id === 'profile' && browserLoginApproval.value?.isOnline())
+      navigation.push(nestedRoute('profile', browserLoginRouteId, 'detail'));
+    return;
+  }
   if (routeName === 'profile') {
     navigation.goRoot('profile');
     return;
@@ -684,7 +725,6 @@ function navigateRoot(routeName: MobileRootRouteId): void {
     routeName !== 'headman-attendance' &&
     routeName !== 'headman-requests' &&
     routeName !== 'headman-more' &&
-    routeName !== 'headman-map' &&
     routeName !== 'profile'
   )
     return;
@@ -738,22 +778,23 @@ function openStats(): void {
   navigation.push(nestedRoute('headman-more', statsRouteId, 'detail'));
 }
 
-function openHomework(startCreate = false): void {
-  homeworkStartCreate.value = startCreate;
-  if (
-    !props.homeworkApi ||
-    !props.journalApi ||
-    props.groupId === null ||
-    !Number.isSafeInteger(props.homeworkActorUserId) ||
-    (props.homeworkActorUserId ?? 0) <= 0
-  )
-    return;
-  navigation.push(nestedRoute('headman-more', homeworkRouteId, 'task'));
+function openHomework(
+  context: HeadmanHomeworkLessonContext | null = null,
+  fromMore = false,
+): void {
+  if (!moreAvailability.value.homework) return;
+  if (context && (route.value.id !== 'headman-today' || props.offline || props.readOnly)) return;
+  homeworkStartContext.value = context;
+  homeworkFromMore.value = fromMore;
+  homeworkLanding.value = fromMore;
+  navigation.push(nestedRoute('headman-more', homeworkRouteId, 'task'), {
+    preserveHistory: context !== null,
+  });
 }
 
 function openSchedule(): void {
   if (!props.api || props.groupId === null) return;
-  navigation.push(nestedRoute('headman-more', scheduleRouteId, 'overview'));
+  navigation.push(nestedRoute('headman-more', scheduleRouteId, 'task'));
 }
 
 function openLessonManagement(): void {
@@ -772,7 +813,7 @@ function selectMore(
   } else if (destination === 'stats') {
     openStats();
   } else if (destination === 'homework') {
-    openHomework();
+    openHomework(null, true);
   } else if (destination === 'group') {
     openGroup();
   } else if (destination === 'subjects') {
@@ -786,7 +827,7 @@ function selectMore(
 
 function openMap(): void {
   if (!props.mapClient) return;
-  navigateRoot('headman-map');
+  navigation.push(nestedRoute('headman-more', mapRouteId, 'task'));
 }
 
 const activeAssignments = computed(() =>
@@ -1678,7 +1719,7 @@ watch(
     lifecyclePreview.value = null;
     formBusy.value = false;
     if (wasEditing && route.value.id === scheduleFormRouteId)
-      navigation.replace(nestedRoute('headman-more', scheduleRouteId, 'overview'));
+      navigation.replace(nestedRoute('headman-more', scheduleRouteId, 'task'));
   },
   { flush: 'sync' },
 );
@@ -1844,8 +1885,14 @@ defineExpose({ openNotificationAction });
     :route="shellRoute"
     :navigation="homeTaskOpen || journalTaskOpen ? null : navigation"
     :nav-items="navigationItems"
-    :active-id="route.root === 'headman-map' ? 'headman-more' : route.root"
+    :active-id="route.root"
     :host="host"
+    :show-task-dock="
+      route.id === scheduleRouteId ||
+      (route.id === homeworkRouteId && homeworkFromMore && homeworkLanding)
+    "
+    data-headman-ui
+    :data-theme="resolvedTheme"
     back-label="Назад"
     @back="handleShellBack"
   >
@@ -1854,13 +1901,14 @@ defineExpose({ openNotificationAction });
         v-if="
           visible &&
             route.root !== 'profile' &&
+            !(route.id === mapRouteId && mapClient) &&
             !groupOpen &&
             !subjectsOpen &&
             !requestsOpen &&
             !homeTaskOpen &&
             !journalScreen?.manualOpen &&
             route.id !== lessonManagementRouteId &&
-            !formOpen
+            !scheduleOpen
         "
         class="mobile-shell__back"
         aria-label="Назад"
@@ -1884,12 +1932,16 @@ defineExpose({ openNotificationAction });
       />
     </template>
     <MapScreen
-      v-if="route.id === 'headman-map' && props.mapClient"
-      :client="props.mapClient"
+      v-if="route.id === mapRouteId && mapClient"
+      compact-presentation
+      headman-presentation
+      :client="mapClient"
       :theme="resolvedTheme"
+      :offline="offline"
+      :on-back="host?.backOwner === 'host' ? undefined : handleTaskBack"
     />
     <p
-      v-else-if="route.id === 'headman-map'"
+      v-else-if="route.id === mapRouteId"
       class="headman-schedule__state"
       role="status"
     >
@@ -1926,7 +1978,7 @@ defineExpose({ openNotificationAction });
       @select-date="selectedDate = $event"
       @role-switch="openHomeRoleSwitch"
       @open-lesson="openHomeLesson"
-      @open-homework="openHomework(true)"
+      @open-homework="openHomework"
       @open-log="openHomeLog"
       @error="forwardError"
     />
@@ -2032,7 +2084,7 @@ defineExpose({ openNotificationAction });
       v-else-if="route.id === homeworkRouteId"
       ref="homeworkScreen"
       :subjects-api="subjectsApi"
-      :initial-create="homeworkStartCreate"
+      :initial-lesson-context="homeworkStartContext"
       :host="host"
       :open-material="openMaterial"
       :api="homeworkApi"
@@ -2041,7 +2093,7 @@ defineExpose({ openNotificationAction });
       :user-id="homeworkActorUserId"
       :offline="offline"
       :read-only="readOnly"
-      @view-change="homeworkView = $event"
+      @landing-change="homeworkLanding = $event"
       @error="forwardError"
     />
     <template v-else-if="route.root === 'profile'">
@@ -2057,11 +2109,8 @@ defineExpose({ openNotificationAction });
       <ProfileScreen
         v-if="route.id === 'profile'"
         :snapshot="profileView.snapshot ?? profile"
-        :browser-login-approval="
-          !offline && !readOnly && !profileOwnerStatus && profileView.snapshotStatus === 'ready'
-            ? profilePort?.browserLoginApproval ?? null
-            : null
-        "
+        browser-login-page
+        :browser-login-approval="browserLoginApproval"
         :loading="profileView.snapshotStatus === 'loading' && profile === null"
         :error="profileView.snapshotError"
         :theme="resolvedTheme"
@@ -2084,8 +2133,17 @@ defineExpose({ openNotificationAction });
         :on-back="handleTaskBack"
         :on-select-role="selectProfileRole"
       />
+      <BrowserLoginScreen
+        v-else-if="route.id === browserLoginRouteId"
+        :port="browserLoginApproval"
+        :offline="offline"
+        :theme="resolvedTheme"
+        :owner-key="profileOwnerKey"
+        :on-back="handleTaskBack"
+      />
       <AppearanceScreen
         v-else-if="route.id === 'profile/appearance'"
+        theme-unlocked
         :theme="themeMode"
         :resolved-theme="resolvedTheme"
         :on-back="handleTaskBack"
@@ -2142,13 +2200,13 @@ defineExpose({ openNotificationAction });
       :data-constructor-view="formOpen ? 'editor' : 'list'"
       :aria-busy="loading || formBusy"
     >
-      <header :class="formOpen ? 'headman-schedule__child-header' : 'headman-schedule__header'">
+      <header class="headman-schedule__child-header">
         <button
-          v-if="formOpen"
+          v-if="host?.backOwner !== 'host'"
           class="headman-schedule__back"
           type="button"
           aria-label="Назад"
-          @click="closeForm"
+          @click="formOpen ? closeForm() : handleTaskBack()"
         >
           <MobileIcon name="back" />
         </button>
@@ -2157,12 +2215,6 @@ defineExpose({ openNotificationAction });
             formOpen ? (editTarget?.active === false ? 'Ранее убранный шаблон' : editTarget ? 'Изменить пару' : 'Добавить пару') : 'Конструктор расписания'
           }}
         </h1>
-        <p
-          v-if="!formOpen"
-          class="headman-schedule__context"
-        >
-          Шаблон повторяющихся пар
-        </p>
       </header>
       <StudentWarningBlock
         v-if="offline"
@@ -2238,10 +2290,16 @@ defineExpose({ openNotificationAction });
           v-if="!visibleDayItems.length"
           class="headman-schedule__empty-card"
         >
+          <!-- eslint-disable vue/no-v-html -- Trusted bundled decorative SVG. -->
           <span
-            class="headman-schedule__plus"
+            class="headman-schedule__empty-art"
             aria-hidden="true"
-          >+</span><h2>На {{ days.find((d) => d.value === selectedDay)?.accusative }} пар пока нет</h2><p>Добавь пару для выбранной недели или сразу для обеих</p><button
+            v-html="scheduleEmptyDay"
+          />
+          <!-- eslint-enable vue/no-v-html -->
+          <h2>На {{ days.find((day) => day.value === selectedDay)?.accusative }} пар пока нет</h2>
+          <p>Добавь пару для выбранной недели или сразу для обеих</p>
+          <button
             class="headman-schedule__primary"
             type="button"
             :disabled="offline || readOnly || !headmanOwner || intentRecoveryBlocked"

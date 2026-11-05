@@ -1,5 +1,6 @@
 package ru.rutcampustrack.academic.contract.dto.subject;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -19,6 +20,7 @@ public class SubjectResponse extends RepresentationModel<SubjectResponse> {
     private String name;
     private SubjectType type;
     private Long groupId;
+    private Long semesterId;
     private List<SubjectType> lessonTypes;
     private List<Long> teacherIds;
     private List<AssignmentSummaryResponse> assignments;
@@ -26,6 +28,17 @@ public class SubjectResponse extends RepresentationModel<SubjectResponse> {
     private OffsetDateTime createdAt;
     private List<PendingAdoptionResponse> pendingAdoptions;
     private List<PendingClosureResponse> pendingClosures;
+    private List<Long> pendingSemesterIds;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @Schema(description = "Семестры незавершённых назначений и снятий преподавателя для старосты группы")
+    public List<Long> getPendingSemesterIds() {
+        return pendingSemesterIds;
+    }
+
+    public void setPendingSemesterIds(List<Long> pendingSemesterIds) {
+        this.pendingSemesterIds = pendingSemesterIds == null ? null : List.copyOf(pendingSemesterIds);
+    }
 
     public List<PendingClosureResponse> getPendingClosures() {
         return pendingClosures;
@@ -106,6 +119,18 @@ public class SubjectResponse extends RepresentationModel<SubjectResponse> {
 
     public void setGroupId(Long groupId) {
         this.groupId = groupId;
+    }
+
+    @Schema(
+            description = "Сохранённая привязка к семестру. Null для предметов без привязки",
+            types = {"integer", "null"},
+            format = "int64")
+    public Long getSemesterId() {
+        return semesterId;
+    }
+
+    public void setSemesterId(Long semesterId) {
+        this.semesterId = semesterId;
     }
 
     public List<SubjectType> getLessonTypes() {

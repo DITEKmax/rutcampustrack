@@ -12,6 +12,8 @@ import {
   type HeadmanPendingClosure,
 } from './headman-subjects-client';
 import MobileIcon from '../../shared/components/MobileIcon.vue';
+import AdminNotice from '../../shared/components/AdminNotice.vue';
+import HeadmanStatsSelect from '../headman-stats/HeadmanStatsSelect.vue';
 import MobileToolsSheet from '../../shared/components/MobileToolsSheet.vue';
 import StudentWarningBlock from '../../shared/components/StudentWarningBlock.vue';
 import {
@@ -24,6 +26,7 @@ import {
 } from './subject-edit-intent';
 import { createSubjectSaveFlow } from './subject-save-flow';
 import {
+  partitionSubjectCatalog,
   subjectEditorAssignments,
   subjectEditorAssignment,
   subjectAssignmentPeriod,
@@ -124,8 +127,8 @@ const editSemester = computed(() =>
     ? activeSemester.value
     : (semesters.value.find((item) => item.id === selectedSemesterId.value) ?? null),
 );
-const editorSubject = computed(
-  () => subjects.value.find((item) => item.id === editorSubjectId.value) ?? null,
+const semesterOptions = computed(() =>
+  semesters.value.map((semester) => ({ value: String(semester.id), label: semester.name })),
 );
 const pickerType = ref<HeadmanSubjectType | null>(null),
   pickerTeacher = ref<HeadmanTeacher | null>(null),
@@ -146,13 +149,19 @@ const recoverySubjectId = ref<number | null>(null);
 const editorDetail = ref<HeadmanSubject | null>(null),
   detailLoading = ref(false);
 let detailRevision = 0;
+const editorSubject = computed(() => {
+  const detail = editorDetail.value;
+  return detail && detail.id === editorSubjectId.value
+    ? detail
+    : (subjects.value.find((item) => item.id === editorSubjectId.value) ?? null);
+});
 const editorDirty = computed(() => formOpen.value && editorBaseline.value !== editorSnapshot());
 const historicalSemester = computed(
   () => editSemester.value !== null && !editSemester.value.active,
 );
 const editorWritable = computed(
   () =>
-    !historicalSemester.value &&
+    editSemester.value?.active === true &&
     !props.offline &&
     !props.readOnly &&
     !denied.value &&
@@ -168,7 +177,9 @@ const subjectName = ref('');
 const loading = ref(false);
 const busy = ref(false);
 const error = ref<string | null>(null);
-const notice = ref<string | null>(null);
+const notice = ref<{ tone: 'success' | 'warning'; title: string; message?: string } | null>(
+  null,
+);
 const denied = ref(false);
 const addSubjectId = ref<number | null>(null);
 const addLessonType = ref<HeadmanSubjectType | null>(null);
@@ -190,13 +201,11 @@ let disposed = false;
 type LoadOutcome = 'loaded' | 'stale' | 'skipped' | 'denied' | 'failed';
 
 const replacementSource = computed(() => {
-  for (const subject of subjects.value) {
-    const assignment = subject.assignments.find(
-      (candidate) => candidate.id === replacementAssignmentId.value,
-    );
-    if (assignment) return { subject, assignment };
-  }
-  return null;
+  const subject = editorSubject.value;
+  const assignment = subject?.assignments.find(
+    (candidate) => candidate.id === replacementAssignmentId.value,
+  );
+  return subject && assignment ? { subject, assignment } : null;
 });
 const mutationLocked = computed(
   () =>
@@ -555,6 +564,15 @@ const progress = ref<HeadmanSemesterProgress | null>(null);
 const progressLoading = ref(false);
 const progressError = ref(false);
 let progressRevision = 0;
+const subjectCatalog = computed(() =>
+  partitionSubjectCatalog(subjects.value, editSemester.value, progress.value),
+);
+const subjectSections = computed(() =>
+  [
+    { id: 'semester', title: null, items: subjectCatalog.value.scoped },
+    { id: 'unscoped', title: 'Семестр не указан', items: subjectCatalog.value.unscoped },
+  ].filter((section) => section.items.length > 0),
+);
 
 async function loadProgress(): Promise<void> {
   const revision = ++progressRevision;
@@ -621,9 +639,9 @@ async function load(): Promise<LoadOutcome> {
     hasSnapshot.value = true;
     subjects.value = nextSubjects;
     semesters.value = nextSemesters;
-    if (selectedSemesterId.value === null)
+    if (!nextSemesters.some((item) => item.id === selectedSemesterId.value))
       selectedSemesterId.value =
-        nextSemesters.find((semester) => semester.active)?.id ?? nextSemesters[0]?.id ?? null;
+        nextSemesters.find((semester) => semester.active)?.id ?? null;
     const teacherIds = [...new Set(nextSubjects.flatMap((subject) => subject.teacherIds))];
     const resolvedTeachers = await props.api.resolveTeachers(teacherIds);
     if (revision !== loadRevision || disposed) return 'stale';
@@ -635,7 +653,11 @@ async function load(): Promise<LoadOutcome> {
         (intent.phase === 'committed' || intent.state === 'COMMITTED'),
     );
     if (confirmed.length > 0) {
-      notice.value = 'Замена подтверждена сервером; предметы и назначения обновлены.';
+      notice.value = {
+        tone: 'success',
+        title: 'Замена подтверждена',
+        message: 'Предметы и назначения обновлены.',
+      };
       for (const intent of confirmed) removeStoredReplacementIntent(intent);
     }
     return 'loaded';
@@ -1018,6 +1040,14 @@ function assignmentsFor(
     moscowDate(new Date().toISOString())!,
   );
 }
+function summaryTeachers(subject: HeadmanSubject): string {
+  const ids = new Set(
+    subject.lessonTypes.flatMap((type) =>
+      assignmentsFor(subject, type).map((assignment) => assignment.teacherId),
+    ),
+  );
+  return [...ids].map(teacherLabel).join(', ') || 'Преподаватель не назначен';
+}
 function resetEditor(subject: HeadmanSubject | null): void {
   editorSubjectId.value = subject?.id ?? null;
   subjectName.value = subject?.name ?? '';
@@ -1077,7 +1107,6 @@ async function refreshOpenSubject(): Promise<void> {
       subject.pendingClosures?.some((h) => h.subjectId !== id || h.groupId !== group)
     )
       throw new Error('Данные восстановления не соответствуют текущему предмету и группе.');
-    subjects.value = subjects.value.map((item) => (item.id === id ? subject : item));
     if (!editorDirty.value) resetEditor(subject);
     editorDetail.value = subject;
   } catch (cause) {
@@ -1101,7 +1130,7 @@ async function finishServerClosure(handle: HeadmanPendingClosure): Promise<void>
     !subject ||
     !actor ||
     group === null ||
-    historicalSemester.value ||
+    editSemester.value?.active !== true ||
     props.offline ||
     props.readOnly ||
     denied.value ||
@@ -1124,9 +1153,13 @@ async function finishServerClosure(handle: HeadmanPendingClosure): Promise<void>
   if (saveFlow.canContinue()) await saveFlow.send();
 }
 
-function changeSemester(): void {
+function changeSemester(value: string): void {
+  const semester = semesters.value.find((item) => String(item.id) === value);
+  if (!semester || semester.id === selectedSemesterId.value || loading.value || mutationLocked.value)
+    return;
+  selectedSemesterId.value = semester.id;
+  notice.value = null;
   void loadProgress();
-  if (formOpen.value && editorSubject.value) resetEditor(editorSubject.value);
 }
 function toggleType(type: HeadmanSubjectType): void {
   if (editorWritable.value)
@@ -1398,14 +1431,21 @@ const saveFlow = createSubjectSaveFlow({
   completed: (selectedResult) => {
     closeForm();
     notice.value = selectedResult
-      ? 'Выбранный предмет принят как результат. Исходный запрос не повторялся.'
-      : 'Изменения подтверждены сервером.';
+      ? {
+          tone: 'warning',
+          title: 'Выбранный предмет принят как результат',
+          message: 'Исходный запрос не повторялся.',
+        }
+      : { tone: 'success', title: 'Изменения подтверждены сервером' };
     error.value = null;
   },
   cancelled: () => {
     closeForm();
-    notice.value =
-      'Подтверждённые изменения сохранены. Оставшиеся изменения отменены; предмет можно редактировать заново.';
+    notice.value = {
+      tone: 'warning',
+      title: 'Подтверждённые изменения сохранены',
+      message: 'Оставшиеся изменения отменены. Предмет можно редактировать заново.',
+    };
     error.value = null;
   },
   failed: (cause) => emit('error', cause),
@@ -1608,13 +1648,15 @@ onBeforeUnmount(() => {
       :message="editStorageError"
       severity="error"
     />
-    <p
+    <AdminNotice
       v-if="notice"
-      class="headman-subjects__notice"
-      role="status"
+      :tone="notice.tone"
+      :title="notice.title"
+      dismiss-label="Закрыть уведомление"
+      @dismiss="notice = null"
     >
-      {{ notice }}
-    </p>
+      <template v-if="notice.message" #default>{{ notice.message }}</template>
+    </AdminNotice>
     <section
       v-if="editorDetail?.pendingClosures?.length && !editIntent"
       class="headman-subjects__recovery"
@@ -1628,7 +1670,10 @@ onBeforeUnmount(() => {
         :key="handle.operationId"
         type="button"
         data-server-closure
-        :disabled="offline || readOnly || denied || mutationLocked || detailLoading || editorDirty"
+        :disabled="
+          !editSemester?.active || offline || readOnly || denied || mutationLocked ||
+            detailLoading || editorDirty
+        "
         @click="finishServerClosure(handle)"
       >
         Завершить снятие
@@ -1704,19 +1749,17 @@ onBeforeUnmount(() => {
       Загружаем предметы…
     </p>
     <template v-if="!formOpen && !replacementSource && !removeCandidate && hasSnapshot">
-      <p class="headman-subjects__count">
-        {{ subjects.length }} предметов
+      <p v-if="editSemester" class="headman-subjects__count">
+        Предметов: {{ subjectCatalog.scoped.length }}
       </p>
-      <label class="headman-subjects__semester"><select
-        v-model="selectedSemesterId"
-        aria-label="Семестр"
-        :disabled="loading || mutationLocked"
-        @change="changeSemester"
-      ><option
-        v-for="semester in semesters"
-        :key="semester.id"
-        :value="semester.id"
-      >{{ semester.name }}</option></select><MobileIcon name="chevron-down" /></label>
+      <HeadmanStatsSelect
+        label="Семестр"
+        :model-value="selectedSemesterId === null ? '' : String(selectedSemesterId)"
+        :options="semesterOptions"
+        :placeholder="semesterOptions.length ? 'Выбери семестр' : 'Нет доступных семестров'"
+        :disabled="loading || mutationLocked || !semesterOptions.length"
+        @update:model-value="changeSemester"
+      />
       <button
         class="headman-subjects__primary headman-subjects__add"
         type="button"
@@ -1734,9 +1777,14 @@ onBeforeUnmount(() => {
       >
         Повторить загрузку прогресса
       </button>
-      <div class="headman-subjects__list">
+      <div
+        v-for="section in subjectSections"
+        :key="section.id"
+        class="headman-subjects__list"
+      >
+        <h2 v-if="section.title">{{ section.title }}</h2>
         <button
-          v-for="subject in subjects"
+          v-for="subject in section.items"
           :key="subject.id"
           class="headman-subjects__subject"
           type="button"
@@ -1744,24 +1792,24 @@ onBeforeUnmount(() => {
           :disabled="mutationLocked"
           @click="openSubject(subject)"
         >
-          <span><strong>{{ subject.name }}</strong><small><MobileIcon name="profile" />{{
-            [
-              ...new Set(
-                subject.lessonTypes.flatMap((type) =>
-                  assignmentsFor(subject, type).map((a) => `${teacherLabel(a.teacherId)} · ${subjectAssignmentPeriodLabel(a.validFrom, a.validUntilExclusive, moscowDate(new Date().toISOString())!)}`),
-                ),
-              ),
-            ].join(', ') || 'Преподаватель не назначен'
-          }}</small><small
-            v-for="type in subject.lessonTypes"
-            :key="type"
-          >{{ typeLabels[type] }} · {{ progressText(subject.id, type) }}</small></span><MobileIcon name="chevron-down" />
+          <span>
+            <strong>{{ subject.name }}</strong>
+            <template v-if="section.id === 'semester'">
+              <small><MobileIcon name="profile" />{{ summaryTeachers(subject) }}</small>
+              <small v-for="type in subject.lessonTypes" :key="type">
+                {{ typeLabels[type] }} · {{ progressText(subject.id, type) }}
+              </small>
+            </template>
+          </span>
+          <MobileIcon name="chevron-down" />
         </button>
       </div>
-      <p v-if="!loading && !subjects.length">
-        Предметов пока нет.
+      <p v-if="!loading && !progressLoading && editSemester && !subjectCatalog.scoped.length">
+        В этом семестре пока нет предметов.
+      </p><p v-else-if="!loading && !editSemester && !subjectSections.length">
+        {{ semesterOptions.length ? 'Выбери семестр, чтобы увидеть его предметы.' : 'Предметов пока нет.' }}
       </p><button
-        v-if="!subjects.length || error"
+        v-if="!subjectSections.length || error"
         class="headman-subjects__secondary"
         type="button"
         :disabled="offline || loading"

@@ -15,6 +15,7 @@ const props = withDefaults(
     onBack?: (() => void | Promise<void>) | undefined;
     offline?: boolean;
     compactPresentation?: boolean;
+    headmanPresentation?: boolean;
   }>(),
   {
     theme: undefined,
@@ -62,7 +63,7 @@ const buildingOptions = computed(() =>
     : buildings.value,
 );
 const floorOptions = computed(() =>
-  props.compactPresentation
+  props.compactPresentation && !props.headmanPresentation
     ? floors.value.map((item) => ({ ...item, label: numberLabel(item.label, 'Этаж') }))
     : floors.value,
 );
@@ -532,8 +533,8 @@ function formatMessage(state: string | undefined, format: 'SVG' | 'PNG'): string
             class="map-card"
             aria-live="polite"
           >
-            <div class="map-card__heading">
-              <div>
+            <div v-if="!headmanPresentation || loadingAsset" class="map-card__heading">
+              <div v-if="!headmanPresentation">
                 <h2>{{ selectedPlan.label }}</h2
                 ><p v-if="!studentPresentation && !compactPresentation"
                   >Версия {{ selectedPlan.version }}</p
@@ -580,7 +581,7 @@ function formatMessage(state: string | undefined, format: 'SVG' | 'PNG'): string
                   @click="resetView"
                 >
                   <MobileIcon
-                    v-if="studentPresentation"
+                    v-if="studentPresentation || headmanPresentation"
                     name="retry"
                   /><span v-else>Сбросить масштаб</span>
                 </button>

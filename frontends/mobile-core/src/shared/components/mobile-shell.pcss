@@ -24,6 +24,15 @@
   @mixin rct-focus-ring;
 }
 
+.mobile-shell[data-headman-ui] {
+  min-block-size: 100dvh;
+  background: var(--rct-color-surface-base);
+}
+
+.mobile-shell[data-headman-ui][data-back-owner='host'] .profile-browser-page .profile-back {
+  display: none;
+}
+
 /* Accepted Student presentation; existing roles retain their base rules. */
 :where([data-student-ui]) .mobile-shell,
 :where([data-student-ui]):is(.mobile-shell) {

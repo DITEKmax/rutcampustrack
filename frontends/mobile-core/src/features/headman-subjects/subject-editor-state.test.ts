@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { subjectEditorAssignment, subjectEditorAssignments, subjectAssignmentPeriod, subjectAssignmentPeriodLabel } from './subject-editor-state'
+import {
+  partitionSubjectCatalog,
+  subjectEditorAssignment,
+  subjectEditorAssignments,
+  subjectAssignmentPeriod,
+  subjectAssignmentPeriodLabel,
+} from './subject-editor-state'
 import { parseSubjectEditIntent } from './subject-edit-intent'
 import type { HeadmanSubject } from './headman-subjects-client'
 const subject: HeadmanSubject = {
@@ -36,6 +42,42 @@ const subject: HeadmanSubject = {
     },
   ],
 }
+describe('subject catalog semester identity', () => {
+  it('retains exact unassigned scopes and shows unresolved legacy separately from the active semester', () => {
+    const past = { id: 1, name: 'Осень', dateFrom: '2026-09-01', dateTo: '2027-01-31', active: false }
+    const active = { ...past, id: 2, active: true }
+    const unassignedPast = { ...subject, id: 2, semesterId: 1, assignments: [] }
+    const unassignedActive = { ...subject, id: 3, semesterId: 2, assignments: [] }
+    const unresolved = { ...subject, id: 4, semesterId: null, assignments: [] }
+    const pendingOnly = { ...unresolved, id: 5, pendingSemesterIds: [past.id] }
+    const catalog = [subject, unassignedPast, unassignedActive, unresolved, pendingOnly]
+    const progress = {
+      semesterId: 2,
+      generatedAt: '2026-10-15T10:00:00Z',
+      items: [
+        { subjectId: 2, lessonType: 'LECTURE' as const, done: 1, total: 1 },
+        { subjectId: 4, lessonType: 'LECTURE' as const, done: 1, total: 1 },
+      ],
+    }
+    expect(partitionSubjectCatalog(catalog, past, progress)).toEqual({
+      scoped: [subject, unassignedPast, pendingOnly],
+      unscoped: [],
+    })
+    expect(partitionSubjectCatalog(catalog, active, null)).toEqual({
+      scoped: [unassignedActive],
+      unscoped: [subject, unresolved, pendingOnly],
+    })
+    expect(partitionSubjectCatalog(catalog, active, progress)).toEqual({
+      scoped: [unassignedActive, unresolved],
+      unscoped: [subject, pendingOnly],
+    })
+    expect(partitionSubjectCatalog(catalog, null, null)).toEqual({
+      scoped: [],
+      unscoped: [subject, unresolved, pendingOnly],
+    })
+  })
+})
+
 describe('editor assignment identity and durable recovery boundaries', () => {
   it('keeps completed and future intervals visible and selects the exact interval of the same teacher', () => {
     const rows = subjectEditorAssignments(

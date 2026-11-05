@@ -429,6 +429,25 @@ class AssignmentReplacementIT extends AbstractAssignmentAuthorityIT {
         assertThat(handle.get("lessonType").asText()).isEqualTo("LECTURE");
         assertThat(handle.has("actorId")).isFalse();
         assertThat(detail.get("assignments")).isEmpty();
+        JsonNode list =
+                objectMapper.readTree(
+                        mockMvc.perform(
+                                        signedHeadman(
+                                                MockMvcRequestBuilders.get("/academic/subjects"),
+                                                currentHeadman,
+                                                fixture.groupId()))
+                                .andExpect(status().isOk())
+                                .andReturn()
+                                .getResponse()
+                                .getContentAsString());
+        JsonNode summary = list.path("_embedded").path("subjectResponseList").path(0);
+        assertThat(summary.path("id").asLong()).isEqualTo(subject);
+        assertThat(summary.path("pendingSemesterIds")).hasSize(1);
+        assertThat(summary.path("pendingSemesterIds").path(0).asLong()).isEqualTo(fixture.semesterId());
+        assertThat(summary.path("assignments")).isEmpty();
+        assertThat(summary.hasNonNull("pendingClosures")).isFalse();
+        assertThat(summary.toString()).doesNotContain(operation.toString(), key.toString());
+
         Fixture foreign = newFixture("foreign closure recovery");
         mockMvc.perform(
                         signedHeadman(

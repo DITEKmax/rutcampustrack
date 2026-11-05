@@ -2050,6 +2050,11 @@ export interface components {
             type?: "LECTURE" | "PRACTICE" | "LAB";
             /** Format: int64 */
             groupId?: number;
+            /**
+             * Format: int64
+             * @description Сохранённая привязка к семестру. Null для предметов без привязки
+             */
+            semesterId?: number | null;
             lessonTypes?: ("LECTURE" | "PRACTICE" | "LAB")[];
             teacherIds?: number[];
             assignments?: components["schemas"]["AssignmentSummaryResponse"][];
@@ -2058,6 +2063,8 @@ export interface components {
             createdAt?: string;
             pendingAdoptions?: components["schemas"]["PendingAdoptionResponse"][];
             pendingClosures?: components["schemas"]["PendingClosureResponse"][];
+            /** @description Семестры незавершённых назначений и снятий преподавателя для старосты группы */
+            pendingSemesterIds?: number[];
             _links?: components["schemas"]["Links"];
         };
         PendingAdoptionResponse: {

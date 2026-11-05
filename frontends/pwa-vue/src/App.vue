@@ -581,10 +581,6 @@ function onPushMessage(event: MessageEvent<unknown>): void {
 if ('serviceWorker' in navigator)
   navigator.serviceWorker.addEventListener('message', onPushMessage);
 const studentViewVisible = computed(() => authView.value === 'student' && featureVisible.value);
-// The accepted Student surface unlocks the existing theme owner; all other roles stay dark.
-watch(studentViewVisible, (visible) => theme?.setLockedMode?.(visible ? undefined : 'dark'), {
-  immediate: true,
-});
 const canOpenNotificationTarget = computed(
   () => notificationsEntryVisible.value && notificationsApi.value !== null && !offline.value,
 );
@@ -593,6 +589,11 @@ const teacherViewVisible = computed(
 );
 const headmanViewVisible = computed(
   () => authView.value === 'headman' && headmanApi.value !== null,
+);
+watch(
+  () => studentViewVisible.value || headmanViewVisible.value,
+  (visible) => theme?.setLockedMode?.(visible ? undefined : 'dark'),
+  { immediate: true },
 );
 const headmanGroupId = ref<number | null>(null);
 const ownerKey = computed(() =>
@@ -2699,7 +2700,7 @@ onBeforeUnmount(() => {
     @clear-notification-target="clearNotificationTargetIntent"
   />
   <button
-    v-if="authView === 'headman' || mapViewVisible"
+    v-if="mapViewVisible"
     class="pwa-logout"
     type="button"
     :disabled="authLoading"

@@ -44,10 +44,12 @@ export interface HeadmanSubject {
   readonly name: string
   readonly type: HeadmanSubjectType
   readonly groupId: number
+  readonly semesterId?: number | null
   readonly lessonTypes: readonly HeadmanSubjectType[]
   readonly teacherIds: readonly number[]
   readonly pendingAdoptions?: readonly HeadmanSubjectPendingAdoption[]
   readonly pendingClosures?: readonly HeadmanPendingClosure[]
+  readonly pendingSemesterIds?: readonly number[]
   readonly assignments: readonly HeadmanSubjectAssignment[]
 }
 
@@ -545,16 +547,23 @@ function normalizeSubject(value: unknown): HeadmanSubject {
     subjectType(item, 'subject.lessonTypes'),
   )
   const assignments = arrayOf(record.assignments).map(normalizeAssignment)
+  if (record.pendingSemesterIds != null && !Array.isArray(record.pendingSemesterIds))
+    throw new Error('Сервер вернул некорректные subject.pendingSemesterIds.')
   return {
     id: positiveInteger(record.id, 'subject.id'),
     name: requiredText(record.name, 'subject.name'),
     type: subjectType(record.type, 'subject.type'),
     groupId: positiveInteger(record.groupId, 'subject.groupId'),
+    semesterId:
+      record.semesterId == null ? null : positiveInteger(record.semesterId, 'subject.semesterId'),
     lessonTypes,
     teacherIds: arrayOf(record.teacherIds).map((id) => positiveInteger(id, 'subject.teacherIds')),
     assignments,
     pendingAdoptions: arrayOf(record.pendingAdoptions).map(normalizeSubjectPendingAdoption),
     pendingClosures: arrayOf(record.pendingClosures).map(normalizePendingClosure),
+    pendingSemesterIds: arrayOf(record.pendingSemesterIds).map((id) =>
+      positiveInteger(id, 'subject.pendingSemesterIds'),
+    ),
   }
 }
 

@@ -281,25 +281,6 @@ input:disabled {
   color: var(--rct-color-text-muted);
   font-size: var(--rct-font-size-micro);
 }
-.headman-subjects__semester {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: var(--rct-space-2);
-  font-size: var(--rct-font-size-micro);
-  color: var(--rct-color-text-muted);
-}
-.headman-subjects__semester select {
-  flex: 1;
-  min-inline-size: 0;
-  min-block-size: 2.75rem;
-  border: var(--rct-border-hairline) solid var(--rct-color-border-default);
-  border-radius: var(--rct-radius-lg);
-  padding: var(--rct-space-2);
-  background: var(--rct-color-surface-raised);
-  color: var(--rct-color-text-primary);
-  font: inherit;
-}
 .headman-subjects__list {
   gap: var(--rct-space-2);
 }
@@ -308,10 +289,10 @@ input:disabled {
   align-items: center;
   justify-content: space-between;
   gap: var(--rct-space-3);
-  min-block-size: 6.5rem;
-  padding: 0.875rem;
+  min-block-size: var(--rct-control-min-touch);
+  padding: var(--rct-space-3);
   border: 0;
-  border-radius: 1.125rem;
+  border-radius: var(--rct-radius-xl);
   background: var(--rct-color-surface-raised);
   color: var(--rct-color-text-primary);
   text-align: start;
@@ -584,10 +565,6 @@ input:disabled {
   background: var(--rct-color-accent-now);
   font: inherit;
 }
-.headman-subjects__notice {
-  margin: 0;
-  color: var(--rct-color-success-text);
-}
 
 .headman-subjects__header h1 {
   font-size: 1.375rem;
@@ -657,20 +634,6 @@ input:disabled {
   min-inline-size: 0;
 }
 
-.headman-subjects__semester {
-  position: relative;
-}
-.headman-subjects__semester select {
-  appearance: none;
-  padding-inline: var(--rct-space-3) calc(var(--rct-space-3) * 2 + var(--rct-space-4));
-}
-.headman-subjects__semester > svg {
-  position: absolute;
-  inset-inline-end: var(--rct-space-3);
-  inline-size: var(--rct-space-4);
-  block-size: var(--rct-space-4);
-  pointer-events: none;
-}
 .headman-subjects__name {
   position: static;
   gap: var(--rct-space-1);
@@ -682,8 +645,4 @@ input:disabled {
 .headman-subjects__name input {
   min-block-size: var(--rct-control-min-touch);
   padding: 0;
-}
-.headman-subjects__subject {
-  min-block-size: var(--rct-control-min-touch);
-  padding: var(--rct-space-3);
 }

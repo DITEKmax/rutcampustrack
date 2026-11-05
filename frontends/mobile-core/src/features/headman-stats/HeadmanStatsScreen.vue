@@ -15,7 +15,7 @@ import {
   headmanStatsWeekSelection,
   headmanStatsStepWeek,
 } from './headman-stats-week';
-import { computed, nextTick, onBeforeUnmount, reactive, ref, watch } from 'vue';
+import { computed, nextTick, onBeforeUnmount, reactive, ref, shallowRef, watch } from 'vue';
 import { StaleSessionGenerationError } from '../../shared/session-owner';
 import type { ReportDownloadPort } from '../../shared/report-download-client';
 import HeadmanStatsTrendChart from './HeadmanStatsTrendChart.vue';
@@ -25,9 +25,11 @@ import HeadmanStatsHistory from './HeadmanStatsHistory.vue';
 import type { HeadmanJournalApi } from '../headman-journal/headman-journal-client';
 import type { HeadmanRequestsApi } from '../headman-requests/headman-requests-client';
 import type { StatisticsGraphRange } from '../statistics/statistics-view-model';
-import type {
-  HeadmanStatsSemesterCatalog,
-  HeadmanStatsOverview,
+import {
+  headmanStatsHistoryFilterKey,
+  type HeadmanStatsHistoryFilter,
+  type HeadmanStatsSemesterCatalog,
+  type HeadmanStatsOverview,
 } from './headman-stats-history-client';
 import {
   HeadmanStatsApiError,
@@ -53,21 +55,24 @@ import './headman-stats-screen.pcss';
 
 interface FilterDraft {
   contains: string;
-  minimum: string;
-  maximum: string;
+  minimum: string | number;
+  maximum: string | number;
 }
 
 const statsToolsOpen = ref(false);
-const statsTool = ref<'filters' | 'sort' | 'export'>('filters');
+const statsTool = ref<'filters' | 'sort' | 'export' | 'history-scope'>('filters');
 const analyticsPage = ref<'trend' | 'tickets' | null>(null);
 const selectedTrendFormat = ref<HeadmanStatsTrendFormat['code'] | ''>('');
 const filterBlock = ref<HeadmanStatsBlock>('group');
 const filterSubjectId = ref('');
 const filterTypes = ref<string[]>([]);
-const personalSubjectId = ref('');
-const personalTypes = ref<string[]>([]);
+const personalFilter = shallowRef<HeadmanStatsHistoryFilter>({
+  subjectId: null,
+  lessonTypes: [],
+});
 const statsToolTitles = {
   filters: 'Фильтры статистики',
+  'history-scope': 'Предмет и тип занятий',
   sort: 'Сортировка',
   export: 'Выгрузка',
   tickets: 'Тикеты студентов',
@@ -180,8 +185,11 @@ const detailLoading = ref(false);
 const detailError = ref<string | null>(null);
 const latePage = ref(0);
 const excusePage = ref(0);
-const detailReturnFocus = ref<HTMLButtonElement | null>(null);
-const mobileViewRef = ref<{ focus: () => void } | null>(null);
+const mobileViewRef = ref<{
+  focus: () => void;
+  focusStudent: (studentId: number) => void;
+  focusSummary: () => void;
+} | null>(null);
 const loading = ref(false);
 const exporting = ref(false);
 const exportStatus = ref<string | null>(null);
@@ -325,8 +333,8 @@ function visibleFilters(): HeadmanStatsFilter[] {
   });
 }
 
-function parseBound(value: string): number | null {
-  if (value.trim() === '') return null;
+function parseBound(value: string | number): number | null {
+  if (typeof value === 'string' && value.trim() === '') return null;
   const parsed = Number(value);
   return Number.isFinite(parsed) && parsed >= 0 ? parsed : null;
 }
@@ -344,8 +352,8 @@ function queryForCurrentBlock(includePaging: boolean): {
     ...(semesterId.value === null ? {} : { semesterId: semesterId.value }),
     subjectId: block.value === 'group' ? null : selectedSubjectId.value,
     lessonTypes: block.value === 'group' ? [] : [...selectedTypes.value],
-    sorts: [...sorts.value],
-    filters: [...filters.value],
+    sorts: block.value === 'group' ? [...sorts.value] : [{ field: 'displayName', descending: false }],
+    filters: block.value === 'group' ? [...filters.value] : [],
     ...(includePaging ? { page: page.value, size: pageSize } : {}),
   };
 }
@@ -390,9 +398,9 @@ function resetTrendRequest(): void {
 }
 
 function clearDetail(focusReturn = false): void {
+  const studentId = detailStudentId.value;
   historyOpen.value = false;
-  personalSubjectId.value = '';
-  personalTypes.value = [];
+  personalFilter.value = { subjectId: null, lessonTypes: [] };
   personalTrendRevision += 1;
   personalTrendController?.abort();
   personalTrend.value = null;
@@ -408,11 +416,10 @@ function clearDetail(focusReturn = false): void {
   detailStudentId.value = null;
   latePage.value = 0;
   excusePage.value = 0;
-  const target = detailReturnFocus.value;
-  detailReturnFocus.value = null;
-  if (focusReturn && target) {
+  if (focusReturn && studentId !== null) {
     void nextTick(() => {
-      if (target.isConnected && !props.offline && canView.value && !denied.value) target.focus();
+      if (!props.offline && canView.value && !denied.value)
+        mobileViewRef.value?.focusStudent(studentId);
     });
   }
 }
@@ -592,14 +599,12 @@ async function loadTrend(): Promise<void> {
   }
 }
 
-function openStudentDetail(studentId: number, event: MouseEvent): void {
+function openStudentDetail(studentId: number): void {
   if (detailStudentId.value === studentId) {
     clearDetail(true);
     return;
   }
   clearDetail();
-  detailReturnFocus.value =
-    event.currentTarget instanceof HTMLButtonElement ? event.currentTarget : null;
   detailStudentId.value = studentId;
   void nextTick(() => mobileViewRef.value?.focus());
   void loadStudentDetail();
@@ -614,11 +619,12 @@ async function loadPersonalTrend(): Promise<void> {
     ...(semesterId.value === null ? {} : { semesterId: semesterId.value }),
     bucketUnit: chartRange.value === 'days' ? ('DAY' as const) : ('WEEK' as const),
   };
-  const query: HeadmanStatsTrendQuery = personalSubjectId.value
+  const { subjectId, lessonTypes } = personalFilter.value;
+  const query: HeadmanStatsTrendQuery = subjectId !== null
     ? {
         mode: 'SUBJECT',
-        subjectId: Number(personalSubjectId.value),
-        ...(personalTypes.value.length ? { lessonTypes: [...personalTypes.value] } : {}),
+        subjectId,
+        ...(lessonTypes.length ? { lessonTypes } : {}),
         ...period,
       }
     : { mode: 'SEMESTER', ...period };
@@ -682,7 +688,7 @@ function selectSemester(value: string): void {
   void loadBlock();
 }
 
-async function loadStudentDetail(): Promise<void> {
+async function loadStudentDetail(keepVisible = false): Promise<void> {
   const api = props.api;
   const groupId = props.groupId;
   const studentId = detailStudentId.value;
@@ -711,8 +717,10 @@ async function loadStudentDetail(): Promise<void> {
     size: 20,
     ...(semesterId.value === null ? {} : { semesterId: semesterId.value }),
   };
-  detailResponse.value = null;
-  detailResponseKey.value = null;
+  if (!keepVisible || detailResponseKey.value !== key) {
+    detailResponse.value = null;
+    detailResponseKey.value = null;
+  }
   detailLoading.value = true;
   detailError.value = null;
   try {
@@ -789,8 +797,12 @@ async function loadInitial(): Promise<void> {
   metadataError.value = null;
   if (props.offline || props.api === null || props.groupId === null || !canView.value) return;
   block.value = 'group';
+  selectedSubjectId.value = null;
+  selectedTypes.value = [];
   sorts.value = [{ field: 'displayName', descending: false }];
   filters.value = [];
+  searchText.value = '';
+  resetToolFilters();
   page.value = 0;
   const api = props.api;
   const group = props.groupId;
@@ -857,7 +869,7 @@ async function loadBlock(keepDetail = false): Promise<void> {
     response.value = null;
     responseScopeKey.value = null;
   }
-  responseQueryKey.value = null;
+  if (!keepDetail || responseQueryKey.value !== queryKey) responseQueryKey.value = null;
   exportStatus.value = null;
   error.value = null;
   denied.value = false;
@@ -904,10 +916,7 @@ function openBlock(next: HeadmanStatsBlock): void {
   page.value = 0;
   selectedSubjectId.value = null;
   selectedTypes.value = [];
-  sorts.value = [{ field: 'displayName', descending: false }];
-  filters.value = [];
   error.value = null;
-  for (const draft of Object.values(filterDrafts)) Object.assign(draft, newFilterDraft());
   if (next === 'group') void loadBlock();
   else {
     responseQueryKey.value = null;
@@ -922,18 +931,23 @@ function selectSubject(value: string): void {
       .find((item) => item.id === selectedSubjectId.value)
       ?.lessonTypes.map((item) => item.code) ?? [];
   page.value = 0;
-  sorts.value = [{ field: 'displayName', descending: false }];
-  filters.value = [];
   responseQueryKey.value = null;
   exportStatus.value = null;
   if (block.value === 'subject' && selectedSubjectId.value !== null) void loadBlock();
   else if (block.value === 'subject') error.value = 'Выбери предмет для статистики.';
 }
 
-function applyFilters(): void {
-  filters.value = visibleFilters();
+function updateFilters(next: HeadmanStatsFilter[]): void {
+  filters.value = next;
+  searchText.value = next.find((item) => item.field === 'displayName')?.contains ?? '';
   page.value = 0;
   void loadBlock();
+}
+
+function clearFilters(): void {
+  resetToolFilters();
+  updateFilters([]);
+  void nextTick(() => mobileViewRef.value?.focus());
 }
 
 function setMobileTypes(types: readonly string[]): void {
@@ -947,8 +961,9 @@ function applyMobileSearch(): void {
     (item) => item.field === 'displayName' && item.filterKind === 'TEXT',
   );
   if (!column) return;
-  filterDraft(column).contains = searchText.value;
-  applyFilters();
+  const contains = searchText.value.trim();
+  const other = filters.value.filter((item) => item.field !== column.field);
+  updateFilters(contains ? [{ field: column.field, contains }, ...other] : other);
 }
 
 function changePage(next: number): void {
@@ -1168,17 +1183,17 @@ function back(): boolean {
   if (historyOpen.value) {
     if (historyRef.value?.back()) return true;
     historyOpen.value = false;
-    void nextTick(() => mobileViewRef.value?.focus());
+    void nextTick(() => mobileViewRef.value?.focusSummary());
     return true;
   }
   clearDetail(true);
   return true;
 }
+function selectDetailTab(showHistory: boolean): void {
+  if (detailStudentId.value !== null) historyOpen.value = showHistory;
+}
 function openHistory(): void {
-  if (detailStudentId.value !== null) {
-    historyOpen.value = true;
-    void nextTick(() => mobileViewRef.value?.focus());
-  }
+  selectDetailTab(true);
 }
 async function loadOverview(): Promise<void> {
   const api = props.api;
@@ -1216,7 +1231,7 @@ async function loadOverview(): Promise<void> {
 }
 function refreshedHistory(): void {
   void loadBlock(true);
-  void loadStudentDetail();
+  void loadStudentDetail(true);
   void loadPersonalTrend();
   void loadOverview();
 }
@@ -1235,12 +1250,10 @@ const sortPreset = computed(
   () => `${sorts.value[0]?.field ?? 'displayName'}:${sorts.value[0]?.descending ? 'desc' : 'asc'}`,
 );
 const visibleTools = computed(() =>
-  (['filters', 'sort', 'export', 'trend', 'tickets'] as const).filter(
+  (['filters', 'sort', 'export', 'tickets'] as const).filter(
     (tool) =>
-      !(
-        detailStudentId.value !== null &&
-        (tool === 'sort' || tool === 'export' || tool === 'trend')
-      ) && !(subjectCatalog.value && (tool === 'export' || tool === 'tickets')),
+      !(block.value === 'subject' && (tool === 'filters' || tool === 'sort')) &&
+      !(subjectCatalog.value && (tool === 'export' || tool === 'tickets')),
   ),
 );
 const subjectCatalog = computed(
@@ -1249,7 +1262,7 @@ const subjectCatalog = computed(
 );
 function chooseSort(value: string): void {
   if (
-    subjectCatalog.value ||
+    block.value !== 'group' ||
     (value !== 'displayName:asc' && !sortPresets.value.some((item) => item.value === value))
   )
     return;
@@ -1259,44 +1272,49 @@ function chooseSort(value: string): void {
   statsToolsOpen.value = false;
   void loadBlock();
 }
-function openTool(tool: 'filters' | 'sort' | 'export' | 'trend' | 'tickets'): void {
+function openTool(tool: typeof statsTool.value | 'trend' | 'tickets'): void {
+  if ((tool === 'filters' || tool === 'sort') && (block.value !== 'group' || detailStudentId.value !== null))
+    return;
+  if (tool === 'history-scope' && !historyOpen.value) return;
   if (tool === 'trend' || tool === 'tickets') {
     analyticsPage.value = tool;
     if (tool === 'trend') void loadTrend();
     return;
   }
   statsTool.value = tool;
-  filterBlock.value =
-    detailStudentId.value !== null ? (personalSubjectId.value ? 'subject' : 'group') : block.value;
-  filterSubjectId.value =
-    detailStudentId.value !== null
-      ? personalSubjectId.value || String(response.value?.subjects[0]?.id ?? '')
-      : String(selectedSubjectId.value ?? response.value?.subjects[0]?.id ?? '');
-  filterTypes.value =
-    detailStudentId.value !== null ? [...personalTypes.value] : [...selectedTypes.value];
+  if (tool === 'history-scope') {
+    const { subjectId, lessonTypes } = personalFilter.value;
+    filterBlock.value = subjectId === null ? 'group' : 'subject';
+    filterSubjectId.value = String(subjectId ?? response.value?.subjects[0]?.id ?? '');
+    filterTypes.value = [...lessonTypes];
+  } else if (tool === 'filters') {
+    resetToolFilters();
+    for (const filter of filters.value) {
+      filterDrafts[filter.field] = {
+        contains: filter.contains ?? '',
+        minimum: filter.minimum ?? '',
+        maximum: filter.maximum ?? '',
+      };
+    }
+  }
   statsToolsOpen.value = true;
 }
 function applyToolFilters(): void {
-  if (detailStudentId.value !== null) {
-    personalSubjectId.value = filterBlock.value === 'subject' ? filterSubjectId.value : '';
-    personalTypes.value = filterBlock.value === 'subject' ? [...filterTypes.value] : [];
+  if (statsTool.value === 'history-scope' && detailStudentId.value !== null) {
     statsToolsOpen.value = false;
+    const current = personalFilter.value;
+    const subjectId = filterBlock.value === 'subject' ? Number(filterSubjectId.value) : null;
+    const lessonTypes = subjectId === null ? [] : [...filterTypes.value];
+    if (headmanStatsHistoryFilterKey(current.subjectId, current.lessonTypes) ===
+        headmanStatsHistoryFilterKey(subjectId, lessonTypes)) return;
+    personalFilter.value = { subjectId, lessonTypes };
     void loadPersonalTrend();
     return;
   }
-  block.value = filterBlock.value;
-  selectedSubjectId.value =
-    filterBlock.value === 'subject' ? Number(filterSubjectId.value) || null : null;
-  selectedTypes.value = filterBlock.value === 'subject' ? [...filterTypes.value] : [];
-  filters.value = visibleFilters();
-  page.value = 0;
   statsToolsOpen.value = false;
-  if (block.value === 'group' || selectedSubjectId.value !== null) void loadBlock();
+  if (block.value === 'group' && detailStudentId.value === null) updateFilters(visibleFilters());
 }
 function resetToolFilters(): void {
-  filterBlock.value = 'group';
-  filterSubjectId.value = String(response.value?.subjects[0]?.id ?? '');
-  filterTypes.value = [];
   for (const draft of Object.values(filterDrafts)) Object.assign(draft, newFilterDraft());
 }
 function changeFilterSubject(value: string): void {
@@ -1380,6 +1398,7 @@ defineExpose({
       :detail-error="detailError"
       :show-back="showBack"
       :history-open="historyOpen"
+      :filters-active="filters.length > 0"
       :semester-catalog="semesterCatalog"
       :semester-id="semesterId"
       :overview="overview"
@@ -1393,17 +1412,28 @@ defineExpose({
       @types="setMobileTypes"
       @student="openStudentDetail"
       @close-student="back"
+      @detail-tab="selectDetailTab"
+      @clear-filters="clearFilters"
       @retry="loadTrend"
       @retry-personal-trend="loadPersonalTrend"
       @retry-detail="loadStudentDetail"
       @range="setChartRange"
       @semester="selectSemester"
     >
+      <template #dynamics>
+        <button
+          v-if="response && !offline && canView"
+          class="headman-stats-mobile__dynamics"
+          type="button"
+          @click="openTool('trend')"
+        >
+          Динамика
+        </button>
+      </template>
       <template #toolbar>
         <nav
-          v-if="response && !offline && canView"
-          class="headman-stats__toolbar"
-          :class="{ 'headman-stats__toolbar--pills': detailStudentId === null && !subjectCatalog }"
+          v-if="response && !offline && canView && visibleTools.length"
+          class="headman-stats__toolbar headman-stats__toolbar--pills"
           aria-label="Инструменты статистики"
         >
           <button
@@ -1415,10 +1445,10 @@ defineExpose({
                 filters: 'Фильтры',
                 sort: 'Сортировка',
                 export: 'Выгрузка',
-                trend: 'Динамика',
                 tickets: 'Тикеты',
               }[tool]
             "
+            :aria-pressed="tool === 'filters' ? filters.length > 0 : undefined"
             @click="openTool(tool)"
           >
             <svg
@@ -1441,10 +1471,6 @@ defineExpose({
               <path
                 v-else-if="tool === 'export'"
                 d="M12 3v12m-4-4 4 4 4-4M4 16v5h16v-5"
-              />
-              <path
-                v-else-if="tool === 'trend'"
-                d="M4 3v17h17M6 15l5-6 4 3 5-8"
               />
               <path
                 v-else
@@ -1478,27 +1504,15 @@ defineExpose({
         </form>
       </template>
       <template #history>
-        <nav
-          v-if="historyOpen"
-          class="headman-stats__toolbar"
-          aria-label="Инструменты истории"
+        <button
+          v-if="historyOpen && response && !offline && canView && !denied"
+          class="headman-stats__history-scope"
+          type="button"
+          :aria-pressed="personalFilter.subjectId !== null"
+          @click="openTool('history-scope')"
         >
-          <button
-            type="button"
-            aria-label="Фильтры"
-            @click="openTool('filters')"
-          >
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.7"
-              aria-hidden="true"
-            >
-              <path d="M4 6h16M7 12h10M10 18h4" />
-            </svg>
-          </button>
-        </nav>
+          Предмет и тип занятий
+        </button>
         <HeadmanStatsHistory
           v-if="historyOpen && detailStudentId !== null"
           ref="historyRef"
@@ -1508,8 +1522,7 @@ defineExpose({
           :group-id="groupId"
           :student-id="detailStudentId"
           :semester-id="semesterId"
-          :subject-id="personalSubjectId ? Number(personalSubjectId) : null"
-          :lesson-types="personalTypes"
+          :filter="personalFilter"
           :offline="offline"
           :allowed="canView && !denied"
           :mark-allowed="
@@ -1520,14 +1533,6 @@ defineExpose({
           "
           @refreshed="refreshedHistory"
         />
-        <button
-          v-else
-          type="button"
-          class="headman-stats__history-link"
-          @click="openHistory"
-        >
-          Прошедшие пары <span aria-hidden="true">›</span>
-        </button>
       </template>
     </HeadmanStatsMobileView>
     <StudentWarningBlock
@@ -1822,16 +1827,18 @@ defineExpose({
       :icon-close="true"
       class="headman-stats__advanced"
     >
-      <template v-if="statsTool === 'filters'">
+      <template v-if="statsTool === 'filters' || statsTool === 'history-scope'">
         <div class="headman-stats__exclusive">
           <button
             type="button"
+            v-if="statsTool === 'history-scope'"
             :aria-pressed="filterBlock === 'group'"
             @click="filterBlock = 'group'"
           >
-            {{ detailStudentId === null ? 'Вся группа' : 'Весь семестр' }}
+            Весь семестр
           </button><button
             type="button"
+            v-if="statsTool === 'history-scope'"
             :aria-pressed="filterBlock === 'subject'"
             @click="
               filterBlock = 'subject';
@@ -1841,7 +1848,7 @@ defineExpose({
             По предмету и типу
           </button>
         </div>
-        <template v-if="filterBlock === 'subject'">
+        <template v-if="statsTool === 'history-scope' && filterBlock === 'subject'">
           <HeadmanStatsSelect
             label="Предмет фильтра"
             :model-value="filterSubjectId"
@@ -1871,7 +1878,7 @@ defineExpose({
           </fieldset>
         </template>
         <div
-          v-if="detailStudentId === null"
+          v-if="statsTool === 'filters'"
           class="headman-stats__filter-grid"
         >
           <fieldset
@@ -1903,6 +1910,7 @@ defineExpose({
         </div>
         <div class="headman-stats__filter-actions">
           <button
+            v-if="statsTool === 'filters'"
             type="button"
             aria-label="Сбросить фильтры"
             @click="resetToolFilters"
@@ -1911,7 +1919,8 @@ defineExpose({
           </button><button
             type="button"
             :disabled="
-              loading || (filterBlock === 'subject' && (!filterSubjectId || !filterTypes.length))
+              loading || (statsTool === 'history-scope' && filterBlock === 'subject' &&
+                (!filterSubjectId || !filterTypes.length))
             "
             @click="applyToolFilters"
           >

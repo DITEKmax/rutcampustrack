@@ -2,6 +2,7 @@
 import {
   exportStateLabel,
   reportDownloadAcceptedMessage,
+  ReportDownloadTicketError,
   validateTicketRequest,
 } from '../../shared/report-download-client';
 import {
@@ -16,7 +17,9 @@ import HeadmanManualRoster from './HeadmanManualRoster.vue';
 import HeadmanManualExcuse from './HeadmanManualExcuse.vue';
 import { excuseLabel, isAttendanceDenied, reportMatchesLesson, useHeadmanManualMarks } from './headman-manual-marks';
 import HeadmanLinkedRequest from './HeadmanLinkedRequest.vue';
+import HeadmanStatsSelect from '../headman-stats/HeadmanStatsSelect.vue';
 import type { HeadmanRequestsApi } from '../headman-requests/headman-requests-client';
+import AdminNotice from '../../shared/components/AdminNotice.vue';
 import StudentWarningBlock from '../../shared/components/StudentWarningBlock.vue';
 import MobileToolsSheet from '../../shared/components/MobileToolsSheet.vue';
 import MobileIcon from '../../shared/components/MobileIcon.vue';
@@ -159,6 +162,7 @@ const weeklyOptionsError = ref<string | null>(null);
 const weeklyExportBusy = ref(false);
 const weeklyExportError = ref<string | null>(null);
 const weeklyExportStatus = ref<string | null>(null);
+const weeklyExportSucceeded = ref(false);
 let lessonsRevision = 0;
 let reportRevision = 0;
 let lessonActionRevision = 0;
@@ -354,10 +358,23 @@ function invalidateWeeklyExport(message?: string): void {
   weeklyExportBusy.value = false;
   weeklyExportError.value = null;
   weeklyExportStatus.value = null;
+  weeklyExportSucceeded.value = false;
   if (message) weeklyExportStatus.value = message;
 }
 
-async function loadWeeklyExportOptions(): Promise<void> {
+function forwardWeeklyExportDenial(cause: unknown): void {
+  const status = cause instanceof HeadmanJournalApiError
+    ? cause.response.status
+    : cause instanceof Error && 'status' in cause ? cause.status : null;
+  if (status !== 401 && status !== 403) return;
+  // The shell recognises journal API errors when checking session and assistant rights.
+  const error = cause instanceof ReportDownloadTicketError
+    ? new HeadmanJournalApiError(new Response(null, { status }), { detail: cause.message })
+    : cause;
+  emit('error', error);
+}
+
+async function loadWeeklyExportOptions(resumeDownload = true): Promise<void> {
   const revision = ++weeklyOptionsRevision;
   invalidateWeeklyExport();
   const api = props.api;
@@ -378,7 +395,7 @@ async function loadWeeklyExportOptions(): Promise<void> {
   weeklyExportError.value = null;
   // The durable accepted intent needs no fresh format/week catalogue to resume.
   try {
-    resumePendingWeeklyExport();
+    if (resumeDownload) resumePendingWeeklyExport();
     const options = await api!.getWeeklyExportOptions();
     if (disposed || revision !== weeklyOptionsRevision || api !== props.api || !canExportWeekly())
       return;
@@ -397,7 +414,7 @@ async function loadWeeklyExportOptions(): Promise<void> {
       return;
     weeklyOptionsError.value =
       cause instanceof Error ? cause.message : 'Не удалось загрузить список недель и форматов.';
-    emit('error', cause);
+    forwardWeeklyExportDenial(cause);
   } finally {
     if (revision === weeklyOptionsRevision) loadingWeeklyOptions.value = false;
   }
@@ -474,9 +491,10 @@ async function downloadWeeklyExport(resumedRequest?: ReportDownloadTicketRequest
       });
       if (result === 'stale' || !isCurrent()) return;
       if (result === 'unsupported') {
-        weeklyExportStatus.value =
+        weeklyExportError.value =
           'Скачивание файлов недоступно в этой версии Telegram. Обнови Telegram до версии 8.0 или новее.';
       } else {
+        weeklyExportSucceeded.value = result === 'accepted';
         weeklyExportStatus.value =
           result === 'accepted'
             ? reportDownloadAcceptedMessage(reportDownload)
@@ -505,7 +523,8 @@ async function downloadWeeklyExport(resumedRequest?: ReportDownloadTicketRequest
     anchor.click();
     anchor.remove();
     window.setTimeout(() => releaseAttachmentObjectUrl(url), 60_000);
-    weeklyExportStatus.value = `Файл ${downloaded.filename} подготовлен.`;
+    weeklyExportSucceeded.value = true;
+    weeklyExportStatus.value = `Файл ${downloaded.filename} передан браузеру для скачивания.`;
   } catch (cause) {
     if (
       disposed ||
@@ -541,7 +560,7 @@ async function downloadWeeklyExport(resumedRequest?: ReportDownloadTicketRequest
       weeklyExportError.value =
         cause instanceof Error ? cause.message : 'Не удалось скачать журнал.';
     }
-    emit('error', cause);
+    forwardWeeklyExportDenial(cause);
   } finally {
     if (revision === weeklyExportRevision) {
       weeklyExportBusy.value = false;
@@ -1991,14 +2010,16 @@ onBeforeUnmount(() => {
         Скачать журнал
       </button>
     </nav>
-    <p
-      v-if="!weeklyOpen && (weeklyExportStatus || weeklyExportError)"
-      class="headman-journal__state"
-      :class="{ 'headman-journal__state--error': weeklyExportError }"
-      :role="weeklyExportError ? 'alert' : 'status'"
-    >
-      {{ weeklyExportError || weeklyExportStatus }}
-    </p>
+    <template v-if="!weeklyOpen">
+      <AdminNotice
+        v-if="weeklyExportError || (weeklyExportSucceeded && weeklyExportStatus)"
+        :tone="weeklyExportError ? 'danger' : 'success'"
+        :title="weeklyExportError ? 'Не удалось скачать журнал' : 'Журнал готов к скачиванию'"
+      >{{ weeklyExportError || weeklyExportStatus }}</AdminNotice>
+      <p v-else-if="weeklyExportStatus" class="headman-journal__state" role="status">
+        {{ weeklyExportStatus }}
+      </p>
+    </template>
     <section
       v-if="selectedLesson"
       class="headman-journal__context"
@@ -2395,7 +2416,6 @@ onBeforeUnmount(() => {
         icon-close
         title="Скачать недельный журнал"
         class="headman-journal__weekly-export"
-        aria-labelledby="headman-journal-weekly-export-title"
         :aria-busy="loadingWeeklyOptions || weeklyExportBusy"
       >
         <p
@@ -2405,15 +2425,25 @@ onBeforeUnmount(() => {
         >
           Загружаем серверный список недель и форматов…
         </p>
-        <p
-          v-else-if="weeklyOptionsError && !weeklyExportOptions"
-          class="headman-journal__state headman-journal__state--error"
-          role="alert"
+        <AdminNotice
+          v-if="weeklyOptionsError && !loadingWeeklyOptions && !weeklyExportError"
+          tone="danger"
+          title="Не удалось загрузить недели и форматы"
         >
           {{ weeklyOptionsError }}
-        </p>
+          <template #actions>
+            <button
+              class="headman-journal__weekly-download"
+              type="button"
+              :disabled="weeklyExportBusy"
+              @click="loadWeeklyExportOptions(false)"
+            >
+              Повторить загрузку
+            </button>
+          </template>
+        </AdminNotice>
         <div
-          v-else-if="weeklyExportOptions"
+          v-if="weeklyExportOptions && !loadingWeeklyOptions"
           class="headman-journal__weekly-export-controls"
         >
           <details class="headman-journal__weekly-dropdown">
@@ -2446,21 +2476,15 @@ onBeforeUnmount(() => {
               </label>
             </fieldset>
           </details>
-          <label class="headman-journal__weekly-format">
-            <span>Формат файла</span>
-            <select
+          <div class="headman-journal__weekly-format">
+            <span aria-hidden="true">Формат файла</span>
+            <HeadmanStatsSelect
               v-model="weeklyExportFormatCode"
+              label="Формат файла"
+              :options="weeklyExportOptions.formats.map((format) => ({ value: format.code, label: format.label }))"
               :disabled="weeklyExportBusy"
-            >
-              <option
-                v-for="format in weeklyExportOptions.formats"
-                :key="format.code"
-                :value="format.code"
-              >
-                {{ format.label }}
-              </option>
-            </select>
-          </label>
+            />
+          </div>
           <button
             class="headman-journal__weekly-download"
             type="button"
@@ -2470,21 +2494,17 @@ onBeforeUnmount(() => {
           >
             {{ weeklyExportBusy ? 'Готовим файл…' : 'Скачать' }}
           </button>
-          <p
-            v-if="weeklyExportError"
-            class="headman-journal__state headman-journal__state--error"
-            role="alert"
-          >
-            {{ weeklyExportError }}
-          </p>
-          <p
-            v-if="weeklyExportStatus"
-            class="headman-journal__state"
-            role="status"
-          >
+        </div>
+        <template v-if="!loadingWeeklyOptions">
+          <AdminNotice
+            v-if="weeklyExportError || (weeklyExportSucceeded && weeklyExportStatus)"
+            :tone="weeklyExportError ? 'danger' : 'success'"
+            :title="weeklyExportError ? 'Не удалось скачать журнал' : 'Журнал готов к скачиванию'"
+          >{{ weeklyExportError || weeklyExportStatus }}</AdminNotice>
+          <p v-else-if="weeklyExportStatus" class="headman-journal__state" role="status">
             {{ weeklyExportStatus }}
           </p>
-        </div>
+        </template>
       </MobileToolsSheet>
     </template>
     <HeadmanLinkedRequest

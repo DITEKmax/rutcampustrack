@@ -6,13 +6,20 @@ import { useHeadmanStatsHistory, type HeadmanStatsHistoryScope } from './use-hea
 import { headmanStatsFixtureLessons } from '../../dev/headman-stats-fixtures'
 import type { HeadmanStatsLesson } from './headman-stats-history-client'
 
-function harness(status: 'PRESENT' | 'EXCUSED' | 'ABSENT' | null = 'EXCUSED') {
+function harness(
+  status: 'PRESENT' | 'EXCUSED' | 'ABSENT' | null = 'EXCUSED',
+  initialFilter: Pick<HeadmanStatsHistoryScope, 'subjectId' | 'lessonTypes'> = {},
+) {
   let lesson: HeadmanStatsLesson = {
     ...headmanStatsFixtureLessons('history')[1]!,
     status,
     ...(status === null ? { source: null, markRevision: null } : {}),
   }
   let writes = 0
+  let reads = 0
+  let failRead = false
+  const requests: { method: string; path: string }[] = []
+  const neighbor = headmanStatsFixtureLessons('history')[0]!
   let conflict = false
   let releaseWrite: (() => void) | null = null
   let hold = false
@@ -20,7 +27,10 @@ function harness(status: 'PRESENT' | 'EXCUSED' | 'ABSENT' | null = 'EXCUSED') {
   let denyWrite = false
   const fetcher: typeof fetch = async (input, init) => {
     const url = new URL(String(input), 'http://fixture.test')
-    if (url.pathname.endsWith('/lessons'))
+    requests.push({ method: init?.method ?? 'GET', path: url.pathname + url.search })
+    if (url.pathname.endsWith('/lessons')) {
+      reads += 1
+      if (failRead) return new Response(null, { status: 503 })
       return new Response(
         JSON.stringify(
           denyRead
@@ -28,15 +38,16 @@ function harness(status: 'PRESENT' | 'EXCUSED' | 'ABSENT' | null = 'EXCUSED') {
             : {
                 page: 0,
                 size: 50,
-                totalElements: 1,
+                totalElements: 2,
                 totalPages: 1,
                 hasPrevious: false,
                 hasNext: false,
-                items: [lesson],
+                items: [lesson, writes ? { ...neighbor, subjectName: 'Чужая свежая строка' } : neighbor],
               },
         ),
         { status: denyRead ? 403 : 200, headers: { 'Content-Type': 'application/json' } },
       )
+    }
     if (init?.method === 'PUT') {
       writes += 1
       if (denyWrite)
@@ -106,6 +117,7 @@ function harness(status: 'PRESENT' | 'EXCUSED' | 'ABSENT' | null = 'EXCUSED') {
     groupId: 2,
     studentId: 11,
     semesterId: 7,
+    ...initialFilter,
     offline: false,
     allowed: true,
     markAllowed: true,
@@ -120,6 +132,11 @@ function harness(status: 'PRESENT' | 'EXCUSED' | 'ABSENT' | null = 'EXCUSED') {
     refreshed,
     stop: () => scope.stop(),
     writes: () => writes,
+    reads: () => reads,
+    requests,
+    failRead: (value: boolean) => {
+      failRead = value
+    },
     setConflict: () => {
       conflict = true
     },
@@ -190,7 +207,7 @@ describe('headman history scoped clear', () => {
     const h = harness(null)
     await vi.waitFor(() => expect(h.controller.data.value).not.toBeNull())
     h.controller.choose(h.controller.data.value!.items[0]!, 'PRESENT')
-    await vi.waitFor(() => expect(h.controller.data.value?.items[0]?.status).toBe('PRESENT'))
+    await vi.waitFor(() => expect(h.controller.data.value?.items[0]?.markRevision).toBe('new-mark-revision'))
     expect(h.controller.data.value!.items[0]!.markRevision).toBe('new-mark-revision')
     expect(h.refreshed).toHaveBeenCalledOnce()
     h.stop()
@@ -200,24 +217,25 @@ describe('headman history scoped clear', () => {
     await vi.waitFor(() => expect(h.controller.data.value).not.toBeNull())
     h.setConflict()
     h.controller.choose(h.controller.data.value!.items[0]!, 'ABSENT')
-    await vi.waitFor(() => expect(h.controller.error.value).toContain('повтори действие'))
+    await vi.waitFor(() => expect(h.controller.pending.value).toBeNull())
     expect(h.controller.data.value!.items[0]!.status).toBe('EXCUSED')
     expect(h.controller.data.value!.items[0]!.markRevision).toBe('remote-excuse-revision')
+    expect(h.controller.rowIssues.value.get(h.controller.data.value!.items[0]!.lessonId)?.needsRead).toBe(false)
     expect(h.controller.feedback.value).toBeNull()
     expect(h.refreshed).not.toHaveBeenCalled()
     h.stop()
   })
   it('cancel preserves the mark and independent approved ticket; confirm clears only its revision', async () => {
     const h = harness()
-    await vi.waitFor(() => expect(h.controller.data.value?.items.length).toBe(1))
+    await vi.waitFor(() => expect(h.controller.data.value?.items.length).toBe(2))
     h.controller.choose(h.controller.data.value!.items[0]!, 'EXCUSED')
     expect(h.controller.confirmation.value).not.toBeNull()
     h.controller.cancel()
     expect(h.writes()).toBe(0)
     expect(h.controller.data.value!.items[0]!.status).toBe('EXCUSED')
     h.controller.choose(h.controller.data.value!.items[0]!, 'EXCUSED')
-    h.controller.confirm()
-    await vi.waitFor(() => expect(h.controller.data.value?.items[0]?.status).toBeNull())
+    await h.controller.confirm()
+    expect(h.controller.data.value?.items[0]?.status).toBeNull()
     expect(h.controller.data.value!.items[0]!.approvedTicket?.status).toBe('APPROVED')
     expect(h.controller.feedback.value).toContain('Статус снят')
     expect(h.refreshed).toHaveBeenCalledOnce()
@@ -239,12 +257,62 @@ describe('headman history scoped clear', () => {
     await vi.waitFor(() => expect(h.controller.data.value).not.toBeNull())
     h.setConflict()
     h.controller.choose(h.controller.data.value!.items[0]!, 'EXCUSED')
-    h.controller.confirm()
-    await vi.waitFor(() => expect(h.controller.error.value).toContain('подтверди снятие заново'))
+    await h.controller.confirm()
     expect(h.controller.data.value!.items[0]!.status).toBe('EXCUSED')
     expect(h.controller.data.value!.items[0]!.markRevision).toBe('changed-reason-revision')
+    expect(h.controller.rowIssues.value.get(h.controller.data.value!.items[0]!.lessonId)?.needsRead).toBe(false)
     expect(h.controller.confirmation.value).toBeNull()
     expect(h.refreshed).not.toHaveBeenCalled()
+    h.stop()
+  })
+  it.each(['PRESENT', null] as const)(
+    'keeps an acknowledged change from %s on a failed read and retries only the scoped GET',
+    async (status) => {
+      const h = harness(status)
+      await vi.waitFor(() => expect(h.controller.data.value).not.toBeNull())
+      const [target, other] = h.controller.data.value!.items as [HeadmanStatsLesson, HeadmanStatsLesson]
+      h.failRead(true)
+      await h.controller.choose(target, status ?? 'ABSENT')
+      const accepted = h.controller.data.value!.items[0]!
+      expect(accepted.status).toBe(status ? null : 'ABSENT')
+      expect(accepted.markRevision).toBeNull()
+      expect(accepted.approvedTicket).toEqual(target.approvedTicket)
+      expect(h.controller.data.value!.items[1]).toBe(other)
+      expect(h.controller.canEdit(accepted)).toBe(false)
+      expect(h.controller.canEdit(other)).toBe(other.editable)
+      expect(h.controller.rowIssues.value.get(target.lessonId)?.needsRead).toBe(true)
+      expect(h.refreshed).toHaveBeenCalledOnce()
+      h.controller.choose(accepted, 'ABSENT')
+      expect(h.writes()).toBe(1)
+      expect(h.reads()).toBe(2)
+      h.failRead(false)
+      expect(await h.controller.retryRow(target.lessonId)).toBe(true)
+      expect(h.requests.map((item) => item.method)).toEqual(['GET', status ? 'DELETE' : 'PUT', 'GET', 'GET'])
+      expect(h.requests[1]!.path).toMatch(new RegExp(`/attendance/lessons/${target.lessonId}/students/11(?:\\?|$)`))
+      expect(h.requests[3]!.path).toBe(h.requests[0]!.path)
+      expect(h.controller.data.value!.items[1]).toBe(other)
+      expect(h.controller.canEdit(h.controller.data.value!.items[0]!)).toBe(true)
+      h.stop()
+    },
+  )
+  it('blocks a second mutation after conflict until a new GET supplies the current revision', async () => {
+    const h = harness('PRESENT')
+    await vi.waitFor(() => expect(h.controller.data.value).not.toBeNull())
+    const original = h.controller.data.value!.items[0]!
+    h.setConflict()
+    h.failRead(true)
+    await h.controller.choose(original, 'PRESENT')
+    expect(h.controller.data.value!.items[0]).toBe(original)
+    h.controller.choose(original, 'PRESENT')
+    expect(h.writes()).toBe(1)
+    expect(h.refreshed).not.toHaveBeenCalled()
+    h.failRead(false)
+    expect(await h.controller.retryRow(original.lessonId)).toBe(true)
+    const latest = h.controller.data.value!.items[0]!
+    expect(latest.markRevision).toBe('changed-reason-revision')
+    h.controller.choose(original, 'PRESENT')
+    expect(h.writes()).toBe(1)
+    expect(h.controller.canEdit(latest)).toBe(true)
     h.stop()
   })
   it('owner replacement invalidates a pending confirmation and stale write feedback', async () => {
@@ -287,6 +355,28 @@ describe('headman history scoped clear', () => {
 })
 
 describe('personal history filter ownership', () => {
+  it('keeps a held write and its ACK when an equivalent filter is reapplied and the next read fails', async () => {
+    const h = harness('PRESENT', { subjectId: 13, lessonTypes: ['PRACTICE', 'LECTURE'] })
+    await vi.waitFor(() => expect(h.controller.data.value).not.toBeNull())
+    const [target, other] = h.controller.data.value!.items as [HeadmanStatsLesson, HeadmanStatsLesson]
+    h.hold()
+    const action = h.controller.choose(target, 'PRESENT')
+    await vi.waitFor(() => expect(h.writes()).toBe(1))
+    h.failRead(true)
+    h.owner.lessonTypes = ['PRACTICE', 'LECTURE']
+    h.owner.lessonTypes = ['LECTURE', 'PRACTICE']
+    expect(h.controller.pending.value).toBe(target.lessonId)
+    expect(h.controller.data.value!.items[0]).toBe(target)
+    h.release()
+    await action
+    expect(h.requests.map((request) => request.method)).toEqual(['GET', 'DELETE', 'GET'])
+    expect(h.controller.data.value!.items[0]!.status).toBeNull()
+    expect(h.controller.data.value!.items[1]).toBe(other)
+    expect(h.controller.rowIssues.value.get(target.lessonId)?.needsRead).toBe(true)
+    expect(h.refreshed).toHaveBeenCalledOnce()
+    h.stop()
+  })
+
   it('drops a pending clear intent when the supported subject/type scope changes', async () => {
     const h = harness()
     await vi.waitFor(() => expect(h.controller.data.value).not.toBeNull())
@@ -296,9 +386,12 @@ describe('personal history filter ownership', () => {
     h.owner.subjectId = 13
     h.owner.lessonTypes = ['PRACTICE']
     expect(h.controller.confirmation.value).toBeNull()
+    expect(h.controller.data.value).toBeNull()
     h.controller.confirm()
     expect(h.writes()).toBe(0)
     await vi.waitFor(() => expect(h.controller.data.value).not.toBeNull())
+    expect(h.reads()).toBe(2)
+    expect(h.requests.at(-1)?.path).toContain('subjectId=13&lessonTypes=PRACTICE')
     h.stop()
   })
 })

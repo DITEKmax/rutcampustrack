@@ -2,6 +2,7 @@
 import {
   exportStateLabel,
   reportDownloadAcceptedMessage,
+  ReportDownloadTicketError,
 } from '../../shared/report-download-client';
 import { computed, onBeforeUnmount, ref, watch } from 'vue';
 import {
@@ -17,6 +18,8 @@ import {
 } from './headman-group-client';
 import { StaleSessionGenerationError } from '../../shared/session-owner';
 import type { ReportDownloadFormat, ReportDownloadPort } from '../../shared/report-download-client';
+import HeadmanStatsSelect from '../headman-stats/HeadmanStatsSelect.vue';
+import AdminNotice from '../../shared/components/AdminNotice.vue';
 import MobileIcon from '../../shared/components/MobileIcon.vue';
 import MobileToolsSheet from '../../shared/components/MobileToolsSheet.vue';
 import StudentWarningBlock from '../../shared/components/StudentWarningBlock.vue';
@@ -90,8 +93,10 @@ const rosterFormats = ref<readonly HeadmanRosterFormat[]>([]);
 const rosterFormat = ref<ReportDownloadFormat | null>(null);
 const rosterLoading = ref(false);
 const rosterDownloading = ref(false);
+const rosterOptionsError = ref<string | null>(null);
 const rosterError = ref<string | null>(null);
 const rosterNotice = ref<string | null>(null);
+const rosterSucceeded = ref(false);
 let rosterRevision = 0;
 let downloadRevision = 0;
 let rosterController: AbortController | null = null;
@@ -107,12 +112,33 @@ function invalidateDownload(): void {
   rosterDownloading.value = false;
   rosterError.value = null;
   rosterNotice.value = null;
+  rosterSucceeded.value = false;
+}
+
+function selectRosterFormat(value: string): void {
+  if (rosterLoading.value || rosterDownloading.value) return;
+  const format = rosterFormats.value.find((item) => item.code === value);
+  if (!format || format.code === rosterFormat.value) return;
+  invalidateDownload();
+  rosterFormat.value = format.code;
+}
+
+function forwardRosterExportDenial(cause: unknown): void {
+  const status = cause instanceof HeadmanGroupApiError
+    ? cause.response.status
+    : cause instanceof Error && 'status' in cause ? cause.status : null;
+  if (status !== 401 && status !== 403) return;
+  const error = cause instanceof ReportDownloadTicketError
+    ? new HeadmanGroupApiError(new Response(null, { status }), { detail: cause.message })
+    : cause;
+  emit('error', error);
 }
 
 async function loadRosterFormats(): Promise<void> {
   const revision = ++rosterRevision;
   rosterFormats.value = [];
   rosterFormat.value = null;
+  rosterOptionsError.value = null;
   const api = props.api;
   if (!api || props.groupId === null || props.offline || !isHeadman.value) {
     rosterLoading.value = false;
@@ -126,9 +152,9 @@ async function loadRosterFormats(): Promise<void> {
     rosterFormat.value = formats[0]?.code ?? null;
   } catch (cause) {
     if (revision !== rosterRevision || cause instanceof StaleSessionGenerationError) return;
-    rosterError.value =
+    rosterOptionsError.value =
       cause instanceof Error ? cause.message : 'Не удалось загрузить форматы состава группы.';
-    emit('error', cause);
+    forwardRosterExportDenial(cause);
   } finally {
     if (revision === rosterRevision) rosterLoading.value = false;
   }
@@ -160,6 +186,7 @@ async function downloadRoster(): Promise<void> {
   rosterDownloading.value = true;
   rosterError.value = null;
   rosterNotice.value = null;
+  rosterSucceeded.value = false;
   try {
     if (reportDownload) {
       const result = await reportDownload.download(
@@ -177,6 +204,7 @@ async function downloadRoster(): Promise<void> {
         rosterError.value =
           'Скачивание файлов недоступно в этой версии Telegram. Обнови Telegram до версии 8.0 или новее.';
       } else {
+        rosterSucceeded.value = result === 'accepted';
         rosterNotice.value =
           result === 'accepted'
             ? reportDownloadAcceptedMessage(reportDownload)
@@ -195,6 +223,7 @@ async function downloadRoster(): Promise<void> {
       anchor.rel = 'noopener';
       document.body.append(anchor);
       anchor.click();
+      rosterSucceeded.value = true;
       rosterNotice.value = 'Файл передан браузеру для скачивания.';
     } finally {
       anchor.remove();
@@ -204,7 +233,7 @@ async function downloadRoster(): Promise<void> {
     if (!isCurrent() || cause instanceof StaleSessionGenerationError) return;
     rosterError.value =
       cause instanceof Error ? cause.message : 'Не удалось скачать состав группы.';
-    emit('error', cause);
+    forwardRosterExportDenial(cause);
   } finally {
     if (revision === downloadRevision) {
       rosterDownloading.value = false;
@@ -840,6 +869,16 @@ defineExpose({ back });
         <MobileIcon name="more" />
       </button>
     </header>
+    <AdminNotice
+      v-if="view === 'list' && isHeadman && !rosterOpen && (rosterError || (rosterSucceeded && rosterNotice))"
+      :tone="rosterError ? 'danger' : 'success'"
+      :title="rosterError ? 'Не удалось скачать состав группы' : 'Состав группы готов к скачиванию'"
+    >{{ rosterError || rosterNotice }}</AdminNotice>
+    <p
+      v-else-if="view === 'list' && isHeadman && !rosterOpen && rosterNotice"
+      class="headman-group__roster-status"
+      role="status"
+    >{{ rosterNotice }}</p>
     <StudentWarningBlock
       v-if="offline"
       title="Нет подключения"
@@ -1101,25 +1140,37 @@ defineExpose({ back });
       ref="sheet"
       v-model:open="rosterOpen"
       title="Состав группы"
+      icon-close
+      :aria-busy="rosterLoading || rosterDownloading"
     >
-      <label class="headman-group__field">Формат файла<select
-        v-model="rosterFormat"
-        :disabled="rosterLoading || rosterDownloading"
-      ><option
-        v-for="format in rosterFormats"
-        :key="format.code"
-        :value="format.code"
-      >{{ format.label }}</option></select><MobileIcon name="chevron-down" /></label><StudentWarningBlock
-        v-if="rosterError"
-        title="Скачивание недоступно"
-        :message="rosterError"
-        severity="error"
-      /><p
-        v-if="rosterNotice"
-        role="status"
+      <AdminNotice
+        v-if="rosterOptionsError"
+        tone="danger"
+        title="Не удалось загрузить форматы состава группы"
       >
-        {{ rosterNotice }}
-      </p><button
+        {{ rosterOptionsError }}
+        <template #actions>
+          <button
+            class="headman-group__primary"
+            type="button"
+            :disabled="offline || rosterLoading"
+            @click="loadRosterFormats"
+          >
+            Повторить загрузку
+          </button>
+        </template>
+      </AdminNotice>
+      <div class="headman-group__roster-format">
+        <span aria-hidden="true">Формат файла</span>
+        <HeadmanStatsSelect
+          label="Формат файла"
+          :model-value="rosterFormat ?? ''"
+          :options="rosterFormats.map((format) => ({ value: format.code, label: format.label }))"
+          :disabled="offline || rosterLoading || rosterDownloading || !rosterFormats.length"
+          @update:model-value="selectRosterFormat"
+        />
+      </div>
+      <button
         type="button"
         class="headman-group__primary"
         :disabled="offline || rosterLoading || rosterDownloading || !activeRosterFormat"
@@ -1127,6 +1178,14 @@ defineExpose({ back });
       >
         {{ rosterDownloading ? 'Скачиваем…' : 'Скачать' }}
       </button>
+      <AdminNotice
+        v-if="rosterError || (rosterSucceeded && rosterNotice)"
+        :tone="rosterError ? 'danger' : 'success'"
+        :title="rosterError ? 'Не удалось скачать состав группы' : 'Состав группы готов к скачиванию'"
+      >{{ rosterError || rosterNotice }}</AdminNotice>
+      <p v-else-if="rosterNotice" class="headman-group__roster-status" role="status">
+        {{ rosterNotice }}
+      </p>
     </MobileToolsSheet>
     <MobileToolsSheet
       :key="confirmation?.step.kind ?? 'leave'"

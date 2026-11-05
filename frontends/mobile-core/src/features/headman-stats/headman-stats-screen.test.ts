@@ -68,6 +68,12 @@ class Node {
   constructor(readonly tag: string) {
     markRaw(this)
   }
+  querySelector(selector: string): Node | null {
+    const student = /^\[data-stats-student="(\d+)"\]$/.exec(selector)?.[1]
+    return student
+      ? find(this, (node) => node.props['data-stats-student'] === Number(student)) ?? null
+      : null
+  }
   querySelectorAll(selector: string): Node[] {
     const result: Node[] = []
     const walk = (node: Node) => {
@@ -517,11 +523,13 @@ describe('headman statistics reviewed regressions', () => {
     const lessons = headmanStatsFixtureLessons('history')
     const math = lessons[1]!
     const systems = lessons[0]!
-    const owner = shallowReactive({ subjectId: 13, lessonTypes: ['PRACTICE'] })
+    const owner = shallowReactive({ filter: { subjectId: 13, lessonTypes: ['PRACTICE'] } })
+    const historyReads: URLSearchParams[] = []
     let releaseTicket: ((reply: Response) => void) | null = null
     const fetcher: typeof fetch = async (input) => {
       const url = new URL(String(input), 'http://fixture.test')
-      if (url.pathname.endsWith('/lessons'))
+      if (url.pathname.endsWith('/lessons')) {
+        historyReads.push(url.searchParams)
         return new Response(
           JSON.stringify({
             page: 0,
@@ -534,6 +542,7 @@ describe('headman statistics reviewed regressions', () => {
           }),
           { headers: { 'Content-Type': 'application/json' } },
         )
+      }
       return new Promise<Response>((resolve) => {
         releaseTicket = resolve
       })
@@ -554,7 +563,7 @@ describe('headman statistics reviewed regressions', () => {
           allowed: true,
           markAllowed: true,
           excuseAllowed: true,
-          ...owner,
+          filter: owner.filter,
         }),
     })
     apps.push(app)
@@ -563,10 +572,17 @@ describe('headman statistics reviewed regressions', () => {
     click(root, 'headman-stats-history__ticket')
     await vi.waitFor(() => expect(releaseTicket).not.toBeNull())
     expect(text(root)).toContain('Загружаем…')
-    owner.subjectId = 12
-    owner.lessonTypes = ['LECTURE']
+    owner.filter = { subjectId: 13, lessonTypes: ['PRACTICE'] }
+    await nextTick()
+    expect(text(root)).toContain('Загружаем…')
+    expect(historyReads).toHaveLength(1)
+    owner.filter = { subjectId: 12, lessonTypes: ['LECTURE'] }
     await nextTick()
     await vi.waitFor(() => expect(text(root)).toContain('Информационные системы'))
+    expect(historyReads.map((params) => [params.get('subjectId'), params.getAll('lessonTypes')])).toEqual([
+      ['13', ['PRACTICE']],
+      ['12', ['LECTURE']],
+    ])
     expect(text(root)).not.toContain('Загружаем…')
     expect(text(root)).not.toContain('Высшая математика')
     const release = releaseTicket as unknown as (reply: Response) => void
@@ -768,17 +784,12 @@ describe('headman statistics reviewed regressions', () => {
   })
 })
 
-describe('R3 server-normalized metric sorting', () => {
-  it.each([null, 12])(
-    'offers exactly8 server percent choices and independent alphabet reset in subject=%s',
-    async (subjectId) => {
+describe('server-normalized metric sorting', () => {
+  it(
+    'offers eight server percent choices and alphabet reset only in individual statistics',
+    async () => {
       const fixture = harness()
       await vi.waitFor(() => expect(fixture.screen().ready).toBe(true))
-      if (subjectId) {
-        fixture.screen().openBlock('subject')
-        fixture.screen().selectSubject(String(subjectId))
-        await vi.waitFor(() => expect(fixture.screen().ready).toBe(true))
-      }
       const choices = ['present', 'excused', 'absent', 'presentOrExcused'].flatMap((kind) =>
         [false, true].map((descending) => ({ field: kind + 'Percent', descending })),
       )
@@ -803,7 +814,7 @@ describe('R3 server-normalized metric sorting', () => {
         )
         ;(options[index]!.props.onClick as () => void)()
         await vi.waitFor(() =>
-          expect(fixture.statsQueries.at(-1)).toMatchObject({ subjectId, sorts: [choice] }),
+          expect(fixture.statsQueries.at(-1)).toMatchObject({ sorts: [choice] }),
         )
         await vi.waitFor(() => expect(fixture.screen().ready).toBe(true))
       }
@@ -812,10 +823,19 @@ describe('R3 server-normalized metric sorting', () => {
       click(fixture.root, 'headman-stats__sort-reset')
       await vi.waitFor(() =>
         expect(fixture.statsQueries.at(-1)).toMatchObject({
-          subjectId,
           sorts: [{ field: 'displayName', descending: false }],
         }),
       )
+      fixture.screen().openBlock('subject')
+      fixture.screen().selectSubject('12')
+      await vi.waitFor(() => expect(fixture.screen().ready).toBe(true))
+      expect(
+        find(fixture.root, (node) => node.tag === 'button' && node.props['aria-label'] === 'Сортировка'),
+      ).toBeUndefined()
+      expect(fixture.statsQueries.at(-1)).toMatchObject({
+        subjectId: 12,
+        sorts: [{ field: 'displayName', descending: false }],
+      })
     },
   )
 })

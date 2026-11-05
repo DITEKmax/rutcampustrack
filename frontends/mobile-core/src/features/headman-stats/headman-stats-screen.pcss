@@ -389,9 +389,9 @@
   font: inherit;
   @mixin rct-focus-ring;
 }
-.headman-stats__history-link {
+.headman-stats__history-scope {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
   min-block-size: var(--rct-control-min-touch);
   border: 0;
@@ -402,6 +402,11 @@
   font: inherit;
   font-size: var(--rct-font-size-dense);
   @mixin rct-focus-ring;
+}
+.headman-stats__history-scope[aria-pressed='true'],
+.headman-stats__toolbar button[aria-pressed='true'] {
+  color: var(--rct-color-accent-on-now);
+  background: var(--rct-color-accent-now);
 }
 .headman-stats__search button {
   order: -1;
@@ -538,7 +543,8 @@
 
 .headman-stats__toolbar--pills {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-auto-columns: minmax(0, 1fr);
+  grid-auto-flow: column;
 }
 .headman-stats__toolbar--pills button {
   inline-size: 100%;

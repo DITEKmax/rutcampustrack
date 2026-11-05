@@ -61,6 +61,18 @@ export interface HeadmanStatsLessonQuery {
   readonly lessonTypes?: readonly string[]
 }
 
+export interface HeadmanStatsHistoryFilter {
+  readonly subjectId: number | null
+  readonly lessonTypes: readonly string[]
+}
+
+export function headmanStatsHistoryFilterKey(
+  subjectId: number | null | undefined,
+  lessonTypes: readonly string[] = [],
+): string {
+  return JSON.stringify([subjectId ?? null, subjectId == null ? [] : [...new Set(lessonTypes)].sort()])
+}
+
 function record(value: unknown): Record<string, unknown> {
   if (!value || typeof value !== 'object' || Array.isArray(value))
     throw new Error('Сервер вернул некорректные данные статистики.')

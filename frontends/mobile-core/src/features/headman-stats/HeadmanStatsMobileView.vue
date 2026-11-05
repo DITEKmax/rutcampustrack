@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, ref, useId, watch } from 'vue';
 import StudentWarningBlock from '../../shared/components/StudentWarningBlock.vue';
 import MobileIcon from '../../shared/components/MobileIcon.vue';
 import HeadmanStatsSelect from './HeadmanStatsSelect.vue';
 import HeadmanStatsTrendChart from './HeadmanStatsTrendChart.vue';
+import HeadmanStatsMetricTable from './HeadmanStatsMetricTable.vue';
 import type { StatisticsGraphRange } from '../statistics/statistics-view-model';
 import type {
   HeadmanStatsOverview,
@@ -40,6 +41,7 @@ const props = defineProps<{
   detailError: string | null;
   showBack: boolean;
   historyOpen: boolean;
+  filtersActive: boolean;
   semesterCatalog: HeadmanStatsSemesterCatalog | null;
   semesterId: number | null;
   overview: HeadmanStatsOverview | null;
@@ -53,8 +55,10 @@ const emit = defineEmits<{
   block: [block: HeadmanStatsBlock];
   subject: [value: string];
   types: [types: readonly string[]];
-  student: [studentId: number, event: MouseEvent];
+  student: [studentId: number];
   'close-student': [];
+  'detail-tab': [showHistory: boolean];
+  'clear-filters': [];
   retry: [];
   'retry-personal-trend': [];
   'retry-detail': [];
@@ -62,7 +66,33 @@ const emit = defineEmits<{
   range: [range: StatisticsGraphRange];
 }>();
 const heading = ref<HTMLElement | null>(null);
-defineExpose({ focus: () => heading.value?.focus() });
+const root = ref<HTMLElement | null>(null);
+const summaryTab = ref<HTMLButtonElement | null>(null);
+const historyTab = ref<HTMLButtonElement | null>(null);
+const tabId = useId();
+defineExpose({
+  focus: () => heading.value?.focus(),
+  focusStudent(studentId: number) {
+    const row = root.value?.querySelector<HTMLButtonElement>(`[data-stats-student="${studentId}"]`);
+    (row ?? heading.value)?.focus();
+  },
+  focusSummary: () => summaryTab.value?.focus(),
+});
+const expandedSubjects = new Set<number>();
+watch(() => props.detailStudentId, () => expandedSubjects.clear(), { flush: 'sync' });
+function rememberSubject(subjectId: number, event: Event): void {
+  const element = event.currentTarget as HTMLDetailsElement;
+  if (!element.isConnected) return;
+  if (element.open) expandedSubjects.add(subjectId);
+  else expandedSubjects.delete(subjectId);
+}
+function navigateTabs(event: KeyboardEvent): void {
+  if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+  event.preventDefault();
+  const showHistory = event.key === 'Home' ? false : event.key === 'End' ? true : !props.historyOpen;
+  emit('detail-tab', showHistory);
+  (showHistory ? historyTab : summaryTab).value?.focus();
+}
 const semester = computed(() => props.detail?.context ?? props.catalog?.context ?? null);
 const spring = computed(() => /^0[2-6]$/.test(semester.value?.semesterFrom?.slice(5, 7) ?? ''));
 const subject = computed(
@@ -89,7 +119,7 @@ function toggleType(code: string): void {
 </script>
 
 <template>
-  <div class="headman-stats-mobile statistics-screen">
+  <div ref="root" class="headman-stats-mobile statistics-screen">
     <header class="headman-stats-mobile__header">
       <button
         v-if="showBack"
@@ -115,16 +145,51 @@ function toggleType(code: string): void {
       </h1>
     </header>
 
-    <p
-      v-if="historyOpen && detail"
-      class="headman-stats-mobile__person-name"
-    >
-      {{ detail.student.displayName }}
-    </p>
-    <slot
-      v-if="historyOpen"
-      name="history"
-    />
+    <template v-if="detailStudentId !== null">
+      <p v-if="detail" class="headman-stats-mobile__person-name headman-stats-mobile__person-name--center">
+        <span>{{ personName[0] }}</span><span>{{ personName[1] }}</span>
+      </p>
+      <div
+        class="headman-stats-mobile__tabs"
+        role="tablist"
+        aria-label="Статистика студента"
+        @keydown="navigateTabs"
+      >
+        <button
+          :id="tabId + '-summary-tab'"
+          ref="summaryTab"
+          type="button"
+          role="tab"
+          :tabindex="historyOpen ? -1 : 0"
+          :aria-selected="!historyOpen"
+          :aria-controls="tabId + '-summary'"
+          @click="emit('detail-tab', false)"
+        >
+          Сводка
+        </button>
+        <button
+          :id="tabId + '-history-tab'"
+          ref="historyTab"
+          type="button"
+          role="tab"
+          :tabindex="historyOpen ? 0 : -1"
+          :aria-selected="historyOpen"
+          :aria-controls="tabId + '-history'"
+          @click="emit('detail-tab', true)"
+        >
+          Прошедшие пары
+        </button>
+      </div>
+      <div
+        :hidden="!historyOpen"
+        :id="tabId + '-history'"
+        class="headman-stats-mobile__detail-panel"
+        role="tabpanel"
+        :aria-labelledby="tabId + '-history-tab'"
+      >
+        <slot v-if="historyOpen" name="history" />
+      </div>
+    </template>
     <template v-if="detailStudentId === null">
       <section
         v-if="semester && !(block === 'subject' && subjectId !== null)"
@@ -190,7 +255,12 @@ function toggleType(code: string): void {
         </article>
       </section>
       <nav
+        class="headman-stats-mobile__mode"
+        aria-label="Инструменты раздела"
+      >
+      <div
         class="headman-stats-mobile__tabs"
+        role="group"
         aria-label="Раздел статистики"
       >
         <button
@@ -206,6 +276,8 @@ function toggleType(code: string): void {
         >
           По предметам
         </button>
+      </div>
+      <slot name="dynamics" />
       </nav>
       <slot name="toolbar" />
       <template v-if="block === 'subject'">
@@ -299,7 +371,8 @@ function toggleType(code: string): void {
                   <th scope="row">
                     <button
                       type="button"
-                      @click="emit('student', row.studentId, $event)"
+                      :data-stats-student="row.studentId"
+                      @click="emit('student', row.studentId)"
                     >
                       {{ row.displayName }}
                     </button>
@@ -323,7 +396,15 @@ function toggleType(code: string): void {
       >
         <h2>Группа</h2>
         <slot name="search" />
-        <ul>
+        <div v-if="!rows.length" class="headman-stats-mobile__empty">
+          <p role="status">
+            {{ filtersActive ? 'Нет студентов, подходящих под фильтры.' : 'Нет данных о студентах за выбранный семестр.' }}
+          </p>
+          <button v-if="filtersActive" type="button" @click="emit('clear-filters')">
+            Сбросить фильтры
+          </button>
+        </div>
+        <ul v-else>
           <li
             v-for="row in rows"
             :key="row.studentId"
@@ -331,7 +412,8 @@ function toggleType(code: string): void {
             <button
               type="button"
               class="headman-stats-mobile__student"
-              @click="emit('student', row.studentId, $event)"
+              :data-stats-student="row.studentId"
+              @click="emit('student', row.studentId)"
             >
               <strong>{{ row.displayName }}</strong><div>
                 <span
@@ -404,9 +486,18 @@ function toggleType(code: string): void {
         </div>
       </details>
     </template>
-    <template v-else-if="!historyOpen">
+    <div
+      v-if="detailStudentId !== null || subjectId !== null"
+      :hidden="historyOpen"
+      :id="detailStudentId !== null ? tabId + '-summary' : undefined"
+      class="headman-stats-mobile__detail-panel"
+      :role="detailStudentId !== null ? 'tabpanel' : undefined"
+      :aria-labelledby="detailStudentId !== null ? tabId + '-summary-tab' : undefined"
+      :tabindex="detailStudentId !== null ? 0 : undefined"
+    >
+      <template v-if="detailStudentId !== null">
       <p
-        v-if="detailLoading"
+        v-if="detailLoading && !detail"
         role="status"
       >
         Загружаем статистику студента…
@@ -419,12 +510,6 @@ function toggleType(code: string): void {
         @action="emit('retry-detail')"
       />
       <template v-else-if="detail && metrics">
-        <div class="headman-stats-mobile__personal-intro">
-          <p class="headman-stats-mobile__person-name headman-stats-mobile__person-name--center">
-            <span>{{ personName[0] }}</span><span>{{ personName[1] }}</span>
-          </p>
-          <slot name="toolbar" />
-        </div>
         <section class="headman-stats-mobile__card headman-stats-mobile__personal">
           <h2>Посещаемость</h2><p>{{ detail.context.semesterName }}</p><div
             v-for="item in [
@@ -469,41 +554,31 @@ function toggleType(code: string): void {
           <details
             v-for="detailSubject in detail.subjects"
             :key="detailSubject.subjectId"
+            class="headman-stats-mobile__subject-details"
             :data-subject-id="detailSubject.subjectId"
+            :open="expandedSubjects.has(detailSubject.subjectId)"
+            @toggle="rememberSubject(detailSubject.subjectId, $event)"
           >
-            <summary>{{ detailSubject.subjectName }}</summary>
-            <dl class="headman-stats-mobile__ticket-cards">
+            <summary>
+              <span>{{ detailSubject.subjectName }}</span>
+              <MobileIcon name="chevron-down" />
+            </summary>
+            <div class="headman-stats-mobile__subject-content">
+              <HeadmanStatsMetricTable
+                :label="`${detailSubject.subjectName} · все типы занятий`"
+                :metrics="detailSubject.metrics"
+              />
               <div
-                v-for="item in [
-                  { label: '«+»', metric: detailSubject.metrics.present },
-                  { label: '«+ и у»', metric: detailSubject.metrics.presentOrExcused },
-                  { label: '«у»', metric: detailSubject.metrics.excused },
-                  { label: '«н»', metric: detailSubject.metrics.absent },
-                ]"
-                :key="item.label"
+                v-for="type in detailSubject.lessonTypes"
+                :key="type.code"
+                :data-lesson-type="type.code"
               >
-                <dt>{{ item.label }}</dt><dd>{{ item.metric.numerator }} из {{ item.metric.denominator }} · {{ headmanStatsPercent(item.metric) }}</dd>
+                <h3>{{ type.label }}</h3>
+                <HeadmanStatsMetricTable
+                  :label="`${detailSubject.subjectName} · ${type.label}`"
+                  :metrics="type.metrics"
+                />
               </div>
-            </dl>
-            <div
-              v-for="type in detailSubject.lessonTypes"
-              :key="type.code"
-              :data-lesson-type="type.code"
-            >
-              <h3>{{ type.label }}</h3>
-              <dl>
-                <div
-                  v-for="item in [
-                    { label: '«+»', metric: type.metrics.present },
-                    { label: '«+ и у»', metric: type.metrics.presentOrExcused },
-                    { label: '«у»', metric: type.metrics.excused },
-                    { label: '«н»', metric: type.metrics.absent },
-                  ]"
-                  :key="item.label"
-                >
-                  <dt>{{ item.label }}</dt><dd>{{ item.metric.numerator }} из {{ item.metric.denominator }} · {{ headmanStatsPercent(item.metric) }}</dd>
-                </div>
-              </dl>
             </div>
           </details>
         </section>
@@ -543,9 +618,8 @@ function toggleType(code: string): void {
             Сервер не передал счётчики тикетов за выбранный семестр.
           </p>
         </section>
-        <slot name="history" />
       </template>
-    </template>
+      </template>
     <section
       v-if="!historyOpen && detail"
       class="headman-stats-mobile__card headman-stats-mobile__sources"
@@ -628,5 +702,6 @@ function toggleType(code: string): void {
         </button>
       </nav>
     </section>
+    </div>
   </div>
 </template>

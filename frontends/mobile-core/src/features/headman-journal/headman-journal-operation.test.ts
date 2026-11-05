@@ -16,7 +16,7 @@ import type {
   ReportDownloadPort,
   ReportDownloadTicketRequest,
 } from '../../shared/report-download-client'
-import { ReportDownloadClient } from '../../shared/report-download-client'
+import { ReportDownloadClient, ReportDownloadTicketError } from '../../shared/report-download-client'
 
 describe('journal destructive confirmation and late ACK ownership', () => {
   const scope: JournalMutationScope = { api: {}, groupId: 4, lessonId: 30, generation: 1 }
@@ -165,6 +165,10 @@ function journalButton(root: JournalNode, label: string): JournalNode | undefine
         String(node.props['aria-label']).startsWith(label + '. ')),
   )
 }
+function journalFormat(root: JournalNode): string | undefined {
+  const button = journalButton(root, 'Формат файла')
+  return button && journalNodes(button).map((node) => node.text).join('').trim()
+}
 function journalClick(node: JournalNode | undefined): void {
   expect(node).toBeDefined()
   ;(node!.props.onClick as (event: { currentTarget: JournalNode }) => void)({
@@ -294,6 +298,7 @@ describe('accepted journal production component controls', () => {
       })),
     }
     const optionsRead = vi.fn(async () => options)
+    const onError = vi.fn()
     const events = new Map<string, () => void>()
     vi.stubGlobal('window', {
       addEventListener: (event: string, listener: () => void) => events.set(event, listener),
@@ -303,6 +308,7 @@ describe('accepted journal production component controls', () => {
       api: { ...fixture.api, getWeeklyExportOptions: optionsRead },
       groupId: 4,
       initialDate: fixture.lesson.date,
+      onError,
     })
     await vi.waitFor(() =>
       expect(journalNodes(root).filter((node) => node.props.type === 'checkbox')).toHaveLength(2),
@@ -310,18 +316,117 @@ describe('accepted journal production component controls', () => {
     const checkboxes = () => journalNodes(root).filter((node) => node.props.type === 'checkbox')
     ;(checkboxes()[0]!.props.onChange as (event: unknown) => void)({ target: { checked: false } })
     ;(checkboxes()[1]!.props.onChange as (event: unknown) => void)({ target: { checked: true } })
-    const select = journalNodes(root).find((node) => node.tag === 'select')!
-    ;(select.props['onUpdate:modelValue'] as (value: string) => void)('pdf')
+    journalClick(journalButton(root, 'Формат файла'))
+    await nextTick()
+    journalClick(journalButton(root, 'pdf'))
     await nextTick()
     expect(checkboxes().map((node) => node.props.checked)).toEqual([false, true])
-    expect(select.selectedIndex).toBe(1)
+    expect(journalFormat(root)).toBe('pdf')
     optionsRead.mockRejectedValueOnce(new Error('catalogue refresh failed'))
     events.get('online')?.()
     await vi.waitFor(() => expect(optionsRead).toHaveBeenCalledTimes(2))
     await nextTick()
     expect(checkboxes().map((node) => node.props.checked)).toEqual([false, true])
-    expect(journalNodes(root).find((node) => node.tag === 'select')?.selectedIndex).toBe(1)
+    expect(journalFormat(root)).toBe('pdf')
+    expect(onError).not.toHaveBeenCalled()
   })
+
+  it('retries only the weekly catalogue even when a durable download is still pending', async () => {
+    const fixture = journalFixture()
+    const pending: ReportDownloadTicketRequest = {
+      kind: 'HEADMAN_WEEKLY_CURRENT',
+      headmanWeeklyCurrent: { weekStart: '2026-09-07', format: 'pdf' },
+    }
+    const getWeeklyExportOptions = vi.fn(async () => ({
+      semesterId: 2,
+      weeks: [],
+      formats: [{ code: 'pdf', label: 'PDF', extension: 'pdf', contentType: 'application/pdf' }],
+    })).mockRejectedValueOnce(new Error('Каталог временно недоступен'))
+    const pendingRequests = vi.fn(() => [pending])
+    const download = vi.fn<ReportDownloadPort['download']>().mockResolvedValue('cancelled')
+    const root = mountJournalScreen(HeadmanJournalScreen, {
+      api: { ...fixture.api, getWeeklyExportOptions },
+      groupId: 4,
+      initialDate: fixture.lesson.date,
+      reportDownload: { pendingRequests, download },
+    })
+    await vi.waitFor(() => expect(download).toHaveBeenCalledTimes(1))
+    expect(download.mock.calls[0]?.[0]).toEqual(pending)
+    journalClick(journalNodes(root).find(
+      (node) => node.tag === 'button' && node.text.trim() === 'Скачать журнал',
+    ))
+    const catalogueRetry = () => journalNodes(root).find(
+      (node) => node.tag === 'button' && node.text.trim() === 'Повторить загрузку',
+    )
+    await vi.waitFor(() => expect(catalogueRetry()?.props.disabled).toBe(false))
+    journalClick(catalogueRetry())
+    await vi.waitFor(() => expect(journalFormat(root)).toBe('PDF'))
+    expect(getWeeklyExportOptions).toHaveBeenCalledTimes(2)
+    expect(download).toHaveBeenCalledTimes(1)
+    expect(pendingRequests).toHaveBeenCalledTimes(1)
+  })
+
+  it.each([503, 401, 403])(
+    'keeps weekly export failure %i in its panel and forwards only access failures',
+    async (status) => {
+      const fixture = journalFixture()
+      const request = {
+        kind: 'HEADMAN_WEEKLY_SELECTED',
+        headmanWeeklySelected: { weekStarts: ['2026-09-07'], format: 'pdf' },
+      }
+      const onError = vi.fn()
+      const failure = new ReportDownloadTicketError(status)
+      const download = vi.fn<ReportDownloadPort['download']>()
+        .mockRejectedValueOnce(failure)
+        .mockResolvedValueOnce('accepted')
+      const api = {
+        ...fixture.api,
+        getWeeklyExportOptions: async () => ({
+          semesterId: 2,
+          weeks: [{
+            weekOfSemester: 1,
+            isoWeek: 37,
+            label: 'Неделя 1',
+            weekStart: '2026-09-07',
+            weekEnd: '2026-09-13',
+            current: false,
+          }],
+          formats: [{ code: 'pdf', label: 'PDF', extension: 'pdf', contentType: 'application/pdf' }],
+        }),
+      }
+      const root = mountJournalScreen(HeadmanJournalScreen, {
+        api,
+        groupId: 4,
+        initialDate: fixture.lesson.date,
+        reportDownload: { download },
+        onError,
+      })
+      const downloadButton = () => journalNodes(root).find(
+        (node) => node.props.class === 'headman-journal__weekly-download' && node.text.trim() === 'Скачать',
+      )
+      await vi.waitFor(() => expect(downloadButton()?.props.disabled).toBe(false))
+      journalClick(journalNodes(root).find(
+        (node) => node.tag === 'button' && node.text.trim() === 'Скачать журнал',
+      ))
+      await nextTick()
+      journalClick(downloadButton())
+      await vi.waitFor(() => expect(journalNodes(root).filter(
+        (node) => node.props.role === 'alert' && journalNodes(node).some((child) => child.text.includes(failure.message)),
+      )).toHaveLength(1))
+      expect(download.mock.calls[0]?.[0]).toEqual(request)
+      if (status === 503) {
+        expect(onError).not.toHaveBeenCalled()
+        expect(downloadButton()?.props.disabled).toBe(false)
+        journalClick(downloadButton())
+        await vi.waitFor(() => expect(download).toHaveBeenCalledTimes(2))
+        expect(download.mock.calls[1]?.[0]).toEqual(request)
+      } else {
+        expect(onError).toHaveBeenCalledOnce()
+        expect(onError.mock.calls[0]?.[0]).toBeInstanceOf(HeadmanJournalApiError)
+        expect(onError.mock.calls[0]?.[0].response.status).toBe(status)
+      }
+    },
+  )
 
   it.each(['known-job', 'unknown-acceptance', 'catalogue-error'])(
     'resumes the exact accepted CURRENT intent after week rollover (%s), without replacing the visible selection',
@@ -420,9 +525,7 @@ describe('accepted journal production component controls', () => {
       expect(client.pendingRequests()).toEqual([request])
       await nextTick()
       if (mode !== 'catalogue-error') {
-        const select = journalNodes(root).find((node) => node.tag === 'select')
-        expect(select?.props['onUpdate:modelValue']).toBeDefined()
-        expect(select?.selectedIndex).toBe(0)
+        expect(journalFormat(root)).toBe('Word')
       }
     },
   )
@@ -512,7 +615,8 @@ describe('accepted journal production component controls', () => {
       expect(
         journalNodes(returnedRoot).some(
           (node) =>
-            node.props.role === 'alert' && node.text.includes('Не удалось связаться с сервером'),
+            node.props.role === 'alert' &&
+            journalNodes(node).some((child) => child.text.includes('Не удалось связаться с сервером')),
         ),
       ).toBe(true),
     )

@@ -18,13 +18,14 @@
   margin: 0;
 }
 .headman-stats-history__lesson {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  justify-content: space-between;
   gap: var(--rct-space-2);
   padding: var(--rct-space-3);
   border-radius: var(--rct-radius-xl);
   background: var(--rct-color-surface-raised);
+  @mixin rct-focus-ring;
 }
 .headman-stats-history__lesson-main {
   display: grid;
@@ -73,12 +74,10 @@
   background: var(--rct-color-disabled-surface);
   color: var(--rct-color-text-secondary);
 }
-.headman-stats-history__lesson:has(.headman-stats-history__choice--empty) {
-  flex-wrap: wrap;
-}
-.headman-stats-history__lesson:has(.headman-stats-history__choice--empty)
+.headman-stats-history__lesson--empty
   .headman-stats-history__choices {
-  margin-inline-start: auto;
+  grid-column: 1 / -1;
+  justify-content: space-around;
 }
 .headman-stats-history__ticket {
   justify-self: start;
@@ -92,15 +91,8 @@
   background: var(--rct-color-surface-float);
   @mixin rct-focus-ring;
 }
-.headman-stats-history__feedback {
-  margin: 0;
-  border-radius: var(--rct-radius-xl);
-  padding: var(--rct-space-3);
-  color: var(--rct-color-success-text);
-  background: var(--rct-color-success-surface);
-  font-size: var(--rct-font-size-caption);
-}
 .headman-stats-history__error {
+  grid-column: 1 / -1;
   display: grid;
   gap: var(--rct-space-2);
   border-radius: var(--rct-radius-xl);
@@ -108,6 +100,9 @@
   color: var(--rct-color-danger-text);
   background: var(--rct-error-surface);
   font-size: var(--rct-font-size-caption);
+}
+.headman-stats-history__error p {
+  margin: 0;
 }
 .headman-stats-history__pages,
 .headman-stats-history__dialog-actions {
@@ -182,7 +177,8 @@
   padding: var(--rct-space-3);
   background: var(--rct-color-surface-raised);
 }
-.headman-stats-history button:disabled {
+.headman-stats-history button:disabled,
+.headman-stats-history button[aria-disabled='true'] {
   cursor: not-allowed;
 }
 
@@ -204,17 +200,6 @@
   inline-size: 100%;
 }
 
-.headman-stats-history__lesson {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-}
-.headman-stats-history__lesson:has(.headman-stats-history__choice--empty)
-  .headman-stats-history__choices {
-  grid-column: 1 / -1;
-  inline-size: 100%;
-  justify-content: space-around;
-  margin: 0;
-}
 .headman-stats-history__ticket {
   grid-column: 1 / -1;
   border-radius: var(--rct-radius-full);

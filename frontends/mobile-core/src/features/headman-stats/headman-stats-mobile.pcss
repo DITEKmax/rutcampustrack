@@ -145,6 +145,31 @@
   display: flex;
   gap: var(--rct-space-2);
 }
+.headman-stats-mobile__mode {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: var(--rct-space-2);
+}
+.headman-stats-mobile__mode .headman-stats-mobile__tabs {
+  flex: 2 1 auto;
+  flex-wrap: wrap;
+}
+.headman-stats-mobile__mode .headman-stats-mobile__tabs button {
+  flex: 1 1 auto;
+}
+.headman-stats-mobile__dynamics {
+  flex: 1 1 auto;
+  min-block-size: var(--rct-control-min-touch);
+  padding-inline: var(--rct-space-2);
+  border: 0;
+  border-radius: var(--rct-radius-xl);
+  font: inherit;
+  font-size: var(--rct-font-size-caption);
+  color: var(--rct-color-text-primary);
+  background: var(--rct-color-surface-raised);
+  @mixin rct-focus-ring;
+}
 .headman-stats-mobile__tabs button,
 .headman-stats-mobile__types button {
   flex: 1;
@@ -160,6 +185,7 @@
   @mixin rct-focus-ring;
 }
 .headman-stats-mobile__tabs button[aria-pressed='true'],
+.headman-stats-mobile__tabs button[aria-selected='true'],
 .headman-stats-mobile__types button[aria-pressed='true'] {
   color: var(--rct-color-accent-on-now);
   background: var(--rct-color-accent-now);
@@ -539,23 +565,99 @@
   font-weight: var(--rct-font-weight-medium);
 }
 
-.headman-stats-mobile__personal-intro {
+.headman-stats-mobile__detail-panel {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) max-content;
-  align-items: center;
   gap: var(--rct-space-2);
   min-inline-size: 0;
 }
-.headman-stats-mobile__personal-intro .headman-stats-mobile__person-name {
+.headman-stats-mobile__detail-panel[hidden] {
+  display: none;
+}
+.headman-stats-mobile__subject-details {
+  border-radius: var(--rct-radius-xl);
+}
+.headman-stats-mobile__subject-details[open] {
+  background: var(--rct-color-surface-float);
+}
+.headman-stats-mobile__subject-details > summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--rct-space-2);
+  min-block-size: var(--rct-control-min-touch);
+  box-sizing: border-box;
+  padding: var(--rct-space-3);
+  list-style: none;
+  overflow-wrap: anywhere;
+  cursor: pointer;
+  @mixin rct-focus-ring;
+}
+.headman-stats-mobile__subject-details > summary::-webkit-details-marker {
+  display: none;
+}
+.headman-stats-mobile__subject-details > summary svg {
+  flex: none;
+  inline-size: var(--rct-icon-size);
+  block-size: var(--rct-icon-size);
+}
+.headman-stats-mobile__subject-details[open] > summary {
+  color: var(--rct-color-accent-now);
+  font-weight: var(--rct-font-weight-medium);
+}
+.headman-stats-mobile__subject-details[open] > summary svg {
+  transform: rotate(180deg);
+}
+.headman-stats-mobile__subject-content {
+  display: grid;
+  gap: var(--rct-space-3);
+  padding: 0 var(--rct-space-3) var(--rct-space-3);
   min-inline-size: 0;
 }
-.headman-stats-mobile__personal-intro .headman-stats__toolbar {
-  flex-wrap: nowrap;
+.headman-stats-mobile__subject-content h3 {
+  margin: 0 0 var(--rct-space-2);
+  font-size: var(--rct-font-size-caption);
 }
-@media (max-width: 24rem) {
-  .headman-stats-mobile__personal-intro .headman-stats__toolbar {
-    flex-direction: column;
-  }
+.headman-stats-mobile__metric-table {
+  table-layout: fixed;
+  overflow-wrap: anywhere;
+}
+.headman-stats-mobile__metric-table th,
+.headman-stats-mobile__metric-table td {
+  text-align: end;
+  padding-inline: var(--rct-space-1);
+}
+.headman-stats-mobile__metric-table th:first-child {
+  inline-size: 44%;
+  text-align: start;
+}
+.headman-stats-mobile__metric-table thead th:nth-child(2) {
+  inline-size: 36%;
+}
+.headman-stats-mobile__metric-table th:first-child span + span {
+  margin-inline-start: var(--rct-space-1);
+}
+.headman-stats-mobile__empty {
+  display: grid;
+  justify-items: center;
+  gap: var(--rct-space-2);
+  padding: var(--rct-space-3);
+  text-align: center;
+  border-radius: var(--rct-radius-xl);
+  color: var(--rct-color-text-secondary);
+  background: var(--rct-color-surface-raised);
+}
+.headman-stats-mobile__empty p {
+  margin: 0;
+}
+.headman-stats-mobile__empty button {
+  min-block-size: var(--rct-control-min-touch);
+  padding-inline: var(--rct-space-3);
+  border: 0;
+  border-radius: var(--rct-radius-full);
+  font: inherit;
+  color: var(--rct-color-accent-on-now);
+  background: var(--rct-color-accent-now);
+  @mixin rct-focus-ring;
 }
 
 .headman-stats-mobile__ticket-cards article,

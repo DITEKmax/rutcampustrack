@@ -59,6 +59,8 @@ export interface HeadmanRequestDecisionSelection {
   readonly expectedRevision: string
   readonly includedLessons: readonly HeadmanRequestLesson[]
   readonly excludedLessons: readonly HeadmanRequestLesson[]
+  /** Current physical targets and marks at the decision boundary; missing on legacy receipts. */
+  readonly beforeLessons?: readonly HeadmanRequestLesson[] | null
 }
 
 export interface HeadmanRequestDecisionInput {
@@ -334,11 +336,33 @@ function normalizeDetail(value: unknown): HeadmanRequestDetail {
       )
     )
       throw new Error('Сервер не подтвердил состав решения')
+    let beforeLessons: HeadmanRequestLesson[] | null = null
+    if (receipt.beforeLessons != null) {
+      if (!Array.isArray(receipt.beforeLessons))
+        throw new Error('Сервер вернул неполный снимок до решения')
+      const before = receipt.beforeLessons.map(normalizeLesson).filter(isValue)
+      const resultIds = new Set(
+        [...includedLessons, ...excludedLessons].map((lesson) => lesson?.occurrenceId),
+      )
+      if (
+        before.length !== receipt.beforeLessons.length ||
+        resultIds.size !== includedLessons.length + excludedLessons.length ||
+        before.length !== resultIds.size ||
+        new Set(before.map((lesson) => lesson.occurrenceId)).size !== before.length ||
+        before.some(
+          (lesson) =>
+            !lesson.lessonId || !lesson.occurrenceId || !resultIds.has(lesson.occurrenceId),
+        )
+      )
+        throw new Error('Сервер не подтвердил пары до решения')
+      beforeLessons = before
+    }
     decisionSelection = {
       requestKey,
       expectedRevision,
       includedLessons: includedLessons as HeadmanRequestLesson[],
       excludedLessons: excludedLessons as HeadmanRequestLesson[],
+      beforeLessons,
     }
   }
   return {

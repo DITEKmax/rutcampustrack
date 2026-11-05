@@ -282,6 +282,11 @@ public class HeadmanRequestService {
                         && ticket.getStatus() != ExcuseTicketStatus.REJECTED
                         && ticket.getStatus() != ExcuseTicketStatus.CANCELLED;
         List<Long> ids = ticket.getLessonIds();
+        if (ids != null && ids.isEmpty() && hasOnlyExcludedCoverage(ticket)) {
+            // A subject deletion can remove every approved pair while the excluded pairs
+            // remain in the archive. The effective receipt is still authoritative.
+            return null;
+        }
         if (ids == null || ids.isEmpty() || ids.stream().anyMatch(id -> id == null || id <= 0)) {
             throw new ConflictException("Текущие пары заявки недоступны");
         }
@@ -305,6 +310,37 @@ public class HeadmanRequestService {
             }
         }
         return unavailable ? null : List.copyOf(current);
+    }
+
+    private static boolean hasOnlyExcludedCoverage(ExcuseTicket ticket) {
+        var selection = ticket.getEffectiveDecisionSelection();
+        var adjustments = ticket.getSubjectCoverageAdjustments();
+        if (ticket.getStatus() != ExcuseTicketStatus.APPROVED
+                || selection == null
+                || adjustments == null
+                || adjustments.isEmpty()
+                || selection.getIncludedLessons() == null
+                || !selection.getIncludedLessons().isEmpty()
+                || selection.getExcludedLessons() == null
+                || selection.getExcludedLessons().isEmpty()
+                || ticket.getGroupId() == null
+                || ticket.getGroupId() <= 0
+                || ticket.getSemesterId() == null
+                || ticket.getSemesterId() <= 0
+                || ticket.getStudentId() == null
+                || ticket.getStudentId() <= 0) {
+            return false;
+        }
+        return selection.getExcludedLessons().stream()
+                .allMatch(
+                        lesson ->
+                                lesson != null
+                                        && lesson.getLessonId() != null
+                                        && lesson.getLessonId() > 0
+                                        && lesson.getOccurrenceId() != null
+                                        && lesson.getOccurrenceId().matches("[1-9][0-9]*")
+                                        && ticket.getGroupId().equals(lesson.getGroupId())
+                                        && ticket.getSemesterId().equals(lesson.getSemesterId()));
     }
 
     private List<HeadmanRequestLessonResponse> currentLateLessons(LateCheckinRequest request) {
@@ -449,7 +485,12 @@ public class HeadmanRequestService {
                         .toList(),
                 saved.getExcludedLessons().stream()
                         .map(HeadmanRequestService::receiptLesson)
-                        .toList());
+                        .toList(),
+                saved.getBeforeLessons() == null
+                        ? null
+                        : saved.getBeforeLessons().stream()
+                                .map(HeadmanRequestService::receiptLesson)
+                                .toList());
     }
 
     private static HeadmanRequestLessonResponse receiptLesson(

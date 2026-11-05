@@ -1,12 +1,16 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, ref, shallowRef, watch } from 'vue';
+import { computed, nextTick, onBeforeUnmount, ref, shallowRef, watch } from 'vue';
+import SvgIcon from '../../../../shared/foundation/SvgIcon.vue';
+import archiveIcon from '../../assets/headman-homework-archive.svg';
+import AdminNotice from '../../shared/components/AdminNotice.vue';
 import MobileIcon from '../../shared/components/MobileIcon.vue';
 import StudentWarningBlock from '../../shared/components/StudentWarningBlock.vue';
 import RequestAttachmentPreview from '../requests/RequestAttachmentPreview.vue';
-import { requestStatusLabel, requestStatusTone, lessonTypeLabel } from '../requests/state';
+import { requestStatusLabel, requestStatusTone } from '../requests/state';
 import type { HeadmanAssistantPermission } from '../headman-group/headman-group-client';
 import {
   HeadmanRequestsApiError,
+  type HeadmanRequestBucket,
   type HeadmanRequestDetail,
   type HeadmanRequestKind,
   type HeadmanRequestLesson,
@@ -23,6 +27,19 @@ import {
   type RequestDecision,
 } from './request-decision';
 import { formatRequestLessonTime } from './request-lesson-time';
+import {
+  currentLessonRows,
+  groupHeadmanRequests,
+  hasDifferentOriginalLessons,
+  originalLessonRows,
+  previewApproval,
+  requestDate,
+  requestPeriod,
+  requestReason,
+  storedDecisionRows,
+  type RequestLessonRow,
+} from './request-presentation';
+import RequestLessonList from './RequestLessonList.vue';
 import './headman-requests-screen.pcss';
 
 const props = withDefaults(
@@ -49,8 +66,10 @@ const emit = defineEmits<{
   'view-change': [view: HeadmanRequestsView];
 }>();
 const view = ref<HeadmanRequestsView>('queue'),
-  bucket = ref<'OPEN' | 'ARCHIVE'>('OPEN'),
+  bucket = ref<HeadmanRequestBucket>('OPEN'),
   kind = ref<HeadmanRequestKind | ''>(props.initialKind ?? '');
+let openKind = kind.value;
+const heading = ref<HTMLElement | null>(null);
 const studentName = ref(''),
   dateFrom = ref(''),
   dateTo = ref(''),
@@ -58,13 +77,12 @@ const studentName = ref(''),
   currentPage = ref(0);
 const appliedQuery = shallowRef<HeadmanRequestFilters | null>(null);
 const page = ref<HeadmanRequestPage | null>(null),
-  details = ref<Record<string, HeadmanRequestDetail>>({}),
   selected = ref<HeadmanRequestDetail | null>(null),
   selectedRequest = shallowRef<HeadmanRequestSummary | null>(null);
 const loading = ref(false),
   busy = ref(false),
   error = ref(''),
-  notice = ref(''),
+  notice = ref<{ tone: 'success' | 'warning'; message: string } | null>(null),
   reason = ref(''),
   counts = ref<Partial<Record<'all' | HeadmanRequestKind, number>>>({});
 const pending = shallowRef<FrozenRequestDecision | null>(null);
@@ -92,6 +110,12 @@ const affected = computed(() =>
     (lesson) => !excludedIds.value.includes(lesson.occurrenceId ?? ''),
   ),
 );
+const pairsPlural = new Intl.PluralRules('ru-RU');
+const approvalLabel = computed(() => {
+  const count = affected.value.length;
+  const form = pairsPlural.select(count);
+  return `Одобрить ${count} ${form === 'one' ? 'пару' : form === 'few' ? 'пары' : 'пар'}`;
+});
 const selectable = computed(
   () =>
     !!selected.value?.decisionRevision &&
@@ -101,21 +125,35 @@ const selectable = computed(
       (lesson) => !!lesson.occurrenceId && !!lesson.occurrenceRevision,
     ),
 );
-const displayLessons = computed(
-  () =>
-    selected.value?.decisionSelection?.includedLessons ??
-    selected.value?.currentAffectedLessons ??
-    selected.value?.lessons ??
-    [],
+const groups = computed(() => groupHeadmanRequests(page.value?.content ?? []));
+const originalRows = computed(() => originalLessonRows(selected.value?.lessons ?? []));
+const currentRows = computed(() =>
+  selected.value?.currentAffectedLessons
+    ? currentLessonRows(selected.value.currentAffectedLessons, excludedIds.value)
+    : originalRows.value,
 );
-const excludedReceipt = computed(() => selected.value?.decisionSelection?.excludedLessons ?? []);
-const transferred = computed(
-  () =>
-    !!selected.value?.currentAffectedLessons &&
-    JSON.stringify(selected.value.lessons.map((lesson) => [lesson.lessonId, lesson.date])) !==
-      JSON.stringify(
-        selected.value.currentAffectedLessons.map((lesson) => [lesson.lessonId, lesson.date]),
-      ),
+const preview = computed(() =>
+  selected.value && view.value === 'approve' && selected.value.summary.status === 'PENDING'
+    ? previewApproval(selected.value, excludedIds.value)
+    : null,
+);
+const stored = computed(() =>
+  selected.value && selected.value.summary.status !== 'PENDING'
+    ? storedDecisionRows(selected.value)
+    : null,
+);
+const originalDistinct = computed(() => {
+  const detail = selected.value;
+  if (!detail) return false;
+  const compared = stored.value
+    ? detail.decisionSelection?.beforeLessons
+    : detail.currentAffectedLessons;
+  return !!compared && hasDifferentOriginalLessons(detail.lessons, compared);
+});
+const legacyCurrentRows = computed(() =>
+  selected.value?.currentAffectedLessons
+    ? currentLessonRows(selected.value.currentAffectedLessons)
+    : [],
 );
 const title = computed(
   () =>
@@ -162,7 +200,6 @@ async function load(append = false): Promise<void> {
   if (!append) appliedQuery.value = query;
   if (!append) {
     page.value = null;
-    details.value = {};
     counts.value = {};
     currentPage.value = 0;
   }
@@ -189,42 +226,8 @@ async function load(append = false): Promise<void> {
       content: [...new Map([...existing, ...data.content].map((item) => [item.id, item])).values()],
     };
     currentPage.value = data.page;
-    // Hydrate one bounded page, with four concurrent authenticated detail reads.
-    const hydrated: Record<string, HeadmanRequestDetail> = {};
-    let cursor = 0;
-    await Promise.all(
-      Array.from({ length: Math.min(4, data.content.length) }, async () => {
-        while (cursor < data.content.length && current(run, api)) {
-          const item = data.content[cursor++]!;
-          try {
-            const detail = await api.get(item.id);
-            if (current(run, api) && detail.summary.id === item.id) hydrated[item.id] = detail;
-          } catch {
-            /* A failed detail remains an honest ungrouped ticket. */
-          }
-        }
-      }),
-    );
-    if (!current(run, api)) return;
-    details.value = { ...details.value, ...hydrated };
-    const countQueries = await Promise.allSettled(
-      (
-        [
-          ['all', null],
-          ['EXCUSE', 'EXCUSE'],
-          ['LATE_CHECKIN', 'LATE_CHECKIN'],
-        ] as const
-      ).map(async ([key, type]) => ({
-        key,
-        count: (await api.list({ ...query, bucket: 'OPEN', type, size: 1, page: 0 })).totalElements,
-      })),
-    );
-    if (!current(run, api)) return;
-    counts.value = Object.fromEntries(
-      countQueries.flatMap((result) =>
-        result.status === 'fulfilled' ? [[result.value.key, result.value.count]] : [],
-      ),
-    );
+    if (!append && query.bucket === 'OPEN')
+      void loadOpenCounts(run, api, query, data.totalElements);
   } catch (cause) {
     if (current(run, api)) {
       error.value = failure(cause, 'Не удалось загрузить заявки.');
@@ -234,30 +237,46 @@ async function load(append = false): Promise<void> {
     if (run === revision) loading.value = false;
   }
 }
-const groups = computed(() => {
-  const result = new Map<
-    string,
-    { lesson: HeadmanRequestLesson | null; items: HeadmanRequestSummary[] }
-  >();
-  for (const item of page.value?.content ?? []) {
-    const lessons = details.value[item.id]?.currentAffectedLessons ?? [];
-    const contexts = bucket.value === 'ARCHIVE' ? [null] : lessons.length ? lessons : [null];
-    for (const lesson of contexts) {
-      const key = lesson ? `${lesson.lessonId}:${lesson.date}` : `unknown:${item.id}`;
-      const group = result.get(key) ?? { lesson, items: [] };
-      if (!group.items.some((entry) => entry.id === item.id)) group.items.push(item);
-      result.set(key, group);
-    }
-  }
-  return [...result.entries()].map(([key, value]) => ({ key, ...value }));
-});
-function choose(next: HeadmanRequestKind | '', archive = false): void {
-  if (busy.value || pending.value) return;
+async function loadOpenCounts(
+  run: number,
+  api: HeadmanRequestsApi,
+  query: HeadmanRequestFilters,
+  total: number,
+): Promise<void> {
+  const result = await Promise.allSettled(
+    (
+      [
+        ['all', null],
+        ['EXCUSE', 'EXCUSE'],
+        ['LATE_CHECKIN', 'LATE_CHECKIN'],
+      ] as const
+    ).map(async ([key, type]) => ({
+      key,
+      count:
+        query.type === type
+          ? total
+          : (await api.list({ ...query, type, size: 1, page: 0 })).totalElements,
+    })),
+  );
+  if (!current(run, api)) return;
+  counts.value = Object.fromEntries(
+    result.flatMap((entry) =>
+      entry.status === 'fulfilled' ? [[entry.value.key, entry.value.count]] : [],
+    ),
+  );
+}
+function chooseKind(next: HeadmanRequestKind | ''): void {
+  if (busy.value || pending.value || kind.value === next) return;
   kind.value = next;
+  if (bucket.value === 'OPEN') openKind = next;
+  void load();
+}
+function switchBucket(): void {
+  if (busy.value || pending.value) return;
+  const archive = bucket.value === 'OPEN';
   bucket.value = archive ? 'ARCHIVE' : 'OPEN';
-  currentPage.value = 0;
-  selected.value = null;
-  notice.value = '';
+  kind.value = archive ? '' : openKind;
+  filterOpen.value = false;
   setView(archive ? 'archive' : 'queue');
   void load();
 }
@@ -270,7 +289,7 @@ async function open(item: HeadmanRequestSummary): Promise<void> {
   excludedIds.value = [];
   reason.value = '';
   error.value = '';
-  notice.value = '';
+  notice.value = null;
   setView('detail');
   loading.value = true;
   try {
@@ -314,6 +333,11 @@ async function confirm(decision: RequestDecision): Promise<void> {
     selected.value = fresh;
     if (fresh.summary.status !== 'PENDING') {
       excludedIds.value = [];
+      notice.value = {
+        tone: 'warning',
+        message: 'Заявка уже обработана. Показано актуальное решение.',
+      };
+      setView('detail');
       return;
     }
     if (excludedIds.value.length && fresh.decisionRevision !== previous.decisionRevision) {
@@ -391,11 +415,19 @@ async function decide(replay = false): Promise<void> {
     return;
   }
   selected.value = outcome.detail;
+  excludedIds.value = [];
   setView('detail');
   notice.value =
     outcome.status === 'done'
-      ? 'Решение сохранено. Заявка находится в архиве.'
-      : 'Заявка уже обработана. Показано актуальное решение.';
+      ? { tone: 'success', message: 'Решение сохранено. Заявка находится в архиве.' }
+      : {
+          tone: 'warning',
+          message: 'Это решение не подтверждено. Показан результат, который сохранил сервер.',
+        };
+}
+function dismissNotice(): void {
+  notice.value = null;
+  void nextTick(() => heading.value?.focus({ preventScroll: true }));
 }
 function back(): boolean {
   if (busy.value || pending.value) return true;
@@ -410,9 +442,17 @@ function back(): boolean {
   }
   if (view.value === 'detail') {
     selected.value = null;
+    selectedRequest.value = null;
+    excludedIds.value = [];
+    notice.value = null;
+    reason.value = '';
     error.value = '';
     setView(bucket.value === 'ARCHIVE' ? 'archive' : 'queue');
     void load();
+    return true;
+  }
+  if (view.value === 'archive') {
+    switchBucket();
     return true;
   }
   return false;
@@ -429,39 +469,8 @@ function loadMore(): void {
   if (!loading.value && !busy.value && currentPage.value + 1 < (page.value?.totalPages ?? 0))
     void load(true);
 }
-function date(value: string | null): string {
-  if (!value) return 'Дата не указана';
-  const d = new Date(value);
-  return Number.isNaN(d.getTime())
-    ? value
-    : new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'long', timeZone: 'UTC' }).format(
-        d,
-      );
-}
-function time(lesson: HeadmanRequestLesson): string {
-  return formatRequestLessonTime(lesson);
-}
-function statusSymbol(status: string | null): string {
-  return status === 'PRESENT' ? '+' : status === 'EXCUSED' ? 'у' : status === 'ABSENT' ? 'н' : '—';
-}
-function statusText(status: string | null): string {
-  return status === 'PRESENT'
-    ? 'Присутствовал'
-    : status === 'EXCUSED'
-      ? 'Уважительная причина'
-      : status === 'ABSENT'
-        ? 'Отсутствовал'
-        : 'Не отмечено';
-}
-function target(lesson: HeadmanRequestLesson): string {
-  return lesson.attendanceStatus === 'PRESENT' || selected.value?.summary.kind === 'LATE_CHECKIN'
-    ? 'PRESENT'
-    : 'EXCUSED';
-}
-function displayStatus(lesson: HeadmanRequestLesson): string | null {
-  return view.value === 'approve' && !excludedIds.value.includes(lesson.occurrenceId ?? '')
-    ? target(lesson)
-    : lesson.attendanceStatus;
+function exclusionLabel({ lesson, excluded }: RequestLessonRow): string {
+  return `${excluded ? 'Вернуть' : 'Исключить'} пару: ${lesson.subjectName ?? 'Предмет'}, ${requestDate(lesson.date)}, ${formatRequestLessonTime(lesson)}`;
 }
 watch(
   () => props.api,
@@ -469,8 +478,11 @@ watch(
     revision += 1;
     busy.value = false;
     selected.value = null;
+    selectedRequest.value = null;
     pending.value = null;
     excludedIds.value = [];
+    notice.value = null;
+    reason.value = '';
     error.value = '';
     setView(bucket.value === 'ARCHIVE' ? 'archive' : 'queue');
     void load();
@@ -504,7 +516,7 @@ function openNotificationRequest(detail: HeadmanRequestDetail): boolean {
   excludedIds.value = [];
   reason.value = '';
   error.value = '';
-  notice.value = '';
+  notice.value = null;
   loading.value = false;
   setView('detail');
   return true;
@@ -521,7 +533,7 @@ defineExpose({ back, openNotificationRequest });
   >
     <header class="headman-requests__header">
       <button
-        v-if="!root || showBack"
+        v-if="!root || showBack || view === 'archive'"
         class="headman-requests__back"
         type="button"
         aria-label="Назад"
@@ -529,7 +541,11 @@ defineExpose({ back, openNotificationRequest });
       >
         <MobileIcon name="back" />
       </button>
-      <h1 id="headman-requests-title">
+      <h1
+        id="headman-requests-title"
+        ref="heading"
+        tabindex="-1"
+      >
         {{ title }}
       </h1>
       <button
@@ -537,6 +553,7 @@ defineExpose({ back, openNotificationRequest });
         type="button"
         class="headman-requests__filter"
         aria-label="Поиск и период"
+        :aria-expanded="filterOpen"
         @click="filterOpen = !filterOpen"
       >
         <MobileIcon name="search" />
@@ -545,41 +562,54 @@ defineExpose({ back, openNotificationRequest });
     <div
       v-if="root"
       class="headman-requests__tabs"
+      role="group"
       aria-label="Фильтры заявок"
     >
       <button
         type="button"
-        :aria-pressed="bucket === 'OPEN' && !kind"
-        @click="choose('')"
+        :aria-pressed="!kind"
+        @click="chooseKind('')"
       >
-        Все <span v-if="(counts.all ?? 0) > 0">{{ counts.all }}</span>
+        Все <span v-if="bucket === 'OPEN' && (counts.all ?? 0) > 0">{{ counts.all }}</span>
       </button>
       <button
         type="button"
-        :aria-pressed="bucket === 'OPEN' && kind === 'EXCUSE'"
-        @click="choose('EXCUSE')"
+        :aria-pressed="kind === 'EXCUSE'"
+        @click="chooseKind('EXCUSE')"
       >
         <span
           class="headman-requests__symbol"
           data-status="EXCUSED"
-        >у</span><span v-if="(counts.EXCUSE ?? 0) > 0">{{ counts.EXCUSE }}</span><span class="headman-requests__sr">Уважительные причины</span>
+          aria-hidden="true"
+        >у</span>
+        <span class="headman-requests__sr">Уважительные причины</span>
+        <span v-if="bucket === 'OPEN' && (counts.EXCUSE ?? 0) > 0">{{ counts.EXCUSE }}</span>
       </button>
       <button
         type="button"
-        :aria-pressed="bucket === 'OPEN' && kind === 'LATE_CHECKIN'"
-        @click="choose('LATE_CHECKIN')"
+        :aria-pressed="kind === 'LATE_CHECKIN'"
+        @click="chooseKind('LATE_CHECKIN')"
       >
         <span
           class="headman-requests__symbol"
           data-status="ABSENT"
-        >н</span><span v-if="(counts.LATE_CHECKIN ?? 0) > 0">{{ counts.LATE_CHECKIN }}</span><span class="headman-requests__sr">Забыл отметиться</span>
+          aria-hidden="true"
+        >н</span>
+        <span class="headman-requests__sr">Забыл отметиться</span>
+        <span v-if="bucket === 'OPEN' && (counts.LATE_CHECKIN ?? 0) > 0">{{
+          counts.LATE_CHECKIN
+        }}</span>
       </button>
       <button
         type="button"
         :aria-pressed="bucket === 'ARCHIVE'"
-        @click="choose('', true)"
+        @click="switchBucket"
       >
-        <MobileIcon name="homework" />Архив
+        <SvgIcon
+          :src="archiveIcon"
+          aria-hidden="true"
+        />
+        Архив
       </button>
     </div>
     <form
@@ -587,18 +617,6 @@ defineExpose({ back, openNotificationRequest });
       class="headman-requests__filters"
       @submit.prevent="apply"
     >
-      <label
-        v-if="bucket === 'ARCHIVE'"
-        for="headman-archive-request-type"
-      ><span id="headman-archive-request-type-label">Тип заявки</span><select
-        id="headman-archive-request-type"
-        v-model="kind"
-        aria-labelledby="headman-archive-request-type-label"
-      >
-        <option value="">Все типы</option>
-        <option value="EXCUSE">Уважительные причины</option>
-        <option value="LATE_CHECKIN">Забыл отметиться</option>
-      </select></label>
       <label>ФИО<input
         v-model="studentName"
         type="search"
@@ -637,7 +655,7 @@ defineExpose({ back, openNotificationRequest });
     />
     <StudentWarningBlock
       v-if="error"
-      severity="error"
+      :severity="pending ? 'warning' : 'error'"
       :title="pending ? 'Проверь результат' : 'Не удалось выполнить действие'"
       :message="error"
       :action-label="
@@ -654,38 +672,50 @@ defineExpose({ back, openNotificationRequest });
         pending ? decide(true) : root ? load() : selectedRequest ? open(selectedRequest) : undefined
       "
     />
-    <StudentWarningBlock
-      v-if="notice"
-      title="Заявка обработана"
-      :message="notice"
-    />
-    <p
-      v-if="loading && (!root || !page)"
-      class="headman-requests__state"
+    <AdminNotice
+      v-if="notice && selected && allowed && !offline"
+      :tone="notice.tone"
+      :title="notice.tone === 'success' ? 'Заявка обработана' : 'Проверь результат'"
+      dismiss-label="Закрыть уведомление"
+      @dismiss="dismissNotice"
+    >
+      <p>{{ notice.message }}</p>
+    </AdminNotice>
+    <div
+      v-if="loading"
+      :class="root ? 'headman-requests__loading' : 'headman-requests__state'"
       role="status"
     >
-      Загружаем {{ root ? 'заявки' : 'заявку' }}…
-    </p>
+      <span
+        v-if="root && !page"
+        class="headman-requests__spinner"
+        aria-hidden="true"
+      />
+      <span :class="{ 'headman-requests__sr': root }">
+        {{ root ? 'Загружаем заявки…' : 'Загружаем заявку…' }}
+      </span>
+    </div>
     <template v-if="root && page && allowed && !offline">
       <p
         v-if="!page.content.length"
         class="headman-requests__state"
+        role="status"
       >
         {{
-          bucket === 'ARCHIVE' ? 'В архиве пока нет заявок.' : 'Заявок по заданным условиям нет.'
+          bucket === 'ARCHIVE'
+            ? 'В архиве нет заявок по заданным условиям.'
+            : 'Заявок по заданным условиям нет.'
         }}
       </p>
       <section
         v-for="group in groups"
         :key="group.key"
         class="headman-requests__group"
+        :aria-labelledby="`headman-request-group-${group.key}`"
       >
-        <header
-          v-if="group.lesson && bucket === 'OPEN'"
-          class="headman-requests__context"
-        >
-          <h2>{{ group.lesson.subjectName ?? 'Предмет не указан' }}</h2><p><MobileIcon name="clock" />{{ time(group.lesson) }} · {{ date(group.lesson.date) }}</p><p><MobileIcon name="lesson" />{{ lessonTypeLabel(group.lesson.subjectType) }}</p>
-        </header>
+        <h2 :id="`headman-request-group-${group.key}`">
+          {{ group.name ?? 'Студент' }}
+        </h2>
         <button
           v-for="item in group.items"
           :key="item.id"
@@ -697,33 +727,40 @@ defineExpose({ back, openNotificationRequest });
           <span
             class="headman-requests__kind"
             :data-kind="item.kind"
-          >{{ item.kind === 'EXCUSE' ? 'у' : 'н' }}</span><span class="headman-requests__ticket-copy"><span
+            aria-hidden="true"
+          >
+            {{ item.kind === 'EXCUSE' ? 'у' : 'н' }}
+          </span>
+          <span class="headman-requests__ticket-copy">
+            <span class="headman-requests__sr">{{
+              item.kind === 'EXCUSE' ? 'Уважительная причина' : 'Забыл отметиться'
+            }}</span>
+            <strong>{{ requestReason(item) }}</strong>
+            <span>{{ requestPeriod(item) }}</span>
+          </span>
+          <span
             v-if="bucket === 'ARCHIVE'"
             class="headman-requests__badge"
             :data-tone="requestStatusTone(item.status)"
-          >{{ requestStatusLabel(item.status) }}</span><strong>{{ item.studentName ?? 'Студент' }}</strong><span>{{
-            item.reason ??
-              (item.kind === 'LATE_CHECKIN' ? 'Не успел отметиться' : 'Уважительная причина')
-          }}
-            · {{ date(item.coverageStart) }}<template v-if="item.coverageEnd !== item.coverageStart"> — {{ date(item.coverageEnd) }}</template>
-            · Пар: {{ item.lessonCount }}</span><span v-if="!group.lesson && bucket === 'OPEN'">Контекст пары недоступен</span></span><MobileIcon
+          >
+            {{ requestStatusLabel(item.status) }}
+          </span>
+          <MobileIcon
             name="back"
             class="headman-requests__next"
           />
         </button>
       </section>
       <div
-        v-if="page.content.length"
+        v-if="currentPage + 1 < page.totalPages"
         class="headman-requests__pagination"
       >
-        <span>Загружено {{ page.content.length }} из {{ page.totalElements }} заявок</span>
         <button
-          v-if="currentPage + 1 < page.totalPages"
           type="button"
           :disabled="loading || busy"
           @click="loadMore"
         >
-          {{ loading ? 'Загружаем…' : 'Показать ещё' }}
+          Показать ещё
         </button>
       </div>
     </template>
@@ -732,23 +769,15 @@ defineExpose({ back, openNotificationRequest });
         class="headman-requests__student"
         :data-status="selected.summary.status"
       >
-        <strong>{{ selected.summary.studentName ?? 'Студент' }}</strong><p>
-          {{
-            selected.summary.reason ??
-              (selected.summary.kind === 'LATE_CHECKIN'
-                ? 'Не успел отметиться'
-                : 'Уважительная причина')
-          }}
-        </p><p>
-          Исходный период: {{ date(selected.summary.coverageStart)
-          }}<template v-if="selected.summary.coverageEnd !== selected.summary.coverageStart">
-            — {{ date(selected.summary.coverageEnd) }}
-          </template>
-        </p><p
+        <strong>{{ selected.summary.studentName ?? 'Студент' }}</strong>
+        <p>{{ requestReason(selected.summary) }}</p>
+        <p>Исходный период: {{ requestPeriod(selected.summary) }}</p>
+        <p
           v-if="selected.summary.kind === 'EXCUSE' && selected.summary.status === 'PENDING'"
           role="status"
         >
-          {{ selected.summary.alreadyMarkedCount }} из {{ selected.summary.lessonCount }} пар уже отмечены. Подтверждённое присутствие сохранится.
+          {{ selected.summary.alreadyMarkedCount }} из {{ selected.summary.lessonCount }} пар уже
+          отмечены. Подтверждённое присутствие сохранится.
         </p><span
           v-if="selected.summary.status !== 'PENDING'"
           class="headman-requests__badge"
@@ -786,42 +815,31 @@ defineExpose({ back, openNotificationRequest });
           Причина решения: {{ selected.summary.decisionComment }}
         </p>
       </template>
-      <template v-if="view !== 'reject'">
+      <template v-if="view === 'detail' && selected.summary.status === 'PENDING'">
         <h2 class="headman-requests__section-title">
-          {{
-            selected.decisionSelection
-              ? 'Пары в решении'
-              : view === 'approve'
-                ? 'Как изменятся отметки'
-                : selected.currentAffectedLessons
-                  ? 'Текущие пары заявки'
-                  : 'Исходные пары заявки'
-          }}
+          {{ selected.currentAffectedLessons ? 'Текущие пары заявки' : 'Исходные пары заявки' }}
         </h2>
         <StudentWarningBlock
           v-if="!selected.currentAffectedLessons"
           title="Текущие пары недоступны"
           message="Сохранённые данные заявки показаны ниже. Одобрение доступно после проверки текущих пар."
         />
-
-        <ul class="headman-requests__lessons">
-          <li
-            v-for="(lesson, index) in displayLessons"
-            :key="`${lesson.lessonId}:${index}`"
-            :data-excluded="excludedIds.includes(lesson.occurrenceId ?? '')"
-          >
+        <RequestLessonList :rows="currentRows">
+          <template #control="{ row }">
             <button
-              v-if="view === 'detail' && selected.summary.status === 'PENDING' && selectable"
+              v-if="selectable"
               type="button"
               class="headman-requests__exclude"
-              :disabled="
-                !writable ||
-                  (!excludedIds.includes(lesson.occurrenceId ?? '') && affected.length <= 1)
-              "
-              :aria-label="`${excludedIds.includes(lesson.occurrenceId ?? '') ? 'Вернуть' : 'Исключить'} пару: ${lesson.subjectName ?? 'Предмет'}`"
-              @click="changeExclusion(lesson, !excludedIds.includes(lesson.occurrenceId ?? ''))"
+              :disabled="!writable || (!row.excluded && affected.length <= 1)"
+              :aria-label="exclusionLabel(row)"
+              @click="changeExclusion(row.lesson, !row.excluded)"
             >
+              <MobileIcon
+                v-if="!row.excluded"
+                name="trash"
+              />
               <svg
+                v-else
                 width="16"
                 height="16"
                 viewBox="0 0 16 16"
@@ -832,67 +850,69 @@ defineExpose({ back, openNotificationRequest });
                 stroke-linejoin="round"
                 aria-hidden="true"
               >
-                <path
-                  v-if="excludedIds.includes(lesson.occurrenceId ?? '')"
-                  d="M3 8l3 3 7-7"
-                />
-                <path
-                  v-else
-                  d="M2.5 4.5h11M6 2.5h4l.5 2H5.5l.5-2ZM4 4.5l.5 9h7l.5-9M6.5 7v4M9.5 7v4"
-                />
+                <path d="M3 8l3 3 7-7" />
               </svg>
             </button>
-            <span class="headman-requests__lesson-copy"><strong>{{ lesson.subjectName ?? 'Предмет не указан' }}</strong><span>{{ date(lesson.date) }} · {{ time(lesson) }}</span><span>{{ lessonTypeLabel(lesson.subjectType) }}</span><span v-if="excludedIds.includes(lesson.occurrenceId ?? '')">Исключена из одобрения</span></span><span
-              class="headman-requests__attendance"
-              :data-status="displayStatus(lesson)"
-              :aria-label="statusText(displayStatus(lesson))"
-            >{{ statusSymbol(displayStatus(lesson)) }}</span>
-          </li>
-        </ul>
+          </template>
+        </RequestLessonList>
       </template>
-      <section
-        v-if="view === 'approve'"
-        class="headman-requests__after"
+      <div
+        v-if="preview || stored"
+        class="headman-requests__comparison"
       >
-        <MobileIcon name="attendance" /><h2>После одобрения</h2><p>
-          {{
-            selected.summary.kind === 'LATE_CHECKIN'
-              ? 'В выбранных парах появится отметка «Присутствовал». Подтверждённое присутствие сохранится.'
-              : 'В выбранных парах появится уважительная причина. Подтверждённое присутствие сохранится.'
-          }}
-        </p>
-      </section>
+        <section
+          class="headman-requests__comparison-panel"
+          data-comparison="before"
+        >
+          <h2>До</h2>
+          <p class="headman-requests__hint">
+            {{
+              preview
+                ? 'Текущие отметки'
+                : selected.decisionSelection?.beforeLessons
+                  ? 'Отметки перед решением'
+                  : 'Исходные пары заявки. Отметки до решения не сохранены.'
+            }}
+          </p>
+          <RequestLessonList :rows="preview?.before ?? stored?.before ?? []" />
+        </section>
+        <section
+          class="headman-requests__comparison-panel"
+          data-comparison="after"
+        >
+          <h2>После</h2>
+          <p class="headman-requests__hint">
+            {{
+              preview
+                ? 'Прогноз после одобрения. Подтверждённое присутствие сохранится.'
+                : selected.decisionSelection
+                  ? 'Отметки на момент решения'
+                  : 'Отметки на момент решения не сохранены.'
+            }}
+          </p>
+          <RequestLessonList
+            v-if="preview || stored?.after.length"
+            :rows="preview?.after ?? stored?.after ?? []"
+          />
+        </section>
+      </div>
       <section
-        v-if="excludedReceipt.length"
+        v-if="stored && !selected.decisionSelection && legacyCurrentRows.length"
         class="headman-requests__original"
       >
         <h2 class="headman-requests__section-title">
-          Исключённые пары
+          Текущие отметки в журнале
         </h2>
-        <p class="headman-requests__hint">
-          Одобрение не изменяет отметки этих пар. Исходные сведения заявки сохранены.
-        </p>
-        <p
-          v-for="lesson in excludedReceipt"
-          :key="lesson.occurrenceId ?? lesson.lessonId ?? ''"
-        >
-          {{ lesson.subjectName }} · {{ date(lesson.date) }} · {{ time(lesson) }}
-        </p>
+        <RequestLessonList :rows="legacyCurrentRows" />
       </section>
       <section
-        v-if="view === 'detail' && (transferred || !!selected.decisionSelection)"
+        v-if="view !== 'reject' && originalDistinct"
         class="headman-requests__original"
       >
         <h2 class="headman-requests__section-title">
-          Исходные сведения заявки
-        </h2><p class="headman-requests__hint">
-          Исходный состав заявки сохранён. Результат решения показан выше.
-        </p><p
-          v-for="(lesson, index) in selected.lessons"
-          :key="index"
-        >
-          {{ lesson.subjectName }} · {{ date(lesson.date) }} · {{ time(lesson) }}
-        </p>
+          Исходные пары заявки
+        </h2>
+        <RequestLessonList :rows="originalRows" />
       </section>
       <template v-if="view === 'reject'">
         <StudentWarningBlock
@@ -939,7 +959,7 @@ defineExpose({ back, openNotificationRequest });
           "
           @click="decide()"
         >
-          {{ busy ? 'Сохраняем…' : `Одобрить ${affected.length} пары` }}
+          {{ busy ? 'Сохраняем…' : approvalLabel }}
         </button>
         <button
           v-else

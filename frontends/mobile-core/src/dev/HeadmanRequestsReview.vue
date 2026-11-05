@@ -125,6 +125,15 @@ onMounted(async () => {
           click('.headman-requests__actions .headman-requests__primary');
           await waitFor(() => document.querySelector('main[aria-busy="false"]') !== null);
         }
+        if (state === 'final-cards') {
+          click('.headman-requests__actions .headman-requests__primary');
+          await waitFor(
+            () =>
+              document.querySelector(
+                'main[aria-busy="false"] [data-tone="success"].admin-notice',
+              ) !== null,
+          );
+        }
       }
       if (['approve', 'unknown', 'transferred'].includes(state)) {
         click('.headman-requests__primary');
@@ -143,7 +152,8 @@ onMounted(async () => {
       if (state === 'unknown') {
         click('.headman-requests__primary');
         await waitFor(
-          () => document.querySelector('main[aria-busy="false"] [data-severity="error"]') !== null,
+          () =>
+            document.querySelector('main[aria-busy="false"] [data-severity="warning"]') !== null,
         );
       }
       if (state === 'late') {
@@ -157,10 +167,7 @@ onMounted(async () => {
     if (state === 'paging') {
       click('.headman-requests__pagination button:last-child');
       await waitFor(
-        () =>
-          document
-            .querySelector('main[aria-busy="false"] .headman-requests__pagination')
-            ?.textContent?.includes('4 из 4') === true,
+        () => document.querySelectorAll('main[aria-busy="false"] [data-request-id]').length === 4,
       );
     }
     await document.fonts.ready;

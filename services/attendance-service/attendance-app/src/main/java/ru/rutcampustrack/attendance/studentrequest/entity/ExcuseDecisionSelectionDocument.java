@@ -24,4 +24,8 @@ public class ExcuseDecisionSelectionDocument {
 
     @Field("excluded_lessons")
     private List<StudentLessonSnapshotDocument> excludedLessons;
+
+    /** Null on decisions saved before the original attendance was captured. */
+    @Field("before_lessons")
+    private List<StudentLessonSnapshotDocument> beforeLessons;
 }

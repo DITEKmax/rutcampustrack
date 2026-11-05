@@ -100,6 +100,12 @@ public final class ExcuseSubjectCoverage {
                                     originalSelection.getExcludedLessons().stream()
                                             .filter(s -> !target.contains(s.getLessonId()))
                                             .toList())
+                            .beforeLessons(
+                                    originalSelection.getBeforeLessons() == null
+                                            ? null
+                                            : originalSelection.getBeforeLessons().stream()
+                                                    .filter(s -> !target.contains(s.getLessonId()))
+                                                    .toList())
                             .build());
         }
         ticket.setLessonIds(

@@ -7,9 +7,11 @@ public record HeadmanRequestDecisionSelectionResponse(
         String requestKey,
         String expectedRevision,
         List<HeadmanRequestLessonResponse> includedLessons,
-        List<HeadmanRequestLessonResponse> excludedLessons) {
+        List<HeadmanRequestLessonResponse> excludedLessons,
+        List<HeadmanRequestLessonResponse> beforeLessons) {
     public HeadmanRequestDecisionSelectionResponse {
         includedLessons = List.copyOf(includedLessons);
         excludedLessons = List.copyOf(excludedLessons);
+        beforeLessons = beforeLessons == null ? null : List.copyOf(beforeLessons);
     }
 }

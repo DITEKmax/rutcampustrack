@@ -4,7 +4,12 @@ import MobileIcon from './MobileIcon.vue';
 import checkIcon from '../../assets/admin/check.svg';
 import './admin-notice.pcss';
 
-defineProps<{ tone: 'success' | 'warning' | 'danger'; title: string }>();
+defineProps<{
+  tone: 'success' | 'warning' | 'danger';
+  title: string;
+  dismissLabel?: string;
+}>();
+const emit = defineEmits<{ dismiss: [] }>();
 </script>
 
 <template>
@@ -28,6 +33,15 @@ defineProps<{ tone: 'success' | 'warning' | 'danger'; title: string }>();
         />
       </span>
       <h2>{{ title }}</h2>
+      <button
+        v-if="dismissLabel"
+        type="button"
+        class="admin-notice__dismiss"
+        :aria-label="dismissLabel"
+        @click="emit('dismiss')"
+      >
+        <MobileIcon name="close" />
+      </button>
     </div>
     <div
       v-if="$slots.default"

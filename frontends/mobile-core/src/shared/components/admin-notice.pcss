@@ -104,3 +104,17 @@
   background: var(--rct-color-disabled-surface);
   cursor: not-allowed;
 }
+
+.admin-notice .admin-notice__dismiss {
+  display: grid;
+  place-items: center;
+  flex: 0 0 var(--rct-control-min-touch);
+  min-block-size: var(--rct-control-min-touch);
+  margin-inline-start: auto;
+  border: 0;
+  border-radius: var(--rct-radius-full);
+  color: inherit;
+  background: transparent;
+  cursor: pointer;
+  @mixin rct-focus-ring;
+}

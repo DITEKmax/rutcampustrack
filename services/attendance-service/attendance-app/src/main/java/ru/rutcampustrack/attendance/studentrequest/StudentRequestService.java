@@ -2423,6 +2423,16 @@ public class StudentRequestService {
                                                     ? allIds
                                                     : ExcuseDecisionSelections.included(
                                                             current, writeLessons, intent);
+                                    // These are current physical pairs under the same write fences
+                                    // as the marks. A previous read or original ticket snapshot
+                                    // cannot prove the attendance at the decision boundary.
+                                    List<StudentLessonSnapshotDocument> before = new ArrayList<>();
+                                    if (intent != null) {
+                                        for (Long id : allIds) {
+                                            before.add(
+                                                    decisionSnapshot(current, writeLessons.get(id)));
+                                        }
+                                    }
                                     Map<String, Object> auditBefore =
                                             ru.rutcampustrack.attendance.audit.RequestActionRecorder
                                                     .snapshot(current);
@@ -2472,18 +2482,26 @@ public class StudentRequestService {
                                                 new ArrayList<>();
                                         List<StudentLessonSnapshotDocument> excluded =
                                                 new ArrayList<>();
-                                        for (Long id : allIds) {
-                                            StudentLessonSnapshotDocument snapshot =
-                                                    decisionSnapshot(current, writeLessons.get(id));
-                                            (includedIds.contains(id) ? included : excluded)
-                                                    .add(snapshot);
+                                        for (int index = 0; index < allIds.size(); index++) {
+                                            Long id = allIds.get(index);
+                                            if (includedIds.contains(id)) {
+                                                included.add(
+                                                        approved
+                                                                ? decisionSnapshot(
+                                                                        current,
+                                                                        writeLessons.get(id))
+                                                                : before.get(index));
+                                            } else {
+                                                excluded.add(before.get(index));
+                                            }
                                         }
                                         current.setDecisionSelection(
                                                 new ExcuseDecisionSelectionDocument(
                                                         intent.requestKey(),
                                                         intent.expectedRevision(),
                                                         included,
-                                                        excluded));
+                                                        excluded,
+                                                        before));
                                         if (approved) current.setLessonIds(includedIds);
                                     }
                                     current.setStatus(

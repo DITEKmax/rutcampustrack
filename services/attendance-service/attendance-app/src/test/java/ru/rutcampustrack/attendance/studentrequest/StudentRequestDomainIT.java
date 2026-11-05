@@ -2,6 +2,7 @@ package ru.rutcampustrack.attendance.studentrequest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.tuple;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -2143,9 +2144,25 @@ class StudentRequestDomainIT {
                 .isEqualTo(AttendanceStatus.PRESENT);
         assertThat(attendanceRepository.findByLessonIdAndUserId(43L, STUDENT_ID).orElseThrow())
                 .isEqualTo(excludedBefore);
-        assertThat(saved.getDecisionSelection().getIncludedLessons())
-                .extracting(StudentLessonSnapshotDocument::getAttendanceStatus)
-                .containsExactly("EXCUSED", "PRESENT");
+        var receipt = headmanRequestService.get(headman(777L), id).decisionSelection();
+        assertThat(receipt.requestKey()).isEqualTo(key);
+        assertThat(receipt.expectedRevision()).isEqualTo(revision);
+        assertThat(receipt.beforeLessons())
+                .extracting(
+                        HeadmanRequestLessonResponse::occurrenceId,
+                        HeadmanRequestLessonResponse::attendanceStatus)
+                .containsExactly(
+                        tuple("10041", "ABSENT"), tuple("10042", "PRESENT"), tuple("10043", "ABSENT"));
+        assertThat(receipt.includedLessons())
+                .extracting(
+                        HeadmanRequestLessonResponse::occurrenceId,
+                        HeadmanRequestLessonResponse::attendanceStatus)
+                .containsExactly(tuple("10041", "EXCUSED"), tuple("10042", "PRESENT"));
+        assertThat(receipt.excludedLessons())
+                .extracting(
+                        HeadmanRequestLessonResponse::occurrenceId,
+                        HeadmanRequestLessonResponse::attendanceStatus)
+                .containsExactly(tuple("10043", "ABSENT"));
         assertThat(
                         mongoTemplate
                                 .getCollection("lesson_actions")
@@ -2168,6 +2185,10 @@ class StudentRequestDomainIT {
                 .isEmpty();
         assertThat(events.getFirst().payload())
                 .contains("\"included_lesson_ids\":[41,42]", "\"excluded_lesson_ids\":[43]");
+
+        writePresentThroughPairCoordinator(41L);
+        assertThat(headmanRequestService.get(headman(777L), id).decisionSelection())
+                .isEqualTo(receipt);
 
         doThrow(new ScheduleServiceUnavailableException("offline after commit"))
                 .when(scheduleGrpcClient)

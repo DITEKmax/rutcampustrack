@@ -169,7 +169,8 @@ class ExcuseEventPublisherTest {
                         "f13db6a3-4e76-4f8a-8703-4871f23fbdcb",
                         "a".repeat(64),
                         List.of(included),
-                        List.of(excluded, legacy));
+                        List.of(excluded, legacy),
+                        List.of(included, excluded, legacy));
         var ticket =
                 ExcuseTicket.builder()
                         .id("partial-ticket")

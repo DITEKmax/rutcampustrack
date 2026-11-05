@@ -45,6 +45,9 @@ class ExcuseSubjectCoverageTest {
         assertThat(ticket.getDecisionSelection().getExcludedLessons())
                 .extracting(StudentLessonSnapshotDocument::getLessonId)
                 .containsExactly(12L);
+        assertThat(ticket.getDecisionSelection().getBeforeLessons())
+                .extracting(StudentLessonSnapshotDocument::getLessonId)
+                .containsExactly(12L);
         var stored = mapped(ticket);
         assertThat(stored.get("lesson_snapshots")).isEqualTo(original.get("lesson_snapshots"));
         assertThat(stored.get("decision_selection")).isEqualTo(original.get("decision_selection"));
@@ -124,6 +127,9 @@ class ExcuseSubjectCoverageTest {
                 .isEqualTo(mapped(ticket()).get("lesson_snapshots"));
         assertThat(mapped(loaded).get("decision_selection"))
                 .isEqualTo(mapped(ticket()).get("decision_selection"));
+        assertThat(loaded.getDecisionSelection().getBeforeLessons())
+                .extracting(StudentLessonSnapshotDocument::getLessonId)
+                .containsExactly(12L);
         assertThat(loaded.getSubjectCoverageAdjustments()).hasSize(1);
     }
 
@@ -165,6 +171,7 @@ class ExcuseSubjectCoverageTest {
                                 .expectedRevision("original-revision")
                                 .includedLessons(List.of(first))
                                 .excludedLessons(List.of(second))
+                                .beforeLessons(List.of(first, second))
                                 .build())
                 .build();
     }

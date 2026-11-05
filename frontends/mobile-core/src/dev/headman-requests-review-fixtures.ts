@@ -36,13 +36,14 @@ export function createRequestsReviewApi(
   function summary(
     id: string,
     kind: 'EXCUSE' | 'LATE_CHECKIN',
+    studentId: number,
     name: string,
   ): HeadmanRequestSummary {
     return {
       id,
       kind,
       status: 'PENDING',
-      studentId: 8,
+      studentId,
       studentName: name,
       reason: kind === 'EXCUSE' ? 'Болезнь' : 'Не успел отметиться',
       comment:
@@ -62,10 +63,10 @@ export function createRequestsReviewApi(
     }
   }
   const requests = [
-    summary('excuse-maria', 'EXCUSE', 'Мария Васильева'),
-    summary('late-ilya', 'LATE_CHECKIN', 'Илья Соколов'),
-    summary('excuse-anna', 'EXCUSE', 'Анна Смирнова'),
-    summary('late-maxim', 'LATE_CHECKIN', 'Максим Орлов'),
+    summary('excuse-maria', 'EXCUSE', 8, 'Васильева Мария'),
+    summary('late-ilya', 'LATE_CHECKIN', 9, 'Соколов Илья'),
+    summary('excuse-anna', 'EXCUSE', 10, 'Смирнова Анна'),
+    summary('late-maxim', 'LATE_CHECKIN', 11, 'Орлов Максим'),
   ]
   const lessons: HeadmanRequestLesson[] = [
     {
@@ -132,7 +133,14 @@ export function createRequestsReviewApi(
         item.id,
         {
           decisionRevision: item.kind === 'EXCUSE' ? 'a'.repeat(64) : null,
-          summary: item,
+          summary:
+            state === 'archive' && index < 3
+              ? {
+                  ...item,
+                  status: index === 1 ? 'REJECTED' : 'APPROVED',
+                  decisionComment: index === 1 ? 'Недостаточно подтверждений' : null,
+                }
+              : item,
           lessons: affected,
           currentAffectedLessons:
             state === 'transferred'
@@ -197,9 +205,16 @@ export function createRequestsReviewApi(
               ? {
                   requestKey: body.requestKey,
                   expectedRevision: body.expectedRevision,
-                  includedLessons: targets.filter(
-                    (lesson) => !body.excludedOccurrenceIds?.includes(lesson.occurrenceId ?? ''),
-                  ),
+                  beforeLessons: targets,
+                  includedLessons: targets
+                    .filter(
+                      (lesson) => !body.excludedOccurrenceIds?.includes(lesson.occurrenceId ?? ''),
+                    )
+                    .map((lesson) =>
+                      body.decision === 'APPROVED' && lesson.attendanceStatus !== 'PRESENT'
+                        ? { ...lesson, attendanceStatus: 'EXCUSED', attendanceSource: 'HEADMAN' }
+                        : lesson,
+                    ),
                   excludedLessons: targets.filter((lesson) =>
                     body.excludedOccurrenceIds?.includes(lesson.occurrenceId ?? ''),
                   ),
@@ -223,7 +238,7 @@ export function createRequestsReviewApi(
         if (
           state === 'stale-selection' &&
           detail.summary.id === 'excuse-maria' &&
-          ++detailReads > 2
+          ++detailReads > 1
         )
           return json({
             ...detail,
@@ -235,13 +250,10 @@ export function createRequestsReviewApi(
           })
         return json(detail)
       }
-      let content = [...details.values()].map((detail) => detail.summary)
-      if (url.searchParams.get('bucket') === 'ARCHIVE')
-        content = content.slice(0, 3).map((item, index) => ({
-          ...item,
-          status: index === 1 ? 'REJECTED' : 'APPROVED',
-          decisionComment: index === 1 ? 'Недостаточно подтверждений' : null,
-        }))
+      const archive = url.searchParams.get('bucket') === 'ARCHIVE'
+      let content = [...details.values()]
+        .map((detail) => detail.summary)
+        .filter((item) => archive === (item.status !== 'PENDING'))
       if (state === 'empty') content = []
       const type = url.searchParams.get('type')
       if (type) content = content.filter((item) => item.kind === type)

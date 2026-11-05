@@ -6,9 +6,12 @@ import AttendanceLessonRow from './AttendanceLessonRow.vue'
 import rowSource from './AttendanceLessonRow.vue?raw'
 import AttendanceSubjectList from './AttendanceSubjectList.vue'
 import subjectsSource from './AttendanceSubjectList.vue?raw'
+import AttendanceDocumentPreview from './AttendanceDocumentPreview.vue'
+import previewSource from './AttendanceDocumentPreview.vue?raw'
 import type { AttendanceLesson, AttendanceSubject } from './attendance-view-model'
 
 for (const [component, source] of [
+  [AttendanceDocumentPreview, previewSource],
   [AttendanceLessonRow, rowSource],
   [AttendanceSubjectList, subjectsSource],
 ] as const) {
@@ -154,6 +157,13 @@ describe('student attendance status explanation', () => {
       expect(text(tooltip(root)!)).toBe(expected)
       expect(events).toEqual([])
       await invoke(trigger, 'onBlur')
+      if (status === 'EXCUSED') {
+        expect(tooltip(root)).toBeDefined()
+        await invoke(
+          nodes(root).find((item) => item.props['aria-label'] === 'Закрыть причину')!,
+          'onClick',
+        )
+      }
       expect(tooltip(root)).toBeUndefined()
       props.lesson = { ...lesson, status: 'PRESENT' }
       await settle()
@@ -196,6 +206,146 @@ describe('student attendance status explanation', () => {
     expect(text(tooltip(root)!)).toBe(`Другое · ${explanation.comment}`)
     expect(trigger.props['aria-describedby']).toContain('canonical:888')
     await invoke(trigger, 'onKeydown')
+    expect(tooltip(root)).toBeUndefined()
+  })
+  it('opens each excused lesson document independently and keeps it reachable when focus leaves the mark', async () => {
+    const opened: string[] = []
+    const documentForLesson = (id: string) => ({ label: 'Документ', open: () => opened.push(id) })
+    const root = mount(() => h(AttendanceLessonRow, { lesson, documentForLesson }))
+    const mark = nodes(root).find((item) => item.tag === 'button')!
+    await invoke(mark, 'onFocus')
+    let document = nodes(root).find((item) => item.props.class === 'attendance-status-document')!
+    ;(mark.props.onBlur as (event: unknown) => void)({ relatedTarget: { closest: () => document } })
+    await settle()
+    await invoke(document, 'onClick')
+    expect(opened).toEqual([lesson.id])
+    expect(tooltip(root)).toBeDefined()
+    await invoke(document, 'onBlur')
+    expect(tooltip(root)).toBeUndefined()
+
+    const metrics = {
+      present: { count: 0, percent: null },
+      presentOrExcused: { count: 0, percent: null },
+      excused: { count: 2, percent: 100 },
+      absent: { count: 0, percent: null },
+      held: 2,
+      planned: 2,
+    }
+    const subjects: readonly AttendanceSubject[] = [
+      {
+        id: '5',
+        name: 'Предмет',
+        typeCards: [
+          {
+            type: 'LECTURE',
+            metrics,
+            history: [
+              { id: 'lesson:1', status: 'EXCUSED', explanation },
+              { id: 'lesson:2', status: 'EXCUSED', explanation },
+            ],
+          },
+        ],
+      },
+    ]
+    const history = mount(() =>
+      h(AttendanceSubjectList, { subjects, expandedSubjectId: '5', documentForLesson }),
+    )
+    const marks = nodes(history).filter(
+      (item) => item.tag === 'button' && String(item.props['aria-label']).startsWith('Занятие'),
+    )
+    for (const [index, trigger] of marks.entries()) {
+      await invoke(trigger, 'onClick')
+      expect(trigger.props['aria-describedby']).toContain(`lesson:${index + 1}`)
+      document = nodes(history).find((item) => item.props.class === 'attendance-status-document')!
+      await invoke(document, 'onClick')
+    }
+    expect(opened).toEqual([lesson.id, 'lesson:1', 'lesson:2'])
+  })
+  it('opens an actual excused segment with its immediate preview and returns from full view to the same reason', async () => {
+    const opened: string[] = []
+    const metrics = {
+      present: { count: 0, percent: null },
+      presentOrExcused: { count: 1, percent: 100 },
+      excused: { count: 1, percent: 100 },
+      absent: { count: 0, percent: null },
+      held: 1,
+      planned: 1,
+    }
+    const subjects: readonly AttendanceSubject[] = [
+      {
+        id: '5',
+        name: 'Предмет',
+        typeCards: [
+          {
+            type: 'LECTURE',
+            metrics,
+            history: [{ id: 'actual-lesson:77', status: 'EXCUSED', explanation }],
+          },
+        ],
+      },
+    ]
+    const root = mount(() =>
+      h(AttendanceSubjectList, {
+        subjects,
+        expandedSubjectId: '5',
+        documentForLesson: (id: string) =>
+          id === 'actual-lesson:77'
+            ? {
+                label: 'Учебный образец',
+                open: () => opened.push(id),
+                preview: {
+                  src: '/local-attachment.png',
+                  kind: 'image' as const,
+                  alt: 'Учебное вложение',
+                },
+              }
+            : null,
+      }),
+    )
+    const segment = nodes(root).find(
+      (item) => item.tag === 'button' && String(item.props['aria-label']).startsWith('Занятие'),
+    )!
+    await invoke(segment, 'onClick')
+    expect(text(tooltip(root)!)).toContain(explanation.comment)
+    const image = nodes(root).find(
+      (item) => item.tag === 'img' && item.props.src === '/local-attachment.png',
+    )
+    expect(image?.props.alt).toBe('Учебное вложение')
+    expect(nodes(root).some((item) => item.props.class === 'attendance-status-document')).toBe(
+      false,
+    )
+    const preview = nodes(root).find((item) => item.props.class === 'attendance-document-preview')!
+    await invoke(preview, 'onClick')
+    expect(nodes(root).find((item) => item.tag === 'dialog')).toBeDefined()
+    const close = nodes(root).find(
+      (item) => item.tag === 'button' && item.props.autofocus !== undefined,
+    )!
+    expect(close.props['aria-label']).toBe('Закрыть')
+    expect(nodes(close).some((item) => item.tag === 'svg')).toBe(true)
+    expect(text(close)).toBe('')
+    await invoke(close, 'onClick')
+    expect(nodes(root).find((item) => item.tag === 'dialog')).toBeUndefined()
+    expect(text(tooltip(root)!)).toContain(explanation.comment)
+    expect(segment.props['aria-expanded']).toBe(true)
+    expect(
+      nodes(root).find((item) => item.props.class === 'attendance-document-preview'),
+    ).toBeDefined()
+    expect(opened).toEqual([])
+    await invoke(preview, 'onClick')
+    const dialog = nodes(root).find((item) => item.tag === 'dialog')!
+    ;(dialog.props.onCancel as (event: unknown) => void)({ preventDefault: () => undefined })
+    await settle()
+    expect(nodes(root).find((item) => item.tag === 'dialog')).toBeUndefined()
+    expect(text(tooltip(root)!)).toContain(explanation.comment)
+    const dismissReason = nodes(root).find(
+      (item) => item.props['aria-label'] === 'Закрыть причину',
+    )!
+    expect(nodes(dismissReason).some((item) => item.tag === 'svg')).toBe(true)
+    expect(text(dismissReason)).toBe('')
+    await invoke(
+      nodes(root).find((item) => item.props['aria-label'] === 'Закрыть причину')!,
+      'onClick',
+    )
     expect(tooltip(root)).toBeUndefined()
   })
 })

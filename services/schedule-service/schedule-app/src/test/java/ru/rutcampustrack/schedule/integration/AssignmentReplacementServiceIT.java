@@ -86,12 +86,35 @@ class AssignmentReplacementServiceIT extends AbstractScheduleIntegrationTest {
 
     @BeforeEach
     void resetData() {
+        jdbc.execute("TRUNCATE constructor_materialization_work,constructor_generation_origins,constructor_semester_materializations,constructor_system_materialization_runs");
         resetScheduleData();
         when(academicGrpcClient.getSemesterArchiveAuthorityState(SEMESTER_ID))
                 .thenReturn(
                         ru.rutcampustrack.academic.grpc.SemesterStateResponse.newBuilder()
                                 .setId(SEMESTER_ID)
                                 .build());
+    }
+
+    @Test
+    void retrospectiveAssignmentAdoptsOnlyNeverAssignedNaturalClosedOccurrencesWithoutReplacingRows() {
+        var authority=new RecurringAssignmentAuthority(SOURCE_ASSIGNMENT_ID,SOURCE_TEACHER_ID,SUBJECT_ID,GROUP_ID,
+                SEMESTER_ID,"lecture",EFFECTIVE_FROM,ASSIGNMENT_END);
+        recurringWriter.write(request(SOURCE_ASSIGNMENT_ID),UUID.randomUUID(),ACTOR_ID,authority,SOURCE_FROM,GENERATION_END);
+        var allIds=jdbc.queryForList("SELECT id FROM lessons ORDER BY id",Long.class);
+        var natural=jdbc.queryForList("SELECT id FROM lessons WHERE assignment_id IS NULL AND status='closed' ORDER BY id",Long.class);
+        assertThat(natural).isNotEmpty();
+        var assigned=jdbc.queryForList("SELECT id FROM lessons WHERE assignment_id=? ORDER BY id",Long.class,SOURCE_ASSIGNMENT_ID);
+        UUID adopt=UUID.randomUUID();configureLifecycle(adopt,"ADOPT_UNASSIGNED",SOURCE_FROM,"PREPARED");
+        replacementService.install(lifecycleRequest(adopt,"ADOPT_UNASSIGNED",SOURCE_FROM));
+        configureLifecycle(adopt,"ADOPT_UNASSIGNED",SOURCE_FROM,"APPLIED");
+        var request=CommitAssignmentCloseRequest.newBuilder().setOperationId(adopt.toString()).setPayloadHash(ByteString.copyFrom(PAYLOAD_HASH)).build();
+        var receipt=replacementService.commit(request);
+        assertThat(receipt.getMovedCount()).isEqualTo(natural.size());
+        assertThat(replacementService.commit(request)).isEqualTo(receipt);
+        assertThat(jdbc.queryForList("SELECT id FROM lessons ORDER BY id",Long.class)).containsExactlyElementsOf(allIds);
+        assertThat(jdbc.queryForList("SELECT id FROM lessons WHERE assignment_id=? ORDER BY id",Long.class,SOURCE_ASSIGNMENT_ID)).containsExactlyElementsOf(assigned);
+        assertThat(jdbc.queryForList("SELECT id FROM lessons WHERE assignment_id=? AND assigned_teacher_id=? AND status='closed' ORDER BY id",Long.class,TARGET_ASSIGNMENT_ID,TARGET_TEACHER_ID)).containsAll(natural);
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM schedule_assignment_binding_ledger WHERE operation_id=?",Long.class,adopt)).isEqualTo(natural.size());
     }
 
     @Test

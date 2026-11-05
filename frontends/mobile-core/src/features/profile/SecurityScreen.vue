@@ -2,6 +2,7 @@
 import SvgIcon from '../../../../shared/foundation/SvgIcon.vue';
 import { computed, nextTick, onUnmounted, ref, watch } from 'vue';
 import type {
+  PasswordValidationIssue,
   ProfilePasswordPolicy,
   ProfileRequestError,
   ProfileResolvedTheme,
@@ -23,6 +24,7 @@ const props = withDefaults(
     error?: ProfileRequestError | null;
     busy?: boolean;
     offline?: boolean;
+    disabled?: boolean;
     onBack?: (() => void | Promise<void>) | undefined;
     onRecover?: (() => void | Promise<void>) | undefined;
     recoveryLabel?: string;
@@ -37,6 +39,7 @@ const props = withDefaults(
     error: null,
     busy: false,
     offline: false,
+    disabled: false,
     onBack: undefined,
     onRecover: undefined,
     recoveryLabel: 'Не помню текущий пароль',
@@ -67,11 +70,14 @@ const requestError = computed(() => props.error ?? localError.value);
 const currentPasswordInvalid = computed(
   () => requestError.value?.code === 'CURRENT_PASSWORD_INVALID',
 );
+const currentPasswordMissing = computed(
+  () => submitted.value && currentPassword.value.length === 0,
+);
 const policyRejectedByServer = computed(
   () => requestError.value?.code === 'PASSWORD_POLICY_VIOLATION',
 );
 const repeatInvalid = computed(
-  () => submitted.value && (repeatPassword.value.length === 0 || hasMismatch.value),
+  () => (submitted.value && repeatPassword.value.length === 0) || hasMismatch.value,
 );
 const isBusy = computed(() => props.busy || submitting.value);
 const invalidatingCodes = new Set([
@@ -81,6 +87,18 @@ const invalidatingCodes = new Set([
   'REFRESH_REJECTED',
 ]);
 const accountInvalidated = computed(() => invalidatingCodes.has(props.error?.code ?? ''));
+const canSubmit = computed(
+  () =>
+    !isBusy.value &&
+    !props.offline &&
+    !props.disabled &&
+    !accountInvalidated.value &&
+    Boolean(props.onChangePassword) &&
+    currentPassword.value.length > 0 &&
+    policyIssues.value.length === 0 &&
+    repeatPassword.value.length > 0 &&
+    !hasMismatch.value,
+);
 let formGeneration = 0;
 let disposed = false;
 
@@ -119,14 +137,23 @@ function toggle(field: 'current' | 'new' | 'repeat'): void {
   if (field === 'repeat') showRepeat.value = !showRepeat.value;
 }
 
-function policyText(): string {
-  const digit = props.policy.requiresDecimalDigit ? ' включая цифру' : '';
-  const special = props.policy.specialCategories.length > 0 ? ' и специальный знак' : '';
-  return `Не менее ${props.policy.minCodePoints} символов${digit}${special}`;
-}
+const passwordRules = computed(() =>
+  [
+    { key: 'MIN_CODE_POINTS', label: `Не менее ${props.policy.minCodePoints} символов` },
+    ...(props.policy.requiresDecimalDigit
+      ? [{ key: 'DECIMAL_DIGIT', label: 'Хотя бы одна цифра' }]
+      : []),
+    ...(props.policy.specialCategories.length > 0
+      ? [{ key: 'SPECIAL_CHARACTER', label: 'Хотя бы один специальный знак' }]
+      : []),
+  ].map((rule) => ({
+    ...rule,
+    met: !policyIssues.value.includes(rule.key as PasswordValidationIssue),
+  })),
+);
 
 async function submit(): Promise<void> {
-  if (isBusy.value || accountInvalidated.value) return;
+  if (isBusy.value || props.disabled || accountInvalidated.value) return;
   submitted.value = true;
   localError.value = null;
   if (currentPassword.value.length === 0) {
@@ -141,8 +168,7 @@ async function submit(): Promise<void> {
     focusField('repeat');
     return;
   }
-  if (props.offline) return;
-  if (!props.onChangePassword) return;
+  if (!canSubmit.value || !props.onChangePassword) return;
   submitting.value = true;
   const requestGeneration = formGeneration;
   try {
@@ -207,12 +233,16 @@ onUnmounted(() => {
 
       <form
         class="profile-form"
+        :aria-busy="isBusy"
         novalidate
         @submit.prevent="submit"
       >
         <div class="profile-field">
           <label for="profile-current-password">Текущий пароль *</label>
-          <div class="profile-field__control">
+          <div
+            class="profile-field__control"
+            :data-invalid="currentPasswordInvalid || currentPasswordMissing"
+          >
             <input
               id="profile-current-password"
               ref="currentInput"
@@ -220,16 +250,20 @@ onUnmounted(() => {
               :type="showCurrent ? 'text' : 'password'"
               autocomplete="current-password"
               required
+              :readonly="isBusy"
               :disabled="accountInvalidated"
-              :aria-invalid="currentPasswordInvalid"
+              :aria-invalid="currentPasswordInvalid || currentPasswordMissing"
               :aria-describedby="
-                currentPasswordInvalid ? 'profile-current-password-error' : undefined
+                currentPasswordInvalid || currentPasswordMissing
+                  ? 'profile-current-password-error'
+                  : undefined
               "
-            >
+            />
             <button
               class="profile-field__toggle"
               type="button"
-              :disabled="accountInvalidated"
+              :disabled="isBusy || accountInvalidated"
+              :aria-pressed="showCurrent"
               :aria-label="showCurrent ? 'Скрыть текущий пароль' : 'Показать текущий пароль'"
               @click="toggle('current')"
             >
@@ -242,18 +276,21 @@ onUnmounted(() => {
             </button>
           </div>
           <span
-            v-if="currentPasswordInvalid"
+            v-if="currentPasswordInvalid || currentPasswordMissing"
             id="profile-current-password-error"
             class="profile-inline-error"
             role="alert"
           >
-            Текущий пароль неверен.
+            {{ currentPasswordInvalid ? 'Текущий пароль неверен.' : 'Введи текущий пароль.' }}
           </span>
         </div>
 
         <div class="profile-field">
           <label for="profile-new-password">Новый пароль *</label>
-          <div class="profile-field__control">
+          <div
+            class="profile-field__control"
+            :data-invalid="(shouldShowPolicy && policyIssues.length > 0) || policyRejectedByServer"
+          >
             <input
               id="profile-new-password"
               ref="newInput"
@@ -261,14 +298,18 @@ onUnmounted(() => {
               :type="showNew ? 'text' : 'password'"
               autocomplete="new-password"
               required
+              :readonly="isBusy"
               :disabled="accountInvalidated"
-              :aria-invalid="shouldShowPolicy && policyIssues.length > 0"
+              :aria-invalid="
+                (shouldShowPolicy && policyIssues.length > 0) || policyRejectedByServer
+              "
               aria-describedby="profile-password-policy"
-            >
+            />
             <button
               class="profile-field__toggle"
               type="button"
-              :disabled="accountInvalidated"
+              :disabled="isBusy || accountInvalidated"
+              :aria-pressed="showNew"
               :aria-label="showNew ? 'Скрыть новый пароль' : 'Показать новый пароль'"
               @click="toggle('new')"
             >
@@ -280,11 +321,53 @@ onUnmounted(() => {
               />
             </button>
           </div>
+          <div
+            id="profile-password-policy"
+            class="profile-password-rules"
+            role="status"
+          >
+            <p
+              v-for="rule in passwordRules"
+              :key="rule.key"
+              class="profile-password-policy"
+              :data-valid="rule.met"
+              :data-invalid="!rule.met"
+            >
+              <span
+                class="profile-password-policy__check"
+                role="img"
+                :aria-label="rule.met ? 'Выполнено' : 'Не выполнено'"
+                >{{ rule.met ? '✓' : '×' }}</span
+              >
+              <span>{{ rule.label }}</span>
+            </p>
+            <p
+              v-if="shouldShowPolicy && policyIssues.includes('MAX_UTF8_BYTES')"
+              class="profile-inline-error"
+            >
+              Не более {{ policy.maxUtf8Bytes }} байт в UTF-8.
+            </p>
+            <p
+              v-if="shouldShowPolicy && policyIssues.includes('UNPAIRED_SURROGATE')"
+              class="profile-inline-error"
+            >
+              Удали некорректный символ.
+            </p>
+            <p
+              v-if="policyRejectedByServer"
+              class="profile-inline-error"
+            >
+              Сервер отклонил пароль по политике.
+            </p>
+          </div>
         </div>
 
         <div class="profile-field">
           <label for="profile-repeat-password">Повтори новый пароль *</label>
-          <div class="profile-field__control">
+          <div
+            class="profile-field__control"
+            :data-invalid="repeatInvalid"
+          >
             <input
               id="profile-repeat-password"
               ref="repeatInput"
@@ -292,14 +375,16 @@ onUnmounted(() => {
               :type="showRepeat ? 'text' : 'password'"
               autocomplete="new-password"
               required
+              :readonly="isBusy"
               :disabled="accountInvalidated"
               :aria-invalid="repeatInvalid"
               :aria-describedby="repeatInvalid ? 'profile-repeat-password-error' : undefined"
-            >
+            />
             <button
               class="profile-field__toggle"
               type="button"
-              :disabled="accountInvalidated"
+              :disabled="isBusy || accountInvalidated"
+              :aria-pressed="showRepeat"
               :aria-label="
                 showRepeat ? 'Скрыть повтор нового пароля' : 'Показать повтор нового пароля'
               "
@@ -319,27 +404,13 @@ onUnmounted(() => {
             class="profile-inline-error"
             role="alert"
           >
-            Пароли не совпадают.
+            {{ repeatPassword.length === 0 ? 'Повтори новый пароль.' : 'Пароли не совпадают.' }}
           </span>
         </div>
 
-        <p
-          id="profile-password-policy"
-          class="profile-password-policy"
-          :data-valid="shouldShowPolicy && policyIssues.length === 0"
-          :data-invalid="shouldShowPolicy && policyIssues.length > 0"
-          role="status"
-        >
-          <span aria-hidden="true">{{
-            shouldShowPolicy ? (policyIssues.length === 0 ? '✓' : '×') : '•'
-          }}</span><span>{{ policyText()
-                         }}<span v-if="shouldShowPolicy && policyIssues.includes('MAX_UTF8_BYTES')">; не более {{ policy.maxUtf8Bytes }} байт в UTF-8</span>
-            <span v-if="policyRejectedByServer">; сервер отклонил пароль по политике</span></span>
-        </p>
-
         <button
           v-if="onRecover"
-          class="profile-recovery-link"
+          class="profile-secondary-button profile-security__recovery"
           type="button"
           @click="recover"
         >
@@ -357,7 +428,8 @@ onUnmounted(() => {
           <button
             class="profile-primary-button"
             type="submit"
-            :disabled="isBusy || offline || accountInvalidated"
+            :disabled="!canSubmit"
+            :aria-busy="isBusy"
           >
             {{ isBusy ? 'Сохраняем…' : 'Сменить пароль' }}
           </button>

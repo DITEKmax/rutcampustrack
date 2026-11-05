@@ -73,6 +73,24 @@ BEGIN
                            sequence_record.nspname, sequence_record.relname);
         END LOOP;
     END LOOP;
+    -- Constructor control rows retain history. State machines need updates;
+    -- immutable audit/origin proofs only need reads and append-only inserts.
+    FOREACH table_name IN ARRAY ARRAY[
+        'constructor_deletion_operations',
+        'constructor_semester_materializations',
+        'constructor_system_materialization_runs',
+        'constructor_materialization_work'] LOOP
+        table_id := to_regclass(format('public.%I', table_name));
+        IF table_id IS NULL THEN CONTINUE; END IF;
+        EXECUTE format('GRANT SELECT, INSERT, UPDATE ON TABLE %s TO rct_runtime', table_id);
+    END LOOP;
+    FOREACH table_name IN ARRAY ARRAY[
+        'constructor_system_audit_proofs',
+        'constructor_generation_origins'] LOOP
+        table_id := to_regclass(format('public.%I', table_name));
+        IF table_id IS NULL THEN CONTINUE; END IF;
+        EXECUTE format('GRANT SELECT, INSERT ON TABLE %s TO rct_runtime', table_id);
+    END LOOP;
     IF to_regclass('public.flyway_schema_history') IS NOT NULL THEN
         REVOKE ALL ON TABLE public.flyway_schema_history FROM rct_runtime;
     END IF;

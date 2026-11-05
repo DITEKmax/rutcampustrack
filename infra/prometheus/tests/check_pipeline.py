@@ -105,19 +105,14 @@ def background_native_failure(raw):
 
 _BACKGROUND_TEST_CLASS = "ru.rutcampustrack.attendance.integration.RabbitDecisionRetryIT"
 _BACKGROUND_TEST_METHOD = "transientOutageAfterThreeAttemptsAutomaticallyRedrivesOriginalAfterThirtySeconds"
-_BACKGROUND_TEST_SOURCE = "services/attendance-service/attendance-app/src/test/java/ru/rutcampustrack/attendance/integration/RabbitDecisionRetryIT.java"
-_BACKGROUND_TEST_SOURCE_HASH = "dcd4ecb2ae9a93722e18c9e545a28e9f4c0d504c6ed0520f12409a44084b01e6"
 _BACKGROUND_TEST_REPORT = "services/attendance-service/attendance-app/build/test-results/integrationTest/TEST-ru.rutcampustrack.attendance.integration.RabbitDecisionRetryIT.xml"
 
 
-def background_test_failure(raw, source):
+def background_test_failure(raw):
     """One declared public test's terminal XML signature; never an authenticated first cause."""
     unknown = {"category": "UNKNOWN", "source_stage": "UNKNOWN", "admission_reason": "XML_REJECTED"}
     if type(raw) is not bytes or not raw or len(raw) > 1024**2:
         return unknown
-    if (type(source) is not bytes or len(source) > 65536
-            or hashlib.sha256(source).hexdigest() != _BACKGROUND_TEST_SOURCE_HASH):
-        return {**unknown, "admission_reason": "SOURCE_REJECTED"}
     try:
         text = raw.decode("utf-8")
         if ("<!DOCTYPE" in text.upper() or "<!ENTITY" in text.upper() or "<!--" in text
@@ -178,37 +173,10 @@ def background_test_failure(raw, source):
             "java.lang.NoClassDefFoundError": "CLASS_LOADING",
             "java.lang.OutOfMemoryError": "JAVA_MEMORY",
         }
-        stages = {
-            "<clinit>": (69, 71, "CLASS_INITIALIZATION"),
-            "overrideRabbitVhost": (83, 95, "CONTEXT_PROPERTIES"),
-            "cleanQueues": (99, 114, "BEFORE_EACH"),
-            _BACKGROUND_TEST_METHOD: (328, 494, "SELECTED_TEST_BODY"),
-            "acceptedOrigin": (559, 583, "TEST_ORIGIN"),
-            "assertExportedWorker": (599, 608, "TEST_WORKER_SPAN"),
-            "producer": (610, 622, "TEST_PRODUCER_SPAN"),
-            "exportedSpan": (624, 629, "TEST_EXPORTED_SPAN"),
-            "assertWorkerCorrelation": (631, 644, "TEST_WORKER_CORRELATION"),
-            "collectorEndpoint": (646, 666, "COLLECTOR_ENDPOINT"),
-            "writeCollectorReceipt": (668, 744, "COLLECTOR_RECEIPT"),
-        }
-        # The first exact public frame in the primary exception only. Do not promote causes,
-        # suppressed failures, unknown frames or arbitrary line numbers to a public identity.
-        stage = "UNKNOWN"
-        for line in stack[1:]:
-            if line.lstrip().startswith(("Caused by:", "Suppressed:")):
-                break
-            match = re.fullmatch(r"\s*at " + re.escape(_BACKGROUND_TEST_CLASS)
-                                 + r"\.([A-Za-z0-9_$<>]+)\(RabbitDecisionRetryIT\.java:([1-9][0-9]{0,5})\)", line)
-            if match:
-                bound = stages.get(match[1])
-                if bound and bound[0] <= int(match[2]) <= bound[1]:
-                    stage = bound[2]
-                break
+        category = categories.get(failure.attrib["type"], "UNKNOWN")
         return {
-            "category": categories.get(failure.attrib["type"], "UNKNOWN"), "source_stage": stage,
-            "admission_reason": "SIGNATURE_CLASSIFIED"
-            if categories.get(failure.attrib["type"], "UNKNOWN") != "UNKNOWN" and stage != "UNKNOWN"
-            else "SIGNATURE_UNCLASSIFIED",
+            "category": category, "source_stage": "UNKNOWN",
+            "admission_reason": "SIGNATURE_CLASSIFIED" if category != "UNKNOWN" else "SIGNATURE_UNCLASSIFIED",
         }
     except (UnicodeError, ValueError, TypeError, ET.ParseError):
         return unknown
@@ -240,9 +208,7 @@ def read_background_test_failure(started_ns):
             if (any(getattr(before, key) != getattr(after, key) or getattr(before, key) != getattr(current, key)
                     for key in fields) or len(raw) != before.st_size):
                 return {**unknown, "admission_reason": "REPORT_REJECTED"}
-        with (ROOT / _BACKGROUND_TEST_SOURCE).open("rb") as public_source:
-            source = public_source.read(65537)
-        return background_test_failure(raw, source)
+        return background_test_failure(raw)
     except Exception:  # noqa: BLE001 -- optional diagnostics preserve the primary Gradle failure
         return unknown
 
@@ -1615,7 +1581,7 @@ def main(host_and_bot_only=False, remaining_infra_only=False):
                     "GF_PATHS_PROVISIONING": "/etc/grafana/provisioning",
                 }
                 if name == "grafana"
-                else {}
+                else copy.deepcopy(service.get("environment", {}))
             )
             mounts = []
             for volume in service.get("volumes", []):
@@ -1652,7 +1618,7 @@ def main(host_and_bot_only=False, remaining_infra_only=False):
             # Use production images, collectors, host mounts and capabilities exactly.
             # Host capability absence is a failed precondition, never synthetic data.
             _STATE["phase"] = "HOST_EXPORTER_PRECONDITIONS"
-            host_paths = ["/proc", "/sys", "/var/run/dbus", "/var/lib/docker", "/dev/disk", "/dev/kmsg"]
+            host_paths = ["/proc", "/sys", "/var/run/dbus", "/var/lib/docker", "/dev/disk", "/dev/kmsg", "/run/containerd/containerd.sock"]
             missing_host_paths = [path for path in host_paths if not Path(path).exists()]
             _STATE["missing_host_paths"] = missing_host_paths
             assert not missing_host_paths, "host-exporter required mounts/devices unavailable: " + ",".join(

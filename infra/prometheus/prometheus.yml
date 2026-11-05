@@ -40,6 +40,8 @@ scrape_configs:
       environment: production
       service: cadvisor
   metric_relabel_configs:
+  - regex: container_label_com_docker_compose_project_config_files
+    action: labeldrop
   - source_labels:
     - __name__
     regex: container_(cpu_usage_seconds_total|memory_usage_bytes|memory_working_set_bytes|memory_swap|spec_memory_limit_bytes|last_seen|network_receive_bytes_total|network_transmit_bytes_total|fs_usage_bytes|fs_limit_bytes|oom_events_total)

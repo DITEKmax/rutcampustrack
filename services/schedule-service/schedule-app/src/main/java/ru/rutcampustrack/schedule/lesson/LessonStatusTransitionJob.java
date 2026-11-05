@@ -1,19 +1,17 @@
 package ru.rutcampustrack.schedule.lesson;
 
-import java.time.Clock;
-import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
-import java.time.ZoneId;
-import java.util.List;
-import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
+
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
+
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+
+import ru.rutcampustrack.schedule.constructor.ConstructorDeletionStore;
 import ru.rutcampustrack.schedule.contract.enums.LessonStatus;
 import ru.rutcampustrack.schedule.event.LessonClosedEvent;
 import ru.rutcampustrack.schedule.event.LessonStartedEvent;
@@ -23,6 +21,13 @@ import ru.rutcampustrack.schedule.item.repository.ScheduleItemRepository;
 import ru.rutcampustrack.schedule.lesson.entity.Lesson;
 import ru.rutcampustrack.schedule.lesson.repository.LessonRepository;
 import ru.rutcampustrack.shared.web.time.EducationalTime;
+
+import java.time.Clock;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Cron job that transitions lesson statuses every minute.
@@ -47,6 +52,7 @@ public class LessonStatusTransitionJob {
     private final ApplicationEventPublisher eventPublisher;
     private final Clock clock;
     private final ScheduleSemesterArchiveWriteFence archiveWriteFence;
+    private final ConstructorDeletionStore constructorDeletions;
 
     @Autowired
     public LessonStatusTransitionJob(
@@ -55,26 +61,14 @@ public class LessonStatusTransitionJob {
             ApplicationEventPublisher eventPublisher,
             Clock clock,
             ScheduleSemesterArchiveWriteFence archiveWriteFence,
-            ObjectProvider<EducationalTime> educationalTime) {
-        this(
-                lessonRepository,
-                scheduleItemRepository,
-                eventPublisher,
-                educationalTime.getIfAvailable(() -> new EducationalTime(clock)).clock(),
-                archiveWriteFence);
-    }
-
-    public LessonStatusTransitionJob(
-            LessonRepository lessonRepository,
-            ScheduleItemRepository scheduleItemRepository,
-            ApplicationEventPublisher eventPublisher,
-            Clock clock,
-            ScheduleSemesterArchiveWriteFence archiveWriteFence) {
+            ObjectProvider<EducationalTime> educationalTime,
+            ConstructorDeletionStore constructorDeletions) {
         this.lessonRepository = lessonRepository;
         this.scheduleItemRepository = scheduleItemRepository;
         this.eventPublisher = eventPublisher;
-        this.clock = clock;
+        this.clock = educationalTime.getIfAvailable(() -> new EducationalTime(clock)).clock();
         this.archiveWriteFence = archiveWriteFence;
+        this.constructorDeletions = constructorDeletions;
     }
 
     @Scheduled(fixedDelay = 60_000)
@@ -97,6 +91,11 @@ public class LessonStatusTransitionJob {
                                 .map(Lesson::getSemesterId)
                                 .filter(java.util.Objects::nonNull)
                                 .toList());
+        // Admission takes these same semester locks. Read AFTER acquiring them,
+        // so a concurrent accepted deletion cannot slip between this check and
+        // status mutation or event publication for either phase of this tick.
+        Set<Long> fencedItems =
+                constructorDeletions.fencedScheduleItemsInSemesters(writableSemesters);
         List<Lesson> toActivate =
                 activationCandidates.stream()
                         .filter(
@@ -104,6 +103,11 @@ public class LessonStatusTransitionJob {
                                         lesson.getSemesterId() != null
                                                 && writableSemesters.contains(
                                                         lesson.getSemesterId()))
+                        .filter(
+                                lesson ->
+                                        lesson.getScheduleItemId() == null
+                                                || !fencedItems.contains(
+                                                        lesson.getScheduleItemId()))
                         .toList();
         for (Lesson lesson : toActivate) {
             lesson.setStatus(LessonStatus.ACTIVE);
@@ -139,6 +143,11 @@ public class LessonStatusTransitionJob {
                                         lesson.getSemesterId() != null
                                                 && writableSemesters.contains(
                                                         lesson.getSemesterId()))
+                        .filter(
+                                lesson ->
+                                        lesson.getScheduleItemId() == null
+                                                || !fencedItems.contains(
+                                                        lesson.getScheduleItemId()))
                         .toList();
         for (Lesson lesson : toClose) {
             lesson.setStatus(LessonStatus.CLOSED);

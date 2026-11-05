@@ -87,7 +87,10 @@ def broker(monkeypatch, count=1):
 
     queue = SimpleNamespace(bind=AsyncMock(), iterator=Iterator)
     channel = SimpleNamespace(
-        set_qos=AsyncMock(), declare_exchange=AsyncMock(), declare_queue=AsyncMock(return_value=queue)
+        set_qos=AsyncMock(),
+        declare_exchange=AsyncMock(),
+        declare_queue=AsyncMock(return_value=queue),
+        default_exchange=SimpleNamespace(publish=AsyncMock()),
     )
     channel.transaction = lambda: SimpleNamespace(select=AsyncMock(), commit=AsyncMock(), rollback=AsyncMock())
     connection = SimpleNamespace(channel=AsyncMock(return_value=channel), close=AsyncMock())
@@ -178,7 +181,7 @@ async def test_deadline_or_lease_loss_defers_and_stops_pending_attempts(monkeypa
         await asyncio.wait_for(start_consumer("amqp://synthetic", SimpleNamespace(dispatch=dispatch), guard), 4)
         held.set()
         await asyncio.wait_for(queue._queue.join(), 1)
-        assert messages[0].nacked and not messages[0].acked
+        assert messages[0].acked and not messages[0].nacked
         guard.complete.assert_not_awaited()
         factory.assert_not_awaited()
         assert all(not worker.done() for worker in queue._workers)
@@ -326,7 +329,7 @@ async def test_initial_authority_rpc_outage_defers_original(monkeypatch):
     await asyncio.wait_for(
         start_consumer("amqp://synthetic", SimpleNamespace(dispatch=AsyncMock(side_effect=error)), guard), 2
     )
-    assert messages[0].nacked and not messages[0].dlq
+    assert messages[0].acked and not messages[0].dlq
     guard.complete.assert_not_awaited()
 
 

@@ -121,3 +121,175 @@
 .notification-colors__notice p {
   margin: 0;
 }
+
+/* Accepted Student presentation; existing roles retain their base rules. */
+:where([data-student-ui]) .notification-colors,
+:where([data-student-ui]):is(.notification-colors) {
+  min-inline-size: 0;
+  color: var(--rct-color-text-primary);
+  font-family: var(--rct-font-family-sans);
+  @mixin rct-type-dense;
+}
+:where([data-student-ui]) .notification-colors button,
+:where([data-student-ui]):is(.notification-colors button) {
+  min-block-size: var(--rct-control-min-touch);
+  border: 0;
+  border-radius: var(--rct-radius-full);
+  padding: var(--rct-space-2) var(--rct-space-3);
+  color: var(--rct-color-text-primary);
+  background: var(--rct-color-surface-raised);
+  font: inherit;
+  cursor: pointer;
+  @mixin rct-focus-ring;
+}
+:where([data-student-ui]) .notification-colors button:disabled,
+:where([data-student-ui]):is(.notification-colors button:disabled) {
+  color: var(--rct-color-disabled-text);
+  cursor: not-allowed;
+}
+:where([data-student-ui]) .notification-colors__group,
+:where([data-student-ui]):is(.notification-colors__group) {
+  margin-block-end: var(--rct-space-4);
+}
+:where([data-student-ui]) .notification-colors__group h2,
+:where([data-student-ui]):is(.notification-colors__group h2) {
+  position: absolute;
+  inline-size: var(--rct-border-hairline);
+  block-size: var(--rct-border-hairline);
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+:where([data-student-ui]) .notification-colors__item,
+:where([data-student-ui]):is(.notification-colors__item) {
+  border-block-end: var(--rct-border-hairline) solid var(--rct-color-border-default);
+}
+:where([data-student-ui]) .notification-colors .notification-colors__type,
+:where([data-student-ui]):is(.notification-colors .notification-colors__type) {
+  display: flex;
+  inline-size: 100%;
+  align-items: center;
+  gap: var(--rct-space-3);
+  border: 0;
+  border-radius: var(--rct-radius-lg);
+  padding-inline: 0;
+  background: transparent;
+  text-align: start;
+}
+:where([data-student-ui]) .notification-colors__type-text,
+:where([data-student-ui]):is(.notification-colors__type-text) {
+  display: grid;
+  flex: 1;
+  min-inline-size: 0;
+  gap: var(--rct-space-1);
+  overflow-wrap: anywhere;
+}
+:where([data-student-ui]) .notification-colors__dot,
+:where([data-student-ui]):is(.notification-colors__dot) {
+  display: block;
+  flex: 0 0 var(--rct-space-3);
+  inline-size: var(--rct-space-3);
+  block-size: var(--rct-space-3);
+  border-radius: var(--rct-radius-full);
+  background: var(--notification-dot-color, var(--rct-color-accent-now));
+}
+:where([data-student-ui]) .notification-colors__palette,
+:where([data-student-ui]):is(.notification-colors__palette) {
+  min-inline-size: 0;
+  margin: var(--rct-space-2) 0 var(--rct-space-3);
+  border: 0;
+  padding: 0;
+}
+:where([data-student-ui]) .notification-colors__palette legend,
+:where([data-student-ui]):is(.notification-colors__palette legend) {
+  position: absolute;
+  inline-size: var(--rct-border-hairline);
+  block-size: var(--rct-border-hairline);
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+:where([data-student-ui]) .notification-colors__chevron,
+:where([data-student-ui]):is(.notification-colors__chevron) {
+  flex: 0 0 var(--rct-icon-size);
+  inline-size: var(--rct-icon-size);
+  block-size: var(--rct-icon-size);
+  transform: rotate(-90deg);
+}
+:where([data-student-ui])
+  .notification-colors__type[aria-expanded='true']
+  .notification-colors__chevron,
+:where([data-student-ui]):is(
+  .notification-colors__type[aria-expanded='true'] .notification-colors__chevron
+) {
+  transform: rotate(90deg);
+}
+:where([data-student-ui]) .notification-colors__swatches,
+:where([data-student-ui]):is(.notification-colors__swatches) {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(var(--rct-control-min-touch), 1fr));
+  gap: var(--rct-space-2);
+  padding: var(--rct-space-1);
+}
+:where([data-student-ui]) .notification-colors .notification-colors__swatch,
+:where([data-student-ui]):is(.notification-colors .notification-colors__swatch) {
+  display: grid;
+  place-items: center;
+  min-inline-size: var(--rct-control-min-touch);
+  aspect-ratio: 1;
+  border: calc(var(--rct-border-hairline) * 2) solid transparent;
+  border-radius: var(--rct-radius-lg);
+  padding: var(--rct-space-2);
+  background: var(--notification-dot-color, var(--rct-color-accent-now));
+}
+:where([data-student-ui]) .notification-colors .notification-colors__swatch[aria-pressed='true'],
+:where([data-student-ui]):is(
+  .notification-colors .notification-colors__swatch[aria-pressed='true']
+) {
+  border-color: var(--rct-color-text-primary);
+}
+:where([data-student-ui]) .notification-colors__selected,
+:where([data-student-ui]):is(.notification-colors__selected) {
+  inline-size: var(--rct-profile-control-icon-size);
+  block-size: var(--rct-profile-control-icon-size);
+  border-radius: var(--rct-radius-xs);
+  padding: var(--rct-space-half);
+  color: var(--rct-color-text-primary);
+  background: var(--rct-color-surface-base);
+}
+:where([data-student-ui]) .notification-colors__save,
+:where([data-student-ui]):is(.notification-colors__save) {
+  inline-size: 100%;
+}
+:where([data-student-ui]) .notification-colors__notice,
+:where([data-student-ui]):is(.notification-colors__notice) {
+  display: grid;
+  gap: var(--rct-space-2);
+  margin-block-end: var(--rct-space-3);
+  border: var(--rct-border-hairline) solid var(--rct-color-warning-text);
+  border-radius: var(--rct-radius-xl);
+  padding: var(--rct-space-3);
+  background: var(--rct-warning-surface);
+}
+:where([data-student-ui]) .notification-colors__notice--error,
+:where([data-student-ui]):is(.notification-colors__notice--error) {
+  border-color: var(--rct-color-danger-text);
+  color: var(--rct-color-danger-text);
+  background: var(--rct-error-surface);
+}
+:where([data-student-ui]) .notification-colors__notice p,
+:where([data-student-ui]):is(.notification-colors__notice p) {
+  margin: 0;
+}
+
+:where([data-student-ui]) .notification-colors .notification-colors__save:not(:disabled),
+:where([data-student-ui]):is(.notification-colors .notification-colors__save:not(:disabled)) {
+  color: var(--rct-color-accent-on-now);
+  background: var(--rct-color-accent-now);
+}
+:where([data-student-ui]) .notification-colors .notification-colors__save:disabled,
+:where([data-student-ui]):is(.notification-colors .notification-colors__save:disabled) {
+  background: var(--rct-color-disabled-surface);
+}

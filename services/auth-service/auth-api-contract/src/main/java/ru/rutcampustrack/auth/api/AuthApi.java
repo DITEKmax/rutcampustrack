@@ -121,7 +121,16 @@ public interface AuthApi {
     @ApiResponse(responseCode = "200", description = "Successfully authenticated via TMA")
     @ApiResponse(
             responseCode = "401",
-            description = "Invalid or tampered initData, or user not linked")
+            description = "Invalid, expired or future initData, or Telegram account not linked",
+            content = @io.swagger.v3.oas.annotations.media.Content(
+                    mediaType = "application/problem+json",
+                    schema = @io.swagger.v3.oas.annotations.media.Schema(
+                            implementation = ru.rutcampustrack.shared.web.api.exception.ErrorResponse.class)))
+    @ApiResponse(responseCode = "503", description = "Authentication authority unavailable",
+            content = @io.swagger.v3.oas.annotations.media.Content(
+                    mediaType = "application/problem+json",
+                    schema = @io.swagger.v3.oas.annotations.media.Schema(
+                            implementation = ru.rutcampustrack.shared.web.api.exception.ErrorResponse.class)))
     @PostMapping("/tma")
     ResponseEntity<TokenResponse> tmaAuth(@Valid @RequestBody TmaAuthRequest request);
 }

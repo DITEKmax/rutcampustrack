@@ -13,6 +13,7 @@ const props = withDefaults(
     onNavigate?: ((route: ProfileRoute) => void | Promise<void>) | undefined;
     assistantEnabled?: boolean;
     mapEnabled?: boolean;
+    scheduleEnabled?: boolean;
     theme?: ProfileResolvedTheme;
     onNotifications?: (() => void) | undefined;
     unreadCount?: number | null;
@@ -21,6 +22,7 @@ const props = withDefaults(
     onNavigate: undefined,
     assistantEnabled: false,
     mapEnabled: false,
+    scheduleEnabled: true,
     onNotifications: undefined,
     unreadCount: null,
   },
@@ -40,13 +42,17 @@ const notificationsLabel = computed(() =>
 );
 
 const routes = computed(() => [
-  {
-    route: 'schedule' as const,
-    label: 'Расписание семестра',
-    icon: null,
-    disabled: false,
-    disabledReason: null,
-  },
+  ...(props.scheduleEnabled
+    ? [
+        {
+          route: 'schedule' as const,
+          label: 'Расписание семестра',
+          icon: null,
+          disabled: false,
+          disabledReason: null,
+        },
+      ]
+    : []),
   {
     route: 'statistics' as const,
     label: 'Статистика',
@@ -147,7 +153,8 @@ function navigate(route: ProfileRoute): void {
             v-if="visibleUnreadCount"
             class="profile-notification-badge"
             aria-hidden="true"
-          >{{ visibleUnreadCount > 99 ? '99+' : visibleUnreadCount }}</span>
+            >{{ visibleUnreadCount > 99 ? '99+' : visibleUnreadCount }}</span
+          >
         </span>
         <span>Уведомления</span>
       </button>

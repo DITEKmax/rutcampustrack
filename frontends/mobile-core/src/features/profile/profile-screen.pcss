@@ -799,3 +799,1074 @@
 .profile-permissions li + li {
   margin-block-start: var(--rct-space-2);
 }
+
+/* Accepted Student presentation; existing roles retain their base rules. */
+:where([data-student-ui]) .profile-screen,
+:where([data-student-ui]):is(.profile-screen) {
+  --profile-color-surface-base: var(--rct-color-surface-base);
+  --profile-color-surface-raised: var(--rct-color-surface-raised);
+  --profile-color-surface-float: var(--rct-color-surface-float);
+  --profile-color-text-primary: var(--rct-color-text-primary);
+  --profile-color-text-secondary: var(--rct-color-text-secondary);
+  --profile-color-text-muted: var(--rct-color-text-muted);
+  --profile-color-border-default: var(--rct-color-border-default);
+  --profile-color-accent-now: var(--rct-color-accent-now);
+  --profile-color-accent-on-now: var(--rct-color-accent-on-now);
+  --profile-color-success-bg: var(--rct-color-success-surface);
+  --profile-color-success-text: var(--rct-color-success-text);
+  --profile-color-warning-bg: var(--rct-warning-surface);
+  --profile-color-warning-text: var(--rct-color-warning-text);
+  --profile-color-danger-fill: var(--rct-color-danger-fill, var(--rct-color-danger-text));
+  --profile-color-danger-text: var(--rct-color-danger-text);
+  max-inline-size: var(--rct-today-content-max);
+  margin-inline: auto;
+  overflow-x: clip;
+  padding: calc(env(safe-area-inset-top) + var(--rct-space-5)) var(--rct-space-4)
+    calc(env(safe-area-inset-bottom) + var(--rct-space-5));
+  color: var(--profile-color-text-primary);
+  background: var(--profile-color-surface-base);
+  font-family: var(--rct-font-family-sans);
+  @mixin rct-type-body;
+}
+
+:where([data-student-ui])
+  .mobile-shell[data-surface='root'][data-dock-visible='true']
+  .profile-screen,
+:where([data-student-ui]):is(
+  .mobile-shell[data-surface='root'][data-dock-visible='true'] .profile-screen
+) {
+  padding-block-end: calc(env(safe-area-inset-bottom) + var(--rct-today-bottom-space));
+}
+
+:where([data-student-ui]) .profile-screen__content,
+:where([data-student-ui]):is(.profile-screen__content) {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rct-space-3);
+  inline-size: 100%;
+  min-inline-size: 0;
+  min-block-size: 0;
+}
+
+:where([data-student-ui]) .profile-screen__title,
+:where([data-student-ui]):is(.profile-screen__title) {
+  margin: 0;
+  color: var(--profile-color-text-primary);
+  font-size: var(--rct-font-size-title-screen);
+  font-weight: var(--rct-font-weight-bold);
+  line-height: 1.25;
+}
+
+:where([data-student-ui]) .profile-screen__title--compact,
+:where([data-student-ui]):is(.profile-screen__title--compact) {
+  font-size: var(--rct-task-title-size);
+}
+
+:where([data-student-ui]) .profile-header,
+:where([data-student-ui]):is(.profile-header) {
+  display: flex;
+  align-items: center;
+  gap: var(--rct-space-2-half);
+  min-block-size: var(--rct-control-min-touch);
+}
+
+:where([data-student-ui]) .profile-header__title,
+:where([data-student-ui]):is(.profile-header__title) {
+  flex: 1 1 auto;
+  min-inline-size: 0;
+  margin: 0;
+  color: var(--profile-color-text-primary);
+  font-size: var(--rct-task-title-size);
+  font-weight: var(--rct-font-weight-bold);
+  line-height: 1.45;
+}
+
+:where([data-student-ui]) .profile-back,
+:where([data-student-ui]):is(.profile-back),
+:where([data-student-ui]) .profile-row,
+:where([data-student-ui]):is(.profile-row),
+:where([data-student-ui]) .profile-more-row,
+:where([data-student-ui]):is(.profile-more-row),
+:where([data-student-ui]) .profile-session-card,
+:where([data-student-ui]):is(.profile-session-card),
+:where([data-student-ui]) .profile-history-card,
+:where([data-student-ui]):is(.profile-history-card),
+:where([data-student-ui]) .profile-danger-button,
+:where([data-student-ui]):is(.profile-danger-button),
+:where([data-student-ui]) .profile-primary-button,
+:where([data-student-ui]):is(.profile-primary-button),
+:where([data-student-ui]) .profile-secondary-button,
+:where([data-student-ui]):is(.profile-secondary-button),
+:where([data-student-ui]) .profile-show-more,
+:where([data-student-ui]):is(.profile-show-more),
+:where([data-student-ui]) .profile-role-card,
+:where([data-student-ui]):is(.profile-role-card) {
+  @mixin rct-focus-ring;
+}
+
+:where([data-student-ui]) .profile-back,
+:where([data-student-ui]):is(.profile-back) {
+  display: grid;
+  flex: 0 0 var(--rct-control-min-touch);
+  place-items: center;
+  inline-size: var(--rct-control-min-touch);
+  block-size: var(--rct-control-min-touch);
+  border: 0;
+  border-radius: var(--rct-radius-2xl);
+  color: var(--profile-color-text-primary);
+  background: var(--profile-color-surface-float);
+  cursor: pointer;
+}
+
+:where([data-student-ui]) .profile-back :is(img, .rct-svg-icon),
+:where([data-student-ui]):is(.profile-back :is(img, .rct-svg-icon)),
+:where([data-student-ui]) .profile-appearance .profile-back .mobile-icon,
+:where([data-student-ui]):is(.profile-appearance .profile-back .mobile-icon) {
+  inline-size: var(--rct-space-4);
+  block-size: var(--rct-space-4);
+}
+
+:where([data-student-ui]) .profile-icon,
+:where([data-student-ui]):is(.profile-icon) {
+  color: var(--rct-color-text-secondary);
+  flex: 0 0 var(--rct-profile-icon-size, var(--rct-space-6));
+  inline-size: var(--rct-profile-icon-size, var(--rct-space-6));
+  block-size: var(--rct-profile-icon-size, var(--rct-space-6));
+  object-fit: contain;
+}
+
+:where([data-student-ui]) .profile-more-row,
+:where([data-student-ui]):is(.profile-more-row),
+:where([data-student-ui]) .profile-row,
+:where([data-student-ui]):is(.profile-row) {
+  display: flex;
+  align-items: center;
+  gap: var(--rct-space-3);
+  inline-size: 100%;
+  min-block-size: var(
+    --rct-profile-row-height,
+    calc(var(--rct-control-min-touch) + var(--rct-space-3))
+  );
+  border: 0;
+  border-radius: var(--rct-profile-row-radius, var(--rct-radius-xl));
+  padding: var(--rct-space-4);
+  color: var(--profile-color-text-primary);
+  background: var(--profile-color-surface-raised);
+  font: inherit;
+  font-size: var(--rct-today-action-size);
+  font-weight: var(--rct-font-weight-bold);
+  line-height: 1.45;
+  text-align: start;
+  cursor: pointer;
+}
+
+:where([data-student-ui]) .profile-more-row,
+:where([data-student-ui]):is(.profile-more-row) {
+  min-block-size: var(
+    --rct-profile-more-row-height,
+    calc(var(--rct-control-min-touch) + var(--rct-space-5) + var(--rct-space-4))
+  );
+  border-radius: var(--rct-radius-2xl);
+  font-size: var(--rct-font-size-body);
+}
+
+:where([data-student-ui]) .profile-more-row:hover,
+:where([data-student-ui]):is(.profile-more-row:hover),
+:where([data-student-ui]) .profile-row:hover,
+:where([data-student-ui]):is(.profile-row:hover),
+:where([data-student-ui]) .profile-role-card:hover,
+:where([data-student-ui]):is(.profile-role-card:hover) {
+  background: color-mix(
+    in srgb,
+    var(--profile-color-surface-raised) 88%,
+    var(--profile-color-accent-now)
+  );
+}
+
+:where([data-student-ui]) .profile-more-row:disabled,
+:where([data-student-ui]):is(.profile-more-row:disabled),
+:where([data-student-ui]) .profile-row:disabled,
+:where([data-student-ui]):is(.profile-row:disabled) {
+  color: var(--rct-color-disabled-text);
+  background: var(--rct-color-disabled-surface);
+  cursor: not-allowed;
+  opacity: 0.72;
+}
+
+:where([data-student-ui]) .profile-more-row:active,
+:where([data-student-ui]):is(.profile-more-row:active),
+:where([data-student-ui]) .profile-row:active,
+:where([data-student-ui]):is(.profile-row:active),
+:where([data-student-ui]) .profile-role-card:active,
+:where([data-student-ui]):is(.profile-role-card:active) {
+  transform: translateY(var(--rct-border-hairline));
+}
+
+:where([data-student-ui]) .profile-card,
+:where([data-student-ui]):is(.profile-card) {
+  display: flex;
+  align-items: center;
+  gap: var(--rct-profile-card-gap, var(--rct-space-3));
+  inline-size: 100%;
+  min-block-size: var(--rct-profile-card-height, var(--rct-form-textarea-height));
+  border-radius: var(--rct-radius-2xl);
+  padding: var(--rct-space-4);
+  background: var(--profile-color-surface-raised);
+}
+
+:where([data-student-ui]) .profile-avatar,
+:where([data-student-ui]):is(.profile-avatar) {
+  display: grid;
+  flex: 0 0 var(--rct-profile-avatar-size, calc(var(--rct-role-avatar-size) + var(--rct-space-2)));
+  place-items: center;
+  inline-size: var(
+    --rct-profile-avatar-size,
+    calc(var(--rct-role-avatar-size) + var(--rct-space-2))
+  );
+  block-size: var(
+    --rct-profile-avatar-size,
+    calc(var(--rct-role-avatar-size) + var(--rct-space-2))
+  );
+  border-radius: var(--rct-radius-full);
+  color: var(--profile-color-accent-on-now);
+  background: var(--profile-color-accent-now);
+  font-size: var(--rct-font-size-title);
+  font-weight: var(--rct-font-weight-bold);
+}
+
+:where([data-student-ui]) .profile-card__copy,
+:where([data-student-ui]):is(.profile-card__copy) {
+  display: grid;
+  min-inline-size: 0;
+  gap: var(--rct-space-1);
+}
+
+:where([data-student-ui]) .profile-card__name,
+:where([data-student-ui]):is(.profile-card__name),
+:where([data-student-ui]) .profile-card__meta,
+:where([data-student-ui]):is(.profile-card__meta) {
+  overflow-wrap: anywhere;
+  margin: 0;
+}
+
+:where([data-student-ui]) .profile-card__name,
+:where([data-student-ui]):is(.profile-card__name) {
+  font-size: var(--rct-homework-date-heading-size);
+  font-weight: var(--rct-font-weight-bold);
+}
+
+:where([data-student-ui]) .profile-card__meta,
+:where([data-student-ui]):is(.profile-card__meta) {
+  color: var(--profile-color-text-secondary);
+  font-size: var(--rct-font-size-caption);
+}
+
+:where([data-student-ui]) .profile-role-list,
+:where([data-student-ui]):is(.profile-role-list) {
+  display: grid;
+  gap: var(--rct-space-3);
+}
+
+:where([data-student-ui]) .profile-role-card,
+:where([data-student-ui]):is(.profile-role-card) {
+  display: flex;
+  align-items: center;
+  gap: var(--rct-space-3);
+  inline-size: 100%;
+  min-block-size: var(
+    --rct-profile-more-row-height,
+    calc(var(--rct-control-min-touch) + var(--rct-space-5) + var(--rct-space-4))
+  );
+  border: 0;
+  border-radius: var(--rct-radius-2xl);
+  padding: var(--rct-space-4);
+  color: var(--profile-color-text-primary);
+  background: var(--profile-color-surface-raised);
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+
+:where([data-student-ui]) .profile-role-card[data-selected='true'],
+:where([data-student-ui]):is(.profile-role-card[data-selected='true']) {
+  color: var(--profile-color-accent-on-now);
+  background: var(--profile-color-accent-now);
+}
+
+:where([data-student-ui]) .profile-role-card[data-disabled='true'],
+:where([data-student-ui]):is(.profile-role-card[data-disabled='true']) {
+  color: var(--profile-color-text-secondary);
+  background: var(--rct-color-disabled-surface);
+  cursor: not-allowed;
+}
+
+:where([data-student-ui]) .profile-role-card__avatar,
+:where([data-student-ui]):is(.profile-role-card__avatar) {
+  display: grid;
+  flex: 0 0 var(--rct-role-avatar-size);
+  place-items: center;
+  inline-size: var(--rct-role-avatar-size);
+  block-size: var(--rct-role-avatar-size);
+  border-radius: var(--rct-radius-full);
+  color: var(--profile-color-text-primary);
+  background: var(--profile-color-surface-float);
+  font-size: var(--rct-font-size-body);
+  font-weight: var(--rct-font-weight-bold);
+}
+
+:where([data-student-ui]) .profile-role-card[data-selected='true'] .profile-role-card__avatar,
+:where([data-student-ui]):is(.profile-role-card[data-selected='true'] .profile-role-card__avatar) {
+  color: var(--profile-color-text-primary);
+  background: var(--profile-color-surface-base);
+}
+
+:where([data-student-ui]) .profile-role-card__copy,
+:where([data-student-ui]):is(.profile-role-card__copy) {
+  display: grid;
+  min-inline-size: 0;
+  gap: var(--rct-space-half);
+}
+
+:where([data-student-ui]) .profile-role-card__title,
+:where([data-student-ui]):is(.profile-role-card__title),
+:where([data-student-ui]) .profile-role-card__meta,
+:where([data-student-ui]):is(.profile-role-card__meta) {
+  overflow-wrap: anywhere;
+  margin: 0;
+}
+
+:where([data-student-ui]) .profile-role-card__title,
+:where([data-student-ui]):is(.profile-role-card__title) {
+  font-size: var(--rct-font-size-body);
+  font-weight: var(--rct-font-weight-bold);
+}
+
+:where([data-student-ui]) .profile-role-card__meta,
+:where([data-student-ui]):is(.profile-role-card__meta) {
+  color: var(--profile-color-text-secondary);
+  font-size: var(--rct-font-size-caption);
+}
+
+:where([data-student-ui]) .profile-role-card[data-selected='true'] .profile-role-card__meta,
+:where([data-student-ui]):is(.profile-role-card[data-selected='true'] .profile-role-card__meta) {
+  color: color-mix(in srgb, var(--profile-color-accent-on-now) 72%, transparent);
+}
+
+:where([data-student-ui]) .profile-role-card[data-disabled='true'] .profile-role-card__meta,
+:where([data-student-ui]):is(.profile-role-card[data-disabled='true'] .profile-role-card__meta) {
+  color: var(--profile-color-text-secondary);
+}
+
+:where([data-student-ui]) .profile-role-card__status,
+:where([data-student-ui]):is(.profile-role-card__status) {
+  margin-inline-start: auto;
+  color: inherit;
+  font-size: var(--rct-font-size-micro);
+  text-align: end;
+}
+
+:where([data-student-ui]) .profile-theme-group,
+:where([data-student-ui]):is(.profile-theme-group) {
+  display: grid;
+  gap: var(--rct-space-2);
+  border: 0;
+  margin: 0;
+  padding: 0;
+}
+
+:where([data-student-ui]) .profile-theme-group legend,
+:where([data-student-ui]):is(.profile-theme-group legend) {
+  margin-block-end: var(--rct-space-1);
+  color: var(--profile-color-text-primary);
+  font-size: var(--rct-font-size-dense);
+  font-weight: var(--rct-font-weight-medium);
+  line-height: 1.45;
+}
+
+:where([data-student-ui]) .profile-theme-option,
+:where([data-student-ui]):is(.profile-theme-option) {
+  display: flex;
+  align-items: center;
+  gap: var(--rct-space-2);
+  min-block-size: var(--rct-control-min-touch);
+  color: var(--profile-color-text-primary);
+  font-size: var(--rct-font-size-dense);
+  cursor: pointer;
+}
+
+:where([data-student-ui]) .profile-theme-option input,
+:where([data-student-ui]):is(.profile-theme-option input) {
+  flex: 0 0 var(--rct-space-4);
+  inline-size: var(--rct-space-4);
+  block-size: var(--rct-space-4);
+  accent-color: var(--profile-color-accent-now);
+}
+
+:where([data-student-ui]) .profile-note,
+:where([data-student-ui]):is(.profile-note),
+:where([data-student-ui]) .profile-security-note,
+:where([data-student-ui]):is(.profile-security-note) {
+  display: grid;
+  gap: var(--rct-space-1-half);
+  inline-size: 100%;
+  border-radius: var(--rct-radius-2xl);
+  padding: var(--rct-space-4);
+}
+
+:where([data-student-ui]) .profile-note,
+:where([data-student-ui]):is(.profile-note) {
+  color: var(--profile-color-text-primary);
+  background: var(--profile-color-surface-raised);
+}
+
+:where([data-student-ui]) .profile-security-note,
+:where([data-student-ui]):is(.profile-security-note) {
+  color: var(--profile-color-warning-text);
+  background: var(--profile-color-warning-bg);
+}
+
+:where([data-student-ui]) .profile-note__title,
+:where([data-student-ui]):is(.profile-note__title),
+:where([data-student-ui]) .profile-note__body,
+:where([data-student-ui]):is(.profile-note__body),
+:where([data-student-ui]) .profile-security-note__title,
+:where([data-student-ui]):is(.profile-security-note__title),
+:where([data-student-ui]) .profile-security-note__body,
+:where([data-student-ui]):is(.profile-security-note__body) {
+  overflow-wrap: anywhere;
+  margin: 0;
+}
+
+:where([data-student-ui]) .profile-note__title,
+:where([data-student-ui]):is(.profile-note__title),
+:where([data-student-ui]) .profile-security-note__title,
+:where([data-student-ui]):is(.profile-security-note__title) {
+  font-size: var(--rct-today-action-size);
+  font-weight: var(--rct-font-weight-bold);
+}
+
+:where([data-student-ui]) .profile-note__body,
+:where([data-student-ui]):is(.profile-note__body),
+:where([data-student-ui]) .profile-security-note__body,
+:where([data-student-ui]):is(.profile-security-note__body) {
+  color: var(--profile-color-text-secondary);
+  font-size: var(--rct-font-size-caption);
+  line-height: 1.55;
+}
+
+:where([data-student-ui]) .profile-security-note__body,
+:where([data-student-ui]):is(.profile-security-note__body) {
+  color: inherit;
+}
+
+:where([data-student-ui]) .profile-form,
+:where([data-student-ui]):is(.profile-form) {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  min-inline-size: 0;
+  gap: var(--rct-space-4);
+}
+
+:where([data-student-ui]) .profile-field,
+:where([data-student-ui]):is(.profile-field) {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  min-inline-size: 0;
+  gap: var(--rct-space-1);
+}
+
+:where([data-student-ui]) .profile-field label,
+:where([data-student-ui]):is(.profile-field label) {
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
+  color: var(--profile-color-text-secondary);
+  font-size: var(--rct-font-size-caption);
+  line-height: 1.4;
+}
+
+:where([data-student-ui]) .profile-field__control,
+:where([data-student-ui]):is(.profile-field__control) {
+  display: flex;
+  min-inline-size: 0;
+  align-items: center;
+  gap: var(--rct-space-2);
+  min-block-size: var(--rct-control-min-touch);
+  border: var(--rct-border-hairline) solid var(--profile-color-border-default);
+  border-radius: var(--rct-radius-full);
+  padding-inline: var(--rct-font-size-title) var(--rct-space-2);
+  color: var(--profile-color-text-primary);
+  background: var(--profile-color-surface-raised);
+}
+
+:where([data-student-ui]) .profile-field__control:focus-within,
+:where([data-student-ui]):is(.profile-field__control:focus-within) {
+  border-color: var(--profile-color-accent-now);
+  outline: var(--rct-focus-width) solid var(--profile-color-accent-now);
+  outline-offset: var(--rct-focus-offset);
+}
+
+:where([data-student-ui]) .profile-field__control input,
+:where([data-student-ui]):is(.profile-field__control input) {
+  inline-size: 0;
+  min-inline-size: 0;
+  flex: 1 1 0;
+  border: 0;
+  outline: 0;
+  padding: 0;
+  color: inherit;
+  background: transparent;
+  font: inherit;
+  font-size: var(--rct-font-size-body);
+}
+
+:where([data-student-ui]) .profile-field__toggle,
+:where([data-student-ui]):is(.profile-field__toggle) {
+  display: grid;
+  flex: 0 0 var(--rct-control-min-touch);
+  place-items: center;
+  inline-size: var(--rct-control-min-touch);
+  block-size: var(--rct-control-min-touch);
+  border: 0;
+  border-radius: var(--rct-radius-full);
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+  @mixin rct-focus-ring;
+}
+
+:where([data-student-ui]) .profile-field__toggle :is(img, .rct-svg-icon),
+:where([data-student-ui]):is(.profile-field__toggle :is(img, .rct-svg-icon)) {
+  inline-size: var(--rct-profile-control-icon-size, var(--rct-space-5));
+  block-size: var(--rct-profile-control-icon-size, var(--rct-space-5));
+}
+
+:where([data-student-ui]) .profile-password-policy,
+:where([data-student-ui]):is(.profile-password-policy) {
+  display: flex;
+  min-inline-size: 0;
+  align-items: flex-start;
+  gap: var(--rct-space-2);
+  color: var(--profile-color-text-secondary);
+  font-size: var(--rct-font-size-caption);
+  line-height: 1.4;
+}
+
+:where([data-student-ui]) .profile-password-policy[data-valid='true'],
+:where([data-student-ui]):is(.profile-password-policy[data-valid='true']) {
+  color: var(--profile-color-success-text);
+}
+
+:where([data-student-ui]) .profile-password-policy[data-invalid='true'],
+:where([data-student-ui]):is(.profile-password-policy[data-invalid='true']) {
+  color: var(--profile-color-danger-text);
+}
+
+:where([data-student-ui]) .profile-password-policy > span:last-child,
+:where([data-student-ui]):is(.profile-password-policy > span:last-child) {
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
+}
+
+:where([data-student-ui]) .profile-secondary-button.profile-security__recovery,
+:where([data-student-ui]):is(.profile-secondary-button.profile-security__recovery) {
+  justify-self: stretch;
+  inline-size: 100%;
+  max-inline-size: 100%;
+  border: 0;
+  overflow-wrap: anywhere;
+}
+
+:where([data-student-ui]) .profile-form__actions,
+:where([data-student-ui]):is(.profile-form__actions) {
+  display: flex;
+  min-inline-size: 0;
+  justify-content: flex-end;
+}
+
+:where([data-student-ui]) .profile-primary-button,
+:where([data-student-ui]):is(.profile-primary-button),
+:where([data-student-ui]) .profile-secondary-button,
+:where([data-student-ui]):is(.profile-secondary-button),
+:where([data-student-ui]) .profile-danger-button,
+:where([data-student-ui]):is(.profile-danger-button),
+:where([data-student-ui]) .profile-show-more,
+:where([data-student-ui]):is(.profile-show-more) {
+  min-block-size: var(--rct-control-min-touch);
+  border-radius: var(--rct-radius-full);
+  padding-inline: var(--rct-space-4);
+  font: inherit;
+  font-size: var(--rct-font-size-dense);
+  font-weight: var(--rct-font-weight-medium);
+  cursor: pointer;
+}
+
+:where([data-student-ui]) .profile-primary-button,
+:where([data-student-ui]):is(.profile-primary-button) {
+  max-inline-size: 100%;
+  overflow-wrap: anywhere;
+  border: 0;
+  color: var(--profile-color-accent-on-now);
+  background: var(--profile-color-accent-now);
+}
+
+:where([data-student-ui]) .profile-secondary-button,
+:where([data-student-ui]):is(.profile-secondary-button),
+:where([data-student-ui]) .profile-show-more,
+:where([data-student-ui]):is(.profile-show-more) {
+  border: var(--rct-border-hairline) solid var(--profile-color-border-default);
+  color: var(--profile-color-text-primary);
+  background: var(--profile-color-surface-float);
+}
+
+:where([data-student-ui]) .profile-danger-button,
+:where([data-student-ui]):is(.profile-danger-button) {
+  inline-size: 100%;
+  border: 0;
+  color: var(--rct-color-text-on-fill-strong);
+  background: var(--profile-color-danger-fill);
+}
+
+:where([data-student-ui]) .profile-primary-button:disabled,
+:where([data-student-ui]):is(.profile-primary-button:disabled),
+:where([data-student-ui]) .profile-secondary-button:disabled,
+:where([data-student-ui]):is(.profile-secondary-button:disabled),
+:where([data-student-ui]) .profile-danger-button:disabled,
+:where([data-student-ui]):is(.profile-danger-button:disabled),
+:where([data-student-ui]) .profile-show-more:disabled,
+:where([data-student-ui]):is(.profile-show-more:disabled) {
+  color: var(--rct-color-disabled-text);
+  background: var(--rct-color-disabled-surface);
+  cursor: not-allowed;
+}
+
+:where([data-student-ui]) .profile-session-list,
+:where([data-student-ui]):is(.profile-session-list),
+:where([data-student-ui]) .profile-history-list,
+:where([data-student-ui]):is(.profile-history-list) {
+  display: grid;
+  gap: var(--rct-space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+:where([data-student-ui]) .profile-session-card,
+:where([data-student-ui]):is(.profile-session-card),
+:where([data-student-ui]) .profile-history-card,
+:where([data-student-ui]):is(.profile-history-card) {
+  display: grid;
+  gap: var(--rct-space-2);
+  inline-size: 100%;
+  border: 0;
+  border-radius: var(--rct-radius-2xl);
+  padding: var(--rct-space-4);
+  color: var(--profile-color-text-primary);
+  background: var(--profile-color-surface-raised);
+  text-align: start;
+}
+
+:where([data-student-ui]) .profile-session-card__top,
+:where([data-student-ui]):is(.profile-session-card__top) {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--rct-space-3);
+}
+
+:where([data-student-ui]) .profile-session-card__title,
+:where([data-student-ui]):is(.profile-session-card__title),
+:where([data-student-ui]) .profile-session-card__meta,
+:where([data-student-ui]):is(.profile-session-card__meta),
+:where([data-student-ui]) .profile-history-card__title,
+:where([data-student-ui]):is(.profile-history-card__title),
+:where([data-student-ui]) .profile-history-card__description,
+:where([data-student-ui]):is(.profile-history-card__description),
+:where([data-student-ui]) .profile-history-card__time,
+:where([data-student-ui]):is(.profile-history-card__time) {
+  overflow-wrap: anywhere;
+  margin: 0;
+}
+
+:where([data-student-ui]) .profile-session-card__title,
+:where([data-student-ui]):is(.profile-session-card__title),
+:where([data-student-ui]) .profile-history-card__title,
+:where([data-student-ui]):is(.profile-history-card__title) {
+  font-size: var(--rct-today-action-size);
+  font-weight: var(--rct-font-weight-bold);
+}
+
+:where([data-student-ui]) .profile-session-card__meta,
+:where([data-student-ui]):is(.profile-session-card__meta),
+:where([data-student-ui]) .profile-history-card__description,
+:where([data-student-ui]):is(.profile-history-card__description),
+:where([data-student-ui]) .profile-history-card__time,
+:where([data-student-ui]):is(.profile-history-card__time) {
+  color: var(--profile-color-text-secondary);
+  font-size: var(--rct-font-size-caption);
+  line-height: 1.55;
+}
+
+:where([data-student-ui]) .profile-history-card__time,
+:where([data-student-ui]):is(.profile-history-card__time) {
+  font-size: var(--rct-font-size-micro);
+}
+
+:where([data-student-ui]) .profile-session-card__current,
+:where([data-student-ui]):is(.profile-session-card__current) {
+  flex: 0 0 auto;
+  border-radius: var(--rct-radius-full);
+  padding: var(--rct-space-2) var(--rct-font-size-dense);
+  color: var(--profile-color-success-text);
+  background: var(--profile-color-success-bg);
+  font-size: var(--rct-today-room-old-size);
+  font-weight: var(--rct-font-weight-bold);
+  line-height: 1.2;
+}
+
+:where([data-student-ui]) .profile-loading,
+:where([data-student-ui]):is(.profile-loading) {
+  display: grid;
+  gap: var(--rct-space-3);
+}
+
+:where([data-student-ui]) .profile-loading__status,
+:where([data-student-ui]):is(.profile-loading__status) {
+  position: absolute;
+  inline-size: var(--rct-border-hairline);
+  block-size: var(--rct-border-hairline);
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+:where([data-student-ui]) .profile-loading__shape,
+:where([data-student-ui]):is(.profile-loading__shape) {
+  background: var(--rct-color-skeleton-fill);
+}
+
+:where([data-student-ui]) .profile-loading__copy,
+:where([data-student-ui]):is(.profile-loading__copy) {
+  flex: 1;
+  gap: var(--rct-space-2);
+}
+
+:where([data-student-ui]) .profile-loading__line,
+:where([data-student-ui]):is(.profile-loading__line) {
+  display: block;
+  inline-size: 70%;
+  min-block-size: var(--rct-space-3);
+  border-radius: var(--rct-radius-full);
+}
+
+:where([data-student-ui]) .profile-loading__line--name,
+:where([data-student-ui]):is(.profile-loading__line--name) {
+  inline-size: 100%;
+  min-block-size: var(--rct-space-4);
+}
+
+:where([data-student-ui]) .profile-loading__line--short,
+:where([data-student-ui]):is(.profile-loading__line--short) {
+  inline-size: 50%;
+}
+
+:where([data-student-ui]) .profile-loading__row,
+:where([data-student-ui]):is(.profile-loading__row) {
+  pointer-events: none;
+  cursor: default;
+}
+
+:where([data-student-ui]) .profile-state,
+:where([data-student-ui]):is(.profile-state) {
+  display: grid;
+  gap: var(--rct-space-2);
+  border: 0;
+  border-radius: var(--rct-radius-2xl);
+  padding: var(--rct-space-4);
+  color: var(--profile-color-text-secondary);
+  background: var(--profile-color-surface-raised);
+  text-align: start;
+}
+
+:where([data-student-ui]) .profile-state[data-error='true'],
+:where([data-student-ui]):is(.profile-state[data-error='true']) {
+  color: var(--profile-color-danger-text);
+  background: var(--rct-error-surface);
+}
+
+:where([data-student-ui]) .profile-state h2,
+:where([data-student-ui]):is(.profile-state h2),
+:where([data-student-ui]) .profile-state p,
+:where([data-student-ui]):is(.profile-state p) {
+  margin: 0;
+}
+
+:where([data-student-ui]) .profile-inline-error,
+:where([data-student-ui]):is(.profile-inline-error) {
+  color: var(--profile-color-danger-text);
+  font-size: var(--rct-font-size-caption);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :where([data-student-ui]) .profile-more-row,
+  :where([data-student-ui]):is(.profile-more-row),
+  :where([data-student-ui]) .profile-row,
+  :where([data-student-ui]):is(.profile-row),
+  :where([data-student-ui]) .profile-role-card,
+  :where([data-student-ui]):is(.profile-role-card) {
+    transition: none;
+  }
+}
+
+:where([data-student-ui]) .profile-row span,
+:where([data-student-ui]):is(.profile-row span),
+:where([data-student-ui]) .profile-more-row span,
+:where([data-student-ui]):is(.profile-more-row span) {
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
+}
+:where([data-student-ui]) .profile-session-card__top,
+:where([data-student-ui]):is(.profile-session-card__top) {
+  flex-wrap: wrap;
+}
+:where([data-student-ui]) .profile-session-card__title,
+:where([data-student-ui]):is(.profile-session-card__title) {
+  flex: 1 1 auto;
+  min-inline-size: 0;
+}
+:where([data-student-ui]) .profile-theme-group,
+:where([data-student-ui]):is(.profile-theme-group) {
+  gap: var(--rct-space-2);
+}
+:where([data-student-ui]) .profile-theme-option,
+:where([data-student-ui]):is(.profile-theme-option) {
+  min-block-size: calc(var(--rct-control-min-touch) + var(--rct-space-2));
+}
+:where([data-student-ui]) .profile-password-policy,
+:where([data-student-ui]):is(.profile-password-policy) {
+  margin: 0;
+}
+:where([data-student-ui]) .profile-history-card,
+:where([data-student-ui]):is(.profile-history-card) {
+  gap: var(--rct-space-1-half);
+}
+:where([data-student-ui]) .profile-history-card__time,
+:where([data-student-ui]):is(.profile-history-card__time) {
+  margin-block-start: var(--rct-space-3);
+}
+
+:where([data-student-ui]) .profile-notification-icon,
+:where([data-student-ui]):is(.profile-notification-icon) {
+  position: relative;
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  inline-size: var(--rct-profile-icon-size);
+  block-size: var(--rct-profile-icon-size);
+}
+
+:where([data-student-ui]) .profile-notification-badge,
+:where([data-student-ui]):is(.profile-notification-badge) {
+  position: absolute;
+  inset-block-start: calc(0rem - var(--rct-space-2));
+  inset-inline-end: calc(0rem - var(--rct-space-3));
+  pointer-events: none;
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  min-inline-size: var(--rct-space-4);
+  min-block-size: var(--rct-space-4);
+  border-radius: var(--rct-radius-full);
+  padding-inline: var(--rct-space-1);
+  color: var(--rct-color-text-on-fill-strong);
+  background: var(--rct-color-danger-fill);
+  @mixin rct-type-micro;
+}
+:where([data-student-ui]) .profile-session-terminate,
+:where([data-student-ui]):is(.profile-session-terminate) {
+  justify-self: start;
+  min-inline-size: 0;
+  max-inline-size: 100%;
+  min-block-size: var(--rct-control-min-touch);
+  margin-block-start: var(--rct-space-2);
+  border: 0;
+  border-radius: var(--rct-radius-full);
+  padding: var(--rct-space-2) var(--rct-space-4);
+  color: var(--rct-color-text-on-fill-strong);
+  background: var(--rct-color-danger-fill);
+  font: inherit;
+  overflow-wrap: anywhere;
+  cursor: pointer;
+  @mixin rct-type-dense;
+  @mixin rct-focus-ring;
+}
+:where([data-student-ui]) .profile-session-terminate:disabled,
+:where([data-student-ui]):is(.profile-session-terminate:disabled) {
+  color: var(--rct-color-text-secondary);
+  background: var(--rct-color-disabled-surface);
+  cursor: not-allowed;
+}
+
+:where([data-student-ui]) .profile-role-switch--compact .profile-role-card,
+:where([data-student-ui]):is(.profile-role-switch--compact .profile-role-card) {
+  min-block-size: calc(var(--rct-space-4) * 4);
+  border-radius: var(--rct-radius-xl);
+}
+:where([data-student-ui]) .profile-role-switch--compact .profile-role-list,
+:where([data-student-ui]):is(.profile-role-switch--compact .profile-role-list) {
+  gap: var(--rct-space-3);
+}
+:where([data-student-ui]) .profile-role-switch--compact .profile-role-card__title,
+:where([data-student-ui]):is(.profile-role-switch--compact .profile-role-card__title) {
+  font-size: var(--rct-font-size-title-block);
+}
+:where([data-student-ui]) .profile-role-switch--compact .profile-role-card__check,
+:where([data-student-ui]):is(.profile-role-switch--compact .profile-role-card__check) {
+  margin-inline-start: auto;
+  flex: none;
+}
+
+:where([data-student-ui]) .profile-permissions,
+:where([data-student-ui]):is(.profile-permissions) {
+  border-radius: var(--rct-radius-2xl);
+  padding: var(--rct-space-4);
+  background: var(--profile-color-surface-raised);
+}
+:where([data-student-ui]) .profile-permissions h2,
+:where([data-student-ui]):is(.profile-permissions h2) {
+  margin: 0 0 var(--rct-space-2);
+  font-size: var(--rct-font-size-body);
+}
+:where([data-student-ui]) .profile-permissions ul,
+:where([data-student-ui]):is(.profile-permissions ul) {
+  margin: 0;
+  padding-inline-start: var(--rct-space-5);
+}
+:where([data-student-ui]) .profile-permissions li + li,
+:where([data-student-ui]):is(.profile-permissions li + li) {
+  margin-block-start: var(--rct-space-2);
+}
+
+:where([data-student-ui]) .profile-security .profile-field,
+:where([data-student-ui]):is(.profile-security .profile-field) {
+  gap: var(--rct-space-2);
+}
+
+:where([data-student-ui]) .profile-security .profile-field__control,
+:where([data-student-ui]):is(.profile-security .profile-field__control) {
+  padding-inline: var(--rct-space-4) var(--rct-space-1);
+}
+
+:where([data-student-ui]) .profile-security .profile-field__control[data-invalid='true'],
+:where([data-student-ui]):is(.profile-security .profile-field__control[data-invalid='true']) {
+  border-color: var(--rct-color-state-danger-border);
+}
+
+:where([data-student-ui]) .profile-security .profile-field__control:focus-within,
+:where([data-student-ui]):is(.profile-security .profile-field__control:focus-within) {
+  border-color: var(--rct-color-border-focus);
+  outline-color: var(--rct-color-border-focus);
+}
+
+:where([data-student-ui]) .profile-security .profile-field__toggle,
+:where([data-student-ui]):is(.profile-security .profile-field__toggle) {
+  color: var(--profile-color-text-secondary);
+}
+
+:where([data-student-ui]) .profile-security .profile-field__toggle:disabled,
+:where([data-student-ui]):is(.profile-security .profile-field__toggle:disabled) {
+  color: var(--rct-color-disabled-text);
+  cursor: not-allowed;
+}
+
+:where([data-student-ui]) .profile-security .profile-field__control:has(input:disabled),
+:where([data-student-ui]):is(.profile-security .profile-field__control:has(input:disabled)) {
+  color: var(--rct-color-disabled-text);
+  border-color: var(--rct-color-disabled-border);
+  background: var(--rct-color-disabled-surface);
+}
+
+:where([data-student-ui]) .profile-security .profile-form__actions .profile-primary-button,
+:where([data-student-ui]):is(.profile-security .profile-form__actions .profile-primary-button) {
+  inline-size: 100%;
+}
+
+:where([data-student-ui]) .profile-browser-login,
+:where([data-student-ui]):is(.profile-browser-login) {
+  gap: var(--rct-space-3);
+}
+
+:where([data-student-ui]) .profile-browser-login__close,
+:where([data-student-ui]):is(.profile-browser-login__close) {
+  justify-self: end;
+  display: grid;
+  place-items: center;
+  inline-size: var(--rct-control-min-touch);
+  min-block-size: var(--rct-control-min-touch);
+  padding: 0;
+  border: 0;
+  border-radius: var(--rct-radius-full);
+  color: var(--profile-color-text-primary);
+  background: var(--profile-color-surface-float);
+  cursor: pointer;
+  @mixin rct-focus-ring;
+}
+
+:where([data-student-ui]) .profile-browser-login__close svg,
+:where([data-student-ui]):is(.profile-browser-login__close svg) {
+  inline-size: var(--rct-profile-control-icon-size, var(--rct-space-5));
+  block-size: var(--rct-profile-control-icon-size, var(--rct-space-5));
+}
+
+:where([data-student-ui]) .profile-browser-login .profile-field > span:first-child,
+:where([data-student-ui]):is(.profile-browser-login .profile-field > span:first-child) {
+  color: var(--profile-color-text-secondary);
+  font-size: var(--rct-font-size-caption);
+  line-height: 1.4;
+}
+
+:where([data-student-ui]) .profile-browser-login .profile-primary-button,
+:where([data-student-ui]):is(.profile-browser-login .profile-primary-button),
+:where([data-student-ui]) .profile-browser-login .profile-secondary-button,
+:where([data-student-ui]):is(.profile-browser-login .profile-secondary-button) {
+  inline-size: 100%;
+  max-inline-size: 100%;
+  overflow-wrap: anywhere;
+}
+
+:where([data-student-ui]) .profile-browser-login .profile-inline-error,
+:where([data-student-ui]):is(.profile-browser-login .profile-inline-error) {
+  margin: 0;
+}
+
+:where([data-student-ui]) .profile-password-rules,
+:where([data-student-ui]):is(.profile-password-rules) {
+  display: grid;
+  gap: var(--rct-space-1-half);
+}
+
+:where([data-student-ui]) .profile-password-policy__check,
+:where([data-student-ui]):is(.profile-password-policy__check) {
+  display: grid;
+  flex: 0 0 var(--rct-space-4);
+  place-items: center;
+  inline-size: var(--rct-space-4);
+  block-size: var(--rct-space-4);
+  border: var(--rct-border-hairline) solid currentColor;
+  border-radius: var(--rct-radius-xs);
+  font-weight: var(--rct-font-weight-bold);
+  line-height: 1;
+}
+
+:where([data-student-ui]) .profile-browser-scanner,
+:where([data-student-ui]):is(.profile-browser-scanner) {
+  gap: var(--rct-space-3);
+}
+
+:where([data-student-ui]) .profile-browser-scanner__video,
+:where([data-student-ui]):is(.profile-browser-scanner__video) {
+  inline-size: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: var(--rct-radius-xl);
+  background: var(--profile-color-surface-base);
+}

@@ -238,7 +238,8 @@ def prepared_audience(event):
     envelope = event.get("_bot_prepared")
     if (
         not isinstance(envelope, dict)
-        or set(envelope) != {"version", "event_id", "event_type", "recipients"}
+        or not {"version", "event_id", "event_type", "recipients"} <= set(envelope)
+        or set(envelope) - {"version", "event_id", "event_type", "recipients", "delivered_user_ids"}
         or type(envelope["version"]) is not int
         or envelope["version"] != 1
         or envelope["event_id"] != event.get("event_id")
@@ -258,7 +259,16 @@ def prepared_audience(event):
             ):
                 raise ValueError
             recipients.append(pb.NotificationAudienceRecipient(**item))
-        return validate_audience(recipients)
+        audience = validate_audience(recipients)
+        delivered = envelope.get("delivered_user_ids", [])
+        if (
+            not isinstance(delivered, list)
+            or any(not positive(uid) for uid in delivered)
+            or len(delivered) != len(set(delivered))
+            or not set(delivered) <= audience.keys()
+        ):
+            raise ValueError("Invalid internal delivery progress")
+        return audience
     except (ValueError, TypeError, NotificationPreferencesUnavailable) as error:
         raise ValueError("Invalid internal notification recipients") from error
 
@@ -296,6 +306,21 @@ class NotificationDeliveryState:
         except Exception as error:
             raise NotificationPreferencesUnavailable("Notification receipt unavailable") from error
 
+    async def snapshot(self, event):
+        """Keep confirmed progress with the durable broker envelope across Redis TTL expiry."""
+        audience = prepared_audience(event)
+        delivered = set(event["_bot_prepared"].get("delivered_user_ids", []))
+        pending = sorted(audience.keys() - delivered)
+        if pending:
+            try:
+                values = await self._redis.mget([f"notification-bot:sent:{event['event_id']}:{uid}" for uid in pending])
+                if len(values) != len(pending) or any(value not in (None, "sent") for value in values):
+                    raise ValueError("Invalid notification receipt snapshot")
+                delivered.update(uid for uid, value in zip(pending, values) if value == "sent")
+            except Exception as error:
+                raise NotificationPreferencesUnavailable("Notification progress snapshot unavailable") from error
+        return {**event, "_bot_prepared": {**event["_bot_prepared"], "delivered_user_ids": sorted(delivered)}}
+
 
 async def handle_business(event, *, bot, academic, queue, reminders, config, state, attendance=None, tracker=None):
     requests = audience_requests(event)
@@ -328,12 +353,13 @@ async def handle_business(event, *, bot, academic, queue, reminders, config, sta
     current = await resolve_all(academic, requests)
     # Saved event/user role set prevents late grants from joining replay/queue delivery.
     saved = prepared_audience(event)
+    delivered = set(event["_bot_prepared"].get("delivered_user_ids", []))
     lesson_id = payload.get("lesson_id")
     if kind == "attendance.marked" and payload.get("status") in {"present", "absent", "excused", "free_attendance"}:
         await reminders.mark_student_marked(lesson_id, payload["user_id"], payload["status"])
     for user_id, saved_roles in saved.items():
         roles = saved_roles & current.get(user_id, frozenset())
-        if not roles or await state.completed(event_id, user_id):
+        if not roles or user_id in delivered or await state.completed(event_id, user_id):
             continue
         if kind == "attendance.marked" and payload.get("marked_by") != "headman":
             continue
@@ -365,7 +391,7 @@ async def handle_business(event, *, bot, academic, queue, reminders, config, sta
             role_state[0] = retained & live.get(uid, frozenset())
             if not role_state[0]:
                 return False
-            if await state.completed(event_id, uid):
+            if uid in delivered or await state.completed(event_id, uid):
                 return False
             if kind == "lesson.reminder" and await reminders.is_student_marked(lesson_id, uid):
                 return False

@@ -39,6 +39,47 @@ function setup(initial: string | null = null) {
 }
 
 describe('device theme reconciliation', () => {
+  it('keeps role policy changes separate from user choice while remote admission is pending', async () => {
+    const state = setup()
+    state.theme.dispose()
+    let resolved: 'light' | 'dark' = 'dark'
+    const theme = createTheme({
+      target: null,
+      mode: 'system',
+      lockedMode: 'dark',
+      systemSource: { read: () => resolved, subscribe: () => () => {} },
+    })
+    const pending = deferred<DeviceThemeSnapshot>()
+    const preferenceWrite = vi.spyOn(state.preference, 'write')
+    const remoteWrite = vi.fn()
+    const mirror = createDeviceThemeMirror({
+      ...state,
+      theme,
+      transport: { read: () => pending.promise, write: remoteWrite },
+    })
+    mirror.setSession({ key: 'student', accessToken: 'synthetic' })
+    theme.setLockedMode?.(undefined)
+    theme.setLockedMode?.('dark')
+    resolved = 'light'
+    theme.setLockedMode?.(undefined)
+    expect(preferenceWrite).not.toHaveBeenCalled()
+    expect(remoteWrite).not.toHaveBeenCalled()
+    pending.resolve({ theme: 'light', revision: '1' })
+    await flush()
+    expect(theme.mode).toBe('light')
+    expect(state.preference.read()).toBe('light')
+    expect(remoteWrite).not.toHaveBeenCalled()
+    preferenceWrite.mockClear()
+    theme.setLockedMode?.('dark')
+    expect(theme.resolvedMode).toBe('dark')
+    expect(theme.mode).toBe('light')
+    expect(preferenceWrite).not.toHaveBeenCalled()
+    expect(remoteWrite).not.toHaveBeenCalled()
+    mirror.dispose()
+    theme.dispose()
+    state.preference.dispose()
+  })
+
   it('preserves a newer manual choice while admission GET is pending, including explicit system', async () => {
     const state = setup()
     const pending = deferred<DeviceThemeSnapshot>()

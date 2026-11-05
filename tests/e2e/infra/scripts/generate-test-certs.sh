@@ -218,7 +218,7 @@ if [ -L "${AUTH_SECRETS_DIR}" ]; then
 fi
 mkdir -p "${AUTH_SECRETS_DIR}"
 chmod 700 "${AUTH_SECRETS_DIR}"
-for name in bot-to-read-token mobile-bff-to-auth-token academic-to-auth-token attendance-to-auth-token auth-to-academic-presentation-token mobile-bff-to-academic-token mobile-bff-to-attendance-token mobile-bff-to-schedule-token attendance-bot-read-to-academic-token attendance-bot-read-to-schedule-token academic-report-to-attendance-token academic-report-to-schedule-token notification-to-academic-token bot-to-auth-token pg-legacy-runtime-password pg-migration-password pg-monitor-password pg-auth-runtime-password pg-auth-migration-password pg-academic-runtime-password; do
+for name in bot-to-read-token mobile-bff-to-auth-token academic-to-auth-token attendance-to-auth-token auth-to-academic-presentation-token mobile-bff-to-academic-token mobile-bff-to-attendance-token mobile-bff-to-schedule-token attendance-bot-read-to-academic-token attendance-bot-read-to-schedule-token academic-report-to-attendance-token academic-report-to-schedule-token constructor-rpc-schedule-to-attendance-token constructor-rpc-schedule-to-academic-token notification-to-academic-token bot-to-auth-token pg-legacy-runtime-password pg-migration-password pg-monitor-password pg-auth-runtime-password pg-auth-migration-password pg-academic-runtime-password; do
   path="${AUTH_SECRETS_DIR}/${name}"
   if [ -L "${path}" ] || { [ -e "${path}" ] && [ ! -f "${path}" ]; }; then
     echo "Refusing a non-regular synthetic Auth secret file." >&2

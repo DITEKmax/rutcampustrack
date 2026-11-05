@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Fixed foreground local analogue of canonical CI browser selections.
+"""Fixed foreground local replay of the broader browser qualification suite.
 
 Each mode uses new source-bound cohorts. No previous acceptance receipt is read.
 Independent modes are serialized by the caller and the existing 8443 lease.
@@ -498,7 +498,7 @@ def main():
                    **({"selectedCaseIds": list(lane.D002_AUTHORITY_CASES if args.d002_authority_only else lane.D002_CASES),
                        "selected": 1 if args.d002_authority_only else 2, "fullAcceptance": False}
                       if args.d002_only or args.d002_authority_only else {}),
-                   "qualification": "Fresh cohorts serially; CI shared-job order/state and hosted hardware differ. No hosted CI identity."}) + "\n")
+                   "qualification": "Local suite with explicit browser selections and fresh serial cohorts. Hosted CI has its own selection and run identity."}) + "\n")
     return exit_code(status, cancelled)
 
 

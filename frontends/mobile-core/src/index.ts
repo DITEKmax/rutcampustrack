@@ -136,3 +136,9 @@ export * from './features/notifications/notifications-launch'
 
 export * from './features/admin-attendance/admin-attendance-client'
 export { default as AdminAttendanceScreen } from './features/admin-attendance/AdminAttendanceScreen.vue'
+
+export type {
+  AttendanceDocumentResolver,
+  AttendanceLessonDocument,
+} from './features/attendance/attendance-view-model'
+export { default as BrowserLoginScreen } from './features/profile/BrowserLoginScreen.vue'

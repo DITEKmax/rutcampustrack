@@ -431,6 +431,49 @@ async def test_pending_headman_preserves_canonical_callbacks_without_private_rea
         await queue.shutdown()
 
 
+@pytest.mark.parametrize("progress", [[1, 1], [999], [True], ["1"], None])
+async def test_prepared_progress_is_unique_positive_and_within_saved_recipients(progress):
+    prepared = await prepare_business(event("group.renamed"), academic([{1: ["STUDENT"]}]))
+    prepared["_bot_prepared"]["delivered_user_ids"] = progress
+    with pytest.raises(ValueError):
+        prepared_audience(prepared)
+
+
+@pytest.mark.parametrize("allow_remaining", [True, False])
+async def test_durable_progress_survives_receipt_expiry_and_preserves_remaining_authority(fake_redis, allow_remaining):
+    authority = academic([{1: ["STUDENT"], 2: ["STUDENT"]}])
+    prepared = await prepare_business(event("group.renamed"), authority)
+    state = NotificationDeliveryState(fake_redis)
+    await state.complete(EVENT_ID, 1)
+    snapshot = await state.snapshot(prepared)
+    assert snapshot["_bot_prepared"]["delivered_user_ids"] == [1]
+    await fake_redis.flushdb()  # Simulate expiry of the isolated seven-day receipt store.
+    assert not await state.completed(EVENT_ID, 1)
+    snapshot = await state.snapshot(snapshot)
+    assert snapshot["_bot_prepared"]["delivered_user_ids"] == [1]
+    # Snapshot prevents duplicate send; it never grants the remaining recipient authority.
+    authority = academic([{1: ["STUDENT"], **({2: ["STUDENT"]} if allow_remaining else {})}])
+    bot, reminders, _ = resources()
+    queue = TelegramSendQueue(SimpleNamespace(is_enabled=AsyncMock(return_value=True)))
+    queue.start()
+    try:
+        async with queue.staged() as batch:
+            await handle_business(
+                snapshot,
+                bot=bot,
+                academic=authority,
+                queue=queue,
+                reminders=reminders,
+                config=None,
+                state=state,
+            )
+        await asyncio.wait_for(batch.wait(), 2)
+        chats = [call.kwargs["chat_id"] for call in bot.send_message.await_args_list]
+        assert chats == ([102] if allow_remaining else [])
+    finally:
+        await queue.shutdown()
+
+
 @pytest.mark.parametrize("actor,sends", [(1, 0), (None, 1), (True, 1)])
 async def test_external_own_sync_suppression_requires_positive_verified_actor(actor, sends):
     queue, batch, bot, _, _, _ = await deliver(

@@ -148,6 +148,15 @@ public class StudentRequestFacade {
                 response.getFilename().isBlank() ? "attachment" : response.getFilename());
     }
 
+    public Download downloadAttendance(long semesterId, long lessonId, String attachmentId, String expectedMarkRevision) {
+        requireStudentScope();
+        StudentRequestAttachmentDownload response = attendance.downloadAttendanceAttachment(
+                semesterId, lessonId, attachmentId, expectedMarkRevision);
+        return new Download(response.getData().toByteArray(),
+                response.getContentType().isBlank() ? "application/octet-stream" : response.getContentType(),
+                response.getFilename().isBlank() ? "attachment" : response.getFilename());
+    }
+
     private void requireStudentScope() {
         InternalJwtClaims claims = requestContext.claims();
         if (!"STUDENT".equalsIgnoreCase(claims.domainRole())) {

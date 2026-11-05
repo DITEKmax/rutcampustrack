@@ -1,0 +1,95 @@
+/* Accepted Student presentation; existing roles retain their base rules. */
+@import '../../styles/tokens.pcss';
+
+:where([data-student-ui]) .request-date-calendar,
+:where([data-student-ui]):is(.request-date-calendar) {
+  min-inline-size: 0;
+  border-radius: var(--rct-radius-2xl);
+  padding: var(--rct-space-3);
+  color: var(--rct-color-text-primary);
+  background: var(--rct-color-surface-raised);
+}
+:where([data-student-ui]) .request-date-calendar__pager,
+:where([data-student-ui]):is(.request-date-calendar__pager) {
+  display: grid;
+  grid-template-columns: var(--rct-control-min-touch) minmax(0, 1fr) var(--rct-control-min-touch);
+  align-items: center;
+  gap: var(--rct-space-2);
+  margin-block-end: var(--rct-space-2);
+}
+:where([data-student-ui]) .request-date-calendar__pager strong,
+:where([data-student-ui]):is(.request-date-calendar__pager strong) {
+  text-align: center;
+  font-size: var(--rct-font-size-caption);
+  font-weight: var(--rct-font-weight-regular);
+  text-transform: capitalize;
+}
+:where([data-student-ui]) .request-date-calendar button,
+:where([data-student-ui]):is(.request-date-calendar button) {
+  display: grid;
+  place-items: center;
+  min-inline-size: 0;
+  min-block-size: var(--rct-control-min-touch);
+  border: 0;
+  border-radius: var(--rct-radius-lg);
+  padding: var(--rct-space-1);
+  color: var(--rct-color-text-primary);
+  background: var(--rct-color-surface-float);
+  font: inherit;
+  cursor: pointer;
+  @mixin rct-focus-ring;
+}
+:where([data-student-ui]) .request-date-calendar button:disabled,
+:where([data-student-ui]):is(.request-date-calendar button:disabled) {
+  color: var(--rct-color-disabled-text);
+  background: var(--rct-color-disabled-surface);
+  cursor: default;
+}
+:where([data-student-ui]) .request-date-calendar__next,
+:where([data-student-ui]):is(.request-date-calendar__next) {
+  transform: rotate(180deg);
+}
+:where([data-student-ui]) .request-date-calendar__grid,
+:where([data-student-ui]):is(.request-date-calendar__grid) {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: var(--rct-space-1);
+  text-align: center;
+  align-items: center;
+}
+:where([data-student-ui]) .request-date-calendar__grid > span,
+:where([data-student-ui]):is(.request-date-calendar__grid > span) {
+  color: var(--rct-color-text-muted);
+  font-size: var(--rct-font-size-micro);
+  min-block-size: var(--rct-space-6);
+}
+:where([data-student-ui]) .request-date-calendar__grid button[aria-pressed='true'],
+:where([data-student-ui]):is(.request-date-calendar__grid button[aria-pressed='true']) {
+  color: var(--rct-color-accent-on-now);
+  background: var(--rct-color-accent-now);
+}
+:where([data-student-ui]) .request-date-calendar__heading,
+:where([data-student-ui]):is(.request-date-calendar__heading) {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--rct-space-2);
+}
+:where([data-student-ui]) .request-date-calendar__heading h2,
+:where([data-student-ui]):is(.request-date-calendar__heading h2) {
+  min-inline-size: 0;
+  margin: 0;
+  font-size: var(--rct-font-size-caption);
+  font-weight: var(--rct-font-weight-bold);
+}
+:where([data-student-ui]) .request-date-calendar .request-date-calendar__close,
+:where([data-student-ui]):is(.request-date-calendar .request-date-calendar__close) {
+  flex: 0 0 var(--rct-control-min-touch);
+  inline-size: var(--rct-control-min-touch);
+  block-size: var(--rct-control-min-touch);
+}
+:where([data-student-ui]) .request-date-calendar__close .mobile-icon,
+:where([data-student-ui]):is(.request-date-calendar__close .mobile-icon) {
+  inline-size: var(--rct-icon-size);
+  block-size: var(--rct-icon-size);
+}

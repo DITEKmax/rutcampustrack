@@ -1,6 +1,6 @@
 import type { RecurringOwner } from './headman-recurring-intent'
 import { recurringScope } from './headman-recurring-intent'
-import type { HeadmanScheduleCreateInput } from './headman-schedule-client'
+import type { HeadmanScheduleCreateInput, HeadmanRecurringCreateReceipt } from './headman-schedule-client'
 export interface RecurringCreateIntent {
   readonly owner: Readonly<RecurringOwner>
   readonly key: string
@@ -56,12 +56,18 @@ export function readRecurringCreate(
     input: Object.freeze({ ...input }),
   })
 }
-export async function submitRecurringCreate(
+export async function submitRecurringCreate<T>(
   storage: Pick<Storage, 'setItem'>,
   intent: RecurringCreateIntent,
-  write: (input: Readonly<HeadmanScheduleCreateInput>, key: string) => Promise<unknown>,
-): Promise<void> {
+  write: (input: Readonly<HeadmanScheduleCreateInput>, key: string) => Promise<T>,
+): Promise<T> {
   // Refusal to persist must never start the write. This durable intent is retained until a validated ACK.
   storage.setItem(recurringCreateScope(intent.owner), JSON.stringify(intent))
-  await write(intent.input, intent.key)
+  return write(intent.input, intent.key)
+}
+
+export function recurringGenerationNotice(receipt: HeadmanRecurringCreateReceipt): string {
+  return receipt.generatedCount === 0
+    ? 'Серия сохранена. В семестре нет дат для этого правила.'
+    : `Серия сохранена. Пар: ${receipt.generatedCount}. Период: ${receipt.generatedFrom} — ${receipt.generatedUntil}.`
 }

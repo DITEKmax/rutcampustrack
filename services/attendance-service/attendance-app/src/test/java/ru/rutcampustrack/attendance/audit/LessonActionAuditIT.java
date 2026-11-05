@@ -6,6 +6,9 @@ import static org.mockito.Mockito.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.github.dockerjava.api.model.ExposedPort;
+import com.github.dockerjava.api.model.PortBinding;
+import com.github.dockerjava.api.model.Ports;
 import io.micrometer.core.instrument.Counter;
 import java.time.*;
 import java.util.*;
@@ -81,7 +84,21 @@ import ru.rutcampustrack.shared.outbox.mongo.MongoOutboxStorage;
     LessonActionAuditIT.Config.class
 })
 class LessonActionAuditIT {
-    @Container static final MongoDBContainer MONGO = new MongoDBContainer("mongo:7.0");
+    @Container
+    static final MongoDBContainer MONGO =
+            new MongoDBContainer("mongo:7.0")
+                    .withReuse(false)
+                    .withLabel("rct.fixture.scope", "lesson-action-audit")
+                    .withCreateContainerCmdModifier(
+                            command ->
+                                    command.getHostConfig()
+                                            .withMemory(1024L * 1024 * 1024)
+                                            .withPortBindings(
+                                                    new PortBinding(
+                                                            Ports.Binding.bindIpAndPort(
+                                                                    "127.0.0.1", 0),
+                                                            ExposedPort.tcp(27017)))
+                                            .withPublishAllPorts(false));
 
     @DynamicPropertySource
     static void properties(DynamicPropertyRegistry r) {
@@ -612,6 +629,7 @@ class LessonActionAuditIT {
         assertThat(checkin.checkin(identity, studentLesson(), "geo-accepted-key-0001", coordinates))
                 .isEqualTo(ack);
         assertThat(count()).isEqualTo(3);
+        verify(geofence, times(1)).evaluate(55.75, 37.61);
         assertThat(reads.read(1L, null, 20).items())
                 .anySatisfy(
                         action -> {
@@ -629,8 +647,8 @@ class LessonActionAuditIT {
                         Query.query(Criteria.where("payload.geo.verdict").is("ACCEPTED")),
                         LessonActionDocument.class);
         Map<?, ?> acceptedGeo = (Map<?, ?>) acceptedAction.getPayload().get("geo");
-        assertThat(acceptedGeo.containsKey("latitude")).isFalse();
-        assertThat(acceptedGeo.containsKey("longitude")).isFalse();
+        assertThat(acceptedGeo.get("latitude")).isEqualTo(55.75);
+        assertThat(acceptedGeo.get("longitude")).isEqualTo(37.61);
         Instant observed = Instant.parse("2026-09-06T07:15:01Z");
         var activityQuery =
                 ru.rutcampustrack.attendance.grpc.AdminActivityQuery.newBuilder()

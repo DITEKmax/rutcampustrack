@@ -60,7 +60,7 @@ function screenFeed(): StudentHomework {
 }
 
 describe('accepted homework period rendering', () => {
-  it('shows the material hostname and escaped safe inline links without interpreting markup', async () => {
+  it('shows the full material URL and escaped safe inline links without interpreting markup', async () => {
     const feed = screenFeed()
     const item = {
       ...feed.items[1]!,
@@ -78,8 +78,10 @@ describe('accepted homework period rendering', () => {
         focusRequestId: 1,
       }),
     )
-    expect(html).toContain('class="homework-material__hostname">materials.example.test</span>')
-    expect(html).toContain('aria-label="Материалы к заданию: Раньше"')
+    expect(html).toContain('>https://materials.example.test/course?topic=one</a>')
+    expect(html).toContain(
+      'aria-label="Материалы к заданию: Раньше (https://materials.example.test/course?topic=one)"',
+    )
     expect(html).toMatch(
       /<a href="https:\/\/notes.example.test\/read\?a=1&amp;b=2" target="_blank" rel="noopener noreferrer"/,
     )
@@ -104,7 +106,7 @@ describe('accepted homework period rendering', () => {
         navItems: createStudentNavigationItems({ homeworkEnabled: true }),
       }),
     )
-    expect(html).toContain('Материалы недоступны: ссылка не поддерживается.')
+    expect(html).toContain('Ссылка не поддерживается.')
     expect(html).not.toContain('homework-material__hostname')
     expect(html).not.toContain('href="javascript:')
   })
@@ -150,7 +152,8 @@ describe('accepted homework period rendering', () => {
       }),
     )
     expect(html).toContain('Нет заданий')
-    expect(html).toContain('На этот день заданий нет.')
+    expect(html).toContain('Заданий пока нет')
+    expect(html).toContain('homework-art-illustration')
     expect(html).toMatch(/data-homework-date="2026-09-07"(?![^>]*disabled)[^>]*>/)
   })
   it('renders selected-day unfinished assignments before completed while excluding the server completion-date union', async () => {

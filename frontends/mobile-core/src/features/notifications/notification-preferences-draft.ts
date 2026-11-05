@@ -92,3 +92,24 @@ export function reapplyNotificationPreferences(
   if (!notificationTypeSetsMatch(Object.keys(draft.types), Object.keys(current.types))) return null
   return notificationPreferencesUpdate(draft, current.revision)
 }
+
+/** Compare only the editable delivery/color payload, independent of server metadata or key order. */
+export function notificationPreferencesDiffer(
+  draft: NotificationPreferencesV2,
+  saved: NotificationPreferencesV2,
+): boolean {
+  if (draft.splitChannels !== saved.splitChannels) return true
+  const ids = Object.keys(draft.types) as NotificationTypeId[]
+  if (ids.length !== Object.keys(saved.types).length) return true
+  return ids.some((id) => {
+    const entry = draft.types[id],
+      baseline = saved.types[id]
+    return (
+      !entry ||
+      !baseline ||
+      entry.appPush !== baseline.appPush ||
+      entry.telegram !== baseline.telegram ||
+      entry.colorId !== baseline.colorId
+    )
+  })
+}

@@ -123,6 +123,7 @@ public class AttendanceReadPortImpl implements AttendanceReadPort {
                 doc.getAttachmentName(),
                 doc.getAttachmentContentType(),
                 doc.getAttachmentSize(),
-                AttendanceRevisions.effective(doc));
+                AttendanceRevisions.effective(doc),
+                doc.getExcuseRequestId());
     }
 }

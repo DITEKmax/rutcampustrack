@@ -1,9 +1,12 @@
 import { createRenderer, createSSRApp, h, nextTick, ref } from 'vue'
 import { renderToString } from '@vue/server-renderer'
 import RequestLessonSelectionScreen from './RequestLessonSelectionScreen.vue'
+import RequestLessonSelector from './RequestLessonSelector.vue'
+import RequestDateCalendar from './RequestDateCalendar.vue'
+import ExcuseRequestScreen from './ExcuseRequestScreen.vue'
 import HeadmanRequestsScreen from '../headman-requests/HeadmanRequestsScreen.vue'
 import { HeadmanRequestsApi } from '../headman-requests/headman-requests-client'
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
   getOrCreateRequestsDraft,
   purgeRequestsDrafts,
@@ -13,6 +16,20 @@ import {
   removeSelectedLessonId,
 } from './state'
 import type { RequestLessonOption } from './types'
+// This flow exercises source selection/draft navigation; DOM-only measurement and
+// outside-pointer behavior of the unchanged reason/text controls are independent.
+vi.mock('./AutoGrowTextarea.vue', () => ({
+  default: {
+    props: ['modelValue'],
+    setup: (props: { modelValue: string }) => () => h('textarea', { value: props.modelValue }),
+  },
+}))
+vi.mock('./ReasonSelect.vue', () => ({
+  default: {
+    props: ['modelValue'],
+    setup: (props: { modelValue: string | null }) => () => h('span', props.modelValue ?? ''),
+  },
+}))
 const options: RequestLessonOption[] = [
   { lesson: { id: 'one' }, excuseEligible: true, lateCheckinEligible: true, pendingRequests: [] },
   {
@@ -91,7 +108,8 @@ describe('lesson selection continuation boundary', () => {
         }),
       )
     expect(await render(['one', 'two'])).not.toMatch(/class="requests-submit-action"[^>]*disabled/)
-    for (const ids of [[], ['one', 'missing'], ['blocked'], ['pending']])
+    expect(await render([])).not.toContain('class="requests-submit-action"')
+    for (const ids of [['one', 'missing'], ['blocked'], ['pending']])
       expect(await render(ids)).toMatch(/class="requests-submit-action"[^>]*disabled/)
     expect(await render(['one'], { offline: true })).toMatch(
       /class="requests-submit-action"[^>]*disabled/,
@@ -212,8 +230,218 @@ function selectionNodes(node: SelectionNode): SelectionNode[] {
   return [node, ...node.children.flatMap(selectionNodes)]
 }
 
+describe('late-checkin source candidates and retained draft recovery', () => {
+  const candidate = (
+    id: string,
+    eligible: boolean,
+    pendingRequests: RequestLessonOption['pendingRequests'] = [],
+  ): RequestLessonOption => ({
+    lesson: { id, subjectName: id, date: '2026-09-02', status: eligible ? 'CLOSED' : 'PLANNED' },
+    lateCheckinEligible: eligible,
+    excuseEligible: true,
+    pendingRequests,
+  })
+  it('lists only source-eligible candidates and blocks a refreshed stale selection until explicit recovery', async () => {
+    const source = ref<RequestLessonOption[]>([
+      candidate('absent', true),
+      candidate('present', false),
+      candidate('excused', false),
+      candidate('future', false),
+      candidate('same-kind-pending', true, [{ id: 'p', kind: 'LATE_CHECKIN' }]),
+      candidate('other-kind-allowed', true, [{ id: 'e', kind: 'EXCUSE' }]),
+    ])
+    const selected = ref<string[]>([])
+    const readOnly = ref(false)
+    let continued = 0
+    const root = selectionNode('root')
+    const app = selectionRenderer.createApp({
+      render: () =>
+        h(RequestLessonSelectionScreen, {
+          kind: 'LATE_CHECKIN',
+          lessons: source.value,
+          lessonIds: selected.value,
+          access: 'allowed',
+          optionsLoaded: true,
+          readOnly: readOnly.value,
+          'onUpdate:lessonIds': (ids: string[]) => {
+            selected.value = ids
+          },
+          onContinue: () => {
+            continued++
+          },
+        }),
+    })
+    app.mount(root)
+    const nodes = () => selectionNodes(root)
+    const choices = () => nodes().filter((node) => node.props.type === 'checkbox')
+    const continueButton = () =>
+      nodes().find((node) => node.props.class === 'requests-submit-action')!
+    const remove = () =>
+      nodes().find((node) => node.props.class === 'request-lesson-recovery-action')!
+    const choose = async (id: string) => {
+      const input = choices().find((node) => node.props.value === id)!
+      ;(input.props.onChange as (event: unknown) => void)({ target: { checked: true } })
+      await nextTick()
+    }
+    try {
+      expect(choices().map((node) => node.props.value)).toEqual(['absent', 'other-kind-allowed'])
+      await choose('absent')
+      expect(continueButton().props.disabled).toBe(false)
+      source.value = source.value.map((option) =>
+        option.lesson?.id === 'absent'
+          ? {
+              ...option,
+              lateCheckinEligible: false,
+              unavailableReason: 'Отметка уже подтверждена.',
+            }
+          : option,
+      )
+      await nextTick()
+      expect(selected.value).toEqual(['absent'])
+      expect(choices().map((node) => node.props.value)).toEqual(['other-kind-allowed'])
+      expect(nodes().some((node) => node.text.includes('Отметка уже подтверждена.'))).toBe(true)
+      expect(remove()).toBeDefined()
+      expect(continueButton().props.disabled).toBe(true)
+      ;(continueButton().props.onClick as () => void)()
+      expect(continued).toBe(0)
+      readOnly.value = true
+      await nextTick()
+      expect(remove().props.disabled).toBe(true)
+      expect(continueButton().props.disabled).toBe(true)
+      readOnly.value = false
+      await nextTick()
+      ;(remove().props.onClick as () => void)()
+      await nextTick()
+      expect(selected.value).toEqual([])
+      await choose('other-kind-allowed')
+      expect(continueButton().props.disabled).toBe(false)
+      ;(continueButton().props.onClick as () => void)()
+      expect(continued).toBe(1)
+      source.value = source.value.map((option) => ({ ...option, lateCheckinEligible: false }))
+      await nextTick()
+      expect(choices()).toHaveLength(0)
+      expect(nodes().some((node) => node.text.includes('Нет доступных пропущенных пар.'))).toBe(
+        true,
+      )
+      expect(selected.value).toEqual(['other-kind-allowed'])
+      expect(continueButton().props.disabled).toBe(true)
+      ;(remove().props.onClick as () => void)()
+      await nextTick()
+      expect(selected.value).toEqual([])
+      expect(continueButton().props.disabled).toBe(true)
+    } finally {
+      app.unmount()
+    }
+  })
+  it('also filters the alternate select while preserving missing/ineligible recovery, without changing EXCUSE options', async () => {
+    const options = [candidate('eligible', true), candidate('unavailable', false)]
+    const render = (mode: 'late' | 'excuse', ids: string | string[]) =>
+      renderToString(
+        createSSRApp(RequestLessonSelector, {
+          mode,
+          options,
+          modelValue: ids,
+        }),
+      )
+    const late = await render('late', 'unavailable')
+    expect(late).toContain('<option value="eligible">')
+    expect(late).not.toContain('<option value="unavailable"')
+    expect(late).toContain('Убрать из заявки')
+    const missing = await render('late', 'missing')
+    expect(missing).toContain('Сохранённая пара больше недоступна')
+    expect(missing).toContain('Убрать из заявки')
+    const excuse = await render('excuse', [])
+    expect(excuse).toContain('value="unavailable"')
+    expect(excuse).toContain('value="eligible"')
+  })
+})
+
 describe('EXCUSE date range input', () => {
-  it('filters inclusive local dates, keeps disabled reasons and retains selected outside dates until explicit removal', async () => {
+  it('uses EXCUSE eligibility for planned/active/closed source candidates and preserves refreshed stale selections for removal', async () => {
+    const source = ref<RequestLessonOption[]>([
+      { lesson: { id: 'planned', date: '2026-09-02', status: 'PLANNED' }, excuseEligible: true },
+      { lesson: { id: 'active', date: '2026-09-02', status: 'ACTIVE' }, excuseEligible: true },
+      { lesson: { id: 'closed', date: '2026-09-02', status: 'CLOSED' }, excuseEligible: true },
+      { lesson: { id: 'denied', date: '2026-09-02' }, excuseEligible: false },
+      {
+        lesson: { id: 'pending', date: '2026-09-02' },
+        excuseEligible: true,
+        pendingRequests: [{ id: 'p', kind: 'EXCUSE' }],
+      },
+      {
+        lesson: { id: 'other-kind', date: '2026-09-02' },
+        excuseEligible: true,
+        pendingRequests: [{ id: 'l', kind: 'LATE_CHECKIN' }],
+      },
+    ])
+    const selected = ref(['active'])
+    let continued = 0
+    const root = selectionNode('root')
+    const app = selectionRenderer.createApp({
+      render: () =>
+        h(RequestLessonSelectionScreen, {
+          kind: 'EXCUSE',
+          lessons: source.value,
+          lessonIds: selected.value,
+          access: 'allowed',
+          optionsLoaded: true,
+          'onUpdate:lessonIds': (ids: string[]) => {
+            selected.value = ids
+          },
+          onContinue: () => {
+            continued++
+          },
+        }),
+    })
+    app.mount(root)
+    const nodes = () => selectionNodes(root)
+    const choices = () =>
+      nodes()
+        .filter((node) => node.props.type === 'checkbox')
+        .map((node) => node.props.value)
+    const continueButton = () =>
+      nodes().find((node) => node.props.class === 'requests-submit-action')!
+    try {
+      expect(choices()).toEqual(['planned', 'active', 'closed', 'other-kind'])
+      expect(continueButton().props.disabled).toBe(false)
+      source.value = source.value.map((option) =>
+        option.lesson?.id === 'active'
+          ? {
+              ...option,
+              pendingRequests: [{ id: 'new-pending', kind: 'EXCUSE' }],
+              unavailableReason: 'Заявка уже на рассмотрении.',
+            }
+          : option,
+      )
+      await nextTick()
+      expect(choices()).toEqual(['planned', 'closed', 'other-kind'])
+      expect(selected.value).toEqual(['active'])
+      expect(nodes().some((node) => node.text.includes('Заявка уже на рассмотрении.'))).toBe(true)
+      expect(continueButton().props.disabled).toBe(true)
+      ;(continueButton().props.onClick as () => void)()
+      expect(continued).toBe(0)
+      const remove = nodes().find((node) => node.props.class === 'request-lesson-recovery-action')!
+      ;(remove.props.onClick as () => void)()
+      await nextTick()
+      expect(selected.value).toEqual([])
+      const checkbox = nodes().find((node) => node.props.value === 'planned')!
+      ;(checkbox.props.onChange as (event: unknown) => void)({ target: { checked: true } })
+      await nextTick()
+      expect(continueButton().props.disabled).toBe(false)
+      ;(continueButton().props.onClick as () => void)()
+      expect(continued).toBe(1)
+      source.value = source.value.map((option) => ({ ...option, excuseEligible: false }))
+      await nextTick()
+      expect(choices()).toEqual([])
+      expect(selected.value).toEqual(['planned'])
+      expect(continueButton().props.disabled).toBe(true)
+      expect(nodes().some((node) => node.text.includes('Доступных пар нет.'))).toBe(true)
+    } finally {
+      app.unmount()
+    }
+  })
+
+  it('filters inclusive local dates to eligible candidates and retains selected outside dates until explicit removal', async () => {
     const dated: RequestLessonOption[] = [
       { lesson: { id: 'before', date: '2026-09-01' }, excuseEligible: true },
       { lesson: { id: 'start', date: '2026-09-02' }, excuseEligible: true },
@@ -253,17 +481,28 @@ describe('EXCUSE date range input', () => {
         .filter((node) => node.props.type === 'checkbox')
         .map((node) => node.props.value)
     const input = async (id: string, value: string) => {
-      ;(field(id).props.onInput as (event: Event) => void)({
-        target: { value },
-      } as unknown as Event)
+      ;(field(id).props.onClick as () => void)()
+      await nextTick()
+      const day = nodes().find((node) => node.props['data-date'] === value)!
+      expect(day.props.disabled).toBe(false)
+      ;(day.props.onClick as () => void)()
+      await nextTick()
+    }
+    const show = async () => {
+      const action = nodes().find((node) => node.text.trim() === 'Показать пары')!
+      expect(action.props.disabled).toBe(false)
+      ;(action.props.onClick as () => void)()
       await nextTick()
     }
     try {
       await input('request-date-from', '2026-09-02')
       await input('request-date-to', '2026-09-03')
-      expect(checkboxIds()).toEqual(['before', 'start', 'blocked', 'end'])
-      expect(nodes().find((node) => node.props.value === 'blocked')?.props.disabled).toBe(true)
-      expect(nodes().some((node) => node.text.includes('Пара отменена'))).toBe(true)
+      expect(checkboxIds()).toEqual([])
+      expect(selected.value).toEqual(['before', 'start', 'end'])
+      await show()
+      expect(checkboxIds()).toEqual(['before', 'start', 'end'])
+      expect(nodes().some((node) => node.props.value === 'blocked')).toBe(false)
+      expect(nodes().some((node) => node.text.includes('Пара отменена'))).toBe(false)
       expect(selected.value).toEqual(['before', 'start', 'end'])
       expect(
         nodes()
@@ -279,21 +518,180 @@ describe('EXCUSE date range input', () => {
       } as unknown as Event)
       await nextTick()
       expect(selected.value).toEqual(['start', 'end'])
-      expect(checkboxIds()).toEqual(['start', 'blocked', 'end'])
+      expect(checkboxIds()).toEqual(['start', 'end'])
       expect(button().props.disabled).toBe(false)
       await input('request-date-from', '2026-09-04')
       expect(nodes().find((node) => node.props.id === 'request-date-error')?.text).toContain(
         'Дата окончания',
       )
       expect(field('request-date-from').props['aria-invalid']).toBe(true)
-      expect(button().props.disabled).toBe(true)
+      expect(button()).toBeUndefined()
       expect(selected.value).toEqual(['start', 'end'])
-      await input('request-date-from', '')
-      await input('request-date-to', '')
-      expect(checkboxIds()).toEqual(['before', 'start', 'blocked', 'end', 'after'])
+      await input('request-date-from', '2026-09-01')
+      await input('request-date-to', '2026-09-04')
+      await show()
+      expect(checkboxIds()).toEqual(['before', 'start', 'end', 'after'])
       expect(button().props.disabled).toBe(false)
       ;(button().props.onClick as () => void)()
       expect(continued).toBe(1)
+    } finally {
+      app.unmount()
+    }
+  })
+  it('applies the range before new selection and preserves it with the reason draft through next-step/edit/back', async () => {
+    const dated: RequestLessonOption[] = [
+      { lesson: { id: 'first', date: '2026-09-01' }, excuseEligible: true },
+      { lesson: { id: 'chosen', date: '2026-09-02' }, excuseEligible: true },
+      { lesson: { id: 'last', date: '2026-09-03' }, excuseEligible: true },
+    ]
+    const draft = ref(
+      updateRequestsDraft('student', 'session', {
+        view: 'select-excuse',
+        excuseReason: 'OTHER',
+        excuseComment: 'Черновик причины',
+        excuseFiles: [{ id: 'proof', name: 'справка.pdf', size: 1, type: 'application/pdf' }],
+      }),
+    )
+    const range = ref<{ from: string; to: string } | null>(null)
+    const update = (patch: Parameters<typeof updateRequestsDraft>[2]) => {
+      draft.value = updateRequestsDraft('student', 'session', patch)
+    }
+    const root = selectionNode('root')
+    const app = selectionRenderer.createApp({
+      render: () =>
+        draft.value.view === 'select-excuse'
+          ? h(RequestLessonSelectionScreen, {
+              kind: 'EXCUSE',
+              lessons: dated,
+              lessonIds: draft.value.excuseLessonIds,
+              access: 'allowed',
+              optionsLoaded: true,
+              dateRange: range.value,
+              'onUpdate:dateRange': (value: { from: string; to: string }) => {
+                range.value = value
+              },
+              'onUpdate:lessonIds': (ids: string[]) => update({ excuseLessonIds: ids }),
+              onContinue: () => update({ view: 'excuse' }),
+            })
+          : h(ExcuseRequestScreen, {
+              access: 'allowed',
+              lessons: dated,
+              lessonIds: draft.value.excuseLessonIds,
+              reasons: [{ code: 'OTHER', label: 'Прочее', commentRequired: true }],
+              reason: draft.value.excuseReason,
+              comment: draft.value.excuseComment,
+              files: draft.value.excuseFiles,
+              fileLimits: null,
+              selectionComplete: true,
+              onEditSelection: () => update({ view: 'select-excuse' }),
+              onBack: () => update({ view: 'select-excuse' }),
+            }),
+    })
+    app.mount(root)
+    const nodes = () => selectionNodes(root)
+    const click = async (predicate: (node: SelectionNode) => boolean) => {
+      const node = nodes().find(predicate)!
+      expect(node).toBeDefined()
+      expect(node.props.disabled).not.toBe(true)
+      ;(node.props.onClick as () => void)()
+      await nextTick()
+    }
+    try {
+      expect(nodes().some((node) => node.props.type === 'checkbox')).toBe(false)
+      expect(nodes().some((node) => node.props.class === 'requests-submit-action')).toBe(false)
+      for (const id of ['request-date-from', 'request-date-to']) {
+        await click((node) => node.props.id === id)
+        await click((node) => node.props['data-date'] === '2026-09-02')
+      }
+      await click((node) => node.text.trim() === 'Показать пары')
+      const checkbox = nodes().find((node) => node.props.type === 'checkbox')!
+      expect(checkbox.props.value).toBe('chosen')
+      ;(checkbox.props.onChange as (event: unknown) => void)({ target: { checked: true } })
+      await nextTick()
+      expect(draft.value.excuseLessonIds).toEqual(['chosen'])
+      for (const edit of [true, false]) {
+        await click((node) => node.props.class === 'requests-submit-action')
+        expect(draft.value.view).toBe('excuse')
+        if (edit)
+          await click((node) => node.tag === 'button' && node.text.includes('Изменить пары'))
+        else await click((node) => node.props.class === 'requests-back-button')
+        expect(draft.value.view).toBe('select-excuse')
+        expect(nodes().find((node) => node.props.value === 'chosen')?.props.checked).toBe(true)
+        expect(range.value).toEqual({ from: '2026-09-02', to: '2026-09-02' })
+        expect(draft.value.excuseReason).toBe('OTHER')
+        expect(draft.value.excuseComment).toBe('Черновик причины')
+        expect(draft.value.excuseFiles[0]?.id).toBe('proof')
+      }
+    } finally {
+      app.unmount()
+    }
+  })
+  it('clamps calendar keyboard navigation and keeps close separate from route back', async () => {
+    const selected = ref('2026-09-30')
+    let closed = 0
+    const root = selectionNode('root')
+    const app = selectionRenderer.createApp({
+      render: () =>
+        h(RequestDateCalendar, {
+          modelValue: selected.value,
+          min: '2026-09-02',
+          max: '2026-10-03',
+          label: 'С даты',
+          'onUpdate:modelValue': (date: string) => {
+            selected.value = date
+          },
+          onClose: () => {
+            closed++
+          },
+        }),
+    })
+    app.mount(root)
+    const nodes = () => selectionNodes(root)
+    const key = async (date: string, value: string) => {
+      const day = nodes().find((node) => node.props['data-date'] === date)!
+      await (day.props.onKeydown as (event: unknown) => Promise<void>)({
+        key: value,
+        preventDefault() {},
+      })
+      await nextTick()
+    }
+    try {
+      expect(nodes().find((node) => node.props['data-date'] === '2026-09-01')?.props.disabled).toBe(
+        true,
+      )
+      await key('2026-09-30', 'PageDown')
+      expect(nodes().find((node) => node.props['data-date'] === '2026-10-03')?.props.tabindex).toBe(
+        0,
+      )
+      expect(
+        nodes().find((node) => node.props['aria-label'] === 'Следующий месяц')?.props.disabled,
+      ).toBe(true)
+      expect(nodes().find((node) => node.props['data-date'] === '2026-10-04')?.props.disabled).toBe(
+        true,
+      )
+      await key('2026-10-03', 'ArrowRight')
+      expect(nodes().find((node) => node.props['data-date'] === '2026-10-03')?.props.tabindex).toBe(
+        0,
+      )
+      await key('2026-10-03', 'PageUp')
+      expect(nodes().find((node) => node.props['data-date'] === '2026-09-03')?.props.tabindex).toBe(
+        0,
+      )
+      await key('2026-09-03', 'Home')
+      expect(nodes().find((node) => node.props['data-date'] === '2026-09-02')?.props.tabindex).toBe(
+        0,
+      )
+      const first = nodes().find((node) => node.props['data-date'] === '2026-09-02')!
+      ;(first.props.onClick as () => void)()
+      await nextTick()
+      expect(selected.value).toBe('2026-09-02')
+      const calendar = nodes().find((node) => node.props.class === 'request-date-calendar')!
+      ;(calendar.props.onKeydown as (event: unknown) => void)({
+        key: 'Escape',
+        preventDefault() {},
+        stopPropagation() {},
+      })
+      expect(closed).toBe(1)
     } finally {
       app.unmount()
     }

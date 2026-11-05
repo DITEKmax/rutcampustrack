@@ -11,6 +11,11 @@ export default defineConfig(({ mode }) => {
     plugins: [vue()],
     optimizeDeps: browserDependencyOptimization,
     css: { postcss: '../postcss.config.mjs' },
+    build: {
+      // Keep fonts compatible with CSP font-src 'self'; retain Vite defaults for other assets.
+      assetsInlineLimit: (filePath) =>
+        /\.(?:woff2?|ttf|otf|eot)$/i.test(filePath) ? false : undefined,
+    },
     server: {
       ...developmentServer(env, 14210, target),
       fs: {

@@ -203,6 +203,11 @@ function dateLabel(point: StatisticsSeriesPoint): string {
     ? short(point.dateFrom)
     : `${short(point.dateFrom)} — ${short(point.dateTo)}`;
 }
+function hasGroupAverage(point: StatisticsSeriesPoint): boolean {
+  return (
+    typeof point.groupPresent?.percent === 'number' && Number.isFinite(point.groupPresent.percent)
+  );
+}
 function description(point: StatisticsSeriesPoint): string {
   return [
     point.label,
@@ -210,7 +215,9 @@ function description(point: StatisticsSeriesPoint): string {
     statisticsPointState(point),
     `Проведено ${point.metrics.held} из ${point.metrics.planned}`,
     `Был или уважительная причина: ${displayPercent(point.metrics.presentOrExcused.percent)}, ${point.metrics.presentOrExcused.count}`,
-    `Средняя своей группы: ${displayPercent(point.groupPresent?.percent ?? null)}`,
+    hasGroupAverage(point)
+      ? `Средняя своей группы: ${displayPercent(point.groupPresent?.percent ?? null)}`
+      : '',
     ...bands.map((band) => `${labels[band]}: ${displayPercent(point.metrics[band].percent)}`),
   ]
     .filter(Boolean)
@@ -302,13 +309,13 @@ function description(point: StatisticsSeriesPoint): string {
               :height="STATISTICS_PLOT_HEIGHT"
             />
             <path
-              v-for="(path,index) in geometry.presentPaths"
+              v-for="(path, index) in geometry.presentPaths"
               :key="`own-${index}`"
               class="statistics-chart__own-line"
               :d="path"
             />
             <path
-              v-for="(path,index) in geometry.groupPaths"
+              v-for="(path, index) in geometry.groupPaths"
               :key="`group-${index}`"
               class="statistics-chart__group-line"
               :d="path"
@@ -320,6 +327,13 @@ function description(point: StatisticsSeriesPoint): string {
             />
           </svg>
         </div>
+      </div>
+      <div
+        class="statistics-chart__legend"
+        aria-label="Линии графика"
+      >
+        <span class="statistics-chart__legend-own">Моя посещаемость</span>
+        <span class="statistics-chart__legend-group">Средняя группы</span>
       </div>
       <p class="statistics-visually-hidden">
         Моя посещаемость и средняя посещаемость своей группы.
@@ -338,7 +352,8 @@ function description(point: StatisticsSeriesPoint): string {
           <span
             v-for="label in axisLabels"
             :key="label"
-          >{{ label }}</span>
+            >{{ label }}</span
+          >
         </div>
         <span
           v-for="(tick, index) in axis.ticks"
@@ -351,47 +366,34 @@ function description(point: StatisticsSeriesPoint): string {
           }"
           :style="{ left: `${tick.position * 100}%` }"
           :title="tick.date"
-        >{{ tick.label }}</span>
-      </div>
-      <details class="statistics-chart__data">
-        <summary>Данные графика</summary>
-        <div
-          class="statistics-chart__table-scroll"
-          role="region"
-          aria-label="Табличные данные графика"
-          tabindex="0"
+          >{{ tick.label }}</span
         >
-          <table class="statistics-chart__data-table">
-            <caption>Посещаемость по периодам</caption>
-            <thead>
-              <tr>
-                <th scope="col">
-                  Период
-                </th>
-                <th scope="col">
-                  Моя посещаемость — был
-                </th>
-                <th scope="col">
-                  Средняя своей группы — был
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr
-                v-for="point in points"
-                :key="point.id"
-              >
-                <th scope="row">
-                  <span>{{ point.label }}</span>
-                  <span>{{ dateLabel(point) }}</span>
-                </th>
-                <td>{{ displayPercent(point.metrics.present.percent) }}</td>
-                <td>{{ displayPercent(point.groupPresent?.percent ?? null) }}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </details>
+      </div>
+      <div class="statistics-visually-hidden">
+        <table class="statistics-chart__data-table">
+          <caption>Посещаемость по периодам</caption>
+          <thead>
+            <tr>
+              <th scope="col"> Период </th>
+              <th scope="col"> Моя посещаемость — был </th>
+              <th scope="col"> Средняя своей группы — был </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              v-for="point in points"
+              :key="point.id"
+            >
+              <th scope="row">
+                <span>{{ point.label }}</span>
+                <span>{{ dateLabel(point) }}</span>
+              </th>
+              <td>{{ displayPercent(point.metrics.present.percent) }}</td>
+              <td>{{ displayPercent(point.groupPresent?.percent ?? null) }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </template>
     <div
       v-if="showRange && !hiddenGraph"
@@ -421,14 +423,11 @@ function description(point: StatisticsSeriesPoint): string {
       <p v-if="statisticsPointState(selected)">
         {{ statisticsPointState(selected) }}
       </p>
-      <p>Проведено {{ selected.metrics.held }} из {{ selected.metrics.planned }}</p>
-      <p class="statistics-chart__primary-metrics">
-        Был: {{ displayPercent(selected.metrics.present.percent) }}, {{ selected.metrics.present.count }};
-        был или уважительная причина: {{ displayPercent(selected.metrics.presentOrExcused.percent) }}, {{ selected.metrics.presentOrExcused.count }}
-      </p>
-      <p class="statistics-chart__group-metric">
+      <p
+        v-if="hasGroupAverage(selected)"
+        class="statistics-chart__group-metric"
+      >
         Средняя своей группы: {{ displayPercent(selected.groupPresent?.percent ?? null) }}
-        <span v-if="selected.groupPresent"> ({{ selected.groupPresent.numerator }}/{{ selected.groupPresent.denominator }})</span>
       </p>
       <template v-if="hasStatisticsMarks(selected)">
         <div
@@ -445,9 +444,10 @@ function description(point: StatisticsSeriesPoint): string {
             :class="`statistics-chart__percentage--${band}`"
             :style="{ inlineSize: `${selected.metrics[band].percent ?? 0}%` }"
             aria-hidden="true"
-          ><span class="statistics-chart__percentage-label">{{
-            displayPercent(selected.metrics[band].percent)
-          }}</span></span>
+            ><span class="statistics-chart__percentage-label">{{
+              displayPercent(selected.metrics[band].percent)
+            }}</span></span
+          >
         </div>
         <div
           v-if="outsideLabels"
@@ -458,7 +458,8 @@ function description(point: StatisticsSeriesPoint): string {
             v-for="band in bands"
             :key="band"
             :class="`statistics-chart__value--${band}`"
-          >{{ displayPercent(selected.metrics[band].percent) }}</span>
+            >{{ displayPercent(selected.metrics[band].percent) }}</span
+          >
         </div>
       </template>
     </section>

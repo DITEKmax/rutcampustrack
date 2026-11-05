@@ -23,7 +23,7 @@ public final class AttendanceRevisions {
                 + digest(
                         Arrays.asList(
                                 document.getId(),
-                                semantic(document),
+                                semantic(document, document.getExcuseRequestId() != null),
                                 document.getCreatedAt(),
                                 document.getUpdatedAt()));
     }
@@ -55,6 +55,7 @@ public final class AttendanceRevisions {
                 d.getAttachmentSize(),
                 d.getCreatedAt(),
                 d.getUpdatedAt(),
+                d.getExcuseRequestId(),
                 d.getMarkRevision());
     }
 
@@ -79,7 +80,8 @@ public final class AttendanceRevisions {
             "attachment_id",
             "attachment_name",
             "attachment_content_type",
-            "attachment_size"
+            "attachment_size",
+            "excuse_request_id"
         };
         if (before != null) {
             Object[] values = {
@@ -99,7 +101,8 @@ public final class AttendanceRevisions {
                 before.getAttachmentId(),
                 before.getAttachmentName(),
                 before.getAttachmentContentType(),
-                before.getAttachmentSize()
+                before.getAttachmentSize(),
+                before.getExcuseRequestId()
             };
             for (int i = 0; i < keys.length; i++) state.put(keys[i], values[i]);
         }
@@ -118,7 +121,11 @@ public final class AttendanceRevisions {
     }
 
     private static String semantic(AttendanceDocument d) {
-        return encode(
+        return semantic(d, true);
+    }
+
+    private static String semantic(AttendanceDocument d, boolean includeProvenance) {
+        java.util.List<Object> values = new java.util.ArrayList<>(
                 Arrays.asList(
                         d.getLessonId(),
                         d.getUserId(),
@@ -137,6 +144,9 @@ public final class AttendanceRevisions {
                         d.getAttachmentName(),
                         d.getAttachmentContentType(),
                         d.getAttachmentSize()));
+        // A newly introduced nullable field must not rotate effective revisions of legacy marks.
+        if (includeProvenance) values.add(d.getExcuseRequestId());
+        return encode(values);
     }
 
     private static String encode(Iterable<?> values) {

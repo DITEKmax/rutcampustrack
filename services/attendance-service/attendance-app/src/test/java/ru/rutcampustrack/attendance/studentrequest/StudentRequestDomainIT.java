@@ -653,6 +653,7 @@ class StudentRequestDomainIT {
                         mark -> {
                             assertThat(mark.getStatus()).isEqualTo(AttendanceStatus.EXCUSED);
                             assertThat(mark.getSource()).isEqualTo(AttendanceSource.HEADMAN_EXCUSE);
+                            assertThat(mark.getExcuseRequestId()).isEqualTo(excuse.summary().id());
                         });
         assertThat(attendanceRepository.findByLessonIdAndUserId(72L, STUDENT_ID))
                 .get()
@@ -2797,6 +2798,16 @@ class StudentRequestDomainIT {
         assertThat(lesson.value.getRosterList())
                 .singleElement()
                 .satisfies(row -> assertThat(row.getTicketId()).isEqualTo(ticket.getId()));
+        for (long[] deniedScope : List.of(
+                new long[] {activeTeacher, foreignLessonId},
+                new long[] {formerTeacher, lessonId})) {
+            RecordingTeacherObserver<TeacherLessonResponse> deniedLesson = new RecordingTeacherObserver<>();
+            teacherContext(deniedScope[0]).run(() -> reader.getTeacherLesson(
+                    TeacherLessonRequest.newBuilder().setLessonId(deniedScope[1]).build(), deniedLesson));
+            assertThat(deniedLesson.value).isNull();
+            assertThat(Status.fromThrowable(deniedLesson.error).getCode())
+                    .isEqualTo(Status.Code.PERMISSION_DENIED);
+        }
         RecordingTeacherObserver<TeacherExcuseResponse> card = new RecordingTeacherObserver<>();
         teacherContext(activeTeacher).run(() -> reader.getTeacherExcuse(cardRequest, card));
         assertThat(card.error).isNull();

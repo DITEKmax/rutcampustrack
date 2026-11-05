@@ -7,7 +7,7 @@ import ru.rutcampustrack.schedule.contract.dto.item.CreateScheduleItemRequest;
 import ru.rutcampustrack.schedule.contract.enums.WeekType;
 import ru.rutcampustrack.schedule.week.AcademicWeekPolicy;
 
-/** Pure ISO-parity range calculation for the canonical recurring writer. */
+/** Physical semester dates. Teacher validity is resolved separately for each dated binding. */
 public final class RecurringDateCalculator {
 
     private RecurringDateCalculator() {}
@@ -18,13 +18,8 @@ public final class RecurringDateCalculator {
             LocalDate semesterStart,
             LocalDate semesterEnd,
             LocalDate fenceCap) {
-        LocalDate from =
-                semesterStart.isAfter(authority.validFrom())
-                        ? semesterStart
-                        : authority.validFrom();
-        LocalDate semesterExclusiveEnd = semesterEnd.plusDays(1);
-        LocalDate exclusiveEnd =
-                semesterExclusiveEnd.isBefore(fenceCap) ? semesterExclusiveEnd : fenceCap;
+        LocalDate from = semesterStart;
+        LocalDate exclusiveEnd = semesterEnd.plusDays(1);
         if (!from.isBefore(exclusiveEnd)) return List.of();
 
         List<LocalDate> dates = new ArrayList<>();

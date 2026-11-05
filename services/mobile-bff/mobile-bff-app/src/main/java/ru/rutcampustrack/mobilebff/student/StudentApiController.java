@@ -166,6 +166,17 @@ public class StudentApiController implements StudentApi {
     @Override
     public ResponseEntity<byte[]> downloadRequestAttachment(String id, String attachmentId) {
         StudentRequestFacade.Download download = requests.download(id, attachmentId);
+        return attachmentResponse(download);
+    }
+
+    @Override
+    public ResponseEntity<byte[]> downloadAttendanceAttachment(String lessonId, String attachmentId,
+            String semesterId, String expectedMarkRevision) {
+        return attachmentResponse(requests.downloadAttendance(Long.parseLong(semesterId),
+                Long.parseLong(lessonId), attachmentId, expectedMarkRevision));
+    }
+
+    private ResponseEntity<byte[]> attachmentResponse(StudentRequestFacade.Download download) {
         MediaType contentType;
         try {
             contentType = MediaType.parseMediaType(download.contentType());

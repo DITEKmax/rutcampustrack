@@ -113,7 +113,8 @@ const canSubmit = computed(
 );
 
 function updateLessonId(value: string[] | string | null): void {
-  emit('update:lessonId', typeof value === 'string' && value ? value : null);
+  const id = Array.isArray(value) ? value[0] : value;
+  emit('update:lessonId', id || null);
 }
 
 function onSubmit(): void {
@@ -136,9 +137,7 @@ function onSubmit(): void {
       >
         <MobileIcon name="back" />
       </button>
-      <h1 id="late-request-title">
-        Забыл отметиться
-      </h1>
+      <h1 id="late-request-title"> Забыл отметиться </h1>
     </header>
 
     <StudentWarningBlock
@@ -199,21 +198,22 @@ function onSubmit(): void {
         <p
           v-if="
             contextLesson &&
-              !props.lessonsLoading &&
-              !props.lessonsError &&
-              (!todaySelectionMatches || !selectedEligible)
+            !props.lessonsLoading &&
+            !props.lessonsError &&
+            (!todaySelectionMatches || !selectedEligible)
           "
           class="request-validation-hint"
           role="alert"
         >
           {{
             selectedOption?.unavailableReason ||
-              'Эта пара больше недоступна для запроса. Вернись назад и выбери доступную пару.'
+            'Эта пара больше недоступна для запроса. Вернись назад и выбери доступную пару.'
           }}
         </p>
         <RequestLessonSelector
           v-if="!contextLesson && !props.selectionComplete && !props.lessonsLoading"
           mode="late"
+          grouped
           :options="props.lessons"
           :model-value="props.lessonId"
           :disabled="props.disabled || Boolean(props.lessonsError)"
@@ -247,7 +247,7 @@ function onSubmit(): void {
 
       <button
         v-if="props.selectionComplete && !contextLesson"
-        class="requests-inline-action requests-edit-selection"
+        class="requests-secondary-action requests-edit-selection"
         type="button"
         :disabled="props.submitting"
         @click="emit('editSelection')"
@@ -263,9 +263,7 @@ function onSubmit(): void {
         class="request-confirmation-panel"
         aria-labelledby="late-confirmation-title"
       >
-        <h2 id="late-confirmation-title">
-          Отправить запрос?
-        </h2>
+        <h2 id="late-confirmation-title"> Отправить запрос? </h2>
         <p
           v-if="budgetExhausted"
           class="request-validation-hint"

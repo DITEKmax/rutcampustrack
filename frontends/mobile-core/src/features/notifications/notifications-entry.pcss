@@ -90,3 +90,117 @@
   font: inherit;
   @mixin rct-focus-ring;
 }
+
+/* Accepted Student presentation; existing roles retain their base rules. */
+:where([data-student-ui]) .notifications-entry,
+:where([data-student-ui]):is(.notifications-entry) {
+  position: relative;
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  inline-size: var(--rct-control-min-touch);
+  block-size: var(--rct-control-min-touch);
+  border: 0;
+  border-radius: var(--rct-radius-full);
+  padding: 0;
+  color: var(--rct-color-text-primary);
+  background: var(--rct-color-surface-float);
+  font: inherit;
+  cursor: pointer;
+  @mixin rct-focus-ring;
+}
+:where([data-student-ui]) .notifications-entry--floating,
+:where([data-student-ui]):is(.notifications-entry--floating) {
+  position: fixed;
+  z-index: 20;
+  inset-block-start: calc(env(safe-area-inset-top) + var(--rct-space-2));
+  inset-inline-end: var(--rct-space-3);
+}
+:where([data-student-ui]) .notifications-entry__badge,
+:where([data-student-ui]):is(.notifications-entry__badge) {
+  position: absolute;
+  inset-block-start: calc(-1 * var(--rct-space-half));
+  inset-inline-end: calc(-1 * var(--rct-space-half));
+  min-inline-size: var(--rct-space-4);
+  border-radius: var(--rct-radius-full);
+  padding: var(--rct-space-half) var(--rct-space-1);
+  color: var(--rct-color-accent-on-now);
+  background: var(--rct-color-accent-now);
+  font-size: var(--rct-font-size-micro);
+  line-height: 1;
+  font-weight: var(--rct-font-weight-bold);
+}
+:where([data-student-ui]) .notifications-entry:disabled,
+:where([data-student-ui]):is(.notifications-entry:disabled) {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+:where([data-student-ui]) .notifications-role-header,
+:where([data-student-ui]):is(.notifications-role-header) {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--rct-space-3);
+}
+:where([data-student-ui]) .teacher-home__role-header.notifications-role-header,
+:where([data-student-ui]):is(.teacher-home__role-header.notifications-role-header),
+:where([data-student-ui]) .headman-home__header.notifications-role-header,
+:where([data-student-ui]):is(.headman-home__header.notifications-role-header),
+:where([data-student-ui]) .admin-dashboard-screen > .notifications-role-header,
+:where([data-student-ui]):is(.admin-dashboard-screen > .notifications-role-header) {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+}
+:where([data-student-ui]) .teacher-home__role-header > .teacher-home__role,
+:where([data-student-ui]):is(.teacher-home__role-header > .teacher-home__role),
+:where([data-student-ui]) .headman-home__header > .headman-home__role,
+:where([data-student-ui]):is(.headman-home__header > .headman-home__role),
+:where([data-student-ui]) .notifications-role-header > .admin-dashboard-screen__role,
+:where([data-student-ui]):is(.notifications-role-header > .admin-dashboard-screen__role) {
+  grid-column: 2;
+  grid-row: 1;
+  justify-self: center;
+  min-inline-size: 0;
+  min-block-size: var(--rct-control-min-touch);
+  margin: 0;
+}
+:where([data-student-ui]) .teacher-home__role-header > .notifications-entry,
+:where([data-student-ui]):is(.teacher-home__role-header > .notifications-entry),
+:where([data-student-ui]) .headman-home__header > .notifications-entry,
+:where([data-student-ui]):is(.headman-home__header > .notifications-entry),
+:where([data-student-ui])
+  .admin-dashboard-screen
+  > .notifications-role-header
+  > .notifications-entry,
+:where([data-student-ui]):is(
+  .admin-dashboard-screen > .notifications-role-header > .notifications-entry
+) {
+  grid-column: 3;
+  grid-row: 1;
+  justify-self: end;
+}
+
+:where([data-student-ui]) .notification-launch-notice,
+:where([data-student-ui]):is(.notification-launch-notice) {
+  position: fixed;
+  z-index: 30;
+  inset-inline: var(--rct-space-4);
+  inset-block-end: calc(
+    env(safe-area-inset-bottom) + var(--rct-mobile-dock-height) + var(--rct-space-6)
+  );
+  padding: var(--rct-space-3);
+  border: var(--rct-border-hairline) solid var(--rct-color-border-default);
+  border-radius: var(--rct-radius-lg);
+  color: var(--rct-color-text-primary);
+  background: var(--rct-color-surface-float);
+}
+:where([data-student-ui]) .notification-launch-notice button,
+:where([data-student-ui]):is(.notification-launch-notice button) {
+  min-block-size: var(--rct-control-min-touch);
+  color: var(--rct-color-accent-now);
+  background: transparent;
+  border: 0;
+  font: inherit;
+  @mixin rct-focus-ring;
+}

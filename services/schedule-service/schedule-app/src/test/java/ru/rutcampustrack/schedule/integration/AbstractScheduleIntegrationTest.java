@@ -155,6 +155,12 @@ ON CONFLICT (assignment_id) DO NOTHING
         jdbcTemplate.execute(
                 """
                 TRUNCATE TABLE
+                    constructor_materialization_work,
+                    constructor_generation_origins,
+                    constructor_semester_materializations,
+                    constructor_system_materialization_runs,
+                    constructor_system_audit_proofs,
+                    constructor_deletion_operations,
                     schedule_subject_deletion_participants,
                     group_deletion_participants,
                     schedule_outbox,

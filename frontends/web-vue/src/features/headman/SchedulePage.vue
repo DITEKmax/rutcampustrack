@@ -5,6 +5,9 @@ import { message, webSession } from '../../auth/session';
 import { useHeadmanFeature, today, lessonTypes } from './context';
 import {
   HeadmanScheduleApiError,
+  canDeleteUnusedSeries,
+  seriesDeletionProtection,
+  scheduleProblemCode,
   type HeadmanScheduleItem,
   type HeadmanScheduleAssignment,
   type HeadmanScheduleSemester,
@@ -17,6 +20,7 @@ import {
   recurringScope,
   readRecurringIntent,
   persistRecurringIntent,
+  continueRecurringDeletion,
   type RecurringIntent,
   type RecurringOwner,
 } from '../../../../mobile-core/src/features/schedule/headman-recurring-intent';
@@ -25,6 +29,7 @@ import {
   readRecurringCreate,
   recurringCreateScope,
   submitRecurringCreate,
+  recurringGenerationNotice,
   type RecurringCreateIntent,
 } from '../../../../mobile-core/src/features/schedule/headman-recurring-create';
 import type { AcademicWeekPolicy } from '../../../../mobile-core/src/domain/academic-week';
@@ -43,6 +48,8 @@ const semesters = shallowRef<readonly HeadmanScheduleSemester[]>([]),
 const semester = computed(() => semesters.value.find((item) => item.id === semesterId.value));
 const rows = shallowRef<readonly HeadmanScheduleItem[]>([]),
   assignments = shallowRef<readonly HeadmanScheduleAssignment[]>([]);
+const includeInactive = ref(false);
+const inactiveRows = computed(() => rows.value.filter((item) => item.active === false));
 const catalog = shallowRef<HeadmanLessonSlotCatalog | null>(null),
   policy = shallowRef<AcademicWeekPolicy | null>(null);
 const editor = ref(false),
@@ -61,6 +68,7 @@ const preview = shallowRef<{
 } | null>(null);
 const pending = shallowRef<RecurringIntent | null>(null),
   createPending = shallowRef<RecurringCreateIntent | null>(null);
+const createRemoved = ref(false);
 const owner = computed<RecurringOwner>(() => ({
   userId: session.userId,
   sessionId: session.sessionId,
@@ -126,7 +134,7 @@ async function read() {
     query = semesterId.value;
   loading.value = true;
   try {
-    const result = await feature.schedule.listScheduleItems(feature.groupId, query);
+    const result = await feature.schedule.listScheduleItems(feature.groupId, query, includeInactive.value);
     feature.assertCurrent();
     if (revision === readRevision && query === semesterId.value) {
       rows.value = result;
@@ -168,7 +176,7 @@ async function load() {
     }
     if (!query) throw new Error('Нет доступного семестра.');
     const [items, teachers] = await Promise.all([
-      feature.schedule.listScheduleItems(feature.groupId, query),
+      feature.schedule.listScheduleItems(feature.groupId, query, includeInactive.value),
       feature.schedule.listAssignments(feature.groupId, query),
     ]);
     feature.assertCurrent();
@@ -179,6 +187,7 @@ async function load() {
     const queryOwner = { ...owner.value, semesterId: query };
     pending.value = readRecurringIntent(sessionStorage, queryOwner);
     createPending.value = readRecurringCreate(sessionStorage, queryOwner);
+    createRemoved.value = false;
   } catch (cause) {
     if (current()) error.value = message(cause);
   } finally {
@@ -200,6 +209,7 @@ function open(day: number, number: number, item: HeadmanScheduleItem | null = nu
 }
 async function calculate(action: 'UPDATE' | 'DELETE') {
   if (!selected.value?.id || locked.value || !writable.value) return;
+  if (action === 'UPDATE' && selected.value.active === false) return;
   busy.value = true;
   error.value = null;
   try {
@@ -218,6 +228,7 @@ async function create(recover = false) {
   if (busy.value || !writable.value || pending.value) return;
   busy.value = true;
   error.value = null;
+  createRemoved.value = false;
   try {
     let intent = createPending.value;
     if (!intent) {
@@ -241,16 +252,21 @@ async function create(recover = false) {
       createPending.value = intent;
     }
     if (recover) await read();
-    await submitRecurringCreate(sessionStorage, intent, (input, key) =>
+    const receipt = await submitRecurringCreate(sessionStorage, intent, (input, key) =>
       feature.schedule.createScheduleItem(input, key),
     );
     feature.assertCurrent();
     sessionStorage.removeItem(recurringCreateScope(owner.value));
     createPending.value = null;
     editor.value = false;
-    notice.value = 'Регулярная пара добавлена.';
+    notice.value = recurringGenerationNotice(receipt);
     await read();
   } catch (cause) {
+    if (cause instanceof HeadmanScheduleApiError && cause.response.status === 410 && scheduleProblemCode(cause) === 'CONSTRUCTOR_SERIES_DELETED') {
+      createRemoved.value = true;
+      error.value = 'Эта серия уже удалена. Исходный запрос не создаст её повторно.';
+      return;
+    }
     if (
       !recover &&
       cause instanceof HeadmanScheduleApiError &&
@@ -264,11 +280,28 @@ async function create(recover = false) {
     busy.value = false;
   }
 }
+function acknowledgeRemovedCreate() {
+  const intent = createPending.value;
+  if (!createRemoved.value || busy.value || !intent || recurringCreateScope(intent.owner) !== recurringCreateScope(owner.value)) return;
+  try {
+    feature.assertCurrent();
+    sessionStorage.removeItem(recurringCreateScope(intent.owner));
+    createPending.value = null;
+    createRemoved.value = false;
+    editor.value = false;
+    error.value = null;
+    notice.value = 'Запрос удалённой серии закрыт. Новую серию можно создать отдельным действием.';
+  } catch (cause) { error.value = message(cause); }
+}
 async function apply(recover = false) {
   if (busy.value || !writable.value) return;
   let intent = pending.value;
   if (!intent) {
     if (!selected.value?.id || !preview.value) return;
+    if (preview.value.action === 'DELETE' && !canDeleteUnusedSeries(preview.value.result)) {
+      error.value = seriesDeletionProtection(preview.value.result);
+      return;
+    }
     intent = {
       owner: owner.value,
       target: { ...selected.value },
@@ -288,14 +321,34 @@ async function apply(recover = false) {
   busy.value = true;
   error.value = null;
   let acknowledged = false;
+  notice.value = null;
   try {
-    if (recover) {
+    if (recover && intent.action !== 'DELETE') {
       await feature.schedule.getScheduleItem(id);
       feature.assertCurrent();
     }
-    if (intent.action === 'DELETE')
-      await feature.schedule.deleteScheduleItem(id, intent.preview.revision, intent.key);
-    else {
+    if (intent.action === 'DELETE') {
+      const deletion = await continueRecurringDeletion(feature.schedule, intent, () => {
+        feature.assertCurrent();
+        return intent!.owner.semesterId === semesterId.value && intent!.owner.groupId === feature.groupId;
+      }, (next) => {
+        persistRecurringIntent(sessionStorage, next);
+        pending.value = next;
+      });
+      if (!deletion) return;
+      intent = deletion.intent;
+      acknowledged = true;
+      if (deletion.operation && deletion.operation.state !== 'COMPLETED') {
+        if (deletion.operation.state === 'RELEASED') {
+          sessionStorage.removeItem(recurringScope(intent.owner));
+          pending.value = null;
+          preview.value = null;
+          throw new Error('Удаление не выполнено. Данные сохранены; обнови расчёт перед новой попыткой.');
+        }
+        notice.value = 'Полное удаление ещё выполняется. Исходная операция сохранена; проверь её состояние.';
+        return;
+      }
+    } else {
       const accepted = await feature.schedule.updateScheduleItem(id, intent.input!, intent.key);
       feature.assertCurrent();
       intent = {
@@ -304,36 +357,34 @@ async function apply(recover = false) {
       };
       persistRecurringIntent(sessionStorage, intent);
       pending.value = intent;
-    }
-    acknowledged = true;
-    const result = await feature.schedule.getScheduleItem(id);
-    feature.assertCurrent();
-    if (
-      result.id !== id ||
-      result.groupId !== feature.groupId ||
-      result.semesterId !== intent.owner.semesterId ||
-      (intent.action === 'DELETE'
-        ? result.active !== false
-        : result.active !== true ||
-          result.weekType !== intent.input!.weekType ||
-          (result.room ?? null) !== intent.input!.room)
-    )
-      throw new Error('Сервер пока не подтвердил состояние серии.');
-    const transfers = await Promise.all(
-      intent.transferIds.map((operation) => feature.schedule.getRecurringTransfer(operation)),
-    );
-    feature.assertCurrent();
-    if (transfers.some((transfer) => transfer.state !== 'COMPLETED'))
-      throw new Error(
-        'Серия сохранена, перенос связанных данных ещё не завершён. Проверь исходную операцию.',
+      acknowledged = true;
+      const result = await feature.schedule.getScheduleItem(id);
+      feature.assertCurrent();
+      if (
+        result.id !== id ||
+        result.groupId !== feature.groupId ||
+        result.semesterId !== intent.owner.semesterId ||
+        result.active !== true ||
+        result.weekType !== intent.input!.weekType ||
+        (result.room ?? null) !== intent.input!.room
+      )
+        throw new Error('Сервер пока не подтвердил состояние серии.');
+      const transfers = await Promise.all(
+        intent.transferIds.map((operation) => feature.schedule.getRecurringTransfer(operation)),
       );
+      feature.assertCurrent();
+      if (transfers.some((transfer) => transfer.state !== 'COMPLETED'))
+        throw new Error(
+          'Серия сохранена, перенос связанных данных ещё не завершён. Проверь исходную операцию.',
+        );
+    }
     sessionStorage.removeItem(recurringScope(intent.owner));
     pending.value = null;
     preview.value = null;
     editor.value = false;
     notice.value =
       intent.action === 'DELETE'
-        ? 'Регулярное занятие удалено из расписания. Начавшиеся, прошедшие и перенесённые вручную пары сохранены.'
+        ? 'Шаблон и все пары этой серии полностью удалены.'
         : 'Будущие пары изменены. Прошедшая история сохранена.';
     await read();
   } catch (cause) {
@@ -364,6 +415,7 @@ useWebLiveRefresh(load, { blocked: () => loading.value || locked.value || editor
     ><div class="headman-constructor-toolbar">
       <WebSelect class="web-field" v-model="semesterId" label="Семестр" :options="semesters.flatMap(item => item.id ? [{ value: item.id, label: item.name + (item.active ? '' : ' · архив') }] : [])" :disabled="locked || editor || loading" @change="load" />
       <span v-if="policy" class="web-caption">Текущая неделя · {{ policy.label }}</span>
+      <button type="button" class="web-button" :disabled="locked || editor || loading" :aria-pressed="includeInactive" @click="includeInactive = !includeInactive; load()">Ранее убранные шаблоны</button>
     </div>
     <p
       v-if="notice"
@@ -388,7 +440,7 @@ useWebLiveRefresh(load, { blocked: () => loading.value || locked.value || editor
         :disabled="busy"
         @click="create(true)"
         >Проверить создание серии</button
-      ></p
+      ><button v-if="createRemoved" type="button" class="web-button" :disabled="busy" @click="acknowledgeRemovedCreate">Закрыть запрос удалённой серии</button></p
     >
     <p class="web-caption headman-constructor-legend">Сверху — 1 неделя · снизу — 2 неделя</p>
     <div class="headman-timetable-scroll"
@@ -452,14 +504,19 @@ useWebLiveRefresh(load, { blocked: () => loading.value || locked.value || editor
         ></table
       ></div
     >
+    <section v-if="includeInactive && !editor" class="headman-panel web-stack" aria-label="Ранее убранные шаблоны">
+      <p class="web-caption">Эти шаблоны убраны из конструктора. Полное удаление доступно только после проверки истории.</p>
+      <p v-if="!inactiveRows.length" class="web-caption">Ранее убранных шаблонов нет.</p>
+      <div v-for="item in inactiveRows" :key="item.id" class="headman-actions"><span>{{ subjectName(item) }} · {{ days[(item.dayOfWeek ?? 1) - 1] }} · {{ item.lessonNumber }} пара</span><button type="button" class="web-button" :disabled="locked || !writable" @click="open(item.dayOfWeek ?? 1, item.lessonNumber ?? 1, item)">Проверить полное удаление</button></div>
+    </section>
     <form
       v-if="editor"
       class="headman-panel web-stack headman-timetable-editor"
       @submit.prevent="selected ? calculate('UPDATE') : create()"
       ><h2
-        >{{ selected ? 'Изменить регулярный слот' : 'Добавить регулярный слот' }} ·
+        >{{ selected?.active === false ? 'Ранее убранный шаблон' : selected ? 'Изменить регулярный слот' : 'Добавить регулярный слот' }} ·
         {{ days[form.day - 1] }} · {{ form.number }} пара</h2
-      ><fieldset :disabled="locked"
+      ><fieldset :disabled="locked || selected?.active === false"
         ><WebSelect class="web-field" v-model="form.assignmentId" label="Предмет, тип и преподаватель" :options="assignments.flatMap(assignment => assignment.id ? [{ value: assignment.id, label: `${assignment.subjectName} · ${lessonTypes[assignment.lessonType ?? ''] ?? 'Тип не указан'} · ${assignment.teacherName}` }] : [])" :disabled="locked || !!selected" required  /><WebSelect class="web-field" v-model="form.week" label="Недели" :options="(policy?.weekTypes ?? []).map(week => ({ value: week.weekType, label: week.label }))" :disabled="locked" @change="preview = null"  /><label class="web-field"
           >Аудитория<input
             v-model="form.room"
@@ -468,7 +525,7 @@ useWebLiveRefresh(load, { blocked: () => loading.value || locked.value || editor
       ><div class="headman-actions"
         ><button
           class="web-button web-button-primary"
-          :disabled="locked"
+          :disabled="locked || selected?.active === false"
           >{{ selected ? 'Рассчитать изменение' : 'Добавить' }}</button
         ><button
           v-if="selected"
@@ -495,9 +552,7 @@ useWebLiveRefresh(load, { blocked: () => loading.value || locked.value || editor
         }}</h3
         ><p
           v-if="preview.action === 'DELETE'"
-          >Регулярное занятие будет удалено из конструктора. Будущих пар к отмене:
-          {{ preview.result.removedCount }}. Начавшиеся и прошедшие пары сохранятся.
-          Перенесённые вручную пары не меняются.</p
+          ><template v-if="canDeleteUnusedSeries(preview.result)">Шаблон и все пары серии будут полностью удалены. Пар к удалению: {{ preview.result.removableCount }}.</template><template v-else>Полное удаление недоступно: {{ seriesDeletionProtection(preview.result) }}.</template> Автоматические отметки «н» не мешают удалению. При наличии реальных действий серия сохраняется целиком.</p
         ><p
           v-else
           >Будет изменено {{ preview.result.updatedCount }}, убрано
@@ -506,7 +561,7 @@ useWebLiveRefresh(load, { blocked: () => loading.value || locked.value || editor
         ><div class="headman-actions"><button
           type="button"
           class="web-button web-button-primary"
-          :disabled="locked"
+          :disabled="locked || (preview.action === 'DELETE' && !canDeleteUnusedSeries(preview.result))"
           @click="apply()"
           >{{ preview.action === 'DELETE' ? 'Удалить из расписания' : 'Подтвердить расчёт' }}</button
         ><button

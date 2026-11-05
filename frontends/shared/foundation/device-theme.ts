@@ -78,11 +78,11 @@ export function createDeviceThemeMirror(options: {
     running = false,
     dirty = false
   let previous = { mode: options.theme.mode, resolvedMode: options.theme.resolvedMode }
-  const stopTheme = options.theme.subscribe((snapshot) => {
+  const stopTheme = options.theme.subscribe((snapshot, cause) => {
     const systemOnly =
       snapshot.mode === previous.mode && snapshot.resolvedMode !== previous.resolvedMode
     previous = snapshot
-    if (applying || systemOnly || disposed) return
+    if (applying || cause === 'policy' || systemOnly || disposed) return
     choice = snapshot.mode
     options.preference.write(choice)
     epoch++

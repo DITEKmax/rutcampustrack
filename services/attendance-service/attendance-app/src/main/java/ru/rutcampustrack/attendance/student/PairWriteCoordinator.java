@@ -110,14 +110,50 @@ public class PairWriteCoordinator {
                 .distinct()
                 .sorted(Comparator.naturalOrder())
                 .forEach(semesterId -> lockSemesterForWrite(semesterId, now));
-        lockLessonFences(lessonIds, groupId, now);
+        lockLessonFences(lessonIds, groupId, now, false);
     }
 
     /** Acquires the same fences for a trusted Schedule outbox effect before pair/domain locks. */
     public void lockAcceptedScheduleEffectLessons(
             long semesterId, Collection<Long> lessonIds, Long groupId, Instant now) {
         semesterArchiveFence.lockAcceptedScheduleEffect(semesterId, now);
-        lockLessonFences(lessonIds, groupId, now);
+        lockLessonFences(lessonIds, groupId, now, true);
+    }
+
+    /** History may arrive after a semester archive; only its lesson deletion scope is fenced. */
+    public void lockActionHistoryLessons(Collection<Long> lessonIds, Long groupId, Instant now) {
+        lockLessonFences(lessonIds, groupId, now, true);
+    }
+
+    /** Only the committing subject deletion may append history for its retained mixed-ticket lesson. */
+    public void lockAcceptedSubjectDeletionHistoryLesson(
+            String operationId, long semesterId, long lessonId, long groupId, Instant now) {
+        if (!org.springframework.transaction.support.TransactionSynchronizationManager
+                .isActualTransactionActive()) {
+            throw new IllegalStateException("Subject deletion history must share its Mongo transaction");
+        }
+        org.bson.Document epoch = operationId == null ? null : mongoTemplate.findById(
+                operationId, org.bson.Document.class, "subject_deletion_participants");
+        if (epoch == null
+                || !"DELETED".equals(epoch.getString("state"))
+                || !(epoch.get("semester_id") instanceof Number semester)
+                || semester.longValue() != semesterId
+                || !(epoch.get("group_id") instanceof Number group)
+                || group.longValue() != groupId
+                || !(epoch.get("fence_ids") instanceof java.util.List<?> fences)
+                || fences.stream().noneMatch(id -> id instanceof Number number && number.longValue() == lessonId)) {
+            throw new ConflictException("История удаления вне принятой операции");
+        }
+        org.bson.Document fence = mongoTemplate.findById(
+                lessonFenceId(lessonId), org.bson.Document.class, "student_checkin_pairs");
+        if (fence == null
+                || !operationId.equals(fence.get("subject_delete_operation"))
+                || Boolean.TRUE.equals(fence.getBoolean("subject_delete_committed"))
+                || !(fence.get("group_id") instanceof Number owner)
+                || owner.longValue() != groupId) {
+            throw new ConflictException("История удаления вне сохранённой пары");
+        }
+        lockLessonFences(java.util.List.of(lessonId), groupId, now, true, operationId);
     }
 
     @org.springframework.beans.factory.annotation.Autowired
@@ -125,7 +161,12 @@ public class PairWriteCoordinator {
                     ru.rutcampustrack.attendance.groupdeletion.GroupDeletionMongoFence>
             groupDeletion;
 
-    private void lockLessonFences(Collection<Long> lessonIds, Long groupId, Instant now) {
+    private void lockLessonFences(Collection<Long> lessonIds, Long groupId, Instant now, boolean acceptedEffect) {
+        lockLessonFences(lessonIds, groupId, now, acceptedEffect, null);
+    }
+
+    private void lockLessonFences(Collection<Long> lessonIds, Long groupId, Instant now, boolean acceptedEffect,
+            String acceptedSubjectDeletion) {
         if (groupId != null && groupDeletion != null && groupDeletion.getIfAvailable() != null)
             groupDeletion.getObject().write(groupId);
         if (lessonIds == null || lessonIds.isEmpty()) {
@@ -159,13 +200,15 @@ public class PairWriteCoordinator {
                                     update,
                                     FindAndModifyOptions.options().upsert(true).returnNew(true),
                                     CheckinPairStateDocument.class);
-                            if (mongoTemplate.exists(
-                                    Query.query(
-                                            Criteria.where("_id")
-                                                    .is(lessonFenceId(lessonId))
-                                                    .and("subject_delete_operation")
-                                                    .exists(true)),
-                                    CheckinPairStateDocument.class)) {
+                            org.bson.Document constructor = mongoTemplate.findById(
+                                    lessonFenceId(lessonId), org.bson.Document.class, "student_checkin_pairs");
+                            if (constructor != null && constructor.get("constructor_delete_operation") != null
+                                    && !(acceptedEffect && Boolean.TRUE.equals(constructor.getBoolean("constructor_delete_committed")))) {
+                                throw new ConflictException("Пара закрыта для удаления; обнови данные");
+                            }
+                            if (constructor != null && constructor.containsKey("subject_delete_operation")
+                                    && (acceptedSubjectDeletion == null
+                                            || !acceptedSubjectDeletion.equals(constructor.get("subject_delete_operation")))) {
                                 throw new ConflictException(
                                         "Предмет закрыт для удаления; обнови данные");
                             }
@@ -181,6 +224,14 @@ public class PairWriteCoordinator {
         org.bson.Document row =
                 mongoTemplate.findById(
                         lessonFenceId(lessonId), org.bson.Document.class, "student_checkin_pairs");
+        if (row != null && Boolean.TRUE.equals(row.getBoolean("constructor_delete_committed"))) {
+            Object semester = row.get("constructor_delete_semester_id");
+            Object owner = row.get("constructor_delete_group_id");
+            if (!(semester instanceof Number n) || n.longValue() != semesterId
+                    || groupId != null && (!(owner instanceof Number g) || g.longValue() != groupId))
+                throw new ConflictException("Удалённая пара принадлежит другому scope");
+            return true;
+        }
         if (row == null || !Boolean.TRUE.equals(row.getBoolean("subject_delete_committed")))
             return false;
         Object semester = row.get("subject_delete_semester_id");

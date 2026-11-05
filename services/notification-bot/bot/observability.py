@@ -66,8 +66,14 @@ EVENT_OUTCOMES = Counter(
     ["outcome"],
     registry=METRICS_REGISTRY,
 )
-for _outcome in ("processed", "prepared", "duplicate", "deferred", "rejected", "uncertain", "cancelled"):
+for _outcome in ("processed", "prepared", "duplicate", "deferred", "parked", "rejected", "uncertain", "cancelled"):
     EVENT_OUTCOMES.labels(_outcome)
+EVENT_FAILURES = Counter(
+    "notification_bot_event_failures",
+    "Event recovery decisions by finite reason; not broker commit or end-user delivery",
+    ["reason"],
+    registry=METRICS_REGISTRY,
+)
 CONSUMER_CONNECTED = Gauge(
     "notification_bot_consumer_connected",
     "Consumer queue iterator is active",
@@ -81,6 +87,31 @@ TASK_ALIVE = Gauge(
 )
 for _task in ("watchdog", "polling", "keyboard_sync"):
     TASK_ALIVE.labels(_task).set(0)
+STARTUP_COMPLETED = Gauge(
+    "notification_bot_startup_completed",
+    "One-shot startup task returned successfully",
+    ["task"],
+    registry=METRICS_REGISTRY,
+)
+STARTUP_FAILED = Gauge(
+    "notification_bot_startup_failed",
+    "One-shot startup task raised an exception",
+    ["task"],
+    registry=METRICS_REGISTRY,
+)
+STARTUP_COMPLETED.labels("keyboard_sync").set(0)
+STARTUP_FAILED.labels("keyboard_sync").set(0)
+KEYBOARD_SYNC_USERS_FAILED = Counter(
+    "notification_bot_keyboard_sync_users_failed",
+    "Users still pending after startup retry exhaustion",
+    registry=METRICS_REGISTRY,
+)
+KEYBOARD_SYNC_REGISTRY_AVAILABLE = Gauge(
+    "notification_bot_keyboard_sync_registry_available",
+    "Last startup registry read succeeded; -1 means not attempted",
+    registry=METRICS_REGISTRY,
+)
+KEYBOARD_SYNC_REGISTRY_AVAILABLE.set(-1)
 
 
 class SendQueueCollector:
@@ -483,17 +514,20 @@ def get_logger(name: str | None = None) -> structlog.stdlib.BoundLogger:
 
 @contextmanager
 def event_trace_context(envelope: dict) -> Iterator[None]:
-    """Durable W3C parent only; legacy trace_id is a separate business field."""
+    """Each delivery is a bounded new trace linked to its durable producer context."""
     parent = Context()
     traceparent = envelope.get("traceparent")
     if isinstance(traceparent, str) and _TRACEPARENT.fullmatch(traceparent):
         parent = TraceContextTextMapPropagator().extract({"traceparent": traceparent}, context=parent)
+    producer = trace.get_current_span(parent).get_span_context()
+    links = [trace.Link(producer)] if producer.is_valid else []
     request_id = envelope.get("request_id")
     if not isinstance(request_id, str) or not _UUID.fullmatch(request_id):
         request_id = None
     with trace.get_tracer(__name__).start_as_current_span(
         "notification-bot.consume",
-        context=parent,
+        context=Context(),
+        links=links,
         kind=trace.SpanKind.CONSUMER,
         record_exception=False,
     ) as span:

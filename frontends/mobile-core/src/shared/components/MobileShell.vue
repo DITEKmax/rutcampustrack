@@ -24,6 +24,7 @@ const props = withDefaults(
     host?: MobileHostAdapter | null;
     backLabel?: string;
     customBack?: boolean;
+    hostBackAction?: (() => void) | undefined;
   }>(),
   {
     route: null,
@@ -33,6 +34,7 @@ const props = withDefaults(
     keyboardVisible: undefined as never,
     backLabel: 'Назад',
     customBack: false,
+    hostBackAction: undefined,
     host: null,
   },
 );
@@ -63,9 +65,10 @@ const productBackVisible = computed(
     !props.customBack &&
     shouldShowProductBack(currentRoute.value, props.host?.backOwner ?? 'product'),
 );
-const hostBackVisible = computed(
-  () =>
-    !props.customBack && shouldShowHostBack(currentRoute.value, props.host?.backOwner ?? 'none'),
+const hostBackVisible = computed(() =>
+  props.navItems.some((item) => item.id === 'today') && props.host?.backOwner === 'host'
+    ? currentRoute.value.kind === 'nested'
+    : !props.customBack && shouldShowHostBack(currentRoute.value, props.host?.backOwner ?? 'none'),
 );
 
 function navigate(route: MobileRootRouteId): void {
@@ -74,6 +77,10 @@ function navigate(route: MobileRootRouteId): void {
 }
 
 function goBack(): void {
+  if (props.host?.backOwner === 'host' && props.hostBackAction) {
+    props.hostBackAction();
+    return;
+  }
   const current = props.navigation?.current;
   const previous = props.navigation?.back() ?? null;
   if (current && previous === current) return;
@@ -126,6 +133,8 @@ onBeforeUnmount(() => {
   <div
     class="mobile-shell"
     :data-surface="currentRoute.surface"
+    :data-student="navItems.some((item) => item.id === 'today')"
+    :data-back-owner="host?.backOwner"
     :data-dock-visible="dockVisible"
     :data-keyboard-visible="keyboardVisible"
   >

@@ -162,3 +162,230 @@
 .notification-settings__save {
   inline-size: 100%;
 }
+
+/* Accepted Student presentation; existing roles retain their base rules. */
+:where([data-student-ui]) .notification-settings,
+:where([data-student-ui]):is(.notification-settings) {
+  min-inline-size: 0;
+  color: var(--rct-color-text-primary);
+  font-family: var(--rct-font-family-sans);
+  @mixin rct-type-dense;
+}
+:where([data-student-ui]) .notification-settings button,
+:where([data-student-ui]):is(.notification-settings button) {
+  min-block-size: var(--rct-control-min-touch);
+  border: 0;
+  border-radius: var(--rct-radius-full);
+  padding: var(--rct-space-2) var(--rct-space-3);
+  color: var(--rct-color-text-primary);
+  background: var(--rct-color-surface-raised);
+  font: inherit;
+  cursor: pointer;
+  @mixin rct-focus-ring;
+}
+:where([data-student-ui]) .notification-settings button:disabled,
+:where([data-student-ui]):is(.notification-settings button:disabled) {
+  color: var(--rct-color-disabled-text);
+  cursor: not-allowed;
+}
+:where([data-student-ui]) .notification-settings .notification-settings__mode,
+:where([data-student-ui]):is(.notification-settings .notification-settings__mode) {
+  min-block-size: var(--rct-profile-row-height);
+  border: 0;
+  border-radius: var(--rct-profile-row-radius);
+  padding-inline: var(--rct-space-4);
+  display: flex;
+  inline-size: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--rct-space-3);
+  text-align: start;
+}
+:where([data-student-ui]) .notification-settings__mode-label,
+:where([data-student-ui]):is(.notification-settings__mode-label) {
+  display: grid;
+  gap: var(--rct-space-1);
+}
+:where([data-student-ui]) .notification-settings__slider,
+:where([data-student-ui]):is(.notification-settings__slider) {
+  display: flex;
+  align-items: center;
+  flex: 0 0 auto;
+  inline-size: calc(var(--rct-space-5) * 2);
+  block-size: var(--rct-space-5);
+  border: var(--rct-border-hairline) solid var(--rct-color-border-default);
+  border-radius: var(--rct-radius-full);
+  padding: var(--rct-space-half);
+  background: var(--rct-color-surface-base);
+}
+:where([data-student-ui]) .notification-settings__slider > span,
+:where([data-student-ui]):is(.notification-settings__slider > span) {
+  inline-size: var(--rct-icon-size);
+  block-size: var(--rct-icon-size);
+  border-radius: var(--rct-radius-full);
+  background: var(--rct-color-text-secondary);
+}
+:where([data-student-ui])
+  .notification-settings__mode[aria-checked='true']
+  .notification-settings__slider,
+:where([data-student-ui]):is(
+  .notification-settings__mode[aria-checked='true'] .notification-settings__slider
+) {
+  justify-content: flex-end;
+  border-color: var(--rct-color-accent-now);
+  background: var(--rct-color-accent-now);
+}
+:where([data-student-ui])
+  .notification-settings__mode[aria-checked='true']
+  .notification-settings__slider
+  > span,
+:where([data-student-ui]):is(
+  .notification-settings__mode[aria-checked='true'] .notification-settings__slider > span
+) {
+  background: var(--rct-color-accent-on-now);
+}
+:where([data-student-ui]) .notification-settings__status,
+:where([data-student-ui]):is(.notification-settings__status) {
+  margin: var(--rct-space-2) 0 var(--rct-space-4);
+  color: var(--rct-color-text-secondary);
+  font-size: var(--rct-font-size-caption);
+}
+:where([data-student-ui]) .notification-settings__choice,
+:where([data-student-ui]):is(.notification-settings__choice),
+:where([data-student-ui]) .notification-settings__notice,
+:where([data-student-ui]):is(.notification-settings__notice) {
+  display: grid;
+  gap: var(--rct-space-2);
+  margin-block-end: var(--rct-space-3);
+  border: var(--rct-border-hairline) solid var(--rct-color-warning-text);
+  border-radius: var(--rct-radius-xl);
+  padding: var(--rct-space-3);
+  background: var(--rct-warning-surface);
+}
+:where([data-student-ui]) .notification-settings__notice--error,
+:where([data-student-ui]):is(.notification-settings__notice--error) {
+  border-color: var(--rct-color-danger-text);
+  color: var(--rct-color-danger-text);
+  background: var(--rct-error-surface);
+}
+:where([data-student-ui]) .notification-settings__choice p,
+:where([data-student-ui]):is(.notification-settings__choice p),
+:where([data-student-ui]) .notification-settings__notice p,
+:where([data-student-ui]):is(.notification-settings__notice p),
+:where([data-student-ui]) .notification-settings__capability p,
+:where([data-student-ui]):is(.notification-settings__capability p) {
+  margin: 0;
+}
+:where([data-student-ui]) .notification-settings__capability,
+:where([data-student-ui]):is(.notification-settings__capability) {
+  display: grid;
+  gap: var(--rct-space-1);
+  margin-block-end: var(--rct-space-3);
+  color: var(--rct-color-text-secondary);
+}
+:where([data-student-ui]) .notification-settings__matrix-scroll,
+:where([data-student-ui]):is(.notification-settings__matrix-scroll) {
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  @mixin rct-focus-ring;
+}
+:where([data-student-ui]) .notification-settings__matrix,
+:where([data-student-ui]):is(.notification-settings__matrix) {
+  inline-size: 100%;
+  /* Keep a readable type column when enlarged text needs a wider data table. */
+  min-inline-size: calc(
+    (var(--rct-control-min-touch) + var(--rct-space-8)) * 2 + var(--rct-control-min-touch) * 2
+  );
+  table-layout: fixed;
+  border-spacing: 0;
+}
+:where([data-student-ui]) .notification-settings__channel-col,
+:where([data-student-ui]):is(.notification-settings__channel-col) {
+  inline-size: calc(var(--rct-control-min-touch) + var(--rct-space-8));
+}
+:where([data-student-ui]) .notification-settings__matrix thead th,
+:where([data-student-ui]):is(.notification-settings__matrix thead th) {
+  position: sticky;
+  z-index: 1;
+  inset-block-start: 0;
+  padding: var(--rct-space-3) 0;
+  color: var(--rct-color-text-primary);
+  background: var(--rct-color-surface-base);
+  font-size: var(--rct-font-size-caption);
+  font-weight: var(--rct-font-weight-bold);
+  text-align: center;
+  white-space: nowrap;
+}
+:where([data-student-ui]) .notification-settings__matrix thead th:first-child,
+:where([data-student-ui]):is(.notification-settings__matrix thead th:first-child) {
+  text-align: start;
+}
+:where([data-student-ui]) .notification-settings__row th,
+:where([data-student-ui]):is(.notification-settings__row th),
+:where([data-student-ui]) .notification-settings__row td,
+:where([data-student-ui]):is(.notification-settings__row td) {
+  border-block-end: var(--rct-border-hairline) solid var(--rct-color-border-default);
+}
+:where([data-student-ui]) .notification-settings__row th,
+:where([data-student-ui]):is(.notification-settings__row th) {
+  padding: var(--rct-space-2) var(--rct-space-2) var(--rct-space-2) 0;
+  font-weight: var(--rct-font-weight-regular);
+  text-align: start;
+  overflow-wrap: anywhere;
+}
+:where([data-student-ui]) .notification-settings__row td,
+:where([data-student-ui]):is(.notification-settings__row td) {
+  padding: 0;
+}
+:where([data-student-ui]) .notification-settings__channel .admin-checkbox,
+:where([data-student-ui]):is(.notification-settings__channel .admin-checkbox) {
+  justify-content: center;
+  inline-size: 100%;
+  min-inline-size: var(--rct-control-min-touch);
+}
+:where([data-student-ui]) .notification-settings__channel .admin-checkbox__label,
+:where([data-student-ui]):is(.notification-settings__channel .admin-checkbox__label),
+:where([data-student-ui]) .notification-settings__sr,
+:where([data-student-ui]):is(.notification-settings__sr) {
+  position: absolute;
+  inline-size: var(--rct-border-hairline);
+  block-size: var(--rct-border-hairline);
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+:where([data-student-ui]) .notification-settings .notification-settings__colors,
+:where([data-student-ui]):is(.notification-settings .notification-settings__colors) {
+  min-block-size: var(--rct-profile-row-height);
+  border: 0;
+  border-radius: var(--rct-profile-row-radius);
+  padding-inline: var(--rct-space-4);
+  display: flex;
+  inline-size: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--rct-space-3);
+  margin-block: var(--rct-space-4);
+  text-align: start;
+}
+:where([data-student-ui]) .notification-settings__save,
+:where([data-student-ui]):is(.notification-settings__save) {
+  inline-size: 100%;
+}
+
+:where([data-student-ui]) .notification-settings__colors .mobile-icon,
+:where([data-student-ui]):is(.notification-settings__colors .mobile-icon) {
+  flex: 0 0 var(--rct-icon-size);
+  inline-size: var(--rct-icon-size);
+  block-size: var(--rct-icon-size);
+  transform: rotate(180deg);
+}
+:where([data-student-ui]) .notification-settings .notification-settings__save:not(:disabled),
+:where([data-student-ui]):is(.notification-settings .notification-settings__save:not(:disabled)) {
+  color: var(--rct-color-accent-on-now);
+  background: var(--rct-color-accent-now);
+}
+:where([data-student-ui]) .notification-settings .notification-settings__save:disabled,
+:where([data-student-ui]):is(.notification-settings .notification-settings__save:disabled) {
+  background: var(--rct-color-disabled-surface);
+}

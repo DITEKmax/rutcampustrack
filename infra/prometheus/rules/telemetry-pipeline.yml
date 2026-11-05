@@ -1,6 +1,26 @@
 groups:
 - name: telemetry-pipeline
   rules:
+  - alert: CadvisorContainerMetricsMissing
+    expr: (up{job="cadvisor"} == 1) unless on(job,instance,environment)
+      count by(job,instance,environment) (container_last_seen{job="cadvisor",name=~"rct-.*"} > time() - 60)
+    for: 2m
+    labels:
+      severity: critical
+      owner: platform
+    annotations:
+      summary: cAdvisor scrape succeeds but Docker container telemetry is missing
+      description: A successful HTTP scrape with only host cgroups does not cover application memory, CPU or OOM. Inspect Docker/containerd compatibility and names before treating container dashboards as complete.
+      runbook_url: https://github.com/DITEKmax/rutcampustrack/blob/main/docs/operations/monitoring/observability.md
+  - alert: PrometheusProcessRestarted
+    expr: changes(process_start_time_seconds{job="prometheus"}[15m]) > 0
+    labels:
+      severity: warning
+      owner: platform
+    annotations:
+      summary: Prometheus restarted in the last15minutes
+      description: Inspect container restart count, memory pressure and ingestion continuity. This observes scrape history; absence of an earlier process sample cannot prove no restart.
+      runbook_url: https://github.com/DITEKmax/rutcampustrack/blob/main/docs/operations/monitoring/observability.md
   - alert: PrometheusRuleEvaluationFailed
     expr: increase(prometheus_rule_evaluation_failures_total[5m]) > 0
     for: 2m
@@ -113,7 +133,9 @@ groups:
         before treating dashboards as complete; preserve persistent data.
       runbook_url: https://github.com/DITEKmax/rutcampustrack/blob/main/docs/operations/monitoring/observability.md
   - alert: FilesystemHeadroomLow
-    expr: node_filesystem_avail_bytes{fstype=~"ext4|xfs|btrfs"} < 4 * 1024 * 1024 * 1024
+    expr: (node_filesystem_avail_bytes{fstype=~"ext4|xfs|btrfs"} < 4 * 1024 * 1024 * 1024)
+      and (node_filesystem_avail_bytes{fstype=~"ext4|xfs|btrfs"} / node_filesystem_size_bytes{fstype=~"ext4|xfs|btrfs"} < 0.10)
+      and (node_filesystem_size_bytes{fstype=~"ext4|xfs|btrfs"} > 0)
     for: 2m
     labels:
       severity: warning
@@ -192,7 +214,7 @@ groups:
         connectivity and snapshot_failures_total.
       runbook_url: https://github.com/DITEKmax/rutcampustrack/blob/main/docs/operations/monitoring/observability.md
   - alert: NotificationBotTaskDown
-    expr: notification_bot_task_alive == 0 or notification_bot_consumer_connected == 0
+    expr: notification_bot_task_alive{task=~"watchdog|polling"} == 0 or notification_bot_consumer_connected == 0
     for: 1m
     labels:
       severity: warning
@@ -201,6 +223,24 @@ groups:
       summary: Business notification bot task/consumer is down
       description: Actual process task/consumer state is zero; queued work is not a delivered notification. Inspect task logs, broker connection and watchdog
         recovery.
+      runbook_url: https://github.com/DITEKmax/rutcampustrack/blob/main/docs/operations/monitoring/observability.md
+  - alert: NotificationBotStartupFailed
+    expr: notification_bot_startup_failed{task="keyboard_sync"} == 1
+    labels:
+      severity: warning
+      owner: platform
+    annotations:
+      summary: Notification bot keyboard startup task failed
+      description: The one-shot task finished with an exception. A completed task is not required to remain alive; successful task completion does not prove every recipient keyboard was updated. Inspect safe startup diagnostics.
+      runbook_url: https://github.com/DITEKmax/rutcampustrack/blob/main/docs/operations/monitoring/observability.md
+  - alert: NotificationBotKeyboardSyncUsersFailed
+    expr: notification_bot_keyboard_sync_users_failed_total > 0
+    labels:
+      severity: warning
+      owner: platform
+    annotations:
+      summary: Notification bot startup exhausted keyboard sync for a recipient
+      description: At least one recipient exhausted the bounded startup retries. Successful task completion alone does not prove all recipient keyboards were synchronized. The process counter resets on restart; inspect retained registry progress before retrying.
       runbook_url: https://github.com/DITEKmax/rutcampustrack/blob/main/docs/operations/monitoring/observability.md
   - alert: NotificationBotSendExhausted
     expr: notification_bot_send_tasks_exhausted_total > 0

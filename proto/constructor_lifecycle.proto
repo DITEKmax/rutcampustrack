@@ -1,0 +1,108 @@
+syntax = "proto3";
+
+package rutcampustrack.constructor;
+option java_multiple_files = true;
+option java_package = "ru.rutcampustrack.constructor.grpc";
+
+// Directed Schedule-only capabilities. These methods require authenticated TLS
+// and a dedicated Schedule -> receiver credential, never a shared-token fallback.
+service ConstructorAttendanceParticipant {
+  rpc ApplyDeletion (ConstructorDeletionCommand) returns (ConstructorParticipantReceipt);
+  rpc MaterializePast (PastLessonMaterializationCommand) returns (PastLessonMaterializationReceipt);
+}
+
+service ConstructorAcademicParticipant {
+  rpc ApplyDeletion (ConstructorDeletionCommand) returns (ConstructorParticipantReceipt);
+}
+
+enum ConstructorDeletionAction {
+  CONSTRUCTOR_DELETION_ACTION_UNSPECIFIED = 0;
+  CONSTRUCTOR_DELETION_PREVIEW = 1;
+  CONSTRUCTOR_DELETION_PREPARE = 2;
+  CONSTRUCTOR_DELETION_SEAL = 3;
+  CONSTRUCTOR_DELETION_COMMIT = 4;
+  CONSTRUCTOR_DELETION_RELEASE = 5;
+}
+
+message ConstructorLessonScope {
+  int64 lesson_id = 1;
+  int64 occurrence_id = 2;
+  int64 schedule_item_id = 3;
+  string lesson_date = 4;
+  int32 lesson_number = 5;
+  string lesson_type = 6;
+  int64 generation = 7;
+  int64 lesson_revision = 8;
+  int64 occurrence_revision = 9;
+  bytes origin_provenance_hash = 10;
+}
+
+message ConstructorDeletionScope {
+  int64 group_id = 1;
+  int64 subject_id = 2;
+  int64 semester_id = 3;
+  repeated int64 schedule_item_ids = 4;
+  repeated ConstructorLessonScope lessons = 5;
+  bytes schedule_manifest_digest = 6;
+  // Hashes of exact trusted creation/template-cancellation audit payloads.
+  // Unknown history is protective; a payload flag alone is not an admission.
+  repeated bytes allowed_system_audit_hashes = 7;
+}
+
+message ConstructorDeletionCommand {
+  string operation_id = 1;
+  ConstructorDeletionAction action = 2;
+  bytes request_hash = 3;
+  bytes scope_hash = 4;
+  bytes participant_digest = 5;
+  int64 original_actor_id = 6;
+  ConstructorDeletionScope scope = 7;
+}
+
+message ConstructorProtectedReason {
+  string code = 1;
+  int64 count = 2;
+}
+
+message ConstructorParticipantReceipt {
+  string operation_id = 1;
+  bytes request_hash = 2;
+  bytes scope_hash = 3;
+  bytes participant_digest = 4;
+  string state = 5;
+  int64 protected_count = 6;
+  repeated ConstructorProtectedReason protected_reasons = 7;
+  // Sorted distinct logical occurrences already present in the supplied scope.
+  // Source validates count and membership, then unions participants without double counting.
+  repeated int64 protected_occurrence_ids = 8;
+}
+
+message PastLessonIdentity {
+  int64 lesson_id = 1;
+  int64 occurrence_id = 2;
+  int64 expected_revision = 3;
+  bytes snapshot_hash = 4;
+}
+
+message PastLessonMaterializationCommand {
+  string operation_id = 1;
+  int64 group_id = 2;
+  int64 semester_id = 3;
+  int32 batch_index = 4;
+  int32 batch_count = 5;
+  bytes batch_hash = 6;
+  repeated PastLessonIdentity lessons = 7;
+}
+
+message PastLessonMaterializationResult {
+  int64 lesson_id = 1;
+  // APPLIED, UNCHANGED, NO_ELIGIBLE_MEMBERS, COVERAGE_UNAVAILABLE, TOMBSTONED.
+  string state = 2;
+}
+
+message PastLessonMaterializationReceipt {
+  string operation_id = 1;
+  int32 batch_index = 2;
+  bytes batch_hash = 3;
+  repeated PastLessonMaterializationResult lessons = 4;
+}

@@ -24,12 +24,22 @@ contract = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(contract)
 
 
+RECOVERY = {'parked': ['exhausted', 'terminal'], 'provider_deliveries': ['healthy', 'transient'],
+            'attempts': {'terminal': 1, 'healthy': 1, 'transient': 3, 'exhausted': 9},
+            'confirmed_progress_retained': True}
+
+
+def native_row(boundary, retry):
+    return {'boundary': boundary, 'replacement': 'retry' if retry else 'prepared', 'durable_outcomes': 1,
+            'projection_after_loss': not retry and boundary == 'commit_after',
+            'completion_before_replay': False, 'replay_provider_deliveries': 1}
+
+
 def receipt():
     return {'prepared_transaction_probe': [
-        {'boundary': boundary, 'durable_outcomes': 1, 'projection_after_loss': boundary == 'commit_after',
-         'completion_before_replay': False, 'replay_provider_deliveries': 1}
+        native_row(boundary, retry) for retry in (False, True)
         for boundary in ('publish', 'ack', 'commit_before', 'commit_after')
-    ]}
+    ], 'recovery_progress': {**RECOVERY, 'attempts': dict(RECOVERY['attempts'])}}
 
 
 class PreparedProjectionControls(unittest.TestCase):
@@ -66,11 +76,25 @@ class PreparedProjectionControls(unittest.TestCase):
             self.assertEqual(len([args for args in calls if 'delete_vhost' in args]), 1)
             self.assertTrue(owned[0].startswith('audit.prepared.'))
 
-    def test_exact_closed_four_phase_result_and_cleanup(self):
-        projected = self.exercise(json.dumps(receipt()).encode())
+    def test_current_producer_receipt_accepts_prepared_retry_recovery_and_cleanup(self):
+        # Execute the current producer's main with only the native broker operations stubbed.
+        tree = ast.parse((ROOT / 'services/notification-bot/tests/prepared_broker_probe.py').read_bytes())
+        main = next(node for node in tree.body if isinstance(node, ast.AsyncFunctionDef) and node.name == 'main')
+        async def phase(url, boundary, *, retry):
+            return native_row(boundary, retry)
+        async def recovery_progress(url):
+            return RECOVERY
+        emitted = []
+        producer = {'logging': SimpleNamespace(disable=lambda _: None, CRITICAL=50), 'os': os, 'json': json,
+                    'phase': phase, 'recovery_progress': recovery_progress, 'print': emitted.append}
+        exec(compile(ast.Module(body=[main], type_ignores=[]), '<prepared-probe-main>', 'exec'), producer)
+        with patch.dict(os.environ, SCHEDULE_BOT_AUDIT_RABBIT_URL='owned-fixture'):
+            asyncio.run(producer['main']())
+        projected = self.exercise(emitted[0].encode())
         self.assertTrue(projected['broker_only'])
         self.assertTrue(projected['owned_vhost_removed'])
-        self.assertEqual(len(projected['phases']), 4)
+        self.assertEqual(projected['phases'], receipt()['prepared_transaction_probe'])
+        self.assertEqual(projected['recovery_progress'], RECOVERY)
 
     def test_missing_extra_wrong_types_duplicates_overflow_and_failures_stay_failed(self):
         unknown = receipt()
@@ -81,9 +105,20 @@ class PreparedProjectionControls(unittest.TestCase):
         early['prepared_transaction_probe'][0]['completion_before_replay'] = True
         missing = receipt()
         missing['prepared_transaction_probe'].pop()
+        duplicate_row = receipt()
+        duplicate_row['prepared_transaction_probe'][-1] = duplicate_row['prepared_transaction_probe'][0]
+        retry_projected = receipt()
+        retry_projected['prepared_transaction_probe'][-1]['projection_after_loss'] = True
+        nested_private = receipt()
+        nested_private['recovery_progress']['private'] = 'synthetic-private-marker'
+        wrong_recovery = receipt()
+        wrong_recovery['recovery_progress']['attempts']['healthy'] = True
+        incomplete_recovery = receipt()
+        incomplete_recovery['recovery_progress']['confirmed_progress_retained'] = False
         duplicate = b'{"prepared_transaction_probe":[],"prepared_transaction_probe":[]}'
-        for raw in [b'not-json', json.dumps(unknown).encode(), json.dumps(wrong).encode(),
-                    json.dumps(early).encode(), json.dumps(missing).encode(), duplicate, b'x' * 4097]:
+        invalid = (unknown, wrong, early, missing, duplicate_row, retry_projected, nested_private,
+                   wrong_recovery, incomplete_recovery)
+        for raw in [b'not-json', duplicate, b'x' * 4097, *(json.dumps(row).encode() for row in invalid)]:
             with self.assertRaises((AssertionError, ValueError)):
                 self.exercise(raw)
         with self.assertRaises(AssertionError):
@@ -177,11 +212,9 @@ class NativeFailureProjectionControls(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.probe_source = (ROOT / 'services/notification-bot/tests/prepared_broker_probe.py').read_bytes()
         tree = ast.parse((ROOT / 'infra/prometheus/tests/check_pipeline.py').read_text())
         names = {'_BACKGROUND_NATIVE_TASK_STAGES',
-                 '_BACKGROUND_TEST_CLASS', '_BACKGROUND_TEST_METHOD', '_BACKGROUND_TEST_SOURCE',
-                 '_BACKGROUND_TEST_SOURCE_HASH', '_BACKGROUND_TEST_REPORT'}
+                 '_BACKGROUND_TEST_CLASS', '_BACKGROUND_TEST_METHOD', '_BACKGROUND_TEST_REPORT'}
         selected = [node for node in tree.body if
                     (isinstance(node, ast.Assign) and any(isinstance(target, ast.Name) and target.id in names
                                                         for target in node.targets)) or
@@ -189,12 +222,11 @@ class NativeFailureProjectionControls(unittest.TestCase):
                      {'background_native_failure', 'background_test_failure', 'read_background_test_failure'})]
         cls.pipeline = {'hashlib': hashlib, 're': re, 'ET': ET, 'os': os, 'stat': stat, 'time': time, 'ROOT': ROOT}
         exec(compile(ast.Module(body=selected, type_ignores=[]), '<pure-native-projection>', 'exec'), cls.pipeline)
-        cls.test_source = (ROOT / cls.pipeline['_BACKGROUND_TEST_SOURCE']).read_bytes()
         cls.gradle_parent = next(node for node in ast.walk(tree) if isinstance(node, ast.FunctionDef)
                                  and node.name == 'run_application_gradle')
 
-    def trace(self, line=177, function='phase', category='TimeoutError', path=None):
-        source_line = self.probe_source.decode().splitlines()[line - 1].strip()
+    def trace(self, line=417, function='phase', category='TimeoutError', path=None):
+        source_line = 'synthetic_private_context()'
         path = path or str(ROOT / 'services/notification-bot/tests/prepared_broker_probe.py')
         return ('Traceback (most recent call last):\n'
                 f'  File "{path}", line {line}, in {function}\n'
@@ -217,56 +249,35 @@ class NativeFailureProjectionControls(unittest.TestCase):
                           self.pipeline['_BACKGROUND_TEST_CLASS'], self.pipeline['_BACKGROUND_TEST_METHOD']]:
             self.assertNotIn(forbidden, serialized)
 
-    def test_prepared_positive_categories_stages_and_terminal_chain_privacy(self):
+    def test_prepared_positive_categories_and_terminal_chain_privacy(self):
         for category in ['ModuleNotFoundError', 'ImportError', 'AssertionError', 'TimeoutError', 'ConnectionError',
                          'OSError', 'RuntimeError', 'ValueError', 'TypeError', 'KeyError']:
-            result = contract.prepared_native_failure(self.trace(category=category), self.probe_source)
-            self.assertEqual(result, {'category': category, 'source_stage': 'WAIT_FIRST_DISCONNECT'})
+            result = contract.prepared_native_failure(self.trace(category=category))
+            self.assertEqual(result, {'category': category, 'source_stage': 'UNKNOWN'})
             self.assert_closed(result)
-        frozen = self.trace().replace(b'Traceback (most recent call last):\n',
-                                     b'Traceback (most recent call last):\n  File "<frozen runpy>", line 198, in _run_module_as_main\n')
-        self.assertEqual(contract.prepared_native_failure(frozen, self.probe_source)['source_stage'], 'WAIT_FIRST_DISCONNECT')
-        for line, function, stage in [(16, '<module>', 'MODULE_IMPORT'), (88, 'phase', 'OBSERVER_CONNECT'),
-                                      (92, 'phase', 'OBSERVER_TOPOLOGY'), (101, 'phase', 'ORIGIN_PUBLISH'),
-                                      (182, 'phase', 'DURABLE_READ'), (183, 'phase', 'DURABLE_ORIGINAL_PRESENT'),
-                                      (184, 'phase', 'DURABLE_DECODE'), (185, 'phase', 'DURABLE_SINGLE_MESSAGE'),
-                                      (187, 'phase', 'DURABLE_ENVELOPE'), (188, 'phase', 'DURABLE_PROJECTION_CUTPOINT'),
-                                      (189, 'phase', 'DURABLE_NO_EARLY_COMPLETION'),
-                                      (191, 'phase', 'DURABLE_QUEUE_PROVENANCE'), (192, 'phase', 'DURABLE_REQUEUE'),
-                                      (204, 'phase', 'WAIT_REPLAY_COMMIT'),
-                                      (210, 'phase', 'REPLAY_OUTCOME_CHECK'), (225, 'phase', 'PROBE_TEARDOWN'),
-                                      (163, 'phase', 'BROKER_CLOSE_HOOK'), (178, 'phase', 'WORKER_CLOSE'),
-                                      *[(line, 'close_with_barrier', 'BROKER_CLOSE_CONFIRMATION')
-                                        for line in (55, 58, 61, 62, 65, 74)]]:
-            result = contract.prepared_native_failure(self.trace(line, function), self.probe_source)
-            self.assertEqual(result['source_stage'], stage)
-            self.assert_closed(result)
-        chain = self.trace() + b'\nDuring handling of the above exception, another exception occurred:\n\n' + self.trace(225)
-        result = contract.prepared_native_failure(chain, self.probe_source)
-        self.assertEqual(result['source_stage'], 'PROBE_TEARDOWN')
-        self.assert_closed(result)  # Terminal teardown signature does not assert the earlier first cause.
+        frozen = self.trace(line=550, function='edited_function').replace(
+            b'Traceback (most recent call last):\n',
+            b'Traceback (most recent call last):\n  File "<frozen runpy>", line 198, in _run_module_as_main\n')
+        self.assertEqual(contract.prepared_native_failure(frozen), {'category': 'TimeoutError', 'source_stage': 'UNKNOWN'})
+        chain = (self.trace() + b'\nDuring handling of the above exception, another exception occurred:\n\n'
+                 + self.trace(category='OSError'))
+        result = contract.prepared_native_failure(chain)
+        self.assertEqual(result, {'category': 'OSError', 'source_stage': 'UNKNOWN'})
+        self.assert_closed(result)
 
-    def test_prepared_unknown_forged_malformed_hash_and_cutoff(self):
+    def test_prepared_unknown_foreign_malformed_and_cutoff(self):
         unknown = {'category': 'UNKNOWN', 'source_stage': 'UNKNOWN'}
         raw = self.trace()
         for malformed in [b'', b'not a traceback\n', raw[:-1], raw + b'not a summary\n', b'\xff\n',
                           b'\x00' + raw, b'\x1b[31m' + raw, b'x' * 65537,
-                          raw.replace(b'    await asyncio.wait_for(interrupted.wait(), 8)', b'    forged_private()')]:
-            self.assertEqual(contract.prepared_native_failure(malformed, self.probe_source), unknown)
-        self.assertEqual(contract.prepared_native_failure(raw, self.probe_source + b' '), unknown)
-        self.assertEqual(contract.prepared_native_failure(raw, b''), unknown)
-        for forged in [self.trace(path='/unowned/prepared_broker_probe.py'), self.trace(179),
-                       self.trace(63, 'close_with_barrier'), self.trace(function='main')]:
-            result = contract.prepared_native_failure(forged, self.probe_source)
-            self.assertEqual(result['source_stage'], 'UNKNOWN')
-            self.assert_closed(result)
-        result = contract.prepared_native_failure(self.trace(category='private.InventedError'), self.probe_source)
-        self.assertEqual(result['category'], 'UNKNOWN')
-        self.assert_closed(result)
+                          self.trace(path='/unowned/prepared_broker_probe.py'),
+                          self.trace(category='private.InventedError'),
+                          raw.replace(b'    synthetic_private_context()', b'unindented_private()')]:
+            self.assertEqual(contract.prepared_native_failure(malformed), unknown)
         at_limit = b'x' * (65536 - len(raw) - 1) + b'\n' + raw
         self.assertEqual(len(at_limit), 65536)
-        self.assertEqual(contract.prepared_native_failure(at_limit, self.probe_source)['category'], 'TimeoutError')
-        self.assertEqual(contract.prepared_native_failure(b'x' + at_limit, self.probe_source), unknown)
+        self.assertEqual(contract.prepared_native_failure(at_limit)['category'], 'TimeoutError')
+        self.assertEqual(contract.prepared_native_failure(b'x' + at_limit), unknown)
 
     def test_gradle_positive_all_exact_tasks_and_private_messages(self):
         classify = self.pipeline['background_native_failure']
@@ -323,9 +334,10 @@ class NativeFailureProjectionControls(unittest.TestCase):
 
     def test_optional_diagnostic_io_failure_keeps_original_parent_failures(self):
         with patch.dict(contract._STATE, {'probe_returncode': 13}):
-            with patch.object(Path, 'open', side_effect=OSError('synthetic-private-io')):
+            with patch.object(contract, 'prepared_native_failure', side_effect=OSError('synthetic-private-io')) as classify:
                 with self.assertRaisesRegex(AssertionError, '^Prepared transaction native probe failed$'):
                     self.exercise(json.dumps(receipt()).encode(), status=1)
+            classify.assert_called_once_with(b'')
             self.assertEqual(contract._STATE['probe_returncode'], 13)
             self.assertEqual(contract._STATE['phase'], 'PREPARED_TRANSACTION_NATIVE_CHILD_EXIT')
             self.assertEqual(contract._STATE['native_failure'], {'category': 'UNKNOWN', 'source_stage': 'UNKNOWN'})
@@ -364,7 +376,7 @@ class NativeFailureProjectionControls(unittest.TestCase):
         ET.SubElement(root, 'system-err').text = 'synthetic-private-error'
         return ET.tostring(root, encoding='utf-8', xml_declaration=True)
 
-    def test_selected_junit_exact_identity_closed_categories_and_public_frames(self):
+    def test_selected_junit_exact_identity_closed_categories_and_no_stage_guess(self):
         classify = self.pipeline['background_test_failure']
         for category, expected in [('java.lang.AssertionError', 'ASSERTION'),
                                    ('org.opentest4j.AssertionFailedError', 'ASSERTION'),
@@ -373,51 +385,28 @@ class NativeFailureProjectionControls(unittest.TestCase):
                                    ('java.lang.ExceptionInInitializerError', 'INITIALIZATION'),
                                    ('java.lang.NoClassDefFoundError', 'CLASS_LOADING'),
                                    ('java.lang.OutOfMemoryError', 'JAVA_MEMORY'), ('private.Error', 'UNKNOWN')]:
-            result = classify(self.junit(category=category), self.test_source)
+            result = classify(self.junit(function='editedFunction', line=1900, category=category))
             reason = 'SIGNATURE_CLASSIFIED' if expected != 'UNKNOWN' else 'SIGNATURE_UNCLASSIFIED'
-            self.assertEqual(result, {'category': expected, 'source_stage': 'SELECTED_TEST_BODY',
-                                      'admission_reason': reason})
+            self.assertEqual(result, {'category': expected, 'source_stage': 'UNKNOWN', 'admission_reason': reason})
             self.assert_closed(result, reason)
-        for function, line, stage in [('<clinit>', 70, 'CLASS_INITIALIZATION'),
-                                      ('overrideRabbitVhost', 89, 'CONTEXT_PROPERTIES'),
-                                      ('cleanQueues', 110, 'BEFORE_EACH'),
-                                      ('acceptedOrigin', 566, 'TEST_ORIGIN'),
-                                      ('assertExportedWorker', 601, 'TEST_WORKER_SPAN'),
-                                      ('producer', 614, 'TEST_PRODUCER_SPAN'),
-                                      ('exportedSpan', 628, 'TEST_EXPORTED_SPAN'),
-                                      ('assertWorkerCorrelation', 637, 'TEST_WORKER_CORRELATION'),
-                                      ('collectorEndpoint', 650, 'COLLECTOR_ENDPOINT'),
-                                      ('writeCollectorReceipt', 675, 'COLLECTOR_RECEIPT')]:
-            result = classify(self.junit(function, line), self.test_source)
-            self.assertEqual(result['source_stage'], stage)
-            self.assert_closed(result, 'SIGNATURE_CLASSIFIED')
-        for function, line in [('privateMethod', 408), ('cleanQueues', 408),
-                               ('lambda$exportedSpan$10', 628)]:
-            result = classify(self.junit(function, line), self.test_source)
-            self.assertEqual(result['source_stage'], 'UNKNOWN')
-            self.assert_closed(result, 'SIGNATURE_UNCLASSIFIED')
-        result = classify(self.junit(function='privateMethod', category='private.Error'), self.test_source)
-        self.assertEqual(result, {'category': 'UNKNOWN', 'source_stage': 'UNKNOWN',
-                                  'admission_reason': 'SIGNATURE_UNCLASSIFIED'})
-        self.assert_closed(result, 'SIGNATURE_UNCLASSIFIED')
         root = ET.fromstring(self.junit())
-        root[1][0].text = ('java.lang.AssertionError: synthetic-private\n    Caused by: private.Error\n'
-                          + (root[1][0].text or '').split('\n', 1)[1])
-        result = classify(ET.tostring(root), self.test_source)
-        self.assertEqual(result['source_stage'], 'UNKNOWN')
-        self.assert_closed(result, 'SIGNATURE_UNCLASSIFIED')
+        root[1][0].text = 'java.lang.AssertionError: synthetic-private\n    Caused by: private.Error\n'
+        result = classify(ET.tostring(root))
+        self.assertEqual(result, {'category': 'ASSERTION', 'source_stage': 'UNKNOWN',
+                                  'admission_reason': 'SIGNATURE_CLASSIFIED'})
+        self.assert_closed(result, 'SIGNATURE_CLASSIFIED')
         for outputs in [(), ('system-out',), ('system-err',), ('system-out', 'system-err')]:
             root = ET.fromstring(self.junit())
             root[0].text = '\n  \t'
             for node in list(root)[2:]:
                 if node.tag not in outputs:
                     root.remove(node)
-            result = classify(ET.tostring(root), self.test_source)
-            self.assertEqual(result, {'category': 'ASSERTION', 'source_stage': 'SELECTED_TEST_BODY',
+            result = classify(ET.tostring(root))
+            self.assertEqual(result, {'category': 'ASSERTION', 'source_stage': 'UNKNOWN',
                                       'admission_reason': 'SIGNATURE_CLASSIFIED'})
             self.assert_closed(result, 'SIGNATURE_CLASSIFIED')
 
-    def test_selected_junit_rejects_wrong_identity_schema_xml_and_source(self):
+    def test_selected_junit_rejects_wrong_identity_schema_and_xml(self):
         classify = self.pipeline['background_test_failure']
         unknown = {'category': 'UNKNOWN', 'source_stage': 'UNKNOWN'}
         raw = self.junit()
@@ -502,13 +491,9 @@ class NativeFailureProjectionControls(unittest.TestCase):
                 reason = 'SIGNATURE_REJECTED'
             cases.append((ET.tostring(root), reason))
         for malformed, reason in cases:
-            result = classify(malformed, self.test_source)
+            result = classify(malformed)
             self.assertEqual(result, {**unknown, 'admission_reason': reason})
             self.assert_closed(result, reason)
-        for source in [self.test_source + b' ', b'']:
-            result = classify(raw, source)
-            self.assertEqual(result, {**unknown, 'admission_reason': 'SOURCE_REJECTED'})
-            self.assert_closed(result, 'SOURCE_REJECTED')
 
     def test_selected_junit_fixed_reader_freshness_symlink_bounds_and_stability(self):
         read = self.pipeline['read_background_test_failure']
@@ -517,9 +502,8 @@ class NativeFailureProjectionControls(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             report = root / self.pipeline['_BACKGROUND_TEST_REPORT']
-            source = root / self.pipeline['_BACKGROUND_TEST_SOURCE']
-            source.parent.mkdir(parents=True)
-            source.write_bytes(self.test_source)
+            source = root / 'unowned.xml'
+            source.write_bytes(self.junit())
             report.parent.mkdir(parents=True)
             with patch.dict(self.pipeline, ROOT=root, time=SimpleNamespace(time_ns=lambda: ended)):
                 started = ended = time.time_ns()
@@ -530,7 +514,7 @@ class NativeFailureProjectionControls(unittest.TestCase):
                 started = min(metadata.st_mtime_ns, metadata.st_ctime_ns)
                 ended = max(metadata.st_mtime_ns, metadata.st_ctime_ns)
                 with patch.object(os, 'open', wraps=os.open) as opened:
-                    self.assertEqual(read(started), {'category': 'ASSERTION', 'source_stage': 'SELECTED_TEST_BODY',
+                    self.assertEqual(read(started), {'category': 'ASSERTION', 'source_stage': 'UNKNOWN',
                                                     'admission_reason': 'SIGNATURE_CLASSIFIED'})
                 opened.assert_called_once_with(report, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK)
                 ended += 1
@@ -576,10 +560,6 @@ class NativeFailureProjectionControls(unittest.TestCase):
                     result = read(started)
                     self.assertEqual(result, {**unknown, 'admission_reason': 'READ_ERROR'})
                     self.assert_closed(result, 'READ_ERROR')
-                source.write_bytes(self.test_source + b' ')
-                self.assertEqual(read(started), {**unknown, 'admission_reason': 'SOURCE_REJECTED'})
-                source.unlink()
-                self.assertEqual(read(started), {**unknown, 'admission_reason': 'READ_ERROR'})
                 self.assert_closed(unknown, 'REPORT_REJECTED')
                 self.assert_closed(absent, 'NO_CURRENT_RESULT')
 
@@ -591,7 +571,7 @@ class NativeFailureProjectionControls(unittest.TestCase):
                 calls = []
                 def diagnostic(started):
                     calls.append(started)
-                    return {'category': 'ASSERTION', 'source_stage': 'SELECTED_TEST_BODY',
+                    return {'category': 'ASSERTION', 'source_stage': 'UNKNOWN',
                             'admission_reason': 'SIGNATURE_CLASSIFIED'}
                 namespace = dict(self.pipeline, td=Path(directory), ROOT=ROOT, _STATE=state, subprocess=subprocess, remaining_infra_only=False,
                                  read_background_test_failure=diagnostic)
@@ -607,7 +587,7 @@ class NativeFailureProjectionControls(unittest.TestCase):
                 self.assertEqual(len(calls), int(filename == 'background-gradle.private.log' and code != 0))
                 if calls:
                     self.assertEqual(state['background_test_failure'],
-                                     {'category': 'ASSERTION', 'source_stage': 'SELECTED_TEST_BODY',
+                                     {'category': 'ASSERTION', 'source_stage': 'UNKNOWN',
                                       'admission_reason': 'SIGNATURE_CLASSIFIED'})
                     self.assert_closed(state['background_test_failure'], 'SIGNATURE_CLASSIFIED')
                 else:

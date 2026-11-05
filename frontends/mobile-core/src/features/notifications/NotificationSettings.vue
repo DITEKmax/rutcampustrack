@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, nextTick, ref, useId, watch } from 'vue';
+import MobileIcon from '../../shared/components/MobileIcon.vue';
 import AdminCheckbox from '../../shared/components/AdminCheckbox.vue';
 import {
   notificationCatalogMatchesPreferences,
@@ -15,11 +16,13 @@ import {
   changeNotificationChannelMode,
   changeNotificationDelivery,
   notificationPreferencesUpdate,
+  notificationPreferencesDiffer,
   type NotificationDeliveryChannel,
 } from './notification-preferences-draft';
 import './notification-settings.pcss';
 
 const props = defineProps<{
+  studentUi?: boolean;
   catalog: NotificationCatalog;
   preferences: NotificationPreferencesV2;
   draft: NotificationPreferencesV2 | null;
@@ -40,6 +43,7 @@ const emit = defineEmits<{
   colors: [];
 }>();
 const value = computed(() => props.draft ?? props.preferences);
+const dirty = computed(() => notificationPreferencesDiffer(value.value, props.preferences));
 const compatible = computed(
   () =>
     notificationCatalogMatchesPreferences(props.catalog, props.preferences) &&
@@ -87,7 +91,8 @@ watch(
 );
 
 function save(next = value.value): void {
-  if (disabled.value || choiceOpen.value) return;
+  if (disabled.value || choiceOpen.value || !notificationPreferencesDiffer(next, props.preferences))
+    return;
   emit('save', notificationPreferencesUpdate(next, props.preferences.revision));
 }
 function commitMode(next: NotificationPreferencesV2): void {
@@ -141,13 +146,18 @@ function setDelivery(
       :disabled="disabled || choiceOpen"
       @click="switchMode"
     >
-      <span class="notification-settings__mode-label">Раздельные настройки<span class="notification-settings__mode-state">{{
-        value.splitChannels ? 'Включены' : 'Выключены'
-      }}</span></span>
+      <span class="notification-settings__mode-label"
+        >Раздельные настройки<span
+          v-if="!studentUi"
+          class="notification-settings__mode-state"
+          >{{ value.splitChannels ? 'Включены' : 'Выключены' }}</span
+        ></span
+      >
       <span
         class="notification-settings__slider"
         aria-hidden="true"
-      ><span /></span>
+        ><span
+      /></span>
     </button>
     <div
       v-if="choiceOpen"
@@ -236,96 +246,103 @@ function setDelivery(
       class="notification-settings__capability"
       role="status"
     >
-      <p v-if="appPushAvailable === false">
-        Web Push недоступен на этом устройстве
-      </p>
-      <p v-if="!preferences.telegramLinked">
-        Telegram не привязан
-      </p>
+      <p v-if="appPushAvailable === false"> Web Push недоступен на этом устройстве </p>
+      <p v-if="!preferences.telegramLinked"> Telegram не привязан </p>
     </div>
     <slot name="capability" />
     <form @submit.prevent="save()">
-      <table
-        class="notification-settings__matrix"
-        :data-split="value.splitChannels"
+      <div
+        class="notification-settings__matrix-scroll"
+        role="region"
+        aria-label="Каналы доставки уведомлений"
+        tabindex="0"
       >
-        <caption class="notification-settings__sr">
-          Доставка по типам уведомлений
-        </caption>
-        <colgroup>
-          <col><col class="notification-settings__channel-col"><col
-            v-if="value.splitChannels"
-            class="notification-settings__channel-col"
-          >
-        </colgroup>
-        <thead>
-          <tr>
-            <th scope="col">
-              Уведомления
-            </th><th scope="col">
-              {{ value.splitChannels ? 'TMA/PWA' : 'Получать' }}
-            </th><th
-              v-if="value.splitChannels"
-              scope="col"
-            >
-              Telegram
-            </th>
-          </tr>
-        </thead>
-        <tbody
-          v-for="group in groups"
-          :key="group.id"
+        <table
+          class="notification-settings__matrix"
+          :data-split="value.splitChannels"
         >
-          <tr class="notification-settings__group">
-            <th
-              :colspan="value.splitChannels ? 3 : 2"
-              scope="rowgroup"
-            >
-              {{ group.label }}
-            </th>
-          </tr>
-          <tr
-            v-for="type in group.types"
-            :key="type.id"
-            class="notification-settings__row"
-          >
-            <th scope="row">
-              {{ type.label }}
-            </th>
-            <td class="notification-settings__channel">
-              <AdminCheckbox
-                :model-value="type.preferences.appPush"
-                :label="`${type.label}: ${value.splitChannels ? 'TMA/PWA' : 'TMA/PWA и Telegram'}`"
-                :disabled="deliveryDisabled || choiceOpen"
-                @update:model-value="setDelivery(type.id, 'appPush', $event)"
-              />
-            </td>
-            <td
+          <caption class="notification-settings__sr"> Доставка по типам уведомлений </caption>
+          <colgroup>
+            <col /><col class="notification-settings__channel-col" /><col
               v-if="value.splitChannels"
-              class="notification-settings__channel"
+              class="notification-settings__channel-col"
+            />
+          </colgroup>
+          <thead>
+            <tr>
+              <th scope="col"> <span class="notification-settings__sr">Тип уведомления</span> </th
+              ><th scope="col"> {{ value.splitChannels ? 'TMA/PWA' : 'Получать' }} </th
+              ><th
+                v-if="value.splitChannels"
+                scope="col"
+              >
+                Telegram
+              </th>
+            </tr>
+          </thead>
+          <tbody
+            v-for="group in groups"
+            :key="group.id"
+          >
+            <tr :class="studentUi ? 'notification-settings__sr' : 'notification-settings__group'">
+              <th
+                :colspan="value.splitChannels ? 3 : 2"
+                scope="rowgroup"
+              >
+                {{ group.label }}
+              </th>
+            </tr>
+            <tr
+              v-for="type in group.types"
+              :key="type.id"
+              class="notification-settings__row"
             >
-              <AdminCheckbox
-                :model-value="type.preferences.telegram"
-                :label="`${type.label}: Telegram`"
-                :disabled="deliveryDisabled || choiceOpen"
-                @update:model-value="setDelivery(type.id, 'telegram', $event)"
-              />
-            </td>
-          </tr>
-        </tbody>
-      </table>
+              <th scope="row">
+                {{ type.label }}
+              </th>
+              <td class="notification-settings__channel">
+                <AdminCheckbox
+                  :model-value="type.preferences.appPush"
+                  :label="`${type.label}: ${value.splitChannels ? 'TMA/PWA' : 'TMA/PWA и Telegram'}`"
+                  :disabled="deliveryDisabled || choiceOpen"
+                  @update:model-value="setDelivery(type.id, 'appPush', $event)"
+                />
+              </td>
+              <td
+                v-if="value.splitChannels"
+                class="notification-settings__channel"
+              >
+                <AdminCheckbox
+                  :model-value="type.preferences.telegram"
+                  :label="`${type.label}: Telegram`"
+                  :disabled="deliveryDisabled || choiceOpen"
+                  @update:model-value="setDelivery(type.id, 'telegram', $event)"
+                />
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
       <button
         class="notification-settings__colors"
+        aria-label="Цвета уведомлений"
         type="button"
         :disabled="busy || choiceOpen"
         @click="emit('colors')"
       >
-        Цвета уведомлений<span aria-hidden="true">›</span>
+        Цвета уведомлений<MobileIcon
+          v-if="studentUi"
+          name="back"
+        /><span
+          v-else
+          aria-hidden="true"
+          >›</span
+        >
       </button>
       <button
         class="notification-settings__save"
         type="submit"
-        :disabled="disabled || choiceOpen"
+        :disabled="disabled || choiceOpen || !dirty"
       >
         {{ busy ? 'Сохраняем…' : 'Сохранить настройки' }}
       </button>

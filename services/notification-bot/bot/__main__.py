@@ -28,7 +28,14 @@ from bot.handlers import (
 )
 from bot.handlers.role_reads import LessonChoices
 from bot.middlewares import ObservabilityMiddleware
-from bot.observability import METRICS_REGISTRY, TASK_ALIVE, SendQueueCollector, setup_observability
+from bot.observability import (
+    METRICS_REGISTRY,
+    STARTUP_COMPLETED,
+    STARTUP_FAILED,
+    TASK_ALIVE,
+    SendQueueCollector,
+    setup_observability,
+)
 from bot.services.academic_http_client import AcademicHttpClient
 from bot.services.attendance_http_client import AttendanceHttpClient
 from bot.services.auth_http_client import AuthHttpClient
@@ -78,6 +85,10 @@ async def run_health_server() -> None:
 async def metrics_handler(request: web.Request) -> web.Response:
     for name, task in (("watchdog", _consumer_task), ("polling", _bot_task), ("keyboard_sync", _keyboard_sync_task)):
         TASK_ALIVE.labels(name).set(int(task is not None and not task.done()))
+    settled = _keyboard_sync_task is not None and _keyboard_sync_task.done() and not _keyboard_sync_task.cancelled()
+    failed = settled and _keyboard_sync_task.exception() is not None
+    STARTUP_COMPLETED.labels("keyboard_sync").set(int(settled and not failed))
+    STARTUP_FAILED.labels("keyboard_sync").set(int(failed))
     return web.Response(body=generate_latest(METRICS_REGISTRY), headers={"Content-Type": CONTENT_TYPE_LATEST})
 
 

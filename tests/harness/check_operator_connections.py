@@ -40,6 +40,36 @@ def main():
         assert certificate['read_only'] is True
         assert certificate['source'] == str(vault / 'files/attendance-tls/attendance-server.crt')
         assert not any(m['source'].endswith('attendance-server.key') for m in academic['volumes'])
+        bot = model['services']['notification-bot']
+        assert bot['environment']['ATTENDANCE_GRPC_HOST'] == 'attendance-service'
+        assert bot['environment']['ATTENDANCE_GRPC_PORT'] == '19093'
+        assert bot['environment']['ATTENDANCE_GRPC_TLS_ENABLED'] == 'true'
+        bot_trust = bot['environment']['ATTENDANCE_GRPC_TLS_CA_PATH']
+        bot_certificate = next(m for m in bot['volumes'] if m['target'] == bot_trust)
+        assert bot_certificate['read_only'] is True
+        assert bot_certificate['source'] == certificate['source']
+        assert not any(m['source'].endswith('attendance-server.key') for m in bot['volumes'])
+        schedule = model['services']['schedule-service']
+        for receiver, port in [('attendance', '19093'), ('academic', '19091')]:
+            prefix = 'CONSTRUCTOR_' + receiver.upper() + '_GRPC_'
+            assert schedule['environment'][prefix + 'ADDRESS'] == 'dns:///' + receiver + '-service:' + port
+            assert schedule['environment'][prefix + 'AUTHORITY'] == receiver + '-service'
+            ca = schedule['environment'][prefix + 'CA_PATH'].removeprefix('file:')
+            trust_mount = next(m for m in schedule['volumes'] if m['target'] == ca)
+            assert trust_mount['read_only'] is True
+            assert trust_mount['source'] == str(vault / ('files/' + receiver + '-tls/' + receiver + '-server.crt'))
+            assert not any(m['source'].endswith(receiver + '-server.key') for m in schedule['volumes'])
+            key = 'CONSTRUCTOR_RPC_SCHEDULE_TO_' + receiver.upper() + '_TOKEN_FILE'
+            name = M.FILES[key]
+            assert model['secrets'][name]['file'] == str(vault / 'files' / name)
+            recipients = []
+            for service_name, service in model['services'].items():
+                for secret in service.get('secrets', []):
+                    if secret['source'] == name:
+                        recipients.append(service_name)
+                        assert secret['target'] == '/run/rct-directed/' + name
+                        assert service['environment'][key] == secret['target']
+            assert sorted(recipients) == sorted(['schedule-service', receiver + '-service'])
         # Actual Academic UID can read the exact client trust mount. Reuse cached nginx shell image only.
         run(['docker', 'run', '--rm', '--network', 'none', '--user', '10001:10001',
              '--mount', 'type=bind,source=' + certificate['source'] + ',target=/trust,readonly',
@@ -60,7 +90,7 @@ def main():
         assert observer['services']['observer-proxy']['ports'][0]['published'] == '18880'
         assert not any('ports' in observer['services'][n] for n in ('glitchtip', 'pyroscope', 'homepage'))
         assert not set(observer['services']).intersection(model['services'])
-        print('PASS template POSIX active paths; five additional loopback API ports; Academic Attendance trust exact mount+UID; optional observer DB/proxy ports and release separation; no stack started')
+        print('PASS template POSIX active paths; five additional loopback API ports; Academic Attendance trust exact mount+UID; bot Attendance TLS and constructor pair-only credential files/public CA trust; optional observer DB/proxy ports and release separation; no stack started')
 
 
 if __name__ == '__main__':

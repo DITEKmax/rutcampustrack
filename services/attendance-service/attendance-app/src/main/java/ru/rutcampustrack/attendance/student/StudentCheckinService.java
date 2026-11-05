@@ -406,9 +406,9 @@ public class StudentCheckinService {
         geoEvidence.put(
                 "verdict",
                 geoDecision == null ? "UNAVAILABLE" : geoAccepted ? "ACCEPTED" : "OUTSIDE_RADIUS");
-        if (!geoAccepted && geo instanceof Coordinates coordinates) {
-            // Keep only the unconfirmed attempt's original coordinates beside its evaluated
-            // distance snapshot.
+        if (geoDecision != null && geo instanceof Coordinates coordinates) {
+            // Keep the evaluated coordinates in the internal audit. Read-side authorization and
+            // outcome-based redaction control whether an API reader can see them.
             geoEvidence.put("latitude", coordinates.latitude());
             geoEvidence.put("longitude", coordinates.longitude());
         }
@@ -458,6 +458,7 @@ public class StudentCheckinService {
             journalAttachmentPort.delete(
                     lesson.semesterId(), lesson.id(), identity.userId(), identity.groupId());
         }
+        attendance.setExcuseRequestId(null);
         attendance.setExcuseReason(null);
         attendance.setExcuseType(null);
         attendance.setExcuseComment(null);

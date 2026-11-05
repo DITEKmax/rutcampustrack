@@ -133,12 +133,15 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(TmaValidationException.class)
     public ResponseEntity<ErrorResponse> handleTmaValidation(
             TmaValidationException ex, HttpServletRequest request) {
-        return problem(
-                HttpStatus.UNAUTHORIZED,
-                "tma-validation-failed",
-                "Telegram Mini App валидация не пройдена",
-                ex.getMessage(),
-                request);
+        ErrorResponse body = new ErrorResponse(
+                401, ErrorResponse.PROBLEM_BASE + "tma-validation-failed",
+                "Telegram authentication failed", "Telegram authentication proof was denied",
+                request.getRequestURI(), Instant.now(), MDC.get(MDC_TRACE_ID), null, null,
+                Map.of("code", ex.code().name()));
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .cacheControl(CacheControl.noStore())
+                .contentType(MediaType.APPLICATION_PROBLEM_JSON)
+                .body(body);
     }
 
     @ExceptionHandler(SessionAdmissionException.class)

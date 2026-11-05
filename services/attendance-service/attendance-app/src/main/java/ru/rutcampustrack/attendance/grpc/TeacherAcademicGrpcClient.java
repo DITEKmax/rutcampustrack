@@ -17,6 +17,8 @@ import ru.rutcampustrack.teacher.grpc.TeacherAssignmentsResponse;
 /** Forwards the validated teacher identity to the teacher-specific Academic read API. */
 @Component
 public final class TeacherAcademicGrpcClient {
+    @org.springframework.beans.factory.annotation.Autowired
+    private org.springframework.beans.factory.ObjectProvider<ru.rutcampustrack.attendance.security.RequestContext> httpContext;
     private static final Metadata.Key<String> INTERNAL_TOKEN =
             Metadata.Key.of("x-internal-token", Metadata.ASCII_STRING_MARSHALLER);
 
@@ -25,7 +27,12 @@ public final class TeacherAcademicGrpcClient {
 
     public TeacherAssignmentsResponse fullSemesterAssignments(long semesterId) {
         if (semesterId <= 0) throw new BadRequestException("semester_id must be positive");
-        String token = TeacherAttendanceGrpcIdentity.requireToken();
+        String token = TeacherAttendanceGrpcIdentity.SIGNED_TOKEN.get();
+        if (token == null && httpContext != null) {
+            try { token = httpContext.getObject().getInternalToken(); }
+            catch (org.springframework.beans.factory.support.ScopeNotActiveException noHttpRequest) { /* gRPC uses its context above */ }
+        }
+        if (token == null || token.isBlank()) throw new AccessDeniedException("Signed teacher identity required");
         Metadata headers = new Metadata();
         headers.put(INTERNAL_TOKEN, token);
         try {

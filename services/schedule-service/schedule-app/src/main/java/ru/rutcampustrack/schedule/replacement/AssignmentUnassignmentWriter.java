@@ -183,7 +183,10 @@ public class AssignmentUnassignmentWriter {
                          SELECT 1 FROM schedule_assignment_binding_ledger ledger
                          JOIN schedule_assignment_replacement_operations closure ON closure.operation_id=ledger.operation_id
                          WHERE ledger.occurrence_id=occurrence.id AND ledger.after_assignment_id IS NULL
-                           AND closure.operation_kind='CLOSE_UNASSIGN' AND closure.state='COMMITTED')))
+                           AND closure.operation_kind='CLOSE_UNASSIGN' AND closure.state='COMMITTED')
+                         OR NOT ? AND constructor_natural_unassigned_origin(occurrence.id) IS NOT NULL
+                            AND NOT EXISTS(SELECT 1 FROM schedule_assignment_binding_ledger earlier
+                                WHERE earlier.occurrence_id=occurrence.id AND earlier.after_assignment_id IS NOT NULL)))
                  ORDER BY occurrence.id FOR UPDATE OF occurrence
                 """,
                         authority.getGroupId(),
@@ -194,6 +197,7 @@ public class AssignmentUnassignmentWriter {
                         LocalDate.parse(authority.getTargetValidUntilExclusive()),
                         close,
                         source(authority),
+                        close,
                         close);
         long changed = 0;
         long held = 0;
@@ -214,6 +218,16 @@ public class AssignmentUnassignmentWriter {
                                     "SELECT status::text NOT IN ('active','closed') AND (date + start_time) AT TIME ZONE 'Europe/Moscow' > NOW() FROM lessons WHERE id=?",
                                     Boolean.class,
                                     lessonId);
+            // A retrospectively published assignment may bind an originally unassigned
+            // semester occurrence without replacing its physical row, marks or history.
+            if (!close && occurrence.get("assignment_id") == null && lesson != null
+                    && "closed".equals(lesson.get("status").toString())
+                    && jdbc.queryForObject(
+                            "SELECT constructor_natural_unassigned_origin(?) IS NOT NULL AND NOT EXISTS "
+                                    + "(SELECT 1 FROM schedule_assignment_binding_ledger WHERE occurrence_id=? AND after_assignment_id IS NOT NULL)",
+                            Boolean.class, occurrence.get("id"), occurrence.get("id"))) {
+                eligible = true;
+            }
             if (!Boolean.TRUE.equals(eligible)) {
                 held++;
                 continue;

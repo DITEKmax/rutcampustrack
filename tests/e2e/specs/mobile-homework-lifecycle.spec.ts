@@ -1520,6 +1520,7 @@ isolated(
 // both existing management clients with current own-group authority.
 isolated(
   'HEADMAN author manual DELETE retains one read-only archive and edit history after replay @real-mobile',
+  { tag: '@homework-archive-history' },
   async ({ page, scenario: dataset }, info) => {
     test.setTimeout(120000);
     const caseDeadline = Date.now() + 110000;

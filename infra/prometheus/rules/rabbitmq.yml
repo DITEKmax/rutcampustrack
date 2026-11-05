@@ -2,7 +2,7 @@ groups:
 - name: rabbitmq
   rules:
   - alert: DLQBacklog
-    expr: rabbitmq_detailed_queue_messages{queue=~".*\\.dlq"} > 0
+    expr: rabbitmq_detailed_queue_messages{queue=~".*\\.(dlq|parked)"} > 0
     for: 1m
     labels:
       severity: warning
@@ -13,7 +13,7 @@ groups:
         and the DLQ runbook; preserve the message and avoid an infinite redrive loop.
       runbook_url: https://github.com/DITEKmax/rutcampustrack/blob/main/docs/operations/runbooks/dlq-triage.md
   - alert: RabbitMQQueueBacklog
-    expr: rabbitmq_detailed_queue_messages{queue!~".*\\.dlq"} > 1000
+    expr: rabbitmq_detailed_queue_messages{queue!~".*\\.(dlq|parked)"} > 1000
     for: 5m
     labels:
       severity: warning
@@ -40,7 +40,7 @@ groups:
         \ + service logs."
       runbook_url: https://github.com/DITEKmax/rutcampustrack/blob/main/docs/operations/runbooks/dlq-triage.md
   - alert: RabbitMQConsumerMissing
-    expr: rabbitmq_detailed_queue_consumers{queue!~".*\\.(dlq|retry)"} == 0 and on (job, instance, vhost, queue) rabbitmq_detailed_queue_messages
+    expr: rabbitmq_detailed_queue_consumers{queue!~".*\\.(dlq|retry|parked)"} == 0 and on (job, instance, vhost, queue) rabbitmq_detailed_queue_messages
       > 0
     for: 2m
     labels:
@@ -49,5 +49,5 @@ groups:
     annotations:
       summary: Pending queue {{ $labels.queue }} has no consumer
       description: Messages cannot be processed. Inspect consumer readiness, broker connection and retry budget. Do not purge/requeue
-        poison messages blindly. Retry TTL queues intentionally have no consumer and are excluded.
+        poison messages blindly. Retry TTL and retained parked queues intentionally have no consumer and are excluded.
       runbook_url: https://github.com/DITEKmax/rutcampustrack/blob/main/docs/operations/runbooks/dlq-triage.md

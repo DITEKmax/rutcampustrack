@@ -392,6 +392,16 @@ public class MobileAttendanceClient {
                 ProblemCode.ATTACHMENT_NOT_FOUND);
     }
 
+    public StudentRequestAttachmentDownload downloadAttendanceAttachment(
+            long semesterId, long lessonId, String attachmentId, String expectedMarkRevision) {
+        return call("downloadAttendanceAttachment", () -> auth.attach(stub)
+                .withDeadlineAfter(10, TimeUnit.SECONDS).downloadStudentAttendanceAttachment(
+                        StudentAttendanceAttachmentRequest.newBuilder().setSemesterId(semesterId)
+                                .setLessonId(lessonId).setAttachmentId(attachmentId)
+                                .setExpectedMarkRevision(expectedMarkRevision).build()),
+                ProblemCode.ATTACHMENT_NOT_FOUND);
+    }
+
     private static <T> T call(String operation, Callable<T> action, ProblemCode notFoundCode) {
         try {
             return action.call();

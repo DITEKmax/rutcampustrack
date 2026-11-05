@@ -7,6 +7,7 @@ import grpc
 
 from bot.observability import (
     CONSUMER_CONNECTED,
+    EVENT_FAILURES,
     EVENT_OUTCOMES,
     bind_trace_context,
     event_trace_context,
@@ -22,6 +23,45 @@ DLQ_EXCHANGE_NAME = "rut-uit.events.dlq"
 QUEUE_NAME = "notification-bot.events"
 DLQ_QUEUE_NAME = "notification-bot.events.dlq"
 DLQ_ROUTING_KEY = "notification-bot.events.dlq"
+PARKING_QUEUE_NAME = "notification-bot.events.parked"
+RETRY_HEADER = "x-bot-retry-count"
+MAX_RETRIES = 8
+RETRY_DELAYS = (1, 2, 4, 8, 8, 8, 8, 8)
+
+
+def failure_reason(error):
+    """Finite diagnostics only: exception text and payloads must never enter telemetry."""
+    seen = set()
+    cause = error
+    while cause is not None and id(cause) not in seen:
+        seen.add(id(cause))
+        if isinstance(cause, grpc.aio.AioRpcError):
+            code = cause.code()
+            reason = "grpc_" + code.name.lower()
+            if reason not in {
+                "grpc_unavailable",
+                "grpc_deadline_exceeded",
+                "grpc_unknown",
+                "grpc_internal",
+                "grpc_resource_exhausted",
+                "grpc_aborted",
+                "grpc_unauthenticated",
+                "grpc_permission_denied",
+                "grpc_not_found",
+                "grpc_invalid_argument",
+            }:
+                reason = "grpc_other"
+            return reason, code in {grpc.StatusCode.NOT_FOUND, grpc.StatusCode.INVALID_ARGUMENT}
+        if isinstance(cause, (ValueError, TypeError)):
+            return "invalid_context", True
+        if isinstance(cause, TimeoutError):
+            return "deadline", False
+        next_cause = cause.__cause__ or cause.__context__
+        if next_cause is None:
+            if isinstance(cause, NotificationPreferencesUnavailable):
+                return "unavailable", False
+        cause = next_cause
+    return "internal_error", False
 
 
 async def start_consumer(
@@ -74,6 +114,9 @@ async def start_consumer(
     )
     await dlq_queue.bind(dlq_exchange, routing_key=DLQ_ROUTING_KEY)
 
+    # Operator-owned recovery, deliberately without expiry/drop-head. Never clear on startup.
+    await channel.declare_queue(PARKING_QUEUE_NAME, durable=True)
+
     # Declare main queue with DLQ arguments
     queue = await channel.declare_queue(
         QUEUE_NAME,
@@ -104,6 +147,7 @@ async def start_consumer(
 
     async def process_in_transaction(message, preparation):
         event_id = claim_token = batch = heartbeat = None
+        body = None
         lease_lost = False
         owner = asyncio.current_task()
 
@@ -133,6 +177,83 @@ async def start_consumer(
                 logger.warning("Lease loss defers original event_id=%s", telemetry_id(event_id) or "unknown")
                 owner.cancel()
 
+        async def defer(error=None, *, reason=None):
+            replacement_body = message.body
+            if body is not None and "_bot_prepared" in body:
+                try:
+                    async with asyncio.timeout(min(8, budget)):
+                        if batch is not None:
+                            await batch.settle()
+                        snapshot = await dispatcher.snapshot_progress(body)
+                    replacement_body = json.dumps(snapshot, ensure_ascii=False).encode("utf-8")
+                except BaseException:
+                    # No ACK/DLQ if confirmed progress cannot be safely persisted.
+                    # Roll back and retain the original and its lease for recovery.
+                    preparation["publish_started"] = True
+                    raise
+            reason, terminal = (reason, False) if reason is not None else failure_reason(error)
+            headers = dict(getattr(message, "headers", None) or {})
+            attempt = headers.get(RETRY_HEADER, 0)
+            coordination_wait = reason == "lease_busy"
+            if type(attempt) is not int or not 0 <= attempt <= MAX_RETRIES:
+                attempt = MAX_RETRIES
+                if not coordination_wait:
+                    reason, terminal = "invalid_retry_metadata", True
+            parked = not coordination_wait and (terminal or attempt >= MAX_RETRIES)
+            EVENT_FAILURES.labels(reason).inc()
+            cause = error
+            seen = set()
+            while cause is not None and id(cause) not in seen:
+                seen.add(id(cause))
+                nested = cause.__cause__ or cause.__context__
+                if nested is None:
+                    break
+                cause = nested
+            origin = "unknown"
+            traceback = cause.__traceback__ if cause is not None else None
+            while traceback is not None:
+                origin = f"{traceback.tb_frame.f_code.co_name}:{traceback.tb_lineno}"
+                traceback = traceback.tb_next
+            logger.warning(
+                "Event recovery reason=%s cause=%s origin=%s attempt=%d action=%s event_id=%s",
+                reason,
+                type(cause).__name__ if cause is not None else "LeaseBusy",
+                origin,
+                attempt,
+                "parked" if parked else "deferred",
+                telemetry_id(event_id) or "unknown",
+            )
+            if not parked:
+                try:
+                    await asyncio.sleep(RETRY_DELAYS[-1] if coordination_wait else RETRY_DELAYS[attempt])
+                except asyncio.CancelledError:
+                    preparation["outcome"] = "cancelled"
+                    await requeue(message, delay=False)
+                    raise
+                # Waiting for an active owner is not another handler failure. Do not
+                # park its duplicate before that owner can finish writing receipts.
+                headers[RETRY_HEADER] = attempt if coordination_wait else attempt + 1
+            headers["x-bot-recovery-reason"] = reason
+            replacement = aio_pika.Message(
+                replacement_body,
+                headers=headers,
+                delivery_mode=aio_pika.DeliveryMode.PERSISTENT,
+                content_type=getattr(message, "content_type", None) or "application/json",
+                message_id=event_id,
+                correlation_id=getattr(message, "correlation_id", None),
+            )
+            # Publish and original ACK commit atomically. Any ambiguous publish/ACK/commit
+            # closes the channel; the original or its one durable replacement survives.
+            preparation["publish_started"] = True
+            async with asyncio.timeout(min(8, budget)):
+                await channel.default_exchange.publish(
+                    replacement,
+                    routing_key=PARKING_QUEUE_NAME if parked else QUEUE_NAME,
+                    mandatory=True,
+                )
+            preparation["outcome"] = "parked" if parked else "deferred"
+            return release
+
         async with message.process(requeue=False, ignore_processed=True):
             try:
                 # Deadline includes authority, queue/rate/backoff/429 and provider waits.
@@ -142,6 +263,15 @@ async def start_consumer(
                     event_id = body.get("event_id")
                     event_type = telemetry_event_type(body.get("event_type"))
                     with bind_trace_context(body.get("trace_id"), event_type=event_type, event_id=event_id):
+                        # Validate before any lease lookup: even a busy/failed claim must
+                        # never launder public prepared roles into our private retry route.
+                        is_prepared = "_bot_prepared" in body
+                        if is_prepared:
+                            if message.exchange != "" or message.routing_key != QUEUE_NAME:
+                                raise ValueError("Prepared audience has invalid transport provenance")
+                            from bot.notifications.audience import prepared_audience
+
+                            prepared_audience(body)
                         if idempotency_guard is not None:
                             claim = getattr(idempotency_guard, "claim", None)
                             if claim is None:
@@ -153,23 +283,16 @@ async def start_consumer(
                                 if claim_token is None:
                                     preparation["outcome"] = "duplicate"
                                     if not await idempotency_guard.is_completed(event_id):
-                                        preparation["outcome"] = "deferred"
-                                        await requeue(message)
+                                        return await defer(reason="lease_busy")
                                     return
                                 if getattr(idempotency_guard, "renew", None) is not None:
                                     heartbeat = asyncio.create_task(renew())
-                        if "_bot_prepared" in body:
-                            # Only the bot's private default-exchange same-queue projection carries roles.
-                            if message.exchange != "" or message.routing_key != QUEUE_NAME:
-                                raise ValueError("Prepared audience has invalid transport provenance")
-                            from bot.notifications.audience import prepared_audience
-
-                            prepared_audience(body)
-                        elif dispatcher and getattr(dispatcher, "prepare", None) is not None:
+                        if not is_prepared and dispatcher and getattr(dispatcher, "prepare", None) is not None:
                             prepared = await dispatcher.prepare(body)
                             if prepared is not None:
                                 projection = aio_pika.Message(
                                     json.dumps(prepared, ensure_ascii=False).encode("utf-8"),
+                                    headers=dict(getattr(message, "headers", None) or {}),
                                     delivery_mode=aio_pika.DeliveryMode.PERSISTENT,
                                     content_type="application/json",
                                     message_id=event_id,
@@ -194,44 +317,32 @@ async def start_consumer(
                         if claim_token is not None:
                             if not await idempotency_guard.complete(event_id, claim_token):
                                 raise NotificationPreferencesUnavailable("Event lease lost at completion")
-            except (NotificationPreferencesUnavailable, TimeoutError):
-                preparation["outcome"] = "deferred"
+            except (NotificationPreferencesUnavailable, TimeoutError) as error:
                 if preparation["publish_started"]:
                     raise  # Rollback whole prepare TX; never combine projection with raw NACK.
                 if batch is not None:
                     batch.cancel()
-                await release()
-                await requeue(message)
+                if lease_lost:
+                    return await defer(reason="lease_lost")
+                return await defer(error)
             except asyncio.CancelledError:
                 preparation["outcome"] = "cancelled"
                 if preparation["publish_started"]:
                     raise
                 if batch is not None:
                     batch.cancel()
+                if lease_lost:
+                    return await defer(reason="lease_lost")
                 # Graceful shutdown/channel replacement behaves like a process crash.
                 # Do not wait for Redis while stopping the owner; its TTL is the fallback.
                 await requeue(message, delay=False)
-                if not lease_lost:
-                    raise
+                raise
             except grpc.aio.AioRpcError as error:
                 if preparation["publish_started"]:
                     raise
                 if batch is not None:
                     batch.cancel()
-                await release()
-                if error.code() in {
-                    grpc.StatusCode.UNAVAILABLE,
-                    grpc.StatusCode.DEADLINE_EXCEEDED,
-                    grpc.StatusCode.UNKNOWN,
-                    grpc.StatusCode.INTERNAL,
-                    grpc.StatusCode.RESOURCE_EXHAUSTED,
-                    grpc.StatusCode.ABORTED,
-                }:
-                    preparation["outcome"] = "deferred"
-                    await requeue(message)
-                else:
-                    preparation["outcome"] = "rejected"
-                    raise
+                return await defer(error)
             except BaseException:
                 preparation["outcome"] = "rejected"
                 if preparation["publish_started"]:

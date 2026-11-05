@@ -70,6 +70,37 @@ class StudentAttendanceProjectionServiceTest {
     }
 
     @Test
+    void lessonDocumentDownloadReauthorizesScopeRevisionAndAllowsReadOnlyStudent() {
+        var files = org.mockito.Mockito.mock(ru.rutcampustrack.attendance.studentrequest.StudentAttendanceAttachmentService.class);
+        service.setAttachments(files);
+        when(academicGrpcClient.resolveStudentProjectionScope(SEMESTER_ID)).thenReturn(scope());
+        when(scheduleGrpcClient.getLessonsByGroup(any(), any(), any(), any()))
+                .thenReturn(LessonsResponse.newBuilder().addLessons(lesson(11, 101, "2026-09-15", "closed")).build());
+        var mark = new AttendanceRecord(11L, OWN_ID, RANK_GROUP_ID, SUBJECT_ID,
+                LocalDate.of(2026, 9, 15), null, AttendanceStatus.EXCUSED, null,
+                "reason", "OTHER", "comment", null, null, null, null, "revision-1", "ticket");
+        when(attendanceReadPort.findByUserId(OWN_ID, SEMESTER_ID)).thenReturn(List.of(mark));
+        when(attendanceReadPort.findByLessonIdAndUserId(11L, OWN_ID)).thenReturn(java.util.Optional.of(mark));
+        var download = new ru.rutcampustrack.attendance.studentrequest.StudentRequestModels.AttachmentDownload(
+                new byte[]{1}, "application/pdf", "proof.pdf");
+        when(files.download(SEMESTER_ID, OWN_ID, mark, "file")).thenReturn(download);
+        InternalJwtClaims readOnly = new InternalJwtClaims(OWN_ID, claims().sessionId(), 1L, 1L,
+                "STUDENT", "GRADUATED", RANK_GROUP_ID, false, true);
+        assertThat(service.downloadAttachment(readOnly, SEMESTER_ID, 11, "file", "revision-1")).isSameAs(download);
+        assertThatThrownBy(() -> service.downloadAttachment(claims(), SEMESTER_ID, 11, "file", "stale"))
+                .isInstanceOf(ru.rutcampustrack.attendance.exception.ConflictException.class);
+        assertThatThrownBy(() -> service.downloadAttachment(claims(), SEMESTER_ID, 101, "file", "revision-1"))
+                .isInstanceOf(ru.rutcampustrack.attendance.contract.exception.ResourceNotFoundException.class);
+        when(attendanceReadPort.findByLessonIdAndUserId(11L, OWN_ID)).thenReturn(java.util.Optional.empty());
+        assertThatThrownBy(() -> service.downloadAttachment(claims(), SEMESTER_ID, 11, "file", "revision-1"))
+                .isInstanceOf(ru.rutcampustrack.attendance.exception.ConflictException.class);
+        when(academicGrpcClient.resolveStudentProjectionScope(SEMESTER_ID))
+                .thenReturn(scope().toBuilder().setStudentId(999).build());
+        assertThatThrownBy(() -> service.downloadAttachment(claims(), SEMESTER_ID, 11, "file", "revision-1"))
+                .isInstanceOf(StudentProjectionException.class);
+    }
+
+    @Test
     void projectsOwnReasonAndFullCommentAndCancellationWithoutStaleExcuseMetadata() {
         when(academicGrpcClient.resolveStudentProjectionScope(SEMESTER_ID))
                 .thenReturn(

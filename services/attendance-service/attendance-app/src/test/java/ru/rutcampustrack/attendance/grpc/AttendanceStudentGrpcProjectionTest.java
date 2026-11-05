@@ -49,10 +49,39 @@ class AttendanceStudentGrpcProjectionTest {
                     false);
 
     @Test
+    void attachmentDownloadMapsConflictAndGoneWithoutRequiringMutableSession() {
+        var projections = mock(StudentAttendanceProjectionService.class);
+        var handler = new AttendanceStudentGrpcServiceImpl(null, null, null, null, null, null, projections);
+        String file = "0123456789abcdef01234567";
+        var request = StudentAttendanceAttachmentRequest.newBuilder().setSemesterId(SEMESTER_ID)
+                .setLessonId(79).setAttachmentId(file).setExpectedMarkRevision("mark-1").build();
+        for (var failure : List.of(
+                new ru.rutcampustrack.attendance.exception.ConflictException("changed"),
+                new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.GONE, "expired"))) {
+            org.mockito.Mockito.doThrow(failure).when(projections)
+                    .downloadAttachment(CLAIMS, SEMESTER_ID, 79, file, "mark-1");
+            List<Throwable> errors = new ArrayList<>();
+            StreamObserver<StudentRequestAttachmentDownload> observer = new StreamObserver<>() {
+                public void onNext(StudentRequestAttachmentDownload value) { throw new AssertionError("Unexpected bytes"); }
+                public void onError(Throwable error) { errors.add(error); }
+                public void onCompleted() { throw new AssertionError("Unexpected completion"); }
+            };
+            Context.current().withValue(StudentGrpcIdentity.CLAIMS, CLAIMS)
+                    .run(() -> handler.downloadStudentAttendanceAttachment(request, observer));
+            assertThat(errors).hasSize(1);
+            assertThat(Status.fromThrowable(errors.getFirst()).getCode()).isEqualTo(
+                    failure instanceof ru.rutcampustrack.attendance.exception.ConflictException
+                            ? Status.Code.ABORTED : Status.Code.FAILED_PRECONDITION);
+        }
+    }
+
+    @Test
     void explanationWireKeepsFullCommentAndOptionalPresenceForDayAndHistory() throws Exception {
         var explanation =
                 new StudentAttendanceProjectionService.Explanation(
-                        "OTHER", "Другое", "Текст ".repeat(40), null);
+                        "OTHER", "Другое", "Текст ".repeat(40), null, List.of(
+                        new ru.rutcampustrack.attendance.studentrequest.StudentAttendanceAttachmentService.DocumentRef(
+                                "file-id", "proof.pdf", "application/pdf", 42, "ACTIVE", Instant.parse("2027-01-01T00:00:00Z"), "mark-1", 79)));
         var history =
                 new StudentAttendanceProjectionService.HistorySegment(
                         "canonical:78", "EXCUSED", explanation);
@@ -105,7 +134,7 @@ class AttendanceStudentGrpcProjectionTest {
                         lesson.endsAt(),
                         lesson.room(),
                         StudentAttendanceProjectionService.ScheduleState.CLOSED,
-                        excusedMark);
+                        excusedMark, null, explanation.documents());
         var subject = base.subjects().getFirst();
         var projected =
                 new StudentAttendanceProjectionService.Projection(
@@ -162,6 +191,11 @@ class AttendanceStudentGrpcProjectionTest {
                 StudentAttendanceProjectionResponse.parseFrom(
                         observed.responses.getFirst().toByteArray());
         var result = wire.getSubjects(0).getTypeCards(0).getHistory(0);
+        assertThat(result.getExplanation().getDocumentsCount()).isEqualTo(1);
+        assertThat(result.getExplanation().getDocuments(0).getLessonId()).isEqualTo(79);
+        assertThat(result.getExplanation().getDocuments(0).getMarkRevision()).isEqualTo("mark-1");
+        assertThat(wire.getDays(0).getLessons(1).getExplanation().getDocumentsList())
+                .isEqualTo(result.getExplanation().getDocumentsList());
         assertThat(result.getId()).isEqualTo("canonical:78");
         assertThat(result.hasExplanation()).isTrue();
         assertThat(result.getExplanation().hasComment()).isTrue();

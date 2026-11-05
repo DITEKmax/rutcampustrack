@@ -434,6 +434,9 @@ class EventDispatcher:
             return await prepare_business(event, self._academic_client)
         return None
 
+    async def snapshot_progress(self, event: dict):
+        return await self._delivery_state.snapshot(event)
+
     async def dispatch(self, event: dict):
         """Dispatch an event dict to the appropriate handler.
 

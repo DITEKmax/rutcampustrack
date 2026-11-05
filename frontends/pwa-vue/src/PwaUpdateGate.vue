@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { acquireInert } from '../../mobile-core/src/shared/inert-lease';
 import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import {
   APP_UPDATE_REQUIRED_EVENT,
@@ -15,6 +16,7 @@ const required = ref<PwaUpdateRequiredDetail | null>(null);
 const updating = ref(false);
 const updateButton = ref<HTMLButtonElement | null>(null);
 let intervalId: number | undefined;
+let releaseInert: (() => void) | undefined;
 
 function showUpdate(detail: PwaUpdateRequiredDetail): void {
   required.value = {
@@ -167,13 +169,13 @@ onMounted(() => {
 });
 
 watch(required, async (value) => {
-  const appRoot = document.getElementById('app');
   if (value) {
-    appRoot?.setAttribute('inert', '');
+    releaseInert ??= acquireInert(document.getElementById('app'));
     await nextTick();
     updateButton.value?.focus();
   } else {
-    appRoot?.removeAttribute('inert');
+    releaseInert?.();
+    releaseInert = undefined;
   }
 });
 
@@ -182,7 +184,8 @@ onBeforeUnmount(() => {
   window.removeEventListener(APP_UPDATE_REQUIRED_EVENT, onUpdateRequired);
   window.removeEventListener('online', checkPolicy);
   document.removeEventListener('visibilitychange', onVisibilityChange);
-  document.getElementById('app')?.removeAttribute('inert');
+  releaseInert?.();
+  releaseInert = undefined;
 });
 </script>
 

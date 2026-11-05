@@ -22,6 +22,15 @@ export function serverDate(serverNow?: string): string | null {
   if (!serverNow || !Number.isFinite(new Date(serverNow).getTime())) return null
   return new Date(serverNow).toLocaleDateString('sv-SE', { timeZone: 'Europe/Moscow' })
 }
+/** Session server clock advances with elapsed runtime; missing clock uses Moscow civil time. */
+export function academicToday(serverNow?: string, elapsedMs = 0, runtimeNow = Date.now()): string {
+  const serverTime = serverNow ? new Date(serverNow).getTime() : Number.NaN
+  return serverDate(
+    new Date(
+      Number.isFinite(serverTime) ? serverTime + Math.max(0, elapsedMs) : runtimeNow,
+    ).toISOString(),
+  )!
+}
 export function shortDate(date: string): string {
   return civilDate(date).toLocaleDateString('ru-RU', {
     timeZone: 'UTC',
@@ -43,7 +52,8 @@ export function attendanceBounds(data: AttendanceViewModel): { from: string; to:
 }
 export function calendarWeek(data: AttendanceViewModel, date: string): readonly AttendanceDay[] {
   const now = serverDate(data.serverNow)
-  return Array.from({ length: 7 }, (_, index) => {
+  const bounds = attendanceBounds(data)
+  return Array.from({ length: 7 }, (_, index): AttendanceDay => {
     const day = shiftDate(monday(date), index)
     return (
       data.days.find((candidate) => candidate.date === day) ?? {
@@ -54,7 +64,7 @@ export function calendarWeek(data: AttendanceViewModel, date: string): readonly 
         lessons: [],
       }
     )
-  })
+  }).filter((day) => !bounds || (day.date >= bounds.from && day.date <= bounds.to))
 }
 function unknownMetrics(): AttendanceMetricSet {
   return {
@@ -79,8 +89,8 @@ export function graphPeriods(
   const bounds = attendanceBounds(data)
   if (!bounds) return []
   const step = range === 'days' ? 1 : 7
-  const start = monday(bounds.from)
-  const end = shiftDate(monday(bounds.to), 6)
+  const start = range === 'days' ? bounds.from : monday(bounds.from)
+  const end = bounds.to
   const now = serverDate(data.serverNow)
   const supplied = new Map(
     data.graph[range].map((point) => [
@@ -90,7 +100,8 @@ export function graphPeriods(
   )
   const result: AttendancePeriod[] = []
   for (let from = start; from <= end; from = shiftDate(from, step)) {
-    const to = shiftDate(from, step - 1)
+    const clippedFrom = from < bounds.from ? bounds.from : from
+    const to = shiftDate(from, step - 1) < bounds.to ? shiftDate(from, step - 1) : bounds.to
     const point = supplied.get(from)
     result.push({
       ...(point ?? {
@@ -98,14 +109,14 @@ export function graphPeriods(
         metrics: unknownMetrics(),
         state: now && from > now ? ('FUTURE' as const) : ('NO_DATA' as const),
       }),
-      dateFrom: from,
+      dateFrom: clippedFrom,
       dateTo: to,
       label:
         range === 'days'
-          ? `${weekday(from)} ${shortDate(from)}`
-          : `${shortDate(from)} – ${shortDate(to)}`,
+          ? `${weekday(clippedFrom)} ${shortDate(clippedFrom)}`
+          : `${shortDate(clippedFrom)} – ${shortDate(to)}`,
       missing: !point,
-      outsideSemester: to < bounds.from || from > bounds.to,
+      outsideSemester: false,
       unfinished: Boolean(now && from <= now && point?.state === 'FUTURE'),
     })
   }

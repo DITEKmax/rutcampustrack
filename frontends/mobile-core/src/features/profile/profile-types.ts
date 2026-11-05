@@ -21,6 +21,7 @@ export type ProfileRoute =
   | 'role-switch'
   | 'appearance'
   | 'security'
+  | 'browser-login'
   | 'sessions'
   | 'history'
 export type ProfileAuthMethod = 'PASSWORD' | 'OTP' | 'TMA' | 'QR'

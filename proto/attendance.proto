@@ -1,4 +1,5 @@
 syntax = "proto3";
+import "google/protobuf/timestamp.proto";
 
 package rutcampustrack.attendance;
 
@@ -84,6 +85,8 @@ service AttendanceStudentGrpcService {
   rpc CancelStudentRequest (StudentRequestId) returns (StudentRequestDetail);
   rpc DownloadStudentRequestAttachment (StudentRequestAttachmentId)
       returns (StudentRequestAttachmentDownload);
+  rpc DownloadStudentAttendanceAttachment (StudentAttendanceAttachmentRequest)
+      returns (StudentRequestAttachmentDownload);
   rpc GetStudentAttendanceProjection (StudentAttendanceProjectionRequest)
       returns (StudentAttendanceProjectionResponse);
   rpc GetStudentAttendanceRanking (StudentAttendanceRankingRequest)
@@ -146,6 +149,24 @@ message StudentAttendanceSnapshotResponse {
 // Server-owned student attendance/statistics read model.  The request carries
 // only a semester and optional view filters; identity and all authorization
 // come from the signed internal JWT at the gRPC boundary.
+message StudentAttendanceAttachmentRequest {
+  int64 semester_id = 1;
+  int64 lesson_id = 2;
+  string attachment_id = 3;
+  string expected_mark_revision = 4;
+}
+
+message StudentAttendanceDocument {
+  string id = 1;
+  string name = 2;
+  string content_type = 3;
+  int64 size = 4;
+  string state = 5;
+  optional google.protobuf.Timestamp expires_at = 6;
+  string mark_revision = 7;
+  int64 lesson_id = 8;
+}
+
 message StudentAttendanceProjectionRequest {
   int64 semester_id = 1;
   optional int64 subject_id = 2;
@@ -236,6 +257,7 @@ message StudentAttendanceExplanation {
   optional string reason_text = 2;
   optional string comment = 3;
   optional string cancellation_reason = 4;
+  repeated StudentAttendanceDocument documents = 5;
 }
 
 message StudentAttendanceRequestOption {

@@ -244,7 +244,7 @@
       },
       "delete" : {
         "tags" : [ "Schedule Items" ],
-        "summary" : "Деактивировать шаблон расписания (HEADMAN/ADMIN)",
+        "summary" : "Окончательно удалить неиспользованную серию (HEADMAN/ADMIN)",
         "operationId" : "deleteScheduleItem",
         "parameters" : [ {
           "name" : "id",
@@ -272,14 +272,41 @@
         } ],
         "responses" : {
           "204" : {
-            "description" : "Шаблон деактивирован"
+            "description" : "Бизнес-строки серии окончательно удалены",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "object"
+                }
+              }
+            }
+          },
+          "202" : {
+            "description" : "Операция принята и восстанавливается по operationId",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "object"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "История защищена или расчёт устарел",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "object"
+                }
+              }
+            }
           },
           "403" : {
             "description" : "Нет прав доступа",
             "content" : {
-              "application/problem+json" : {
+              "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/ErrorResponse"
+                  "type" : "object"
                 }
               }
             }
@@ -287,9 +314,9 @@
           "404" : {
             "description" : "Шаблон не найден",
             "content" : {
-              "application/problem+json" : {
+              "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/ErrorResponse"
+                  "type" : "object"
                 }
               }
             }
@@ -306,16 +333,6 @@
           },
           "401" : {
             "description" : "Требуется аутентификация",
-            "content" : {
-              "application/problem+json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "409" : {
-            "description" : "Конфликт данных",
             "content" : {
               "application/problem+json" : {
                 "schema" : {
@@ -939,6 +956,14 @@
             "format" : "int64"
           }
         }, {
+          "name" : "includeInactive",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "boolean",
+            "default" : false
+          }
+        }, {
           "name" : "pageable",
           "in" : "query",
           "required" : true,
@@ -1125,6 +1150,115 @@
           },
           "404" : {
             "description" : "Ресурс не найден",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429" : {
+            "description" : "Превышен лимит запросов",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Внутренняя ошибка сервера",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
+    "/schedule/items/{id}/semester-materialization" : {
+      "post" : {
+        "tags" : [ "Schedule Items" ],
+        "summary" : "Дозаполнить даты семестра без перезаписи существующей истории",
+        "operationId" : "materializeSemester",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "Idempotency-Key",
+          "in" : "header",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/SemesterMaterializationResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Ошибка валидации запроса",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Требуется аутентификация",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Доступ запрещён",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Ресурс не найден",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Конфликт данных",
             "content" : {
               "application/problem+json" : {
                 "schema" : {
@@ -2079,6 +2213,207 @@
         } ]
       }
     },
+    "/schedule/items/operations/{operationId}" : {
+      "get" : {
+        "tags" : [ "Schedule Items" ],
+        "summary" : "Прочитать собственную принятую операцию удаления",
+        "operationId" : "getConstructorOperation",
+        "parameters" : [ {
+          "name" : "operationId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ConstructorOperationResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Ошибка валидации запроса",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Требуется аутентификация",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Доступ запрещён",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Ресурс не найден",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Конфликт данных",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429" : {
+            "description" : "Превышен лимит запросов",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Внутренняя ошибка сервера",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
+    "/schedule/items/materialization-operations/{operationId}" : {
+      "get" : {
+        "tags" : [ "Schedule Items" ],
+        "operationId" : "getSemesterMaterialization",
+        "parameters" : [ {
+          "name" : "operationId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/SemesterMaterializationResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Ошибка валидации запроса",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Требуется аутентификация",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Доступ запрещён",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Ресурс не найден",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Конфликт данных",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429" : {
+            "description" : "Превышен лимит запросов",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Внутренняя ошибка сервера",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
     "/schedule/health-check" : {
       "get" : {
         "tags" : [ "health-check-controller" ],
@@ -2579,6 +2914,18 @@
         },
         "required" : [ "dayOfWeek", "endTime", "expectedRevision", "lessonNumber", "startTime", "subjectId", "weekType" ]
       },
+      "ConstructorProtectedReason" : {
+        "type" : "object",
+        "properties" : {
+          "code" : {
+            "type" : "string"
+          },
+          "count" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }
+      },
       "EntityModelScheduleItemResponse" : {
         "type" : "object",
         "properties" : {
@@ -2677,6 +3024,26 @@
           "createdCount" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "operationKind" : {
+            "type" : "string"
+          },
+          "deletable" : {
+            "type" : "boolean"
+          },
+          "protectedCount" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "removableCount" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "protectedReasons" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/ConstructorProtectedReason"
+            }
           }
         }
       },
@@ -3043,6 +3410,30 @@
         },
         "required" : [ "assignmentId", "dayOfWeek", "groupId", "lessonNumber", "semesterId", "subjectId", "weekType" ]
       },
+      "SemesterMaterializationResponse" : {
+        "type" : "object",
+        "properties" : {
+          "operationId" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "state" : {
+            "type" : "string"
+          },
+          "createdCount" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "pendingCount" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "coverageUnavailableCount" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }
+      },
       "ChangeLessonRoomRequest" : {
         "type" : "object",
         "properties" : {
@@ -3269,6 +3660,29 @@
           },
           "page" : {
             "$ref" : "#/components/schemas/PageMetadata"
+          }
+        }
+      },
+      "ConstructorOperationResponse" : {
+        "type" : "object",
+        "properties" : {
+          "operationId" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "state" : {
+            "type" : "string"
+          },
+          "deletedCount" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "protectedCount" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "errorCode" : {
+            "type" : "string"
           }
         }
       },

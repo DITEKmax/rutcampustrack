@@ -35,10 +35,18 @@ public class ActionEventHandler {
                     "revision");
     private final MongoTemplate mongo;
     private final LessonActionService actions;
+    private final ru.rutcampustrack.attendance.student.PairWriteCoordinator pairs;
 
-    public ActionEventHandler(MongoTemplate mongo, LessonActionService actions) {
+    @org.springframework.beans.factory.annotation.Autowired
+    public ActionEventHandler(MongoTemplate mongo, LessonActionService actions,
+            ru.rutcampustrack.attendance.student.PairWriteCoordinator pairs) {
         this.mongo = mongo;
         this.actions = actions;
+        this.pairs = pairs;
+    }
+
+    public ActionEventHandler(MongoTemplate mongo, LessonActionService actions) {
+        this(mongo, actions, new ru.rutcampustrack.attendance.student.PairWriteCoordinator(mongo));
     }
 
     public void validate(Map<String, Object> envelope) {
@@ -51,6 +59,13 @@ public class ActionEventHandler {
         Instant at = parsed.at();
         String source = parsed.source();
         Map<String, Object> p = parsed.payload();
+        if (p.get("lesson_id") instanceof Number lesson) {
+            long semester = ((Number) p.get("semester_id")).longValue();
+            long group = ((Number) p.get("group_id")).longValue();
+            pairs.lockActionHistoryLessons(java.util.List.of(lesson.longValue()), group, at);
+            // This check shares the deletion fence and Mongo transaction with append.
+            if (pairs.isSubjectDeleted(lesson.longValue(), semester, group)) return;
+        }
         LessonActionDocument prior = mongo.findById(id, LessonActionDocument.class);
         if (prior != null) {
             if (!source.equals(prior.getSource())

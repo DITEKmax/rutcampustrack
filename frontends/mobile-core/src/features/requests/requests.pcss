@@ -1308,3 +1308,1552 @@
   color: var(--requests-muted);
   @mixin rct-type-lesson-meta;
 }
+
+/* Accepted Student presentation; existing roles retain their base rules. */
+:where([data-student-ui]) .requests-screen,
+:where([data-student-ui]):is(.requests-screen),
+:where([data-student-ui]) .requests-type-screen,
+:where([data-student-ui]):is(.requests-type-screen),
+:where([data-student-ui]) .requests-form-screen,
+:where([data-student-ui]):is(.requests-form-screen) {
+  --requests-base: var(--rct-color-surface-base);
+  --requests-raised: var(--rct-color-surface-raised);
+  --requests-float: var(--rct-color-surface-float);
+  --requests-text: var(--rct-color-text-primary);
+  --requests-secondary: var(--rct-color-text-secondary);
+  --requests-muted: var(--rct-color-text-muted);
+  --requests-border: var(--rct-color-border-default);
+  --requests-accent: var(--rct-color-accent-now);
+  --requests-on-accent: var(--rct-color-accent-on-now);
+  --requests-success: var(--rct-color-success-text);
+  --requests-warning: var(--rct-color-warning-text);
+  --requests-danger: var(--rct-color-danger-text);
+  --requests-danger-fill: var(--rct-color-danger-fill, var(--rct-color-status-absent-fill));
+  --requests-warning-fill: var(--rct-warning-surface);
+  --requests-warning-soft: var(--rct-warning-surface);
+  min-block-size: 100dvh;
+  color: var(--requests-text);
+  background: var(--requests-base);
+  font-family: var(--rct-font-family-sans);
+  font-feature-settings:
+    'tnum' 1,
+    'lnum' 1;
+  font-variant-numeric: tabular-nums;
+}
+
+:where([data-student-ui]) .requests-screen,
+:where([data-student-ui]):is(.requests-screen),
+:where([data-student-ui]) .requests-type-screen,
+:where([data-student-ui]):is(.requests-type-screen),
+:where([data-student-ui]) .requests-form-screen,
+:where([data-student-ui]):is(.requests-form-screen) {
+  inline-size: min(var(--rct-mobile-content-width), calc(100% - 2rem));
+  margin-inline: auto;
+  padding-block: 1.25rem 2rem;
+}
+
+:where([data-student-ui]) .requests-screen h1,
+:where([data-student-ui]):is(.requests-screen h1),
+:where([data-student-ui]) .requests-type-screen h1,
+:where([data-student-ui]):is(.requests-type-screen h1),
+:where([data-student-ui]) .requests-form-screen h1,
+:where([data-student-ui]):is(.requests-form-screen h1),
+:where([data-student-ui]) .requests-screen h2,
+:where([data-student-ui]):is(.requests-screen h2),
+:where([data-student-ui]) .requests-type-screen h2,
+:where([data-student-ui]):is(.requests-type-screen h2),
+:where([data-student-ui]) .requests-form-screen h2,
+:where([data-student-ui]):is(.requests-form-screen h2),
+:where([data-student-ui]) .requests-screen h3,
+:where([data-student-ui]):is(.requests-screen h3),
+:where([data-student-ui]) .requests-type-screen h3,
+:where([data-student-ui]):is(.requests-type-screen h3),
+:where([data-student-ui]) .requests-form-screen h3,
+:where([data-student-ui]):is(.requests-form-screen h3),
+:where([data-student-ui]) .requests-screen p,
+:where([data-student-ui]):is(.requests-screen p),
+:where([data-student-ui]) .requests-type-screen p,
+:where([data-student-ui]):is(.requests-type-screen p),
+:where([data-student-ui]) .requests-form-screen p,
+:where([data-student-ui]):is(.requests-form-screen p) {
+  margin-block: 0;
+}
+
+:where([data-student-ui]) .requests-screen__header,
+:where([data-student-ui]):is(.requests-screen__header) {
+  display: flex;
+  align-items: center;
+  min-block-size: 1.875rem;
+  margin-block-end: 0.75rem;
+}
+
+:where([data-student-ui]) .requests-screen__header h1,
+:where([data-student-ui]):is(.requests-screen__header h1) {
+  font-size: 1.5rem;
+  font-weight: var(--rct-font-weight-bold);
+  line-height: 1.25;
+}
+
+:where([data-student-ui]) .requests-primary-action,
+:where([data-student-ui]):is(.requests-primary-action),
+:where([data-student-ui]) .requests-submit-action,
+:where([data-student-ui]):is(.requests-submit-action),
+:where([data-student-ui]) .requests-secondary-action,
+:where([data-student-ui]):is(.requests-secondary-action),
+:where([data-student-ui]) .requests-danger-action,
+:where([data-student-ui]):is(.requests-danger-action),
+:where([data-student-ui]) .requests-tab,
+:where([data-student-ui]):is(.requests-tab),
+:where([data-student-ui]) .requests-inline-action,
+:where([data-student-ui]):is(.requests-inline-action),
+:where([data-student-ui]) .requests-back-button,
+:where([data-student-ui]):is(.requests-back-button),
+:where([data-student-ui]) .request-card__attachment-action,
+:where([data-student-ui]):is(.request-card__attachment-action),
+:where([data-student-ui]) .request-attachment-preview__open,
+:where([data-student-ui]):is(.request-attachment-preview__open) {
+  font: inherit;
+  cursor: pointer;
+  transition:
+    background-color 120ms ease,
+    color 120ms ease,
+    border-color 120ms ease,
+    opacity 120ms ease;
+  @mixin rct-focus-ring;
+}
+
+:where([data-student-ui]) .requests-primary-action,
+:where([data-student-ui]):is(.requests-primary-action),
+:where([data-student-ui]) .requests-submit-action,
+:where([data-student-ui]):is(.requests-submit-action) {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 100%;
+  min-block-size: 2.75rem;
+  border: 0;
+  border-radius: var(--rct-radius-2xl);
+  padding-inline: 1rem;
+  color: var(--requests-on-accent);
+  background: var(--requests-accent);
+  font-size: 0.8125rem;
+  font-weight: var(--rct-font-weight-bold);
+  line-height: 1.35;
+}
+
+:where([data-student-ui]) .requests-primary-action,
+:where([data-student-ui]):is(.requests-primary-action) {
+  color: var(--requests-on-accent);
+  background: var(--requests-text);
+}
+
+:where([data-student-ui]) .requests-primary-action:disabled,
+:where([data-student-ui]):is(.requests-primary-action:disabled),
+:where([data-student-ui]) .requests-submit-action:disabled,
+:where([data-student-ui]):is(.requests-submit-action:disabled),
+:where([data-student-ui]) .requests-secondary-action:disabled,
+:where([data-student-ui]):is(.requests-secondary-action:disabled),
+:where([data-student-ui]) .requests-danger-action:disabled,
+:where([data-student-ui]):is(.requests-danger-action:disabled),
+:where([data-student-ui]) .request-card__attachment-action:disabled,
+:where([data-student-ui]):is(.request-card__attachment-action:disabled) {
+  color: var(--rct-color-disabled-text);
+  background: var(--rct-color-disabled-surface);
+  border-color: transparent;
+  cursor: not-allowed;
+  opacity: 1;
+}
+
+:where([data-student-ui]) .requests-screen__hint,
+:where([data-student-ui]):is(.requests-screen__hint),
+:where([data-student-ui]) .request-validation-hint,
+:where([data-student-ui]):is(.request-validation-hint),
+:where([data-student-ui]) .request-field__help,
+:where([data-student-ui]):is(.request-field__help),
+:where([data-student-ui]) .requests-type-choice__reason,
+:where([data-student-ui]):is(.requests-type-choice__reason),
+:where([data-student-ui]) .request-lesson-selector__help,
+:where([data-student-ui]):is(.request-lesson-selector__help),
+:where([data-student-ui]) .request-lesson-selector__unavailable,
+:where([data-student-ui]):is(.request-lesson-selector__unavailable),
+:where([data-student-ui]) .request-card__missing,
+:where([data-student-ui]):is(.request-card__missing) {
+  color: var(--requests-secondary);
+  font-size: 0.8125rem;
+  line-height: 1.4;
+}
+
+:where([data-student-ui]) .requests-screen__hint,
+:where([data-student-ui]):is(.requests-screen__hint) {
+  margin-block-start: 0.5rem;
+  text-align: center;
+}
+
+:where([data-student-ui]) .requests-tabs,
+:where([data-student-ui]):is(.requests-tabs) {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+  margin-block-start: 0.75rem;
+}
+
+:where([data-student-ui]) .requests-tab,
+:where([data-student-ui]):is(.requests-tab) {
+  min-block-size: 2.75rem;
+  border: 0.0625rem solid var(--requests-border);
+  border-radius: var(--rct-radius-2xl);
+  padding-inline: 0.75rem;
+  color: var(--requests-text);
+  background: var(--requests-float);
+  font-size: 0.8125rem;
+  font-weight: var(--rct-font-weight-bold);
+}
+
+:where([data-student-ui]) .requests-tab--active,
+:where([data-student-ui]):is(.requests-tab--active) {
+  border-color: var(--requests-accent);
+  color: var(--requests-on-accent);
+  background: var(--requests-accent);
+}
+
+:where([data-student-ui]) .requests-offline,
+:where([data-student-ui]):is(.requests-offline),
+:where([data-student-ui]) .requests-form-status,
+:where([data-student-ui]):is(.requests-form-status) {
+  color: var(--requests-warning);
+  font-size: 0.8125rem;
+  line-height: 1.4;
+}
+
+:where([data-student-ui]) .requests-offline,
+:where([data-student-ui]):is(.requests-offline) {
+  margin-block-start: 0.75rem;
+  text-align: center;
+}
+
+:where([data-student-ui]) .requests-list,
+:where([data-student-ui]):is(.requests-list) {
+  display: grid;
+  gap: 0.75rem;
+  margin-block-start: 0.75rem;
+  padding: 0;
+  list-style: none;
+}
+
+:where([data-student-ui]) .request-card,
+:where([data-student-ui]):is(.request-card) {
+  display: grid;
+  gap: 0.625rem;
+  border-radius: var(--rct-radius-2xl);
+  padding: 1rem;
+  color: var(--requests-text);
+  background: var(--requests-raised);
+}
+
+:where([data-student-ui]) .request-card__head,
+:where([data-student-ui]):is(.request-card__head) {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+:where([data-student-ui]) .request-card__head h2,
+:where([data-student-ui]):is(.request-card__head h2) {
+  max-inline-size: 12rem;
+  font-size: 1rem;
+  font-weight: var(--rct-font-weight-bold);
+  line-height: 1.25;
+}
+
+:where([data-student-ui]) .request-status,
+:where([data-student-ui]):is(.request-status) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  min-block-size: 2rem;
+  inline-size: 7.5rem;
+  border-radius: var(--rct-radius-2xl);
+  padding-inline: 0;
+  font-size: 0.6875rem;
+  font-weight: var(--rct-font-weight-bold);
+  line-height: 1.25;
+  white-space: nowrap;
+}
+
+:where([data-student-ui]) .request-status--warning,
+:where([data-student-ui]):is(.request-status--warning) {
+  color: var(--requests-warning);
+  background: var(--requests-warning-soft);
+}
+
+:where([data-student-ui]) .request-status--success,
+:where([data-student-ui]):is(.request-status--success) {
+  color: var(--requests-success);
+  background: var(--rct-color-success-surface);
+}
+
+:where([data-student-ui]) .request-status--danger,
+:where([data-student-ui]):is(.request-status--danger) {
+  color: var(--requests-danger);
+  background: color-mix(in srgb, var(--requests-danger) 16%, transparent);
+}
+
+:where([data-student-ui]) .request-status--muted,
+:where([data-student-ui]):is(.request-status--muted) {
+  color: var(--requests-secondary);
+  background: var(--requests-float);
+}
+
+:where([data-student-ui]) .request-card__meta,
+:where([data-student-ui]):is(.request-card__meta),
+:where([data-student-ui]) .request-lesson-card p,
+:where([data-student-ui]):is(.request-lesson-card p),
+:where([data-student-ui]) .request-late-lesson-card p,
+:where([data-student-ui]):is(.request-late-lesson-card p) {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: var(--requests-secondary);
+  font-size: 0.8125rem;
+  line-height: 1.35;
+}
+
+:where([data-student-ui]) .request-card__meta,
+:where([data-student-ui]):is(.request-card__meta) {
+  display: grid;
+  gap: 0.5rem;
+}
+
+:where([data-student-ui]) .request-icon,
+:where([data-student-ui]):is(.request-icon) {
+  flex: 0 0 auto;
+  inline-size: 0.75rem;
+  block-size: 0.75rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.25;
+}
+
+:where([data-student-ui]) .request-icon--date,
+:where([data-student-ui]):is(.request-icon--date) {
+  inline-size: 1rem;
+  block-size: 1rem;
+  margin-inline: -0.1875rem;
+}
+
+:where([data-student-ui]) .request-card__meta .request-icon--time,
+:where([data-student-ui]):is(.request-card__meta .request-icon--time) {
+  inline-size: 0.46875rem;
+  block-size: 0.46875rem;
+}
+
+:where([data-student-ui]) .request-lesson-card .request-icon--time,
+:where([data-student-ui]):is(.request-lesson-card .request-icon--time),
+:where([data-student-ui]) .request-lesson-option .request-icon--time,
+:where([data-student-ui]):is(.request-lesson-option .request-icon--time),
+:where([data-student-ui]) .request-late-lesson-card .request-icon--time,
+:where([data-student-ui]):is(.request-late-lesson-card .request-icon--time),
+:where([data-student-ui]) .request-icon--lesson-type,
+:where([data-student-ui]):is(.request-icon--lesson-type) {
+  inline-size: 1rem;
+  block-size: 1rem;
+}
+
+:where([data-student-ui]) .request-card__lessons,
+:where([data-student-ui]):is(.request-card__lessons) {
+  display: grid;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+:where([data-student-ui]) .request-lesson-card,
+:where([data-student-ui]):is(.request-lesson-card) {
+  display: grid;
+  inline-size: calc(100% - 2rem);
+  gap: 0.3125rem;
+  border-radius: 1rem;
+  padding: 0.625rem;
+  background: var(--requests-float);
+}
+
+:where([data-student-ui]) .request-lesson-card h3,
+:where([data-student-ui]):is(.request-lesson-card h3) {
+  overflow-wrap: anywhere;
+  font-size: 0.875rem;
+  font-weight: var(--rct-font-weight-bold);
+  line-height: 1.3;
+}
+
+:where([data-student-ui]) .request-card__missing,
+:where([data-student-ui]):is(.request-card__missing) {
+  border-radius: 1rem;
+  padding: 0.75rem;
+  background: var(--requests-float);
+}
+
+:where([data-student-ui]) .request-card__decision,
+:where([data-student-ui]):is(.request-card__decision) {
+  min-inline-size: 0;
+  border-radius: var(--rct-radius-xl);
+  padding: var(--rct-space-3);
+  background: var(--requests-float);
+  overflow-wrap: anywhere;
+  color: var(--requests-text);
+  font-size: 0.8125rem;
+  line-height: 1.4;
+}
+
+:where([data-student-ui]) .request-card__attachments,
+:where([data-student-ui]):is(.request-card__attachments) {
+  display: grid;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  color: var(--requests-secondary);
+  font-size: 0.8125rem;
+  list-style: none;
+}
+
+:where([data-student-ui]) .request-card__attachments li,
+:where([data-student-ui]):is(.request-card__attachments li) {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  min-block-size: 2.75rem;
+  border-block-start: 0.0625rem solid var(--requests-border);
+  padding-block-start: 0.5rem;
+}
+
+:where([data-student-ui]) .request-card__attachment-name,
+:where([data-student-ui]):is(.request-card__attachment-name) {
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
+}
+
+:where([data-student-ui]) .request-card__attachment-actions,
+:where([data-student-ui]):is(.request-card__attachment-actions) {
+  display: grid;
+  flex: 0 1 auto;
+  justify-items: end;
+  min-inline-size: 0;
+  gap: 0.25rem;
+}
+
+:where([data-student-ui]) .request-card__attachment-state,
+:where([data-student-ui]):is(.request-card__attachment-state) {
+  color: var(--requests-muted);
+  text-align: end;
+}
+
+:where([data-student-ui]) .request-card__attachment-error,
+:where([data-student-ui]):is(.request-card__attachment-error) {
+  max-inline-size: 14rem;
+  color: var(--requests-danger);
+  font-size: 0.75rem;
+  line-height: 1.35;
+  text-align: end;
+}
+
+:where([data-student-ui]) .request-card__attachment-action,
+:where([data-student-ui]):is(.request-card__attachment-action) {
+  min-block-size: 2.75rem;
+  border: 0.0625rem solid var(--requests-border);
+  border-radius: 1rem;
+  padding-inline: 0.75rem;
+  color: var(--requests-text);
+  background: transparent;
+  font-size: 0.8125rem;
+}
+
+:where([data-student-ui]) .requests-danger-action,
+:where([data-student-ui]):is(.requests-danger-action) {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 100%;
+  min-block-size: 2.75rem;
+  border: 0;
+  border-radius: var(--rct-radius-2xl);
+  padding-inline: 1rem;
+  color: var(--rct-color-text-on-fill-strong);
+  background: var(--requests-danger-fill);
+  font-size: 0.8125rem;
+  font-weight: var(--rct-font-weight-bold);
+}
+
+:where([data-student-ui]) .requests-state,
+:where([data-student-ui]):is(.requests-state) {
+  display: grid;
+  place-items: center;
+  gap: 0.75rem;
+  min-block-size: 12rem;
+  margin-block-start: 0.75rem;
+  border: 0.0625rem solid var(--requests-border);
+  border-radius: var(--rct-radius-2xl);
+  padding: 1.25rem;
+  color: var(--requests-secondary);
+  background: var(--requests-raised);
+  text-align: center;
+}
+
+:where([data-student-ui]) .requests-state h2,
+:where([data-student-ui]):is(.requests-state h2) {
+  color: var(--requests-text);
+  font-size: 1rem;
+  line-height: 1.3;
+}
+
+:where([data-student-ui]) .requests-state p,
+:where([data-student-ui]):is(.requests-state p) {
+  max-inline-size: 18rem;
+  font-size: 0.875rem;
+  line-height: 1.45;
+}
+
+:where([data-student-ui]) .requests-state--error,
+:where([data-student-ui]):is(.requests-state--error) {
+  border-color: var(--requests-danger);
+}
+
+:where([data-student-ui]) .requests-secondary-action,
+:where([data-student-ui]):is(.requests-secondary-action) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-block-size: 2.75rem;
+  border: 0.0625rem solid var(--requests-border);
+  border-radius: var(--rct-radius-2xl);
+  padding-inline: 1rem;
+  color: var(--requests-text);
+  background: var(--requests-float);
+  font-size: 0.8125rem;
+  font-weight: var(--rct-font-weight-bold);
+}
+
+:where([data-student-ui]) .requests-skeleton,
+:where([data-student-ui]):is(.requests-skeleton) {
+  display: block;
+  inline-size: 100%;
+  min-block-size: 4.5rem;
+  border-radius: 1rem;
+  background: var(--requests-float);
+}
+
+:where([data-student-ui]) .requests-state--loading,
+:where([data-student-ui]):is(.requests-state--loading) {
+  display: grid;
+}
+
+:where([data-student-ui]) .requests-form-header,
+:where([data-student-ui]):is(.requests-form-header) {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-block-size: 2.75rem;
+  margin-block-end: 1rem;
+}
+
+:where([data-student-ui]) .requests-form-header h1,
+:where([data-student-ui]):is(.requests-form-header h1) {
+  overflow-wrap: anywhere;
+  font-size: 1.25rem;
+  font-weight: var(--rct-font-weight-bold);
+  line-height: 1.25;
+}
+
+:where([data-student-ui]) .requests-back-button,
+:where([data-student-ui]):is(.requests-back-button) {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  inline-size: 2.75rem;
+  block-size: 2.75rem;
+  border: 0;
+  border-radius: var(--rct-radius-full);
+  color: var(--requests-secondary);
+  background: var(--requests-float);
+}
+
+:where([data-student-ui]) .requests-back-button svg,
+:where([data-student-ui]):is(.requests-back-button svg) {
+  inline-size: 1.25rem;
+  block-size: 1.25rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.75;
+}
+
+:where([data-student-ui]) .requests-form-error,
+:where([data-student-ui]):is(.requests-form-error),
+:where([data-student-ui]) .request-form-error,
+:where([data-student-ui]):is(.request-form-error) {
+  color: var(--requests-danger);
+  font-size: 0.8125rem;
+  line-height: 1.45;
+}
+
+:where([data-student-ui]) .requests-form-error,
+:where([data-student-ui]):is(.requests-form-error) {
+  margin-block-end: 0.75rem;
+}
+
+:where([data-student-ui]) .requests-form,
+:where([data-student-ui]):is(.requests-form) {
+  display: grid;
+  gap: 1rem;
+}
+
+:where([data-student-ui]) .requests-form__section,
+:where([data-student-ui]):is(.requests-form__section) {
+  display: grid;
+  gap: 0.5rem;
+}
+
+:where([data-student-ui]) .requests-form__kicker,
+:where([data-student-ui]):is(.requests-form__kicker),
+:where([data-student-ui]) .request-field__label,
+:where([data-student-ui]):is(.request-field__label) {
+  color: var(--requests-text);
+  font-size: 0.8125rem;
+  font-weight: var(--rct-font-weight-bold);
+  line-height: 1.35;
+}
+
+:where([data-student-ui]) .requests-form__selection-count,
+:where([data-student-ui]):is(.requests-form__selection-count) {
+  color: var(--requests-secondary);
+  font-size: 0.8125rem;
+  line-height: 1.35;
+}
+
+:where([data-student-ui]) .request-lesson-selector,
+:where([data-student-ui]):is(.request-lesson-selector) {
+  display: grid;
+  gap: 0.75rem;
+}
+
+:where([data-student-ui]) .request-lesson-recovery-panel,
+:where([data-student-ui]):is(.request-lesson-recovery-panel) {
+  display: grid;
+  gap: 0.5rem;
+  border: 0.0625rem solid var(--requests-warning);
+  border-radius: 0.75rem;
+  padding: 0.75rem;
+  color: var(--requests-text);
+  background: var(--requests-warning-soft);
+}
+
+:where([data-student-ui]) .request-lesson-recovery-panel h3,
+:where([data-student-ui]):is(.request-lesson-recovery-panel h3) {
+  font-size: 0.875rem;
+  font-weight: var(--rct-font-weight-bold);
+  line-height: 1.3;
+}
+
+:where([data-student-ui]) .request-lesson-recovery-panel p,
+:where([data-student-ui]):is(.request-lesson-recovery-panel p) {
+  color: var(--requests-secondary);
+  font-size: 0.8125rem;
+  line-height: 1.4;
+}
+
+:where([data-student-ui]) .request-lesson-recovery-list,
+:where([data-student-ui]):is(.request-lesson-recovery-list) {
+  display: grid;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+:where([data-student-ui]) .request-lesson-recovery-list li,
+:where([data-student-ui]):is(.request-lesson-recovery-list li) {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+:where([data-student-ui]) .request-lesson-recovery-list li > span,
+:where([data-student-ui]):is(.request-lesson-recovery-list li > span) {
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
+  font-size: 0.8125rem;
+  line-height: 1.35;
+}
+
+:where([data-student-ui]) .request-lesson-recovery-action,
+:where([data-student-ui]):is(.request-lesson-recovery-action) {
+  flex: 0 0 auto;
+  min-block-size: 2.75rem;
+  border: 0.0625rem solid var(--requests-border);
+  border-radius: 0.75rem;
+  padding-inline: 0.75rem;
+  color: var(--requests-accent);
+  background: var(--requests-raised);
+  font: inherit;
+  font-size: 0.8125rem;
+  line-height: 1.35;
+  cursor: pointer;
+}
+
+:where([data-student-ui]) .request-lesson-recovery-action:disabled,
+:where([data-student-ui]):is(.request-lesson-recovery-action:disabled) {
+  color: var(--rct-color-disabled-text);
+  background: var(--rct-color-disabled-surface);
+  border-color: transparent;
+  cursor: not-allowed;
+  opacity: 1;
+}
+
+:where([data-student-ui]) .request-lesson-group,
+:where([data-student-ui]):is(.request-lesson-group) {
+  display: grid;
+  gap: 0.5rem;
+}
+
+:where([data-student-ui]) .request-lesson-group fieldset,
+:where([data-student-ui]):is(.request-lesson-group fieldset) {
+  display: grid;
+  gap: 0.5rem;
+  min-inline-size: 0;
+  margin: 0;
+  border: 0;
+  padding: 0;
+}
+
+:where([data-student-ui]) .request-lesson-group legend,
+:where([data-student-ui]):is(.request-lesson-group legend) {
+  margin-block-end: 0.125rem;
+  color: var(--requests-secondary);
+  font-size: 0.8125rem;
+  line-height: 1.35;
+}
+
+:where([data-student-ui]) .request-lesson-option-row,
+:where([data-student-ui]):is(.request-lesson-option-row) {
+  display: grid;
+  gap: 0.375rem;
+}
+
+:where([data-student-ui]) .request-lesson-option,
+:where([data-student-ui]):is(.request-lesson-option) {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.625rem;
+  min-block-size: 4.25rem;
+  border: 0.0625rem solid transparent;
+  border-radius: 1rem;
+  padding: 0.75rem;
+  color: var(--requests-text);
+  background: var(--requests-float);
+  cursor: pointer;
+}
+
+:where([data-student-ui]) .request-lesson-option--selected,
+:where([data-student-ui]):is(.request-lesson-option--selected) {
+  border-color: var(--requests-accent);
+}
+
+:where([data-student-ui]) .request-lesson-option--disabled,
+:where([data-student-ui]):is(.request-lesson-option--disabled) {
+  color: var(--requests-muted);
+  cursor: not-allowed;
+  opacity: 0.82;
+}
+
+:where([data-student-ui]) .request-lesson-option input,
+:where([data-student-ui]):is(.request-lesson-option input) {
+  flex: 0 0 auto;
+  inline-size: 1.25rem;
+  block-size: 1.25rem;
+  margin-block-start: 0.125rem;
+  accent-color: var(--requests-accent);
+}
+
+:where([data-student-ui]) .request-lesson-option__copy,
+:where([data-student-ui]):is(.request-lesson-option__copy) {
+  display: grid;
+  min-inline-size: 0;
+  gap: 0.3125rem;
+}
+
+:where([data-student-ui]) .request-lesson-option__subject,
+:where([data-student-ui]):is(.request-lesson-option__subject) {
+  overflow-wrap: anywhere;
+  font-size: 0.875rem;
+  font-weight: var(--rct-font-weight-bold);
+  line-height: 1.3;
+}
+
+:where([data-student-ui]) .request-lesson-option__meta,
+:where([data-student-ui]):is(.request-lesson-option__meta) {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.625rem;
+  color: var(--requests-secondary);
+  font-size: 0.75rem;
+  line-height: 1.35;
+}
+
+:where([data-student-ui]) .request-lesson-option__meta span,
+:where([data-student-ui]):is(.request-lesson-option__meta span) {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+:where([data-student-ui]) .request-lesson-option__reason,
+:where([data-student-ui]):is(.request-lesson-option__reason) {
+  color: var(--requests-warning);
+  font-size: 0.75rem;
+  line-height: 1.35;
+}
+
+:where([data-student-ui]) .request-lesson-selector__empty,
+:where([data-student-ui]):is(.request-lesson-selector__empty),
+:where([data-student-ui]) .request-lesson-selector__help,
+:where([data-student-ui]):is(.request-lesson-selector__help),
+:where([data-student-ui]) .request-lesson-selector__status,
+:where([data-student-ui]):is(.request-lesson-selector__status),
+:where([data-student-ui]) .request-lesson-selector__unavailable,
+:where([data-student-ui]):is(.request-lesson-selector__unavailable) {
+  margin: 0;
+}
+
+:where([data-student-ui]) .request-lesson-selector__status,
+:where([data-student-ui]):is(.request-lesson-selector__status) {
+  color: var(--requests-success);
+  font-size: 0.8125rem;
+  line-height: 1.4;
+}
+
+:where([data-student-ui]) .request-lesson-selector__unavailable,
+:where([data-student-ui]):is(.request-lesson-selector__unavailable) {
+  display: grid;
+  gap: 0.3125rem;
+  padding-inline-start: 1.25rem;
+}
+
+:where([data-student-ui]) .request-field,
+:where([data-student-ui]):is(.request-field) {
+  display: grid;
+  gap: 0.5rem;
+}
+
+:where([data-student-ui]) .request-date-range,
+:where([data-student-ui]):is(.request-date-range) {
+  display: grid;
+  gap: var(--rct-space-3);
+  min-inline-size: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+:where([data-student-ui]) .request-date-range legend,
+:where([data-student-ui]):is(.request-date-range legend) {
+  margin-block-end: var(--rct-space-3);
+}
+
+:where([data-student-ui]) .request-field input[type='date'],
+:where([data-student-ui]):is(.request-field input[type='date']) {
+  min-inline-size: 0;
+}
+
+:where([data-student-ui]) .request-field input[type='date'],
+:where([data-student-ui]):is(.request-field input[type='date']),
+:where([data-student-ui]) .request-field select,
+:where([data-student-ui]):is(.request-field select),
+:where([data-student-ui]) .request-field textarea,
+:where([data-student-ui]):is(.request-field textarea),
+:where([data-student-ui]) .request-late-screen select,
+:where([data-student-ui]):is(.request-late-screen select) {
+  inline-size: 100%;
+  min-block-size: 2.75rem;
+  border: 0.0625rem solid var(--requests-border);
+  border-radius: 1rem;
+  padding: 0.625rem 0.75rem;
+  color: var(--requests-text);
+  background: var(--requests-raised);
+  font: inherit;
+  font-size: 1rem;
+  line-height: 1.35;
+  @mixin rct-focus-ring;
+}
+
+:where([data-student-ui]) .request-select-control,
+:where([data-student-ui]):is(.request-select-control) {
+  position: relative;
+  display: block;
+  inline-size: 100%;
+}
+
+:where([data-student-ui]) .request-select-control select,
+:where([data-student-ui]):is(.request-select-control select) {
+  appearance: none;
+  padding-inline-end: 2.75rem;
+}
+
+:where([data-student-ui]) .request-select-icon,
+:where([data-student-ui]):is(.request-select-icon) {
+  position: absolute;
+  inset-inline-end: 0.75rem;
+  inset-block-start: 50%;
+  inline-size: 1rem;
+  block-size: 1rem;
+  transform: translateY(-50%);
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  pointer-events: none;
+}
+
+:where([data-student-ui]) .request-field textarea,
+:where([data-student-ui]):is(.request-field textarea) {
+  min-block-size: 6rem;
+  resize: vertical;
+}
+
+:where([data-student-ui]) .request-field input[type='date']:disabled,
+:where([data-student-ui]):is(.request-field input[type='date']:disabled),
+:where([data-student-ui]) .request-field select:disabled,
+:where([data-student-ui]):is(.request-field select:disabled),
+:where([data-student-ui]) .request-field textarea:disabled,
+:where([data-student-ui]):is(.request-field textarea:disabled),
+:where([data-student-ui]) .request-late-screen select:disabled,
+:where([data-student-ui]):is(.request-late-screen select:disabled) {
+  color: var(--requests-muted);
+  cursor: not-allowed;
+  opacity: 0.8;
+}
+
+:where([data-student-ui]) .request-field__help,
+:where([data-student-ui]):is(.request-field__help) {
+  margin-block-start: -0.625rem;
+}
+
+:where([data-student-ui]) .request-attachment-field,
+:where([data-student-ui]):is(.request-attachment-field) {
+  display: grid;
+  gap: 0.5rem;
+}
+
+:where([data-student-ui]) .request-attachment-picker,
+:where([data-student-ui]):is(.request-attachment-picker) {
+  display: grid;
+  place-items: center;
+  gap: 0.25rem;
+  min-block-size: 4rem;
+  border: 0.0625rem dashed var(--requests-border);
+  border-radius: 1rem;
+  padding: 0.75rem;
+  color: var(--requests-text);
+  text-align: center;
+  cursor: pointer;
+  @mixin rct-focus-ring;
+}
+
+:where([data-student-ui]) .request-attachment-picker:focus-within,
+:where([data-student-ui]):is(.request-attachment-picker:focus-within) {
+  outline: var(--rct-focus-width) solid var(--rct-color-accent-now);
+  outline-offset: var(--rct-focus-offset);
+}
+
+:where([data-student-ui]) .request-attachment-picker__hint,
+:where([data-student-ui]):is(.request-attachment-picker__hint) {
+  color: var(--requests-secondary);
+  font-size: 0.8125rem;
+  line-height: 1.35;
+}
+
+:where([data-student-ui]) .request-attachment-picker--disabled,
+:where([data-student-ui]):is(.request-attachment-picker--disabled) {
+  color: var(--requests-muted);
+  cursor: not-allowed;
+  opacity: 0.75;
+}
+
+:where([data-student-ui]) .request-visually-hidden,
+:where([data-student-ui]):is(.request-visually-hidden) {
+  position: absolute;
+  inline-size: 0.0625rem;
+  block-size: 0.0625rem;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+:where([data-student-ui]) .request-attachment-list,
+:where([data-student-ui]):is(.request-attachment-list) {
+  display: grid;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+:where([data-student-ui]) .request-attachment-list li,
+:where([data-student-ui]):is(.request-attachment-list li) {
+  display: grid;
+  gap: 0.5rem;
+  min-block-size: 2.75rem;
+  border-radius: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  background: var(--requests-float);
+}
+
+:where([data-student-ui]) .request-attachment-list__item,
+:where([data-student-ui]):is(.request-attachment-list__item) {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  min-inline-size: 0;
+}
+
+:where([data-student-ui]) .request-attachment-list__item > span,
+:where([data-student-ui]):is(.request-attachment-list__item > span) {
+  display: grid;
+  min-inline-size: 0;
+  gap: 0.125rem;
+}
+
+:where([data-student-ui]) .request-attachment-list strong,
+:where([data-student-ui]):is(.request-attachment-list strong) {
+  overflow-wrap: anywhere;
+  font-size: 0.8125rem;
+  font-weight: var(--rct-font-weight-medium);
+}
+
+:where([data-student-ui]) .request-attachment-list small,
+:where([data-student-ui]):is(.request-attachment-list small) {
+  color: var(--requests-secondary);
+  font-size: 0.75rem;
+}
+
+:where([data-student-ui]) .request-attachment-list button,
+:where([data-student-ui]):is(.request-attachment-list button) {
+  flex: 0 0 auto;
+  min-block-size: 2.75rem;
+  border: 0;
+  border-radius: 0.75rem;
+  padding-inline: 0.625rem;
+  color: var(--requests-danger);
+  background: transparent;
+  font: inherit;
+  font-size: 0.8125rem;
+  cursor: pointer;
+  @mixin rct-focus-ring;
+}
+
+:where([data-student-ui]) .request-attachment-preview,
+:where([data-student-ui]):is(.request-attachment-preview) {
+  display: grid;
+  min-inline-size: 0;
+  gap: 0.25rem;
+}
+
+:where([data-student-ui]) .request-attachment-preview__image,
+:where([data-student-ui]):is(.request-attachment-preview__image),
+:where([data-student-ui]) .request-attachment-preview__pdf,
+:where([data-student-ui]):is(.request-attachment-preview__pdf) {
+  display: block;
+  inline-size: 100%;
+  block-size: 18rem;
+  border: 0.0625rem solid var(--requests-border);
+  border-radius: var(--rct-radius-2xl);
+  background: var(--requests-base);
+}
+
+:where([data-student-ui]) .request-attachment-preview__image,
+:where([data-student-ui]):is(.request-attachment-preview__image) {
+  object-fit: contain;
+}
+
+:where([data-student-ui]) .request-attachment-preview__message,
+:where([data-student-ui]):is(.request-attachment-preview__message) {
+  color: var(--requests-secondary);
+  font-size: 0.8125rem;
+  line-height: 1.4;
+}
+
+:where([data-student-ui]) .request-attachment-preview__open,
+:where([data-student-ui]):is(.request-attachment-preview__open) {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: 2.75rem;
+  justify-self: start;
+  color: var(--requests-text);
+  font-size: 0.8125rem;
+  line-height: 1.35;
+  text-decoration: underline;
+  text-underline-offset: 0.15rem;
+}
+
+:where([data-student-ui]) .requests-submit-action,
+:where([data-student-ui]):is(.requests-submit-action) {
+  margin-block-start: 0.25rem;
+}
+
+:where([data-student-ui]) .requests-type-list,
+:where([data-student-ui]):is(.requests-type-list) {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+:where([data-student-ui]) .requests-type-choice,
+:where([data-student-ui]):is(.requests-type-choice) {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  inline-size: 100%;
+  min-block-size: 5.75rem;
+  border: 0.0625rem solid transparent;
+  border-radius: var(--rct-radius-2xl);
+  padding: 1rem;
+  color: var(--requests-text);
+  background: var(--requests-raised);
+  font-size: 1rem;
+  font-weight: var(--rct-font-weight-bold);
+  text-align: start;
+}
+
+:where([data-student-ui]) .requests-type-choice:disabled,
+:where([data-student-ui]):is(.requests-type-choice:disabled) {
+  cursor: not-allowed;
+  opacity: 0.72;
+}
+
+:where([data-student-ui]) .requests-type-choice--unavailable,
+:where([data-student-ui]):is(.requests-type-choice--unavailable) {
+  border-color: var(--requests-border);
+}
+
+:where([data-student-ui]) .requests-type-choice__symbol,
+:where([data-student-ui]):is(.requests-type-choice__symbol) {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  inline-size: 2.75rem;
+  block-size: 2.75rem;
+  border-radius: var(--rct-radius-full);
+  color: var(--requests-on-accent);
+  font-size: 1rem;
+  font-weight: var(--rct-font-weight-bold);
+}
+
+:where([data-student-ui]) .requests-type-choice__symbol--excuse,
+:where([data-student-ui]):is(.requests-type-choice__symbol--excuse) {
+  background: var(--rct-color-status-excused-fill);
+}
+
+:where([data-student-ui]) .requests-type-choice__symbol--late_checkin,
+:where([data-student-ui]):is(.requests-type-choice__symbol--late_checkin) {
+  color: var(--requests-on-accent);
+  background: var(--rct-color-status-absent-fill);
+}
+
+:where([data-student-ui]) .requests-type-choice__symbol-pair,
+:where([data-student-ui]):is(.requests-type-choice__symbol-pair) {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 0.375rem;
+  inline-size: 6.9375rem;
+  block-size: 2.75rem;
+}
+
+:where([data-student-ui]) .requests-type-choice__mark,
+:where([data-student-ui]):is(.requests-type-choice__mark) {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  inline-size: 2.75rem;
+  block-size: 2.75rem;
+  border-radius: var(--rct-radius-full);
+  color: var(--requests-on-accent);
+  font-size: 1.125rem;
+  font-weight: var(--rct-font-weight-bold);
+  line-height: 1;
+}
+
+:where([data-student-ui]) .requests-type-choice__mark--late,
+:where([data-student-ui]):is(.requests-type-choice__mark--late) {
+  background: var(--requests-danger);
+}
+
+:where([data-student-ui]) .requests-type-choice__mark--positive,
+:where([data-student-ui]):is(.requests-type-choice__mark--positive) {
+  background: var(--requests-success);
+}
+
+:where([data-student-ui]) .requests-type-choice__pair-arrow,
+:where([data-student-ui]):is(.requests-type-choice__pair-arrow) {
+  flex: 0 0 auto;
+  color: var(--requests-secondary);
+  font-size: 0.9375rem;
+  font-weight: var(--rct-font-weight-bold);
+  line-height: 1;
+}
+
+:where([data-student-ui]) .requests-type-choice__label,
+:where([data-student-ui]):is(.requests-type-choice__label) {
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
+}
+
+:where([data-student-ui]) .requests-type-choice__arrow,
+:where([data-student-ui]):is(.requests-type-choice__arrow) {
+  margin-inline-start: auto;
+  color: var(--requests-secondary);
+  font-size: 1.75rem;
+  font-weight: var(--rct-font-weight-regular);
+  line-height: 1;
+}
+
+:where([data-student-ui]) .requests-type-choice__reason,
+:where([data-student-ui]):is(.requests-type-choice__reason) {
+  margin-block-start: 0.375rem;
+  padding-inline: 0.75rem;
+}
+
+:where([data-student-ui]) .requests-form-status,
+:where([data-student-ui]):is(.requests-form-status) {
+  margin-block-start: -0.5rem;
+}
+
+:where([data-student-ui]) .request-inline-action,
+:where([data-student-ui]):is(.request-inline-action),
+:where([data-student-ui]) .requests-inline-action,
+:where([data-student-ui]):is(.requests-inline-action) {
+  margin-inline-start: 0.375rem;
+  border: 0;
+  padding: 0;
+  color: var(--requests-accent);
+  background: transparent;
+  font: inherit;
+  font-weight: var(--rct-font-weight-bold);
+  text-decoration: underline;
+  cursor: pointer;
+  @mixin rct-focus-ring;
+}
+
+:where([data-student-ui]) .request-late-lesson-card,
+:where([data-student-ui]):is(.request-late-lesson-card) {
+  display: grid;
+  gap: 0.5rem;
+  border-radius: var(--rct-radius-2xl);
+  padding: 1rem;
+  color: var(--requests-text);
+  background: var(--requests-raised);
+}
+
+:where([data-student-ui]) .request-late-lesson-card__head,
+:where([data-student-ui]):is(.request-late-lesson-card__head) {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+:where([data-student-ui]) .request-late-lesson-card h2,
+:where([data-student-ui]):is(.request-late-lesson-card h2) {
+  max-inline-size: 16rem;
+  overflow-wrap: anywhere;
+  font-size: 1rem;
+  font-weight: var(--rct-font-weight-bold);
+  line-height: 1.3;
+}
+
+:where([data-student-ui]) .request-late-mark,
+:where([data-student-ui]):is(.request-late-mark) {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  inline-size: 2.25rem;
+  block-size: 2.25rem;
+  border-radius: var(--rct-radius-full);
+  color: var(--requests-on-accent);
+  background: var(--rct-color-status-absent-fill);
+  font-size: 1rem;
+  font-weight: var(--rct-font-weight-bold);
+}
+
+:where([data-student-ui]) .request-budget-card,
+:where([data-student-ui]):is(.request-budget-card) {
+  display: grid;
+  gap: 0.5rem;
+  border-radius: var(--rct-radius-2xl);
+  padding: 1rem;
+  color: var(--requests-secondary);
+  background: var(--requests-raised);
+}
+
+:where([data-student-ui]) .request-budget-card p,
+:where([data-student-ui]):is(.request-budget-card p) {
+  font-size: 0.8125rem;
+  line-height: 1.35;
+}
+
+:where([data-student-ui]) .request-budget-card strong,
+:where([data-student-ui]):is(.request-budget-card strong) {
+  color: var(--requests-text);
+  font-size: 1.5rem;
+  font-weight: var(--rct-font-weight-bold);
+  line-height: 1.2;
+}
+
+:where([data-student-ui]) .request-confirmation-panel,
+:where([data-student-ui]):is(.request-confirmation-panel) {
+  display: grid;
+  gap: 0.75rem;
+  border-radius: var(--rct-radius-2xl);
+  padding: 1rem;
+  color: var(--requests-warning);
+  background: var(--requests-warning-fill);
+}
+
+:where([data-student-ui]) .request-confirmation-panel h2,
+:where([data-student-ui]):is(.request-confirmation-panel h2) {
+  font-size: 1rem;
+  font-weight: var(--rct-font-weight-bold);
+  line-height: 1.3;
+}
+
+:where([data-student-ui]) .request-confirmation-panel p,
+:where([data-student-ui]):is(.request-confirmation-panel p) {
+  font-size: 0.8125rem;
+  line-height: 1.45;
+}
+
+:where([data-student-ui]) .request-confirmation-panel .requests-submit-action,
+:where([data-student-ui]):is(.request-confirmation-panel .requests-submit-action) {
+  margin-block-start: 0.5rem;
+}
+
+:where([data-student-ui]) .request-confirmation-panel .requests-secondary-action,
+:where([data-student-ui]):is(.request-confirmation-panel .requests-secondary-action) {
+  color: var(--requests-text);
+  background: var(--requests-float);
+}
+
+@keyframes requests-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :where([data-student-ui]) .requests-primary-action,
+  :where([data-student-ui]):is(.requests-primary-action),
+  :where([data-student-ui]) .requests-submit-action,
+  :where([data-student-ui]):is(.requests-submit-action),
+  :where([data-student-ui]) .requests-secondary-action,
+  :where([data-student-ui]):is(.requests-secondary-action),
+  :where([data-student-ui]) .requests-danger-action,
+  :where([data-student-ui]):is(.requests-danger-action),
+  :where([data-student-ui]) .requests-tab,
+  :where([data-student-ui]):is(.requests-tab),
+  :where([data-student-ui]) .requests-inline-action,
+  :where([data-student-ui]):is(.requests-inline-action),
+  :where([data-student-ui]) .requests-back-button,
+  :where([data-student-ui]):is(.requests-back-button),
+  :where([data-student-ui]) .request-card__attachment-action,
+  :where([data-student-ui]):is(.request-card__attachment-action),
+  :where([data-student-ui]) .request-lesson-recovery-action,
+  :where([data-student-ui]):is(.request-lesson-recovery-action) {
+    transition: none;
+  }
+
+  :where([data-student-ui]) .requests-skeleton,
+  :where([data-student-ui]):is(.requests-skeleton) {
+    animation: none;
+  }
+}
+
+@media (max-width: 21rem) {
+  :where([data-student-ui]) .request-card__head,
+  :where([data-student-ui]):is(.request-card__head),
+  :where([data-student-ui]) .request-late-lesson-card__head,
+  :where([data-student-ui]):is(.request-late-lesson-card__head) {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  :where([data-student-ui]) .request-status,
+  :where([data-student-ui]):is(.request-status) {
+    justify-self: start;
+  }
+}
+
+:where([data-student-ui]) .requests-screen,
+:where([data-student-ui]):is(.requests-screen),
+:where([data-student-ui]) .requests-type-screen,
+:where([data-student-ui]):is(.requests-type-screen) {
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
+  padding-block: var(--rct-space-5) var(--rct-today-bottom-space);
+}
+:where([data-student-ui]) .requests-screen__header h1,
+:where([data-student-ui]):is(.requests-screen__header h1) {
+  @mixin rct-type-screen-title;
+}
+:where([data-student-ui]) .requests-type-screen .requests-form-header h1,
+:where([data-student-ui]):is(.requests-type-screen .requests-form-header h1) {
+  @mixin rct-type-task-title;
+}
+:where([data-student-ui]) .requests-type-choice,
+:where([data-student-ui]):is(.requests-type-choice),
+:where([data-student-ui]) .requests-type-choice--unavailable,
+:where([data-student-ui]):is(.requests-type-choice--unavailable) {
+  border: 0;
+}
+:where([data-student-ui]) .requests-type-choice__symbol-pair,
+:where([data-student-ui]):is(.requests-type-choice__symbol-pair) {
+  inline-size: auto;
+}
+:where([data-student-ui]) .request-card__head h2,
+:where([data-student-ui]):is(.request-card__head h2) {
+  min-inline-size: 0;
+  font-size: var(--rct-font-size-body);
+}
+:where([data-student-ui]) .request-status,
+:where([data-student-ui]):is(.request-status) {
+  flex: 0 0 auto;
+}
+:where([data-student-ui]) .request-lesson-card,
+:where([data-student-ui]):is(.request-lesson-card) {
+  inline-size: 100%;
+  min-inline-size: 0;
+}
+:where([data-student-ui]) .requests-state,
+:where([data-student-ui]):is(.requests-state) {
+  border: 0;
+}
+:where([data-student-ui]) .requests-state--error,
+:where([data-student-ui]):is(.requests-state--error) {
+  background: var(--rct-error-surface);
+}
+:where([data-student-ui]) .requests-state--error h2,
+:where([data-student-ui]):is(.requests-state--error h2) {
+  color: var(--rct-color-danger-text);
+}
+:where([data-student-ui]) .requests-screen > .student-warning,
+:where([data-student-ui]):is(.requests-screen > .student-warning) {
+  margin-block-start: var(--rct-space-3);
+}
+
+/* Request metadata uses the same semantic icons at the caption text size. */
+:where([data-student-ui]) .request-card__details-head,
+:where([data-student-ui]):is(.request-card__details-head) {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--rct-space-3);
+}
+:where([data-student-ui]) .request-card__meta p,
+:where([data-student-ui]):is(.request-card__meta p) {
+  display: flex;
+  align-items: center;
+  gap: var(--rct-space-1);
+}
+:where([data-student-ui]) .request-card__meta .mobile-icon,
+:where([data-student-ui]):is(.request-card__meta .mobile-icon),
+:where([data-student-ui]) .request-lesson-card .mobile-icon,
+:where([data-student-ui]):is(.request-lesson-card .mobile-icon),
+:where([data-student-ui]) .request-lesson-option__meta .mobile-icon,
+:where([data-student-ui]):is(.request-lesson-option__meta .mobile-icon) {
+  flex: 0 0 auto;
+  inline-size: var(--rct-font-size-caption);
+  block-size: var(--rct-font-size-caption);
+}
+:where([data-student-ui]) .request-card__toggle,
+:where([data-student-ui]):is(.request-card__toggle) {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  inline-size: var(--rct-control-min-touch);
+  block-size: var(--rct-control-min-touch);
+  border: 0;
+  border-radius: var(--rct-radius-full);
+  color: var(--requests-secondary);
+  background: var(--requests-float);
+  cursor: pointer;
+  @mixin rct-focus-ring;
+}
+:where([data-student-ui]) .request-card__toggle .mobile-icon,
+:where([data-student-ui]):is(.request-card__toggle .mobile-icon) {
+  inline-size: var(--rct-icon-size);
+  block-size: var(--rct-icon-size);
+}
+:where([data-student-ui]) .request-card__toggle-icon--expanded,
+:where([data-student-ui]):is(.request-card__toggle-icon--expanded) {
+  transform: rotate(180deg);
+}
+:where([data-student-ui]) .request-lesson-card,
+:where([data-student-ui]):is(.request-lesson-card) {
+  border-radius: var(--rct-radius-2xl);
+}
+:where([data-student-ui]) .request-lesson-retained,
+:where([data-student-ui]):is(.request-lesson-retained) {
+  display: grid;
+  gap: var(--rct-space-2);
+}
+:where([data-student-ui]) .request-lesson-retained__help,
+:where([data-student-ui]):is(.request-lesson-retained__help) {
+  color: var(--requests-secondary);
+  @mixin rct-type-lesson-meta;
+}
+:where([data-student-ui]) .request-lesson-retained__row,
+:where([data-student-ui]):is(.request-lesson-retained__row) {
+  flex-wrap: wrap;
+  color: var(--requests-muted);
+}
+:where([data-student-ui]) .request-lesson-retained__row .request-lesson-recovery-action,
+:where([data-student-ui]):is(.request-lesson-retained__row .request-lesson-recovery-action),
+:where([data-student-ui]) .requests-selection-screen .request-lesson-recovery-action,
+:where([data-student-ui]):is(.requests-selection-screen .request-lesson-recovery-action) {
+  border: 0;
+  color: var(--requests-secondary);
+  background: var(--requests-float);
+}
+:where([data-student-ui]) .request-lesson-option__absence,
+:where([data-student-ui]):is(.request-lesson-option__absence) {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  inline-size: var(--rct-control-min-touch);
+  block-size: var(--rct-control-min-touch);
+  border-radius: var(--rct-radius-full);
+  color: var(--rct-color-status-absent-on-fill);
+  background: var(--rct-color-status-absent-fill);
+  @mixin rct-type-field-label;
+  font-weight: var(--rct-font-weight-bold);
+}
+:where([data-student-ui]) .request-lesson-option__lifecycle,
+:where([data-student-ui]):is(.request-lesson-option__lifecycle) {
+  flex: 0 1 auto;
+  color: var(--requests-muted);
+  @mixin rct-type-lesson-meta;
+}

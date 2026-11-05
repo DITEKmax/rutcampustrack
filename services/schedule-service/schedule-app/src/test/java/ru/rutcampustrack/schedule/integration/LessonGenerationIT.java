@@ -30,8 +30,11 @@ import ru.rutcampustrack.schedule.item.repository.ScheduleItemRepository;
 import ru.rutcampustrack.schedule.lesson.entity.Lesson;
 import ru.rutcampustrack.schedule.lesson.repository.LessonRepository;
 
+import java.time.Clock;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.UUID;
 
@@ -75,6 +78,8 @@ class LessonGenerationIT extends AbstractScheduleIntegrationTest {
 
     @MockitoBean AcademicGrpcClient academicGrpcClient;
 
+    @MockitoBean Clock clock;
+
     @Autowired MockMvc mockMvc;
 
     @Autowired ObjectMapper objectMapper;
@@ -85,6 +90,12 @@ class LessonGenerationIT extends AbstractScheduleIntegrationTest {
 
     @BeforeEach
     void setUp() {
+        // Generation classifies past physical lessons as CLOSED. This scenario creates
+        // future lessons, independently of the machine date.
+        when(clock.instant()).thenReturn(Instant.parse("2026-02-01T09:00:00Z"));
+        when(clock.getZone()).thenReturn(ZoneId.of("Europe/Moscow"));
+        when(clock.withZone(org.mockito.ArgumentMatchers.any()))
+                .thenAnswer(invocation -> Clock.fixed(clock.instant(), invocation.getArgument(0)));
         resetScheduleData();
         when(academicGrpcClient.getSemesterArchiveAuthorityState(SEMESTER_ID))
                 .thenReturn(

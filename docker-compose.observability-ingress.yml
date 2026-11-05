@@ -6,6 +6,8 @@ services:
       - private_net
       - browser-errors
   grafana:
+    volumes:
+      - ./infra/pyroscope/grafana-datasource.yml:/etc/grafana/provisioning/datasources/pyroscope.yml:ro
     networks:
       - private_net
       - java-profiles

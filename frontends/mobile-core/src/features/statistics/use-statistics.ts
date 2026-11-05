@@ -347,22 +347,43 @@ export function useStatistics(
       if (!isStatisticsScopeReady(requestScope) || !requestScope.groupId)
         throw new StatisticsScopeError()
       const requestedPage = (key as typeof rankingQueryKey.value)[12]
-      const response = await api.getStatisticsRanking(
-        requestScope.semesterId!,
-        requestedPage,
-        20,
-        signal,
-      )
-      if (
-        signal.aborted ||
-        offline.value ||
-        JSON.stringify(rankingQueryKey.value) !== JSON.stringify(key) ||
-        studentFeatureScopeIdentity(scope.value) !== studentFeatureScopeIdentity(requestScope)
-      )
-        throw new StatisticsStaleResponseError()
-      if (response.rows.some((row) => row.isSelf !== (row.id === requestScope.userId)))
-        throw new TypeError('Некорректный текущий участник рейтинга')
-      return response
+      const assertCurrent = (): void => {
+        if (
+          signal.aborted ||
+          offline.value ||
+          JSON.stringify(rankingQueryKey.value) !== JSON.stringify(key) ||
+          studentFeatureScopeIdentity(scope.value) !== studentFeatureScopeIdentity(requestScope)
+        )
+          throw new StatisticsStaleResponseError()
+      }
+      const loadPage = async (page: number | null): Promise<StudentStatisticsRankingResponse> => {
+        const response = await api.getStatisticsRanking(requestScope.semesterId!, page, 20, signal)
+        assertCurrent()
+        if (response.rows.some((row) => row.isSelf !== (row.id === requestScope.userId)))
+          throw new TypeError('Некорректный текущий участник рейтинга')
+        return response
+      }
+      const first = await loadPage(requestedPage)
+      if (!first.available || !first.total) return first
+      const pages = new Map([[first.page, first.rows]])
+      // Keep the server's bounded transport pages; the expanded card shows the whole group.
+      for (let page = 0; page < Math.ceil(first.total / first.size); page += 1) {
+        if (pages.has(page)) continue
+        const response = await loadPage(page)
+        if (
+          !response.available ||
+          response.page !== page ||
+          response.size !== first.size ||
+          response.total !== first.total ||
+          response.ownPosition !== first.ownPosition
+        )
+          throw new TypeError('Рейтинг группы изменился. Попробуй ещё раз.')
+        pages.set(page, response.rows)
+      }
+      const rows = [...pages].sort(([left], [right]) => left - right).flatMap(([, rows]) => rows)
+      if (rows.length !== first.total || new Set(rows.map((row) => row.id)).size !== rows.length)
+        throw new TypeError('Рейтинг группы изменился. Попробуй ещё раз.')
+      return { ...first, rows }
     },
     retry: shouldRetry,
   })
@@ -399,7 +420,7 @@ export function useStatistics(
   })
 
   function openRanking(): void {
-    rankingVisible.value = true
+    rankingVisible.value = !rankingVisible.value
   }
   function setRankingPage(page: number): void {
     const state = rankingState.value

@@ -214,7 +214,7 @@ def admit_gate(name,root,audit,since,revision=None,nonce=None,mode=None):
                 if memory.get('context',{}).get('checkoutSha')!=revision or memory.get('context',{}).get('runIdentity')!='local-'+nonce:return False
                 if len(memory.get('arms',[]))!=1:return False
                 arm=memory['arms'][0]
-                if arm.get('heapMiB')!=1024 or arm.get('nativeExit')!=0 or arm.get('telemetryComplete') is not True or arm.get('rosterConfirmed') is not True or arm.get('cleanup') is not True:return False
+                if arm.get('heapMiB')!=1024 or arm.get('nativeExit')!=0 or arm.get('telemetryComplete') is not True or arm.get('nativeResultsConfirmed') is not True or arm.get('cleanup') is not True:return False
                 if arm.get('actualWorkerPolicy')!={task:{'workers':4,'maxParallelForks':1,'forkEvery':0} for task in ('test','integrationTest')}:return False
                 starts=[]
                 for task in ('test','integrationTest'):
@@ -294,7 +294,8 @@ BRIDGE_PHASES=frozenset(('setup','actual_auth_change_outbox_confirm_consumer_ack
     'same_real_event_completed_dedup_ack','actual_unlinked_reset_original_uid_cleanup',
     'uncertain_provider_keeps_real_claim_retry_without_ack','actual_worker_death_durable_redelivery_recovery',
     'worker_death_while_default_processing_lease_held','held_lease_blocks_premature_ack_until_natural_expiry',
-    'unknown_version_real_dlq_releases_claim','completed','cleanup','OTHER'))
+    'uncertain_provider_preserves_durable_retry','actual_worker_death_durable_retry_recovery',
+    'held_lease_preserves_retry_until_natural_expiry','unknown_version_real_dlq_releases_claim','completed','cleanup','OTHER'))
 BRIDGE_CAUSES=frozenset(('CHECK_FAILED','ASSERTION','TIMEOUT','HTTP_TRANSPORT',
     'GRPC_UNAVAILABLE','GRPC_DEADLINE_EXCEEDED','GRPC_UNAUTHENTICATED','GRPC_PERMISSION_DENIED',
     'GRPC_FAILED_PRECONDITION','GRPC_INVALID_ARGUMENT','GRPC_NOT_FOUND','GRPC_OTHER',
@@ -335,13 +336,18 @@ def bridge_detail(text):
     success=re.compile(r'NP01 broker bridge qualified=true native_python_exit=0 checks=([0-9]{1,7}) '
                        r'worker_restarts=([0-9]{1,7}) held_lease_initial_pttl_ms=([0-9]{1,8}) '
                        r'held_lease_monotonic_elapsed_ms=([0-9]{1,8}) held_lease_redis_elapsed_ms=([0-9]{1,8}) '
-                       r'held_lease_redeliveries=([0-9]{1,7})(?=\s|$)')
+                       r'(?:held_lease_redeliveries=([0-9]{1,7})|held_lease_retry_observed=(true))(?=\s|$)')
     for match in success.finditer(text):
-        values=tuple(map(int,match.groups()))
-        if any(v>10000000 for v in values):continue
-        result['lease']=dict(zip(('checks','worker_restarts','held_lease_initial_pttl_ms',
-                                  'held_lease_monotonic_elapsed_ms','held_lease_redis_elapsed_ms',
-                                  'held_lease_redeliveries'),values))
+        *metrics, redeliveries, retry_observed = match.groups()
+        values = tuple(map(int, metrics))
+        if any(v > 10000000 for v in values):continue
+        lease = dict(zip(('checks','worker_restarts','held_lease_initial_pttl_ms',
+                          'held_lease_monotonic_elapsed_ms','held_lease_redis_elapsed_ms'), values))
+        if retry_observed:
+            lease['held_lease_retry_observed'] = True
+        else:
+            lease['held_lease_redeliveries'] = int(redeliveries)
+        result['lease'] = lease
     return result
 
 RECOVERY_FIELDS={'CLASS': ['RECOVERY_ERROR', 'JSON_DECODE_ERROR', 'UNICODE_DECODE_ERROR', 'OS_ERROR', 'VALUE_ERROR', 'KEY_ERROR', 'OTHER'], 'GUARD': ['BUNDLE_ACCESS_MISSING', 'BUNDLE_ARTIFACTS', 'BUNDLE_DATABASES', 'BUNDLE_DATABASE_ONLY_FILES', 'BUNDLE_DIRECTORY', 'BUNDLE_INTEGRITY', 'BUNDLE_MODE_MISMATCH', 'BUNDLE_REGULAR_FILES', 'CREDENTIAL_FILE_MISSING', 'DISTINCT_TARGETS', 'FILES_ARCHIVE_INVENTORY', 'FILES_ARCHIVE_MEMBER', 'FILES_ENTRY', 'FILES_MODE', 'FILES_SOURCE', 'FILES_SYMLINK', 'MANIFEST_FILES_MODE', 'MANIFEST_FORMAT', 'NOT_QUIESCED', 'OTHER', 'OUTPUT_EXISTS', 'OUTPUT_IN_SOURCE', 'PG_ACCESS_DATABASE', 'PG_ACCESS_DUPLICATE', 'PG_ACCESS_INCOMPLETE', 'PG_ACCESS_OBJECT', 'RECOVERY_ADMIN', 'RESTORE_ACADEMIC_INVENTORY', 'RESTORE_ACADEMIC_SCHEMA', 'RESTORE_AUTH_INVENTORY', 'RESTORE_AUTH_SCHEMA', 'RESTORE_FILES_TARGET_EXISTS', 'RESTORE_MONGO_FILES', 'RESTORE_MONGO_TARGET_NOT_FRESH', 'RESTORE_PG_TARGET_NOT_FRESH', 'RESTORE_PROJECT_PREFIX', 'RESTORE_SCHEDULE_INVENTORY', 'RESTORE_SCHEDULE_SCHEMA', 'RESTORE_TARGET_LABELS', 'SCHEMA_REFERENCE_EXISTS', 'SCHEMA_REFERENCE_ID_CHANGED', 'SCHEMA_REFERENCE_ID_MISSING', 'SOURCE_CHANGED', 'TARGET_NOT_RUNNING'], 'HINT': ['GUARD', 'INPUT_CREDENTIAL', 'INSPECT', 'MONGO_DUMP', 'MONGO_QUERY', 'MONGO_RESTORE', 'OTHER_TOOL', 'PG_DUMP', 'PG_QUERY', 'PG_RESTORE', 'PG_SCHEMA', 'RESTORE_DIFF_ACCESS_ACL', 'RESTORE_DIFF_ACCESS_ACL_COLUMN', 'RESTORE_DIFF_ACCESS_ACL_DATABASE', 'RESTORE_DIFF_ACCESS_ACL_DEFAULT', 'RESTORE_DIFF_ACCESS_ACL_FUNCTION', 'RESTORE_DIFF_ACCESS_ACL_RELATION', 'RESTORE_DIFF_ACCESS_ACL_SCHEMA', 'RESTORE_DIFF_ACCESS_ACL_TYPE', 'RESTORE_DIFF_ACCESS_OBJECT_SET', 'RESTORE_DIFF_ACCESS_ORDER', 'RESTORE_DIFF_ACCESS_OWNER', 'RESTORE_DIFF_OTHER_SHAPE', 'RESTORE_DIFF_SEQUENCES', 'RESTORE_DIFF_TABLES']}

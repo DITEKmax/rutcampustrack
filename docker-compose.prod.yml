@@ -294,8 +294,8 @@ services:
       AUTH_GRPC_PRIVATE_KEY: file:/run/rct-auth-tls/auth-server.key
       ACADEMIC_GRPC_TRUST_CERT_COLLECTION: file:/run/rct-academic-tls/academic-server.crt
       ACADEMIC_GRPC_TLS_AUTHORITY: ${ACADEMIC_GRPC_TLS_AUTHORITY:?ACADEMIC_GRPC_TLS_AUTHORITY must be set}
-      # M09 G7 (NEW-157) — heap = 0.75 × mem_limit. См. docs/resource-limits.md.
-      JAVA_TOOL_OPTIONS: '-XX:MaxRAMPercentage=75.0 -XX:InitialRAMPercentage=50.0 -XX:+UseG1GC -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp'
+      # Preserve the measured previous heap; cgroup RAM also covers native memory.
+      JAVA_TOOL_OPTIONS: '-Xms192m -Xmx288m -XX:+UseG1GC -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp'
     secrets:
     - source: mobile-bff-to-auth-service-token
       target: /run/rct-directed/grpc.service-identity.mobile-bff-to-auth-token
@@ -344,7 +344,9 @@ services:
     # JVM heap 75% от 256m = 192m, плюс non-heap (metaspace, native, OTel
     # instrumentation, RabbitMQ NIO buffers, Hikari pool overhead, Spring
     # Boot reflective bytecode) → > 256m. 384m даёт безопасный margin.
-    mem_limit: 384m
+    # Measured resident+swap budget; preserve previous heap sizing independently.
+    mem_limit: 896m
+    memswap_limit: 1152m
     mem_reservation: 256m
     restart: unless-stopped
     healthcheck:
@@ -365,6 +367,7 @@ services:
       AUTH_GRPC_TRUST_CERT_COLLECTION: file:/run/rct-auth-tls/auth-server.crt
       AUTH_GRPC_TLS_AUTHORITY: auth-service
       SPRING_CONFIG_IMPORT: configtree:/run/rct-db/,configtree:/run/rct-cache/,configtree:/run/rct-directed/
+      CONSTRUCTOR_RPC_SCHEDULE_TO_ACADEMIC_TOKEN_FILE: /run/rct-directed/constructor-rpc-schedule-to-academic-token
       RCT_CACHE_REDIS_HOST: redis-cache
       RCT_CACHE_REDIS_PORT: '6379'
       RCT_CACHE_REDIS_USERNAME: rct_cache
@@ -403,7 +406,7 @@ services:
       ATTENDANCE_GRPC_TLS_AUTHORITY: attendance-service
       SCHEDULE_GRPC_TRUST_CERT_COLLECTION: file:/run/rct-schedule-tls/schedule-server.crt
       # M09 G7 (NEW-157).
-      JAVA_TOOL_OPTIONS: '-XX:MaxRAMPercentage=75.0 -XX:InitialRAMPercentage=50.0 -XX:+UseG1GC -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp'
+      JAVA_TOOL_OPTIONS: '-Xms256m -Xmx384m -XX:+UseG1GC -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp'
     secrets:
     - source: academic-to-auth-service-token
       target: /run/rct-directed/grpc.service-identity.academic-to-auth-token
@@ -417,6 +420,8 @@ services:
       target: /run/rct-directed/grpc.service-identity.academic-report-to-attendance-token
     - source: academic-report-to-schedule-service-token
       target: /run/rct-directed/grpc.service-identity.academic-report-to-schedule-token
+    - source: constructor-rpc-schedule-to-academic-token
+      target: /run/rct-directed/constructor-rpc-schedule-to-academic-token
     - source: notification-to-academic-service-token
       target: /run/rct-directed/grpc.service-identity.notification-to-academic-token
     - source: redis-cache-runtime-password
@@ -443,7 +448,9 @@ services:
       rabbitmq:
         condition: service_healthy
     # M09 G7 (NEW-157).
-    mem_limit: 512m
+    # Measured resident+swap budget; preserve previous heap sizing independently.
+    mem_limit: 1152m
+    memswap_limit: 1408m
     mem_reservation: 384m
     restart: unless-stopped
     healthcheck:
@@ -462,6 +469,14 @@ services:
     logging: *bounded-logs
     environment:
       SPRING_CONFIG_IMPORT: configtree:/run/rct-db/,configtree:/run/rct-directed/
+      CONSTRUCTOR_ATTENDANCE_GRPC_ADDRESS: dns:///attendance-service:19093
+      CONSTRUCTOR_ATTENDANCE_GRPC_CA_PATH: file:/run/rct-attendance-tls/attendance-server.crt
+      CONSTRUCTOR_ATTENDANCE_GRPC_AUTHORITY: attendance-service
+      CONSTRUCTOR_ACADEMIC_GRPC_ADDRESS: dns:///academic-service:19091
+      CONSTRUCTOR_ACADEMIC_GRPC_CA_PATH: file:/run/rct-academic-tls/academic-server.crt
+      CONSTRUCTOR_ACADEMIC_GRPC_AUTHORITY: academic-service
+      CONSTRUCTOR_RPC_SCHEDULE_TO_ATTENDANCE_TOKEN_FILE: /run/rct-directed/constructor-rpc-schedule-to-attendance-token
+      CONSTRUCTOR_RPC_SCHEDULE_TO_ACADEMIC_TOKEN_FILE: /run/rct-directed/constructor-rpc-schedule-to-academic-token
       SPRING_DATASOURCE_USERNAME: rct_runtime
       SPRING_FLYWAY_USER: rct_migrator
       SPRING_FLYWAY_LOCATIONS: classpath:db/migration,filesystem:/etc/rct/flyway-callbacks
@@ -493,8 +508,12 @@ services:
       SCHEDULE_GRPC_PRIVATE_KEY: file:/run/rct-schedule-tls/schedule-server.key
       TZ: Europe/Moscow
       # M09 G7 (NEW-157).
-      JAVA_TOOL_OPTIONS: '-XX:MaxRAMPercentage=75.0 -XX:InitialRAMPercentage=50.0 -XX:+UseG1GC -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp'
+      JAVA_TOOL_OPTIONS: '-Xms256m -Xmx384m -XX:+UseG1GC -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp'
     secrets:
+    - source: constructor-rpc-schedule-to-attendance-token
+      target: /run/rct-directed/constructor-rpc-schedule-to-attendance-token
+    - source: constructor-rpc-schedule-to-academic-token
+      target: /run/rct-directed/constructor-rpc-schedule-to-academic-token
     - source: mobile-bff-to-schedule-service-token
       target: /run/rct-directed/grpc.service-identity.mobile-bff-to-schedule-token
     - source: attendance-bot-read-to-schedule-service-token
@@ -510,6 +529,7 @@ services:
       - ${SCHEDULE_GRPC_TLS_DIR:?SCHEDULE_GRPC_TLS_DIR must be set}/schedule-server.crt:/run/rct-schedule-tls/schedule-server.crt:ro
       - ${SCHEDULE_GRPC_TLS_DIR:?SCHEDULE_GRPC_TLS_DIR must be set}/schedule-server.key:/run/rct-schedule-tls/schedule-server.key:ro
       - ${ACADEMIC_GRPC_TLS_DIR:?ACADEMIC_GRPC_TLS_DIR must be set}/academic-server.crt:/run/rct-academic-tls/academic-server.crt:ro
+      - ${ATTENDANCE_GRPC_TLS_DIR:?ATTENDANCE_GRPC_TLS_DIR must be set}/attendance-server.crt:/run/rct-attendance-tls/attendance-server.crt:ro
     expose:
       - '9092'
     networks:
@@ -522,7 +542,9 @@ services:
       rabbitmq:
         condition: service_healthy
     # M09 G7 (NEW-157).
-    mem_limit: 512m
+    # Measured resident+swap budget; preserve previous heap sizing independently.
+    mem_limit: 1024m
+    memswap_limit: 1280m
     mem_reservation: 384m
     restart: unless-stopped
     healthcheck:
@@ -540,6 +562,7 @@ services:
     container_name: rct-attendance-service
     logging: *bounded-logs
     environment:
+      CONSTRUCTOR_RPC_SCHEDULE_TO_ATTENDANCE_TOKEN_FILE: /run/rct-directed/constructor-rpc-schedule-to-attendance-token
       ATTENDANCE_BOT_READ_AUTH_GRPC_CA_PATH: file:/run/rct-auth-tls/auth-server.crt
       ATTENDANCE_GRPC_CERTIFICATE_CHAIN: file:/run/rct-attendance-tls/attendance-server.crt
       ATTENDANCE_GRPC_PRIVATE_KEY: file:/run/rct-attendance-tls/attendance-server.key
@@ -588,6 +611,8 @@ services:
         target: /run/rct-directed/grpc.service-identity.attendance-bot-read-to-schedule-token
       - source: academic-report-to-attendance-service-token
         target: /run/rct-directed/grpc.service-identity.academic-report-to-attendance-token
+      - source: constructor-rpc-schedule-to-attendance-token
+        target: /run/rct-directed/constructor-rpc-schedule-to-attendance-token
     volumes:
       - ${ATTENDANCE_GRPC_TLS_DIR:?ATTENDANCE_GRPC_TLS_DIR must be set}/attendance-server.crt:/run/rct-attendance-tls/attendance-server.crt:ro
       - ${ATTENDANCE_GRPC_TLS_DIR:?ATTENDANCE_GRPC_TLS_DIR must be set}/attendance-server.key:/run/rct-attendance-tls/attendance-server.key:ro
@@ -724,7 +749,7 @@ services:
       # M10 G1 D4 — retention для notification_history (дней).
       NOTIFICATION_HISTORY_TTL_DAYS: ${NOTIFICATION_HISTORY_TTL_DAYS:-30}
       # M09 G7 (NEW-157).
-      JAVA_TOOL_OPTIONS: '-XX:MaxRAMPercentage=75.0 -XX:InitialRAMPercentage=50.0 -XX:+UseG1GC -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp'
+      JAVA_TOOL_OPTIONS: '-Xms192m -Xmx288m -XX:+UseG1GC -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp'
     secrets:
       - source: notification-to-academic-service-token
         target: /run/rct-directed/grpc.service-identity.notification-to-academic-token
@@ -746,7 +771,9 @@ services:
     # M09 G7 (NEW-157). M15 hotfix: 256m → 384m. Идентичная OOM проблема как у
     # auth-service: heap 75% от 256m = 192m + non-heap (metaspace, OTel, STOMP
     # WebSocket buffers, MongoDB driver, RabbitMQ NIO, Caffeine cache) > 256m.
-    mem_limit: 384m
+    # Measured resident+swap budget; preserve previous heap sizing independently.
+    mem_limit: 896m
+    memswap_limit: 1152m
     mem_reservation: 256m
     restart: unless-stopped
     healthcheck:
@@ -807,6 +834,10 @@ services:
       GRPC_SECRET: ${GRPC_SECRET}
       SCHEDULE_GRPC_TLS_ENABLED: 'true'
       SCHEDULE_GRPC_TLS_CA_PATH: /run/rct-schedule-tls/schedule-server.crt
+      ATTENDANCE_GRPC_HOST: attendance-service
+      ATTENDANCE_GRPC_PORT: '19093'
+      ATTENDANCE_GRPC_TLS_ENABLED: 'true'
+      ATTENDANCE_GRPC_TLS_CA_PATH: /run/rct-attendance-tls/attendance-server.crt
       AUTH_SERVICE_HOST: auth-service
       AUTH_SERVICE_PORT: '9090'
       API_GATEWAY_URL: http://api-gateway:8080
@@ -825,6 +856,7 @@ services:
       - ${AUTH_GRPC_TLS_DIR:?AUTH_GRPC_TLS_DIR must be set}/auth-server.crt:/run/rct-auth-tls/auth-server.crt:ro
       - ${SCHEDULE_GRPC_TLS_DIR:?SCHEDULE_GRPC_TLS_DIR must be set}/schedule-server.crt:/run/rct-schedule-tls/schedule-server.crt:ro
       - ${ACADEMIC_GRPC_TLS_DIR:?ACADEMIC_GRPC_TLS_DIR must be set}/academic-server.crt:/run/rct-academic-tls/academic-server.crt:ro
+      - ${ATTENDANCE_GRPC_TLS_DIR:?ATTENDANCE_GRPC_TLS_DIR must be set}/attendance-server.crt:/run/rct-attendance-tls/attendance-server.crt:ro
     networks:
       - private_net
     depends_on:
@@ -832,8 +864,9 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
-    # M09 G7 (NEW-157). Python ~80-120MB RSS, 256M — с запасом.
-    mem_limit: 256m
+    # Observed249MiB resident+149MiB swap; 512m includes about25% headroom.
+    mem_limit: 512m
+    memswap_limit: 768m
     mem_reservation: 128m
     restart: unless-stopped
     healthcheck:
@@ -885,7 +918,7 @@ services:
       SCHEDULE_GRPC_TLS_AUTHORITY: schedule-service
       ACADEMIC_GRPC_TRUST_CERT_COLLECTION: file:/run/rct-academic-tls/academic-server.crt
       ACADEMIC_GRPC_TLS_AUTHORITY: ${ACADEMIC_GRPC_TLS_AUTHORITY:?ACADEMIC_GRPC_TLS_AUTHORITY must be set}
-      JAVA_TOOL_OPTIONS: '-XX:MaxRAMPercentage=75.0 -XX:InitialRAMPercentage=50.0 -XX:+UseG1GC -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp'
+      JAVA_TOOL_OPTIONS: '-Xms192m -Xmx288m -XX:+UseG1GC -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp'
     secrets:
       - source: bot-to-read-service-token
         target: /run/rct-directed/grpc.service-identity.bot-to-mobile-bff-token
@@ -918,7 +951,9 @@ services:
         condition: service_healthy
       attendance-service:
         condition: service_healthy
-    mem_limit: 384m
+    # Measured resident+swap budget; preserve previous heap sizing independently.
+    mem_limit: 640m
+    memswap_limit: 896m
     mem_reservation: 256m
     restart: unless-stopped
     healthcheck:
@@ -969,7 +1004,7 @@ services:
       PWA_VERSION_POLICY_LATEST: 1-${IMAGE_TAG:-0.0.0}
       PWA_VERSION_POLICY_FORCE: 'true'
       # M09 G7 (NEW-157).
-      JAVA_TOOL_OPTIONS: '-XX:MaxRAMPercentage=75.0 -XX:InitialRAMPercentage=50.0 -XX:+UseG1GC -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp'
+      JAVA_TOOL_OPTIONS: '-Xms192m -Xmx288m -XX:+UseG1GC -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp'
     expose:
       - '8080'
     networks:
@@ -993,7 +1028,9 @@ services:
     # peak: Reactor Netty + Redis + RSA pub key fetch + OTel SDK + Spring
     # Security + WebFlux. После warmup ~150m steady-state, но cold start
     # пробивает 256m mem_limit → exit 137 → restart loop.
-    mem_limit: 384m
+    # Measured resident+swap budget; preserve previous heap sizing independently.
+    mem_limit: 768m
+    memswap_limit: 1024m
     mem_reservation: 256m
     restart: unless-stopped
     healthcheck:
@@ -1173,7 +1210,12 @@ services:
     image: prom/node-exporter:v1.8.2@sha256:4032c6d5bfd752342c3e631c2f1de93ba6b86c41db6b167b9a35372c139e7706
     container_name: rct-node-exporter
     logging: *bounded-logs
+    # netdev uses netlink: host /proc mounts alone still report bridge traffic.
+    # Bind only the Docker host gateway, never the public host interface.
+    network_mode: host
+    pid: host
     command:
+      - '--web.listen-address=${NODE_EXPORTER_LISTEN_ADDRESS:-172.17.0.1:9100}'
       - '--path.rootfs=/host'
       - '--path.procfs=/host/proc'
       - '--path.sysfs=/host/sys'
@@ -1187,10 +1229,6 @@ services:
       # state, process/thread counts, IRQ detail and TCP socket queues.
       # Hardware sensors still depend on physical host support.
       - /var/run/dbus:/var/run/dbus:ro,rslave
-    expose:
-      - '9100'
-    networks:
-      - private_net
     # M16 G8a — drop NET_RAW (default Docker capability). Без него
     # потенциально compromised peer не может sniff'ать plaintext-трафик
     # в private_net (например, Bearer token Alertmanager → notification-web).
@@ -1215,11 +1253,15 @@ services:
     # но M16 G9 убрал `privileged: true` — больше нет full root host access
     # на write/exec через /proc, /dev manipulation, kernel capabilities.
     # Bump digest через Renovate (QD6).
-    # Version: v0.49.1. Update: `docker buildx imagetools inspect gcr.io/cadvisor/cadvisor:<ver>`
-    image: gcr.io/cadvisor/cadvisor:v0.49.1@sha256:3cde6faf0791ebf7b41d6f8ae7145466fed712ea6f252c935294d2608b1af388
+    # v0.60.5 includes upstream #3709: Docker 29 containerd overlayfs support.
+    image: ghcr.io/google/cadvisor:v0.60.5@sha256:763aecf1c32c2be8a1a75f9abfc2fc461005c9dbbaa39cb356b354aac1296dbe
     container_name: rct-cadvisor
     logging: *bounded-logs
+    command:
+      - '--containerd=/run/containerd/containerd.sock'
     volumes:
+      # Socket access has daemon-control capability even with a read-only mount.
+      - /run/containerd/containerd.sock:/run/containerd/containerd.sock:ro
       - /:/rootfs:ro
       - /var/run:/var/run:ro
       - /sys:/sys:ro
@@ -1286,6 +1328,11 @@ services:
     image: prom/prometheus:v2.55.1@sha256:2659f4c2ebb718e7695cb9b25ffa7d6be64db013daba13e05c875451cf51b0d3
     container_name: rct-prometheus
     logging: *bounded-logs
+    environment:
+      # Observed Go heap was 307MiB with 58,986 head series; 192m was insufficient.
+      GOMEMLIMIT: 768MiB
+    extra_hosts:
+      - 'node-exporter:host-gateway'
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
       - '--storage.tsdb.path=/prometheus'
@@ -1319,8 +1366,9 @@ services:
       - node-exporter
       - cadvisor
       - alertmanager
-    # M09 G7 (NEW-157).
-    mem_limit: 192m
+    # 1GiB includes Go heap, TSDB mmap and native overhead. Swap is total RAM+swap.
+    mem_limit: 1g
+    memswap_limit: 1536m
     mem_reservation: 128m
     restart: unless-stopped
 
@@ -1381,9 +1429,10 @@ services:
       timeout: 5s
       retries: 5
       start_period: 45s
-    # M18: Tempo compaction + WAL replay need more headroom than 128m.
+    # Measured memory pressure/restart: reserve headroom for compaction and WAL replay.
     # App services still do not depend on Tempo health.
-    mem_limit: 256m
+    mem_limit: 512m
+    memswap_limit: 768m
     mem_reservation: 192m
     restart: unless-stopped
 
@@ -1727,3 +1776,9 @@ secrets:
 
   bot-to-read-service-token:
     file: ${BOT_TO_READ_SERVICE_TOKEN_FILE:?BOT_TO_READ_SERVICE_TOKEN_FILE must be set}
+
+  constructor-rpc-schedule-to-attendance-token:
+    file: ${CONSTRUCTOR_RPC_SCHEDULE_TO_ATTENDANCE_TOKEN_FILE:?CONSTRUCTOR_RPC_SCHEDULE_TO_ATTENDANCE_TOKEN_FILE must be set}
+
+  constructor-rpc-schedule-to-academic-token:
+    file: ${CONSTRUCTOR_RPC_SCHEDULE_TO_ACADEMIC_TOKEN_FILE:?CONSTRUCTOR_RPC_SCHEDULE_TO_ACADEMIC_TOKEN_FILE must be set}

@@ -1,0 +1,55 @@
+/* Accepted Student presentation; existing roles retain their base rules. */
+:where([data-student-ui]) .notification-inbox .rctstu-illustration,
+:where([data-student-ui]):is(.notification-inbox .rctstu-illustration) {
+  display: block;
+  inline-size: calc(var(--rct-space-6) * 4);
+  block-size: auto;
+  max-inline-size: 100%;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  --rctstu-paper: var(--rct-color-surface-raised);
+  --rctstu-edge: var(--rct-color-border-default);
+  --rctstu-line: var(--rct-color-text-muted);
+  --rctstu-accent: var(--rct-color-accent-now);
+  --rctstu-soft: var(--rct-color-surface-float);
+  --rctstu-on-accent: var(--rct-color-accent-on-now);
+}
+:where([data-student-ui]) .notification-inbox .rctstu-paper,
+:where([data-student-ui]):is(.notification-inbox .rctstu-paper) {
+  fill: var(--rctstu-paper);
+  stroke: var(--rctstu-edge);
+  stroke-width: 1.5;
+}
+:where([data-student-ui]) .notification-inbox .rctstu-soft,
+:where([data-student-ui]):is(.notification-inbox .rctstu-soft) {
+  fill: var(--rctstu-soft);
+  stroke: var(--rctstu-accent);
+  stroke-width: 1.5;
+}
+:where([data-student-ui]) .notification-inbox .rctstu-ink,
+:where([data-student-ui]):is(.notification-inbox .rctstu-ink) {
+  stroke: var(--rctstu-accent);
+  stroke-width: 1.7;
+}
+:where([data-student-ui]) .notification-inbox .rctstu-solid,
+:where([data-student-ui]):is(.notification-inbox .rctstu-solid) {
+  fill: var(--rctstu-accent);
+}
+:where([data-student-ui]) .notification-inbox .rctstu-badge,
+:where([data-student-ui]):is(.notification-inbox .rctstu-badge) {
+  fill: var(--rctstu-accent);
+  stroke: var(--rctstu-paper);
+  stroke-width: 3;
+}
+:where([data-student-ui]) .notification-inbox .rctstu-mark,
+:where([data-student-ui]):is(.notification-inbox .rctstu-mark) {
+  stroke: var(--rctstu-on-accent);
+  stroke-width: 2;
+}
+:where([data-student-ui]) .notification-inbox .rctstu-dotted,
+:where([data-student-ui]):is(.notification-inbox .rctstu-dotted) {
+  stroke: var(--rctstu-edge);
+  stroke-width: 1.25;
+  stroke-dasharray: 2 5;
+}

@@ -495,6 +495,115 @@ class SafeCases {
                 self.assertEqual(value["stage"], "AWAIT_BARRIER")
                 self.assertNotIn(MARKER, json.dumps(value))
 
+    BROKER_MARKER = (
+        "BRIDGE_DETAIL_V1 kind=BROKER phase=held_lease_blocks_premature_ack_until_natural_expiry "
+        "cause=CHECK_FAILED action=facts checks=42 workers_reaped=true "
+        "check_line=731 check_call_line=731 observations=ack_unchanged=false,pending_positive=true,"
+        "initial_pttl_ms=300000,redis_elapsed_ms=1200"
+    )
+
+    def broker_case(self, message=None, text=None, kind="java.lang.AssertionError"):
+        case = COLLECTOR.ElementTree.Element("testcase")
+        failure = COLLECTOR.ElementTree.SubElement(case, "failure", type=kind)
+        failure.set("message", self.BROKER_MARKER if message is None else message)
+        failure.text = "java.lang.AssertionError: " + self.BROKER_MARKER + "\n" + MARKER if text is None else text
+        return case
+
+    def test_broker_bridge_projects_closed_detail_and_keeps_failed_outcome(self) -> None:
+        source = self.root / COLLECTOR.BROKER_BRIDGE_SOURCE
+        source.parent.mkdir(parents=True)
+        source.write_text(
+            "package ru.rutcampustrack.academic.botcredentials; class BotCredentialBrokerBridgeIT {"
+            "@Test void actualProducerBrokerClaimAckRetryRestartAndDlqPreserveExactCards() {}"
+            "@Test void otherBoundary() {} }"
+        )
+        subprocess.run(["git", "add", str(source.relative_to(self.root))], cwd=self.root,
+                       check=True, capture_output=True)
+        self.results = self.root / COLLECTOR.MODULES["academic-service"] / "build/test-results/integrationTest"
+        self.results.mkdir(parents=True)
+        self.environment.update(RCT_CI_JOB_ID="java-integration-test", RCT_CI_TEST_OUTCOME="failure")
+        case = self.broker_case()
+        case.set("classname", COLLECTOR.BROKER_BRIDGE_CLASS)
+        case.set("name", COLLECTOR.BROKER_BRIDGE_METHOD + "()")
+        body = COLLECTOR.ElementTree.tostring(case, encoding="unicode")
+        self.xml(body, tests=1, failures=1)
+        report = COLLECTOR.collect(self.root, "academic-service", "integrationTest", self.environment)
+        self.assertEqual(report["cases"][0]["failureDiagnostic"], {
+            "state": "CLOSED_MARKER", "kind": "BROKER",
+            "phase": "held_lease_blocks_premature_ack_until_natural_expiry",
+            "cause": "CHECK_FAILED", "action": "facts", "checks": 42, "workersReaped": True,
+            "checkLine": 731, "checkCallLine": 731,
+            "observations": {"ack_unchanged": False, "pending_positive": True,
+                             "initial_pttl_ms": 300000, "redis_elapsed_ms": 1200},
+        })
+        self.assertEqual(report["summary"]["FAILED"], 1)
+        self.assertEqual(report["acceptance"], "NOT_ASSESSED")
+        self.assertNotIn(MARKER, json.dumps(report))
+        for class_name, method, has_failure in (
+            (COLLECTOR.BROKER_BRIDGE_CLASS, "otherBoundary()", True),
+            (COLLECTOR.BROKER_BRIDGE_CLASS + "NearMatch", COLLECTOR.BROKER_BRIDGE_METHOD + "()", True),
+            (COLLECTOR.BROKER_BRIDGE_CLASS, COLLECTOR.BROKER_BRIDGE_METHOD + "()", False),
+        ):
+            foreign = self.broker_case() if has_failure else COLLECTOR.ElementTree.Element("testcase")
+            foreign.set("classname", class_name)
+            foreign.set("name", method)
+            self.xml(COLLECTOR.ElementTree.tostring(foreign, encoding="unicode"), tests=1, failures=int(has_failure))
+            report = COLLECTOR.collect(self.root, "academic-service", "integrationTest", self.environment)
+            self.assertNotIn("failureDiagnostic", report["cases"][0])
+        self.xml(body, tests=1, failures=1)
+        unit = self.results.parent / "test"
+        unit.mkdir()
+        (unit / "TEST-control.xml").write_text((self.results / "TEST-control.xml").read_text())
+        report = COLLECTOR.collect(self.root, "academic-service", "test",
+                                   {**self.environment, "RCT_CI_JOB_ID": "java-unit-test"})
+        self.assertNotIn("failureDiagnostic", report["cases"][0])
+        source.rename(source.with_name("OtherCases.java"))
+        subprocess.run(["git", "add", "-A"], cwd=self.root, check=True, capture_output=True)
+        report = COLLECTOR.collect(self.root, "academic-service", "integrationTest", self.environment)
+        self.assertNotIn("failureDiagnostic", report["cases"][0])
+
+    def test_broker_bridge_rejects_private_conflicting_partial_and_out_of_bound_carriers(self) -> None:
+        good = self.BROKER_MARKER
+        bad = (
+            MARKER + good, good + " " + MARKER, good + MARKER,
+            good.replace("CHECK_FAILED", MARKER), good.replace("phase=held_lease_blocks_premature_ack_until_natural_expiry", "phase=" + MARKER),
+            good.replace("action=facts", "action=" + MARKER), good.replace("checks=42", "checks=100001"),
+            good.replace("check_line=731", "check_line=-2"), good.replace("workers_reaped=true", "workers_reaped=1"),
+            good.replace("ack_unchanged=false", "ack_unchanged=0"), good.replace("ack_unchanged=false", MARKER + "=true"),
+            good.replace("initial_pttl_ms=300000", "initial_pttl_ms=10000001"),
+            good.replace("initial_pttl_ms=300000", "initial_pttl_ms=-2"),
+            good.replace("ack_unchanged=false", "ack_unchanged=false,ack_unchanged=true"),
+            good + "," + ",".join(["pending_positive=true"] * 9), good[:100], good + " " * 1024,
+        )
+        for carrier in bad:
+            for message, text in ((carrier, ""), (good, carrier)):
+                with self.subTest(carrier="closed rejection vector"):
+                    result = COLLECTOR.broker_bridge_failure_diagnostic(self.broker_case(message, text))
+                    self.assertEqual(result, {"state": "ABSENT_OR_UNRECOGNIZED"})
+                    self.assertNotIn(MARKER, json.dumps(result))
+        for case in (
+            self.broker_case(good, good.replace("checks=42", "checks=41")),
+            self.broker_case(good, "", kind="java.lang.IllegalStateException"),
+            self.broker_case("", "private first line\n" + good),
+            self.broker_case(good + "\n" + MARKER, ""),
+        ):
+            self.assertEqual(COLLECTOR.broker_bridge_failure_diagnostic(case), {"state": "ABSENT_OR_UNRECOGNIZED"})
+        case = self.broker_case()
+        case.append(self.broker_case()[0])
+        self.assertEqual(COLLECTOR.broker_bridge_failure_diagnostic(case), {"state": "ABSENT_OR_UNRECOGNIZED"})
+
+    def test_broker_bridge_bounds_and_native_mirrored_marker_are_preserved(self) -> None:
+        good = self.BROKER_MARKER
+        for message, text in ((good, ""), ("", "org.opentest4j.AssertionFailedError: " + good + "\n" + MARKER)):
+            self.assertEqual(COLLECTOR.broker_bridge_failure_diagnostic(self.broker_case(message, text))["state"], "CLOSED_MARKER")
+        for original, replacement, key, expected in (
+            ("checks=42", "checks=-1", "checks", -1),
+            ("check_line=731", "check_line=100000", "checkLine", 100000),
+            ("workers_reaped=true", "workers_reaped=UNKNOWN", "workersReaped", None),
+        ):
+            marker = good.replace(original, replacement)
+            self.assertEqual(COLLECTOR.broker_bridge_failure_diagnostic(self.broker_case(marker, ""))[key], expected)
+
     def headman_race_fixture(self) -> None:
         source = self.root / COLLECTOR.HEADMAN_RACE_SOURCE
         source.parent.mkdir(parents=True)

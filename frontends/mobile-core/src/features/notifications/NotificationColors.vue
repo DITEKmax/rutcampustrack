@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, nextTick, ref, useId } from 'vue';
+import MobileIcon from '../../shared/components/MobileIcon.vue';
 import {
   notificationCatalogMatchesPreferences,
   notificationTypeSetsMatch,
@@ -14,10 +15,12 @@ import type {
 import {
   changeNotificationColor,
   notificationPreferencesUpdate,
+  notificationPreferencesDiffer,
 } from './notification-preferences-draft';
 import './notification-colors.pcss';
 
 const props = defineProps<{
+  studentUi?: boolean;
   catalog: NotificationCatalog;
   preferences: NotificationPreferencesV2;
   draft: NotificationPreferencesV2 | null;
@@ -35,6 +38,7 @@ const emit = defineEmits<{
   reapply: [];
 }>();
 const value = computed(() => props.draft ?? props.preferences);
+const dirty = computed(() => notificationPreferencesDiffer(value.value, props.preferences));
 const compatible = computed(
   () =>
     notificationCatalogMatchesPreferences(props.catalog, props.preferences) &&
@@ -87,7 +91,7 @@ function setColor(id: NotificationTypeId, colorId: NotificationPaletteId): void 
   emit('update:draft', changeNotificationColor(value.value, id, colorId));
 }
 function save(): void {
-  if (!disabled.value)
+  if (!disabled.value && dirty.value)
     emit('save', notificationPreferencesUpdate(value.value, props.preferences.revision));
 }
 </script>
@@ -166,6 +170,7 @@ function save(): void {
         <button
           type="button"
           class="notification-colors__type"
+          :aria-label="`${type.label}: ${paletteLabel(type.preferences.colorId)}`"
           :aria-expanded="selectedType === type.id"
           :aria-controls="selectedType === type.id ? `${pageId}-${type.id}` : undefined"
           @click="toggleType(type.id)"
@@ -175,11 +180,11 @@ function save(): void {
             :style="dotStyle(type.preferences.colorId)"
             aria-hidden="true"
           />
-          <span class="notification-colors__type-text">{{ type.label
-          }}<span class="notification-colors__current">{{
-            paletteLabel(type.preferences.colorId)
-          }}</span></span>
-          <span aria-hidden="true">{{ selectedType === type.id ? '⌃' : '⌄' }}</span>
+          <span class="notification-colors__type-text">{{ type.label }}</span>
+          <MobileIcon
+            class="notification-colors__chevron"
+            name="back"
+          />
         </button>
         <fieldset
           v-if="selectedType === type.id"
@@ -194,34 +199,53 @@ function save(): void {
               :key="color.id"
               type="button"
               class="notification-colors__swatch"
+              :style="studentUi ? dotStyle(color.id) : undefined"
+              :aria-label="color.label"
               :aria-pressed="type.preferences.colorId === color.id"
               @click="setColor(type.id, color.id)"
             >
-              <span
-                class="notification-colors__dot"
-                :style="dotStyle(color.id)"
-                aria-hidden="true"
-              />
-              <span>{{ color.label }}</span><span
+              <svg
+                v-if="studentUi && type.preferences.colorId === color.id"
                 class="notification-colors__selected"
+                viewBox="0 0 16 16"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
                 aria-hidden="true"
-              >{{ type.preferences.colorId === color.id ? '✓' : '' }}</span>
+              >
+                <path d="m4 8 3 3 5-6" />
+              </svg>
+              <template v-if="!studentUi">
+                <span
+                  class="notification-colors__dot"
+                  :style="dotStyle(color.id)"
+                  aria-hidden="true"
+                />
+                <span>{{ color.label }}</span>
+                <span
+                  class="notification-colors__selected"
+                  aria-hidden="true"
+                  >{{ type.preferences.colorId === color.id ? '✓' : '' }}</span
+                >
+              </template>
             </button>
           </div>
           <button
+            v-if="!studentUi"
             type="button"
             class="notification-colors__reset"
             @click="setColor(type.id, 'violet')"
+            >Сбросить: фиолетовый</button
           >
-            Сбросить: фиолетовый
-          </button>
         </fieldset>
       </div>
     </section>
     <button
       type="button"
       class="notification-colors__save"
-      :disabled="disabled"
+      :disabled="disabled || !dirty"
       @click="save"
     >
       {{ busy ? 'Сохраняем…' : 'Сохранить цвета' }}

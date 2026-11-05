@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import NotificationInboxCard from './NotificationInboxCard.vue';
+import NotificationReadIllustration from './NotificationReadIllustration.vue';
 import MobileIcon from '../../shared/components/MobileIcon.vue';
 import type { NotificationItem, NotificationPreferencesV2 } from './notifications-v2-models';
 import './notification-inbox.pcss';
 
 withDefaults(
   defineProps<{
+    studentUi?: boolean;
     items: readonly NotificationItem[];
     preferences: NotificationPreferencesV2 | null;
     contextKey: string;
@@ -78,10 +80,26 @@ const emit = defineEmits<{
         v-if="canMarkAllRead"
         type="button"
         class="notification-inbox__button notification-inbox__mark-all"
+        :aria-label="markAllPending ? 'Отмечаем всё прочитанным' : 'Отметить всё прочитанным'"
+        title="Отметить всё прочитанным"
+        :aria-busy="markAllPending"
         :disabled="markAllPending || offline || loading || pendingIds.size > 0"
         @click="emit('mark-all-read')"
       >
-        {{ markAllPending ? 'Отмечаем…' : 'Прочитать все' }}
+        <svg
+          v-if="studentUi"
+          class="notification-inbox__mark-all-icon"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.75"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <path d="m3 12 4 4L17 6M11 16l10-10" />
+        </svg>
+        <template v-else>{{ markAllPending ? 'Отмечаем…' : 'Прочитать все' }}</template>
       </button>
     </div>
     <div
@@ -108,13 +126,14 @@ const emit = defineEmits<{
     >
       Загружаем уведомления…
     </p>
-    <p
+    <div
       v-if="!loading && !error && !offline && !items.length"
-      class="notification-inbox__state"
+      class="notification-inbox__state notification-inbox__state--empty"
       role="status"
     >
-      {{ unreadOnly ? 'Непрочитанных уведомлений нет.' : 'Уведомлений пока нет.' }}
-    </p>
+      <NotificationReadIllustration v-if="studentUi && unreadOnly" />
+      <p>{{ unreadOnly ? 'Непрочитанных уведомлений нет.' : 'Уведомлений пока нет.' }}</p>
+    </div>
     <ul
       v-if="items.length"
       :key="contextKey"

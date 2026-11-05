@@ -103,17 +103,11 @@ class BotCredentialBrokerBridgeIT {
         List<String> facts = new ArrayList<>();
         JsonNode outcomes = check.path("outcomes");
         for (String name :
-                List.of(
-                        "ack_unchanged",
-                        "pending_positive",
-                        "held_card_unchanged",
-                        "foreign_card_unchanged")) {
+                List.of("pending_positive", "held_card_unchanged", "foreign_card_unchanged")) {
             JsonNode value = outcomes.path(name);
             if (value.isBoolean()) facts.add(name + "=" + value.booleanValue());
         }
-        for (String name :
-                List.of(
-                        "initial_pttl_ms", "monotonic_elapsed_ms", "redis_elapsed_ms", "redeliveries")) {
+        for (String name : List.of("initial_pttl_ms", "monotonic_elapsed_ms", "redis_elapsed_ms")) {
             JsonNode value = outcomes.path(name);
             if (value.isIntegralNumber()
                     && value.canConvertToInt()
@@ -303,10 +297,10 @@ class BotCredentialBrokerBridgeIT {
                                                         "actual_auth_change_outbox_confirm_consumer_ack",
                                                         "same_real_event_completed_dedup_ack",
                                                         "actual_unlinked_reset_original_uid_cleanup",
-                                                        "uncertain_provider_keeps_real_claim_retry_without_ack",
-                                                        "actual_worker_death_durable_redelivery_recovery",
+                                                        "uncertain_provider_preserves_durable_retry",
+                                                        "actual_worker_death_durable_retry_recovery",
                                                         "worker_death_while_default_processing_lease_held",
-                                                        "held_lease_blocks_premature_ack_until_natural_expiry",
+                                                        "held_lease_preserves_retry_until_natural_expiry",
                                                         "unknown_version_real_dlq_releases_claim",
                                                         "completed",
                                                         "cleanup")),
@@ -367,6 +361,7 @@ class BotCredentialBrokerBridgeIT {
                                         "real_redis",
                                         "actual_worker_restart",
                                         "workers_reaped",
+                                        "held_lease_retry_observed",
                                         "natural_held_lease_expiry")) {
                             assertThat(result.path(fact).asBoolean(false)).as(fact).isTrue();
                         }
@@ -376,8 +371,6 @@ class BotCredentialBrokerBridgeIT {
                         assertThat(heldPttl).isGreaterThan(270_000).isLessThanOrEqualTo(300_000);
                         assertThat(result.path("held_lease_redis_elapsed_ms").asInt(-1))
                                 .isGreaterThanOrEqualTo(heldPttl - 2_000);
-                        assertThat(result.path("held_lease_redeliveries").asInt(-1))
-                                .isGreaterThanOrEqualTo(2);
                         System.out.println(
                                 "NP01 broker bridge qualified=true native_python_exit=0 checks="
                                         + result.path("checks").asInt(-1)
@@ -389,8 +382,7 @@ class BotCredentialBrokerBridgeIT {
                                         + result.path("held_lease_monotonic_elapsed_ms").asInt(-1)
                                         + " held_lease_redis_elapsed_ms="
                                         + result.path("held_lease_redis_elapsed_ms").asInt(-1)
-                                        + " held_lease_redeliveries="
-                                        + result.path("held_lease_redeliveries").asInt(-1));
+                                        + " held_lease_retry_observed=true");
                         assertThat(
                                         jdbc.queryForObject(
                                                 "SELECT count(*) FROM bot_credential_messages WHERE"

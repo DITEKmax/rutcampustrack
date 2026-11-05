@@ -36,7 +36,8 @@ db.createUser({
   ],
 })
 
-// Monitoring uses diagnostic commands only; it cannot read application documents.
+// Monitoring uses diagnostic commands plus explicit topology metadata only;
+// it cannot read application documents.
 // The same secret file is supplied as env_file to the pinned scratch exporter,
 // which supports MONGODB_PASSWORD but has no password-file flag or shell.
 // A new monitor credential is URL-safe to avoid URI/env-file interpretation.
@@ -51,8 +52,15 @@ const monitorPassword = monitorLines[0].slice('MONGODB_PASSWORD='.length)
 if (!/^[A-Za-z0-9_-]{32,128}$/.test(monitorPassword)) {
   throw new Error('Monitoring password must contain 32–128 URL-safe characters')
 }
+// Exporter topology discovery reads only shardIdentity metadata in this collection.
+// clusterMonitor alone cannot find admin.system.version on MongoDB7.
+db.createRole({
+  role: 'rct_monitor_topology',
+  privileges: [{ resource: { db: 'admin', collection: 'system.version' }, actions: ['find'] }],
+  roles: [],
+})
 db.createUser({
   user: 'rct_monitor',
   pwd: monitorPassword,
-  roles: [{ role: 'clusterMonitor', db: 'admin' }],
+  roles: [{ role: 'clusterMonitor', db: 'admin' }, { role: 'rct_monitor_topology', db: 'admin' }],
 })

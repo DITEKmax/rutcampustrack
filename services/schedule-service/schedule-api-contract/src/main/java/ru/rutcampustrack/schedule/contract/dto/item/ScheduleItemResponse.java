@@ -1,5 +1,6 @@
 package ru.rutcampustrack.schedule.contract.dto.item;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -35,8 +36,13 @@ public class ScheduleItemResponse extends RepresentationModel<ScheduleItemRespon
     private String room;
     private boolean active;
     private OffsetDateTime createdAt;
+    @JsonInclude(JsonInclude.Include.ALWAYS)
     private Long generatedCount;
+
+    @JsonInclude(JsonInclude.Include.ALWAYS)
     private LocalDate generatedFrom;
+
+    @JsonInclude(JsonInclude.Include.ALWAYS)
     private LocalDate generatedUntil;
     private ScheduleItemLifecyclePreviewResponse lifecycleResult;
     private List<TransferLessonResponse> transfers = List.of();

@@ -6,21 +6,41 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.lang.reflect.Field;
-import java.time.Duration;
-import java.time.Instant;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+
 import ru.rutcampustrack.academic.grpc.GeofenceResponse;
 import ru.rutcampustrack.attendance.exception.AcademicServiceUnavailableException;
 import ru.rutcampustrack.attendance.grpc.AcademicGrpcClient;
+
+import java.lang.reflect.Field;
+import java.time.Duration;
+import java.time.Instant;
 
 @ExtendWith(MockitoExtension.class)
 class GeofenceServiceTest {
 
     @Mock private AcademicGrpcClient academicGrpcClient;
+
+    @Test
+    void approvedCampusAcceptsCenterAndInsideButRejectsOutsideTwoHundredMeters() {
+        when(academicGrpcClient.getCampusGeofence())
+                .thenReturn(
+                        GeofenceResponse.newBuilder()
+                                .setLat(55.788328)
+                                .setLng(37.606637)
+                                .setRadiusM(200)
+                                .build());
+        GeofenceService service = new GeofenceService(academicGrpcClient);
+        double insideLat = 55.788328 + Math.toDegrees(199.9 / 6_371_000.0);
+        double outsideLat = 55.788328 + Math.toDegrees(200.1 / 6_371_000.0);
+
+        assertThat(service.evaluate(55.788328, 37.606637).accepted()).isTrue();
+        assertThat(service.evaluate(insideLat, 37.606637).accepted()).isTrue();
+        assertThat(service.evaluate(outsideLat, 37.606637).accepted()).isFalse();
+    }
 
     @Test
     void isWithinCampus_usesStaleGeofenceWhenRefreshFailsAfterTtl() throws Exception {

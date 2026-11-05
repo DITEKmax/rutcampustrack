@@ -13,6 +13,13 @@ class Element {
   constructor(readonly tag: string) {
     markRaw(this)
   }
+  get inert(): boolean {
+    return Object.hasOwn(this.props, 'inert')
+  }
+  set inert(value: boolean) {
+    if (value) this.setAttribute('inert', '')
+    else this.removeAttribute('inert')
+  }
   setAttribute(name: string, value: string): void {
     this.props[name] = value
   }

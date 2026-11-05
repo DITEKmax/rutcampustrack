@@ -10,12 +10,14 @@ import './map-screen.pcss';
 const props = withDefaults(
   defineProps<{
     client: CampusMapClient;
-    theme?: 'dark' | 'light';
+    studentPresentation?: boolean;
+    theme?: 'dark' | 'light' | undefined;
     onBack?: (() => void | Promise<void>) | undefined;
     offline?: boolean;
     compactPresentation?: boolean;
   }>(),
   {
+    theme: undefined,
     onBack: undefined,
     offline: false,
     compactPresentation: false,
@@ -471,9 +473,7 @@ function formatMessage(state: string | undefined, format: 'SVG' | 'PNG'): string
       >
         <MobileIcon name="back" />
       </button>
-      <h1 id="map-screen-title">
-        Карта кампуса
-      </h1>
+      <h1 id="map-screen-title"> Карта кампуса </h1>
     </header>
     <div class="map-screen__content">
       <StudentWarningBlock
@@ -502,7 +502,8 @@ function formatMessage(state: string | undefined, format: 'SVG' | 'PNG'): string
           <label
             class="map-field"
             for="map-building"
-          ><span>Корпус</span></label>
+            ><span>Корпус</span></label
+          >
           <MapSelect
             id="map-building"
             v-model="selectedBuildingId"
@@ -511,7 +512,8 @@ function formatMessage(state: string | undefined, format: 'SVG' | 'PNG'): string
           <label
             class="map-field"
             for="map-floor"
-          ><span>Этаж</span></label>
+            ><span>Этаж</span></label
+          >
           <MapSelect
             id="map-floor"
             v-model="selectedFloorId"
@@ -532,14 +534,16 @@ function formatMessage(state: string | undefined, format: 'SVG' | 'PNG'): string
           >
             <div class="map-card__heading">
               <div>
-                <h2>{{ selectedPlan.label }}</h2><p v-if="!compactPresentation">
-                  Версия {{ selectedPlan.version }}
-                </p>
+                <h2>{{ selectedPlan.label }}</h2
+                ><p v-if="!studentPresentation && !compactPresentation"
+                  >Версия {{ selectedPlan.version }}</p
+                >
               </div>
               <span
                 v-if="loadingAsset"
                 class="map-card__status"
-              >Загружаем…</span>
+                >Загружаем…</span
+              >
             </div>
             <div
               v-if="previewUrl"
@@ -571,10 +575,14 @@ function formatMessage(state: string | undefined, format: 'SVG' | 'PNG'): string
                 <button
                   type="button"
                   class="map-zoom-button"
+                  aria-label="Сбросить масштаб схемы"
                   :disabled="!viewerReady || zoom === 1"
                   @click="resetView"
                 >
-                  Сбросить масштаб
+                  <MobileIcon
+                    v-if="studentPresentation"
+                    name="retry"
+                  /><span v-else>Сбросить масштаб</span>
                 </button>
               </div>
               <p
@@ -607,7 +615,7 @@ function formatMessage(state: string | undefined, format: 'SVG' | 'PNG'): string
                   alt="Схема выбранного этажа"
                   :draggable="false"
                   @load="previewLoaded"
-                >
+                />
               </div>
             </div>
             <div
@@ -627,20 +635,23 @@ function formatMessage(state: string | undefined, format: 'SVG' | 'PNG'): string
                 :href="previewUrl"
                 target="_blank"
                 rel="noopener noreferrer"
-              >Открыть схему</a>
+                >Открыть схему</a
+              >
               <a
                 v-if="pngUrl && selectedPlan.png.state === 'ready'"
                 class="map-download"
                 :href="pngUrl"
                 :download="pngFilename"
                 @click="guardPngDownload"
-              >Скачать PNG</a>
+                >Скачать PNG</a
+              >
               <a
                 v-if="svgUrl"
                 class="map-open"
                 :href="svgUrl"
                 download="campus-map.svg"
-              >Скачать SVG</a>
+                >Скачать SVG</a
+              >
             </div>
             <StudentWarningBlock
               v-for="format in unavailableFormats"
@@ -665,8 +676,8 @@ function formatMessage(state: string | undefined, format: 'SVG' | 'PNG'): string
                 floors.length
                   ? 'Для этого этажа схема не загружена'
                   : 'В этом корпусе нет доступных этажей'
-              }}
-            </p><p>{{ floors.length ? 'Выбери другой этаж' : 'Выбери другой корпус' }}</p>
+              }} </p
+            ><p>{{ floors.length ? 'Выбери другой этаж' : 'Выбери другой корпус' }}</p>
           </div>
         </template>
         <div

@@ -427,7 +427,7 @@
       },
       "targets": [
         {
-          "expr": "pg_up or mongodb_up or redis_up",
+          "expr": "pg_up{environment=~\"$environment\",job=~\"$job\",instance=~\"$instance\"} or mongodb_up{environment=~\"$environment\",job=~\"$job\",instance=~\"$instance\"} or redis_up{environment=~\"$environment\",job=~\"$job\",instance=~\"$instance\"}",
           "refId": "A",
           "legendFormat": "{{service}} {{instance}} {{report}} {{format}} {{outcome}}"
         }
@@ -456,7 +456,7 @@
       },
       "targets": [
         {
-          "expr": "redis_memory_used_bytes / redis_memory_max_bytes > 0 and redis_memory_max_bytes > 0",
+          "expr": "redis_memory_used_bytes{environment=~\"$environment\",job=~\"$job\",instance=~\"$instance\"} / (redis_memory_max_bytes{environment=~\"$environment\",job=~\"$job\",instance=~\"$instance\"} > 0)",
           "refId": "A",
           "legendFormat": "{{service}} {{instance}} {{report}} {{format}} {{outcome}}"
         }
@@ -485,7 +485,7 @@
       },
       "targets": [
         {
-          "expr": "rate(redis_evicted_keys_total[5m])",
+          "expr": "rate(redis_evicted_keys_total{environment=~\"$environment\",job=~\"$job\",instance=~\"$instance\"}[5m])",
           "refId": "A",
           "legendFormat": "{{service}} {{instance}} {{report}} {{format}} {{outcome}}"
         }
@@ -572,7 +572,7 @@
       },
       "targets": [
         {
-          "expr": "rct_sli:http_availability30d",
+          "expr": "rct_sli:http_availability30d{environment=~\"$environment\",job=~\"$job\"} and on(job,environment) group by(job,environment) (up{environment=~\"$environment\",job=~\"$job\",instance=~\"$instance\"})",
           "refId": "A",
           "legendFormat": "{{job}} {{operation}}"
         }
@@ -583,7 +583,7 @@
           "noValue": "NO DATA"
         }
       },
-      "description": "Finite operation classes use nonoverlapping30min event rollups;30d needs1440 complete windows, successful scrapes and actual counter coverage. No traffic remainsNaN; missing/incomplete/pruned history isNO DATA. Gateway broad routes are ingress availability only; backend templates classify latency."
+      "description": "История агрегирована по сервису и окружению. Фильтр instance выбирает сервис по текущей scrape-цели; исторический результат остаётся общим для всех его экземпляров. Отсутствие полных данных не означает нулевую ошибку."
     },
     {
       "id": 41,
@@ -601,7 +601,7 @@
       },
       "targets": [
         {
-          "expr": "rct_sli:http_source_coverage_seconds30d",
+          "expr": "rct_sli:http_source_coverage_seconds30d{environment=~\"$environment\",job=~\"$job\"} and on(job,environment) group by(job,environment) (up{environment=~\"$environment\",job=~\"$job\",instance=~\"$instance\"})",
           "refId": "A",
           "legendFormat": "{{job}} {{operation}}"
         }
@@ -612,7 +612,7 @@
           "noValue": "NO DATA"
         }
       },
-      "description": "Age of oldest retained complete30min operation window. A complete window requires120 successful15s scrapes, the expected target count, and120 actual eligible-counter samples. Availability also requires all1440 windows; this age alone is not a completeness verdict."
+      "description": "История агрегирована по сервису и окружению. Фильтр instance выбирает сервис по текущей scrape-цели; исторический результат остаётся общим для всех его экземпляров. Отсутствие полных данных не означает нулевую ошибку."
     },
     {
       "id": 42,
@@ -630,9 +630,14 @@
       },
       "targets": [
         {
-          "expr": "rct_sli:http_error_ratio5m / 0.001",
+          "expr": "rct_sli:http_error_ratio5m{environment=~\"$environment\",job=~\"$job\",instance=~\"$instance\"} / 0.001",
           "refId": "A",
-          "legendFormat": "{{job}} {{instance}} {{routeId}} {{method}} {{uri}} {{report}} {{format}}"
+          "legendFormat": "5m {{job}} {{instance}} {{method}} {{uri}}"
+        },
+        {
+          "expr": "rct_sli:http_error_ratio1h{environment=~\"$environment\",job=~\"$job\",instance=~\"$instance\"} / 0.001",
+          "refId": "B",
+          "legendFormat": "1h {{job}} {{instance}} {{method}} {{uri}}"
         }
       ],
       "fieldConfig": {
@@ -659,7 +664,7 @@
       },
       "targets": [
         {
-          "expr": "rct_sli:report_p95_seconds5m{format=\"docx\"}",
+          "expr": "rct_sli:report_p95_seconds5m{format=\"docx\",environment=~\"$environment\",job=~\"$job\",instance=~\"$instance\"}",
           "refId": "A",
           "legendFormat": "{{job}} {{instance}} {{routeId}} {{method}} {{uri}} {{report}} {{format}}"
         }
@@ -898,7 +903,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "rct_sli:export_good_fraction30d",
+          "expr": "rct_sli:export_good_fraction30d{environment=~\"$environment\",job=~\"$job\"} and on(job,environment) group by(job,environment) (up{environment=~\"$environment\",job=~\"$job\",instance=~\"$instance\"})",
           "legendFormat": "{{kind}} good≤60s"
         }
       ],
@@ -908,7 +913,7 @@
           "noValue": "NO DATA"
         }
       },
-      "description": "Actual SDK le=60.0 verified. Good=committed successful result within60s from admission; eligible=terminal success/failure. No trafficNaN, incomplete1440windowsNO DATA; denied/rejected excluded.12finitekinds includingunknown fallback bound30d6array budget103680<500000."
+      "description": "История агрегирована по сервису и окружению. Фильтр instance выбирает сервис по текущей scrape-цели; исторический результат остаётся общим для всех его экземпляров. Отсутствие полных данных не означает нулевую ошибку."
     },
     {
       "id": 54,

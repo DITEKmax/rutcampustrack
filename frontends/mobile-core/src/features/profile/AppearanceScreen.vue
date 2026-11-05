@@ -8,6 +8,7 @@ import './profile-screen.pcss';
 const props = withDefaults(
   defineProps<{
     theme: ProfileTheme;
+    themeUnlocked?: boolean;
     resolvedTheme?: ProfileResolvedTheme;
     onBack?: (() => void | Promise<void>) | undefined;
     onThemeChange?: ((theme: ProfileTheme) => void | Promise<void>) | undefined;
@@ -36,7 +37,10 @@ const previewTheme = ref<ProfileResolvedTheme>(preview.resolvedMode);
 const stopPreviewSnapshot = preview.subscribe(({ resolvedMode }) => {
   previewTheme.value = resolvedMode;
 });
-const stopPreviewMode = watch(() => props.theme, mode => preview.setMode(mode));
+const stopPreviewMode = watch(
+  () => props.theme,
+  (mode) => preview.setMode(mode),
+);
 onBeforeUnmount(() => {
   stopPreviewMode();
   stopPreviewSnapshot();
@@ -90,9 +94,12 @@ function chooseTheme(theme: ProfileTheme): void {
           <span>{{ option.label }}</span>
         </label>
       </fieldset>
-      <p class="profile-note__body">
-        Выбранная тема сохраняется и пока применяется только на этом экране.
-        Остальные экраны остаются тёмными.
+      <p
+        v-if="!themeUnlocked"
+        class="profile-note__body"
+      >
+        Выбранная тема сохраняется и пока применяется только на этом экране. Остальные экраны
+        остаются тёмными.
       </p>
     </div>
   </main>

@@ -226,7 +226,7 @@ function onSubmit(): void {
         </p>
         <p
           v-if="!contextLesson"
-          class="requests-form__selection-count"
+          class="requests-form__selection-count request-visually-hidden"
           role="status"
           aria-live="polite"
         >
@@ -262,7 +262,7 @@ function onSubmit(): void {
         >
           {{
             todayOption?.unavailableReason ||
-              'Эта пара больше недоступна для заявки. Вернись назад и выбери доступную пару.'
+            'Эта пара больше недоступна для заявки. Вернись назад и выбери доступную пару.'
           }}
         </p>
         <RequestLessonSelector
@@ -282,7 +282,7 @@ function onSubmit(): void {
         </template>
         <button
           v-if="props.selectionComplete && !contextLesson"
-          class="requests-inline-action requests-edit-selection"
+          class="requests-secondary-action requests-edit-selection"
           type="button"
           :disabled="props.submitting"
           @click="emit('editSelection')"
@@ -302,7 +302,8 @@ function onSubmit(): void {
         <label
           class="request-field__label"
           for="request-excuse-reason"
-        >Причина</label>
+          >Причина</label
+        >
         <ReasonSelect
           id="request-excuse-reason"
           :model-value="props.reason"

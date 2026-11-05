@@ -1,6 +1,6 @@
 /// <reference types="vite/client" />
-import { afterEach, describe, expect, it } from 'vitest'
-import { createRenderer, h, nextTick, shallowReactive, ssrContextKey, type App } from 'vue'
+import { afterEach, describe, expect, it, vi } from 'vitest'
+import { createRenderer, h, nextTick, ref, shallowReactive, ssrContextKey, type App } from 'vue'
 import AttendanceScreen from './AttendanceScreen.vue'
 import { toAttendanceViewModel } from './use-attendance'
 import type { StudentAttendanceResponse } from '../../api/types'
@@ -75,6 +75,7 @@ async function settle(): Promise<void> {
 const apps: App[] = []
 afterEach(() => {
   for (const app of apps.splice(0)) app.unmount()
+  vi.useRealTimers()
 })
 function mount(render: () => ReturnType<typeof h>) {
   const root = node('root')
@@ -123,6 +124,7 @@ function screen(value = response()) {
   const props = shallowReactive<{
     state: AttendanceReadState<AttendanceViewModel>
     selectedDate: string
+    overlayActive?: boolean
     onSelectDate: (date: string) => void
   }>({
     state: { status: 'ready', data: toAttendanceViewModel(value) },
@@ -217,5 +219,147 @@ describe('student server week metadata in the existing attendance pager', () => 
         toAttendanceViewModel({ ...response(), weeks } as StudentAttendanceResponse),
       ).toThrow('Не удалось получить данные недели.')
     }
+  })
+})
+
+describe('attendance Today and semester date navigation', () => {
+  const today = (root: Node) => nodes(root).find((item) => item.props.class === 'attendance-today')
+  const content = (root: Node) => nodes(root).find((item) => item.tag === 'main')!
+
+  it('shows the floating return control and reserves content inset only away from today, then selects today in one click', async () => {
+    const { root, props } = screen()
+    await settle()
+    expect(today(root)).toBeUndefined()
+    expect(content(root).props['data-today-visible']).toBe(false)
+    props.selectedDate = '2020-12-28'
+    await settle()
+    expect(today(root)?.props.disabled).toBe(false)
+    expect(content(root).props['data-today-visible']).toBe(true)
+    ;(today(root)!.props.onClick as () => void)()
+    await settle()
+    expect(props.selectedDate).toBe('2020-12-30')
+    expect(today(root)).toBeUndefined()
+    expect(content(root).props['data-today-visible']).toBe(false)
+    props.selectedDate = '2020-12-28'
+    props.overlayActive = true
+    await settle()
+    expect(today(root)).toBeUndefined()
+    props.overlayActive = false
+    await settle()
+    expect(today(root)).toBeDefined()
+  })
+
+  it('advances the session clock across Moscow midnight and uses the current day at click time', async () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date('2030-02-03T10:00:00Z'))
+    const value = { ...response(), serverNow: '2020-12-30T20:59:00Z' }
+    const { root, props } = screen(value)
+    await settle()
+    expect(today(root)).toBeUndefined()
+    await vi.advanceTimersByTimeAsync(120_000)
+    await settle()
+    expect(today(root)).toBeDefined()
+    ;(today(root)!.props.onClick as () => void)()
+    await settle()
+    expect(props.selectedDate).toBe('2020-12-31')
+    expect(today(root)).toBeUndefined()
+  })
+
+  it('exposes honest unavailable today outside the semester and never emits a nonexistent selection', async () => {
+    const value = { ...response(), serverNow: '2021-02-01T12:00:00Z' }
+    const { root, props } = screen(value)
+    await settle()
+    expect(today(root)?.props.disabled).toBe(true)
+    expect(text(today(root)!)).toBe('Сегодня вне семестра')
+    ;(today(root)!.props.onClick as () => void)()
+    await settle()
+    expect(props.selectedDate).toBe('2020-12-30')
+  })
+
+  it('keeps both partial semester weeks within bounds, including keyboard rail targets', async () => {
+    const { root, props } = screen()
+    props.selectedDate = '2020-09-02'
+    await settle()
+    const dayLabels = () =>
+      nodes(root)
+        .filter((item) => String(item.props.class).includes('attendance-day-rail__item'))
+        .map((item) => String(item.props['aria-label']))
+    expect(dayLabels()).toHaveLength(4)
+    expect(text(root)).not.toContain('31 авг.')
+    props.selectedDate = '2021-01-12'
+    await settle()
+    expect(dayLabels()).toHaveLength(2)
+    expect(text(root)).not.toContain('13 янв.')
+    await page(root, 'Предыдущая неделя')
+    expect(props.selectedDate).toBe('2021-01-04')
+  })
+
+  it('lets native host Back close full document, then reason, before returning to ordinary navigation', async () => {
+    const instance = ref<{ closeOverlay: () => boolean } | null>(null)
+    const overlays: boolean[] = []
+    const data = toAttendanceViewModel(response())
+    const root = mount(() =>
+      h(AttendanceScreen, {
+        ref: instance,
+        state: {
+          status: 'ready',
+          data: {
+            ...data,
+            subjects: [
+              {
+                id: 'subject:test',
+                name: 'Предмет',
+                typeCards: [
+                  {
+                    type: 'LECTURE',
+                    metrics: data.metrics,
+                    history: [
+                      {
+                        id: 'lesson:test',
+                        status: 'EXCUSED',
+                        explanation: { reasonCode: 'OTHER', reasonText: 'Учебный пример' },
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
+        },
+        selectedDate: '2020-12-28',
+        mode: 'subjects',
+        expandedSubjectId: 'subject:test',
+        documentForLesson: () => ({
+          label: 'Учебное вложение',
+          open: () => undefined,
+          preview: { src: '/sample.png', kind: 'image' },
+        }),
+        onOverlayVisible: (visible: boolean) => overlays.push(visible),
+      }),
+    )
+    await settle()
+    const segment = nodes(root).find(
+      (item) => item.tag === 'button' && String(item.props['aria-label']).startsWith('Занятие'),
+    )!
+    ;(segment.props.onClick as () => void)()
+    await settle()
+    expect(today(root)).toBeUndefined()
+    expect(overlays.at(-1)).toBe(true)
+    const preview = nodes(root).find((item) => item.props.class === 'attendance-document-preview')!
+    ;(preview.props.onClick as () => void)()
+    await settle()
+    expect(nodes(root).some((item) => item.tag === 'dialog')).toBe(true)
+    expect(instance.value!.closeOverlay()).toBe(true)
+    await settle()
+    expect(nodes(root).some((item) => item.tag === 'dialog')).toBe(false)
+    expect(segment.props['aria-expanded']).toBe(true)
+    expect(today(root)).toBeUndefined()
+    expect(overlays.at(-1)).toBe(true)
+    expect(instance.value!.closeOverlay()).toBe(true)
+    await settle()
+    expect(segment.props['aria-expanded']).toBe(false)
+    expect(overlays.at(-1)).toBe(false)
+    expect(today(root)).toBeDefined()
+    expect(instance.value!.closeOverlay()).toBe(false)
   })
 })

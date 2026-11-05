@@ -183,3 +183,227 @@
   background: var(--rct-color-surface-raised);
   @mixin rct-type-dense;
 }
+
+/* Accepted Student presentation; existing roles retain their base rules. */
+:where([data-student-ui]) .map-screen,
+:where([data-student-ui]):is(.map-screen) {
+  max-inline-size: var(--rct-today-content-max);
+  margin-inline: auto;
+  padding: calc(env(safe-area-inset-top) + var(--rct-space-5)) var(--rct-space-4)
+    calc(env(safe-area-inset-bottom) + var(--rct-space-5));
+  color: var(--rct-color-text-primary);
+  background: var(--rct-color-surface-base);
+  font-family: var(--rct-font-family-sans);
+  @mixin rct-type-body;
+}
+:where([data-student-ui]) .map-screen__header,
+:where([data-student-ui]):is(.map-screen__header) {
+  display: flex;
+  align-items: center;
+  gap: var(--rct-space-2-half);
+  margin-block-end: var(--rct-space-4);
+}
+:where([data-student-ui]) .map-screen h1,
+:where([data-student-ui]):is(.map-screen h1) {
+  min-inline-size: 0;
+  margin: 0;
+  overflow-wrap: anywhere;
+  @mixin rct-type-task-title;
+}
+:where([data-student-ui]) .map-screen__back,
+:where([data-student-ui]):is(.map-screen__back) {
+  display: grid;
+  place-items: center;
+  flex: 0 0 var(--rct-control-min-touch);
+  inline-size: var(--rct-control-min-touch);
+  block-size: var(--rct-control-min-touch);
+  padding: 0;
+  border: 0;
+  border-radius: var(--rct-task-back-radius);
+  color: var(--rct-color-text-primary);
+  background: var(--rct-color-surface-float);
+  cursor: pointer;
+  @mixin rct-focus-ring;
+}
+:where([data-student-ui]) .map-screen__content,
+:where([data-student-ui]):is(.map-screen__content) {
+  display: grid;
+  gap: var(--rct-space-3);
+  min-inline-size: 0;
+}
+:where([data-student-ui]) .map-field,
+:where([data-student-ui]):is(.map-field) {
+  color: var(--rct-color-text-primary);
+  @mixin rct-type-field-label;
+}
+:where([data-student-ui]) .map-field:not(:first-child),
+:where([data-student-ui]):is(.map-field:not(:first-child)) {
+  margin-block-start: var(--rct-space-1);
+}
+:where([data-student-ui]) .map-field + .map-select,
+:where([data-student-ui]):is(.map-field + .map-select) {
+  margin-block-start: calc(-1 * var(--rct-space-2));
+}
+:where([data-student-ui]) .map-card,
+:where([data-student-ui]):is(.map-card) {
+  display: grid;
+  gap: var(--rct-space-3);
+  min-inline-size: 0;
+}
+:where([data-student-ui]) .map-card__heading,
+:where([data-student-ui]):is(.map-card__heading) {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: var(--rct-space-3);
+}
+:where([data-student-ui]) .map-card h2,
+:where([data-student-ui]):is(.map-card h2) {
+  margin: 0;
+  overflow-wrap: anywhere;
+  @mixin rct-type-list-title;
+}
+:where([data-student-ui]) .map-card__heading p,
+:where([data-student-ui]):is(.map-card__heading p),
+:where([data-student-ui]) .map-card__status,
+:where([data-student-ui]):is(.map-card__status) {
+  margin: 0;
+  color: var(--rct-color-text-secondary);
+  @mixin rct-type-lesson-meta;
+}
+:where([data-student-ui]) .map-viewer,
+:where([data-student-ui]):is(.map-viewer) {
+  position: relative;
+  display: grid;
+  gap: var(--rct-space-2);
+  min-inline-size: 0;
+}
+:where([data-student-ui]) .map-zoom-controls,
+:where([data-student-ui]):is(.map-zoom-controls) {
+  position: absolute;
+  z-index: 1;
+  inset-block-start: var(--rct-space-2);
+  inset-inline-end: var(--rct-space-2);
+  display: flex;
+  gap: var(--rct-space-1);
+}
+:where([data-student-ui]) .map-zoom-button,
+:where([data-student-ui]):is(.map-zoom-button) {
+  min-inline-size: var(--rct-control-min-touch);
+  min-block-size: var(--rct-control-min-touch);
+  display: grid;
+  place-items: center;
+  inline-size: var(--rct-control-min-touch);
+  padding: 0;
+  border: 0;
+  border-radius: var(--rct-radius-lg);
+  color: var(--rct-color-text-primary);
+  background: var(--rct-color-surface-float);
+  font: inherit;
+  cursor: pointer;
+  @mixin rct-focus-ring;
+}
+:where([data-student-ui]) .map-zoom-button:disabled,
+:where([data-student-ui]):is(.map-zoom-button:disabled) {
+  color: var(--rct-color-text-secondary);
+  cursor: default;
+}
+:where([data-student-ui]) .map-zoom-status,
+:where([data-student-ui]):is(.map-zoom-status) {
+  grid-row: 2;
+  margin: 0;
+  color: var(--rct-color-text-secondary);
+  @mixin rct-type-lesson-meta;
+}
+:where([data-student-ui]) .map-preview,
+:where([data-student-ui]):is(.map-preview) {
+  grid-row: 1;
+  position: relative;
+  aspect-ratio: var(--map-aspect-ratio);
+  min-block-size: var(--rct-state-min-height);
+  overflow: auto;
+  border-radius: var(--rct-radius-lg);
+  background: var(--rct-color-surface-raised);
+  scrollbar-width: none;
+  @mixin rct-focus-ring;
+}
+:where([data-student-ui]) .map-preview::-webkit-scrollbar,
+:where([data-student-ui]):is(.map-preview::-webkit-scrollbar) {
+  display: none;
+}
+:where([data-student-ui]) .map-preview img,
+:where([data-student-ui]):is(.map-preview img) {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: 0;
+  display: block;
+  inline-size: calc(100% * var(--map-zoom));
+  block-size: calc(100% * var(--map-zoom));
+  max-inline-size: none;
+  object-fit: contain;
+  user-select: none;
+}
+:where([data-student-ui]) .map-preview--zoomed,
+:where([data-student-ui]):is(.map-preview--zoomed) {
+  cursor: grab;
+}
+:where([data-student-ui]) .map-empty,
+:where([data-student-ui]):is(.map-empty) {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--rct-space-2);
+  min-block-size: var(--rct-state-min-height);
+  margin-block-start: var(--rct-space-2);
+  padding: var(--rct-space-4);
+  border: var(--rct-border-hairline) solid var(--rct-color-border-default);
+  border-radius: var(--rct-radius-lg);
+  @mixin rct-type-dense;
+}
+:where([data-student-ui]) .map-empty p,
+:where([data-student-ui]):is(.map-empty p) {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+:where([data-student-ui]) .map-empty p + p,
+:where([data-student-ui]):is(.map-empty p + p) {
+  color: var(--rct-color-text-secondary);
+}
+:where([data-student-ui]) .map-actions,
+:where([data-student-ui]):is(.map-actions) {
+  display: grid;
+  gap: var(--rct-space-2);
+}
+:where([data-student-ui]) .map-download,
+:where([data-student-ui]):is(.map-download),
+:where([data-student-ui]) .map-open,
+:where([data-student-ui]):is(.map-open) {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-block-size: var(--rct-control-min-touch);
+  padding: var(--rct-space-2) var(--rct-space-3);
+  border: 0;
+  border-radius: var(--rct-radius-full);
+  color: var(--rct-color-accent-on-now);
+  background: var(--rct-color-accent-now);
+  text-decoration: none;
+  text-align: center;
+  overflow-wrap: anywhere;
+  @mixin rct-type-dense;
+  @mixin rct-focus-ring;
+}
+:where([data-student-ui]) .map-open,
+:where([data-student-ui]):is(.map-open) {
+  color: var(--rct-color-text-primary);
+  background: var(--rct-color-surface-float);
+}
+:where([data-student-ui]) .map-state,
+:where([data-student-ui]):is(.map-state) {
+  margin: 0;
+  padding: var(--rct-space-4);
+  border-radius: var(--rct-radius-2xl);
+  color: var(--rct-color-text-secondary);
+  background: var(--rct-color-surface-raised);
+  @mixin rct-type-dense;
+}

@@ -773,4 +773,19 @@ public interface StudentApi {
     ResponseEntity<byte[]> downloadRequestAttachment(
             @PathVariable @Pattern(regexp = "^[0-9a-fA-F]{24}$") String id,
             @PathVariable @Pattern(regexp = "^[0-9a-fA-F]{24}$") String attachmentId);
+    @Operation(summary = "Download a document bound to the student's current excused mark")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Document bytes", content = @Content(mediaType = MediaType.APPLICATION_OCTET_STREAM_VALUE)),
+        @ApiResponse(responseCode = "403", description = "Outside student scope", content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(implementation = MobileProblemDetails.class))),
+        @ApiResponse(responseCode = "404", description = "Document not bound to current mark", content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(implementation = MobileProblemDetails.class))),
+        @ApiResponse(responseCode = "409", description = "Mark revision changed", content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(implementation = MobileProblemDetails.class))),
+        @ApiResponse(responseCode = "410", description = "Document expired or removed", content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(implementation = MobileProblemDetails.class)))
+    })
+    @GetMapping("/attendance/lessons/{lessonId}/attachments/{attachmentId}")
+    ResponseEntity<byte[]> downloadAttendanceAttachment(
+            @PathVariable @Pattern(regexp = "^[1-9][0-9]*$") String lessonId,
+            @PathVariable @Pattern(regexp = "^[0-9a-fA-F]{24}$") String attachmentId,
+            @RequestParam @Pattern(regexp = "^[1-9][0-9]*$") String semesterId,
+            @RequestParam @jakarta.validation.constraints.NotBlank @jakarta.validation.constraints.Size(max = 128) String expectedMarkRevision);
+
 }

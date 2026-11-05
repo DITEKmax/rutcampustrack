@@ -111,6 +111,11 @@ export default defineConfig(({ mode }) => {
     css: {
       postcss: '../postcss.config.mjs',
     },
+    build: {
+      // Keep fonts compatible with CSP font-src 'self'; retain Vite defaults for other assets.
+      assetsInlineLimit: (filePath) =>
+        /\.(?:woff2?|ttf|otf|eot)$/i.test(filePath) ? false : undefined,
+    },
     define: {
       __RCT_SERVICE_WORKER_ENABLED__: config.serviceWorkerEnabled,
       __RCT_APP_VERSION__: JSON.stringify(config.appVersion),

@@ -1,5 +1,8 @@
 import {
   HeadmanScheduleApiError,
+  canDeleteUnusedSeries,
+  type HeadmanScheduleApi,
+  type HeadmanSeriesDeletionOperation,
   type HeadmanLifecyclePreview,
   type HeadmanScheduleItem,
   type HeadmanScheduleUpdateInput,
@@ -22,6 +25,25 @@ export interface RecurringIntent {
   // Only a first definitive rejection can authorize a fresh user-confirmed command.
   readonly rejected: boolean
   readonly transferIds: readonly string[]
+  readonly operationId?: string
+}
+
+/** A lost DELETE response is retried with the frozen key; a known operation is read by its ID. */
+export async function continueRecurringDeletion(
+  api: Pick<HeadmanScheduleApi, 'deleteScheduleItem' | 'getScheduleItemOperation'>,
+  intent: RecurringIntent,
+  current: () => boolean,
+  persist: (next: RecurringIntent) => void,
+): Promise<{ intent: RecurringIntent; operation: HeadmanSeriesDeletionOperation | void } | null> {
+  if (intent.action !== 'DELETE' || !canDeleteUnusedSeries(intent.preview))
+    throw new Error('Нужен новый расчёт полного удаления без защищённой истории.')
+  const operation = intent.operationId
+    ? await api.getScheduleItemOperation(intent.operationId)
+    : await api.deleteScheduleItem(intent.target.id!, intent.preview.revision, intent.key)
+  if (!current()) return null
+  const next = operation ? { ...intent, operationId: operation.operationId } : intent
+  if (operation) persist(next)
+  return { intent: next, operation }
 }
 
 /** Hide authorization-revoked data without deleting an uncertain owner's durable command. */
@@ -130,7 +152,13 @@ export function readRecurringIntent(
     ) {
       throw new Error('Сохранённый запрос серии не совпадает с исходным слотом.')
     }
-  } else if (value.input !== null) throw new Error('Сохранённое удаление серии повреждено.')
+  } else if (value.input !== null || !canDeleteUnusedSeries(value.preview)) {
+    throw new Error('Сохранённое удаление не подтверждает новое полное удаление. Исходный запрос сохранён.')
+  }
+  if (value.operationId !== undefined && (
+    value.action !== 'DELETE' || typeof value.operationId !== 'string' ||
+    !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value.operationId)
+  )) throw new Error('Сохранённая операция удаления повреждена.')
   return Object.freeze({
     ...value,
     owner: Object.freeze({ ...value.owner }),

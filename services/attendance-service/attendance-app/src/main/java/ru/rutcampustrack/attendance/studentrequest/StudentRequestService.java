@@ -2806,6 +2806,7 @@ public class StudentRequestService {
         }
         document.setStatus(AttendanceStatus.EXCUSED);
         document.setSource(AttendanceSource.HEADMAN_EXCUSE);
+        document.setExcuseRequestId(ticket.getId());
         document.setExcuseReason(reasonText(ticket));
         document.setExcuseType(ticket.getExcuseType());
         document.setExcuseComment(ticket.getComment());
@@ -2858,6 +2859,7 @@ public class StudentRequestService {
         document.setStatus(AttendanceStatus.PRESENT);
         document.setSource(AttendanceSource.LATE_CHECKIN);
         document.setMarkedBy(markedBy);
+        document.setExcuseRequestId(null);
         document.setExcuseReason(null);
         document.setExcuseType(null);
         document.setExcuseComment(null);

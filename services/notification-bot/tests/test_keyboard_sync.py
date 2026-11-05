@@ -14,6 +14,7 @@ from bot.handlers.prefs import (
     keyboard_signature,
     main_keyboard,
 )
+from bot.observability import KEYBOARD_SYNC_REGISTRY_AVAILABLE, KEYBOARD_SYNC_USERS_FAILED
 from bot.services.bot_menu import BotGrant, MenuScope
 from bot.services.keyboard_sync import KeyboardSyncClient, mark_keyboard_synced, sync_registered_keyboards
 
@@ -162,7 +163,9 @@ async def test_startup_failure_is_bounded_and_leaves_user_pending(fake_redis, fa
         menu.menu_scope.side_effect = RuntimeError("outage")
     if failure in {"send", "fallback_send"}:
         bot.send_message.side_effect = RuntimeError("provider failure")
+    before = KEYBOARD_SYNC_USERS_FAILED._value.get()
     await sync_registered_keyboards(bot, client, None, delay_seconds=0, retry_delay_seconds=0, bot_menu_client=menu)
+    assert KEYBOARD_SYNC_USERS_FAILED._value.get() == before + 1
     assert menu.menu_scope.await_count == 3
     assert bot.send_message.await_count == (1 if failure == "rpc" else 3)
     assert await client.get_user_keyboard_version(111) is None
@@ -170,6 +173,19 @@ async def test_startup_failure_is_bounded_and_leaves_user_pending(fake_redis, fa
     bot.send_message.side_effect = None
     await sync_registered_keyboards(bot, client, None, delay_seconds=0, retry_delay_seconds=0, bot_menu_client=menu)
     assert await client.get_user_keyboard_version(111) == keyboard_signature(**scope.keyboard_options)
+
+
+async def test_startup_registry_unavailable_is_not_a_successful_empty_registry(fake_redis):
+    failed = KeyboardSyncClient(redis_client=SimpleNamespace(smembers=AsyncMock(side_effect=RuntimeError("private"))))
+    bot = SimpleNamespace(send_message=AsyncMock())
+    with pytest.raises(RuntimeError, match="Keyboard registry unavailable"):
+        await sync_registered_keyboards(bot, failed, None, delay_seconds=0)
+    assert KEYBOARD_SYNC_REGISTRY_AVAILABLE._value.get() == 0
+    bot.send_message.assert_not_awaited()
+    healthy = KeyboardSyncClient(redis_client=fake_redis)
+    await sync_registered_keyboards(bot, healthy, None, delay_seconds=0)
+    assert KEYBOARD_SYNC_REGISTRY_AVAILABLE._value.get() == 1
+    bot.send_message.assert_not_awaited()
 
 
 async def test_startup_retries_failed_role_delivery_and_marks_only_success(fake_redis):

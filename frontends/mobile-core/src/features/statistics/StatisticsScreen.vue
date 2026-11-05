@@ -8,6 +8,7 @@ import StatisticsSemesterChart from './StatisticsSemesterChart.vue';
 import StatisticsSubjectDetail from './StatisticsSubjectDetail.vue';
 import {
   displayPercent,
+  statisticsRankingName,
   type StatisticsGraphRange,
   type StatisticsLessonType,
   type StatisticsOverviewData,
@@ -26,13 +27,14 @@ const props = withDefaults(
     range?: StatisticsGraphRange;
     semesterStartsOn?: string;
     semesterEndsOn?: string;
-    theme?: StatisticsTheme;
+    theme?: StatisticsTheme | undefined;
     terminal?: boolean;
     showDock?: boolean;
     rankingVisible?: boolean;
     rankingState?: StatisticsReadState<StatisticsRankingData> | null;
   }>(),
   {
+    theme: undefined,
     semesterStartsOn: '',
     semesterEndsOn: '',
     selectedSubjectId: null,
@@ -131,9 +133,7 @@ function rankLabel(rank: StatisticsOverviewData['ownRank']): string {
     aria-labelledby="statistics-title"
   >
     <header class="statistics-screen__header">
-      <h1 id="statistics-title">
-        Статистика
-      </h1>
+      <h1 id="statistics-title"> Статистика </h1>
     </header>
 
     <section
@@ -161,18 +161,24 @@ function rankLabel(rank: StatisticsOverviewData['ownRank']): string {
         class="statistics-rank"
         aria-label="Место в группе"
       >
-        <p>Твоё место в группе</p>
-        <strong>{{ rankLabel(data.ownRank) }}</strong>
         <button
-          class="statistics-ranking__button"
+          class="statistics-rank__toggle"
           type="button"
           :aria-expanded="rankingVisible"
+          aria-label="Рейтинг группы"
+          aria-controls="statistics-group-ranking"
           @click="emit('open-ranking')"
         >
-          Рейтинг группы
+          <span class="statistics-rank__context">Твоё место в группе</span>
+          <strong>{{ rankLabel(data.ownRank) }}</strong>
+          <MobileIcon name="chevron-down" />
         </button>
-        <template v-if="rankingVisible">
-          <h2>Рейтинг своей группы</h2>
+        <section
+          v-if="rankingVisible"
+          id="statistics-group-ranking"
+          class="statistics-ranking"
+          aria-label="Рейтинг группы"
+        >
           <p
             v-if="!rankingState || rankingState.status === 'loading'"
             role="status"
@@ -182,7 +188,7 @@ function rankLabel(rank: StatisticsOverviewData['ownRank']): string {
           <template v-else-if="rankingState.status === 'ready'">
             <ol
               class="statistics-ranking__rows"
-              aria-label="Рейтинг своей группы"
+              aria-label="Рейтинг группы"
             >
               <li
                 v-for="row in rankingState.data.rows"
@@ -191,98 +197,65 @@ function rankLabel(rank: StatisticsOverviewData['ownRank']): string {
                 :data-self="row.isSelf"
               >
                 <span>{{ row.position ?? '—' }}</span>
-                <span>{{ row.name }}<strong
-                  v-if="row.isSelf"
-                  class="statistics-visually-hidden"
-                >Это я</strong></span>
+                <span class="statistics-ranking__name">
+                  <span aria-hidden="true">{{ statisticsRankingName(row.name) }}</span>
+                  <span class="statistics-visually-hidden">{{ row.name }}</span>
+                </span>
                 <span>{{ displayPercent(row.percentage) }}</span>
               </li>
             </ol>
-            <nav
-              class="statistics-ranking__pages"
-              aria-label="Страницы рейтинга"
-            >
-              <button
-                type="button"
-                class="statistics-ranking__button"
-                :disabled="rankingState.data.page === 0"
-                @click="emit('ranking-page', rankingState.data.page - 1)"
-              >
-                Выше
-              </button>
-              <span>{{ rankingState.data.page + 1 }} / {{ Math.ceil(rankingState.data.total / rankingState.data.size) }}</span>
-              <button
-                type="button"
-                class="statistics-ranking__button"
-                :disabled="(rankingState.data.page + 1) * rankingState.data.size >= rankingState.data.total"
-                @click="emit('ranking-page', rankingState.data.page + 1)"
-              >
-                Ниже
-              </button>
-            </nav>
           </template>
           <StudentWarningBlock
             v-else-if="rankingState.status === 'error' || rankingState.status === 'forbidden'"
             title="Рейтинг недоступен"
             severity="error"
             :message="rankingState.status === 'error' ? rankingState.message : rankingState.reason"
-            :action-label="rankingState.status === 'error' && rankingState.retryable ? 'Повторить' : ''"
+            :action-label="
+              rankingState.status === 'error' && rankingState.retryable ? 'Повторить' : ''
+            "
             @action="emit('ranking-retry')"
           />
           <p
             v-else
             role="status"
           >
-            {{ rankingState.status === 'offline' ? 'Рейтинг недоступен офлайн' : 'В рейтинге пока нет данных' }}
+            {{
+              rankingState.status === 'offline'
+                ? 'Рейтинг недоступен офлайн'
+                : 'В рейтинге пока нет данных'
+            }}
           </p>
-        </template>
+        </section>
       </section>
 
       <section
         class="statistics-metrics"
         aria-label="Метрики посещаемости"
       >
-        <article class="statistics-metric statistics-metric--present">
-          <span
-            class="statistics-metric__symbol"
-            aria-hidden="true"
-          >+</span>
-          <span>{{ displayPercent(data.metrics.present.percent) }}</span>
-          <span class="statistics-metric__count" aria-hidden="true">{{ data.metrics.present.count }} / {{ data.metrics.held }}</span>
-          <span class="statistics-visually-hidden">Был, {{ data.metrics.present.count }} из {{ data.metrics.held }} проведённых пар</span>
-        </article>
-        <article class="statistics-metric statistics-metric--combined">
-          <span
-            class="statistics-metric__symbol"
-            aria-hidden="true"
-          >+ и у</span>
-          <span>{{ displayPercent(data.metrics.presentOrExcused.percent) }}</span>
-          <span class="statistics-metric__count" aria-hidden="true">{{ data.metrics.presentOrExcused.count }} / {{ data.metrics.held }}</span>
-          <span class="statistics-visually-hidden">Был или уважительная причина, {{ data.metrics.presentOrExcused.count }} из {{ data.metrics.held }} проведённых пар</span>
-        </article>
-        <article class="statistics-metric statistics-metric--absent">
-          <span
-            class="statistics-metric__symbol"
-            aria-hidden="true"
-          >н</span>
-          <span>{{ displayPercent(data.metrics.absent.percent) }}</span>
-          <span class="statistics-metric__count" aria-hidden="true">{{ data.metrics.absent.count }} / {{ data.metrics.held }}</span>
-          <span class="statistics-visually-hidden">Не был, {{ data.metrics.absent.count }} из {{ data.metrics.held }} проведённых пар</span>
-        </article>
-        <article class="statistics-metric statistics-metric--excused">
-          <span
-            class="statistics-metric__symbol"
-            aria-hidden="true"
-          >у</span>
-          <span>{{ displayPercent(data.metrics.excused.percent) }}</span>
-          <span class="statistics-metric__count" aria-hidden="true">{{ data.metrics.excused.count }} / {{ data.metrics.held }}</span>
-          <span class="statistics-visually-hidden">Уважительная причина, {{ data.metrics.excused.count }} из {{ data.metrics.held }} проведённых пар</span>
+        <article
+          v-for="metric in [
+            { key: 'present', label: 'Был', value: data.metrics.present },
+            {
+              key: 'presentOrExcused',
+              label: 'С учётом уважительных',
+              value: data.metrics.presentOrExcused,
+            },
+            { key: 'absent', label: 'Не был', value: data.metrics.absent },
+            { key: 'excused', label: 'Уважительная причина', value: data.metrics.excused },
+          ]"
+          :key="metric.key"
+          class="statistics-metric"
+          :class="`statistics-metric--${metric.key}`"
+        >
+          <span class="statistics-metric__label">{{ metric.label }}</span>
+          <strong class="statistics-metric__value">{{
+            displayPercent(metric.value.percent)
+          }}</strong>
+          <span class="statistics-metric__count"
+            >{{ metric.value.count }} из {{ data.metrics.held }} пар</span
+          >
         </article>
       </section>
-
-      <p class="statistics-visually-hidden">
-        Проведено {{ data.metrics.held }} из {{ data.metrics.planned }} пар
-      </p>
 
       <StatisticsSemesterChart
         :points="chartPoints"
@@ -298,9 +271,7 @@ function rankLabel(rank: StatisticsOverviewData['ownRank']): string {
         class="statistics-subjects"
         aria-labelledby="statistics-subjects-title"
       >
-        <h2 id="statistics-subjects-title">
-          По предметам
-        </h2>
+        <h2 id="statistics-subjects-title"> По предметам </h2>
         <p
           v-if="data.subjects.length === 0"
           class="statistics-subjects__empty"
@@ -318,34 +289,27 @@ function rankLabel(rank: StatisticsOverviewData['ownRank']): string {
               @click="emit('open-subject', subject.id)"
             >
               <span class="statistics-subject-summary__name">{{ subject.name }}</span>
-              <span
-                class="statistics-subject-summary__metrics"
-                aria-label="Метрики посещаемости"
-              >
+              <span class="statistics-subject-summary__metrics">
                 <span
                   class="statistics-subject-summary__metric statistics-subject-summary__metric--present"
                 >
-                  <i aria-hidden="true" />{{ displayPercent(subject.metrics.present.percent) }}
-                  <span class="statistics-visually-hidden">
-                    присутствовал, {{ subject.metrics.present.count }}</span>
-                </span>
-                <span class="statistics-subject-summary__metric statistics-subject-summary__metric--combined">
-                  + и у {{ displayPercent(subject.metrics.presentOrExcused.percent) }}
-                  <span class="statistics-visually-hidden">был или уважительная причина, {{ subject.metrics.presentOrExcused.count }}</span>
+                  <i aria-hidden="true" />
+                  <span class="statistics-visually-hidden">Был</span>
+                  {{ displayPercent(subject.metrics.present.percent) }}
                 </span>
                 <span
                   class="statistics-subject-summary__metric statistics-subject-summary__metric--excused"
                 >
-                  <i aria-hidden="true" />{{ displayPercent(subject.metrics.excused.percent) }}
-                  <span class="statistics-visually-hidden">
-                    уважительная причина, {{ subject.metrics.excused.count }}</span>
+                  <i aria-hidden="true" />
+                  <span class="statistics-visually-hidden">Уважительная причина</span>
+                  {{ displayPercent(subject.metrics.excused.percent) }}
                 </span>
                 <span
                   class="statistics-subject-summary__metric statistics-subject-summary__metric--absent"
                 >
-                  <i aria-hidden="true" />{{ displayPercent(subject.metrics.absent.percent) }}
-                  <span class="statistics-visually-hidden">
-                    отсутствовал, {{ subject.metrics.absent.count }}</span>
+                  <i aria-hidden="true" />
+                  <span class="statistics-visually-hidden">Не был</span>
+                  {{ displayPercent(subject.metrics.absent.percent) }}
                 </span>
               </span>
               <span

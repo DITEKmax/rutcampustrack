@@ -68,8 +68,12 @@ export function statisticsGeometry(
   const cells = points.map((point, index) => {
     const date = dates[index]!
     const valid = date.from !== null && date.to !== null && date.to >= date.from
-    const left = valid ? x(date.from!) : (index / Math.max(1, points.length)) * width
-    const right = valid ? x(date.to! + 1) : ((index + 1) / Math.max(1, points.length)) * width
+    // Days form a sequence of scheduled dates; weeks retain their calendar spacing.
+    const calendarCell = bounds.range !== 'days' && valid
+    const left = calendarCell ? x(date.from!) : (index / Math.max(1, points.length)) * width
+    const right = calendarCell
+      ? x(date.to! + 1)
+      : ((index + 1) / Math.max(1, points.length)) * width
     return { point, index, left, right, center: (left + right) / 2, validDate: valid }
   })
   const runs: (typeof cells)[] = []
@@ -145,7 +149,7 @@ export interface StatisticsAxisTick {
   readonly date: string
 }
 
-/** Calendar domain includes omitted buckets; weekly numbering uses Monday weeks, never opaque IDs. */
+/** Days label scheduled dates only; weekly numbering retains calendar Monday weeks. */
 export function statisticsAxisCandidates(
   points: readonly StatisticsSeriesPoint[],
   range: StatisticsGraphRange,
@@ -157,12 +161,34 @@ export function statisticsAxisCandidates(
     return from !== null && to !== null && to >= from ? [{ from, to }] : []
   })
   if (!dates.length) return []
+  if (range === 'days') {
+    const withYear =
+      new Date(dates[0]!.from * DAY).getUTCFullYear() !==
+      new Date(dates.at(-1)!.to * DAY).getUTCFullYear()
+    // Thinning selects actual points, never labels for empty dates.
+    return Array.from(
+      { length: Math.min(dates.length, 128) - (dates.length > 1 ? 1 : 0) },
+      (_, offset) => {
+        const count = dates.length === 1 ? 1 : Math.min(dates.length, 128) - offset
+        return Array.from({ length: count }, (_, index) => {
+          const pointIndex =
+            count === 1 ? 0 : Math.round((index * (dates.length - 1)) / (count - 1))
+          const date = new Date(dates[pointIndex]!.from * DAY).toISOString().slice(0, 10)
+          const position = dates.length === 1 ? 0.5 : pointIndex / (dates.length - 1)
+          return {
+            position,
+            date,
+            label: `${date.slice(8, 10)}.${date.slice(5, 7)}${withYear ? '.' + date.slice(0, 4) : ''}`,
+          }
+        })
+      },
+    )
+  }
   const { start, end } = calendarDomain(dates, bounds)
   const monday = (value: number) => value - ((new Date(value * DAY).getUTCDay() + 6) % 7)
-  const from = range === 'weeks' ? monday(start) : start
-  const to = range === 'weeks' ? monday(end) : end
-  const periods = Math.round((to - from) / (range === 'weeks' ? 7 : 1)) + 1
-  const withYear = new Date(start * DAY).getUTCFullYear() !== new Date(end * DAY).getUTCFullYear()
+  const from = monday(start)
+  const to = monday(end)
+  const periods = Math.round((to - from) / 7) + 1
   const iso = (value: number) => new Date(value * DAY).toISOString().slice(0, 10)
   // Bound candidate generation, not the rendered tick count. Mobile content width is already constrained.
   return Array.from({ length: Math.min(periods, 128) - (periods > 1 ? 1 : 0) }, (_, offset) => {
@@ -170,11 +196,8 @@ export function statisticsAxisCandidates(
     return Array.from({ length: count }, (_, index) => {
       const position = count === 1 ? 0.5 : index / (count - 1)
       const period = Math.round(position * (periods - 1))
-      const date = iso(from + period * (range === 'weeks' ? 7 : 1))
-      const label =
-        range === 'weeks'
-          ? String(period + 1)
-          : `${date.slice(8, 10)}.${date.slice(5, 7)}${withYear ? '.' + date.slice(0, 4) : ''}`
+      const date = iso(from + period * 7)
+      const label = String(period + 1)
       return { position, label, date }
     })
   })

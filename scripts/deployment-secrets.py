@@ -38,7 +38,8 @@ MOBILE_BFF_TO_ACADEMIC_SERVICE_TOKEN_FILE MOBILE_BFF_TO_ATTENDANCE_SERVICE_TOKEN
 MOBILE_BFF_TO_SCHEDULE_SERVICE_TOKEN_FILE ATTENDANCE_BOT_READ_TO_ACADEMIC_SERVICE_TOKEN_FILE
 ATTENDANCE_BOT_READ_TO_SCHEDULE_SERVICE_TOKEN_FILE ACADEMIC_REPORT_TO_ATTENDANCE_SERVICE_TOKEN_FILE
 ACADEMIC_REPORT_TO_SCHEDULE_SERVICE_TOKEN_FILE NOTIFICATION_TO_ACADEMIC_SERVICE_TOKEN_FILE
-BOT_TO_READ_SERVICE_TOKEN_FILE BOT_TO_AUTH_SERVICE_TOKEN_FILE'''.split()
+BOT_TO_READ_SERVICE_TOKEN_FILE BOT_TO_AUTH_SERVICE_TOKEN_FILE
+CONSTRUCTOR_RPC_SCHEDULE_TO_ATTENDANCE_TOKEN_FILE CONSTRUCTOR_RPC_SCHEDULE_TO_ACADEMIC_TOKEN_FILE'''.split()
 FILES = {key: key.lower().removesuffix('_file').replace('_', '-') for key in FILE_NAMES}
 ALLOWED = set(FILES.values()) | {f'{name}-tls/{name}-server.{ext}' for name in TLS for ext in ('crt', 'key')}
 DIRECTED = '''ACADEMIC_TO_SCHEDULE_SERVICE_TOKEN SCHEDULE_TO_ACADEMIC_SERVICE_TOKEN
@@ -197,7 +198,9 @@ def validate(values, files, path_root):
     for key, name in FILES.items():
         require(values[key] == str(path_root / name), 'SECRET_PATH_' + key)
         value = files[name].decode().strip()
-        if key.endswith('_SERVICE_TOKEN_FILE'):
+        if key.endswith('_SERVICE_TOKEN_FILE') or key in {
+                'CONSTRUCTOR_RPC_SCHEDULE_TO_ATTENDANCE_TOKEN_FILE',
+                'CONSTRUCTOR_RPC_SCHEDULE_TO_ACADEMIC_TOKEN_FILE'}:
             directed.append(value)
         elif key.startswith('PG_') or key == 'REDIS_CACHE_RUNTIME_PASSWORD_FILE':
             require(re.fullmatch(r'[A-Za-z0-9_-]{32,128}', value), 'PASSWORD_FORMAT_' + key)

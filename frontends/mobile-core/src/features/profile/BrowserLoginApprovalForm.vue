@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { onBeforeUnmount, ref, watch } from 'vue';
+import { nextTick, onBeforeUnmount, ref, watch } from 'vue';
+import MobileIcon from '../../shared/components/MobileIcon.vue';
 import { parseBrowserLoginProof } from './browser-login-approval';
 import type {
   BrowserLoginApprovalPort,
@@ -7,9 +8,24 @@ import type {
   BrowserLoginProof,
 } from './browser-login-approval';
 
-const props = defineProps<{ port: BrowserLoginApprovalPort }>();
-const emit = defineEmits<{ close: [] }>();
+const browserLoginDateFormatter = new Intl.DateTimeFormat('ru-RU', {
+  dateStyle: 'medium',
+  timeStyle: 'short',
+  timeZone: 'Europe/Moscow',
+});
+function formatBrowserLoginInstant(value: string): string {
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? value : browserLoginDateFormatter.format(parsed);
+}
+
+const props = defineProps<{
+  port: BrowserLoginApprovalPort;
+  ownerKey?: string | null;
+  scanOnly?: boolean;
+}>();
+const emit = defineEmits<{ close: []; busy: [value: boolean] }>();
 const input = ref('');
+const details = ref<HTMLElement | null>(null);
 const preview = ref<BrowserLoginPreview | null>(null);
 const busy = ref(false);
 const error = ref('');
@@ -46,9 +62,9 @@ function armDeadline(request: number, port: BrowserLoginApprovalPort): void {
   );
 }
 function clear(): void {
+  input.value = '';
   stopDeadline();
   revision++;
-  input.value = '';
   proof = null;
   preview.value = null;
   busy.value = false;
@@ -67,7 +83,7 @@ function edit(): void {
 function current(request: number, port: BrowserLoginApprovalPort): boolean {
   return request === revision && props.port === port && port.isOnline();
 }
-async function inspect(): Promise<void> {
+async function inspectScan(value: string): Promise<void> {
   if (busy.value) return;
   stopDeadline();
   const request = ++revision;
@@ -82,9 +98,9 @@ async function inspect(): Promise<void> {
   }
   let candidate: BrowserLoginProof;
   try {
-    candidate = parseBrowserLoginProof(input.value);
+    candidate = parseBrowserLoginProof(value);
   } catch {
-    error.value = 'Вставь данные LOGIN QR из окна входа в браузере';
+    error.value = 'Это не QR для входа. Отсканируй LOGIN QR со страницы входа WEB';
     return;
   }
   busy.value = true;
@@ -99,17 +115,21 @@ async function inspect(): Promise<void> {
       return;
     }
     preview.value = value;
-    proof = value.status === 'pending' ? candidate : null;
     input.value = '';
+    proof = value.status === 'pending' ? candidate : null;
     if (proof) armDeadline(request, port);
   } catch {
     if (request === revision && !current(request, port)) {
       clear();
       return;
     }
-    if (current(request, port)) error.value = 'Не удалось проверить вход. Проверь данные и повтори';
+    if (current(request, port)) error.value = 'Не удалось проверить вход. Отсканируй QR ещё раз';
   } finally {
-    if (request === revision) busy.value = false;
+    if (request === revision) {
+      busy.value = false;
+      await nextTick();
+      if (current(request, port)) details.value?.focus();
+    }
   }
 }
 async function decide(decision: 'CONFIRM' | 'REJECT'): Promise<void> {
@@ -174,52 +194,70 @@ function close(): void {
   clear();
   emit('close');
 }
-watch(() => props.port, clear);
+defineExpose({ inspectScan, clear });
+watch(() => [props.port, props.ownerKey], clear, { flush: 'sync' });
+watch(busy, (value) => emit('busy', value), { flush: 'sync' });
 onBeforeUnmount(clear);
 </script>
 
 <template>
   <section
-    class="profile-note"
-    aria-labelledby="browser-login-title"
+    v-if="!scanOnly || busy || preview || error || result"
+    ref="details"
+    class="profile-note profile-browser-login"
+    aria-label="Сведения о входе в браузере"
+    :aria-busy="busy"
+    tabindex="-1"
+    @keydown.esc.stop.prevent="close"
   >
-    <h2
-      id="browser-login-title"
-      class="profile-note__title"
-    >
-      Вход в браузере
-    </h2>
-    <p class="profile-note__body">
-      Вставь текст LOGIN QR из окна входа в браузере. Подтверждай только свой вход.
-    </p>
-    <form
-      class="profile-form"
-      :aria-busy="busy"
-      @submit.prevent="inspect"
-    >
-      <label class="profile-field">
-        <span>Данные QR для входа</span>
-        <span class="profile-field__control">
-          <input
-            v-model="input"
-            type="text"
-            autocomplete="off"
-            autocapitalize="off"
-            spellcheck="false"
-            maxlength="1024"
-            :disabled="busy"
-            @input="edit"
-          >
-        </span>
-      </label>
-      <button
-        class="profile-secondary-button"
-        type="submit"
-        :disabled="busy || !input.trim()"
+    <template v-if="!scanOnly">
+      <h2 class="profile-note__title">Вход в браузере</h2>
+      <p class="profile-note__body"
+        >Вставь текст LOGIN QR из окна входа в браузере. Подтверждай только свой вход.</p
       >
-        Проверить вход
-      </button>
-    </form>
+      <form
+        class="profile-form"
+        :aria-busy="busy"
+        @submit.prevent="inspectScan(input)"
+      >
+        <label class="profile-field"
+          ><span>Данные QR для входа</span
+          ><span class="profile-field__control">
+            <input
+              v-model="input"
+              type="text"
+              autocomplete="off"
+              autocapitalize="off"
+              spellcheck="false"
+              maxlength="1024"
+              :disabled="busy"
+              @input="edit"
+            /> </span
+        ></label>
+        <button
+          class="profile-secondary-button"
+          type="submit"
+          :disabled="busy || !input.trim()"
+          >Проверить вход</button
+        >
+      </form>
+    </template>
+    <button
+      v-if="scanOnly"
+      class="profile-browser-login__close"
+      type="button"
+      aria-label="Закрыть"
+      @click="close"
+    >
+      <MobileIcon name="close" />
+    </button>
+    <p
+      v-if="busy"
+      class="profile-note__body"
+      role="status"
+    >
+      Проверяем вход…
+    </p>
     <div
       v-if="preview"
       class="profile-form"
@@ -231,11 +269,9 @@ onBeforeUnmount(clear);
       <p class="profile-note__body">
         {{ preview.warning }}
       </p>
+      <p class="profile-note__body"> Создан: {{ formatBrowserLoginInstant(preview.issuedAt) }} </p>
       <p class="profile-note__body">
-        Создан: {{ preview.issuedAt }}
-      </p>
-      <p class="profile-note__body">
-        Действует до: {{ preview.expiresAt }}
+        Действует до: {{ formatBrowserLoginInstant(preview.expiresAt) }}
       </p>
       <template v-if="preview.status === 'pending'">
         <button
@@ -255,12 +291,11 @@ onBeforeUnmount(clear);
           Отклонить вход
         </button>
       </template>
-      <p v-else>
-        Вход больше не ожидает подтверждения
-      </p>
+      <p v-else> Вход больше не ожидает подтверждения </p>
     </div>
     <p
       v-if="error"
+      id="browser-login-error"
       class="profile-inline-error"
       role="alert"
     >
@@ -273,11 +308,11 @@ onBeforeUnmount(clear);
       {{ result }}
     </p>
     <button
+      v-if="!scanOnly"
       class="profile-secondary-button"
       type="button"
       @click="close"
+      >Закрыть</button
     >
-      Закрыть
-    </button>
   </section>
 </template>

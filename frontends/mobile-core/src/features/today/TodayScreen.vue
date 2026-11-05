@@ -23,6 +23,7 @@ import {
 } from '../../shared/navigation';
 import type { MobileHostAdapter } from '../../shared/host';
 import { createStudentNavigationItems } from '../../shared/mobile-navigation-items';
+import DayCompleteIllustration from './DayCompleteIllustration.vue';
 import './today-screen.pcss';
 
 const props = withDefaults(
@@ -203,9 +204,7 @@ function lessonKind(lesson: TodayLesson): string {
         >
           <MobileIcon name="back" />
         </button>
-        <h1 id="today-title">
-          Запрос на отметку
-        </h1>
+        <h1 id="today-title"> Запрос на отметку </h1>
       </header>
       <header
         v-else
@@ -254,7 +253,8 @@ function lessonKind(lesson: TodayLesson): string {
         <span
           class="today-visually-hidden"
           role="status"
-        >Загружаем сегодняшнее расписание…</span>
+          >Загружаем сегодняшнее расписание…</span
+        >
         <div
           class="today-skeleton today-skeleton--hero"
           aria-hidden="true"
@@ -271,9 +271,7 @@ function lessonKind(lesson: TodayLesson): string {
           class="today-skeleton-row"
           aria-hidden="true"
         >
-          <i /><div class="today-skeleton">
-            <i /><i /><i />
-          </div>
+          <i /><div class="today-skeleton"> <i /><i /><i /> </div>
         </div>
       </section>
       <StudentWarningBlock
@@ -291,9 +289,7 @@ function lessonKind(lesson: TodayLesson): string {
         role="status"
       >
         <MobileIcon name="calendar" /><h2>
-          {{
-            offline ? 'Нет сохранённого расписания' : 'На сегодня пар нет'
-          }}
+          {{ offline ? 'Нет сохранённого расписания' : 'На сегодня пар нет' }}
         </h2>
         <p>
           {{
@@ -335,18 +331,30 @@ function lessonKind(lesson: TodayLesson): string {
           </p>
           <h2>{{ hero.schedule.subject.name }}</h2>
           <div class="today-hero__metadata">
-            <p class="today-hero__room" :data-changed="hero.schedule.room.changeState === 'CHANGED'">
-              <MobileIcon name="room" /><span class="today-hero__room-details"><span class="today-hero__room-values"><span
-                :class="{ 'today-hero__room--changed': hero.schedule.room.changeState === 'CHANGED' }"
-              >{{ hero.schedule.room.current ?? 'Аудитория уточняется' }}</span><s
-                v-if="hero.schedule.room.previous"
-                class="today-hero__previous-room"
-                :aria-label="`Прежняя аудитория: ${hero.schedule.room.previous}`"
-              >{{ hero.schedule.room.previous }}</s></span><strong
-                v-if="hero.schedule.room.changeState === 'CHANGED'"
-                class="today-hero__room-notice"
-              >Аудитория изменена</strong></span>
-            </p><p>
+            <p
+              class="today-hero__room"
+              :data-changed="hero.schedule.room.changeState === 'CHANGED'"
+            >
+              <MobileIcon name="room" /><span class="today-hero__room-details"
+                ><span class="today-hero__room-values"
+                  ><span
+                    :class="{
+                      'today-hero__room--changed': hero.schedule.room.changeState === 'CHANGED',
+                    }"
+                    >{{ hero.schedule.room.current ?? 'Аудитория уточняется' }}</span
+                  ><s
+                    v-if="hero.schedule.room.previous"
+                    class="today-hero__previous-room"
+                    :aria-label="`Прежняя аудитория: ${hero.schedule.room.previous}`"
+                    >{{ hero.schedule.room.previous }}</s
+                  ></span
+                ><strong
+                  v-if="hero.schedule.room.changeState === 'CHANGED'"
+                  class="today-hero__room-notice"
+                  >Аудитория изменена</strong
+                ></span
+              > </p
+            ><p>
               <MobileIcon name="lesson" /><span>{{ lessonKind(hero) }}</span>
             </p>
           </div>
@@ -375,7 +383,11 @@ function lessonKind(lesson: TodayLesson): string {
           class="today-state today-state--ended"
           role="status"
         >
-          <h2>Пары на сегодня закончились</h2><p>Отметки и доступные действия — в списке ниже.</p>
+          <DayCompleteIllustration />
+          <div class="today-state__copy">
+            <h2>Пары на сегодня закончились</h2>
+            <p>Отметки и доступные действия — в списке ниже.</p>
+          </div>
         </section>
         <StudentWarningBlock
           v-if="checkinError"
@@ -436,8 +448,8 @@ function lessonKind(lesson: TodayLesson): string {
                 <p
                   v-else-if="
                     !pendingRequest(lesson) &&
-                      !canRequest(lesson, 'EXCUSE') &&
-                      !canRequest(lesson, 'LATE_CHECKIN')
+                    !canRequest(lesson, 'EXCUSE') &&
+                    !canRequest(lesson, 'LATE_CHECKIN')
                   "
                 >
                   {{

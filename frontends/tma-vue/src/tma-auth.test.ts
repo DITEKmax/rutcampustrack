@@ -47,6 +47,32 @@ afterEach(() => {
 })
 
 describe('TMA authentication wire contract', () => {
+  it.each(['TMA_INIT_DATA_INVALID', 'TMA_INIT_DATA_EXPIRED', 'TMA_INIT_DATA_NOT_YET_VALID', 'TMA_TELEGRAM_NOT_LINKED'])(
+    'accepts only an explicit 401 proof code: %s', async code => {
+      const fetcher = vi.fn<typeof fetch>().mockResolvedValue(Response.json(
+        { extras: { code }, detail: 'server-private-detail' }, { status: 401 }))
+      await expect(authenticateTma(fetcher, INIT_DATA)).rejects.toMatchObject({ status: 401, code })
+      await expect(authenticateTma(fetcher, INIT_DATA)).rejects.not.toHaveProperty('message', 'server-private-detail')
+    },
+  )
+  it.each([
+    { status: 503, extras: { code: 'TMA_INIT_DATA_EXPIRED' } },
+    { status: 401, extras: { code: 'UNKNOWN_REASON' } },
+    { status: 401, extras: { code: '__proto__' } },
+    { status: 401, extras: null },
+    { status: 401, extras: { code: 'AUTHORITY_UNAVAILABLE' } },
+  ])('keeps generic messaging for unknown or wrong-status reasons', async ({ status, extras }) => {
+    const fetcher = vi.fn<typeof fetch>().mockResolvedValue(Response.json({ extras, detail: 'private' }, { status }))
+    await expect(authenticateTma(fetcher, INIT_DATA)).rejects.toMatchObject({ status, code: undefined, message: 'Telegram не подтвердил сессию' })
+  })
+  it('keeps authority unavailability separate from expired proof', async () => {
+    const fetcher = vi.fn<typeof fetch>().mockResolvedValue(Response.json(
+      { extras: { code: 'AUTHORITY_UNAVAILABLE' } }, { status: 503 }))
+    await expect(authenticateTma(fetcher, INIT_DATA)).rejects.toMatchObject({
+      status: 503, code: 'AUTHORITY_UNAVAILABLE',
+      message: 'Сервис входа временно недоступен. Попробуй ещё раз чуть позже.',
+    })
+  })
   it('sends the canonical JSON DTO and returns the in-memory access token', async () => {
     const fetcher = vi.fn<typeof fetch>().mockResolvedValue(
       new Response(JSON.stringify({ accessToken: 'memory-only-token' }), {

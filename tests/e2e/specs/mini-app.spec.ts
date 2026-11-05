@@ -17,9 +17,7 @@ test.describe('Vue Telegram entry @smoke', () => {
     );
     await page.goto('/mini-app/');
     expect((await authentication).status()).toBe(401);
-    await expect(
-      page.getByRole('heading', { name: 'Не удалось открыть приложение' }),
-    ).toBeVisible();
+    await expect(page.getByRole('alert')).toBeVisible();
     await expect(page.locator('.teacher-feature-owner')).toHaveCount(0);
     await expect(page.getByRole('navigation', { name: 'Основная навигация' })).toHaveCount(0);
     expect((await context.cookies()).some((cookie) => cookie.name === 'rct_refresh')).toBe(false);

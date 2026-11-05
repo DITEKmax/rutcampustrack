@@ -2584,7 +2584,7 @@
             "type": "prometheus",
             "uid": "${ds_prometheus}"
           },
-          "description": "Network interface utilization as a percentage of its maximum capacity",
+          "description": "Загрузка показывается только при известной положительной пропускной способности интерфейса. У виртуального интерфейса скорость может быть неизвестна: отсутствие данных здесь не означает нулевой трафик. Фактический приём и передача доступны на графиках трафика.",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -2678,7 +2678,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "(node_network_speed_bytes{instance=\"$node\",job=\"$job\"} > bool 0) * (rate(node_network_receive_bytes_total{instance=\"$node\",job=\"$job\"}[$__rate_interval]) / ignoring(speed) node_network_speed_bytes{instance=\"$node\",job=\"$job\", speed!=\"-1\"})",
+              "expr": "rate(node_network_receive_bytes_total{instance=\"$node\",job=\"$job\"}[$__rate_interval]) / (node_network_speed_bytes{instance=\"$node\",job=\"$job\"} > 0)",
               "format": "time_series",
               "legendFormat": "{{device}} - Rx in",
               "range": true,
@@ -2687,7 +2687,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "(node_network_speed_bytes{instance=\"$node\",job=\"$job\"} > bool 0) * (rate(node_network_transmit_bytes_total{instance=\"$node\",job=\"$job\"}[$__rate_interval]) / ignoring(speed) node_network_speed_bytes{instance=\"$node\",job=\"$job\", speed!=\"-1\"})",
+              "expr": "rate(node_network_transmit_bytes_total{instance=\"$node\",job=\"$job\"}[$__rate_interval]) / (node_network_speed_bytes{instance=\"$node\",job=\"$job\"} > 0)",
               "format": "time_series",
               "legendFormat": "{{device}} - Tx out",
               "range": true,
@@ -8320,7 +8320,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "(node_cooling_device_max_state{instance=\"$node\",job=\"$job\"} > bool 0) * (100 * node_cooling_device_cur_state{instance=\"$node\",job=\"$job\"} / node_cooling_device_max_state{instance=\"$node\",job=\"$job\"})",
+              "expr": "100 * node_cooling_device_cur_state{instance=\"$node\",job=\"$job\"} / (node_cooling_device_max_state{instance=\"$node\",job=\"$job\"} > 0)",
               "format": "time_series",
               "interval": "",
               "legendFormat": "{{name}} - {{type}}",
@@ -9465,7 +9465,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "(rate(node_disk_reads_completed_total{instance=\"$node\",job=\"$job\"}[$__rate_interval]) > bool 0) * (rate(node_disk_read_time_seconds_total{instance=\"$node\",job=\"$job\"}[$__rate_interval]) / rate(node_disk_reads_completed_total{instance=\"$node\",job=\"$job\"}[$__rate_interval]))",
+              "expr": "rate(node_disk_read_time_seconds_total{instance=\"$node\",job=\"$job\"}[$__rate_interval]) / (rate(node_disk_reads_completed_total{instance=\"$node\",job=\"$job\"}[$__rate_interval]) > 0)",
               "interval": "",
               "legendFormat": "{{device}} - Read",
               "range": true,
@@ -9474,7 +9474,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "(rate(node_disk_writes_completed_total{instance=\"$node\",job=\"$job\"}[$__rate_interval]) > bool 0) * (rate(node_disk_write_time_seconds_total{instance=\"$node\",job=\"$job\"}[$__rate_interval]) / rate(node_disk_writes_completed_total{instance=\"$node\",job=\"$job\"}[$__rate_interval]))",
+              "expr": "rate(node_disk_write_time_seconds_total{instance=\"$node\",job=\"$job\"}[$__rate_interval]) / (rate(node_disk_writes_completed_total{instance=\"$node\",job=\"$job\"}[$__rate_interval]) > 0)",
               "interval": "",
               "legendFormat": "{{device}} - Write",
               "range": true,
@@ -12118,10 +12118,10 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "node_network_up{operstate=\"up\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_network_up{instance=\"$node\",job=\"$job\"}",
               "format": "time_series",
               "hide": true,
-              "legendFormat": "{{interface}} - Operational state UP",
+              "legendFormat": "{{device}} - Operational state UP",
               "range": true,
               "refId": "A",
               "step": 240

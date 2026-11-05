@@ -24,31 +24,29 @@ function historyTone(status: StatisticsHistoryStatus): string {
     <div class="statistics-type-card__pill">
       {{ statisticsTypeLabel(card.type) }}
     </div>
-    <h3>Пар {{ card.metrics.held }}/{{ card.metrics.planned }}</h3>
     <div
       class="statistics-type-card__metrics"
       aria-label="Метрики посещаемости"
     >
-      <span class="statistics-type-card__metric statistics-type-card__metric--present">
-        <i aria-hidden="true" />{{ displayPercent(card.metrics.present.percent) }}
-        <span class="statistics-type-card__count">
-          присутствие, {{ card.metrics.present.count }}</span>
-      </span>
-      <span class="statistics-type-card__metric statistics-type-card__metric--combined">
-        + и у {{ displayPercent(card.metrics.presentOrExcused.percent) }}
-        <span class="statistics-type-card__count">был или уважительная причина, {{ card.metrics.presentOrExcused.count }}</span>
-      </span>
-      <span class="statistics-type-card__metric statistics-type-card__metric--excused">
-        <i aria-hidden="true" />{{ displayPercent(card.metrics.excused.percent) }}
-        <span class="statistics-type-card__count">
-          уважительная причина, {{ card.metrics.excused.count }}</span>
-      </span>
-      <span class="statistics-type-card__metric statistics-type-card__metric--absent">
-        <i aria-hidden="true" />{{ displayPercent(card.metrics.absent.percent) }}
-        <span class="statistics-type-card__count"> отсутствие, {{ card.metrics.absent.count }}</span>
+      <span
+        v-for="metric in [
+          { key: 'present', label: 'Был', value: card.metrics.present },
+          { key: 'excused', label: 'Уважительная причина', value: card.metrics.excused },
+          { key: 'absent', label: 'Не был', value: card.metrics.absent },
+        ]"
+        :key="metric.key"
+        class="statistics-type-card__metric"
+        :class="`statistics-type-card__metric--${metric.key}`"
+      >
+        <span>{{ metric.label }}</span>
+        <strong>{{ displayPercent(metric.value.percent) }}</strong>
+        <span class="statistics-type-card__count"
+          >{{ metric.value.count }} из {{ card.metrics.held }}</span
+        >
       </span>
     </div>
     <div
+      v-if="card.history.length"
       class="statistics-type-card__history"
       role="list"
       :aria-label="`История ${statisticsTypeLabel(card.type)}`"

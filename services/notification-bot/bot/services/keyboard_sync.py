@@ -8,6 +8,7 @@ import redis.asyncio as aioredis
 from aiogram import Bot
 
 from bot.handlers.prefs import keyboard_signature, main_keyboard
+from bot.observability import KEYBOARD_SYNC_REGISTRY_AVAILABLE, KEYBOARD_SYNC_USERS_FAILED
 from bot.services.bot_menu import resolve_menu_scope
 
 logger = logging.getLogger(__name__)
@@ -62,8 +63,10 @@ class KeyboardSyncClient:
         try:
             raw_ids = await self._redis.smembers(self._ACTIVE_USERS_KEY)
         except Exception:
+            KEYBOARD_SYNC_REGISTRY_AVAILABLE.set(0)
             logger.exception("Redis error loading keyboard user registry")
-            return []
+            raise RuntimeError("Keyboard registry unavailable") from None
+        KEYBOARD_SYNC_REGISTRY_AVAILABLE.set(1)
 
         user_ids: list[int] = []
         for raw_id in raw_ids:
@@ -152,6 +155,7 @@ async def sync_registered_keyboards(
                     logger.debug("Failed to sync keyboard for telegram_id=%d", telegram_id, exc_info=True)
             if attempt == 2:
                 failed += 1
+                KEYBOARD_SYNC_USERS_FAILED.inc()
             elif retry_delay_seconds > 0:
                 await asyncio.sleep(retry_delay_seconds)
 

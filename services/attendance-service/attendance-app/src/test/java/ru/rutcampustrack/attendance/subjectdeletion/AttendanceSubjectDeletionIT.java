@@ -518,7 +518,8 @@ class AttendanceSubjectDeletionIT {
         var c = prepare();
         participant.apply(c);
         participant.apply(c.toBuilder().setAction(SubjectDeletionAction.SEAL).build());
-        doThrow(new IllegalStateException("Owned subject outbox control"))
+        var refusal = new IllegalStateException("Owned subject outbox control");
+        doThrow(refusal)
                 .when(outbox)
                 .save(eq("dashboard.invalidated"), anyString());
         try {
@@ -528,7 +529,8 @@ class AttendanceSubjectDeletionIT {
                                             c.toBuilder()
                                                     .setAction(SubjectDeletionAction.COMMIT)
                                                     .build()))
-                    .isInstanceOf(RuntimeException.class);
+                    .isSameAs(refusal);
+            verify(outbox).save(eq("dashboard.invalidated"), anyString());
         } finally {
             reset(outbox);
         }
@@ -546,6 +548,47 @@ class AttendanceSubjectDeletionIT {
         participant.apply(c.toBuilder().setAction(SubjectDeletionAction.COMMIT).build());
         assertThat(mongo.findById("mixed-ticket", ExcuseTicket.class).getLessonIds())
                 .containsExactly(12L);
+    }
+
+    @Test
+    void acceptedDeletionHistoryCannotCrossOperationPhaseOrRetainedLessonScope() {
+        seed();
+        var c = prepare();
+        participant.apply(c);
+        participant.apply(c.toBuilder().setAction(SubjectDeletionAction.SEAL).build());
+        assertThatThrownBy(() -> new TransactionTemplate(manager).executeWithoutResult(
+                status -> pairs.lockAcceptedSubjectDeletionHistoryLesson(
+                        c.getOperationId(), 3L, 12L, 5L, NOW)))
+                .isInstanceOf(ru.rutcampustrack.attendance.exception.ConflictException.class);
+        for (int attempt = 0; attempt < 6; attempt++) {
+            int deniedScope = attempt;
+            assertThatThrownBy(() -> new TransactionTemplate(manager).executeWithoutResult(status -> {
+                // Only COMMIT sees DELETED while the operation still owns its shared fences.
+                mongo.updateFirst(Query.query(Criteria.where("_id").is(c.getOperationId())),
+                        new Update().set("state", "DELETED"), "subject_deletion_participants");
+                if (deniedScope == 5) {
+                    pairs.lockActionHistoryLessons(List.of(12L), 5L, NOW);
+                } else {
+                    if (deniedScope == 4) {
+                        mongo.updateFirst(Query.query(Criteria.where("_id").is(PairWriteCoordinator.lessonFenceId(11L))),
+                                new Update().set("subject_delete_committed", true), "student_checkin_pairs");
+                    }
+                    pairs.lockAcceptedSubjectDeletionHistoryLesson(
+                            deniedScope == 0 ? UUID.randomUUID().toString() : c.getOperationId(),
+                            deniedScope == 1 ? 4L : 3L,
+                            deniedScope == 3 ? 99L : deniedScope == 4 ? 11L : 12L,
+                            deniedScope == 2 ? 6L : 5L, NOW);
+                }
+            })).isInstanceOf(ru.rutcampustrack.attendance.exception.ConflictException.class);
+        }
+        assertThat(mongo.findById(c.getOperationId(), Document.class, "subject_deletion_participants").getString("state"))
+                .isEqualTo("SEALED");
+        assertThat(mongo.count(new Query(), "lesson_actions")).isZero();
+        participant.apply(c.toBuilder().setAction(SubjectDeletionAction.COMMIT).build());
+        assertThatThrownBy(() -> new TransactionTemplate(manager).executeWithoutResult(
+                status -> pairs.lockAcceptedSubjectDeletionHistoryLesson(
+                        c.getOperationId(), 3L, 12L, 5L, NOW)))
+                .isInstanceOf(ru.rutcampustrack.attendance.exception.ConflictException.class);
     }
 
     @Test

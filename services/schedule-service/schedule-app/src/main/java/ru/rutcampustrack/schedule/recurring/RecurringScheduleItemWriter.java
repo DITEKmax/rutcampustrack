@@ -16,12 +16,14 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 import ru.rutcampustrack.schedule.contract.dto.item.CreateScheduleItemRequest;
+import ru.rutcampustrack.schedule.constructor.SemesterMaterializationWriter;
 import ru.rutcampustrack.schedule.contract.enums.LessonSlot;
 import ru.rutcampustrack.schedule.contract.enums.LessonStatus;
 import ru.rutcampustrack.schedule.event.ScheduleActionRecordedEvent;
@@ -45,6 +47,12 @@ public class RecurringScheduleItemWriter {
     private final Clock clock;
     private final ScheduleSemesterArchiveWriteFence archiveWriteFence;
     private final ApplicationEventPublisher events;
+    private SemesterMaterializationWriter semesterMaterialization;
+
+    @Autowired
+    public void setSemesterMaterialization(SemesterMaterializationWriter writer) {
+        this.semesterMaterialization = writer;
+    }
 
     public RecurringScheduleItemWriter(
             JdbcTemplate jdbc,
@@ -128,7 +136,9 @@ public class RecurringScheduleItemWriter {
         dates.removeIf(replacementAlreadyCovered(request, authority, fenceCap));
         Long replacementTemplateId = replacementTemplateId(request);
         if (replacementTemplateId != null) {
-            dates.removeIf(date -> occurrenceExists(replacementTemplateId, date));
+            Set<LocalDate> covered = semesterMaterialization == null ? Set.of()
+                    : semesterMaterialization.coveredDates(semesterMaterialization.familyIds(replacementTemplateId));
+            dates.removeIf(date -> covered.contains(date) || occurrenceExists(replacementTemplateId, date));
         }
         OffsetDateTime createdAt = OffsetDateTime.now(clock.withZone(ZoneOffset.UTC));
         LocalDate generatedFrom = dates.isEmpty() ? null : dates.get(0);
@@ -144,6 +154,10 @@ public class RecurringScheduleItemWriter {
                                     generatedFrom,
                                     generatedUntil)
                             : replacementTemplateId;
+            if (semesterMaterialization == null)
+                throw new RecurringProtocolConflictException("semester materialization authority is unavailable");
+            UUID materialization = semesterMaterialization.begin(
+                    scheduleItemId, actorId, requestKey, authority, semesterStart, semesterEnd);
             for (LocalDate date : dates) {
                 long occurrenceId = insertOccurrence(scheduleItemId, date, authority, createdAt);
                 long lessonId =
@@ -174,6 +188,7 @@ public class RecurringScheduleItemWriter {
                 ScheduleActionRecordedEvent.publish(
                         jdbc, events, "LESSON_CREATED", lessonId, actorId, null, createdAt);
             }
+            semesterMaterialization.finish(materialization);
 
             jdbc.update(
                     """
@@ -220,6 +235,78 @@ public class RecurringScheduleItemWriter {
                     "recurring request conflicts with an existing physical slot or canonical identity");
         }
     }
+
+    /** Adds only missing dates of one active canonical family; never rewrites an existing lesson. */
+    @Transactional(isolation = Isolation.READ_COMMITTED)
+    public UUID materializeExisting(
+            long itemId, UUID key, Long actor, RecurringAssignmentAuthority authority,
+            LocalDate from, LocalDate to,
+            ScheduleSemesterArchiveWriteFence.PreparedBusinessWrite prepared) {
+        if (key == null || actor != null && actor <= 0 || semesterMaterialization == null)
+            throw new RecurringProtocolConflictException("materialization identity is required");
+        String source = actor == null ? "SYSTEM_BACKFILL" : "USER";
+        archiveWriteFence.lockPreparedBusinessWrite(prepared);
+        UUID replay = semesterMaterialization.replay(actor, key, source, "BACKFILL", itemId);
+        if (replay != null) return replay;
+        List<Long> family = semesterMaterialization.familyIds(itemId);
+        if (family.isEmpty()) throw new RecurringProtocolConflictException("materialization family is absent");
+        List<Long> assignments = jdbc.queryForList(
+                "SELECT DISTINCT assignment_id FROM schedule_items WHERE id=ANY(?::bigint[]) ORDER BY assignment_id",
+                Long.class, array(family));
+        for (long assignment : assignments) {
+            if (assignment == authority.assignmentId()) lockOrInstallFence(authority);
+            else if (jdbc.queryForList("SELECT assignment_id FROM schedule_assignment_fences WHERE assignment_id=? FOR UPDATE", assignment).size() != 1)
+                throw new RecurringProtocolConflictException("family assignment fence is absent");
+        }
+        for (long id : family) jdbc.queryForMap("SELECT id FROM schedule_items WHERE id=? FOR UPDATE", id);
+        if (!family.equals(semesterMaterialization.familyIds(itemId)))
+            throw new RecurringProtocolConflictException("materialization family changed");
+        var item = jdbc.queryForMap("SELECT *,week_type::text AS week_type FROM schedule_items WHERE id=?", itemId);
+        if (!Boolean.TRUE.equals(item.get("is_active"))
+                || ((Number) item.get("assignment_id")).longValue() != authority.assignmentId()
+                || ((Number) item.get("group_id")).longValue() != authority.groupId()
+                || ((Number) item.get("subject_id")).longValue() != authority.subjectId()
+                || ((Number) item.get("semester_id")).longValue() != authority.semesterId())
+            throw new RecurringProtocolConflictException("only the admitted active family can be materialized");
+        var request = new CreateScheduleItemRequest(authority.assignmentId(), authority.groupId(),
+                authority.subjectId(), authority.semesterId(), ((Number) item.get("day_of_week")).shortValue(),
+                ((Number) item.get("lesson_number")).shortValue(), localTime(item.get("start_time")),
+                localTime(item.get("end_time")), ru.rutcampustrack.schedule.contract.enums.WeekType.valueOf(
+                        item.get("week_type").toString().toUpperCase(java.util.Locale.ROOT)), (String) item.get("room"));
+        var covered = semesterMaterialization.coveredDates(family);
+        UUID operation = semesterMaterialization.begin(itemId, actor, key, authority, from, to, source, "BACKFILL");
+        OffsetDateTime at = OffsetDateTime.now(clock.withZone(ZoneOffset.UTC));
+        for (LocalDate date : RecurringDateCalculator.compute(request, authority, from, to, authority.validUntilExclusive())) {
+            if (!covered.add(date)) continue;
+            long occurrence = insertOccurrence(itemId, date, authority, at);
+            long lesson = insertPhysicalLesson(itemId, occurrence, date, request, authority, LessonStatus.PLANNED, at, null);
+            jdbc.update("UPDATE lesson_occurrences SET current_lesson_id=? WHERE id=?", lesson, occurrence);
+            // System admission is explicit and never impersonates a human in the append-only audit.
+            if (actor != null) jdbc.update(
+                    "INSERT INTO lesson_lifecycle_entries(occurrence_id,revision,action,lesson_id,generation,actor_id,occurred_at) VALUES(?,1,'CREATED',?,1,?,?)",
+                    occurrence, lesson, actor, at);
+            ScheduleActionRecordedEvent.publish(jdbc, events, "LESSON_CREATED", lesson, actor, null, at);
+        }
+        semesterMaterialization.finish(operation);
+        return operation;
+    }
+
+    private static String array(List<Long> values) {
+        return "{" + values.stream().map(String::valueOf).collect(java.util.stream.Collectors.joining(",")) + "}";
+    }
+
+    private static LocalTime localTime(Object value) {
+        return value instanceof java.sql.Time time ? time.toLocalTime() : LocalTime.parse(value.toString());
+    }
+
+    UUID beginLifecycleMaterialization(long item, long actor, UUID key,
+            RecurringAssignmentAuthority authority, LocalDate from, LocalDate to) {
+        if (semesterMaterialization==null) throw new RecurringProtocolConflictException("semester authority unavailable");
+        UUID workKey=UUID.nameUUIDFromBytes(("LIFECYCLE_MATERIALIZATION|"+key).getBytes(StandardCharsets.UTF_8));
+        return semesterMaterialization.begin(item,actor,workKey,authority,from,to,"USER","BACKFILL");
+    }
+
+    void finishLifecycleMaterialization(UUID operation) { semesterMaterialization.finish(operation); }
 
     private static void validateInputs(
             CreateScheduleItemRequest request,
@@ -595,6 +682,8 @@ public class RecurringScheduleItemWriter {
             LocalDate date,
             RecurringAssignmentAuthority authority,
             OffsetDateTime createdAt) {
+        if (semesterMaterialization != null && semesterMaterialization.admitted())
+            return semesterMaterialization.insertOccurrence(scheduleItemId, date, authority, createdAt);
         Long id =
                 jdbc.queryForObject(
                         """
@@ -629,6 +718,8 @@ public class RecurringScheduleItemWriter {
             LessonStatus status,
             OffsetDateTime createdAt,
             Long closedAtEpochMillis) {
+        if (semesterMaterialization != null && semesterMaterialization.admitted())
+            return semesterMaterialization.insertPhysicalLesson(occurrenceId, createdAt);
         OffsetDateTime closedAt =
                 closedAtEpochMillis == null
                         ? null

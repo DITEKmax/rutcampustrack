@@ -23,7 +23,12 @@ import {
   type SubjectRemovalIntent,
 } from './subject-edit-intent';
 import { createSubjectSaveFlow } from './subject-save-flow';
-import { subjectEditorAssignments, subjectEditorAssignment } from './subject-editor-state';
+import {
+  subjectEditorAssignments,
+  subjectEditorAssignment,
+  subjectAssignmentPeriod,
+  subjectAssignmentPeriodLabel,
+} from './subject-editor-state';
 import { moscowDate } from '../../domain/homework';
 import './headman-subjects-screen.pcss';
 
@@ -124,7 +129,8 @@ const editorSubject = computed(
 );
 const pickerType = ref<HeadmanSubjectType | null>(null),
   pickerTeacher = ref<HeadmanTeacher | null>(null),
-  pickerValidFrom = ref('');
+  pickerValidFrom = ref(''),
+  pickerValidThrough = ref('');
 const editorBaseline = ref(''),
   leaveOpen = ref(false);
 const removeCandidate = ref<{
@@ -157,6 +163,7 @@ const editorWritable = computed(
     !editorDetail.value?.pendingClosures?.length,
 );
 const draftValidFrom = reactive<Partial<Record<HeadmanSubjectType, Record<number, string>>>>({});
+const draftValidUntil = reactive<Partial<Record<HeadmanSubjectType, Record<number, string>>>>({});
 const subjectName = ref('');
 const loading = ref(false);
 const busy = ref(false);
@@ -996,19 +1003,9 @@ function editorSnapshot(): string {
       selectedTeachers[type].map((teacher) => [teacher.id, teacher.assignmentId ?? null]),
     ]),
     dates: draftValidFrom,
+    until: draftValidUntil,
     removals: draftRemovals.value,
   });
-}
-function semesterDay(): string {
-  const current = moscowDate(new Date().toISOString())!,
-    semester = editSemester.value;
-  return semester
-    ? current < semester.dateFrom
-      ? semester.dateFrom
-      : current > semester.dateTo
-        ? semester.dateTo
-        : current
-    : current;
 }
 function assignmentsFor(
   subject: HeadmanSubject,
@@ -1039,6 +1036,7 @@ function resetEditor(subject: HeadmanSubject | null): void {
         }))
       : [];
     draftValidFrom[type] = {};
+    draftValidUntil[type] = {};
   }
   draftRemovals.value = [];
   formOpen.value = true;
@@ -1140,7 +1138,8 @@ function openPicker(type: HeadmanSubjectType = selectedTypes.value[0] ?? 'LECTUR
   if (!editorWritable.value || !editSemester.value) return;
   pickerType.value = type;
   pickerTeacher.value = null;
-  pickerValidFrom.value = semesterDay();
+  pickerValidFrom.value = editSemester.value.dateFrom;
+  pickerValidThrough.value = editSemester.value.dateTo;
   addPicker.query = '';
   addPicker.results = [];
   void searchAddTeachers();
@@ -1173,29 +1172,42 @@ async function searchAddTeachers(): Promise<void> {
     if (revision === addPicker.revision) addPicker.loading = false;
   }
 }
+function assignmentCompleted(teacher: EditorTeacher): boolean {
+  return (
+    teacher.assignmentId !== undefined &&
+    !!teacher.validUntilExclusive &&
+    teacher.validUntilExclusive <= moscowDate(new Date().toISOString())!
+  );
+}
+function teacherAlreadySelected(type: HeadmanSubjectType, teacherId: number): boolean {
+  return selectedTeachers[type].some(
+    (teacher) => teacher.id === teacherId && !assignmentCompleted(teacher),
+  );
+}
 function addTeacherDraft(): void {
   const type = pickerType.value,
     teacher = pickerTeacher.value,
     semester = editSemester.value;
   if (!editorWritable.value || !type || !teacher || !semester) return;
-  if (
-    pickerValidFrom.value < semester.dateFrom ||
-    pickerValidFrom.value > semester.dateTo ||
-    !/^\d{4}-\d{2}-\d{2}$/.test(pickerValidFrom.value)
-  ) {
-    error.value = 'Дата назначения должна быть внутри выбранного семестра.';
+  let period: ReturnType<typeof subjectAssignmentPeriod>;
+  try {
+    period = subjectAssignmentPeriod(semester, pickerValidFrom.value, pickerValidThrough.value);
+  } catch (cause) {
+    error.value = cause instanceof Error ? cause.message : 'Проверь период назначения.';
     return;
   }
   if (!selectedTypes.value.includes(type)) selectedTypes.value.push(type);
-  if (!selectedTeachers[type].some((item) => item.id === teacher.id)) {
-    selectedTeachers[type].push(teacher);
-    (draftValidFrom[type] ??= {})[teacher.id] = pickerValidFrom.value;
+  if (!teacherAlreadySelected(type, teacher.id)) {
+    selectedTeachers[type].push({ ...teacher, ...period });
+    (draftValidFrom[type] ??= {})[teacher.id] = period.validFrom;
+    (draftValidUntil[type] ??= {})[teacher.id] = period.validUntilExclusive;
   }
   pickerType.value = null;
   addPicker.revision++;
   error.value = null;
 }
 function requestRemove(type: HeadmanSubjectType, teacher: EditorTeacher): void {
+  if (assignmentCompleted(teacher)) return;
   removeCandidate.value = {
     type,
     teacher,
@@ -1221,10 +1233,13 @@ function removeDraftTeacher(): void {
     });
   selectedTeachers[target.type] = selectedTeachers[target.type].filter((item) =>
     target.teacher.assignmentId === undefined
-      ? item.id !== target.teacher.id
+      ? item.assignmentId !== undefined || item.id !== target.teacher.id
       : item.assignmentId !== target.teacher.assignmentId,
   );
-  delete draftValidFrom[target.type]?.[target.teacher.id];
+  if (target.teacher.assignmentId === undefined) {
+    delete draftValidFrom[target.type]?.[target.teacher.id];
+    delete draftValidUntil[target.type]?.[target.teacher.id];
+  }
   removeCandidate.value = null;
 }
 function closeForm(): void {
@@ -1333,8 +1348,8 @@ async function saveSubject(): Promise<void> {
         teacherId: teacher.id,
         semesterId: semester.id,
         lessonType,
-        validFrom: draftValidFrom[lessonType]?.[teacher.id] ?? semesterDay(),
-        validUntilExclusive: null,
+        validFrom: draftValidFrom[lessonType]?.[teacher.id] ?? '',
+        validUntilExclusive: draftValidUntil[lessonType]?.[teacher.id] ?? '',
       })),
   );
   const plan: SubjectEditIntent = {
@@ -1733,7 +1748,7 @@ onBeforeUnmount(() => {
             [
               ...new Set(
                 subject.lessonTypes.flatMap((type) =>
-                  assignmentsFor(subject, type).map((a) => teacherLabel(a.teacherId)),
+                  assignmentsFor(subject, type).map((a) => `${teacherLabel(a.teacherId)} · ${subjectAssignmentPeriodLabel(a.validFrom, a.validUntilExclusive, moscowDate(new Date().toISOString())!)}`),
                 ),
               ),
             ].join(', ') || 'Преподаватель не назначен'
@@ -1794,11 +1809,11 @@ onBeforeUnmount(() => {
           :key="teacher.assignmentId ?? teacher.id"
           class="headman-subjects__teacher"
           type="button"
-          :disabled="!editorWritable"
+          :disabled="!editorWritable || assignmentCompleted(teacher)"
           @click="requestRemove(type, teacher)"
         >
           <MobileIcon name="profile" /><span>{{ teacher.fullName
-          }}<small v-if="teacher.validFrom && teacher.validFrom > semesterDay()">С {{ teacher.validFrom }}</small></span><MobileIcon name="chevron-down" />
+          }}<small v-if="teacher.validFrom">{{ subjectAssignmentPeriodLabel(teacher.validFrom, teacher.validUntilExclusive, moscowDate(new Date().toISOString())!) }}</small></span><MobileIcon name="chevron-down" />
         </button><button
           v-if="!selectedTeachers[type].length"
           class="headman-subjects__teacher"
@@ -1870,7 +1885,7 @@ onBeforeUnmount(() => {
           type="button"
           :aria-pressed="pickerTeacher?.id === teacher.id"
           :disabled="
-            !editorWritable || selectedTeachers[pickerType].some((item) => item.id === teacher.id)
+            !editorWritable || teacherAlreadySelected(pickerType, teacher.id)
           "
           @click="pickerTeacher = teacher"
         >
@@ -1889,10 +1904,21 @@ onBeforeUnmount(() => {
       </div><p v-if="!addPicker.loading && !addPicker.results.length">
         Преподаватели не найдены.
       </p>
-      <label class="headman-subjects__field"><span>Начало назначения</span><input
+      <label class="headman-subjects__field" for="headman-assignment-from"><span>Начало назначения</span><input
+        id="headman-assignment-from"
         v-model="pickerValidFrom"
         type="date"
+        required
         :min="editSemester?.dateFrom"
+        :max="editSemester?.dateTo"
+        :disabled="!editorWritable"
+      ></label>
+      <label class="headman-subjects__field" for="headman-assignment-through"><span>По дату включительно</span><input
+        id="headman-assignment-through"
+        v-model="pickerValidThrough"
+        type="date"
+        required
+        :min="pickerValidFrom || editSemester?.dateFrom"
         :max="editSemester?.dateTo"
         :disabled="!editorWritable"
       ></label>

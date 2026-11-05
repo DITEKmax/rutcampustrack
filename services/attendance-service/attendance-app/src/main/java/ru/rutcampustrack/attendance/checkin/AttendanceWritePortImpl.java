@@ -116,7 +116,8 @@ public class AttendanceWritePortImpl implements AttendanceWritePort {
             doc.setSource(source);
             doc.setGroupId(groupId);
             doc.setSemesterId(semesterId);
-            doc.setExcuseReason(excuseReason);
+            doc.setExcuseRequestId(null);
+        doc.setExcuseReason(excuseReason);
             doc.setExcuseType(null);
             doc.setExcuseComment(null);
             doc.setUpdatedAt(now);
@@ -184,6 +185,7 @@ public class AttendanceWritePortImpl implements AttendanceWritePort {
         doc.setStatus(status);
         doc.setSource(source);
         doc.setMarkedBy(markedBy);
+        doc.setExcuseRequestId(null);
         doc.setExcuseReason(null);
         doc.setExcuseType(null);
         doc.setExcuseComment(null);

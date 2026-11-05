@@ -16,6 +16,7 @@ import traceback
 
 from collect import agent_file, conclusion, docker_public, docker_snapshot, memory, profile
 from toolchain import ensure, SHA256, VERSION
+from native_results import current_artifact, successful_results
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / 'scripts'))
@@ -196,13 +197,13 @@ def error_class(error):
     return name if name in {'TimeoutError', 'TimeoutExpired', 'ValueError', 'OSError', 'KeyboardInterrupt', 'CalledProcessError', 'FileNotFoundError', 'PermissionError', 'TypeError', 'KeyError'} else 'OTHER'
 
 
-def collect_arm(directory, result, environment):
+def collect_arm(directory, result, environment, started_ns):
     env = {**environment, 'RCT_CI_TEST_OUTCOME': 'success' if result['nativeExit'] == 0 else 'failure'}
     if environment.get('GITHUB_ACTIONS') == 'true':
         for target, source in (('RCT_CI_EVENT_NAME', 'GITHUB_EVENT_NAME'), ('RCT_CI_RUN_ID', 'GITHUB_RUN_ID'), ('RCT_CI_RUN_ATTEMPT', 'GITHUB_RUN_ATTEMPT'), ('RCT_CI_JOB_ID', 'GITHUB_JOB'), ('RCT_CI_PR_HEAD_SHA', 'GITHUB_SHA')):
             env[target] = environment[source]
     with (directory / 'collect.private.log').open('xb') as log:
-        for task, count in (('test', 419), ('integrationTest', 266)):
+        for task in ('test', 'integrationTest'):
             try:
                 call = subprocess.run([sys.executable, str(ROOT / 'scripts/collect-ci-test-outcomes.py'), '--service', 'attendance-service', '--task', task], cwd=ROOT, env=env, stdout=log, stderr=subprocess.STDOUT, timeout=60)
                 result[task + 'CollectionExit'] = call.returncode
@@ -210,19 +211,26 @@ def collect_arm(directory, result, environment):
                 report = json.loads(source.read_text())
                 shutil.copyfile(source, directory / (task + '.safe.json'))
                 result[task + 'Summary'] = report['summary']
-                result['rosterConfirmed'] &= report['summary'] == {'PASSED': count, 'FAILED': 0, 'ERROR': 0, 'SKIPPED': 0, 'NOT_EXECUTED': 0}
                 families = {row.get('failureDiagnostic', {}).get('oomResource', {}).get('family') for row in report.get('cases', [])}
                 result['javaHeapOom'] |= 'JAVA_HEAP' in families
                 result['nativeMemoryFailure'] |= bool(families & {'METASPACE', 'DIRECT_BUFFER', 'DIRECT_MEMORY', 'NATIVE_THREAD', 'NATIVE_ALLOCATION'})
                 source_xml = APP / 'build/test-results' / task
+                xml_files = list(source_xml.glob('TEST-*.xml'))
+                result[task + 'ResultsConfirmed'] = (
+                    bool(xml_files)
+                    and all(current_artifact(path, started_ns) for path in xml_files)
+                    and successful_results(report)
+                )
                 if source_xml.is_dir():
                     shutil.copytree(source_xml, directory / (task + '-xml.private'))
             except Exception as error:
                 result[task + 'CollectionExit'] = None
                 result[task + 'CollectionError'] = error_class(error)
                 result['diagnosticsFailed'] = True
+    result['nativeResultsConfirmed'] = all(result.get(task + 'ResultsConfirmed') is True
+                                          for task in ('test', 'integrationTest'))
     xml = APP / 'build/reports/jacoco/test/jacocoTestReport.xml'
-    result['jacocoPresent'] = xml.is_file() and xml.stat().st_size > 0
+    result['jacocoPresent'] = current_artifact(xml, started_ns)
     if result['jacocoPresent']:
         shutil.copyfile(xml, directory / 'jacoco.private.xml')
 
@@ -296,8 +304,8 @@ def arm_run(directory, heap, jar, environment, observed_tree):
     directory.mkdir(mode=0o700)
     result = {'heapMiB': heap, 'nativeExit': None, 'cause': None, 'cleanup': False, 'telemetryComplete': False,
               'javaHeapOom': False, 'nativeMemoryFailure': False, 'retainedGrowthSuspected': False,
-              'diagnosticsFailed': False, 'probeFailureMarker': False, 'rosterConfirmed': False, 'jacocoPresent': False}
-    before = initial = None
+              'diagnosticsFailed': False, 'probeFailureMarker': False, 'nativeResultsConfirmed': False, 'jacocoPresent': False}
+    before = initial = started_ns = None
     try:
         before = docker_snapshot()
         write(directory / 'docker-before.private.json', before)
@@ -307,16 +315,16 @@ def arm_run(directory, heap, jar, environment, observed_tree):
         if test_tree() != observed_tree:
             result['cause'] = 'SOURCE_TREE_CHANGED'
             raise ValueError('SOURCE_TREE_CHANGED')
+        started_ns = time.time_ns()
         result.update(native(directory, heap, jar, environment))
-        result['rosterConfirmed'] = test_tree() == observed_tree
-        if not result['rosterConfirmed']:
+        if test_tree() != observed_tree:
             result['cause'] = 'SOURCE_TREE_CHANGED'
     except BaseException as error:
         result['controlClass'] = error_class(error)
         result['cause'] = 'CANCELLED' if isinstance(error, KeyboardInterrupt) else result['cause'] or 'CONTROL_ERROR'
     # Independent phases: diagnostic failures cannot jump over resource closure.
     try:
-        collect_arm(directory, result, environment)
+        collect_arm(directory, result, environment, started_ns)
     except BaseException as error:
         result['collectionError'] = error_class(error)
         result['diagnosticsFailed'] = True
@@ -332,15 +340,19 @@ def arm_run(directory, heap, jar, environment, observed_tree):
         result['cleanup'] = False
     try:
         if test_tree() != observed_tree:
-            result['rosterConfirmed'] = False
             result['cause'] = 'SOURCE_TREE_CHANGED'
     except BaseException as error:
-        result['rosterConfirmed'] = False
         result['sourceIntegrityError'] = error_class(error)
         result['cause'] = 'CANCELLED' if isinstance(error, KeyboardInterrupt) else 'SOURCE_TREE_UNVERIFIED'
     if CANCELLED:
         result['cause'] = 'CANCELLED'
-    result['result'] = 'HOLD' if result['diagnosticsFailed'] or not result['cleanup'] or result['cause'] is not None else 'PASS' if result['nativeExit'] == 0 and result['telemetryComplete'] and result['rosterConfirmed'] and result['jacocoPresent'] and all(result.get(t + 'CollectionExit') == 0 for t in ('test', 'integrationTest')) else 'FAIL'
+    if result['diagnosticsFailed'] or not result['cleanup'] or result['cause'] is not None:
+        result['result'] = 'HOLD'
+    elif (result['nativeExit'] == 0 and result['telemetryComplete'] and result['nativeResultsConfirmed']
+          and result['jacocoPresent'] and all(result.get(task + 'CollectionExit') == 0 for task in ('test', 'integrationTest'))):
+        result['result'] = 'PASS'
+    else:
+        result['result'] = 'FAIL'
     try:
         write(directory / 'arm.safe.json', result)
     except Exception as error:
@@ -365,7 +377,7 @@ def main():
     parent = Path(os.environ.get('RCT_LOCAL_RELEASE_AUDIT', os.environ.get('RUNNER_TEMP', '/tmp')))
     output = parent / ('attendance-memory-' + nonce)
     output.mkdir(mode=0o700)
-    summary = {'schema': 'RCT_ATTENDANCE_MEMORY_V1', 'context': context, 'armsMode': args.arms, 'arms': [], 'result': 'HOLD', 'conclusion': 'INCONCLUSIVE', 'heapPolicyMiB': [512, 1024] if args.arms == 'comparison' else [1024], 'workers': 4, 'maxParallelForks': 1, 'forkEvery': 0, 'initialHeapPolicy': 'UNSET_JVM_DEFAULT; historical initial heap unknown', 'profile': profile(), 'jdkVersion': VERSION, 'jdkArchiveSha256': SHA256, 'observedTestTreeSha256': observed_tree, 'expectedPassed': {'test': 419, 'integrationTest': 266}, 'qualification': 'Diagnostic arms retain native failures; NOT_REPRODUCED does not prove absence of leaks; WSL is not hosted-VM equivalence'}
+    summary = {'schema': 'RCT_ATTENDANCE_MEMORY_V1', 'context': context, 'armsMode': args.arms, 'arms': [], 'result': 'HOLD', 'conclusion': 'INCONCLUSIVE', 'heapPolicyMiB': [512, 1024] if args.arms == 'comparison' else [1024], 'workers': 4, 'maxParallelForks': 1, 'forkEvery': 0, 'initialHeapPolicy': 'UNSET_JVM_DEFAULT; historical initial heap unknown', 'profile': profile(), 'jdkVersion': VERSION, 'jdkArchiveSha256': SHA256, 'observedTestTreeSha256': observed_tree, 'qualification': 'Diagnostic arms retain native failures; NOT_REPRODUCED does not prove absence of leaks; WSL is not hosted-VM equivalence'}
     summary['admissionReason'] = 'NOT_EVALUATED'
     public = ROOT / 'build/attendance-memory'
     public.mkdir(mode=0o700, parents=True, exist_ok=True)

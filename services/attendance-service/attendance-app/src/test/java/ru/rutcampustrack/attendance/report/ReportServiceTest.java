@@ -665,16 +665,30 @@ class ReportServiceTest {
     }
 
     @Test
-    void authorizeTeacherWithHistoricalDifferentSubjectAllowsCurrentGroup() {
-        assertThatCode(
-                        () ->
-                                reportService.authorizeTeacherLesson(
-                                        lesson(SUBJECT_ID_1, GROUP_ID).toBuilder()
-                                                .setAssignedTeacherId(USER_ID + 1)
-                                                .build(),
-                                        USER_ID))
+    void authorizeCurrentSubjectTeacherReadsReplacedHistoricalTeacherAndOtherLessonType() {
+        var historical = lesson(SUBJECT_ID_1, GROUP_ID).toBuilder()
+                .setAssignedTeacherId(USER_ID + 1)
+                .setAssignmentId(901L)
+                .setLessonType("practice")
+                .setDate("2025-09-01")
+                .setSemesterId(SEMESTER_ID + 1)
+                .build();
+        assertThatCode(() -> reportService.authorizeTeacherLesson(historical, USER_ID))
                 .doesNotThrowAnyException();
         verify(academicGrpcClient).getCurrentTeacherSubjects(USER_ID);
+    }
+
+    @Test
+    void authorizeTeacherRejectsIncompleteHistoricalSnapshot() {
+        var historical = lesson(SUBJECT_ID_1, GROUP_ID);
+        for (var incomplete : List.of(
+                historical.toBuilder().setDate("not-a-date").build(),
+                historical.toBuilder().clearDate().build(),
+                historical.toBuilder().clearLessonType().build())) {
+            assertThatThrownBy(() -> reportService.authorizeTeacherLesson(incomplete, USER_ID))
+                    .isInstanceOf(AccessDeniedException.class);
+        }
+        verify(academicGrpcClient, never()).getCurrentTeacherSubjects(USER_ID);
     }
 
     @Test
@@ -690,19 +704,24 @@ class ReportServiceTest {
     @Test
     void authorizeTeacherWithDifferentGroupDeniesLesson() {
         when(requestContext.getRole()).thenReturn(UserRole.TEACHER);
-        when(academicGrpcClient.getCurrentTeacherSubjects(USER_ID))
-                .thenReturn(
-                        TeacherSubjectsResponse.newBuilder()
-                                .addSubjects(
-                                        TeacherSubjectInfo.newBuilder()
-                                                .setGroupId(GROUP_ID + 1)
-                                                .build())
-                                .build());
         when(scheduleGrpcClient.getLessonById(LESSON_ID))
-                .thenReturn(lesson(SUBJECT_ID_1, GROUP_ID));
+                .thenReturn(lesson(SUBJECT_ID_1, GROUP_ID + 1));
 
         assertThatThrownBy(() -> reportService.getLessonAttendance(LESSON_ID))
                 .isInstanceOf(AccessDeniedException.class);
+    }
+
+    @Test
+    void revokedTeacherCannotReadEvenTheirOwnHistoricalAssignment() {
+        when(academicGrpcClient.getCurrentTeacherSubjects(USER_ID))
+                .thenReturn(TeacherSubjectsResponse.getDefaultInstance());
+        var past = lesson(SUBJECT_ID_1, GROUP_ID).toBuilder()
+                .setDate("2026-02-15")
+                .setStatus("closed")
+                .build();
+        assertThatThrownBy(() -> reportService.authorizeTeacherLesson(past, USER_ID))
+                .isInstanceOf(AccessDeniedException.class);
+        verify(academicGrpcClient).getCurrentTeacherSubjects(USER_ID);
     }
 
     @Test

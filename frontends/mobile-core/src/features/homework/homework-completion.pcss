@@ -70,3 +70,235 @@
   stroke-linejoin: round;
   pointer-events: none;
 }
+
+/* Accepted Student presentation; existing roles retain their base rules. */
+:where([data-student-ui]) .homework-completion,
+:where([data-student-ui]):is(.homework-completion) {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 100%;
+  min-inline-size: 0;
+  min-block-size: calc(var(--rct-control-min-touch) + 2 * var(--rct-space-1));
+  border-radius: var(--rct-radius-full);
+  padding: var(--rct-space-1);
+  color: var(--rct-color-text-secondary);
+  background: var(--rct-color-surface-float);
+  font-size: var(--rct-font-size-caption);
+  font-weight: var(--rct-font-weight-bold);
+  line-height: 1.35;
+  text-align: center;
+}
+:where([data-student-ui]) .homework-completion--completed,
+:where([data-student-ui]):is(.homework-completion--completed) {
+  color: var(--rct-color-text-primary);
+}
+:where([data-student-ui]) .homework-completion--readonly,
+:where([data-student-ui]):is(.homework-completion--readonly) {
+  color: var(--rct-color-disabled-text);
+  background: var(--rct-color-disabled-surface);
+}
+:where([data-student-ui]) .homework-completion__fill,
+:where([data-student-ui]):is(.homework-completion__fill) {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--rct-color-accent-soft);
+  transform-origin: left center;
+  transition:
+    transform 320ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    background-color 220ms ease-out;
+  pointer-events: none;
+}
+:where([data-student-ui]) .homework-completion--completed .homework-completion__fill,
+:where([data-student-ui]):is(.homework-completion--completed .homework-completion__fill) {
+  background: var(--rct-color-success-surface);
+}
+:where([data-student-ui]) .homework-completion--readonly .homework-completion__fill,
+:where([data-student-ui]):is(.homework-completion--readonly .homework-completion__fill) {
+  background: var(--rct-color-disabled-surface);
+}
+:where([data-student-ui]) .homework-completion__label,
+:where([data-student-ui]):is(.homework-completion__label) {
+  min-inline-size: 0;
+  max-inline-size: calc(100% - 2 * var(--rct-control-min-touch));
+  overflow-wrap: anywhere;
+  pointer-events: none;
+}
+:where([data-student-ui]) .homework-completion__travel,
+:where([data-student-ui]):is(.homework-completion__travel) {
+  position: absolute;
+  inset-block-start: var(--rct-space-1);
+  inset-inline-start: var(--rct-space-1);
+  inline-size: calc(100% - var(--rct-control-min-touch) - 2 * var(--rct-space-1));
+  block-size: var(--rct-control-min-touch);
+  pointer-events: none;
+  transition: transform 320ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+:where([data-student-ui]) .homework-completion__handle,
+:where([data-student-ui]):is(.homework-completion__handle) {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  inset-block-start: 0;
+  inset-inline-start: 0;
+  inline-size: var(--rct-control-min-touch);
+  block-size: var(--rct-control-min-touch);
+  border: 0;
+  border-radius: var(--rct-radius-full);
+  padding: 0;
+  color: var(--rct-color-accent-on-now);
+  background: var(--rct-color-accent-now);
+  cursor: grab;
+  transition:
+    background-color 220ms ease-out,
+    box-shadow 220ms ease-out;
+  pointer-events: auto;
+  touch-action: pan-y;
+  user-select: none;
+  @mixin rct-focus-ring;
+}
+:where([data-student-ui]) .homework-completion__handle:active,
+:where([data-student-ui]):is(.homework-completion__handle:active) {
+  cursor: grabbing;
+}
+:where([data-student-ui]) .homework-completion__handle:disabled,
+:where([data-student-ui]):is(.homework-completion__handle:disabled) {
+  cursor: not-allowed;
+}
+:where([data-student-ui]) .homework-completion--completed .homework-completion__handle,
+:where([data-student-ui]):is(.homework-completion--completed .homework-completion__handle) {
+  background: var(--rct-color-success-text);
+}
+:where([data-student-ui]) .homework-completion--readonly .homework-completion__handle,
+:where([data-student-ui]):is(.homework-completion--readonly .homework-completion__handle) {
+  color: var(--rct-color-disabled-text);
+  background: var(--rct-color-surface-float);
+}
+:where([data-student-ui]) .homework-completion__mark,
+:where([data-student-ui]):is(.homework-completion__mark) {
+  inline-size: var(--rct-space-4);
+  block-size: var(--rct-space-4);
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  pointer-events: none;
+}
+
+:where([data-student-ui]) .homework-completion__direction,
+:where([data-student-ui]):is(.homework-completion__direction) {
+  transform-origin: center;
+  transform: translateX(calc(var(--homework-progress) * 12%));
+}
+:where([data-student-ui]) .homework-completion__direction--reverse,
+:where([data-student-ui]):is(.homework-completion__direction--reverse) {
+  transform: rotate(180deg) translateX(calc(var(--homework-progress) * 12%));
+}
+:where([data-student-ui]) .homework-completion__ring,
+:where([data-student-ui]):is(.homework-completion__ring) {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  transform: rotate(-90deg);
+  pointer-events: none;
+}
+:where([data-student-ui]) .homework-completion__ring circle,
+:where([data-student-ui]):is(.homework-completion__ring circle) {
+  stroke-dasharray: 1;
+  stroke-dashoffset: calc(1 - var(--homework-progress));
+  stroke-linecap: round;
+  opacity: var(--homework-progress);
+}
+:where([data-student-ui]) .homework-completion--armed .homework-completion__handle,
+:where([data-student-ui]):is(.homework-completion--armed .homework-completion__handle) {
+  box-shadow: 0 0 0 var(--rct-space-1) var(--rct-color-accent-soft);
+}
+:where([data-student-ui]) .homework-completion--saving .homework-completion__handle,
+:where([data-student-ui]):is(.homework-completion--saving .homework-completion__handle) {
+  cursor: wait;
+}
+:where([data-student-ui]) .homework-completion--saving .homework-completion__ring,
+:where([data-student-ui]):is(.homework-completion--saving .homework-completion__ring) {
+  animation: homework-saving 900ms linear infinite;
+}
+:where([data-student-ui]) .homework-completion--saving .homework-completion__ring circle,
+:where([data-student-ui]):is(.homework-completion--saving .homework-completion__ring circle) {
+  stroke-dasharray: 0.7 0.3;
+  stroke-dashoffset: 0;
+  opacity: 1;
+}
+:where([data-student-ui]) .homework-completion--saving .homework-completion__direction,
+:where([data-student-ui]):is(.homework-completion--saving .homework-completion__direction) {
+  opacity: 0.45;
+}
+:where([data-student-ui]) .homework-completion[data-settled] .homework-completion__mark,
+:where([data-student-ui]):is(.homework-completion[data-settled] .homework-completion__mark) {
+  animation: homework-settle 420ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+:where([data-student-ui])
+  .homework-completion[data-settled='completed']
+  .homework-completion__check,
+:where([data-student-ui]):is(
+  .homework-completion[data-settled='completed'] .homework-completion__check
+) {
+  stroke-dasharray: 1;
+  animation: homework-check 300ms ease-out both;
+}
+:where([data-student-ui]) .homework-completion--dragging .homework-completion__fill,
+:where([data-student-ui]):is(.homework-completion--dragging .homework-completion__fill),
+:where([data-student-ui]) .homework-completion--dragging .homework-completion__travel,
+:where([data-student-ui]):is(.homework-completion--dragging .homework-completion__travel) {
+  transition: none;
+}
+@keyframes homework-saving {
+  to {
+    transform: rotate(270deg);
+  }
+}
+@keyframes homework-check {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes homework-settle {
+  0% {
+    transform: scale(0.65);
+  }
+  60% {
+    transform: scale(1.18);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  :where([data-student-ui]) .homework-completion__fill,
+  :where([data-student-ui]):is(.homework-completion__fill),
+  :where([data-student-ui]) .homework-completion__travel,
+  :where([data-student-ui]):is(.homework-completion__travel),
+  :where([data-student-ui]) .homework-completion__handle,
+  :where([data-student-ui]):is(.homework-completion__handle) {
+    transition: none;
+  }
+  :where([data-student-ui]) .homework-completion .homework-completion__mark,
+  :where([data-student-ui]):is(.homework-completion .homework-completion__mark),
+  :where([data-student-ui]) .homework-completion .homework-completion__check,
+  :where([data-student-ui]):is(.homework-completion .homework-completion__check),
+  :where([data-student-ui]) .homework-completion .homework-completion__ring,
+  :where([data-student-ui]):is(.homework-completion .homework-completion__ring) {
+    animation: none;
+  }
+}

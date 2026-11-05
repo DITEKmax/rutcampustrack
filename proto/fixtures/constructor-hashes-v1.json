@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "vectors": [
+    {
+      "name": "numeric-bson-json",
+      "inputJson": "{\"z\":1.0,\"a\":{\"n\":-0.0,\"кириллица\":\"кампус\"},\"array\":[1,1.0,0.0100,true,null]}",
+      "canonical": "{\"a\":{\"n\":0,\"кириллица\":\"кампус\"},\"array\":[1,1,0.01,true,null],\"z\":1}",
+      "sha256": "4f8d7617a4584f1f155f1d1032497a3b3e8affe2478fb0d5bdeb4ec3f4291d92"
+    },
+    {
+      "name": "immutable-past-lesson",
+      "inputJson": "{\"lesson_id\":21,\"occurrence_id\":12,\"group_id\":3,\"subject_id\":4,\"semester_id\":5,\"lesson_type\":\"lecture\",\"date\":\"2026-09-07\",\"lesson_number\":1,\"start_time\":\"09:00\",\"end_time\":\"10:30\",\"generation\":1}",
+      "canonical": "{\"date\":\"2026-09-07\",\"end_time\":\"10:30\",\"generation\":1,\"group_id\":3,\"lesson_id\":21,\"lesson_number\":1,\"lesson_type\":\"lecture\",\"occurrence_id\":12,\"semester_id\":5,\"start_time\":\"09:00\",\"subject_id\":4}",
+      "sha256": "29a7e866a010023e88aad912e2287bed7f06fe201115cb1904df96fcd0531018"
+    }
+  ]
+}

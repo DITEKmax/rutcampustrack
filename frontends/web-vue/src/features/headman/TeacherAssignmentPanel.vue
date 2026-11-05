@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, ref, shallowRef, watch } from 'vue';
 import type { HeadmanFeature } from './context';
-import { addDays, dateLabel, today } from './context';
+import { dateLabel, today } from './context';
 import { message } from '../../auth/session';
 import type { HeadmanTeacher, HeadmanSemester, HeadmanSubjectType, HeadmanSubjectAssignment, HeadmanSubjectInitialAssignment } from '../../../../mobile-core/src/features/headman-subjects/headman-subjects-client';
 import WebDateField from '../../shared/WebDateField.vue';
 import MobileIcon from '../../../../mobile-core/src/shared/components/MobileIcon.vue';
+import { subjectAssignmentPeriod, subjectAssignmentPeriodLabel } from '../../../../mobile-core/src/features/headman-subjects/subject-editor-state';
 
 const props = defineProps<{
   feature: HeadmanFeature; semester: HeadmanSemester; type: HeadmanSubjectType; label: string;
@@ -21,7 +22,7 @@ const emit = defineEmits<{
 }>();
 const query = ref(''), results = shallowRef<readonly HeadmanTeacher[]>([]), chosen = shallowRef<HeadmanTeacher | null>(null);
 const searchBusy = ref(false), searchError = ref<string | null>(null), completed = ref(false), page = ref(0), more = ref(false);
-const from = ref(today() < props.semester.dateFrom ? props.semester.dateFrom : today()), until = ref(''), replacingId = ref(0), issue = ref<string | null>(null);
+const from = ref(props.semester.dateFrom), until = ref(props.semester.dateTo), replacingId = ref(0), issue = ref<string | null>(null);
 const dates = ref<HTMLElement | null>(null), fromField = ref<HTMLElement | null>(null);
 const pendingStage = shallowRef<HeadmanSubjectInitialAssignment | null>(null);
 let assignmentFrom = from.value;
@@ -77,7 +78,10 @@ function add() {
   if (!chosen.value) { issue.value = 'Выбери преподавателя в результатах поиска.'; return; }
   if (!datesValid(true)) { issue.value = 'Проверь даты назначения.'; return; }
   issue.value = null;
-  const value: HeadmanSubjectInitialAssignment = { teacherId: chosen.value.id, semesterId: props.semester.id, lessonType: props.type, validFrom: from.value, validUntilExclusive: until.value || null };
+  let period: ReturnType<typeof subjectAssignmentPeriod>;
+  try { period = subjectAssignmentPeriod(props.semester, from.value, until.value); }
+  catch (cause) { issue.value = cause instanceof Error ? cause.message : 'Проверь период назначения.'; return; }
+  const value: HeadmanSubjectInitialAssignment = { teacherId: chosen.value.id, semesterId: props.semester.id, lessonType: props.type, ...period };
   if (!props.existing) pendingStage.value = value;
   emit('add', chosen.value, value);
 }
@@ -104,7 +108,7 @@ function replace() {
   emit('replace', target.value, chosen.value, from.value);
 }
 function period(from: string, until: string | null | undefined) {
-  return until ? `${dateLabel(from)} — ${dateLabel(until)}` : `С ${dateLabel(from)}`;
+  return subjectAssignmentPeriodLabel(from, until, today());
 }
 watch(query, schedule, { flush: 'sync' });
 watch(() => props.locked, locked => { if (locked) resetSearch(); else schedule(); }, { flush: 'sync' });
@@ -114,7 +118,7 @@ watch(() => props.staged, staged => {
     pendingStage.value = null; chosen.value = null; query.value = ''; resetSearch();
   }
 });
-watch(() => `${props.semester.id}:${props.type}`, () => { resetSearch(); query.value = ''; chosen.value = null; pendingStage.value = null; replacingId.value = 0; from.value = today() < props.semester.dateFrom ? props.semester.dateFrom : today(); until.value = ''; issue.value = null; }, { flush: 'sync' });
+watch(() => `${props.semester.id}:${props.type}`, () => { resetSearch(); query.value = ''; chosen.value = null; pendingStage.value = null; replacingId.value = 0; from.value = props.semester.dateFrom; until.value = props.semester.dateTo; issue.value = null; }, { flush: 'sync' });
 watch(() => props.assignments, () => { if (replacingId.value && (!target.value || (target.value.validUntilExclusive !== null && from.value && from.value >= target.value.validUntilExclusive))) resetReplacement(); });
 onBeforeUnmount(() => { alive = false; resetSearch(); });
 </script>
@@ -132,7 +136,7 @@ onBeforeUnmount(() => { alive = false; resetSearch(); });
         <button v-if="more" type="button" class="web-button" :disabled="locked || searchBusy" @click="search(true)">Ещё преподаватели</button>
       </div>
       <div v-if="chosen && !target" class="headman-teacher-chosen"><div><strong>{{ chosen.fullName }}</strong><span v-if="chosen.employeeNumber" class="web-caption">Таб. № {{ chosen.employeeNumber }}</span></div><button type="button" class="web-button web-icon-button" :disabled="locked" :aria-label="`Убрать выбранного преподавателя: ${chosen.fullName}`" @click="chosen = null"><MobileIcon name="close" /></button></div>
-      <div ref="dates" class="headman-teacher-dates" :class="{ 'is-replacement': target }"><div ref="fromField"><WebDateField v-model="from" :label="target ? 'Дата замены' : 'С даты'" :min="semester.dateFrom" :max="semester.dateTo" :today="today()" :disabled="locked" required /></div><WebDateField v-if="!target" v-model="until" label="До даты, не включая" :min="from ? addDays(from, 1) : undefined" :max="addDays(semester.dateTo, 1)" :today="today()" :disabled="locked" /></div>
+      <div ref="dates" class="headman-teacher-dates" :class="{ 'is-replacement': target }"><div ref="fromField"><WebDateField v-model="from" :label="target ? 'Дата замены' : 'С даты'" :min="semester.dateFrom" :max="semester.dateTo" :today="today()" :disabled="locked" required /></div><WebDateField v-if="!target" v-model="until" label="По дату включительно" :min="from || semester.dateFrom" :max="semester.dateTo" :today="today()" :disabled="locked" required /></div>
       <p v-if="!assignmentEnabled" class="web-caption">Сначала сохрани новый тип занятия в предмете.</p>
       <p v-if="issue" class="web-error" role="alert">{{ issue }}</p>
       <button v-if="!target" type="button" class="web-button" :disabled="locked || !chosen || !assignmentEnabled" @click="add">Добавить преподавателя</button>

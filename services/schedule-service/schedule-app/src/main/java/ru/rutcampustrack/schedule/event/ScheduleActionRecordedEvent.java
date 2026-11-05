@@ -1,13 +1,15 @@
 package ru.rutcampustrack.schedule.event;
 
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.jdbc.core.JdbcTemplate;
+
+import ru.rutcampustrack.schedule.item.entity.ScheduleItem;
+import ru.rutcampustrack.schedule.lesson.entity.Lesson;
+
 import java.time.OffsetDateTime;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.jdbc.core.JdbcTemplate;
-import ru.rutcampustrack.schedule.item.entity.ScheduleItem;
-import ru.rutcampustrack.schedule.lesson.entity.Lesson;
 
 /** Authoritative mutation snapshots, delivered by the existing transactional outbox listener. */
 public final class ScheduleActionRecordedEvent extends DomainEvent {
@@ -21,13 +23,13 @@ public final class ScheduleActionRecordedEvent extends DomainEvent {
         Map<String, Object> row =
                 jdbc.queryForMap(
                         """
-                SELECT id AS lesson_id, occurrence_id, schedule_item_id, one_off_lesson_id,
-                       assignment_id, group_id, subject_id, semester_id, assigned_teacher_id,
-                       lesson_type, date, lesson_number, start_time, end_time, room_snapshot,
-                       status::text AS status, generation, revision, cancel_reason, cancelled_by,
-                       cancelled_at, is_geo_blocked, is_blocked_by_headman, blocked_by_user_id, blocked_at
-                  FROM lessons WHERE id = ?
-                """,
+SELECT id AS lesson_id, occurrence_id, schedule_item_id, one_off_lesson_id,
+       assignment_id, group_id, subject_id, semester_id, assigned_teacher_id,
+       lesson_type, date, lesson_number, start_time, end_time, room_snapshot,
+       status::text AS status, generation, revision, cancel_reason, cancelled_by,
+       cancelled_at, is_geo_blocked, is_blocked_by_headman, blocked_by_user_id, blocked_at
+  FROM lessons WHERE id = ?
+""",
                         lessonId);
         Map<String, Object> snapshot = new LinkedHashMap<>();
         row.forEach(
@@ -51,7 +53,11 @@ public final class ScheduleActionRecordedEvent extends DomainEvent {
             Long actorId,
             Map<String, Object> before,
             OffsetDateTime occurredAt) {
-        publish(events, action, lessonId, actorId, before, snapshot(jdbc, lessonId), occurredAt);
+        Map<String, Object> payload =
+                payload(action, lessonId, actorId, before, snapshot(jdbc, lessonId));
+        ru.rutcampustrack.schedule.constructor.ConstructorSystemAuditProofs.remember(
+                jdbc, action, lessonId, actorId, payload, occurredAt);
+        events.publishEvent(new ScheduleActionRecordedEvent(payload, occurredAt));
     }
 
     public static Map<String, Object> snapshot(Lesson lesson, ScheduleItem item) {
@@ -111,6 +117,17 @@ public final class ScheduleActionRecordedEvent extends DomainEvent {
             Map<String, Object> before,
             Map<String, Object> after,
             OffsetDateTime occurredAt) {
+        events.publishEvent(
+                new ScheduleActionRecordedEvent(
+                        payload(action, lessonId, actorId, before, after), occurredAt));
+    }
+
+    private static Map<String, Object> payload(
+            String action,
+            long lessonId,
+            Long actorId,
+            Map<String, Object> before,
+            Map<String, Object> after) {
         Map<String, Object> payload = new LinkedHashMap<>();
         payload.put("group_id", after.get("group_id"));
         payload.put("semester_id", after.get("semester_id"));
@@ -131,7 +148,7 @@ public final class ScheduleActionRecordedEvent extends DomainEvent {
         payload.put("ticket", null);
         payload.put("homework", null);
         payload.put("revision", after.get("revision"));
-        events.publishEvent(new ScheduleActionRecordedEvent(payload, occurredAt));
+        return payload;
     }
 
     public static void publishReplacement(

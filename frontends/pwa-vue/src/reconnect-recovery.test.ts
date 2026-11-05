@@ -189,6 +189,7 @@ async function setup() {
     currentFetcher: () => createPwaFetcher(fetcher),
     isAssistantPermissionReadForbidden: () => false,
     push: { invalidate: async () => {} },
+    authSuccess: { clear() {} },
     themeMirror: null,
     adminAuthorityOwner: { bind() {} },
     snapshotStore: {

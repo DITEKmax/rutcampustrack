@@ -151,12 +151,20 @@ export function toggleTypeSelection(
   )
 }
 
+/** Full names stay available to assistive technology; the list uses one-line initials. */
+export function statisticsRankingName(name: string): string {
+  const [surname, ...givenNames] = name.trim().split(/\s+/u)
+  return [surname, givenNames.map((part) => `${Array.from(part)[0] ?? ''}.`).join(' ')]
+    .filter(Boolean)
+    .join(' ')
+}
+
 export function seriesForRange(
   data: StatisticsSubjectDetailData,
   range: StatisticsGraphRange = 'weeks',
 ): readonly StatisticsSeriesPoint[] {
-  // The host supplies an already bucketed projection. IDs are opaque and are
-  // never parsed to infer the selected range or drop a valid server point.
-  void range
-  return data.series
+  // The host has already applied the selected subject/types and bucket range.
+  // Planned is the authoritative selected schedule count, including unmarked/future lessons.
+  // Keep those unknown values intact; only omit days with no scheduled lessons.
+  return range === 'days' ? data.series.filter((point) => point.metrics.planned > 0) : data.series
 }

@@ -28,12 +28,19 @@ BEGIN
        OR EXISTS (SELECT FROM semesters)
        OR EXISTS (SELECT FROM student_group_history)
        OR EXISTS (SELECT FROM group_history_coverage)
-       OR EXISTS (SELECT FROM campus_settings)
        OR EXISTS (SELECT FROM academic_identity_operations)
        OR EXISTS (SELECT FROM academic_identity_read_model)
        OR NOT EXISTS (SELECT FROM academic_identity_catalog_cursor
                       WHERE singleton AND applied_catalog_version = 0) THEN
         RAISE EXCEPTION 'Unmarked Academic baseline must be empty';
+    END IF;
+
+    -- V15 owns the primary campus. Accept only its approved production configuration;
+    -- never turn a partial/unmarked campus inventory into a trusted fixture or overwrite it.
+    IF (SELECT count(*) FROM campus_settings) <> 1
+       OR NOT EXISTS (SELECT FROM campus_settings WHERE id = 1
+                      AND lat = 55.788328 AND lng = 37.606637 AND radius_m = 200) THEN
+        RAISE EXCEPTION 'Academic baseline requires the approved production campus';
     END IF;
 
     INSERT INTO academic_profiles(id, directory_role, directory_status, last_name, first_name,
@@ -56,14 +63,11 @@ BEGIN
     VALUES(1, 3, 1, '2026-02-01', 'initial-enrollment');
     INSERT INTO group_history_coverage(group_id, coverage_from, writer_version)
     VALUES(1, '2026-02-01', 'managed_v1');
-    INSERT INTO campus_settings(id, name, lat, lng, radius_m)
-    VALUES(1, 'Main Campus', 55.788204, 37.606762, 200);
 
     -- Only sequences with explicitly assigned snapshot IDs are advanced; repeat never resets them.
     PERFORM setval(pg_get_serial_sequence('groups', 'id'), 1, TRUE);
     PERFORM setval(pg_get_serial_sequence('semesters', 'id'), 1, TRUE);
     PERFORM setval(pg_get_serial_sequence('student_group_history', 'id'), 1, TRUE);
-    PERFORM setval(pg_get_serial_sequence('campus_settings', 'id'), 1, TRUE);
 
     -- Do not populate academic_identity_read_model: its normal owner-fed RPC synchronizer
     -- consumes the real final Auth catalog only after this local baseline is committed.

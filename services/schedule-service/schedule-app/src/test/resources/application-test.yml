@@ -1,4 +1,10 @@
 spring:
+  datasource:
+    hikari:
+      # Cached Spring contexts share one test database. Keep room for concurrent writers
+      # without retaining the production pool's five idle connections per context.
+      maximum-pool-size: 4
+      minimum-idle: 0
   jpa:
     hibernate:
       ddl-auto: validate

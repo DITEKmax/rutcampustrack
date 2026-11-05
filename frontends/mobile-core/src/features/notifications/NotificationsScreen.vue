@@ -3,7 +3,10 @@ import { computed, nextTick, onBeforeUnmount, onMounted, ref, shallowRef, watch 
 import { NotificationsApiError, notificationsErrorMessage } from './notifications-client';
 import { NotificationsConflictError } from './notifications-v2-client';
 import { notificationCatalogMatchesPreferences } from './notifications-v2-models';
-import { reapplyNotificationPreferences } from './notification-preferences-draft';
+import {
+  notificationPreferencesDiffer,
+  reapplyNotificationPreferences,
+} from './notification-preferences-draft';
 import type {
   NotificationAction,
   NotificationCatalog,
@@ -24,6 +27,7 @@ import MobileIcon from '../../shared/components/MobileIcon.vue';
 import './notifications-screen.pcss';
 
 const props = defineProps<{
+  studentUi?: boolean;
   api: NotificationsV2Api;
   contextKey: string;
   unreadOwner: NotificationsUnreadState;
@@ -158,10 +162,7 @@ async function loadPreferences(preserveDraft = false): Promise<void> {
     }
     const previous = preferences.value;
     const hasDraftChanges =
-      draft.value &&
-      previous &&
-      (draft.value.splitChannels !== previous.splitChannels ||
-        JSON.stringify(draft.value.types) !== JSON.stringify(previous.types));
+      draft.value && previous && notificationPreferencesDiffer(draft.value, previous);
     if (
       preserveDraft &&
       hasDraftChanges &&
@@ -437,6 +438,7 @@ onBeforeUnmount(() => {
   <main
     ref="dialogElement"
     class="notifications-screen"
+    :data-student-ui="studentUi ? '' : undefined"
     role="dialog"
     aria-modal="true"
     aria-labelledby="notifications-title"
@@ -494,6 +496,7 @@ onBeforeUnmount(() => {
           </button>
         </div>
         <NotificationInbox
+          :student-ui="studentUi"
           v-if="page === 'inbox'"
           :items="items"
           :preferences="preferences"
@@ -518,12 +521,13 @@ onBeforeUnmount(() => {
         <template
           v-else-if="
             catalog &&
-              preferences &&
-              notificationCatalogMatchesPreferences(catalog, preferences) &&
-              (!draft || notificationCatalogMatchesPreferences(catalog, draft))
+            preferences &&
+            notificationCatalogMatchesPreferences(catalog, preferences) &&
+            (!draft || notificationCatalogMatchesPreferences(catalog, draft))
           "
         >
           <NotificationSettings
+            :student-ui="studentUi"
             v-if="page === 'settings'"
             :catalog="catalog"
             :preferences="preferences"
@@ -543,6 +547,7 @@ onBeforeUnmount(() => {
             @colors="changePage('colors')"
           />
           <NotificationColors
+            :student-ui="studentUi"
             v-else
             :catalog="catalog"
             :preferences="preferences"
@@ -564,9 +569,8 @@ onBeforeUnmount(() => {
             class="notifications-screen__device"
             aria-labelledby="notifications-device-title"
           >
-            <h2 id="notifications-device-title">
-              Уведомления на устройстве
-            </h2><p role="status">
+            <h2 id="notifications-device-title"> Уведомления на устройстве </h2
+            ><p role="status">
               {{ pushState.message }}
             </p>
             <button

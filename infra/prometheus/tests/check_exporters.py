@@ -33,73 +33,43 @@ from local_release_evidence import evidence_directory, evidence_file
 _STATE = {"phase": "PRECHECK_OR_CONFIG", "cleanup": "NOT_STARTED"}
 
 
-def prepared_native_failure(raw, source):
-    """Bounded terminal signature only; teardown can mask an earlier failure."""
+def prepared_native_failure(raw):
+    """Project an allowlisted terminal exception from the owned probe, without a stage guess."""
     unknown = {"category": "UNKNOWN", "source_stage": "UNKNOWN"}
-    if type(raw) is not bytes or len(raw) > 65536 or type(source) is not bytes or len(source) != 9687:
-        return unknown
-    if hashlib.sha256(source).hexdigest() != "f936f5af40e686130619056a718ddc7902bf4794e8bd089073ed2c984a3b0428":
+    if type(raw) is not bytes or len(raw) > 65536:
         return unknown
     try:
         text = raw.decode("utf-8").replace("\r\n", "\n")
-        if not text.endswith("\n") or any(
-            (ord(char) < 32 and char not in "\n\t") or char in "\x7f\x85\u2028\u2029" for char in text
-        ):
-            return unknown
-        lines = text.rstrip("\n").split("\n")
-        headers = [index for index, line in enumerate(lines) if line == "Traceback (most recent call last):"]
-        if not headers:
-            return unknown
-        terminal = lines[headers[-1] + 1 :]
-        if len(terminal) < 3:
-            return unknown
-        summary = re.fullmatch(r"([A-Za-z_][A-Za-z0-9_.]*)(?::[^\n]*)?", terminal[-1])
-        if summary is None:
-            return unknown
-        categories = {
-            name: name for name in (
-                "ModuleNotFoundError", "ImportError", "AssertionError", "TimeoutError", "ConnectionError",
-                "OSError", "RuntimeError", "ValueError", "TypeError", "KeyError",
-            )
-        }
-        stages = {
-            **{("<module>", line): "MODULE_IMPORT" for line in (16, 17, 18, 19, 21)},
-            **{("phase", line): "OBSERVER_CONNECT" for line in (88, 89)},
-            **{("phase", line): "OBSERVER_TOPOLOGY" for line in (90, 91, 92, 100)},
-            ("phase", 101): "ORIGIN_PUBLISH", ("phase", 163): "BROKER_CLOSE_HOOK",
-            ("phase", 177): "WAIT_FIRST_DISCONNECT", ("phase", 182): "DURABLE_READ",
-            ("phase", 183): "DURABLE_ORIGINAL_PRESENT", ("phase", 184): "DURABLE_DECODE",
-            ("phase", 185): "DURABLE_SINGLE_MESSAGE", ("phase", 187): "DURABLE_ENVELOPE",
-            ("phase", 188): "DURABLE_PROJECTION_CUTPOINT", ("phase", 189): "DURABLE_NO_EARLY_COMPLETION",
-            ("phase", 191): "DURABLE_QUEUE_PROVENANCE", ("phase", 192): "DURABLE_REQUEUE",
-            ("phase", 204): "WAIT_REPLAY_COMMIT",
-            **{("phase", line): "REPLAY_OUTCOME_CHECK" for line in (209, 210)},
-            **{("phase", line): "WORKER_CLOSE" for line in (178, 205)},
-            **{("close_with_barrier", line): "BROKER_CLOSE_CONFIRMATION" for line in (55, 58, 61, 62, 65, 74)},
-            **{("phase", line): "PROBE_TEARDOWN" for line in (220, 223, 225, 226, 227, 228, 229)},
-        }
-        expected_path = str(ROOT / "services/notification-bot/tests/prepared_broker_probe.py")
-        source_lines = source.decode("utf-8").splitlines()
-        stage = "UNKNOWN"
-        index = 0
-        while index < len(terminal) - 1:
-            frame = re.fullmatch(r'  File "([^"\r\n]+)", line ([1-9][0-9]{0,8}), in ([A-Za-z_][A-Za-z0-9_]*|<module>|<listcomp>)', terminal[index])
-            if frame is None:
-                return unknown
-            index += 1
-            has_context = index < len(terminal) - 1 and terminal[index].startswith("    ")
-            if frame[1] == expected_path:
-                number = int(frame[2])
-                if not has_context or number > len(source_lines) or terminal[index].strip() != source_lines[number - 1].strip():
-                    return unknown
-                stage = stages.get((frame[3], number), "UNKNOWN")
-            if has_context:
-                index += 1
-            if index < len(terminal) - 1 and terminal[index].startswith("    ") and set(terminal[index].strip()) <= {"~", "^"}:
-                index += 1
-        return {"category": categories.get(summary[1], "UNKNOWN"), "source_stage": stage}
-    except (UnicodeError, ValueError, TypeError):
+    except UnicodeError:
         return unknown
+    if not text.endswith("\n") or any(
+        (ord(char) < 32 and char not in "\n\t") or char in "\x7f\x85\u2028\u2029" for char in text
+    ):
+        return unknown
+    lines = text.rstrip("\n").split("\n")
+    header = "Traceback (most recent call last):"
+    headers = [index for index, line in enumerate(lines) if line == header]
+    if not headers or len(lines) - headers[-1] < 3:
+        return unknown
+    frames = lines[headers[-1] + 1 : -1]
+    match = re.fullmatch(r"([A-Za-z_][A-Za-z0-9_.]*)(?::[^\n]*)?", lines[-1])
+    categories = {
+        "ModuleNotFoundError", "ImportError", "AssertionError", "TimeoutError", "ConnectionError",
+        "OSError", "RuntimeError", "ValueError", "TypeError", "KeyError",
+    }
+    if match is None or match[1] not in categories:
+        return unknown
+    expected_path = str(ROOT / "services/notification-bot/tests/prepared_broker_probe.py")
+    own_frame = False
+    frame_seen = False
+    for line in frames:
+        frame = re.fullmatch(r'  File "([^"\r\n]+)", line [1-9][0-9]*, in [A-Za-z0-9_<>]+', line)
+        if frame:
+            frame_seen = True
+            own_frame |= frame[1] == expected_path
+        elif not frame_seen or not line.startswith("    "):
+            return unknown
+    return {**unknown, "category": match[1]} if own_frame else unknown
 
 
 def mongo_monitor_witness(probe):
@@ -276,9 +246,7 @@ def prepared_transaction_contract(docker):
                 try:
                     errors.seek(0)
                     native_raw = errors.read(65537)
-                    with (ROOT / "services/notification-bot/tests/prepared_broker_probe.py").open("rb") as public_source:
-                        native_source = public_source.read(9444)
-                    _STATE["native_failure"] = prepared_native_failure(native_raw, native_source)
+                    _STATE["native_failure"] = prepared_native_failure(native_raw)
                 except Exception:  # noqa: BLE001 -- optional diagnostics must never mask the original failure
                     pass
             assert completed.returncode == 0, "Prepared transaction native probe failed"
@@ -296,25 +264,43 @@ def prepared_transaction_contract(docker):
             return result
 
         receipt = json.loads(raw, object_pairs_hook=unique_pairs)
-        assert type(receipt) is dict and set(receipt) == {"prepared_transaction_probe"}
+        assert type(receipt) is dict and set(receipt) == {"prepared_transaction_probe", "recovery_progress"}
         rows = receipt["prepared_transaction_probe"]
-        phases = ("publish", "ack", "commit_before", "commit_after")
-        assert type(rows) is list and len(rows) == len(phases)
-        projection = []
+        boundaries = ("publish", "ack", "commit_before", "commit_after")
+        expected = [(kind, boundary) for kind in ("prepared", "retry") for boundary in boundaries]
+        assert type(rows) is list
+        projection = {}
         _STATE["phase"] = "PREPARED_TRANSACTION_NATIVE_BOUNDARY_CONTRACT"
-        for boundary, row in zip(phases, rows, strict=True):
+        for row in rows:
             assert type(row) is dict and set(row) == {
-                "boundary", "durable_outcomes", "projection_after_loss",
+                "boundary", "replacement", "durable_outcomes", "projection_after_loss",
                 "completion_before_replay", "replay_provider_deliveries",
             }
-            assert row["boundary"] == boundary
+            kind, boundary = row["replacement"], row["boundary"]
+            assert type(kind) is str and type(boundary) is str
+            key = (kind, boundary)
+            assert key in expected and key not in projection
             assert type(row["durable_outcomes"]) is int and row["durable_outcomes"] == 1
             assert type(row["replay_provider_deliveries"]) is int and row["replay_provider_deliveries"] == 1
-            assert type(row["projection_after_loss"]) is bool and row["projection_after_loss"] == (boundary == "commit_after")
+            projected_after_loss = key == ("prepared", "commit_after")
+            assert row["projection_after_loss"] is projected_after_loss
             assert row["completion_before_replay"] is False
-            projection.append({"boundary": boundary, "durable_outcomes": 1,
-                               "projection_after_loss": boundary == "commit_after",
-                               "completion_before_replay": False, "replay_provider_deliveries": 1})
+            projection[key] = {"boundary": boundary, "replacement": kind, "durable_outcomes": 1,
+                               "projection_after_loss": projected_after_loss,
+                               "completion_before_replay": False, "replay_provider_deliveries": 1}
+        assert projection.keys() == set(expected)
+
+        _STATE["phase"] = "PREPARED_TRANSACTION_NATIVE_RECOVERY_CONTRACT"
+        recovery = receipt["recovery_progress"]
+        expected_recovery = {
+            "parked": ["exhausted", "terminal"],
+            "provider_deliveries": ["healthy", "transient"],
+            "attempts": {"terminal": 1, "healthy": 1, "transient": 3, "exhausted": 9},
+            "confirmed_progress_retained": True,
+        }
+        assert recovery == expected_recovery
+        assert recovery["confirmed_progress_retained"] is True
+        assert all(type(count) is int for count in recovery["attempts"].values())
     finally:
         primary = sys.exc_info()[0]
         try:
@@ -327,7 +313,8 @@ def prepared_transaction_contract(docker):
                 raise
             # The first probe failure remains primary; fixture teardown still removes its whole owned cohort.
     _STATE["phase"] = "PREPARED_TRANSACTION_NATIVE_BOUNDARIES"
-    return {"phases": projection, "owned_vhost_removed": True, "broker_only": True}
+    return {"phases": [projection[key] for key in expected], "recovery_progress": expected_recovery,
+            "owned_vhost_removed": True, "broker_only": True}
 
 
 def main():
@@ -414,10 +401,13 @@ def main():
                 "MONGO_PASSWORD": "synthetic-application-only",
                 "MONGO_NOTIFICATION_USER": "fixture_notification",
                 "MONGO_NOTIFICATION_PASSWORD": "synthetic-notification-only",
+                "RCT_MONITOR_TOPOLOGY_SCRATCH_ONLY": "1",
             },
             volumes=[
                 "mongo-test:/bitnami/mongodb",
                 str(ROOT / "infra/mongo/init-mongo.js") + ":/docker-entrypoint-initdb.d/init-mongo.js:ro",
+                str(ROOT / "infra/mongo/monitor-topology-role.js") + ":/monitor-topology-role.js:ro",
+                str(ROOT / "infra/prometheus/tests/mongo_topology_cases.js") + ":/mongo-topology-cases.js:ro",
             ],
             mem_limit="512m",
             cpus=1,
@@ -788,6 +778,24 @@ def main():
             # Only an authentication-not-ready observation retries; wrong-role/unknown fails.
             _STATE["phase"] = "MONGO_MONITOR_AUTH_READINESS"
             wait(mongo_monitor_ready)
+            _STATE["phase"] = "MONGO_TOPOLOGY_ROLE_IDEMPOTENCE"
+            role_cases = execute("mongo-attendance", mongo_cli + ['load("/mongo-topology-cases.js")'])
+            assert all("PASS topology_" + case in role_cases.stdout for case in (
+                "existing_correct", "missing_grant", "repeated_install", "unexpected_privilege_rejected"
+            ))
+            _STATE["phase"] = "MONGO_TOPOLOGY_METADATA_READ"
+            topology = execute(
+                "mongo-attendance",
+                [
+                    "mongosh", "--quiet", "--username", "rct_monitor",
+                    "--password", "synthetic-mongo-monitor-only-0123456789abcdef",
+                    "--authenticationDatabase", "admin", "--eval",
+                    'const result=db.getSiblingDB("admin").runCommand({find:"system.version",filter:{_id:"shardIdentity"},limit:1,singleBatch:true});'
+                    'if(result.ok!==1)quit(1);print("TOPOLOGY_METADATA_READ_OK");',
+                ],
+                check=False,
+            )
+            assert topology.returncode == 0 and "TOPOLOGY_METADATA_READ_OK" in topology.stdout
             _STATE["phase"] = "MONGO_APPLICATION_READ_DENIAL"
             denied = execute(
                 "mongo-attendance",

@@ -8,12 +8,13 @@ from contextlib import asynccontextmanager
 from types import SimpleNamespace
 from unittest.mock import AsyncMock
 
+import grpc
 import pytest
 import structlog
 from opentelemetry import trace
 from opentelemetry.sdk.trace import TracerProvider
 
-from bot.consumers.event_consumer import QUEUE_NAME, start_consumer
+from bot.consumers.event_consumer import MAX_RETRIES, PARKING_QUEUE_NAME, QUEUE_NAME, RETRY_HEADER, start_consumer
 from bot.observability import EVENT_OUTCOMES, setup_observability
 from bot.services.notification_prefs import NotificationPreferencesUnavailable
 
@@ -35,7 +36,16 @@ PREPARED = {
 }
 
 
-def broker(monkeypatch, *, event=None, fail_commit=False, prepared_transport=False, publish_error=None, ack_error=None):
+def broker(
+    monkeypatch,
+    *,
+    event=None,
+    fail_commit=False,
+    prepared_transport=False,
+    publish_error=None,
+    ack_error=None,
+    headers=None,
+):
     import bot.consumers.event_consumer as module
 
     operations = []
@@ -46,7 +56,9 @@ def broker(monkeypatch, *, event=None, fail_commit=False, prepared_transport=Fal
         exchange="" if prepared_transport else "rut-uit.events",
         routing_key=QUEUE_NAME if prepared_transport else "group.renamed",
         processed=False,
+        headers=headers or {},
     )
+    state.replacements = []
 
     @asynccontextmanager
     async def process(**kwargs):
@@ -73,26 +85,27 @@ def broker(monkeypatch, *, event=None, fail_commit=False, prepared_transport=Fal
         state.pending.append(("nack", None))
 
     async def publish(message, *, routing_key, mandatory):
-        assert routing_key == QUEUE_NAME and mandatory
+        assert routing_key in {QUEUE_NAME, PARKING_QUEUE_NAME} and mandatory
         assert message.delivery_mode.value == 2
         assert message.message_id == EVENT["event_id"]
         operations.append("publish")
-        state.pending.append(("publish", json.loads(message.body)))
+        state.pending.append(("publish", (routing_key, json.loads(message.body), dict(message.headers or {}))))
         if publish_error is not None:
             raise publish_error
 
     async def select(**kwargs):
-        assert kwargs == {"timeout": 8}
+        assert kwargs == {"timeout": min(8, guard._ttl)}
         operations.append("select")
 
     async def commit(**kwargs):
-        assert kwargs == {"timeout": 8}
+        assert kwargs == {"timeout": min(8, guard._ttl)}
         operations.append("commit")
         if fail_commit:
             raise RuntimeError("synthetic commit unavailable")
         for operation, value in state.pending:
             if operation == "publish":
-                state.published.append(value)
+                state.published.append(value[1])
+                state.replacements.append(value)
             elif operation == "ack":
                 state.acked = True
             elif operation == "reject":
@@ -144,6 +157,7 @@ def broker(monkeypatch, *, event=None, fail_commit=False, prepared_transport=Fal
     )
     connection = SimpleNamespace(channel=AsyncMock(return_value=channel), close=close)
     monkeypatch.setattr(module.aio_pika, "connect_robust", AsyncMock(return_value=connection))
+    monkeypatch.setattr(module, "RETRY_DELAYS", (0,) * MAX_RETRIES)
     guard = SimpleNamespace(
         _ttl=300,
         claim=AsyncMock(return_value="owned"),
@@ -156,7 +170,11 @@ def broker(monkeypatch, *, event=None, fail_commit=False, prepared_transport=Fal
 
 async def test_atomic_prepare_publish_ack_commit_preserves_facts_and_minimal_roles(monkeypatch):
     state, operations, connection, channel, guard = broker(monkeypatch)
-    dispatcher = SimpleNamespace(prepare=AsyncMock(return_value=PREPARED), dispatch=AsyncMock())
+    dispatcher = SimpleNamespace(
+        snapshot_progress=AsyncMock(side_effect=lambda body: body),
+        prepare=AsyncMock(return_value=PREPARED),
+        dispatch=AsyncMock(),
+    )
     before = EVENT_OUTCOMES.labels("prepared")._value.get()
     await asyncio.wait_for(start_consumer("amqp://synthetic", dispatcher, guard), 3)
     assert EVENT_OUTCOMES.labels("prepared")._value.get() == before + 1
@@ -171,7 +189,11 @@ async def test_atomic_prepare_publish_ack_commit_preserves_facts_and_minimal_rol
 
 async def test_commit_unavailable_retains_original_without_partial_replacement(monkeypatch):
     state, operations, _, _, guard = broker(monkeypatch, fail_commit=True)
-    dispatcher = SimpleNamespace(prepare=AsyncMock(return_value=PREPARED), dispatch=AsyncMock())
+    dispatcher = SimpleNamespace(
+        snapshot_progress=AsyncMock(side_effect=lambda body: body),
+        prepare=AsyncMock(return_value=PREPARED),
+        dispatch=AsyncMock(),
+    )
     prepared_before = EVENT_OUTCOMES.labels("prepared")._value.get()
     uncertain_before = EVENT_OUTCOMES.labels("uncertain")._value.get()
     await asyncio.wait_for(start_consumer("amqp://synthetic", dispatcher, guard), 3)
@@ -183,22 +205,346 @@ async def test_commit_unavailable_retains_original_without_partial_replacement(m
     guard.release.assert_not_awaited()  # Lease survives uncertain commit until expiry.
 
 
-async def test_unknown_prepare_authority_commits_requeue_without_provider_or_publish(monkeypatch):
+async def test_unknown_prepare_authority_commits_tail_retry_without_provider(monkeypatch):
     state, operations, _, _, guard = broker(monkeypatch)
     dispatcher = SimpleNamespace(
+        snapshot_progress=AsyncMock(side_effect=lambda body: body),
         prepare=AsyncMock(side_effect=NotificationPreferencesUnavailable("synthetic unknown")),
         dispatch=AsyncMock(),
     )
     await asyncio.wait_for(start_consumer("amqp://synthetic", dispatcher, guard), 3)
-    assert state.requeued and not state.acked and not state.published
+    assert state.acked and not state.requeued and state.published == [EVENT]
+    assert state.replacements[0][0] == QUEUE_NAME
+    assert state.replacements[0][2][RETRY_HEADER] == 1
     dispatcher.dispatch.assert_not_awaited()
+    guard.complete.assert_not_awaited()
+
+
+@pytest.mark.parametrize("attempt", [0, MAX_RETRIES - 1, MAX_RETRIES])
+async def test_transient_recovery_is_bounded_and_parking_keeps_prepared_body(monkeypatch, attempt):
+    state, operations, _, channel, guard = broker(
+        monkeypatch,
+        event=PREPARED,
+        prepared_transport=True,
+        headers={RETRY_HEADER: attempt},
+    )
+    error = grpc.aio.AioRpcError(grpc.StatusCode.UNAVAILABLE, (), (), "private-marker")
+    dispatcher = SimpleNamespace(
+        snapshot_progress=AsyncMock(side_effect=lambda body: body), dispatch=AsyncMock(side_effect=error)
+    )
+    before = EVENT_OUTCOMES.labels("parked")._value.get()
+    await asyncio.wait_for(start_consumer("amqp://synthetic", dispatcher, guard), 3)
+    assert state.acked and state.published == [PREPARED] and not state.requeued
+    destination, _, headers = state.replacements[0]
+    assert destination == (PARKING_QUEUE_NAME if attempt == MAX_RETRIES else QUEUE_NAME)
+    assert headers[RETRY_HEADER] == (attempt if attempt == MAX_RETRIES else attempt + 1)
+    assert headers["x-bot-recovery-reason"] == "grpc_unavailable"
+    assert EVENT_OUTCOMES.labels("parked")._value.get() == before + int(attempt == MAX_RETRIES)
+    guard.complete.assert_not_awaited()
+    guard.release.assert_awaited_once()
+    assert operations.index("publish") < operations.index("ack") < operations.index("commit")
+    channel.declare_queue.assert_any_await(PARKING_QUEUE_NAME, durable=True)
+
+
+@pytest.mark.parametrize("code", [grpc.StatusCode.NOT_FOUND, grpc.StatusCode.INVALID_ARGUMENT])
+async def test_wrapped_terminal_authority_failure_is_parked_without_sending_or_completion(monkeypatch, code, caplog):
+    state, _, _, _, guard = broker(monkeypatch, event=PREPARED, prepared_transport=True)
+    cause = grpc.aio.AioRpcError(code, (), (), "private-canonical-marker")
+    error = NotificationPreferencesUnavailable("Canonical request context unavailable")
+    error.__cause__ = cause
+    dispatcher = SimpleNamespace(
+        snapshot_progress=AsyncMock(side_effect=lambda body: body), dispatch=AsyncMock(side_effect=error)
+    )
+    await asyncio.wait_for(start_consumer("amqp://synthetic", dispatcher, guard), 3)
+    assert state.acked and state.replacements[0][0] == PARKING_QUEUE_NAME
+    assert state.published == [PREPARED]
+    guard.complete.assert_not_awaited()
+    assert "private-canonical-marker" not in caplog.text
+    assert "cause=AioRpcError" in caplog.text
+
+
+@pytest.mark.parametrize("cause_class", [ValueError, TypeError])
+async def test_local_canonical_validation_parks_and_reports_code_origin_only(monkeypatch, cause_class, caplog):
+    state, _, _, _, guard = broker(monkeypatch, event=PREPARED, prepared_transport=True)
+
+    async def canonical_lookup():
+        raise cause_class("private-identity-marker")
+
+    async def dispatch(body):
+        try:
+            await canonical_lookup()
+        except Exception as error:
+            raise NotificationPreferencesUnavailable("canonical authority unavailable") from error
+
+    await asyncio.wait_for(
+        start_consumer(
+            "amqp://synthetic",
+            SimpleNamespace(snapshot_progress=AsyncMock(side_effect=lambda body: body), dispatch=dispatch),
+            guard,
+        ),
+        3,
+    )
+    assert state.acked and state.published == [PREPARED]
+    assert state.replacements[0][0] == PARKING_QUEUE_NAME
+    assert "origin=canonical_lookup:" in caplog.text
+    assert f"cause={cause_class.__name__}" in caplog.text
+    assert "private-identity-marker" not in caplog.text
+    guard.complete.assert_not_awaited()
+
+
+@pytest.mark.parametrize("failure", ["publish", "ack", "commit"])
+async def test_retry_transaction_failure_retains_original_without_completion(monkeypatch, failure):
+    state, operations, _, _, guard = broker(
+        monkeypatch,
+        fail_commit=failure == "commit",
+        publish_error=TimeoutError() if failure == "publish" else None,
+        ack_error=TimeoutError() if failure == "ack" else None,
+    )
+    dispatcher = SimpleNamespace(
+        snapshot_progress=AsyncMock(side_effect=lambda body: body),
+        dispatch=AsyncMock(side_effect=NotificationPreferencesUnavailable("outage")),
+    )
+    await asyncio.wait_for(start_consumer("amqp://synthetic", dispatcher, guard), 3)
+    assert not state.acked and not state.published and state.requeued
+    assert "rollback" in operations
+    guard.complete.assert_not_awaited()
+    guard.release.assert_not_awaited()
+
+
+async def test_progress_read_failure_rolls_back_original_without_ack_or_dlq(monkeypatch):
+    state, operations, _, _, guard = broker(monkeypatch, event=PREPARED, prepared_transport=True)
+    dispatcher = SimpleNamespace(
+        dispatch=AsyncMock(side_effect=NotificationPreferencesUnavailable("authority outage")),
+        snapshot_progress=AsyncMock(side_effect=NotificationPreferencesUnavailable("receipt outage")),
+    )
+    await asyncio.wait_for(start_consumer("amqp://synthetic", dispatcher, guard), 3)
+    assert state.requeued and not state.acked and not state.published and not state.rejected
+    assert "rollback" in operations and "commit" not in operations
+    guard.complete.assert_not_awaited()
+    guard.release.assert_not_awaited()
+
+
+async def test_partial_progress_survives_retry_parking_and_redrive_after_receipt_expiry(monkeypatch, fake_redis):
+    from bot.notifications.audience import NotificationDeliveryState, handle_business
+    from bot.services.send_queue import TelegramSendQueue
+    from tests.test_notification_audience import academic, resources
+
+    prepared = {
+        **PREPARED,
+        "_bot_prepared": {
+            **PREPARED["_bot_prepared"],
+            "recipients": [{"user_id": uid, "roles": ["STUDENT"]} for uid in (1, 2)],
+        },
+    }
+    receipts = NotificationDeliveryState(fake_redis)
+    await receipts.complete(EVENT["event_id"], 1)
+    dispatcher = SimpleNamespace(
+        dispatch=AsyncMock(side_effect=NotificationPreferencesUnavailable("authority outage")),
+        snapshot_progress=receipts.snapshot,
+    )
+    state, _, _, _, guard = broker(
+        monkeypatch,
+        event=prepared,
+        prepared_transport=True,
+        headers={RETRY_HEADER: MAX_RETRIES - 1},
+    )
+    await asyncio.wait_for(start_consumer("amqp://synthetic", dispatcher, guard), 3)
+    retry_route, retry_body, retry_headers = state.replacements[0]
+    assert retry_route == QUEUE_NAME and retry_body["_bot_prepared"]["delivered_user_ids"] == [1]
+    assert retry_body["payload"] == prepared["payload"]
+    await fake_redis.flushdb()  # Isolated receipt store expiry; broker progress remains.
+    state, _, _, _, guard = broker(
+        monkeypatch,
+        event=retry_body,
+        prepared_transport=True,
+        headers=retry_headers,
+    )
+    await asyncio.wait_for(start_consumer("amqp://synthetic", dispatcher, guard), 3)
+    parked_route, parked_body, parked_headers = state.replacements[0]
+    assert parked_route == PARKING_QUEUE_NAME and parked_body["_bot_prepared"]["delivered_user_ids"] == [1]
+    # Redrive retains progress and still resolves current authority for remaining users.
+    state, _, _, _, guard = broker(
+        monkeypatch,
+        event=parked_body,
+        prepared_transport=True,
+        headers=parked_headers,
+    )
+    authority = academic([{1: ["STUDENT"], 2: ["STUDENT"]}])
+    bot, reminders, _ = resources()
+    queue = TelegramSendQueue(SimpleNamespace(is_enabled=AsyncMock(return_value=True)))
+    queue.start()
+
+    async def dispatch(body):
+        async with queue.staged() as batch:
+            await handle_business(
+                body,
+                bot=bot,
+                academic=authority,
+                queue=queue,
+                reminders=reminders,
+                config=None,
+                state=receipts,
+            )
+        return batch
+
+    try:
+        await asyncio.wait_for(
+            start_consumer(
+                "amqp://synthetic",
+                SimpleNamespace(dispatch=dispatch, snapshot_progress=receipts.snapshot),
+                guard,
+            ),
+            3,
+        )
+        assert state.acked and not state.published
+        assert [call.kwargs["chat_id"] for call in bot.send_message.await_args_list] == [102]
+        guard.complete.assert_awaited_once()
+    finally:
+        await queue.shutdown()
+
+
+@pytest.mark.parametrize("settles", [True, False])
+async def test_parking_snapshot_waits_for_inflight_receipt_writer_cleanup(monkeypatch, fake_redis, settles):
+    from bot.notifications.audience import NotificationDeliveryState
+    from bot.services.send_queue import SendTask, TelegramSendQueue
+
+    prepared = {
+        **PREPARED,
+        "_bot_prepared": {
+            **PREPARED["_bot_prepared"],
+            "recipients": [{"user_id": uid, "roles": ["STUDENT"]} for uid in (1, 2)],
+        },
+    }
+    receipts = NotificationDeliveryState(fake_redis)
+    entered, cancelling, finish_receipt = asyncio.Event(), asyncio.Event(), asyncio.Event()
+    queue = TelegramSendQueue()
+    queue.start()
+
+    async def first_recipient():
+        entered.set()
+        try:
+            await asyncio.Event().wait()
+        except asyncio.CancelledError:
+            cancelling.set()
+            await finish_receipt.wait()
+            await receipts.complete(EVENT["event_id"], 1)
+
+    async def second_recipient():
+        await entered.wait()
+        raise NotificationPreferencesUnavailable("synthetic authority failure")
+
+    async def release_receipt():
+        await cancelling.wait()
+        if not settles:
+            await asyncio.Event().wait()
+        await asyncio.sleep(0.02)  # Receipt writer is deliberately later than a raw snapshot read.
+        finish_receipt.set()
+
+    async def dispatch(body):
+        async with queue.staged() as batch:
+            await queue.put(SendTask(first_recipient, system_alert=True))
+            await queue.put(SendTask(second_recipient, system_alert=True))
+        return batch
+
+    state, _, _, _, guard = broker(
+        monkeypatch,
+        event=prepared,
+        prepared_transport=True,
+        headers={RETRY_HEADER: MAX_RETRIES},
+    )
+    if not settles:
+        guard._ttl = 1
+    writer = asyncio.create_task(release_receipt())
+    try:
+        await asyncio.wait_for(
+            start_consumer(
+                "amqp://synthetic",
+                SimpleNamespace(dispatch=dispatch, snapshot_progress=receipts.snapshot),
+                guard,
+            ),
+            3,
+        )
+        if settles:
+            assert state.replacements[0][0] == PARKING_QUEUE_NAME
+            assert state.published[0]["_bot_prepared"]["delivered_user_ids"] == [1]
+        else:
+            assert state.requeued and not state.acked and not state.published and not state.rejected
+    finally:
+        finish_receipt.set()
+        writer.cancel()
+        await asyncio.gather(writer, return_exceptions=True)
+        await queue.shutdown()
+
+
+@pytest.mark.parametrize("handoff", ["completed", "expired"])
+async def test_busy_owner_does_not_park_before_late_receipts_or_lease_handoff(monkeypatch, fake_redis, handoff):
+    from bot.notifications.audience import NotificationDeliveryState
+    from bot.services.idempotency_guard import BotIdempotencyGuard
+
+    receipts = NotificationDeliveryState(fake_redis)
+    guard = BotIdempotencyGuard(redis_client=fake_redis)
+    guard.release = AsyncMock(return_value=True)
+    await fake_redis.set(guard._key(EVENT["event_id"]), "processing:other-owner", ex=300)
+    dispatcher = SimpleNamespace(
+        dispatch=AsyncMock(side_effect=NotificationPreferencesUnavailable("authority failure")),
+        snapshot_progress=receipts.snapshot,
+    )
+    state, _, _, _, _ = broker(
+        monkeypatch,
+        event=PREPARED,
+        prepared_transport=True,
+        headers={RETRY_HEADER: MAX_RETRIES},
+    )
+    await asyncio.wait_for(start_consumer("amqp://synthetic", dispatcher, guard), 3)
+    route, body, headers = state.replacements[0]
+    assert route == QUEUE_NAME and headers[RETRY_HEADER] == MAX_RETRIES
+    dispatcher.dispatch.assert_not_awaited()
+    # The active owner confirms progress only after the waiting duplicate was republished.
+    await receipts.complete(EVENT["event_id"], 1)
+    if handoff == "completed":
+        await fake_redis.set(guard._key(EVENT["event_id"]), "completed", ex=7 * 24 * 3600)
+    else:
+        await fake_redis.pexpire(guard._key(EVENT["event_id"]), 1)
+        await asyncio.sleep(0.02)
+        assert await fake_redis.get(guard._key(EVENT["event_id"])) is None
+    state, _, _, _, _ = broker(monkeypatch, event=body, prepared_transport=True, headers=headers)
+    await asyncio.wait_for(start_consumer("amqp://synthetic", dispatcher, guard), 3)
+    assert state.acked
+    if handoff == "completed":
+        assert not state.published
+        dispatcher.dispatch.assert_not_awaited()
+    else:
+        dispatcher.dispatch.assert_awaited_once()
+        assert state.replacements[0][0] == PARKING_QUEUE_NAME
+        assert state.published[0]["_bot_prepared"]["delivered_user_ids"] == [1]
+
+
+async def test_cancel_during_retry_backoff_keeps_original_on_main_queue(monkeypatch):
+    import bot.consumers.event_consumer as module
+
+    state, _, _, _, guard = broker(monkeypatch)
+
+    async def cancelled(delay):
+        raise asyncio.CancelledError
+
+    monkeypatch.setattr(module.asyncio, "sleep", cancelled)
+    dispatcher = SimpleNamespace(
+        snapshot_progress=AsyncMock(side_effect=lambda body: body),
+        dispatch=AsyncMock(side_effect=NotificationPreferencesUnavailable("outage")),
+    )
+    await asyncio.wait_for(start_consumer("amqp://synthetic", dispatcher, guard), 3)
+    assert state.requeued and not state.acked and not state.rejected and not state.published
     guard.complete.assert_not_awaited()
 
 
 @pytest.mark.parametrize("private_transport", [False, True])
 async def test_prepared_projection_requires_private_queue_provenance(monkeypatch, private_transport):
     state, operations, _, _, guard = broker(monkeypatch, event=PREPARED, prepared_transport=private_transport)
-    dispatcher = SimpleNamespace(prepare=AsyncMock(), dispatch=AsyncMock(return_value=None))
+    dispatcher = SimpleNamespace(
+        snapshot_progress=AsyncMock(side_effect=lambda body: body),
+        prepare=AsyncMock(),
+        dispatch=AsyncMock(return_value=None),
+    )
     await asyncio.wait_for(start_consumer("amqp://synthetic", dispatcher, guard), 3)
     dispatcher.prepare.assert_not_awaited()
     if private_transport:
@@ -212,10 +558,54 @@ async def test_prepared_projection_requires_private_queue_provenance(monkeypatch
         guard.complete.assert_not_awaited()
 
 
+@pytest.mark.parametrize("lease", ["busy", "timeout", "authority_failure"])
+@pytest.mark.parametrize(
+    "invalid",
+    [
+        "public_prepared",
+        "public_prepared_progress",
+        "invalid_private_prepared",
+        "invalid_private_progress",
+    ],
+)
+async def test_prepared_input_cannot_gain_trust_through_lease_retry(monkeypatch, lease, invalid):
+    event = PREPARED
+    if invalid == "invalid_private_prepared":
+        event = {**PREPARED, "_bot_prepared": {**PREPARED["_bot_prepared"], "version": 99}}
+    elif invalid.endswith("progress"):
+        delivered = [999] if invalid == "invalid_private_progress" else [1]
+        event = {**PREPARED, "_bot_prepared": {**PREPARED["_bot_prepared"], "delivered_user_ids": delivered}}
+    state, operations, _, _, guard = broker(
+        monkeypatch,
+        event=event,
+        prepared_transport=invalid.startswith("invalid_private"),
+    )
+    if lease == "busy":
+        guard.claim.return_value = None
+    elif lease == "timeout":
+        guard.claim.side_effect = TimeoutError()
+    else:
+        guard.claim.side_effect = NotificationPreferencesUnavailable("synthetic lease failure")
+    dispatcher = SimpleNamespace(
+        snapshot_progress=AsyncMock(side_effect=lambda body: body), prepare=AsyncMock(), dispatch=AsyncMock()
+    )
+    await asyncio.wait_for(start_consumer("amqp://synthetic", dispatcher, guard), 3)
+    assert state.rejected and not state.acked and not state.published and not state.requeued
+    assert operations == ["select", "reject", "commit", "close"]
+    guard.claim.assert_not_awaited()
+    guard.complete.assert_not_awaited()
+    dispatcher.prepare.assert_not_awaited()
+    dispatcher.dispatch.assert_not_awaited()
+
+
 @pytest.mark.parametrize("abort", [TimeoutError(), asyncio.CancelledError(), RuntimeError("synthetic drain abort")])
 async def test_abort_after_publish_staging_rolls_back_raw_and_prepared_without_commit(monkeypatch, abort):
     state, operations, _, _, guard = broker(monkeypatch, publish_error=abort)
-    dispatcher = SimpleNamespace(prepare=AsyncMock(return_value=PREPARED), dispatch=AsyncMock())
+    dispatcher = SimpleNamespace(
+        snapshot_progress=AsyncMock(side_effect=lambda body: body),
+        prepare=AsyncMock(return_value=PREPARED),
+        dispatch=AsyncMock(),
+    )
     await asyncio.wait_for(start_consumer("amqp://synthetic", dispatcher, guard), 3)
     assert "commit" not in operations and "nack" not in operations
     assert not state.acked and not state.published and not state.rejected and state.requeued
@@ -226,7 +616,11 @@ async def test_abort_after_publish_staging_rolls_back_raw_and_prepared_without_c
 
 async def test_abort_during_automatic_ack_after_staging_never_commits_projection(monkeypatch):
     state, operations, _, _, guard = broker(monkeypatch, ack_error=TimeoutError())
-    dispatcher = SimpleNamespace(prepare=AsyncMock(return_value=PREPARED), dispatch=AsyncMock())
+    dispatcher = SimpleNamespace(
+        snapshot_progress=AsyncMock(side_effect=lambda body: body),
+        prepare=AsyncMock(return_value=PREPARED),
+        dispatch=AsyncMock(),
+    )
     await asyncio.wait_for(start_consumer("amqp://synthetic", dispatcher, guard), 3)
     assert "commit" not in operations and "nack" not in operations
     assert not state.acked and not state.published and state.requeued
@@ -235,7 +629,7 @@ async def test_abort_during_automatic_ack_after_staging_never_commits_projection
 
 @pytest.mark.parametrize("prepared", [False, True])
 @pytest.mark.parametrize("parent", [None, "malformed", "00-0123456789abcdef0123456789abcdef-0123456789abcdef-01"])
-async def test_real_consumer_restores_context_and_uses_only_durable_w3c_parent(monkeypatch, prepared, parent):
+async def test_real_consumer_restores_context_and_starts_delivery_trace(monkeypatch, prepared, parent):
     with monkeypatch.context() as env:
         env.setenv("OTEL_SDK_DISABLED", "false")
         provider = TracerProvider()
@@ -249,7 +643,11 @@ async def test_real_consumer_restores_context_and_uses_only_durable_w3c_parent(m
         captured.update(structlog.contextvars.get_contextvars())
         captured["span"] = trace.get_current_span().get_span_context()
 
-    dispatcher = SimpleNamespace(prepare=AsyncMock(return_value=None), dispatch=dispatch)
+    dispatcher = SimpleNamespace(
+        snapshot_progress=AsyncMock(side_effect=lambda body: body),
+        prepare=AsyncMock(return_value=None),
+        dispatch=dispatch,
+    )
     before = EVENT_OUTCOMES.labels("processed")._value.get()
     structlog.contextvars.bind_contextvars(requestId="outer")
     try:
@@ -258,11 +656,7 @@ async def test_real_consumer_restores_context_and_uses_only_durable_w3c_parent(m
         assert "trace_id" not in captured  # Noncanonical business correlation is not telemetry.
         assert captured["span"].is_valid
         actual_trace = format(captured["span"].trace_id, "032x")
-        if parent and parent != "malformed":
-            assert actual_trace == "0123456789abcdef0123456789abcdef"
-            assert captured["span"].span_id != int("0123456789abcdef", 16)
-        else:
-            assert actual_trace != "0123456789abcdef0123456789abcdef"
+        assert actual_trace != "0123456789abcdef0123456789abcdef"
         assert EVENT_OUTCOMES.labels("processed")._value.get() == before + 1
         assert state.acked
         assert structlog.contextvars.get_contextvars() == {"requestId": "outer"}
@@ -310,7 +704,11 @@ async def test_consumer_json_never_copies_malformed_envelope_metadata(monkeypatc
         if cancel:
             raise asyncio.CancelledError
 
-    dispatcher = SimpleNamespace(prepare=AsyncMock(return_value=None), dispatch=dispatch)
+    dispatcher = SimpleNamespace(
+        snapshot_progress=AsyncMock(side_effect=lambda body: body),
+        prepare=AsyncMock(return_value=None),
+        dispatch=dispatch,
+    )
     structlog.contextvars.clear_contextvars()
     structlog.contextvars.bind_contextvars(requestId="outer-request")
     try:

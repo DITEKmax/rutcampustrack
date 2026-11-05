@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { subjectEditorAssignment, subjectEditorAssignments } from './subject-editor-state'
+import { subjectEditorAssignment, subjectEditorAssignments, subjectAssignmentPeriod, subjectAssignmentPeriodLabel } from './subject-editor-state'
 import { parseSubjectEditIntent } from './subject-edit-intent'
 import type { HeadmanSubject } from './headman-subjects-client'
 const subject: HeadmanSubject = {
@@ -37,14 +37,15 @@ const subject: HeadmanSubject = {
   ],
 }
 describe('editor assignment identity and durable recovery boundaries', () => {
-  it('shows future intervals before their start and selects the exact interval of the same teacher', () => {
+  it('keeps completed and future intervals visible and selects the exact interval of the same teacher', () => {
     const rows = subjectEditorAssignments(
       subject,
       'LECTURE',
       { id: 1, name: 'Осень', dateFrom: '2026-09-01', dateTo: '2027-01-31', active: true },
       '2026-10-06',
     )
-    expect(rows.map((a) => a.id)).toEqual([101, 102])
+    expect(rows.map((a) => a.id)).toEqual([100, 101, 102])
+    expect(subjectAssignmentPeriodLabel(rows[0]!.validFrom, rows[0]!.validUntilExclusive, '2026-10-06')).toContain('2026-09-30 включительно · Завершено')
     expect(subjectEditorAssignment(subject, 'LECTURE', 1, 10, 102)?.validFrom).toBe('2026-12-01')
     expect(subjectEditorAssignment(subject, 'LECTURE', 1, 10, undefined)).toBeNull()
   })
@@ -89,5 +90,23 @@ describe('editor assignment identity and durable recovery boundaries', () => {
         4,
       ),
     ).toBeNull()
+  })
+})
+
+describe('assignment dates within one semester', () => {
+  const semester = { dateFrom: '2026-09-01', dateTo: '2027-01-31' }
+  it('preserves both past dates and converts the inclusive final day without extending a shorter grant', () => {
+    expect(subjectAssignmentPeriod(semester, '2026-09-01', '2026-09-30')).toEqual({ validFrom: '2026-09-01', validUntilExclusive: '2026-10-01' })
+    expect(subjectAssignmentPeriod(semester, semester.dateFrom, semester.dateTo)).toEqual({ validFrom: '2026-09-01', validUntilExclusive: '2027-02-01' })
+    expect(subjectAssignmentPeriod(semester, semester.dateTo, semester.dateTo)).toEqual({ validFrom: '2027-01-31', validUntilExclusive: '2027-02-01' })
+  })
+  it.each([
+    ['2026-08-31', '2026-09-01'],
+    ['2027-01-31', '2027-02-01'],
+    ['2026-09-30', '2026-09-01'],
+    ['2026-09-01', '2026-09-31'],
+    ['', '2026-09-30'],
+  ])('rejects an invalid or out-of-semester interval %s to %s', (from, through) => {
+    expect(() => subjectAssignmentPeriod(semester, from, through)).toThrow()
   })
 })

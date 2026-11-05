@@ -93,12 +93,12 @@ export default defineConfig<
             : workerLifecycle
               ? /(?:production worker update activates through the update gate and retains a warm launch|synthetic installation prompt handles dismissed unavailable and accepted outcomes|synthetic iOS installation instructions dismiss persistently without a native prompt)$/
               : webkitSubset
-                ? /another live session revokes the browser session and recovery exposes login only$/
+                ? /@session-revocation(?= |$)/
                 : roleLogout
                   ? /(?:SUSPENDED STUDENT retains active TEACHER access until UI logout-all revokes both sessions|four durable grants default to STUDENT; explicit role survives reload and stale version cannot switch @cloud-accepted|unconfirmed UI logout clears its owner and rejects a late real feed through reload @cloud-accepted|FULL multirole ADMIN assigns updates and revokes LIMITED rights through Vue without foreign-role calls @cloud-accepted|own profile security changes password and replacement login rejects old authority @cloud-accepted|password recovery consumes its own delivered OTP and admits the replacement password @cloud-accepted|FULL exports five group attendance formats; dashboard-only LIMITED reads until revocation @cloud-accepted)$/
                   : adminLifecycle
                     ? /ADMIN creates a multirole headman and restores the archived account without old authority$/
-                    : /(?:LIMITED ADMIN views accounts while creation is denied by UI and server|empty foreign-group homework and transport failure provide a real retry path|another live session revokes the browser session and recovery exposes login only|D003 signed HEADMAN TMA marks an isolated own-group roster row|warm offline reload remains read-only; revoked session reconnect clears the cached user|D002 offline reload rechecks suspended grants before role selection|D002 late prior-account homework cannot replace the new account or offline snapshot|D002 TMA stays online-only beside a warm PWA snapshot|N2 retained Student shell recovers through current-only retry \(active\)|N2 retained Student shell recovers through current-only retry \(suspended\))$/,
+                    : /@(?:mobile-access-smoke|d002-reconnect-authority)(?= |$)|(?:empty foreign-group homework and transport failure provide a real retry path|warm offline reload remains read-only; revoked session reconnect clears the cached user|D002 late prior-account homework cannot replace the new account or offline snapshot)$/,
       }
     : {}),
   projects: existing.projects

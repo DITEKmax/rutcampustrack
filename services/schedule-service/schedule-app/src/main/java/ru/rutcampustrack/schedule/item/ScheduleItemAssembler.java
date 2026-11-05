@@ -5,6 +5,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 import org.springframework.hateoas.EntityModel;
 import org.springframework.stereotype.Component;
+
 import ru.rutcampustrack.schedule.contract.dto.item.ScheduleItemResponse;
 import ru.rutcampustrack.schedule.item.entity.ScheduleItem;
 
@@ -49,6 +50,7 @@ public class ScheduleItemAssembler {
                                         .listScheduleItems(
                                                 response.getGroupId(),
                                                 response.getSemesterId(),
+                                                false,
                                                 null,
                                                 null))
                         .withRel("collection"));

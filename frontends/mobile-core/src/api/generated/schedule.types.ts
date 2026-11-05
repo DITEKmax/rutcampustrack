@@ -15,7 +15,7 @@ export interface paths {
         /** Полное обновление шаблона (PUT, HEADMAN/ADMIN) */
         put: operations["updateScheduleItem"];
         post?: never;
-        /** Деактивировать шаблон расписания (HEADMAN/ADMIN) */
+        /** Окончательно удалить неиспользованную серию (HEADMAN/ADMIN) */
         delete: operations["deleteScheduleItem"];
         options?: never;
         head?: never;
@@ -87,6 +87,23 @@ export interface paths {
         put?: never;
         /** Создать шаблон расписания (HEADMAN/ADMIN) */
         post: operations["createScheduleItem"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/schedule/items/{id}/semester-materialization": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Дозаполнить даты семестра без перезаписи существующей истории */
+        post: operations["materializeSemester"];
         delete?: never;
         options?: never;
         head?: never;
@@ -232,6 +249,39 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/schedule/items/operations/{operationId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Прочитать собственную принятую операцию удаления */
+        get: operations["getConstructorOperation"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/schedule/items/materialization-operations/{operationId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getSemesterMaterialization"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/schedule/health-check": {
         parameters: {
             query?: never;
@@ -347,6 +397,11 @@ export interface components {
             /** @description Revision из предварительного расчёта; проверяется при применении */
             expectedRevision: string;
         };
+        ConstructorProtectedReason: {
+            code?: string;
+            /** Format: int64 */
+            count?: number;
+        };
         EntityModelScheduleItemResponse: {
             /** Format: int64 */
             id?: number;
@@ -390,6 +445,13 @@ export interface components {
             restoredCount?: number;
             /** Format: int64 */
             createdCount?: number;
+            operationKind?: string;
+            deletable?: boolean;
+            /** Format: int64 */
+            protectedCount?: number;
+            /** Format: int64 */
+            removableCount?: number;
+            protectedReasons?: components["schemas"]["ConstructorProtectedReason"][];
         };
         TransferLessonResponse: {
             operationId?: string;
@@ -599,6 +661,17 @@ export interface components {
              */
             room?: string;
         };
+        SemesterMaterializationResponse: {
+            /** Format: uuid */
+            operationId?: string;
+            state?: string;
+            /** Format: int64 */
+            createdCount?: number;
+            /** Format: int64 */
+            pendingCount?: number;
+            /** Format: int64 */
+            coverageUnavailableCount?: number;
+        };
         ChangeLessonRoomRequest: {
             room: string;
             expectedRevision: string;
@@ -690,6 +763,16 @@ export interface components {
             };
             _links?: components["schemas"]["Links"];
             page?: components["schemas"]["PageMetadata"];
+        };
+        ConstructorOperationResponse: {
+            /** Format: uuid */
+            operationId?: string;
+            state?: string;
+            /** Format: int64 */
+            deletedCount?: number;
+            /** Format: int64 */
+            protectedCount?: number;
+            errorCode?: string;
         };
         PagedResourcesAssemblerLessonResponse: {
             forceFirstAndLastRels?: boolean;
@@ -1031,12 +1114,23 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Шаблон деактивирован */
+            /** @description Операция принята и восстанавливается по operationId */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": Record<string, never>;
+                };
+            };
+            /** @description Бизнес-строки серии окончательно удалены */
             204: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "*/*": Record<string, never>;
+                };
             };
             /** @description Ошибка валидации запроса */
             400: {
@@ -1062,7 +1156,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                    "*/*": Record<string, never>;
                 };
             };
             /** @description Шаблон не найден */
@@ -1071,16 +1165,16 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                    "*/*": Record<string, never>;
                 };
             };
-            /** @description Конфликт данных */
+            /** @description История защищена или расчёт устарел */
             409: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                    "*/*": Record<string, never>;
                 };
             };
             /** @description Превышен лимит запросов */
@@ -1570,6 +1664,7 @@ export interface operations {
             query: {
                 groupId: number;
                 semesterId: number;
+                includeInactive?: boolean;
                 pageable: components["schemas"]["Pageable"];
                 assembler: components["schemas"]["PagedResourcesAssemblerScheduleItemResponse"];
             };
@@ -1747,6 +1842,93 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["EntityModelScheduleItemResponse"];
+                };
+            };
+        };
+    };
+    materializeSemester: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["SemesterMaterializationResponse"];
+                };
+            };
+            /** @description Ошибка валидации запроса */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Требуется аутентификация */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Доступ запрещён */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Ресурс не найден */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Конфликт данных */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Превышен лимит запросов */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Внутренняя ошибка сервера */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
                 };
             };
         };
@@ -2413,6 +2595,176 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["LessonSlotCatalogResponse"];
+                };
+            };
+            /** @description Ошибка валидации запроса */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Требуется аутентификация */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Доступ запрещён */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Ресурс не найден */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Конфликт данных */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Превышен лимит запросов */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Внутренняя ошибка сервера */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    getConstructorOperation: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                operationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ConstructorOperationResponse"];
+                };
+            };
+            /** @description Ошибка валидации запроса */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Требуется аутентификация */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Доступ запрещён */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Ресурс не найден */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Конфликт данных */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Превышен лимит запросов */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Внутренняя ошибка сервера */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    getSemesterMaterialization: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                operationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["SemesterMaterializationResponse"];
                 };
             };
             /** @description Ошибка валидации запроса */

@@ -170,7 +170,7 @@ public class ReportService {
     }
 
     public ReportService forPlan(AdmittedReportPlan plan) {
-        return new ReportService(
+        ReportService result = new ReportService(
                 attendanceReadPort,
                 plan,
                 plan,
@@ -179,6 +179,7 @@ public class ReportService {
                 plan.clock(),
                 journalAttachmentPort,
                 approvedTicketResolver);
+        return result;
     }
 
     private String statusSymbol(AttendanceStatus s) {
@@ -262,8 +263,7 @@ public class ReportService {
 
     /**
      * Reads one concrete lesson for a teacher identity supplied by the dedicated teacher gRPC
-     * boundary. The schedule snapshot remains the historical lesson authority; current active group
-     * assignments authorize reading attendance recorded before the teacher's assignment.
+     * boundary. Current group and subject authority also permits historical lesson reads.
      */
     public LessonAttendanceResponse getTeacherLessonAttendance(Long lessonId, long teacherId) {
         LessonResponse lesson = scheduleGrpcClient.getLessonById(lessonId);
@@ -1827,9 +1827,8 @@ public class ReportService {
     }
 
     /**
-     * Authorizes a concrete lesson read. The Schedule snapshot carries the historical assignment
-     * identity; a rich Academic assignment projection is matched when it is available so a current
-     * assignment cannot cross into a different date/type/semester.
+     * Authorizes a concrete lesson read using current group and subject authority. Historical
+     * assignment identity remains independent of read access (D023).
      */
     private void authorizeHeadmanOrTeacher(LessonResponse lesson) {
         Long groupId = lesson.getGroupId();
@@ -1852,23 +1851,20 @@ public class ReportService {
         authorizeTeacherLesson(lesson, requestContext.getUserId());
     }
 
-    /**
-     * Reusable concrete-lesson gate for the dedicated teacher read boundary. Current active
-     * group+subject authority grants historical access within that subject, while the immutable
-     * Schedule snapshot supplies historical lesson data.
-     */
+    /** Current group and subject authority permits historical reading, including replaced teachers. */
     public void authorizeTeacherLesson(LessonResponse lesson, Long teacherId) {
         if (lesson == null
                 || lesson.getId() <= 0
-                || lesson.getGroupId() <= 0
-                || lesson.getSubjectId() <= 0
-                || lesson.getAssignmentId() <= 0
                 || lesson.getSemesterId() <= 0
-                || lesson.getAssignedTeacherId() <= 0
-                || lesson.getLessonType() == null
                 || lesson.getLessonType().isBlank()
-                || teacherId == null) {
+                || teacherId == null
+                || teacherId <= 0) {
             throw new AccessDeniedException("Teacher cannot read this lesson");
+        }
+        try {
+            LocalDate.parse(lesson.getDate());
+        } catch (RuntimeException invalid) {
+            throw new AccessDeniedException("Teacher lesson date unavailable");
         }
         authorizeTeacherSubject(lesson.getGroupId(), lesson.getSubjectId(), teacherId);
     }

@@ -4,11 +4,16 @@ import { HeadmanRequestsApi } from '../../../../mobile-core/src/features/headman
 import {
   HeadmanSubjectsApi,
   type HeadmanSubject,
+  type HeadmanSubjectInitialAssignment,
 } from '../../../../mobile-core/src/features/headman-subjects/headman-subjects-client'
 import { subjectEditStorageKey } from '../../../../mobile-core/src/features/headman-subjects/subject-edit-intent'
 import SchedulePage from './SchedulePage.vue'
 import RequestsPage from './RequestsPage.vue'
 import SubjectsPage from './SubjectsPage.vue'
+import HeadmanSubjectsScreen from '../../../../mobile-core/src/features/headman-subjects/HeadmanSubjectsScreen.vue'
+import { HeadmanScheduleApi, type HeadmanScheduleItem, type HeadmanLifecyclePreview } from '../../../../mobile-core/src/features/schedule/headman-schedule-client'
+import type { RecurringIntent } from '../../../../mobile-core/src/features/schedule/headman-recurring-intent'
+import { freezeRecurringCreate, recurringCreateScope, type RecurringCreateIntent } from '../../../../mobile-core/src/features/schedule/headman-recurring-create'
 const box = vi.hoisted(() => ({ feature: {} as Record<string, unknown>, writable: true }))
 vi.mock('../../auth/session', () => ({
   webSession: {
@@ -20,6 +25,7 @@ vi.mock('../../auth/session', () => ({
 vi.mock('../../app/live', () => ({ useWebLiveRefresh: () => undefined }))
 vi.mock('vue-router', () => ({ useRoute: () => ({ query: {} }) }))
 vi.mock('./HeadmanPage.vue', () => ({ default: { render: () => null } }))
+vi.mock('../../../../mobile-core/src/shared/components/MobileToolsSheet.vue', () => ({ default: { render: () => null } }))
 vi.mock('./context', () => ({
   useHeadmanFeature: () => box.feature,
   today: () => '2026-10-24',
@@ -51,8 +57,8 @@ const renderer = createRenderer<Host, Host>({
   nextSibling: () => null,
 })
 let dispose: (() => void) | undefined
-function mount<T>(component: Component): T {
-  const app = renderer.createApp(component)
+function mount<T>(component: Component, props?: Record<string, unknown>): T {
+  const app = renderer.createApp(component, props)
   app.config.warnHandler = () => undefined
   const vm = app.mount(node())
   dispose = () => app.unmount()
@@ -115,7 +121,7 @@ beforeEach(() => {
   storage = new MemoryStorage()
   box.writable = true
   vi.stubGlobal('sessionStorage', storage)
-  vi.stubGlobal('window', { confirm: () => true })
+  vi.stubGlobal('window', { confirm: () => true, localStorage: storage, addEventListener: () => undefined, removeEventListener: () => undefined })
 })
 afterEach(() => {
   dispose?.()
@@ -132,6 +138,89 @@ interface ScheduleState {
   load(): Promise<void>
   read(): Promise<void>
 }
+
+interface ConstructorMutationState extends ScheduleState {
+  selected: HeadmanScheduleItem | null
+  preview: { action: 'DELETE'; input: null; result: HeadmanLifecyclePreview } | null
+  pending: RecurringIntent | null
+  createPending: RecurringCreateIntent | null
+  notice: string | null
+  apply(recover?: boolean): Promise<void>
+  create(recover?: boolean): Promise<void>
+  acknowledgeRemovedCreate(): void
+}
+function constructorApi(fetcher: typeof fetch) {
+  const api = new HeadmanScheduleApi({ accessToken: () => null, fetcher })
+  vi.spyOn(api, 'listSemesters').mockResolvedValue([semester])
+  vi.spyOn(api, 'listScheduleItems').mockResolvedValue([])
+  vi.spyOn(api, 'listAssignments').mockResolvedValue([])
+  vi.spyOn(api, 'lessonSlots').mockResolvedValue({ timezone: 'Europe/Moscow', slots: [] })
+  vi.spyOn(api, 'academicWeekPolicy').mockResolvedValue({} as never)
+  return api
+}
+
+describe('actual constructor deletion and tombstone recovery', () => {
+  const preview: HeadmanLifecyclePreview = { revision: 'a'.repeat(64), updatedCount: 0, removedCount: 3, restoredCount: 0, createdCount: 0, operationKind: 'DELETE_UNUSED_SERIES', deletable: true, protectedCount: 0, removableCount: 3, protectedReasons: [] }
+  const target = { id: 31, groupId: 1, semesterId: semester.id, active: true }
+  it('cannot send deletion from a protected preview', async () => {
+    const fetcher = vi.fn<typeof fetch>()
+    box.feature = feature({ schedule: constructorApi(fetcher) })
+    const state = mount<ConstructorMutationState>(SchedulePage)
+    await settle()
+    state.selected = target
+    state.preview = { action: 'DELETE', input: null, result: { ...preview, deletable: false, protectedCount: 1, protectedReasons: [{ code: 'MANUAL_ATTENDANCE', count: 1 }] } }
+    await state.apply()
+    expect(fetcher).not.toHaveBeenCalled()
+    expect(storage.length).toBe(0)
+    expect(state.error).toContain('ручные отметки')
+  })
+  it.each(['COMPLETED', 'RELEASED'] as const)('persists pending deletion then handles terminal %s without requiring an inactive item', async (terminal) => {
+    const requests: { path: string; method: string }[] = []
+    const operationId = 'aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee'
+    const api = constructorApi(async (path, init) => {
+      requests.push({ path: String(path), method: init?.method ?? 'GET' })
+      const state = requests.length === 1 ? 'COMMITTING' : terminal
+      const receipt = { operationId, state, deletedCount: state === 'COMPLETED' ? 3 : 0, protectedCount: state === 'RELEASED' ? 1 : 0, errorCode: state === 'RELEASED' ? 'CONSTRUCTOR_HISTORY_PROTECTED' : null }
+      return new Response(JSON.stringify(receipt), { status: requests.length === 1 ? 202 : 200 })
+    })
+    box.feature = feature({ schedule: api })
+    const state = mount<ConstructorMutationState>(SchedulePage)
+    await settle()
+    state.selected = target
+    state.preview = { action: 'DELETE', input: null, result: preview }
+    await state.apply()
+    expect(state.pending?.operationId).toBe(operationId)
+    const key = state.pending?.key
+    expect(state.notice).toContain('ещё выполняется')
+    await state.apply(true)
+    expect(state.pending).toBeNull()
+    expect(storage.length).toBe(0)
+    expect(requests).toEqual([{ path: '/api/schedule/items/31', method: 'DELETE' }, { path: `/api/schedule/items/operations/${operationId}`, method: 'GET' }])
+    expect(key).not.toBe(operationId)
+    if (terminal === 'COMPLETED') expect(state.notice).toContain('полностью удалены')
+    else expect(state.error).toContain('Данные сохранены')
+  })
+  it('retains the original CREATE key and payload after a deleted-series tombstone', async () => {
+    const fetcher = vi.fn<typeof fetch>().mockResolvedValue(new Response(JSON.stringify({ extras: { code: 'CONSTRUCTOR_SERIES_DELETED' } }), { status: 410 }))
+    box.feature = feature({ schedule: constructorApi(fetcher) })
+    const state = mount<ConstructorMutationState>(SchedulePage)
+    await settle()
+    const intent = freezeRecurringCreate({ userId: '3', sessionId: 'own-session', groupId: 1, semesterId: semester.id }, '11111111-1111-4111-8111-111111111111', { groupId: 1, semesterId: semester.id, assignmentId: 1, subjectId: 2, dayOfWeek: 1, lessonNumber: 1, startTime: '09:00:00', endTime: '10:30:00', weekType: 'ALL' })
+    storage.setItem(recurringCreateScope(intent.owner), JSON.stringify(intent))
+    state.createPending = intent
+    state.acknowledgeRemovedCreate()
+    expect(state.createPending).toEqual(intent)
+    await state.create(true)
+    expect(fetcher).toHaveBeenCalledOnce()
+    expect(state.createPending).toEqual(intent)
+    expect(JSON.parse(storage.getItem(recurringCreateScope(intent.owner))!)).toEqual(intent)
+    expect(state.error).toContain('уже удалена')
+    state.acknowledgeRemovedCreate()
+    expect(state.createPending).toBeNull()
+    expect(storage.length).toBe(0)
+    expect(fetcher).toHaveBeenCalledOnce()
+  })
+})
 describe('actual schedule semester reads', () => {
   it('discards a slow archive response after the active response', async () => {
     const oldRows = deferred<{ id: number; semesterId: number }[]>(),
@@ -387,6 +476,7 @@ interface SubjectState {
   replacement: unknown
   locked: boolean
   error: string | null
+  assignment(teacher: { id: number; fullName: string; employeeNumber: null }, value: HeadmanSubjectInitialAssignment): HeadmanSubjectInitialAssignment
   replace(recover?: boolean, selection?: { assignment: NonNullable<HeadmanSubject['assignments']>[number]; teacher: { id: number; fullName: string; employeeNumber: null }; from: string }): Promise<void>
 }
 function subjectApi() {
@@ -421,6 +511,51 @@ function subjectApi() {
   return { api, fetcher }
 }
 describe('actual replacement preflight', () => {
+  it('defaults the shared mobile picker to the semester and durably retains a shorter past period after a lost create', async () => {
+    const { api } = subjectApi()
+    vi.spyOn(api, 'searchTeachers').mockResolvedValue({ items: [], page: 0, totalPages: 0 })
+    const create = vi.spyOn(api, 'createSubject').mockRejectedValue(new TypeError('lost response'))
+    const state = mount<{
+      subjectName: string; selectedTypes: string[]; pickerValidFrom: string; pickerValidThrough: string;
+      pickerTeacher: { id: number; fullName: string; employeeNumber: null };
+      selectedTeachers: Record<string, { id: number; fullName: string; employeeNumber: null }[]>;
+      removeCandidate: unknown;
+      requestRemove(type: string, teacher: { id: number; fullName: string; employeeNumber: null }): void;
+      openCreate(): void; openPicker(type: string): void; addTeacherDraft(): void; saveSubject(): Promise<void>;
+    }>({ ...HeadmanSubjectsScreen, render: () => null }, { api, groupId: 1, actorUserId: '3' })
+    await settle()
+    state.openCreate()
+    state.subjectName = 'Прошедший период'
+    state.selectedTypes = ['LECTURE']
+    state.openPicker('LECTURE')
+    expect([state.pickerValidFrom, state.pickerValidThrough]).toEqual([semester.dateFrom, semester.dateTo])
+    state.pickerTeacher = { id: 7, fullName: 'Другой', employeeNumber: null }
+    state.pickerValidThrough = '2026-10-23'
+    state.addTeacherDraft()
+    state.requestRemove('LECTURE', state.selectedTeachers.LECTURE![0]!)
+    expect(state.removeCandidate).not.toBeNull()
+    state.removeCandidate = null
+    await state.saveSubject()
+    const period = { teacherId: 7, semesterId: semester.id, lessonType: 'LECTURE', validFrom: '2026-10-23', validUntilExclusive: '2026-10-24' }
+    expect(create).toHaveBeenCalledOnce()
+    expect(create.mock.calls[0]?.[0].initialAssignments).toEqual([period])
+    const saved = JSON.parse(storage.getItem(subjectEditStorageKey('3', 1))!)
+    expect(saved.assignments).toEqual([period])
+    expect(saved.unknown).toBe(true)
+    expect(saved.actorUserId).toBe('3')
+    expect(saved.groupId).toBe(1)
+  })
+  it('accepts an already completed period in the current semester and rejects inverted or outside dates', async () => {
+    const { api } = subjectApi()
+    box.feature = feature({ subjects: api })
+    const state = mount<SubjectState>(SubjectsPage)
+    await settle()
+    const teacher = { id: 7, fullName: 'Другой', employeeNumber: null }
+    const input: HeadmanSubjectInitialAssignment = { teacherId: 7, semesterId: semester.id, lessonType: 'LECTURE', validFrom: '2026-10-23', validUntilExclusive: '2026-10-24' }
+    expect(state.assignment(teacher, input)).toEqual(input)
+    expect(() => state.assignment(teacher, { ...input, validFrom: '2026-10-22' })).toThrow()
+    expect(() => state.assignment(teacher, { ...input, validUntilExclusive: input.validFrom })).toThrow()
+  })
   it('keeps an invalid date editable without fetch and sends only after correction', async () => {
     const { api, fetcher } = subjectApi()
     box.feature = feature({ subjects: api })

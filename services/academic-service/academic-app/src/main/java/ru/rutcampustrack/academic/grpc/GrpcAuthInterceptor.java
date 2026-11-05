@@ -5,6 +5,8 @@ import io.grpc.*;
 import net.devh.boot.grpc.server.interceptor.GrpcGlobalServerInterceptor;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 
 /**
  * IMP-09: gRPC shared secret authentication interceptor.
@@ -13,6 +15,7 @@ import org.springframework.beans.factory.annotation.Value;
  * x-grpc-secret} metadata header. Rejects unauthenticated calls with UNAUTHENTICATED status.
  */
 @GrpcGlobalServerInterceptor
+@Order(Ordered.LOWEST_PRECEDENCE)
 public class GrpcAuthInterceptor implements ServerInterceptor {
 
     private static final Metadata.Key<String> SECRET_KEY =
@@ -32,7 +35,8 @@ public class GrpcAuthInterceptor implements ServerInterceptor {
         if (ru.rutcampustrack.academic.botread.AcademicBotReadServiceIdentityInterceptor.admitted(
                         method)
                 || ru.rutcampustrack.academic.identitypresentation
-                        .IdentityPresentationServiceIdentityInterceptor.admitted(method)) {
+                        .IdentityPresentationServiceIdentityInterceptor.admitted(method)
+                || ru.rutcampustrack.academic.constructor.ConstructorServiceIdentityInterceptor.admitted(method)) {
             return next.startCall(call, headers);
         }
 

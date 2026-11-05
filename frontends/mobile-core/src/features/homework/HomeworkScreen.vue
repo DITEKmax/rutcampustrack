@@ -23,9 +23,10 @@ import {
   type MobileRoute,
 } from '../../shared/navigation';
 import type { MobileHostAdapter } from '../../shared/host';
-import externalLinkIcon from '../../assets/homework-external-link.svg';
 import expandChevronIcon from '../../assets/homework-expand-chevron.svg';
 import HomeworkCompletion from './HomeworkCompletion.vue';
+import NoAssignmentsIllustration from './NoAssignmentsIllustration.vue';
+import MobileIcon from '../../shared/components/MobileIcon.vue';
 import { homeworkTextSegments } from './headman-homework-state';
 import StudentWarningBlock from '../../shared/components/StudentWarningBlock.vue';
 import returnTodayChevronIcon from '../../assets/homework-return-today-chevron.svg';
@@ -164,10 +165,20 @@ const monthDays = computed(() => {
   return days;
 });
 const calendarItems = computed(() => {
-  const result = new Map<string, { count: number; subjects: string[] }>();
+  const result = new Map<
+    string,
+    { count: number; subjects: string[]; allCompleted: boolean; pending: boolean }
+  >();
   for (const item of dedupeHomeworkItems(props.homework?.items ?? [])) {
-    const entry = result.get(item.lessonDate) ?? { count: 0, subjects: [] };
+    const entry = result.get(item.lessonDate) ?? {
+      count: 0,
+      subjects: [],
+      allCompleted: true,
+      pending: false,
+    };
     entry.count += 1;
+    entry.pending = entry.pending || itemPending(item.id);
+    entry.allCompleted = entry.allCompleted && item.completed === true && !itemPending(item.id);
     if (!entry.subjects.includes(item.subject.name)) entry.subjects.push(item.subject.name);
     result.set(item.lessonDate, entry);
   }
@@ -197,7 +208,7 @@ function calendarLabel(day: string): string {
   const summary =
     state === 'ready'
       ? content
-        ? `Заданий: ${content.count}. ${content.subjects.join(', ')}`
+        ? `Заданий: ${content.count}. ${content.subjects.join(', ')}. ${content.pending ? 'Сохраняем изменения.' : content.allCompleted ? 'Все выполнены.' : 'Есть невыполненные.'}`
         : 'Нет заданий'
       : state === 'loading'
         ? 'Данные загружаются'
@@ -266,11 +277,6 @@ function openMaterial(item: StudentHomeworkItem): void {
   if (result.supported) emit('openMaterial', result.original, item);
 }
 
-function materialHostname(item: StudentHomeworkItem): string {
-  const result = materialState(item);
-  return result.supported ? new URL(result.original).hostname : '';
-}
-
 function completionLabel(item: StudentHomeworkItem): string {
   if (itemPending(item.id)) return 'Сохраняем…';
   if (item.archived) return item.completed ? 'Выполнено · архив' : 'Архив · только чтение';
@@ -318,10 +324,6 @@ function rememberCompletionFocus(item: StudentHomeworkItem, expectedCompleted: b
     feedIdentity: homeworkFeedIdentity(props.homework),
     ownerKey: props.ownerKey ?? null,
   };
-}
-
-function groupHasMonth(index: number): boolean {
-  return index === 0 || groups.value[index - 1]?.monthLabel !== groups.value[index]?.monthLabel;
 }
 
 function groupId(group: HomeworkGroup): string {
@@ -453,9 +455,7 @@ onBeforeUnmount(() => {
       aria-labelledby="homework-title"
     >
       <div class="homework-content">
-        <h1 id="homework-title">
-          Задания
-        </h1>
+        <h1 id="homework-title"> Задания </h1>
 
         <template v-if="periodRange && selectedDate">
           <div
@@ -491,7 +491,7 @@ onBeforeUnmount(() => {
               :disabled="!canStep(-1)"
               @click="emit('stepPeriod', -1)"
             >
-              ←
+              <MobileIcon name="back" />
             </button>
             <output aria-live="polite">{{ periodLabel }}</output>
             <button
@@ -500,7 +500,10 @@ onBeforeUnmount(() => {
               :disabled="!canStep(1)"
               @click="emit('stepPeriod', 1)"
             >
-              →
+              <MobileIcon
+                name="back"
+                class="homework-period-pager__next"
+              />
             </button>
           </nav>
           <div
@@ -514,7 +517,13 @@ onBeforeUnmount(() => {
               v-if="calendarState !== 'ready'"
               role="status"
             >
-              {{ calendarState === 'loading' ? 'Загружаем календарь…' : calendarState === 'error' ? 'Не удалось загрузить календарь.' : 'Данные календаря не подтверждены.' }}
+              {{
+                calendarState === 'loading'
+                  ? 'Загружаем календарь…'
+                  : calendarState === 'error'
+                    ? 'Не удалось загрузить календарь.'
+                    : 'Данные календаря не подтверждены.'
+              }}
             </p>
             <div
               class="homework-calendar"
@@ -525,7 +534,8 @@ onBeforeUnmount(() => {
                 v-for="weekday in ['ПН', 'ВТ', 'СР', 'ЧТ', 'ПТ', 'СБ', 'ВС']"
                 :key="weekday"
                 aria-hidden="true"
-              >{{ weekday }}</span>
+                >{{ weekday }}</span
+              >
               <template
                 v-for="(day, index) in monthDays"
                 :key="day ?? `blank-${index}`"
@@ -541,12 +551,12 @@ onBeforeUnmount(() => {
                   @click="emit('selectDate', day)"
                 >
                   <strong>{{ Number(day.slice(8)) }}</strong>
-                  <small v-if="day === todayDate">Сегодня</small>
                   <span
-                    v-for="subject in calendarState === 'ready' ? calendarItems.get(day)?.subjects ?? [] : []"
-                    :key="subject"
-                    :title="subject"
-                  >{{ subject }}</span>
+                    v-if="calendarState === 'ready' && calendarItems.get(day)?.count"
+                    class="homework-calendar__dot"
+                    :data-completion="calendarItems.get(day)?.allCompleted ? 'completed' : 'open'"
+                    aria-hidden="true"
+                  />
                 </button>
                 <span
                   v-else
@@ -582,6 +592,12 @@ onBeforeUnmount(() => {
           :aria-labelledby="periodRange ? `homework-tab-${periodMode}` : undefined"
           class="homework-period-panel"
         >
+          <h2
+            v-if="periodMode === 'month' && selectedDate"
+            class="homework-selected-date"
+          >
+            {{ periodDateLabel(selectedDate) }}
+          </h2>
           <section
             v-if="loading && !homework"
             class="homework-skeleton"
@@ -628,9 +644,14 @@ onBeforeUnmount(() => {
             </button>
           </section>
           <section
-            v-else-if="!homework || groups.length === 0"
+            v-else-if="
+              !homework ||
+              groups.length === 0 ||
+              (periodMode !== 'week' && groups.every((group) => group.items.length === 0))
+            "
             class="homework-state"
           >
+            <NoAssignmentsIllustration />
             <h2>Заданий пока нет</h2>
             <p>Новые задания появятся здесь после публикации.</p>
           </section>
@@ -645,26 +666,26 @@ onBeforeUnmount(() => {
             />
 
             <section
-              v-for="(group, groupIndex) in groups"
+              v-for="group in groups"
               :key="group.key"
               class="homework-group"
-              :aria-labelledby="groupId(group)"
+              :class="{ 'homework-group--week': periodMode === 'week' }"
+              :aria-labelledby="periodMode === 'week' ? groupId(group) : undefined"
+              :aria-label="periodMode !== 'week' ? 'Задания на выбранный день' : undefined"
             >
-              <p
-                v-if="groupHasMonth(groupIndex) && group.monthLabel"
-                class="homework-month"
+              <h2
+                v-if="periodMode === 'week'"
+                :id="groupId(group)"
               >
-                {{ group.monthLabel }}
-              </p>
-              <h2 :id="groupId(group)">
                 {{ group.label }}
               </h2>
-              <p
+              <div
                 v-if="group.items.length === 0"
                 class="homework-empty-day"
               >
-                На этот день заданий нет.
-              </p>
+                <NoAssignmentsIllustration />
+                <p>На этот день заданий нет</p>
+              </div>
               <div class="homework-group__cards">
                 <article
                   v-for="item in group.items"
@@ -680,18 +701,38 @@ onBeforeUnmount(() => {
                         : 'unsafe'
                   "
                 >
-                  <p class="homework-card__subject">
-                    {{ item.subject.name }}
-                  </p>
-                  <h3
-                    :ref="(element) => setCardHeadingRef(item.id, element)"
-                    class="homework-card__title"
-                    tabindex="-1"
-                  >
+                  <div class="homework-card__heading">
+                    <component
+                      :is="periodMode === 'day' ? 'h2' : 'h3'"
+                      :ref="(element: unknown) => setCardHeadingRef(item.id, element)"
+                      class="homework-card__subject"
+                      tabindex="-1"
+                    >
+                      {{ item.subject.name }}
+                    </component>
+                    <button
+                      v-if="hasDescription(item)"
+                      class="homework-expand"
+                      type="button"
+                      :aria-expanded="isExpanded(item.id)"
+                      :aria-controls="`homework-description-${item.id}`"
+                      :aria-label="isExpanded(item.id) ? 'Свернуть описание' : 'Раскрыть описание'"
+                      @click="toggleExpanded(item.id)"
+                    >
+                      <span
+                        class="homework-icon homework-expand__icon"
+                        :style="iconStyle(expandChevronIcon)"
+                        aria-hidden="true"
+                        :class="{ 'homework-expand__icon--open': isExpanded(item.id) }"
+                      />
+                    </button>
+                  </div>
+                  <p class="homework-card__title">
                     {{ item.title }}
-                  </h3>
+                  </p>
                   <p
-                    v-if="hasDescription(item) && isExpanded(item.id)"
+                    v-if="hasDescription(item)"
+                    v-show="isExpanded(item.id)"
                     :id="`homework-description-${item.id}`"
                     class="homework-card__description"
                   >
@@ -706,60 +747,30 @@ onBeforeUnmount(() => {
                         rel="noopener noreferrer"
                         :aria-label="`Материалы к заданию: ${item.subject.name} (${segment.text})`"
                         @click.prevent="emit('openMaterial', segment.url, item)"
-                      >{{ segment.text }}</a>
+                        >{{ segment.text }}</a
+                      >
                       <template v-else>
                         {{ segment.text }}
                       </template>
                     </template>
                   </p>
-                  <div
-                    v-if="item.link !== null || hasDescription(item)"
-                    class="homework-card__actions"
-                    :class="{ 'homework-card__actions--no-material': item.link === null }"
+                  <a
+                    v-if="item.link !== null && materialState(item).supported"
+                    class="homework-material"
+                    :href="item.link"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    :aria-label="`Материалы к заданию: ${item.subject.name} (${item.link})`"
+                    @click.prevent="openMaterial(item)"
+                    >{{ item.link }}</a
                   >
-                    <button
-                      v-if="item.link !== null && materialState(item).supported"
-                      class="homework-material"
-                      type="button"
-                      :aria-label="`Материалы к заданию: ${item.subject.name}`"
-                      @click="openMaterial(item)"
-                    >
-                      <span
-                        class="homework-icon homework-material__icon"
-                        :style="iconStyle(externalLinkIcon)"
-                        aria-hidden="true"
-                      />
-                      <span class="homework-material__label">
-                        Материалы
-                        <span class="homework-material__hostname">{{ materialHostname(item) }}</span>
-                      </span>
-                    </button>
-                    <p
-                      v-else-if="item.link !== null"
-                      class="homework-material-error"
-                      role="status"
-                    >
-                      Материалы недоступны: ссылка не поддерживается.
-                    </p>
-                    <button
-                      v-if="hasDescription(item)"
-                      class="homework-expand"
-                      type="button"
-                      :aria-expanded="isExpanded(item.id)"
-                      :aria-controls="
-                        isExpanded(item.id) ? `homework-description-${item.id}` : undefined
-                      "
-                      :aria-label="isExpanded(item.id) ? 'Свернуть описание' : 'Раскрыть описание'"
-                      @click="toggleExpanded(item.id)"
-                    >
-                      <span
-                        class="homework-icon homework-expand__icon"
-                        :style="iconStyle(expandChevronIcon)"
-                        aria-hidden="true"
-                        :class="{ 'homework-expand__icon--open': isExpanded(item.id) }"
-                      />
-                    </button>
-                  </div>
+                  <p
+                    v-else-if="item.link !== null"
+                    class="homework-material-error"
+                    role="status"
+                  >
+                    Ссылка не поддерживается.
+                  </p>
                   <HomeworkCompletion
                     :key="`${item.id}:${ownerKey ?? ''}`"
                     :completed="item.completed"

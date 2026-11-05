@@ -136,6 +136,29 @@ class TmaServiceTest {
         verifyNoInteractions(users, auth);
     }
 
+    @Test
+    void failureCodesRequireValidSignatureThenTimeThenLinkAndDoNotHideConfigurationErrors() throws Exception {
+        long now = 1_800_000_000L;
+        TmaService fixed = new TmaService(users, auth, mock(StringRedisTemplate.class),
+                new TmaProperties(SYNTHETIC_BOT_TOKEN, 86400), new ObjectMapper(),
+                Clock.fixed(Instant.ofEpochSecond(now), ZoneOffset.UTC));
+        when(users.findByTelegramId(123456789L)).thenReturn(Optional.empty());
+        for (var input : Map.of(
+                signed(Long.toString(now - 86401)), TmaValidationException.Code.TMA_INIT_DATA_EXPIRED,
+                signed(Long.toString(now + 1)), TmaValidationException.Code.TMA_INIT_DATA_NOT_YET_VALID,
+                signed(Long.toString(now)), TmaValidationException.Code.TMA_TELEGRAM_NOT_LINKED,
+                "auth_date=0&hash=tampered", TmaValidationException.Code.TMA_INIT_DATA_INVALID).entrySet()) {
+            assertThatThrownBy(() -> fixed.authenticateWithInitData(new TmaAuthRequest(input.getKey())))
+                    .isInstanceOfSatisfying(TmaValidationException.class, ex -> assertThat(ex.code()).isEqualTo(input.getValue()));
+        }
+        org.mockito.Mockito.verify(users).findByTelegramId(123456789L);
+        verifyNoInteractions(auth);
+        TmaService unconfigured = new TmaService(users, auth, mock(StringRedisTemplate.class),
+                new TmaProperties("", 86400), new ObjectMapper());
+        assertThatThrownBy(() -> unconfigured.authenticateWithInitData(new TmaAuthRequest("hash=invalid")))
+                .isInstanceOf(IllegalStateException.class);
+    }
+
     private static String signed(String authDate) throws Exception {
         Map<String, String> parameters = new TreeMap<>();
         if (authDate != null) parameters.put("auth_date", authDate);

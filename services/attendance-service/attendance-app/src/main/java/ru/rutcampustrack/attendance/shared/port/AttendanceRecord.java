@@ -25,7 +25,17 @@ public record AttendanceRecord(
         String attachmentName,
         String attachmentContentType,
         Long attachmentSize,
-        String markRevision) {
+        String markRevision,
+        String excuseRequestId) {
+    public AttendanceRecord(Long lessonId, Long userId, Long groupId, Long subjectId, LocalDate lessonDate,
+            Integer lessonNumber, AttendanceStatus status, AttendanceSource source,
+            String excuseReason, String excuseType, String excuseComment, String attachmentId,
+            String attachmentName, String attachmentContentType, Long attachmentSize, String markRevision) {
+        this(lessonId, userId, groupId, subjectId, lessonDate, lessonNumber, status, source,
+                excuseReason, excuseType, excuseComment, attachmentId, attachmentName,
+                attachmentContentType, attachmentSize, markRevision, null);
+    }
+
     public AttendanceRecord(
             Long lessonId,
             Long userId,

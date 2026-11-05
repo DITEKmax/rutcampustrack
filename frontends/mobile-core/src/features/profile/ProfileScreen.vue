@@ -30,6 +30,7 @@ const props = withDefaults(
     onNavigate?: ((route: ProfileRoute) => void | Promise<void>) | undefined;
     onLogout?: (() => void | Promise<void>) | undefined;
     logoutBusy?: boolean;
+    browserLoginPage?: boolean;
     showActiveRole?: boolean;
     showRoleSwitch?: boolean;
     theme?: ProfileResolvedTheme;
@@ -43,6 +44,7 @@ const props = withDefaults(
     onNavigate: undefined,
     onLogout: undefined,
     logoutBusy: false,
+    browserLoginPage: false,
     showActiveRole: true,
     showRoleSwitch: true,
   },
@@ -58,6 +60,7 @@ const approvalAvailable = computed(
     !props.error &&
     props.browserLoginApproval.isOnline(),
 );
+
 watch([() => props.snapshot, () => props.browserLoginApproval, approvalAvailable], () => {
   approvalOpen.value = false;
 });
@@ -212,7 +215,7 @@ function logout(): void {
         </section>
 
         <section
-          v-if="approvalAvailable && browserLoginApproval"
+          v-if="!browserLoginPage && approvalAvailable && browserLoginApproval"
           aria-label="Вход в браузере"
         >
           <BrowserLoginApprovalForm
@@ -225,11 +228,9 @@ function logout(): void {
             class="profile-secondary-button"
             type="button"
             @click="approvalOpen = true"
+            >Вход в браузере</button
           >
-            Вход в браузере
-          </button>
         </section>
-
         <nav aria-label="Настройки профиля">
           <div class="profile-screen__content">
             <button
@@ -249,6 +250,21 @@ function logout(): void {
                 aria-hidden="true"
               />
               <span>{{ item.label }}</span>
+            </button>
+            <button
+              v-if="browserLoginPage && approvalAvailable"
+              class="profile-row"
+              type="button"
+              @click="navigate('browser-login')"
+            >
+              <SvgIcon
+                :width="24"
+                :height="24"
+                class="profile-icon"
+                :src="profileSessions"
+                aria-hidden="true"
+              />
+              <span>Вход в браузере</span>
             </button>
           </div>
         </nav>

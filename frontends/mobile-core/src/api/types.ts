@@ -220,6 +220,18 @@ export interface StudentAttendanceExplanation {
   readonly reasonText?: string | null
   readonly comment?: string | null
   readonly cancellationReason?: string | null
+  readonly documents?: readonly StudentAttendanceDocument[]
+}
+
+export interface StudentAttendanceDocument {
+  readonly id: string
+  readonly name: string
+  readonly contentType: string
+  readonly size: number
+  readonly state: string
+  readonly expiresAt?: string | null
+  readonly markRevision: string
+  readonly lessonId: string
 }
 
 export interface StudentAttendanceLesson {

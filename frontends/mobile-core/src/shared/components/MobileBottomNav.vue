@@ -42,6 +42,7 @@ function navigate(item: MobileBottomNavItem): void {
     class="mobile-bottom-nav"
     :class="slotsClass"
     :data-slots="slots"
+    :data-student="items.some((item) => item.id === 'today')"
     :aria-label="ariaLabel"
   >
     <button
@@ -65,7 +66,8 @@ function navigate(item: MobileBottomNavItem): void {
         v-if="item.badge !== undefined"
         class="mobile-bottom-nav__badge"
         aria-hidden="true"
-      >{{ item.badge }}</span>
+        >{{ item.badge }}</span
+      >
     </button>
   </nav>
 </template>

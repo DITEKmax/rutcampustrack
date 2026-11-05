@@ -62,6 +62,35 @@ afterEach(() => {
 })
 
 describe('createMobileTheme', () => {
+  it('unlocks Student appearance and relocks other roles without replacing the selected preference', () => {
+    const query = mediaQuery(false)
+    const root = target(query)
+    const controller = createMobileTheme({
+      target: root as unknown as HTMLElement,
+      mode: 'light',
+      lockedMode: 'dark',
+    })
+    controllers.push(controller)
+    controller.setLockedMode?.(undefined)
+    expect(root.attributes.get(MOBILE_THEME_ATTRIBUTE)).toBe('light')
+    controller.setLockedMode?.('dark')
+    expect(controller.mode).toBe('light')
+    expect(controller.resolvedMode).toBe('dark')
+    controller.setLockedMode?.(undefined)
+    expect(controller.resolvedMode).toBe('light')
+    controller.setMode('system')
+    query.matches = true
+    query.emit()
+    expect(controller.resolvedMode).toBe('dark')
+    controller.setLockedMode?.('dark')
+    query.matches = false
+    query.emit()
+    expect(controller.resolvedMode).toBe('dark')
+    controller.setLockedMode?.(undefined)
+    expect(controller.mode).toBe('system')
+    expect(controller.resolvedMode).toBe('light')
+  })
+
   it('retains every chosen mode while keeping locked DOM/resolved appearance dark', () => {
     const query = mediaQuery(false)
     const root = target(query)

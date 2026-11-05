@@ -1,6 +1,6 @@
 /* eslint-disable */
 // Generated from docs/openapi/auth.json. Do not edit.
-// Contract: Auth session/role; SHA-256: f4c0e38e0d5cb9bc7441079209aa552ae9b9203a1f537525507137f9be1d6044
+// Contract: Auth session/role; SHA-256: 88877967a3e1878aa587324178f5e0ff807e8593bc0c1127563c628ebef2cfdb
 
 export interface paths {
     "/auth/account-history": {
@@ -3552,13 +3552,13 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Invalid or tampered initData, or user not linked */
+            /** @description Invalid, expired or future initData, or Telegram account not linked */
             401: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["TokenResponse"];
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
                 };
             };
             /** @description Доступ запрещён */
@@ -3599,6 +3599,15 @@ export interface operations {
             };
             /** @description Внутренняя ошибка сервера */
             500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Authentication authority unavailable */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };

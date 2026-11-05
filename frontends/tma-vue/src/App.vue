@@ -1,6 +1,18 @@
 <script setup lang="ts">
+import TelegramAuthScreen from '../../mobile-core/src/features/auth/TelegramAuthScreen.vue';
+import AuthSuccessOverlay from '../../mobile-core/src/features/auth/AuthSuccessOverlay.vue';
+import { useAuthSuccess } from '../../mobile-core/src/features/auth/use-auth-success';
 import { createDeviceThemeMirror, createDeviceThemeTransport } from '../../shared/foundation';
-import { computed, nextTick, onBeforeUnmount, onMounted, provide, ref, shallowRef, watch } from 'vue';
+import {
+  computed,
+  nextTick,
+  onBeforeUnmount,
+  onMounted,
+  provide,
+  ref,
+  shallowRef,
+  watch,
+} from 'vue';
 import {
   AdminAccessApiError,
   type AdminAccessClient,
@@ -97,8 +109,11 @@ import {
 } from './telegram';
 import { useTmaSession } from './tma-session';
 import { createTelegramReportDownloadPort } from './report-download-adapter';
-import { TmaAuthError } from './tma-auth';
+import { TmaAuthError, type TmaProofCode } from './tma-auth';
 import { publicPasswordRecoveryUrl } from './password-recovery-link';
+
+const authSuccess = useAuthSuccess();
+const authSuccessVisible = authSuccess.visible;
 
 const fixtureMode = import.meta.env.VITE_MOBILE_FIXTURE_MODE === 'true';
 if (fixtureMode) installFixtureTelegramHost();
@@ -109,6 +124,7 @@ const sessionOwner = useTmaSession({
   fetcher: fixtureTransport ?? nativeFetcher,
   getInitData: () => host.start(),
 });
+watch(sessionOwner.resetGeneration, () => authSuccess.clear(), { flush: 'sync' });
 const reportDownload = computed(() =>
   createTelegramReportDownloadPort(sessionOwner.createReportDownloadClient(currentFetcher()), host),
 );
@@ -250,6 +266,7 @@ const headmanGroupId = ref<number | null>(null);
 const ready = ref(false);
 const offline = ref(typeof navigator !== 'undefined' ? !navigator.onLine : false);
 const error = ref<string | null>(null);
+const proofCode = ref<TmaProofCode | null>(null);
 const logoutPending = ref(false);
 const logoutUnconfirmed = ref(false);
 const bootstrapping = ref(false);
@@ -446,6 +463,10 @@ const notificationsEntryVisible = computed(
     authView.value !== 'role',
 );
 const studentViewVisible = computed(() => authView.value === 'student' && api.value !== null);
+// The accepted Student surface unlocks the existing theme owner; all other roles stay dark.
+watch(studentViewVisible, (visible) => theme?.setLockedMode?.(visible ? undefined : 'dark'), {
+  immediate: true,
+});
 const canOpenNotificationTarget = computed(
   () => notificationsEntryVisible.value && notificationsApi.value !== null && !offline.value,
 );
@@ -916,6 +937,7 @@ function asProfileError(cause: unknown): ProfileRequestError {
 }
 
 function invalidateOwnerSynchronously(options: { clearAuth?: boolean } = {}): void {
+  authSuccess.clear();
   if (options.clearAuth !== false) sessionOwner.clear();
   if (roleOperationGeneration !== null && !sessionOwner.isCurrent(roleOperationGeneration)) {
     roleOperation += 1;
@@ -977,6 +999,7 @@ function activateMapRole(value: ProfileSnapshot): void {
       : null;
   offline.value = false;
   error.value = null;
+  proofCode.value = null;
   ownerRevision.value += 1;
   authView.value = value.activeRole === 'ADMIN' ? 'admin-profile' : 'map';
   if (value.activeRole === 'ADMIN') {
@@ -1023,6 +1046,7 @@ function openAdminRoleSwitch(): void {
     return;
   roleError.value = null;
   error.value = null;
+  proofCode.value = null;
   adminRoleReturn.value = adminProfileViewVisible.value ? 'admin-profile' : 'admin-home';
   authView.value = 'admin-role-switch';
 }
@@ -1039,6 +1063,7 @@ async function logout(): Promise<void> {
   invalidateOwnerSynchronously({ clearAuth: false });
   authView.value = 'signed-out';
   error.value = null;
+  proofCode.value = null;
   offline.value = false;
   ready.value = true;
   bootstrapping.value = false;
@@ -1067,6 +1092,7 @@ async function activateTeacherCandidate(candidate: TeacherCandidate): Promise<vo
   });
   offline.value = false;
   error.value = null;
+  proofCode.value = null;
   ownerRevision.value += 1;
   authView.value = 'teacher';
 }
@@ -1098,18 +1124,21 @@ function activateHeadmanOwner(value: ProfileSnapshot, generation: number): void 
   });
   offline.value = false;
   error.value = null;
+  proofCode.value = null;
   ownerRevision.value += 1;
   authView.value = 'headman';
 }
 
 async function bootstrap(): Promise<void> {
   if (bootstrapping.value || authView.value === 'signed-out') return;
+  proofCode.value = null;
   if (browserIsOffline()) {
     offline.value = true;
     ready.value = true;
     error.value = 'TMA работает только при подключении к интернету';
     return;
   }
+  const presentingAuth = !profile.value;
   bootstrapping.value = true;
   const operation = ++bootstrapOperation;
   let operationGeneration = sessionOwner.currentGeneration();
@@ -1178,6 +1207,8 @@ async function bootstrap(): Promise<void> {
     }
     offline.value = false;
     error.value = null;
+  proofCode.value = null;
+    if (presentingAuth && sessionOwner.isCurrent(candidateProfile.generation)) authSuccess.show();
   } catch (cause) {
     if (
       operation !== bootstrapOperation ||
@@ -1194,6 +1225,7 @@ async function bootstrap(): Promise<void> {
       // cannot complete; a later retry can reuse its recovery intent.
       offline.value = true;
     }
+    proofCode.value = cause instanceof TmaAuthError ? cause.code ?? null : null;
     error.value = cause instanceof Error ? cause.message : 'Не удалось открыть приложение';
   } finally {
     if (operation === bootstrapOperation) {
@@ -1217,6 +1249,7 @@ async function selectRole(
   pendingRole.value = role;
   roleError.value = null;
   error.value = null;
+  proofCode.value = null;
   const generation = sessionOwner.currentGeneration();
   const operation = ++roleOperation;
   let operationGeneration = generation;
@@ -1317,6 +1350,7 @@ function handleProfileInvalidated(
   invalidateOwnerSynchronously();
   offline.value = false;
   error.value = null;
+  proofCode.value = null;
   if (reason === 'logout-all' || reason === 'password-changed' || reason === 'session-terminated') {
     authView.value = 'signed-out';
     ready.value = true;
@@ -1334,6 +1368,7 @@ const stopSessionInvalidation = sessionOwner.subscribeInvalidation(() => {
   authView.value = 'role';
   offline.value = false;
   error.value = null;
+  proofCode.value = null;
   roleError.value = null;
   authorityBootstrapPending = true;
   if (!bootstrapping.value) void bootstrap();
@@ -1386,11 +1421,13 @@ function onOwnerError(cause: unknown): void {
 }
 
 function offlineNow(): void {
+  proofCode.value = null;
   offline.value = true;
   error.value = 'TMA работает только при подключении к интернету';
 }
 
 function onlineNow(): void {
+  proofCode.value = null;
   themeMirror?.reconcile();
   if (authView.value === 'signed-out') return;
   // Browser online is only a transport hint. Keep the owner read-only until
@@ -1438,6 +1475,19 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
+  <AuthSuccessOverlay :visible="authSuccessVisible">
+    <TelegramAuthScreen
+      v-if="!ready || (!featureVisible && !profile && error) || authSuccessVisible"
+      v-show="(!featureVisible && !profile && (!ready || error)) || authSuccessVisible"
+      :success="authSuccessVisible"
+      :error="error"
+      :proof-code="proofCode"
+      :outside="!host.app?.initData"
+      :offline="offline && !proofCode"
+      :loading="bootstrapping"
+      @retry="bootstrap"
+    />
+  </AuthSuccessOverlay>
   <p
     v-if="notificationLaunchNotice && notificationsEntryVisible"
     class="notification-launch-notice"
@@ -1465,6 +1515,7 @@ onBeforeUnmount(() => {
   />
   <Teleport to="body">
     <NotificationsScreen
+      :student-ui="studentViewVisible"
       v-if="notificationsOpen && notificationsApi"
       :key="notificationContextKey"
       :api="notificationsApi"
@@ -1761,6 +1812,7 @@ onBeforeUnmount(() => {
     />
   </AdminShell>
   <StudentFeatureOwner
+    :overlay-active="notificationsOpen"
     v-else-if="studentViewVisible"
     :realtime-revision="notificationRealtimeRevision"
     ref="studentNotificationOwner"
@@ -1824,27 +1876,5 @@ onBeforeUnmount(() => {
   >
     <h2>Подключись к интернету</h2>
     <p>{{ error ?? 'TMA работает только при подключении к интернету' }}</p>
-  </section>
-  <section
-    v-if="!featureVisible && !profile && (!ready || error)"
-    class="today-state"
-    :class="{ 'today-state--error': Boolean(error) }"
-    :role="error ? 'alert' : undefined"
-    aria-live="polite"
-  >
-    <span
-      v-if="!error"
-      class="today-state__spinner"
-      aria-hidden="true"
-    />
-    <h2 v-if="error"> Не удалось открыть приложение </h2>
-    <p>{{ error ?? 'Подключаемся к Telegram…' }}</p>
-    <button
-      v-if="error && !offline"
-      type="button"
-      @click="bootstrap"
-    >
-      Повторить
-    </button>
   </section>
 </template>

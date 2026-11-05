@@ -2,7 +2,7 @@
 import { useProjectionRefresh } from '../projection-refresh';
 import type { NotificationAction } from '../../features/notifications/notifications-v2-models';
 import { computed, onBeforeUnmount, reactive, ref, shallowRef, watch } from 'vue';
-import { useQuery, useQueryClient } from '@tanstack/vue-query';
+import { useQueryClient } from '@tanstack/vue-query';
 import type { CampusMapClient } from '../../api/map-client';
 import { StudentApi, StudentApiError } from '../../api/student-client';
 import type {
@@ -25,13 +25,16 @@ import AttendanceScreen from '../../features/attendance/AttendanceScreen.vue';
 import {
   findAttendanceLesson,
   type AttendanceGraphRange,
+  type AttendanceDocumentResolver,
   type AttendanceLesson,
   type AttendanceMode,
 } from '../../features/attendance/attendance-view-model';
 import { useAttendance } from '../../features/attendance/use-attendance';
+import { useAttendanceDocuments } from '../../features/attendance/use-attendance-documents';
 import HomeworkScreen from '../../features/homework/HomeworkScreen.vue';
 import type { HeadmanHomeworkApi } from '../../features/homework/headman-homework-client';
 import { homeworkQueryKey, useHomework } from '../../features/homework/use-homework';
+import BrowserLoginScreen from '../../features/profile/BrowserLoginScreen.vue';
 import AccountHistoryScreen from '../../features/profile/AccountHistoryScreen.vue';
 import AppearanceScreen from '../../features/profile/AppearanceScreen.vue';
 import MoreScreen from '../../features/profile/MoreScreen.vue';
@@ -58,7 +61,6 @@ import type {
   ProfileTheme,
 } from '../../features/profile/profile-types';
 import TodayScreen from '../../features/today/TodayScreen.vue';
-import SemesterScheduleScreen from '../../features/today/SemesterScheduleScreen.vue';
 import RoleSwitchDialog from './RoleSwitchDialog.vue';
 import { todayQueryKey, useToday } from '../../features/today/use-today';
 import ExcuseRequestScreen from '../../features/requests/ExcuseRequestScreen.vue';
@@ -121,6 +123,7 @@ const props = withDefaults(
     ownerKey?: string | null;
     offline: boolean;
     readOnly?: boolean;
+    overlayActive?: boolean;
     todayFallback?: StudentToday | null;
     homeworkFallback?: StudentHomework | null;
     semesterStartsOn?: string;
@@ -131,6 +134,7 @@ const props = withDefaults(
     host?: MobileHostAdapter | null;
     mapClient?: CampusMapClient | null;
     profilePort?: ProfilePort | null;
+    attendanceDocumentForLesson?: AttendanceDocumentResolver;
     profileRoleSelect?:
       | ((role: ProfileRole, expectedSessionVersion: string) => void | Promise<void>)
       | undefined;
@@ -154,6 +158,7 @@ const props = withDefaults(
   {
     realtimeRevision: 0,
     readOnly: false,
+    overlayActive: false,
     unreadCount: null,
     ownerKey: null,
     todayFallback: null,
@@ -264,6 +269,9 @@ const attendanceMode = ref<AttendanceMode>('days');
 const attendanceGraphRange = ref<AttendanceGraphRange>('days');
 const attendanceExpandedSubjectId = ref<string | null>(null);
 const attendanceActionLessonId = ref<string | null>(null);
+const attendanceScreen = ref<InstanceType<typeof AttendanceScreen> | null>(null);
+const attendanceOverlayVisible = ref(false);
+const requestDateRange = ref<{ from: string; to: string } | null>(null);
 const todayActionLessonId = ref<string | null>(null);
 const todayRequestLesson = shallowRef<TodayLesson | null>(null);
 const attendanceRequestLesson = shallowRef<AttendanceLesson | null>(null);
@@ -288,44 +296,6 @@ const resolvedTheme = ref<MobileThemeResolvedMode>(props.themeController?.resolv
 let stopTheme = (): void => undefined;
 let disposed = false;
 
-const semesterQuery = useQuery({
-  queryKey: computed(() => [
-    'student',
-    'semester-schedule',
-    scope.value ? studentFeatureScopeIdentity(scope.value) : null,
-  ]),
-  enabled: computed(
-    () =>
-      props.loadSemesterSchedule &&
-      route.value.id === 'more/schedule' &&
-      !offline.value &&
-      Boolean(scope.value?.semesterId),
-  ),
-  retry: false,
-  queryFn: async () => {
-    const current = scope.value;
-    if (!current?.semesterId || offline.value || disposed)
-      throw new Error('Расписание семестра недоступно');
-    const identity = studentFeatureScopeIdentity(current);
-    const response = await api.value.getSemesterSchedule(current.semesterId);
-    if (
-      disposed ||
-      offline.value ||
-      !scope.value ||
-      studentFeatureScopeIdentity(scope.value) !== identity
-    )
-      throw new Error('Сессия изменилась во время загрузки расписания');
-    return response.data;
-  },
-});
-const displayedSemester = computed(() =>
-  props.loadSemesterSchedule ? (semesterQuery.data.value ?? null) : props.semesterSchedule,
-);
-watch(displayedSemester, (schedule) => {
-  if (!schedule) return;
-  const dates = [...new Set(schedule.lessons.map((lesson) => lesson.date))].sort();
-  if (!dates.includes(selectedDate.value)) selectedDate.value = dates[0] ?? selectedDate.value;
-});
 const today = useToday(
   api.value,
   computed(() => props.api !== null),
@@ -358,6 +328,7 @@ const stopRequestsScope = watch(
       (!value || studentFeatureScopeIdentity(previous) !== studentFeatureScopeIdentity(value))
     ) {
       purgeRequestsDrafts(previous.userId ?? undefined);
+      requestDateRange.value = null;
     }
     requestDraft.value = value?.userId
       ? getOrCreateRequestsDraft(value.userId, requestsSessionGeneration(value))
@@ -519,6 +490,15 @@ const homeworkLoading = computed(
 const ownerIdentity = computed(() =>
   scope.value ? studentFeatureScopeIdentity(scope.value) : null,
 );
+const realAttendanceDocuments = useAttendanceDocuments(() => ({
+  api: props.api, ownerKey: ownerIdentity.value ?? "",
+  semesterId: scope.value?.semesterId ?? null,
+  allowed: scope.value?.activeRole === 'STUDENT' && props.api !== null,
+  offline: offline.value, data: attendance.data.value,
+}));
+const attendanceDocumentResolver: AttendanceDocumentResolver = (lessonId, explanation) =>
+  props.attendanceDocumentForLesson?.(lessonId, explanation) ?? realAttendanceDocuments(lessonId, explanation);
+
 function refreshTodayAfterRequestDecision(ownerScopeAtStart: StudentFeatureScope | null): void {
   if (
     !ownerScopeAtStart ||
@@ -528,6 +508,7 @@ function refreshTodayAfterRequestDecision(ownerScopeAtStart: StudentFeatureScope
   )
     return;
   void today.refresh(ownerScopeAtStart);
+  void requests.loadOptions().catch(handleRequestsError);
 }
 
 const activeHomeworkNotification = computed(() =>
@@ -1338,6 +1319,8 @@ function profileRoute(routeName: ProfileRoute): MobileRoute | null {
   if (routeName === 'appearance') return nestedRoute('profile', 'profile/appearance', 'detail');
   if (routeName === 'security') return nestedRoute('profile', 'profile/security', 'detail');
   if (routeName === 'sessions') return nestedRoute('profile', 'profile/sessions', 'detail');
+  if (routeName === 'browser-login')
+    return nestedRoute('profile', 'profile/browser-login', 'detail');
   if (routeName === 'history') return nestedRoute('profile', 'profile/history', 'detail');
   return null;
 }
@@ -1361,6 +1344,35 @@ function openHomeRoleSwitch(): void {
   homeRoleDialogOpen.value = true;
   if (!profileView.value.snapshot) void loadProfileSnapshot();
 }
+
+let releaseRoleBack: (() => void) | undefined;
+watch(
+  () => [homeRoleDialogOpen.value, props.host] as const,
+  ([open, host]) => {
+    releaseRoleBack?.();
+    releaseRoleBack =
+      open && host?.backOwner === 'host'
+        ? host.claimBack?.(() => {
+            if (profilePendingRole.value === null) homeRoleDialogOpen.value = false;
+          })
+        : undefined;
+  },
+);
+
+let releaseAttendanceBack: (() => void) | undefined;
+watch(
+  () =>
+    [attendanceOverlayVisible.value, props.host, props.overlayActive, route.value.root] as const,
+  ([visible, host, obscured, root]) => {
+    releaseAttendanceBack?.();
+    releaseAttendanceBack =
+      visible && !obscured && root === 'attendance' && host?.backOwner === 'host'
+        ? host.claimBack?.(() => {
+            attendanceScreen.value?.closeOverlay();
+          })
+        : undefined;
+  },
+);
 
 function backProfile(): void {
   navigation.back();
@@ -1487,7 +1499,6 @@ watch(
       statistics.detailQuery.error.value,
       statistics.allDetailQuery.error.value,
       statistics.rankingQuery.error.value,
-      semesterQuery.error.value,
     ] as const,
   (errors) => {
     if (disposed || !scope.value) return;
@@ -1510,14 +1521,6 @@ watch(
 );
 
 function navigateMore(routeName: ProfileRoute): void {
-  if (routeName === 'schedule') {
-    const dates = [
-      ...new Set(displayedSemester.value?.lessons.map((lesson) => lesson.date) ?? []),
-    ].sort();
-    if (!dates.includes(selectedDate.value)) selectedDate.value = dates[0] ?? selectedDate.value;
-    navigation.push(nestedRoute('more', 'more/schedule', 'overview'));
-    return;
-  }
   if (routeName === 'statistics') {
     navigation.push(nestedRoute('more', 'more/statistics', 'overview'));
     return;
@@ -1925,6 +1928,7 @@ async function submitExcuse(payload: Parameters<typeof requests.submitExcuse>[0]
       excuseFiles: [],
     });
     requests.selectBucket('open');
+    void requests.loadOptions().catch(handleRequestsError);
     void attendance.query.refetch();
     if (fromToday && route.value.id === 'today/excuse') finishTodayRequest(ack);
     else if (fromAttendance && route.value.id === submittedRouteId) {
@@ -1951,6 +1955,7 @@ async function submitLateCheckin(
     if (disposed || ownerIdentity.value !== identity) return;
     updateRequestDraft({ view: 'inbox', lateLessonId: null });
     requests.selectBucket('open');
+    void requests.loadOptions().catch(handleRequestsError);
     void attendance.query.refetch();
     if (fromToday && route.value.id === 'today/late') finishTodayRequest(ack);
     else if (fromAttendance && route.value.id === submittedRouteId) {
@@ -2008,12 +2013,16 @@ function checkin(lesson: TodayLesson): void {
       if (
         disposed ||
         ownerIdentity.value !== requestIdentity ||
-        scope.value?.activeRole !== 'STUDENT' ||
-        ack.request?.origin !== 'AUTO_GEO_FAILURE'
+        scope.value?.activeRole !== 'STUDENT'
       )
         return;
-      requests.controller.invalidateOpenBucket();
-      if (route.value.id === 'more/requests') ensureRequestsRoute(route.value);
+      void attendance.query.refetch();
+      void statistics.query.refetch();
+      void requests.loadOptions().catch(handleRequestsError);
+      if (ack.request?.origin === 'AUTO_GEO_FAILURE') {
+        requests.controller.invalidateOpenBucket();
+        if (route.value.id === 'more/requests') ensureRequestsRoute(route.value);
+      }
     })
     .catch((error: unknown) => {
       if (disposed || ownerIdentity.value !== requestIdentity) return;
@@ -2050,6 +2059,8 @@ function openMaterialFromItem(url: string, item: StudentHomeworkItem): void {
 
 onBeforeUnmount(() => {
   disposed = true;
+  releaseRoleBack?.();
+  releaseAttendanceBack?.();
   stopReadFreshness();
   const currentScope = scope.value;
   if (currentScope?.userId) purgeRequestsDrafts(currentScope.userId);
@@ -2093,7 +2104,6 @@ useProjectionRefresh(
     if (id === 'today') await today.refresh();
     else if (id === 'homework') await homework.query.refetch();
     else if (id === 'attendance') await attendance.query.refetch();
-    else if (id === 'more/schedule') await semesterQuery.refetch();
     else if (id.startsWith('more/statistics')) await statistics.query.refetch();
   },
   {
@@ -2108,343 +2118,381 @@ useProjectionRefresh(
   },
 );
 
+function studentHostBack(): void {
+  if (route.value.root === 'attendance' && attendanceScreen.value?.closeOverlay()) return;
+  if (route.value.id.startsWith('more/requests/')) backRequests();
+  else if (/^(today|attendance)\/(excuse|late)$/.test(route.value.id)) backTodayTask();
+  else navigation.back();
+}
+
 defineExpose({ openNotificationAction });
 </script>
 
 <template>
-  <MobileShell
-    v-if="
-      route.id === 'today/excuse' ||
+  <div
+    data-student-ui
+    :data-theme="resolvedTheme"
+  >
+    <MobileShell
+      v-if="
+        route.id === 'today/excuse' ||
         route.id === 'today/late' ||
         route.id === 'attendance/excuse' ||
         route.id === 'attendance/late'
-    "
-    custom-back
-    :route="route"
-    :navigation="navigation"
-    :nav-items="navItems"
-    :active-id="route.root"
-    :host="host"
-  >
-    <template #back />
-    <ExcuseRequestScreen
-      v-if="route.id === 'today/excuse' || route.id === 'attendance/excuse'"
-      :today-lesson="route.root === 'today' ? todayRequestLesson : null"
-      :selected-lesson="route.root === 'attendance' ? attendanceRequestSummary : null"
-      :attendance-status="route.root === 'attendance' ? attendanceRequestStatus : null"
-      :back-label="
-        route.root === 'attendance' ? 'Вернуться к посещаемости' : 'Вернуться на сегодня'
       "
-      :access="requests.view.access"
-      :lessons="requestLessons"
-      :lesson-ids="requestDraft?.excuseLessonIds ?? []"
-      :reasons="requestReasons"
-      :reason="requestDraft?.excuseReason ?? null"
-      :comment="requestDraft?.excuseComment ?? ''"
-      :files="requestDraft?.excuseFiles ?? []"
-      :file-limits="requestFileLimits"
-      :lessons-loading="requests.view.optionsLoading"
-      :lessons-error="requests.view.optionsError"
-      :offline="offline"
-      :submitting="requests.view.mutation === 'submitting'"
-      :submit-error="requestSubmitError || requests.view.mutationError"
-      :disabled="requestReadOnly"
-      :ambiguous="requestAmbiguous"
-      @back="backTodayTask"
-      @retry-lessons="() => requests.loadOptions().catch(handleRequestsError)"
-      @update:lesson-ids="updateRequestLessonIds"
-      @update:reason="updateRequestReason"
-      @update:comment="updateRequestComment"
-      @update:files="updateRequestFiles"
-      @abandon="abandonRequestCommand"
-      @submit="submitExcuse"
-    />
-    <LateCheckinRequestScreen
-      v-else
-      :today-lesson="route.root === 'today' ? todayRequestLesson : null"
-      :selected-lesson="route.root === 'attendance' ? attendanceRequestSummary : null"
-      :attendance-status="route.root === 'attendance' ? attendanceRequestStatus : null"
-      :back-label="
-        route.root === 'attendance' ? 'Вернуться к посещаемости' : 'Вернуться на сегодня'
-      "
-      :access="requests.view.access"
-      :lessons="requestLessons"
-      :lesson-id="requestDraft?.lateLessonId ?? null"
-      :budget="requestBudget"
-      :lessons-loading="requests.view.optionsLoading"
-      :lessons-error="requests.view.optionsError"
-      :offline="offline"
-      :submitting="requests.view.mutation === 'submitting'"
-      :submit-error="requestSubmitError || requests.view.mutationError"
-      :disabled="requestReadOnly"
-      :ambiguous="requestAmbiguous"
-      @back="backTodayTask"
-      @cancel="backTodayTask"
-      @retry-lessons="() => requests.loadOptions().catch(handleRequestsError)"
-      @update:lesson-id="updateLateLesson"
-      @abandon="abandonRequestCommand"
-      @submit="submitLateCheckin"
-    />
-  </MobileShell>
-  <TodayScreen
-    v-else-if="route.root === 'today'"
-    :on-notifications="onNotifications"
-    :unread-count="unreadCount"
-    :today="displayToday"
-    :loading="todayLoading"
-    :error="todayError"
-    :offline="offline"
-    :updated-at="updatedAt"
-    :submitting-lesson-id="
-      today.mutation.isPending.value ? (today.mutation.variables.value?.lessonId ?? null) : null
-    "
-    :acquiring-lesson-id="acquiringLessonId"
-    :checkin-error="checkinError"
-    :expanded-lesson-id="todayActionLessonId"
-    :request-options="todayRequestOptions"
-    :options-loading="requests.view.optionsLoading"
-    :options-error="requests.view.optionsError"
-    :semester-schedule="semesterSchedule"
-    :selected-date="selectedDate"
-    :nav-items="navItems"
-    :route="route"
-    :navigation="navigation"
-    :active-id="'today'"
-    :host="host"
-    :read-only="readOnly || offline"
-    :role-switch-disabled="homeRoleSwitchDisabled"
-    @checkin="checkin"
-    @select-date="selectedDate = $event"
-    @navigate="navigate"
-    @role-switch="openHomeRoleSwitch"
-    @retry="retryToday"
-    @retry-options="() => requests.loadOptions().catch(handleRequestsError)"
-    @toggle-actions="toggleTodayActions"
-    @open-request="openTodayRequest"
-    @back="backTodayTask"
-  />
-  <HomeworkScreen
-    v-else-if="route.root === 'homework'"
-    :homework="homeworkScreenData.homework"
-    :loading="homeworkScreenData.loading"
-    :error="homeworkScreenData.error"
-    :focus-item-id="homeworkScreenData.focusItemId"
-    :focus-request-id="homeworkScreenData.focusRequestId"
-    :unavailable-message="homeworkScreenData.unavailableMessage"
-    :nav-items="navItems"
-    :offline="offline"
-    :read-only="readOnly"
-    :updated-at="updatedAt"
-    :route="route"
-    :navigation="navigation"
-    :active-id="'homework'"
-    :host="host"
-    :owner-key="ownerIdentity"
-    :historical="homework.isHistorical.value"
-    :can-load-previous="homework.canLoadPrevious.value"
-    :period-mode="homework.periodMode.value"
-    :selected-date="homework.selectedDate.value"
-    :period-range="homework.periodRange.value"
-    :semester-range="homework.periodSemester.value"
-    :today-date="homework.todayDate.value"
-    :is-item-pending="homework.isPending"
-    :item-error="homework.itemError"
-    @complete="complete"
-    @retry="retry"
-    @retry-feed="retryHomeworkFeed"
-    @open-material="openMaterialFromItem"
-    @previous="homework.loadPrevious"
-    @return-today="returnHomeworkToToday"
-    @select-period="navigateHomeworkPeriod(() => homework.selectPeriod($event))"
-    @select-date="navigateHomeworkPeriod(() => homework.selectDate($event))"
-    @step-period="navigateHomeworkPeriod(() => homework.stepPeriod($event))"
-    @navigate="navigate"
-    @back="navigation.back()"
-  />
-  <MobileShell
-    v-else-if="route.root === 'attendance'"
-    :route="route"
-    :navigation="navigation"
-    :nav-items="navItems"
-    :active-id="'attendance'"
-    :host="host"
-  >
-    <template #back />
-    <main
-      v-if="activeLessonNotification && activeLessonNotification.status !== 'available'"
-      class="attendance-screen"
+      custom-back
+      :route="route"
+      :navigation="navigation"
+      :nav-items="navItems"
+      :active-id="route.root"
+      :host="host"
+      :host-back-action="studentHostBack"
     >
-      <section
-        class="attendance-state"
-        :class="{ 'attendance-state--error': activeLessonNotification.status === 'error' }"
-        :role="activeLessonNotification.status === 'error' ? 'alert' : 'status'"
-        aria-live="polite"
+      <template #back />
+      <ExcuseRequestScreen
+        v-if="route.id === 'today/excuse' || route.id === 'attendance/excuse'"
+        :today-lesson="route.root === 'today' ? todayRequestLesson : null"
+        :selected-lesson="route.root === 'attendance' ? attendanceRequestSummary : null"
+        :attendance-status="route.root === 'attendance' ? attendanceRequestStatus : null"
+        :back-label="
+          route.root === 'attendance' ? 'Вернуться к посещаемости' : 'Вернуться на сегодня'
+        "
+        :access="requests.view.access"
+        :lessons="requestLessons"
+        :lesson-ids="requestDraft?.excuseLessonIds ?? []"
+        :reasons="requestReasons"
+        :reason="requestDraft?.excuseReason ?? null"
+        :comment="requestDraft?.excuseComment ?? ''"
+        :files="requestDraft?.excuseFiles ?? []"
+        :file-limits="requestFileLimits"
+        :lessons-loading="requests.view.optionsLoading"
+        :lessons-error="requests.view.optionsError"
+        :offline="offline"
+        :submitting="requests.view.mutation === 'submitting'"
+        :submit-error="requestSubmitError || requests.view.mutationError"
+        :disabled="requestReadOnly"
+        :ambiguous="requestAmbiguous"
+        @back="backTodayTask"
+        @retry-lessons="() => requests.loadOptions().catch(handleRequestsError)"
+        @update:lesson-ids="updateRequestLessonIds"
+        @update:reason="updateRequestReason"
+        @update:comment="updateRequestComment"
+        @update:files="updateRequestFiles"
+        @abandon="abandonRequestCommand"
+        @submit="submitExcuse"
+      />
+      <LateCheckinRequestScreen
+        v-else
+        :today-lesson="route.root === 'today' ? todayRequestLesson : null"
+        :selected-lesson="route.root === 'attendance' ? attendanceRequestSummary : null"
+        :attendance-status="route.root === 'attendance' ? attendanceRequestStatus : null"
+        :back-label="
+          route.root === 'attendance' ? 'Вернуться к посещаемости' : 'Вернуться на сегодня'
+        "
+        :access="requests.view.access"
+        :lessons="requestLessons"
+        :lesson-id="requestDraft?.lateLessonId ?? null"
+        :budget="requestBudget"
+        :lessons-loading="requests.view.optionsLoading"
+        :lessons-error="requests.view.optionsError"
+        :offline="offline"
+        :submitting="requests.view.mutation === 'submitting'"
+        :submit-error="requestSubmitError || requests.view.mutationError"
+        :disabled="requestReadOnly"
+        :ambiguous="requestAmbiguous"
+        @back="backTodayTask"
+        @cancel="backTodayTask"
+        @retry-lessons="() => requests.loadOptions().catch(handleRequestsError)"
+        @update:lesson-id="updateLateLesson"
+        @abandon="abandonRequestCommand"
+        @submit="submitLateCheckin"
+      />
+    </MobileShell>
+    <TodayScreen
+      v-else-if="route.root === 'today'"
+      :on-notifications="onNotifications"
+      :unread-count="unreadCount"
+      :today="displayToday"
+      :loading="todayLoading"
+      :error="todayError"
+      :offline="offline"
+      :updated-at="updatedAt"
+      :submitting-lesson-id="
+        today.mutation.isPending.value ? (today.mutation.variables.value?.lessonId ?? null) : null
+      "
+      :acquiring-lesson-id="acquiringLessonId"
+      :checkin-error="checkinError"
+      :expanded-lesson-id="todayActionLessonId"
+      :request-options="todayRequestOptions"
+      :options-loading="requests.view.optionsLoading"
+      :options-error="requests.view.optionsError"
+      :semester-schedule="semesterSchedule"
+      :selected-date="selectedDate"
+      :nav-items="navItems"
+      :route="route"
+      :navigation="navigation"
+      :active-id="'today'"
+      :host="host"
+      :read-only="readOnly || offline"
+      :role-switch-disabled="homeRoleSwitchDisabled"
+      @checkin="checkin"
+      @select-date="selectedDate = $event"
+      @navigate="navigate"
+      @role-switch="openHomeRoleSwitch"
+      @retry="retryToday"
+      @retry-options="() => requests.loadOptions().catch(handleRequestsError)"
+      @toggle-actions="toggleTodayActions"
+      @open-request="openTodayRequest"
+      @back="backTodayTask"
+    />
+    <HomeworkScreen
+      v-else-if="route.root === 'homework'"
+      :homework="homeworkScreenData.homework"
+      :loading="homeworkScreenData.loading"
+      :error="homeworkScreenData.error"
+      :focus-item-id="homeworkScreenData.focusItemId"
+      :focus-request-id="homeworkScreenData.focusRequestId"
+      :unavailable-message="homeworkScreenData.unavailableMessage"
+      :nav-items="navItems"
+      :offline="offline"
+      :read-only="readOnly"
+      :updated-at="updatedAt"
+      :route="route"
+      :navigation="navigation"
+      :active-id="'homework'"
+      :host="host"
+      :owner-key="ownerIdentity"
+      :historical="homework.isHistorical.value"
+      :can-load-previous="homework.canLoadPrevious.value"
+      :period-mode="homework.periodMode.value"
+      :selected-date="homework.selectedDate.value"
+      :period-range="homework.periodRange.value"
+      :semester-range="homework.periodSemester.value"
+      :today-date="homework.todayDate.value"
+      :is-item-pending="homework.isPending"
+      :item-error="homework.itemError"
+      @complete="complete"
+      @retry="retry"
+      @retry-feed="retryHomeworkFeed"
+      @open-material="openMaterialFromItem"
+      @previous="homework.loadPrevious"
+      @return-today="returnHomeworkToToday"
+      @select-period="navigateHomeworkPeriod(() => homework.selectPeriod($event))"
+      @select-date="navigateHomeworkPeriod(() => homework.selectDate($event))"
+      @step-period="navigateHomeworkPeriod(() => homework.stepPeriod($event))"
+      @navigate="navigate"
+      @back="navigation.back()"
+    />
+    <MobileShell
+      v-else-if="route.root === 'attendance'"
+      :route="route"
+      :navigation="navigation"
+      :nav-items="navItems"
+      :active-id="'attendance'"
+      :host="host"
+      :host-back-action="studentHostBack"
+    >
+      <template #back />
+      <main
+        v-if="activeLessonNotification && activeLessonNotification.status !== 'available'"
+        class="attendance-screen"
       >
-        <button
-          class="attendance-back-button"
-          type="button"
-          @click="backFromLessonNotificationTarget"
+        <section
+          class="attendance-state"
+          :class="{ 'attendance-state--error': activeLessonNotification.status === 'error' }"
+          :role="activeLessonNotification.status === 'error' ? 'alert' : 'status'"
+          aria-live="polite"
         >
-          Назад к посещаемости
-        </button>
+          <button
+            class="attendance-back-button"
+            type="button"
+            @click="backFromLessonNotificationTarget"
+          >
+            Назад к посещаемости
+          </button>
+          <span
+            v-if="activeLessonNotification.status === 'loading'"
+            class="attendance-state__spinner"
+            aria-hidden="true"
+          />
+          <h2>
+            {{
+              activeLessonNotification.status === 'loading'
+                ? 'Открываем занятие'
+                : activeLessonNotification.status === 'unavailable'
+                  ? 'Занятие недоступно'
+                  : 'Не удалось загрузить занятие'
+            }}
+          </h2>
+          <p v-if="activeLessonNotification.status !== 'loading'">
+            {{ activeLessonNotification.message }}
+          </p>
+          <button
+            v-if="activeLessonNotification.status === 'error'"
+            class="attendance-state__retry"
+            type="button"
+            @click="retryNotificationTarget"
+          >
+            Повторить
+          </button>
+        </section>
+      </main>
+      <AttendanceScreen
+        ref="attendanceScreen"
+        @overlay-visible="attendanceOverlayVisible = $event"
+        :overlay-active="overlayActive"
+        :document-for-lesson="attendanceDocumentResolver"
+        v-else
+        :state="attendance.state.value"
+        :selected-date="attendanceSelectedDate"
+        :mode="attendanceMode"
+        :graph-range="attendanceGraphRange"
+        :expanded-subject-id="attendanceExpandedSubjectId"
+        :action-lesson-id="attendanceActionLessonId"
+        :terminal="offline || props.readOnly || attendance.terminalReadOnly.value"
+        :focused-lesson-id="focusedNotificationLessonId"
+        :theme="resolvedTheme"
+        @select-date="attendanceSelectedDate = $event"
+        @set-mode="setAttendanceMode"
+        @set-graph-range="attendanceGraphRange = $event"
+        @toggle-subject="toggleAttendanceSubject"
+        @toggle-actions="toggleAttendanceActions"
+        @open-request="openAttendanceRequest"
+        @retry="retryAttendance"
+      />
+    </MobileShell>
+    <MobileShell
+      v-else-if="route.root === 'profile'"
+      :route="route"
+      :navigation="navigation"
+      :nav-items="navItems"
+      :active-id="'profile'"
+      :host="host"
+      :host-back-action="studentHostBack"
+    >
+      <template #back>
         <span
-          v-if="activeLessonNotification.status === 'loading'"
-          class="attendance-state__spinner"
+          hidden
           aria-hidden="true"
         />
-        <h2>
-          {{
-            activeLessonNotification.status === 'loading'
-              ? 'Открываем занятие'
-              : activeLessonNotification.status === 'unavailable'
-                ? 'Занятие недоступно'
-                : 'Не удалось загрузить занятие'
-          }}
-        </h2>
-        <p v-if="activeLessonNotification.status !== 'loading'">
-          {{ activeLessonNotification.message }}
-        </p>
-        <button
-          v-if="activeLessonNotification.status === 'error'"
-          class="attendance-state__retry"
-          type="button"
-          @click="retryNotificationTarget"
-        >
-          Повторить
-        </button>
-      </section>
-    </main>
-    <AttendanceScreen
-      v-else
-      :state="attendance.state.value"
-      :selected-date="attendanceSelectedDate"
-      :mode="attendanceMode"
-      :graph-range="attendanceGraphRange"
-      :expanded-subject-id="attendanceExpandedSubjectId"
-      :action-lesson-id="attendanceActionLessonId"
-      :terminal="offline || props.readOnly || attendance.terminalReadOnly.value"
-      :focused-lesson-id="focusedNotificationLessonId"
-      :theme="resolvedTheme"
-      @select-date="attendanceSelectedDate = $event"
-      @set-mode="setAttendanceMode"
-      @set-graph-range="attendanceGraphRange = $event"
-      @toggle-subject="toggleAttendanceSubject"
-      @toggle-actions="toggleAttendanceActions"
-      @open-request="openAttendanceRequest"
-      @retry="retryAttendance"
-    />
-  </MobileShell>
-  <MobileShell
-    v-else-if="route.root === 'profile'"
-    :route="route"
-    :navigation="navigation"
-    :nav-items="navItems"
-    :active-id="'profile'"
-    :host="host"
-  >
-    <template #back>
-      <span
-        hidden
-        aria-hidden="true"
+      </template>
+      <p
+        v-if="profileOwnerStatus"
+        class="profile-inline-error profile-owner-status"
+        data-profile-stale="true"
+        role="status"
+        aria-live="polite"
+      >
+        {{ profileOwnerStatus }}
+      </p>
+      <ProfileScreen
+        browser-login-page
+        v-if="route.kind === 'root'"
+        :snapshot="profileView.snapshot"
+        :browser-login-approval="
+          !offline && !readOnly && !profileOwnerStatus && profileView.snapshotStatus === 'ready'
+            ? (profilePort?.browserLoginApproval ?? null)
+            : null
+        "
+        :delegated-permissions="profilePermissionOptions"
+        :loading="profileView.snapshotStatus === 'loading'"
+        :error="profileView.snapshotError"
+        :theme="resolvedTheme"
+        :on-retry="retryProfileSnapshot"
+        :on-navigate="navigateProfile"
+        :on-logout="onLogout"
       />
-    </template>
-    <p
-      v-if="profileOwnerStatus"
-      class="profile-inline-error profile-owner-status"
-      data-profile-stale="true"
-      role="status"
-      aria-live="polite"
+      <RoleSwitchScreen
+        v-else-if="route.id === 'profile/role-switch'"
+        :snapshot="profileView.snapshot"
+        :pending-role="profilePendingRole"
+        :error="homeRoleError ?? profileView.snapshotError"
+        :loading="profileView.snapshotStatus === 'loading'"
+        :offline="offline"
+        :theme="resolvedTheme"
+        :on-back="backProfile"
+        :on-select-role="selectProfileRole"
+      />
+      <BrowserLoginScreen
+        v-else-if="route.id === 'profile/browser-login'"
+        :port="profilePort?.browserLoginApproval ?? null"
+        :offline="offline"
+        :theme="resolvedTheme"
+        :owner-key="ownerIdentity"
+        :on-back="backProfile"
+      />
+      <AppearanceScreen
+        theme-unlocked
+        v-else-if="route.id === 'profile/appearance'"
+        :theme="themeMode"
+        :resolved-theme="resolvedTheme"
+        :on-back="backProfile"
+        :on-theme-change="changeProfileTheme"
+      />
+      <SecurityScreen
+        v-else-if="route.id === 'profile/security'"
+        :owner-key="ownerIdentity"
+        :policy="profileView.snapshot?.passwordPolicy ?? DEFAULT_PASSWORD_POLICY"
+        :disabled="
+          props.readOnly ||
+          scope?.readOnly === true ||
+          Boolean(profileOwnerStatus) ||
+          profileView.snapshotStatus !== 'ready' ||
+          !profileView.snapshot?.activeRole ||
+          profileView.snapshot.readOnly ||
+          profileView.mutationBusy !== null
+        "
+        :error="profileView.error"
+        :busy="profileView.mutationBusy === 'password'"
+        :offline="offline || profileState === null"
+        :theme="resolvedTheme"
+        :on-back="backProfile"
+        :on-change-password="changeProfilePassword"
+        :on-recover="onRecover"
+      />
+      <SessionsScreen
+        v-else-if="route.id === 'profile/sessions'"
+        :sessions="profileView.sessions"
+        :loading="profileView.sessionsStatus === 'loading'"
+        :error="profileView.sessionsError"
+        :busy="profileView.mutationBusy !== null"
+        :terminating-session-id="profileView.terminatingSessionId"
+        :termination-error="profileView.terminationError"
+        :on-terminate-session="
+          props.profilePort?.terminateSession ? terminateProfileSession : undefined
+        "
+        :offline="offline || profileState === null"
+        :theme="resolvedTheme"
+        :on-back="backProfile"
+        :on-retry="() => retryProfileArea('sessions')"
+        :on-logout-all="logoutProfileAll"
+      />
+      <AccountHistoryScreen
+        v-else-if="route.id === 'profile/history'"
+        :events="profileView.history"
+        :loading="profileView.historyStatus === 'loading'"
+        :error="profileView.historyError"
+        :next-cursor="profileView.historyNextCursor"
+        :theme="resolvedTheme"
+        :on-back="backProfile"
+        :on-retry="() => retryProfileArea('history')"
+        :on-load-more="(cursor) => loadMoreProfile('history', cursor)"
+      />
+    </MobileShell>
+    <MobileShell
+      v-else-if="route.root === 'more'"
+      :custom-back="route.id === 'more/map'"
+      :route="route"
+      :navigation="navigation"
+      :nav-items="navItems"
+      :active-id="'more'"
+      :host="host"
+      :host-back-action="studentHostBack"
     >
-      {{ profileOwnerStatus }}
-    </p>
-    <ProfileScreen
-      v-if="route.kind === 'root'"
-      :snapshot="profileView.snapshot"
-      :browser-login-approval="
-        !offline && !readOnly && !profileOwnerStatus && profileView.snapshotStatus === 'ready'
-          ? profilePort?.browserLoginApproval ?? null
-          : null
-      "
-      :delegated-permissions="profilePermissionOptions"
-      :loading="profileView.snapshotStatus === 'loading'"
-      :error="profileView.snapshotError"
-      :theme="resolvedTheme"
-      :on-retry="retryProfileSnapshot"
-      :on-navigate="navigateProfile"
-      :on-logout="onLogout"
-    />
-    <RoleSwitchScreen
-      v-else-if="route.id === 'profile/role-switch'"
-      :snapshot="profileView.snapshot"
-      :pending-role="profilePendingRole"
-      :error="homeRoleError ?? profileView.snapshotError"
-      :loading="profileView.snapshotStatus === 'loading'"
-      :offline="offline"
-      :theme="resolvedTheme"
-      :on-back="backProfile"
-      :on-select-role="selectProfileRole"
-    />
-    <AppearanceScreen
-      v-else-if="route.id === 'profile/appearance'"
-      :theme="themeMode"
-      :resolved-theme="resolvedTheme"
-      :on-back="backProfile"
-      :on-theme-change="changeProfileTheme"
-    />
-    <SecurityScreen
-      v-else-if="route.id === 'profile/security'"
-      :owner-key="ownerIdentity"
-      :policy="profileView.snapshot?.passwordPolicy ?? DEFAULT_PASSWORD_POLICY"
-      :error="profileView.error"
-      :busy="profileView.mutationBusy === 'password'"
-      :offline="offline || profileState === null"
-      :theme="resolvedTheme"
-      :on-back="backProfile"
-      :on-change-password="changeProfilePassword"
-      :on-recover="onRecover"
-    />
-    <SessionsScreen
-      v-else-if="route.id === 'profile/sessions'"
-      :sessions="profileView.sessions"
-      :loading="profileView.sessionsStatus === 'loading'"
-      :error="profileView.sessionsError"
-      :busy="profileView.mutationBusy !== null"
-      :terminating-session-id="profileView.terminatingSessionId"
-      :termination-error="profileView.terminationError"
-      :on-terminate-session="
-        props.profilePort?.terminateSession ? terminateProfileSession : undefined
-      "
-      :offline="offline || profileState === null"
-      :theme="resolvedTheme"
-      :on-back="backProfile"
-      :on-retry="() => retryProfileArea('sessions')"
-      :on-logout-all="logoutProfileAll"
-    />
-    <AccountHistoryScreen
-      v-else-if="route.id === 'profile/history'"
-      :events="profileView.history"
-      :loading="profileView.historyStatus === 'loading'"
-      :error="profileView.historyError"
-      :next-cursor="profileView.historyNextCursor"
-      :theme="resolvedTheme"
-      :on-back="backProfile"
-      :on-retry="() => retryProfileArea('history')"
-      :on-load-more="(cursor) => loadMoreProfile('history', cursor)"
-    />
-  </MobileShell>
-  <MobileShell
-    v-else-if="route.root === 'more'"
-    :custom-back="route.id === 'more/map'"
-    :route="route"
-    :navigation="navigation"
-    :nav-items="navItems"
-    :active-id="'more'"
-    :host="host"
-  >
-    <template #back="{ visible, onBack }">
-      <span
-        v-if="
-          route.id === 'more/statistics' ||
+      <template #back="{ visible, onBack }">
+        <span
+          v-if="
+            route.id === 'more/statistics' ||
             route.id === 'more/statistics/subject' ||
             [
               'more/requests/type',
@@ -2453,202 +2501,197 @@ defineExpose({ openNotificationAction });
               'more/requests/excuse',
               'more/requests/late',
             ].includes(route.id)
-        "
-        hidden
-        aria-hidden="true"
+          "
+          hidden
+          aria-hidden="true"
+        />
+        <button
+          v-else-if="visible && route.id === 'more/assistant'"
+          class="mobile-shell__back"
+          type="button"
+          @click="onBack"
+        >
+          Назад
+        </button>
+      </template>
+      <MoreScreen
+        v-if="route.kind === 'root'"
+        :theme="resolvedTheme"
+        :schedule-enabled="false"
+        :map-enabled="Boolean(props.mapClient) && !offline"
+        :assistant-enabled="Boolean(props.assistantPermissions?.length) && !offline"
+        :on-navigate="navigateMore"
+        :on-notifications="onNotifications"
+        :unread-count="unreadCount ?? null"
       />
-      <button
-        v-else-if="visible && route.id === 'more/assistant'"
-        class="mobile-shell__back"
-        type="button"
-        @click="onBack"
-      >
-        Назад
-      </button>
-    </template>
-    <MoreScreen
-      v-if="route.kind === 'root'"
-      :theme="resolvedTheme"
-      :map-enabled="Boolean(props.mapClient) && !offline"
-      :assistant-enabled="Boolean(props.assistantPermissions?.length) && !offline"
-      :on-navigate="navigateMore"
-      :on-notifications="onNotifications"
-      :unread-count="unreadCount ?? null"
-    />
-    <SemesterScheduleScreen
-      v-else-if="route.id === 'more/schedule'"
-      :schedule="displayedSemester"
-      :selected-date="selectedDate"
+      <AssistantActionsScreen
+        v-else-if="route.id === 'more/assistant'"
+        :navigation="navigation"
+        :permissions="assistantPermissions ?? []"
+        :group-id="scope?.groupId ? Number(scope.groupId) : null"
+        :journal-api="assistantJournalApi ?? null"
+        :stats-api="assistantStatsApi ?? null"
+        :requests-api="assistantRequestsApi ?? null"
+        :homework-api="assistantHomeworkApi ?? null"
+        :user-id="scope?.userId ? Number(scope.userId) : null"
+        :offline="offline"
+        :read-only="props.readOnly"
+        :report-download="reportDownload"
+        @error="emit('ownerError', $event)"
+      />
+      <StatisticsScreen
+        v-else-if="route.id === 'more/statistics' || route.id === 'more/statistics/subject'"
+        :state="statistics.overviewState.value"
+        :ranking-state="statistics.rankingState.value"
+        :ranking-visible="statistics.rankingVisible.value"
+        :selected-subject-id="statistics.selectedSubjectId.value"
+        :detail-state="statistics.detailState.value"
+        :range="statistics.range.value"
+        :semester-starts-on="semesterStartsOn"
+        :semester-ends-on="semesterEndsOn"
+        :terminal="offline || props.readOnly"
+        :theme="resolvedTheme"
+        @open-subject="openStatisticsSubject"
+        @set-range="statistics.setRange"
+        @set-types="statistics.setTypes"
+        @back="backStatistics"
+        @retry="retryStatistics"
+        @detail-retry="retryStatisticsDetail"
+        @open-ranking="statistics.openRanking"
+        @ranking-page="statistics.setRankingPage"
+        @ranking-retry="statistics.retryRanking"
+      />
+      <MapScreen
+        student-presentation
+        v-else-if="route.id === 'more/map' && props.mapClient"
+        :key="ownerIdentity ?? 'scope-unavailable'"
+        :offline="offline"
+        :on-back="backMore"
+        :client="props.mapClient"
+        :theme="resolvedTheme"
+      />
+      <RequestsScreen
+        v-else-if="route.id === 'more/requests' || route.id === requestNotificationRoute.id"
+        :bucket="requests.view.bucket"
+        :open-count="requestOpenCount"
+        :requests="requestBucketView.requests"
+        :loading="requestBucketView.loading"
+        :error="requestBucketView.error"
+        :offline="offline"
+        :read-only="requestReadOnly"
+        :access="requests.view.access"
+        :cancelling-id="requestCancellingId"
+        :has-next-page="requestHasNextPage"
+        :loading-more="requestBucketView.loadingMore"
+        :attachment-states="requestAttachmentStates"
+        :notification-target="requestNotificationView"
+        @select-bucket="selectRequestBucket"
+        @new-request="newRequest"
+        @retry="retryRequests"
+        @load-more="loadMoreRequests"
+        @cancel="cancelRequest"
+        @open-attachment="openRequestAttachment"
+        @back-target="backFromRequestNotificationTarget"
+        @retry-target="retryNotificationTarget"
+      />
+      <RequestTypeScreen
+        v-else-if="route.id === 'more/requests/type'"
+        :choices="requestTypeChoices"
+        :busy="requests.view.optionsLoading"
+        :error="requests.view.optionsError"
+        @back="backRequests"
+        @choose="chooseRequestKind"
+      />
+      <RequestLessonSelectionScreen
+        v-else-if="
+          route.id === 'more/requests/select-excuse' || route.id === 'more/requests/select-late'
+        "
+        :kind="route.id === 'more/requests/select-excuse' ? 'EXCUSE' : 'LATE_CHECKIN'"
+        :lessons="requestLessons"
+        :lesson-ids="
+          route.id === 'more/requests/select-excuse'
+            ? (requestDraft?.excuseLessonIds ?? [])
+            : requestDraft?.lateLessonId
+              ? [requestDraft.lateLessonId]
+              : []
+        "
+        :access="requests.view.access"
+        :date-range="requestDateRange"
+        :options-loaded="requests.view.options !== null"
+        :loading="requests.view.optionsLoading"
+        :error="requests.view.optionsError"
+        :offline="offline"
+        :read-only="requestReadOnly"
+        @back="backRequests"
+        @retry="() => requests.loadOptions().catch(handleRequestsError)"
+        @update:date-range="requestDateRange = $event"
+        @update:lesson-ids="updateRequestSelection"
+        @continue="continueRequestSelection"
+      />
+      <ExcuseRequestScreen
+        v-else-if="route.id === 'more/requests/excuse'"
+        :selection-complete="true"
+        :read-only="requestReadOnly"
+        :access="requests.view.access"
+        :lessons="requestLessons"
+        :lesson-ids="requestDraft?.excuseLessonIds ?? []"
+        :reasons="requestReasons"
+        :reason="requestDraft?.excuseReason ?? null"
+        :comment="requestDraft?.excuseComment ?? ''"
+        :files="requestDraft?.excuseFiles ?? []"
+        :file-limits="requestFileLimits"
+        :lessons-loading="requests.view.optionsLoading"
+        :lessons-error="requests.view.optionsError"
+        :offline="offline"
+        :submitting="requests.view.mutation === 'submitting'"
+        :submit-error="requestSubmitError || requests.view.mutationError"
+        :disabled="requestReadOnly"
+        :ambiguous="requestAmbiguous"
+        @back="backRequests"
+        @edit-selection="editRequestSelection"
+        @retry-lessons="() => requests.loadOptions().catch(handleRequestsError)"
+        @update:lesson-ids="updateRequestLessonIds"
+        @update:reason="updateRequestReason"
+        @update:comment="updateRequestComment"
+        @update:files="updateRequestFiles"
+        @abandon="abandonRequestCommand"
+        @submit="submitExcuse"
+      />
+      <LateCheckinRequestScreen
+        v-else-if="route.id === 'more/requests/late'"
+        :selection-complete="true"
+        :read-only="requestReadOnly"
+        :access="requests.view.access"
+        :lessons="requestLessons"
+        :lesson-id="requestDraft?.lateLessonId ?? null"
+        :budget="requestBudget"
+        :lessons-loading="requests.view.optionsLoading"
+        :lessons-error="requests.view.optionsError"
+        :offline="offline"
+        :submitting="requests.view.mutation === 'submitting'"
+        :submit-error="requestSubmitError || requests.view.mutationError"
+        :disabled="requestReadOnly"
+        :ambiguous="requestAmbiguous"
+        @back="backRequests"
+        @edit-selection="editRequestSelection"
+        @cancel="backRequests"
+        @retry-lessons="() => requests.loadOptions().catch(handleRequestsError)"
+        @update:lesson-id="updateLateLesson"
+        @abandon="abandonRequestCommand"
+        @submit="submitLateCheckin"
+      />
+    </MobileShell>
+    <RoleSwitchDialog
+      v-if="homeRoleDialogOpen"
+      full-width
+      student-ui
+      :snapshot="profileView.snapshot"
+      :pending-role="profilePendingRole"
+      :error="homeRoleError ?? profileView.snapshotError"
+      :loading="profileView.snapshotStatus === 'loading'"
       :offline="offline"
-      :loading="loadSemesterSchedule && semesterQuery.isFetching.value"
-      :error="semesterQuery.error.value ? requestErrorText(semesterQuery.error.value) : null"
-      :retry-enabled="loadSemesterSchedule && !offline && Boolean(scope?.semesterId)"
-      @retry="semesterQuery.refetch()"
-      @select-date="selectedDate = $event"
-      @back="navigation.back()"
+      :on-select-role="selectProfileRole"
+      @close="homeRoleDialogOpen = false"
     />
-    <AssistantActionsScreen
-      v-else-if="route.id === 'more/assistant'"
-      :navigation="navigation"
-      :permissions="assistantPermissions ?? []"
-      :group-id="scope?.groupId ? Number(scope.groupId) : null"
-      :journal-api="assistantJournalApi ?? null"
-      :stats-api="assistantStatsApi ?? null"
-      :requests-api="assistantRequestsApi ?? null"
-      :homework-api="assistantHomeworkApi ?? null"
-      :user-id="scope?.userId ? Number(scope.userId) : null"
-      :offline="offline"
-      :read-only="props.readOnly"
-      :report-download="reportDownload"
-      @error="emit('ownerError', $event)"
-    />
-    <StatisticsScreen
-      v-else-if="route.id === 'more/statistics' || route.id === 'more/statistics/subject'"
-      :state="statistics.overviewState.value"
-      :ranking-state="statistics.rankingState.value"
-      :ranking-visible="statistics.rankingVisible.value"
-      :selected-subject-id="statistics.selectedSubjectId.value"
-      :detail-state="statistics.detailState.value"
-      :range="statistics.range.value"
-      :semester-starts-on="semesterStartsOn"
-      :semester-ends-on="semesterEndsOn"
-      :terminal="offline || props.readOnly"
-      :theme="resolvedTheme"
-      @open-subject="openStatisticsSubject"
-      @set-range="statistics.setRange"
-      @set-types="statistics.setTypes"
-      @back="backStatistics"
-      @retry="retryStatistics"
-      @detail-retry="retryStatisticsDetail"
-      @open-ranking="statistics.openRanking"
-      @ranking-page="statistics.setRankingPage"
-      @ranking-retry="statistics.retryRanking"
-    />
-    <MapScreen
-      v-else-if="route.id === 'more/map' && props.mapClient"
-      :key="ownerIdentity ?? 'scope-unavailable'"
-      :offline="offline"
-      :on-back="backMore"
-      :client="props.mapClient"
-      :theme="resolvedTheme"
-    />
-    <RequestsScreen
-      v-else-if="route.id === 'more/requests' || route.id === requestNotificationRoute.id"
-      :bucket="requests.view.bucket"
-      :open-count="requestOpenCount"
-      :requests="requestBucketView.requests"
-      :loading="requestBucketView.loading"
-      :error="requestBucketView.error"
-      :offline="offline"
-      :read-only="requestReadOnly"
-      :access="requests.view.access"
-      :cancelling-id="requestCancellingId"
-      :has-next-page="requestHasNextPage"
-      :loading-more="requestBucketView.loadingMore"
-      :attachment-states="requestAttachmentStates"
-      :notification-target="requestNotificationView"
-      @select-bucket="selectRequestBucket"
-      @new-request="newRequest"
-      @retry="retryRequests"
-      @load-more="loadMoreRequests"
-      @cancel="cancelRequest"
-      @open-attachment="openRequestAttachment"
-      @back-target="backFromRequestNotificationTarget"
-      @retry-target="retryNotificationTarget"
-    />
-    <RequestTypeScreen
-      v-else-if="route.id === 'more/requests/type'"
-      :choices="requestTypeChoices"
-      :busy="requests.view.optionsLoading"
-      :error="requests.view.optionsError"
-      @back="backRequests"
-      @choose="chooseRequestKind"
-    />
-    <RequestLessonSelectionScreen
-      v-else-if="
-        route.id === 'more/requests/select-excuse' || route.id === 'more/requests/select-late'
-      "
-      :kind="route.id === 'more/requests/select-excuse' ? 'EXCUSE' : 'LATE_CHECKIN'"
-      :lessons="requestLessons"
-      :lesson-ids="
-        route.id === 'more/requests/select-excuse'
-          ? (requestDraft?.excuseLessonIds ?? [])
-          : requestDraft?.lateLessonId
-            ? [requestDraft.lateLessonId]
-            : []
-      "
-      :access="requests.view.access"
-      :options-loaded="requests.view.options !== null"
-      :loading="requests.view.optionsLoading"
-      :error="requests.view.optionsError"
-      :offline="offline"
-      :read-only="requestReadOnly"
-      @back="backRequests"
-      @retry="() => requests.loadOptions().catch(handleRequestsError)"
-      @update:lesson-ids="updateRequestSelection"
-      @continue="continueRequestSelection"
-    />
-    <ExcuseRequestScreen
-      v-else-if="route.id === 'more/requests/excuse'"
-      :selection-complete="true"
-      :read-only="requestReadOnly"
-      :access="requests.view.access"
-      :lessons="requestLessons"
-      :lesson-ids="requestDraft?.excuseLessonIds ?? []"
-      :reasons="requestReasons"
-      :reason="requestDraft?.excuseReason ?? null"
-      :comment="requestDraft?.excuseComment ?? ''"
-      :files="requestDraft?.excuseFiles ?? []"
-      :file-limits="requestFileLimits"
-      :lessons-loading="requests.view.optionsLoading"
-      :lessons-error="requests.view.optionsError"
-      :offline="offline"
-      :submitting="requests.view.mutation === 'submitting'"
-      :submit-error="requestSubmitError || requests.view.mutationError"
-      :disabled="requestReadOnly"
-      :ambiguous="requestAmbiguous"
-      @back="backRequests"
-      @edit-selection="editRequestSelection"
-      @retry-lessons="() => requests.loadOptions().catch(handleRequestsError)"
-      @update:lesson-ids="updateRequestLessonIds"
-      @update:reason="updateRequestReason"
-      @update:comment="updateRequestComment"
-      @update:files="updateRequestFiles"
-      @abandon="abandonRequestCommand"
-      @submit="submitExcuse"
-    />
-    <LateCheckinRequestScreen
-      v-else-if="route.id === 'more/requests/late'"
-      :selection-complete="true"
-      :read-only="requestReadOnly"
-      :access="requests.view.access"
-      :lessons="requestLessons"
-      :lesson-id="requestDraft?.lateLessonId ?? null"
-      :budget="requestBudget"
-      :lessons-loading="requests.view.optionsLoading"
-      :lessons-error="requests.view.optionsError"
-      :offline="offline"
-      :submitting="requests.view.mutation === 'submitting'"
-      :submit-error="requestSubmitError || requests.view.mutationError"
-      :disabled="requestReadOnly"
-      :ambiguous="requestAmbiguous"
-      @back="backRequests"
-      @edit-selection="editRequestSelection"
-      @cancel="backRequests"
-      @retry-lessons="() => requests.loadOptions().catch(handleRequestsError)"
-      @update:lesson-id="updateLateLesson"
-      @abandon="abandonRequestCommand"
-      @submit="submitLateCheckin"
-    />
-  </MobileShell>
-  <RoleSwitchDialog
-    v-if="homeRoleDialogOpen"
-    :snapshot="profileView.snapshot"
-    :pending-role="profilePendingRole"
-    :error="homeRoleError ?? profileView.snapshotError"
-    :loading="profileView.snapshotStatus === 'loading'"
-    :offline="offline"
-    :on-select-role="selectProfileRole"
-    @close="homeRoleDialogOpen = false"
-  />
+  </div>
 </template>

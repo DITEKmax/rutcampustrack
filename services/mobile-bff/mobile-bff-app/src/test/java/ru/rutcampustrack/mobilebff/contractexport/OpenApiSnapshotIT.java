@@ -57,6 +57,8 @@ class OpenApiSnapshotIT {
 
     @MockitoBean private StudentCheckinFacade checkins;
 
+    @MockitoBean private ru.rutcampustrack.mobilebff.grpc.MobileAttendanceClient attendance;
+
     @BeforeEach
     void setUpRuntimeSeam() {
         when(publicKeyProvider.getPublicKey()).thenReturn(JWT.publicKey());
@@ -132,6 +134,32 @@ class OpenApiSnapshotIT {
                 .isEqualTo(
                         normalizeLineEndings(
                                 Files.readString(SNAPSHOT_PATH, StandardCharsets.UTF_8)));
+    }
+
+    @Test
+    void attendanceDocumentEndpointUsesReadOnlyStudentScopeAndNoStoreAndMapsFailures() throws Exception {
+        String file = "0123456789abcdef01234567";
+        String endpoint = "/api/v1/student/attendance/lessons/79/attachments/" + file;
+        String token = JWT.validToken(100L, UUID.randomUUID(), 1L, 1L, "STUDENT", "GRADUATED", 10L, false, true);
+        when(attendance.downloadAttendanceAttachment(11, 79, file, "mark-1"))
+                .thenReturn(ru.rutcampustrack.attendance.grpc.StudentRequestAttachmentDownload.newBuilder()
+                        .setData(com.google.protobuf.ByteString.copyFromUtf8("%PDF-1.7"))
+                        .setContentType("application/pdf").setFilename("proof.pdf").build());
+        mockMvc.perform(get(endpoint).header("X-Internal-Token", token)
+                        .param("semesterId", "11").param("expectedMarkRevision", "mark-1"))
+                .andExpect(status().isOk()).andExpect(content().contentType("application/pdf"))
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.header().string("Cache-Control", "no-store"))
+                .andExpect(content().bytes("%PDF-1.7".getBytes(StandardCharsets.UTF_8)));
+        for (HttpStatus status : java.util.List.of(HttpStatus.CONFLICT, HttpStatus.GONE)) {
+            org.mockito.Mockito.doThrow(new MobileBffException(status, status == HttpStatus.CONFLICT
+                            ? ProblemCode.REQUEST_CONFLICT : ProblemCode.ATTACHMENT_EXPIRED, "Document unavailable"))
+                    .when(attendance).downloadAttendanceAttachment(11, 79, file, "mark-1");
+            mockMvc.perform(get(endpoint).header("X-Internal-Token", token)
+                            .param("semesterId", "11").param("expectedMarkRevision", "mark-1"))
+                    .andExpect(status().is(status.value())).andExpect(content().contentTypeCompatibleWith(APPLICATION_PROBLEM_JSON));
+        }
+        mockMvc.perform(get(endpoint).header("X-Internal-Token", token).param("semesterId", "11"))
+                .andExpect(status().isBadRequest());
     }
 
     private static String normalizeLineEndings(String value) {

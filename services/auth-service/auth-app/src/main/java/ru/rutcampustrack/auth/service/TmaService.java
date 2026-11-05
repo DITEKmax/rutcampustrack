@@ -20,7 +20,7 @@ import ru.rutcampustrack.auth.config.TmaProperties;
 import ru.rutcampustrack.auth.dto.TmaAuthRequest;
 import ru.rutcampustrack.auth.dto.TokenResponse;
 import ru.rutcampustrack.auth.entity.User;
-import ru.rutcampustrack.auth.exception.InvalidCredentialsException;
+import java.security.GeneralSecurityException;
 import ru.rutcampustrack.auth.exception.TmaValidationException;
 import ru.rutcampustrack.auth.repository.UserRepository;
 import ru.rutcampustrack.auth.session.AuthSessionException;
@@ -80,8 +80,11 @@ public class TmaService {
         long now = clock.instant().getEpochSecond();
         // A proof must have been issued within the configured past window.
         // Reject future/negative timestamps before subtraction to avoid overflow.
-        if (authDate > now || now - authDate > tmaProperties.authDateMaxAgeSeconds()) {
-            throw new TmaValidationException("initData expired or not yet valid");
+        if (authDate > now) {
+            throw new TmaValidationException(TmaValidationException.Code.TMA_INIT_DATA_NOT_YET_VALID);
+        }
+        if (now - authDate > tmaProperties.authDateMaxAgeSeconds()) {
+            throw new TmaValidationException(TmaValidationException.Code.TMA_INIT_DATA_EXPIRED);
         }
 
         String userJson = params.get("user");
@@ -92,7 +95,7 @@ public class TmaService {
             user =
                     userRepository
                             .findByTelegramId(telegramId)
-                            .orElseThrow(InvalidCredentialsException::new);
+                            .orElseThrow(() -> new TmaValidationException(TmaValidationException.Code.TMA_TELEGRAM_NOT_LINKED));
         } catch (DataAccessException exception) {
             throw new AuthSessionException(
                     AuthSessionException.Code.AUTHORITY_UNAVAILABLE, exception);
@@ -114,6 +117,10 @@ public class TmaService {
     }
 
     private boolean validateInitData(String initData) {
+        if (tmaProperties.botToken() == null || tmaProperties.botToken().isBlank()
+                || tmaProperties.authDateMaxAgeSeconds() < 0) {
+            throw new IllegalStateException("Telegram proof verification is not configured");
+        }
         try {
             Map<String, String> params = parseQueryString(initData);
             String receivedHash = params.remove("hash");
@@ -136,12 +143,14 @@ public class TmaService {
             return MessageDigest.isEqual(
                     computedHex.getBytes(StandardCharsets.UTF_8),
                     receivedHash.getBytes(StandardCharsets.UTF_8));
-        } catch (Exception e) {
+        } catch (IllegalArgumentException e) {
             return false;
+        } catch (GeneralSecurityException e) {
+            throw new IllegalStateException("Telegram proof verification is unavailable", e);
         }
     }
 
-    private byte[] hmacSha256(byte[] data, byte[] key) throws Exception {
+    private byte[] hmacSha256(byte[] data, byte[] key) throws GeneralSecurityException {
         Mac mac = Mac.getInstance("HmacSHA256");
         mac.init(new SecretKeySpec(key, "HmacSHA256"));
         return mac.doFinal(data);
@@ -149,13 +158,16 @@ public class TmaService {
 
     private Map<String, String> parseQueryString(String queryString) {
         Map<String, String> result = new LinkedHashMap<>();
-        String[] pairs = queryString.split("&");
+        if (queryString == null || queryString.isBlank()) throw new IllegalArgumentException();
+        String[] pairs = queryString.split("&", -1);
         for (String pair : pairs) {
             int idx = pair.indexOf('=');
             if (idx > 0) {
                 String key = URLDecoder.decode(pair.substring(0, idx), StandardCharsets.UTF_8);
                 String value = URLDecoder.decode(pair.substring(idx + 1), StandardCharsets.UTF_8);
-                result.put(key, value);
+                if (result.putIfAbsent(key, value) != null) throw new IllegalArgumentException();
+            } else {
+                throw new IllegalArgumentException();
             }
         }
         return result;
@@ -163,7 +175,11 @@ public class TmaService {
 
     private Long extractTelegramId(String userJson) {
         try {
-            return objectMapper.readTree(userJson).get("id").asLong();
+            var id = objectMapper.readTree(userJson).get("id");
+            if (id == null || !id.isIntegralNumber() || !id.canConvertToLong() || id.longValue() <= 0) {
+                throw new IllegalArgumentException();
+            }
+            return id.longValue();
         } catch (Exception e) {
             throw new TmaValidationException("Invalid user JSON in initData");
         }

@@ -713,7 +713,11 @@ public class StudentQueryService {
                 source.hasReasonCode() ? source.getReasonCode() : null,
                 source.hasReasonText() ? source.getReasonText() : null,
                 source.hasComment() ? source.getComment() : null,
-                source.hasCancellationReason() ? source.getCancellationReason() : null);
+                source.hasCancellationReason() ? source.getCancellationReason() : null,
+                source.getDocumentsList().stream().map(file -> new StudentAttendanceDocument(
+                        file.getId(), file.getName(), file.getContentType(), file.getSize(), file.getState(),
+                        file.hasExpiresAt() ? Instant.ofEpochSecond(file.getExpiresAt().getSeconds(), file.getExpiresAt().getNanos()) : null,
+                        file.getMarkRevision(), Long.toString(file.getLessonId()))).toList());
     }
 
     private static StudentAttendanceGraph graph(

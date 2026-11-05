@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import MobileIcon from '../../shared/components/MobileIcon.vue';
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import {
   displayPercent,
@@ -23,15 +24,9 @@ const props = withDefaults(
 );
 const emit = defineEmits<{ 'change-range': [range: AttendanceGraphRange] }>();
 const columns = ref<HTMLElement | null>(null);
-const hasHorizontalOverflow = ref(false);
 const detailMetrics = ref<HTMLElement | null>(null);
 const detailLabelsOutside = ref(false);
 let observer: ResizeObserver | null = null;
-function measureColumns(): void {
-  hasHorizontalOverflow.value = Boolean(
-    columns.value && columns.value.scrollWidth > columns.value.clientWidth,
-  );
-}
 function measureDetailLabels(): void {
   detailLabelsOutside.value = Array.from(
     detailMetrics.value?.querySelectorAll<HTMLElement>('.attendance-graph__detail-segment') ?? [],
@@ -53,12 +48,10 @@ watch(
 );
 onMounted(() => {
   observer = new ResizeObserver(() => {
-    measureColumns();
     measureDetailLabels();
   });
   if (columns.value) observer.observe(columns.value);
   if (detailMetrics.value) observer.observe(detailMetrics.value);
-  measureColumns();
   measureDetailLabels();
   void document.fonts.ready.then(() => {
     if (observer) measureDetailLabels();
@@ -72,20 +65,18 @@ const page = ref(0);
 const selectedId = ref<string | null>(null);
 const size = computed(() => (props.range === 'days' ? 7 : 6));
 const pageCount = computed(() => Math.max(1, Math.ceil(props.points.length / size.value)));
-const visible = computed(() =>
+const visible = computed(() => props.points);
+const pagePoints = computed(() =>
   props.points.slice(page.value * size.value, (page.value + 1) * size.value),
 );
-watch(visible, () => {
-  void nextTick(measureColumns);
-});
 const selected = computed(
   () =>
     visible.value.find((point) => point.id === selectedId.value) ??
-    visible.value.find(
+    pagePoints.value.find(
       (point) => point.state === 'DATA' && !('outsideSemester' in point && point.outsideSemester),
     ) ??
-    visible.value.find((point) => !('outsideSemester' in point && point.outsideSemester)) ??
-    visible.value[0] ??
+    pagePoints.value.find((point) => !('outsideSemester' in point && point.outsideSemester)) ??
+    pagePoints.value[0] ??
     null,
 );
 const statusMetrics = ['present', 'excused', 'absent'] as const;
@@ -99,12 +90,35 @@ watch(
   () => {
     page.value = initialPeriodPage(props.points, props.range, props.serverNow);
     selectedId.value = null;
+    void nextTick(scrollToPage);
   },
   { immediate: true },
 );
 function changePage(delta: number): void {
   page.value = Math.max(0, Math.min(pageCount.value - 1, page.value + delta));
   selectedId.value = null;
+  scrollToPage();
+}
+function scrollToPage(): void {
+  const plot = columns.value;
+  const target = plot?.querySelectorAll<HTMLButtonElement>('button')[page.value * size.value];
+  if (!plot || !target) return;
+  plot.scrollTo({ left: target.offsetLeft, behavior: 'auto' });
+}
+function onScroll(): void {
+  const plot = columns.value;
+  if (!plot || !plot.clientWidth) return;
+  const buttons = Array.from(plot.querySelectorAll<HTMLButtonElement>('button'));
+  const first = buttons[0];
+  if (!first) return;
+  // Keep the existing period controls in sync with touch, trackpad and keyboard scrolling.
+  const index = buttons.findIndex(
+    (button) => button.offsetLeft - first.offsetLeft >= plot.scrollLeft,
+  );
+  page.value =
+    plot.scrollLeft + plot.clientWidth >= plot.scrollWidth - 1
+      ? pageCount.value - 1
+      : Math.min(pageCount.value - 1, Math.floor(Math.max(0, index) / size.value));
 }
 function keyboard(event: KeyboardEvent, index: number): void {
   const offset = event.key === 'ArrowLeft' ? -1 : event.key === 'ArrowRight' ? 1 : 0;
@@ -139,6 +153,14 @@ function hasMarks(point: GraphPoint): boolean {
     point.metrics.excused.percent !== null
   );
 }
+function isPlanned(point: GraphPoint): boolean {
+  return (
+    point.state === 'FUTURE' &&
+    point.metrics.planned > 0 &&
+    !('missing' in point && point.missing) &&
+    !('outsideSemester' in point && point.outsideSemester)
+  );
+}
 function graphState(point: GraphPoint): string {
   if (
     ('missing' in point && point.missing) ||
@@ -168,9 +190,7 @@ function description(point: GraphPoint): string {
     class="attendance-graph"
     aria-labelledby="attendance-graph-title"
   >
-    <h2 id="attendance-graph-title">
-      Посещаемость за семестр
-    </h2>
+    <h2 id="attendance-graph-title"> Посещаемость за семестр </h2>
     <div
       class="attendance-graph__range"
       role="group"
@@ -195,17 +215,24 @@ function description(point: GraphPoint): string {
         :disabled="page === 0"
         @click="changePage(-1)"
       >
-        ‹
+        <MobileIcon name="back" />
       </button>
-      <span role="status">{{ visible[0] ? shortDate(visible[0].dateFrom) : 'Нет периодов'
-      }}{{ visible.length ? ` — ${shortDate(visible[visible.length - 1]!.dateTo)}` : '' }}</span>
+      <span role="status"
+        >{{ pagePoints[0] ? shortDate(pagePoints[0].dateFrom) : 'Нет периодов'
+        }}{{
+          pagePoints.length ? ` — ${shortDate(pagePoints[pagePoints.length - 1]!.dateTo)}` : ''
+        }}</span
+      >
       <button
         type="button"
         aria-label="Следующие периоды"
         :disabled="page + 1 >= pageCount"
         @click="changePage(1)"
       >
-        ›
+        <MobileIcon
+          name="back"
+          class="attendance-period-pager__next"
+        />
       </button>
     </div>
     <p
@@ -230,7 +257,8 @@ function description(point: GraphPoint): string {
         class="attendance-graph__columns"
         :data-range="range"
         role="group"
-        aria-label="Выбери период для подробностей"
+        aria-label="График по всему семестру. Выбери период для подробностей"
+        @scroll.passive="onScroll"
       >
         <button
           v-for="(point, index) in visible"
@@ -246,7 +274,10 @@ function description(point: GraphPoint): string {
         >
           <span
             class="attendance-graph__stack"
-            :class="{ 'attendance-graph__stack--unknown': !hasMarks(point) }"
+            :class="{
+              'attendance-graph__stack--unknown': !hasMarks(point),
+              'attendance-graph__stack--planned': isPlanned(point),
+            }"
             aria-hidden="true"
           >
             <template v-if="hasMarks(point)">
@@ -264,24 +295,20 @@ function description(point: GraphPoint): string {
               />
             </template>
             <span
-              v-if="!hasMarks(point)"
+              v-if="!hasMarks(point) && !isPlanned(point)"
               class="attendance-graph__neutral-label"
-            >{{ point.state === 'FUTURE' ? '›' : '—' }}</span>
+              >—</span
+            >
           </span>
-          <span class="attendance-graph__date">{{ range === 'days' ? weekday(point.dateFrom) : shortDate(point.dateFrom)
-          }}<br v-if="range === 'days'">{{
-            range === 'days' ? point.dateFrom.slice(8) : ''
-          }}</span>
+          <span class="attendance-graph__date"
+            >{{ range === 'days' ? weekday(point.dateFrom) : shortDate(point.dateFrom)
+            }}<br v-if="range === 'days'" />{{
+              range === 'days' ? point.dateFrom.slice(8) : ''
+            }}</span
+          >
         </button>
       </div>
     </div>
-    <p
-      v-if="hasHorizontalOverflow"
-      class="attendance-graph__scroll-hint"
-      role="status"
-    >
-      Листай график по горизонтали, чтобы увидеть все периоды.
-    </p>
     <section
       v-if="selected"
       class="attendance-graph__detail"
@@ -298,7 +325,7 @@ function description(point: GraphPoint): string {
       <template
         v-if="
           !('missing' in selected && selected.missing) &&
-            !('outsideSemester' in selected && selected.outsideSemester)
+          !('outsideSemester' in selected && selected.outsideSemester)
         "
       >
         <p>Проведено {{ selected.metrics.held }} из {{ selected.metrics.planned }}</p>
@@ -338,7 +365,8 @@ function description(point: GraphPoint): string {
             v-for="metric in statusMetrics"
             :key="metric"
             :class="`attendance-graph__detail-percentage--${metric}`"
-          >{{ displayPercent(selected.metrics[metric].percent) }}</span>
+            >{{ displayPercent(selected.metrics[metric].percent) }}</span
+          >
         </div>
       </template>
     </section>

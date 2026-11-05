@@ -393,6 +393,20 @@ public class AttendanceStudentGrpcServiceImpl
         }
     }
 
+    @Override
+    public void downloadStudentAttendanceAttachment(StudentAttendanceAttachmentRequest request,
+            StreamObserver<StudentRequestAttachmentDownload> observer) {
+        try {
+            validateObjectId(request.getAttachmentId(), "attachment_id");
+            observer.onNext(StudentRequestGrpcMapper.download(projectionService.downloadAttachment(
+                    requireClaims(), request.getSemesterId(), request.getLessonId(),
+                    request.getAttachmentId(), request.getExpectedMarkRevision())));
+            observer.onCompleted();
+        } catch (RuntimeException error) {
+            observer.onError(StudentRequestGrpcErrors.toStatus(error));
+        }
+    }
+
     private StudentRequestService requireRequestService() {
         if (requestService == null) {
             throw new AcademicServiceUnavailableException(
@@ -699,6 +713,14 @@ public class AttendanceStudentGrpcServiceImpl
         if (value.comment() != null) result.setComment(value.comment());
         if (value.cancellationReason() != null)
             result.setCancellationReason(value.cancellationReason());
+        for (var file : value.documents()) {
+            StudentAttendanceDocument.Builder document = StudentAttendanceDocument.newBuilder()
+                    .setId(file.id()).setName(file.name()).setContentType(file.contentType())
+                    .setSize(file.size()).setState(file.state()).setMarkRevision(file.markRevision()).setLessonId(file.lessonId());
+            if (file.expiresAt() != null) document.setExpiresAt(com.google.protobuf.Timestamp.newBuilder()
+                    .setSeconds(file.expiresAt().getEpochSecond()).setNanos(file.expiresAt().getNano()));
+            result.addDocuments(document);
+        }
         return result.build();
     }
 

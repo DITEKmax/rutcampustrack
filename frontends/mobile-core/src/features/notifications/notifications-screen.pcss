@@ -109,3 +109,132 @@
   color: var(--rct-color-danger-text);
   background: var(--rct-error-surface);
 }
+
+/* Accepted Student presentation; existing roles retain their base rules. */
+:where([data-student-ui]) .notifications-screen,
+:where([data-student-ui]):is(.notifications-screen) {
+  position: fixed;
+  z-index: 1000;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: calc(env(safe-area-inset-top) + var(--rct-space-4)) var(--rct-space-4) 0;
+  color: var(--rct-color-text-primary);
+  background: var(--rct-color-surface-base);
+  font-family: var(--rct-font-family-sans);
+  font-variant-numeric: tabular-nums;
+  @mixin rct-type-body;
+}
+:where([data-student-ui]) .notifications-screen__header,
+:where([data-student-ui]):is(.notifications-screen__header) {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: var(--rct-space-3);
+  margin-block-end: var(--rct-space-5);
+}
+:where([data-student-ui]) .notifications-screen__header h1,
+:where([data-student-ui]):is(.notifications-screen__header h1) {
+  flex: 1;
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
+  margin: 0;
+  font-size: var(--rct-font-size-title-screen);
+  font-weight: var(--rct-font-weight-bold);
+  line-height: var(--rct-leading-snug);
+}
+:where([data-student-ui]) .notifications-screen__back,
+:where([data-student-ui]):is(.notifications-screen__back),
+:where([data-student-ui]) .notifications-screen__gear,
+:where([data-student-ui]):is(.notifications-screen__gear) {
+  flex: none;
+  display: grid;
+  place-items: center;
+  inline-size: var(--rct-control-min-touch);
+  block-size: var(--rct-control-min-touch);
+  border: 0;
+  border-radius: var(--rct-radius-full);
+  padding: 0;
+  color: var(--rct-color-text-primary);
+  background: var(--rct-color-surface-float);
+  cursor: pointer;
+  @mixin rct-focus-ring;
+}
+@media (max-width: 22.5rem) {
+  :where([data-student-ui]) .notifications-screen__header,
+  :where([data-student-ui]):is(.notifications-screen__header) {
+    display: grid;
+    grid-template-columns: 1fr auto;
+  }
+  :where([data-student-ui]) .notifications-screen__header h1,
+  :where([data-student-ui]):is(.notifications-screen__header h1) {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+  :where([data-student-ui]) .notifications-screen__back,
+  :where([data-student-ui]):is(.notifications-screen__back) {
+    grid-column: 1;
+    grid-row: 1;
+  }
+  :where([data-student-ui]) .notifications-screen__gear,
+  :where([data-student-ui]):is(.notifications-screen__gear) {
+    grid-column: 2;
+    grid-row: 1;
+  }
+}
+:where([data-student-ui]) .notifications-screen__notice,
+:where([data-student-ui]):is(.notifications-screen__notice),
+:where([data-student-ui]) .notifications-screen__device,
+:where([data-student-ui]):is(.notifications-screen__device) {
+  margin-block: var(--rct-space-4);
+  border: var(--rct-border-hairline) solid var(--rct-color-border-default);
+  border-radius: var(--rct-radius-xl);
+  padding: var(--rct-space-4);
+  background: var(--rct-color-surface-raised);
+}
+:where([data-student-ui]) .notifications-screen__notice button,
+:where([data-student-ui]):is(.notifications-screen__notice button),
+:where([data-student-ui]) .notifications-screen__device button,
+:where([data-student-ui]):is(.notifications-screen__device button) {
+  min-block-size: var(--rct-control-min-touch);
+  padding: var(--rct-space-2) var(--rct-space-3);
+  border: 0;
+  border-radius: var(--rct-radius-lg);
+  color: var(--rct-color-text-primary);
+  background: var(--rct-color-surface-float);
+  font: inherit;
+  cursor: pointer;
+  @mixin rct-focus-ring;
+}
+:where([data-student-ui]) .notifications-screen__device h2,
+:where([data-student-ui]):is(.notifications-screen__device h2) {
+  font-size: var(--rct-font-size-title);
+}
+:where([data-student-ui]) .notifications-screen button:disabled,
+:where([data-student-ui]):is(.notifications-screen button:disabled) {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+:where([data-student-ui]) .notifications-screen__content,
+:where([data-student-ui]):is(.notifications-screen__content) {
+  flex: 1;
+  min-block-size: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-block-end: calc(env(safe-area-inset-bottom) + var(--rct-space-5));
+}
+
+:where([data-student-ui]) .notifications-screen__notice[data-tone='warning'],
+:where([data-student-ui]):is(.notifications-screen__notice[data-tone='warning']) {
+  border-color: var(--rct-color-warning-text);
+  color: var(--rct-color-warning-text);
+  background: var(--rct-warning-surface);
+}
+:where([data-student-ui]) .notifications-screen__notice[data-tone='error'],
+:where([data-student-ui]):is(.notifications-screen__notice[data-tone='error']) {
+  border-color: var(--rct-color-danger-text);
+  color: var(--rct-color-danger-text);
+  background: var(--rct-error-surface);
+}

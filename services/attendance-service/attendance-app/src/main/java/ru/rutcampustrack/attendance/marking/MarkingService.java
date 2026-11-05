@@ -230,6 +230,7 @@ public class MarkingService {
 
         Update update =
                 new Update()
+                        .unset("excuse_request_id")
                         .set("status", request.status())
                         .set("source", AttendanceSource.HEADMAN)
                         .set("marked_by", requestContext.getUserId())
@@ -259,7 +260,7 @@ public class MarkingService {
                         .unset("attachment_size");
             }
         } else {
-            update.unset("excuse_reason")
+            update.unset("excuse_request_id").unset("excuse_reason")
                     .unset("excuse_type")
                     .unset("excuse_comment")
                     .unset("attachment_id")
@@ -791,6 +792,7 @@ public class MarkingService {
             }
             Update update =
                     new Update()
+                            .unset("excuse_request_id")
                             .set("status", item.status())
                             .set("source", AttendanceSource.HEADMAN)
                             .set("marked_by", markedBy)
@@ -810,7 +812,7 @@ public class MarkingService {
                         .unset("attachment_size");
             }
             if (item.status() != AttendanceStatus.EXCUSED) {
-                update.unset("excuse_reason").unset("excuse_type").unset("excuse_comment");
+                update.unset("excuse_request_id").unset("excuse_reason").unset("excuse_type").unset("excuse_comment");
             }
             if (!ru.rutcampustrack.attendance.checkin.AttendanceRevisions.prepare(
                     existing, update)) {

@@ -1,6 +1,12 @@
 package ru.rutcampustrack.attendance.report.studentprojection;
 
 import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Autowired;
+import ru.rutcampustrack.attendance.studentrequest.StudentAttendanceAttachmentService;
+import ru.rutcampustrack.attendance.studentrequest.StudentAttendanceAttachmentService.DocumentRef;
+import ru.rutcampustrack.attendance.studentrequest.StudentRequestModels;
+import ru.rutcampustrack.attendance.exception.ConflictException;
+import ru.rutcampustrack.attendance.contract.exception.ResourceNotFoundException;
 
 import ru.rutcampustrack.academic.grpc.AcademicSubjectInfo;
 import ru.rutcampustrack.academic.grpc.GroupMembersResponse;
@@ -60,6 +66,12 @@ public class StudentAttendanceProjectionService {
     private final AcademicGrpcClient academicGrpcClient;
     private final ScheduleGrpcClient scheduleGrpcClient;
     private final Clock clock;
+    private StudentAttendanceAttachmentService attachments;
+
+    @Autowired
+    public void setAttachments(StudentAttendanceAttachmentService attachments) {
+        this.attachments = attachments;
+    }
 
     public StudentAttendanceProjectionService(
             AttendanceReadPort attendanceReadPort,
@@ -107,9 +119,12 @@ public class StudentAttendanceProjectionService {
                         allLessons,
                         claims.userId(),
                         semesterId);
+        Map<Long, List<DocumentRef>> documents = attachments == null ? Map.of()
+                : attachments.documents(semesterId, claims.userId(), ownMarks.values());
         List<Lesson> materializedAll =
                 allLessons.stream()
-                        .map(lesson -> lesson.withMark(ownMarks.get(lesson.lessonId())))
+                        .map(lesson -> lesson.withMark(ownMarks.get(lesson.lessonId()))
+                                .withDocuments(documents.getOrDefault(lesson.lessonId(), List.of())))
                         .toList();
 
         List<Lesson> selectedLessons =
@@ -165,6 +180,33 @@ public class StudentAttendanceProjectionService {
                 subjectViews,
                 graph,
                 rank);
+    }
+
+    public StudentRequestModels.AttachmentDownload downloadAttachment(
+            InternalJwtClaims claims, long semesterId, long lessonId, String attachmentId,
+            String expectedMarkRevision) {
+        requireStudent(claims);
+        if (semesterId <= 0 || lessonId <= 0 || expectedMarkRevision == null || expectedMarkRevision.isBlank())
+            throw new StudentCheckinException(StudentCheckinException.Code.INVALID_REQUEST, "Invalid attachment scope");
+        StudentProjectionScopeResponse scope = academicGrpcClient.resolveStudentProjectionScope(semesterId);
+        validateScope(scope, claims, semesterId, null);
+        List<Lesson> lessons = loadLessons(scope, semesterId, subjectMap(scope), null, Set.of());
+        Lesson lesson = lessons.stream().filter(l -> l.lessonId() == lessonId).findFirst()
+                .orElseThrow(() -> new ResourceNotFoundException("Attachment", "id", attachmentId));
+        AttendanceRecord mark = markIndex(attendanceReadPort.findByUserId(claims.userId(), semesterId),
+                lessons, claims.userId(), semesterId).get(lessonId);
+        if (mark == null || !"EXCUSED".equals(lesson.withMark(mark).uiStatus()))
+            throw new ResourceNotFoundException("Attachment", "id", attachmentId);
+        if (!Objects.equals(mark.markRevision(), expectedMarkRevision))
+            throw new ConflictException("Attendance mark changed; reload the attendance view");
+        if (attachments == null) throw new IllegalStateException("Attachment storage unavailable");
+        StudentRequestModels.AttachmentDownload result = attachments.download(semesterId, claims.userId(), mark, attachmentId);
+        AttendanceRecord current = attendanceReadPort.findByLessonIdAndUserId(lessonId, claims.userId()).orElse(null);
+        if (current == null || current.status() != AttendanceStatus.EXCUSED
+                || !Objects.equals(current.markRevision(), expectedMarkRevision)
+                || !Objects.equals(current.groupId(), mark.groupId()))
+            throw new ConflictException("Attendance mark changed; reload the attendance view");
+        return result;
     }
 
     /** Returns the bounded ranking page for the cohort resolved from the signed student scope. */
@@ -1225,7 +1267,17 @@ public class StudentAttendanceProjectionService {
             String room,
             ScheduleState scheduleState,
             AttendanceRecord mark,
-            String cancellationReason) {
+            String cancellationReason,
+            List<DocumentRef> documents) {
+
+        public Lesson(
+                long lessonId, long occurrenceId, long groupId, LocalDate date, int lessonNumber,
+                long subjectId, String subjectName, String lessonType, LocalTime startsAt,
+                LocalTime endsAt, String room, ScheduleState scheduleState, AttendanceRecord mark,
+                String cancellationReason) {
+            this(lessonId, occurrenceId, groupId, date, lessonNumber, subjectId, subjectName,
+                    lessonType, startsAt, endsAt, room, scheduleState, mark, cancellationReason, List.of());
+        }
 
         public Lesson(
                 long lessonId,
@@ -1273,8 +1325,17 @@ public class StudentAttendanceProjectionService {
                     code = null;
                 }
             }
-            return explanationOrNull(
+            Explanation explanation = explanationOrNull(
                     code, label == null ? mark.excuseReason() : label, mark.excuseComment(), null);
+            if (explanation == null && documents.isEmpty()) return null;
+            return new Explanation(code, label == null ? mark.excuseReason() : label,
+                    mark.excuseComment(), null, documents);
+        }
+
+        Lesson withDocuments(List<DocumentRef> values) {
+            return new Lesson(lessonId, occurrenceId, groupId, date, lessonNumber, subjectId,
+                    subjectName, lessonType, startsAt, endsAt, room, scheduleState, mark,
+                    cancellationReason, List.copyOf(values));
         }
 
         Lesson withMark(AttendanceRecord value) {
@@ -1292,7 +1353,7 @@ public class StudentAttendanceProjectionService {
                     room,
                     scheduleState,
                     value,
-                    cancellationReason);
+                    cancellationReason, documents);
         }
 
         boolean sameSource(Lesson other) {
@@ -1350,7 +1411,12 @@ public class StudentAttendanceProjectionService {
     }
 
     public record Explanation(
-            String reasonCode, String reasonText, String comment, String cancellationReason) {}
+            String reasonCode, String reasonText, String comment, String cancellationReason,
+            List<DocumentRef> documents) {
+        public Explanation(String reasonCode, String reasonText, String comment, String cancellationReason) {
+            this(reasonCode, reasonText, comment, cancellationReason, List.of());
+        }
+    }
 
     private static String text(String value) {
         return value == null || value.isBlank() ? null : value;

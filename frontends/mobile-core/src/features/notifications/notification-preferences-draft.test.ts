@@ -9,6 +9,7 @@ import {
   changeNotificationColor,
   changeNotificationDelivery,
   notificationPreferencesUpdate,
+  notificationPreferencesDiffer,
   reapplyNotificationPreferences,
   copyNotificationPreferences,
 } from './notification-preferences-draft'
@@ -157,4 +158,34 @@ describe('actual-key drafts and cross-set reapply boundary', () => {
       expect(update).not.toHaveProperty('mutedUntil')
     },
   )
+})
+
+describe('editable notification payload comparison', () => {
+  it('ignores metadata and key order but detects and clears each real edit', () => {
+    const saved = preferences()
+    const reordered = {
+      ...copyNotificationPreferences(saved),
+      revision: 'new',
+      telegramLinked: true,
+      mutedUntil: null,
+    }
+    reordered.types = Object.fromEntries(
+      Object.entries(reordered.types).reverse(),
+    ) as NotificationPreferencesV2['types']
+    expect(notificationPreferencesDiffer(reordered, saved)).toBe(false)
+    const delivery = changeNotificationDelivery(saved, 'LESSON_STARTED', 'appPush', false)
+    expect(notificationPreferencesDiffer(delivery, saved)).toBe(true)
+    expect(
+      notificationPreferencesDiffer(
+        changeNotificationDelivery(delivery, 'LESSON_STARTED', 'appPush', true),
+        saved,
+      ),
+    ).toBe(false)
+    expect(
+      notificationPreferencesDiffer(changeNotificationColor(saved, 'LESSON_STARTED', 'red'), saved),
+    ).toBe(true)
+    expect(notificationPreferencesDiffer(changeNotificationChannelMode(saved, true)!, saved)).toBe(
+      true,
+    )
+  })
 })

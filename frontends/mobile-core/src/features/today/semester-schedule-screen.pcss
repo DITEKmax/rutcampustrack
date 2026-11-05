@@ -60,3 +60,184 @@
 .semester-screen__cancelled {
   color: var(--rct-color-danger-text);
 }
+
+/* Accepted Student presentation; existing roles retain their base rules. */
+:where([data-student-ui]) .semester-screen,
+:where([data-student-ui]):is(.semester-screen) {
+  display: grid;
+  align-content: start;
+  gap: var(--rct-space-5);
+  max-inline-size: var(--rct-today-content-max);
+  min-block-size: 100dvh;
+  margin-inline: auto;
+  padding: var(--rct-space-5) var(--rct-space-4) var(--rct-today-bottom-space);
+  color: var(--rct-color-text-primary);
+  font-family: var(--rct-font-family-sans);
+  overflow-wrap: anywhere;
+  @mixin rct-type-body;
+}
+:where([data-student-ui]) .semester-screen h2,
+:where([data-student-ui]):is(.semester-screen h2),
+:where([data-student-ui]) .semester-screen h3,
+:where([data-student-ui]):is(.semester-screen h3),
+:where([data-student-ui]) .semester-screen p,
+:where([data-student-ui]):is(.semester-screen p) {
+  margin: 0;
+}
+:where([data-student-ui]) .semester-screen h2,
+:where([data-student-ui]):is(.semester-screen h2),
+:where([data-student-ui]) .semester-screen h3,
+:where([data-student-ui]):is(.semester-screen h3) {
+  @mixin rct-type-list-title;
+}
+:where([data-student-ui]) .semester-screen__summary,
+:where([data-student-ui]):is(.semester-screen__summary),
+:where([data-student-ui]) .semester-screen__intro,
+:where([data-student-ui]):is(.semester-screen__intro) {
+  display: grid;
+  gap: var(--rct-space-2);
+}
+:where([data-student-ui]) .semester-screen__semester,
+:where([data-student-ui]):is(.semester-screen__semester) {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--rct-space-2);
+}
+:where([data-student-ui]) .semester-screen__semester > span,
+:where([data-student-ui]):is(.semester-screen__semester > span),
+:where([data-student-ui]) .semester-screen__period,
+:where([data-student-ui]):is(.semester-screen__period),
+:where([data-student-ui]) .semester-screen__intro > p,
+:where([data-student-ui]):is(.semester-screen__intro > p) {
+  color: var(--rct-color-text-secondary);
+  @mixin rct-type-lesson-meta;
+}
+:where([data-student-ui]) .semester-screen__today,
+:where([data-student-ui]):is(.semester-screen__today) {
+  display: flex;
+  align-items: center;
+  gap: var(--rct-space-2);
+  color: var(--rct-color-accent-now);
+  @mixin rct-type-lesson-meta;
+}
+:where([data-student-ui]) .semester-screen__day,
+:where([data-student-ui]):is(.semester-screen__day) {
+  display: grid;
+  gap: var(--rct-space-3);
+}
+:where([data-student-ui]) .semester-screen__day-header,
+:where([data-student-ui]):is(.semester-screen__day-header) {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--rct-space-3);
+}
+:where([data-student-ui]) .semester-screen__day-header::after,
+:where([data-student-ui]):is(.semester-screen__day-header::after) {
+  content: '';
+  flex: 1;
+  block-size: var(--rct-border-hairline);
+  background: var(--rct-color-border-default);
+}
+:where([data-student-ui]) .semester-screen__day-header > span,
+:where([data-student-ui]):is(.semester-screen__day-header > span) {
+  color: var(--rct-color-accent-now);
+  @mixin rct-type-lesson-meta;
+}
+:where([data-student-ui]) .semester-screen__lessons,
+:where([data-student-ui]):is(.semester-screen__lessons) {
+  display: grid;
+  gap: var(--rct-space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+:where([data-student-ui]) .semester-screen__lesson,
+:where([data-student-ui]):is(.semester-screen__lesson) {
+  display: grid;
+  grid-template-columns: minmax(min-content, var(--rct-mobile-time-column)) minmax(0, 1fr);
+  align-items: start;
+  gap: var(--rct-space-3);
+  padding: var(--rct-space-4) var(--rct-space-3);
+  border-radius: var(--rct-radius-xl);
+  background: var(--rct-color-surface-raised);
+}
+:where([data-student-ui]) .semester-screen__time,
+:where([data-student-ui]):is(.semester-screen__time) {
+  display: grid;
+  gap: var(--rct-space-1);
+  @mixin rct-type-lesson-meta;
+}
+:where([data-student-ui]) .semester-screen__time strong,
+:where([data-student-ui]):is(.semester-screen__time strong) {
+  font-weight: var(--rct-font-weight-bold);
+}
+:where([data-student-ui]) .semester-screen__time > span,
+:where([data-student-ui]):is(.semester-screen__time > span) {
+  color: var(--rct-color-text-secondary);
+}
+:where([data-student-ui]) .semester-screen__time > .semester-screen__number,
+:where([data-student-ui]):is(.semester-screen__time > .semester-screen__number) {
+  margin-block-start: var(--rct-space-2);
+  @mixin rct-type-lesson-end;
+}
+:where([data-student-ui]) .semester-screen__details,
+:where([data-student-ui]):is(.semester-screen__details) {
+  display: grid;
+  min-inline-size: 0;
+  gap: var(--rct-space-1);
+}
+:where([data-student-ui]) .semester-screen__type,
+:where([data-student-ui]):is(.semester-screen__type),
+:where([data-student-ui]) .semester-screen__dates,
+:where([data-student-ui]):is(.semester-screen__dates),
+:where([data-student-ui]) .semester-screen__room,
+:where([data-student-ui]):is(.semester-screen__room) {
+  color: var(--rct-color-text-secondary);
+  @mixin rct-type-lesson-meta;
+}
+:where([data-student-ui]) .semester-screen__details > .semester-screen__rotation,
+:where([data-student-ui]):is(.semester-screen__details > .semester-screen__rotation) {
+  margin-block-start: var(--rct-space-2);
+  @mixin rct-type-lesson-meta;
+  font-weight: var(--rct-font-weight-bold);
+}
+:where([data-student-ui]) .semester-screen__room,
+:where([data-student-ui]):is(.semester-screen__room) {
+  display: flex;
+  align-items: center;
+  gap: var(--rct-space-1);
+}
+:where([data-student-ui]) .semester-screen__room > svg,
+:where([data-student-ui]):is(.semester-screen__room > svg),
+:where([data-student-ui]) .semester-screen__today > svg,
+:where([data-student-ui]):is(.semester-screen__today > svg) {
+  flex-shrink: 0;
+}
+:where([data-student-ui]) .semester-screen__changes,
+:where([data-student-ui]):is(.semester-screen__changes) {
+  display: grid;
+  gap: var(--rct-space-2);
+  padding: 0;
+  margin: var(--rct-space-3) 0 0;
+  list-style: none;
+  @mixin rct-type-lesson-meta;
+}
+:where([data-student-ui]) .semester-screen__changes > li,
+:where([data-student-ui]):is(.semester-screen__changes > li) {
+  display: grid;
+  gap: var(--rct-space-1);
+  padding: var(--rct-space-2) var(--rct-space-3);
+  border-inline-start: var(--rct-space-half) solid var(--rct-color-state-warning-border);
+  border-radius: var(--rct-radius-xs);
+  color: var(--rct-color-warning-text);
+  background: var(--rct-color-state-warning-bg);
+}
+:where([data-student-ui]) .semester-screen__changes > li[data-cancelled='true'],
+:where([data-student-ui]):is(.semester-screen__changes > li[data-cancelled='true']) {
+  border-color: var(--rct-color-state-danger-border);
+  color: var(--rct-color-danger-text);
+  background: var(--rct-color-state-danger-bg);
+}

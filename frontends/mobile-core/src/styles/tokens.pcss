@@ -47,6 +47,8 @@
   --rct-today-present-leading: 1.25;
   --rct-today-dock-label-leading: 1.35;
   /* Accepted Homework date heading: final source 4601-142.txt, lines 34/69 (17px). */
+  --rct-homework-calendar-dot-size: 0.375rem;
+  --rct-homework-calendar-dot-completed: var(--rct-color-status-none-text);
   --rct-homework-date-heading-size: 1.0625rem;
   --rct-today-role-gradient: linear-gradient(
     104.93deg,
@@ -209,4 +211,30 @@
     var(--rct-color-accent-soft),
     var(--rct-color-surface-raised)
   );
+}
+
+/* Accepted Student warning surfaces use the saturated warning palette. */
+[data-theme='light'] [data-student-ui],
+[data-student-ui][data-theme='light'] {
+  --rct-warning-surface: var(--rct-color-state-warning-bg);
+}
+
+/* Accepted Student5 light palette. The canonical palettes for auth/other roles stay intact. */
+[data-student-ui] {
+  --rct-homework-calendar-dot-completed-selected: #525252;
+}
+[data-theme='light'] [data-student-ui],
+[data-student-ui][data-theme='light'] {
+  --rct-color-surface-base: #f2f2f4;
+  --rct-color-state-warning-fill: #f4bf22;
+  --rct-color-state-warning-bg: #ffe08a;
+  --rct-color-state-warning-border: #d99a00;
+  --rct-color-state-warning-text: #5c3b00;
+  --rct-color-state-warning-on-fill: #3b2a00;
+  --rct-color-status-present-fill: #68dbb2;
+  --rct-color-status-present-text: #075a45;
+  --rct-color-status-excused-fill: #ffc85c;
+  --rct-color-status-absent-fill: #f78d8d;
+  --rct-color-status-absent-text: #781818;
+  --rct-homework-calendar-dot-completed-selected: #dcdcdc;
 }

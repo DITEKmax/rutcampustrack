@@ -3,6 +3,7 @@ import { renderToString } from '@vue/server-renderer'
 import { describe, expect, it } from 'vitest'
 import ExcuseRequestScreen from './ExcuseRequestScreen.vue'
 import RequestsScreen from './RequestsScreen.vue'
+import RequestCard from './RequestCard.vue'
 import type {
   RequestAttachmentViewState,
   RequestDetail,
@@ -128,6 +129,21 @@ describe('RequestsScreen rendered states', () => {
     expect(html).not.toContain('request-card__decision')
     expect(html).not.toContain('Деталь причины не является решением')
     expect(html).not.toContain('type="checkbox"')
+    expect(html).toContain('aria-expanded="false"')
+    expect(html).toMatch(
+      /<ul(?=[^>]*id="request-lessons-request-1")(?=[^>]*style="display:none;")[^>]*>/,
+    )
+    const explicitTarget = await renderToString(
+      createSSRApp(RequestCard, {
+        detail: pendingRequest,
+        offline: false,
+        focusTarget: true,
+      }),
+    )
+    expect(explicitTarget).toContain('aria-expanded="true"')
+    expect(explicitTarget).not.toMatch(
+      /<ul(?=[^>]*id="request-lessons-request-1")(?=[^>]*style="display:none;")[^>]*>/,
+    )
   })
 
   it('keeps archive empty copy distinct and makes offline submission unavailable', async () => {

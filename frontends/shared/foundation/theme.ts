@@ -18,7 +18,9 @@ export interface ThemeSnapshot {
 
 export interface ThemeController extends ThemeSnapshot {
   setMode(mode: ThemeMode): void
-  subscribe(listener: (snapshot: ThemeSnapshot) => void): () => void
+  /** Surface policy may unlock one accepted role without changing its preference. */
+  setLockedMode?(mode: ResolvedTheme | undefined): void
+  subscribe(listener: (snapshot: ThemeSnapshot, cause?: 'policy') => void): () => void
   dispose(): void
 }
 
@@ -38,7 +40,7 @@ export class ThemeOwnershipError extends Error {
   }
 }
 
-type ThemeListener = (snapshot: ThemeSnapshot) => void
+type ThemeListener = (snapshot: ThemeSnapshot, cause?: 'policy') => void
 
 const targetOwners = new WeakMap<HTMLElement, object>()
 const MEDIA_QUERY = '(prefers-color-scheme: dark)'
@@ -98,17 +100,17 @@ export function createTheme(options: ThemeOptions = {}): ThemeController {
   const listeners = new Set<ThemeListener>()
   let mode: ThemeMode = normalizeMode(options.mode ?? options.lockedMode)
   const source = options.systemSource ?? createBrowserSystemThemeSource(resolveWindow(target))
-  const resolve = (): ResolvedTheme =>
-    options.lockedMode ?? (mode === 'system' ? source.read() : mode)
+  let lockedMode = options.lockedMode
+  const resolve = (): ResolvedTheme => lockedMode ?? (mode === 'system' ? source.read() : mode)
   let resolvedMode = resolve()
   let stopMediaSubscription: (() => void) | undefined
   let disposed = false
 
   const snapshot = (): ThemeSnapshot => ({ mode, resolvedMode })
 
-  function notify(): void {
+  function notify(cause?: 'policy'): void {
     const current = snapshot()
-    for (const listener of [...listeners]) listener(current)
+    for (const listener of [...listeners]) listener(current, cause)
   }
 
   function apply(): void {
@@ -124,7 +126,7 @@ export function createTheme(options: ThemeOptions = {}): ThemeController {
 
   function watchMedia(): void {
     stopWatchingMedia()
-    if (options.lockedMode || mode !== 'system') return
+    if (lockedMode || mode !== 'system') return
     stopMediaSubscription = source.subscribe(() => {
       if (disposed || mode !== 'system') return
       const nextResolvedMode = resolve()
@@ -155,6 +157,16 @@ export function createTheme(options: ThemeOptions = {}): ThemeController {
     return () => listeners.delete(listener)
   }
 
+  function setLockedMode(next: ResolvedTheme | undefined): void {
+    if (disposed || lockedMode === next) return
+    lockedMode = next
+    const previousResolved = resolvedMode
+    resolvedMode = resolve()
+    apply()
+    watchMedia()
+    if (resolvedMode !== previousResolved) notify('policy')
+  }
+
   function dispose(): void {
     if (disposed) return
     disposed = true
@@ -179,6 +191,7 @@ export function createTheme(options: ThemeOptions = {}): ThemeController {
       return resolvedMode
     },
     setMode,
+    setLockedMode,
     subscribe,
     dispose,
   }

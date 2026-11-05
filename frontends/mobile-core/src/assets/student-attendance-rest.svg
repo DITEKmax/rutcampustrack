@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="160" height="128" viewBox="0 0 160 128" fill="none" aria-hidden="true" focusable="false">
+  <path d="M35 110H127" stroke="var(--rct-color-text-muted, #8a8299)" stroke-opacity=".25" stroke-width="1.5" stroke-linecap="round"/>
+  <path d="M94 34V30A9 9 0 0 1 112 30V34" stroke="var(--rct-color-accent-now, #b79cfa)" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M123 53C132 53 135 59 135 68V88C135 94 133 98 129 100" stroke="var(--rct-color-text-muted, #8a8299)" stroke-opacity=".55" stroke-width="3" stroke-linecap="round"/>
+  <path d="M79 50C79 39 88 32 103 32C118 32 127 39 127 50L132 94C133 101 128 106 121 106H85C78 106 73 101 74 94L79 50Z" fill="var(--rct-color-surface-raised, #1c1922)" stroke="var(--rct-color-text-muted, #8a8299)" stroke-width="1.5" stroke-linejoin="round"/>
+  <path d="M79 51C80 39 89 32 103 32C117 32 126 39 127 51L115 60C108 65 98 65 91 60L79 51Z" fill="var(--rct-color-accent-soft, #2f1160)" stroke="var(--rct-color-accent-now, #b79cfa)" stroke-width="1.5" stroke-linejoin="round"/>
+  <path d="M103 54V65" stroke="var(--rct-color-accent-now, #b79cfa)" stroke-width="3" stroke-linecap="round"/>
+  <rect x="98.5" y="61" width="9" height="7" rx="2.5" fill="var(--rct-color-surface-raised, #1c1922)" stroke="var(--rct-color-accent-now, #b79cfa)" stroke-width="1.5"/>
+  <rect x="87" y="76" width="33" height="22" rx="7" fill="var(--rct-color-accent-soft, #2f1160)" fill-opacity=".45" stroke="var(--rct-color-text-muted, #8a8299)" stroke-opacity=".6" stroke-width="1.5"/>
+  <path d="M94 82H113M110 82V86" stroke="var(--rct-color-text-muted, #8a8299)" stroke-opacity=".65" stroke-width="1.5" stroke-linecap="round"/>
+  <g transform="rotate(-8 59 87)" stroke-linejoin="round">
+    <path d="M30 66H78A6 6 0 0 1 84 72V101H30A7 7 0 0 1 23 94V73A7 7 0 0 1 30 66Z" fill="var(--rct-color-accent-soft, #2f1160)" stroke="var(--rct-color-accent-now, #b79cfa)" stroke-width="1.5"/>
+    <path d="M30 91H83V101H30A5 5 0 0 1 30 91Z" fill="var(--rct-color-surface-raised, #1c1922)" stroke="var(--rct-color-accent-now, #b79cfa)" stroke-width="1.5"/>
+    <path d="M32 96H75" stroke="var(--rct-color-text-muted, #8a8299)" stroke-opacity=".35" stroke-width="1.5" stroke-linecap="round"/>
+    <path d="M32 67V90" stroke="var(--rct-color-accent-now, #b79cfa)" stroke-opacity=".5" stroke-width="1.5"/>
+    <path d="M69 92V105L73 102L77 105V92" fill="var(--rct-color-accent-now, #b79cfa)"/>
+    <path d="M44 77H62" stroke="var(--rct-color-accent-now, #b79cfa)" stroke-opacity=".6" stroke-width="1.5" stroke-linecap="round"/>
+  </g>
+  <path d="M36 51C38 45 42 42 48 43C47 49 43 53 36 51Z" fill="var(--rct-color-accent-soft, #2f1160)" stroke="var(--rct-color-accent-now, #b79cfa)" stroke-width="1.5" stroke-linejoin="round"/>
+  <path d="M34 56L41 49" stroke="var(--rct-color-accent-now, #b79cfa)" stroke-width="1.5" stroke-linecap="round"/>
+  <path d="M52 32H57" stroke="var(--rct-color-text-muted, #8a8299)" stroke-opacity=".4" stroke-width="1.5" stroke-linecap="round"/>
+</svg>

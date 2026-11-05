@@ -78,6 +78,8 @@ class TmaIT extends AbstractIntegrationTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
         assertThat(response.getHeaders().getContentType().toString())
                 .contains("application/problem+json");
+        assertThat(response.getBody()).contains("TMA_INIT_DATA_INVALID").doesNotContain("999999999", "cause");
+        assertThat(response.getHeaders().getCacheControl()).contains("no-store");
     }
 
     @Test
@@ -89,6 +91,8 @@ class TmaIT extends AbstractIntegrationTest {
         ResponseEntity<String> response =
                 restTemplate.postForEntity("/auth/tma", request, String.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+        assertThat(response.getBody()).contains("TMA_INIT_DATA_EXPIRED").doesNotContain("999999999", "cause");
+        assertThat(response.getHeaders().getCacheControl()).contains("no-store");
     }
 
     @Test
@@ -99,6 +103,17 @@ class TmaIT extends AbstractIntegrationTest {
         ResponseEntity<String> response =
                 restTemplate.postForEntity("/auth/tma", request, String.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+        assertThat(response.getBody()).contains("TMA_TELEGRAM_NOT_LINKED").doesNotContain("999999999", "cause");
+        assertThat(response.getHeaders().getCacheControl()).contains("no-store");
+    }
+
+    @Test
+    void futureSignedProofReturnsDistinctCodeBeforeLinkLookup() {
+        String initData = buildValidInitDataWithAuthDate(999999999L, BOT_TOKEN,
+                System.currentTimeMillis() / 1000 + 3600);
+        ResponseEntity<String> response = restTemplate.postForEntity("/auth/tma", new TmaAuthRequest(initData), String.class);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+        assertThat(response.getBody()).contains("TMA_INIT_DATA_NOT_YET_VALID").doesNotContain("999999999");
     }
 
     /**

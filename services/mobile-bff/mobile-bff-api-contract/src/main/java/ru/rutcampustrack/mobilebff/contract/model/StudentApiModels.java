@@ -394,7 +394,15 @@ public final class StudentApiModels {
             @Schema(nullable = true) String reasonCode,
             @Schema(nullable = true) String reasonText,
             @Schema(nullable = true) String comment,
-            @Schema(nullable = true) String cancellationReason) {}
+            @Schema(nullable = true) String cancellationReason,
+            List<StudentAttendanceDocument> documents) {
+        public StudentAttendanceExplanation(String reasonCode, String reasonText, String comment, String cancellationReason) {
+            this(reasonCode, reasonText, comment, cancellationReason, List.of());
+        }
+    }
+
+    public record StudentAttendanceDocument(String id, String name, String contentType, long size,
+            String state, @Schema(nullable = true) Instant expiresAt, String markRevision, String lessonId) {}
 
     @Schema(
             name = "StudentAttendanceLessonSchedule",

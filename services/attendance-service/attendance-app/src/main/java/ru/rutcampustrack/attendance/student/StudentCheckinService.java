@@ -458,6 +458,7 @@ public class StudentCheckinService {
             journalAttachmentPort.delete(
                     lesson.semesterId(), lesson.id(), identity.userId(), identity.groupId());
         }
+        attendance.setExcuseRequestId(null);
         attendance.setExcuseReason(null);
         attendance.setExcuseType(null);
         attendance.setExcuseComment(null);

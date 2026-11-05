@@ -2305,6 +2305,98 @@
         } ]
       }
     },
+    "/api/v1/student/attendance/lessons/{lessonId}/attachments/{attachmentId}" : {
+      "get" : {
+        "tags" : [ "Student mobile" ],
+        "summary" : "Download a document bound to the student's current excused mark",
+        "operationId" : "downloadAttendanceAttachment",
+        "parameters" : [ {
+          "name" : "lessonId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "pattern" : "^[1-9][0-9]*$",
+            "type" : "string"
+          }
+        }, {
+          "name" : "attachmentId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "pattern" : "^[0-9a-fA-F]{24}$",
+            "type" : "string"
+          }
+        }, {
+          "name" : "semesterId",
+          "in" : "query",
+          "required" : true,
+          "schema" : {
+            "pattern" : "^[1-9][0-9]*$",
+            "type" : "string"
+          }
+        }, {
+          "name" : "expectedMarkRevision",
+          "in" : "query",
+          "required" : true,
+          "schema" : {
+            "maxLength" : 128,
+            "minLength" : 0,
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Document bytes",
+            "content" : {
+              "application/octet-stream" : { }
+            }
+          },
+          "403" : {
+            "description" : "Outside student scope",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MobileProblemDetails"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Document not bound to current mark",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MobileProblemDetails"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Mark revision changed",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MobileProblemDetails"
+                }
+              }
+            }
+          },
+          "410" : {
+            "description" : "Document expired or removed",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MobileProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
     "/api/v1/map/manifest" : {
       "get" : {
         "tags" : [ "Campus map" ],
@@ -4004,6 +4096,38 @@
           }
         }
       },
+      "StudentAttendanceDocument" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string"
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "contentType" : {
+            "type" : "string"
+          },
+          "size" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "state" : {
+            "type" : "string"
+          },
+          "expiresAt" : {
+            "type" : "string",
+            "format" : "date-time",
+            "nullable" : true
+          },
+          "markRevision" : {
+            "type" : "string"
+          },
+          "lessonId" : {
+            "type" : "string"
+          }
+        }
+      },
       "StudentAttendanceExplanation" : {
         "type" : "object",
         "properties" : {
@@ -4022,6 +4146,12 @@
           "cancellationReason" : {
             "type" : "string",
             "nullable" : true
+          },
+          "documents" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/StudentAttendanceDocument"
+            }
           }
         },
         "nullable" : true

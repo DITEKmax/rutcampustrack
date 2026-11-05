@@ -1,9 +1,8 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { createRenderer, h, markRaw, nextTick, type App } from 'vue'
+import { createRenderer, h, markRaw, nextTick, reactive, type App } from 'vue'
 import RoleSwitchDialog from './RoleSwitchDialog.vue'
 import AutoGrowTextarea from '../../features/requests/AutoGrowTextarea.vue'
 import { DEFAULT_PASSWORD_POLICY, type ProfileSnapshot } from '../../features/profile/profile-types'
-
 
 class TestElement {
   children: TestElement[] = []
@@ -192,6 +191,39 @@ afterEach(() => {
 })
 
 describe('role overlay lifecycle', () => {
+  it('dismisses the Student dialog by X, guards pending work and restores focus', async () => {
+    const root = setup()
+    const previous = new TestElement('button')
+    testDocument.activeElement = previous
+    const close = vi.fn()
+    const props = reactive({
+      dismissible: true,
+      snapshot: roleSnapshot(),
+      pendingRole: null as 'HEADMAN' | null,
+    })
+    const app = renderer.createApp({
+      render: () => h(RoleSwitchDialog, { ...props, onSelectRole: vi.fn(), onClose: close }),
+    })
+    apps.push(app)
+    app.mount(root)
+    await nextTick()
+    const dismiss = testDocument.body
+      .querySelectorAll()
+      .find((button) => button.props['aria-label'] === 'Закрыть')!
+    expect(testDocument.activeElement).toBe(dismiss)
+    ;(dismiss.props.onClick as () => void)()
+    expect(close).toHaveBeenCalledOnce()
+    props.pendingRole = 'HEADMAN'
+    await nextTick()
+    expect(dismiss.props.disabled).toBe(true)
+    ;(dismiss.props.onClick as () => void)()
+    testDocument.dispatchEvent(key('Escape'))
+    expect(close).toHaveBeenCalledOnce()
+    app.unmount()
+    apps.pop()
+    expect(testDocument.activeElement).toBe(previous)
+  })
+
   it('does not install listeners or move focus when unmounted before the mounted nextTick', async () => {
     const root = setup()
     const previous = new TestElement('button')
@@ -240,16 +272,16 @@ describe('role overlay lifecycle', () => {
   })
 })
 
-
-
 describe('comment measurement lifecycle', () => {
   it('releases observers and ignores pending width/font callbacks after unmount', async () => {
     const root = setup()
     const app = renderer.createApp(AutoGrowTextarea, { modelValue: 'Retained comment' })
-    apps.push(app); app.mount(root)
-    const control = root.children.find(child => child.tag === 'textarea')!
+    apps.push(app)
+    app.mount(root)
+    const control = root.children.find((child) => child.tag === 'textarea')!
     expect(observed).toBe(control)
-    app.unmount(); apps.pop()
+    app.unmount()
+    apps.pop()
     expect(disconnected).toBe(true)
     const height = control.style.height
     notifyResize?.()

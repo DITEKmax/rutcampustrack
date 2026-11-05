@@ -1,13 +1,17 @@
 <script setup lang="ts">
+import MobileIcon from '../../shared/components/MobileIcon.vue';
+import AttendanceDocumentPreview from './AttendanceDocumentPreview.vue';
 import SvgIcon from '../../../../shared/foundation/SvgIcon.vue';
-import { computed, ref, watch } from 'vue';
+import { computed, onBeforeUnmount, ref, watch } from 'vue';
 import chevronDown from '../../assets/chevron-down.svg';
 import {
   attendanceExplanationText,
+  attendanceDocuments,
   displayPercent,
   historyStatusLabel,
   lessonTypeLabel,
   LESSON_TYPE_ORDER,
+  type AttendanceDocumentResolver,
   type AttendanceSubject,
   type AttendanceSubjectTypeSummary,
 } from './attendance-view-model';
@@ -15,14 +19,19 @@ import {
 const props = withDefaults(
   defineProps<{
     subjects: readonly AttendanceSubject[];
+    documentForLesson?: AttendanceDocumentResolver | undefined;
     expandedSubjectId?: string | null;
   }>(),
   {
+    documentForLesson: undefined,
     expandedSubjectId: null,
   },
 );
 
-const emit = defineEmits<{ toggle: [subjectId: string] }>();
+const emit = defineEmits<{
+  toggle: [subjectId: string];
+  'explanation-visible': [visible: boolean];
+}>();
 
 function subjectIsExpanded(subject: AttendanceSubject): boolean {
   return subject.id === props.expandedSubjectId;
@@ -47,6 +56,14 @@ function metricLabel(status: 'present' | 'excused' | 'absent', percent: number |
   return `${labels[status]}: ${displayPercent(percent)}`;
 }
 
+const documentPreviews = ref<InstanceType<typeof AttendanceDocumentPreview>[]>([]);
+function closeOverlay(): boolean {
+  if (documentPreviews.value.some((preview) => preview.closeOverlay())) return true;
+  if (explanationId.value === null) return false;
+  explanationId.value = null;
+  return true;
+}
+defineExpose({ closeOverlay });
 const explanationId = ref<string | null>(null);
 const explanationInteraction = ref<'hover' | 'focus' | 'tap'>('hover');
 function showExplanation(id: string, interaction: 'hover' | 'focus' | 'tap'): void {
@@ -54,10 +71,25 @@ function showExplanation(id: string, interaction: 'hover' | 'focus' | 'tap'): vo
   explanationId.value = id;
   explanationInteraction.value = interaction;
 }
-function hideHoverExplanation(): void {
+function hideHoverExplanation(event: MouseEvent): void {
+  if ((event.relatedTarget as HTMLElement | null)?.closest?.('[data-attendance-explanation]'))
+    return;
   if (explanationInteraction.value === 'hover') explanationId.value = null;
 }
+function closeExplanationOnBlur(event: FocusEvent): void {
+  if (
+    explanationInteraction.value === 'tap' ||
+    (event.relatedTarget as HTMLElement | null)?.closest?.('[data-attendance-document]')
+  )
+    return;
+  explanationId.value = null;
+}
+function segmentDocument(segment: AttendanceSubjectTypeSummary['history'][number]) {
+  return segment.status === 'EXCUSED' ? attendanceDocuments(props.documentForLesson?.(segment.id, segment.explanation)) : [];
+}
 
+onBeforeUnmount(() => emit('explanation-visible', false));
+watch(explanationId, (id) => emit('explanation-visible', id !== null));
 watch(
   () => [props.subjects, props.expandedSubjectId],
   () => {
@@ -95,24 +127,25 @@ const hasSubjects = computed(() => props.subjects.length > 0);
         v-for="subject in subjects"
         :key="subject.id"
         class="attendance-subject-list__item"
+        :class="{ 'attendance-subject-list__item--expanded': subjectIsExpanded(subject) }"
       >
-        <button
-          class="attendance-subject-list__trigger"
-          type="button"
-          :aria-expanded="subjectIsExpanded(subject)"
-          :aria-controls="`attendance-subject-${subject.id}`"
-          @click="emit('toggle', subject.id)"
-        >
-          <span class="attendance-subject-list__trigger-label">{{ subject.name }}</span>
-          <span
-            class="attendance-subject-list__disclosure"
-            aria-hidden="true"
+        <h3 class="attendance-subject-list__heading">
+          <button
+            class="attendance-subject-list__trigger"
+            type="button"
+            :aria-expanded="subjectIsExpanded(subject)"
+            :aria-controls="`attendance-subject-${subject.id}`"
+            @click="emit('toggle', subject.id)"
           >
-            <SvgIcon
-              :src="chevronDown"
-            />
-          </span>
-        </button>
+            <span class="attendance-subject-list__trigger-label">{{ subject.name }}</span>
+            <span
+              class="attendance-subject-list__disclosure"
+              aria-hidden="true"
+            >
+              <SvgIcon :src="chevronDown" />
+            </span>
+          </button>
+        </h3>
         <div
           v-if="subjectIsExpanded(subject)"
           :id="`attendance-subject-${subject.id}`"
@@ -126,7 +159,7 @@ const hasSubjects = computed(() => props.subjects.length > 0);
             <div class="attendance-type-card__pill">
               {{ lessonTypeLabel(card.type) }}
             </div>
-            <h3>Пары {{ card.metrics.held }}/{{ card.metrics.planned }}</h3>
+            <h4>Пары {{ card.metrics.held }}/{{ card.metrics.planned }}</h4>
             <div
               class="attendance-type-card__metrics"
               role="group"
@@ -161,17 +194,23 @@ const hasSubjects = computed(() => props.subjects.length > 0);
                 :key="segment.id"
               >
                 <button
-                  v-if="segmentExplanation(segment)"
+                  v-if="segmentExplanation(segment) || segmentDocument(segment).length"
                   class="attendance-type-card__segment attendance-type-card__segment--explanation"
                   :class="`attendance-type-card__segment--${historyTone(segment.status)}`"
                   type="button"
                   :aria-label="`Занятие ${index + 1}: ${historyStatusLabel(segment.status)} · ${segmentExplanation(segment)}`"
                   :aria-expanded="explanationId === segmentId(subject.id, card.type, segment.id)"
-                  :aria-describedby="explanationId === segmentId(subject.id, card.type, segment.id) ? explanationId : undefined"
-                  @mouseenter="showExplanation(segmentId(subject.id, card.type, segment.id), 'hover')"
+                  :aria-describedby="
+                    explanationId === segmentId(subject.id, card.type, segment.id)
+                      ? explanationId
+                      : undefined
+                  "
+                  @mouseenter="
+                    showExplanation(segmentId(subject.id, card.type, segment.id), 'hover')
+                  "
                   @mouseleave="hideHoverExplanation"
                   @focus="showExplanation(segmentId(subject.id, card.type, segment.id), 'focus')"
-                  @blur="explanationId = null"
+                  @blur="closeExplanationOnBlur"
                   @click="showExplanation(segmentId(subject.id, card.type, segment.id), 'tap')"
                   @keydown.esc="explanationId = null"
                 />
@@ -188,14 +227,35 @@ const hasSubjects = computed(() => props.subjects.length > 0);
               v-for="segment in card.history"
               :key="segment.id"
             >
-              <p
-                v-if="explanationId === segmentId(subject.id, card.type, segment.id) && segmentExplanation(segment)"
-                :id="explanationId"
+              <div
+                v-if="explanationId === segmentId(subject.id, card.type, segment.id)"
                 class="attendance-status-explanation"
-                role="tooltip"
+                data-attendance-explanation
+                @mouseleave="hideHoverExplanation"
               >
-                {{ segmentExplanation(segment) }}
-              </p>
+                <p
+                  :id="explanationId"
+                  role="tooltip"
+                >
+                  {{ segmentExplanation(segment) }}
+                </p>
+                <AttendanceDocumentPreview
+                  v-for="(document, documentIndex) in segmentDocument(segment)"
+                  :key="documentIndex"
+                  ref="documentPreviews"
+                  :document="document"
+                  @blur="closeExplanationOnBlur"
+                />
+                <button
+                  v-if="explanationInteraction === 'tap'"
+                  class="attendance-explanation-close"
+                  type="button"
+                  aria-label="Закрыть причину"
+                  @click="explanationId = null"
+                >
+                  <MobileIcon name="close" />
+                </button>
+              </div>
             </template>
           </article>
         </div>

@@ -244,46 +244,57 @@ describe('statistics query owner and independent cards', () => {
   })
 })
 
-const ranking = (page = 1, self = true) => ({
+const ranking = (page = 1) => ({
   available: true,
   page,
   size: 20,
   total: 42,
   ownPosition: 22,
-  rows: [
-    {
-      id: self ? '1' : '2',
-      name: self ? 'Свой студент' : 'Сосед',
-      position: page * 20 + 2,
+  rows: Array.from({ length: Math.min(20, 42 - page * 20) }, (_, index) => {
+    const position = page * 20 + index + 1
+    const isSelf = position === 22
+    return {
+      id: isSelf ? '1' : String(position + 1),
+      name: isSelf ? 'Свой студент' : `Сосед ${position}`,
+      position,
       percentage: 50,
-      isSelf: self,
-    },
-  ],
+      isSelf,
+    }
+  }),
 })
 describe('own-cohort ranking stays within the current query owner', () => {
-  it('is opt-in, anchors at self, hides previous rows during paging and clears on deny', async () => {
+  it('is opt-in, loads every bounded page before expansion and clears on deny', async () => {
     const next = deferred<Response>()
     const seen: URL[] = []
+    let denied = false
     const { controller, scope } = mount(async (input) => {
       const url = new URL(String(input), 'https://fixture')
       if (!url.pathname.endsWith('/ranking')) return reply(overview)
       seen.push(url)
-      if (!url.searchParams.has('page')) return reply(ranking())
+      if (denied) return reply({}, 403)
       if (url.searchParams.get('page') === '2') return next.promise
-      return reply({}, 403)
+      return reply(ranking(url.searchParams.has('page') ? Number(url.searchParams.get('page')) : 1))
     }, 300000)
     scope.value = { ...scope.value, userId: '1' }
     await nextTick()
     expect(seen).toHaveLength(0)
     controller.openRanking()
-    await vi.waitFor(() => expect(controller.rankingState.value.status).toBe('ready'))
-    expect(seen[0]?.searchParams.has('page')).toBe(false)
-    controller.setRankingPage(2)
+    await vi.waitFor(() => expect(seen).toHaveLength(3))
     expect(controller.rankingState.value.status).toBe('loading')
-    next.resolve(reply(ranking(2, false)))
+    next.resolve(reply(ranking(2)))
     await vi.waitFor(() => expect(controller.rankingState.value.status).toBe('ready'))
+    expect(seen.map((url) => url.searchParams.get('page'))).toEqual([null, '0', '2'])
+    expect(seen.every((url) => url.searchParams.get('size') === '20')).toBe(true)
     const state = controller.rankingState.value
-    expect(state.status === 'ready' && state.data.rows[0]?.id).toBe('2')
+    expect(state.status === 'ready' && state.data.rows).toHaveLength(42)
+    expect(state.status === 'ready' && state.data.rows.map((row) => row.position)).toEqual(
+      Array.from({ length: 42 }, (_, index) => index + 1),
+    )
+    controller.openRanking()
+    expect(controller.rankingVisible.value).toBe(false)
+    controller.openRanking()
+    expect(controller.rankingVisible.value).toBe(true)
+    denied = true
     controller.setRankingPage(0)
     await vi.waitFor(() => expect(controller.rankingState.value.status).toBe('forbidden'))
     expect('data' in controller.rankingState.value).toBe(false)
@@ -299,7 +310,10 @@ describe('own-cohort ranking stays within the current query owner', () => {
     scope.value = { ...scope.value, userId: '1' }
     controller.openRanking()
     await vi.waitFor(() => expect(signal).toBeDefined())
-    const pending = client.getQueryCache().findAll().filter(query => query.state.fetchStatus === 'fetching')
+    const pending = client
+      .getQueryCache()
+      .findAll()
+      .filter((query) => query.state.fetchStatus === 'fetching')
     expect(pending).toHaveLength(1)
     const oldQuery = pending[0]!
     const oldHash = oldQuery.queryHash
@@ -315,9 +329,12 @@ describe('own-cohort ranking stays within the current query owner', () => {
     expect(oldQuery.state.data).toBeUndefined()
   })
   it('clears on offline and refuses a mismatched self marker rather than showing peers', async () => {
-    const { controller, scope, offline } = mount(async (input) =>
-      String(input).includes('/ranking') ? reply(ranking()) : reply(overview),
-    )
+    const { controller, scope, offline } = mount(async (input) => {
+      const url = new URL(String(input), 'https://fixture')
+      return url.pathname.endsWith('/ranking')
+        ? reply(ranking(url.searchParams.has('page') ? Number(url.searchParams.get('page')) : 1))
+        : reply(overview)
+    })
     scope.value = { ...scope.value, userId: '1' }
     controller.openRanking()
     await vi.waitFor(() => expect(controller.rankingState.value.status).toBe('ready'))

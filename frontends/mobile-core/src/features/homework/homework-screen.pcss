@@ -196,7 +196,8 @@
     45deg,
     transparent,
     transparent calc(var(--rct-space-1) - var(--rct-border-hairline) * 1.5),
-    color-mix(in srgb, var(--rct-color-border-default) 55%, transparent) calc(var(--rct-space-1) - var(--rct-border-hairline) * 1.5),
+    color-mix(in srgb, var(--rct-color-border-default) 55%, transparent)
+      calc(var(--rct-space-1) - var(--rct-border-hairline) * 1.5),
     color-mix(in srgb, var(--rct-color-border-default) 55%, transparent) var(--rct-space-1)
   );
 }
@@ -407,4 +408,608 @@
   block-size: calc(var(--rct-control-min-touch) + 2 * var(--rct-space-1));
   border-radius: var(--rct-radius-full);
   background: var(--rct-color-surface-float);
+}
+
+/* Accepted Student presentation; existing roles retain their base rules. */
+:where([data-student-ui]) .homework-screen,
+:where([data-student-ui]):is(.homework-screen) {
+  position: relative;
+  min-block-size: 100dvh;
+  color: var(--rct-color-text-primary);
+  background: var(--rct-color-surface-base);
+  @mixin rct-type-body;
+}
+
+:where([data-student-ui]) .homework-content,
+:where([data-student-ui]):is(.homework-content) {
+  display: flex;
+  flex-direction: column;
+  inline-size: min(calc(100% - 2 * var(--rct-space-4)), var(--rct-mobile-content-width));
+  min-block-size: 100dvh;
+  margin-inline: auto;
+  padding-block: calc(env(safe-area-inset-top) + var(--rct-space-5))
+    calc(env(safe-area-inset-bottom) + 6.75rem);
+  gap: var(--rct-space-3);
+}
+
+:where([data-student-ui]) .homework-content h1,
+:where([data-student-ui]):is(.homework-content h1) {
+  margin: 0;
+  color: var(--rct-color-text-primary);
+  font-size: var(--rct-font-size-title-screen);
+  font-weight: var(--rct-font-weight-bold);
+  line-height: 1.25;
+}
+
+:where([data-student-ui]) .homework-previous,
+:where([data-student-ui]):is(.homework-previous),
+:where([data-student-ui]) .homework-material,
+:where([data-student-ui]):is(.homework-material),
+:where([data-student-ui]) .homework-state button,
+:where([data-student-ui]):is(.homework-state button) {
+  min-block-size: var(--rct-control-min-touch);
+  border: var(--rct-border-hairline) solid var(--rct-color-border-default);
+  border-radius: var(--rct-radius-2xl);
+  padding-inline: var(--rct-space-4);
+  color: var(--rct-color-text-primary);
+  background: var(--rct-color-surface-float);
+  font: inherit;
+  font-size: var(--rct-font-size-caption);
+  font-weight: var(--rct-font-weight-bold);
+  line-height: 1.35;
+  cursor: pointer;
+  @mixin rct-focus-ring;
+}
+
+:where([data-student-ui]) .homework-period-panel,
+:where([data-student-ui]):is(.homework-period-panel) {
+  display: grid;
+  gap: var(--rct-space-3);
+}
+
+:where([data-student-ui]) .homework-period-tabs,
+:where([data-student-ui]):is(.homework-period-tabs) {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--rct-space-1);
+}
+
+:where([data-student-ui]) .homework-period-tabs button,
+:where([data-student-ui]):is(.homework-period-tabs button),
+:where([data-student-ui]) .homework-period-pager button,
+:where([data-student-ui]):is(.homework-period-pager button),
+:where([data-student-ui]) .homework-calendar button,
+:where([data-student-ui]):is(.homework-calendar button) {
+  min-block-size: var(--rct-control-min-touch);
+  min-inline-size: 0;
+  border: 0;
+  border-radius: var(--rct-radius-xl);
+  padding: var(--rct-space-1);
+  color: var(--rct-color-text-primary);
+  background: var(--rct-color-surface-float);
+  font: inherit;
+  font-size: var(--rct-font-size-caption);
+  cursor: pointer;
+  @mixin rct-focus-ring;
+}
+
+:where([data-student-ui]) .homework-period-tabs button[aria-selected='true'],
+:where([data-student-ui]):is(.homework-period-tabs button[aria-selected='true']),
+:where([data-student-ui]) .homework-calendar button[aria-pressed='true'],
+:where([data-student-ui]):is(.homework-calendar button[aria-pressed='true']) {
+  color: var(--rct-color-accent-on-now);
+  background: var(--rct-color-accent-now);
+}
+
+:where([data-student-ui]) .homework-period-tabs button:disabled,
+:where([data-student-ui]):is(.homework-period-tabs button:disabled),
+:where([data-student-ui]) .homework-period-pager button:disabled,
+:where([data-student-ui]):is(.homework-period-pager button:disabled),
+:where([data-student-ui]) .homework-calendar button:disabled,
+:where([data-student-ui]):is(.homework-calendar button:disabled) {
+  opacity: 0.5;
+  cursor: default;
+}
+
+:where([data-student-ui]) .homework-period-pager,
+:where([data-student-ui]):is(.homework-period-pager) {
+  display: grid;
+  grid-template-columns: var(--rct-control-min-touch) minmax(0, 1fr) var(--rct-control-min-touch);
+  align-items: center;
+  gap: var(--rct-space-2);
+}
+
+:where([data-student-ui]) .homework-period-pager output,
+:where([data-student-ui]):is(.homework-period-pager output) {
+  text-align: center;
+  overflow-wrap: anywhere;
+  font-size: var(--rct-font-size-caption);
+}
+
+:where([data-student-ui]) .homework-calendar-scroll,
+:where([data-student-ui]):is(.homework-calendar-scroll) {
+  min-inline-size: 0;
+  max-inline-size: 100%;
+  overflow-x: auto;
+  @mixin rct-focus-ring;
+}
+
+:where([data-student-ui]) .homework-calendar,
+:where([data-student-ui]):is(.homework-calendar) {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(var(--rct-control-min-touch), 1fr));
+  min-inline-size: calc(7 * var(--rct-control-min-touch) + 6 * var(--rct-space-1));
+  gap: var(--rct-space-1);
+  text-align: center;
+  font-size: var(--rct-font-size-micro);
+}
+
+:where([data-student-ui]) .homework-calendar button,
+:where([data-student-ui]):is(.homework-calendar button) {
+  position: relative;
+  min-inline-size: var(--rct-control-min-touch);
+  min-block-size: calc(var(--rct-control-min-touch) + var(--rct-space-5));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding-block: var(--rct-space-2);
+  gap: var(--rct-space-1);
+}
+
+:where([data-student-ui]) .homework-calendar button[aria-current='date'] strong,
+:where([data-student-ui]):is(.homework-calendar button[aria-current='date'] strong) {
+  text-decoration: underline;
+  text-underline-offset: var(--rct-space-1);
+}
+
+:where([data-student-ui]) .homework-calendar__dot,
+:where([data-student-ui]):is(.homework-calendar__dot) {
+  position: absolute;
+  inset-block-start: var(--rct-space-2);
+  inset-inline-end: var(--rct-space-2);
+  inline-size: var(--rct-homework-calendar-dot-size);
+  block-size: var(--rct-homework-calendar-dot-size);
+  border-radius: var(--rct-radius-full);
+  background: var(--rct-color-text-primary);
+}
+
+:where([data-student-ui]) .homework-calendar__dot[data-completion='completed'],
+:where([data-student-ui]):is(.homework-calendar__dot[data-completion='completed']) {
+  background: var(--rct-homework-calendar-dot-completed);
+}
+
+:where([data-student-ui]) .homework-calendar button[aria-pressed='true'] .homework-calendar__dot,
+:where([data-student-ui]):is(
+  .homework-calendar button[aria-pressed='true'] .homework-calendar__dot
+) {
+  background: var(--rct-color-accent-on-now);
+}
+
+:where([data-student-ui])
+  .homework-calendar
+  button[aria-pressed='true']
+  .homework-calendar__dot[data-completion='completed'],
+:where([data-student-ui]):is(
+  .homework-calendar
+    button[aria-pressed='true']
+    .homework-calendar__dot[data-completion='completed']
+) {
+  background: var(--rct-homework-calendar-dot-completed-selected);
+}
+
+:where([data-student-ui]) .homework-empty-day,
+:where([data-student-ui]):is(.homework-empty-day) {
+  display: flex;
+  align-items: center;
+  gap: var(--rct-space-3);
+  padding-inline: var(--rct-space-3);
+  color: var(--rct-color-text-secondary);
+  font-size: var(--rct-font-size-caption);
+}
+
+:where([data-student-ui]) .homework-empty-day .homework-art-illustration,
+:where([data-student-ui]):is(.homework-empty-day .homework-art-illustration) {
+  flex: 0 0 calc(var(--rct-space-4) * 3);
+  inline-size: calc(var(--rct-space-4) * 3);
+}
+
+:where([data-student-ui]) .homework-empty-day p,
+:where([data-student-ui]):is(.homework-empty-day p) {
+  margin: 0;
+}
+
+:where([data-student-ui]) .homework-previous,
+:where([data-student-ui]):is(.homework-previous) {
+  display: grid;
+  place-items: center;
+  inline-size: 100%;
+}
+
+:where([data-student-ui]) .homework-month,
+:where([data-student-ui]):is(.homework-month) {
+  margin: var(--rct-space-2) 0 calc(var(--rct-space-2) * -1);
+  color: var(--rct-color-text-secondary);
+  font-size: var(--rct-font-size-micro);
+  font-weight: var(--rct-font-weight-bold);
+  letter-spacing: 0.04em;
+  line-height: 1.35;
+}
+
+:where([data-student-ui]) .homework-group,
+:where([data-student-ui]):is(.homework-group) {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rct-space-3);
+}
+
+:where([data-student-ui]) .homework-selected-date,
+:where([data-student-ui]):is(.homework-selected-date),
+:where([data-student-ui]) .homework-group > h2,
+:where([data-student-ui]):is(.homework-group > h2) {
+  margin: 0;
+  color: var(--rct-color-text-primary);
+  font-size: var(--rct-homework-date-heading-size);
+  font-weight: var(--rct-font-weight-bold);
+  line-height: 1.35;
+}
+
+:where([data-student-ui]) .homework-group--week .homework-month,
+:where([data-student-ui]):is(.homework-group--week .homework-month) {
+  text-align: center;
+}
+
+:where([data-student-ui]) .homework-group--week > h2,
+:where([data-student-ui]):is(.homework-group--week > h2) {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--rct-space-3);
+  text-align: center;
+}
+
+:where([data-student-ui]) .homework-group--week > h2::before,
+:where([data-student-ui]):is(.homework-group--week > h2::before),
+:where([data-student-ui]) .homework-group--week > h2::after,
+:where([data-student-ui]):is(.homework-group--week > h2::after) {
+  content: '';
+  flex: 1;
+  block-size: var(--rct-border-hairline);
+  background: var(--rct-color-border-default);
+}
+
+:where([data-student-ui]) .homework-group__cards,
+:where([data-student-ui]):is(.homework-group__cards) {
+  display: grid;
+  gap: var(--rct-space-3);
+}
+
+:where([data-student-ui]) .homework-card,
+:where([data-student-ui]):is(.homework-card) {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  gap: var(--rct-space-2-half);
+  inline-size: 100%;
+  min-inline-size: 0;
+  border-radius: var(--rct-radius-2xl);
+  padding: var(--rct-space-4);
+  color: var(--rct-color-text-primary);
+  background: var(--rct-color-surface-raised);
+}
+:where([data-student-ui]) .homework-card[data-completion='completed'],
+:where([data-student-ui]):is(.homework-card[data-completion='completed']) {
+  background-color: var(--rct-color-surface-base);
+}
+:where([data-student-ui]) .homework-card[data-completion='completed'],
+:where([data-student-ui]):is(.homework-card[data-completion='completed']) {
+  outline: var(--rct-border-hairline) solid var(--rct-color-border-default);
+  outline-offset: calc(-1 * var(--rct-border-hairline));
+}
+:where([data-student-ui]) .homework-card[data-completion='completed'] .homework-completion,
+:where([data-student-ui]):is(.homework-card[data-completion='completed'] .homework-completion),
+:where([data-student-ui])
+  .homework-card[data-completion='completed']
+  :is(a, button):not(.homework-completion__handle):focus-visible,
+:where([data-student-ui]):is(
+  .homework-card[data-completion='completed']
+    :is(a, button):not(.homework-completion__handle):focus-visible
+) {
+  position: relative;
+  z-index: 2;
+}
+
+:where([data-student-ui]) .homework-card__heading,
+:where([data-student-ui]):is(.homework-card__heading) {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--rct-space-2);
+}
+
+:where([data-student-ui]) .homework-card__subject,
+:where([data-student-ui]):is(.homework-card__subject),
+:where([data-student-ui]) .homework-card__title,
+:where([data-student-ui]):is(.homework-card__title),
+:where([data-student-ui]) .homework-card__description,
+:where([data-student-ui]):is(.homework-card__description),
+:where([data-student-ui]) .homework-card__error,
+:where([data-student-ui]):is(.homework-card__error),
+:where([data-student-ui]) .homework-material-error,
+:where([data-student-ui]):is(.homework-material-error) {
+  min-inline-size: 0;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+:where([data-student-ui]) .homework-card__subject,
+:where([data-student-ui]):is(.homework-card__subject) {
+  color: var(--rct-color-text-primary);
+  font-size: var(--rct-font-size-title-block);
+  font-weight: var(--rct-font-weight-bold);
+  line-height: 1.35;
+}
+
+:where([data-student-ui]) .homework-card__title,
+:where([data-student-ui]):is(.homework-card__title),
+:where([data-student-ui]) .homework-card__description,
+:where([data-student-ui]):is(.homework-card__description) {
+  font-size: var(--rct-font-size-caption);
+  line-height: 1.45;
+  white-space: pre-line;
+}
+
+:where([data-student-ui]) .homework-card__title,
+:where([data-student-ui]):is(.homework-card__title) {
+  color: var(--rct-color-text-primary);
+  font-weight: var(--rct-font-weight-bold);
+}
+
+:where([data-student-ui]) .homework-card__description,
+:where([data-student-ui]):is(.homework-card__description) {
+  color: var(--rct-color-text-secondary);
+  font-weight: var(--rct-font-weight-regular);
+}
+
+:where([data-student-ui]) .homework-card__description a,
+:where([data-student-ui]):is(.homework-card__description a) {
+  color: var(--rct-color-text-primary);
+  text-decoration: underline;
+  @mixin rct-focus-ring;
+}
+
+:where([data-student-ui]) .homework-material,
+:where([data-student-ui]):is(.homework-material) {
+  display: flex;
+  align-items: center;
+  inline-size: 100%;
+  min-inline-size: 0;
+  padding: var(--rct-space-3);
+  color: var(--rct-color-text-primary);
+  text-align: start;
+  text-decoration: underline;
+  overflow-wrap: anywhere;
+  font-weight: var(--rct-font-weight-regular);
+}
+
+:where([data-student-ui]) .homework-icon,
+:where([data-student-ui]):is(.homework-icon) {
+  display: inline-block;
+  flex: 0 0 auto;
+  background-color: currentColor;
+  mask-image: var(--rct-icon-mask);
+  mask-position: center;
+  mask-repeat: no-repeat;
+  -webkit-mask-image: var(--rct-icon-mask);
+  -webkit-mask-position: center;
+  -webkit-mask-repeat: no-repeat;
+}
+
+:where([data-student-ui]) .homework-material-error,
+:where([data-student-ui]):is(.homework-material-error) {
+  flex: 1;
+  color: var(--rct-color-danger-text);
+  font-size: var(--rct-font-size-micro);
+  line-height: 1.35;
+}
+
+:where([data-student-ui]) .homework-expand,
+:where([data-student-ui]):is(.homework-expand) {
+  display: grid;
+  place-items: center;
+  flex: 0 0 var(--rct-control-min-touch);
+  inline-size: var(--rct-control-min-touch);
+  block-size: var(--rct-control-min-touch);
+  border: 0;
+  border-radius: var(--rct-radius-full);
+  padding: 0;
+  color: var(--rct-color-text-secondary);
+  margin-block: calc((var(--rct-control-min-touch) - var(--rct-space-6)) / -2);
+  background: transparent;
+  cursor: pointer;
+  @mixin rct-focus-ring;
+}
+
+:where([data-student-ui]) .homework-expand__icon,
+:where([data-student-ui]):is(.homework-expand__icon) {
+  inline-size: var(--rct-control-min-touch);
+  block-size: var(--rct-control-min-touch);
+  mask-size: contain;
+  -webkit-mask-size: contain;
+}
+
+:where([data-student-ui]) .homework-expand__icon--open,
+:where([data-student-ui]):is(.homework-expand__icon--open) {
+  transform: rotate(180deg);
+}
+
+:where([data-student-ui]) .homework-state,
+:where([data-student-ui]):is(.homework-state) {
+  display: grid;
+  place-items: center;
+  gap: var(--rct-space-3);
+  min-block-size: 12rem;
+  border: var(--rct-border-hairline) solid var(--rct-color-border-default);
+  border-radius: var(--rct-radius-2xl);
+  padding: var(--rct-space-5);
+  color: var(--rct-color-text-secondary);
+  background: var(--rct-color-surface-raised);
+  text-align: center;
+}
+
+:where([data-student-ui]) .homework-state h2,
+:where([data-student-ui]):is(.homework-state h2),
+:where([data-student-ui]) .homework-state p,
+:where([data-student-ui]):is(.homework-state p) {
+  margin: 0;
+}
+
+:where([data-student-ui]) .homework-return-today,
+:where([data-student-ui]):is(.homework-return-today) {
+  position: fixed;
+  z-index: 2;
+  inset-inline-end: max(var(--rct-space-4), calc((100vw - var(--rct-mobile-content-width)) / 2));
+  inset-block-end: calc(env(safe-area-inset-bottom) + 5.75rem);
+  inline-size: var(--rct-control-min-touch);
+  block-size: var(--rct-control-min-touch);
+  border: 0;
+  border-radius: var(--rct-radius-full);
+  padding: 0;
+  color: var(--rct-color-text-secondary);
+  background: var(--rct-color-surface-float);
+  cursor: pointer;
+  @mixin rct-focus-ring;
+}
+
+:where([data-student-ui]) .homework-return-today__icon,
+:where([data-student-ui]):is(.homework-return-today__icon) {
+  inline-size: 100%;
+  block-size: 100%;
+  mask-size: contain;
+  -webkit-mask-size: contain;
+}
+
+@media (min-width: 26.625rem) {
+  :where([data-student-ui]) .homework-screen,
+  :where([data-student-ui]):is(.homework-screen) {
+    max-inline-size: 26.625rem;
+    margin-inline: auto;
+  }
+}
+
+:where([data-student-ui]) .homework-screen .student-warning,
+:where([data-student-ui]):is(.homework-screen .student-warning) {
+  gap: var(--rct-space-4);
+}
+:where([data-student-ui]) .homework-skeleton,
+:where([data-student-ui]):is(.homework-skeleton) {
+  display: grid;
+  gap: var(--rct-space-3);
+}
+:where([data-student-ui]) .homework-skeleton__card,
+:where([data-student-ui]):is(.homework-skeleton__card) {
+  display: grid;
+  gap: var(--rct-space-3);
+  border-radius: var(--rct-radius-2xl);
+  padding: var(--rct-space-4);
+  background: var(--rct-color-surface-raised);
+}
+:where([data-student-ui]) .homework-skeleton__line,
+:where([data-student-ui]):is(.homework-skeleton__line) {
+  block-size: var(--rct-space-4);
+  border-radius: var(--rct-radius-full);
+  background: var(--rct-color-surface-float);
+}
+:where([data-student-ui]) .homework-skeleton__line:first-child,
+:where([data-student-ui]):is(.homework-skeleton__line:first-child) {
+  inline-size: 70%;
+}
+:where([data-student-ui]) .homework-skeleton__track,
+:where([data-student-ui]):is(.homework-skeleton__track) {
+  block-size: calc(var(--rct-control-min-touch) + 2 * var(--rct-space-1));
+  border-radius: var(--rct-radius-full);
+  background: var(--rct-color-surface-float);
+}
+
+:where([data-student-ui]) .homework-art-illustration,
+:where([data-student-ui]):is(.homework-art-illustration) {
+  display: block;
+  inline-size: 100%;
+  block-size: auto;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+:where([data-student-ui]) .homework-art-illustration .homework-art-paper,
+:where([data-student-ui]):is(.homework-art-illustration .homework-art-paper) {
+  fill: var(--rct-color-surface-raised);
+  stroke: var(--rct-color-border-default);
+  stroke-width: 1.5;
+}
+:where([data-student-ui]) .homework-art-illustration .homework-art-soft,
+:where([data-student-ui]):is(.homework-art-illustration .homework-art-soft) {
+  fill: var(--rct-color-accent-soft);
+  stroke: var(--rct-color-accent-now);
+  stroke-width: 1.5;
+}
+:where([data-student-ui]) .homework-art-illustration .homework-art-line,
+:where([data-student-ui]):is(.homework-art-illustration .homework-art-line) {
+  stroke: var(--rct-color-text-muted);
+  stroke-width: 2;
+}
+:where([data-student-ui]) .homework-art-illustration .homework-art-ink,
+:where([data-student-ui]):is(.homework-art-illustration .homework-art-ink) {
+  stroke: var(--rct-color-accent-now);
+  stroke-width: 1.7;
+}
+:where([data-student-ui]) .homework-art-illustration .homework-art-solid,
+:where([data-student-ui]):is(.homework-art-illustration .homework-art-solid) {
+  fill: var(--rct-color-accent-now);
+}
+:where([data-student-ui]) .homework-art-illustration .homework-art-badge,
+:where([data-student-ui]):is(.homework-art-illustration .homework-art-badge) {
+  fill: var(--rct-color-accent-now);
+  stroke: var(--rct-color-surface-raised);
+  stroke-width: 3;
+}
+:where([data-student-ui]) .homework-art-illustration .homework-art-mark,
+:where([data-student-ui]):is(.homework-art-illustration .homework-art-mark) {
+  stroke: var(--rct-color-accent-on-now);
+  stroke-width: 2;
+}
+:where([data-student-ui]) .homework-art-illustration .homework-art-dotted,
+:where([data-student-ui]):is(.homework-art-illustration .homework-art-dotted) {
+  stroke: var(--rct-color-border-default);
+  stroke-width: 1.25;
+  stroke-dasharray: 2 5;
+}
+
+:where([data-student-ui]) .homework-period-pager button,
+:where([data-student-ui]):is(.homework-period-pager button) {
+  display: grid;
+  place-items: center;
+  border-radius: var(--rct-radius-full);
+}
+:where([data-student-ui]) .homework-period-pager__next,
+:where([data-student-ui]):is(.homework-period-pager__next) {
+  transform: rotate(180deg);
+}
+:where([data-student-ui]) .homework-period-pager button:enabled:hover,
+:where([data-student-ui]):is(.homework-period-pager button:enabled:hover) {
+  background: var(--rct-color-surface-raised);
+}
+:where([data-student-ui]) .homework-period-pager button:enabled:active,
+:where([data-student-ui]):is(.homework-period-pager button:enabled:active) {
+  color: var(--rct-color-accent-on-now);
+  background: var(--rct-color-accent-now);
+}
+:where([data-student-ui]) .homework-period-pager button:disabled,
+:where([data-student-ui]):is(.homework-period-pager button:disabled) {
+  opacity: 1;
+  color: var(--rct-color-disabled-text);
+  background: var(--rct-color-disabled-surface);
+}
+:where([data-student-ui]) .homework-state .homework-art-illustration,
+:where([data-student-ui]):is(.homework-state .homework-art-illustration) {
+  inline-size: calc(var(--rct-space-4) * 6);
 }

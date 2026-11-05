@@ -653,6 +653,7 @@ class StudentRequestDomainIT {
                         mark -> {
                             assertThat(mark.getStatus()).isEqualTo(AttendanceStatus.EXCUSED);
                             assertThat(mark.getSource()).isEqualTo(AttendanceSource.HEADMAN_EXCUSE);
+                            assertThat(mark.getExcuseRequestId()).isEqualTo(excuse.summary().id());
                         });
         assertThat(attendanceRepository.findByLessonIdAndUserId(72L, STUDENT_ID))
                 .get()

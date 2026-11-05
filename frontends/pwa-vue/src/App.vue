@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import AuthSuccessOverlay from '../../mobile-core/src/features/auth/AuthSuccessOverlay.vue';
+import { useAuthSuccess } from '../../mobile-core/src/features/auth/use-auth-success';
 import { createDeviceThemeMirror, createDeviceThemeTransport } from '../../shared/foundation';
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, shallowRef, toRaw, watch } from 'vue';
 import {
@@ -125,6 +127,9 @@ import './pwa-host.pcss';
 const props = defineProps<{ installPrompt: InstallPromptController }>();
 const installPrompt = props.installPrompt;
 
+const authSuccess = useAuthSuccess();
+const authSuccessVisible = authSuccess.visible;
+
 const fixtureMode = import.meta.env.VITE_MOBILE_FIXTURE_MODE === 'true';
 const fixtureDiagnosticsMode =
   fixtureMode && new URLSearchParams(window.location.search).get('fixtureDiagnostics') === 'true';
@@ -148,6 +153,7 @@ const auth = usePwaAuth({
   canRefresh: (generation) =>
     generation !== currentOnlyGeneration && (!offline.value || bootstrapping.value),
 });
+watch(auth.resetGeneration, () => authSuccess.clear(), { flush: 'sync' });
 const reportDownload = computed(() =>
   createBrowserReportDownloadPort(
     createGenerationBoundReportDownloadClient(
@@ -575,6 +581,10 @@ function onPushMessage(event: MessageEvent<unknown>): void {
 if ('serviceWorker' in navigator)
   navigator.serviceWorker.addEventListener('message', onPushMessage);
 const studentViewVisible = computed(() => authView.value === 'student' && featureVisible.value);
+// The accepted Student surface unlocks the existing theme owner; all other roles stay dark.
+watch(studentViewVisible, (visible) => theme?.setLockedMode?.(visible ? undefined : 'dark'), {
+  immediate: true,
+});
 const canOpenNotificationTarget = computed(
   () => notificationsEntryVisible.value && notificationsApi.value !== null && !offline.value,
 );
@@ -1090,6 +1100,7 @@ async function loadOfflineSnapshot(): Promise<boolean> {
 function invalidateOwnerSynchronously(
   options: { clearAuth?: boolean } = {},
 ): StudentSession | null {
+  authSuccess.clear();
   const previous = session.value;
   cleanupUiGeneration += 1;
   cleanupRetrying.value = false;
@@ -1835,6 +1846,7 @@ async function submitLogin(
       authView.value = 'role';
       readOnly.value = true;
       sessionReady.value = true;
+      if (auth.isCurrent(result.generation)) authSuccess.show();
       return;
     }
     if (profile.activeRole === 'HEADMAN') {
@@ -1857,6 +1869,7 @@ async function submitLogin(
       authView.value = 'student';
     }
     sessionReady.value = true;
+    if (auth.isCurrent(result.generation)) authSuccess.show();
   } catch (error) {
     if (error instanceof StaleSessionGenerationError) return;
     authError.value = asProfileError(error);
@@ -2259,6 +2272,19 @@ onBeforeUnmount(() => {
 
 <template>
   <PwaUpdateGate :enabled="!fixtureMode" />
+  <AuthSuccessOverlay :visible="authSuccessVisible">
+    <LoginScreen
+      v-if="!logoutPending && (authView === 'login' || authLoading || authSuccessVisible)"
+      v-show="authView === 'login' || authSuccessVisible"
+      :success="authSuccessVisible"
+      :loading="authLoading || bootstrapping || logoutPending"
+      :error="authError"
+      :notice="passwordRecoveryNotice"
+      @submit="submitLogin"
+      @submit-otp="submitLogin"
+      @open-recovery="openPasswordRecovery"
+    />
+  </AuthSuccessOverlay>
   <p
     v-if="notificationLaunchNotice && notificationsEntryVisible"
     class="notification-launch-notice"
@@ -2286,6 +2312,7 @@ onBeforeUnmount(() => {
   />
   <Teleport to="body">
     <NotificationsScreen
+      :student-ui="studentViewVisible"
       v-if="notificationsOpen && notificationsApi"
       :key="notificationContextKey"
       :api="notificationsApi"
@@ -2338,14 +2365,6 @@ onBeforeUnmount(() => {
     >
       {{ logoutNotice }}
     </p>
-    <LoginScreen
-      :loading="authLoading || bootstrapping"
-      :error="authError"
-      :notice="passwordRecoveryNotice"
-      @submit="submitLogin"
-      @submit-otp="submitLogin"
-      @open-recovery="openPasswordRecovery"
-    />
   </template>
   <PasswordRecoveryScreen
     v-else-if="authView === 'password-recovery'"
@@ -2639,6 +2658,7 @@ onBeforeUnmount(() => {
     />
   </AdminShell>
   <StudentFeatureOwner
+    :overlay-active="notificationsOpen"
     v-else-if="studentViewVisible"
     :realtime-revision="notificationRealtimeRevision"
     ref="studentNotificationOwner"

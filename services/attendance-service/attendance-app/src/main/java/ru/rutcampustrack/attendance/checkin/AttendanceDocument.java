@@ -84,6 +84,9 @@ public class AttendanceDocument {
     @Field("updated_at")
     private Instant updatedAt;
 
+    @Field("excuse_request_id")
+    private String excuseRequestId;
+
     @Field("mark_revision")
     private String markRevision;
 }

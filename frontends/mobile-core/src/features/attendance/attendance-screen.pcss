@@ -1096,3 +1096,1627 @@ button.attendance-status-badge::after {
   background-clip: content-box;
   padding-block: calc((var(--rct-control-min-touch) - var(--rct-space-2)) / 2);
 }
+
+/* Accepted Student presentation; existing roles retain their base rules. */
+:where([data-student-ui]) .attendance-screen *,
+:where([data-student-ui]):is(.attendance-screen *),
+:where([data-student-ui]) .attendance-screen *::before,
+:where([data-student-ui]):is(.attendance-screen *::before),
+:where([data-student-ui]) .attendance-screen *::after,
+:where([data-student-ui]):is(.attendance-screen *::after) {
+  box-sizing: border-box;
+}
+
+:where([data-student-ui]) .attendance-screen button,
+:where([data-student-ui]):is(.attendance-screen button) {
+  font: inherit;
+}
+
+:where([data-student-ui]) .attendance-screen button,
+:where([data-student-ui]):is(.attendance-screen button),
+:where([data-student-ui]) .attendance-screen [role='tab'],
+:where([data-student-ui]):is(.attendance-screen [role='tab']) {
+  @mixin rct-focus-ring;
+}
+
+:where([data-student-ui]) .attendance-screen__header,
+:where([data-student-ui]):is(.attendance-screen__header),
+:where([data-student-ui]) .attendance-inline__header,
+:where([data-student-ui]):is(.attendance-inline__header) {
+  display: flex;
+  align-items: center;
+  min-block-size: var(--rct-control-min-touch);
+  margin-block-end: var(--rct-space-3);
+}
+
+:where([data-student-ui]) .attendance-screen__header h1,
+:where([data-student-ui]):is(.attendance-screen__header h1),
+:where([data-student-ui]) .attendance-inline__header h1,
+:where([data-student-ui]):is(.attendance-inline__header h1) {
+  margin: 0;
+  color: var(--rct-color-text-primary);
+  letter-spacing: -0.015em;
+  @mixin rct-type-screen-title;
+}
+
+:where([data-student-ui]) .attendance-screen__header h1,
+:where([data-student-ui]):is(.attendance-screen__header h1) {
+  inline-size: 100%;
+}
+
+:where([data-student-ui]) .attendance-metrics,
+:where([data-student-ui]):is(.attendance-metrics) {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--rct-space-3);
+  margin-block-end: var(--rct-space-3);
+}
+
+:where([data-student-ui]) .attendance-metric,
+:where([data-student-ui]):is(.attendance-metric) {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--rct-space-1-half);
+  min-block-size: var(--rct-attendance-day-height);
+  min-inline-size: 0;
+  border-radius: var(--rct-radius-xl);
+  padding: var(--rct-space-2-half);
+  color: var(--rct-color-text-primary);
+  background: var(--rct-color-surface-raised);
+  @mixin rct-type-list-title;
+}
+
+:where([data-student-ui]) .attendance-metric--present .attendance-metric__symbol,
+:where([data-student-ui]):is(.attendance-metric--present .attendance-metric__symbol) {
+  background: var(--rct-color-status-present-fill);
+}
+
+:where([data-student-ui]) .attendance-metric--absent .attendance-metric__symbol,
+:where([data-student-ui]):is(.attendance-metric--absent .attendance-metric__symbol) {
+  background: var(--rct-color-status-absent-fill);
+}
+
+:where([data-student-ui]) .attendance-metric--excused .attendance-metric__symbol,
+:where([data-student-ui]):is(.attendance-metric--excused .attendance-metric__symbol) {
+  background: var(--rct-color-status-excused-fill);
+}
+
+:where([data-student-ui]) .attendance-view-switch,
+:where([data-student-ui]):is(.attendance-view-switch) {
+  display: grid;
+  grid-template-columns: minmax(0, 0.875fr) minmax(0, 1fr) var(--rct-control-min-touch);
+  gap: var(--rct-space-2);
+  margin-block-end: var(--rct-space-3);
+  padding: 0;
+}
+
+:where([data-student-ui]) .attendance-view-switch button,
+:where([data-student-ui]):is(.attendance-view-switch button),
+:where([data-student-ui]) .attendance-graph__range-button,
+:where([data-student-ui]):is(.attendance-graph__range-button) {
+  min-block-size: var(--rct-control-min-touch);
+  min-inline-size: 0;
+  border: 0;
+  border-radius: var(--rct-radius-lg);
+  padding: var(--rct-space-2) var(--rct-space-2-half);
+  color: var(--rct-color-text-secondary);
+  background: var(--rct-color-surface-raised);
+  cursor: pointer;
+  @mixin rct-type-dense;
+}
+
+:where([data-student-ui]) .attendance-view-switch button:hover,
+:where([data-student-ui]):is(.attendance-view-switch button:hover),
+:where([data-student-ui]) .attendance-graph__range-button:hover,
+:where([data-student-ui]):is(.attendance-graph__range-button:hover) {
+  color: var(--rct-color-text-primary);
+}
+
+:where([data-student-ui]) .attendance-view-switch__button--selected,
+:where([data-student-ui]):is(.attendance-view-switch__button--selected),
+:where([data-student-ui]) .attendance-graph__range-button--selected,
+:where([data-student-ui]):is(.attendance-graph__range-button--selected) {
+  color: var(--rct-color-accent-on-now) !important;
+  background: var(--rct-color-accent-now) !important;
+}
+
+:where([data-student-ui]) .attendance-view-switch__graph,
+:where([data-student-ui]):is(.attendance-view-switch__graph) {
+  display: grid;
+  place-items: center;
+  padding: 0 !important;
+  @mixin rct-type-micro;
+}
+
+:where([data-student-ui]) .attendance-state h2,
+:where([data-student-ui]):is(.attendance-state h2),
+:where([data-student-ui]) .attendance-state p,
+:where([data-student-ui]):is(.attendance-state p) {
+  margin: 0;
+}
+
+:where([data-student-ui]) .attendance-state h2,
+:where([data-student-ui]):is(.attendance-state h2) {
+  color: var(--rct-color-text-primary);
+  @mixin rct-type-list-title;
+}
+
+:where([data-student-ui]) .attendance-state--error,
+:where([data-student-ui]):is(.attendance-state--error) {
+  background: var(--rct-color-surface-raised);
+}
+
+:where([data-student-ui]) .attendance-state__spinner,
+:where([data-student-ui]):is(.attendance-state__spinner) {
+  inline-size: var(--rct-space-5);
+  block-size: var(--rct-space-5);
+  border: var(--rct-progress-stroke) solid
+    color-mix(in srgb, var(--rct-color-text-primary) 30%, transparent);
+  border-block-start-color: var(--rct-color-text-primary);
+  border-radius: var(--rct-radius-full);
+  animation: attendance-spin 0.8s linear infinite;
+}
+
+:where([data-student-ui]) .attendance-state__retry,
+:where([data-student-ui]):is(.attendance-state__retry) {
+  min-block-size: var(--rct-control-min-touch);
+  border: 0;
+  border-radius: var(--rct-radius-xl);
+  padding-inline: var(--rct-space-4);
+  color: var(--rct-color-accent-on-now);
+  background: var(--rct-color-accent-now);
+  cursor: pointer;
+  font-weight: var(--rct-font-weight-bold);
+}
+
+:where([data-student-ui]) .attendance-day-rail__item strong,
+:where([data-student-ui]):is(.attendance-day-rail__item strong) {
+  color: var(--rct-color-text-primary);
+  @mixin rct-type-date-heading;
+}
+
+:where([data-student-ui]) .attendance-day-rail__item--selected,
+:where([data-student-ui]):is(.attendance-day-rail__item--selected) {
+  color: var(--rct-color-accent-on-now);
+  background: var(--rct-color-accent-now);
+}
+
+:where([data-student-ui]) .attendance-day-rail__item--selected strong,
+:where([data-student-ui]):is(.attendance-day-rail__item--selected strong) {
+  color: inherit;
+}
+
+:where([data-student-ui]) .attendance-lesson-list,
+:where([data-student-ui]):is(.attendance-lesson-list) {
+  display: grid;
+  gap: var(--rct-space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+:where([data-student-ui]) .attendance-lesson-row,
+:where([data-student-ui]):is(.attendance-lesson-row) {
+  display: grid;
+  grid-template-columns: var(--rct-mobile-time-column) minmax(0, 1fr);
+  gap: var(--rct-space-2);
+  align-items: stretch;
+  min-inline-size: 0;
+}
+
+:where([data-student-ui]) .attendance-lesson-row__time span:first-child,
+:where([data-student-ui]):is(.attendance-lesson-row__time span:first-child) {
+  color: var(--rct-color-text-primary);
+  font-weight: var(--rct-font-weight-bold);
+}
+
+:where([data-student-ui]) .attendance-status-badge:disabled,
+:where([data-student-ui]):is(.attendance-status-badge:disabled) {
+  cursor: default;
+  opacity: 1;
+}
+
+:where([data-student-ui]) .attendance-status-badge--neutral,
+:where([data-student-ui]):is(.attendance-status-badge--neutral) {
+  inline-size: auto;
+  min-inline-size: var(--rct-today-present-size);
+  padding-inline: var(--rct-space-2);
+  border-radius: var(--rct-radius-full);
+}
+
+:where([data-student-ui]) .attendance-status-badge--present,
+:where([data-student-ui]):is(.attendance-status-badge--present) {
+  background: var(--rct-color-status-present-fill);
+}
+
+:where([data-student-ui]) .attendance-status-badge--absent,
+:where([data-student-ui]):is(.attendance-status-badge--absent) {
+  background: var(--rct-color-status-absent-fill);
+}
+
+:where([data-student-ui]) .attendance-status-badge--excused,
+:where([data-student-ui]):is(.attendance-status-badge--excused) {
+  background: var(--rct-color-status-excused-fill);
+}
+
+:where([data-student-ui]) .attendance-status-badge--cancelled,
+:where([data-student-ui]):is(.attendance-status-badge--cancelled),
+:where([data-student-ui]) .attendance-status-badge--neutral,
+:where([data-student-ui]):is(.attendance-status-badge--neutral) {
+  color: var(--rct-color-text-primary);
+  background: var(--rct-color-text-muted);
+}
+
+:where([data-student-ui]) .attendance-lesson-row__metadata :is(img, .rct-svg-icon),
+:where([data-student-ui]):is(.attendance-lesson-row__metadata :is(img, .rct-svg-icon)) {
+  inline-size: var(--rct-lesson-meta-icon-size);
+  block-size: var(--rct-lesson-meta-icon-size);
+  flex: 0 0 auto;
+}
+
+:where([data-student-ui]) .attendance-lesson-row__action:disabled,
+:where([data-student-ui]):is(.attendance-lesson-row__action:disabled) {
+  color: var(--rct-color-disabled-text);
+  background: var(--rct-color-disabled-surface);
+  cursor: not-allowed;
+}
+
+:where([data-student-ui]) .attendance-days__empty,
+:where([data-student-ui]):is(.attendance-days__empty),
+:where([data-student-ui]) .attendance-subject-list__empty,
+:where([data-student-ui]):is(.attendance-subject-list__empty) {
+  margin: var(--rct-space-6) 0;
+  color: var(--rct-color-text-secondary);
+  text-align: center;
+}
+
+:where([data-student-ui]) .attendance-subject-list,
+:where([data-student-ui]):is(.attendance-subject-list) {
+  display: grid;
+  gap: var(--rct-space-3);
+}
+
+:where([data-student-ui]) .attendance-subject-list h2,
+:where([data-student-ui]):is(.attendance-subject-list h2),
+:where([data-student-ui]) .attendance-graph h2,
+:where([data-student-ui]):is(.attendance-graph h2) {
+  margin: 0;
+  color: var(--rct-color-text-primary);
+  @mixin rct-type-list-title;
+}
+
+:where([data-student-ui]) .attendance-subject-list__disclosure,
+:where([data-student-ui]):is(.attendance-subject-list__disclosure) {
+  display: grid;
+  flex: 0 0 var(--rct-control-min-touch);
+  place-items: center;
+  inline-size: var(--rct-control-min-touch);
+  block-size: var(--rct-control-min-touch);
+}
+
+:where([data-student-ui])
+  .attendance-subject-list__trigger[aria-expanded='true']
+  .attendance-subject-list__disclosure
+  :is(img, .rct-svg-icon),
+:where([data-student-ui]):is(
+  .attendance-subject-list__trigger[aria-expanded='true']
+    .attendance-subject-list__disclosure
+    :is(img, .rct-svg-icon)
+) {
+  transform: rotate(180deg);
+}
+
+:where([data-student-ui]) .attendance-type-card,
+:where([data-student-ui]):is(.attendance-type-card) {
+  position: relative;
+  display: grid;
+  gap: var(--rct-space-2-half);
+  min-inline-size: 0;
+  border: 0;
+  border-radius: var(--rct-radius-xl);
+  padding: var(--rct-space-4) var(--rct-space-3) var(--rct-space-3);
+  background: var(--rct-color-surface-raised);
+}
+
+:where([data-student-ui]) .attendance-type-card__pill,
+:where([data-student-ui]):is(.attendance-type-card__pill) {
+  position: absolute;
+  inset-block-start: var(--rct-attendance-type-pill-offset);
+  inset-inline-end: var(--rct-space-3);
+  min-block-size: var(--rct-attendance-type-card-gap);
+  border: 0;
+  border-radius: var(--rct-radius-full);
+  padding: var(--rct-space-1-half) var(--rct-space-4);
+  color: var(--rct-color-text-primary);
+  background: var(--rct-color-surface-raised);
+  @mixin rct-type-micro;
+}
+
+:where([data-student-ui]) .attendance-type-card h4,
+:where([data-student-ui]):is(.attendance-type-card h4) {
+  margin: 0;
+  color: var(--rct-color-text-primary);
+  @mixin rct-type-lesson-meta;
+}
+
+:where([data-student-ui]) .attendance-type-card__metric,
+:where([data-student-ui]):is(.attendance-type-card__metric) {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--rct-space-1);
+}
+
+:where([data-student-ui]) .attendance-type-card__metric i,
+:where([data-student-ui]):is(.attendance-type-card__metric i) {
+  inline-size: var(--rct-space-2);
+  block-size: var(--rct-space-2);
+  border-radius: var(--rct-space-1);
+}
+
+:where([data-student-ui]) .attendance-type-card__metric--present i,
+:where([data-student-ui]):is(.attendance-type-card__metric--present i) {
+  background: var(--rct-color-status-present-fill);
+}
+
+:where([data-student-ui]) .attendance-type-card__metric--excused i,
+:where([data-student-ui]):is(.attendance-type-card__metric--excused i) {
+  background: var(--rct-color-status-excused-fill);
+}
+
+:where([data-student-ui]) .attendance-type-card__metric--absent i,
+:where([data-student-ui]):is(.attendance-type-card__metric--absent i) {
+  background: var(--rct-color-status-absent-fill);
+}
+
+:where([data-student-ui]) .attendance-type-card__history,
+:where([data-student-ui]):is(.attendance-type-card__history) {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: var(--rct-space-1);
+  inline-size: 100%;
+  min-block-size: var(--rct-space-2);
+}
+
+:where([data-student-ui]) .attendance-type-card__segment,
+:where([data-student-ui]):is(.attendance-type-card__segment) {
+  display: block;
+  flex: 1 1 0;
+  min-inline-size: 0;
+  min-block-size: var(--rct-space-2);
+  border-radius: var(--rct-radius-full);
+  background: var(--rct-color-text-muted);
+}
+
+:where([data-student-ui]) .attendance-type-card__segment--present,
+:where([data-student-ui]):is(.attendance-type-card__segment--present) {
+  background: var(--rct-color-status-present-fill);
+}
+
+:where([data-student-ui]) .attendance-type-card__segment--absent,
+:where([data-student-ui]):is(.attendance-type-card__segment--absent) {
+  background: var(--rct-color-status-absent-fill);
+}
+
+:where([data-student-ui]) .attendance-type-card__segment--excused,
+:where([data-student-ui]):is(.attendance-type-card__segment--excused) {
+  background: var(--rct-color-status-excused-fill);
+}
+
+:where([data-student-ui]) .attendance-type-card__segment--no-data,
+:where([data-student-ui]):is(.attendance-type-card__segment--no-data) {
+  background: var(--rct-color-text-muted);
+}
+
+:where([data-student-ui]) .attendance-type-card__segment--future,
+:where([data-student-ui]):is(.attendance-type-card__segment--future) {
+  background: repeating-linear-gradient(
+    135deg,
+    var(--rct-color-text-muted) 0 var(--rct-border-hairline),
+    var(--rct-color-surface-float) var(--rct-border-hairline) var(--rct-space-1)
+  );
+}
+
+:where([data-student-ui]) .attendance-inline__header,
+:where([data-student-ui]):is(.attendance-inline__header) {
+  gap: var(--rct-space-2);
+}
+
+:where([data-student-ui]) .attendance-back-button,
+:where([data-student-ui]):is(.attendance-back-button) {
+  display: grid;
+  flex: 0 0 var(--rct-control-min-touch);
+  place-items: center;
+  inline-size: var(--rct-control-min-touch);
+  block-size: var(--rct-control-min-touch);
+  border: 0;
+  border-radius: var(--rct-radius-full);
+  padding: 0;
+  color: var(--rct-color-text-primary);
+  background: transparent;
+  cursor: pointer;
+  transform: rotate(90deg);
+}
+
+:where([data-student-ui]) .attendance-back-button :is(img, .rct-svg-icon),
+:where([data-student-ui]):is(.attendance-back-button :is(img, .rct-svg-icon)) {
+  inline-size: var(--rct-space-4);
+  block-size: var(--rct-space-4);
+}
+
+:where([data-student-ui]) .attendance-inline__header h1,
+:where([data-student-ui]):is(.attendance-inline__header h1) {
+  @mixin rct-type-list-title;
+}
+
+:where([data-student-ui]) .attendance-inline__lesson,
+:where([data-student-ui]):is(.attendance-inline__lesson) {
+  margin-block-end: var(--rct-space-3);
+}
+
+:where([data-student-ui]) .attendance-inline__lesson .attendance-lesson-row,
+:where([data-student-ui]):is(.attendance-inline__lesson .attendance-lesson-row) {
+  grid-template-columns: var(--rct-mobile-time-column) minmax(0, 1fr);
+}
+
+:where([data-student-ui]) .attendance-inline__slot,
+:where([data-student-ui]):is(.attendance-inline__slot) {
+  min-inline-size: 0;
+}
+
+:where([data-student-ui]) .attendance-inline__slot-open,
+:where([data-student-ui]):is(.attendance-inline__slot-open) {
+  display: grid;
+  gap: var(--rct-space-2);
+  border: var(--rct-border-hairline) dashed var(--rct-color-border-default);
+  border-radius: var(--rct-radius-xl);
+  padding: var(--rct-space-4);
+  color: var(--rct-color-text-secondary);
+  background: var(--rct-color-surface-raised);
+}
+
+:where([data-student-ui]) .attendance-inline__slot-open h2,
+:where([data-student-ui]):is(.attendance-inline__slot-open h2),
+:where([data-student-ui]) .attendance-inline__slot-open p,
+:where([data-student-ui]):is(.attendance-inline__slot-open p) {
+  margin: 0;
+}
+
+:where([data-student-ui]) .attendance-inline__slot-open h2,
+:where([data-student-ui]):is(.attendance-inline__slot-open h2) {
+  color: var(--rct-color-text-primary);
+  @mixin rct-type-micro;
+}
+
+:where([data-student-ui]) .attendance-dock,
+:where([data-student-ui]):is(.attendance-dock) {
+  position: fixed;
+  inset-inline: var(--rct-space-4);
+  inset-block-end: calc(env(safe-area-inset-bottom) + var(--rct-mobile-dock-bottom));
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  align-items: center;
+  gap: var(--rct-space-1);
+  inline-size: auto;
+  max-inline-size: var(--rct-mobile-content-width);
+  min-block-size: var(--rct-mobile-dock-height);
+  margin-inline: auto;
+  border-radius: var(--rct-radius-2xl);
+  padding: var(--rct-space-2);
+  background: color-mix(in srgb, var(--rct-color-surface-float) 88%, transparent);
+  backdrop-filter: blur(var(--rct-mobile-blur));
+  z-index: 2;
+}
+
+:where([data-student-ui]) .attendance-dock__item,
+:where([data-student-ui]):is(.attendance-dock__item) {
+  display: grid;
+  grid-template-rows: var(--rct-space-5) auto;
+  gap: var(--rct-space-1);
+  justify-items: center;
+  align-content: center;
+  min-inline-size: 0;
+  min-block-size: var(--rct-today-dock-item-height);
+  border-radius: var(--rct-radius-lg);
+  padding: 0;
+  color: var(--rct-color-text-primary);
+  text-align: center;
+  @mixin rct-type-micro;
+}
+
+:where([data-student-ui]) .attendance-dock__item > span:last-child,
+:where([data-student-ui]):is(.attendance-dock__item > span:last-child) {
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
+}
+
+:where([data-student-ui]) .attendance-dock__item--active,
+:where([data-student-ui]):is(.attendance-dock__item--active) {
+  color: var(--rct-color-accent-on-now);
+  background: var(--rct-color-accent-now);
+}
+
+:where([data-student-ui]) .attendance-dock__icon,
+:where([data-student-ui]):is(.attendance-dock__icon) {
+  display: grid;
+  place-items: center;
+  inline-size: var(--rct-attendance-type-card-gap);
+  block-size: var(--rct-space-5);
+}
+
+:where([data-student-ui]) .attendance-dock__icon :is(img, .rct-svg-icon),
+:where([data-student-ui]):is(.attendance-dock__icon :is(img, .rct-svg-icon)) {
+  inline-size: var(--rct-space-4);
+  block-size: var(--rct-space-4);
+}
+
+:where([data-student-ui]) .attendance-visually-hidden,
+:where([data-student-ui]):is(.attendance-visually-hidden) {
+  position: absolute;
+  inline-size: var(--rct-border-hairline);
+  block-size: var(--rct-border-hairline);
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@keyframes attendance-spin {
+  to {
+    transform: rotate(1turn);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :where([data-student-ui]) .attendance-state__spinner,
+  :where([data-student-ui]):is(.attendance-state__spinner) {
+    animation: none;
+  }
+
+  :where([data-student-ui]) .attendance-subject-list__disclosure :is(img, .rct-svg-icon),
+  :where([data-student-ui]):is(.attendance-subject-list__disclosure :is(img, .rct-svg-icon)) {
+    transition: none;
+  }
+}
+
+:where([data-student-ui]) .attendance-screen,
+:where([data-student-ui]):is(.attendance-screen) {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings:
+    'tnum' 1,
+    'lnum' 1;
+  font-family: var(--rct-font-family-sans);
+  background: var(--rct-color-surface-base);
+  color: var(--rct-color-text-primary);
+  padding: calc(env(safe-area-inset-top) + var(--rct-space-5)) var(--rct-space-4)
+    calc(env(safe-area-inset-bottom) + var(--rct-today-bottom-space));
+  margin-inline: auto;
+  min-block-size: 100dvh;
+  box-sizing: border-box;
+  flex-direction: column;
+  display: flex;
+  inline-size: min(100%, var(--rct-today-content-max));
+  padding-block-start: calc(env(safe-area-inset-top) + var(--rct-space-5));
+  @mixin rct-type-body;
+}
+
+:where([data-student-ui]) .attendance-screen__header,
+:where([data-student-ui]):is(.attendance-screen__header) {
+  justify-content: space-between;
+  min-block-size: 0;
+}
+
+:where([data-student-ui]) .attendance-screen > .student-warning,
+:where([data-student-ui]):is(.attendance-screen > .student-warning) {
+  margin-block-end: var(--rct-space-4);
+}
+
+:where([data-student-ui]) .attendance-metric__symbol,
+:where([data-student-ui]):is(.attendance-metric__symbol) {
+  @mixin rct-type-status;
+  color: var(--rct-color-status-on-fill);
+  border-radius: var(--rct-radius-full);
+  flex: 0 0 auto;
+  place-items: center;
+  display: grid;
+  inline-size: var(--rct-attendance-summary-symbol, var(--rct-control-min-touch));
+  block-size: var(--rct-attendance-summary-symbol, var(--rct-control-min-touch));
+}
+
+:where([data-student-ui]) .attendance-view-switch button,
+:where([data-student-ui]):is(.attendance-view-switch button) {
+  border-radius: var(--rct-radius-full);
+  background: var(--rct-color-surface-float);
+  color: var(--rct-color-text-primary);
+}
+
+:where([data-student-ui]) .attendance-view-switch__graph .mobile-icon,
+:where([data-student-ui]):is(.attendance-view-switch__graph .mobile-icon) {
+  inline-size: var(--rct-icon-size);
+  block-size: var(--rct-icon-size);
+}
+
+:where([data-student-ui]) .attendance-day-rail__item,
+:where([data-student-ui]):is(.attendance-day-rail__item) {
+  @mixin rct-type-micro;
+  cursor: pointer;
+  background: var(--rct-color-surface-raised);
+  color: var(--rct-color-text-secondary);
+  padding: var(--rct-space-2) var(--rct-space-1);
+  gap: var(--rct-space-1);
+  align-content: center;
+  border-radius: var(--rct-radius-xl);
+  border: 0;
+  min-block-size: calc(var(--rct-attendance-day-height) + var(--rct-space-6));
+  place-items: center;
+  flex: 0 0 var(--rct-mobile-time-column);
+  display: grid;
+  min-inline-size: 0;
+  inline-size: 100%;
+}
+
+:where([data-student-ui]) .attendance-day-rail__item:disabled,
+:where([data-student-ui]):is(.attendance-day-rail__item:disabled) {
+  opacity: 0.4;
+  cursor: default;
+}
+
+:where([data-student-ui]) .attendance-period-pager,
+:where([data-student-ui]):is(.attendance-period-pager) {
+  display: grid;
+  grid-template-columns: var(--rct-control-min-touch) minmax(0, 1fr) var(--rct-control-min-touch);
+  gap: var(--rct-space-1);
+  align-items: center;
+  text-align: center;
+  color: var(--rct-color-text-secondary);
+  @mixin rct-type-micro;
+}
+
+:where([data-student-ui]) .attendance-week-pager__label,
+:where([data-student-ui]):is(.attendance-week-pager__label) {
+  display: grid;
+  gap: var(--rct-space-1);
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
+}
+
+:where([data-student-ui]) .attendance-period-pager button,
+:where([data-student-ui]):is(.attendance-period-pager button) {
+  inline-size: var(--rct-control-min-touch);
+  min-block-size: var(--rct-control-min-touch);
+  border: 0;
+  border-radius: var(--rct-radius-full);
+  background: var(--rct-color-surface-float);
+  color: var(--rct-color-text-primary);
+  cursor: pointer;
+}
+
+:where([data-student-ui]) .attendance-period-pager button:disabled,
+:where([data-student-ui]):is(.attendance-period-pager button:disabled) {
+  opacity: 0.4;
+  cursor: default;
+}
+
+:where([data-student-ui]) .attendance-sunday,
+:where([data-student-ui]):is(.attendance-sunday) {
+  inline-size: 100%;
+  min-block-size: var(--rct-control-min-touch);
+  margin-block-end: var(--rct-space-3);
+  border: 0;
+  border-radius: var(--rct-radius-xl);
+  color: var(--rct-color-text-primary);
+  background: var(--rct-color-surface-raised);
+}
+
+:where([data-student-ui]) .attendance-sunday[aria-pressed='true'],
+:where([data-student-ui]):is(.attendance-sunday[aria-pressed='true']) {
+  background: var(--rct-color-accent-now);
+  color: var(--rct-color-accent-on-now);
+}
+
+:where([data-student-ui]) .attendance-days__empty,
+:where([data-student-ui]):is(.attendance-days__empty) {
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: var(--rct-space-3);
+  min-block-size: var(--rct-attendance-empty-height, var(--rct-state-min-height));
+  margin: 0;
+  padding: var(--rct-space-4);
+  border-radius: var(--rct-radius-2xl);
+  background: var(--rct-color-surface-raised);
+  color: var(--rct-color-text-primary);
+  @mixin rct-type-screen-title;
+}
+
+:where([data-student-ui]) .attendance-days__empty p,
+:where([data-student-ui]):is(.attendance-days__empty p) {
+  margin: 0;
+}
+
+:where([data-student-ui]) .attendance-days__empty-art,
+:where([data-student-ui]):is(.attendance-days__empty-art) {
+  inline-size: calc(var(--rct-space-8) * 5);
+  max-inline-size: 100%;
+}
+
+:where([data-student-ui]) .attendance-days__empty-art svg,
+:where([data-student-ui]):is(.attendance-days__empty-art svg) {
+  display: block;
+  inline-size: 100%;
+  block-size: auto;
+}
+
+:where([data-student-ui]) .attendance-lesson-row__time,
+:where([data-student-ui]):is(.attendance-lesson-row__time) {
+  @mixin rct-type-lesson-meta;
+  color: var(--rct-color-text-secondary);
+  margin: 0;
+  gap: var(--rct-space-half);
+  align-content: start;
+  display: grid;
+  padding-block-start: 0;
+}
+
+:where([data-student-ui]) button.attendance-status-badge,
+:where([data-student-ui]):is(button.attendance-status-badge) {
+  cursor: pointer;
+}
+
+:where([data-student-ui]) button.attendance-status-badge::after,
+:where([data-student-ui]):is(button.attendance-status-badge::after) {
+  content: '';
+  position: absolute;
+  min-inline-size: var(--rct-control-min-touch);
+  min-block-size: var(--rct-control-min-touch);
+  inset: var(--rct-status-hit-offset);
+  border-radius: inherit;
+}
+
+:where([data-student-ui]) .attendance-lesson-row__metadata span,
+:where([data-student-ui]):is(.attendance-lesson-row__metadata span) {
+  overflow-wrap: anywhere;
+  gap: var(--rct-space-1);
+  min-inline-size: 0;
+  align-items: center;
+  display: inline-flex;
+  min-block-size: var(--rct-icon-size);
+}
+
+:where([data-student-ui]) .attendance-lesson-row__action,
+:where([data-student-ui]):is(.attendance-lesson-row__action) {
+  cursor: pointer;
+  background: var(--rct-color-surface-float);
+  color: var(--rct-color-text-primary);
+  padding: var(--rct-space-2) var(--rct-space-3);
+  border: 0;
+  min-block-size: var(--rct-control-min-touch);
+  border-radius: var(--rct-radius-full);
+  text-align: center;
+}
+
+:where([data-student-ui])
+  .attendance-lesson-row[data-status='cancelled']
+  .attendance-lesson-row__card,
+:where([data-student-ui]):is(
+  .attendance-lesson-row[data-status='cancelled'] .attendance-lesson-row__card
+) {
+  color: var(--rct-color-text-muted);
+}
+
+:where([data-student-ui]) .attendance-lesson-row[data-status='cancelled'] h3,
+:where([data-student-ui]):is(.attendance-lesson-row[data-status='cancelled'] h3) {
+  color: inherit;
+  text-decoration: line-through;
+}
+
+:where([data-student-ui]) .attendance-subject-list > ul,
+:where([data-student-ui]):is(.attendance-subject-list > ul) {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: var(--rct-space-3);
+}
+
+:where([data-student-ui]) .attendance-subject-list__item,
+:where([data-student-ui]):is(.attendance-subject-list__item) {
+  border-radius: var(--rct-radius-xl);
+  min-inline-size: 0;
+  background: transparent;
+}
+
+:where([data-student-ui]) .attendance-subject-list__trigger,
+:where([data-student-ui]):is(.attendance-subject-list__trigger) {
+  text-align: start;
+  cursor: pointer;
+  background: transparent;
+  color: var(--rct-color-text-primary);
+  border-radius: var(--rct-radius-xl);
+  border: 0;
+  min-block-size: var(--rct-control-min-touch);
+  inline-size: 100%;
+  align-items: center;
+  display: flex;
+  justify-content: start;
+  padding: 0;
+  gap: var(--rct-space-1);
+}
+
+:where([data-student-ui]) .attendance-subject-list__trigger-label,
+:where([data-student-ui]):is(.attendance-subject-list__trigger-label) {
+  @mixin rct-type-date-heading;
+  overflow-wrap: anywhere;
+  min-inline-size: 0;
+}
+
+:where([data-student-ui]) .attendance-subject-list__disclosure :is(img, .rct-svg-icon),
+:where([data-student-ui]):is(.attendance-subject-list__disclosure :is(img, .rct-svg-icon)) {
+  block-size: var(--rct-icon-size);
+  inline-size: var(--rct-icon-size);
+  transform: rotate(-90deg);
+  transition: none;
+}
+
+:where([data-student-ui]) .attendance-subject-list__cards,
+:where([data-student-ui]):is(.attendance-subject-list__cards) {
+  padding: var(--rct-space-3) var(--rct-space-2) var(--rct-space-4);
+  gap: var(--rct-attendance-type-card-gap);
+  display: grid;
+  padding-inline: 0;
+  padding-block: var(--rct-space-6);
+}
+
+:where([data-student-ui]) .attendance-type-card__metrics,
+:where([data-student-ui]):is(.attendance-type-card__metrics) {
+  @mixin rct-type-micro;
+  color: var(--rct-color-text-primary);
+  gap: var(--rct-space-2);
+  justify-content: space-between;
+  display: flex;
+  flex-wrap: wrap;
+}
+
+:where([data-student-ui]) .attendance-state,
+:where([data-student-ui]):is(.attendance-state) {
+  text-align: center;
+  background: var(--rct-color-surface-raised);
+  color: var(--rct-color-text-secondary);
+  padding: var(--rct-space-5);
+  border-radius: var(--rct-radius-2xl);
+  min-block-size: var(--rct-state-min-height);
+  gap: var(--rct-space-3);
+  justify-items: center;
+  display: grid;
+  border: 0;
+}
+
+:where([data-student-ui]) .attendance-graph,
+:where([data-student-ui]):is(.attendance-graph) {
+  display: grid;
+  min-inline-size: 0;
+  gap: var(--rct-space-3);
+  padding: var(--rct-space-3);
+  border-radius: var(--rct-radius-2xl);
+  background: var(--rct-color-surface-raised);
+}
+
+:where([data-student-ui]) .attendance-graph__range,
+:where([data-student-ui]):is(.attendance-graph__range) {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--rct-space-2);
+}
+
+:where([data-student-ui]) .attendance-graph__range-button,
+:where([data-student-ui]):is(.attendance-graph__range-button) {
+  border-radius: var(--rct-radius-full);
+  background: var(--rct-color-surface-float);
+  color: var(--rct-color-text-primary);
+}
+
+:where([data-student-ui]) .attendance-graph__plot,
+:where([data-student-ui]):is(.attendance-graph__plot) {
+  position: relative;
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: var(--rct-space-2);
+  min-inline-size: 0;
+  padding: 0;
+  border-radius: var(--rct-radius-lg);
+  background: var(--rct-color-surface-float);
+}
+
+:where([data-student-ui]) .attendance-graph__axis,
+:where([data-student-ui]):is(.attendance-graph__axis) {
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  block-size: var(--rct-attendance-plot-height, var(--rct-mobile-hero-height));
+  color: var(--rct-color-text-secondary);
+  @mixin rct-type-micro;
+}
+
+:where([data-student-ui]) .attendance-graph__column::after,
+:where([data-student-ui]):is(.attendance-graph__column::after) {
+  content: '';
+  position: absolute;
+  inset: 0;
+}
+
+:where([data-student-ui]) .attendance-graph__column--selected,
+:where([data-student-ui]):is(.attendance-graph__column--selected) {
+  outline: var(--rct-border-hairline) solid var(--rct-color-accent-now);
+  outline-offset: calc(-1 * var(--rct-focus-width));
+  border-radius: var(--rct-radius-lg);
+}
+
+:where([data-student-ui]) .attendance-graph__stack,
+:where([data-student-ui]):is(.attendance-graph__stack) {
+  position: relative;
+  display: flex;
+  flex-direction: column-reverse;
+  block-size: var(--rct-attendance-plot-height, var(--rct-mobile-hero-height));
+  inline-size: 100%;
+  overflow: hidden;
+  border-radius: var(--rct-radius-lg);
+}
+
+:where([data-student-ui]) .attendance-graph__band,
+:where([data-student-ui]):is(.attendance-graph__band) {
+  display: block;
+  flex-shrink: 0;
+}
+
+:where([data-student-ui]) .attendance-graph__band--present,
+:where([data-student-ui]):is(.attendance-graph__band--present) {
+  background: var(--rct-color-status-present-fill);
+}
+
+:where([data-student-ui]) .attendance-graph__band--excused,
+:where([data-student-ui]):is(.attendance-graph__band--excused) {
+  background: var(--rct-color-status-excused-fill);
+}
+
+:where([data-student-ui]) .attendance-graph__band--absent,
+:where([data-student-ui]):is(.attendance-graph__band--absent) {
+  background: var(--rct-color-status-absent-fill);
+}
+
+:where([data-student-ui]) .attendance-graph__stack--unknown,
+:where([data-student-ui]):is(.attendance-graph__stack--unknown) {
+  background: color-mix(in srgb, var(--rct-color-text-muted) 25%, transparent);
+}
+
+:where([data-student-ui]) .attendance-graph__stack--planned,
+:where([data-student-ui]):is(.attendance-graph__stack--planned) {
+  background: repeating-linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--rct-color-text-muted) 45%, transparent) 0 var(--rct-border-hairline),
+    color-mix(in srgb, var(--rct-color-text-muted) 15%, transparent) var(--rct-border-hairline)
+      var(--rct-space-2)
+  );
+}
+
+:where([data-student-ui]) .attendance-graph__neutral-label,
+:where([data-student-ui]):is(.attendance-graph__neutral-label) {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+}
+
+:where([data-student-ui]) .attendance-graph__date,
+:where([data-student-ui]):is(.attendance-graph__date) {
+  display: block;
+  min-block-size: var(--rct-control-min-touch);
+  padding-block-start: var(--rct-space-1);
+  overflow-wrap: anywhere;
+  @mixin rct-type-micro;
+}
+
+:where([data-student-ui]) .attendance-graph__detail,
+:where([data-student-ui]):is(.attendance-graph__detail) {
+  padding: var(--rct-space-3);
+  border-radius: var(--rct-radius-xl);
+  background: var(--rct-color-surface-float);
+  @mixin rct-type-lesson-meta;
+}
+
+:where([data-student-ui]) .attendance-graph__detail h3,
+:where([data-student-ui]):is(.attendance-graph__detail h3),
+:where([data-student-ui]) .attendance-graph__detail p,
+:where([data-student-ui]):is(.attendance-graph__detail p) {
+  margin: 0 0 var(--rct-space-2);
+}
+
+:where([data-student-ui]) .attendance-graph__detail h3,
+:where([data-student-ui]):is(.attendance-graph__detail h3) {
+  @mixin rct-type-dense;
+}
+
+:where([data-student-ui]) .attendance-graph__detail-metrics,
+:where([data-student-ui]):is(.attendance-graph__detail-metrics) {
+  display: flex;
+  inline-size: 100%;
+  min-block-size: var(--rct-control-min-touch);
+  overflow: hidden;
+  border-radius: var(--rct-radius-lg);
+  background: var(--rct-color-surface-raised);
+}
+
+:where([data-student-ui]) .attendance-graph__detail-segment,
+:where([data-student-ui]):is(.attendance-graph__detail-segment) {
+  display: grid;
+  flex: 0 0 auto;
+  min-inline-size: 0;
+  place-items: center;
+  overflow: hidden;
+  padding: 0;
+  color: var(--rct-color-status-on-fill);
+  white-space: nowrap;
+  @mixin rct-type-micro;
+}
+
+:where([data-student-ui]) .attendance-graph__detail-segment-label,
+:where([data-student-ui]):is(.attendance-graph__detail-segment-label) {
+  inline-size: max-content;
+}
+
+:where([data-student-ui])
+  .attendance-graph__detail-metrics--outside-labels
+  .attendance-graph__detail-segment-label,
+:where([data-student-ui]):is(
+  .attendance-graph__detail-metrics--outside-labels .attendance-graph__detail-segment-label
+) {
+  visibility: hidden;
+}
+
+:where([data-student-ui]) .attendance-graph__detail-percentages,
+:where([data-student-ui]):is(.attendance-graph__detail-percentages) {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--rct-space-2);
+  margin-block-start: var(--rct-space-2);
+  white-space: nowrap;
+  @mixin rct-type-micro;
+}
+
+:where([data-student-ui]) .attendance-graph__detail-percentage--present,
+:where([data-student-ui]):is(.attendance-graph__detail-percentage--present) {
+  color: var(--rct-color-status-present-text);
+}
+
+:where([data-student-ui]) .attendance-graph__detail-percentage--excused,
+:where([data-student-ui]):is(.attendance-graph__detail-percentage--excused) {
+  color: var(--rct-color-status-excused-text);
+}
+
+:where([data-student-ui]) .attendance-graph__detail-percentage--absent,
+:where([data-student-ui]):is(.attendance-graph__detail-percentage--absent) {
+  color: var(--rct-color-status-absent-text);
+}
+
+:where([data-student-ui]) .attendance-graph__columns,
+:where([data-student-ui]):is(.attendance-graph__columns) {
+  gap: calc(var(--rct-space-half) / 2);
+  min-inline-size: 0;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: max(var(--rct-attendance-chart-column), var(--rct-control-min-touch));
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  overflow-y: hidden;
+  padding: 0;
+}
+
+:where([data-student-ui]) .attendance-graph__columns[data-range='weeks'],
+:where([data-student-ui]):is(.attendance-graph__columns[data-range='weeks']) {
+  grid-auto-columns: calc(var(--rct-control-min-touch) + var(--rct-space-2));
+}
+
+:where([data-student-ui]) .attendance-graph__column,
+:where([data-student-ui]):is(.attendance-graph__column) {
+  cursor: pointer;
+  color: var(--rct-color-text-secondary);
+  background: transparent;
+  padding: 0;
+  border: 0;
+  display: grid;
+  position: relative;
+  min-inline-size: var(--rct-control-min-touch);
+}
+
+:where([data-student-ui]) .attendance-lesson-row__card,
+:where([data-student-ui]):is(.attendance-lesson-row__card) {
+  gap: var(--rct-space-1-half);
+  border: 0 !important;
+  position: relative;
+  display: grid;
+  min-inline-size: 0;
+  min-block-size: var(--rct-mobile-row-height);
+  border-radius: var(--rct-radius-xl);
+  padding: var(--rct-space-3);
+  color: var(--rct-color-text-primary);
+  background: var(--rct-color-surface-raised);
+  grid-template-columns: minmax(0, 1fr) max-content;
+}
+
+:where([data-student-ui]) .attendance-lesson-row__head,
+:where([data-student-ui]):is(.attendance-lesson-row__head) {
+  min-inline-size: 0;
+  gap: var(--rct-space-2);
+  justify-content: space-between;
+  align-items: start;
+  display: contents;
+}
+
+:where([data-student-ui]) .attendance-lesson-row__head h3,
+:where([data-student-ui]):is(.attendance-lesson-row__head h3) {
+  inline-size: 100%;
+  min-inline-size: 0;
+  margin: 0;
+  overflow-wrap: anywhere;
+  color: var(--rct-color-text-primary);
+  @mixin rct-type-lesson-title;
+  grid-column: 1 / -1;
+}
+
+:where([data-student-ui]) .attendance-status-badge,
+:where([data-student-ui]):is(.attendance-status-badge) {
+  cursor: default;
+  inset-block-start: calc(var(--rct-space-5) + var(--rct-space-5));
+  inset-inline-end: var(--rct-space-3);
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  inline-size: var(--rct-today-present-size);
+  block-size: var(--rct-today-present-size);
+  border: 0;
+  border-radius: var(--rct-radius-full);
+  color: var(--rct-color-accent-on-now);
+  @mixin rct-type-status;
+  position: relative;
+  inset: auto;
+  grid-column: 2;
+  grid-row: 2;
+  align-self: end;
+}
+
+:where([data-student-ui]) .attendance-lesson-row__metadata,
+:where([data-student-ui]):is(.attendance-lesson-row__metadata) {
+  gap: var(--rct-space-1);
+  display: grid;
+  flex-wrap: wrap;
+  color: var(--rct-color-text-secondary);
+  @mixin rct-type-lesson-meta;
+  grid-column: 1;
+  grid-row: 2;
+  padding-inline-end: 0;
+}
+
+:where([data-student-ui]) .attendance-lesson-row__actions,
+:where([data-student-ui]):is(.attendance-lesson-row__actions) {
+  border: 0;
+  display: grid;
+  gap: var(--rct-space-2);
+  padding-block-start: var(--rct-space-2);
+  grid-column: 1 / -1;
+}
+
+:where([data-student-ui]) .attendance-day-rail,
+:where([data-student-ui]):is(.attendance-day-rail) {
+  overflow: visible;
+  gap: var(--rct-space-1-half);
+  display: grid;
+  inline-size: 100%;
+  margin-block-end: var(--rct-space-3);
+  scrollbar-width: thin;
+  grid-template-columns: repeat(6, minmax(var(--rct-control-min-touch), 1fr));
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-inline: contain;
+}
+
+:where([data-student-ui]) .attendance-week-pager,
+:where([data-student-ui]):is(.attendance-week-pager) {
+  margin-block: 0 var(--rct-space-3);
+}
+
+:where([data-student-ui]) .attendance-day-rail__item:focus-visible,
+:where([data-student-ui]):is(.attendance-day-rail__item:focus-visible),
+:where([data-student-ui]) .attendance-graph__column:focus-visible,
+:where([data-student-ui]):is(.attendance-graph__column:focus-visible) {
+  outline-offset: calc(-1 * var(--rct-focus-width));
+}
+
+:where([data-student-ui]) .attendance-graph__axis span,
+:where([data-student-ui]):is(.attendance-graph__axis span) {
+  align-self: end;
+  white-space: nowrap;
+}
+
+:where([data-student-ui]) .attendance-graph__scroll-hint,
+:where([data-student-ui]):is(.attendance-graph__scroll-hint) {
+  margin: 0;
+  color: var(--rct-color-text-secondary);
+  @mixin rct-type-lesson-meta;
+}
+
+/* Keep the theme rail visible after the mobile shell hides generic scrollbars. */
+:where([data-student-ui]) .attendance-screen .attendance-graph__columns,
+:where([data-student-ui]):is(.attendance-screen .attendance-graph__columns),
+:where([data-student-ui]) .attendance-screen .attendance-day-rail,
+:where([data-student-ui]):is(.attendance-screen .attendance-day-rail) {
+  scrollbar-width: thin;
+  scrollbar-color: var(--rct-color-accent-now) var(--rct-color-surface-float);
+  padding-block-end: var(--rct-space-1);
+}
+
+:where([data-student-ui]) .attendance-screen .attendance-graph__columns::-webkit-scrollbar,
+:where([data-student-ui]):is(.attendance-screen .attendance-graph__columns::-webkit-scrollbar),
+:where([data-student-ui]) .attendance-screen .attendance-day-rail::-webkit-scrollbar,
+:where([data-student-ui]):is(.attendance-screen .attendance-day-rail::-webkit-scrollbar) {
+  display: block;
+  height: var(--rct-space-1);
+  width: 0;
+}
+
+:where([data-student-ui]) .attendance-screen .attendance-graph__columns::-webkit-scrollbar-track,
+:where([data-student-ui]):is(
+  .attendance-screen .attendance-graph__columns::-webkit-scrollbar-track
+),
+:where([data-student-ui]) .attendance-screen .attendance-day-rail::-webkit-scrollbar-track,
+:where([data-student-ui]):is(.attendance-screen .attendance-day-rail::-webkit-scrollbar-track) {
+  border-radius: var(--rct-radius-full);
+  background: var(--rct-color-surface-float);
+}
+
+:where([data-student-ui]) .attendance-screen .attendance-graph__columns::-webkit-scrollbar-thumb,
+:where([data-student-ui]):is(
+  .attendance-screen .attendance-graph__columns::-webkit-scrollbar-thumb
+),
+:where([data-student-ui]) .attendance-screen .attendance-day-rail::-webkit-scrollbar-thumb,
+:where([data-student-ui]):is(.attendance-screen .attendance-day-rail::-webkit-scrollbar-thumb) {
+  border-radius: var(--rct-radius-full);
+  background: var(--rct-color-accent-now);
+}
+
+:where([data-student-ui]) .attendance-status-explanation,
+:where([data-student-ui]):is(.attendance-status-explanation) {
+  position: relative;
+  margin: 0;
+  padding: var(--rct-space-3);
+  color: var(--rct-color-text-primary);
+  background: var(--rct-color-surface-float);
+  border-radius: var(--rct-radius-lg);
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+:where([data-student-ui])
+  .attendance-type-card__history:has(.attendance-type-card__segment--explanation),
+:where([data-student-ui]):is(
+  .attendance-type-card__history:has(.attendance-type-card__segment--explanation)
+) {
+  align-items: center;
+}
+
+:where([data-student-ui]) .attendance-type-card__segment--explanation,
+:where([data-student-ui]):is(.attendance-type-card__segment--explanation) {
+  min-inline-size: 0;
+  min-block-size: var(--rct-control-min-touch);
+  padding: 0;
+  border: 0;
+  cursor: pointer;
+}
+
+:where([data-student-ui]) .attendance-week-pager__label strong,
+:where([data-student-ui]):is(.attendance-week-pager__label strong) {
+  color: var(--rct-color-text-primary);
+  @mixin rct-type-date-heading;
+}
+:where([data-student-ui]) .attendance-week-pager__metadata,
+:where([data-student-ui]):is(.attendance-week-pager__metadata) {
+  color: var(--rct-color-text-secondary);
+}
+:where([data-student-ui]) .attendance-period-pager button,
+:where([data-student-ui]):is(.attendance-period-pager button) {
+  display: grid;
+  place-items: center;
+}
+:where([data-student-ui]) .attendance-period-pager__next,
+:where([data-student-ui]):is(.attendance-period-pager__next) {
+  transform: rotate(180deg);
+}
+:where([data-student-ui]) .attendance-period-pager button:enabled:hover,
+:where([data-student-ui]):is(.attendance-period-pager button:enabled:hover) {
+  background: var(--rct-color-surface-raised);
+}
+:where([data-student-ui]) .attendance-period-pager button:enabled:active,
+:where([data-student-ui]):is(.attendance-period-pager button:enabled:active) {
+  color: var(--rct-color-accent-on-now);
+  background: var(--rct-color-accent-now);
+}
+:where([data-student-ui]) .attendance-period-pager button:disabled,
+:where([data-student-ui]):is(.attendance-period-pager button:disabled),
+:where([data-student-ui]) .attendance-day-rail__item:disabled,
+:where([data-student-ui]):is(.attendance-day-rail__item:disabled),
+:where([data-student-ui]) .attendance-sunday:disabled,
+:where([data-student-ui]):is(.attendance-sunday:disabled) {
+  opacity: 1;
+  color: var(--rct-color-disabled-text);
+  background: var(--rct-color-disabled-surface);
+  cursor: default;
+}
+:where([data-student-ui]) .attendance-day-rail__item:disabled strong,
+:where([data-student-ui]):is(.attendance-day-rail__item:disabled strong) {
+  color: inherit;
+}
+:where([data-student-ui]) .attendance-day-rail__item--selected:not(:disabled),
+:where([data-student-ui]):is(.attendance-day-rail__item--selected:not(:disabled)) {
+  color: var(--rct-color-accent-on-now);
+  background: var(--rct-color-accent-now);
+}
+:where([data-student-ui]) .attendance-day-rail__item--selected:not(:disabled) strong,
+:where([data-student-ui]):is(.attendance-day-rail__item--selected:not(:disabled) strong) {
+  color: inherit;
+}
+:where([data-student-ui]) .attendance-subject-list > ul,
+:where([data-student-ui]):is(.attendance-subject-list > ul) {
+  gap: var(--rct-space-3);
+}
+:where([data-student-ui]) .attendance-subject-list__heading,
+:where([data-student-ui]):is(.attendance-subject-list__heading) {
+  margin: 0;
+}
+:where([data-student-ui]) .attendance-subject-list__trigger,
+:where([data-student-ui]):is(.attendance-subject-list__trigger) {
+  justify-content: space-between;
+  gap: var(--rct-space-2);
+  padding: var(--rct-space-2) var(--rct-space-3);
+  background: var(--rct-color-surface-raised);
+}
+:where([data-student-ui]) .attendance-subject-list__trigger[aria-expanded='true'],
+:where([data-student-ui]):is(.attendance-subject-list__trigger[aria-expanded='true']) {
+  background: var(--rct-color-surface-float);
+}
+:where([data-student-ui]) .attendance-subject-list__cards,
+:where([data-student-ui]):is(.attendance-subject-list__cards) {
+  padding-block: var(--rct-space-5) var(--rct-space-3);
+}
+:where([data-student-ui]) .attendance-status-badge--active,
+:where([data-student-ui]):is(.attendance-status-badge--active) {
+  background: var(--rct-color-accent-now);
+}
+:where([data-student-ui]) .attendance-status-badge--future,
+:where([data-student-ui]):is(.attendance-status-badge--future) {
+  border: var(--rct-border-hairline) solid var(--rct-color-border-default);
+  background: transparent;
+}
+:where([data-student-ui]) .attendance-graph__columns,
+:where([data-student-ui]):is(.attendance-graph__columns) {
+  position: relative;
+  scrollbar-width: thin;
+  touch-action: pan-x pan-y;
+  padding-block-end: var(--rct-space-2);
+}
+
+:where([data-student-ui]) .attendance-status-explanation p,
+:where([data-student-ui]):is(.attendance-status-explanation p) {
+  margin: 0;
+}
+
+:where([data-student-ui]) .attendance-status-document,
+:where([data-student-ui]):is(.attendance-status-document) {
+  display: block;
+  min-block-size: var(--rct-control-min-touch);
+  max-inline-size: 100%;
+  margin-block-start: var(--rct-space-2);
+  padding: var(--rct-space-2) var(--rct-space-3);
+  border: 0;
+  border-radius: var(--rct-radius-full);
+  color: var(--rct-color-accent-on-now);
+  background: var(--rct-color-accent-now);
+  cursor: pointer;
+  overflow-wrap: anywhere;
+}
+
+:where([data-student-ui]) .attendance-lesson-row__card > .attendance-status-explanation,
+:where([data-student-ui]):is(.attendance-lesson-row__card > .attendance-status-explanation) {
+  grid-column: 1 / -1;
+}
+
+/* The dock and the floating day control share the shell's semantic geometry. */
+:where([data-student-ui]) .attendance-screen[data-today-visible='true'],
+:where([data-student-ui]):is(.attendance-screen[data-today-visible='true']) {
+  padding-block-end: calc(
+    env(safe-area-inset-bottom) + var(--rct-mobile-dock-bottom) + var(--rct-mobile-dock-height) +
+      var(--rct-control-min-touch) + var(--rct-space-6)
+  );
+}
+:where([data-student-ui]) .attendance-today,
+:where([data-student-ui]):is(.attendance-today) {
+  position: fixed;
+  z-index: 10;
+  inset-inline-start: 50%;
+  inset-block-end: calc(
+    env(safe-area-inset-bottom) + var(--rct-mobile-dock-bottom) + var(--rct-mobile-dock-height) +
+      var(--rct-space-3)
+  );
+  transform: translateX(-50%);
+  min-block-size: var(--rct-control-min-touch);
+  max-inline-size: calc(100% - var(--rct-space-8));
+  padding: var(--rct-space-2) var(--rct-space-5);
+  border: var(--rct-border-hairline) solid var(--rct-color-border-default);
+  border-radius: var(--rct-radius-full);
+  color: var(--rct-color-accent-on-now);
+  background: var(--rct-color-accent-now);
+  cursor: pointer;
+  @mixin rct-type-body;
+}
+:where([data-student-ui]) .attendance-today:disabled,
+:where([data-student-ui]):is(.attendance-today:disabled) {
+  color: var(--rct-color-disabled-text);
+  background: var(--rct-color-disabled-surface);
+  cursor: default;
+}
+:where([data-student-ui]) .attendance-subject-list__item--expanded + .attendance-subject-list__item,
+:where([data-student-ui]):is(
+  .attendance-subject-list__item--expanded + .attendance-subject-list__item
+) {
+  margin-block-start: var(--rct-space-3);
+}
+/* A padded background clip keeps square inner corners. Paint the rounded bar separately. */
+:where([data-student-ui]) .attendance-type-card__segment--explanation,
+:where([data-student-ui]):is(.attendance-type-card__segment--explanation) {
+  position: relative;
+  background: transparent;
+  padding: 0;
+}
+:where([data-student-ui]) .attendance-type-card__segment--explanation::before,
+:where([data-student-ui]):is(.attendance-type-card__segment--explanation::before) {
+  content: '';
+  position: absolute;
+  inset-inline: 0;
+  inset-block-start: 50%;
+  block-size: var(--rct-space-2);
+  transform: translateY(-50%);
+  border-radius: var(--rct-radius-full);
+  background: var(--rct-color-text-muted);
+}
+:where([data-student-ui]) .attendance-type-card__segment--excused::before,
+:where([data-student-ui]):is(.attendance-type-card__segment--excused::before) {
+  background: var(--rct-color-status-excused-fill);
+}
+:where([data-student-ui]) .attendance-type-card__segment--present::before,
+:where([data-student-ui]):is(.attendance-type-card__segment--present::before) {
+  background: var(--rct-color-status-present-fill);
+}
+:where([data-student-ui]) .attendance-type-card__segment--absent::before,
+:where([data-student-ui]):is(.attendance-type-card__segment--absent::before) {
+  background: var(--rct-color-status-absent-fill);
+}
+:where([data-student-ui]) .attendance-period-pager button .mobile-icon,
+:where([data-student-ui]):is(.attendance-period-pager button .mobile-icon) {
+  inline-size: var(--rct-icon-size);
+  block-size: var(--rct-icon-size);
+}
+:where([data-student-ui]) .attendance-period-pager button:enabled:hover,
+:where([data-student-ui]):is(.attendance-period-pager button:enabled:hover) {
+  color: var(--rct-color-text-primary);
+}
+:where([data-student-ui]) .attendance-period-pager button:focus-visible,
+:where([data-student-ui]):is(.attendance-period-pager button:focus-visible),
+:where([data-student-ui]) .attendance-today:focus-visible,
+:where([data-student-ui]):is(.attendance-today:focus-visible),
+:where([data-student-ui]) .attendance-document-preview:focus-visible,
+:where([data-student-ui]):is(.attendance-document-preview:focus-visible),
+:where([data-student-ui]) .attendance-explanation-close:focus-visible,
+:where([data-student-ui]):is(.attendance-explanation-close:focus-visible),
+:where([data-student-ui]) .attendance-document-full button:focus-visible,
+:where([data-student-ui]):is(.attendance-document-full button:focus-visible) {
+  outline: var(--rct-focus-width) solid var(--rct-color-border-focus);
+  outline-offset: var(--rct-focus-offset);
+}
+:where([data-student-ui]) .attendance-document-preview,
+:where([data-student-ui]):is(.attendance-document-preview) {
+  display: block;
+  inline-size: 100%;
+  margin-block-start: var(--rct-space-3);
+  padding: var(--rct-space-2);
+  border: var(--rct-border-hairline) solid var(--rct-color-border-default);
+  border-radius: var(--rct-radius-lg);
+  background: var(--rct-color-surface-raised);
+  color: var(--rct-color-text-primary);
+  overflow: hidden;
+  cursor: zoom-in;
+}
+:where([data-student-ui]) .attendance-document-preview :is(img, object),
+:where([data-student-ui]):is(.attendance-document-preview :is(img, object)) {
+  display: block;
+  inline-size: 100%;
+  block-size: var(--rct-mobile-hero-height);
+  object-fit: contain;
+  pointer-events: none;
+}
+:where([data-student-ui]) .attendance-document-full,
+:where([data-student-ui]):is(.attendance-document-full) {
+  position: fixed;
+  inset: 0;
+  box-sizing: border-box;
+  inline-size: 100%;
+  max-inline-size: 100%;
+  block-size: 100%;
+  max-block-size: 100%;
+  margin: 0;
+  padding: calc(env(safe-area-inset-top) + var(--rct-space-4)) var(--rct-space-4)
+    calc(env(safe-area-inset-bottom) + var(--rct-space-4));
+  border: 0;
+  background: var(--rct-color-surface-base);
+  color: var(--rct-color-text-primary);
+}
+:where([data-student-ui]) .attendance-document-full[open],
+:where([data-student-ui]):is(.attendance-document-full[open]) {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rct-space-4);
+}
+:where([data-student-ui]) .attendance-document-full header,
+:where([data-student-ui]):is(.attendance-document-full header) {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: var(--rct-space-3);
+}
+:where([data-student-ui]) .attendance-document-full h2,
+:where([data-student-ui]):is(.attendance-document-full h2) {
+  margin: 0;
+  overflow-wrap: anywhere;
+  @mixin rct-type-body;
+}
+:where([data-student-ui]) .attendance-document-full :is(img, object),
+:where([data-student-ui]):is(.attendance-document-full :is(img, object)) {
+  min-block-size: 0;
+  flex: 1;
+  inline-size: 100%;
+  object-fit: contain;
+}
+:where([data-student-ui]) .attendance-explanation-close,
+:where([data-student-ui]):is(.attendance-explanation-close),
+:where([data-student-ui]) .attendance-document-full button,
+:where([data-student-ui]):is(.attendance-document-full button) {
+  min-block-size: var(--rct-control-min-touch);
+  padding: var(--rct-space-2) var(--rct-space-3);
+  border: 0;
+  border-radius: var(--rct-radius-full);
+  background: var(--rct-color-surface-float);
+  color: var(--rct-color-text-primary);
+  cursor: pointer;
+}
+:where([data-student-ui]) .attendance-explanation-close,
+:where([data-student-ui]):is(.attendance-explanation-close),
+:where([data-student-ui]) .attendance-document-full .attendance-document-close,
+:where([data-student-ui]):is(.attendance-document-full .attendance-document-close) {
+  display: grid;
+  place-items: center;
+  flex: 0 0 var(--rct-control-min-touch);
+  inline-size: var(--rct-control-min-touch);
+  block-size: var(--rct-control-min-touch);
+  padding: 0;
+}
+:where([data-student-ui]) .attendance-explanation-close,
+:where([data-student-ui]):is(.attendance-explanation-close) {
+  position: absolute;
+  inset-block-start: var(--rct-space-2);
+  inset-inline-end: var(--rct-space-2);
+}
+:where([data-student-ui]) .attendance-status-explanation:has(.attendance-explanation-close) > p,
+:where([data-student-ui]):is(
+  .attendance-status-explanation:has(.attendance-explanation-close) > p
+) {
+  min-block-size: var(--rct-control-min-touch);
+  padding-inline-end: calc(var(--rct-control-min-touch) + var(--rct-space-2));
+}

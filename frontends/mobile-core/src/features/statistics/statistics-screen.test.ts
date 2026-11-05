@@ -102,7 +102,7 @@ const data: StatisticsOverviewData = {
   semesterSeries: [],
   subjects: [],
 }
-function mount() {
+function mount(overview: StatisticsOverviewData = data) {
   const state = ref<StatisticsReadState<StatisticsRankingData>>({
     status: 'ready',
     data: {
@@ -112,40 +112,105 @@ function mount() {
       total: 42,
       ownPosition: 22,
       rows: [
-        { id: '1', name: '<script>synthetic</script>', position: 22, percentage: 0, isSelf: true },
+        { id: '1', name: 'Иванов Иван Олегович', position: 22, percentage: 0, isSelf: true },
+        { id: '2', name: '<script>synthetic</script>', position: 23, percentage: 0, isSelf: false },
       ],
     },
   })
   const root = new Node('root')
   const pages: number[] = []
+  const openRanking = vi.fn()
   const app = renderer.createApp({
     setup: () => () =>
       h(StatisticsScreen, {
-        state: { status: 'ready', data },
+        state: { status: 'ready', data: overview },
         rankingVisible: true,
         rankingState: state.value,
         onRankingPage: (page: number) => pages.push(page),
+        onOpenRanking: openRanking,
       }),
   })
   app.mount(root)
   apps.push(app)
-  return { root, state, pages }
+  return { root, state, pages, openRanking }
 }
+describe('subject summary authoritative percentages', () => {
+  it('uses all three supplied percentages, keeps unknown distinct from zero and ignores future/planned totals', () => {
+    const { root } = mount({
+      ...data,
+      subjects: [
+        {
+          id: 'known',
+          name: 'Предмет с отметками',
+          metrics: {
+            ...metrics,
+            held: 4,
+            planned: 100,
+            present: { count: 999, percent: 50 },
+            excused: { count: 999, percent: 25 },
+            absent: { count: 999, percent: 25 },
+          },
+        },
+        {
+          id: 'unknown',
+          name: 'Предмет без полных данных',
+          metrics: {
+            ...metrics,
+            held: 0,
+            planned: 10,
+            present: { count: 0, percent: null },
+            excused: { count: 0, percent: 0 },
+            absent: { count: 0, percent: null },
+          },
+        },
+      ],
+    })
+    const summaries = all(
+      root,
+      (n) => n.tag === 'button' && n.props.class === 'statistics-subject-summary',
+    )
+    expect(
+      summaries.map((summary) =>
+        all(summary, (n) =>
+          String(n.props.class ?? '').startsWith('statistics-subject-summary__metric '),
+        ).map((n) => text(n).replace(/\s+/gu, '')),
+      ),
+    ).toEqual([
+      ['Был50%', 'Уважительнаяпричина25%', 'Небыл25%'],
+      ['Был—', 'Уважительнаяпричина0%', 'Небыл—'],
+    ])
+  })
+})
+
 describe('compact statistics accepted metrics and readonly own-group list', () => {
-  it('renders peers as text, marks self by words and emits bounded server pages', () => {
-    const { root, pages } = mount()
+  it('renders peers as text, emphasizes self and expands the group through its chevron', () => {
+    const { root, pages, openRanking } = mount()
     const rows = all(
       root,
       (n) => String(n.props.class ?? '').includes('statistics-ranking__row') && n.tag === 'li',
     )
-    expect(rows).toHaveLength(1)
-    expect(text(rows[0]!)).toContain('<script>synthetic</script>')
-    expect(text(rows[0]!)).toContain('Это я')
+    expect(rows).toHaveLength(2)
+    expect(text(rows[0]!)).toContain('Иванов И. О.')
+    const name = all(rows[0]!, (n) => n.props.class === 'statistics-ranking__name')[0]!
+    expect(name.children.find((n) => n.props['aria-hidden'] === 'true')?.text).toBe('Иванов И. О.')
+    expect(name.children.find((n) => n.props.class === 'statistics-visually-hidden')?.text).toBe(
+      'Иванов Иван Олегович',
+    )
+    expect(text(rows[1]!)).toContain('<script>synthetic</script>')
+    expect(rows[0]!.props['data-self']).toBe(true)
+    expect(text(rows[0]!)).not.toContain('Это я')
     expect(text(rows[0]!)).toContain('0%')
     expect(all(rows[0]!, (n) => ['button', 'a', 'input', 'script'].includes(n.tag))).toHaveLength(0)
-    const next = all(root, (n) => n.tag === 'button' && text(n).trim() === 'Ниже')[0]!
-    ;(next.props.onClick as () => void)()
-    expect(pages).toEqual([2])
+    const toggle = all(
+      root,
+      (n) => n.tag === 'button' && n.props['aria-label'] === 'Рейтинг группы',
+    )[0]!
+    expect(toggle.props['aria-expanded']).toBe(true)
+    expect(all(toggle, (n) => n.tag === 'svg')).toHaveLength(1)
+    ;(toggle.props.onClick as () => void)()
+    expect(openRanking).toHaveBeenCalledOnce()
+    expect(all(root, (n) => n.tag === 'nav')).toHaveLength(0)
+    expect(pages).toEqual([])
   })
   it('removes previous peer rows while paging and on authority failure', async () => {
     const { root, state } = mount()
@@ -236,8 +301,7 @@ describe('semester chart accessible same-point data', () => {
     const { root } = await mountChart()
     const table = all(root, (node) => node.tag === 'table')[0]
     expect(table).toBeDefined()
-    const disclosure = all(root, (node) => node.tag === 'details')[0]!
-    expect(text(all(disclosure, (node) => node.tag === 'summary')[0]!)).toBe('Данные графика')
+    expect(all(root, (node) => node.tag === 'details' || node.tag === 'summary')).toHaveLength(0)
     expect(text(all(table!, (node) => node.tag === 'caption')[0]!)).toContain('Посещаемость')
     expect(
       all(table!, (node) => node.tag === 'th' && node.props.scope === 'col').map((node) =>
@@ -279,7 +343,7 @@ describe('semester chart accessible same-point data', () => {
   })
 
   it.each(['hidden', 'loading', 'error', 'empty'] as const)(
-    'removes the old table and disclosure when the graph becomes %s',
+    'removes the old accessible table when the graph becomes %s',
     async (state) => {
       const { root, props } = await mountChart()
       expect(all(root, (node) => node.tag === 'table')).toHaveLength(1)

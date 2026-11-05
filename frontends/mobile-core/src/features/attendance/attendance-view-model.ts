@@ -36,6 +36,26 @@ export type AttendanceLessonStatus =
 
 export type AttendanceRequestKind = 'EXCUSE' | 'LATE_CHECKIN'
 
+/** Host-owned document lookup; attendance API explanations need not contain attachments. */
+export interface AttendanceLessonDocument {
+  readonly label: string
+  readonly open: () => void
+  readonly pending?: boolean
+  readonly error?: string | null
+  readonly unavailable?: boolean
+  /** Optional host-owned, preview-safe source joined to this actual lesson. */
+  readonly preview?: {
+    readonly src: string
+    readonly kind: 'image' | 'pdf'
+    readonly alt?: string
+  }
+}
+export type AttendanceDocumentResolver = (lessonId: string, explanation?: StudentAttendanceExplanation | null) => AttendanceLessonDocument | readonly AttendanceLessonDocument[] | null
+
+export function attendanceDocuments(value: ReturnType<AttendanceDocumentResolver> | undefined): readonly AttendanceLessonDocument[] {
+  return value ? (Array.isArray(value) ? value : [value as AttendanceLessonDocument]) : []
+}
+
 export interface AttendanceRequestOption {
   readonly id: string
   readonly kind: AttendanceRequestKind

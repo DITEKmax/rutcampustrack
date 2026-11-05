@@ -345,3 +345,567 @@
 .requests-selection-screen .request-lesson-option__meta {
   @mixin rct-type-lesson-meta;
 }
+
+/* Accepted Student presentation; existing roles retain their base rules. */
+:where([data-student-ui]) .requests-form-screen,
+:where([data-student-ui]):is(.requests-form-screen) {
+  --requests-base: var(--rct-color-surface-base);
+  --requests-raised: var(--rct-color-surface-raised);
+  --requests-float: var(--rct-color-surface-float);
+  --requests-text: var(--rct-color-text-primary);
+  --requests-secondary: var(--rct-color-text-secondary);
+  --requests-muted: var(--rct-color-text-muted);
+  --requests-border: var(--rct-color-border-default);
+  --requests-on-accent: var(--rct-color-accent-on-now);
+  --requests-danger-fill: var(--rct-color-danger-fill, var(--rct-color-status-absent-fill));
+  --requests-warning-fill: var(
+    --rct-warning-surface,
+    color-mix(in srgb, var(--rct-color-warning-text) 14%, var(--rct-color-surface-raised))
+  );
+  --requests-warning-soft: var(--requests-warning-fill);
+  inline-size: 100%;
+  max-inline-size: var(--rct-today-content-max);
+  min-inline-size: 0;
+  padding-block: var(--rct-space-5) var(--rct-space-6);
+  padding-inline: var(--rct-space-4);
+  overflow-wrap: anywhere;
+}
+
+:where([data-student-ui]) .requests-form-screen .requests-form-header,
+:where([data-student-ui]):is(.requests-form-screen .requests-form-header) {
+  gap: var(--rct-space-2-half);
+  margin-block-end: var(--rct-space-3);
+}
+
+:where([data-student-ui]) .requests-form-screen .requests-form-header h1,
+:where([data-student-ui]):is(.requests-form-screen .requests-form-header h1) {
+  min-inline-size: 0;
+  @mixin rct-type-task-title;
+}
+
+:where([data-student-ui]) .requests-form-screen .requests-back-button,
+:where([data-student-ui]):is(.requests-form-screen .requests-back-button) {
+  inline-size: var(--rct-control-min-touch);
+  block-size: var(--rct-control-min-touch);
+  border-radius: var(--rct-task-back-radius);
+  color: var(--rct-color-text-secondary);
+  background: var(--rct-color-surface-float);
+}
+
+:where([data-student-ui]) .requests-form-screen .requests-back-button .mobile-icon,
+:where([data-student-ui]):is(.requests-form-screen .requests-back-button .mobile-icon) {
+  inline-size: var(--rct-icon-size);
+  block-size: var(--rct-icon-size);
+}
+
+:where([data-student-ui]) .requests-form-screen .requests-form,
+:where([data-student-ui]):is(.requests-form-screen .requests-form) {
+  min-inline-size: 0;
+  gap: var(--rct-space-3);
+}
+
+:where([data-student-ui]) .requests-form-screen .requests-form__section,
+:where([data-student-ui]):is(.requests-form-screen .requests-form__section) {
+  min-inline-size: 0;
+  gap: var(--rct-space-2);
+}
+
+:where([data-student-ui]) .requests-form-screen .request-field,
+:where([data-student-ui]):is(.requests-form-screen .request-field) {
+  min-inline-size: 0;
+  gap: var(--rct-space-3);
+}
+
+:where([data-student-ui]) .requests-form-screen .request-field__label,
+:where([data-student-ui]):is(.requests-form-screen .request-field__label) {
+  @mixin rct-type-field-label;
+}
+
+:where([data-student-ui]) .requests-form-screen .request-field select,
+:where([data-student-ui]):is(.requests-form-screen .request-field select),
+:where([data-student-ui]) .requests-form-screen .request-field textarea,
+:where([data-student-ui]):is(.requests-form-screen .request-field textarea) {
+  min-inline-size: 0;
+  border: 0;
+  border-radius: var(--rct-radius-xl);
+  padding: var(--rct-space-2-half) var(--rct-space-3);
+  color: var(--rct-color-text-primary);
+  background: var(--rct-color-surface-raised);
+  @mixin rct-type-body;
+  @mixin rct-focus-ring;
+}
+
+:where([data-student-ui]) .requests-form-screen .request-field select,
+:where([data-student-ui]):is(.requests-form-screen .request-field select) {
+  min-block-size: var(--rct-form-select-height);
+  padding-inline-end: calc(var(--rct-space-3) * 2 + var(--rct-icon-size));
+}
+
+:where([data-student-ui]) .requests-form-screen .request-field textarea,
+:where([data-student-ui]):is(.requests-form-screen .request-field textarea) {
+  min-block-size: var(--rct-form-textarea-height);
+}
+
+:where([data-student-ui]) .requests-form-screen .request-field textarea::placeholder,
+:where([data-student-ui]):is(.requests-form-screen .request-field textarea::placeholder) {
+  color: var(--rct-color-text-secondary);
+  opacity: 1;
+}
+
+:where([data-student-ui]) .requests-form-screen .request-select-icon,
+:where([data-student-ui]):is(.requests-form-screen .request-select-icon) {
+  inset-inline-end: var(--rct-space-3);
+  inline-size: var(--rct-icon-size);
+  block-size: var(--rct-icon-size);
+}
+
+:where([data-student-ui]) .requests-form-screen .request-field__help,
+:where([data-student-ui]):is(.requests-form-screen .request-field__help),
+:where([data-student-ui]) .requests-form-screen .request-validation-hint,
+:where([data-student-ui]):is(.requests-form-screen .request-validation-hint),
+:where([data-student-ui]) .requests-form-screen .request-form-error,
+:where([data-student-ui]):is(.requests-form-screen .request-form-error),
+:where([data-student-ui]) .requests-form-screen .requests-form-status,
+:where([data-student-ui]):is(.requests-form-screen .requests-form-status),
+:where([data-student-ui]) .requests-form-screen .requests-offline,
+:where([data-student-ui]):is(.requests-form-screen .requests-offline) {
+  overflow-wrap: anywhere;
+  @mixin rct-type-lesson-meta;
+}
+
+:where([data-student-ui]) .requests-form-screen .requests-submit-action,
+:where([data-student-ui]):is(.requests-form-screen .requests-submit-action) {
+  min-block-size: var(--rct-form-submit-height);
+  margin-block-start: 0;
+  border-radius: var(--rct-radius-2xl);
+  padding: var(--rct-space-2) var(--rct-space-4);
+  color: var(--rct-color-text-primary);
+  background: var(--rct-today-action-gradient);
+  overflow-wrap: anywhere;
+  @mixin rct-type-action;
+  @mixin rct-focus-ring;
+}
+
+:where([data-student-ui]) .requests-form-screen .requests-submit-action:disabled,
+:where([data-student-ui]):is(.requests-form-screen .requests-submit-action:disabled) {
+  color: var(--rct-color-disabled-text);
+  background: var(--rct-color-disabled-surface);
+}
+
+:where([data-student-ui]) .requests-form-screen .requests-secondary-action,
+:where([data-student-ui]):is(.requests-form-screen .requests-secondary-action) {
+  min-inline-size: 0;
+  min-block-size: var(--rct-control-min-touch);
+  border: 0;
+  padding: var(--rct-space-2) var(--rct-space-4);
+  overflow-wrap: anywhere;
+  @mixin rct-type-action;
+}
+
+:where([data-student-ui]) .requests-form-screen .requests-state,
+:where([data-student-ui]):is(.requests-form-screen .requests-state),
+:where([data-student-ui]) .requests-form-screen .request-budget-card,
+:where([data-student-ui]):is(.requests-form-screen .request-budget-card),
+:where([data-student-ui]) .requests-form-screen .request-confirmation-panel,
+:where([data-student-ui]):is(.requests-form-screen .request-confirmation-panel) {
+  min-inline-size: 0;
+  gap: var(--rct-space-3);
+  border: 0;
+  padding: var(--rct-space-4);
+  color: var(--rct-color-text-secondary);
+  background: var(--rct-color-surface-raised);
+}
+
+:where([data-student-ui]) .requests-form-screen .request-confirmation-panel h2,
+:where([data-student-ui]):is(.requests-form-screen .request-confirmation-panel h2),
+:where([data-student-ui]) .requests-form-screen .requests-state h2,
+:where([data-student-ui]):is(.requests-form-screen .requests-state h2) {
+  color: var(--rct-color-text-primary);
+  @mixin rct-type-list-title;
+}
+
+:where([data-student-ui]) .requests-form-screen .request-budget-card p,
+:where([data-student-ui]):is(.requests-form-screen .request-budget-card p),
+:where([data-student-ui]) .requests-form-screen .request-confirmation-panel p,
+:where([data-student-ui]):is(.requests-form-screen .request-confirmation-panel p) {
+  @mixin rct-type-field-label;
+}
+
+:where([data-student-ui]) .request-attachment-field--compact,
+:where([data-student-ui]):is(.request-attachment-field--compact) {
+  min-inline-size: 0;
+  gap: var(--rct-space-2);
+}
+
+:where([data-student-ui]) .request-attachment-field--compact .request-attachment-picker,
+:where([data-student-ui]):is(.request-attachment-field--compact .request-attachment-picker) {
+  min-inline-size: 0;
+  min-block-size: var(--rct-form-upload-height);
+  gap: var(--rct-space-1);
+  border: var(--rct-border-hairline) dashed var(--rct-color-border-default);
+  border-radius: var(--rct-radius-2xl);
+  padding: var(--rct-space-2-half) var(--rct-space-4);
+  color: var(--rct-color-text-primary);
+  overflow-wrap: anywhere;
+  @mixin rct-type-body;
+  place-items: center;
+  text-align: center;
+}
+
+:where([data-student-ui]) .request-attachment-field--compact .request-attachment-picker__hint,
+:where([data-student-ui]):is(.request-attachment-field--compact .request-attachment-picker__hint) {
+  color: var(--rct-color-text-muted);
+  @mixin rct-type-lesson-meta;
+}
+
+:where([data-student-ui]) .request-attachment-field--compact .request-attachment-preview__image,
+:where([data-student-ui]):is(.request-attachment-field--compact .request-attachment-preview__image),
+:where([data-student-ui]) .request-attachment-field--compact .request-attachment-preview__pdf,
+:where([data-student-ui]):is(.request-attachment-field--compact .request-attachment-preview__pdf) {
+  border: 0;
+}
+
+:where([data-student-ui]) .requests-form-screen .request-validation-hint,
+:where([data-student-ui]):is(.requests-form-screen .request-validation-hint),
+:where([data-student-ui]) .requests-form-screen .request-form-error,
+:where([data-student-ui]):is(.requests-form-screen .request-form-error),
+:where([data-student-ui]) .requests-form-screen .request-lesson-option__reason,
+:where([data-student-ui]):is(.requests-form-screen .request-lesson-option__reason),
+:where([data-student-ui]) .requests-form-screen .request-lesson-selector__unavailable,
+:where([data-student-ui]):is(.requests-form-screen .request-lesson-selector__unavailable),
+:where([data-student-ui]) .requests-form-screen .request-lesson-recovery-panel h3,
+:where([data-student-ui]):is(.requests-form-screen .request-lesson-recovery-panel h3) {
+  color: var(--rct-color-danger-text);
+}
+
+:where([data-student-ui]) .requests-form-screen .request-lesson-recovery-panel,
+:where([data-student-ui]):is(.requests-form-screen .request-lesson-recovery-panel) {
+  border: 0;
+  background: var(
+    --rct-error-surface,
+    color-mix(in srgb, var(--rct-color-danger-text) 14%, var(--rct-color-surface-raised))
+  );
+}
+
+:where([data-student-ui]) .requests-form-screen .request-lesson-recovery-list li,
+:where([data-student-ui]):is(.requests-form-screen .request-lesson-recovery-list li) {
+  flex-wrap: wrap;
+}
+
+:where([data-student-ui]) .requests-form-screen .request-lesson-option,
+:where([data-student-ui]):is(.requests-form-screen .request-lesson-option) {
+  border: 0;
+  padding: var(--rct-space-3);
+  background: var(--rct-color-surface-raised);
+}
+
+:where([data-student-ui]) .requests-form-screen .request-lesson-option--selected,
+:where([data-student-ui]):is(.requests-form-screen .request-lesson-option--selected) {
+  outline: var(--rct-border-hairline) solid var(--rct-color-accent-now);
+  outline-offset: calc(0rem - var(--rct-border-hairline));
+}
+
+:where([data-student-ui]) .requests-form-screen .request-lesson-option--disabled,
+:where([data-student-ui]):is(.requests-form-screen .request-lesson-option--disabled) {
+  opacity: 1;
+}
+
+:where([data-student-ui]) .requests-form-screen .request-budget-card,
+:where([data-student-ui]):is(.requests-form-screen .request-budget-card),
+:where([data-student-ui]) .requests-form-screen .request-confirmation-panel,
+:where([data-student-ui]):is(.requests-form-screen .request-confirmation-panel) {
+  border-radius: var(--rct-radius-2xl);
+}
+
+:where([data-student-ui]) .requests-form-screen .request-lesson-selector__empty,
+:where([data-student-ui]):is(.requests-form-screen .request-lesson-selector__empty),
+:where([data-student-ui]) .requests-form-screen .request-field__help--error,
+:where([data-student-ui]):is(.requests-form-screen .request-field__help--error) {
+  color: var(--rct-color-danger-text);
+}
+
+:where([data-student-ui]) .requests-form-screen > .student-warning,
+:where([data-student-ui]):is(.requests-form-screen > .student-warning) {
+  margin-block: var(--rct-space-4);
+}
+
+:where([data-student-ui]) .requests-form-screen .requests-form-header:has(+ .student-warning),
+:where([data-student-ui]):is(.requests-form-screen .requests-form-header:has(+ .student-warning)) {
+  margin-block-end: 0;
+}
+
+:where([data-student-ui]) .requests-form-screen .requests-form__section:has(> .student-warning),
+:where([data-student-ui]):is(
+  .requests-form-screen .requests-form__section:has(> .student-warning)
+) {
+  gap: var(--rct-space-4);
+}
+
+:where([data-student-ui]) .requests-selected-summary,
+:where([data-student-ui]):is(.requests-selected-summary) {
+  border-radius: var(--rct-radius-2xl);
+  padding: var(--rct-space-4);
+  background: var(--rct-color-surface-raised);
+}
+:where([data-student-ui]) .requests-selected-summary .requests-form__selection-count,
+:where([data-student-ui]):is(.requests-selected-summary .requests-form__selection-count) {
+  color: var(--rct-color-text-primary);
+  @mixin rct-type-field-label;
+  font-weight: var(--rct-font-weight-bold);
+}
+:where([data-student-ui]) .requests-selected-summary .request-lesson-summary,
+:where([data-student-ui]):is(.requests-selected-summary .request-lesson-summary) {
+  padding: var(--rct-space-2-half);
+  border-radius: var(--rct-radius-xl);
+  background: var(--rct-color-surface-float);
+  gap: var(--rct-space-1);
+}
+:where([data-student-ui]) .requests-selected-summary .request-lesson-summary h2,
+:where([data-student-ui]):is(.requests-selected-summary .request-lesson-summary h2) {
+  @mixin rct-type-field-label;
+  font-weight: var(--rct-font-weight-bold);
+}
+:where([data-student-ui]) .requests-selected-summary .request-lesson-summary__unknown,
+:where([data-student-ui]):is(.requests-selected-summary .request-lesson-summary__unknown) {
+  display: none;
+}
+:where([data-student-ui]) .requests-edit-selection,
+:where([data-student-ui]):is(.requests-edit-selection) {
+  margin: 0;
+  justify-self: start;
+  min-block-size: var(--rct-control-min-touch);
+}
+:where([data-student-ui]) .requests-form-screen .request-confirmation-panel,
+:where([data-student-ui]):is(.requests-form-screen .request-confirmation-panel) {
+  background: var(--rct-warning-surface);
+}
+:where([data-student-ui]) .requests-form-screen .request-confirmation-panel h2,
+:where([data-student-ui]):is(.requests-form-screen .request-confirmation-panel h2) {
+  color: var(--rct-color-warning-text);
+}
+:where([data-student-ui]) .requests-form-screen .request-confirmation-panel p,
+:where([data-student-ui]):is(.requests-form-screen .request-confirmation-panel p) {
+  color: var(--rct-color-text-secondary);
+}
+:where([data-student-ui]) .requests-form-screen .requests-submit-action,
+:where([data-student-ui]):is(.requests-form-screen .requests-submit-action) {
+  color: var(--rct-color-accent-on-now);
+  background: var(--rct-color-accent-now);
+}
+:where([data-student-ui]) .requests-selection-screen .request-lesson-option__copy,
+:where([data-student-ui]):is(.requests-selection-screen .request-lesson-option__copy) {
+  flex: 1 1 auto;
+}
+:where([data-student-ui]) .requests-selection-screen .request-lesson-option input,
+:where([data-student-ui]):is(.requests-selection-screen .request-lesson-option input) {
+  inline-size: var(--rct-icon-size);
+  block-size: var(--rct-icon-size);
+}
+:where([data-student-ui]) .requests-screen__description,
+:where([data-student-ui]):is(.requests-screen__description) {
+  color: var(--rct-color-text-secondary);
+  @mixin rct-type-lesson-meta;
+}
+
+:where([data-student-ui]) .requests-form-screen .request-lesson-recovery-panel p,
+:where([data-student-ui]):is(.requests-form-screen .request-lesson-recovery-panel p),
+:where([data-student-ui]) .requests-form-screen .request-lesson-recovery-list,
+:where([data-student-ui]):is(.requests-form-screen .request-lesson-recovery-list) {
+  color: var(--rct-color-text-primary);
+}
+:where([data-student-ui]) .requests-form-screen .request-lesson-recovery-panel__head,
+:where([data-student-ui]):is(.requests-form-screen .request-lesson-recovery-panel__head) {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--rct-space-2);
+  color: var(--rct-color-danger-text);
+}
+:where([data-student-ui]) .requests-form-screen .request-lesson-recovery-panel__head .mobile-icon,
+:where([data-student-ui]):is(
+  .requests-form-screen .request-lesson-recovery-panel__head .mobile-icon
+) {
+  flex: 0 0 auto;
+  inline-size: var(--rct-icon-size);
+  block-size: var(--rct-icon-size);
+}
+
+:where([data-student-ui]) .requests-selection-screen,
+:where([data-student-ui]):is(.requests-selection-screen) {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  block-size: 100dvh;
+  min-block-size: 0;
+  box-sizing: border-box;
+  overflow: hidden;
+  padding-block-end: max(var(--rct-space-4), env(safe-area-inset-bottom));
+}
+:where([data-student-ui]) .requests-selection-screen .requests-selection-scroll,
+:where([data-student-ui]):is(.requests-selection-screen .requests-selection-scroll) {
+  display: flex;
+  flex-direction: column;
+  min-block-size: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-block-end: var(--rct-space-4);
+}
+:where([data-student-ui]) .requests-selection-footer,
+:where([data-student-ui]):is(.requests-selection-footer) {
+  display: grid;
+  gap: var(--rct-space-2);
+  padding-block-start: var(--rct-space-3);
+  background: var(--rct-color-surface-base);
+}
+:where([data-student-ui]) .requests-selection-screen .request-lesson-option,
+:where([data-student-ui]):is(.requests-selection-screen .request-lesson-option) {
+  border-radius: var(--rct-radius-2xl);
+  align-items: center;
+}
+:where([data-student-ui]) .requests-selection-screen .request-lesson-option__reason,
+:where([data-student-ui]):is(.requests-selection-screen .request-lesson-option__reason) {
+  color: var(--rct-color-text-muted);
+}
+:where([data-student-ui])
+  .requests-selection-screen
+  .request-lesson-option--disabled
+  .request-lesson-option__subject,
+:where([data-student-ui]):is(
+  .requests-selection-screen .request-lesson-option--disabled .request-lesson-option__subject
+) {
+  color: var(--rct-color-text-muted);
+}
+:where([data-student-ui]) .requests-selection-screen .request-lesson-option__meta,
+:where([data-student-ui]):is(.requests-selection-screen .request-lesson-option__meta) {
+  @mixin rct-type-lesson-meta;
+}
+
+:where([data-student-ui]) .requests-selection-hint,
+:where([data-student-ui]):is(.requests-selection-hint) {
+  margin: 0;
+  color: var(--rct-color-text-secondary);
+  font-size: var(--rct-font-size-caption);
+  line-height: var(--rct-leading-caption);
+}
+:where([data-student-ui]) .requests-form-screen .request-lesson-option:has(input:focus-visible),
+:where([data-student-ui]):is(
+  .requests-form-screen .request-lesson-option:has(input:focus-visible)
+) {
+  outline: var(--rct-focus-width) solid var(--rct-color-accent-now);
+  outline-offset: var(--rct-focus-offset);
+}
+:where([data-student-ui]) .requests-selection-screen .request-lesson-option--selected,
+:where([data-student-ui]):is(.requests-selection-screen .request-lesson-option--selected) {
+  border-color: var(--rct-color-accent-now);
+  background: var(--rct-color-surface-float);
+}
+
+:where([data-student-ui]) .request-date-range__fields,
+:where([data-student-ui]):is(.request-date-range__fields) {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--rct-space-2);
+}
+:where([data-student-ui]) .requests-form-screen .request-date-trigger,
+:where([data-student-ui]):is(.requests-form-screen .request-date-trigger) {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--rct-space-2);
+  min-inline-size: 0;
+  min-block-size: var(--rct-control-min-touch);
+  border: var(--rct-border-hairline) solid var(--rct-color-border-default);
+  border-radius: var(--rct-radius-xl);
+  padding: var(--rct-space-2-half) var(--rct-space-3);
+  color: var(--rct-color-text-primary);
+  background: var(--rct-color-surface-raised);
+  text-align: start;
+  font: inherit;
+  font-size: var(--rct-font-size-caption);
+  cursor: pointer;
+  @mixin rct-focus-ring;
+}
+:where([data-student-ui]) .request-date-trigger .mobile-icon,
+:where([data-student-ui]):is(.request-date-trigger .mobile-icon) {
+  flex: 0 0 auto;
+  inline-size: var(--rct-icon-size);
+  block-size: var(--rct-icon-size);
+}
+:where([data-student-ui]) .requests-form-screen .requests-edit-selection,
+:where([data-student-ui]):is(.requests-form-screen .requests-edit-selection),
+:where([data-student-ui]) .requests-form-screen .requests-show-lessons,
+:where([data-student-ui]):is(.requests-form-screen .requests-show-lessons) {
+  border: var(--rct-border-hairline) solid var(--rct-color-border-default);
+  border-radius: var(--rct-radius-xl);
+  color: var(--rct-color-text-primary);
+  background: var(--rct-color-surface-float);
+  text-decoration: none;
+  @mixin rct-focus-ring;
+}
+:where([data-student-ui]) .requests-form-screen .requests-edit-selection,
+:where([data-student-ui]):is(.requests-form-screen .requests-edit-selection) {
+  justify-self: stretch;
+}
+:where([data-student-ui]) .requests-form-screen .request-date-trigger:disabled,
+:where([data-student-ui]):is(.requests-form-screen .request-date-trigger:disabled),
+:where([data-student-ui]) .requests-form-screen .requests-show-lessons:disabled,
+:where([data-student-ui]):is(.requests-form-screen .requests-show-lessons:disabled),
+:where([data-student-ui]) .requests-form-screen .requests-edit-selection:disabled,
+:where([data-student-ui]):is(.requests-form-screen .requests-edit-selection:disabled) {
+  color: var(--rct-color-disabled-text);
+  background: var(--rct-color-disabled-surface);
+  cursor: default;
+}
+:where([data-student-ui]) .requests-form-screen .request-lesson-option,
+:where([data-student-ui]):is(.requests-form-screen .request-lesson-option) {
+  position: relative;
+}
+:where([data-student-ui]) .requests-form-screen .request-lesson-option input[type='checkbox'],
+:where([data-student-ui]):is(.requests-form-screen .request-lesson-option input[type='checkbox']) {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: inherit;
+}
+:where([data-student-ui]) .requests-form-screen .request-lesson-option__checkbox,
+:where([data-student-ui]):is(.requests-form-screen .request-lesson-option__checkbox) {
+  pointer-events: none;
+  display: grid;
+  place-items: center;
+  flex: 0 0 var(--rct-space-5);
+  inline-size: var(--rct-space-5);
+  block-size: var(--rct-space-5);
+  border: var(--rct-border-hairline) solid var(--rct-color-border-default);
+  border-radius: var(--rct-radius-xs);
+  color: var(--rct-color-accent-on-now);
+  background: var(--rct-color-surface-float);
+}
+:where([data-student-ui]) .requests-form-screen .request-lesson-option__checkbox .rct-svg-icon,
+:where([data-student-ui]):is(.requests-form-screen .request-lesson-option__checkbox .rct-svg-icon) {
+  inline-size: var(--rct-icon-size);
+  block-size: var(--rct-icon-size);
+}
+:where([data-student-ui])
+  .requests-form-screen
+  .request-lesson-option
+  input:checked
+  + .request-lesson-option__checkbox,
+:where([data-student-ui]):is(
+  .requests-form-screen .request-lesson-option input:checked + .request-lesson-option__checkbox
+) {
+  border-color: var(--rct-color-accent-now);
+  background: var(--rct-color-accent-now);
+}
+:where([data-student-ui])
+  .requests-form-screen
+  .request-lesson-option
+  input:disabled
+  + .request-lesson-option__checkbox,
+:where([data-student-ui]):is(
+  .requests-form-screen .request-lesson-option input:disabled + .request-lesson-option__checkbox
+) {
+  border-color: var(--rct-color-disabled-text);
+  background: var(--rct-color-disabled-surface);
+  opacity: 0.5;
+}

@@ -3,6 +3,7 @@ import {
   displayPercent,
   historyStatusAccessibleLabel,
   seriesForRange,
+  statisticsRankingName,
   toggleTypeSelection,
   typeSelectionContains,
   type StatisticsSubjectDetailData,
@@ -70,10 +71,29 @@ describe('statistics controlled projection helpers', () => {
     expect(typeSelectionContains(detail.selectedTypes, 'LAB')).toBe(true)
   })
 
-  it('selects the supplied server bucket without client aggregation', () => {
-    expect(seriesForRange(detail, 'weeks')).toHaveLength(2)
-    expect(seriesForRange(detail, 'days')).toHaveLength(2)
-    expect(seriesForRange(detail, 'weeks')[0]?.id).toBe('g:123')
+  it('keeps weeks unchanged and drops only authoritative zero-schedule days', () => {
+    const scheduledUnknown = {
+      ...detail.series[1]!,
+      id: 'unknown-with-lesson',
+      metrics: { ...detail.series[1]!.metrics, planned: 1 },
+    }
+    const future = { ...scheduledUnknown, id: 'future-with-lesson', state: 'FUTURE' as const }
+    const source = {
+      ...detail,
+      series: [detail.series[0]!, detail.series[1]!, scheduledUnknown, future],
+    }
+    expect(seriesForRange(source, 'weeks')).toBe(source.series)
+    expect(seriesForRange(source, 'days')).toEqual([detail.series[0]!, scheduledUnknown, future])
+    expect(seriesForRange(source, 'days')[1]!.metrics.present.percent).toBeNull()
+    expect(seriesForRange(source, 'days')[2]!.state).toBe('FUTURE')
+    expect(source.series).toHaveLength(4)
+  })
+
+  it('formats surname and initials without losing a hyphenated surname or Unicode initial', () => {
+    expect(statisticsRankingName('  Иванов-Петров  Иван   Олегович ')).toBe('Иванов-Петров И. О.')
+    expect(statisticsRankingName('Ли Я')).toBe('Ли Я.')
+    expect(statisticsRankingName('Сингл')).toBe('Сингл')
+    expect(statisticsRankingName('')).toBe('')
   })
 
   it('exposes full Russian labels for history segments', () => {

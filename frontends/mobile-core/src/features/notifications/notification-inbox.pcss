@@ -306,3 +306,535 @@
 .notification-card[data-unread='true'] .notification-card__dot[data-color='grey'] {
   background: var(--m-notification-dot-grey);
 }
+
+/* Accepted Student presentation; existing roles retain their base rules. */
+:where([data-student-ui]) .notification-inbox,
+:where([data-student-ui]):is(.notification-inbox),
+:where([data-student-ui]) .notification-inbox__list,
+:where([data-student-ui]):is(.notification-inbox__list) {
+  display: grid;
+  gap: var(--rct-space-3);
+  min-inline-size: 0;
+}
+:where([data-student-ui]) .notification-inbox,
+:where([data-student-ui]):is(.notification-inbox) {
+  font-family: var(--rct-font-family-sans);
+}
+:where([data-student-ui]) .notification-inbox__list,
+:where([data-student-ui]):is(.notification-inbox__list) {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+:where([data-student-ui]) .notification-inbox__toolbar,
+:where([data-student-ui]):is(.notification-inbox__toolbar),
+:where([data-student-ui]) .notification-inbox__filters,
+:where([data-student-ui]):is(.notification-inbox__filters) {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--rct-space-2);
+}
+:where([data-student-ui]) .notification-inbox__toolbar,
+:where([data-student-ui]):is(.notification-inbox__toolbar) {
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: var(--rct-space-2);
+}
+:where([data-student-ui]) .notification-inbox__filters,
+:where([data-student-ui]):is(.notification-inbox__filters) {
+  display: grid;
+  flex: 1;
+  min-inline-size: 0;
+  grid-template-columns: minmax(var(--rct-control-min-touch), max-content) minmax(0, 1fr);
+  gap: var(--rct-space-1);
+  padding: var(--rct-space-1);
+  border-radius: var(--rct-radius-xl);
+  background: var(--rct-color-surface-raised);
+}
+:where([data-student-ui]) .notification-inbox__filters .notification-inbox__button,
+:where([data-student-ui]):is(.notification-inbox__filters .notification-inbox__button) {
+  min-inline-size: 0;
+  padding-inline: var(--rct-space-2);
+  background: transparent;
+  font-size: var(--rct-font-size-caption);
+  white-space: nowrap;
+}
+:where([data-student-ui]) .notification-inbox__button,
+:where([data-student-ui]):is(.notification-inbox__button) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--rct-space-2);
+  min-block-size: var(--rct-control-min-touch);
+  min-inline-size: var(--rct-control-min-touch);
+  border: 0;
+  border-radius: var(--rct-radius-lg);
+  padding: var(--rct-space-2) var(--rct-space-3);
+  background: var(--rct-color-surface-float);
+  color: var(--rct-color-text-primary);
+  font: inherit;
+  font-size: var(--rct-font-size-dense);
+  cursor: pointer;
+  @mixin rct-focus-ring;
+}
+:where([data-student-ui]) .notification-inbox__filters button[aria-pressed='true'],
+:where([data-student-ui]):is(.notification-inbox__filters button[aria-pressed='true']) {
+  color: var(--rct-color-accent-on-now);
+  background: var(--rct-color-accent-now);
+}
+:where([data-student-ui]) .notification-inbox__mark-all,
+:where([data-student-ui]):is(.notification-inbox__mark-all) {
+  flex: 0 0 var(--rct-control-min-touch);
+  padding: var(--rct-space-2);
+  background: transparent;
+  color: var(--rct-color-accent-now);
+}
+:where([data-student-ui]) .notification-inbox__mark-all-icon,
+:where([data-student-ui]):is(.notification-inbox__mark-all-icon) {
+  inline-size: var(--rct-profile-control-icon-size);
+  block-size: var(--rct-profile-control-icon-size);
+}
+:where([data-student-ui]) .notification-inbox button:disabled,
+:where([data-student-ui]):is(.notification-inbox button:disabled) {
+  cursor: default;
+  opacity: 0.65;
+}
+:where([data-student-ui]) .notification-inbox__state,
+:where([data-student-ui]):is(.notification-inbox__state) {
+  margin: 0;
+  padding: var(--rct-space-4);
+  color: var(--rct-color-text-secondary);
+  font-size: var(--rct-font-size-dense);
+}
+:where([data-student-ui]) .notification-inbox__notice,
+:where([data-student-ui]):is(.notification-inbox__notice) {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: var(--rct-space-2) var(--rct-space-3);
+  border-radius: var(--rct-radius-xl);
+  padding: var(--rct-space-3);
+  color: var(--rct-color-warning-text);
+  background: var(--rct-warning-surface);
+}
+:where([data-student-ui]) .notification-inbox__notice[data-tone='error'],
+:where([data-student-ui]):is(.notification-inbox__notice[data-tone='error']) {
+  color: var(--rct-color-danger-text);
+  background: var(--rct-error-surface);
+}
+:where([data-student-ui]) .notification-inbox__notice p,
+:where([data-student-ui]):is(.notification-inbox__notice p) {
+  margin: 0;
+  font-size: var(--rct-font-size-dense);
+  line-height: var(--rct-leading-caption);
+  overflow-wrap: anywhere;
+}
+:where([data-student-ui]) .notification-inbox__notice > .mobile-icon,
+:where([data-student-ui]):is(.notification-inbox__notice > .mobile-icon) {
+  inline-size: var(--rct-profile-control-icon-size);
+  block-size: var(--rct-profile-control-icon-size);
+}
+:where([data-student-ui]) .notification-inbox__reload,
+:where([data-student-ui]):is(.notification-inbox__reload) {
+  grid-column: 2;
+  justify-self: start;
+  background: transparent;
+  color: inherit;
+}
+:where([data-student-ui]) .notification-inbox__state--empty,
+:where([data-student-ui]):is(.notification-inbox__state--empty) {
+  display: grid;
+  justify-items: center;
+  gap: var(--rct-space-2);
+  padding-block: var(--rct-space-6);
+  text-align: center;
+}
+:where([data-student-ui]) .notification-inbox__state--empty p,
+:where([data-student-ui]):is(.notification-inbox__state--empty p) {
+  margin: 0;
+}
+:where([data-student-ui]) .notification-inbox__load-more,
+:where([data-student-ui]):is(.notification-inbox__load-more) {
+  justify-self: center;
+}
+:where([data-student-ui]) .notification-card,
+:where([data-student-ui]):is(.notification-card) {
+  min-inline-size: 0;
+  border: 0;
+  border-radius: var(--rct-radius-xl);
+  padding: var(--rct-space-2);
+  color: var(--rct-color-text-primary);
+  background: var(--m-notification-card-read-bg);
+}
+:where([data-student-ui]) .notification-card[data-unread='true'],
+:where([data-student-ui]):is(.notification-card[data-unread='true']) {
+  background: var(--m-notification-card-unread-bg);
+}
+:where([data-student-ui]) .notification-card__row,
+:where([data-student-ui]):is(.notification-card__row) {
+  display: flex;
+  align-items: center;
+  gap: var(--rct-space-1);
+}
+:where([data-student-ui]) .notification-card__main,
+:where([data-student-ui]):is(.notification-card__main),
+:where([data-student-ui]) .notification-card__disclosure,
+:where([data-student-ui]):is(.notification-card__disclosure),
+:where([data-student-ui]) .notification-card__more,
+:where([data-student-ui]):is(.notification-card__more) {
+  min-block-size: var(--rct-control-min-touch);
+  min-inline-size: var(--rct-control-min-touch);
+  margin: 0;
+  border: 0;
+  border-radius: var(--rct-radius-lg);
+  padding: var(--rct-space-2);
+  color: inherit;
+  background: transparent;
+  font: inherit;
+  cursor: pointer;
+  @mixin rct-focus-ring;
+}
+:where([data-student-ui]) .notification-card__main,
+:where([data-student-ui]):is(.notification-card__main) {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--rct-space-2);
+  flex: 1;
+  min-inline-size: 0;
+  text-align: start;
+  touch-action: pan-y;
+}
+:where([data-student-ui]) .notification-card__compact,
+:where([data-student-ui]):is(.notification-card__compact) {
+  display: grid;
+  gap: var(--rct-space-1);
+  min-inline-size: 0;
+}
+:where([data-student-ui]) .notification-card__heading,
+:where([data-student-ui]):is(.notification-card__heading) {
+  font-size: var(--rct-font-size-dense);
+  font-weight: var(--rct-font-weight-medium);
+  line-height: var(--rct-leading-snug);
+  overflow-wrap: anywhere;
+}
+:where([data-student-ui]) .notification-card[data-unread='false'],
+:where([data-student-ui]):is(.notification-card[data-unread='false']) {
+  color: var(--rct-color-text-secondary);
+}
+:where([data-student-ui]) .notification-card[data-unread='false'] .notification-card__heading,
+:where([data-student-ui]):is(.notification-card[data-unread='false'] .notification-card__heading) {
+  font-size: var(--rct-font-size-caption);
+  font-weight: var(--rct-font-weight-regular);
+}
+:where([data-student-ui]) .notification-card[data-unread='false'] .notification-card__summary,
+:where([data-student-ui]):is(.notification-card[data-unread='false'] .notification-card__summary),
+:where([data-student-ui]) .notification-card[data-unread='false'] .notification-card__facts,
+:where([data-student-ui]):is(.notification-card[data-unread='false'] .notification-card__facts) {
+  font-size: var(--rct-font-size-caption);
+}
+:where([data-student-ui]) .notification-card__time,
+:where([data-student-ui]):is(.notification-card__time) {
+  font-size: var(--rct-font-size-caption);
+  color: var(--rct-color-text-secondary);
+  line-height: var(--rct-leading-caption);
+}
+:where([data-student-ui]) .notification-card__dot,
+:where([data-student-ui]):is(.notification-card__dot) {
+  flex: 0 0 auto;
+  inline-size: var(--rct-space-2);
+  block-size: var(--rct-space-2);
+  margin-block-start: var(--rct-space-1);
+  border-radius: var(--rct-radius-full);
+  background: var(--m-notification-read-dot);
+}
+:where([data-student-ui]) .notification-card__disclosure,
+:where([data-student-ui]):is(.notification-card__disclosure),
+:where([data-student-ui]) .notification-card__more,
+:where([data-student-ui]):is(.notification-card__more) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+}
+:where([data-student-ui]) .notification-card__disclosure .mobile-icon,
+:where([data-student-ui]):is(.notification-card__disclosure .mobile-icon),
+:where([data-student-ui]) .notification-card__more .mobile-icon,
+:where([data-student-ui]):is(.notification-card__more .mobile-icon) {
+  inline-size: var(--rct-profile-control-icon-size);
+  block-size: var(--rct-profile-control-icon-size);
+}
+:where([data-student-ui]) .notification-card__disclosure[aria-expanded='true'] .mobile-icon,
+:where([data-student-ui]):is(.notification-card__disclosure[aria-expanded='true'] .mobile-icon) {
+  transform: rotate(180deg);
+}
+:where([data-student-ui]) .notification-card__details,
+:where([data-student-ui]):is(.notification-card__details) {
+  display: grid;
+  gap: var(--rct-space-3);
+  padding: var(--rct-space-2) var(--rct-space-3) var(--rct-space-3);
+}
+:where([data-student-ui]) .notification-card__details[hidden],
+:where([data-student-ui]):is(.notification-card__details[hidden]) {
+  display: none;
+}
+:where([data-student-ui]) .notification-card__summary,
+:where([data-student-ui]):is(.notification-card__summary),
+:where([data-student-ui]) .notification-card__hint,
+:where([data-student-ui]):is(.notification-card__hint) {
+  margin: 0;
+  font-size: var(--rct-font-size-dense);
+  line-height: var(--rct-leading-caption);
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+:where([data-student-ui]) .notification-card__hint,
+:where([data-student-ui]):is(.notification-card__hint) {
+  color: var(--rct-color-text-secondary);
+}
+:where([data-student-ui]) .notification-card__facts,
+:where([data-student-ui]):is(.notification-card__facts) {
+  display: grid;
+  gap: var(--rct-space-3);
+  margin: 0;
+  font-size: var(--rct-font-size-dense);
+  line-height: var(--rct-leading-caption);
+}
+:where([data-student-ui]) .notification-card__facts > div,
+:where([data-student-ui]):is(.notification-card__facts > div) {
+  display: grid;
+  gap: var(--rct-space-1);
+  min-inline-size: 0;
+}
+:where([data-student-ui]) .notification-card__facts dt,
+:where([data-student-ui]):is(.notification-card__facts dt) {
+  color: var(--rct-color-text-secondary);
+  font-size: var(--rct-font-size-caption);
+}
+:where([data-student-ui]) .notification-card__facts dd,
+:where([data-student-ui]):is(.notification-card__facts dd) {
+  margin: 0;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+:where([data-student-ui]) .notification-card__menu,
+:where([data-student-ui]):is(.notification-card__menu) {
+  padding: var(--rct-space-2);
+}
+:where([data-student-ui]) .notification-card__menu button,
+:where([data-student-ui]):is(.notification-card__menu button) {
+  inline-size: 100%;
+  color: var(--rct-color-accent-now);
+}
+:where([data-student-ui]) .notification-inbox__sr-only,
+:where([data-student-ui]):is(.notification-inbox__sr-only) {
+  position: absolute;
+  inline-size: var(--rct-border-hairline);
+  block-size: var(--rct-border-hairline);
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+@media (forced-colors: active) {
+  :where([data-student-ui]) .notification-card,
+  :where([data-student-ui]):is(.notification-card) {
+    border: var(--rct-border-hairline) solid CanvasText;
+  }
+  :where([data-student-ui]) .notification-card__dot,
+  :where([data-student-ui]):is(.notification-card__dot) {
+    border: var(--rct-border-hairline) solid CanvasText;
+  }
+}
+:where([data-student-ui])
+  .notification-card[data-unread='true']
+  .notification-card__dot[data-color='violet'],
+:where([data-student-ui]):is(
+  .notification-card[data-unread='true'] .notification-card__dot[data-color='violet']
+) {
+  background: var(--m-notification-dot-violet);
+}
+:where([data-student-ui])
+  .notification-card[data-unread='true']
+  .notification-card__dot[data-color='lavender'],
+:where([data-student-ui]):is(
+  .notification-card[data-unread='true'] .notification-card__dot[data-color='lavender']
+) {
+  background: var(--m-notification-dot-lavender);
+}
+:where([data-student-ui])
+  .notification-card[data-unread='true']
+  .notification-card__dot[data-color='purple'],
+:where([data-student-ui]):is(
+  .notification-card[data-unread='true'] .notification-card__dot[data-color='purple']
+) {
+  background: var(--m-notification-dot-purple);
+}
+:where([data-student-ui])
+  .notification-card[data-unread='true']
+  .notification-card__dot[data-color='indigo'],
+:where([data-student-ui]):is(
+  .notification-card[data-unread='true'] .notification-card__dot[data-color='indigo']
+) {
+  background: var(--m-notification-dot-indigo);
+}
+:where([data-student-ui])
+  .notification-card[data-unread='true']
+  .notification-card__dot[data-color='blue'],
+:where([data-student-ui]):is(
+  .notification-card[data-unread='true'] .notification-card__dot[data-color='blue']
+) {
+  background: var(--m-notification-dot-blue);
+}
+:where([data-student-ui])
+  .notification-card[data-unread='true']
+  .notification-card__dot[data-color='cobalt'],
+:where([data-student-ui]):is(
+  .notification-card[data-unread='true'] .notification-card__dot[data-color='cobalt']
+) {
+  background: var(--m-notification-dot-cobalt);
+}
+:where([data-student-ui])
+  .notification-card[data-unread='true']
+  .notification-card__dot[data-color='sky'],
+:where([data-student-ui]):is(
+  .notification-card[data-unread='true'] .notification-card__dot[data-color='sky']
+) {
+  background: var(--m-notification-dot-sky);
+}
+:where([data-student-ui])
+  .notification-card[data-unread='true']
+  .notification-card__dot[data-color='cyan'],
+:where([data-student-ui]):is(
+  .notification-card[data-unread='true'] .notification-card__dot[data-color='cyan']
+) {
+  background: var(--m-notification-dot-cyan);
+}
+:where([data-student-ui])
+  .notification-card[data-unread='true']
+  .notification-card__dot[data-color='turquoise'],
+:where([data-student-ui]):is(
+  .notification-card[data-unread='true'] .notification-card__dot[data-color='turquoise']
+) {
+  background: var(--m-notification-dot-turquoise);
+}
+:where([data-student-ui])
+  .notification-card[data-unread='true']
+  .notification-card__dot[data-color='teal'],
+:where([data-student-ui]):is(
+  .notification-card[data-unread='true'] .notification-card__dot[data-color='teal']
+) {
+  background: var(--m-notification-dot-teal);
+}
+:where([data-student-ui])
+  .notification-card[data-unread='true']
+  .notification-card__dot[data-color='green'],
+:where([data-student-ui]):is(
+  .notification-card[data-unread='true'] .notification-card__dot[data-color='green']
+) {
+  background: var(--m-notification-dot-green);
+}
+:where([data-student-ui])
+  .notification-card[data-unread='true']
+  .notification-card__dot[data-color='mint'],
+:where([data-student-ui]):is(
+  .notification-card[data-unread='true'] .notification-card__dot[data-color='mint']
+) {
+  background: var(--m-notification-dot-mint);
+}
+:where([data-student-ui])
+  .notification-card[data-unread='true']
+  .notification-card__dot[data-color='lime'],
+:where([data-student-ui]):is(
+  .notification-card[data-unread='true'] .notification-card__dot[data-color='lime']
+) {
+  background: var(--m-notification-dot-lime);
+}
+:where([data-student-ui])
+  .notification-card[data-unread='true']
+  .notification-card__dot[data-color='olive'],
+:where([data-student-ui]):is(
+  .notification-card[data-unread='true'] .notification-card__dot[data-color='olive']
+) {
+  background: var(--m-notification-dot-olive);
+}
+:where([data-student-ui])
+  .notification-card[data-unread='true']
+  .notification-card__dot[data-color='yellow'],
+:where([data-student-ui]):is(
+  .notification-card[data-unread='true'] .notification-card__dot[data-color='yellow']
+) {
+  background: var(--m-notification-dot-yellow);
+}
+:where([data-student-ui])
+  .notification-card[data-unread='true']
+  .notification-card__dot[data-color='amber'],
+:where([data-student-ui]):is(
+  .notification-card[data-unread='true'] .notification-card__dot[data-color='amber']
+) {
+  background: var(--m-notification-dot-amber);
+}
+:where([data-student-ui])
+  .notification-card[data-unread='true']
+  .notification-card__dot[data-color='orange'],
+:where([data-student-ui]):is(
+  .notification-card[data-unread='true'] .notification-card__dot[data-color='orange']
+) {
+  background: var(--m-notification-dot-orange);
+}
+:where([data-student-ui])
+  .notification-card[data-unread='true']
+  .notification-card__dot[data-color='coral'],
+:where([data-student-ui]):is(
+  .notification-card[data-unread='true'] .notification-card__dot[data-color='coral']
+) {
+  background: var(--m-notification-dot-coral);
+}
+:where([data-student-ui])
+  .notification-card[data-unread='true']
+  .notification-card__dot[data-color='red'],
+:where([data-student-ui]):is(
+  .notification-card[data-unread='true'] .notification-card__dot[data-color='red']
+) {
+  background: var(--m-notification-dot-red);
+}
+:where([data-student-ui])
+  .notification-card[data-unread='true']
+  .notification-card__dot[data-color='raspberry'],
+:where([data-student-ui]):is(
+  .notification-card[data-unread='true'] .notification-card__dot[data-color='raspberry']
+) {
+  background: var(--m-notification-dot-raspberry);
+}
+:where([data-student-ui])
+  .notification-card[data-unread='true']
+  .notification-card__dot[data-color='pink'],
+:where([data-student-ui]):is(
+  .notification-card[data-unread='true'] .notification-card__dot[data-color='pink']
+) {
+  background: var(--m-notification-dot-pink);
+}
+:where([data-student-ui])
+  .notification-card[data-unread='true']
+  .notification-card__dot[data-color='rose'],
+:where([data-student-ui]):is(
+  .notification-card[data-unread='true'] .notification-card__dot[data-color='rose']
+) {
+  background: var(--m-notification-dot-rose);
+}
+:where([data-student-ui])
+  .notification-card[data-unread='true']
+  .notification-card__dot[data-color='brown'],
+:where([data-student-ui]):is(
+  .notification-card[data-unread='true'] .notification-card__dot[data-color='brown']
+) {
+  background: var(--m-notification-dot-brown);
+}
+:where([data-student-ui])
+  .notification-card[data-unread='true']
+  .notification-card__dot[data-color='grey'],
+:where([data-student-ui]):is(
+  .notification-card[data-unread='true'] .notification-card__dot[data-color='grey']
+) {
+  background: var(--m-notification-dot-grey);
+}

@@ -294,6 +294,18 @@ export class StudentApi {
     return response.blob()
   }
 
+  async downloadAttendanceAttachment(
+    semesterId: string, lessonId: string, attachmentId: string,
+    expectedMarkRevision: string, signal?: AbortSignal,
+  ): Promise<Blob> {
+    const query = new URLSearchParams({ semesterId, expectedMarkRevision })
+    const response = await this.requestResponse(
+      `/api/v1/student/attendance/lessons/${encodeURIComponent(lessonId)}/attachments/${encodeURIComponent(attachmentId)}?${query}`,
+      { ...(signal ? { signal } : {}), headers: { Accept: 'application/octet-stream' } },
+    )
+    return response.blob()
+  }
+
   private async request<T>(path: string, init?: RequestInit): Promise<T> {
     const response = await this.requestResponse(path, init)
     return this.json<T>(response)

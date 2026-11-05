@@ -1,6 +1,6 @@
 /* eslint-disable */
 // Generated from docs/openapi/mobile-bff.json. Do not edit.
-// Contract: JS-STUDENT-01-r1; SHA-256: 67c9cc911fd173bb838b3f23b64370a1feffd94cc2f02a0cd856f740b9af062e
+// Contract: JS-STUDENT-01-r1; SHA-256: 96b3f8bdca7f080451d97c31b5aaf0511615a5fac490f6145d5f5df0d9cc536f
 
 export interface paths {
     "/api/v1/map/buildings/{buildingId}/floors/{floorId}/opens": {
@@ -80,6 +80,23 @@ export interface paths {
         };
         /** Student attendance projection */
         get: operations["getAttendance"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/student/attendance/lessons/{lessonId}/attachments/{attachmentId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Download a document bound to the student's current excused mark */
+        get: operations["downloadAttendanceAttachment"];
         put?: never;
         post?: never;
         delete?: never;
@@ -801,9 +818,22 @@ export interface components {
             state: "PAST" | "CURRENT" | "FUTURE";
             weekday: string;
         };
+        StudentAttendanceDocument: {
+            contentType?: string;
+            /** Format: date-time */
+            expiresAt?: string | null;
+            id?: string;
+            lessonId?: string;
+            markRevision?: string;
+            name?: string;
+            /** Format: int64 */
+            size?: number;
+            state?: string;
+        };
         StudentAttendanceExplanation: {
             cancellationReason?: string | null;
             comment?: string | null;
+            documents?: components["schemas"]["StudentAttendanceDocument"][];
             reasonCode?: string | null;
             reasonText?: string | null;
         } | null;
@@ -1800,6 +1830,68 @@ export interface operations {
             };
             /** @description Mandatory dependency unavailable */
             503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["MobileProblemDetails"];
+                };
+            };
+        };
+    };
+    downloadAttendanceAttachment: {
+        parameters: {
+            query: {
+                expectedMarkRevision: string;
+                semesterId: string;
+            };
+            header?: never;
+            path: {
+                attachmentId: string;
+                lessonId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Document bytes */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/octet-stream": unknown;
+                };
+            };
+            /** @description Outside student scope */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["MobileProblemDetails"];
+                };
+            };
+            /** @description Document not bound to current mark */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["MobileProblemDetails"];
+                };
+            };
+            /** @description Mark revision changed */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["MobileProblemDetails"];
+                };
+            };
+            /** @description Document expired or removed */
+            410: {
                 headers: {
                     [name: string]: unknown;
                 };

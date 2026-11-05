@@ -87,7 +87,7 @@ afterEach(() => {
   vi.restoreAllMocks()
 })
 
-it('keeps icon reset, zoom bounds, keyboard and mouse pan usable on the loaded map', async () => {
+it('keeps reset, zoom bounds, keyboard and mouse pan usable on the loaded student map', async () => {
   vi.stubGlobal('HTMLImageElement', Element)
   const client = new CampusMapClient({ accessToken: () => null })
   vi.spyOn(client, 'getManifest').mockResolvedValue({
@@ -125,7 +125,7 @@ it('keeps icon reset, zoom bounds, keyboard and mouse pan usable on the loaded m
   )
   vi.spyOn(client, 'recordFloorOpen').mockResolvedValue()
   const root = new Element('root')
-  app = renderer.createApp({ render: () => h(MapScreen, { client }) })
+  app = renderer.createApp({ render: () => h(MapScreen, { client, studentPresentation: true }) })
   app.mount(root)
   await flush()
   const button = (label: string) =>
@@ -134,8 +134,6 @@ it('keeps icon reset, zoom bounds, keyboard and mouse pan usable on the loaded m
     zoomOut = button('Уменьшить масштаб схемы'),
     reset = button('Сбросить масштаб схемы')
   expect(reset).toBeDefined()
-  expect(all(reset, (n) => n.tag === 'svg')).toHaveLength(1)
-  expect(content(reset).trim()).toBe('')
   expect(zoomIn.props.disabled).toBe(true)
   const image = all(root, (n) => n.tag === 'img')[0]!
   ;(image.props.onLoad as (event: unknown) => void)({ currentTarget: image })

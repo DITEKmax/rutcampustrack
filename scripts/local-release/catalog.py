@@ -1,4 +1,4 @@
-"""Fixed complete local CI replay with explicit browser selections."""
+"""Local release checks with independent browser selections."""
 from dataclasses import dataclass
 
 @dataclass(frozen=True)

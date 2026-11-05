@@ -427,7 +427,7 @@ test.describe('Current Vue roles with real synthetic domain @real-mobile', () =>
     expect(assistantPermissionCodes(await stale.json())).toEqual([]);
   });
 
-  test('LIMITED ADMIN views accounts while creation is denied by UI and server', { annotation: diagnosticCase('LIMITED_ADMIN_ACCOUNTS') }, async ({
+  test('LIMITED ADMIN views accounts while creation is denied by UI and server', { tag: '@mobile-access-smoke', annotation: diagnosticCase('LIMITED_ADMIN_ACCOUNTS') }, async ({
     page,
     dataset,
   }) => {
@@ -501,7 +501,7 @@ test.describe('Current Vue roles with real synthetic domain @real-mobile', () =>
     await expect(page.getByText(dataset.marker, { exact: true }).first()).toBeVisible();
   });
 
-  test('another live session revokes the browser session and recovery exposes login only', { annotation: diagnosticCase('SESSION_REVOKE_RECOVERY') }, async ({
+  test('another live session revokes the browser session and recovery exposes login only', { tag: ['@mobile-access-smoke', '@session-revocation'], annotation: diagnosticCase('SESSION_REVOKE_RECOVERY') }, async ({
     page,
     dataset,
   }) => {
@@ -521,7 +521,7 @@ test.describe('Current Vue roles with real synthetic domain @real-mobile', () =>
 });
 
 test.describe('Signed HEADMAN Telegram entry @real-mobile', () => {
-  test('D003 signed HEADMAN TMA marks an isolated own-group roster row', { annotation: diagnosticCase('D003_HEADMAN_TMA_MARK') }, async ({
+  test('D003 signed HEADMAN TMA marks an isolated own-group roster row', { tag: '@mobile-access-smoke', annotation: diagnosticCase('D003_HEADMAN_TMA_MARK') }, async ({
     page,
     request: issuer,
     activeHeadmanDataset: dataset,
@@ -1774,7 +1774,7 @@ test.describe('Production PWA service worker D002 @real-mobile', () => {
 
   test(
     'D002 offline reload rechecks suspended grants before role selection',
-    { annotation: diagnosticCase('D002_RECONNECT_ACCOUNT_AUTHORITY') },
+    { tag: '@d002-reconnect-authority', annotation: diagnosticCase('D002_RECONNECT_ACCOUNT_AUTHORITY') },
     async ({ page, context, d002Dataset: dataset }) => {
       const marker = `${dataset.marker}-offline-owner`;
       await publishOfflineHomework(dataset, marker);
@@ -2344,7 +2344,7 @@ test.describe('Production PWA service worker D002 @real-mobile', () => {
       }
     },
   );
-  test('D002 TMA stays online-only beside a warm PWA snapshot', { annotation: diagnosticCase('D002_TMA_ONLINE_ONLY') }, async ({
+  test('D002 TMA stays online-only beside a warm PWA snapshot', { tag: '@mobile-access-smoke', annotation: diagnosticCase('D002_TMA_ONLINE_ONLY') }, async ({
     page,
     context,
     dataset,
@@ -4423,7 +4423,7 @@ except Exception as error:
 });
 
 for (const suspended of [false, true]) {
-  test(`N2 retained Student shell recovers through current-only retry (${suspended ? 'suspended' : 'active'})`, { annotation: diagnosticCase(suspended ? 'N2_STUDENT_RETRY_SUSPENDED' : 'N2_STUDENT_RETRY_ACTIVE') }, async ({
+  test(`N2 retained Student shell recovers through current-only retry (${suspended ? 'suspended' : 'active'})`, { tag: '@mobile-access-smoke', annotation: diagnosticCase(suspended ? 'N2_STUDENT_RETRY_SUSPENDED' : 'N2_STUDENT_RETRY_ACTIVE') }, async ({
     page,
     dataset,
   }) => {

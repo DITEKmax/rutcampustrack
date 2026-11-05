@@ -76,7 +76,7 @@ BATCH_BLOCKED = [
 
 D002_CASES = ("D002_RECONNECT_ACCOUNT_AUTHORITY", "D002_LATE_ACCOUNT_HOMEWORK")
 D002_AUTHORITY_CASES = D002_CASES[:1]
-D002_TITLES = ("D002 offline reload rechecks suspended grants before role selection", "D002 late prior-account homework cannot replace the new account or offline snapshot")
+D002_FILTERS = ("@d002-reconnect-authority(?= |$)", "D002 late prior-account homework cannot replace the new account or offline snapshot$")
 
 FAILED_CASES = {
     'TMA_SIGNED_ENTRY': ('auth-smoke', 'signed teacher entry loads the real session and shared profile with host Back'),
@@ -92,7 +92,7 @@ FAILED_CASES = {
 
 def client_cases_arguments(cases):
     require(cases in (None, D002_CASES, D002_AUTHORITY_CASES), "CLIENT_CASE_SELECTION")
-    return ["--grep", "(?:" + "|".join(map(re.escape, D002_TITLES[:len(cases)])) + ")$"] if cases else []
+    return ["--grep", "|".join(D002_FILTERS[:len(cases)])] if cases else []
 
 
 def selected_batch_cases(cases):

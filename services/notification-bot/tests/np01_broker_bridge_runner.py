@@ -15,6 +15,7 @@ import os
 import signal
 import sys
 import uuid
+from contextlib import asynccontextmanager
 from pathlib import Path
 from types import SimpleNamespace
 from urllib.parse import quote
@@ -28,7 +29,14 @@ from aiogram.client.telegram import TelegramAPIServer
 from aiogram.types import Update
 from aiohttp import web
 
-from bot.consumers.event_consumer import DLQ_QUEUE_NAME, QUEUE_NAME, start_consumer
+from bot.consumers.event_consumer import (
+    DLQ_QUEUE_NAME,
+    MAX_RETRIES,
+    PARKING_QUEUE_NAME,
+    QUEUE_NAME,
+    RETRY_HEADER,
+    start_consumer,
+)
 from bot.consumers.event_dispatcher import EventDispatcher
 from bot.grpc_client.academic_client import AcademicGrpcClient
 from bot.grpc_client.bot_credentials_client import BotCredentialsGrpcClient
@@ -52,7 +60,7 @@ _held_lease_expiry = False
 _held_lease_initial_pttl = 0
 _held_lease_monotonic_elapsed_ms = 0
 _held_lease_redis_elapsed_ms = 0
-_held_lease_redeliveries = 0
+_held_lease_retry_observed = False
 _WORKER_INPUTS = (
     "NP01_AUTHORITY",
     "NP01_CA",
@@ -101,7 +109,11 @@ def check(condition, *, outcomes=None):
     if not condition:
         if not _failed_check:
             frame = sys._getframe(1)
-            caller = frame.f_back if frame.f_code.co_name in ("require_exact_card", "capture_new_card") else frame
+            caller = (
+                frame.f_back
+                if frame.f_code.co_name in ("require_exact_card", "capture_new_card", "check_retry_delivery")
+                else frame
+            )
             _failed_check = {
                 "line": frame.f_lineno,
                 "call_line": caller.f_lineno,
@@ -110,14 +122,12 @@ def check(condition, *, outcomes=None):
                     for name, value in (outcomes or {}).items()
                     if name
                     in (
-                        "ack_unchanged",
                         "pending_positive",
                         "held_card_unchanged",
                         "foreign_card_unchanged",
                         "initial_pttl_ms",
                         "monotonic_elapsed_ms",
                         "redis_elapsed_ms",
-                        "redeliveries",
                     )
                     and (type(value) is bool or type(value) is int and -1 <= value <= 10_000_000)
                 },
@@ -136,6 +146,20 @@ def capture_new_card(cards, before_keys, chat, marker):
     check(len(candidates) == 1)
     key = candidates[0]
     return key, cards[key]
+
+
+def check_retry_delivery(delivery, produced, own, *, expected_attempts):
+    event = json.loads(delivery.body)
+    check(delivery.message_id == event["event_id"] == produced["event_id"])
+    check(event["event_type"] == "password.changed" and event["event_version"] == 2)
+    payload = event["payload"]
+    check(payload["user_id"] == own["uid"] and payload["telegram_id"] == own["chat"])
+    check(payload["credentials_version"] == produced["credentials_version"])
+    check(payload["telegram_binding_version"] == produced["telegram_binding_version"])
+    check(delivery.exchange == "" and delivery.routing_key == QUEUE_NAME)
+    check(delivery.delivery_mode == aio_pika.DeliveryMode.PERSISTENT and delivery.content_type == "application/json")
+    attempt = delivery.headers.get(RETRY_HEADER)
+    check(type(attempt) is int and attempt in expected_attempts)
 
 
 def worker_environment(provider_url, source, module_root):
@@ -308,7 +332,7 @@ class Provider:
 
 async def supervisor():
     global _phase, _worker_restarts, _worker_starts, _worker_reaps, _failure_detail
-    global _held_lease_expiry, _held_lease_initial_pttl, _held_lease_redeliveries
+    global _held_lease_expiry, _held_lease_initial_pttl, _held_lease_retry_observed
     global _held_lease_monotonic_elapsed_ms, _held_lease_redis_elapsed_ms
     fixtures = json.loads(os.environ["NP01_FIXTURES"])
     own, foreign = fixtures["own"], fixtures["foreign"]
@@ -388,7 +412,6 @@ async def supervisor():
                     "unacked": value.get("messages_unacknowledged", 0),
                     "consumers": value.get("consumers", 0),
                     "ack": stats.get("ack", 0),
-                    "redeliver": stats.get("redeliver", 0),
                 }
 
         async def key_state(event_id):
@@ -450,20 +473,25 @@ async def supervisor():
                 child = None
                 _worker_reaps += 1
                 check((await control(f"worker_reaped?pid={owned.pid}"))["worker_reaped"])
+                return owned.returncode
 
-        async def freeze_released_worker(event_id):
-            # Freeze only our worker, then recheck the real Redis key. A claim that
-            # raced with the observation is resumed and retried; no lease is forged.
-            deadline = asyncio.get_running_loop().time() + 15
-            while asyncio.get_running_loop().time() < deadline:
-                check(child is not None and child.returncode is None)
-                if await key_state(event_id) is None:
-                    os.kill(child.pid, signal.SIGSTOP)
-                    if await key_state(event_id) is None:
-                        return
-                    os.kill(child.pid, signal.SIGCONT)
-                await asyncio.sleep(0.02)
-            raise BridgeFailure("actual released-claim restart boundary unavailable")
+        @asynccontextmanager
+        async def observe_next_delivery():
+            # Subscribe after the worker owns the initial delivery. The observer holds
+            # its replacement unacked. Closing the channel returns it to RabbitMQ.
+            async with observer.channel() as channel:
+                await channel.set_qos(prefetch_count=1)
+                queue = await channel.get_queue(QUEUE_NAME, ensure=True)
+                async with queue.iterator(arguments={"x-priority": 10}) as deliveries:
+                    yield deliveries
+
+        async def wait_for_stopped_delivery():
+            await until(
+                queue_facts,
+                lambda fact: (
+                    fact is not None and fact["consumers"] == 0 and fact["ready"] == 1 and fact["unacked"] == 0
+                ),
+            )
 
         async def freeze_processing_worker(event_id):
             await asyncio.wait_for(provider.delete_entered.wait(), timeout=15)
@@ -505,7 +533,7 @@ async def supervisor():
                 bot_menu_client=menu,
             )
 
-        async def observed_ack(event_id, previous_ack):
+        async def observed_completion(event_id, previous_ack=None):
             async def observe():
                 return await queue_facts(), await guard.is_completed(event_id), await control("facts")
 
@@ -513,7 +541,7 @@ async def supervisor():
                 observe,
                 lambda value: (
                     value[0] is not None
-                    and value[0]["ack"] > previous_ack
+                    and (previous_ack is None or value[0]["ack"] > previous_ack)
                     and value[0]["ready"] == value[0]["unacked"] == 0
                     and value[1]
                     and value[2]["pending"] == value[2]["outbox_pending"] == 0
@@ -558,14 +586,14 @@ async def supervisor():
             event_id = produced["event_id"]
             published = await control("publish")
             check(published["outbox_pending"] == 0 and published["outbox_sent"] == 1)
-            acknowledged = await observed_ack(event_id, baseline["ack"])
+            acknowledged = await observed_completion(event_id, baseline["ack"])
             check(not provider.contains(own_marker) and provider.contains(foreign_marker))
             require_exact_card(provider.cards, old_foreign_key, old_foreign_text)
 
             _phase = "same_real_event_completed_dedup_ack"
             effects = provider.delete_attempts, provider.edit_count, provider.notice_count
             await control("replay")
-            acknowledged = await observed_ack(event_id, acknowledged["ack"])
+            acknowledged = await observed_completion(event_id, acknowledged["ack"])
             check(effects == (provider.delete_attempts, provider.edit_count, provider.notice_count))
             require_exact_card(provider.cards, old_foreign_key, old_foreign_text)
 
@@ -589,7 +617,7 @@ async def supervisor():
             check(produced["producer_v2"] and produced["producer_original_uid"])
             check(not produced["producer_has_recipient"] and produced["producer_payload_fields"] == 3)
             await control("publish")
-            acknowledged = await observed_ack(produced["event_id"], acknowledged["ack"])
+            await observed_completion(produced["event_id"], acknowledged["ack"])
             check(not provider.contains(reset_marker))
             # BR-T01 sensitivity: remove only new_foreign_key in an isolated own
             # provider counterexample; this exact invariant must fail even if old survives.
@@ -598,7 +626,7 @@ async def supervisor():
             check(provider.notice_count == notices)
             await control("restore_binding")
 
-            _phase = "uncertain_provider_keeps_real_claim_retry_without_ack"
+            _phase = "uncertain_provider_preserves_durable_retry"
             await control("new_initial")
             fresh = await protected.read(own["chat"], own["uid"])
             uncertain_marker = html.escape(fresh.initial_password)
@@ -608,55 +636,48 @@ async def supervisor():
                 answer=lambda text, **kwargs: bot.send_message(own["chat"], text, **kwargs),
             )
             provider.drop_edit_reply = True
+            before_uncertain_card = set(provider.cards)
             try:
                 await cards.deliver(message, SimpleNamespace(user_id=own["uid"]))
             except NotificationPreferencesUnavailable:
                 check(True)
             else:
                 raise BridgeFailure("lost provider edit reply did not remain uncertain")
-            check(provider.contains(uncertain_marker))
+            uncertain_key, uncertain_text = capture_new_card(
+                provider.cards, before_uncertain_card, own["chat"], uncertain_marker
+            )
             provider.delete_rejected = True
-            edits, deletes = provider.edit_count, provider.delete_attempts
-            baseline = await queue_facts()
+            provider.delete_gate = asyncio.Event()
+            provider.delete_entered.clear()
+            edits, notices = provider.edit_count, provider.notice_count
             produced = await control("change")
             event_id = produced["event_id"]
             await control("publish")
+            await asyncio.wait_for(provider.delete_entered.wait(), timeout=15)
+            async with observe_next_delivery() as deliveries:
+                provider.delete_gate.set()
+                provider.delete_gate = None
+                retry = await asyncio.wait_for(anext(deliveries), timeout=30)
+                # The worker may have already taken a retry while the observer subscribed.
+                check_retry_delivery(retry, produced, own, expected_attempts=range(1, MAX_RETRIES + 1))
+                await until(lambda: key_state(event_id), lambda value: value is None)
+                check((await control("facts"))["pending"] > 0 and not await guard.is_completed(event_id))
+                check((provider.edit_count, provider.notice_count) == (edits, notices))
+                require_exact_card(provider.cards, uncertain_key, uncertain_text)
+                require_exact_card(provider.cards, old_foreign_key, old_foreign_text)
+                require_exact_card(provider.cards, new_foreign_key, new_foreign_text)
 
-            async def retry_facts():
-                return await queue_facts(), await key_state(event_id), await control("facts")
-
-            retry = await until(
-                retry_facts,
-                lambda value: (
-                    value[0] is not None
-                    and value[0]["redeliver"] > baseline["redeliver"]
-                    and value[0]["ack"] == baseline["ack"]
-                    and value[1] is None
-                    and value[2]["pending"] > 0
-                    and provider.delete_attempts >= deletes + 2
-                ),
-            )
-            check(retry[1] is None and not await guard.is_completed(event_id))
-            check(provider.contains(uncertain_marker) and provider.edit_count == edits)
-            require_exact_card(provider.cards, new_foreign_key, new_foreign_text)
-
-            _phase = "actual_worker_death_durable_redelivery_recovery"
-            await freeze_released_worker(event_id)
-            await stop_worker(force=True)  # Actual process death after a verified real Redis release.
-            stopped = await until(
-                queue_facts,
-                lambda fact: (
-                    fact is not None and fact["consumers"] == 0 and fact["ready"] == 1 and fact["unacked"] == 0
-                ),
-            )
-            check(stopped["ack"] == baseline["ack"] and await key_state(event_id) is None)
-            check((await control("facts"))["pending"] > 0 and provider.contains(uncertain_marker))
-            require_exact_card(provider.cards, new_foreign_key, new_foreign_text)
+                _phase = "actual_worker_death_durable_retry_recovery"
+                # The worker released the actual Redis claim after commit.
+                check(await stop_worker(force=True) == -signal.SIGKILL)
+            await wait_for_stopped_delivery()
+            check(await key_state(event_id) is None and (await control("facts"))["pending"] > 0)
             provider.delete_rejected = False
             await start_worker()
             _worker_restarts += 1
-            acknowledged = await observed_ack(event_id, baseline["ack"])
-            check(not provider.contains(uncertain_marker) and provider.edit_count == edits)
+            await observed_completion(event_id)
+            check(uncertain_key not in provider.cards and not provider.contains(uncertain_marker))
+            check(provider.edit_count == edits)
             require_exact_card(provider.cards, old_foreign_key, old_foreign_text)
             require_exact_card(provider.cards, new_foreign_key, new_foreign_text)
 
@@ -670,67 +691,62 @@ async def supervisor():
             held_card_key, held_card_text = capture_new_card(provider.cards, before_held_card, own["chat"], held_marker)
             provider.delete_gate = asyncio.Event()
             provider.delete_entered.clear()
-            baseline = await queue_facts()
             produced = await control("change")
             event_id = produced["event_id"]
             await control("publish")
             held_value, held_pttl, redis_observed_at, observed_at = await freeze_processing_worker(event_id)
             check(270_000 < held_pttl <= 300_000)
             _held_lease_initial_pttl = held_pttl
-            unacked = await until(
-                queue_facts, lambda fact: fact is not None and fact["unacked"] == 1 and fact["ack"] == baseline["ack"]
-            )
-            check(unacked["unacked"] == 1 and (await control("facts"))["pending"] > 0)
+            await until(queue_facts, lambda fact: fact is not None and fact["ready"] == 0 and fact["unacked"] == 1)
+            check((await control("facts"))["pending"] > 0)
             check(await key_state(event_id) == held_value)
             require_exact_card(provider.cards, held_card_key, held_card_text)
             require_exact_card(provider.cards, new_foreign_key, new_foreign_text)
-            await stop_worker(force=True)
-            stopped = await until(
-                queue_facts,
-                lambda fact: (
-                    fact is not None and fact["consumers"] == 0 and fact["ready"] == 1 and fact["unacked"] == 0
-                ),
-            )
+            check(await stop_worker(force=True) == -signal.SIGKILL)
+            await wait_for_stopped_delivery()
             check(await key_state(event_id) == held_value)
+            deletes = provider.delete_attempts
             await start_worker()
             _worker_restarts += 1
             provider.delete_gate.set()
             provider.delete_gate = None
 
-            _phase = "held_lease_blocks_premature_ack_until_natural_expiry"
-            # Two subsequent native redeliveries require a NACK/requeue cycle by
-            # the fresh worker while it cannot acquire the original lease.
-            requeued = await until(
+            _phase = "held_lease_preserves_retry_until_natural_expiry"
+            await until(
                 queue_facts,
-                lambda fact: (
-                    fact is not None
-                    and fact["redeliver"] >= stopped["redeliver"] + 2
-                    and fact["ack"] == baseline["ack"]
-                ),
+                lambda fact: fact is not None and fact["ready"] == 0 and fact["unacked"] == 1,
             )
-            _held_lease_redeliveries = requeued["redeliver"] - stopped["redeliver"]
-            check(await key_state(event_id) == held_value)
+            async with observe_next_delivery() as deliveries:
+                retry = await asyncio.wait_for(anext(deliveries), timeout=30)
+                check_retry_delivery(retry, produced, own, expected_attempts=(0,))
+                check(retry.headers.get("x-bot-recovery-reason") == "lease_busy")
+                check(await key_state(event_id) == held_value and not await guard.is_completed(event_id))
+                _held_lease_retry_observed = True
             expiry_deadline = observed_at + BotIdempotencyGuard.DEFAULT_TTL_SECONDS + 45
             while asyncio.get_running_loop().time() < expiry_deadline:
                 first, _, redis_now = await lease_observation(event_id)
                 if first != held_value:
                     break
-                facts, state = await queue_facts(), await control("facts")
+                state = await control("facts")
                 # Snapshot local provider state BEFORE the trailing Redis read.
                 # Its reply can arrive after expiry/provider recovery; inspecting
                 # mutable cards after that await would mislabel a valid deletion.
                 outcomes = {
-                    "ack_unchanged": facts["ack"] == baseline["ack"],
                     "pending_positive": state["pending"] > 0,
                     "held_card_unchanged": provider.cards.get(held_card_key) == held_card_text,
-                    "foreign_card_unchanged": provider.cards.get(new_foreign_key) == new_foreign_text,
+                    "foreign_card_unchanged": (
+                        provider.cards.get(old_foreign_key) == old_foreign_text
+                        and provider.cards.get(new_foreign_key) == new_foreign_text
+                    ),
                 }
+                no_provider_attempt = provider.delete_attempts == deletes
                 after, _, redis_now = await lease_observation(event_id)
                 if after != held_value:
                     break  # Discard observations that crossed the natural expiry boundary.
-                check(outcomes["ack_unchanged"] and outcomes["pending_positive"], outcomes=outcomes)
+                check(outcomes["pending_positive"], outcomes=outcomes)
                 check(outcomes["held_card_unchanged"], outcomes=outcomes)
                 check(outcomes["foreign_card_unchanged"], outcomes=outcomes)
+                check(no_provider_attempt)
                 await asyncio.sleep(0.2)
             else:
                 raise BridgeFailure("default processing lease did not naturally expire")
@@ -746,10 +762,13 @@ async def supervisor():
             )
             _held_lease_expiry = True
             held_value = None  # Never log the actual processing claim token.
-            acknowledged = await observed_ack(event_id, baseline["ack"])
+            await observed_completion(event_id)
             check(held_card_key not in provider.cards and not provider.contains(held_marker))
             require_exact_card(provider.cards, old_foreign_key, old_foreign_text)
             require_exact_card(provider.cards, new_foreign_key, new_foreign_text)
+            async with observer.channel() as channel:
+                parking = await channel.declare_queue(PARKING_QUEUE_NAME, passive=True)
+                check(parking.declaration_result.message_count == 0)
 
             _phase = "unknown_version_real_dlq_releases_claim"
             malformed = await control("unknown_version")  # Explicit negative wire input, no fake producer claim.
@@ -874,7 +893,7 @@ if __name__ == "__main__":
                     "held_lease_initial_pttl_ms": _held_lease_initial_pttl,
                     "held_lease_monotonic_elapsed_ms": _held_lease_monotonic_elapsed_ms,
                     "held_lease_redis_elapsed_ms": _held_lease_redis_elapsed_ms,
-                    "held_lease_redeliveries": _held_lease_redeliveries,
+                    "held_lease_retry_observed": _held_lease_retry_observed,
                     "failures": 0,
                     "checks": _checks,
                     "phase": _phase,

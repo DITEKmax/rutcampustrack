@@ -364,6 +364,8 @@ BROKER_BRIDGE_PHASES = (
     "actual_unlinked_reset_original_uid_cleanup", "uncertain_provider_keeps_real_claim_retry_without_ack",
     "actual_worker_death_durable_redelivery_recovery", "worker_death_while_default_processing_lease_held",
     "held_lease_blocks_premature_ack_until_natural_expiry", "unknown_version_real_dlq_releases_claim",
+    "uncertain_provider_preserves_durable_retry", "actual_worker_death_durable_retry_recovery",
+    "held_lease_preserves_retry_until_natural_expiry",
     "completed", "cleanup", "OTHER",
 )
 BROKER_BRIDGE_CAUSES = (

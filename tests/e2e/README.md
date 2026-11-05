@@ -46,9 +46,18 @@ acceptance surface. Current WEB runtime acceptance and conditional cases are
 recorded in `docs/validation/web-vue-pr3/`; do not infer completion from test
 selection or recreate accepted destructive operations merely to fill this lane.
 
-The auth smoke blocks service workers for deterministic online auth; the PWA
-worker/offline checks remain in the Vue workspace CI job. Shared/mobile fixture
-helpers and artifact privacy controls remain in use.
+The auth smoke blocks service workers for deterministic online auth. The
+required GitHub check aggregates the client and lifecycle jobs. The client job
+also selects real permission, revocation, retry and D002 reconnect cases. The
+lifecycle job selects the schedule room refresh from the lesson lifecycle spec
+set and continues to run the separate recovery and archival checks.
+
+The broader local replay includes additional offline and homework cases,
+profile and password recovery, map download, attendance budget, lesson
+cancel/restore and the homework notification mutation control. GitHub CI keeps
+the homework archive/history case in its required selection.
+
+Shared/mobile fixture helpers and artifact privacy controls remain in use.
 
 Requirements: Node 24.14+, Docker Compose v2 with `up --wait`, and an available
 isolated runtime lease when running alongside the shared development stand.
@@ -61,7 +70,13 @@ Run python3 scripts/local_e2e_async.py ui-batch only in a separate disposable ch
 This mode selects 34 remaining named Chromium scenarios in ten serial lanes: auth smoke9, FIRST3=2, admin1, role/security/export6, synthetic installation2, geo1, homework4, map1, registry HTML3 and helper5. The historical portable36 campaign excluded its then-passed client10, lesson-lifecycle4 and DOCX1; its saved reports remain historical. Each invocation owns a new nonce, and each lane has its own private artifact directory and the sole safe reporter; workers1, retries0 and maxFailures0 are enforced.
 
 
-Current client qualification has **11 physical browser cases: nine sibling cases plus two independent D002 stories**. D002 grant readmission uses a genuine offline reload and restored read-only Student cache before going online; late prior-account homework delivery has its own test-scoped actors/data and keeps the same-document account change and real offline reload. CI runs these two stories in a separate required D002 step and uploads only their own safe artifact; deterministic reconnect/bootstrap ordering also has a required targeted Vue step. The existing admitted local `browser-replay.py client --d002-only` selection now binds exactly both case IDs and reports `selected=2/fullAcceptance=false`. It does not replay the nine passed sibling cases or claim full client acceptance.
+The broader client replay includes both independent D002 stories. The required
+CI D002 step selects grant readmission after a genuine offline reload and uploads
+its safe outcome. Late prior-account homework delivery has its own actors and
+remains available in local replay. The admitted local command
+`browser-replay.py client --d002-only` selects both D002 case IDs and reports
+`selected=2/fullAcceptance=false`. Deterministic reconnect/bootstrap ordering
+also has a targeted Vue check.
 
 A valid safe test-process failure or incomplete/skipped lane is collected as FAIL/INCOMPLETE with notRun; it does not claim an assertion-only cause. Independent lanes continue only after frozen identity, actual declared healthchecks and unchanged shared clock are checked. Running alone is insufficient for a declared healthcheck. Missing/unsafe reports, runner errors, unexpected cases, ownership/readiness loss and unexpected shared-clock changes block dependent lanes. Build, admission, private-artifact and cleanup guards remain mandatory. No CI identity is spoofed.
 

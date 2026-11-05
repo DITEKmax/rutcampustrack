@@ -21,9 +21,11 @@ class D002Controls(unittest.TestCase):
         self.assertEqual(lane.client_cases_arguments(None), [])
         args = lane.client_cases_arguments(lane.D002_CASES)
         self.assertEqual(args[0], '--grep')
-        self.assertTrue(re.search(args[1], lane.D002_TITLES[0]))
-        self.assertTrue(re.search(args[1], lane.D002_TITLES[1]))
-        self.assertFalse(re.search(args[1], lane.D002_TITLES[0] + ' altered'))
+        reconnect = 'renamed reconnect scenario @d002-reconnect-authority'
+        late = 'D002 late prior-account homework cannot replace the new account or offline snapshot'
+        self.assertTrue(re.search(args[1], reconnect))
+        self.assertTrue(re.search(args[1], late))
+        self.assertFalse(re.search(args[1], reconnect + '-other'))
         with self.assertRaises(lane.AdmissionError):
             lane.client_cases_arguments('HEADMAN_TEACHER_READ')
         for mode, release in [('client', None), ('ui-batch', 'ui-batch'), ('client', 'webkit')]:
@@ -31,8 +33,8 @@ class D002Controls(unittest.TestCase):
                 lane.Runner(mode, release_lane=release, client_cases=lane.D002_CASES)
         self.assertNotIn('RCT_LOCAL_CLIENT_CASES', lane.Runner('client').env)
         authority = lane.client_cases_arguments(lane.D002_AUTHORITY_CASES)
-        self.assertTrue(re.search(authority[1], lane.D002_TITLES[0]))
-        self.assertFalse(re.search(authority[1], lane.D002_TITLES[1]))
+        self.assertTrue(re.search(authority[1], reconnect))
+        self.assertFalse(re.search(authority[1], late))
         for rejected in ((lane.D002_CASES[1],), tuple(reversed(lane.D002_CASES)), ('FOREIGN',)):
             with self.assertRaises(lane.AdmissionError): lane.client_cases_arguments(rejected)
             with self.assertRaises(lane.AdmissionError): lane.Runner('client', release_lane='client', client_cases=rejected)
@@ -89,4 +91,3 @@ class D002Controls(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
-

@@ -58,7 +58,6 @@ import type {
 import HeadmanRequestsScreen from '../headman-requests/HeadmanRequestsScreen.vue';
 import type {
   HeadmanRequestsApi,
-  HeadmanRequestKind,
 } from '../headman-requests/headman-requests-client';
 import HeadmanGroupScreen from '../headman-group/HeadmanGroupScreen.vue';
 import type { HeadmanGroupApi } from '../headman-group/headman-group-client';
@@ -250,7 +249,6 @@ const selectedDay = ref(1);
 const formOpen = ref(false);
 const journalOpen = ref(false);
 const requestsOpen = ref(false);
-const homeRequestKind = ref<HeadmanRequestKind | null>(null);
 const groupScreen = ref<InstanceType<typeof HeadmanGroupScreen> | null>(null);
 const groupOpen = ref(false);
 const subjectsScreen = ref<InstanceType<typeof HeadmanSubjectsScreen> | null>(null);
@@ -309,6 +307,8 @@ const actionLogRouteId = 'headman-today/actions' as const;
 const homeworkStartCreate = ref(false);
 const homeworkView = ref<'calendar' | 'archive' | 'detail' | 'wizard' | 'history'>('calendar');
 const homeworkScreen = ref<InstanceType<typeof HeadmanHomeworkScreen> | null>(null);
+const homeTaskOpen = ref(false);
+const homeScreen = ref<InstanceType<typeof HeadmanHomeScreen> | null>(null);
 const journalTaskOpen = ref(false);
 const journalScreen = ref<InstanceType<typeof HeadmanJournalScreen> | null>(null);
 const journalRouteId = 'headman-attendance/lesson' as const;
@@ -376,6 +376,9 @@ const stopRecurringBackGuard = navigation.beforeBack((current) => {
     : 'Результат изменения ещё не подтверждён. Повтори исходный запрос.';
   return false;
 });
+const stopHomeBackGuard = navigation.beforeBack(
+  (current) => current.id !== 'headman-today' || !homeScreen.value?.back(),
+);
 const stopJournalBackGuard = navigation.beforeBack(
   () => !journalOpen.value || !journalScreen.value?.back(),
 );
@@ -404,7 +407,8 @@ function handleShellBack(): void {
     requestsScreen.value?.back();
     return;
   }
-  if (journalTaskOpen.value) journalScreen.value?.back();
+  if (homeTaskOpen.value) homeScreen.value?.back();
+  else if (journalTaskOpen.value) journalScreen.value?.back();
 }
 const shellRoute = computed(() =>
   route.value.id === scheduleRouteId
@@ -423,8 +427,10 @@ const shellRoute = computed(() =>
               homeworkRouteId,
               homeworkView.value === 'calendar' ? 'overview' : 'editor',
             )
-          : journalTaskOpen.value
-            ? nestedRoute('headman-attendance', 'headman-attendance/reason', 'editor')
+          : homeTaskOpen.value
+            ? nestedRoute('headman-today', 'headman-today/reason', 'editor')
+            : journalTaskOpen.value
+              ? nestedRoute('headman-attendance', 'headman-attendance/reason', 'editor')
             : statsOpen.value && statsView.value !== 'overview'
               ? nestedRoute('headman-more', statsRouteId, 'detail')
               : route.value,
@@ -435,7 +441,8 @@ watch(statsOpen, (open) => {
 let stopNavigation = navigation.subscribe(() => {
   const next = navigation.current;
   route.value = next;
-  if (next.id !== requestsRouteId) homeRequestKind.value = null;
+  if (next.id !== 'headman-today') homeTaskOpen.value = false;
+  if (next.root !== 'headman-attendance') journalTaskOpen.value = false;
   journalOpen.value = next.root === 'headman-attendance';
   requestsOpen.value = next.id === requestsRouteId;
   groupOpen.value = next.id === groupRouteId;
@@ -671,10 +678,7 @@ function handleTaskBack(): void {
   navigation.back();
 }
 
-function navigateRoot(
-  routeName: MobileRootRouteId,
-  requestKind: HeadmanRequestKind | null = null,
-): void {
+function navigateRoot(routeName: MobileRootRouteId): void {
   if (
     routeName !== 'headman-today' &&
     routeName !== 'headman-attendance' &&
@@ -684,7 +688,6 @@ function navigateRoot(
     routeName !== 'profile'
   )
     return;
-  if (routeName === 'headman-requests') homeRequestKind.value = requestKind;
   if (routeName !== 'headman-attendance') selectedLessonId.value = null;
   navigation.goRoot(routeName);
 }
@@ -1740,6 +1743,7 @@ onBeforeUnmount(() => {
   stopManagementBackGuard();
   stopRequestsBackGuard();
   stopStatsBackGuard();
+  stopHomeBackGuard();
   stopJournalBackGuard();
   stopHomeworkBackGuard();
   stopGroupBackGuard();
@@ -1838,7 +1842,7 @@ defineExpose({ openNotificationAction });
 <template>
   <MobileShell
     :route="shellRoute"
-    :navigation="journalTaskOpen ? null : navigation"
+    :navigation="homeTaskOpen || journalTaskOpen ? null : navigation"
     :nav-items="navigationItems"
     :active-id="route.root === 'headman-map' ? 'headman-more' : route.root"
     :host="host"
@@ -1853,6 +1857,8 @@ defineExpose({ openNotificationAction });
             !groupOpen &&
             !subjectsOpen &&
             !requestsOpen &&
+            !homeTaskOpen &&
+            !journalScreen?.manualOpen &&
             route.id !== lessonManagementRouteId &&
             !formOpen
         "
@@ -1899,10 +1905,11 @@ defineExpose({ openNotificationAction });
     />
     <HeadmanHomeScreen
       v-else-if="route.id === 'headman-today'"
+      ref="homeScreen"
+      :actor-user-id="profile?.userId ?? null"
       :on-notifications="onNotifications"
       :unread-count="unreadCount"
       :api="journalApi"
-      :requests-api="requestsApi"
       :assistant-permissions="assistantPermissions"
       :week-policy-api="api"
       :group-id="groupId"
@@ -1915,11 +1922,11 @@ defineExpose({ openNotificationAction });
       :offline="offline"
       :read-only="readOnly"
       :role-switch-disabled="homeRoleSwitchDisabled"
+      @task-change="homeTaskOpen = $event"
       @select-date="selectedDate = $event"
       @role-switch="openHomeRoleSwitch"
       @open-lesson="openHomeLesson"
       @open-homework="openHomework(true)"
-      @open-requests="navigateRoot('headman-requests', $event)"
       @open-log="openHomeLog"
       @error="forwardError"
     />
@@ -1927,7 +1934,6 @@ defineExpose({ openNotificationAction });
       v-else-if="requestsOpen"
       ref="requestsScreen"
       :api="requestsApi"
-      :initial-kind="homeRequestKind"
       :assistant-permissions="assistantPermissions"
       :offline="offline"
       :read-only="readOnly"
@@ -1974,6 +1980,7 @@ defineExpose({ openNotificationAction });
     <HeadmanJournalScreen
       v-else-if="journalOpen"
       ref="journalScreen"
+      :actor-user-id="profile?.userId ?? null"
       :api="journalApi"
       :requests-api="requestsApi"
       :subjects-api="subjectsApi"

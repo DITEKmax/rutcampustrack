@@ -68,8 +68,8 @@ function tryReady(): void {
             ? Boolean(main.querySelector('.headman-home__lesson'))
             : Boolean(
                 main.querySelector('[data-user-id="2"]') ||
-                  ((state === 'reason-form' || state === 'manual-new-empty') &&
-                    main.querySelector('[data-user-id="4"] .headman-journal__excuse-form')) ||
+                  (['reason-form', 'manual-new-empty', 'manual-file'].includes(state) &&
+                    main.querySelector('.headman-manual-excuse form')) ||
                   ((state === 'student-ticket-link' || state.startsWith('ticket-preview')) &&
                     main.querySelector('.headman-journal__linked-request h2')),
               );
@@ -84,7 +84,7 @@ function tryReady(): void {
       action = main.querySelector('.headman-home__homework-toggle:not(:disabled)');
     if (state === 'reason-form' || state === 'manual-new-empty')
       action = main.querySelector(
-        '[data-user-id="4"] .headman-journal__picker button:nth-child(2)',
+        '[data-user-id="4"] button[data-choice="EXCUSED"]',
       );
     if (state === 'student-ticket-link' || state.startsWith('ticket-preview'))
       action = main.querySelector('[data-user-id="2"] .headman-journal__ticket-link');
@@ -95,7 +95,7 @@ function tryReady(): void {
     if (state.startsWith('weekly-download'))
       action = main.querySelector('.mobile-toolbar button:last-child');
     if (state.startsWith('clear-confirm'))
-      action = main.querySelector('[data-user-id="2"] .headman-journal__current');
+      action = main.querySelector('[data-user-id="2"] button[data-choice="EXCUSED"][aria-pressed="true"]');
     if (
       [
         'today-past',
@@ -124,9 +124,12 @@ function tryReady(): void {
   )
     return;
   if (
-    (state.startsWith('clear-confirm') ||
-      state === 'journal-tools-dialog' ||
-      state.startsWith('weekly-download')) &&
+    state.startsWith('clear-confirm') &&
+    !main.querySelector('[data-user-id="2"][data-status="empty"]:not([aria-busy="true"])')
+  )
+    return;
+  if (
+    (state === 'journal-tools-dialog' || state.startsWith('weekly-download')) &&
     !main.querySelector('dialog[open]')
   )
     return;
@@ -150,7 +153,7 @@ function tryReady(): void {
     }
   }
   if (state === 'manual-file') {
-    const preview = main.querySelector('.headman-journal__manual-preview');
+    const preview = main.querySelector('.headman-manual-excuse__preview');
     if (
       !preview ||
       preview.getAttribute('aria-busy') === 'true' ||
@@ -287,7 +290,6 @@ onBeforeUnmount(() => {
       v-else-if="view === 'today'"
       :week-policy-api="apis.schedule"
       :api="apis.journal"
-      :requests-api="apis.requests"
       :subjects-api="apis.subjects"
       :homework-api="apis.homework"
       :group-id="4"

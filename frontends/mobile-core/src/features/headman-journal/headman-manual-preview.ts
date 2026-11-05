@@ -27,6 +27,7 @@ export class HeadmanManualPreview {
     private readonly owner: () => ManualPreviewOwner,
     private readonly publish: (state: ManualPreviewState) => void,
     private readonly urls: Pick<typeof URL, 'createObjectURL' | 'revokeObjectURL'> = URL,
+    private readonly onError?: (cause: unknown) => void,
   ) {}
   private release(): void {
     if (this.url) this.urls.revokeObjectURL(this.url)
@@ -95,6 +96,7 @@ export class HeadmanManualPreview {
               ? cause.message
               : 'Не удалось показать вложение.',
       })
+      this.onError?.(cause)
     }
   }
   openUrl(): string | null {

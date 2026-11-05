@@ -2,11 +2,14 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { createRenderer, h, markRaw, reactive, nextTick, type App, type Component } from 'vue'
 import HeadmanJournalScreen from './HeadmanJournalScreen.vue'
 import HeadmanHomeScreen from '../headman-home/HeadmanHomeScreen.vue'
-import type {
-  HeadmanJournalApi,
-  HeadmanJournalLesson,
-  HeadmanJournalReport,
-  HeadmanJournalRosterEntry,
+import { moscowDate } from '../../domain/homework'
+import {
+  HeadmanJournalApiError,
+  type HeadmanJournalApi,
+  type HeadmanJournalMarkCommand,
+  type HeadmanJournalLesson,
+  type HeadmanJournalReport,
+  type HeadmanJournalRosterEntry,
 } from './headman-journal-client'
 import { journalScopeCurrent, type JournalMutationScope } from './headman-journal-operation'
 import type {
@@ -31,28 +34,48 @@ describe('journal destructive confirmation and late ACK ownership', () => {
   })
   it('does not publish a late destructive ACK into the newly selected lesson', async () => {
     const original = journalFixture()
-    Object.assign(original.api, { getWeeklyExportOptions: async () => ({ semesterId: 2, weeks: [], formats: [] }) })
+    Object.assign(original.api, {
+      getWeeklyExportOptions: async () => ({ semesterId: 2, weeks: [], formats: [] }),
+    })
     let finish!: () => void
-    original.clear.mockImplementation(() => new Promise<void>(resolve => { finish = resolve }))
+    original.clear.mockImplementation(
+      () =>
+        new Promise<void>((resolve) => {
+          finish = resolve
+        }),
+    )
     const next = journalFixture(false, 'ABSENT')
-    Object.assign(next.api, { getWeeklyExportOptions: async () => ({ semesterId: 2, weeks: [], formats: [] }) })
-    const props = reactive({ api: markRaw(original.api), groupId: 4, initialDate: original.lesson.date })
+    Object.assign(next.api, {
+      getWeeklyExportOptions: async () => ({ semesterId: 2, weeks: [], formats: [] }),
+    })
+    const props = reactive({
+      api: markRaw(original.api),
+      groupId: 4,
+      initialDate: original.lesson.date,
+    })
     const errors = vi.fn()
     const root = mountJournalScreen(HeadmanJournalScreen, Object.assign(props, { onError: errors }))
-    await vi.waitFor(() => expect(journalButton(root, 'Изменить отметку: Синтетический студент')).toBeDefined())
-    journalClick(journalButton(root, 'Изменить отметку: Синтетический студент'))
-    await nextTick()
+    await vi.waitFor(() =>
+      expect(journalButton(root, 'Был: Синтетический студент')?.props['aria-pressed']).toBe(true),
+    )
     journalClick(journalButton(root, 'Был: Синтетический студент'))
-    expect(original.clear).toHaveBeenCalledWith(30, 7, { expectedStatus: 'PRESENT', expectedRevision: 'revision-a' })
+    expect(original.clear).toHaveBeenCalledWith(30, 7, {
+      expectedStatus: 'PRESENT',
+      expectedRevision: 'revision-a',
+    })
     props.api = markRaw(next.api)
-    await vi.waitFor(() => expect(journalButton(root, 'Не был: Синтетический студент. Открыть выбор отметки')).toBeDefined())
+    await vi.waitFor(() =>
+      expect(journalButton(root, 'Не был: Синтетический студент')?.props['aria-pressed']).toBe(
+        true,
+      ),
+    )
     const readsBefore = vi.mocked(next.api.getLessonAttendance).mock.calls.length
     finish()
     await nextTick()
     await Promise.resolve()
     await nextTick()
-    expect(journalButton(root, 'Не был: Синтетический студент. Открыть выбор отметки')).toBeDefined()
-    expect(journalButton(root, 'Изменить отметку: Синтетический студент')?.props.disabled).not.toBe(true)
+    expect(journalButton(root, 'Не был: Синтетический студент')?.props['aria-pressed']).toBe(true)
+    expect(journalButton(root, 'Был: Синтетический студент')?.props.disabled).not.toBe(true)
     expect(vi.mocked(next.api.getLessonAttendance).mock.calls.length).toBe(readsBefore)
     expect(next.clear).not.toHaveBeenCalled()
     expect(errors).not.toHaveBeenCalled()
@@ -82,6 +105,11 @@ class JournalNode {
     this.props.open = true
   }
   addEventListener(): void {}
+  querySelectorAll(selector: string): JournalNode[] {
+    return selector === '[role="option"]'
+      ? journalNodes(this).filter((node) => node.props.role === 'option')
+      : []
+  }
   getRootNode() {
     return { activeElement: null }
   }
@@ -131,12 +159,17 @@ function journalNodes(root: JournalNode): JournalNode[] {
 }
 function journalButton(root: JournalNode, label: string): JournalNode | undefined {
   return journalNodes(root).find(
-    (node) => node.tag === 'button' && node.props['aria-label'] === label,
+    (node) =>
+      node.tag === 'button' &&
+      (node.props['aria-label'] === label ||
+        String(node.props['aria-label']).startsWith(label + '. ')),
   )
 }
 function journalClick(node: JournalNode | undefined): void {
   expect(node).toBeDefined()
-  ;(node!.props.onClick as () => void)()
+  ;(node!.props.onClick as (event: { currentTarget: JournalNode }) => void)({
+    currentTarget: node!,
+  })
 }
 const journalApps: App[] = []
 afterEach(() => {
@@ -160,8 +193,8 @@ function mountJournalScreen(component: Component, props: Record<string, unknown>
 function journalFixture(
   future = false,
   initialStatus: 'PRESENT' | 'ABSENT' | 'EXCUSED' = 'PRESENT',
+  date = future ? '2099-09-08' : '2026-09-07',
 ) {
-  const date = future ? '2099-09-08' : '2026-09-07'
   const lesson: HeadmanJournalLesson = {
     id: 30,
     groupId: 4,
@@ -204,23 +237,38 @@ function journalFixture(
     semesterId: 2,
     lessonStatus: lesson.status,
     editable: !future,
-    entries: [{ ...entry }],
+    entries: [
+      { ...entry },
+      { ...entry, userId: 8, displayName: 'Иванов Иван', status: 'EMPTY', markRevision: null },
+    ],
   })
   const clear = vi.fn(async () => {
     entry = { ...entry, status: 'EMPTY', symbol: null, markRevision: null, source: null }
   })
+  const mark = vi.fn(
+    async (lessonId: number, userId: number, command: HeadmanJournalMarkCommand) => {
+      entry = {
+        ...entry,
+        status: command.status,
+        markRevision: 'revision-b',
+        excuseType: command.status === 'EXCUSED' ? command.excuseType : null,
+      }
+      return { status: command.status, lessonId, userId, timestamp: '2026-09-07T09:00:00Z' }
+    },
+  )
   const api = {
     writable: true,
+    getWeeklyExportOptions: async () => ({ semesterId: 2, weeks: [], formats: [] }),
     listLessons: vi.fn(async () => [lesson]),
     getLessonAttendance: vi.fn(async () => report()),
     clear,
-    mark: vi.fn(),
+    mark,
     setHeadmanBlock: vi.fn(async (_id: number, blocked: boolean) => ({
       ...lesson,
       blockedByHeadman: blocked,
     })),
   } as unknown as HeadmanJournalApi
-  return { api, lesson, clear, report }
+  return { api, lesson, clear, mark, report }
 }
 describe('accepted journal production component controls', () => {
   it('preserves the current week/format selection across same-owner reconnect even if the catalogue refresh fails', async () => {
@@ -475,7 +523,7 @@ describe('accepted journal production component controls', () => {
     finish('accepted')
   })
 
-  it('opens the filled chooser without clearing, then clears only the selected choice', async () => {
+  it('clears the active choice directly using its current revision', async () => {
     const fixture = journalFixture()
     const root = mountJournalScreen(HeadmanJournalScreen, {
       api: fixture.api,
@@ -483,28 +531,19 @@ describe('accepted journal production component controls', () => {
       initialDate: fixture.lesson.date,
     })
     await vi.waitFor(() =>
-      expect(
-        journalButton(root, 'Был: Синтетический студент. Открыть выбор отметки'),
-      ).toBeDefined(),
+      expect(journalButton(root, 'Был: Синтетический студент')?.props['aria-pressed']).toBe(true),
     )
-    const edit = journalButton(root, 'Изменить отметку: Синтетический студент')
-    expect(edit, 'filled mark exposes the accepted edit action').toBeDefined()
-    journalClick(edit)
-    await vi.waitFor(() =>
-      expect(journalButton(root, 'Не был: Синтетический студент')).toBeDefined(),
-    )
-    expect(journalButton(root, 'Был: Синтетический студент')?.props.focused).toBe(true)
-    expect(fixture.clear).not.toHaveBeenCalled()
-    expect(fixture.report().entries[0]?.status).toBe('PRESENT')
+    expect(journalButton(root, 'Не был: Синтетический студент')).toBeDefined()
     journalClick(journalButton(root, 'Был: Синтетический студент'))
-    await vi.waitFor(() => expect(fixture.report().entries[0]?.status).toBe('EMPTY'))
-    expect(fixture.clear).toHaveBeenCalledTimes(1)
-    expect(fixture.clear).toHaveBeenCalledWith(30, 7, {
+    await vi.waitFor(() =>
+      expect(journalButton(root, 'Был: Синтетический студент')?.props['aria-pressed']).toBe(false),
+    )
+    expect(fixture.clear).toHaveBeenCalledExactlyOnceWith(30, 7, {
       expectedStatus: 'PRESENT',
       expectedRevision: 'revision-a',
     })
-    await vi.waitFor(() => expect(journalButton(root, 'Был: Синтетический студент')).toBeDefined())
   })
+
   it('clears the repeated EXCUSED choice immediately without opening an attachment dialog', async () => {
     const fixture = journalFixture(false, 'EXCUSED')
     const root = mountJournalScreen(HeadmanJournalScreen, {
@@ -513,11 +552,9 @@ describe('accepted journal production component controls', () => {
       initialDate: fixture.lesson.date,
     })
     await vi.waitFor(() =>
-      expect(journalButton(root, 'Изменить отметку: Синтетический студент')).toBeDefined(),
-    )
-    journalClick(journalButton(root, 'Изменить отметку: Синтетический студент'))
-    await vi.waitFor(() =>
-      expect(journalButton(root, 'Уважительная причина: Синтетический студент')).toBeDefined(),
+      expect(
+        journalButton(root, 'Уважительная причина: Синтетический студент')?.props['aria-pressed'],
+      ).toBe(true),
     )
     expect(fixture.clear).not.toHaveBeenCalled()
     journalClick(journalButton(root, 'Уважительная причина: Синтетический студент'))
@@ -537,16 +574,10 @@ describe('accepted journal production component controls', () => {
       initialDate: fixture.lesson.date,
       assistantPermissions: ['MARK_ATTENDANCE'],
     })
-    await vi.waitFor(() =>
-      expect(journalButton(root, 'Изменить отметку: Синтетический студент')).toBeDefined(),
-    )
-    const edit = journalButton(root, 'Изменить отметку: Синтетический студент')
-    expect(edit?.props.disabled).toBe(true)
-    journalClick(edit)
+    const findChoice = () => journalButton(root, 'Уважительная причина: Синтетический студент')
+    await vi.waitFor(() => expect(findChoice()?.props.disabled).toBe(true))
+    journalClick(findChoice())
     await nextTick()
-    expect(journalButton(root, 'Уважительная причина: Синтетический студент') === undefined).toBe(
-      true,
-    )
     expect(fixture.clear).not.toHaveBeenCalled()
     expect(fixture.report().entries[0]?.status).toBe('EXCUSED')
   })
@@ -567,8 +598,296 @@ describe('accepted journal production component controls', () => {
     expect(journalNodes(root).some((node) => node.text.includes('Пара ещё не началась'))).toBe(true)
     expect(fixture.clear).not.toHaveBeenCalled()
   })
-  it('offers geo blocking on the loaded active main lesson', async () => {
+  it.each([HeadmanJournalScreen, HeadmanHomeScreen])(
+    'validates an empty reason before writing and accepts a reason after one command',
+    async (screen) => {
+      const fixture = journalFixture()
+      const root = mountJournalScreen(screen, {
+        api: fixture.api,
+        groupId: 4,
+        initialDate: fixture.lesson.date,
+        selectedDate: fixture.lesson.date,
+      })
+      const choice = () => journalButton(root, 'Уважительная причина: Синтетический студент')
+      await vi.waitFor(() => expect(choice()).toBeDefined())
+      journalClick(choice())
+      await nextTick()
+      const form = () => journalNodes(root).find((node) => node.tag === 'form')
+      const select = () => journalButton(root, 'Причина уважительной отметки')!
+      const submit = () =>
+        (form()!.props.onSubmit as (event: unknown) => void)({ preventDefault() {} })
+      submit()
+      await nextTick()
+      expect(fixture.mark).not.toHaveBeenCalled()
+      expect(select().props['aria-invalid']).toBe(true)
+      expect(
+        journalNodes(form()!).some(
+          (node) =>
+            String(select().props['aria-describedby']).split(' ').includes(String(node.props.id)) &&
+            node.text.trim() === 'Выбери причину.',
+        ),
+      ).toBe(true)
+      journalClick(select())
+      await nextTick()
+      journalClick(journalButton(root, 'Болезнь'))
+      await nextTick()
+      submit()
+      await vi.waitFor(() => expect(choice()?.props['aria-pressed']).toBe(true))
+      expect(form()).toBeUndefined()
+      expect(fixture.mark).toHaveBeenCalledExactlyOnceWith(
+        30,
+        7,
+        {
+          status: 'EXCUSED',
+          excuseType: 'ILLNESS',
+        },
+        { expectedStatus: 'PRESENT', expectedRevision: 'revision-a' },
+      )
+    },
+  )
+
+  it('shows a confirmed row after the next GET fails and only reads on retry', async () => {
     const fixture = journalFixture()
+    const getAttendance = vi.mocked(fixture.api.getLessonAttendance)
+    const siblingBefore = () => journalButton(root, 'Был: Иванов Иван')
+    const onError = vi.fn()
+    const root = mountJournalScreen(HeadmanJournalScreen, {
+      api: fixture.api,
+      groupId: 4,
+      initialDate: fixture.lesson.date,
+      onError,
+    })
+    const absent = () => journalButton(root, 'Не был: Синтетический студент')
+    await vi.waitFor(() => expect(absent()).toBeDefined())
+    const sibling = siblingBefore()
+    getAttendance.mockRejectedValueOnce(new Error('read unavailable'))
+    journalClick(absent())
+    const retry = () => journalButton(root, 'Обновить отметку: Синтетический студент')
+    await vi.waitFor(() => expect(retry()?.props.disabled).toBe(false))
+    expect(absent()?.props['aria-pressed']).toBe(true)
+    expect(absent()?.props['aria-disabled']).toBe(true)
+    expect(siblingBefore()).toBe(sibling)
+    expect(sibling?.props['aria-pressed']).toBe(false)
+    expect(sibling?.props['aria-disabled']).toBeUndefined()
+    expect(journalNodes(root).some((node) => node.text.includes('Отметка сохранена.'))).toBe(true)
+    journalClick(absent())
+    expect(fixture.mark).toHaveBeenCalledTimes(1)
+    expect(fixture.clear).not.toHaveBeenCalled()
+    journalClick(retry())
+    await vi.waitFor(() => expect(retry()).toBeUndefined())
+    expect(getAttendance).toHaveBeenCalledTimes(3)
+    expect(fixture.mark).toHaveBeenCalledTimes(1)
+    expect(fixture.clear).not.toHaveBeenCalled()
+    expect(onError).not.toHaveBeenCalled()
+    journalClick(absent())
+    await vi.waitFor(() =>
+      expect(fixture.clear).toHaveBeenCalledExactlyOnceWith(30, 7, {
+        expectedStatus: 'ABSENT',
+        expectedRevision: 'revision-b',
+      }),
+    )
+  })
+
+  it.each([409, 503])(
+    'distinguishes a conflict from an ordinary rejected write (%s)',
+    async (status) => {
+      const fixture = journalFixture()
+      const reads = vi.mocked(fixture.api.getLessonAttendance)
+      const root = mountJournalScreen(HeadmanJournalScreen, {
+        api: fixture.api,
+        groupId: 4,
+        initialDate: fixture.lesson.date,
+      })
+      const absent = () => journalButton(root, 'Не был: Синтетический студент')
+      await vi.waitFor(() => expect(absent()).toBeDefined())
+      fixture.mark.mockRejectedValueOnce(
+        new HeadmanJournalApiError(new Response(null, { status }), {
+          detail: 'Операция отклонена',
+        }),
+      )
+      if (status === 409) reads.mockResolvedValueOnce(journalFixture(false, 'EXCUSED').report())
+      journalClick(absent())
+      await vi.waitFor(() =>
+        expect(
+          journalNodes(root).some((node) =>
+            node.text.includes(status === 409 ? 'Отметка изменилась.' : 'Операция отклонена'),
+          ),
+        ).toBe(true),
+      )
+      expect(reads).toHaveBeenCalledTimes(status === 409 ? 2 : 1)
+      expect(fixture.mark).toHaveBeenCalledTimes(1)
+      expect(absent()?.props['aria-pressed']).toBe(false)
+      expect(
+        journalButton(
+          root,
+          status === 409
+            ? 'Уважительная причина: Синтетический студент'
+            : 'Был: Синтетический студент',
+        )?.props['aria-pressed'],
+      ).toBe(true)
+    },
+  )
+
+  it('keeps a rejected reason draft open, and purges it and the roster on authorization denial', async () => {
+    const fixture = journalFixture()
+    const root = mountJournalScreen(HeadmanJournalScreen, {
+      api: fixture.api,
+      groupId: 4,
+      initialDate: fixture.lesson.date,
+    })
+    const choice = () => journalButton(root, 'Уважительная причина: Синтетический студент')
+    await vi.waitFor(() => expect(choice()).toBeDefined())
+    journalClick(choice())
+    await nextTick()
+    const findForm = () => journalNodes(root).find((node) => node.tag === 'form')
+    const form = findForm()!
+    journalClick(journalButton(root, 'Причина уважительной отметки'))
+    await nextTick()
+    journalClick(journalButton(root, 'Болезнь'))
+    await nextTick()
+    const submit = () => (form.props.onSubmit as (event: unknown) => void)({ preventDefault() {} })
+    fixture.mark.mockRejectedValueOnce(
+      new HeadmanJournalApiError(new Response(null, { status: 503 }), {
+        detail: 'Причина не принята',
+      }),
+    )
+    submit()
+    await vi.waitFor(() =>
+      expect(journalNodes(form).some((node) => node.text === 'Причина не принята')).toBe(true),
+    )
+    expect(findForm()).toBe(form)
+    fixture.mark.mockRejectedValueOnce(
+      new HeadmanJournalApiError(new Response(null, { status: 403 }), { detail: 'Нет доступа' }),
+    )
+    submit()
+    await vi.waitFor(() => expect(findForm()).toBeUndefined())
+    expect(journalNodes(root).some((node) => node.props['data-user-id'] === 7)).toBe(false)
+    expect(fixture.mark).toHaveBeenCalledTimes(2)
+  })
+
+  it('holds a conflicting reason draft until the refreshed mark has been reviewed', async () => {
+    const fixture = journalFixture()
+    const reads = vi.mocked(fixture.api.getLessonAttendance)
+    const root = mountJournalScreen(HeadmanJournalScreen, {
+      api: fixture.api,
+      groupId: 4,
+      initialDate: fixture.lesson.date,
+    })
+    const choice = () => journalButton(root, 'Уважительная причина: Синтетический студент')
+    await vi.waitFor(() => expect(choice()).toBeDefined())
+    journalClick(choice())
+    await nextTick()
+    const form = journalNodes(root).find((node) => node.tag === 'form')!
+    journalClick(journalButton(root, 'Причина уважительной отметки'))
+    await nextTick()
+    journalClick(journalButton(root, 'Болезнь'))
+    await nextTick()
+    const submit = () => (form.props.onSubmit as (event: unknown) => void)({ preventDefault() {} })
+    const button = (label: string) =>
+      journalNodes(form).find((node) => node.tag === 'button' && node.text.trim() === label)
+    const formText = () =>
+      journalNodes(form)
+        .map((node) => node.text)
+        .join(' ')
+    fixture.mark.mockRejectedValueOnce(
+      new HeadmanJournalApiError(new Response(null, { status: 409 }), {}),
+    )
+    reads.mockRejectedValueOnce(new Error('read unavailable'))
+    submit()
+    await vi.waitFor(() => expect(button('Обновить отметку')?.props.disabled).toBe(false))
+    submit()
+    expect(fixture.mark).toHaveBeenCalledTimes(1)
+    const refreshed = journalFixture(false, 'EXCUSED').report()
+    reads.mockResolvedValueOnce({
+      ...refreshed,
+      entries: refreshed.entries.map((row) =>
+        row.userId === 7
+          ? {
+              ...row,
+              markRevision: 'actual-revision',
+              excuseType: 'MEDICAL_EXAMINATION',
+              comment: 'Комментарий с сервера',
+            }
+          : row,
+      ),
+    })
+    journalClick(button('Обновить отметку'))
+    await vi.waitFor(() => expect(button('Продолжить с этой отметкой')?.props.disabled).toBe(false))
+    expect(reads).toHaveBeenCalledTimes(3)
+    expect(formText()).toContain('Медицинское обследование')
+    expect(formText()).toContain('Комментарий с сервера')
+    expect(formText()).not.toContain('Обнови состав')
+    expect(formText()).toContain('Болезнь')
+    expect(button('Сохранить')?.props['aria-disabled']).toBe(true)
+    submit()
+    expect(fixture.mark).toHaveBeenCalledTimes(1)
+    journalClick(button('Продолжить с этой отметкой'))
+    await nextTick()
+    expect(fixture.mark).toHaveBeenCalledTimes(1)
+    submit()
+    await vi.waitFor(() => expect(choice()?.props['aria-pressed']).toBe(true))
+    expect(fixture.mark).toHaveBeenCalledTimes(2)
+    expect(fixture.mark).toHaveBeenLastCalledWith(
+      30,
+      7,
+      { status: 'EXCUSED', excuseType: 'ILLNESS' },
+      {
+        expectedStatus: 'EXCUSED',
+        expectedRevision: 'actual-revision',
+      },
+    )
+  })
+
+  it('does not grant Today reason or geo controls to an assistant with only MARK_ATTENDANCE', async () => {
+    const fixture = journalFixture(false, 'PRESENT', moscowDate(new Date().toISOString())!)
+    const root = mountJournalScreen(HeadmanHomeScreen, {
+      api: fixture.api,
+      groupId: 4,
+      selectedDate: fixture.lesson.date,
+      assistantPermissions: ['MARK_ATTENDANCE'],
+    })
+    const reason = () => journalButton(root, 'Уважительная причина: Синтетический студент')
+    await vi.waitFor(() => expect(reason()?.props.disabled).toBe(true))
+    journalClick(reason())
+    await nextTick()
+    expect(journalNodes(root).some((node) => node.tag === 'form')).toBe(false)
+    expect(journalButton(root, 'Заблокировать геоотметки')).toBeUndefined()
+    expect(fixture.mark).not.toHaveBeenCalled()
+  })
+
+  it('keeps the pending row owner when a geo ACK replaces the same lesson', async () => {
+    const fixture = journalFixture(false, 'PRESENT', moscowDate(new Date().toISOString())!)
+    const mark = fixture.mark.getMockImplementation()!
+    let finishMark!: () => void
+    fixture.mark.mockImplementationOnce(async (...args) => {
+      await new Promise<void>((resolve) => {
+        finishMark = resolve
+      })
+      return mark(...args)
+    })
+    const root = mountJournalScreen(HeadmanHomeScreen, {
+      api: fixture.api,
+      groupId: 4,
+      selectedDate: fixture.lesson.date,
+    })
+    const absent = () => journalButton(root, 'Не был: Синтетический студент')
+    await vi.waitFor(() => expect(absent()).toBeDefined())
+    journalClick(absent())
+    journalClick(journalButton(root, 'Заблокировать геоотметки'))
+    await nextTick()
+    journalClick(journalButton(root, 'Подтвердить блокировку геоотметок'))
+    await vi.waitFor(() => expect(journalButton(root, 'Разблокировать геоотметки')).toBeDefined())
+    expect(absent()?.props['aria-disabled']).toBe(true)
+    expect(absent()?.props['aria-pressed']).toBe(false)
+    expect(fixture.api.getLessonAttendance).toHaveBeenCalledTimes(1)
+    finishMark()
+    await vi.waitFor(() => expect(absent()?.props['aria-pressed']).toBe(true))
+    expect(fixture.mark).toHaveBeenCalledTimes(1)
+    expect(fixture.api.getLessonAttendance).toHaveBeenCalledTimes(2)
+  })
+
+  it('offers geo blocking on the loaded active main lesson', async () => {
+    const fixture = journalFixture(false, 'PRESENT', moscowDate(new Date().toISOString())!)
     const root = mountJournalScreen(HeadmanHomeScreen, {
       api: fixture.api,
       groupId: 4,
@@ -584,14 +903,13 @@ describe('accepted journal production component controls', () => {
       expect(journalButton(root, 'Подтвердить блокировку геоотметок')).toBeDefined(),
     )
     expect(fixture.api.setHeadmanBlock).not.toHaveBeenCalled()
+    expect(journalButton(root, 'Заблокировать геоотметки')).toBeUndefined()
     const cancel = journalNodes(root).find(
       (node) => node.tag === 'button' && node.text.trim() === 'Отмена',
     )
     expect(cancel?.props.focused).toBe(true)
     const group = journalNodes(root).find(
-      (node) =>
-        node.props.role === 'group' &&
-        node.props['aria-label'] === 'Подтвердить блокировку геоотметок',
+      (node) => node.props.class === 'headman-home__block-confirm',
     )
     expect(group).toBeDefined()
     const preventDefault = vi.fn()
@@ -626,7 +944,7 @@ describe('accepted journal production component controls', () => {
     expect(fixture.api.setHeadmanBlock).toHaveBeenLastCalledWith(30, false)
   })
   it('keeps a writable transport read-only in an archived owner', async () => {
-    const fixture = journalFixture()
+    const fixture = journalFixture(false, 'PRESENT', moscowDate(new Date().toISOString())!)
     const root = mountJournalScreen(HeadmanHomeScreen, {
       api: fixture.api,
       groupId: 4,
@@ -638,7 +956,7 @@ describe('accepted journal production component controls', () => {
     expect(fixture.api.setHeadmanBlock).not.toHaveBeenCalled()
   })
   it('drops the old block confirmation and late ACK when the owner goes offline', async () => {
-    const fixture = journalFixture()
+    const fixture = journalFixture(false, 'PRESENT', moscowDate(new Date().toISOString())!)
     let finish!: (lesson: HeadmanJournalLesson) => void
     const pending = new Promise<HeadmanJournalLesson>((resolve) => {
       finish = resolve

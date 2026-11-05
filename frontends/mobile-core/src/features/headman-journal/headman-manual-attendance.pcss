@@ -1,0 +1,235 @@
+@import '../../styles/tokens.pcss';
+
+.headman-manual-roster {
+  list-style: none;
+  margin: 0;
+  padding: 0 var(--rct-space-3);
+  border: var(--rct-border-hairline) solid var(--rct-color-border-default);
+  border-radius: var(--rct-radius-lg);
+  background: var(--rct-color-surface-float);
+}
+
+.headman-manual-roster__row {
+  padding-block: var(--rct-space-1);
+}
+
+.headman-manual-roster__row + .headman-manual-roster__row {
+  border-block-start: var(--rct-border-hairline) solid var(--rct-color-border-default);
+}
+
+.headman-manual-roster__main,
+.headman-manual-excuse__heading,
+.headman-manual-excuse__student {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--rct-space-2);
+}
+
+.headman-manual-roster__name {
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
+  color: var(--rct-color-text-primary);
+  font-size: var(--rct-font-size-dense);
+  font-weight: var(--rct-font-weight-medium);
+}
+
+.headman-manual-roster__choices {
+  display: flex;
+  flex: 0 0 auto;
+}
+
+.headman-manual-roster__choices button,
+.headman-manual-excuse__back {
+  display: grid;
+  place-items: center;
+  inline-size: var(--rct-control-min-touch);
+  min-block-size: var(--rct-control-min-touch);
+  padding: 0;
+  border: 0;
+  border-radius: var(--rct-radius-full);
+  color: inherit;
+  background: transparent;
+  cursor: pointer;
+  @mixin rct-focus-ring;
+}
+
+.headman-manual-roster__choices button:is(:disabled, [aria-disabled='true']) {
+  cursor: default;
+}
+
+.headman-manual__circle {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  inline-size: var(--rct-headman-status-size);
+  block-size: var(--rct-headman-status-size);
+  border: var(--rct-border-hairline) solid var(--rct-color-border-default);
+  border-radius: var(--rct-radius-full);
+  color: var(--rct-color-text-secondary);
+  font-size: var(--rct-font-size-dense);
+  font-weight: var(--rct-font-weight-medium);
+}
+
+.headman-manual__circle[data-mark] {
+  border-color: transparent;
+  color: var(--rct-color-status-on-fill);
+}
+
+.headman-manual__circle[data-mark='PRESENT'] {
+  background: var(--rct-color-status-present-fill);
+}
+
+.headman-manual__circle[data-mark='EXCUSED'] {
+  background: var(--rct-color-status-excused-fill);
+}
+
+.headman-manual__circle[data-mark='ABSENT'] {
+  background: var(--rct-color-status-absent-fill);
+}
+
+.headman-manual-roster__hint,
+.headman-manual-roster__issue,
+.headman-manual-roster__retry {
+  color: var(--rct-color-text-secondary);
+  font-size: var(--rct-font-size-caption);
+}
+
+.headman-manual-roster__issue {
+  margin: 0;
+  padding-block: var(--rct-space-1);
+}
+
+.headman-manual-roster__issue[role='alert'],
+.headman-manual-excuse__error {
+  color: var(--rct-color-state-danger-text);
+}
+
+.headman-manual-roster__retry {
+  min-block-size: var(--rct-control-min-touch);
+  padding-inline: var(--rct-space-2);
+  border: var(--rct-border-hairline) solid var(--rct-color-border-default);
+  border-radius: var(--rct-radius-md);
+  background: var(--rct-color-surface-float);
+}
+
+.headman-manual__sr-only {
+  position: absolute;
+  inline-size: var(--rct-border-hairline);
+  block-size: var(--rct-border-hairline);
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.headman-manual-excuse {
+  display: grid;
+  gap: var(--rct-space-4);
+  text-align: start;
+}
+
+.headman-manual-excuse__heading {
+  justify-content: flex-start;
+  gap: var(--rct-space-3);
+}
+
+.headman-manual-excuse__heading h1 {
+  font-size: var(--rct-task-title-size);
+  line-height: var(--rct-task-title-leading);
+}
+
+.headman-manual-excuse__back {
+  flex: 0 0 auto;
+  border: var(--rct-border-hairline) solid var(--rct-color-border-default);
+  background: var(--rct-color-surface-float);
+}
+
+.headman-manual-excuse__student {
+  padding: var(--rct-space-3);
+  border: var(--rct-border-hairline) solid var(--rct-color-border-default);
+  border-radius: var(--rct-radius-lg);
+  background: var(--rct-color-surface-float);
+  overflow-wrap: anywhere;
+}
+
+.headman-manual-excuse__student p,
+.headman-manual-excuse small {
+  color: var(--rct-color-text-secondary);
+  font-size: var(--rct-font-size-caption);
+}
+
+.headman-manual-excuse form,
+.headman-manual-excuse fieldset {
+  display: grid;
+  gap: var(--rct-space-2);
+  min-inline-size: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.headman-manual-excuse label:not(.mobile-upload) {
+  margin-block-start: var(--rct-space-2);
+  font-weight: var(--rct-font-weight-medium);
+}
+
+.headman-manual-excuse__select .headman-stats-select__trigger {
+  border: var(--rct-border-hairline) solid var(--rct-color-border-default);
+  border-radius: var(--rct-radius-lg);
+  background: var(--rct-color-surface-float);
+  font-size: var(--rct-font-size-dense);
+}
+
+.headman-manual-excuse textarea {
+  box-sizing: border-box;
+  inline-size: 100%;
+  min-block-size: var(--rct-control-min-touch);
+  padding: var(--rct-space-3);
+  border: var(--rct-border-hairline) solid var(--rct-color-border-default);
+  border-radius: var(--rct-radius-lg);
+  background: var(--rct-color-surface-float);
+  color: var(--rct-color-text-primary);
+  font: inherit;
+}
+
+.headman-manual-excuse .headman-stats-select__trigger[aria-invalid='true'],
+.headman-manual-excuse textarea[aria-invalid='true'] {
+  border-color: var(--rct-color-state-danger-text);
+}
+
+.headman-manual-excuse__preview img {
+  display: block;
+  max-inline-size: 100%;
+}
+
+.headman-manual-excuse__save {
+  min-block-size: var(--rct-control-min-touch);
+  margin-block-start: var(--rct-space-3);
+  border: 0;
+  border-radius: var(--rct-radius-lg);
+  color: var(--rct-color-accent-on-now);
+  background: var(--rct-color-accent-now);
+  font: inherit;
+  font-weight: var(--rct-font-weight-medium);
+}
+
+.headman-manual-excuse__save[aria-disabled='true'] {
+  opacity: 0.65;
+}
+
+.headman-manual-excuse__conflict {
+  display: grid;
+  gap: var(--rct-space-2);
+  padding: var(--rct-space-3);
+  border: var(--rct-border-hairline) solid var(--rct-color-border-default);
+  border-radius: var(--rct-radius-lg);
+  background: var(--rct-color-surface-float);
+}
+
+.headman-manual-excuse__conflict h2,
+.headman-manual-excuse__conflict p {
+  margin: 0;
+  font-size: var(--rct-font-size-caption);
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}

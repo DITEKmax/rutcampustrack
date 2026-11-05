@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import NotificationsEntryButton from '../notifications/NotificationsEntryButton.vue';
-import { computed, nextTick, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue';
+import { computed, nextTick, onBeforeUnmount, ref, shallowRef, watch } from 'vue';
 import StudentWarningBlock from '../../shared/components/StudentWarningBlock.vue';
 import MobileIcon from '../../shared/components/MobileIcon.vue';
 import { academicWeekOrdinal, type AcademicWeekPolicy } from '../../domain/academic-week';
@@ -26,10 +26,9 @@ import type {
   HeadmanManagedHomework,
 } from '../homework/headman-homework-client';
 import type { HeadmanAssistantPermission } from '../headman-group/headman-group-client';
-import type {
-  HeadmanRequestKind,
-  HeadmanRequestsApi,
-} from '../headman-requests/headman-requests-client';
+import HeadmanManualRoster from '../headman-journal/HeadmanManualRoster.vue';
+import HeadmanManualExcuse from '../headman-journal/HeadmanManualExcuse.vue';
+import { excuseLabel, isAttendanceDenied, reportMatchesLesson, useHeadmanManualMarks } from '../headman-journal/headman-manual-marks';
 import './headman-home-screen.pcss';
 
 const props = withDefaults(
@@ -37,10 +36,10 @@ const props = withDefaults(
     unreadCount?: number | null | undefined;
     onNotifications?: (() => void) | undefined;
     api: HeadmanJournalApi | null;
-    requestsApi?: HeadmanRequestsApi | null;
     assistantPermissions?: readonly HeadmanAssistantPermission[] | null;
     weekPolicyApi?: HeadmanScheduleApi | null;
     groupId: number | null;
+    actorUserId?: string | null;
     groupLabel?: string | null;
     subjectsApi?: HeadmanSubjectsApi | null;
     homeworkApi?: HeadmanHomeworkApi | null;
@@ -53,11 +52,11 @@ const props = withDefaults(
   }>(),
   {
     unreadCount: null,
-    requestsApi: null,
     assistantPermissions: null,
     onNotifications: undefined,
     weekPolicyApi: null,
     groupLabel: null,
+    actorUserId: null,
     subjectsApi: null,
     homeworkApi: null,
     selectedDate: '',
@@ -71,11 +70,11 @@ const props = withDefaults(
 const emit = defineEmits<{
   openLesson: [lesson: HeadmanJournalLesson];
   openHomework: [];
-  openRequests: [kind: HeadmanRequestKind];
   openLog: [lesson: HeadmanJournalLesson];
   selectDate: [date: string];
   error: [cause: unknown];
   roleSwitch: [];
+  taskChange: [active: boolean];
 }>();
 function todayIso(): string {
   return moscowDate(new Date().toISOString()) ?? new Date().toISOString().slice(0, 10);
@@ -84,159 +83,11 @@ const selectedDate = ref(props.selectedDate || todayIso());
 const lessons = shallowRef<readonly HeadmanJournalLesson[]>([]);
 const subjects = shallowRef<readonly HeadmanSubject[]>([]);
 const report = shallowRef<HeadmanJournalReport | null>(null);
-// The ongoing summary is independent of the date/lesson selected in the panels.
-const ongoingLesson = shallowRef<HeadmanJournalLesson | null>(null);
-const ongoingReport = shallowRef<HeadmanJournalReport | null>(null);
-const ongoingState = ref<'loading' | 'ready' | 'none' | 'error' | 'offline'>('loading');
-let ongoingRevision = 0;
-// Matches the existing headman lesson-management foreground cadence; no SLA.
-const ONGOING_REFRESH_INTERVAL_MS = 30_000;
-let ongoingTimer: ReturnType<typeof setInterval> | null = null;
-let ongoingMounted = false;
-let ongoingFlight: Promise<void> | null = null;
-let ongoingRefreshQueued = false;
-function ongoingOnline(): boolean {
-  return !props.offline && (typeof navigator === 'undefined' || navigator.onLine !== false);
-}
-function ongoingVisible(): boolean {
-  return typeof document === 'undefined' || document.visibilityState === 'visible';
-}
-function stopOngoingTimer(): void {
-  if (ongoingTimer !== null) clearInterval(ongoingTimer);
-  ongoingTimer = null;
-}
-function requestOngoing(): void {
-  if (disposed || !ongoingOnline() || !ongoingVisible()) return;
-  if (ongoingFlight) {
-    ongoingRefreshQueued = true;
-    return;
-  }
-  const pending = loadOngoing();
-  ongoingFlight = pending;
-  const settled = () => {
-    if (ongoingFlight === pending) ongoingFlight = null;
-    if (ongoingRefreshQueued && !disposed && ongoingOnline() && ongoingVisible()) {
-      ongoingRefreshQueued = false;
-      requestOngoing();
-    }
-  };
-  void pending.then(settled, settled);
-}
-function startOngoingTimer(): void {
-  if (
-    !ongoingMounted ||
-    typeof document === 'undefined' ||
-    typeof window === 'undefined' ||
-    !ongoingOnline() ||
-    !ongoingVisible() ||
-    !props.api ||
-    props.groupId === null
-  )
-    return;
-  ongoingTimer = setInterval(() => {
-    requestOngoing();
-    requestCounts();
-  }, ONGOING_REFRESH_INTERVAL_MS);
-}
-function restartOngoing(): void {
-  stopOngoingTimer();
-  ongoingRevision += 1;
-  ongoingRefreshQueued = false;
-  ongoingLesson.value = null;
-  ongoingReport.value = null;
-  ongoingState.value = ongoingOnline() ? 'loading' : 'offline';
-  requestOngoing();
-  startOngoingTimer();
-}
-const requestsAllowed = computed(
-  () =>
-    props.assistantPermissions === null || props.assistantPermissions.includes('MANAGE_EXCUSES'),
-);
-const openCounts = shallowRef<Readonly<Record<HeadmanRequestKind, number>> | null>(null);
-const countState = ref<'loading' | 'ready' | 'unavailable' | 'offline'>('loading');
-let countRevision = 0;
-let countFlight: Promise<void> | null = null;
-let countQueued = false;
-async function loadCounts(): Promise<void> {
-  const revision = countRevision,
-    api = props.requestsApi,
-    groupId = props.groupId;
-  const current = () =>
-    !disposed &&
-    revision === countRevision &&
-    api === props.requestsApi &&
-    groupId === props.groupId &&
-    requestsAllowed.value &&
-    ongoingOnline() &&
-    ongoingVisible();
-  if (!api || groupId === null || !requestsAllowed.value) {
-    openCounts.value = null;
-    countState.value = 'unavailable';
-    return;
-  }
-  const results = await Promise.allSettled(
-    (['EXCUSE', 'LATE_CHECKIN'] as const).map(async (type) => {
-      const page = await api.list({ bucket: 'OPEN', type, page: 0, size: 1 });
-      if (!Number.isSafeInteger(page.totalElements) || page.totalElements < 0)
-        throw new Error('Сервер не подтвердил число открытых заявок.');
-      return [type, page.totalElements] as const;
-    }),
-  );
-  if (!current()) return;
-  const failed = results.find((result) => result.status === 'rejected');
-  if (failed?.status === 'rejected') {
-    openCounts.value = null;
-    countState.value = 'unavailable';
-    if (!(failed.reason instanceof StaleSessionGenerationError)) emit('error', failed.reason);
-    return;
-  }
-  openCounts.value = Object.fromEntries(
-    results.flatMap((result) => (result.status === 'fulfilled' ? [result.value] : [])),
-  ) as Record<HeadmanRequestKind, number>;
-  countState.value = 'ready';
-}
-function requestCounts(): void {
-  if (disposed || !ongoingOnline() || !ongoingVisible() || !requestsAllowed.value) return;
-  if (countFlight) {
-    countQueued = true;
-    return;
-  }
-  const pending = loadCounts();
-  countFlight = pending;
-  const settled = () => {
-    if (countFlight === pending) countFlight = null;
-    if (countQueued) {
-      countQueued = false;
-      requestCounts();
-    }
-  };
-  void pending.then(settled, settled);
-}
-function restartCounts(): void {
-  countRevision += 1;
-  countQueued = false;
-  openCounts.value = null;
-  countState.value = ongoingOnline() ? 'loading' : 'offline';
-  requestCounts();
-}
-function restartHomeLiveReads(): void {
-  restartOngoing();
-  restartCounts();
-}
-const ongoingCounts = computed(() => {
-  const entries = ongoingReport.value?.entries;
-  return entries
-    ? {
-        present: entries.filter((entry) => entry.status === 'PRESENT').length,
-        excused: entries.filter((entry) => entry.status === 'EXCUSED').length,
-        total: entries.length,
-      }
-    : null;
-});
 const homeworks = shallowRef<readonly HeadmanManagedHomework[]>([]);
 const selectedLessonId = ref<number | null>(null);
 const loading = ref(false);
 const detailLoading = ref(false);
+const homeworkLoading = ref(false);
 const error = ref<string | null>(null);
 const detailError = ref<string | null>(null);
 const homeworkError = ref<string | null>(null);
@@ -249,10 +100,32 @@ const weekLoading = ref(false);
 let weekRevision = 0;
 let loadRevision = 0;
 let detailRevision = 0;
+let rosterRevision = 0;
 let disposed = false;
 const selectedLesson = computed(
   () => lessons.value.find((lesson) => lesson.id === selectedLessonId.value) ?? null,
 );
+const manualRoster = ref<InstanceType<typeof HeadmanManualRoster> | null>(null);
+const lessonNotStarted = computed(
+  () => selectedLesson.value?.status === 'PLANNED' && report.value?.editable === false,
+);
+const manual = useHeadmanManualMarks({
+  scope: () => ({
+    api: props.api, groupId: props.groupId, date: selectedDate.value, lesson: selectedLesson.value,
+    actorUserId: props.actorUserId, offline: props.offline, readOnly: props.readOnly,
+    permissions: props.assistantPermissions,
+  }),
+  report,
+  loading: () => detailLoading.value,
+  refresh: async () => Boolean(await loadAttendance(true)),
+  deny: purgeReport,
+  error: (cause) => emit('error', cause),
+  focus: (userId, choice) => manualRoster.value?.focus(userId, choice),
+});
+const { draft: manualDraft, draftEntry: manualEntry, pendingUserId, blocked: manualBlocked, staleRows, issues: rowIssues } = manual;
+watch(() => manualDraft.value !== null, (active) => emit('taskChange', active), { flush: 'sync' });
+defineExpose({ back: manual.closeDraft });
+
 const lessonIndex = computed(() =>
   lessons.value.findIndex((lesson) => lesson.id === selectedLessonId.value),
 );
@@ -307,10 +180,12 @@ const ordinal = computed(() => {
 const blockConfirm = ref(false);
 const blockTrigger = ref<HTMLButtonElement | null>(null);
 const blockCancel = ref<HTMLButtonElement | null>(null);
+const blockSubmit = ref<HTMLButtonElement | null>(null);
+const geoDenied = ref(false);
 function focusBlockTrigger(revision: number): void {
   void nextTick(() => {
     if (!disposed && revision === blockRevision && canBlock.value && !blockPending.value)
-      blockTrigger.value?.focus();
+      blockTrigger.value?.focus?.({ preventScroll: true });
   });
 }
 function openBlockConfirmation(): void {
@@ -319,11 +194,11 @@ function openBlockConfirmation(): void {
   blockConfirm.value = true;
   void nextTick(() => {
     if (!disposed && revision === blockRevision && blockConfirm.value && canBlock.value)
-      blockCancel.value?.focus();
+      blockCancel.value?.focus?.({ preventScroll: true });
   });
 }
 function dismissBlockConfirmation(): void {
-  if (!blockConfirm.value) return;
+  if (!blockConfirm.value || blockPending.value) return;
   blockConfirm.value = false;
   focusBlockTrigger(blockRevision);
 }
@@ -332,10 +207,15 @@ const blockError = ref<string | null>(null);
 let blockRevision = 0;
 const canBlock = computed(
   () =>
-    !!props.api?.writable &&
+    !!props.api?.writable && !geoDenied.value &&
     !props.offline &&
     !props.readOnly &&
-    selectedLesson.value?.current === true &&
+    props.assistantPermissions === null &&
+    props.groupId !== null &&
+    selectedLesson.value?.groupId === props.groupId &&
+    selectedLesson.value.date === selectedDate.value &&
+    selectedDate.value === todayIso() &&
+    selectedLesson.value.current === true &&
     selectedLesson.value.status === 'ACTIVE' &&
     typeof selectedLesson.value.blockedByHeadman === 'boolean',
 );
@@ -346,6 +226,8 @@ watch(
       props.groupId,
       props.offline,
       props.readOnly,
+      props.actorUserId,
+      props.assistantPermissions?.join('\u0000') ?? null,
       selectedDate.value,
       selectedLessonId.value,
     ] as const,
@@ -354,6 +236,7 @@ watch(
     blockConfirm.value = false;
     blockPending.value = false;
     blockError.value = null;
+    geoDenied.value = false;
   },
   { flush: 'sync' },
 );
@@ -361,7 +244,9 @@ async function changeGeoBlock(blocked: boolean): Promise<void> {
   const api = props.api;
   const lesson = selectedLesson.value;
   const group = props.groupId;
-  if (!api || !lesson || lesson.groupId !== group || !canBlock.value || blockPending.value) return;
+  if (!api || !lesson || !canBlock.value || blockPending.value ||
+      (blocked ? !blockConfirm.value || lesson.blockedByHeadman : !lesson.blockedByHeadman))
+    return;
   const run = ++blockRevision;
   const current = () =>
     !disposed &&
@@ -369,25 +254,37 @@ async function changeGeoBlock(blocked: boolean): Promise<void> {
     api === props.api &&
     group === props.groupId &&
     lesson.id === selectedLessonId.value &&
-    !props.offline &&
-    !props.readOnly;
-  blockConfirm.value = false;
+    canBlock.value;
   blockPending.value = true;
   blockError.value = null;
   try {
     const updated = await api.setHeadmanBlock(lesson.id, blocked);
     if (!current()) return;
-    if (updated.groupId !== group) throw new Error('Сервер вернул другую группу пары.');
+    if (updated.groupId !== group || updated.date !== lesson.date ||
+        updated.id !== lesson.id || updated.blockedByHeadman !== blocked)
+      throw new Error('Сервер не подтвердил геоблокировку выбранной пары.');
+    blockConfirm.value = false;
     lessons.value = lessons.value.map((item) => (item.id === lesson.id ? updated : item));
   } catch (cause) {
-    if (!current() || cause instanceof StaleSessionGenerationError) return;
+    if (!current()) return;
+    if (isAttendanceDenied(cause)) {
+      blockConfirm.value = false;
+      geoDenied.value = true;
+      blockPending.value = false;
+      onManualAccessDenied(cause);
+      return;
+    }
     blockError.value =
       cause instanceof Error ? cause.message : 'Не удалось изменить геоблокировку.';
-    emit('error', cause);
   } finally {
-    if (current()) {
+    if (!disposed && run === blockRevision) {
       blockPending.value = false;
-      focusBlockTrigger(run);
+      if (blockConfirm.value) {
+        void nextTick(() => {
+          if (run === blockRevision && blockConfirm.value && !blockPending.value)
+            blockSubmit.value?.focus?.({ preventScroll: true });
+        });
+      } else focusBlockTrigger(run);
     }
   }
 }
@@ -489,64 +386,6 @@ function safeHomeworkLink(value: string | null): string | null {
     return null;
   }
 }
-async function loadOngoing(): Promise<void> {
-  const revision = ++ongoingRevision;
-  const api = props.api;
-  const groupId = props.groupId;
-  const date = todayIso();
-  ongoingLesson.value = null;
-  ongoingReport.value = null;
-  ongoingState.value = ongoingOnline() ? 'loading' : 'offline';
-  if (!ongoingOnline() || !ongoingVisible()) return;
-  if (!api || groupId === null) {
-    ongoingState.value = 'error';
-    return;
-  }
-  const current = () =>
-    !disposed &&
-    revision === ongoingRevision &&
-    api === props.api &&
-    groupId === props.groupId &&
-    date === todayIso() &&
-    ongoingOnline() &&
-    ongoingVisible();
-  try {
-    const dayLessons = await api.listLessons(groupId, date, date);
-    if (!current()) return;
-    if (dayLessons.some((lesson) => lesson.groupId !== groupId || lesson.date !== date))
-      throw new Error('Unexpected ongoing lesson scope');
-    if (dayLessons.some((lesson) => lesson.current && lesson.status === 'UNSUPPORTED'))
-      throw new Error('Unknown current lesson status');
-    const active = dayLessons.filter((lesson) => lesson.current && lesson.status === 'ACTIVE');
-    if (active.length === 0) {
-      ongoingState.value = 'none';
-      return;
-    }
-    if (active.length !== 1) throw new Error('Ambiguous ongoing lesson');
-    const lesson = active[0]!;
-    const next = await api.getLessonAttendance(lesson.id);
-    if (!current()) return;
-    if (
-      next.lessonId !== lesson.id ||
-      next.groupId !== groupId ||
-      next.lessonDate !== date ||
-      next.lessonStatus !== 'ACTIVE' ||
-      !next.entries.length ||
-      new Set(next.entries.map((entry) => entry.userId)).size !== next.entries.length ||
-      next.entries.some(
-        (entry) => !['PRESENT', 'EXCUSED', 'ABSENT', 'EMPTY'].includes(entry.status),
-      )
-    )
-      throw new Error('Unexpected ongoing attendance scope');
-    ongoingLesson.value = lesson;
-    ongoingReport.value = next;
-    ongoingState.value = 'ready';
-  } catch (cause) {
-    if (!current()) return;
-    ongoingState.value = 'error';
-    if (!(cause instanceof StaleSessionGenerationError)) emit('error', cause);
-  }
-}
 async function load(): Promise<void> {
   const revision = ++loadRevision;
   detailRevision += 1;
@@ -570,6 +409,8 @@ async function load(): Promise<void> {
     ]);
     if (disposed || revision !== loadRevision || api !== props.api || groupId !== props.groupId)
       return;
+    if (next.some((lesson) => lesson.groupId !== groupId || lesson.date !== date))
+      throw new Error('Сервер вернул занятия другой группы или даты.');
     lessons.value = next
       .slice()
       .sort((left, right) => (left.lessonNumber ?? 99) - (right.lessonNumber ?? 99));
@@ -590,84 +431,137 @@ async function load(): Promise<void> {
     if (!disposed && revision === loadRevision) loading.value = false;
   }
 }
-async function loadDetails(): Promise<void> {
-  const revision = ++detailRevision;
-  const api = props.api;
-  const homeworkApi = props.homeworkApi;
-  const lesson = selectedLesson.value;
-  const groupId = props.groupId;
+function canViewAttendance(): boolean {
+  const permissions = props.assistantPermissions;
+  return permissions === null || permissions.includes('MARK_ATTENDANCE') || permissions.includes('VIEW_STATS');
+}
+
+function purgeReport(): void {
+  rosterRevision += 1;
+  clearHomework();
   report.value = null;
-  homeworks.value = [];
-  homeworkLoaded.value = false;
+  detailLoading.value = false;
+  detailError.value = 'Состав группы недоступен для текущей роли.';
+}
+function onManualAccessDenied(cause: unknown): void {
+  manual.deny();
+  if (!(cause instanceof StaleSessionGenerationError)) emit('error', cause);
+}
+
+async function loadAttendance(rowRefresh = false): Promise<HeadmanJournalReport | null> {
+  const revision = ++rosterRevision;
+  const { api, groupId, actorUserId } = props;
+  const date = selectedDate.value;
+  const lesson = selectedLesson.value;
   detailError.value = null;
-  homeworkError.value = null;
-  homeworkExpanded.value = false;
-  if (!api || !lesson || groupId === null || props.offline) {
+  if (!api || !lesson || props.offline || !canViewAttendance()) {
     detailLoading.value = false;
-    return;
+    return null;
   }
   const current = () =>
-    !disposed &&
-    revision === detailRevision &&
-    api === props.api &&
-    groupId === props.groupId &&
-    lesson.id === selectedLessonId.value &&
-    homeworkApi === props.homeworkApi &&
-    !props.offline;
+    !disposed && revision === rosterRevision && api === props.api && groupId === props.groupId &&
+    actorUserId === props.actorUserId && date === selectedDate.value &&
+    lesson.id === selectedLessonId.value && !props.offline && canViewAttendance();
   detailLoading.value = true;
   try {
     const next = await api.getLessonAttendance(lesson.id);
-    if (!current()) return;
+    if (!current()) return null;
+    if (!reportMatchesLesson(next, lesson, groupId, date))
+      throw new Error('Сервер вернул состав другой пары.');
     report.value = next;
-    if (homeworkApi && next.semesterId !== null) {
-      try {
-        const items = await readPublishedHomeworks(homeworkApi, groupId, next.semesterId, current);
-        if (!current()) return;
-        homeworkLoaded.value = true;
-        homeworks.value = (items ?? []).filter(
-          (item) =>
-            item.subjectId === lesson.subjectId &&
-            item.lessonDate === lesson.date &&
-            (item.bindingMode === 'DATE' || item.lessonNumber === lesson.lessonNumber),
-        );
-      } catch (cause) {
-        if (!current() || cause instanceof StaleSessionGenerationError) return;
-        homeworkError.value = 'Не удалось загрузить домашнее задание.';
-        emit('error', cause);
-      }
-    }
+    manual.reportRefreshed();
+    return next;
   } catch (cause) {
-    if (!current() || cause instanceof StaleSessionGenerationError) return;
-    detailError.value = cause instanceof Error ? cause.message : 'Не удалось загрузить отметки.';
-    homeworkError.value = 'Домашнее задание неизвестно: данные выбранной пары не загрузились.';
-    emit('error', cause);
+    if (!current()) return null;
+    if (isAttendanceDenied(cause)) {
+      onManualAccessDenied(cause);
+      return null;
+    }
+    if (!rowRefresh) {
+      detailError.value = cause instanceof Error ? cause.message : 'Не удалось загрузить отметки.';
+      emit('error', cause);
+    }
+    return null;
   } finally {
-    if (current()) detailLoading.value = false;
+    if (revision === rosterRevision) detailLoading.value = false;
   }
 }
+
+function clearHomework(): void {
+  detailRevision += 1;
+  homeworks.value = [];
+  homeworkLoaded.value = false;
+  homeworkLoading.value = false;
+  homeworkError.value = null;
+  homeworkExpanded.value = false;
+}
+
+async function loadSelectedHomework(attendance: HeadmanJournalReport | null): Promise<void> {
+  clearHomework();
+  const revision = detailRevision;
+  const { groupId, homeworkApi } = props;
+  const lesson = selectedLesson.value;
+  if (!lesson || groupId === null || props.offline) return;
+  if (!attendance || !reportMatchesLesson(attendance, lesson, groupId, selectedDate.value)) {
+    homeworkError.value = 'Домашнее задание неизвестно: данные выбранной пары не загрузились.';
+    return;
+  }
+  if (!homeworkApi || attendance.semesterId === null) return;
+  const current = () =>
+    !disposed && revision === detailRevision && groupId === props.groupId &&
+    lesson.id === selectedLessonId.value && homeworkApi === props.homeworkApi && !props.offline;
+  homeworkLoading.value = true;
+  try {
+    const items = await readPublishedHomeworks(homeworkApi, groupId, attendance.semesterId, current);
+    if (!current()) return;
+    homeworkLoaded.value = true;
+    homeworks.value = (items ?? []).filter(
+      (item) =>
+        item.subjectId === lesson.subjectId &&
+        item.lessonDate === lesson.date &&
+        (item.bindingMode === 'DATE' || item.lessonNumber === lesson.lessonNumber),
+    );
+  } catch (cause) {
+    if (!current() || cause instanceof StaleSessionGenerationError) return;
+    homeworkError.value = 'Не удалось загрузить домашнее задание.';
+    emit('error', cause);
+  } finally {
+    if (current()) homeworkLoading.value = false;
+  }
+}
+
+async function loadDetails(): Promise<void> {
+  clearHomework();
+  report.value = null;
+  if (!selectedLesson.value || props.groupId === null || props.offline) {
+    rosterRevision += 1;
+    detailLoading.value = false;
+    detailError.value = null;
+    return;
+  }
+  homeworkLoading.value = true;
+  const revision = rosterRevision + 1;
+  const attendance = await loadAttendance();
+  if (revision !== rosterRevision || disposed) return;
+  await loadSelectedHomework(attendance);
+}
 watch(
-  () => [props.requestsApi, props.groupId, props.offline, requestsAllowed.value] as const,
-  restartCounts,
-  { immediate: true, flush: 'sync' },
-);
-watch(() => [props.api, props.groupId, props.offline] as const, restartOngoing, {
-  immediate: true,
-  flush: 'sync',
-});
-watch(
-  () => [props.api, props.subjectsApi, props.groupId, props.offline, selectedDate.value] as const,
+  () => [props.api, props.subjectsApi, props.groupId, props.actorUserId, props.offline, selectedDate.value] as const,
   () => {
     void load();
   },
   { immediate: true, flush: 'sync' },
 );
 watch(
-  () => [selectedLessonId.value, props.homeworkApi] as const,
+  () => [selectedLessonId.value, props.readOnly, props.assistantPermissions?.join('\u0000') ?? null] as const,
   () => {
     void loadDetails();
   },
   { flush: 'sync' },
 );
+watch(() => props.homeworkApi, () => {
+  if (report.value) void loadSelectedHomework(report.value);
+});
 watch(
   () => props.selectedDate,
   (date) => {
@@ -681,29 +575,9 @@ watch(
   },
   { immediate: true, flush: 'sync' },
 );
-onMounted(() => {
-  ongoingMounted = true;
-  if (typeof document !== 'undefined')
-    document.addEventListener('visibilitychange', restartHomeLiveReads);
-  if (typeof window !== 'undefined') {
-    window.addEventListener('online', restartHomeLiveReads);
-    window.addEventListener('offline', restartHomeLiveReads);
-  }
-  startOngoingTimer();
-});
 onBeforeUnmount(() => {
   disposed = true;
-  countRevision += 1;
-  countQueued = false;
-  ongoingRevision += 1;
-  ongoingRefreshQueued = false;
-  stopOngoingTimer();
-  if (typeof document !== 'undefined')
-    document.removeEventListener('visibilitychange', restartHomeLiveReads);
-  if (typeof window !== 'undefined') {
-    window.removeEventListener('online', restartHomeLiveReads);
-    window.removeEventListener('offline', restartHomeLiveReads);
-  }
+  rosterRevision += 1;
   blockRevision += 1;
   weekRevision += 1;
   loadRevision += 1;
@@ -712,7 +586,27 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
+  <main v-if="manualEntry && selectedLesson" class="headman-home">
+    <HeadmanManualExcuse
+      :key="manualEntry.userId"
+      :entry="manualEntry"
+      :lesson-id="selectedLesson.id"
+      :api="api"
+      :context="`${subjectName} · ${selectedLesson.lessonNumber ?? '—'} пара · ${timeRange(selectedLesson)}`"
+      :allowed="manual.canWrite(manualEntry, 'EXCUSED')"
+      :pending="pendingUserId === manualEntry.userId"
+      :blocked="manualBlocked"
+      :stale="staleRows.has(manualEntry.userId)"
+      :issue="rowIssues[manualEntry.userId] ?? null"
+      @back="manual.closeDraft"
+      @save="manual.submitExcuse"
+      @review-conflict="manual.reviewConflict"
+      @refresh="manual.refreshRow(manualEntry.userId, $event)"
+      @access-denied="onManualAccessDenied"
+    />
+  </main>
   <main
+    v-else
     class="headman-home"
     aria-labelledby="headman-home-title"
     :aria-busy="loading"
@@ -741,52 +635,6 @@ onBeforeUnmount(() => {
         @click="onNotifications"
       />
     </header>
-    <section
-      v-if="requestsAllowed"
-      class="headman-home__requests headman-home__state"
-      aria-label="Открытые заявки"
-      :data-state="countState"
-      :aria-busy="countState === 'loading'"
-    >
-      <h2>Открытые заявки</h2>
-      <div class="headman-home__actions">
-        <button
-          type="button"
-          data-request-kind="EXCUSE"
-          :disabled="offline || countState !== 'ready'"
-          @click="emit('openRequests', 'EXCUSE')"
-        >
-          <span
-            class="headman-home__circle"
-            data-status="excused"
-          >у</span> Уважительные причины <strong>{{ openCounts?.EXCUSE ?? '—' }}</strong>
-        </button>
-        <button
-          type="button"
-          data-request-kind="LATE_CHECKIN"
-          :disabled="offline || countState !== 'ready'"
-          @click="emit('openRequests', 'LATE_CHECKIN')"
-        >
-          <span
-            class="headman-home__circle"
-            data-status="absent"
-          >н</span> Забыл отметиться <strong>{{ openCounts?.LATE_CHECKIN ?? '—' }}</strong>
-        </button>
-      </div>
-      <p
-        v-if="countState !== 'ready'"
-        role="status"
-      >
-        {{ countState === 'offline' ? 'Число заявок неизвестно: нет подключения.' : countState === 'loading' ? 'Загружаем заявки…' : 'Число заявок недоступно.' }}
-      </p>
-      <button
-        v-if="countState === 'unavailable' && requestsApi && !offline"
-        type="button"
-        @click="restartCounts"
-      >
-        Повторить заявки
-      </button>
-    </section>
     <nav
       class="headman-home__week-pager"
       aria-label="Выбор недели"
@@ -852,46 +700,6 @@ onBeforeUnmount(() => {
         <span>{{ day.name }}</span><strong>{{ day.number }}</strong>
       </button>
     </nav>
-
-    <section
-      class="headman-home__ongoing"
-      aria-label="Отметки текущей пары"
-      :aria-busy="ongoingState === 'loading'"
-      :data-lesson-id="ongoingLesson?.id"
-    >
-      <template v-if="ongoingState === 'ready' && ongoingCounts && ongoingLesson">
-        <p>Сейчас: {{ ongoingLesson.lessonNumber ?? '—' }} пара · {{ timeRange(ongoingLesson) }}</p>
-        <p class="headman-home__ongoing-counts">
-          <span class="headman-home__ongoing-present">Присутствуют +: <strong>{{ ongoingCounts.present }} из {{ ongoingCounts.total }}</strong></span>
-          <span class="headman-home__ongoing-excused">Уважительная причина у: <strong>{{ ongoingCounts.excused }} из {{ ongoingCounts.total }}</strong></span>
-        </p>
-      </template>
-      <p v-else-if="ongoingState === 'none'">
-        Сейчас пары нет.
-      </p>
-      <p v-else-if="ongoingState === 'offline'">
-        Нет подключения. Сводка текущей пары недоступна.
-      </p>
-      <p
-        v-else-if="ongoingState === 'loading'"
-        role="status"
-      >
-        Загружаем сводку текущей пары…
-      </p>
-      <p
-        v-else
-        class="headman-home__state"
-        role="alert"
-      >
-        Сводка недоступна.
-        <button
-          type="button"
-          @click="restartOngoing"
-        >
-          Повторить сводку
-        </button>
-      </p>
-    </section>
 
     <StudentWarningBlock
       v-if="offline"
@@ -960,14 +768,14 @@ onBeforeUnmount(() => {
         <span class="headman-home__time">{{ timeRange(selectedLesson) }}</span><strong>{{ subjectName }}</strong><span class="headman-home__meta"><span><MobileIcon name="room" />{{ selectedLesson.room ?? 'Аудитория не указана' }}</span><span><MobileIcon name="lesson" />{{ typeLabel(selectedLesson.lessonType) }}</span></span>
       </button>
       <StudentWarningBlock
-        v-if="detailError"
+        v-if="detailError && !report"
         title="Отметки недоступны"
         :message="detailError"
         action-label="Повторить"
         @action="loadDetails"
       />
       <div
-        v-else
+        v-if="report"
         class="headman-home__metrics"
         :aria-busy="detailLoading"
         :aria-label="`Отметки выбранной пары${groupLabel ? `, ${groupLabel}` : ''}`"
@@ -994,11 +802,10 @@ onBeforeUnmount(() => {
         </div>
       </div>
 
-      <button
+      <section
         v-if="report"
         class="headman-home__excused"
-        type="button"
-        @click="emit('openLesson', selectedLesson)"
+        aria-label="Уважительные причины выбранной пары"
       >
         <span class="headman-home__excused-count"><span
           class="headman-home__circle"
@@ -1007,9 +814,31 @@ onBeforeUnmount(() => {
           v-for="entry in excused"
           :key="entry.userId"
         ><strong>{{ entry.displayName }}</strong><small>{{
-          entry.excuseReason ?? entry.excuseType ?? 'Уважительная причина'
+          excuseLabel(entry.excuseReason ?? entry.excuseType) ?? 'Уважительная причина'
         }}</small></span><span v-if="excused.length === 0">Уважительных причин нет</span></span>
-      </button>
+      </section>
+      <section
+        v-if="report?.entries.length"
+        class="headman-home__quick-roster"
+        aria-labelledby="headman-home-roster-title"
+      >
+        <h2 id="headman-home-roster-title">Отметки выбранной пары</h2>
+        <HeadmanManualRoster
+          ref="manualRoster"
+          :entries="report.entries"
+          label="Отметки студентов"
+          :future="lessonNotStarted"
+          :pending-user-id="pendingUserId"
+          :blocked="manualBlocked"
+          :issues="rowIssues"
+          :stale-rows="staleRows"
+          :can-write="manual.canWrite"
+          @choose="manual.choose"
+          @refresh="manual.refreshRow"
+        />
+      </section>
+      <p v-else-if="report" class="headman-home__state">Состав группы пуст.</p>
+      <p v-else-if="detailLoading" class="headman-home__state" role="status">Загружаем состав группы…</p>
       <section
         class="headman-home__homework"
         :data-expanded="homeworkExpanded"
@@ -1025,7 +854,7 @@ onBeforeUnmount(() => {
           <MobileIcon name="homework" /><span><strong>{{
             homeworkError
               ? 'ДЗ недоступно'
-              : detailLoading
+              : homeworkLoading
                 ? 'Загружаем ДЗ…'
                 : !homeworkLoaded
                   ? 'ДЗ недоступно'
@@ -1060,58 +889,57 @@ onBeforeUnmount(() => {
           {{ homeworkError }}
         </p>
       </section>
-      <p
-        v-if="blockError"
-        role="alert"
+      <section
+        v-if="canBlock || blockError"
+        class="headman-home__geo"
+        aria-label="Геоотметки выбранной пары"
+        :aria-busy="blockPending"
       >
-        {{ blockError }}
-      </p>
-      <div
-        v-if="blockConfirm && canBlock"
-        class="headman-home__block-confirm"
-        role="group"
-        aria-label="Подтвердить блокировку геоотметок"
-        @keydown.esc.stop.prevent="dismissBlockConfirmation"
-      >
-        <p>Заблокировать геоотметки студентов на выбранной паре? Ты сможешь продолжить ручной учёт.</p>
-        <button
-          ref="blockCancel"
-          type="button"
-          @click="dismissBlockConfirmation"
+        <div
+          v-if="blockConfirm && canBlock"
+          class="headman-home__block-confirm"
+          @keydown.esc.stop.prevent="dismissBlockConfirmation"
         >
-          Отмена
-        </button>
+          <p>Заблокировать геоотметки на этой паре? Ручной учёт останется доступен.</p>
+          <div class="headman-home__actions">
+            <button
+              ref="blockCancel"
+              type="button"
+              :disabled="blockPending"
+              @click="dismissBlockConfirmation"
+            >
+              Отмена
+            </button>
+            <button
+              ref="blockSubmit"
+              type="button"
+              :disabled="blockPending"
+              aria-label="Подтвердить блокировку геоотметок"
+              @click="changeGeoBlock(true)"
+            >
+              {{ blockPending ? 'Блокируем…' : 'Заблокировать' }}
+            </button>
+          </div>
+        </div>
         <button
-          type="button"
-          aria-label="Подтвердить блокировку геоотметок"
-          @click="changeGeoBlock(true)"
-        >
-          Заблокировать
-        </button>
-      </div>
-      <div class="headman-home__actions">
-        <button
-          v-if="canBlock"
+          v-else-if="canBlock"
           ref="blockTrigger"
           class="headman-home__geo-block"
           type="button"
           :disabled="blockPending"
-          :aria-busy="blockPending"
           :aria-label="selectedLesson.blockedByHeadman ? 'Разблокировать геоотметки' : 'Заблокировать геоотметки'"
           @click="selectedLesson.blockedByHeadman ? changeGeoBlock(false) : openBlockConfirmation()"
         >
-          {{ selectedLesson.blockedByHeadman ? 'Разблокировать геоотметки' : 'Заблокировать геоотметки' }}
+          <svg class="mobile-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="3.5" y="7" width="9" height="6.5" rx="1.5" />
+            <path :d="selectedLesson.blockedByHeadman ? 'M5.5 7V5a2.5 2.5 0 0 1 5 0' : 'M5.5 7V5a2.5 2.5 0 0 1 5 0v2'" />
+          </svg>
+          {{ blockPending ? 'Разблокируем…' : selectedLesson.blockedByHeadman ? 'Разблокировать геоотметки' : 'Заблокировать геоотметки' }}
         </button>
+        <p v-if="blockError" class="headman-home__geo-error" role="alert">{{ blockError }}</p>
+      </section>
+      <div class="headman-home__actions">
         <button
-          type="button"
-          :data-active="selectedLesson.status === 'ACTIVE'"
-          :disabled="
-            offline || selectedLesson.status === 'CLOSED' || selectedLesson.date < todayIso()
-          "
-          @click="emit('openLesson', selectedLesson)"
-        >
-          {{ selectedLesson.status === 'ACTIVE' ? 'Пара открыта' : 'Управление парой' }}
-        </button><button
           type="button"
           :disabled="offline || !homeworkEnabled"
           @click="emit('openHomework')"

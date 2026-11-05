@@ -14,6 +14,9 @@ const props = withDefaults(
     }[];
     placeholder?: string;
     disabled?: boolean;
+    triggerId?: string;
+    invalid?: boolean;
+    errorId?: string | undefined;
   }>(),
   { placeholder: 'Выбери вариант', disabled: false },
 );
@@ -24,6 +27,10 @@ const active = ref(0);
 const host = ref<HTMLElement | null>(null);
 const trigger = ref<HTMLButtonElement | null>(null);
 const list = ref<HTMLElement | null>(null);
+function focus(): void {
+  trigger.value?.focus({ preventScroll: true });
+}
+defineExpose({ focus });
 const selected = computed(() => props.options.find((option) => option.value === props.modelValue));
 function focusOption(): void {
   void nextTick(() =>
@@ -50,7 +57,9 @@ function choose(value: string): void {
 }
 function keydown(event: KeyboardEvent): void {
   if (event.key === 'Escape') {
+    if (!open.value) return;
     event.preventDefault();
+    event.stopPropagation();
     close(true);
     return;
   }
@@ -97,13 +106,15 @@ onBeforeUnmount(() => {
     @focusout="focusout"
   >
     <button
+      :id="triggerId"
       ref="trigger"
       class="headman-stats-select__trigger"
       type="button"
       :aria-label="label"
       aria-haspopup="listbox"
-      :aria-controls="id"
-      :aria-describedby="id + '-value'"
+      :aria-controls="open ? id : undefined"
+      :aria-invalid="invalid || undefined"
+      :aria-describedby="errorId ? `${id}-value ${errorId}` : id + '-value'"
       :aria-expanded="open"
       :disabled="disabled"
       @click="toggle"

@@ -454,7 +454,7 @@ const shellRoute = computed(() =>
     ? nestedRoute(
         'headman-more',
         lessonManagementRouteId,
-        managementView.value === 'agenda' ? 'overview' : 'editor',
+        managementView.value === 'agenda' ? 'task' : 'editor',
       )
     : requestsOpen.value && !['queue', 'archive'].includes(requestsView.value)
       ? nestedRoute('headman-requests', 'headman-requests/detail', 'editor')
@@ -1889,6 +1889,7 @@ defineExpose({ openNotificationAction });
     :host="host"
     :show-task-dock="
       route.id === scheduleRouteId ||
+      (route.id === lessonManagementRouteId && managementView === 'agenda') ||
       (route.id === homeworkRouteId && homeworkFromMore && homeworkLanding)
     "
     data-headman-ui
@@ -2025,6 +2026,7 @@ defineExpose({ openNotificationAction });
       :offline="offline"
       :read-only="readOnly"
       :initial-date="selectedDate"
+      :show-back="host?.backOwner !== 'host'"
       @view-change="managementView = $event"
       @back="navigation.back()"
       @error="forwardError"

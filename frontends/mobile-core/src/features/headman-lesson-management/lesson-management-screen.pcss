@@ -42,6 +42,7 @@
   align-items: center;
 }
 .lesson-management__child-header h1 {
+  grid-column: 2;
   font-size: var(--rct-font-size-title);
   text-align: center;
 }
@@ -180,6 +181,14 @@
 }
 .lesson-management__card small {
   color: var(--rct-color-danger-text);
+  font-size: var(--rct-font-size-micro);
+}
+.lesson-management__card .lesson-management__origin {
+  justify-self: start;
+  padding: var(--rct-space-1) var(--rct-space-2);
+  border-radius: var(--rct-radius-full);
+  background: var(--rct-color-surface-float);
+  color: var(--rct-color-text-primary);
   font-size: var(--rct-font-size-micro);
 }
 .lesson-management__card[data-cancelled='true'] {

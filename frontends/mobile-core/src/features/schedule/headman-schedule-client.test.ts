@@ -44,8 +44,8 @@ const canonical = {
   date: input.date,
   lessonNumber: 3,
 }
-const json = (body: unknown): Response =>
-  new Response(JSON.stringify(body), { headers: { 'Content-Type': 'application/json' } })
+const json = (body: unknown, status = 200): Response =>
+  new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } })
 
 const deleteIntent = (): RecurringIntent => ({
   owner: { userId: '5', sessionId: 'session1', groupId: 7, semesterId: 10 },
@@ -565,7 +565,7 @@ describe('ONE_OFF durable creation', () => {
     )
   })
 
-  it('recovers the exact request/key after an unknown outcome and refresh, then reads canonical physical identity', async () => {
+  it('replays the original request and reads the same logical lesson at its new location', async () => {
     const values = new Map<string, string>()
     const storage = {
       getItem: (scope: string) => values.get(scope) ?? null,
@@ -576,6 +576,13 @@ describe('ONE_OFF durable creation', () => {
     const scope = 'user5:session1:HEADMAN:group7'
     persistOneOffIntent(storage, scope, { key, input })
     const requests: Array<{ path: string; key: string | null; body: string | null }> = []
+    const moved = {
+      ...canonical,
+      physicalLessonId: 43,
+      date: '2026-10-16',
+      lessonNumber: 5,
+      classroom: 'Б-204',
+    }
     const api = new HeadmanScheduleApi({
       accessToken: () => 'owned-token',
       fetcher: async (path, init) => {
@@ -586,22 +593,45 @@ describe('ONE_OFF durable creation', () => {
         })
         if (requests.length === 1) throw new TypeError('response lost after acceptance')
         return requests.length === 2
-          ? json(canonical)
-          : json({ _embedded: { oneOffLessonResponseList: [canonical] } })
+          ? json(moved, 201)
+          : json({ _embedded: { oneOffLessonResponseList: [moved] } })
       },
     })
     await expect(api.createOneOffLesson(input, key)).rejects.toThrow('response lost')
     const recovered = readOneOffIntent(storage, scope)!
     expect(Object.isFrozen(recovered.input)).toBe(true)
     expect(readOneOffIntent(storage, 'user6:session2:HEADMAN:group7')).toBeNull()
-    await expect(api.createOneOffLesson(recovered.input, recovered.key)).resolves.toEqual(canonical)
+    await expect(api.createOneOffLesson(recovered.input, recovered.key)).resolves.toEqual(moved)
     expect(requests[0]).toEqual(requests[1])
     expect(JSON.parse(requests[1]!.body!)).toEqual(input)
-    await expect(api.listOneOffLessons(7, '2026-09-01', '2027-01-01')).resolves.toEqual([canonical])
+    await expect(api.listOneOffLessons(7, '2026-09-01', '2027-01-01')).resolves.toEqual([moved])
     expect(requests[2]!.path).toBe(
       '/api/schedule/one-off-lessons?groupId=7&dateFrom=2026-09-01&dateTo=2027-01-01',
     )
     expect(values.get(scope)).not.toContain('owned-token')
+  })
+
+  it.each([200, 202])('rejects a complete creation body without HTTP 201 (%s)', async (status) => {
+    const api = new HeadmanScheduleApi({
+      accessToken: () => null,
+      fetcher: async () => json(canonical, status),
+    })
+    await expect(api.createOneOffLesson(input, key)).rejects.toThrow('Исходный запрос сохранён')
+  })
+
+  it.each([
+    [{ groupId: 8 }, 'другого предмета или группы'],
+    [{ subjectId: 10 }, 'другого предмета или группы'],
+    [{ id: 0 }, 'id must be a positive integer'],
+    [{ date: '2026-02-30' }, 'некорректную дату'],
+    [{ lessonNumber: 9 }, 'некорректный номер'],
+    [{ classroom: { name: 'Б-204' } }, 'некорректную аудиторию'],
+  ])('rejects HTTP 201 with invalid receipt fields %j', async (fields, message) => {
+    const api = new HeadmanScheduleApi({
+      accessToken: () => null,
+      fetcher: async () => json({ ...canonical, ...fields }, 201),
+    })
+    await expect(api.createOneOffLesson(input, key)).rejects.toThrow(message)
   })
 
   it('rejects a response from the old session and never retries its 401 with the new account', async () => {
@@ -651,7 +681,7 @@ describe('ONE_OFF durable creation', () => {
     expect(() => readOneOffIntent({ getItem: () => '{broken' }, 'scope')).toThrow()
     const api = new HeadmanScheduleApi({
       accessToken: () => null,
-      fetcher: async () => json({ ...canonical, physicalLessonId: undefined }),
+      fetcher: async () => json({ ...canonical, physicalLessonId: undefined }, 201),
     })
     await expect(api.createOneOffLesson(input, key)).rejects.toThrow('physicalLessonId')
   })

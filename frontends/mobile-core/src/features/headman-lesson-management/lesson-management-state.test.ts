@@ -5,6 +5,7 @@ import {
   lessonCanTransfer,
   transferEffectiveRoom,
   readManagementIntent,
+  type LessonCommand,
   type ManagementJournal,
   type ManagementSchedule,
 } from './lesson-management-state'
@@ -12,6 +13,11 @@ import {
   HeadmanJournalApi,
   HeadmanJournalApiError,
 } from '../headman-journal/headman-journal-client'
+import {
+  HeadmanScheduleApi,
+  HeadmanScheduleApiError,
+  type HeadmanOneOffLesson,
+} from '../schedule/headman-schedule-client'
 import type {
   HeadmanJournalLesson,
   HeadmanLessonRoomReceipt,
@@ -34,6 +40,28 @@ const lesson: HeadmanJournalLesson = {
   occurrenceRevision: '9007199254740993',
   transferOperationId: null,
   transferState: null,
+}
+const oneOff: Extract<LessonCommand, { kind: 'ONE_OFF' }> = {
+  kind: 'ONE_OFF',
+  key,
+  input: {
+    groupId: owner.groupId,
+    assignmentId: 13,
+    subjectId: 1,
+    date: '2026-10-16',
+    lessonNumber: 3,
+    startTime: '11:20:00',
+    endTime: '12:50:00',
+  },
+}
+const oneOffReceipt: HeadmanOneOffLesson = {
+  id: 50,
+  physicalLessonId: 71,
+  groupId: owner.groupId,
+  subjectId: oneOff.input.subjectId,
+  semesterId: 9,
+  date: oneOff.input.date,
+  lessonNumber: oneOff.input.lessonNumber,
 }
 function fixture() {
   const rows = new Map<string, string>(),
@@ -82,6 +110,7 @@ function fixture() {
     createOneOffLesson: vi.fn(async () => {
       throw new Error('not used')
     }),
+    listOneOffLessons: vi.fn(async () => []),
   }
   const create = () =>
     new LessonManagementState(
@@ -95,6 +124,104 @@ function fixture() {
   return { rows, storage, journal, schedule, create }
 }
 describe('management durable physical actions', () => {
+  it('keeps the original one-off request after a lost ACK and accepts its moved snapshot', async () => {
+    const f = fixture()
+    const create = vi.mocked(f.schedule.createOneOffLesson)
+    const moved = {
+      ...oneOffReceipt,
+      physicalLessonId: 72,
+      date: '2026-10-17',
+      lessonNumber: 4,
+      classroom: 'Б-204',
+    }
+    create
+      .mockRejectedValueOnce(new TypeError('reply lost'))
+      .mockResolvedValueOnce(moved)
+    const first = f.create()
+    await first.submit(oneOff)
+    expect(first.notice).toBeNull()
+    expect(first.confirmedOneOff).toBeNull()
+    first.dispose()
+
+    const restored = f.create()
+    expect(restored.locked).toBe(true)
+    await restored.recover()
+    expect(create.mock.calls).toEqual([[oneOff.input, key], [oneOff.input, key]])
+    expect(restored.confirmedOneOff).toEqual({
+      id: moved.id,
+      date: moved.date,
+      lessonNumber: moved.lessonNumber,
+      physicalLessonId: moved.physicalLessonId,
+    })
+    expect(restored.notice).toBe('Разовая пара создана')
+    expect(restored.locked).toBe(false)
+    expect(readManagementIntent(f.storage, owner)).toBeNull()
+  })
+
+  it('a one-off write denial clears the refused intent without publishing success', async () => {
+    const f = fixture()
+    const create = vi.mocked(f.schedule.createOneOffLesson)
+    create.mockRejectedValueOnce(
+      new HeadmanScheduleApiError(new Response(null, { status: 403 }), { detail: 'denied' }),
+    )
+    const state = f.create()
+    await state.submit(oneOff)
+    await state.recover()
+    expect(state.denied).toBe(true)
+    expect(state.notice).toBeNull()
+    expect(state.confirmedOneOff).toBeNull()
+    expect(readManagementIntent(f.storage, owner)).toBeNull()
+    expect(create).toHaveBeenCalledOnce()
+  })
+
+  it.each([
+    [404, 'not-found', false],
+    [409, 'conflict', false],
+    [409, 'one-off-create-rejected', true],
+  ] as const)(
+    'only clears the one-off intent on a proven rejection: HTTP %s %s',
+    async (status, problemType, rejectedBeforeWrite) => {
+      const f = fixture()
+      const create = vi.mocked(f.schedule.createOneOffLesson)
+      const wireApi = new HeadmanScheduleApi({
+        accessToken: () => null,
+        fetcher: async () =>
+          new Response(
+            JSON.stringify({
+              status,
+              type: 'https://api.rutcampustrack.ru/problems/' + problemType,
+              instance: '/schedule/one-off-lessons',
+            }),
+            { status, headers: { 'Content-Type': 'application/problem+json' } },
+          ),
+      })
+      create.mockImplementationOnce((input, requestKey) =>
+        wireApi.createOneOffLesson(input, requestKey),
+      )
+      const state = f.create()
+      await state.submit(oneOff)
+      expect(state.notice).toBeNull()
+      const persisted = readManagementIntent(f.storage, owner)
+      if (rejectedBeforeWrite) {
+        expect(persisted).toBeNull()
+        expect(state.locked).toBe(false)
+        await state.recover()
+        expect(create).toHaveBeenCalledOnce()
+      } else {
+        expect(persisted).toEqual({ owner, command: oneOff, sent: true })
+        expect(state.locked).toBe(true)
+        state.dispose()
+        create.mockResolvedValueOnce(oneOffReceipt)
+        await f.create().recover()
+        expect(create.mock.calls).toEqual([
+          [oneOff.input, key],
+          [oneOff.input, key],
+        ])
+        expect(readManagementIntent(f.storage, owner)).toBeNull()
+      }
+    },
+  )
+
   it('blocks any POST when storage refuses', async () => {
     const f = fixture()
     const state = new LessonManagementState(

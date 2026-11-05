@@ -485,12 +485,18 @@ export class HeadmanScheduleApi {
     idempotencyKey: string,
   ): Promise<HeadmanOneOffLesson> {
     validateOneOffKey(idempotencyKey)
-    const value = await this.request<unknown>('/api/schedule/one-off-lessons', {
-      method: 'POST',
-      headers: { 'Idempotency-Key': idempotencyKey },
-      body: JSON.stringify(input),
-    })
+    const value = await this.request<unknown>(
+      '/api/schedule/one-off-lessons',
+      {
+        method: 'POST',
+        headers: { 'Idempotency-Key': idempotencyKey },
+        body: JSON.stringify(input),
+      },
+      false,
+      [201],
+    )
     const lesson = oneOffLesson(value)
+    // An exact replay returns the current physical lesson. Its location may have changed.
     if (lesson.groupId !== input.groupId || lesson.subjectId !== input.subjectId)
       throw new Error('Сервер вернул пару другого предмета или группы.')
     return lesson
@@ -630,11 +636,23 @@ function oneOffLesson(value: unknown): HeadmanOneOffLesson {
     'groupId',
     'subjectId',
     'semesterId',
-    'lessonNumber',
   ] as const)
     assertNumericId(value[field] as number, field)
-  if (typeof value.date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value.date))
-    throw new Error('Сервер не вернул дату разовой пары.')
+  if (typeof value.date !== 'string' || academicDate(value.date) === null)
+    throw new Error('Сервер вернул некорректную дату разовой пары.')
+  if (
+    typeof value.lessonNumber !== 'number' ||
+    !Number.isInteger(value.lessonNumber) ||
+    value.lessonNumber < 1 ||
+    value.lessonNumber > 8
+  )
+    throw new Error('Сервер вернул некорректный номер разовой пары.')
+  if (
+    value.classroom !== undefined &&
+    value.classroom !== null &&
+    typeof value.classroom !== 'string'
+  )
+    throw new Error('Сервер вернул некорректную аудиторию разовой пары.')
   return value as unknown as HeadmanOneOffLesson
 }
 

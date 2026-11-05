@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, ref, shallowReactive, shallowRef, watch } from 'vue';
+import AdminNotice from '../../shared/components/AdminNotice.vue';
 import MobileIcon from '../../shared/components/MobileIcon.vue';
 import { academicWeekOrdinal } from '../../domain/academic-week';
+import { StaleSessionGenerationError } from '../../shared/session-owner';
 import StudentWarningBlock from '../../shared/components/StudentWarningBlock.vue';
 import HeadmanLessonActionsScreen from '../headman-journal/HeadmanLessonActionsScreen.vue';
+import HeadmanStatsSelect from '../headman-stats/HeadmanStatsSelect.vue';
 import type { HeadmanLessonActionsApi } from '../headman-journal/headman-journal-actions-client';
 import type {
   HeadmanJournalApi,
@@ -14,6 +17,7 @@ import type { HeadmanAssistantPermission } from '../headman-group/headman-group-
 import {
   LessonManagementState,
   datePlus,
+  isManagementAccessDenied,
   lessonCanRoom,
   lessonCanTransfer,
   transferEffectiveRoom,
@@ -32,6 +36,7 @@ const props = withDefaults(
     offline?: boolean;
     readOnly?: boolean;
     initialDate?: string;
+    showBack?: boolean;
   }>(),
   {
     actionsApi: null,
@@ -39,6 +44,7 @@ const props = withDefaults(
     offline: false,
     readOnly: false,
     initialDate: '',
+    showBack: true,
   },
 );
 export type ManagementView =
@@ -68,7 +74,7 @@ const selected = shallowRef<HeadmanJournalLesson | null>(null),
   room = ref(''),
   reason = ref(''),
   assignmentId = ref<number | null>(null);
-const targetLessons = shallowRef<readonly HeadmanJournalLesson[]>([]),
+const targetOccupiedSlots = shallowRef<ReadonlySet<number>>(new Set()),
   targetLoadedDate = ref(''),
   targetError = ref<string | null>(null),
   targetBusy = ref(false),
@@ -87,6 +93,17 @@ const cancelMutable = computed(
     mutable.value &&
     (props.assistantPermissions === null || props.assistantPermissions.includes('CANCEL_LESSONS')),
 );
+const canRecover = computed(() => {
+  const current = state.value;
+  const command = current?.intent?.command;
+  if (!current || !command || current.busy || props.offline || props.readOnly) return false;
+  // An exact one-off replay can resolve an accepted command after the semester has closed.
+  if (command.kind === 'ONE_OFF')
+    return !current.denied && !current.loading && current.canWrite(command);
+  return command.kind === 'CANCEL' || command.kind === 'RESTORE'
+    ? cancelMutable.value
+    : headmanMutable.value;
+});
 const controlsLocked = computed(() => !mutable.value || !!state.value?.locked);
 const title = computed(
   () =>
@@ -177,31 +194,40 @@ const sourceCanTransfer = computed(
 const sourceCanRoom = computed(
   () => !!selected.value && lessonCanRoom(selected.value, clock.value),
 );
-const assignment = computed(
-  () => state.value?.assignments.find((a) => a.id === assignmentId.value) ?? null,
-);
-const subjects = computed(() => [
-  ...new Map((state.value?.assignments ?? []).map((a) => [a.subjectId, a])).values(),
-]);
-const subjectId = ref<number | null>(null);
-const assignmentOptions = computed(() =>
+const validAssignments = computed(() =>
   (state.value?.assignments ?? []).filter(
     (a) =>
-      a.subjectId === subjectId.value &&
+      !!a.id &&
+      !!a.subjectId &&
       !!a.teacherId &&
       !!a.lessonType &&
       (!a.validFrom || a.validFrom <= targetDate.value) &&
       (!a.validUntilExclusive || targetDate.value < a.validUntilExclusive),
   ),
 );
+const subjects = computed(() => [
+  ...new Map(validAssignments.value.map((a) => [a.subjectId, a])).values(),
+]);
+const subjectId = ref<number | null>(null);
+const assignmentOptions = computed(() =>
+  validAssignments.value.filter((a) => a.subjectId === subjectId.value),
+);
+const assignment = computed(
+  () => assignmentOptions.value.find((a) => a.id === assignmentId.value) ?? null,
+);
+const oneOffSubjectOptions = computed(() =>
+  subjects.value.map((a) => ({ value: String(a.subjectId), label: a.subjectName || 'Предмет' })),
+);
+const oneOffTypeOptions = computed(() =>
+  assignmentOptions.value.map((a) => ({ value: String(a.id), label: typeName(a.lessonType) })),
+);
 const targetSlots = computed(() =>
   (state.value?.catalog?.slots ?? []).map((slot) => ({
     ...slot,
     unavailable:
       targetLoadedDate.value !== targetDate.value ||
-      targetLessons.value.some(
-        (l) => l.current && l.lessonNumber === slot.lessonNumber && l.status !== 'TRANSFERRED',
-      ) ||
+      state.value?.hasPendingOneOff(targetDate.value, slot.lessonNumber) ||
+      targetOccupiedSlots.value.has(slot.lessonNumber) ||
       (view.value === 'transfer' &&
         selected.value?.date === targetDate.value &&
         selected.value?.lessonNumber === slot.lessonNumber),
@@ -211,6 +237,16 @@ const targetSlot = computed(
   () =>
     targetSlots.value.find((s) => s.lessonNumber === targetNumber.value && !s.unavailable) ?? null,
 );
+const oneOffSlotOptions = computed(() =>
+  targetSlots.value
+    .filter((slot) => !slot.unavailable)
+    .map((slot) => ({
+      value: String(slot.lessonNumber),
+      label: `${slot.lessonNumber} пара · ${time(slot.startTime)}–${time(slot.endTime)}`,
+    })),
+);
+const selectValue = (id: number | null) => (id === null ? '' : String(id));
+const optionId = (value: string) => (value ? Number(value) : null);
 const effectiveTransferRoom = computed(() =>
   transferEffectiveRoom(room.value, selected.value?.room ?? null),
 );
@@ -275,18 +311,26 @@ function openTask(task: ManagementView): void {
   view.value = task;
 }
 function openOneOff(number: number): void {
-  if (controlsLocked.value || !headmanMutable.value) return;
+  if (
+    controlsLocked.value ||
+    !headmanMutable.value ||
+    state.value?.hasPendingOneOff(date.value, number)
+  )
+    return;
+  state.value?.dismissOneOffNotice();
   selected.value = null;
   targetDate.value = date.value;
   targetNumber.value = number;
   subjectId.value = subjects.value[0]?.subjectId ?? null;
   assignmentId.value = assignmentOptions.value[0]?.id ?? null;
   month.value = date.value.slice(0, 7);
+  calendarOpen.value = false;
   room.value = '';
   view.value = 'oneoff';
   formError.value = null;
 }
 function back(): boolean {
+  if (state.value?.denied) return false;
   if (state.value?.locked) {
     formError.value = 'Результат действия ещё не подтверждён. Проверь исходный запрос.';
     return true;
@@ -311,37 +355,54 @@ defineExpose({ back });
 async function loadTarget(): Promise<void> {
   const run = ++targetRun,
     current = model.value,
-    requested = targetDate.value;
+    requested = targetDate.value,
+    requestedView = view.value;
   targetLoadedDate.value = '';
-  targetLessons.value = [];
+  targetOccupiedSlots.value = new Set();
   targetError.value = null;
   targetBusy.value = false;
   if (
     !current ||
+    current.denied ||
     props.offline ||
-    !['transfer', 'oneoff'].includes(view.value) ||
+    !['transfer', 'oneoff'].includes(requestedView) ||
     !targetDateValid.value
   )
     return;
+  const isCurrent = () =>
+    run === targetRun &&
+    current === model.value &&
+    requested === targetDate.value &&
+    requestedView === view.value &&
+    !disposed &&
+    !current.denied;
   targetBusy.value = true;
   try {
-    const lessons = await current.targetLessons(requested);
-    if (run !== targetRun || current !== model.value || disposed) return;
-    targetLessons.value = lessons;
+    const occupied = await current.targetOccupiedSlots(requested);
+    if (!isCurrent()) return;
+    targetOccupiedSlots.value = occupied;
     targetLoadedDate.value = requested;
   } catch (cause) {
-    if (run !== targetRun || current !== model.value || disposed) return;
+    if (!isCurrent() || cause instanceof StaleSessionGenerationError) return;
     targetError.value = 'Не удалось проверить занятость дня.';
-    emit('error', cause);
+    if (isManagementAccessDenied(cause)) emit('error', cause);
   } finally {
     if (run === targetRun) targetBusy.value = false;
   }
 }
-async function afterWrite(): Promise<void> {
-  if (!model.value || model.value.locked || props.offline || model.value.error) return;
+async function afterWrite(kind?: LessonCommand['kind']): Promise<void> {
+  const current = model.value;
+  if (!current || current.locked || props.offline || current.error) return;
+  const confirmedDate = kind === 'ONE_OFF' ? current.confirmedOneOff?.date : undefined;
+  if (kind === 'ONE_OFF' && !confirmedDate) return;
   view.value = 'agenda';
   selected.value = null;
-  await model.value.load(date.value);
+  if (confirmedDate && confirmedDate !== date.value) {
+    // The date watcher owns the read when navigation changes the agenda day.
+    date.value = confirmedDate;
+  } else {
+    await current.load(date.value);
+  }
 }
 async function submit(): Promise<void> {
   const current = model.value,
@@ -404,7 +465,7 @@ async function submit(): Promise<void> {
         };
       } else {
         const a = assignment.value;
-        if (!a?.id || !a.subjectId || !assignmentOptions.value.some((option) => option.id === a.id))
+        if (!a?.id || !a.subjectId)
           throw new Error('Выбери действующее назначение преподавателя.');
         cmd = {
           kind: 'ONE_OFF',
@@ -426,14 +487,16 @@ async function submit(): Promise<void> {
     await current.submit(cmd);
     if (current === model.value) {
       confirmingRestore.value = false;
-      if (current.intent === null && current.error) {
+      if (current.intent === null && current.error && !current.denied) {
         await loadTarget();
-        const refreshed = await current.targetLessons(lesson?.date ?? date.value);
-        if (current !== model.value) return;
-        const fresh = refreshed.find((l) => l.id === lesson?.id && l.current);
-        if (fresh) selected.value = fresh;
+        if (lesson) {
+          const refreshed = await current.targetLessons(lesson.date);
+          if (current !== model.value) return;
+          const fresh = refreshed.find((l) => l.id === lesson.id && l.current);
+          if (fresh) selected.value = fresh;
+        }
       }
-      await afterWrite();
+      await afterWrite(cmd.kind);
     }
   } catch (cause) {
     formError.value = cause instanceof Error ? cause.message : 'Не удалось сохранить действие.';
@@ -441,14 +504,10 @@ async function submit(): Promise<void> {
 }
 async function recover(): Promise<void> {
   const current = model.value;
-  if (!current || props.offline || props.readOnly) return;
-  const cmd = current.intent?.command;
-  if (
-    cmd?.kind === 'CANCEL' || cmd?.kind === 'RESTORE' ? !cancelMutable.value : !headmanMutable.value
-  )
-    return;
+  const command = current?.intent?.command;
+  if (!current || !command || !canRecover.value) return;
   await current.recover();
-  if (current === model.value) await afterWrite();
+  if (current === model.value) await afterWrite(command.kind);
 }
 watch(
   [
@@ -509,6 +568,10 @@ watch(
     void loadTarget();
   },
 );
+watch(subjects, (options) => {
+  if (!options.some((a) => a.subjectId === subjectId.value))
+    subjectId.value = options[0]?.subjectId ?? null;
+});
 watch(assignmentOptions, (options) => {
   if (!options.some((a) => a.id === assignmentId.value))
     assignmentId.value = options[0]?.id ?? null;
@@ -550,7 +613,7 @@ onBeforeUnmount(() => {
   >
     <header :class="{ 'lesson-management__child-header': view !== 'agenda' }">
       <button
-        v-if="view !== 'agenda'"
+        v-if="showBack && view !== 'agenda'"
         class="lesson-management__back"
         type="button"
         aria-label="Назад"
@@ -570,6 +633,8 @@ onBeforeUnmount(() => {
       severity="error"
       title="Нет доступа"
       message="Управление парами этой группы недоступно."
+      :action-label="showBack && view === 'agenda' ? 'Назад' : ''"
+      @action="handleBack"
     />
     <StudentWarningBlock
       v-else-if="state?.intent || state?.storageBlocked"
@@ -578,7 +643,7 @@ onBeforeUnmount(() => {
         state.error || 'Сохранён исходный запрос. Проверь его результат перед новым действием.'
       "
       action-label="Проверить исходное действие"
-      :action-disabled="state.busy || readOnly"
+      :action-disabled="!canRecover"
       @action="recover"
     />
     <StudentWarningBlock
@@ -589,8 +654,22 @@ onBeforeUnmount(() => {
       action-label="Повторить"
       @action="state.load(date)"
     />
+    <StudentWarningBlock
+      v-else-if="view === 'agenda' && state.oneOffReadError"
+      title="Не удалось обновить разовые пары"
+      :message="state.oneOffReadError"
+      action-label="Повторить"
+      @action="state.load(date)"
+    />
+    <AdminNotice
+      v-if="view === 'agenda' && state?.oneOffNotice && state.notice"
+      tone="success"
+      :title="state.notice"
+      dismiss-label="Закрыть уведомление"
+      @dismiss="state.dismissOneOffNotice()"
+    />
     <p
-      v-if="state?.notice"
+      v-else-if="state?.notice && !state.oneOffNotice"
       role="status"
       class="lesson-management__notice"
     >
@@ -608,8 +687,11 @@ onBeforeUnmount(() => {
     >
       Загружаем расписание…
     </p>
+    <h2 v-if="view === 'agenda' && state?.error && !state.denied && state.loadedDate !== date">
+      {{ dayLabel(date) }}
+    </h2>
     <template v-if="state && !state.denied && !state.loading">
-      <template v-if="view === 'agenda'">
+      <template v-if="view === 'agenda' && state.loadedDate === date">
         <div class="lesson-management__week">
           <button
             type="button"
@@ -635,7 +717,7 @@ onBeforeUnmount(() => {
             type="button"
             role="switch"
             :aria-checked="addMode"
-            :disabled="controlsLocked || !headmanMutable"
+            :disabled="controlsLocked || !headmanMutable || !!state.error"
             @click="addMode = !addMode"
           >
             Добавление пары<span class="lesson-management__switch" />
@@ -691,18 +773,25 @@ onBeforeUnmount(() => {
               :data-lesson-id="lesson.id"
               @click="openLesson(lesson)"
             >
-              <small v-if="lesson.status === 'CANCELLED'">Отменена</small><strong>{{ subject(lesson) }}</strong><span><MobileIcon name="room" />{{ lesson.room || 'Аудитория не указана'
+              <small v-if="lesson.status === 'CANCELLED'">Отменена</small><span
+                v-if="state.oneOffPhysicalIds.has(lesson.id)"
+                class="lesson-management__origin"
+              >Разовая</span><strong>{{ subject(lesson) }}</strong><span><MobileIcon name="room" />{{ lesson.room || 'Аудитория не указана'
               }}<MobileIcon name="lesson" />{{ typeName(lesson.lessonType) }}</span><MobileIcon
                 name="back"
                 class="lesson-management__chevron"
               />
             </button>
             <button
-              v-if="addMode && !state.lessons.some((l) => l.lessonNumber === row.slot.lessonNumber)"
+              v-if="
+                addMode &&
+                  !state.hasPendingOneOff(date, row.slot.lessonNumber) &&
+                  !state.lessons.some((l) => l.lessonNumber === row.slot.lessonNumber)
+              "
               type="button"
               class="lesson-management__free"
               :data-slot="row.slot.lessonNumber"
-              :disabled="controlsLocked || !headmanMutable || date < today()"
+              :disabled="controlsLocked || !headmanMutable || !!state.error || date < today()"
               @click="openOneOff(row.slot.lessonNumber)"
             >
               + Добавить пару в свободный слот
@@ -710,13 +799,16 @@ onBeforeUnmount(() => {
           </template>
         </section>
       </template>
-      <template v-else>
+      <template v-else-if="view !== 'agenda'">
         <section
           v-if="selected"
           class="lesson-management__card lesson-management__summary"
           :data-cancelled="selected.status === 'CANCELLED'"
         >
-          <small v-if="selected.status === 'CANCELLED'">Отменена</small><strong>{{ subject(selected) }}</strong><span>{{ dayLabel(selected.date) }} · {{ selected.lessonNumber }} пара ·
+          <small v-if="selected.status === 'CANCELLED'">Отменена</small><span
+            v-if="state.oneOffPhysicalIds.has(selected.id)"
+            class="lesson-management__origin"
+          >Разовая</span><strong>{{ subject(selected) }}</strong><span>{{ dayLabel(selected.date) }} · {{ selected.lessonNumber }} пара ·
             {{ time(selected.startTime) }}–{{ time(selected.endTime) }}</span><span><MobileIcon name="room" />{{ selected.room || 'Аудитория не указана' }}</span><span><MobileIcon name="lesson" />{{ typeName(selected.lessonType) }}</span>
         </section>
         <template v-if="view === 'detail'">
@@ -834,6 +926,7 @@ onBeforeUnmount(() => {
             type="button"
             :disabled="controlsLocked || !headmanMutable"
             class="lesson-management__select"
+            :aria-expanded="calendarOpen"
             @click="calendarOpen = !calendarOpen"
           >{{ dayLabel(targetDate) }}<MobileIcon name="chevron-down" /></button></label>
           <section
@@ -877,7 +970,34 @@ onBeforeUnmount(() => {
               </button>
             </div>
           </section>
-          <label class="lesson-management__field">Номер пары<select
+          <div
+            v-if="view === 'oneoff'"
+            class="lesson-management__field"
+          >
+            <span>Номер пары</span>
+            <HeadmanStatsSelect
+              label="Номер пары"
+              :model-value="selectValue(targetSlot?.lessonNumber ?? null)"
+              :options="oneOffSlotOptions"
+              :disabled="
+                controlsLocked ||
+                  !headmanMutable ||
+                  targetBusy ||
+                  !targetDateValid ||
+                  !oneOffSlotOptions.length
+              "
+              :placeholder="
+                targetLoadedDate === targetDate && !oneOffSlotOptions.length
+                  ? 'Нет свободных слотов'
+                  : 'Выбери свободный слот'
+              "
+              @update:model-value="targetNumber = optionId($event)"
+            />
+          </div>
+          <label
+            v-else
+            class="lesson-management__field"
+          >Номер пары<select
             v-model.number="targetNumber"
             :disabled="controlsLocked || targetBusy || !targetDateValid"
           ><option :value="null">Выбери свободный слот</option><option
@@ -905,21 +1025,29 @@ onBeforeUnmount(() => {
             Выбери допустимую дату текущего семестра.
           </p>
           <template v-if="view === 'oneoff'">
-            <label class="lesson-management__field">Предмет<select
-              v-model.number="subjectId"
-              :disabled="controlsLocked"
-            ><option
-              v-for="item in subjects"
-              :key="item.subjectId"
-              :value="item.subjectId"
-            >{{ item.subjectName }}</option></select></label><label class="lesson-management__field">Тип занятия<select
-              v-model.number="assignmentId"
-              :disabled="controlsLocked"
-            ><option
-              v-for="item in assignmentOptions"
-              :key="item.id"
-              :value="item.id"
-            >{{ typeName(item.lessonType) }}</option></select></label><div class="lesson-management__field">
+            <div class="lesson-management__field">
+              <span>Предмет</span>
+              <HeadmanStatsSelect
+                label="Предмет"
+                :model-value="selectValue(subjectId)"
+                :options="oneOffSubjectOptions"
+                :disabled="controlsLocked || !headmanMutable || !oneOffSubjectOptions.length"
+                placeholder="Нет предметов с действующим назначением"
+                @update:model-value="subjectId = optionId($event)"
+              />
+            </div>
+            <div class="lesson-management__field">
+              <span>Тип занятия</span>
+              <HeadmanStatsSelect
+                label="Тип занятия"
+                :model-value="selectValue(assignmentId)"
+                :options="oneOffTypeOptions"
+                :disabled="controlsLocked || !headmanMutable || !oneOffTypeOptions.length"
+                placeholder="Нет действующего назначения"
+                @update:model-value="assignmentId = optionId($event)"
+              />
+            </div>
+            <div class="lesson-management__field">
               Преподаватель<strong>{{
                 assignment?.teacherName || 'Нет действующего назначения'
               }}</strong>
@@ -1007,6 +1135,7 @@ onBeforeUnmount(() => {
   >
     <header class="lesson-management__child-header">
       <button
+        v-if="showBack"
         type="button"
         class="lesson-management__back"
         aria-label="Назад"

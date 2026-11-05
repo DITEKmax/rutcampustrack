@@ -8,12 +8,13 @@ import type {
 import { HeadmanJournalApiError } from '../headman-journal/headman-journal-client'
 import type {
   HeadmanOneOffCreateInput,
+  HeadmanOneOffLesson,
   HeadmanScheduleApi,
   HeadmanScheduleAssignment,
   HeadmanScheduleSemester,
   HeadmanLessonSlotCatalog,
 } from '../schedule/headman-schedule-client'
-import { HeadmanScheduleApiError } from '../schedule/headman-schedule-client'
+import { HeadmanScheduleApiError, canCorrectRejectedOneOff } from '../schedule/headman-schedule-client'
 import type { AcademicWeekPolicy } from '../../domain/academic-week'
 import { academicDate } from '../../domain/academic-week'
 import { StaleSessionGenerationError } from '../../shared/session-owner'
@@ -33,7 +34,16 @@ export type ManagementJournal = Pick<
 >
 export type ManagementSchedule = Pick<
   HeadmanScheduleApi,
-  'listSemesters' | 'listAssignments' | 'academicWeekPolicy' | 'lessonSlots' | 'createOneOffLesson'
+  | 'listSemesters'
+  | 'listAssignments'
+  | 'academicWeekPolicy'
+  | 'lessonSlots'
+  | 'createOneOffLesson'
+  | 'listOneOffLessons'
+>
+const ONE_OFF_CREATED = 'Разовая пара создана'
+type ConfirmedOneOff = Readonly<
+  Pick<HeadmanOneOffLesson, 'id' | 'date' | 'lessonNumber' | 'physicalLessonId'>
 >
 export type LessonCommand =
   | {
@@ -135,7 +145,9 @@ export function readManagementIntent(
   return Object.freeze({
     ...value,
     owner: Object.freeze({ ...value.owner }),
-    command: Object.freeze({ ...cmd }),
+    command: Object.freeze(
+      cmd.kind === 'ONE_OFF' ? { ...cmd, input: Object.freeze({ ...cmd.input }) } : { ...cmd },
+    ),
   })
 }
 export function lessonCanTransfer(lesson: HeadmanJournalLesson, today: string): boolean {
@@ -195,9 +207,17 @@ function status(cause: unknown): number | null {
       ? cause.response.status
       : null
 }
+export function isManagementAccessDenied(cause: unknown): boolean {
+  const responseStatus = status(cause)
+  return responseStatus === 401 || responseStatus === 403
+}
 /** Owner-bound durable command coordinator. Presentation never writes through the API directly. */
 export class LessonManagementState {
   lessons: readonly HeadmanJournalLesson[] = []
+  loadedDate: string | null = null
+  oneOffPhysicalIds: ReadonlySet<number> = new Set()
+  oneOffReadError: string | null = null
+  confirmedOneOff: ConfirmedOneOff | null = null
   assignments: readonly HeadmanScheduleAssignment[] = []
   semester: HeadmanScheduleSemester | null = null
   catalog: HeadmanLessonSlotCatalog | null = null
@@ -209,6 +229,7 @@ export class LessonManagementState {
   storageBlocked = false
   error: string | null = null
   notice: string | null = null
+  private pendingOneOffs: ReadonlyMap<number, ConfirmedOneOff> = new Map()
   private alive = true
   private reads = 0
   private poll: ReturnType<typeof setTimeout> | null = null
@@ -231,40 +252,76 @@ export class LessonManagementState {
   dispose(): void {
     this.alive = false
     this.reads++
+    this.pendingOneOffs = new Map()
     if (this.poll) clearTimeout(this.poll)
   }
   get locked(): boolean {
     return this.busy || this.intent !== null || this.storageBlocked
   }
+  get oneOffNotice(): boolean {
+    return this.notice === ONE_OFF_CREATED
+  }
+  dismissOneOffNotice(): void {
+    if (this.oneOffNotice) this.notice = null
+  }
+  hasPendingOneOff(date: string, lessonNumber?: number): boolean {
+    for (const pending of this.pendingOneOffs.values()) {
+      if (
+        pending.date === date &&
+        (lessonNumber === undefined || pending.lessonNumber === lessonNumber)
+      )
+        return true
+    }
+    return false
+  }
   private publish(): void {
     if (this.alive) this.changed()
   }
-  private fail(cause: unknown): void {
+  private fail(cause: unknown, localReadback = false): void {
     if (!this.alive || cause instanceof StaleSessionGenerationError) return
-    if (status(cause) === 401 || status(cause) === 403) {
+    const accessLost = isManagementAccessDenied(cause)
+    if (accessLost) {
       this.denied = true
       this.lessons = []
+      this.loadedDate = null
+      this.oneOffPhysicalIds = new Set()
+      this.oneOffReadError = null
+      this.confirmedOneOff = null
+      this.pendingOneOffs = new Map()
+      this.dismissOneOffNotice()
       this.assignments = []
       this.catalog = null
       this.policy = null
     }
     this.error = cause instanceof Error ? cause.message : 'Не удалось проверить действие пары.'
-    this.onError(cause)
+    if (!localReadback || accessLost) this.onError(cause)
     this.publish()
   }
   async load(date: string): Promise<void> {
     const read = ++this.reads
+    const localReadback = this.hasPendingOneOff(date)
     this.loading = true
     this.error = null
+    this.oneOffReadError = null
     this.publish()
     try {
-      const [lessons, catalog, policy, semesters] = await Promise.all([
+      const [lessons, catalog, policy, semesters, oneOffs] = await Promise.all([
         this.journal.listLessons(this.owner.groupId, date, date),
         this.schedule.lessonSlots(),
         this.schedule.academicWeekPolicy(date),
         this.schedule.listSemesters(),
+        this.schedule.listOneOffLessons(this.owner.groupId, date, date).then(
+          (items) => ({ items, ok: true as const }),
+          (cause: unknown) => ({ cause, ok: false as const }),
+        ),
       ])
       if (!this.alive || read !== this.reads) return
+      if (
+        !oneOffs.ok &&
+        (isManagementAccessDenied(oneOffs.cause) ||
+          oneOffs.cause instanceof StaleSessionGenerationError)
+      )
+        throw oneOffs.cause
       const semester = semesters.find((s) => s.active) ?? null
       const assignments = semester?.id
         ? await this.schedule.listAssignments(this.owner.groupId, semester.id)
@@ -273,13 +330,45 @@ export class LessonManagementState {
       this.lessons = lessons.filter(
         (l) => l.groupId === this.owner.groupId && l.date === date && l.current,
       )
+      this.loadedDate = date
+      const projections = oneOffs.ok
+        ? oneOffs.items.filter(
+            (lesson) => lesson.groupId === this.owner.groupId && lesson.date === date,
+          )
+        : []
+      const visibleIds = new Set(this.lessons.map((lesson) => lesson.id))
+      const currentPhysicalIds = new Map(
+        projections.map((lesson) => [lesson.id, lesson.physicalLessonId]),
+      )
+      const ids = new Set(currentPhysicalIds.values())
+      const pendingAfterRead = new Map(this.pendingOneOffs)
+      for (const [physicalId, pending] of this.pendingOneOffs) {
+        const currentPhysicalId = currentPhysicalIds.get(pending.id)
+        if (currentPhysicalId !== undefined && currentPhysicalId !== physicalId) {
+          pendingAfterRead.delete(physicalId)
+          continue
+        }
+        if (pending.date !== date) continue
+        ids.add(physicalId)
+        if (visibleIds.has(physicalId)) pendingAfterRead.delete(physicalId)
+      }
+      for (const lesson of projections) {
+        if (!visibleIds.has(lesson.physicalLessonId))
+          pendingAfterRead.set(lesson.physicalLessonId, lesson)
+      }
+      this.pendingOneOffs = pendingAfterRead
+      this.oneOffPhysicalIds = ids
+      if (!oneOffs.ok)
+        this.oneOffReadError = 'Список разовых пар пока недоступен.'
+      else if (this.hasPendingOneOff(date))
+        this.oneOffReadError = 'Расписание ещё не отобразило все созданные пары.'
       this.catalog = catalog
       this.policy = policy
       this.semester = semester
       this.assignments = assignments
       this.denied = false
     } catch (cause) {
-      if (read === this.reads) this.fail(cause)
+      if (read === this.reads) this.fail(cause, localReadback)
     } finally {
       if (this.alive && read === this.reads) {
         this.loading = false
@@ -289,6 +378,29 @@ export class LessonManagementState {
   }
   async targetLessons(date: string): Promise<readonly HeadmanJournalLesson[]> {
     return this.journal.listLessons(this.owner.groupId, date, date)
+  }
+  async targetOccupiedSlots(date: string): Promise<ReadonlySet<number>> {
+    const [lessons, oneOffs] = await Promise.all([
+      this.targetLessons(date),
+      this.schedule.listOneOffLessons(this.owner.groupId, date, date),
+    ])
+    const occupied = new Set<number>()
+    const physicalIds = new Set<number>()
+    for (const lesson of lessons) {
+      if (lesson.groupId !== this.owner.groupId || lesson.date !== date || !lesson.current) continue
+      physicalIds.add(lesson.id)
+      if (lesson.lessonNumber !== null && lesson.status !== 'TRANSFERRED')
+        occupied.add(lesson.lessonNumber)
+    }
+    for (const lesson of oneOffs) {
+      if (
+        lesson.groupId === this.owner.groupId &&
+        lesson.date === date &&
+        !physicalIds.has(lesson.physicalLessonId)
+      )
+        occupied.add(lesson.lessonNumber)
+    }
+    return occupied
   }
   private persist(intent: ManagementIntent): void {
     this.storage.setItem(managementScope(this.owner), JSON.stringify(intent))
@@ -304,6 +416,7 @@ export class LessonManagementState {
   }
   async submit(command: LessonCommand): Promise<void> {
     if (!this.alive || this.locked || this.denied) return
+    this.dismissOneOffNotice()
     try {
       this.persist({ owner: this.owner, command, sent: false })
     } catch (cause) {
@@ -368,14 +481,15 @@ export class LessonManagementState {
       } else if (cmd.kind === 'ONE_OFF') {
         const receipt = await this.schedule.createOneOffLesson(cmd.input, cmd.key)
         if (!this.alive) return
-        if (
-          receipt.date !== cmd.input.date ||
-          receipt.lessonNumber !== cmd.input.lessonNumber ||
-          receipt.groupId !== this.owner.groupId ||
-          receipt.subjectId !== cmd.input.subjectId
-        )
-          throw new Error('Сервер не подтвердил исходную разовую пару.')
-        this.finish('Разовая пара создана.')
+        this.finish(ONE_OFF_CREATED)
+        const confirmed = Object.freeze({
+          id: receipt.id,
+          date: receipt.date,
+          lessonNumber: receipt.lessonNumber,
+          physicalLessonId: receipt.physicalLessonId,
+        })
+        this.confirmedOneOff = confirmed
+        this.pendingOneOffs = new Map(this.pendingOneOffs).set(confirmed.physicalLessonId, confirmed)
       } else {
         if (cmd.kind === 'CANCEL') await this.journal.cancelLesson(cmd.target.id, cmd.reason)
         else await this.journal.restoreLesson(cmd.target.id)
@@ -387,12 +501,12 @@ export class LessonManagementState {
     } catch (cause) {
       if (!this.alive || cause instanceof StaleSessionGenerationError) return
       // Only the first definitive refusal authorizes editing. Never drop a replayed uncertain intent.
-      if (
-        !mutationAcknowledged &&
-        !retry &&
-        !frozen.sent &&
-        [400, 403, 404, 409, 422].includes(status(cause) ?? 0)
-      ) {
+      const refusal =
+        frozen.command.kind === 'ONE_OFF'
+          ? (cause instanceof HeadmanScheduleApiError && cause.response.status === 403) ||
+            canCorrectRejectedOneOff(cause, true)
+          : [400, 403, 404, 409, 422].includes(status(cause) ?? 0)
+      if (!mutationAcknowledged && !retry && !frozen.sent && refusal) {
         try {
           this.storage.removeItem(managementScope(this.owner))
           this.intent = null

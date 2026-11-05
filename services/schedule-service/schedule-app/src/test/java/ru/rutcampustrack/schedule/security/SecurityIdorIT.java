@@ -208,7 +208,7 @@ class SecurityIdorIT extends AbstractScheduleIntegrationTest {
         mockMvc.perform(
                         asHeadmanA(delete("/schedule/items/{id}", scheduleItemBId))
                                 .header("Idempotency-Key", java.util.UUID.randomUUID())
-                                .header("If-Match", "1"))
+                                .header("If-Match", "0".repeat(64)))
                 .andExpect(status().isForbidden());
     }
 }

@@ -102,6 +102,8 @@ env_get() {
 # Required vars (must be defined + not "CHANGE_ME")
 # -----------------------------------------------------------------------------
 REQUIRED_VARS=(
+    CONSTRUCTOR_RPC_SCHEDULE_TO_ATTENDANCE_TOKEN_FILE
+    CONSTRUCTOR_RPC_SCHEDULE_TO_ACADEMIC_TOKEN_FILE
     ACADEMIC_GRPC_TLS_AUTHORITY
     ACADEMIC_GRPC_TLS_DIR
     ACADEMIC_REPORT_TO_ATTENDANCE_SERVICE_TOKEN_FILE

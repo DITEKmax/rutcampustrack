@@ -8,6 +8,12 @@ plugins {
 group = "ru.rutcampustrack"
 version = "0.1.0"
 
+tasks.withType<Test>().configureEach {
+    // Eight cached contexts x four fixture connections stay below PostgreSQL's limit.
+    // Eviction closes each old context and its pool; concurrent domain tests keep four slots.
+    systemProperty("spring.test.context.cache.maxSize", "8")
+}
+
 dependencyManagement {
     imports {
         mavenBom("org.testcontainers:testcontainers-bom:1.20.4")

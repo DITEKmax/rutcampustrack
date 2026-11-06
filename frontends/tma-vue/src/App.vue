@@ -1805,11 +1805,13 @@ onBeforeUnmount(() => {
     <AdminProfileOwner
       ref="adminTaskOwner"
       :key="'admin-profile-' + ownerRevision"
+      :profile="profile"
       :profile-port="profilePort"
       :theme-controller="theme"
       :resolved-theme="adminTheme"
       :offline="offline"
       :on-logout="logout"
+      :on-recover="openPasswordRecovery"
       @navigation-visibility="adminNavigationVisible = $event"
       @open-role-switch="openAdminRoleSwitch"
     />
@@ -1817,7 +1819,7 @@ onBeforeUnmount(() => {
   <AdminShell
     v-else-if="adminRoleSwitchViewVisible && profile"
     :authority="adminAuthority"
-    active="home"
+    :active="adminRoleReturn === 'admin-profile' ? 'profile' : 'home'"
     :task="true"
     :host="host"
     :theme="adminTheme"
@@ -1826,7 +1828,7 @@ onBeforeUnmount(() => {
   >
     <RoleSwitchScreen
       :theme="adminTheme"
-      compact
+      :compact="adminRoleReturn === 'admin-home'"
       :snapshot="profile"
       :pending-role="pendingRole"
       :error="roleError"

@@ -44,6 +44,7 @@ function navigate(id: MobileRootRouteId): void {
 <template>
   <MobileShell
     class="admin-shell"
+    :data-student-ui="active === 'profile' ? '' : undefined"
     :data-theme="theme"
     :style="theme ? { colorScheme: theme } : undefined"
     :data-back-owner="host?.backOwner ?? 'product'"

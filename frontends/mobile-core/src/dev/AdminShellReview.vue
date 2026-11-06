@@ -48,6 +48,7 @@ const unsubscribeAuthority = authorityOwner.subscribe((value) => {
 authorityOwner.bind(fixtures.access, 'synthetic-admin', '1');
 const visible = ref(true);
 const profileOwner = ref<InstanceType<typeof AdminProfileOwner> | null>(null);
+const roleReturn = ref<'home' | 'profile'>('home');
 const pendingRole = ref<ProfileRole | null>(null);
 const roleError = ref<ProfileRequestError | null>(null);
 const hostBackVisible = ref(false);
@@ -57,7 +58,7 @@ const active = computed(() =>
     ? 'map'
     : view.value === 'map-statistics'
       ? 'map-statistics'
-      : view.value === 'profile'
+      : view.value === 'profile' || (view.value === 'roles' && roleReturn.value === 'profile')
         ? 'profile'
         : view.value === 'more'
           ? 'more'
@@ -98,10 +99,14 @@ function back(): void {
     return;
   }
   if (view.value === 'roles') {
-    view.value = 'home';
+    view.value = roleReturn.value;
     return;
   }
   profileOwner.value?.back();
+}
+function openRoleSwitch(): void {
+  roleReturn.value = view.value === 'profile' ? 'profile' : 'home';
+  view.value = 'roles';
 }
 async function selectRole(role: ProfileRole, expectedSessionVersion: string): Promise<void> {
   pendingRole.value = role;
@@ -490,7 +495,7 @@ onBeforeUnmount(() => {
     <AdminDashboardScreen
       v-if="view === 'home'"
       :client="fixtures.dashboard"
-      @open-role-switch="view = 'roles'"
+      @open-role-switch="openRoleSwitch"
     />
     <AdminMapScreen
       v-else-if="view === 'map'"
@@ -514,14 +519,15 @@ onBeforeUnmount(() => {
     <AdminProfileOwner
       v-else-if="view === 'profile'"
       ref="profileOwner"
+      :profile="fixtures.snapshot"
       :profile-port="fixtures.profile"
       :theme-controller="theme"
       @navigation-visibility="visible = $event"
-      @open-role-switch="view = 'roles'"
+      @open-role-switch="openRoleSwitch"
     />
     <RoleSwitchScreen
       v-else
-      compact
+      :compact="roleReturn === 'home'"
       :snapshot="fixtures.snapshot"
       :pending-role="pendingRole"
       :error="roleError"

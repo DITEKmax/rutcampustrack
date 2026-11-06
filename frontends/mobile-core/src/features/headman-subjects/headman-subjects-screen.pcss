@@ -299,6 +299,7 @@ input:disabled {
 }
 .headman-subjects__subject > span {
   display: grid;
+  flex: 1;
   gap: var(--rct-space-1);
   min-inline-size: 0;
 }
@@ -315,6 +316,11 @@ input:disabled {
   line-height: 1rem;
   color: var(--rct-color-text-secondary);
   overflow-wrap: anywhere;
+}
+.headman-subjects__subject .headman-subjects__progress {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 var(--rct-space-2);
 }
 .headman-subjects__subject small svg {
   inline-size: 0.75rem;
@@ -362,6 +368,10 @@ input:disabled {
   border-radius: var(--rct-radius-xl);
   background: var(--rct-color-surface-raised);
 }
+.headman-subjects__name:focus-within {
+  outline: var(--rct-focus-width) solid var(--rct-color-accent-now);
+  outline-offset: var(--rct-focus-offset);
+}
 .headman-subjects__name span {
   font-size: 0.6875rem;
   color: var(--rct-color-text-muted);
@@ -374,7 +384,9 @@ input:disabled {
   color: var(--rct-color-text-primary);
   font: inherit;
   font-size: var(--rct-font-size-dense);
-  @mixin rct-focus-ring;
+}
+.headman-subjects__name input:focus {
+  outline: none;
 }
 .headman-subjects__section-title {
   font-size: var(--rct-font-size-body) !important;

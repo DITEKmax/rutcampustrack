@@ -1796,8 +1796,11 @@ onBeforeUnmount(() => {
             <strong>{{ subject.name }}</strong>
             <template v-if="section.id === 'semester'">
               <small><MobileIcon name="profile" />{{ summaryTeachers(subject) }}</small>
-              <small v-for="type in subject.lessonTypes" :key="type">
-                {{ typeLabels[type] }} · {{ progressText(subject.id, type) }}
+              <small v-if="subject.lessonTypes.length" class="headman-subjects__progress">
+                <template v-for="type in subject.lessonTypes" :key="type">
+                  <span>{{ typeLabels[type] }}</span>
+                  <span>{{ progressText(subject.id, type) }}</span>
+                </template>
               </small>
             </template>
           </span>

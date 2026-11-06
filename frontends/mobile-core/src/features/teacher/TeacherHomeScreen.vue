@@ -340,6 +340,7 @@ useProjectionRefresh(() => loadAssignments(true), { revision: () => props.realti
         v-if="current"
         :lesson="current"
         current
+        presentation="today"
         @open="emit('open-lesson', $event)"
       />
       <h2
@@ -362,7 +363,7 @@ useProjectionRefresh(() => loadAssignments(true), { revision: () => props.realti
           <TeacherLessonCard
             v-if="item.kind === 'lesson'"
             :lesson="item.lesson"
-            :current="item.lesson.id === current?.id"
+            presentation="today"
             @open="emit('open-lesson', $event)"
           />
           <span

@@ -5,7 +5,7 @@
   padding-block-start: var(--rct-space-5);
   min-block-size: var(--rct-control-min-touch);
 }
-.teacher-lesson-card[data-one-off='true'] {
+.teacher-lesson-card[data-one-off='true']:not([data-presentation='today']) {
   color: var(--rct-color-status-present-on-fill);
   background: var(--rct-color-status-present-fill);
 }
@@ -13,7 +13,7 @@
   color: var(--rct-color-accent-on-now);
   background: var(--rct-color-accent-now);
 }
-.teacher-lesson-card[data-cancelled='true'] {
+.teacher-lesson-card[data-cancelled='true']:not([data-presentation='today']) {
   color: var(--rct-color-status-absent-on-fill);
   background: var(--rct-color-status-absent-fill);
 }
@@ -42,12 +42,28 @@
   max-inline-size: 100%;
   margin-inline-start: auto;
 }
-.teacher-lesson-card .teacher-lesson-card__group {
+.teacher-lesson-card__header {
+  display: contents;
+}
+.teacher-lesson-card[data-presentation='today'] .teacher-lesson-card__header {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline: var(--rct-space-4);
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--rct-space-2);
+}
+.teacher-lesson-card:not([data-presentation='today']) .teacher-lesson-card__group {
   position: absolute;
   inset-block-start: 0;
   inset-inline-end: var(--rct-space-4);
   transform: translateY(-50%);
   max-inline-size: calc(100% - var(--rct-space-4) * 2);
+}
+.teacher-lesson-card .teacher-lesson-card__group,
+.teacher-lesson-card__header > .teacher-lesson-card__tag {
   min-inline-size: 0;
   margin: 0;
   padding: var(--rct-space-1) var(--rct-space-3);
@@ -60,6 +76,9 @@
   white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;
+}
+.teacher-lesson-card__header > .teacher-lesson-card__tag {
+  flex: none;
 }
 .teacher-lesson-card__tags {
   display: flex;
@@ -88,6 +107,22 @@
 .teacher-lesson-card__tag[data-tone='active'] {
   color: var(--rct-color-accent-on-now);
   background: var(--rct-color-accent-now);
+}
+.teacher-lesson-card__header > .teacher-lesson-card__tag[data-tone='active'] {
+  color: var(--rct-color-accent-now);
+  background: var(--rct-color-accent-soft);
+}
+.teacher-lesson-card__header > .teacher-lesson-card__tag[data-tone='moved'] {
+  color: var(--rct-color-state-warning-text);
+  background: var(--rct-color-state-warning-bg);
+}
+.teacher-lesson-card__header > .teacher-lesson-card__tag[data-tone='one-off'] {
+  color: var(--rct-color-state-success-text);
+  background: var(--rct-color-state-success-bg);
+}
+.teacher-lesson-card__header > .teacher-lesson-card__tag[data-tone='cancelled'] {
+  color: var(--rct-color-state-danger-text);
+  background: var(--rct-color-state-danger-bg);
 }
 .teacher-lesson-card__cancellation {
   margin-block-start: var(--rct-space-2);
@@ -138,8 +173,9 @@
   overflow-wrap: anywhere;
 }
 .teacher-lesson-card[data-current='true'] .teacher-lesson-card__meta,
-.teacher-lesson-card[data-one-off='true'] .teacher-lesson-card__meta,
-.teacher-lesson-card[data-cancelled='true'] .teacher-lesson-card__meta {
+.teacher-lesson-card[data-one-off='true']:not([data-presentation='today']) .teacher-lesson-card__meta,
+.teacher-lesson-card[data-cancelled='true']:not([data-presentation='today'])
+  .teacher-lesson-card__meta {
   color: inherit;
 }
 .teacher-lesson-card[data-compact='true'] .teacher-lesson-card__meta {

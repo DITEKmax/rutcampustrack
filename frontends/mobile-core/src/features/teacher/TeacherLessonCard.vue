@@ -1,9 +1,10 @@
 <script setup lang="ts">
+import { computed } from 'vue';
 import { teacherLessonTypeLabel } from './teacher-ui-format';
 import MobileIcon from '../../shared/components/MobileIcon.vue';
 import type { TeacherDayLesson } from './teacher-client';
 import './teacher-lesson-r3.pcss';
-withDefaults(
+const props = withDefaults(
   defineProps<{
     lesson: TeacherDayLesson;
     current?: boolean;
@@ -12,6 +13,7 @@ withDefaults(
     compact?: boolean;
     showStatus?: boolean;
     attendance?: boolean;
+    presentation?: 'default' | 'today';
   }>(),
   {
     current: false,
@@ -20,6 +22,7 @@ withDefaults(
     compact: false,
     showStatus: false,
     attendance: false,
+    presentation: 'default',
   },
 );
 const emit = defineEmits<{ open: [lessonId: number] }>();
@@ -41,6 +44,22 @@ function status(lesson: TeacherDayLesson): string {
         ? 'Запланирована'
         : 'Время уточняется';
 }
+const originTag = computed(() => {
+  if (props.lesson.cancelled) return { label: 'Отменена', tone: 'cancelled' };
+  if (props.lesson.moved) return { label: 'Перенесена', tone: 'moved' };
+  if (props.lesson.oneOff) return { label: 'Разовая', tone: 'one-off' };
+  return null;
+});
+const timeTag = computed(() => ({
+  label: status(props.lesson),
+  tone: props.lesson.status === 'ACTIVE' ? 'active' : 'neutral',
+}));
+const todayTag = computed(() => originTag.value ?? timeTag.value);
+const announceTimeStatus = computed(() => !props.lesson.cancelled && (
+  props.presentation === 'today'
+    ? props.lesson.status === 'ACTIVE' && originTag.value !== null
+    : props.current && !props.showStatus
+));
 </script>
 <template>
   <component
@@ -52,48 +71,48 @@ function status(lesson: TeacherDayLesson): string {
     :data-one-off="lesson.oneOff && !lesson.moved && !lesson.cancelled"
     :data-attendance="attendance"
     :data-compact="compact"
+    :data-presentation="presentation"
     :data-teacher-action="interactive && !lesson.cancelled ? 'lesson-open' : undefined"
     :data-lesson-id="lesson.id"
     @click="interactive && !lesson.cancelled && emit('open', lesson.id)"
   >
     <span
-      v-if="current && !showStatus && !lesson.cancelled"
+      v-if="announceTimeStatus"
       class="teacher-screen__sr"
-    >{{ status(lesson) }}</span>
-    <span
-      class="teacher-lesson-card__group"
-      :title="lesson.groupName"
-    >{{ lesson.groupName }}</span>
+    >{{ timeTag.label }}</span>
+    <span class="teacher-lesson-card__header">
+      <span
+        v-if="presentation === 'today'"
+        class="teacher-lesson-card__tag"
+        :data-tone="todayTag.tone"
+      >{{ todayTag.label }}</span>
+      <span
+        class="teacher-lesson-card__group"
+        :title="lesson.groupName"
+      >{{ lesson.groupName }}</span>
+    </span>
     <span class="teacher-lesson-card__topline">
-      <span class="teacher-lesson-card__identity">
+      <span
+        v-if="presentation !== 'today' && originTag"
+        class="teacher-lesson-card__identity"
+      >
         <span
-          v-if="lesson.cancelled"
           class="teacher-lesson-card__tag"
-          data-tone="cancelled"
-        >Отменена</span>
-        <span
-          v-else-if="lesson.moved"
-          class="teacher-lesson-card__tag"
-          data-tone="neutral"
-        >Перенесена</span>
-        <span
-          v-else-if="lesson.oneOff"
-          class="teacher-lesson-card__tag"
-          data-tone="one-off"
-        >Разовая</span>
+          :data-tone="originTag.tone === 'moved' ? 'neutral' : originTag.tone"
+        >{{ originTag.label }}</span>
       </span>
       <span class="teacher-lesson-card__time">{{ showDate ? dateLabel(lesson.date) + ' · ' : '' }}{{ time(lesson.startsAt) }}–{{
         time(lesson.endsAt)
       }}</span>
     </span>
     <span
-      v-if="showStatus && !lesson.cancelled"
+      v-if="presentation !== 'today' && showStatus && !lesson.cancelled"
       class="teacher-lesson-card__tags"
     >
       <span
         class="teacher-lesson-card__tag"
-        :data-tone="lesson.status === 'ACTIVE' ? 'active' : 'neutral'"
-      >{{ status(lesson) }}</span>
+        :data-tone="timeTag.tone"
+      >{{ timeTag.label }}</span>
     </span>
     <span
       v-if="!compact"

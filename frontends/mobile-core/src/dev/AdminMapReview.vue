@@ -159,13 +159,18 @@ function ready(): void {
   }
   if (!map && phase === 0) {
     if (state === 'statistics-filter') {
-      const select = main.querySelector<HTMLSelectElement>('select');
-      if (!select) return;
-      select.value = '30';
-      select.dispatchEvent(new Event('change', { bubbles: true }));
+      if (!click('Корпус')) return;
+      phase = 1;
       void nextTick(ready);
+      return;
     }
     phase = 3;
+  }
+  if (statistics && state === 'statistics-filter' && phase === 1) {
+    if (!click('Корпус 2')) return;
+    phase = 3;
+    void nextTick(ready);
+    return;
   }
   if (statistics) {
     if (main.getAttribute('aria-busy') === 'true') return;
@@ -182,7 +187,8 @@ function ready(): void {
         return;
       if (
         state === 'statistics-filter' &&
-        main.querySelector<HTMLSelectElement>('select')?.value !== '30'
+        main.querySelector('button[aria-haspopup="listbox"][aria-label="Корпус"]')
+          ?.textContent?.trim() !== 'Корпус 2'
       )
         return;
     }

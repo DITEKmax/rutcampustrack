@@ -3,6 +3,7 @@ import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import type { AdminMapBuildingResponse } from '../../api/types';
 import { AdminMapClient } from '../../api/map-client';
 import type { AdminAccessProfile } from '../admin-access/admin-access-client';
+import HeadmanStatsSelect from '../headman-stats/HeadmanStatsSelect.vue';
 import AdminNotice from '../../shared/components/AdminNotice.vue';
 import MobileIcon from '../../shared/components/MobileIcon.vue';
 import { StaleSessionGenerationError } from '../../shared/session-owner';
@@ -20,6 +21,10 @@ const props = withDefaults(
 const emit = defineEmits<{ back: []; 'owner-error': [cause: unknown] }>();
 const inventory = ref<readonly AdminMapBuildingResponse[]>([]);
 const buildingId = ref('all');
+const buildingOptions = computed(() => [
+  { value: 'all', label: 'Все корпуса' },
+  ...inventory.value.map((building) => ({ value: building.id, label: `Корпус ${building.code}` })),
+]);
 const loading = ref(true);
 const error = ref(false);
 const canView = computed(
@@ -164,13 +169,17 @@ async function load(): Promise<void> {
       >
         <MobileIcon name="attendance-graph" /><p>Открытия схем</p><strong>{{ total.toLocaleString('ru-RU') }}</strong><span>За всё время</span>
       </section>
-      <label class="admin-map-field"><span>Корпус</span><span class="admin-map-select"><select v-model="buildingId"><option value="all">Все корпуса</option><option
-        v-for="building in inventory"
-        :key="building.id"
-        :value="building.id"
-      >Корпус {{ building.code }}</option></select><MobileIcon name="chevron-down" /></span></label>
+      <div class="admin-map-field">
+        <span aria-hidden="true">Корпус</span>
+        <HeadmanStatsSelect
+          v-model="buildingId"
+          label="Корпус"
+          popup
+          :options="buildingOptions"
+        />
+      </div>
       <section
-        class="admin-map-card"
+        class="admin-map-card admin-map-statistics__floors"
         aria-labelledby="admin-map-statistics-floors"
       >
         <h2 id="admin-map-statistics-floors">

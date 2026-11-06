@@ -1,9 +1,12 @@
 import { describe, expect, it } from 'vitest'
 import { StaleSessionGenerationError } from '../../shared/session-owner'
 import {
+  acceptedRecurringTransfers,
   hideDeniedHeadmanSchedule,
   persistRecurringIntent,
   readRecurringIntent,
+  recurringItemMatches,
+  recurringReadback,
   recurringUpdate,
   retainRecurringBack,
   continueRecurringDeletion,
@@ -148,6 +151,36 @@ describe('constructor generation receipts', () => {
 })
 
 describe('recurring lifecycle durable ownership', () => {
+  it('confirms the exact accepted move before showing a later active placement for the same series', async () => {
+    const owner = { userId: '5', sessionId: 'session1', groupId: 7, semesterId: 10 }
+    const target = {
+      id: 31, groupId: 7, semesterId: 10, subjectId: 9, assignmentId: 501,
+      dayOfWeek: 1, lessonNumber: 1, startTime: '08:30:00', endTime: '09:50:00',
+      weekType: 'ALL' as const, active: true,
+    }
+    const preview = { revision: 'a'.repeat(64), updatedCount: 1, removedCount: 0, restoredCount: 0, createdCount: 0 }
+    const input = { ...recurringUpdate(target, 'ODD', 'А-102', {
+      dayOfWeek: 5, lessonNumber: 2, startTime: '10:05:00', endTime: '11:25:00',
+    }), expectedRevision: preview.revision }
+    const operationId = 'aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee'
+    const intent: RecurringIntent = { owner, target, input, key, action: 'UPDATE', preview, rejected: false, transferIds: [] }
+    const accepted = { ...target, ...input, transfers: [{ operationId, state: 'PENDING' as const }] }
+    const newer = { ...accepted, dayOfWeek: 4, weekType: 'EVEN' as const }
+    const api = new HeadmanScheduleApi({
+      accessToken: () => null,
+      fetcher: async (_path, init) => {
+        expect(init?.cache).toBe('no-store')
+        return json(newer)
+      },
+    })
+    expect(acceptedRecurringTransfers(intent, accepted)).toEqual([operationId])
+    expect(() => acceptedRecurringTransfers(intent, newer)).toThrow('не подтвердил')
+    expect(() => acceptedRecurringTransfers(intent, { ...accepted, transfers: [] })).toThrow('не подтвердил')
+    expect(recurringReadback(intent, await api.getScheduleItem(target.id, true)))
+      .toEqual({ dayOfWeek: 4, weekType: 'EVEN', superseded: true })
+    expect(() => recurringReadback(intent, { ...newer, assignmentId: 502 })).toThrow('не подтвердил')
+  })
+
   it('hides denied preview/apply/readback data, releases Back and retains the exact uncertain command only for its owner', async () => {
     const owner = { userId: '5', sessionId: 'session1', groupId: 7, semesterId: 10 }
     const target = {
@@ -272,7 +305,15 @@ describe('recurring lifecycle durable ownership', () => {
       restoredCount: 0,
       createdCount: 0,
     }
-    const update = { ...recurringUpdate(target, 'ODD', 'А-102'), expectedRevision: revision }
+    const update = {
+      ...recurringUpdate(target, 'ODD', 'А-102', {
+        dayOfWeek: 4,
+        lessonNumber: 2,
+        startTime: '10:05:00',
+        endTime: '11:25:00',
+      }),
+      expectedRevision: revision,
+    }
     const values = new Map<string, string>()
     const storage = {
       getItem: (scope: string) => values.get(scope) ?? null,
@@ -320,6 +361,10 @@ describe('recurring lifecycle durable ownership', () => {
     await api.updateScheduleItem(recovered.target.id!, recovered.input!, recovered.key)
     expect(requests[0]).toEqual(requests[1])
     expect(JSON.parse(String(requests[1]?.body))).toEqual(update)
+    expect(recurringItemMatches({ ...target, ...update, startTime: '10:05', endTime: '11:25' }, update)).toBe(true)
+    expect(recurringItemMatches({ ...target, ...update, dayOfWeek: target.dayOfWeek }, update)).toBe(false)
+    expect(recurringItemMatches({ ...target, ...update, lessonNumber: target.lessonNumber }, update)).toBe(false)
+    expect(recurringItemMatches({ ...target, ...update, startTime: '10:05:30' }, update)).toBe(false)
     // A DELETE has no JSON body, but retains the same revision/key during retries.
     const deletionKey = 'aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee'
     persistRecurringIntent(storage, {

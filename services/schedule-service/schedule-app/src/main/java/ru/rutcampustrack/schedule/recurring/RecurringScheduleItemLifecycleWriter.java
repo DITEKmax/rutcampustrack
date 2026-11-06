@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.rutcampustrack.schedule.contract.dto.item.*;
 import ru.rutcampustrack.schedule.contract.dto.lesson.TransferLessonRequest;
 import ru.rutcampustrack.schedule.contract.dto.lesson.TransferLessonResponse;
+import ru.rutcampustrack.schedule.contract.enums.LessonSlot;
 import ru.rutcampustrack.schedule.contract.enums.LessonStatus;
 import ru.rutcampustrack.schedule.contract.enums.WeekType;
 import ru.rutcampustrack.schedule.event.HomeworkBindingArchivedEvent;
@@ -24,6 +25,7 @@ import ru.rutcampustrack.schedule.exception.ConflictException;
 import ru.rutcampustrack.schedule.exception.ResourceNotFoundException;
 import ru.rutcampustrack.schedule.grpc.ScheduleSemesterArchiveWriteFence;
 import ru.rutcampustrack.schedule.lesson.LessonTransferWriter;
+import ru.rutcampustrack.schedule.week.AcademicWeekPolicy;
 
 /** Local template writer. Remote authorities are obtained by the coordinator before entry. */
 @Service
@@ -60,19 +62,38 @@ public class RecurringScheduleItemLifecycleWriter {
         this.events = events;
     }
 
-    public ScheduleItemResponse createReplayResponse(long actor, UUID key) {
+    public ScheduleItemResponse createReplayResponse(long actor, UUID key, CreateScheduleItemRequest request) {
         List<String> snapshots =
                 jdbc.query(
                         "SELECT response_snapshot::text FROM schedule_recurring_lifecycle_replay WHERE actor_id = ? AND request_key = ? AND action = 'REACTIVATE'",
                         (rs, row) -> rs.getString(1),
                         actor,
                         key);
-        if (snapshots.isEmpty()) return null;
-        try {
-            return mapper.readValue(snapshots.get(0), ScheduleItemResponse.class);
-        } catch (Exception failure) {
-            throw new IllegalStateException("Invalid recurring replay snapshot", failure);
+        if (!snapshots.isEmpty()) {
+            try {
+                return mapper.readValue(snapshots.getFirst(), ScheduleItemResponse.class);
+            } catch (Exception failure) {
+                throw new IllegalStateException("Invalid recurring replay snapshot", failure);
+            }
         }
+        // The command has already passed current authorization and idempotency checks.
+        // Reconstruct its accepted receipt from the immutable ledger, not the current slot.
+        var accepted = jdbc.queryForList("""
+                SELECT item.id, item.created_at, replay.generated_count, replay.generated_from, replay.generated_until
+                  FROM schedule_recurring_create_replay replay JOIN schedule_items item ON item.id = replay.schedule_item_id
+                 WHERE replay.actor_id = ? AND replay.request_key = ? AND replay.payload_hash = ?
+                   AND item.placement_changed_at IS NOT NULL
+                """, actor, key, RecurringScheduleItemWriter.payloadHash(request));
+        if (accepted.isEmpty()) return null;
+        var row = accepted.getFirst();
+        var slot = LessonSlot.forNumber(request.lessonNumber());
+        return new ScheduleItemResponse(number(row.get("id")), request.assignmentId(), request.groupId(),
+                request.subjectId(), request.semesterId(), request.dayOfWeek(), request.lessonNumber(),
+                request.startTime() == null ? slot.startTime() : request.startTime(),
+                request.endTime() == null ? slot.endTime() : request.endTime(), request.weekType(), request.room(),
+                true, timestamp(row.get("created_at")), number(row.get("generated_count")),
+                row.get("generated_from") == null ? null : date(row.get("generated_from")),
+                row.get("generated_until") == null ? null : date(row.get("generated_until")));
     }
 
     public List<Long> seriesItemIds(long itemId) {
@@ -114,7 +135,8 @@ public class RecurringScheduleItemLifecycleWriter {
         validateUpdate(item(items, itemId), request, delete);
         List<Map<String, Object>> rows = readOccurrences(items, false);
         Plan plan = plan(items, rows, request, delete, false, authorities, from, to);
-        return counts(revision(items, rows), plan);
+        if (plan.structural) checkTemplateCollision(items, request, false);
+        return counts(previewRevision(items, rows, request, plan), plan);
     }
 
     @Transactional(isolation = Isolation.READ_COMMITTED)
@@ -145,11 +167,11 @@ public class RecurringScheduleItemLifecycleWriter {
                         "Удалённый слот нужно вернуть через добавление прежней серии");
             }
             List<Map<String, Object>> rows = readOccurrences(items, true);
-            if (!revision(items, rows).equals(expectedRevision)) {
+            Plan plan = plan(items, rows, request, delete, false, authorities, from, to);
+            if (!previewRevision(items, rows, request, plan).equals(expectedRevision)) {
                 throw new ConflictException(
                         "Серия изменилась после предварительного расчёта; обнови расчёт");
             }
-            Plan plan = plan(items, rows, request, delete, false, authorities, from, to);
             UUID operation = UUID.randomUUID();
             OffsetDateTime now = OffsetDateTime.now(clock);
             checkTemplateCollision(items, request, delete);
@@ -157,11 +179,19 @@ public class RecurringScheduleItemLifecycleWriter {
                 jdbc.update(
                         """
                         UPDATE schedule_items
-                           SET week_type = CAST(? AS week_type), room = ?, lifecycle_revision = lifecycle_revision + 1,
+                           SET day_of_week = ?, lesson_number = ?, start_time = ?, end_time = ?,
+                               placement_changed_at = CASE WHEN ? THEN ? ELSE placement_changed_at END,
+                               week_type = CAST(? AS week_type), room = ?, lifecycle_revision = lifecycle_revision + 1,
                                is_active = CASE WHEN ? THEN FALSE ELSE is_active END,
                                deactivated_at = CASE WHEN ? THEN COALESCE(deactivated_at, ?) ELSE deactivated_at END
                          WHERE id = ? AND lifecycle_revision = ?
                         """,
+                        delete ? current.get("day_of_week") : request.dayOfWeek(),
+                        delete ? current.get("lesson_number") : request.lessonNumber(),
+                        delete ? current.get("start_time") : request.startTime(),
+                        delete ? current.get("end_time") : request.endTime(),
+                        plan.structural,
+                        now,
                         delete ? current.get("week_type") : request.weekType().name().toLowerCase(),
                         delete ? current.get("room") : request.room(),
                         delete,
@@ -172,6 +202,11 @@ public class RecurringScheduleItemLifecycleWriter {
             }
             UUID materialization=creation.beginLifecycleMaterialization(itemId,actor,key,
                     authorities.get(number(requested.get("assignment_id"))),from,to);
+            if (plan.structural) {
+                jdbc.queryForObject(
+                        "SELECT set_config('rutcampustrack.template_placement_operation_id', ?, true)",
+                        String.class, operation.toString());
+            }
             List<TransferLessonResponse> accepted = apply(plan, operation, actor, prepared, now);
             creation.finishLifecycleMaterialization(materialization);
             ScheduleItemResponse response = response(itemId);
@@ -342,6 +377,8 @@ public class RecurringScheduleItemLifecycleWriter {
             LocalDate from,
             LocalDate to) {
         Plan plan = new Plan();
+        plan.structural = !delete && !reactivate && items.stream().anyMatch(i -> placementDiffers(i, request));
+        boolean movedBefore = items.stream().anyMatch(i -> i.get("placement_changed_at") != null);
         LocalDateTime now = LocalDateTime.now(clock.withZone(MOSCOW));
         Map<Long, Set<LocalDate>> desired = new LinkedHashMap<>();
         for (Map<String, Object> current : items) {
@@ -377,6 +414,11 @@ public class RecurringScheduleItemLifecycleWriter {
                             RecurringDateCalculator.compute(
                                     createRequest(current, request), authority, lower, to, cap)));
         }
+        if (!delete && (plan.structural || movedBefore)) {
+            plan.weekBased = true;
+            planByWeek(items, rows, request, reactivate, authorities, now, desired, plan);
+            return plan;
+        }
         Set<LocalDate> covered = new HashSet<>();
         for (Map<String, Object> row : rows) {
             LocalDate day = date(row.get("occurrence_date"));
@@ -392,7 +434,8 @@ public class RecurringScheduleItemLifecycleWriter {
                     throw new ConflictException("Предыдущий перенос пары ещё не завершён");
                 if (target == null) plan.removed.add(row);
                 else if (!Objects.equals(row.get("room_snapshot"), request.room()))
-                    plan.updated.add(row);
+                    plan.updated.add(new ChangedDate(row, day, (short) number(row.get("lesson_number")),
+                            time(row.get("start_time")), time(row.get("end_time")), request.room()));
             } else if ("cancelled".equals(status)
                     && target != null
                     && Boolean.TRUE.equals(row.get("template_cancelled"))) {
@@ -427,6 +470,140 @@ public class RecurringScheduleItemLifecycleWriter {
         return plan;
     }
 
+    /** Match the current generation to its new date in the same academic week. */
+    private void planByWeek(
+            List<Map<String, Object>> items, List<Map<String, Object>> rows,
+            UpdateScheduleItemRequest request, boolean reactivate,
+            Map<Long, RecurringAssignmentAuthority> authorities, LocalDateTime now,
+            Map<Long, Set<LocalDate>> desired, Plan plan) {
+        Map<LocalDate, NewDate> targets = new TreeMap<>();
+        for (LocalDate day : desired.values().stream().flatMap(Set::stream).distinct().sorted().toList()) {
+            if (!day.atTime(request.startTime()).isAfter(now)) continue;
+            var target = targetForDate(items, desired, day, true, reactivate);
+            if (target != null) targets.put(weekOf(day), new NewDate(target, day,
+                    authorities.get(number(target.get("assignment_id"))), createRequest(target, request)));
+        }
+        Set<LocalDate> reservedWeeks = new HashSet<>();
+        Set<LocalDate> retainedDates = new HashSet<>();
+        Map<LocalDate, Map<String, Object>> future = new TreeMap<>();
+        Map<LocalDate, Map<String, Object>> cancelled = new HashMap<>();
+        for (var row : rows) {
+            LocalDate day = date(row.get("occurrence_date"));
+            LocalDate week = weekOf(day);
+            String status = String.valueOf(row.get("status"));
+            if (row.get("manual_source_date") != null) {
+                reservedWeeks.add(weekOf(date(row.get("manual_source_date"))));
+                retainedDates.add(day);
+            } else if ("cancelled".equals(status) && Boolean.TRUE.equals(row.get("template_cancelled"))) {
+                cancelled.put(day, row);
+            } else if (!"planned".equals(status) || !day.atTime(time(row.get("start_time"))).isAfter(now)) {
+                // A conducted, started or intentionally cancelled lesson still occupies its natural week.
+                reservedWeeks.add(week);
+                retainedDates.add(day);
+            } else if (future.putIfAbsent(week, row) != null) {
+                throw new ConflictException("На одной учебной неделе несколько пар этой серии");
+            }
+        }
+        for (var entry : future.entrySet()) {
+            var row = entry.getValue();
+            LocalDate source = date(row.get("occurrence_date"));
+            var target = targets.remove(entry.getKey());
+            if (Boolean.TRUE.equals(row.get("pending_transfer"))) {
+                throw new ConflictException("Предыдущий перенос пары ещё не завершён");
+            }
+            if (target == null) {
+                if (plan.structural && (request.weekType() == WeekType.ALL
+                        || request.weekType() == AcademicWeekPolicy.weekType(source))) {
+                    throw new ConflictException("Для будущей пары нет нового слота в той же учебной неделе: "
+                            + "время уже прошло или дата выходит за границы семестра");
+                }
+                if (plan.structural && Boolean.TRUE.equals(row.get("live_homework"))) {
+                    throw new ConflictException("У будущей пары с домашним заданием нет нового слота в этой неделе");
+                }
+                plan.removed.add(row);
+                continue;
+            }
+            if (reservedWeeks.contains(entry.getKey()) || retainedDates.contains(target.date)
+                    || cancelled.containsKey(target.date) && !source.equals(target.date)) {
+                throw new ConflictException("Новый слот пересекается с сохранённой парой этой серии");
+            }
+            boolean moving = !source.equals(target.date)
+                    || number(row.get("lesson_number")) != request.lessonNumber()
+                    || !time(row.get("start_time")).equals(request.startTime())
+                    || !time(row.get("end_time")).equals(request.endTime());
+            if (moving) {
+                long originId = number(row.get("schedule_item_id"));
+                var origin = item(items, originId);
+                boolean admitted = originId == number(target.item.get("id"))
+                        && Boolean.TRUE.equals(origin.get("is_active"));
+                if (!admitted && plan.structural && row.get("assignment_id") != null
+                        && !Boolean.TRUE.equals(origin.get("is_active"))
+                        && desired.get(originId).contains(target.date)) {
+                    admitted = Boolean.TRUE.equals(jdbc.queryForObject(
+                            "SELECT constructor_has_matching_active_replacement_successor(?, ?::bigint[])",
+                            Boolean.class, originId, array(itemIds(items))));
+                }
+                if (!plan.structural || !admitted
+                        || !retainsDatedAssignment(row, target.date)) {
+                    throw new ConflictException("Новый слот не соответствует действующему назначению пары");
+                }
+                checkPhysicalCollision(target, number(row.get("current_lesson_id")));
+                plan.updated.add(new ChangedDate(row, target.date, request.lessonNumber(),
+                        request.startTime(), request.endTime(), request.room()));
+            } else if (!Objects.equals(row.get("room_snapshot"), request.room())) {
+                plan.updated.add(new ChangedDate(row, source, request.lessonNumber(),
+                        request.startTime(), request.endTime(), request.room()));
+            }
+        }
+        Set<LocalDate> coveredDates = creation.coveredLifecycleDates(itemIds(items));
+        for (var entry : targets.entrySet()) {
+            NewDate target = entry.getValue();
+            if (reservedWeeks.contains(entry.getKey())) continue;
+            if (retainedDates.contains(target.date)) {
+                throw new ConflictException("Новый слот пересекается с сохранённой парой этой серии");
+            }
+            var cancelledOnDate = cancelled.get(target.date);
+            if (cancelledOnDate != null) {
+                if (plan.structural || number(cancelledOnDate.get("lesson_number")) != request.lessonNumber()
+                        || !time(cancelledOnDate.get("start_time")).equals(request.startTime())
+                        || !time(cancelledOnDate.get("end_time")).equals(request.endTime())) {
+                    throw new ConflictException("Новый слот пересекается с отменённой парой этой серии");
+                }
+                var restore = new LinkedHashMap<>(cancelledOnDate);
+                restore.put("target_item", target.item);
+                plan.restored.add(restore);
+            } else {
+                if (coveredDates.contains(target.date)) {
+                    throw new ConflictException("На новую дату уже сохранена история этой серии");
+                }
+                checkPhysicalCollision(target, 0);
+                plan.created.add(target);
+            }
+        }
+    }
+
+    static LocalDate weekOf(LocalDate day) {
+        return day.minusDays(day.getDayOfWeek().getValue() - 1L);
+    }
+
+    private boolean retainsDatedAssignment(Map<String, Object> row, LocalDate day) {
+        return row.get("assignment_id") == null || Boolean.TRUE.equals(jdbc.queryForObject(
+                """
+                SELECT EXISTS (SELECT 1 FROM schedule_assignment_fences WHERE assignment_id = ?
+                    AND ? >= valid_from AND ? < creation_cap_until_exclusive)
+                """, Boolean.class, row.get("assignment_id"), day, day));
+    }
+
+    private void checkPhysicalCollision(NewDate target, long source) {
+        if (Boolean.TRUE.equals(jdbc.queryForObject(
+                """
+                SELECT EXISTS (SELECT 1 FROM lessons WHERE group_id = ? AND date = ? AND lesson_number = ?
+                    AND status IN ('planned', 'active', 'closed') AND id <> ?)
+                """, Boolean.class, target.request.groupId(), target.date, target.request.lessonNumber(), source))) {
+            throw new ConflictException("Новый слот уже занят");
+        }
+    }
+
     private Map<String,Object> targetForDate(List<Map<String,Object>> items,Map<Long,Set<LocalDate>> desired,
             LocalDate day,boolean creating,boolean reactivate) {
         Map<String,Object> fallback=null;
@@ -449,8 +626,9 @@ public class RecurringScheduleItemLifecycleWriter {
             ScheduleSemesterArchiveWriteFence.PreparedBusinessWrite prepared,
             OffsetDateTime now) {
         List<TransferLessonResponse> accepted = new ArrayList<>();
-        for (Map<String, Object> row : plan.removed) cancel(row, operation, actor, now);
-        for (Map<String, Object> row : plan.updated) {
+        for (Map<String, Object> row : plan.removed) cancel(row, operation, actor, now, plan.structural);
+        for (ChangedDate change : plan.updated) {
+            Map<String, Object> row = change.source;
             UUID key =
                     UUID.nameUUIDFromBytes(
                             (operation + ":" + row.get("id")).getBytes(StandardCharsets.UTF_8));
@@ -459,15 +637,11 @@ public class RecurringScheduleItemLifecycleWriter {
                             number(row.get("current_lesson_id")),
                             actor,
                             new TransferLessonRequest(
-                                    date(row.get("occurrence_date")),
-                                    (int) number(row.get("lesson_number")),
-                                    time(row.get("start_time")),
-                                    time(row.get("end_time")),
-                                    (String)
-                                            jdbc.queryForMap(
-                                                            "SELECT room FROM schedule_items WHERE id = ?",
-                                                            number(row.get("schedule_item_id")))
-                                                    .get("room"),
+                                    change.date,
+                                    (int) change.number,
+                                    change.start,
+                                    change.end,
+                                    change.room,
                                     String.valueOf(row.get("revision")),
                                     key),
                             operation,
@@ -490,6 +664,10 @@ public class RecurringScheduleItemLifecycleWriter {
             } else restore(row, operation, actor, now);
         }
         for (NewDate generated : plan.created) {
+            if (plan.structural && !generated.date.atTime(generated.request.startTime())
+                    .isAfter(LocalDateTime.now(clock.withZone(MOSCOW)))) {
+                throw new ConflictException("Время нового слота уже наступило; обнови расчёт");
+            }
             long itemId = number(generated.item.get("id"));
             long occurrence =
                     creation.insertOccurrence(itemId, generated.date, generated.authority, now);
@@ -524,7 +702,8 @@ public class RecurringScheduleItemLifecycleWriter {
         return accepted;
     }
 
-    private void cancel(Map<String, Object> row, UUID operation, long actor, OffsetDateTime now) {
+    private void cancel(Map<String, Object> row, UUID operation, long actor, OffsetDateTime now,
+            boolean protectHomework) {
         long occurrence = number(row.get("id")), lesson = number(row.get("current_lesson_id"));
         Map<String, Object> actionBefore = ScheduleActionRecordedEvent.snapshot(jdbc, lesson);
         List<Map<String, Object>> bindings =
@@ -536,6 +715,13 @@ public class RecurringScheduleItemLifecycleWriter {
                 """,
                         occurrence,
                         lesson);
+        if (protectHomework && !bindings.isEmpty()) {
+            throw new ConflictException("У будущей пары с домашним заданием нет нового слота в этой неделе");
+        }
+        if (protectHomework && !date(row.get("occurrence_date")).atTime(time(row.get("start_time")))
+                .isAfter(LocalDateTime.now(clock.withZone(MOSCOW)))) {
+            throw new ConflictException("Пара уже началась; обнови расчёт");
+        }
         if (bindings.stream().anyMatch(b -> b.get("pending_edit_operation_id") != null)) {
             throw new ConflictException("Домашнее задание ожидает подтверждения изменения");
         }
@@ -756,8 +942,14 @@ public class RecurringScheduleItemLifecycleWriter {
                        lesson.is_geo_blocked, lesson.is_blocked_by_headman, lesson.blocked_by_user_id, lesson.blocked_at,
                        EXISTS (SELECT 1 FROM lesson_transfer_operations operation WHERE operation.occurrence_id = occurrence.id
                            AND operation.template_operation_id IS NULL) AS manual_transfer,
+                       (SELECT (operation.source_snapshot->>'date')::date FROM lesson_transfer_operations operation
+                         WHERE operation.occurrence_id = occurrence.id AND operation.template_operation_id IS NULL
+                         ORDER BY operation.source_generation LIMIT 1) AS manual_source_date,
                        EXISTS (SELECT 1 FROM lesson_transfer_operations operation WHERE operation.occurrence_id = occurrence.id
                            AND operation.state <> 'COMPLETED') AS pending_transfer,
+                       EXISTS (SELECT 1 FROM lesson_homework_bindings binding
+                         WHERE binding.occurrence_id = occurrence.id AND binding.state IN ('PENDING', 'ACTIVE'))
+                         AS live_homework,
                        EXISTS (SELECT 1 FROM lesson_lifecycle_entries entry WHERE entry.occurrence_id = occurrence.id
                            AND entry.revision = occurrence.revision AND entry.action = 'CANCELLED'
                            AND entry.template_operation_id IS NOT NULL) AS template_cancelled
@@ -805,14 +997,35 @@ public class RecurringScheduleItemLifecycleWriter {
                 || request.endTime() == null
                 || request.weekType() == null
                 || number(current.get("subject_id")) != request.subjectId()
-                || number(current.get("day_of_week")) != request.dayOfWeek()
+                || request.room() != null && request.room().length() > 64) {
+            throw new ConflictException("Предмет серии нельзя изменить; проверь параметры нового слота");
+        }
+        if (placementDiffers(current, request)) {
+            if (request.dayOfWeek() < 1 || request.dayOfWeek() > 7) {
+                throw new ConflictException("Выбери день недели для нового слота");
+            }
+            LessonSlot.forNumber(request.lessonNumber()).validateTimes(request.startTime(), request.endTime());
+        }
+    }
+
+    private static boolean placementDiffers(Map<String, Object> current, UpdateScheduleItemRequest request) {
+        return number(current.get("day_of_week")) != request.dayOfWeek()
                 || number(current.get("lesson_number")) != request.lessonNumber()
                 || !time(current.get("start_time")).equals(request.startTime())
-                || !time(current.get("end_time")).equals(request.endTime())
-                || request.room() != null && request.room().length() > 64) {
-            throw new ConflictException(
-                    "Предмет, день, номер и время слота неизменяемы; доступны аудитория и чётность");
-        }
+                || !time(current.get("end_time")).equals(request.endTime());
+    }
+
+    private String previewRevision(List<Map<String, Object>> items, List<Map<String, Object>> rows,
+            UpdateScheduleItemRequest request, Plan plan) {
+        String base = revision(items, rows);
+        if (!plan.weekBased) return base;
+        return HexFormat.of().formatHex(hash(json(Arrays.asList(
+                base, request.subjectId(), request.dayOfWeek(), request.lessonNumber(), request.startTime(),
+                request.endTime(), request.weekType(), request.room(),
+                plan.updated.stream().map(c -> List.of(c.source.get("id"), c.date)).toList(),
+                plan.removed.stream().map(r -> r.get("id")).toList(),
+                plan.restored.stream().map(r -> r.get("id")).toList(),
+                plan.created.stream().map(c -> List.of(c.item.get("id"), c.date)).toList()))));
     }
 
     private void checkTemplateCollision(
@@ -986,11 +1199,16 @@ public class RecurringScheduleItemLifecycleWriter {
     }
 
     private static final class Plan {
-        final List<Map<String, Object>> updated = new ArrayList<>(),
-                removed = new ArrayList<>(),
+        boolean structural;
+        boolean weekBased;
+        final List<ChangedDate> updated = new ArrayList<>();
+        final List<Map<String, Object>> removed = new ArrayList<>(),
                 restored = new ArrayList<>();
         final List<NewDate> created = new ArrayList<>();
     }
+
+    private record ChangedDate(Map<String, Object> source, LocalDate date, short number,
+            LocalTime start, LocalTime end, String room) {}
 
     private record NewDate(
             Map<String, Object> item,

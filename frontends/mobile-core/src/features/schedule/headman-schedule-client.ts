@@ -378,9 +378,10 @@ export class HeadmanScheduleApi {
     return item as HeadmanRecurringCreateReceipt
   }
 
-  getScheduleItem(id: number): Promise<HeadmanScheduleItem> {
+  getScheduleItem(id: number, fresh = false): Promise<HeadmanScheduleItem> {
     assertNumericId(id, 'id')
-    return this.request<unknown>(`/api/schedule/items/${id}`).then(scheduleItem)
+    return this.request<unknown>(`/api/schedule/items/${id}`, fresh ? { cache: 'no-store' } : undefined)
+      .then(scheduleItem)
   }
 
   async previewScheduleItem(

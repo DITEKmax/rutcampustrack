@@ -1512,6 +1512,180 @@ VALUES ((SELECT id FROM schedule_items LIMIT 1), DATE '2026-02-23',
     }
 
     @Test
+    void structuralMoveKeepsHistoryAssignmentHomeworkAndReplay() throws Exception {
+        when(clock.instant()).thenReturn(Instant.parse("2026-02-09T06:00:00Z"));
+        UUID createKey = UUID.randomUUID();
+        var create = request(1, 1, "A-101", ASSIGNMENT_ID, GROUP_ID, SUBJECT_ID, SEMESTER_ID);
+        var created = objectMapper.readTree(postCreate(createKey, create).getResponse().getContentAsString());
+        long item = created.path("id").asLong();
+        long future = lessonOn("2026-02-16");
+        insertBinding(future, 901L);
+        var history = jdbcTemplate.queryForList(
+                "SELECT to_jsonb(l)::text FROM lessons l WHERE date <= DATE '2026-02-09' ORDER BY id",
+                String.class);
+        var before = jdbcTemplate.queryForMap("SELECT occurrence_id, assignment_id, assigned_teacher_id FROM lessons WHERE id=?", future);
+        var preview = preview(item, placementRequest(2, 2, WeekType.ALL, null), false);
+        assertThat(preview.path("updatedCount").asLong()).isEqualTo(1);
+        assertThat(preview.path("createdCount").asLong()).isZero();
+        assertThat(preview.path("removedCount").asLong()).isZero();
+        UUID key = UUID.randomUUID();
+        var command = placementRequest(2, 2, WeekType.ALL, preview.path("revision").asText());
+        var result = update(item, key, command);
+        assertThat(result.path("dayOfWeek").asInt()).isEqualTo(2);
+        assertThat(result.path("lessonNumber").asInt()).isEqualTo(2);
+        assertThat(result.path("startTime").asText()).startsWith("10:05");
+        long moved = lessonOn("2026-02-17");
+        assertThat(jdbcTemplate.queryForMap(
+                "SELECT occurrence_id, assignment_id, assigned_teacher_id FROM lessons WHERE id=?", moved))
+                .isEqualTo(before);
+        assertThat(jdbcTemplate.queryForObject(
+                "SELECT current_lesson_id FROM lesson_homework_bindings WHERE homework_id=901", Long.class))
+                .isEqualTo(moved);
+        assertThat(jdbcTemplate.queryForObject("SELECT status::text FROM lessons WHERE id=?", String.class, future))
+                .isEqualTo("transferred");
+        assertThat(jdbcTemplate.queryForList(
+                "SELECT to_jsonb(l)::text FROM lessons l WHERE date <= DATE '2026-02-09' ORDER BY id", String.class))
+                .containsExactlyElementsOf(history);
+        assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM lessons", Long.class)).isEqualTo(4);
+
+        completeTransfer(result.path("transfers").get(0).path("operationId").asText());
+        assertThat(update(item, key, command)).isEqualTo(result);
+        var originalReplay = objectMapper.readTree(postCreate(createKey, create).getResponse().getContentAsString());
+        assertThat(originalReplay).isEqualTo(created);
+        assertThat(jdbcTemplate.queryForObject("SELECT day_of_week FROM schedule_items WHERE id=?", Integer.class, item))
+                .isEqualTo(2);
+        materializations.materializeSystemBackfill(UUID.randomUUID(), SEMESTER_ID, GROUP_ID, List.of(item));
+        assertThat(jdbcTemplate.queryForList("SELECT date::text FROM lessons ORDER BY date", String.class))
+                .containsExactly("2026-02-02", "2026-02-09", "2026-02-16", "2026-02-17");
+    }
+
+    @Test
+    void structuralMoveConflictsLeaveSeriesAndHomeworkUntouched() throws Exception {
+        long item = createLifecycleItem();
+        long future = lessonOn("2026-02-16");
+        insertBinding(future, 901L);
+        var unmatched = placementRequest(2, 2, WeekType.EVEN, null);
+        mockMvc.perform(mutationHeaders(post("/schedule/items/{id}/lifecycle-preview", item), UUID.randomUUID())
+                .contentType(MediaType.APPLICATION_JSON).content(objectMapper.writeValueAsString(unmatched)))
+                .andExpect(status().isConflict());
+
+        var preview = preview(item, placementRequest(2, 2, WeekType.ALL, null), false);
+        var blocker = objectMapper.readTree(postCreate(UUID.randomUUID(),
+                request(2, 2, "BLOCKER", ASSIGNMENT_ID, GROUP_ID, SUBJECT_ID, SEMESTER_ID))
+                .getResponse().getContentAsString()).path("id").asLong();
+        // A dated physical collision can exist without another visible active template.
+        seedLegacyInactiveTemplate(blocker);
+        var tables = List.of("schedule_items", "lessons", "lesson_occurrences",
+                "lesson_homework_bindings", "lesson_transfer_operations", "schedule_outbox",
+                "schedule_recurring_lifecycle_replay");
+        var before = new java.util.LinkedHashMap<String, List<String>>();
+        for (String table : tables) before.put(table, snapshotRows(table));
+        var command = placementRequest(2, 2, WeekType.ALL, preview.path("revision").asText());
+        mockMvc.perform(mutationHeaders(put("/schedule/items/{id}", item), UUID.randomUUID())
+                .contentType(MediaType.APPLICATION_JSON).content(objectMapper.writeValueAsString(command)))
+                .andExpect(status().isConflict());
+        for (String table : tables) assertThat(snapshotRows(table)).as(table).isEqualTo(before.get(table));
+    }
+
+    private List<String> snapshotRows(String table) {
+        return jdbcTemplate.queryForList("SELECT to_jsonb(snapshot)::text FROM " + table
+                + " snapshot ORDER BY 1", String.class);
+    }
+
+    @Test
+    void structuralMoveRejectsElapsedTargetInsteadOfCancellingFutureSource() throws Exception {
+        var created = objectMapper.readTree(postCreate(UUID.randomUUID(),
+                request(5, 1, "A-101", ASSIGNMENT_ID, GROUP_ID, SUBJECT_ID, SEMESTER_ID))
+                .getResponse().getContentAsString());
+        long item = created.path("id").asLong();
+        long future = lessonOn("2026-02-13");
+        assertPlacementPreviewConflict(item, placementRequest(1, 1, WeekType.ALL, null));
+        assertThat(jdbcTemplate.queryForObject("SELECT day_of_week FROM schedule_items WHERE id=?", Integer.class, item))
+                .isEqualTo(5);
+        assertThat(jdbcTemplate.queryForObject("SELECT status::text FROM lessons WHERE id=?", String.class, future))
+                .isEqualTo("planned");
+    }
+
+    @Test
+    void structuralMoveRejectsTargetOutsideDatedAssignmentInsteadOfCancellingFutureSource() throws Exception {
+        when(academicGrpcClient.getAssignmentsByIds(List.of(ASSIGNMENT_ID))).thenReturn(List.of(
+                assignment(ASSIGNMENT_ID, GROUP_ID, SUBJECT_ID, SEMESTER_ID, SEMESTER_FROM, LocalDate.of(2026, 2, 17))));
+        long item = createLifecycleItem();
+        long future = lessonOn("2026-02-16");
+        assertPlacementPreviewConflict(item, placementRequest(2, 2, WeekType.ALL, null));
+        assertThat(jdbcTemplate.queryForObject("SELECT assignment_id FROM lessons WHERE id=?", Long.class, future))
+                .isEqualTo(ASSIGNMENT_ID);
+        assertThat(jdbcTemplate.queryForObject("SELECT status::text FROM lessons WHERE id=?", String.class, future))
+                .isEqualTo("planned");
+    }
+
+    private void assertPlacementPreviewConflict(long item,
+            ru.rutcampustrack.schedule.contract.dto.item.UpdateScheduleItemRequest request) throws Exception {
+        mockMvc.perform(mutationHeaders(post("/schedule/items/{id}/lifecycle-preview", item), UUID.randomUUID())
+                .contentType(MediaType.APPLICATION_JSON).content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isConflict());
+    }
+
+    @Test
+    void structuralMoveKeepsBothDatedAssignmentsAcrossCommittedReplacement() throws Exception {
+        var initial = request(3, 1, "A-101", ASSIGNMENT_ID, GROUP_ID, SUBJECT_ID, SEMESTER_ID);
+        long sourceItem = objectMapper.readTree(postCreate(UUID.randomUUID(), initial).getResponse()
+                .getContentAsString()).path("id").asLong();
+        LocalDate effective = LocalDate.of(2026, 2, 14);
+        UUID operation = UUID.randomUUID();
+        var prepared = ru.rutcampustrack.academic.grpc.PreparedAssignmentCloseResponse.newBuilder()
+                .setOperationId(operation.toString())
+                .setSourceAssignmentId(ASSIGNMENT_ID).setTargetAssignmentId(502L)
+                .setSourceTeacherId(TEACHER_ID).setTargetTeacherId(701L)
+                .setGroupId(GROUP_ID).setSubjectId(SUBJECT_ID).setSemesterId(SEMESTER_ID).setLessonType("lecture")
+                .setSourceValidFrom(SEMESTER_FROM.toString()).setSourceValidUntilExclusive(ASSIGNMENT_END.toString())
+                .setTargetValidUntilExclusive(ASSIGNMENT_END.toString()).setEffectiveFrom(effective.toString())
+                .setState("PREPARED").setTargetLifecycleState("PREPARED")
+                .setPayloadHash(com.google.protobuf.ByteString.copyFrom(new byte[32])).build();
+        when(academicGrpcClient.getPreparedAssignmentCloseOperation(operation, ASSIGNMENT_ID)).thenReturn(prepared);
+        replacementService.install(ru.rutcampustrack.schedule.grpc.InstallAssignmentCloseCapRequest.newBuilder()
+                .setOperationId(operation.toString()).setSourceAssignmentId(ASSIGNMENT_ID).setTargetAssignmentId(502L)
+                .setEffectiveFrom(effective.toString()).setPayloadHash(prepared.getPayloadHash()).build());
+        when(academicGrpcClient.getPreparedAssignmentCloseOperation(operation, ASSIGNMENT_ID))
+                .thenReturn(prepared.toBuilder().setState("APPLIED").setTargetLifecycleState("ACTIVE")
+                        .setSourceValidUntilExclusive(effective.toString()).build());
+        replacementService.commit(ru.rutcampustrack.schedule.grpc.CommitAssignmentCloseRequest.newBuilder()
+                .setOperationId(operation.toString()).setPayloadHash(prepared.getPayloadHash()).build());
+        long targetItem = jdbcTemplate.queryForObject("""
+                SELECT target_schedule_item_id FROM schedule_assignment_replacement_templates
+                 WHERE source_schedule_item_id=?
+                """, Long.class, sourceItem);
+        var source = assignment(ASSIGNMENT_ID, GROUP_ID, SUBJECT_ID, SEMESTER_ID, SEMESTER_FROM, effective);
+        var target = assignment(502L, GROUP_ID, SUBJECT_ID, SEMESTER_ID, effective, ASSIGNMENT_END)
+                .toBuilder().setTeacherId(701L).build();
+        when(academicGrpcClient.getAssignmentsByIds(List.of(ASSIGNMENT_ID, 502L))).thenReturn(List.of(source, target));
+
+        var identities = jdbcTemplate.queryForList("""
+                SELECT id, schedule_item_id, assignment_id, assigned_teacher_id
+                  FROM lesson_occurrences WHERE occurrence_date >= DATE '2026-02-11' ORDER BY occurrence_date
+                """);
+        var preview = preview(targetItem, placementRequest(4, 2, WeekType.ALL, null), false);
+        assertThat(preview.path("updatedCount").asLong()).isEqualTo(2);
+        update(targetItem, UUID.randomUUID(), placementRequest(4, 2, WeekType.ALL, preview.path("revision").asText()));
+        assertThat(jdbcTemplate.queryForList("""
+                SELECT id, schedule_item_id, assignment_id, assigned_teacher_id
+                  FROM lesson_occurrences WHERE occurrence_date >= DATE '2026-02-11' ORDER BY occurrence_date
+                """)).containsExactlyElementsOf(identities);
+        assertThat(jdbcTemplate.queryForList("""
+                SELECT occurrence_date::text FROM lesson_occurrences ORDER BY occurrence_date
+                """, String.class)).containsExactly("2026-02-04", "2026-02-12", "2026-02-19");
+        assertThat(jdbcTemplate.queryForObject("SELECT is_active FROM schedule_items WHERE id=?", Boolean.class, sourceItem))
+                .isFalse();
+    }
+
+    private ru.rutcampustrack.schedule.contract.dto.item.UpdateScheduleItemRequest placementRequest(
+            int day, int number, WeekType parity, String revision) {
+        var slot = ru.rutcampustrack.schedule.contract.enums.LessonSlot.forNumber(number);
+        return new ru.rutcampustrack.schedule.contract.dto.item.UpdateScheduleItemRequest(
+                SUBJECT_ID, (short) day, (short) number, slot.startTime(), slot.endTime(), parity, "A-101", revision);
+    }
+
+    @Test
     void futureRoomUsesDurableTransferAndReplayKeepsAcceptedSnapshot() throws Exception {
         long item = createLifecycleItem();
         long past = lessonOn("2026-02-02"),

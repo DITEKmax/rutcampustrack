@@ -80,9 +80,14 @@ export function recurringUpdate(
   target: HeadmanScheduleItem,
   weekType: HeadmanScheduleUpdateInput['weekType'],
   room: string,
+  placement?: Pick<HeadmanScheduleUpdateInput, 'dayOfWeek' | 'lessonNumber' | 'startTime' | 'endTime'>,
 ): Omit<HeadmanScheduleUpdateInput, 'expectedRevision'> {
-  const { subjectId, dayOfWeek, lessonNumber, startTime, endTime } = target
-  if (!subjectId || !dayOfWeek || !lessonNumber || !startTime || !endTime)
+  const { subjectId } = target
+  const { dayOfWeek, lessonNumber, startTime, endTime } = placement ?? target
+  if (!subjectId || !dayOfWeek || !lessonNumber || !startTime || !endTime ||
+      !Number.isInteger(dayOfWeek) || dayOfWeek < 1 || dayOfWeek > 7 ||
+      !Number.isInteger(lessonNumber) || lessonNumber < 1 || lessonNumber > 8 ||
+      !validTime(startTime) || !validTime(endTime))
     throw new Error('Слот не содержит исходные параметры. Обнови расписание.')
   if (room.trim().length > 64) throw new Error('Аудитория — до 64 символов.')
   return {
@@ -93,6 +98,74 @@ export function recurringUpdate(
     endTime,
     weekType,
     room: room.trim() || null,
+  }
+}
+
+function validTime(value: string): boolean {
+  return typeof value === 'string' && /^(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d{1,9})?)?$/.test(value)
+}
+
+function comparableTime(value: string | undefined): string | undefined {
+  if (value === undefined || !validTime(value)) return value
+  const [time, fraction = ''] = value.split('.')
+  return `${time!.length === 5 ? `${time}:00` : time}.${fraction.padEnd(9, '0')}`
+}
+
+export function recurringItemMatches(
+  item: HeadmanScheduleItem,
+  input: Omit<HeadmanScheduleUpdateInput, 'expectedRevision'>,
+): boolean {
+  return item.subjectId === input.subjectId &&
+    item.dayOfWeek === input.dayOfWeek &&
+    item.lessonNumber === input.lessonNumber &&
+    comparableTime(item.startTime) === comparableTime(input.startTime) &&
+    comparableTime(item.endTime) === comparableTime(input.endTime) &&
+    item.weekType === input.weekType &&
+    (item.room?.trim() || null) === input.room
+}
+
+function belongsToRecurringIntent(intent: RecurringIntent, item: HeadmanScheduleItem): boolean {
+  return item.id === intent.target.id &&
+    item.groupId === intent.owner.groupId &&
+    item.semesterId === intent.owner.semesterId &&
+    item.subjectId === intent.target.subjectId &&
+    Number.isSafeInteger(item.assignmentId) &&
+    item.assignmentId === intent.target.assignmentId &&
+    item.active === true
+}
+
+export function acceptedRecurringTransfers(
+  intent: RecurringIntent,
+  accepted: HeadmanScheduleItem,
+): readonly string[] {
+  const ids = accepted.transfers?.map((transfer) => transfer.operationId)
+  const count = accepted.lifecycleResult?.updatedCount ?? intent.preview.updatedCount
+  if (!intent.input || !belongsToRecurringIntent(intent, accepted) ||
+      !recurringItemMatches(accepted, intent.input) ||
+      (accepted.room ?? null) !== intent.input.room ||
+      !ids || !Number.isSafeInteger(count) || count < 0 || ids.length < count ||
+      new Set(ids).size !== ids.length ||
+      (intent.transferIds.length > 0 &&
+        (intent.transferIds.length !== ids.length || intent.transferIds.some((id) => !ids.includes(id))))) {
+    throw new Error('Сервер не подтвердил исходное изменение серии. Повтори исходный запрос.')
+  }
+  return ids
+}
+
+/** Use only after the exact command receipt and all its transfers are confirmed. */
+export function recurringReadback(intent: RecurringIntent, item: HeadmanScheduleItem) {
+  if (!intent.input || !belongsToRecurringIntent(intent, item) ||
+      !item.dayOfWeek || !Number.isInteger(item.dayOfWeek) || item.dayOfWeek < 1 || item.dayOfWeek > 7 ||
+      !item.lessonNumber || !Number.isInteger(item.lessonNumber) || item.lessonNumber < 1 || item.lessonNumber > 8 ||
+      !item.startTime || !validTime(item.startTime) || !item.endTime || !validTime(item.endTime) ||
+      (item.room != null && typeof item.room !== 'string') ||
+      (item.weekType !== 'ALL' && item.weekType !== 'ODD' && item.weekType !== 'EVEN')) {
+    throw new Error('Сервер не подтвердил текущее расписание этой серии. Повтори исходный запрос.')
+  }
+  return {
+    dayOfWeek: item.dayOfWeek,
+    weekType: item.weekType,
+    superseded: !recurringItemMatches(item, intent.input) || (item.room ?? null) !== intent.input.room,
   }
 }
 
@@ -144,7 +217,7 @@ export function readRecurringIntent(
       !['ALL', 'ODD', 'EVEN'].includes(value.input.weekType) ||
       (value.input.room !== null && typeof value.input.room !== 'string') ||
       Object.entries(
-        recurringUpdate(value.target, value.input.weekType, value.input.room ?? ''),
+        recurringUpdate(value.target, value.input.weekType, value.input.room ?? '', value.input),
       ).some(
         ([field, expected]) =>
           value.input?.[field as keyof HeadmanScheduleUpdateInput] !== expected,

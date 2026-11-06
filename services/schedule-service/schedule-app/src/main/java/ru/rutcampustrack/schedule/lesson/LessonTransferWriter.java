@@ -10,7 +10,9 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.time.Clock;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
@@ -143,14 +145,15 @@ public class LessonTransferWriter {
                         "Домашнее задание ожидает подтверждения изменения; повтори перенос позже");
             }
 
-            LocalDate today = LocalDate.now(clock.withZone(MOSCOW));
+            LocalDateTime localNow = LocalDateTime.now(clock.withZone(MOSCOW));
+            LocalDate today = localNow.toLocalDate();
             LocalDate sourceDate = localDate(source.get("date"));
             boolean future =
                     templateOperationId == null
                             ? sourceDate.isAfter(today)
                             : sourceDate
                                     .atTime(localTime(source.get("start_time")))
-                                    .isAfter(java.time.LocalDateTime.now(clock.withZone(MOSCOW)));
+                                    .isAfter(localNow);
             if (!"planned".equals(source.get("status")) || !future) {
                 throw new InvalidLessonStateException(
                         "Переносить можно только будущую запланированную пару");
@@ -175,7 +178,7 @@ public class LessonTransferWriter {
                     occurrenceId);
 
             short targetNumber = request.targetLessonNumber().shortValue();
-            // Template operations change only room and retain immutable historical times.
+            // Room-only template changes retain the source snapshot, including legacy times.
             var slot = LessonSlot.forNumber(targetNumber);
             if (templateOperationId == null)
                 slot.validateTimes(request.targetStartTime(), request.targetEndTime());
@@ -199,13 +202,24 @@ public class LessonTransferWriter {
                 throw new ConflictException(
                         "Для переноса не удалось определить корректное время пары");
             }
-            if (templateOperationId != null
-                    && (!targetDate.equals(sourceDate)
-                            || targetNumber != number(source.get("lesson_number"))
-                            || !targetStart.equals(localTime(source.get("start_time")))
-                            || !targetEnd.equals(localTime(source.get("end_time")))
-                            || java.util.Objects.equals(targetRoom, source.get("room_snapshot")))) {
-                throw new ConflictException("Шаблон может изменить только аудиторию будущей пары");
+            if (templateOperationId != null) {
+                boolean samePlacement = targetDate.equals(sourceDate)
+                        && targetNumber == number(source.get("lesson_number"))
+                        && targetStart.equals(localTime(source.get("start_time")))
+                        && targetEnd.equals(localTime(source.get("end_time")));
+                if (samePlacement && Objects.equals(targetRoom, source.get("room_snapshot"))) {
+                    throw new ConflictException("Пара уже занимает выбранный слот и аудиторию");
+                }
+                if (!samePlacement) {
+                    slot.validateTimes(request.targetStartTime(), request.targetEndTime());
+                    if (request.targetStartTime() == null || request.targetEndTime() == null
+                            || !targetDate.atTime(targetStart).isAfter(localNow)
+                            || !sourceDate.with(DayOfWeek.MONDAY).equals(targetDate.with(DayOfWeek.MONDAY))
+                            || !matchesTemplatePlacement(source, targetDay, targetNumber,
+                                    targetStart, targetEnd, targetRoom)) {
+                        throw new ConflictException("Новый слот не совпадает с будущим слотом действующей серии");
+                    }
+                }
             }
             if (templateOperationId == null
                     && targetDate.equals(sourceDate)
@@ -1132,6 +1146,20 @@ SELECT physical.id FROM lessons physical
 
     private static Long nullableBinding(Object value) {
         return value == null ? null : number(value);
+    }
+
+    private boolean matchesTemplatePlacement(Map<String, Object> source,
+            short day, short number, LocalTime start, LocalTime end, String room) {
+        return source.get("schedule_item_id") != null && Boolean.TRUE.equals(jdbc.queryForObject(
+                """
+                SELECT EXISTS (SELECT 1 FROM schedule_items item WHERE id = ?
+                    AND day_of_week = ? AND lesson_number = ? AND start_time = ? AND end_time = ?
+                    AND room IS NOT DISTINCT FROM ? AND placement_changed_at IS NOT NULL
+                    AND (is_active OR assignment_id = ? AND constructor_has_matching_active_replacement_successor(item.id,
+                        (SELECT family_ids FROM constructor_semester_materializations WHERE operation_id =
+                            NULLIF(current_setting('rutcampustrack.constructor_materialization_operation_id', true), '')::uuid))))
+                """, Boolean.class, source.get("schedule_item_id"), day, number, start, end, room,
+                source.get("assignment_id")));
     }
 
     private boolean targetSlotOccupied(

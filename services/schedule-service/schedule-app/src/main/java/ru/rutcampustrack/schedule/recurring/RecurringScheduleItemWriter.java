@@ -5,8 +5,10 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.Clock;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -136,9 +138,14 @@ public class RecurringScheduleItemWriter {
         dates.removeIf(replacementAlreadyCovered(request, authority, fenceCap));
         Long replacementTemplateId = replacementTemplateId(request);
         if (replacementTemplateId != null) {
-            Set<LocalDate> covered = semesterMaterialization == null ? Set.of()
-                    : semesterMaterialization.coveredDates(semesterMaterialization.familyIds(replacementTemplateId));
-            dates.removeIf(date -> covered.contains(date) || occurrenceExists(replacementTemplateId, date));
+            var family = semesterMaterialization == null ? List.<Long>of()
+                    : semesterMaterialization.familyIds(replacementTemplateId);
+            Set<LocalDate> covered = coveredLifecycleDates(family);
+            Set<LocalDate> coveredWeeks = coveredWeeksAfterPlacementChange(family);
+            LocalDateTime cutover = placementCutover(family);
+            LocalTime start = request.startTime();
+            dates.removeIf(date -> covered.contains(date) || occurrenceExists(replacementTemplateId, date)
+                    || unavailableAfterPlacementChange(date, start, cutover, coveredWeeks));
         }
         OffsetDateTime createdAt = OffsetDateTime.now(clock.withZone(ZoneOffset.UTC));
         LocalDate generatedFrom = dates.isEmpty() ? null : dates.get(0);
@@ -274,10 +281,13 @@ public class RecurringScheduleItemWriter {
                 localTime(item.get("end_time")), ru.rutcampustrack.schedule.contract.enums.WeekType.valueOf(
                         item.get("week_type").toString().toUpperCase(java.util.Locale.ROOT)), (String) item.get("room"));
         var covered = semesterMaterialization.coveredDates(family);
+        LocalDateTime cutover = placementCutover(family);
+        Set<LocalDate> coveredWeeks = cutover == null ? Set.of() : coveredWeeksAfterPlacementChange(family);
         UUID operation = semesterMaterialization.begin(itemId, actor, key, authority, from, to, source, "BACKFILL");
         OffsetDateTime at = OffsetDateTime.now(clock.withZone(ZoneOffset.UTC));
         for (LocalDate date : RecurringDateCalculator.compute(request, authority, from, to, authority.validUntilExclusive())) {
-            if (!covered.add(date)) continue;
+            if (unavailableAfterPlacementChange(date, request.startTime(), cutover, coveredWeeks)
+                    || !covered.add(date)) continue;
             long occurrence = insertOccurrence(itemId, date, authority, at);
             long lesson = insertPhysicalLesson(itemId, occurrence, date, request, authority, LessonStatus.PLANNED, at, null);
             jdbc.update("UPDATE lesson_occurrences SET current_lesson_id=? WHERE id=?", lesson, occurrence);
@@ -297,6 +307,39 @@ public class RecurringScheduleItemWriter {
 
     private static LocalTime localTime(Object value) {
         return value instanceof java.sql.Time time ? time.toLocalTime() : LocalTime.parse(value.toString());
+    }
+
+    Set<LocalDate> coveredLifecycleDates(List<Long> family) {
+        if (family.isEmpty()) return Set.of();
+        return semesterMaterialization.coveredDates(family);
+    }
+
+    private LocalDateTime placementCutover(List<Long> family) {
+        if (family.isEmpty()) return null;
+        return jdbc.queryForObject("""
+                SELECT MAX(placement_changed_at) AT TIME ZONE 'Europe/Moscow'
+                  FROM schedule_items WHERE id=ANY(?::bigint[])
+                """, LocalDateTime.class, array(family));
+    }
+
+    private Set<LocalDate> coveredWeeksAfterPlacementChange(List<Long> family) {
+        if (family.isEmpty()) return Set.of();
+        return new HashSet<>(jdbc.query(
+                """
+                SELECT date_trunc('week', occurrence_date::timestamp)::date
+                  FROM lesson_occurrences WHERE schedule_item_id=ANY(?::bigint[])
+                UNION
+                SELECT date_trunc('week', (operation.source_snapshot->>'date')::timestamp)::date
+                  FROM lesson_transfer_operations operation JOIN lesson_occurrences occurrence
+                    ON occurrence.id=operation.occurrence_id
+                 WHERE occurrence.schedule_item_id=ANY(?::bigint[]) AND operation.template_operation_id IS NULL
+                """, (rs, row) -> rs.getObject(1, LocalDate.class), array(family), array(family)));
+    }
+
+    private static boolean unavailableAfterPlacementChange(LocalDate date, LocalTime start,
+            LocalDateTime cutover, Set<LocalDate> coveredWeeks) {
+        return cutover != null && (!date.atTime(start).isAfter(cutover)
+                || coveredWeeks.contains(RecurringScheduleItemLifecycleWriter.weekOf(date)));
     }
 
     UUID beginLifecycleMaterialization(long item, long actor, UUID key,
@@ -346,7 +389,17 @@ public class RecurringScheduleItemWriter {
         }
     }
 
+    RecurringCreateResult findAcceptedCreate(long actorId, UUID requestKey, byte[] payloadHash) {
+        if (requestKey == null) return null;
+        return readCreateReplay(actorId, requestKey, payloadHash, false);
+    }
+
     RecurringCreateResult replayIfPresent(long actorId, UUID requestKey, byte[] payloadHash) {
+        return readCreateReplay(actorId, requestKey, payloadHash, true);
+    }
+
+    private RecurringCreateResult readCreateReplay(long actorId, UUID requestKey, byte[] payloadHash,
+            boolean lock) {
         List<Map<String, Object>> replayRows =
                 jdbc.queryForList(
                         """
@@ -354,8 +407,7 @@ public class RecurringScheduleItemWriter {
                        generated_from, generated_until, payload_hash
                   FROM schedule_recurring_create_replay
                  WHERE actor_id = ? AND request_key = ?
-                 FOR UPDATE
-                """,
+                """ + (lock ? " FOR UPDATE" : ""),
                         actorId,
                         requestKey);
         if (replayRows.isEmpty()) {

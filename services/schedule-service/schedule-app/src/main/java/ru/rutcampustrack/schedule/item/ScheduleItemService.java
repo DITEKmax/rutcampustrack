@@ -162,8 +162,8 @@ public class ScheduleItemService {
         return recurringCoordinator.preview(id, request, delete);
     }
 
-    public ScheduleItemResponse createReplayResponse(UUID key) {
-        return recurringCoordinator.createReplayResponse(key);
+    public ScheduleItemResponse createReplayResponse(UUID key, CreateScheduleItemRequest request) {
+        return recurringCoordinator.createReplayResponse(key, request);
     }
 
     public ConstructorOperationResponse constructorOperation(UUID id) {

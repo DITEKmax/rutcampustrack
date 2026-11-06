@@ -126,28 +126,16 @@ public class RecurringScheduleItemCoordinator {
                             semesterEnd);
         } else {
             var prepared = archiveFence.prepareBusinessWrite(request.semesterId());
-            Long inactive = writer.inactiveTemplateId(request);
-            if (inactive != null) {
-                result =
-                        lifecycle.reactivate(
-                                inactive,
-                                request,
-                                requestKey,
-                                requireActor(),
-                                authorities(inactive),
-                                semesterStart,
-                                semesterEnd,
-                                prepared);
-            } else {
-                result =
-                        writer.writePrepared(
-                                request,
-                                requestKey,
-                                requireActor(),
-                                authority,
-                                semesterStart,
-                                semesterEnd,
-                                prepared);
+            long actor = requireActor();
+            // Resolve an accepted key before inspecting the current occupants of its old slot.
+            result = writer.findAcceptedCreate(actor, requestKey, RecurringScheduleItemWriter.payloadHash(request));
+            if (result == null) {
+                Long inactive = writer.inactiveTemplateId(request);
+                result = inactive == null
+                        ? writer.writePrepared(request, requestKey, actor, authority,
+                                semesterStart, semesterEnd, prepared)
+                        : lifecycle.reactivate(inactive, request, requestKey, actor, authorities(inactive),
+                                semesterStart, semesterEnd, prepared);
             }
         }
         return scheduleItemRepository
@@ -207,8 +195,8 @@ public class RecurringScheduleItemCoordinator {
                 prepared);
     }
 
-    public ScheduleItemResponse createReplayResponse(UUID key) {
-        return lifecycle == null ? null : lifecycle.createReplayResponse(requireActor(), key);
+    public ScheduleItemResponse createReplayResponse(UUID key, CreateScheduleItemRequest request) {
+        return lifecycle == null ? null : lifecycle.createReplayResponse(requireActor(), key, request);
     }
 
     private ScheduleItem authorizeItem(long id) {

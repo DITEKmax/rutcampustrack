@@ -97,9 +97,12 @@ import {
 import './headman-schedule-screen.pcss';
 import '../../shared/components/mobile-tools-sheet.pcss';
 import {
+  acceptedRecurringTransfers,
   hideDeniedHeadmanSchedule,
   persistRecurringIntent,
   readRecurringIntent,
+  recurringItemMatches,
+  recurringReadback,
   recurringScope,
   recurringUpdate,
   retainRecurringBack,
@@ -248,6 +251,7 @@ const formLocked = computed(
 );
 const semester = shallowRef<HeadmanScheduleSemester | null>(null);
 const selectedDay = ref(1);
+const editorDay = ref(1);
 const formOpen = ref(false);
 const journalOpen = ref(false);
 const requestsOpen = ref(false);
@@ -829,21 +833,78 @@ const constructorAssignments = computed(() =>
   ),
 );
 function constructorSlotAvailable(number: number): boolean {
-  return !dayItems.value.some(
+  return !scheduleItems.value.some(
     (item) =>
+      item.active !== false &&
       item.id !== editTarget.value?.id &&
+      item.dayOfWeek === editorDay.value &&
       item.lessonNumber === number &&
       (item.weekType === weekType.value || item.weekType === 'ALL' || weekType.value === 'ALL'),
   );
 }
 function selectConstructorSlot(number: number): void {
   const slot = slotCatalog.value?.slots.find((s) => s.lessonNumber === number);
-  if (!slot || formLocked.value || !constructorSlotAvailable(number)) return;
+  if (!slot || slotControlsLocked.value || !constructorSlotAvailable(number)) return;
   lessonNumber.value = slot.lessonNumber;
   startTime.value = slot.startTime.slice(0, 5);
   endTime.value = slot.endTime.slice(0, 5);
   slotPickerOpen.value = false;
 }
+const slotControlsLocked = computed(
+  () => formLocked.value || recurringLocked.value || props.offline || !headmanOwner.value,
+);
+const slotCatalogEntry = computed(() =>
+  slotCatalog.value?.slots.find((option) => option.lessonNumber === lessonNumber.value),
+);
+const placementChanged = computed(() => !!editTarget.value &&
+  (editTarget.value.dayOfWeek !== editorDay.value || editTarget.value.lessonNumber !== lessonNumber.value));
+const slotDisplay = computed(() => {
+  const target = editTarget.value;
+  const slot = placementChanged.value ? slotCatalogEntry.value : target;
+  return {
+    start: slot?.startTime?.slice(0, 5) ?? startTime.value,
+    end: slot?.endTime?.slice(0, 5) ?? endTime.value,
+  };
+});
+const updateInput = computed(() => {
+  const target = editTarget.value;
+  if (!target || !lessonNumber.value || !selectedWeekTypes.value.length) return null;
+  const moved = placementChanged.value;
+  const slot = slotCatalogEntry.value;
+  if (moved && !slot) return null;
+  try {
+    return recurringUpdate(
+      target,
+      weekType.value,
+      room.value,
+      moved && slot ? {
+        dayOfWeek: editorDay.value,
+        lessonNumber: slot.lessonNumber,
+        startTime: slot.startTime,
+        endTime: slot.endTime,
+      } : undefined,
+    );
+  } catch {
+    return null;
+  }
+});
+const canSave = computed(() => {
+  if (!headmanOwner.value || formBusy.value || props.offline ||
+      removalDialogOpen.value || intentRecoveryBlocked.value) return false;
+  if (editTarget.value) {
+    if (editTarget.value.active === false) return false;
+    const intent = recurringIntent.value;
+    if (intent && !intent.rejected) return intent.action === 'UPDATE';
+    const input = updateInput.value;
+    return !!input && !!weekPolicy.value && constructorSlotAvailable(input.lessonNumber) &&
+      !recurringItemMatches(editTarget.value, input);
+  }
+  if (createRemoved.value) return false;
+  if (recurringCreateIntent.value || oneOffIntent.value) return true;
+  return !!weekPolicy.value && !!selectedWeekTypes.value.length &&
+    !!lessonNumber.value && !!selectedAssignment.value &&
+    (createMode.value === 'ONE_OFF' || constructorSlotAvailable(lessonNumber.value));
+});
 function scheduleTypeName(type: string | undefined): string {
   return type === 'LECTURE'
     ? 'Лекция'
@@ -930,6 +991,8 @@ function openForm(): void {
     return;
   }
   editTarget.value = null;
+  editorDay.value = selectedDay.value;
+  slotPickerOpen.value = false;
   lifecyclePreview.value = null;
   formError.value = null;
   notice.value = null;
@@ -1038,7 +1101,7 @@ function buildInput(): HeadmanScheduleCreateInput | HeadmanOneOffCreateInput | n
     groupId: props.groupId,
     subjectId: selected.subjectId,
     semesterId: currentSemester.id,
-    dayOfWeek: selectedDay.value,
+    dayOfWeek: editorDay.value,
     lessonNumber: slot.lessonNumber,
     startTime: `${startTime.value}:00`,
     endTime: `${endTime.value}:00`,
@@ -1048,8 +1111,7 @@ function buildInput(): HeadmanScheduleCreateInput | HeadmanOneOffCreateInput | n
 }
 
 async function save(): Promise<void> {
-  if (!headmanOwner.value || denied.value || removalDialogOpen.value) return;
-  if (editTarget.value?.active === false) return;
+  if (!canSave.value) return;
   if (editTarget.value) {
     if (recurringIntent.value && !recurringIntent.value.rejected) await applyRecurring();
     else if (lifecyclePreview.value?.action === 'UPDATE') await applyRecurring();
@@ -1126,6 +1188,8 @@ async function save(): Promise<void> {
       );
       if (!isCurrent()) return;
       sessionStorage.removeItem(recurringCreateScope(owner));
+      selectedDay.value = intent.input.dayOfWeek;
+      if (intent.input.weekType !== 'ALL') constructorWeek.value = intent.input.weekType;
       recurringCreateIntent.value = null;
       notice.value = recurringGenerationNotice(receipt);
     }
@@ -1184,6 +1248,7 @@ function restoreRecurringCreateEditor(intent: RecurringCreateIntent): void {
   createMode.value = 'RECURRING';
   assignmentId.value = intent.input.assignmentId;
   constructorSubjectId.value = intent.input.subjectId;
+  editorDay.value = intent.input.dayOfWeek;
   selectedDay.value = intent.input.dayOfWeek;
   weekType.value = intent.input.weekType;
   lessonNumber.value = intent.input.lessonNumber;
@@ -1244,12 +1309,13 @@ function restoreRecurringEditor(intent: RecurringIntent): void {
   lifecyclePreview.value = null;
   constructorSubjectId.value = intent.target.subjectId ?? null;
   assignmentId.value = intent.target.assignmentId ?? null;
-  lessonNumber.value = intent.target.lessonNumber ?? null;
-  startTime.value = intent.target.startTime?.slice(0, 5) ?? '';
-  endTime.value = intent.target.endTime?.slice(0, 5) ?? '';
+  lessonNumber.value = intent.input?.lessonNumber ?? intent.target.lessonNumber ?? null;
+  startTime.value = (intent.input?.startTime ?? intent.target.startTime)?.slice(0, 5) ?? '';
+  endTime.value = (intent.input?.endTime ?? intent.target.endTime)?.slice(0, 5) ?? '';
   weekType.value = intent.input?.weekType ?? intent.target.weekType ?? 'ALL';
-  room.value = intent.input?.room ?? intent.target.room ?? '';
-  selectedDay.value = intent.target.dayOfWeek ?? 1;
+  room.value = (intent.input ? intent.input.room : intent.target.room) ?? '';
+  editorDay.value = intent.input?.dayOfWeek ?? intent.target.dayOfWeek ?? selectedDay.value;
+  slotPickerOpen.value = false;
   formError.value = intent.rejected
     ? 'Запрос отклонён. Обнови расчёт и подтверди изменения заново.'
     : 'Сохранён исходный запрос. Повтори его, чтобы проверить результат.';
@@ -1281,6 +1347,8 @@ function editRecurring(item: HeadmanScheduleItem): void {
   }
   if (item.groupId !== props.groupId || item.semesterId !== semester.value?.id) return;
   editTarget.value = Object.freeze({ ...item });
+  editorDay.value = item.dayOfWeek ?? selectedDay.value;
+  slotPickerOpen.value = false;
   createMode.value = 'RECURRING';
   lifecyclePreview.value = null;
   formError.value = null;
@@ -1296,7 +1364,7 @@ function editRecurring(item: HeadmanScheduleItem): void {
 }
 
 watch(
-  () => [weekType.value, room.value] as const,
+  () => [editorDay.value, lessonNumber.value, selectedWeekTypes.value, room.value] as const,
   () => {
     lifecyclePreview.value = null;
   },
@@ -1307,10 +1375,8 @@ async function previewRecurring(action: 'UPDATE' | 'DELETE'): Promise<void> {
   const api = props.api;
   const target = editTarget.value;
   const owner = currentRecurringOwner();
-  if (action === 'UPDATE' && !selectedWeekTypes.value.length) {
-    formError.value = 'Выбери хотя бы одну неделю.';
-    return;
-  }
+  const input = action === 'UPDATE' ? updateInput.value : null;
+  if (action === 'UPDATE' && (!input || !canSave.value)) return;
   if (
     !api ||
     !target?.id ||
@@ -1332,7 +1398,6 @@ async function previewRecurring(action: 'UPDATE' | 'DELETE'): Promise<void> {
   lifecyclePreview.value = null;
   formBusy.value = true;
   try {
-    const input = action === 'DELETE' ? null : recurringUpdate(target, weekType.value, room.value);
     const result = await api.previewScheduleItem(target.id, input);
     if (isCurrent()) lifecyclePreview.value = { action, input, result };
   } catch (cause) {
@@ -1424,6 +1489,7 @@ async function applyRecurring(): Promise<void> {
   formBusy.value = true;
   formError.value = null;
   let acknowledged = false;
+  let currentPlacement: ReturnType<typeof recurringReadback> | null = null;
   try {
     if (!intent) {
       if (!preview || typeof crypto === 'undefined' || typeof crypto.randomUUID !== 'function')
@@ -1467,26 +1533,11 @@ async function applyRecurring(): Promise<void> {
       if (!isCurrent()) return;
       intent = {
         ...intent,
-        transferIds: (accepted.transfers ?? []).map((transfer) => transfer.operationId),
+        transferIds: acceptedRecurringTransfers(intent, accepted),
       };
       persistRecurringIntent(sessionStorage, intent);
       recurringIntent.value = intent;
       acknowledged = true;
-      if (!isCurrent()) return;
-      const readback = await api.getScheduleItem(target.id);
-      if (!isCurrent()) return;
-      if (
-        readback.id !== target.id ||
-        readback.groupId !== owner.groupId ||
-        readback.semesterId !== owner.semesterId ||
-        readback.active !== true ||
-        readback.weekType !== intent.input!.weekType ||
-        (readback.room ?? null) !== intent.input!.room
-      ) {
-        throw new Error(
-          'Изменение ещё не подтверждено текущим расписанием. Повтори исходный запрос.',
-        );
-      }
       const transfers = await Promise.all(
         intent.transferIds.map((id) => api.getRecurringTransfer(id)),
       );
@@ -1497,8 +1548,15 @@ async function applyRecurring(): Promise<void> {
           : 'Слот сохранён, перенос связанных данных ещё выполняется (PENDING). Повтори проверку исходного запроса.';
         return;
       }
+      const readback = await api.getScheduleItem(target.id, true);
+      if (!isCurrent()) return;
+      currentPlacement = recurringReadback(intent, readback);
     }
     sessionStorage.removeItem(recurringScope(owner));
+    if (currentPlacement) {
+      selectedDay.value = currentPlacement.dayOfWeek;
+      if (currentPlacement.weekType !== 'ALL') constructorWeek.value = currentPlacement.weekType;
+    }
     recurringIntent.value = null;
     lifecyclePreview.value = null;
     editTarget.value = null;
@@ -1506,7 +1564,9 @@ async function applyRecurring(): Promise<void> {
     notice.value =
       intent.action === 'DELETE'
         ? 'Шаблон и все пары этой серии полностью удалены.'
-        : 'Изменение будущих пар подтверждено сервером. Прошедшие пары сохранены.';
+        : currentPlacement?.superseded
+          ? 'Исходное изменение подтверждено. Серию уже изменили ещё раз: показываем текущее расписание.'
+          : 'Изменение будущих пар подтверждено сервером. Прошедшие пары сохранены.';
     closeForm();
     await load();
   } catch (cause) {
@@ -1569,7 +1629,7 @@ async function load(): Promise<void> {
     }
     const [nextAssignments, nextItems, nextOneOff, catalog] = await Promise.all([
       props.api.listAssignments(props.groupId, current.id),
-      props.api.listScheduleItems(props.groupId, current.id, includeInactive.value),
+      props.api.listScheduleItems(props.groupId, current.id, headmanOwner.value),
       current.dateFrom && current.dateTo
         ? props.api.listOneOffLessons(props.groupId, current.dateFrom, current.dateTo)
         : Promise.resolve([]),
@@ -1579,6 +1639,7 @@ async function load(): Promise<void> {
     slotCatalog.value = catalog;
     assignments.value = nextAssignments;
     scheduleItems.value = nextItems;
+    if (!inactiveItems.value.length) includeInactive.value = false;
     oneOffLessons.value = nextOneOff.filter((lesson) => lesson.semesterId === current.id);
     const owner = currentRecurringOwner();
     if (owner && !editTarget.value) {
@@ -1669,6 +1730,7 @@ watch(
     oneOffLessons.value = [];
     assignments.value = [];
     scheduleItems.value = [];
+    includeInactive.value = false;
     semester.value = null;
     selectedDate.value = props.selectedDate || moscowToday();
     profileRoleError.value = null;
@@ -1717,19 +1779,14 @@ watch(
       props.host,
       formOpen.value,
       formBusy.value,
-      props.offline,
-      props.readOnly,
       createMode.value,
       oneOffIntent.value,
-      intentRecoveryBlocked.value,
       editTarget.value,
       recurringIntent.value,
-      lifecyclePreview.value,
-      removalDialogOpen.value,
       denied.value,
-      selectedWeekTypes.value,
+      canSave.value,
     ] as const,
-  ([host, open, busy, offline, readOnly]) => {
+  ([host, open, busy]) => {
     if (!host || host.primaryActionOwner !== 'host') return;
     host.setPrimaryAction?.(
       open && !denied.value
@@ -1745,13 +1802,7 @@ watch(
                   : createMode.value === 'ONE_OFF'
                     ? 'Создать разовую пару'
                     : 'Сохранить слот',
-            disabled:
-              busy ||
-              removalDialogOpen.value ||
-              offline ||
-              readOnly ||
-              intentRecoveryBlocked.value ||
-              !selectedWeekTypes.value.length,
+            disabled: !canSave.value,
             onInvoke: save,
           }
         : null,
@@ -2230,7 +2281,20 @@ defineExpose({ openNotificationAction });
       >
         {{ notice }}
       </p>
-      <button v-if="!formOpen && semester && headmanOwner" type="button" class="headman-schedule__secondary" :aria-pressed="includeInactive" :disabled="loading || formBusy || offline" @click="includeInactive = !includeInactive; load()">Ранее убранные шаблоны</button>
+      <div
+        v-if="!formOpen && semester && headmanOwner"
+        class="headman-schedule__weeks"
+      >
+        <button
+          class="headman-schedule__archive-toggle"
+          type="button"
+          :aria-pressed="includeInactive"
+          :disabled="loading || !inactiveItems.length || formBusy || offline"
+          @click="includeInactive = !includeInactive"
+        >
+          Ранее убранные шаблоны
+        </button>
+      </div>
       <p
         v-if="loading"
         role="status"
@@ -2243,10 +2307,23 @@ defineExpose({ openNotificationAction });
         :message="stateMessage"
       />
       <template v-else-if="!formOpen">
-        <section v-if="includeInactive" class="headman-schedule__list" aria-label="Ранее убранные шаблоны">
-          <p>Полное удаление ранее убранного шаблона доступно после проверки истории.</p>
-          <p v-if="!inactiveItems.length">Ранее убранных шаблонов нет.</p>
-          <button v-for="item in inactiveItems" :key="item.id" type="button" class="headman-schedule__slot" :disabled="offline || readOnly || !headmanOwner || intentRecoveryBlocked" @click="editRecurring(item)"><strong>{{ assignments.find((a) => a.id === item.assignmentId)?.subjectName || 'Предмет' }}</strong><span>{{ days.find((day) => day.value === item.dayOfWeek)?.name }} · {{ item.lessonNumber }} пара</span><span>Проверить полное удаление</span></button>
+        <section
+          v-if="includeInactive && headmanOwner"
+          class="headman-schedule__list"
+          aria-label="Ранее убранные шаблоны"
+        >
+          <button
+            v-for="item in inactiveItems"
+            :key="item.id"
+            type="button"
+            class="headman-schedule__slot"
+            :disabled="offline || !headmanOwner || intentRecoveryBlocked"
+            @click="editRecurring(item)"
+          >
+            <strong>{{ assignments.find((a) => a.id === item.assignmentId)?.subjectName || 'Предмет' }}</strong>
+            <span>{{ days.find((day) => day.value === item.dayOfWeek)?.name }} · {{ item.lessonNumber }} пара</span>
+            <span>Проверить полное удаление</span>
+          </button>
         </section>
         <div
           class="headman-schedule__days"
@@ -2344,14 +2421,22 @@ defineExpose({ openNotificationAction });
         class="headman-schedule__form"
         :aria-busy="formBusy"
       >
-        <p class="headman-schedule__day-summary">
-          {{ days.find((d) => d.value === selectedDay)?.name
-          }}<small>{{
-            editTarget
-              ? editTarget.active === false ? 'Полное удаление после проверки истории' : 'Изменение будущих пар, история сохранится'
-              : 'Повторяется по выбранным учебным неделям'
-          }}</small>
-        </p>
+        <label class="headman-schedule__field headman-schedule__field-card">
+          <span class="headman-schedule__field-caption">День недели</span>
+          <span class="headman-schedule__select-wrap">
+            <select
+              v-model.number="editorDay"
+              :disabled="slotControlsLocked"
+            >
+              <option
+                v-for="day in days"
+                :key="day.value"
+                :value="day.value"
+              >{{ day.name }}</option>
+            </select>
+            <MobileIcon name="chevron-down" />
+          </span>
+        </label>
         <fieldset class="headman-schedule__field">
           <legend>Учебные недели</legend><div class="headman-schedule__parity">
             <button
@@ -2382,16 +2467,16 @@ defineExpose({ openNotificationAction });
           class="headman-schedule__select"
           :aria-label="
             lessonNumber
-              ? `Номер пары: ${lessonNumber} пара · ${startTime}–${endTime}`
+              ? `Номер пары: ${lessonNumber} пара · ${slotDisplay.start}–${slotDisplay.end}`
               : 'Номер пары: выбери номер пары'
           "
-          :disabled="!!editTarget || formLocked || offline || !headmanOwner"
+          :disabled="slotControlsLocked"
           @click="slotPickerOpen = !slotPickerOpen"
         >{{
-          lessonNumber ? `${lessonNumber} пара · ${startTime}–${endTime}` : 'Выбери номер пары'
+          lessonNumber ? `${lessonNumber} пара · ${slotDisplay.start}–${slotDisplay.end}` : 'Выбери номер пары'
         }}<MobileIcon name="chevron-down" /></button></label>
         <div
-          v-if="slotPickerOpen && !editTarget"
+          v-if="slotPickerOpen"
           class="headman-schedule__slot-picker"
         >
           <button
@@ -2399,13 +2484,16 @@ defineExpose({ openNotificationAction });
             :key="slot.lessonNumber"
             :data-slot="slot.lessonNumber"
             type="button"
-            :disabled="formLocked || !constructorSlotAvailable(slot.lessonNumber)"
+            :disabled="slotControlsLocked || !constructorSlotAvailable(slot.lessonNumber)"
             :aria-pressed="lessonNumber === slot.lessonNumber"
             @click="selectConstructorSlot(slot.lessonNumber)"
           >
             <strong>{{ slot.lessonNumber }} пара</strong><small>{{ slot.startTime.slice(0, 5) }}–{{ slot.endTime.slice(0, 5) }}</small>
           </button>
         </div>
+        <small v-if="lessonNumber && selectedWeekTypes.length && !constructorSlotAvailable(lessonNumber)">
+          Этот номер пары занят в выбранный день.
+        </small>
         <label class="headman-schedule__field headman-schedule__field-card"><span class="headman-schedule__field-caption">Предмет</span><span class="headman-schedule__select-wrap"><select
           v-model.number="constructorSubjectId"
           :disabled="!!editTarget || formLocked || offline || !headmanOwner"
@@ -2440,32 +2528,29 @@ defineExpose({ openNotificationAction });
           title="Проверь сохранение"
           :message="formError"
         />
-        <button v-if="createRemoved && recurringCreateIntent" type="button" class="headman-schedule__secondary" :disabled="formBusy || offline || !headmanOwner" @click="acknowledgeRemovedCreate">Закрыть запрос удалённой серии</button>
+        <button
+          v-if="createRemoved && recurringCreateIntent"
+          type="button"
+          class="headman-schedule__secondary"
+          :disabled="formBusy || offline || !headmanOwner"
+          @click="acknowledgeRemovedCreate"
+        >
+          Закрыть запрос удалённой серии
+        </button>
         <footer class="headman-schedule__footer">
           <button
             ref="removalTrigger"
             type="button"
-            :class="editTarget ? 'headman-schedule__primary headman-schedule__delete' : 'headman-schedule__secondary'"
+            class="headman-schedule__primary headman-schedule__delete"
             :disabled="!editTarget || formBusy || offline || readOnly || !headmanOwner || intentRecoveryBlocked || (recurringLocked && recurringIntent?.action !== 'DELETE')"
             @click="requestRemoval"
           >
             {{ recurringIntent?.action === 'DELETE' && !recurringIntent.rejected ? 'Повторить удаление' : 'Удалить пару' }}
           </button>
           <button
-            :class="editTarget ? 'headman-schedule__secondary' : 'headman-schedule__primary'"
+            class="headman-schedule__primary"
             type="button"
-            :disabled="
-              formBusy ||
-                editTarget?.active === false ||
-                recurringIntent?.action === 'DELETE' ||
-                offline ||
-                readOnly ||
-                !headmanOwner ||
-                intentRecoveryBlocked ||
-                !weekPolicy ||
-                !selectedWeekTypes.length ||
-                (!editTarget && !recurringCreateIntent && (!lessonNumber || !selectedAssignment))
-            "
+            :disabled="!canSave"
             @click="save"
           >
             {{
@@ -2502,7 +2587,12 @@ defineExpose({ openNotificationAction });
         v-if="removalPreview"
         role="status"
       >
-        <template v-if="canDeleteUnusedSeries(removalPreview)">Пар к удалению: {{ removalPreview.removableCount }}.</template><template v-else>Полное удаление недоступно: {{ seriesDeletionProtection(removalPreview) }}.</template>
+        <template v-if="canDeleteUnusedSeries(removalPreview)">
+          Пар к удалению: {{ removalPreview.removableCount }}.
+        </template>
+        <template v-else>
+          Полное удаление недоступно: {{ seriesDeletionProtection(removalPreview) }}.
+        </template>
       </p>
       <StudentWarningBlock
         v-if="formError"

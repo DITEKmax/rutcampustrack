@@ -402,7 +402,7 @@ class StudentOccurrenceMigrationIT {
         assertThat(
                         jdbc.queryForList(
                                 "SELECT to_jsonb(retained) - ARRAY['lifecycle_revision',"
-                                    + " 'deactivated_at', 'generation_not_before'] AS snapshot FROM"
+                                    + " 'deactivated_at', 'generation_not_before', 'placement_changed_at'] AS snapshot FROM"
                                     + " "
                                         + table(schema, "schedule_items")
                                         + " retained ORDER BY id"))
@@ -430,7 +430,7 @@ class StudentOccurrenceMigrationIT {
                                 "SELECT COUNT(*) FROM "
                                         + table(schema, "schedule_items")
                                         + " WHERE lifecycle_revision = 1 AND deactivated_at IS NULL"
-                                        + " AND generation_not_before IS NULL",
+                                        + " AND generation_not_before IS NULL AND placement_changed_at IS NULL",
                                 Integer.class))
                 .isEqualTo(1);
         assertThat(retainedHistoryIndexes(schema)).isEqualTo(originalIndexes);

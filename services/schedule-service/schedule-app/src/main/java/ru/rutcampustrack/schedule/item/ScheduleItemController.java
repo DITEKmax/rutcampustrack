@@ -55,7 +55,7 @@ public class ScheduleItemController implements ScheduleItemApi {
     public ResponseEntity<EntityModel<ScheduleItemResponse>> createScheduleItem(
             UUID idempotencyKey, CreateScheduleItemRequest request) {
         ScheduleItem result = scheduleItemService.createScheduleItem(request, idempotencyKey);
-        ScheduleItemResponse replay = scheduleItemService.createReplayResponse(idempotencyKey);
+        ScheduleItemResponse replay = scheduleItemService.createReplayResponse(idempotencyKey, request);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(
                         replay == null

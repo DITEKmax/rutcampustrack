@@ -15,6 +15,8 @@ import HeadmanStatsSelect from '../headman-stats/HeadmanStatsSelect.vue';
 import MobileIcon from '../../shared/components/MobileIcon.vue';
 import StudentWarningBlock from '../../shared/components/StudentWarningBlock.vue';
 import { StaleSessionGenerationError } from '../../shared/session-owner';
+import TeacherAttendanceEmptyState from './TeacherAttendanceEmptyState.vue';
+import TeacherDayCalendar from './TeacherDayCalendar.vue';
 import TeacherLessonCard from './TeacherLessonCard.vue';
 import { TeacherAttendanceFeed, type TeacherAttendanceFeedState } from './teacher-attendance-feed';
 import { teacherLessonTypeLabel } from './teacher-ui-format';
@@ -35,13 +37,15 @@ const props = withDefaults(
     semesterId: number | null;
     initialQuery?: TeacherJournalQuery | null;
     active?: boolean;
+    calendarCloseSignal?: number;
   }>(),
-  { initialQuery: null, active: true },
+  { initialQuery: null, active: true, calendarCloseSignal: 0 },
 );
 const emit = defineEmits<{
   'change-context': [query: TeacherJournalQuery];
   'open-lesson': [lessonId: number, query: TeacherJournalQuery];
   'open-journal': [query: TeacherJournalQuery];
+  'calendar-open': [open: boolean];
   error: [cause: unknown];
 }>();
 const semester = ref<{ id: number; dateFrom: string; dateTo: string } | null>(null);
@@ -52,6 +56,9 @@ const selectedSubjectId = ref<number | null>(null);
 const selectedTypes = ref<string[]>([]);
 const dateFrom = ref('');
 const dateTo = ref('');
+const calendarField = ref<'from' | 'to' | null>(null);
+const fromTrigger = ref<HTMLButtonElement | null>(null);
+const toTrigger = ref<HTMLButtonElement | null>(null);
 const loading = ref(false);
 const error = ref<string | null>(null);
 const errorSeverity = ref<'warning' | 'error'>('error');
@@ -98,13 +105,33 @@ const types = computed(() => [
     subjects.value.find((item) => item.subjectId === selectedSubjectId.value)?.lessonTypes ?? [],
   ),
 ]);
-const periodError = computed(() => {
-  if (!semester.value) return null;
-  if (!isDate(dateFrom.value) || !isDate(dateTo.value)) return 'Укажи обе даты.';
-  if (dateFrom.value > dateTo.value) return 'Начало периода позже окончания.';
-  if (dateFrom.value < semester.value.dateFrom || dateTo.value > semester.value.dateTo)
-    return 'Выбери период внутри семестра.';
-  return null;
+const validPeriod = computed(() =>
+  Boolean(
+    semester.value &&
+      isDate(dateFrom.value) &&
+      isDate(dateTo.value) &&
+      dateFrom.value >= semester.value.dateFrom &&
+      dateTo.value <= semester.value.dateTo &&
+      dateFrom.value <= dateTo.value,
+  ),
+);
+const calendar = computed(() => {
+  if (!semester.value || !calendarField.value || !validPeriod.value) return null;
+  return calendarField.value === 'from'
+    ? {
+        selected: dateFrom.value,
+        min: semester.value.dateFrom,
+        max: dateTo.value,
+        trigger: fromTrigger.value,
+        title: 'Выбери начало периода',
+      }
+    : {
+        selected: dateTo.value,
+        min: dateFrom.value,
+        max: semester.value.dateTo,
+        trigger: toTrigger.value,
+        title: 'Выбери конец периода',
+      };
 });
 const journalContext = computed<TeacherJournalQuery | null>(() => {
   if (
@@ -115,7 +142,7 @@ const journalContext = computed<TeacherJournalQuery | null>(() => {
     !groups.value.some((group) => group.id === selectedGroupId.value) ||
     !subjects.value.some((subject) => subject.subjectId === selectedSubjectId.value) ||
     selectedTypes.value.some((type) => !types.value.includes(type)) ||
-    periodError.value
+    !validPeriod.value
   )
     return null;
   return {
@@ -151,11 +178,13 @@ const feedError = computed(() => {
 watch(query, (value) => {
   const api = props.api;
   feed.reset(value, api ? (request) => api.journal(request) : null);
-  if (value) {
-    emit('change-context', value);
-    if (props.active && !cached) void loadMore();
-  }
+  if (value && props.active && !cached) void loadMore();
 });
+watch(journalContext, (value) => {
+  if (value) emit('change-context', value);
+});
+watch(calendarField, (field) => emit('calendar-open', field !== null), { flush: 'sync' });
+watch(() => props.calendarCloseSignal, closeCalendar);
 watch(
   () => [props.api, props.semesterId] as const,
   () => {
@@ -174,7 +203,10 @@ watch(
   () => props.active,
   (active) => {
     if (active) void resume();
-    else suspend();
+    else {
+      closeCalendar();
+      suspend();
+    }
   },
   { flush: 'sync' },
 );
@@ -187,10 +219,12 @@ onActivated(() => {
   void resume();
 });
 onDeactivated(() => {
+  closeCalendar();
   suspend();
   cached = true;
 });
 onBeforeUnmount(() => {
+  closeCalendar();
   disposed = true;
   revision += 1;
   feed.reset(null, null);
@@ -207,6 +241,7 @@ async function loadContext(): Promise<void> {
   const api = props.api;
   const semesterId = props.semesterId;
   const run = ++revision;
+  closeCalendar();
   loading.value = true;
   semester.value = null;
   groups.value = [];
@@ -244,8 +279,10 @@ async function loadContext(): Promise<void> {
             .filter((type) => types.value.includes(type))
             .slice(0, 3)
         : [];
-    dateFrom.value = initial?.dateFrom ?? active.dateFrom;
-    dateTo.value = initial?.dateTo ?? active.dateTo;
+    const from = boundedDate(initial?.dateFrom, active.dateFrom, active.dateTo, active.dateFrom);
+    const to = boundedDate(initial?.dateTo, active.dateFrom, active.dateTo, active.dateTo);
+    dateFrom.value = from <= to ? from : active.dateFrom;
+    dateTo.value = from <= to ? to : active.dateTo;
   } catch (cause) {
     if (!current(run) || cause instanceof StaleSessionGenerationError) return;
     errorSeverity.value = warningSeverity(cause);
@@ -269,6 +306,16 @@ function toggleType(type: string): void {
   selectedTypes.value = selectedTypes.value.includes(type)
     ? selectedTypes.value.filter((value) => value !== type)
     : [...selectedTypes.value, type].slice(0, 3);
+}
+function closeCalendar(): void {
+  calendarField.value = null;
+}
+function selectDate(date: string): void {
+  const limits = calendar.value;
+  if (!limits || !isDate(date) || date < limits.min || date > limits.max) return;
+  if (calendarField.value === 'from') dateFrom.value = date;
+  else dateTo.value = date;
+  closeCalendar();
 }
 function rememberScroll(): void {
   if (typeof window !== 'undefined') savedScroll = window.scrollY;
@@ -391,6 +438,24 @@ function isDate(value: string): boolean {
   const date = new Date(`${value}T00:00:00Z`);
   return Number.isFinite(date.getTime()) && date.toISOString().slice(0, 10) === value;
 }
+function boundedDate(
+  value: string | undefined,
+  min: string,
+  max: string,
+  fallback: string,
+): string {
+  if (!value || !isDate(value)) return fallback;
+  return value < min ? min : value > max ? max : value;
+}
+const periodDate = new Intl.DateTimeFormat('ru-RU', {
+  day: '2-digit',
+  month: '2-digit',
+  year: 'numeric',
+  timeZone: 'UTC',
+});
+function dateLabel(date: string): string {
+  return isDate(date) ? periodDate.format(new Date(`${date}T00:00:00Z`)) : '—';
+}
 async function refreshProjection(): Promise<void> {
   if (!semester.value) { await loadContext(); return; }
   const api = props.api, semesterId = props.semesterId, run = ++revision;
@@ -430,14 +495,14 @@ useProjectionRefresh(refreshProjection, { blocked: () => !props.active });
         Посещаемость
       </h1>
       <button
-        class="teacher-screen__icon-button"
+        class="teacher-screen__secondary teacher-attendance__journal"
         type="button"
-        aria-label="Открыть журнал и выгрузку"
         data-teacher-action="journal-open"
         :disabled="!journalContext"
         @click="openJournal"
       >
-        <MobileIcon name="download" />
+        <MobileIcon name="homework" />
+        Журнал
       </button>
     </header>
     <p
@@ -513,45 +578,50 @@ useProjectionRefresh(refreshProjection, { blocked: () => !props.active });
               </button>
             </div>
           </fieldset>
-          <p
-            v-if="!selectedTypes.length"
-            class="teacher-attendance__field-error"
-            role="status"
-          >
-            Выбери хотя бы один тип занятия.
-          </p>
           <div
             id="teacher-attendance-period"
             ref="period"
             class="teacher-attendance__dates"
           >
-            <label class="teacher-attendance__field"><span>С</span><input
-              v-model="dateFrom"
-              class="teacher-screen__date"
-              type="date"
-              :min="semester?.dateFrom"
-              :max="semester?.dateTo"
-              :aria-invalid="Boolean(periodError)"
-              :aria-describedby="periodError ? 'teacher-period-error' : undefined"
-            ></label>
-            <label class="teacher-attendance__field"><span>По</span><input
-              v-model="dateTo"
-              class="teacher-screen__date"
-              type="date"
-              :min="semester?.dateFrom"
-              :max="semester?.dateTo"
-              :aria-invalid="Boolean(periodError)"
-              :aria-describedby="periodError ? 'teacher-period-error' : undefined"
-            ></label>
+            <div class="teacher-attendance__field">
+              <span aria-hidden="true">С</span>
+              <button
+                ref="fromTrigger"
+                class="teacher-screen__date teacher-attendance__date"
+                type="button"
+                aria-haspopup="dialog"
+                :aria-expanded="calendarField === 'from'"
+                :aria-controls="calendarField === 'from' ? 'teacher-attendance-calendar' : undefined"
+                :aria-label="`С ${dateLabel(dateFrom)}`"
+                :disabled="!validPeriod"
+                @click="calendarField = 'from'"
+              >
+                <MobileIcon name="calendar" />
+                <time :datetime="dateFrom">{{ dateLabel(dateFrom) }}</time>
+              </button>
+            </div>
+            <div class="teacher-attendance__field">
+              <span aria-hidden="true">По</span>
+              <button
+                ref="toTrigger"
+                class="teacher-screen__date teacher-attendance__date"
+                type="button"
+                aria-haspopup="dialog"
+                :aria-expanded="calendarField === 'to'"
+                :aria-controls="calendarField === 'to' ? 'teacher-attendance-calendar' : undefined"
+                :aria-label="`По ${dateLabel(dateTo)}`"
+                :disabled="!validPeriod"
+                @click="calendarField = 'to'"
+              >
+                <MobileIcon name="calendar" />
+                <time :datetime="dateTo">{{ dateLabel(dateTo) }}</time>
+              </button>
+            </div>
           </div>
-          <p
-            v-if="periodError"
-            id="teacher-period-error"
-            class="teacher-attendance__field-error"
-            role="alert"
-          >
-            {{ periodError }}
-          </p>
+          <TeacherAttendanceEmptyState
+            v-if="!selectedTypes.length"
+            reason="types"
+          />
         </template>
       </section>
       <section
@@ -596,18 +666,10 @@ useProjectionRefresh(refreshProjection, { blocked: () => !props.active });
             :action-disabled="feedState.loading"
             @action="loadMore"
           />
-          <p
+          <TeacherAttendanceEmptyState
             v-else-if="!feedState.lessons.length && !feedState.hasMore"
-            role="status"
-          >
-            За выбранный период занятий нет.
-          </p>
-          <p
-            v-else-if="!feedState.hasMore"
-            role="status"
-          >
-            Все занятия за период показаны.
-          </p>
+            reason="period"
+          />
         </div>
       </section>
     </template>
@@ -624,5 +686,17 @@ useProjectionRefresh(refreshProjection, { blocked: () => !props.active });
       />
       Наверх
     </button>
+    <TeacherDayCalendar
+      v-if="calendar"
+      dialog-id="teacher-attendance-calendar"
+      label="Период посещаемости"
+      :title="calendar.title"
+      :selected-date="calendar.selected"
+      :min-date="calendar.min"
+      :max-date="calendar.max"
+      :return-focus="calendar.trigger"
+      @select="selectDate"
+      @close="closeCalendar"
+    />
   </main>
 </template>

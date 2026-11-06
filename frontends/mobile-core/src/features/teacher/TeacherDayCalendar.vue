@@ -5,14 +5,26 @@ import StudentWarningBlock from '../../shared/components/StudentWarningBlock.vue
 import SemesterCalendar from '../admin-semester/SemesterCalendar.vue';
 import './teacher-home-r3.pcss';
 
-const props = defineProps<{
-  selectedDate: string;
-  minDate: string;
-  maxDate: string;
-  returnFocus: HTMLElement | null;
-  checkingSemester: boolean;
-  semesterCheckFailed: boolean;
-}>();
+const props = withDefaults(
+  defineProps<{
+    selectedDate: string;
+    minDate: string;
+    maxDate: string;
+    returnFocus: HTMLElement | null;
+    checkingSemester?: boolean;
+    semesterCheckFailed?: boolean;
+    dialogId?: string;
+    title?: string;
+    label?: string;
+  }>(),
+  {
+    checkingSemester: false,
+    semesterCheckFailed: false,
+    dialogId: 'teacher-date-choice',
+    title: 'Выбери день',
+    label: 'Расписание',
+  },
+);
 const emit = defineEmits<{ select: [date: string]; close: []; retry: [] }>();
 const dialog = ref<HTMLElement | null>(null);
 const closeButton = ref<HTMLButtonElement | null>(null);
@@ -59,17 +71,17 @@ function keyboard(event: KeyboardEvent): void {
     @keydown="keyboard"
   >
     <section
-      id="teacher-date-choice"
+      :id="dialogId"
       ref="dialog"
       class="teacher-day-calendar"
       role="dialog"
       aria-modal="true"
-      aria-labelledby="teacher-day-calendar-title"
+      :aria-labelledby="`${dialogId}-title`"
       :aria-busy="checkingSemester"
     >
       <header class="teacher-day-calendar__heading">
-        <h2 id="teacher-day-calendar-title">
-          Выбери день
+        <h2 :id="`${dialogId}-title`">
+          {{ title }}
         </h2>
         <button
           ref="closeButton"
@@ -102,7 +114,7 @@ function keyboard(event: KeyboardEvent): void {
         :max-date="maxDate"
         :disabled="blocked"
         :show-today="false"
-        label="Расписание"
+        :label="label"
         @update:model-value="emit('select', $event)"
       />
     </section>

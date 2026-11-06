@@ -48,9 +48,13 @@ vi.mock('../headman-stats/HeadmanStatsSelect.vue', () => ({
   }),
 }))
 class Node {
-  scrollWidth = 0
-  clientWidth = 0
   scrollLeft = 0
+  readonly style = {
+    properties: new Map<string, string>(),
+    setProperty: (name: string, value: string) => this.style.properties.set(name, value),
+    removeProperty: (name: string) => this.style.properties.delete(name),
+  }
+  readonly ownerDocument = { defaultView: { innerHeight: 720, scrollBy: vi.fn() } }
   children: Node[] = []
   parent: Node | null = null
   props: Record<string, unknown> = {}
@@ -70,8 +74,11 @@ class Node {
     this.children.forEach(walk)
     return result
   }
-  getBoundingClientRect(): { width: number } {
-    return { width: 360 }
+  getBoundingClientRect() {
+    return { width: 360, left: 0, right: 360, top: 0, bottom: 720 }
+  }
+  contains(target: Node): boolean {
+    return target === this || this.children.some((child) => child.contains(target))
   }
   focus(): void {}
   close(): void {}
@@ -219,6 +226,7 @@ function response(subjectId = 3, name = 'Анна'): TeacherJournalResponse {
 function mount(
   options: {
     initialTypes?: string[]
+    initialRange?: Pick<TeacherJournalQuery, 'dateFrom' | 'dateTo'>
     api?: TeacherApi
     showExport?: boolean
     journal?: (query: TeacherJournalQuery) => Promise<TeacherJournalResponse>
@@ -251,6 +259,7 @@ function mount(
       groupId: 2,
       subjectId: 3,
       lessonTypes: options.initialTypes ?? [],
+      ...options.initialRange,
       pastOnly: true,
     },
     active: true,
@@ -418,6 +427,8 @@ describe('teacher journal context and navigation', () => {
 
   it('renders server Table and Chart metrics, with selected-student reads fenced against late results', async () => {
     vi.stubGlobal('document', { createElement: () => ({ getContext: () => null }) })
+    const range = { dateFrom: '2026-10-01', dateTo: '2026-10-01' }
+    const exports: ReportDownloadTicketRequest[] = []
     const present = { numerator: 1, denominator: 4, percent: 25 }
     const combined = { numerator: 3, denominator: 4, percent: 75 }
     const excused = { numerator: 2, denominator: 4, percent: 50 }
@@ -447,6 +458,13 @@ describe('teacher journal context and navigation', () => {
     let release!: (value: TeacherJournalResponse) => void
     const view = mount({
       initialTypes: ['lecture'],
+      initialRange: range,
+      report: {
+        async download(request) {
+          exports.push(request)
+          return 'accepted'
+        },
+      },
       journal: async (query) => {
         if (query.metricsStudentId === 4)
           return new Promise((resolve) => {
@@ -456,6 +474,12 @@ describe('teacher journal context and navigation', () => {
       },
     })
     await settle()
+    expect(view.calls[0]).toMatchObject({ ...range, pastOnly: true })
+    click(view.root, 'Скачать журнал за выбранный период')
+    await settle()
+    expect(exports).toMatchObject([
+      { kind: 'TEACHER_JOURNAL', teacherJournal: { ...range, pastOnly: true } },
+    ])
     // The only cell is EXCUSED: these values cannot come from counting that cell.
     expect(text(view.root)).toContain('25 %')
     expect(
@@ -468,17 +492,33 @@ describe('teacher journal context and navigation', () => {
     ).toBeDefined()
     click(view.root, 'Показать график')
     await settle()
+    const axis = find(
+      view.root,
+      (node) => node.props.class === 'teacher-journal__chart-axis',
+    )
     expect(
-      find(
-        view.root,
-        (node) =>
-          node.props.role === 'img' &&
-          String(node.props['aria-label']).includes('присутствия 25 %'),
-      ),
-    ).toBeDefined()
+      axis?.children
+        .filter((node) => node.tag === 'text')
+        .map((node) => [text(node).trim(), node.props['text-anchor']]),
+    ).toEqual([['1 окт.', 'middle']])
+    const bar = find(
+      view.root,
+      (node) =>
+        node.tag === 'g' &&
+        node.props.role === 'img' &&
+        String(node.props['aria-label']).includes('присутствия 25 %'),
+    )!
+    expect(bar).toBeDefined()
+    ;(bar.props.onClick as () => void)()
+    await settle()
+    const readout = find(view.root, (node) => node.tag === 'dl')
+    expect(readout?.children.filter((node) => node.tag === 'dd').map(text)).toEqual([
+      '25 %', '75 %', '50 %', '25 %', '4',
+    ])
     click(view.root, 'Студент')
     await settle()
     expect(view.calls.at(-1)).toMatchObject({
+      ...range,
       metricsStudentId: 4,
       includeMetrics: true,
       page: 0,
@@ -507,7 +547,7 @@ describe('teacher journal context and navigation', () => {
     ).toBeDefined()
     view.state.active = false
     await settle()
-    expect(find(view.root, (node) => node.props.role === 'img')).toBeUndefined()
+    expect(find(view.root, (node) => node.tag === 'g' && node.props.role === 'img')).toBeUndefined()
     view.state.active = true
     await settle()
     expect(
@@ -657,7 +697,9 @@ describe('teacher journal context and navigation', () => {
     )
     expect(manual?.props['aria-description']).toBeUndefined()
     expect(pending?.props['aria-description']).toBe(automatic?.props['aria-description'])
-    expect(text(pending!)).toContain('Ожидает решения')
+    expect(text(pending!).trim()).toBe('Н')
+    expect(pending?.props['data-pending-ticket']).toBe(true)
+    expect(automatic?.props['data-pending-ticket']).toBe(false)
     for (const status of [automatic, manual, pending]) {
       expect(status?.tag).toBe('span')
       expect(status?.props.onClick).toBeUndefined()
@@ -745,7 +787,7 @@ describe('teacher journal context and navigation', () => {
   })
 })
 
-describe('journal local threshold preferences and linked scrolling', () => {
+describe('journal local threshold and viewport preferences', () => {
   function mountTable() {
     const state = shallowReactive({ journal: response(), contextKey: 'semester:group:subject' })
     const root = new Node('root')
@@ -819,52 +861,77 @@ describe('journal local threshold preferences and linked scrolling', () => {
     expect(view.cells().every((cell) => cell.props['data-threshold'] === null)).toBe(true)
   })
 
-  it('links the bottom range to actual overflow, reflects table scrolling, and updates on resize', async () => {
-    let resize: (() => void) | undefined
-    const disconnect = vi.fn()
-    vi.stubGlobal(
-      'ResizeObserver',
-      class {
-        constructor(callback: () => void) {
-          resize = callback
-        }
-        observe() {}
-        disconnect = disconnect
-      },
-    )
+  it('keeps a two-finger zoom under its center, suppresses its tap and releases the next touch', async () => {
     const view = mountTable()
     const viewport = find(
       view.root,
       (node) => node.props.class === 'teacher-journal__table-scroll',
     )!
-    const range = () =>
-      find(view.root, (node) => node.tag === 'input' && node.props.type === 'range')!
-    await settle()
-    expect(range().props.disabled).toBe(true)
-    viewport.scrollWidth = 1100
-    viewport.clientWidth = 300
-    resize!()
-    await settle()
-    expect(range().props.max).toBe(800)
-    expect(range().props.disabled).toBe(false)
-    ;(range().props.onInput as (event: unknown) => void)({ target: { value: '600' } })
-    await settle()
-    expect(viewport.scrollLeft).toBe(600)
-    expect(range().props.value).toBe(600)
-    viewport.scrollLeft = 200
-    ;(viewport.props.onScroll as () => void)()
-    await settle()
-    expect(range().props.value).toBe(200)
-    viewport.clientWidth = 1100
-    viewport.scrollLeft = 0
-    resize!()
-    await settle()
-    expect(range().props.disabled).toBe(true)
-    expect(range().props.value).toBe(0)
+    const table = find(viewport, (node) => node.tag === 'table')!
+    const name = find(table, (node) => node.tag === 'th')!
+    const lesson = find(table, (node) => String(node.props.class).includes('__type-heading'))!
+    const property = '--teacher-journal-scale'
+    const scale = () => Number(viewport.style.properties.get(property) ?? 1)
+    let pageScroll = 0
+    viewport.ownerDocument.defaultView.scrollBy.mockImplementation(({ top }) => (pageScroll += top))
+    viewport.scrollLeft = 80
+    table.getBoundingClientRect = () => ({
+      width: 600 * scale(),
+      left: 20 - viewport.scrollLeft,
+      right: 620,
+      top: 100 - pageScroll,
+      bottom: 720,
+    })
+    // At larger scales, mobile CSS limits the visible sticky name column.
+    name.getBoundingClientRect = () => ({
+      width: Math.min(100 * scale(), 120),
+      left: 20,
+      right: 20 + Math.min(100 * scale(), 120),
+      top: 100 - pageScroll,
+      bottom: 720,
+    })
+    const finger = (identifier: number, target: Node, clientX: number) => ({
+      identifier, target, clientX, clientY: 180,
+    })
+    const first = finger(11, name, 100)
+    const second = finger(22, lesson, 200)
+    const dispatch = (handler: string, touches: (typeof first)[], type = 'touchmove') => {
+      const event = { touches, type, cancelable: true, timeStamp: 100, preventDefault: vi.fn() }
+      ;(viewport.props[handler] as (value: typeof event) => void)(event)
+      return event.preventDefault
+    }
+    expect(dispatch('onTouchstart', [first])).not.toHaveBeenCalled()
+    expect(dispatch('onTouchmove', [first])).not.toHaveBeenCalled()
+    expect(dispatch('onTouchstart', [first, finger(22, view.root, 200)])).not.toHaveBeenCalled()
+    expect(dispatch('onTouchstart', [first, second])).toHaveBeenCalledOnce()
+    expect(dispatch('onTouchmove', [
+      { ...first, clientX: 75 },
+      { ...second, clientX: 225 },
+    ])).toHaveBeenCalledOnce()
+    expect(scale()).toBe(1.5)
+    expect(viewport.scrollLeft).toBe(155)
+    expect(pageScroll).toBe(40)
+    expect(dispatch('onTouchend', [first], 'touchend')).toHaveBeenCalledOnce()
+    expect(dispatch('onTouchmove', [first])).toHaveBeenCalledOnce()
+    expect(dispatch('onTouchend', [], 'touchend')).toHaveBeenCalledOnce()
+    const tap = () => {
+      const event = {
+        pointerType: 'touch',
+        detail: 1,
+        timeStamp: 101,
+        preventDefault: vi.fn(),
+        stopPropagation: vi.fn(),
+      }
+      ;(viewport.props.onClickCapture as (value: typeof event) => void)(event)
+      return event
+    }
+    expect(tap().stopPropagation).toHaveBeenCalledOnce()
+    expect(dispatch('onTouchstart', [second])).not.toHaveBeenCalled()
+    expect(tap().stopPropagation).not.toHaveBeenCalled()
+    expect(find(view.root, (node) => node.tag === 'input' && node.props.type === 'range')).toBeUndefined()
     view.state.contextKey = 'new-context'
     await settle()
     expect(viewport.scrollLeft).toBe(0)
-    apps.pop()!.unmount()
-    expect(disconnect).toHaveBeenCalledOnce()
+    expect(scale()).toBe(1)
   })
 })

@@ -17,7 +17,7 @@ const probe = ref<SVGTextElement | null>(null);
 const width = ref(360);
 const labelWidth = ref(50);
 const percentLabelWidth = ref(30);
-const readout = ref<string | null>(null);
+const selectedLessonId = ref<number | null>(null);
 let observer: ResizeObserver | null = null;
 function measure(): void {
   if (!plot.value || !probe.value) return;
@@ -50,7 +50,7 @@ onBeforeUnmount(() => observer?.disconnect());
 watch(
   () => [props.journal, props.studentId, props.from, props.to],
   () => {
-    readout.value = null;
+    selectedLessonId.value = null;
   },
 );
 const left = computed(() => Math.ceil(percentLabelWidth.value) + 12);
@@ -70,6 +70,7 @@ const axis = computed(() =>
     labelWidth: labelWidth.value,
   }),
 );
+const ticks = computed(() => axis.value?.ticks ?? []);
 const bars = computed(() =>
   props.journal.lessons
     .filter(
@@ -90,6 +91,24 @@ const bars = computed(() =>
       (bar): bar is typeof bar & { counts: NonNullable<typeof bar.counts> } => bar.counts != null,
     ),
 );
+const selectedBar = computed(() =>
+  bars.value.find((bar) => bar.lesson.id === selectedLessonId.value),
+);
+const metricLabels = {
+  present: 'Присутствия',
+  presentOrExcused: 'Присутствия и уважительные причины',
+  excused: 'Уважительные причины',
+  absent: 'Отсутствия',
+} as const;
+const dateFormatter = new Intl.DateTimeFormat('ru-RU', {
+  day: 'numeric',
+  month: 'long',
+  year: 'numeric',
+  timeZone: 'UTC',
+});
+function lessonDate(date: string): string {
+  return dateFormatter.format(new Date(`${date}T00:00:00Z`));
+}
 const layout = computed(
   () =>
     new Map(
@@ -112,7 +131,10 @@ function size(percent: number): number {
 }
 function text(index: number): string {
   const bar = bars.value[index]!;
-  return `${bar.lesson.date}, ${teacherLessonTypeLabel(bar.lesson.lessonType)}, ${bar.lesson.lessonNumber}-я пара: присутствия ${journalMetricPercent(bar.counts.present)}, присутствия и уважительные причины ${journalMetricPercent(bar.counts.presentOrExcused)}, уважительные причины ${journalMetricPercent(bar.counts.excused)}, отсутствия ${journalMetricPercent(bar.counts.absent)}; ${bar.counts.present.denominator} отметок`;
+  const metrics = Object.entries(metricLabels)
+    .map(([key, label]) => `${label.toLowerCase()} ${journalMetricPercent(bar.counts[key as keyof typeof metricLabels])}`)
+    .join(', ');
+  return `${lessonDate(bar.lesson.date)}, ${teacherLessonTypeLabel(bar.lesson.lessonType)}, ${bar.lesson.lessonNumber}-я пара: ${metrics}; отметок: ${bar.counts.present.denominator}`;
 }
 </script>
 <template>
@@ -169,8 +191,8 @@ function text(index: number): string {
         tabindex="0"
         role="img"
         :aria-label="text(index)"
-        @focus="readout = text(index)"
-        @click="readout = text(index)"
+        @focus="selectedLessonId = bar.lesson.id"
+        @click="selectedLessonId = bar.lesson.id"
       >
         <title>{{ text(index) }}</title>
         <rect
@@ -202,23 +224,38 @@ function text(index: number): string {
         aria-hidden="true"
       >
         <text
-          v-for="(tick, index) in axis?.ticks ?? []"
+          v-for="(tick, index) in ticks"
           :key="tick.date"
           :x="left + tick.position * plotWidth"
           :y="height - 8"
           :text-anchor="
-            index === 0 ? 'start' : index === (axis?.ticks.length ?? 0) - 1 ? 'end' : 'middle'
+            ticks.length === 1 ? 'middle' : index === 0 ? 'start' : index === ticks.length - 1 ? 'end' : 'middle'
           "
         >
           {{ tick.label }}
         </text>
       </g>
     </svg>
-    <p
-      v-if="readout"
+    <div
+      v-if="selectedBar"
+      class="teacher-journal__chart-readout"
       role="status"
     >
-      {{ readout }}
-    </p>
+      <p class="teacher-journal__chart-lesson">
+        <time :datetime="selectedBar.lesson.date">{{ lessonDate(selectedBar.lesson.date) }}</time>
+        <span>{{ teacherLessonTypeLabel(selectedBar.lesson.lessonType) }} · {{ selectedBar.lesson.lessonNumber }}-я пара</span>
+      </p>
+      <dl class="teacher-journal__chart-metrics">
+        <template
+          v-for="(label, key) in metricLabels"
+          :key="key"
+        >
+          <dt>{{ label }}</dt>
+          <dd>{{ journalMetricPercent(selectedBar.counts[key]) }}</dd>
+        </template>
+        <dt>Отметок</dt>
+        <dd>{{ selectedBar.counts.present.denominator }}</dd>
+      </dl>
+    </div>
   </section>
 </template>

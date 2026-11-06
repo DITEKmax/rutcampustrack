@@ -8,8 +8,21 @@
 .teacher-attendance__header h1 {
   min-inline-size: 0;
 }
-.teacher-attendance__header .teacher-screen__icon-button {
+.teacher-attendance__journal,
+.teacher-attendance__date {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--rct-space-1);
+}
+.teacher-attendance__journal,
+.teacher-attendance__journal .mobile-icon,
+.teacher-attendance__date .mobile-icon {
   flex: none;
+}
+.teacher-attendance .teacher-attendance__date {
+  padding-inline: var(--rct-space-2);
+  font-size: var(--rct-font-size-micro);
 }
 .teacher-attendance__filters {
   display: grid;
@@ -66,16 +79,6 @@
 .teacher-attendance__type[aria-pressed='true'] {
   color: var(--rct-color-accent-on-now);
   background: var(--rct-color-accent-now);
-}
-.teacher-attendance__field-error {
-  color: var(--rct-color-danger-text);
-  font-size: var(--rct-font-size-caption);
-  overflow-wrap: anywhere;
-}
-.teacher-attendance__dates input {
-  inline-size: 100%;
-  min-inline-size: 0;
-  max-inline-size: 100%;
 }
 .teacher-attendance__feed {
   display: grid;

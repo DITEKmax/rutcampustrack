@@ -178,25 +178,26 @@ let contextInFlight: {
   readonly promise: Promise<void>;
 } | null = null;
 let stopTheme = (): void => undefined;
-const stopOverlayBack = navigation.beforeBack(() => {
+function dismissOverlay(): boolean {
   if (attachmentOpen.value) {
     attachmentCloseSignal.value += 1;
-    return false;
+    return true;
   }
   if (statsToolOpen.value) {
     statsToolCloseSignal.value += 1;
-    return false;
+    return true;
   }
   if (calendarOpen.value) {
     calendarCloseSignal.value += 1;
-    return false;
+    return true;
   }
   if (exportOpen.value) {
     exportCloseSignal.value += 1;
-    return false;
+    return true;
   }
-  return true;
-});
+  return false;
+}
+const stopOverlayBack = navigation.beforeBack(() => !dismissOverlay());
 const journalSubjectOptions = computed(() => {
   const options = new Map<string, TeacherStatsSubjectOption>();
   for (const option of [
@@ -546,7 +547,7 @@ function navigateRoot(routeName: MobileRootRouteId): void {
 }
 
 function backRoute(): void {
-  navigation.back();
+  if (!dismissOverlay()) navigation.back();
 }
 
 function openLesson(nextLessonId: number): void {
@@ -589,6 +590,8 @@ function openAttendanceJournal(query: TeacherJournalQuery): void {
     semesterId: query.semesterId,
     groupId: query.groupId,
     subjectId: query.subjectId,
+    ...(query.dateFrom !== undefined ? { dateFrom: query.dateFrom } : {}),
+    ...(query.dateTo !== undefined ? { dateTo: query.dateTo } : {}),
     lessonTypes: [],
     pastOnly: true,
   };
@@ -805,6 +808,7 @@ defineExpose({ openNotificationAction });
     :active-id="route.root"
     :host="host"
     :custom-back="true"
+    :host-back-action="backRoute"
     @navigate="navigateRoot"
   >
     <template #back />
@@ -1082,6 +1086,8 @@ defineExpose({ openNotificationAction });
           :semester-id="effectiveSemesterId"
           :initial-query="attendanceQuery"
           :active="route.id === 'teacher-attendance'"
+          :calendar-close-signal="calendarCloseSignal"
+          @calendar-open="calendarOpen = $event"
           @change-context="rememberAttendanceContext"
           @open-lesson="openAttendanceLesson"
           @open-journal="openAttendanceJournal"

@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { computed, nextTick, onMounted, onUnmounted, ref, useId, watch } from 'vue';
+import { computed, ref, useId, watch } from 'vue';
 import type { TeacherJournalCell, TeacherJournalResponse } from './teacher-client';
 import { journalMark, journalMetricPercent, journalMetricLabel } from './teacher-journal-model';
 import { teacherLessonTypeLabel } from './teacher-ui-format';
 import { journalThreshold, journalThresholdResult } from './teacher-journal-threshold';
+import { createTeacherJournalZoom } from './teacher-journal-zoom';
 const props = defineProps<{
   journal: TeacherJournalResponse;
   contextKey?: string;
@@ -35,8 +36,7 @@ watch(
     selectedStudentId.value = null;
     selectedLessonId.value = null;
     thresholdInputs.value = emptyThresholds();
-    if (tableScroll.value) tableScroll.value.scrollLeft = 0;
-    scrollPosition.value = 0;
+    zoom.reset();
   },
   { flush: 'sync' },
 );
@@ -84,38 +84,12 @@ const thresholds = computed(
 const tableId = useId();
 const tableScroll = ref<HTMLElement | null>(null);
 const table = ref<HTMLTableElement | null>(null);
-const scrollPosition = ref(0);
-const scrollMaximum = ref(0);
-let resizeObserver: ResizeObserver | undefined;
-function measureScroll(): void {
-  const viewport = tableScroll.value;
-  if (!viewport) return;
-  scrollMaximum.value = Math.max(0, viewport.scrollWidth - viewport.clientWidth);
-  scrollPosition.value = Math.min(scrollMaximum.value, Math.max(0, viewport.scrollLeft));
-}
-function moveScroll(event: Event): void {
-  const value = Number((event.target as HTMLInputElement).value);
-  if (!tableScroll.value || !Number.isFinite(value)) return;
-  tableScroll.value.scrollLeft = Math.max(0, Math.min(scrollMaximum.value, value));
-  measureScroll();
-}
-onMounted(() => {
-  measureScroll();
-  if (typeof ResizeObserver !== 'undefined') {
-    resizeObserver = new ResizeObserver(measureScroll);
-    if (tableScroll.value) resizeObserver.observe(tableScroll.value);
-    if (table.value) resizeObserver.observe(table.value);
-  }
-  if (typeof window !== 'undefined') window.addEventListener('resize', measureScroll);
-});
-onUnmounted(() => {
-  resizeObserver?.disconnect();
-  if (typeof window !== 'undefined') window.removeEventListener('resize', measureScroll);
-});
-watch([rows, lessons], async () => {
-  await nextTick();
-  measureScroll();
-});
+const nameHeading = ref<HTMLTableCellElement | null>(null);
+const zoom = createTeacherJournalZoom(
+  () => tableScroll.value,
+  () => table.value,
+  () => nameHeading.value,
+);
 function updateThreshold(key: MetricKey, event: Event): void {
   thresholdInputs.value[key] = (event.target as HTMLInputElement).value;
 }
@@ -140,7 +114,7 @@ function compactLessonType(value: string): string {
   );
 }
 function dayStart(index: number): boolean {
-  return index === 0 || lessons.value[index - 1]?.date !== lessons.value[index]?.date;
+  return index > 0 && lessons.value[index - 1]?.date !== lessons.value[index]?.date;
 }
 function compactName(name: string): string {
   if (name.length <= 25) return name;
@@ -171,6 +145,9 @@ function description(cell: TeacherJournalCell | undefined): string | undefined {
     ? 'Отсутствие отмечено автоматически при закрытии пары'
     : undefined;
 }
+function pendingAbsence(cell: TeacherJournalCell | undefined): boolean {
+  return Boolean(cell?.pendingTicket && journalMark(cell) === 'absent');
+}
 function open(cell: TeacherJournalCell | undefined, studentId: number): void {
   if (!cell || journalMark(cell) !== 'excused') return;
   if (cell.ticketId) emit('open-excuse', cell.ticketId);
@@ -186,14 +163,26 @@ function date(value: string): string {
 </script>
 <template>
   <div class="teacher-journal__table-panel">
+    <p
+      :id="`${tableId}-instructions`"
+      class="teacher-journal__sr"
+    >
+      Прокручивай таблицу стрелками. Клавиши плюс и минус меняют масштаб таблицы, ноль сбрасывает.
+    </p>
     <div
       :id="tableId"
       ref="tableScroll"
       class="teacher-journal__table-scroll"
       tabindex="0"
       role="region"
-      aria-label="Журнал посещаемости. Таблицу можно прокрутить вправо."
-      @scroll="measureScroll"
+      aria-label="Журнал посещаемости"
+      :aria-describedby="`${tableId}-instructions`"
+      @keydown="zoom.keydown"
+      @touchstart="zoom.touchStart"
+      @touchmove="zoom.touchMove"
+      @touchend="zoom.touchEnd"
+      @touchcancel="zoom.touchEnd"
+      @click.capture="zoom.captureClick"
     >
       <table
         ref="table"
@@ -205,6 +194,7 @@ function date(value: string): string {
         <thead>
           <tr>
             <th
+              ref="nameHeading"
               scope="col"
               class="teacher-journal__name"
             >
@@ -220,7 +210,7 @@ function date(value: string): string {
               :title="lesson.cancellationReason ?? undefined"
             >
               <button
-                class="teacher-journal__lesson-heading"
+                class="teacher-journal__lesson-heading teacher-journal__date-heading"
                 type="button"
                 :aria-label="`Выделить ${lesson.lessonNumber}-ю пару, ${date(lesson.date)}, ${teacherLessonTypeLabel(lesson.lessonType)}`"
                 :aria-pressed="selectedLessonId === lesson.id"
@@ -313,6 +303,7 @@ function date(value: string): string {
               <span
                 v-if="lesson.cancelled"
                 class="teacher-journal__mark teacher-journal__mark--cancelled"
+                role="img"
                 aria-label="Отменена"
               ><span
                 class="teacher-journal__cell-circle"
@@ -321,7 +312,6 @@ function date(value: string): string {
                 v-else-if="journalMark(student.cellsById.get(lesson.id)) === 'excused'"
                 type="button"
                 class="teacher-journal__mark teacher-journal__mark--excused"
-                :data-pending-ticket="Boolean(student.cellsById.get(lesson.id)?.pendingTicket)"
                 :aria-description="description(student.cellsById.get(lesson.id))"
                 :title="description(student.cellsById.get(lesson.id))"
                 :aria-label="`${student.displayName}: ${label(student.cellsById.get(lesson.id))}, ${date(lesson.date)}, ${teacherLessonTypeLabel(lesson.lessonType)}`"
@@ -331,29 +321,20 @@ function date(value: string): string {
                   class="teacher-journal__cell-circle"
                   aria-hidden="true"
                 >У</span>
-                <span
-                  v-if="student.cellsById.get(lesson.id)?.pendingTicket"
-                  class="teacher-journal__pending"
-                  aria-hidden="true"
-                >Ожидает решения</span>
               </button><span
                 v-else
+                role="img"
                 class="teacher-journal__mark"
                 :class="`teacher-journal__mark--${journalMark(student.cellsById.get(lesson.id)) ?? 'none'}`"
                 :data-auto-absent="Boolean(description(student.cellsById.get(lesson.id)))"
-                :data-pending-ticket="Boolean(student.cellsById.get(lesson.id)?.pendingTicket)"
+                :data-pending-ticket="pendingAbsence(student.cellsById.get(lesson.id))"
                 :aria-description="description(student.cellsById.get(lesson.id))"
                 :title="description(student.cellsById.get(lesson.id))"
                 :aria-label="label(student.cellsById.get(lesson.id))"
               ><span
-                 class="teacher-journal__cell-circle"
-                 aria-hidden="true"
-               >{{ symbol(student.cellsById.get(lesson.id)) }}</span>
-                <span
-                  v-if="student.cellsById.get(lesson.id)?.pendingTicket"
-                  class="teacher-journal__pending"
-                  aria-hidden="true"
-                >Ожидает решения</span></span>
+                class="teacher-journal__cell-circle"
+                aria-hidden="true"
+              >{{ symbol(student.cellsById.get(lesson.id)) }}</span></span>
             </td>
             <td
               v-for="metric in metricColumns"
@@ -422,24 +403,14 @@ function date(value: string): string {
         </tfoot>
       </table>
     </div>
-    <label class="teacher-journal__scroll-control">
-      <span>Прокрутка журнала</span>
-      <input
-        type="range"
-        min="0"
-        :max="scrollMaximum"
-        step="any"
-        :value="scrollPosition"
-        :disabled="scrollMaximum === 0"
-        :aria-controls="tableId"
-        :aria-valuetext="
-          scrollMaximum === 0
-            ? 'Все столбцы видны'
-            : `${Math.round((scrollPosition / scrollMaximum) * 100)} %`
-        "
-        aria-label="Горизонтальная прокрутка журнала"
-        @input="moveScroll"
+    <p class="teacher-journal__legend">
+      <span
+        class="teacher-journal__metric-mark teacher-journal__metric-mark--absent teacher-journal__pending-ring"
+        aria-hidden="true"
       >
-    </label>
+        Н
+      </span>
+      Заявление ожидает решения
+    </p>
   </div>
 </template>

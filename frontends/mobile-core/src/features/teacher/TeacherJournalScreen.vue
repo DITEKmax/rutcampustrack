@@ -25,6 +25,7 @@ import {
 } from './teacher-client';
 import { journalContextKey, journalPassedEnd, loadJournalPages } from './teacher-journal-model';
 import { teacherLessonTypeLabel } from './teacher-ui-format';
+import TeacherAttendanceEmptyState from './TeacherAttendanceEmptyState.vue';
 import TeacherJournalTable from './TeacherJournalTable.vue';
 import TeacherJournalChart from './TeacherJournalChart.vue';
 import './teacher-journal-screen.pcss';
@@ -137,10 +138,10 @@ const studentOptions = computed(() => [
   })),
 ]);
 const chartFrom = computed(
-  () => props.semester?.dateFrom ?? effectiveQuery.value?.dateFrom ?? null,
+  () => effectiveQuery.value?.dateFrom ?? props.semester?.dateFrom ?? null,
 );
 const chartTo = computed(() =>
-  journalPassedEnd(props.semester?.dateTo ?? effectiveQuery.value?.dateTo, state.value?.serverNow),
+  journalPassedEnd(effectiveQuery.value?.dateTo ?? props.semester?.dateTo, state.value?.serverNow),
 );
 const canExport = computed(() =>
   Boolean(
@@ -555,13 +556,10 @@ useProjectionRefresh(
     >
       Сессия преподавателя недоступна.
     </p>
-    <p
+    <TeacherAttendanceEmptyState
       v-else-if="!selectedTypes.length"
-      class="teacher-journal__state"
-      role="status"
-    >
-      Выбери один или несколько типов занятий.
-    </p>
+      reason="types"
+    />
     <div
       v-else-if="loading"
       class="teacher-journal__loading"
@@ -591,13 +589,10 @@ useProjectionRefresh(
       action-label="Повторить"
       @action="load()"
     />
-    <p
+    <TeacherAttendanceEmptyState
       v-else-if="!completedJournal?.lessons.length"
-      class="teacher-journal__state"
-      role="status"
-    >
-      В выбранном периоде прошедших занятий нет.
-    </p>
+      reason="past-period"
+    />
     <template v-else>
       <template v-if="chart">
         <HeadmanStatsSelect

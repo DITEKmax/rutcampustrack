@@ -1,0 +1,24 @@
+@import '../../styles/tokens.pcss';
+
+.teacher-attendance-empty {
+  display: grid;
+  justify-items: center;
+  gap: var(--rct-space-2);
+  padding: var(--rct-space-3);
+  color: var(--rct-color-text-secondary);
+  font-size: var(--rct-font-size-caption);
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+.teacher-attendance-empty p {
+  margin: 0;
+}
+.teacher-attendance-empty__art {
+  inline-size: calc(var(--rct-control-min-touch) * 2);
+  max-inline-size: 100%;
+}
+.teacher-attendance-empty__art svg {
+  display: block;
+  inline-size: 100%;
+  block-size: auto;
+}

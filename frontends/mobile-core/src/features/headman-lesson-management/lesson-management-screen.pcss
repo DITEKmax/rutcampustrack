@@ -436,7 +436,13 @@
 }
 
 .lesson-management[data-management-view='log'] {
-  padding: var(--rct-space-4);
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto 1fr;
+  inline-size: 100%;
+  max-inline-size: none;
+  min-block-size: 100dvh;
+  padding: var(--rct-space-4) var(--rct-space-4)
+    calc(var(--rct-space-4) + env(safe-area-inset-bottom, 0rem));
 }
 .lesson-management[data-management-view='log'] .headman-actions {
   padding: 0;

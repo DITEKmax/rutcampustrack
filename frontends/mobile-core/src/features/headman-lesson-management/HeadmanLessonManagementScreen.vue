@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, ref, shallowReactive, shallowRef, watch } from 'vue';
+import { computed, onBeforeUnmount, ref, shallowReactive, shallowRef, useId, watch } from 'vue';
 import AdminNotice from '../../shared/components/AdminNotice.vue';
 import MobileIcon from '../../shared/components/MobileIcon.vue';
 import { academicWeekOrdinal } from '../../domain/academic-week';
@@ -81,6 +81,7 @@ const targetOccupiedSlots = shallowRef<ReadonlySet<number>>(new Set()),
   targetBusy = ref(false),
   calendarOpen = ref(false),
   month = ref('');
+const targetSlotTriggerId = useId();
 const formError = ref<string | null>(null),
   confirmingRestore = ref(false);
 let targetRun = 0,
@@ -222,29 +223,28 @@ const oneOffSubjectOptions = computed(() =>
 const oneOffTypeOptions = computed(() =>
   assignmentOptions.value.map((a) => ({ value: String(a.id), label: typeName(a.lessonType) })),
 );
-const targetSlots = computed(() =>
-  (state.value?.catalog?.slots ?? []).map((slot) => ({
-    ...slot,
-    unavailable:
-      targetLoadedDate.value !== targetDate.value ||
-      state.value?.hasPendingOneOff(targetDate.value, slot.lessonNumber) ||
-      targetOccupiedSlots.value.has(slot.lessonNumber) ||
-      (view.value === 'transfer' &&
-        selected.value?.date === targetDate.value &&
-        selected.value?.lessonNumber === slot.lessonNumber),
-  })),
+const availableTargetSlots = computed(() =>
+  targetLoadedDate.value === targetDate.value
+    ? (state.value?.catalog?.slots ?? []).filter(
+        (slot) =>
+          !state.value?.hasPendingOneOff(targetDate.value, slot.lessonNumber) &&
+          !targetOccupiedSlots.value.has(slot.lessonNumber) &&
+          !(
+            view.value === 'transfer' &&
+            selected.value?.date === targetDate.value &&
+            selected.value?.lessonNumber === slot.lessonNumber
+          ),
+      )
+    : [],
 );
 const targetSlot = computed(
-  () =>
-    targetSlots.value.find((s) => s.lessonNumber === targetNumber.value && !s.unavailable) ?? null,
+  () => availableTargetSlots.value.find((slot) => slot.lessonNumber === targetNumber.value) ?? null,
 );
-const oneOffSlotOptions = computed(() =>
-  targetSlots.value
-    .filter((slot) => !slot.unavailable)
-    .map((slot) => ({
-      value: String(slot.lessonNumber),
-      label: `${slot.lessonNumber} пара · ${time(slot.startTime)}–${time(slot.endTime)}`,
-    })),
+const targetSlotOptions = computed(() =>
+  availableTargetSlots.value.map((slot) => ({
+    value: String(slot.lessonNumber),
+    label: `${slot.lessonNumber} пара · ${time(slot.startTime)}–${time(slot.endTime)}`,
+  })),
 );
 const selectValue = (id: number | null) => (id === null ? '' : String(id));
 const optionId = (value: string) => (value ? Number(value) : null);
@@ -271,6 +271,11 @@ function shiftMonth(delta: number): void {
   const parsed = new Date(month.value + '-01T00:00:00Z');
   parsed.setUTCMonth(parsed.getUTCMonth() + delta);
   month.value = parsed.toISOString().slice(0, 7);
+}
+function selectTargetDate(day: string): void {
+  if (view.value === 'transfer' && day !== targetDate.value) targetNumber.value = null;
+  targetDate.value = day;
+  calendarOpen.value = false;
 }
 function targetDayAllowed(value: string): boolean {
   const sem = state.value?.semester;
@@ -371,7 +376,7 @@ async function loadTarget(): Promise<void> {
     !current ||
     current.denied ||
     props.offline ||
-    !['transfer', 'oneoff'].includes(requestedView) ||
+    (requestedView !== 'transfer' && requestedView !== 'oneoff') ||
     !targetDateValid.value
   )
     return;
@@ -384,7 +389,7 @@ async function loadTarget(): Promise<void> {
     !current.denied;
   targetBusy.value = true;
   try {
-    const occupied = await current.targetOccupiedSlots(requested);
+    const occupied = await current.targetOccupiedSlots(requested, requestedView);
     if (!isCurrent()) return;
     targetOccupiedSlots.value = occupied;
     targetLoadedDate.value = requested;
@@ -972,52 +977,34 @@ onBeforeUnmount(() => {
                 :aria-pressed="targetDate === day"
                 :data-outside="day.slice(0, 7) !== month"
                 :disabled="controlsLocked || !targetDayAllowed(day)"
-                @click="
-                  targetDate = day;
-                  calendarOpen = false;
-                "
+                @click="selectTargetDate(day)"
               >
                 {{ Number(day.slice(8)) }}
               </button>
             </div>
           </section>
-          <div
-            v-if="view === 'oneoff'"
-            class="lesson-management__field"
-          >
-            <span>Номер пары</span>
+          <div class="lesson-management__field">
+            <label :for="targetSlotTriggerId">Номер пары</label>
             <HeadmanStatsSelect
+              :trigger-id="targetSlotTriggerId"
               label="Номер пары"
               :model-value="selectValue(targetSlot?.lessonNumber ?? null)"
-              :options="oneOffSlotOptions"
+              :options="targetSlotOptions"
               :disabled="
                 controlsLocked ||
                   !headmanMutable ||
                   targetBusy ||
                   !targetDateValid ||
-                  !oneOffSlotOptions.length
+                  !targetSlotOptions.length
               "
               :placeholder="
-                targetLoadedDate === targetDate && !oneOffSlotOptions.length
+                targetLoadedDate === targetDate && !targetSlotOptions.length
                   ? 'Нет свободных слотов'
                   : 'Выбери свободный слот'
               "
               @update:model-value="targetNumber = optionId($event)"
             />
           </div>
-          <label
-            v-else
-            class="lesson-management__field"
-          >Номер пары<select
-            v-model.number="targetNumber"
-            :disabled="controlsLocked || targetBusy || !targetDateValid"
-          ><option :value="null">Выбери свободный слот</option><option
-            v-for="slot in targetSlots"
-            :key="slot.lessonNumber"
-            :value="slot.lessonNumber"
-            :disabled="slot.unavailable"
-          >{{ slot.lessonNumber }} пара · {{ time(slot.startTime) }}–{{ time(slot.endTime)
-          }}{{ slot.unavailable ? ' · занято' : '' }}</option></select></label>
           <StudentWarningBlock
             v-if="targetError"
             title="Занятость не проверена"
@@ -1086,7 +1073,7 @@ onBeforeUnmount(() => {
               <small>Было</small><strong>{{ dayLabel(selected.date) }} · {{ selected.lessonNumber }} пара ·
                 {{ selected.room || 'Без аудитории' }}</strong>
             </div><span class="lesson-management__arrow">↓</span><div>
-              <small>Станет</small><strong>{{ dayLabel(targetDate) }} · {{ targetNumber || '—' }} пара ·
+              <small>Станет</small><strong>{{ dayLabel(targetDate) }} · {{ targetSlot?.lessonNumber ?? '—' }} пара ·
                 {{ effectiveTransferRoom || 'Без аудитории' }}</strong>
             </div>
           </section>

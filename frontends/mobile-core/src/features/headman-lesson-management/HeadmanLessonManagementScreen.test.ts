@@ -9,7 +9,6 @@ import {
 } from '../headman-journal/headman-journal-client'
 import {
   HeadmanScheduleApiError,
-  type HeadmanOneOffCreateInput,
   type HeadmanOneOffLesson,
   type HeadmanScheduleApi,
 } from '../schedule/headman-schedule-client'
@@ -121,19 +120,15 @@ function fixture(
   const onError = vi.fn()
   const childView = ref('agenda')
   let pending: Promise<readonly HeadmanJournalLesson[]> | null = null
-  const listLessons = vi.fn(async (_groupId: number, _dateFrom: string, _dateTo: string) => {
+  const listLessons = vi.fn<HeadmanJournalApi['listLessons']>(async () => {
     const reply = pending
     pending = null
     return reply ? await reply : lessons
   })
-  const listOneOffLessons = vi.fn(
-    async (_groupId: number, _dateFrom: string, _dateTo: string) => oneOffs,
-  )
-  const createOneOffLesson = vi.fn(
-    async (_input: HeadmanOneOffCreateInput, _key: string): Promise<HeadmanOneOffLesson> => {
-      throw new Error('not used')
-    },
-  )
+  const listOneOffLessons = vi.fn<HeadmanScheduleApi['listOneOffLessons']>(async () => oneOffs)
+  const createOneOffLesson = vi
+    .fn<HeadmanScheduleApi['createOneOffLesson']>()
+    .mockRejectedValue(new Error('not used'))
   const journal = { listLessons } as unknown as HeadmanJournalApi
   const lessonSlots = vi.fn(async () => ({
     timezone: 'Europe/Moscow',
@@ -473,9 +468,50 @@ describe('lesson management owner identity in the actual SFC', () => {
 
     await click(f.root, (item) => item === card(f.root, existing.id))
     await click(f.root, (item) => text(item).includes('Перенести пару'))
-    const slot = nodes(f.root).find((item) => item.tag === 'option' && item.props.value === 2)
+    const slot = nodes(f.root).find((item) => item.props['aria-label'] === 'Номер пары')
     expect(slot?.props.disabled).toBe(true)
+    expect(text(slot!)).toBe('Нет свободных слотов')
     expect(f.createOneOffLesson).not.toHaveBeenCalled()
+  })
+
+  it('offers a cancelled destination slot and clears the transfer choice when the date changes', async () => {
+    const source = { ...exactLesson, id: 71, lessonNumber: 3, occurrenceId: '141' }
+    const f = fixture([source, { ...exactLesson, status: 'CANCELLED' }])
+    const slot = () =>
+      nodes(f.root).find((item) => item.tag === 'button' && item.props['aria-label'] === 'Номер пары')!
+    const submit = () =>
+      nodes(f.root).find((item) => item.tag === 'button' && text(item).trim() === 'Перенести пару')
+    const options = () => nodes(f.root).filter((item) => item.props.role === 'option')
+
+    await settle()
+    await click(f.root, (item) => item.props['aria-label'] === 'суббота, 17 октября')
+    await click(f.root, (item) => item === card(f.root, source.id))
+    await click(f.root, (item) => text(item).includes('Перенести пару'))
+    await click(f.root, (item) => item === slot())
+    expect(options().map(text)).toEqual(['2 пара · 10:40–12:10'])
+    await click(f.root, (item) => item === options()[0])
+    expect(submit()?.props.disabled).toBe(false)
+
+    await click(f.root, (item) => item.props.class === 'lesson-management__select')
+    let rejectTarget!: (reason: Error) => void
+    f.deferTarget(
+      new Promise((_, reject) => {
+        rejectTarget = reject
+      }),
+    )
+    await click(f.root, (item) => 'data-outside' in item.props && text(item).trim() === '19')
+    expect(slot().props.disabled).toBe(true)
+    expect(submit()?.props.disabled).toBe(true)
+    rejectTarget(new TypeError('read failed'))
+    await settle()
+    expect(slot().props.disabled).toBe(true)
+    expect(text(f.root)).toContain('Занятость не проверена')
+
+    await click(f.root, (item) => text(item).trim() === 'Повторить')
+    expect(text(slot())).toBe('Выбери свободный слот')
+    expect(submit()?.props.disabled).toBe(true)
+    await click(f.root, (item) => item === slot())
+    expect(options().map(text)).toEqual(['2 пара · 10:40–12:10', '3 пара · 12:20–13:50'])
   })
 
   it('verifies one-off occupancy for a date reached only through the form calendar', async () => {

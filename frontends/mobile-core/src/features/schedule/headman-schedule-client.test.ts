@@ -159,12 +159,13 @@ describe('recurring lifecycle durable ownership', () => {
       weekType: 'ALL' as const, active: true,
     }
     const preview = { revision: 'a'.repeat(64), updatedCount: 1, removedCount: 0, restoredCount: 0, createdCount: 0 }
-    const input = { ...recurringUpdate(target, 'ODD', 'А-102', {
+    const room = 'А-102'
+    const input = { ...recurringUpdate(target, 'ODD', room, {
       dayOfWeek: 5, lessonNumber: 2, startTime: '10:05:00', endTime: '11:25:00',
     }), expectedRevision: preview.revision }
     const operationId = 'aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee'
     const intent: RecurringIntent = { owner, target, input, key, action: 'UPDATE', preview, rejected: false, transferIds: [] }
-    const accepted = { ...target, ...input, transfers: [{ operationId, state: 'PENDING' as const }] }
+    const accepted = { ...target, ...input, room, transfers: [{ operationId, state: 'PENDING' as const }] }
     const newer = { ...accepted, dayOfWeek: 4, weekType: 'EVEN' as const }
     const api = new HeadmanScheduleApi({
       accessToken: () => null,
@@ -305,8 +306,9 @@ describe('recurring lifecycle durable ownership', () => {
       restoredCount: 0,
       createdCount: 0,
     }
+    const room = 'А-102'
     const update = {
-      ...recurringUpdate(target, 'ODD', 'А-102', {
+      ...recurringUpdate(target, 'ODD', room, {
         dayOfWeek: 4,
         lessonNumber: 2,
         startTime: '10:05:00',
@@ -314,6 +316,7 @@ describe('recurring lifecycle durable ownership', () => {
       }),
       expectedRevision: revision,
     }
+    const accepted = { ...target, ...update, room, transfers: [] }
     const values = new Map<string, string>()
     const storage = {
       getItem: (scope: string) => values.get(scope) ?? null,
@@ -350,7 +353,7 @@ describe('recurring lifecycle durable ownership', () => {
         if (requests.length === 1) throw new TypeError('accepted response lost')
         return init?.method === 'DELETE'
           ? new Response(null, { status: 204 })
-          : json({ ...target, ...update, transfers: [] })
+          : json(accepted)
       },
     })
     await expect(api.updateScheduleItem(target.id, update, key)).rejects.toThrow('response lost')
@@ -361,10 +364,10 @@ describe('recurring lifecycle durable ownership', () => {
     await api.updateScheduleItem(recovered.target.id!, recovered.input!, recovered.key)
     expect(requests[0]).toEqual(requests[1])
     expect(JSON.parse(String(requests[1]?.body))).toEqual(update)
-    expect(recurringItemMatches({ ...target, ...update, startTime: '10:05', endTime: '11:25' }, update)).toBe(true)
-    expect(recurringItemMatches({ ...target, ...update, dayOfWeek: target.dayOfWeek }, update)).toBe(false)
-    expect(recurringItemMatches({ ...target, ...update, lessonNumber: target.lessonNumber }, update)).toBe(false)
-    expect(recurringItemMatches({ ...target, ...update, startTime: '10:05:30' }, update)).toBe(false)
+    expect(recurringItemMatches({ ...accepted, startTime: '10:05', endTime: '11:25' }, update)).toBe(true)
+    expect(recurringItemMatches({ ...accepted, dayOfWeek: target.dayOfWeek }, update)).toBe(false)
+    expect(recurringItemMatches({ ...accepted, lessonNumber: target.lessonNumber }, update)).toBe(false)
+    expect(recurringItemMatches({ ...accepted, startTime: '10:05:30' }, update)).toBe(false)
     // A DELETE has no JSON body, but retains the same revision/key during retries.
     const deletionKey = 'aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee'
     persistRecurringIntent(storage, {

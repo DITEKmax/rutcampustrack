@@ -379,7 +379,10 @@ export class LessonManagementState {
   async targetLessons(date: string): Promise<readonly HeadmanJournalLesson[]> {
     return this.journal.listLessons(this.owner.groupId, date, date)
   }
-  async targetOccupiedSlots(date: string): Promise<ReadonlySet<number>> {
+  async targetOccupiedSlots(
+    date: string,
+    operation: 'transfer' | 'oneoff',
+  ): Promise<ReadonlySet<number>> {
     const [lessons, oneOffs] = await Promise.all([
       this.targetLessons(date),
       this.schedule.listOneOffLessons(this.owner.groupId, date, date),
@@ -389,7 +392,11 @@ export class LessonManagementState {
     for (const lesson of lessons) {
       if (lesson.groupId !== this.owner.groupId || lesson.date !== date || !lesson.current) continue
       physicalIds.add(lesson.id)
-      if (lesson.lessonNumber !== null && lesson.status !== 'TRANSFERRED')
+      if (
+        lesson.lessonNumber !== null &&
+        lesson.status !== 'TRANSFERRED' &&
+        (operation === 'oneoff' || lesson.status !== 'CANCELLED')
+      )
         occupied.add(lesson.lessonNumber)
     }
     for (const lesson of oneOffs) {

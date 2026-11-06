@@ -150,6 +150,9 @@ const draftRole = ref<AdminManagedRole | ''>('');
 const draftStatus = ref<AdminRoleStatus | ''>('');
 const sortDirection = ref<'asc' | 'desc'>('asc');
 const draftSort = ref<'asc' | 'desc'>('asc');
+const filtersActive = computed(
+  () => Boolean(roleFilter.value || statusFilter.value) || sortDirection.value !== 'asc',
+);
 
 const archivePreview = ref<AdminUserArchivePreview | null>(null);
 const archivePassword = ref('');
@@ -2269,7 +2272,9 @@ onBeforeUnmount(() => {
       <div class="admin-users-tools">
         <button
           class="admin-users-action admin-users-action--secondary"
+          :class="{ 'admin-users-tools__filters--active': filtersActive }"
           type="button"
+          :aria-label="filtersActive ? 'Фильтры и сортировка, применено' : undefined"
           @click="openFilters"
         >
           Фильтры и сортировка
@@ -2282,14 +2287,6 @@ onBeforeUnmount(() => {
           <MobileIcon name="retry" />
         </button>
       </div>
-      <p class="admin-users-muted">
-        Всего: {{ totalElements.toLocaleString('ru-RU')
-        }}<template v-if="roleFilter">
-          · {{ roleLabel(roleFilter) }}
-        </template><template v-if="statusFilter">
-          · {{ statusLabel(statusFilter) }}
-        </template>
-      </p>
       <p
         v-if="loading"
         class="admin-users-state"
@@ -2378,6 +2375,7 @@ onBeforeUnmount(() => {
       </nav>
       <ExportButton
         inline
+        hide-format-label
         :port="reportDownload"
         :formats="() => client.exportFormats()"
         :request="exportRequest"

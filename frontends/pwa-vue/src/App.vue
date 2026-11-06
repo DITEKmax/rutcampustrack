@@ -2323,11 +2323,8 @@ onBeforeUnmount(() => {
         !studentViewVisible &&
         !headmanViewVisible &&
         !teacherViewVisible &&
-        !adminHomeViewVisible &&
-        !adminAttendanceViewVisible
+        authSnapshot?.activeRole !== 'ADMIN'
     "
-    :data-admin-ui="authSnapshot?.activeRole === 'ADMIN' ? '' : undefined"
-    :data-theme="authSnapshot?.activeRole === 'ADMIN' ? adminTheme : undefined"
     floating
     :count="notificationUnread.count"
     @click="openNotifications"

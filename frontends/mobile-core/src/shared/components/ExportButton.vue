@@ -24,11 +24,13 @@ const props = withDefaults(
     scopeKey: string;
     disabled?: boolean;
     inline?: boolean;
+    hideFormatLabel?: boolean;
     label?: string;
   }>(),
-  { disabled: false, inline: false, label: 'Выгрузка', weeks: null },
+  { disabled: false, inline: false, hideFormatLabel: false, label: 'Выгрузка', weeks: null },
 );
 const emit = defineEmits<{ error: [cause: unknown] }>();
+const formatLabel = 'Формат выгрузки';
 const open = ref(false),
   busy = ref(false);
 const formatOptions = ref<readonly ReportFormatOption[]>([]);
@@ -171,8 +173,9 @@ async function download(): Promise<void> {
       v-if="open || inline"
       class="rct-export__options"
     >
-      <label>Формат выгрузки<select
+      <label>{{ hideFormatLabel ? '' : formatLabel }}<select
         v-model="selected"
+        :aria-label="hideFormatLabel ? formatLabel : undefined"
         :disabled="busy || (inline && (!port || disabled || !formatOptions.length))"
       ><option
         v-for="format in formatOptions"

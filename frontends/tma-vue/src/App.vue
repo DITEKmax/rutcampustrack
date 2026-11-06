@@ -1517,11 +1517,8 @@ onBeforeUnmount(() => {
         !studentViewVisible &&
         !headmanViewVisible &&
         !teacherViewVisible &&
-        !adminHomeViewVisible &&
-        !adminAttendanceViewVisible
+        profile?.activeRole !== 'ADMIN'
     "
-    :data-admin-ui="profile?.activeRole === 'ADMIN' ? '' : undefined"
-    :data-theme="profile?.activeRole === 'ADMIN' ? adminTheme : undefined"
     floating
     :count="notificationUnread.count"
     @click="openNotifications"

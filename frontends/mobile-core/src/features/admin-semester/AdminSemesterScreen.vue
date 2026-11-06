@@ -2239,18 +2239,31 @@ onBeforeUnmount(() => {
       <h2 id="admin-semester-activation-title">
         {{ activationConfirmation.name }}
       </h2>
-      <p v-if="semesterFuture(activationConfirmation)">
-        Активация будет запланирована на {{ formatDate(activationConfirmation.dateFrom) }}. Текущий
-        семестр останется активным до этой даты.
-      </p>
-      <p v-else>
-        Этот семестр станет текущим.
-        {{
-          activeSemesters.length
-            ? 'Предыдущий активный семестр станет неактивным. Его данные сохранятся.'
-            : 'Сейчас активный семестр не выбран.'
-        }}
-      </p>
+      <ul class="admin-semester-consequences">
+        <template v-if="semesterFuture(activationConfirmation)">
+          <li>
+            Активация будет запланирована на
+            <time :datetime="activationConfirmation.dateFrom">{{
+              formatDate(activationConfirmation.dateFrom)
+            }}</time>.
+          </li>
+          <li v-if="hasActiveSemester">
+            Текущий семестр останется активным до этой даты.
+          </li>
+          <li v-else>
+            Активного семестра сейчас нет.
+          </li>
+        </template>
+        <template v-else>
+          <li>Этот семестр станет текущим.</li>
+          <li v-if="hasActiveSemester">
+            Предыдущий активный семестр станет неактивным. Его данные сохранятся.
+          </li>
+          <li v-else>
+            Активного семестра сейчас нет.
+          </li>
+        </template>
+      </ul>
       <button
         class="admin-semester-action"
         type="button"
@@ -2960,7 +2973,7 @@ onBeforeUnmount(() => {
             </p>
             <button
               v-if="canManage && semester.active"
-              class="admin-semester-action admin-semester-action--secondary"
+              class="admin-semester-action admin-semester-action--neutral"
               type="button"
               :disabled="mutationBusy || !canEditMetadata(semester)"
               :title="canEditMetadata(semester) ? undefined : editBlockReason(semester)"
@@ -2969,26 +2982,46 @@ onBeforeUnmount(() => {
               Редактировать
             </button>
             <div class="admin-semester-card__details">
-              <p
+              <div
                 v-if="semester.archived"
-                class="admin-semester-form__hint"
+                class="admin-semester-archive-details"
               >
-                Учебные данные сохранены в архиве. Можно расширить даты периода; восстановление
-                оставит семестр неактивным.
-              </p>
-              <p
+                <ul>
+                  <li>Учебные данные сохранены в архиве.</li>
+                  <li>Даты периода можно продлить.</li>
+                  <li>После восстановления семестр останется неактивным.</li>
+                </ul>
+              </div>
+              <div
                 v-if="semester.archived && semesterExpired(semester)"
-                class="admin-semester-form__hint"
+                class="admin-semester-card__expiry"
               >
-                Срок семестра истёк. Чтобы восстановить его, сначала продли даты периода.
-              </p>
+                <h4>
+                  <MobileIcon
+                    name="warning"
+                    aria-hidden="true"
+                  />
+                  Срок семестра истёк
+                </h4>
+                <ol
+                  v-if="canManage"
+                  class="admin-semester-consequences"
+                >
+                  <li>Нажми «Редактировать» и продли даты периода.</li>
+                  <li>Нажми «Восстановить».</li>
+                  <li>После восстановления нажми «Сделать текущим».</li>
+                </ol>
+                <p v-else>
+                  Восстановление доступно после продления дат периода.
+                </p>
+              </div>
               <div
                 v-if="canManage"
                 class="admin-semester-card__actions"
               >
                 <button
                   v-if="!semester.active"
-                  class="admin-semester-action admin-semester-action--secondary"
+                  class="admin-semester-action admin-semester-action--neutral"
                   type="button"
                   :disabled="mutationBusy || !canEditMetadata(semester)"
                   :title="canEditMetadata(semester) ? undefined : editBlockReason(semester)"
@@ -2998,7 +3031,7 @@ onBeforeUnmount(() => {
                 </button>
                 <button
                   v-if="!semester.archived && !semester.active"
-                  class="admin-semester-action admin-semester-action--secondary"
+                  class="admin-semester-action admin-semester-action--neutral"
                   type="button"
                   :disabled="mutationBusy || !canActivate(semester)"
                   :title="
@@ -3015,7 +3048,12 @@ onBeforeUnmount(() => {
                 <div class="admin-semester-card__lifecycle">
                   <button
                     v-if="!semester.archived"
-                    class="admin-semester-action admin-semester-action--secondary"
+                    class="admin-semester-action"
+                    :class="
+                      canStartNewArchiveAttempt(semester, 'ARCHIVE')
+                        ? 'admin-semester-action--secondary'
+                        : 'admin-semester-action--neutral'
+                    "
                     type="button"
                     :disabled="mutationBusy || !canArchive(semester)"
                     :title="

@@ -277,11 +277,13 @@
   font-size: var(--rct-font-size-caption);
 }
 
-.admin-semester-archive-details ul {
+.admin-semester-archive-details ul,
+.admin-semester-consequences {
   display: grid;
   gap: var(--rct-space-1);
   margin: 0;
   padding-inline-start: var(--rct-space-4);
+  overflow-wrap: anywhere;
 }
 
 .admin-semester-action:disabled,
@@ -400,6 +402,10 @@
   border: 0;
   background: var(--rct-color-accent-now);
   color: var(--rct-color-accent-on-now);
+}
+.admin-semester-action--neutral:not(:disabled) {
+  background: var(--rct-color-surface-base);
+  color: var(--rct-color-text-primary);
 }
 .admin-semester-card__actions {
   display: grid;
@@ -565,6 +571,31 @@
 .admin-semester-card__details > p {
   margin: 0;
 }
+.admin-semester-card__expiry {
+  display: grid;
+  min-inline-size: 0;
+  gap: var(--rct-space-2);
+  padding: var(--rct-space-3);
+  border-radius: var(--rct-radius-xl);
+  color: var(--rct-color-text-primary);
+  background: var(--rct-warning-surface);
+  font-size: var(--rct-font-size-caption);
+  overflow-wrap: anywhere;
+}
+.admin-semester-card__expiry h4 {
+  display: flex;
+  align-items: center;
+  gap: var(--rct-space-2);
+  margin: 0;
+  color: var(--rct-color-warning-text);
+  font-size: inherit;
+  font-weight: var(--rct-font-weight-bold);
+}
+.admin-semester-card__expiry h4 svg {
+  flex: 0 0 var(--rct-icon-size);
+  inline-size: var(--rct-icon-size);
+  block-size: var(--rct-icon-size);
+}
 .admin-semester-field-error {
   margin: 0;
   font-size: var(--rct-font-size-caption);
@@ -592,11 +623,13 @@
 .admin-semester-card__lifecycle {
   display: flex;
   flex: 1 0 100%;
+  flex-wrap: wrap;
   gap: var(--rct-space-2);
 }
 .admin-semester-card__lifecycle > button {
-  flex: 1;
+  flex: 1 1 max-content;
   min-inline-size: 0;
+  overflow-wrap: anywhere;
 }
 .admin-semester-action--danger {
   border-color: var(--rct-color-danger-fill);

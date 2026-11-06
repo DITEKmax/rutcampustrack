@@ -437,12 +437,141 @@ h3 {
   display: none;
 }
 .web-nav-management-divider { align-self: center; inline-size: var(--web-border); block-size: var(--space-5); margin-inline: var(--space-2); background: var(--color-border-subtle); }
+.web-shell {
+  display: flex;
+  flex-direction: column;
+  min-block-size: 100dvh;
+}
 .web-main {
-  padding: var(--space-6) var(--web-page-padding);
+  --web-workspace-canvas: #111015;
+  --web-action-fill: #c9b4f0;
+  --web-action-hover: #d6c5f8;
+  --web-action-ink: #231637;
+  --web-panel-line: #4b4156;
+  --web-field-line: #827291;
+  --web-focus-color: #d1b9fb;
+  --web-data-header-surface: #292331;
+  --web-content-max-width: 96rem;
+  --web-workspace-control-height: var(--control-height);
+  flex: 1;
+  min-inline-size: 0;
+  padding: var(--space-5) var(--web-page-padding) var(--space-8);
+  background: var(--web-workspace-canvas);
+}
+[data-theme='light'] .web-main {
+  --web-workspace-canvas: #eae7f0;
+  --web-action-fill: #ddcff9;
+  --web-action-hover: #cfb9f3;
+  --web-action-ink: #2b1747;
+  --web-panel-line: #d5cede;
+  --web-field-line: #8e819b;
+  --web-focus-color: #7040af;
+  --web-data-header-surface: #f4f0fa;
+}
+.web-main > :where(section, div, article) {
+  min-inline-size: 0;
+  max-inline-size: var(--web-content-max-width);
+  margin-inline: auto;
+}
+.web-main :where(button, input, select, textarea, a, summary, [tabindex]):focus-visible {
+  outline: var(--focus-width) solid var(--web-focus-color);
+  outline-offset: var(--focus-offset);
+}
+.web-main .web-button {
+  min-block-size: var(--web-workspace-control-height);
+  border-radius: var(--radius-md);
+  font-weight: var(--font-weight-medium);
+}
+.web-main .web-icon-button {
+  flex-basis: var(--web-workspace-control-height);
+  inline-size: var(--web-workspace-control-height);
+}
+.web-main .web-button:not(.web-button-danger):is(.web-button-primary, .web-button-selected, .router-link-active, [aria-pressed='true']:not(.web-icon-button)) {
+  background: var(--web-action-fill);
+  border-color: var(--web-action-fill);
+  color: var(--web-action-ink);
+}
+.web-main .web-button:not(.web-button-danger):is(.web-button-primary, .web-button-selected, .router-link-active, [aria-pressed='true']:not(.web-icon-button)):hover:not(:disabled) {
+  background: var(--web-action-hover);
+  border-color: var(--web-action-hover);
+}
+.web-main :is(.web-panel, .web-homework-card, .headman-home-card) {
+  min-inline-size: 0;
+  padding: var(--space-4);
+  border-color: var(--web-panel-line);
+  border-radius: var(--radius-lg);
+}
+.web-main .web-notice {
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+}
+.web-main .web-field {
+  min-inline-size: 0;
+  font-weight: var(--font-weight-medium);
+}
+.web-main :is(.web-field-trigger, .web-date-control, .web-date-label-trigger),
+.web-main .web-field :is(input:not(:where([type='checkbox'], [type='radio'], [type='file'], .web-date-input, .web-select-validation)), select, textarea) {
+  min-block-size: var(--web-workspace-control-height);
+  border-color: var(--web-field-line);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-raised);
+  font-size: var(--font-size-dense);
+}
+.web-main .web-date-control :is(.web-date-input, .web-date-toggle) {
+  min-block-size: calc(var(--web-workspace-control-height) - var(--web-border) * 2);
+  block-size: auto;
+}
+.web-main .web-date-control .web-date-input {
+  padding-inline-start: var(--space-3);
+  font-size: var(--font-size-dense);
+}
+.web-main .web-date-control .web-date-toggle {
+  inline-size: var(--web-workspace-control-height);
+}
+.web-main .web-date-control:focus-within {
+  border-color: var(--web-focus-color);
+  outline-color: var(--web-focus-color);
+}
+.web-main .web-field textarea {
+  resize: vertical;
+}
+.web-main .web-field-popover {
+  border-color: var(--web-field-line);
+  border-radius: var(--radius-lg);
+}
+.web-main .web-select-option {
+  min-block-size: var(--web-workspace-control-height);
+  border-radius: var(--radius-md);
+  white-space: normal;
+}
+.web-main .web-select-option:is([aria-selected='true'], [aria-selected='true']:hover),
+.web-main .web-date-calendar-day:is([aria-pressed='true'], [aria-pressed='true']:hover) > span {
+  background: var(--web-action-fill);
+  color: var(--web-action-ink);
+}
+.web-main .web-confirm-dialog {
+  border-color: var(--web-panel-line);
+  border-radius: var(--radius-lg);
+}
+@mixin rct-compact {
+  .web-main {
+    --web-workspace-control-height: var(--control-min-touch);
+  }
 }
 .web-period-toolbar {
   display: grid;
   gap: var(--space-3);
+}
+.web-homework > .web-period-toolbar {
+  padding: var(--space-4);
+  border: var(--web-border) solid var(--web-panel-line);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-raised);
+}
+.web-homework .student-homework-period {
+  padding: 0;
+  border: 0;
+  background: transparent;
 }
 .web-period-modes {
   display: flex;
@@ -480,8 +609,9 @@ h3 {
 .web-homework-groups.is-week > .web-homework-day + .web-homework-day {
   margin-block-start: calc(-1 * var(--space-4));
   padding-block-start: var(--space-4);
-  border-block-start: var(--web-border) solid var(--color-border-subtle);
+  border-block-start: var(--web-border) solid var(--web-panel-line);
 }
+.web-homework-day { gap: var(--space-3); }
 .web-homework-empty {
   display: flex;
   flex-direction: column;
@@ -629,8 +759,8 @@ h3 {
   color: inherit;
 }
 .web-calendar-day.is-selected {
-  background: var(--color-accent-now);
-  color: var(--color-accent-on-now);
+  background: var(--web-action-fill);
+  color: var(--web-action-ink);
 }
 .web-calendar-day.is-today:not(.is-selected) {
   border-color: var(--color-accent-now);
@@ -798,7 +928,7 @@ h3 {
 .web-code-control:focus-within { outline: var(--web-border) solid var(--color-text-primary); outline-offset: var(--space-2); border-radius: var(--radius-lg); }
 .web-code-cell { display: grid; place-items: center; aspect-ratio: 1; border: var(--web-border) solid var(--color-border-default); border-radius: var(--radius-full); font-size: var(--font-size-body); color: var(--color-text-primary); }
 
-.web-profile-data { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: var(--space-6); }
+.web-profile-data { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); align-items: start; gap: var(--space-4); }
 .web-profile-details-table {
   inline-size: 100%;
   table-layout: fixed;
@@ -836,8 +966,35 @@ h3 {
   text-align: center;
   overflow-wrap: anywhere;
 }
-.web-avatar-upload { position: relative; }
-.web-avatar-upload-state { position: absolute; inset-block-start: var(--space-2); inset-inline-end: var(--space-2); font-size: var(--font-size-micro); color: var(--color-text-secondary); }
+.web-profile-disclosure > summary {
+  min-block-size: var(--web-workspace-control-height);
+  align-content: center;
+  padding-block: var(--space-2);
+  cursor: pointer;
+  font-weight: var(--font-weight-bold);
+}
+.web-profile-disclosure[open] > summary {
+  margin-block-end: var(--space-3);
+  border-block-end: var(--web-border) solid var(--web-panel-line);
+}
+.web-main .web-profile-disclosure {
+  padding-block: var(--space-2);
+}
+.web-profile-disclosure > .web-panel,
+.web-profile-avatar-options {
+  min-inline-size: 0;
+  margin: 0;
+  padding: var(--space-2) 0;
+  border: 0;
+}
+.web-profile-disclosure > .web-panel > h2 {
+  position: absolute;
+  inline-size: var(--web-border);
+  block-size: var(--web-border);
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
 @mixin rct-compact {
   .web-profile-data { grid-template-columns: minmax(0, 1fr); }
   .web-profile-list li { flex-wrap: wrap; }
@@ -890,11 +1047,20 @@ h3 {
 .web-notification-unread-dot { flex-shrink: 0; inline-size: var(--space-2); block-size: var(--space-2); border-radius: var(--radius-full); background: var(--color-text-primary); }
 .web-notification-history { align-self: start; inline-size: fit-content; max-inline-size: none; white-space: nowrap; }
 .web-notification-popover:not(:popover-open) { display: none; }
-.web-notification-card { min-inline-size: 0; }
-.web-notification-card header { display: flex; flex-wrap: wrap; align-items: start; justify-content: space-between; gap: var(--space-2); }
+.web-notification-card { min-inline-size: 0; gap: var(--space-3); }
+.web-notification-card header { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: var(--space-1) var(--space-4); }
+.web-notification-card header time { white-space: nowrap; }
 .web-notification-card h2, .web-notification-toast h2 { font-size: var(--font-size-body); }
 .web-notification-card.is-unread { border-color: var(--color-text-secondary); }
 .web-notification-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.web-notification-details {
+  border-block-start: var(--web-border) solid var(--web-panel-line);
+  padding-block-start: var(--space-3);
+}
+.web-notification-details dl { grid-template-columns: minmax(0, auto) minmax(0, 1fr); margin: 0; }
+@mixin rct-compact {
+  .web-notification-details dl { grid-template-columns: minmax(0, 1fr); gap: var(--space-2); }
+}
 .web-notification-toasts { position: fixed; z-index: 40; inset-block-start: var(--space-4); inset-inline: 0; margin-inline: auto; inline-size: min(32rem, calc(100% - var(--space-8))); max-block-size: calc(100dvh - var(--space-8)); overflow: hidden; display: grid; gap: var(--space-3); pointer-events: none; }
 .web-feedback-host { position: fixed; z-index: 40; inset-block-end: var(--space-4); inset-inline-end: var(--space-4); inline-size: min(24rem, calc(100% - var(--space-8))); pointer-events: none; }
 .web-feedback-toast { display: grid; grid-template-columns: var(--space-6) minmax(0, 1fr) var(--control-height); align-items: center; gap: var(--space-3); padding: var(--space-3) var(--space-3) var(--space-3) var(--space-5); border: var(--web-border) solid var(--color-state-success-border); border-radius: var(--radius-2xl); background: var(--color-state-success-bg); color: var(--color-state-success-text); box-shadow: var(--rct-shadow-overlay); pointer-events: auto; }
@@ -922,14 +1088,16 @@ h3 {
 
 /* Ordinary data headers share a neutral surface; calendars and timetables keep their own states. */
 /* Header cell separators are independent of surface and interactive row states. */
-:is(.headman-home-table, .headman-management-table, .headman-statistics-table, .headman-request-table, .headman-homework-diff > table, .headman-table:not(.headman-timetable), .student-table, .student-attendance-table, .teacher-table, .admin-table) > thead > tr > :is(th, td) {
+.web-main :is(.headman-table-scroll, .headman-management-scroll, .teacher-table-scroll, .student-table-scroll, .student-attendance-scroll, .admin-table-wrap) {
+  border-color: var(--web-panel-line);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-raised);
+}
+:where(.web-main) :is(.headman-home-table, .headman-management-table, .headman-statistics-table, .headman-request-table, .headman-homework-diff > table, .headman-table:not(.headman-timetable), .student-table, .student-attendance-table, .teacher-table, .admin-table) > thead > tr > :is(th, td) {
   border-inline-end: var(--web-border) solid var(--color-border-default);
   border-block-end: var(--web-border) solid var(--color-border-strong);
 }
-:is(.headman-home-table, .headman-management-table, .headman-statistics-table, .headman-request-table, .headman-homework-diff > table, .headman-table:not(.headman-timetable), .student-table, .student-attendance-table) {
-  --web-data-header-surface: color-mix(in srgb, var(--color-surface-raised) 94%, var(--color-text-primary));
-}
-:is(.headman-home-table, .headman-management-table, .headman-statistics-table, .headman-request-table, .headman-homework-diff > table, .headman-table:not(.headman-timetable), .student-table, .student-attendance-table) > thead > tr:not(.is-current):not(.is-selected):not(.is-cancelled) > :is(th, td):not(.is-current):not(.is-selected):not(.is-cancelled) {
+:where(.web-main) :is(.headman-home-table, .headman-management-table, .headman-statistics-table, .headman-request-table, .headman-homework-diff > table, .headman-table:not(.headman-timetable), .student-table, .student-attendance-table, .teacher-table, .admin-table) > thead > tr:not(.is-current):not(.is-selected):not(.is-cancelled) > :is(th, td):not(.is-current):not(.is-selected):not(.is-cancelled) {
   background: var(--web-data-header-surface);
   color: var(--color-text-primary);
   font-weight: var(--font-weight-medium);

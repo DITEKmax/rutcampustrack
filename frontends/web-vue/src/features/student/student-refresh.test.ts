@@ -515,6 +515,7 @@ describe('student SFC live reading and retained selections', () => {
   it('defers server replacement while the actual request form has a draft, then publishes the pending update after closing it', async () => {
     const { default: Page } = await import('./StudentRequestsPage.vue')
     const root = mount(Page)
+    const savedRequest = () => flatten(root).find((node) => node.props['data-request-id'] === 'saved-request')
     await settle()
     const textarea = flatten(root).find((node) => node.tag === 'textarea')!
     textarea.value = 'Сохрани мой черновик'
@@ -526,9 +527,28 @@ describe('student SFC live reading and retained selections', () => {
     await settle()
     expect(server.requestReads).toBe(reads)
     expect(textarea.value).toBe('Сохрани мой черновик')
-    expect(text(root)).not.toContain('Заявка saved-request')
+    expect(savedRequest()).toBeUndefined()
     await click(button(root, 'Закрыть форму'))
-    expect(text(root)).toContain('Заявка saved-request')
+    const card = savedRequest()!
+    expect(card).toBeDefined()
+    expect(text(card)).toContain('Уважительная причина: болезнь')
+    expect(text(card)).not.toContain('Новая заявка')
+    const expand = flatten(card).find((node) => node.props['aria-expanded'] === false)!
+    await click(expand)
+    expect(text(card)).toContain('Новая заявка')
+    expect(text(card)).toContain('Заявка №saved-request')
+  })
+  it('prefills the exact lesson, then clears it when the student edits an overlapping date range', async () => {
+    const { default: Page } = await import('./StudentRequestsPage.vue')
+    const root = mount(Page)
+    await settle()
+    const lesson = () => flatten(root).find((node) => node.props.name === 'request-lesson')
+    expect(lesson()?.checked).toBe(true)
+    const from = root.querySelector('.web-date-input')!
+    from.value = '23.10.2026'
+    ;(from.props.onInput as (event: unknown) => void)({ target: from })
+    await settle()
+    expect(lesson()?.checked).toBe(false)
   })
   it('can read both earlier and later cohort pages around the server-selected own page and return to the own position', async () => {
     const { default: Ranking } = await import('./StudentRanking.vue')

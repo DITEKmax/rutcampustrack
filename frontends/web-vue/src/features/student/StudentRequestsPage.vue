@@ -109,51 +109,66 @@ async function checkCancellationAndRefresh() {
       >
         Доступен только просмотр. Подать или отменить заявку нельзя.
       </p>
-      <div class="student-actions">
-        <button
-          class="web-button"
-          :class="{ 'web-button-selected': requests.form.value === 'EXCUSE' }"
-          :aria-pressed="requests.form.value === 'EXCUSE'"
-          :disabled="
-            scope.readOnly.value ||
-              !scope.session.value.semester ||
-              requests.busy.value ||
-              requests.ambiguous.value
-          "
-          @click="openForm('EXCUSE')"
+      <div class="student-request-toolbar">
+        <div
+          class="student-actions"
+          role="group"
+          aria-label="Подать заявку"
         >
-          Подать на «у»
-        </button><button
-          class="web-button"
-          :class="{ 'web-button-selected': requests.form.value === 'LATE_CHECKIN' }"
-          :aria-pressed="requests.form.value === 'LATE_CHECKIN'"
-          :disabled="
-            scope.readOnly.value ||
-              !scope.session.value.semester ||
-              requests.busy.value ||
-              requests.ambiguous.value ||
-              (requests.view.options?.budget?.remaining ?? 0) <= 0
-          "
-          @click="openForm('LATE_CHECKIN')"
+          <button
+            class="web-button"
+            :class="{ 'web-button-primary': !requests.form.value, 'web-button-selected': requests.form.value === 'EXCUSE' }"
+            :aria-pressed="requests.form.value === 'EXCUSE'"
+            :disabled="
+              scope.readOnly.value ||
+                !scope.session.value.semester ||
+                requests.busy.value ||
+                requests.ambiguous.value
+            "
+            @click="openForm('EXCUSE')"
+          >
+            Подать уважительную причину
+          </button>
+          <button
+            class="web-button"
+            :class="{ 'web-button-selected': requests.form.value === 'LATE_CHECKIN' }"
+            :aria-pressed="requests.form.value === 'LATE_CHECKIN'"
+            :disabled="
+              scope.readOnly.value ||
+                !scope.session.value.semester ||
+                requests.busy.value ||
+                requests.ambiguous.value ||
+                (requests.view.options?.budget?.remaining ?? 0) <= 0
+            "
+            @click="openForm('LATE_CHECKIN')"
+          >
+            Забыл отметиться
+          </button>
+        </div>
+        <div
+          class="student-actions"
+          role="group"
+          aria-label="Статус заявок"
         >
-          Оспорить «н»
-        </button><button
-          class="web-button"
-          :aria-pressed="!requests.form.value && requests.view.bucket === 'open'"
-          :disabled="requests.busy.value || requests.ambiguous.value"
-          :class="{ 'web-button-selected': !requests.form.value && requests.view.bucket === 'open' }"
-          @click="requests.form.value = null; requests.selectBucket('open')"
-        >
-          На рассмотрении{{ openCount === null ? '' : ` (${openCount})` }}
-        </button><button
-          class="web-button"
-          :aria-pressed="!requests.form.value && requests.view.bucket === 'archive'"
-          :disabled="requests.busy.value || requests.ambiguous.value"
-          :class="{ 'web-button-selected': !requests.form.value && requests.view.bucket === 'archive' }"
-          @click="requests.form.value = null; requests.selectBucket('archive')"
-        >
-          Архив
-        </button>
+          <button
+            class="web-button"
+            :aria-pressed="!requests.form.value && requests.view.bucket === 'open'"
+            :disabled="requests.busy.value || requests.ambiguous.value"
+            :class="{ 'web-button-selected': !requests.form.value && requests.view.bucket === 'open' }"
+            @click="requests.form.value = null; requests.selectBucket('open')"
+          >
+            На рассмотрении{{ openCount === null ? '' : ` (${openCount})` }}
+          </button>
+          <button
+            class="web-button"
+            :aria-pressed="!requests.form.value && requests.view.bucket === 'archive'"
+            :disabled="requests.busy.value || requests.ambiguous.value"
+            :class="{ 'web-button-selected': !requests.form.value && requests.view.bucket === 'archive' }"
+            @click="requests.form.value = null; requests.selectBucket('archive')"
+          >
+            Архив
+          </button>
+        </div>
       </div>
       <p
         v-if="!scope.session.value.semester"
@@ -164,7 +179,7 @@ async function checkCancellationAndRefresh() {
         v-else-if="(requests.view.options?.budget?.remaining ?? 1) <= 0"
         class="web-caption"
       >
-        Попытки оспорить отсутствие закончились. Заявки на уважительную причину доступны.
+        Попытки восстановить пропущенную отметку закончились. Заявки на уважительную причину доступны.
       </p>
       <StudentNotice
         :loading="requests.view.optionsLoading"

@@ -11,7 +11,7 @@
 .web-map-pickers {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--rct-space-6);
+  gap: var(--space-4);
 }
 .web-map-empty-error {
   display: flex;
@@ -41,15 +41,18 @@
 .web-map-viewer {
   position: relative;
   block-size: var(--web-map-height);
-  border: var(--rct-border-hairline) solid var(--color-border-default);
-  border-radius: var(--rct-radius-2xl);
+  border: var(--web-border) solid var(--web-panel-line);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-raised);
   overflow: hidden;
 }
 .web-map-viewport {
   inline-size: 100%;
   block-size: 100%;
   overflow: auto;
-  @mixin rct-focus-ring;
+}
+.web-main .web-map-viewport:focus-visible {
+  outline-offset: calc(-1 * var(--focus-width));
 }
 .web-map-canvas {
   inline-size: calc(100% * var(--web-map-zoom, 1));

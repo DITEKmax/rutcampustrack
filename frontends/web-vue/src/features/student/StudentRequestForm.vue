@@ -12,6 +12,7 @@ import {
   lessonTypeLabel,
   formatLessonDate,
   formatLessonTime,
+  requestKindLabel,
 } from '../../../../mobile-core/src/features/requests/state';
 import {
   validateExcusePayload,
@@ -21,6 +22,7 @@ import ConfirmDialog from '../../shared/ConfirmDialog.vue';
 import WebDateField from '../../shared/WebDateField.vue';
 import WebSelect from '../../shared/WebSelect.vue';
 import StudentRequestFiles from './StudentRequestFiles.vue';
+import StudentEmptyLessons from './StudentEmptyLessons.vue';
 const props = defineProps<{
   kind: RequestKind;
   options: RequestOptions | null;
@@ -60,7 +62,9 @@ const rangeReady = computed(() => Boolean(fromValid.value && toValid.value && fr
 function editDates() {
   datesEdited = true;
   pendingInitial = null;
+  selected.value = [];
   confirm.value = false;
+  error.value = '';
 }
 watch(() => [props.initialLesson, props.options], () => {
   if (initialApplied || datesEdited || from.value || to.value || !props.initialLesson) return;
@@ -71,16 +75,21 @@ watch(() => [props.initialLesson, props.options], () => {
   from.value = date;
   to.value = date;
 }, { immediate: true });
-const lessons = computed(
-  () =>
-    rangeReady.value ? props.options?.lessons?.filter(
-      (option) => Boolean(option.lesson?.date) && option.lesson!.date! >= from.value && option.lesson!.date! <= to.value,
-    ) ?? [] : [],
+const lessons = computed(() =>
+  rangeReady.value
+    ? props.options?.lessons?.flatMap((option) => {
+        const lesson = option.lesson;
+        return lesson?.date && lesson.date >= from.value && lesson.date <= to.value &&
+          canRequestLesson(option, props.kind)
+          ? [{ ...lesson, date: lesson.date }]
+          : [];
+      }) ?? []
+    : [],
 );
 watch([lessons, rangeReady, disabled], () => {
   if (disabled.value) return;
   confirm.value = false;
-  const visible = new Set(lessons.value.flatMap((option) => option.lesson ? [option.lesson.id] : []));
+  const visible = new Set(lessons.value.map((lesson) => lesson.id));
   selected.value = selected.value.filter((id) => visible.has(id));
   if (pendingInitial && rangeReady.value && visible.has(pendingInitial)) {
     selected.value = [pendingInitial];
@@ -88,11 +97,11 @@ watch([lessons, rangeReady, disabled], () => {
   }
 }, { flush: 'sync' });
 const days = computed(() =>
-  [...new Set(lessons.value.map((l) => l.lesson?.date ?? ''))]
+  [...new Set(lessons.value.map((lesson) => lesson.date))]
     .sort()
     .map((date) => ({
       date,
-      lessons: lessons.value.filter((l) => (l.lesson?.date ?? '') === date),
+      lessons: lessons.value.filter((lesson) => lesson.date === date),
     })),
 );
 const payload = computed<ExcuseRequestPayload | { lessonId: string }>(() =>
@@ -106,8 +115,7 @@ const payload = computed<ExcuseRequestPayload | { lessonId: string }>(() =>
     : { lessonId: selected.value[0] ?? '' },
 );
 const selectedLessons = computed(
-  () =>
-    props.options?.lessons?.filter((o) => o.lesson && selected.value.includes(o.lesson.id)) ?? [],
+  () => lessons.value.filter((lesson) => selected.value.includes(lesson.id)),
 );
 function select(id: string, checked: boolean) {
   selected.value =
@@ -125,7 +133,7 @@ function prepare() {
     error.value = 'Укажи корректные даты начала и конца периода.';
     return;
   }
-  if (selected.value.some((id) => !lessons.value.some((option) => option.lesson?.id === id))) {
+  if (selected.value.some((id) => !lessons.value.some((lesson) => lesson.id === id))) {
     error.value = 'Выбери пары в указанном периоде.';
     return;
   }
@@ -145,11 +153,11 @@ function submit() {
 <template>
   <form
     ref="form"
-    class="student-request-form web-stack"
+    class="student-request-form web-panel web-stack"
     :aria-busy="busy"
     @submit.prevent="prepare"
   >
-    <h2>{{ kind === 'EXCUSE' ? 'Уважительная причина' : 'Оспорить отсутствие' }}</h2>
+    <h2>{{ requestKindLabel(kind) }}</h2>
     <div
       v-if="kind === 'LATE_CHECKIN'"
       class="student-request-budget"
@@ -161,7 +169,7 @@ function submit() {
       </template>
       <p v-else class="web-caption">{{ budgetLabel(options?.budget) }}</p>
     </div>
-    <div class="student-filter">
+    <div class="student-request-dates">
       <WebDateField
         v-model="from"
         label="С даты"
@@ -181,43 +189,42 @@ function submit() {
         @change="editDates"
       />
     </div>
-    <div v-if="rangeReady" class="student-request-lessons web-stack" tabindex="0" aria-label="Пары для заявки">
+    <div
+      v-if="rangeReady && days.length"
+      class="student-request-lessons web-stack"
+      tabindex="0"
+      role="region"
+      aria-label="Пары для заявки"
+    >
       <fieldset
         v-for="day in days"
         :key="day.date"
         class="student-request-day"
       >
-        <legend>{{ day.date ? formatLessonDate(day.date) : 'Дата не указана' }}</legend><label
-          v-for="option in day.lessons"
-          :key="option.lesson!.id"
+        <legend>{{ formatLessonDate(day.date) }}</legend><label
+          v-for="lesson in day.lessons"
+          :key="lesson.id"
           class="student-request-option"
         ><input
-          :checked="selected.includes(option.lesson!.id)"
+          :checked="selected.includes(lesson.id)"
           :type="kind === 'EXCUSE' ? 'checkbox' : 'radio'"
           name="request-lesson"
           :disabled="
-            disabled ||
-              !canRequestLesson(option, kind) ||
-              (kind === 'LATE_CHECKIN' && (options?.budget?.remaining ?? 0) <= 0)
+            disabled || (kind === 'LATE_CHECKIN' && (options?.budget?.remaining ?? 0) <= 0)
           "
-          @change="select(option.lesson!.id, ($event.target as HTMLInputElement).checked)"
-        ><span><strong>{{ option.lesson?.subjectName ?? 'Предмет не указан' }}</strong><br>{{ lessonTypeLabel(option.lesson?.subjectType) }} ·
-          {{ formatLessonTime(option.lesson!)
-          }}<br v-if="!canRequestLesson(option, kind)"><small
-            v-if="!canRequestLesson(option, kind)"
-            class="web-caption"
-          >{{
-            option.pendingRequests?.some((p) => p.kind === kind)
-              ? 'По этой паре уже есть активная заявка'
-              : option.unavailableReason || 'Пара недоступна для этой заявки'
-          }}</small></span></label>
-      </fieldset><p v-if="!days.length">
-        Для выбранного периода пар нет.
-      </p>
+          @change="select(lesson.id, ($event.target as HTMLInputElement).checked)"
+        ><span><strong>{{ lesson.subjectName ?? 'Предмет не указан' }}</strong><br>{{ lessonTypeLabel(lesson.subjectType) }} ·
+          {{ formatLessonTime(lesson) }}</span></label>
+      </fieldset>
     </div>
+    <StudentEmptyLessons
+      v-else-if="rangeReady && options"
+      message="На эти даты нет пар для заявки"
+      announce
+    />
     <div
       v-if="kind === 'EXCUSE'"
-      class="student-dashboard-bottom"
+      class="student-request-details"
     >
       <div class="web-stack">
         <WebSelect
@@ -276,17 +283,18 @@ function submit() {
       :open="confirm"
       title="Отправить заявку?"
       confirm-label="Подтвердить отправку"
+      cancel-label="Назад"
       :busy="busy"
       @cancel="confirm = false"
       @confirm="submit"
     >
       <p>Пары, включённые в заявку:</p><ul>
         <li
-          v-for="option in selectedLessons"
-          :key="option.lesson!.id"
+          v-for="lesson in selectedLessons"
+          :key="lesson.id"
         >
-          {{ option.lesson?.subjectName }} · {{ formatLessonDate(option.lesson?.date) }} ·
-          {{ formatLessonTime(option.lesson!) }}
+          {{ lesson.subjectName }} · {{ formatLessonDate(lesson.date) }} ·
+          {{ formatLessonTime(lesson) }}
         </li>
       </ul><p v-if="kind === 'LATE_CHECKIN'">
         Будет потрачена одна попытка из {{ budgetLabel(options?.budget) }}.

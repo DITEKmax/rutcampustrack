@@ -59,10 +59,9 @@ const kindAndReason = computed(() => {
     :data-request-id="request.summary.id"
     tabindex="-1"
   >
-    <header class="web-page-header">
-      <div class="web-stack">
-        <h2>Заявка {{ request.summary.id }}</h2><p>{{ kindAndReason }}</p>
-      </div><div class="student-actions">
+    <header class="student-request-heading">
+      <h2>{{ kindAndReason }}</h2>
+      <div class="student-actions">
         <span
           class="student-request-status"
           :data-tone="requestStatusTone(request.summary.status)"
@@ -77,13 +76,31 @@ const kindAndReason = computed(() => {
         </button>
       </div>
     </header>
-    <p v-if="request.comment">
-      {{ request.comment }}
+    <p class="student-request-meta">
+      Пар: {{ request.summary.lessons?.length ?? 0 }}
+      <time
+        v-if="request.summary.createdAt"
+        :datetime="request.summary.createdAt"
+      >
+        · {{ formatRequestDate(request.summary.createdAt) }}, {{ requestTime(request.summary.createdAt) }} МСК
+      </time>
     </p>
     <div
       v-if="expanded"
-      class="web-stack"
+      class="student-request-detail web-stack"
     >
+      <p class="web-caption">
+        Заявка №{{ request.summary.id }}
+      </p>
+      <p
+        v-if="request.summary.origin === 'AUTO_GEO_FAILURE'"
+        class="web-caption"
+      >
+        Создана автоматически после геопроверки
+      </p>
+      <p v-if="request.comment">
+        {{ request.comment }}
+      </p>
       <div
         v-for="lesson in request.summary.lessons ?? []"
         :key="lesson.id"
@@ -134,21 +151,19 @@ const kindAndReason = computed(() => {
           Не включена в решение: {{ lesson.subjectName }} · {{ formatLessonDate(lesson.date) }}
         </p>
       </section>
-    </div>
-    <p v-if="request.decision?.comment">
-      Решение: {{ request.decision.comment }}
-    </p>
-    <footer class="web-page-header">
-      <p class="student-request-meta">
-        Пар: {{ request.summary.lessons?.length ?? 0 }}<template v-if="request.summary.createdAt"> · </template>
-        <time
-          v-if="request.summary.createdAt"
-          :datetime="request.summary.createdAt"
-        >{{ formatRequestDate(request.summary.createdAt) }},
-          {{ requestTime(request.summary.createdAt) }} МСК</time>
-        <template v-if="request.decision?.decidedAt"> · <time :datetime="request.decision.decidedAt">{{ formatRequestDate(request.decision.decidedAt, 'Решение принято') }}, {{ requestTime(request.decision.decidedAt) }} МСК</time></template>
-        <template v-if="request.summary.origin === 'AUTO_GEO_FAILURE'"> · Создана автоматически после геопроверки</template>
-      </p><button
+      <p v-if="request.decision?.comment">
+        Решение: {{ request.decision.comment }}
+      </p>
+      <p
+        v-if="request.decision?.decidedAt"
+        class="web-caption"
+      >
+        Решение принято:
+        <time :datetime="request.decision.decidedAt">
+          {{ formatRequestDate(request.decision.decidedAt) }}, {{ requestTime(request.decision.decidedAt) }} МСК
+        </time>
+      </p>
+      <button
         v-if="canCancel"
         class="web-button web-button-danger"
         :disabled="busy"
@@ -156,6 +171,6 @@ const kindAndReason = computed(() => {
       >
         Отменить заявку
       </button>
-    </footer>
+    </div>
   </article>
 </template>

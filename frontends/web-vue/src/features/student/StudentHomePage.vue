@@ -14,6 +14,7 @@ import StudentLesson from './StudentLesson.vue';
 import StudentMetrics from './StudentMetrics.vue';
 import StudentPwaBanner from './StudentPwaBanner.vue';
 import StudentHomeworkDay from './StudentHomeworkDay.vue';
+import StudentEmptyLessons from './StudentEmptyLessons.vue';
 import { canRequestLesson } from '../../../../mobile-core/src/features/requests/state';
 const scope = useStudentScope();
 const today = useStudentResource<StudentToday>(scope);
@@ -97,7 +98,6 @@ const progress = computed(() => {
     <h1 class="web-sr-only">
       Главная студента
     </h1>
-    <StudentPwaBanner />
     <StudentNotice
       :loading="scope.loading.value"
       :error="scope.error.value"
@@ -162,9 +162,10 @@ const progress = computed(() => {
               Уточнить результат отметки
             </button>
           </template>
-          <p v-else>
-            На сегодня текущих и предстоящих пар нет.
-          </p>
+          <StudentEmptyLessons
+            v-else
+            message="На сегодня больше нет пар"
+          />
           <p
             v-if="checkin.error.value"
             class="web-error"
@@ -250,7 +251,7 @@ const progress = computed(() => {
                       }"
                     >
                       {{
-                        kind === 'EXCUSE' ? 'Подать уважительную причину' : 'Оспорить отсутствие'
+                        kind === 'EXCUSE' ? 'Подать уважительную причину' : 'Забыл отметиться'
                       }}
                     </RouterLink>
                   </template>
@@ -268,5 +269,6 @@ const progress = computed(() => {
         <StudentHomeworkDay />
       </div>
     </template>
+    <StudentPwaBanner />
   </StudentRegion>
 </template>

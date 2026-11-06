@@ -68,7 +68,11 @@ function step(direction: -1 | 1) {
       @retry="scope.load"
     />
     <template v-if="schedule.data.value && date">
-      <div class="student-chart-toolbar">
+      <div
+        class="student-schedule-toolbar web-panel"
+        role="group"
+        aria-label="Период расписания"
+      >
         <StudentPeriodPager
           :label="periodLabel"
           unit="период расписания"
@@ -88,9 +92,9 @@ function step(direction: -1 | 1) {
           />
         </StudentPeriodPager>
         <div
-          class="student-actions student-chart-range"
+          class="student-schedule-modes"
           role="group"
-          aria-label="Разрез расписания"
+          aria-label="Вид расписания"
         >
           <button
             v-for="item in [

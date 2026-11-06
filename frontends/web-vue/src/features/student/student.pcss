@@ -11,14 +11,24 @@
   --student-lesson-time-width: 7rem;
   --student-mark-size: 1.5rem;
   --student-detail-width: 24rem;
+  --student-empty-art-width: 3.5rem;
+  --student-empty-art-height: 2.75rem;
+  --student-request-date-min-width: 9.5rem;
+  --student-request-form-width: 64rem;
+  --student-dashboard-gap: var(--space-4);
   min-inline-size: 0;
+  gap: var(--space-5);
 }
 .student-attendance-scroll,
 .student-table-scroll {
   overflow: auto;
   min-inline-size: 0;
+  max-inline-size: 100%;
   border: var(--web-border) solid var(--color-border-subtle);
   border-radius: var(--radius-xl);
+}
+.student-attendance-scroll {
+  overscroll-behavior-inline: contain;
 }
 .student-attendance-table {
   border-collapse: collapse;
@@ -127,8 +137,8 @@
   padding: var(--space-2);
 }
 .student-ranking-list .is-self {
-  background: var(--color-accent-now);
-  color: var(--color-accent-on-now);
+  background: var(--web-action-fill);
+  color: var(--web-action-ink);
   border-radius: var(--radius-md);
 }
 .student-ranking-list > .student-auto-edge {
@@ -144,8 +154,40 @@
   flex-wrap: wrap;
 }
 .student-request-form {
-  padding: var(--space-6);
-  border-block: var(--web-border) solid var(--color-border-subtle);
+  inline-size: 100%;
+  max-inline-size: var(--student-request-form-width);
+}
+.student-request-toolbar {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-3) var(--space-5);
+}
+.student-request-toolbar .student-actions {
+  gap: var(--space-2);
+}
+.student-request-dates,
+.student-request-details {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+  gap: var(--space-4);
+}
+.student-request-dates {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--student-request-date-min-width)), 1fr));
+}
+.student-empty-lessons {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  color: var(--color-text-secondary);
+}
+.student-empty-lessons > svg {
+  flex: 0 0 var(--student-empty-art-width);
+  inline-size: var(--student-empty-art-width);
+  block-size: var(--student-empty-art-height);
+  color: var(--web-focus-color);
 }
 .student-requests-empty {
   display: flex;
@@ -177,17 +219,17 @@
   overflow: auto;
   gap: var(--space-4);
   padding: var(--space-4);
-  border: var(--web-border) solid var(--color-border-subtle);
-  border-radius: var(--radius-xl);
+  border: var(--web-border) solid var(--web-panel-line);
+  border-radius: var(--radius-lg);
   background: var(--color-surface-raised);
 }
 .student-request-option {
   display: flex;
   align-items: start;
   gap: var(--space-3);
-  padding: var(--space-3);
+  padding: var(--space-2) var(--space-3);
   border: var(--web-border) solid var(--color-border-subtle);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-md);
   background: var(--color-surface-base);
   color: var(--color-text-primary);
   cursor: pointer;
@@ -208,20 +250,20 @@
   border: var(--web-border) solid var(--color-border-strong);
   border-radius: var(--radius-full);
   background: var(--color-surface-raised);
-  color: var(--color-accent-now);
+  color: var(--web-action-fill);
   cursor: inherit;
 }
-.student-request-option:has(> input:checked) {
-  border-color: var(--color-accent-now);
-  background: var(--color-accent-now);
-  color: var(--color-accent-on-now);
+.student-request-option > input[type='checkbox'] {
+  border-radius: var(--radius-sm);
 }
-.student-request-option:has(> input:checked) .web-caption {
-  color: inherit;
+.student-request-option:has(> input:checked) {
+  border-color: var(--web-action-fill);
+  background: var(--web-action-fill);
+  color: var(--web-action-ink);
 }
 .student-request-option > input:checked {
-  border-color: var(--color-accent-on-now);
-  background: var(--color-accent-on-now);
+  border-color: var(--web-action-ink);
+  background: var(--web-action-ink);
 }
 .student-request-option > input[type='checkbox']:checked::before {
   content: '';
@@ -250,7 +292,7 @@
   color: var(--color-disabled-text);
 }
 .student-request-option:has(> input:focus-visible) {
-  outline: var(--focus-width) solid var(--color-border-focus);
+  outline: var(--focus-width) solid var(--web-focus-color);
   outline-offset: var(--focus-offset);
 }
 .student-request-option > input:focus-visible {
@@ -285,7 +327,26 @@
   overflow-wrap: anywhere;
 }
 .student-request-card {
+  gap: var(--space-2);
   scroll-margin-block: var(--space-6);
+}
+.student-request-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-4);
+}
+.student-request-heading .student-actions {
+  gap: var(--space-2);
+}
+.student-request-detail {
+  border-block-start: var(--web-border) solid var(--web-panel-line);
+  padding-block-start: var(--space-3);
+  overflow-wrap: anywhere;
+}
+.student-request-detail > .web-button {
+  align-self: start;
 }
 .student-request-meta {
   color: var(--color-text-muted);
@@ -359,7 +420,7 @@
   min-inline-size: calc(var(--control-height) * 4);
 }
 .student-file-picker:focus-within > .web-button {
-  outline: var(--focus-width) solid var(--color-border-focus);
+  outline: var(--focus-width) solid var(--web-focus-color);
   outline-offset: var(--focus-offset);
 }
 .student-file-picker:has(input:disabled) {
@@ -393,12 +454,6 @@
 .student-attachment .is-expired {
   text-decoration: line-through;
 }
-.student-request-form .web-field {
-  min-inline-size: 0;
-}
-.student-request-form .web-field textarea {
-  border-radius: var(--radius-2xl);
-}
 .student-mark-detail:focus-visible {
   outline: var(--focus-width) solid var(--color-border-focus);
   outline-offset: var(--space-1);
@@ -409,17 +464,25 @@
 .student-dashboard-pair {
   display: grid;
   grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
-  gap: var(--space-6);
+  gap: var(--student-dashboard-gap);
 }
 .student-dashboard-bottom {
-  margin-block-start: var(--space-8);
+  margin-block-start: var(--space-3);
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--space-6);
+  gap: var(--space-4);
   align-items: start;
 }
+.student-dashboard-bottom > section {
+  min-inline-size: 0;
+}
 .student-statistics-trend {
-  margin-block: var(--space-8);
+  min-inline-size: 0;
+  margin-block: var(--space-2);
+  padding: var(--space-4);
+  border: var(--web-border) solid var(--web-panel-line);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-raised);
 }
 html:has(.student-statistics-summary) {
   scrollbar-gutter: stable;
@@ -448,11 +511,11 @@ html:has(.student-statistics-summary) {
 .student-statistics-ranking-details {
   grid-column: 2;
   min-inline-size: 0;
-  margin-block-start: calc(-1 * var(--space-6));
+  margin-block-start: calc(-1 * var(--student-dashboard-gap));
   padding: 0 var(--space-4) var(--space-4);
-  border: var(--web-border) solid var(--color-border-default);
+  border: var(--web-border) solid var(--web-panel-line);
   border-block-start: 0;
-  border-radius: 0 0 var(--radius-2xl) var(--radius-2xl);
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
   background: var(--color-surface-raised);
 }
 .student-actions {
@@ -463,13 +526,13 @@ html:has(.student-statistics-summary) {
 }
 .student-current {
   align-self: start;
-  padding: var(--space-6);
-  border: var(--web-border) solid var(--color-border-accent);
-  border-radius: var(--radius-2xl);
+  padding: var(--space-4);
+  border: var(--web-border) solid var(--web-panel-line);
+  border-radius: var(--radius-lg);
   background: var(--color-surface-raised);
 }
 .student-current > .web-button {
-  inline-size: 100%;
+  align-self: start;
 }
 .student-current-stats {
   align-self: stretch;
@@ -589,8 +652,8 @@ html:has(.student-statistics-summary) {
 .student-metric {
   min-block-size: var(--student-metric-min-height);
   padding: var(--space-4);
-  border: var(--web-border) solid var(--color-border-default);
-  border-radius: var(--radius-2xl);
+  border: var(--web-border) solid var(--web-panel-line);
+  border-radius: var(--radius-lg);
   background: var(--color-surface-raised);
   gap: var(--space-2);
 }
@@ -675,7 +738,7 @@ html:has(.student-statistics-summary) {
 }
 .student-period-context {
   display: grid;
-  grid-template-columns: var(--control-height) minmax(0, 1fr) repeat(2, var(--control-height));
+  grid-template-columns: var(--web-workspace-control-height) minmax(0, 1fr) repeat(2, var(--web-workspace-control-height));
   align-items: center;
   gap: var(--space-2);
   inline-size: min(100%, calc(var(--control-height) * 14));
@@ -695,18 +758,46 @@ html:has(.student-statistics-summary) {
 }
 .student-homework-period,
 .student-attendance-period { inline-size: 100%; }
+.student-schedule-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3) var(--space-5);
+}
+.student-schedule-toolbar .student-period-context {
+  flex: 1 1 calc(var(--control-height) * 8);
+  min-inline-size: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+.student-schedule-modes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+.student-schedule-day {
+  gap: var(--space-2);
+}
 .student-schedule-day + .student-schedule-day {
-  padding-block-start: var(--space-4);
-  border-block-start: var(--web-border) solid var(--color-border-subtle);
+  padding-block-start: var(--space-5);
+  border-block-start: var(--web-border) solid var(--web-panel-line);
+}
+.student-schedule-day .student-lesson {
+  border: var(--web-border) solid var(--web-panel-line);
+  border-radius: var(--radius-lg);
+}
+.student-schedule-day .student-lesson:not(.is-current) {
+  background: var(--color-surface-raised);
 }
 .student-period-arrow {
-  block-size: var(--control-height);
+  block-size: var(--web-workspace-control-height);
   border: var(--web-border) solid var(--color-border-default);
   border-radius: var(--radius-full);
   background: var(--color-surface-base);
 }
 .student-period-reset {
-  block-size: var(--control-height);
+  block-size: var(--web-workspace-control-height);
   border-color: var(--color-border-default);
   border-radius: var(--radius-full);
   background: var(--color-surface-float);
@@ -718,8 +809,8 @@ html:has(.student-statistics-summary) {
   gap: var(--space-3);
   inline-size: 100%;
   padding: var(--space-2);
-  border: var(--web-border) solid var(--color-border-default);
-  border-radius: var(--radius-2xl);
+  border: var(--web-border) solid var(--web-panel-line);
+  border-radius: var(--radius-lg);
   background: var(--color-surface-raised);
 }
 .student-chart-toolbar .student-period-context,
@@ -1009,6 +1100,11 @@ html:has(.student-statistics-summary) {
   }
 }
 @media (max-width: 40rem) {
+  .student-schedule-modes {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    inline-size: 100%;
+  }
   .student-statistics-ranking-details {
     grid-column: 1;
     padding-inline: var(--space-3);
@@ -1018,11 +1114,9 @@ html:has(.student-statistics-summary) {
     grid-template-columns: minmax(0, 1fr);
   }
   .student-dashboard-pair,
-  .student-dashboard-bottom {
+  .student-dashboard-bottom,
+  .student-request-details {
     grid-template-columns: minmax(0, 1fr);
-  }
-  .student-current {
-    padding: var(--space-4);
   }
   .student-current-stats > .student-metrics {
     flex: none;

@@ -12,7 +12,6 @@ import AccountHistory from './AccountHistory.vue';
 import SessionList from './SessionList.vue';
 import SecurityForm from './SecurityForm.vue';
 import WebAvatar from '../../shared/WebAvatar.vue';
-import MobileIcon from '../../../../mobile-core/src/shared/components/MobileIcon.vue';
 const dirty = ref(false);
 const confirmAll = ref(false);
 const p = useWebProfile(() => dirty.value);
@@ -114,75 +113,90 @@ const permissionLabels = {
           </li>
         </ul>
       </div>
-      <fieldset
-        class="web-panel web-stack"
-        :disabled="p.busy.value || p.uncertain.value"
-      >
-        <legend class="web-sr-only">Аватар профиля</legend><div class="web-avatar-options">
-          <button
-            class="web-button"
-            aria-label="Инициалы"
-            :class="{ 'web-button-selected': !p.own.value?.avatarId }"
-            :aria-pressed="!p.own.value?.avatarId"
-            @click="p.saveAvatar('')"
-          >
-            <WebAvatar :initials="initials" /><span>Инициалы</span>
-          </button><button
-            v-for="preset in AVATAR_PRESETS"
-            :key="preset.id"
-            class="web-button"
-            :aria-label="preset.label"
-            :class="{ 'web-button-selected': p.own.value?.avatarId === preset.id }"
-            :aria-pressed="p.own.value?.avatarId === preset.id"
-            @click="p.saveAvatar(preset.id)"
-          >
-            <WebAvatar :avatar-id="preset.id" :initials="initials" /><span>{{ preset.label }}</span>
-          </button>
-          <button class="web-button web-avatar-upload" type="button" disabled>
-            <span class="web-avatar" aria-hidden="true"><MobileIcon name="plus" /></span>
-            <span>Загрузить фото</span><small class="web-avatar-upload-state">Скоро</small>
-          </button>
-        </div>
-      </fieldset>
-    </div>
-    <AccountHistory
-      :items="view.history"
-      :loading="view.historyStatus === 'loading' || p.historyBusy.value"
-      :error="view.historyError?.message"
-      :next="view.historyNextCursor"
-      @retry="act(() => p.loadHistory())"
-      @more="act(() => p.loadHistory(true))"
-    />
-    <SessionList
-      :items="view.sessions"
-      :loading="view.sessionsStatus === 'loading'"
-      :busy="p.busy.value"
-      :uncertain="p.uncertain.value"
-      :error="(view.terminationError || view.sessionsError)?.message"
-      :next="view.sessionsNextCursor"
-      @retry="act(() => p.state.loadAllSessions())"
-      @more="act(() => p.state.loadSessions({ cursor: view.sessionsNextCursor! }))"
-      @revoke="(id) => act(() => p.state.terminateSession(id))"
-    >
-      <template #actions>
-        <button
-          class="web-button web-button-danger"
-          type="button"
+      <details class="web-profile-disclosure web-panel">
+        <summary>Аватар</summary>
+        <fieldset
+          class="web-profile-avatar-options"
           :disabled="p.busy.value || p.uncertain.value"
-          @click="confirmAll = true"
         >
-          Выйти на всех устройствах
-        </button>
-      </template>
-    </SessionList>
-    <SecurityForm
-      v-if="webSession.snapshot.value"
-      :policy="webSession.snapshot.value.passwordPolicy"
-      :busy="p.busy.value"
-      :uncertain="p.uncertain.value"
-      @dirty="dirty = $event"
-      @change="(value) => act(() => p.state.changePassword(value))"
-    />
+          <legend class="web-sr-only">
+            Аватар профиля
+          </legend>
+          <div class="web-avatar-options">
+            <button
+              class="web-button"
+              aria-label="Инициалы"
+              :class="{ 'web-button-selected': !p.own.value?.avatarId }"
+              :aria-pressed="!p.own.value?.avatarId"
+              @click="p.saveAvatar('')"
+            >
+              <WebAvatar :initials="initials" /><span>Инициалы</span>
+            </button>
+            <button
+              v-for="preset in AVATAR_PRESETS"
+              :key="preset.id"
+              class="web-button"
+              :aria-label="preset.label"
+              :class="{ 'web-button-selected': p.own.value?.avatarId === preset.id }"
+              :aria-pressed="p.own.value?.avatarId === preset.id"
+              @click="p.saveAvatar(preset.id)"
+            >
+              <WebAvatar
+                :avatar-id="preset.id"
+                :initials="initials"
+              /><span>{{ preset.label }}</span>
+            </button>
+          </div>
+        </fieldset>
+      </details>
+    </div>
+    <details class="web-profile-disclosure web-panel">
+      <summary>История аккаунта</summary>
+      <AccountHistory
+        :items="view.history"
+        :loading="view.historyStatus === 'loading' || p.historyBusy.value"
+        :error="view.historyError?.message"
+        :next="view.historyNextCursor"
+        @retry="act(() => p.loadHistory())"
+        @more="act(() => p.loadHistory(true))"
+      />
+    </details>
+    <details class="web-profile-disclosure web-panel">
+      <summary>Активные сессии</summary>
+      <SessionList
+        :items="view.sessions"
+        :loading="view.sessionsStatus === 'loading'"
+        :busy="p.busy.value"
+        :uncertain="p.uncertain.value"
+        :error="(view.terminationError || view.sessionsError)?.message"
+        :next="view.sessionsNextCursor"
+        @retry="act(() => p.state.loadAllSessions())"
+        @more="act(() => p.state.loadSessions({ cursor: view.sessionsNextCursor! }))"
+        @revoke="(id) => act(() => p.state.terminateSession(id))"
+      >
+        <template #actions>
+          <button
+            class="web-button web-button-danger"
+            type="button"
+            :disabled="p.busy.value || p.uncertain.value"
+            @click="confirmAll = true"
+          >
+            Выйти на всех устройствах
+          </button>
+        </template>
+      </SessionList>
+    </details>
+    <details class="web-profile-disclosure web-panel">
+      <summary>Смена пароля</summary>
+      <SecurityForm
+        v-if="webSession.snapshot.value"
+        :policy="webSession.snapshot.value.passwordPolicy"
+        :busy="p.busy.value"
+        :uncertain="p.uncertain.value"
+        @dirty="dirty = $event"
+        @change="(value) => act(() => p.state.changePassword(value))"
+      />
+    </details>
     <ConfirmDialog
       class="web-logout-all-dialog"
       :open="confirmAll"

@@ -103,6 +103,14 @@ async function load() {
   const value = await client.listBuildings(admin.signal);
   admin.assertCurrent();
   inventory.value = value;
+  const row = selected.value;
+  if (row) {
+    const building = value.find((item) => item.id === row.building.id);
+    const floor = building?.floors.find(
+      (item) => item.id === row.floor.id && item.buildingId === row.building.id,
+    );
+    if (building && floor) selected.value = { building, floor };
+  }
   if (selectedBuilding.value && !value.some((b) => b.id === selectedBuilding.value))
     selectedBuilding.value = '';
 }
@@ -132,6 +140,10 @@ function open(row: { building: AdminMapBuildingResponse; floor: AdminMapFloorRes
   deletionPreview.value = null;
   resetFiles();
 }
+function close() {
+  selected.value = null;
+  plan.value = null;
+}
 function chooseFile(event: Event, format: MapFormat) {
   const file = (event.target as HTMLInputElement).files?.[0] ?? null;
   if (format === 'png') png.value = file;
@@ -155,8 +167,17 @@ function planMatchesFloor(value: AdminMapPlan, floor: FloorIdentity) {
   return value.floorId === floor.id && value.buildingId === floor.buildingId;
 }
 function acceptPublication(value: AdminMapPlan) {
+  inventory.value = inventory.value.map((building) => {
+    if (building.id !== value.buildingId) return building;
+    return {
+      ...building,
+      floors: building.floors.map((floor) =>
+        planMatchesFloor(value, floor) ? { ...floor, currentPlan: value } : floor,
+      ),
+    };
+  });
   const row = selected.value;
-  if (row && planMatchesFloor(value, row.floor))
+  if (row && row.building.id === value.buildingId && planMatchesFloor(value, row.floor))
     selected.value = { building: row.building, floor: { ...row.floor, currentPlan: value } };
   plan.value = value;
   version.value = value.version;
@@ -643,10 +664,7 @@ useWebLiveRefresh(
           <h2>Корпус {{ selected.building.code }} · этаж {{ selected.floor.code }}</h2><button
             class="web-button"
             :disabled="locked"
-            @click="
-              selected = null;
-              plan = null;
-            "
+            @click="close"
           >
             Закрыть
           </button>

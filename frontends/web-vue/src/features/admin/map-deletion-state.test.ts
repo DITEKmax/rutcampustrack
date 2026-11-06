@@ -73,12 +73,15 @@ type State = {
     floor: AdminMapBuildingResponse['floors'][number]
   } | null>
   version: Ref<string>
+  plan: Ref<AdminMapPlan | null>
   png: Ref<File | null>
   open(row: {
     building: AdminMapBuildingResponse
     floor: AdminMapBuildingResponse['floors'][number]
   }): void
+  close(): void
   beginUpload(row: NonNullable<State['selected']['value']>): void
+  load(): Promise<void>
   publish(): Promise<void>
   readVersion(): Promise<void>
   previewDeletion(): Promise<void>
@@ -211,6 +214,11 @@ beforeEach(() => {
 it('keeps the confirmed replacement current when a historical plan was open and the registry refresh fails', async () => {
   const initial = building({ ...replacement, version: '3' })
   const floor = initial.floors[0]!
+  const latest = building({ ...replacement, version: '5' })
+  const otherBuilding = {
+    ...building(null), id: '11', code: '4', floors: [{ ...floor, id: '21', buildingId: '11', currentPlan: null }],
+  }
+  let registryAvailable = false
   let publications = 0
   owner.fetcher = async (path, init) => {
     const url = String(path)
@@ -224,11 +232,13 @@ it('keeps the confirmed replacement current when a historical plan was open and 
         status: 'replaced', buildingCreated: false, floorCreated: false, plan: replacement,
       })
     }
-    if (url.endsWith('/buildings')) return Response.json({}, { status: 503 })
+    if (url.endsWith('/buildings'))
+      return registryAvailable ? Response.json([latest]) : Response.json({}, { status: 503 })
     throw new Error(`Unexpected map read/write: ${url}`)
   }
   const { html } = await runPage(async (state) => {
     const row = { building: initial, floor }
+    state.inventory.value = [initial, otherBuilding]
     state.open(row)
     state.version.value = '2'
     await state.readVersion()
@@ -239,10 +249,24 @@ it('keeps the confirmed replacement current when a historical plan was open and 
     await state.publish()
     expect(state.unknownPublication.value).toBeNull()
     expect(state.version.value).toBe('4')
+    expect(state.selected.value?.floor.currentPlan?.version).toBe('4')
+    const cached = state.inventory.value[0]!
+    expect(cached.floors[0]?.currentPlan?.version).toBe('4')
+    expect(state.inventory.value[1]).toBe(otherBuilding)
+
+    state.close()
+    state.open({ building: cached, floor: cached.floors[0]! })
+    expect(state.version.value).toBe('4')
+    state.version.value = '2'
+    await state.readVersion()
+    registryAvailable = true
+    await state.load()
+    expect(state.selected.value?.floor.currentPlan?.version).toBe('5')
+    expect(state.plan.value?.version).toBe('2')
     state.beginUpload(state.selected.value!)
   })
   expect(publications).toBe(1)
-  expect(html).toContain('Текущая версия схемы: 4.')
+  expect(html).toContain('Текущая версия схемы: 5.')
 })
 describe('ADMIN map deletion intent and receipt', () => {
   it.each([undefined, null])(

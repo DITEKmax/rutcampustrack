@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import MobileIcon from '../../shared/components/MobileIcon.vue';
 import StudentWarningBlock from '../../shared/components/StudentWarningBlock.vue';
 import type { RequestKind, RequestTypeChoice } from './types';
 
@@ -32,16 +33,7 @@ const emit = defineEmits<{
         aria-label="Вернуться к заявкам"
         @click="emit('back')"
       >
-        <svg
-          viewBox="0 0 16 16"
-          aria-hidden="true"
-        >
-          <path
-            d="M10.5 3L5.5 8L10.5 13"
-            stroke="currentColor"
-            stroke-width="2"
-          />
-        </svg>
+        <MobileIcon name="back" />
       </button>
       <h1 id="request-type-title">
         Новая заявка

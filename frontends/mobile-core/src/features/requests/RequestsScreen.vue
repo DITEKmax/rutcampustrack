@@ -28,6 +28,7 @@ const props = withDefaults(
     access: RequestAccessState;
     retrying?: boolean;
     cancellingId?: string | null;
+    cancelError?: { id: string; message: string } | null;
     hasNextPage?: boolean;
     loadingMore?: boolean;
     attachmentStates?: Readonly<Record<string, RequestAttachmentViewState | undefined>> | undefined;
@@ -37,6 +38,7 @@ const props = withDefaults(
     openCount: null,
     retrying: false,
     cancellingId: null,
+    cancelError: null,
     readOnly: false,
     hasNextPage: false,
     loadingMore: false,
@@ -71,6 +73,15 @@ const openTabLabel = computed(() =>
 const accessBlocked = computed(
   () => props.access === 'forbidden' || (!isArchive.value && props.access === 'no-active-semester'),
 );
+const unlistedCancelError = computed(() => {
+  const failure = props.cancelError;
+  if (!failure || props.loading) return null;
+  return props.error ||
+    accessBlocked.value ||
+    !props.requests.some((request) => request.summary.id === failure.id)
+    ? failure.message
+    : null;
+});
 const canStartRequest = computed(
   () => !props.offline && !props.readOnly && props.access === 'allowed',
 );
@@ -229,6 +240,13 @@ function onTabKeydown(event: KeyboardEvent): void {
         "
       />
 
+      <StudentWarningBlock
+        v-if="unlistedCancelError"
+        severity="error"
+        title="Отмена заявки"
+        :message="unlistedCancelError"
+      />
+
       <section
         v-if="loading"
         class="requests-state requests-state--loading"
@@ -284,6 +302,7 @@ function onTabKeydown(event: KeyboardEvent): void {
             :detail="request"
             :offline="offline"
             :cancelling="cancellingId === request.summary.id"
+            :cancel-error="cancelError?.id === request.summary.id ? cancelError.message : null"
             :attachment-states="attachmentStates"
             @cancel="emit('cancel', $event)"
             @open-attachment="emit('openAttachment', $event)"

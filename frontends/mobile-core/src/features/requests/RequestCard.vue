@@ -24,11 +24,13 @@ const props = withDefaults(
     detail: RequestDetail;
     offline: boolean;
     cancelling?: boolean;
+    cancelError?: string | null;
     attachmentStates?: Readonly<Record<string, RequestAttachmentViewState | undefined>> | undefined;
     focusTarget?: boolean;
   }>(),
   {
     cancelling: false,
+    cancelError: null,
     attachmentStates: undefined,
     focusTarget: false,
   },
@@ -332,11 +334,20 @@ watch(
       </li>
     </ul>
 
+    <p
+      v-if="cancelError"
+      :id="'request-cancel-error-' + summary.id"
+      class="request-card__cancel-error"
+      role="alert"
+    >
+      {{ cancelError }}
+    </p>
     <button
       v-if="showCancel"
       class="requests-danger-action"
       type="button"
       :disabled="offline || cancelling"
+      :aria-describedby="cancelError ? 'request-cancel-error-' + summary.id : undefined"
       @click="emit('cancel', summary.id)"
     >
       {{ cancelling ? 'Отменяем…' : 'Отменить заявку' }}

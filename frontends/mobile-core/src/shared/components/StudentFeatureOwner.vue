@@ -1091,6 +1091,16 @@ const todayRequestOptions = computed(() =>
 );
 const requestSubmitError = ref<string | null>(null);
 const requestCancellingId = ref<string | null>(null);
+const requestCancelError = ref<{ id: string; message: string } | null>(null);
+let requestInboxRevision = 0;
+watch(
+  [ownerIdentity, () => route.value.id, () => requests.view.bucket],
+  () => {
+    requestInboxRevision += 1;
+    requestCancelError.value = null;
+  },
+  { flush: 'sync' },
+);
 const requestObjectUrls = new Set<string>();
 const requestAttachmentStates = reactive<Record<string, RequestAttachmentViewState>>({});
 const requestAttachmentPopups = new Set<RequestAttachmentPopup>();
@@ -1886,11 +1896,31 @@ function cancelRequest(id: string): void {
       });
     return;
   }
+  const inboxRevision = requestInboxRevision;
+  requestCancelError.value = null;
   requestCancellingId.value = id;
   void requests
     .cancelRequest(id)
     .then(() => refreshAfterRequestDecision(ownerScopeAtStart))
-    .catch(handleRequestsError)
+    .catch((error: unknown) => {
+      if (disposed) return;
+      const terminal = terminalAuthError(error);
+      if (terminal) {
+        emit('ownerError', terminal);
+        return;
+      }
+      if (requestInboxRevision !== inboxRevision) return;
+      const message =
+        error instanceof StudentApiError
+          ? error.problem?.detail
+          : error instanceof RequestsError
+            ? error.message
+            : null;
+      requestCancelError.value = {
+        id,
+        message: message || 'Не удалось отменить заявку. Проверь подключение и попробуй ещё раз.',
+      };
+    })
     .finally(() => {
       if (!disposed) requestCancellingId.value = null;
     });
@@ -2744,6 +2774,7 @@ defineExpose({ openNotificationAction });
         :read-only="requestReadOnly"
         :access="requests.view.access"
         :cancelling-id="requestCancellingId"
+        :cancel-error="requestCancelError"
         :has-next-page="requestHasNextPage"
         :loading-more="requestBucketView.loadingMore"
         :attachment-states="requestAttachmentStates"

@@ -20,11 +20,13 @@
 
 На [стенде восстановления пароля](http://127.0.0.1:14277/viewport?width=390) введи логин `student.preview`, запроси код и введи `246810`. Для нового пароля подойдёт любая тестовая строка от 10 символов. После сохранения можно войти с этим паролем в той же вкладке. Состояние этой учётной записи хранится до перезагрузки.
 
+В «Ещё → Заявки» тестовые открытые заявки можно отменить и найти в архиве. В [сценарии временного отказа](http://127.0.0.1:14273/viewport?width=320&text=125&requestCancel=fail-once) первая отмена показывает сообщение рядом с заявкой, повтор переносит её в архив.
+
 ## Повторный запуск
 
 Рабочая копия Windows находится в `C:/Users/maksd/.codex/worktrees/9689/rutcampustrack/.agent/worktrees/frontend-refactor-v2`. Команды ниже выполняются из её корня. Нужны Node.js 24.14, npm 11.9 и установленные зависимости в `frontends/node_modules`. Если их нужно восстановить, выполни `npm --prefix frontends ci`.
 
-Конфигурации и сценарии хранятся в `.agent/evidence/student-mobile-v2` и `.agent/evidence/web-student-v2`. Их актуальная резервная копия находится в `.agent/evidence/frontend-refactor-v2-stand/fixtures-profile-recovery.zip` исходной рабочей копии `9689/rutcampustrack`. Для новой рабочей копии этой ветки распакуй архив в её корень. В ZIP 28 файлов с путями от корня рабочей копии. SHA-256 `00807dec1de7307acd9b07f97835cd6a4eb52755fbe8bedca3d13001c854778f`.
+Конфигурации и сценарии хранятся в `.agent/evidence/student-mobile-v2` и `.agent/evidence/web-student-v2`. Их актуальная резервная копия находится в `.agent/evidence/frontend-refactor-v2-stand/fixtures-student-requests.zip` исходной рабочей копии `9689/rutcampustrack`. Для новой рабочей копии этой ветки распакуй архив в её корень. В ZIP 28 файлов с путями от корня рабочей копии. SHA-256 `683a4ada92db2e252fbde699f2e9a3b169875d496fd85f7ab1ae2b76f88d3e7c`.
 
 Каждая команда запускается в своём окне PowerShell.
 

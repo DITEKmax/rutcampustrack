@@ -12,7 +12,7 @@ import {
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { QueryClient, VueQueryPlugin } from '@tanstack/vue-query'
 import type { MobileBottomNavItems, MobileNavigationStack } from '../navigation'
-import type { StudentApi } from '../../api/student-client'
+import { StudentApiError, type StudentApi } from '../../api/student-client'
 import type { NotificationTargetIntent } from '../../features/notifications/notifications-client'
 import { CheckinCommandRecovery } from '../../domain/checkin'
 import type {
@@ -237,15 +237,34 @@ vi.mock('../../features/statistics/StatisticsScreen.vue', () => ({
 vi.mock('../../features/requests/RequestsScreen.vue', () => ({
   default: {
     name: 'OwnerTestRequestsScreen',
-    props: ['requests'],
-    emits: ['newRequest', 'cancel'],
-    setup(props: { requests: readonly { summary: { id: string } }[] }, { emit }: SetupContext) {
+    props: ['requests', 'bucket', 'error', 'cancelError'],
+    emits: ['newRequest', 'cancel', 'selectBucket'],
+    setup(
+      props: {
+        requests: readonly { summary: { id: string } }[]
+        bucket: 'open' | 'archive'
+        error: string | null
+        cancelError: { id: string; message: string } | null
+      },
+      { emit }: SetupContext,
+    ) {
       return () =>
         h('div', [
           h(
             'output',
             { class: 'test-request-ids' },
             props.requests.map((request) => request.summary.id).join(','),
+          ),
+          h('output', { class: 'test-request-cancel-error' }, JSON.stringify(props.cancelError)),
+          h('output', { class: 'test-request-list-error' }, props.error ?? ''),
+          h(
+            'button',
+            {
+              class: 'test-switch-request-bucket',
+              type: 'button',
+              onClick: () => emit('selectBucket', props.bucket === 'open' ? 'archive' : 'open'),
+            },
+            'Переключить список',
           ),
           h(
             'button',
@@ -1542,6 +1561,119 @@ describe('StudentFeatureOwner requests route', () => {
     await vi.waitFor(() => expect(attendanceStatusAction(root)).toContain('Действия для отметки'))
     expect(api.getAttendance).toHaveBeenCalledTimes(2)
   })
+
+  it('reports a failed cancellation, allows a retry, and drops an error from an abandoned tab', async () => {
+    let cancelled = false
+    let rejectRetry!: (error: Error) => void
+    const pending = requestSummary('PENDING')
+    const cancelledDetail = requestDetail(requestSummary('CANCELLED'))
+    const cancelRequest = vi
+      .fn(async () => {
+        cancelled = true
+        return cancelledDetail
+      })
+      .mockRejectedValueOnce(new TypeError('Failed to fetch'))
+      .mockImplementationOnce(
+        () =>
+          new Promise((_resolve, reject) => {
+            rejectRetry = reject
+          }),
+      )
+    const api = {
+      listRequests: async (bucket: 'OPEN' | 'ARCHIVE') =>
+        requestPage(bucket === 'OPEN' && !cancelled ? [pending] : []),
+      getRequest: async () => requestDetail(pending),
+      cancelRequest,
+    } as unknown as StudentApi
+    const root = mountOwnerTest(api)
+
+    await settleOwnerTestRender()
+    clickOwnerTestButton(root, 'test-enter-more')
+    await settleOwnerTestRender()
+    clickOwnerTestButton(root, 'test-enter-requests')
+    await vi.waitFor(() => expect(ownerTestOutput(root, 'test-request-ids')).toBe('request-1'))
+    clickOwnerTestButton(root, 'test-cancel-request')
+    await vi.waitFor(() =>
+      expect(ownerTestOutput(root, 'test-request-cancel-error')).toBe(
+        JSON.stringify({
+          id: 'request-1',
+          message: 'Не удалось отменить заявку. Проверь подключение и попробуй ещё раз.',
+        }),
+      ),
+    )
+    expect(ownerTestOutput(root, 'test-request-ids')).toBe('request-1')
+
+    clickOwnerTestButton(root, 'test-cancel-request')
+    await settleOwnerTestRender()
+    expect(ownerTestOutput(root, 'test-request-cancel-error')).toBe('null')
+    clickOwnerTestButton(root, 'test-switch-request-bucket')
+    await settleOwnerTestRender()
+    clickOwnerTestButton(root, 'test-switch-request-bucket')
+    await settleOwnerTestRender()
+    rejectRetry(new TypeError('Failed to fetch after tab switch'))
+    await settleOwnerTestRender()
+    expect(ownerTestOutput(root, 'test-request-cancel-error')).toBe('null')
+
+    clickOwnerTestButton(root, 'test-cancel-request')
+    await vi.waitFor(() => expect(ownerTestOutput(root, 'test-request-ids')).toBe(''))
+    expect(cancelRequest).toHaveBeenCalledTimes(3)
+    expect(ownerTestOutput(root, 'test-request-cancel-error')).toBe('null')
+  })
+
+  it.each(['success', 'conflict'] as const)(
+    'keeps the cancellation %s separate from a failed list refresh',
+    async (outcome) => {
+      const pending = requestSummary('PENDING')
+      const decided = requestSummary(outcome === 'success' ? 'CANCELLED' : 'APPROVED')
+      const conflictMessage = 'Староста уже рассмотрел заявку.'
+      const listError = 'Список временно недоступен.'
+      let attempted = false
+      const api = {
+        listRequests: async (bucket: 'OPEN' | 'ARCHIVE') => {
+          if (bucket === 'ARCHIVE') return requestPage(attempted ? [decided] : [])
+          if (attempted) throw new Error(listError)
+          return requestPage([pending])
+        },
+        getRequest: async () => requestDetail(attempted ? decided : pending),
+        getRequestOptions: async () => requestOptions(),
+        cancelRequest: async () => {
+          attempted = true
+          if (outcome === 'conflict') {
+            throw new StudentApiError(new Response(null, { status: 409 }), {
+              code: 'REQUEST_CONFLICT',
+              detail: conflictMessage,
+              instance: '/api/v1/student/requests/request-1/cancel',
+              status: 409,
+              timestamp: '2026-10-04T10:00:00Z',
+              title: 'Конфликт',
+              type: 'about:blank',
+            })
+          }
+          return requestDetail(decided)
+        },
+      } as unknown as StudentApi
+      const root = mountOwnerTest(api)
+
+      await settleOwnerTestRender()
+      clickOwnerTestButton(root, 'test-enter-more')
+      await settleOwnerTestRender()
+      clickOwnerTestButton(root, 'test-enter-requests')
+      await vi.waitFor(() => expect(ownerTestOutput(root, 'test-request-ids')).toBe('request-1'))
+      clickOwnerTestButton(root, 'test-cancel-request')
+      await vi.waitFor(() => {
+        expect(ownerTestOutput(root, 'test-request-list-error')).toBe(listError)
+        if (outcome === 'conflict') {
+          expect(ownerTestOutput(root, 'test-request-cancel-error')).toBe(
+            JSON.stringify({ id: 'request-1', message: conflictMessage }),
+          )
+          expect(refreshToday).not.toHaveBeenCalled()
+        } else {
+          expect(ownerTestOutput(root, 'test-request-cancel-error')).toBe('null')
+          expect(refreshToday).toHaveBeenCalledOnce()
+        }
+      })
+    },
+  )
 
   it('localizes a request port network failure and clears only its error on explicit abandon', async () => {
     ownerQueryData.realShell = true

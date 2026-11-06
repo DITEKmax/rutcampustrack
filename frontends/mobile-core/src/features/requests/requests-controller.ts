@@ -935,28 +935,41 @@ export class RequestsController {
     ) {
       throw new RequestsError('VALIDATION', 'Эту заявку сейчас нельзя отменить.')
     }
-    const requestBucket = bucket
+    const identity = this.identity()
+    const contextGeneration = this.contextGeneration
+    if (!identity) throw new RequestsError('FORBIDDEN', 'Раздел недоступен.')
+    const assertCurrent = () => {
+      if (!this.isCurrentContext(identity, contextGeneration))
+        throw new RequestsError('STALE', 'Сессия заявки больше не актуальна.')
+    }
     this.view.mutation = 'cancelling'
     this.view.mutationError = null
     this.mutationErrorCommand = null
-    const commandIdentity = this.identity()
     try {
-      await this.options.port()!.cancelRequest(id)
-      if (!commandIdentity || !this.isCurrentIdentity(commandIdentity))
-        throw new RequestsError('STALE', 'Сессия заявки больше не актуальна.')
-      await this.loadBucket(requestBucket, 0)
-      await this.loadBucket(requestBucket === 'open' ? 'archive' : 'open', 0).catch(() => undefined)
-    } catch (error) {
-      if (!commandIdentity || !this.isCurrentIdentity(commandIdentity))
-        throw new RequestsError('STALE', 'Сессия заявки больше не актуальна.')
-      if (error instanceof StudentApiError && error.response.status === 409) {
-        await this.loadBucket(requestBucket, 0).catch(() => undefined)
+      try {
+        await this.options.port()!.cancelRequest(id)
+      } catch (error) {
+        assertCurrent()
+        if (error instanceof StudentApiError && error.response.status === 409) {
+          await this.loadBucket(bucket, 0).catch(() => undefined)
+          assertCurrent()
+        }
+        this.view.mutationError = errorMessage(error, 'Не удалось отменить заявку.')
+        this.mutationErrorCommand = null
+        throw error
       }
-      this.view.mutationError = errorMessage(error, 'Не удалось отменить заявку.')
-      this.mutationErrorCommand = null
-      throw error
+      assertCurrent()
+      await this.loadBucket(bucket, 0).catch((error: unknown) => {
+        if (isAuthError(error)) {
+          assertCurrent()
+          throw error
+        }
+      })
+      assertCurrent()
+      await this.loadBucket(bucket === 'open' ? 'archive' : 'open', 0).catch(() => undefined)
+      assertCurrent()
     } finally {
-      if (!commandIdentity || this.isCurrentIdentity(commandIdentity)) this.view.mutation = 'idle'
+      if (this.isCurrentContext(identity, contextGeneration)) this.view.mutation = 'idle'
     }
   }
 

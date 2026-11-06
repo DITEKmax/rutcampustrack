@@ -1677,9 +1677,14 @@
   display: grid;
   inline-size: calc(100% - 2rem);
   gap: 0.3125rem;
+  border: var(--rct-border-hairline) solid var(--requests-border);
   border-radius: 1rem;
   padding: 0.625rem;
   background: var(--requests-float);
+}
+
+:where([data-student-ui][data-theme='light']) .request-lesson-card {
+  background: var(--requests-base);
 }
 
 :where([data-student-ui]) .request-lesson-card h3,
@@ -1702,11 +1707,18 @@
   min-inline-size: 0;
   border-radius: var(--rct-radius-xl);
   padding: var(--rct-space-3);
-  background: var(--requests-float);
+  background: var(--rct-color-info-surface);
   overflow-wrap: anywhere;
   color: var(--requests-text);
   font-size: 0.8125rem;
   line-height: 1.4;
+}
+
+:where([data-student-ui]) .request-card__cancel-error,
+:where([data-student-ui]):is(.request-card__cancel-error) {
+  color: var(--requests-danger);
+  overflow-wrap: anywhere;
+  @mixin rct-type-lesson-meta;
 }
 
 :where([data-student-ui]) .request-card__attachments,
@@ -2446,27 +2458,22 @@
 }
 
 :where([data-student-ui]) .requests-type-choice__symbol,
-:where([data-student-ui]):is(.requests-type-choice__symbol) {
+:where([data-student-ui]):is(.requests-type-choice__symbol),
+:where([data-student-ui]) .requests-type-choice__mark,
+:where([data-student-ui]):is(.requests-type-choice__mark) {
   display: grid;
   flex: 0 0 auto;
   place-items: center;
-  inline-size: 2.75rem;
-  block-size: 2.75rem;
+  inline-size: var(--rct-today-present-size);
+  block-size: var(--rct-today-present-size);
   border-radius: var(--rct-radius-full);
-  color: var(--requests-on-accent);
-  font-size: 1rem;
-  font-weight: var(--rct-font-weight-bold);
+  @mixin rct-type-status;
 }
 
 :where([data-student-ui]) .requests-type-choice__symbol--excuse,
 :where([data-student-ui]):is(.requests-type-choice__symbol--excuse) {
+  color: var(--rct-color-status-excused-on-fill);
   background: var(--rct-color-status-excused-fill);
-}
-
-:where([data-student-ui]) .requests-type-choice__symbol--late_checkin,
-:where([data-student-ui]):is(.requests-type-choice__symbol--late_checkin) {
-  color: var(--requests-on-accent);
-  background: var(--rct-color-status-absent-fill);
 }
 
 :where([data-student-ui]) .requests-type-choice__symbol-pair,
@@ -2479,28 +2486,16 @@
   block-size: 2.75rem;
 }
 
-:where([data-student-ui]) .requests-type-choice__mark,
-:where([data-student-ui]):is(.requests-type-choice__mark) {
-  display: grid;
-  flex: 0 0 auto;
-  place-items: center;
-  inline-size: 2.75rem;
-  block-size: 2.75rem;
-  border-radius: var(--rct-radius-full);
-  color: var(--requests-on-accent);
-  font-size: 1.125rem;
-  font-weight: var(--rct-font-weight-bold);
-  line-height: 1;
-}
-
 :where([data-student-ui]) .requests-type-choice__mark--late,
 :where([data-student-ui]):is(.requests-type-choice__mark--late) {
-  background: var(--requests-danger);
+  color: var(--rct-color-status-absent-on-fill);
+  background: var(--rct-color-status-absent-fill);
 }
 
 :where([data-student-ui]) .requests-type-choice__mark--positive,
 :where([data-student-ui]):is(.requests-type-choice__mark--positive) {
-  background: var(--requests-success);
+  color: var(--rct-color-status-present-on-fill);
+  background: var(--rct-color-status-present-fill);
 }
 
 :where([data-student-ui]) .requests-type-choice__pair-arrow,

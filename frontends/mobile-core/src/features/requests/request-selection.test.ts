@@ -774,7 +774,8 @@ describe('headman request coverage and predecision summary', () => {
       const ticket = nodes().find((node) => node.props['data-request-id'] === id)!
       expect(text(ticket)).toContain('2 сентября')
       expect(text(ticket)).toContain('— 7 сентября')
-      expect(text(ticket)).toContain('Пар: 5')
+      expect(text(ticket)).toContain('Другая причина')
+      expect(text(ticket)).not.toContain('Пар: 5')
       await (ticket.props.onClick as () => Promise<void>)()
       await settle()
       expect(text(root)).toContain('2 из 5 пар уже отмечены')
@@ -855,11 +856,22 @@ describe('headman archive type filter', () => {
       ;(button.props.onClick as () => void)()
       await nextTick()
     }
-    const selectType = (value: string) => {
-      const select = nodes().find((node) => node.tag === 'select')!
-      expect(select).toBeDefined()
-      for (const option of select.options) option.selected = option.value === value
-      ;(select.props['native:change'] as (event: unknown) => void)({ target: select })
+    const typeTab = (label: string) => {
+      const filters = nodes().find(
+        (node) => node.props.role === 'group' && node.props['aria-label'] === 'Фильтры заявок',
+      )!
+      expect(filters).toBeDefined()
+      const tab = selectionNodes(filters).find(
+        (node) => node.tag === 'button' && text(node).includes(label),
+      )!
+      expect(tab).toBeDefined()
+      return tab
+    }
+    const selectType = async (label: string) => {
+      const tab = typeTab(label)
+      ;(tab.props.onClick as () => void)()
+      await settle()
+      expect(tab.props['aria-pressed']).toBe(true)
     }
     const fill = (label: string, value: string) => {
       const input = nodes().find(
@@ -876,19 +888,15 @@ describe('headman archive type filter', () => {
     const lastArchive = () => queries.filter((query) => query.get('bucket') === 'ARCHIVE').at(-1)!
     try {
       await settle()
-      expect(nodes().some((node) => node.tag === 'select')).toBe(false)
-      const archive = nodes().find((node) => node.tag === 'button' && text(node).includes('Архив'))!
+      const archive = typeTab('Архив')
       ;(archive.props.onClick as () => void)()
       await settle()
+      expect(archive.props['aria-pressed']).toBe(true)
+      expect(typeTab('Все').props['aria-pressed']).toBe(true)
+      await selectType('Уважительные причины')
+      expect(lastArchive().get('type')).toBe('EXCUSE')
       await openFilters()
-      const select = nodes().find((node) => node.tag === 'select')!
-      expect(select).toBeDefined()
-      expect(select.parent?.props.for).toBe(select.props.id)
-      expect(text(select.parent!)).toContain('Тип заявки')
-      const caption = nodes().find((node) => node.props.id === select.props['aria-labelledby'])
-      expect(caption?.text).toBe('Тип заявки')
       const beforeDraft = queries.length
-      selectType('EXCUSE')
       fill('ФИО', 'Тестовый студент')
       fill('Период от', '2026-09-02')
       fill('Период до', '2026-09-07')
@@ -904,17 +912,17 @@ describe('headman archive type filter', () => {
         coverageDateTo: '2026-09-07',
       })
       expect(nodes().filter((node) => node.props['data-request-id'] === summary.id)).toHaveLength(1)
-      await openFilters()
-      selectType('LATE_CHECKIN')
-      await apply()
+      await selectType('Забыл отметиться')
       expect(lastArchive().get('type')).toBe('LATE_CHECKIN')
       expect(lastArchive().get('studentName')).toBe('Тестовый студент')
       expect(lastArchive().get('coverageDateFrom')).toBe('2026-09-02')
       expect(lastArchive().get('coverageDateTo')).toBe('2026-09-07')
       expect(nodes().some((node) => node.props['data-request-id'] === summary.id)).toBe(false)
-      expect(text(root)).toContain('В архиве пока нет заявок.')
+      expect(text(root)).toContain('В архиве нет заявок по заданным условиям.')
+      await selectType('Все')
+      expect(lastArchive().get('type')).toBeNull()
+      expect(lastArchive().get('studentName')).toBe('Тестовый студент')
       await openFilters()
-      selectType('')
       fill('ФИО', '')
       fill('Период от', '')
       fill('Период до', '')

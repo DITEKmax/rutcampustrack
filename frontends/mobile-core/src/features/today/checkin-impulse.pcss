@@ -592,6 +592,11 @@
   animation: impulse-cover 550ms cubic-bezier(0.42, 0.04, 0.22, 1) both;
 }
 
+/* Keep the live viewport opaque behind the measured disc if the window rotates or resizes. */
+.checkin-arrival:is([data-phase='covered'], [data-phase='revealing']) {
+  background: var(--impulse-mint);
+}
+
 .checkin-arrival[data-phase='revealing'] {
   animation: impulse-reveal 280ms ease-out both;
 }

@@ -1,5 +1,6 @@
 import { effectScope, nextTick, ref, type EffectScope } from 'vue'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { StudentApiError } from '../../api/student-client'
 import type { StudentCheckinAck, StudentToday, TodayLesson } from '../../api/types'
 import { checkinArrivalGeometry, useCheckinImpulse } from './checkin-impulse'
 
@@ -43,6 +44,16 @@ const pending: StudentCheckinAck = {
   attendance: null,
   request: { id: '123', status: 'PENDING', origin: 'AUTO_GEO_FAILURE', resolutionReason: null },
 }
+const at = (milliseconds: number): string =>
+  new Date(Date.parse(serverNow) + milliseconds).toISOString()
+const duringCooldown = (retryAt: string, observedAt = serverNow): StudentToday => ({
+  ...projection({
+    ...current,
+    request: pending.request,
+    checkinEligibility: { allowed: false, reason: 'COOLDOWN', retryAt },
+  }),
+  serverNow: observedAt,
+})
 
 const scopes: EffectScope[] = []
 beforeEach(() => {
@@ -63,9 +74,9 @@ function setup(ack: StudentCheckinAck = present, reduced = false) {
   const authority = ref('student|session')
   const authorized = ref(true)
   const read = vi.fn(async () => {})
-  const submit = vi.fn<(lesson: TodayLesson, isCurrent: () => boolean) => Promise<StudentCheckinAck>>(
-    async () => ack,
-  )
+  const submit = vi.fn<
+    (lesson: TodayLesson, isCurrent: () => boolean) => Promise<StudentCheckinAck>
+  >(async () => ack)
   const navigateToday = vi.fn(() => {
     route.value = 'today'
   })
@@ -170,21 +181,98 @@ describe('check-in impulse route', () => {
     expect(test.submit).toHaveBeenCalledTimes(1)
   })
 
-  it('rechecks geo cooldown with Today and waits for a second press', async () => {
-    const retryAt = new Date(Date.parse(serverNow) + 2000).toISOString()
-    const test = setup({ ...pending, retryAt })
+  it('waits for the newer Today deadline and its fresh eligibility before a second press', async () => {
+    const test = setup({ ...pending, retryAt: at(1000) })
     test.start()
     await nextTick()
+    let finishRead!: () => void
+    test.read
+      .mockImplementationOnce(async () => {
+        test.data.value = duringCooldown(at(7000))
+      })
+      .mockImplementationOnce(
+        () =>
+          new Promise((resolve) => {
+            finishRead = () => {
+              test.data.value = projection({ ...current, request: pending.request })
+              resolve()
+            }
+          }),
+      )
     await test.impulse.submit()
     expect(test.impulse.state.value).toBe('pending')
-    await vi.advanceTimersByTimeAsync(1999)
+    await vi.advanceTimersByTimeAsync(6999)
     expect(test.impulse.canSubmit.value).toBe(false)
-    expect(test.read).toHaveBeenCalledTimes(1)
-    await vi.advanceTimersByTimeAsync(1)
     expect(test.read).toHaveBeenCalledTimes(2)
+    await test.impulse.submit()
+    expect(test.submit).toHaveBeenCalledTimes(1)
+    await vi.advanceTimersByTimeAsync(1)
+    expect(test.read).toHaveBeenCalledTimes(3)
+    expect(test.impulse.state.value).toBe('pending')
+    expect(test.impulse.canSubmit.value).toBe(false)
+    finishRead()
+    await nextTick()
     expect(test.impulse.canSubmit.value).toBe(true)
     expect(test.submit).toHaveBeenCalledTimes(1)
     expect(test.navigateToday).not.toHaveBeenCalled()
+    test.submit.mockResolvedValueOnce(present)
+    await test.impulse.submit()
+    expect(test.submit).toHaveBeenCalledTimes(2)
+  })
+
+  it('keeps a repeated expired cooldown blocked without a GET loop or automatic POST', async () => {
+    const retryAt = at(2000)
+    const test = setup({ ...pending, retryAt })
+    test.start()
+    await nextTick()
+    test.read
+      .mockImplementationOnce(async () => {
+        test.data.value = duringCooldown(retryAt)
+      })
+      .mockImplementationOnce(async () => {
+        test.data.value = duringCooldown(retryAt, at(2000))
+      })
+    await test.impulse.submit()
+    await vi.advanceTimersByTimeAsync(12_000)
+    expect(test.impulse.state.value).toBe('pending')
+    expect(test.impulse.canSubmit.value).toBe(false)
+    expect(test.impulse.canRetryRead.value).toBe(true)
+    expect(test.read).toHaveBeenCalledTimes(3)
+    expect(test.submit).toHaveBeenCalledTimes(1)
+  })
+
+  it('holds eligibility after a 429 until its newer server deadline and fresh Today read', async () => {
+    const test = setup()
+    test.start()
+    await nextTick()
+    test.submit.mockRejectedValueOnce(
+      new StudentApiError(new Response(null, { status: 429, headers: { 'Retry-After': '7' } }), {
+        status: 429,
+        title: 'Отметка пока недоступна',
+        detail: 'Попробуй ещё раз позже.',
+        instance: '/api/v1/student/lessons/77/checkin',
+        type: 'urn:rct:problem:checkin-cooldown',
+        code: 'CHECKIN_COOLDOWN',
+        timestamp: serverNow,
+        retryAt: at(7000),
+      }),
+    )
+    await test.impulse.submit()
+    await vi.advanceTimersByTimeAsync(6999)
+    expect(test.impulse.state.value).toBe('cooldown')
+    expect(test.impulse.canSubmit.value).toBe(false)
+    await test.impulse.submit()
+    expect(test.submit).toHaveBeenCalledTimes(1)
+    expect(test.read).toHaveBeenCalledTimes(2)
+    test.read.mockRejectedValueOnce(new TypeError('offline during revalidation'))
+    await vi.advanceTimersByTimeAsync(1)
+    expect(test.read).toHaveBeenCalledTimes(3)
+    expect(test.impulse.state.value).toBe('error')
+    expect(test.impulse.canSubmit.value).toBe(false)
+    await test.impulse.load()
+    expect(test.read).toHaveBeenCalledTimes(4)
+    expect(test.impulse.canSubmit.value).toBe(true)
+    expect(test.submit).toHaveBeenCalledTimes(1)
   })
 
   it('starts no effect for a different acknowledgement or after leaving during the command', async () => {

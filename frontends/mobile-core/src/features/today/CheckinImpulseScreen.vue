@@ -20,6 +20,7 @@ const props = defineProps<{
   feedback: string;
   error: string;
   canSubmit: boolean;
+  canRetryRead: boolean;
   animate: boolean;
   hostBack: boolean;
 }>();
@@ -274,11 +275,11 @@ defineExpose({ measure });
           class="checkin-impulse__links"
         >
           <button
-            v-if="state === 'error'"
+            v-if="canRetryRead"
             type="button"
             @click="emit('retry')"
           >
-            Повторить
+            {{ state === 'error' ? 'Повторить' : 'Проверить доступность' }}
           </button>
           <button
             type="button"

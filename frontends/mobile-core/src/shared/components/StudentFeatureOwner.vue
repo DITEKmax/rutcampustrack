@@ -2239,6 +2239,7 @@ defineExpose({ openNotificationAction });
         :feedback="impulse.feedback.value"
         :error="impulse.commandError.value"
         :can-submit="impulse.canSubmit.value"
+        :can-retry-read="impulse.canRetryRead.value"
         :animate="impulse.animate.value"
         :host-back="host?.backOwner === 'host'"
         @back="studentHostBack"

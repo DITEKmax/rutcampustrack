@@ -1,7 +1,11 @@
 import { computed, nextTick, ref, shallowRef, watch } from 'vue'
 import { StudentApiError } from '../../api/student-client'
 import type { StudentCheckinAck, StudentToday, TodayLesson } from '../../api/types'
-import { eligibilityLabel, isPendingCheckin, remainingSeconds } from '../../domain/checkin'
+import {
+  CheckinBeforeSendCancelled,
+  eligibilityLabel,
+  isPendingCheckin,
+} from '../../domain/checkin'
 
 export interface CheckinArrivalGeometry {
   x: number
@@ -39,8 +43,21 @@ interface ImpulseOptions {
 }
 
 type Launch = { lessonId: string; authority: string; authorized: () => boolean }
-type ReadState = 'loading' | 'ready' | 'error'
+type ReadState = 'loading' | 'refreshing' | 'ready' | 'error'
 type Arrival = { phase: 'covering' | 'covered' | 'revealing'; geometry: CheckinArrivalGeometry }
+type Cooldown = { key: string; dueAt: number }
+
+function rejectedCooldown(error: StudentApiError): Cooldown | null {
+  if (error.response.status !== 429 || error.problem?.code !== 'CHECKIN_COOLDOWN') return null
+  const retryAt = error.problem.retryAt
+  const retryAfter = error.response.headers.get('Retry-After')
+  const dueAt =
+    retryAfter && /^\d+$/.test(retryAfter)
+      ? Date.now() + Number(retryAfter) * 1000
+      : Date.parse(retryAt ?? '')
+  if (!Number.isFinite(dueAt)) return null
+  return { key: retryAt ?? String(dueAt), dueAt }
+}
 
 /** Owns only the route attempt and presentation. The normal Today query owns all server data. */
 export function useCheckinImpulse(options: ImpulseOptions) {
@@ -48,42 +65,71 @@ export function useCheckinImpulse(options: ImpulseOptions) {
   const readState = ref<ReadState>('loading')
   const commandError = ref('')
   const pendingAck = shallowRef<StudentCheckinAck | null>(null)
+  const rejectionCooldown = shallowRef<Cooldown | null>(null)
+  const projectionClock = shallowRef<{ serverNow: number; receivedAt: number } | null>(null)
   const success = ref(false)
   const animate = ref(false)
   const arrival = shallowRef<Arrival | null>(null)
   const arrivingToday = ref(false)
   const now = ref(Date.now())
   const timers = new Set<ReturnType<typeof setTimeout>>()
+  const checkedCooldowns = new Set<string>()
   let readVersion = 0
   let commandVersion = 0
 
+  const currentLesson = computed(() => {
+    const id = launch.value?.lessonId
+    if (!id) return null
+    return options.data()?.lessons.find((item) => item.schedule.id === id) ?? null
+  })
   const lesson = computed(() => {
-    if (readState.value !== 'ready' || !launch.value) return null
-    return (
-      options.data()?.lessons.find((item) => item.schedule.id === launch.value?.lessonId) ?? null
-    )
+    if (readState.value === 'loading') return null
+    if (readState.value === 'error' && !pendingAck.value) return null
+    return currentLesson.value
   })
-  const retryAt = computed(
-    () =>
-      (pendingAck.value?.request?.origin === 'AUTO_GEO_FAILURE'
-        ? pendingAck.value.retryAt
-        : null) ??
-      (lesson.value?.checkinEligibility.reason === 'COOLDOWN'
-        ? lesson.value.checkinEligibility.retryAt
-        : null),
+  const eligibility = computed(() => lesson.value?.checkinEligibility)
+  const pending = computed(
+    () => pendingAck.value !== null || (lesson.value !== null && isPendingCheckin(lesson.value)),
   )
-  const countdown = computed(() => {
-    const serverNow = pendingAck.value?.serverNow ?? options.data()?.serverNow
-    return serverNow ? remainingSeconds(serverNow, retryAt.value, now.value) : 0
+  const cooldown = computed<Cooldown | null>(() => {
+    const clock = projectionClock.value
+    const retryAt = eligibility.value?.reason === 'COOLDOWN' ? eligibility.value.retryAt : null
+    const serverDeadline = Date.parse(retryAt ?? '')
+    const projection =
+      clock && retryAt && Number.isFinite(serverDeadline)
+        ? { key: retryAt, dueAt: clock.receivedAt + serverDeadline - clock.serverNow }
+        : null
+    const rejection = rejectionCooldown.value
+    return projection && (!rejection || projection.dueAt >= rejection.dueAt)
+      ? projection
+      : rejection
   })
-  const canSubmit = computed(() => {
+  const countdown = computed(() => {
+    const value = cooldown.value
+    if (!value) return 0
+    return Math.max(0, Math.ceil((value.dueAt - now.value) / 1000))
+  })
+  const canRetryRead = computed(
+    () =>
+      readState.value === 'error' ||
+      (readState.value === 'ready' &&
+        (eligibility.value?.reason === 'COOLDOWN' || rejectionCooldown.value !== null) &&
+        (countdown.value === 0 || checkedCooldowns.has(cooldown.value?.key ?? ''))),
+  )
+  const cooldownMessage = computed(() => {
+    if (canRetryRead.value || countdown.value === 0) return ''
+    if (countdown.value < 60) return 'Проверим доступность меньше чем через минуту.'
+    return `Проверим доступность через ${Math.ceil(countdown.value / 60)} мин.`
+  })
+  const eligibleToSend = computed(() => {
     const value = lesson.value
     if (
       !value ||
+      readState.value !== 'ready' ||
       !launch.value ||
       !isActive(launch.value) ||
       options.readOnly() ||
-      options.busy() ||
+      rejectionCooldown.value ||
       success.value ||
       value.attendance?.status === 'PRESENT' ||
       value.checkinEligibility.reason === 'ALREADY_PRESENT' ||
@@ -92,12 +138,9 @@ export function useCheckinImpulse(options: ImpulseOptions) {
         (pendingAck.value.request?.origin !== 'AUTO_GEO_FAILURE' || !pendingAck.value.retryAt))
     )
       return false
-    if (retryAt.value && countdown.value > 0) return false
-    return (
-      value.checkinEligibility.allowed ||
-      (value.checkinEligibility.reason === 'COOLDOWN' && retryAt.value !== null)
-    )
+    return value.checkinEligibility.allowed && value.checkinEligibility.reason === 'ELIGIBLE'
   })
+  const canSubmit = computed(() => !options.busy() && eligibleToSend.value)
   const state = computed(() => {
     if (success.value) return 'success'
     if (options.offline()) return 'offline'
@@ -105,6 +148,7 @@ export function useCheckinImpulse(options: ImpulseOptions) {
     if (stage) return stage
     if (readState.value === 'loading') return 'loading'
     if (readState.value === 'error') return 'error'
+    if (readState.value === 'refreshing') return pending.value ? 'pending' : 'loading'
     if (!lesson.value) return 'unavailable'
     if (
       lesson.value.attendance?.status === 'PRESENT' ||
@@ -113,7 +157,8 @@ export function useCheckinImpulse(options: ImpulseOptions) {
       return 'present'
     if (options.readOnly()) return 'readonly'
     if (canSubmit.value) return 'ready'
-    if (pendingAck.value || isPendingCheckin(lesson.value)) return 'pending'
+    if (pending.value) return 'pending'
+    if (eligibility.value?.reason === 'COOLDOWN' || rejectionCooldown.value) return 'cooldown'
     return 'closed'
   })
   const feedback = computed(() => {
@@ -127,7 +172,9 @@ export function useCheckinImpulse(options: ImpulseOptions) {
       case 'loading':
         return 'Проверяем доступность отметки…'
       case 'error':
-        return 'Не удалось загрузить пару. Попробуй ещё раз.'
+        return pending.value
+          ? 'Запрос на подтверждении у старосты. Не удалось обновить доступность отметки.'
+          : 'Не удалось загрузить пару. Попробуй ещё раз.'
       case 'unavailable':
         return 'Этой пары нет в твоём расписании на сегодня.'
       case 'readonly':
@@ -137,9 +184,11 @@ export function useCheckinImpulse(options: ImpulseOptions) {
       case 'submitting':
         return 'Отправляем отметку…'
       case 'pending':
-        return retryAt.value && countdown.value > 0
-          ? `Запрос у старосты. Повтори отметку через ${Math.ceil(countdown.value / 60)} мин.`
+        return cooldownMessage.value
+          ? `Запрос у старосты. ${cooldownMessage.value}`
           : 'Запрос на подтверждении у старосты.'
+      case 'cooldown':
+        return cooldownMessage.value || 'Отметка пока недоступна.'
       case 'closed':
         return lesson.value ? eligibilityLabel(lesson.value, countdown.value) : ''
       default:
@@ -183,6 +232,8 @@ export function useCheckinImpulse(options: ImpulseOptions) {
     success.value = false
     animate.value = false
     pendingAck.value = null
+    rejectionCooldown.value = null
+    checkedCooldowns.clear()
     commandError.value = ''
     readState.value = 'loading'
   }
@@ -190,11 +241,21 @@ export function useCheckinImpulse(options: ImpulseOptions) {
   async function load(value = launch.value): Promise<void> {
     if (!value || !isActive(value) || success.value) return
     const version = ++readVersion
-    readState.value = 'loading'
+    readState.value = readState.value === 'ready' || pendingAck.value ? 'refreshing' : 'loading'
     try {
       await options.read()
       if (!isActive(value) || version !== readVersion) return
       now.value = Date.now()
+      const freshEligibility = currentLesson.value?.checkinEligibility
+      if (
+        freshEligibility?.allowed &&
+        freshEligibility.reason === 'ELIGIBLE' &&
+        rejectionCooldown.value &&
+        now.value >= rejectionCooldown.value.dueAt
+      ) {
+        rejectionCooldown.value = null
+        commandError.value = ''
+      }
       readState.value = 'ready'
     } catch (error) {
       if (!isActive(value) || version !== readVersion) return
@@ -271,7 +332,7 @@ export function useCheckinImpulse(options: ImpulseOptions) {
     commandError.value = ''
     const version = ++commandVersion
     const isCurrent = () => version === commandVersion && isActive(value)
-    const result = options.submit(target, isCurrent)
+    const result = options.submit(target, () => isCurrent() && eligibleToSend.value)
     if (!result) return
     try {
       const ack = await result
@@ -279,15 +340,19 @@ export function useCheckinImpulse(options: ImpulseOptions) {
       if (ack.outcome === 'PRESENT') confirm(value)
       else {
         pendingAck.value = ack
-        now.value = Date.now()
+        if (ack.retryAt) void load(value)
       }
     } catch (error) {
-      if (!isCurrent()) return
+      if (!isCurrent() || error instanceof CheckinBeforeSendCancelled) return
       commandError.value =
         error instanceof Error && !(error instanceof TypeError) && error.message
           ? error.message
           : 'Не удалось отправить отметку. Попробуй ещё раз.'
-      if (error instanceof StudentApiError && error.response.status < 500) void load(value)
+      if (error instanceof StudentApiError && error.response.status < 500) {
+        const rejected = rejectedCooldown(error)
+        if (rejected) rejectionCooldown.value = rejected
+        void load(value)
+      }
     }
   }
 
@@ -351,23 +416,36 @@ export function useCheckinImpulse(options: ImpulseOptions) {
     { flush: 'sync' },
   )
   watch(
-    () => [launch.value, retryAt.value, options.offline()] as const,
-    ([value, retry, offline], _, onCleanup) => {
-      if (!value || !retry || offline) return
-      now.value = Date.now()
-      const timer = setInterval(() => {
-        now.value = Date.now()
-        if (countdown.value === 0) clearInterval(timer)
-      }, 1000)
-      onCleanup(() => clearInterval(timer))
+    () => options.data()?.serverNow,
+    (timestamp) => {
+      const serverNow = Date.parse(timestamp ?? '')
+      projectionClock.value = Number.isFinite(serverNow)
+        ? { serverNow, receivedAt: Date.now() }
+        : null
     },
+    { flush: 'sync', immediate: true },
   )
   watch(
-    countdown,
-    (seconds, previous) => {
-      if (seconds === 0 && previous > 0 && retryAt.value && readState.value === 'ready') void load()
+    () =>
+      [launch.value, cooldown.value, readState.value, options.offline(), success.value] as const,
+    ([value, deadline, read, offline, confirmed], _, onCleanup) => {
+      if (!value || !deadline || read !== 'ready' || offline || confirmed) return
+      now.value = Date.now()
+      if (deadline.dueAt <= now.value || checkedCooldowns.has(deadline.key)) return
+      let timer: ReturnType<typeof setTimeout>
+      const tick = () => {
+        now.value = Date.now()
+        const remaining = deadline.dueAt - now.value
+        if (remaining > 0) {
+          timer = setTimeout(tick, Math.min(1000, remaining))
+        } else if (isActive(value)) {
+          checkedCooldowns.add(deadline.key)
+          void load(value)
+        }
+      }
+      tick()
+      onCleanup(() => clearTimeout(timer))
     },
-    { flush: 'sync' },
   )
 
   return {
@@ -376,6 +454,7 @@ export function useCheckinImpulse(options: ImpulseOptions) {
     feedback,
     commandError,
     canSubmit,
+    canRetryRead,
     animate,
     arrival,
     start,

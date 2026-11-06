@@ -36,7 +36,6 @@ const loading = ref(false),
   uncertain = ref(false),
   search = ref(''),
   selectedId = ref(0);
-const detailHeading = ref<HTMLElement | null>(null);
 const rosterRoot = ref<HTMLElement | null>(null);
 const selected = computed(() => members.value.find((member) => member.id === selectedId.value));
 function roleLabel(member: HeadmanGroupMember) {
@@ -200,7 +199,9 @@ async function choose(member: HeadmanGroupMember) {
   draft.value = [...(assistant.value?.permissions ?? [])];
   void readBudget(member.id, true);
   await nextTick();
-  if (selectedId.value === member.id) detailHeading.value?.focus();
+  if (selectedId.value === member.id) {
+    rosterRoot.value?.querySelector<HTMLElement>('#headman-member-detail-' + member.id)?.focus();
+  }
 }
 async function closeMember() {
   if (managementLocked.value) return;
@@ -209,7 +210,9 @@ async function closeMember() {
   selectedId.value = 0;
   credentials.clear();
   await nextTick();
-  rosterRoot.value?.querySelector<HTMLButtonElement>("#headman-member-" + memberId)?.focus();
+  if (!selectedId.value) {
+    rosterRoot.value?.querySelector<HTMLButtonElement>('#headman-member-' + memberId)?.focus();
+  }
 }
 function context(): PermissionConfirmationContext | null {
   if (!selected.value) return null;
@@ -441,7 +444,7 @@ onMounted(load);
         >
           <div class="headman-member-heading">
             <h2
-              ref="detailHeading"
+              :id="'headman-member-detail-' + member.id"
               tabindex="-1"
             >
               {{ selected.fullName }}

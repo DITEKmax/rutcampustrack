@@ -10,6 +10,7 @@ import {
 } from 'vue';
 import { useRoute } from 'vue-router';
 import { useWebLiveRefresh } from '../../app/live';
+import { WebAuthorityChangedError } from '../../app/api';
 import { message, webSession } from '../../auth/session';
 import {
   useHeadmanFeature,
@@ -59,6 +60,7 @@ const date = ref(
   error = ref<string | null>(null),
   selected = shallowRef<HeadmanJournalLesson | null>(null);
 const task = ref<'ROOM' | 'TRANSFER' | 'CANCEL' | 'RESTORE' | 'ONE_OFF' | null>(null);
+const draftNeedsRefresh = ref(false);
 const form = reactive({ date: today(), number: 1, assignmentId: 0, room: '', reason: '' });
 const targetOccupied = shallowRef<ReadonlySet<number>>(new Set()),
   targetDate = ref(''),
@@ -118,35 +120,49 @@ function lessonLabel(lesson: HeadmanJournalLesson) {
   ].join(', ');
 }
 let weekRevision = 0;
+function isCurrentWeek(revision: number, from: string) {
+  return revision === weekRevision && from === weekFrom.value;
+}
+async function readWeekOneOffs() {
+  const revision = weekRevision;
+  const from = weekFrom.value;
+  weekOneOffUnavailable.value = false;
+  try {
+    const to = addDays(from, 5);
+    const items = await feature.schedule.listOneOffLessons(feature.groupId, from, to);
+    feature.assertCurrent();
+    if (!isCurrentWeek(revision, from)) return;
+    weekOneOffIds.value = new Set(items
+      .filter(item => item.groupId === feature.groupId && item.date >= from && item.date <= to)
+      .map(item => item.physicalLessonId));
+  } catch (cause) {
+    if (!isCurrentWeek(revision, from) || cause instanceof WebAuthorityChangedError) return;
+    weekOneOffIds.value = new Set();
+    weekOneOffUnavailable.value = true;
+  }
+}
 async function readWeek() {
   const revision = ++weekRevision;
   const from = weekFrom.value;
   weekLoading.value = true;
   weekError.value = null;
-  weekOneOffUnavailable.value = false;
   if (publishedWeek.value !== from) {
     weekLessons.value = [];
     weekOneOffIds.value = new Set();
   }
+  void readWeekOneOffs();
   try {
     const to = addDays(from, 5);
-    const [result, oneOffs] = await Promise.allSettled([
-      feature.journal.listLessons(feature.groupId, from, to),
-      feature.schedule.listOneOffLessons(feature.groupId, from, to),
-    ]);
+    const lessons = await feature.journal.listLessons(feature.groupId, from, to);
     feature.assertCurrent();
-    if (revision !== weekRevision || from !== weekFrom.value) return;
-    if (result.status === 'rejected') throw result.reason;
-    weekLessons.value = result.value.filter(lesson => lesson.groupId === feature.groupId && lesson.current && lesson.date >= from && lesson.date <= to);
-    weekOneOffIds.value = new Set(oneOffs.status === 'fulfilled'
-      ? oneOffs.value.filter(item => item.groupId === feature.groupId && item.date >= from && item.date <= to).map(item => item.physicalLessonId)
-      : []);
-    weekOneOffUnavailable.value = oneOffs.status === 'rejected';
+    if (!isCurrentWeek(revision, from)) return;
+    weekLessons.value = lessons.filter(lesson => lesson.groupId === feature.groupId && lesson.current && lesson.date >= from && lesson.date <= to);
     publishedWeek.value = from;
   } catch (cause) {
-    if (revision === weekRevision) weekError.value = message(cause);
+    if (isCurrentWeek(revision, from) && !(cause instanceof WebAuthorityChangedError))
+      weekError.value = message(cause);
   } finally {
-    if (revision === weekRevision) weekLoading.value = false;
+    if (isCurrentWeek(revision, from)) weekLoading.value = false;
   }
 }
 async function showDate(value: string) {
@@ -213,6 +229,7 @@ async function begin(kind: NonNullable<typeof task.value>) {
       : !feature.writable())
   )
     return;
+  draftNeedsRefresh.value = false;
   task.value = kind;
   form.date = kind === 'TRANSFER' ? addDays(today(), 1) : date.value;
   form.room = selected.value?.room ?? '';
@@ -240,9 +257,60 @@ async function loadTarget() {
 function unavailable(number: number) {
   return targetDate.value !== form.date || targetOccupied.value.has(number);
 }
+function closeTask() {
+  task.value = null;
+  draftNeedsRefresh.value = false;
+}
+function canStillEditSource(kind: NonNullable<typeof task.value>, lesson: HeadmanJournalLesson) {
+  switch (kind) {
+    case 'ROOM': return feature.writable() && lessonCanRoom(lesson, Date.now());
+    case 'TRANSFER': return feature.writable() && lessonCanTransfer(lesson, today());
+    case 'CANCEL': return feature.writable('CANCEL_LESSONS') && lesson.status !== 'CANCELLED';
+    case 'RESTORE': return feature.writable('CANCEL_LESSONS') && lesson.status === 'CANCELLED';
+    case 'ONE_OFF': return feature.writable();
+  }
+}
+async function refreshRejectedDraft() {
+  const kind = task.value;
+  const source = selected.value;
+  if (!kind || !draftNeedsRefresh.value || locked.value) return;
+  navigationBusy.value = true;
+  error.value = null;
+  try {
+    if (kind !== 'ONE_OFF') {
+      const lessons = source ? await state.targetLessons(source.date) : [];
+      feature.assertCurrent();
+      const fresh = source && lessons.find(lesson =>
+        lesson.id === source.id && lesson.occurrenceId === source.occurrenceId &&
+        lesson.current && lesson.groupId === feature.groupId && lesson.date === source.date,
+      );
+      if (!fresh || !canStillEditSource(kind, fresh)) {
+        selected.value = fresh || null;
+        closeTask();
+        error.value = 'Действие для этой пары больше недоступно. Расписание обновлено.';
+        void readWeek();
+        return;
+      }
+      selected.value = fresh;
+    }
+    if (kind === 'TRANSFER' || kind === 'ONE_OFF') {
+      await loadTarget();
+      feature.assertCurrent();
+      if (targetDate.value !== form.date) return;
+    }
+    draftNeedsRefresh.value = false;
+    void readWeek();
+  } catch (cause) {
+    if (!(cause instanceof WebAuthorityChangedError)) {
+      error.value = 'Не удалось обновить данные пары. ' + message(cause);
+    }
+  } finally {
+    navigationBusy.value = false;
+  }
+}
 async function submit() {
   const lesson = selected.value;
-  if (!task.value || locked.value) return;
+  if (!task.value || locked.value || draftNeedsRefresh.value || state.denied) return;
   error.value = null;
   try {
     let command: LessonCommand;
@@ -326,13 +394,22 @@ async function submit() {
     }
     await state.submit(command);
     feature.assertCurrent();
-    if (!state.intent && !state.error) {
-      if (command.kind === 'ONE_OFF' && state.confirmedOneOff) {
-        date.value = state.confirmedOneOff.date;
+    if (state.intent) return;
+    if (state.error) {
+      if (state.denied) {
+        selected.value = null;
+        closeTask();
+      } else {
+        draftNeedsRefresh.value = true;
+        await refreshRejectedDraft();
       }
-      task.value = null;
-      await load();
+      return;
     }
+    if (command.kind === 'ONE_OFF' && state.confirmedOneOff) {
+      date.value = state.confirmedOneOff.date;
+    }
+    closeTask();
+    await load();
   } catch (cause) {
     error.value = message(cause);
   }
@@ -394,7 +471,7 @@ useWebLiveRefresh(load, { blocked: () => locked.value || state.loading || !!task
     title="Управление парами"
     :loading="state.loading"
     :error="error ?? state.error"
-    @reload="load"
+    @reload="draftNeedsRefresh ? refreshRejectedDraft() : load()"
     ><template #actions
       ><button
         v-if="feature.isHeadman"
@@ -446,10 +523,9 @@ useWebLiveRefresh(load, { blocked: () => locked.value || state.loading || !!task
       Пометки разовых пар недоступны. <button
         type="button"
         class="web-button"
-        :disabled="weekLoading"
-        @click="readWeek"
+        @click="readWeekOneOffs"
       >
-        Обновить сетку
+        Обновить пометки
       </button>
     </p>
     <div
@@ -589,13 +665,13 @@ useWebLiveRefresh(load, { blocked: () => locked.value || state.loading || !!task
         ><button
         class="web-button"
         :class="task === 'CANCEL' ? 'web-button-danger' : 'web-button-primary'"
-          :disabled="locked || targetBusy"
+          :disabled="locked || targetBusy || draftNeedsRefresh || state.denied || ((task === 'TRANSFER' || task === 'ONE_OFF') && unavailable(form.number))"
           >Подтвердить</button
         ><button
           type="button"
           class="web-button"
           :disabled="locked"
-          @click="task = null"
+          @click="closeTask"
           >Отмена</button
         ></div
       ></form

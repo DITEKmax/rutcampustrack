@@ -18,17 +18,20 @@
 
 В «Учёте» перейди к первой неделе сентября. У «н» за 1 сентября доступны обе формы. На других парах этой недели есть примеры активных заявок обоих типов. В разрезе «По предметам» открой «Компьютерные сети» и нажми первый жёлтый сегмент в «Практике». Он показывает причину, комментарий и тестовую справку. [TMA с исчерпанным лимитом](http://127.0.0.1:14273/viewport?width=390&attendanceBudget=zero) показывает ноль попыток на следующем шаге.
 
+На [стенде восстановления пароля](http://127.0.0.1:14277/viewport?width=390) введи логин `student.preview`, запроси код и введи `246810`. Для нового пароля подойдёт любая тестовая строка от 10 символов. После сохранения можно войти с этим паролем в той же вкладке. Состояние этой учётной записи хранится до перезагрузки.
+
 ## Повторный запуск
 
 Рабочая копия Windows находится в `C:/Users/maksd/.codex/worktrees/9689/rutcampustrack/.agent/worktrees/frontend-refactor-v2`. Команды ниже выполняются из её корня. Нужны Node.js 24.14, npm 11.9 и установленные зависимости в `frontends/node_modules`. Если их нужно восстановить, выполни `npm --prefix frontends ci`.
 
-Конфигурации и сценарии хранятся в `.agent/evidence/student-mobile-v2` и `.agent/evidence/web-student-v2`. Их актуальная резервная копия находится в `.agent/evidence/frontend-refactor-v2-stand/fixtures-attendance.zip` исходной рабочей копии `9689/rutcampustrack`. Для новой рабочей копии этой ветки распакуй архив в её корень. В ZIP 26 файлов с путями от корня рабочей копии. SHA-256 `ec0ab9aa4e52c676d7f847d435aae6fe4d514e74e0fbc80fc90c826d1177284c`.
+Конфигурации и сценарии хранятся в `.agent/evidence/student-mobile-v2` и `.agent/evidence/web-student-v2`. Их актуальная резервная копия находится в `.agent/evidence/frontend-refactor-v2-stand/fixtures-profile-recovery.zip` исходной рабочей копии `9689/rutcampustrack`. Для новой рабочей копии этой ветки распакуй архив в её корень. В ZIP 28 файлов с путями от корня рабочей копии. SHA-256 `00807dec1de7307acd9b07f97835cd6a4eb52755fbe8bedca3d13001c854778f`.
 
 Каждая команда запускается в своём окне PowerShell.
 
     node frontends/node_modules/vite/bin/vite.js --config .agent/evidence/student-mobile-v2/pwa-qa/vite.config.mjs
     node frontends/node_modules/vite/bin/vite.js --config .agent/evidence/student-mobile-v2/tma-qa/vite.config.mjs
     node frontends/node_modules/vite/bin/vite.js --config .agent/evidence/web-student-v2/vite.config.mjs
+    node frontends/node_modules/vite/bin/vite.js --config .agent/evidence/student-mobile-v2/pwa-qa/recovery.config.mjs
 
 Для HTML запусти две команды из исходной рабочей копии `9689/rutcampustrack`. Каталог Web-эталонов содержит четыре оригинальных HTML. Остальные оригиналы лежат по отдельным каталогам в `.agent/inputs/frontend-refactor-v2`. ZIP владельца сохранены в `C:/Users/maksd/OneDrive/Desktop/frontendrefactor`.
 

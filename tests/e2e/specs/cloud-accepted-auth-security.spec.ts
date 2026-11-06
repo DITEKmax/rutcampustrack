@@ -936,8 +936,7 @@ test('password recovery consumes its own delivered OTP and admits the replacemen
   await page.clock.setSystemTime(new Date());
   const user = await dataset.user('STUDENT', dataset.otherGroup.id);
   await recipient.bind();
-  await page.goto('/app/');
-  await page.getByRole('button', { name: 'Забыл пароль', exact: true }).click();
+  await page.goto('/app/password-reset');
   await expect(
     page.getByRole('heading', { name: 'Восстановить пароль', exact: true }),
   ).toBeVisible();
@@ -956,21 +955,14 @@ test('password recovery consumes its own delivered OTP and admits the replacemen
     'Reset challenge exposes server TTL without its code',
   ).toBe(true);
   await expect(page.getByRole('heading', { name: 'Введи код', exact: true })).toBeVisible();
+  const ttlPattern = /^Код из Telegram действует (?:(\d+) мин(?: (\d+) сек)?|(\d+) сек)\.$/;
+  const ttlText = page.getByText(ttlPattern);
+  await expect(ttlText).toBeVisible();
+  const duration = ttlPattern.exec((await ttlText.innerText()).trim());
   expect(
-    await page.locator('.login-card__hint').evaluateAll(
-      (elements, ttl: number) =>
-        elements.some((element) => {
-          const match = /^Код из Telegram действует (?:(\d+) мин(?: (\d+) сек)?|(\d+) сек)\.$/.exec(
-            element.textContent?.trim() ?? '',
-          );
-          return (
-            match !== null && Number(match[1] ?? 0) * 60 + Number(match[2] ?? match[3] ?? 0) === ttl
-          );
-        }),
-      challenge.ttlSeconds,
-    ),
+    duration && Number(duration[1] ?? 0) * 60 + Number(duration[2] ?? duration[3] ?? 0),
     'UI displays the real challenge TTL',
-  ).toBe(true);
+  ).toBe(challenge.ttlSeconds);
   const delivered = await recipient.receive(
     user.telegramId,
     challenge.challengeId,
@@ -989,21 +981,10 @@ test('password recovery consumes its own delivered OTP and admits the replacemen
     remainingAttempts === delivered.attemptsRemaining - 1 && remainingAttempts > 0,
     'Server decreases the own challenge attempt count',
   ).toBe(true);
-  await expect
-    .poll(
-      () =>
-        page
-          .getByRole('status')
-          .evaluateAll(
-            (elements, remaining: number) =>
-              elements.some(
-                (element) => element.textContent?.trim() === `Осталось попыток: ${remaining}.`,
-              ),
-            remainingAttempts,
-          ),
-      { message: 'UI displays server-provided remaining attempts' },
-    )
-    .toBe(true);
+  await expect(
+    page.getByRole('alert').filter({ hasText: 'Код не подошёл.' }),
+    'UI displays server-provided remaining attempts',
+  ).toContainText(`Осталось попыток: ${remainingAttempts}.`);
   await page.getByLabel('Код из Telegram', { exact: true }).fill(delivered.code);
   const verified = http(page, '/api/auth/password-reset/verify', 'POST');
   await page.getByRole('button', { name: 'Проверить код', exact: true }).click();

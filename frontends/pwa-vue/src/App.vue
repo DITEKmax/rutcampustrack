@@ -316,10 +316,8 @@ if (directPasswordRecoveryEntry) {
         `${window.location.pathname}${window.location.search}`,
       );
     });
-    if (!directPasswordResetProof.value) {
-      directPasswordResetLinkError.value = linkFragment
-        ? 'Ссылка восстановления повреждена. Запроси новый код.'
-        : 'В ссылке нет кода восстановления. Запроси новый код.';
+    if (linkFragment && !directPasswordResetProof.value) {
+      directPasswordResetLinkError.value = 'Ссылка восстановления повреждена. Запроси новый код.';
     }
   } catch {
     directPasswordResetLinkError.value = 'Не удалось безопасно открыть ссылку. Запроси новый код.';

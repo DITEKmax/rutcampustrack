@@ -2266,6 +2266,7 @@ defineExpose({ openNotificationAction });
 <template>
   <div
     ref="studentRoot"
+    class="student-feature-owner"
     data-student-ui
     :data-theme="resolvedTheme"
   >

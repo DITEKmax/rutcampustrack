@@ -1,9 +1,11 @@
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import AuthIllustration from '../../../../mobile-core/src/features/auth/AuthIllustration.vue';
+import AuthLayout from '../../../../mobile-core/src/features/auth/AuthLayout.vue';
 import { createPasswordRecoveryClient, PasswordRecoveryApiError } from './password-recovery-client';
 import type { PasswordResetProof } from './password-recovery-link';
 import { createPasswordRecoveryOperationGate } from './password-recovery-operation';
-import '../../login-screen.pcss';
+import './password-recovery-screen.pcss';
 
 const props = withDefaults(
   defineProps<{
@@ -42,6 +44,56 @@ const passwordConfirmation = ref('');
 const busy = ref(false);
 const feedback = ref<string | null>(null);
 const notice = ref<string | null>(null);
+const heading = ref<HTMLHeadingElement | null>(null);
+
+const stepContent = computed(() => {
+  if (step.value === 'request') {
+    return {
+      title: 'Восстановить пароль',
+      description: 'Введи логин. Если для аккаунта доступен Telegram, код придёт в бот.',
+      action: 'Запросить код',
+      pending: 'Запрашиваем…',
+    };
+  }
+  if (step.value === 'code') {
+    return {
+      title: 'Введи код',
+      description:
+        challengeTtlSeconds.value === null
+          ? 'Введи код из Telegram.'
+          : 'Код из Telegram действует ' + formatDuration(challengeTtlSeconds.value) + '.',
+      action: 'Проверить код',
+      pending: 'Проверяем…',
+    };
+  }
+  return {
+    title: 'Задай новый пароль',
+    description:
+      ticketTtlSeconds.value === null
+        ? 'Введи и подтверди новый пароль.'
+        : 'Подтверждение действует ' + formatDuration(ticketTtlSeconds.value) + '.',
+    action: 'Сохранить пароль',
+    pending: 'Сохраняем…',
+  };
+});
+const canSubmit = computed(() => {
+  if (busy.value) return false;
+  if (step.value === 'request') return Boolean(login.value.trim());
+  if (step.value === 'code') return Boolean(code.value.trim());
+  return Boolean(newPassword.value && newPassword.value === passwordConfirmation.value);
+});
+const passwordMismatch = computed(
+  () => Boolean(passwordConfirmation.value) && newPassword.value !== passwordConfirmation.value,
+);
+const feedbackId = computed(() => (feedback.value ? 'password-recovery-error' : undefined));
+
+const submitStep = {
+  request: requestCode,
+  code: verifyCode,
+  password: completeReset,
+};
+
+watch(step, () => heading.value?.focus(), { flush: 'post' });
 
 function beginOperation() {
   busy.value = true;
@@ -288,206 +340,179 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <main
-    class="login-screen password-recovery-screen"
+  <AuthLayout
+    class="password-recovery-screen"
     aria-labelledby="password-recovery-title"
   >
-    <form
-      v-if="step === 'request'"
-      class="login-card"
-      @submit.prevent="requestCode"
-    >
-      <p class="login-card__eyebrow">
-        RutCampusTrack
-      </p>
-      <h1 id="password-recovery-title">
-        Восстановить пароль
-      </h1>
-      <p class="login-card__hint">
-        Введи логин. Если для аккаунта доступен Telegram, код придёт в бот.
-      </p>
-      <p class="login-card__hint">
+    <section class="auth-content recovery-content">
+      <AuthIllustration :state="busy ? 'pending' : feedback ? 'error' : 'idle'" />
+      <div class="auth-heading">
+        <h1
+          id="password-recovery-title"
+          ref="heading"
+          class="auth-title"
+          tabindex="-1"
+        >
+          {{ stepContent.title }}
+        </h1>
+        <p>{{ stepContent.description }}</p>
+      </div>
+
+      <form
+        class="auth-form"
+        :aria-busy="busy"
+        @submit.prevent="submitStep[step]()"
+      >
+        <label
+          v-if="step === 'request'"
+          class="field"
+          for="password-recovery-login"
+        >
+          <span class="field-label">Логин</span>
+          <input
+            id="password-recovery-login"
+            v-model="login"
+            name="login"
+            type="text"
+            autocomplete="username"
+            autocapitalize="off"
+            :spellcheck="false"
+            placeholder="Введи логин"
+            required
+            :disabled="busy"
+            :aria-describedby="feedbackId"
+          >
+        </label>
+        <template v-else-if="step === 'code'">
+          <p
+            v-if="notice"
+            :class="busy ? 'helper recovery-meta' : 'feedback notice'"
+            role="status"
+          >
+            {{ notice }}
+          </p>
+          <label
+            class="field"
+            for="password-recovery-code"
+          >
+            <span class="field-label">Код из Telegram</span>
+            <input
+              id="password-recovery-code"
+              v-model="code"
+              name="code"
+              type="text"
+              inputmode="numeric"
+              autocomplete="one-time-code"
+              required
+              :disabled="busy"
+              :aria-describedby="feedbackId"
+            >
+          </label>
+          <p
+            v-if="attemptsRemaining !== null && !feedback"
+            class="helper recovery-meta"
+            role="status"
+          >
+            Осталось попыток: {{ attemptsRemaining }}.
+          </p>
+        </template>
+        <template v-else>
+          <label
+            class="field"
+            for="password-recovery-new-password"
+          >
+            <span class="field-label">Новый пароль</span>
+            <input
+              id="password-recovery-new-password"
+              v-model="newPassword"
+              name="newPassword"
+              type="password"
+              autocomplete="new-password"
+              required
+              :disabled="busy"
+              :aria-describedby="feedbackId"
+            >
+          </label>
+          <label
+            class="field"
+            for="password-recovery-password-confirmation"
+          >
+            <span class="field-label">Повтори новый пароль</span>
+            <input
+              id="password-recovery-password-confirmation"
+              v-model="passwordConfirmation"
+              name="passwordConfirmation"
+              type="password"
+              autocomplete="new-password"
+              required
+              :disabled="busy"
+              :aria-invalid="passwordMismatch"
+              :aria-describedby="passwordMismatch ? 'password-recovery-mismatch' : feedbackId"
+            >
+          </label>
+          <p
+            v-if="passwordMismatch"
+            id="password-recovery-mismatch"
+            class="helper recovery-meta"
+            role="status"
+          >
+            Пароли не совпадают.
+          </p>
+        </template>
+        <p
+          v-if="feedback"
+          id="password-recovery-error"
+          class="feedback"
+          role="alert"
+          aria-live="polite"
+        >
+          <span aria-hidden="true">!</span>
+          {{ feedback }}
+        </p>
+        <button
+          class="primary"
+          type="submit"
+          :disabled="!canSubmit"
+          :aria-busy="busy"
+        >
+          <span
+            v-if="busy"
+            class="spinner"
+            aria-hidden="true"
+          />
+          {{ busy ? stepContent.pending : stepContent.action }}
+          <span
+            v-if="!busy"
+            aria-hidden="true"
+          >→</span>
+        </button>
+      </form>
+
+      <div class="recovery-actions">
+        <button
+          v-if="step === 'code' && login.trim()"
+          class="recovery-quiet-button"
+          type="button"
+          :disabled="busy"
+          @click="requestCode"
+        >
+          Запросить новый код
+        </button>
+        <button
+          class="recovery-quiet-button"
+          type="button"
+          @click="cancel"
+        >
+          Вернуться ко входу
+        </button>
+      </div>
+      <p
+        v-if="step === 'request'"
+        class="helper recovery-help"
+      >
         Если не можешь получить код: студенту — к старосте группы; старосте и преподавателю — к
         администратору; администратору — к оператору.
       </p>
-      <label class="login-field">
-        <span>Логин</span>
-        <input
-          v-model="login"
-          name="login"
-          type="text"
-          autocomplete="username"
-          required
-          :disabled="busy"
-        >
-      </label>
-      <p
-        v-if="feedback"
-        class="login-card__error"
-        role="alert"
-        aria-live="polite"
-      >
-        {{ feedback }}
-      </p>
-      <button
-        class="login-card__submit"
-        type="submit"
-        :disabled="busy"
-        :aria-busy="busy"
-      >
-        {{ busy ? 'Запрашиваем…' : 'Запросить код' }}
-      </button>
-      <button
-        class="login-card__secondary"
-        type="button"
-        @click="cancel"
-      >
-        Вернуться ко входу
-      </button>
-    </form>
-
-    <form
-      v-else-if="step === 'code'"
-      class="login-card"
-      @submit.prevent="verifyCode"
-    >
-      <p class="login-card__eyebrow">
-        RutCampusTrack
-      </p>
-      <h1 id="password-recovery-title">
-        Введи код
-      </h1>
-      <p class="login-card__hint">
-        {{
-          challengeTtlSeconds === null
-            ? 'Введи код из Telegram.'
-            : 'Код из Telegram действует ' + formatDuration(challengeTtlSeconds) + '.'
-        }}
-      </p>
-      <p
-        v-if="notice"
-        class="login-card__notice"
-        role="status"
-        aria-live="polite"
-      >
-        {{ notice }}
-      </p>
-      <p
-        v-if="attemptsRemaining !== null"
-        class="login-card__hint"
-        role="status"
-        aria-live="polite"
-      >
-        Осталось попыток: {{ attemptsRemaining }}.
-      </p>
-      <label class="login-field">
-        <span>Код из Telegram</span>
-        <input
-          v-model="code"
-          name="code"
-          type="text"
-          inputmode="numeric"
-          autocomplete="one-time-code"
-          required
-          :disabled="busy"
-        >
-      </label>
-      <p
-        v-if="feedback"
-        class="login-card__error"
-        role="alert"
-        aria-live="polite"
-      >
-        {{ feedback }}
-      </p>
-      <button
-        class="login-card__submit"
-        type="submit"
-        :disabled="busy || !code.trim()"
-        :aria-busy="busy"
-      >
-        {{ busy ? 'Проверяем…' : 'Проверить код' }}
-      </button>
-      <button
-        class="login-card__secondary"
-        type="button"
-        :disabled="busy"
-        @click="requestCode()"
-      >
-        Запросить новый код
-      </button>
-      <button
-        class="login-card__secondary"
-        type="button"
-        @click="cancel"
-      >
-        Вернуться ко входу
-      </button>
-    </form>
-
-    <form
-      v-else
-      class="login-card"
-      @submit.prevent="completeReset"
-    >
-      <p class="login-card__eyebrow">
-        RutCampusTrack
-      </p>
-      <h1 id="password-recovery-title">
-        Задай новый пароль
-      </h1>
-      <p class="login-card__hint">
-        {{
-          ticketTtlSeconds === null
-            ? 'Задай новый пароль.'
-            : 'Подтверждение действует ' + formatDuration(ticketTtlSeconds) + '.'
-        }}
-      </p>
-      <label class="login-field">
-        <span>Новый пароль</span>
-        <input
-          v-model="newPassword"
-          name="newPassword"
-          type="password"
-          autocomplete="new-password"
-          required
-          :disabled="busy"
-        >
-      </label>
-      <label class="login-field">
-        <span>Повтори новый пароль</span>
-        <input
-          v-model="passwordConfirmation"
-          name="passwordConfirmation"
-          type="password"
-          autocomplete="new-password"
-          required
-          :disabled="busy"
-        >
-      </label>
-      <p
-        v-if="feedback"
-        class="login-card__error"
-        role="alert"
-        aria-live="polite"
-      >
-        {{ feedback }}
-      </p>
-      <button
-        class="login-card__submit"
-        type="submit"
-        :disabled="busy || newPassword !== passwordConfirmation || !newPassword"
-        :aria-busy="busy"
-      >
-        {{ busy ? 'Сохраняем…' : 'Сохранить пароль' }}
-      </button>
-      <button
-        class="login-card__secondary"
-        type="button"
-        @click="cancel"
-      >
-        Вернуться ко входу
-      </button>
-    </form>
-  </main>
+    </section>
+  </AuthLayout>
 </template>

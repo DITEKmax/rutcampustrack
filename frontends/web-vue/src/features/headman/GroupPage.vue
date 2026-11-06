@@ -121,6 +121,7 @@ const credentials = useHeadmanCredentials(() => ({
     credentialEligible.value &&
     !!selected.value,
   memberIds: selected.value ? [selected.value.id] : [],
+  detailStudentId: selected.value?.id ?? null,
 }));
 const credential = computed(() => credentials.values.value[selectedId.value]);
 const semesterId = computed(() => semesters.value.find((semester) => semester.active)?.id);

@@ -544,7 +544,7 @@ defineExpose({ back, openNotificationRequest });
   >
     <header class="headman-requests__header">
       <button
-        v-if="!root || showBack || view === 'archive'"
+        v-if="!root || showBack"
         class="headman-requests__back"
         type="button"
         aria-label="Назад"

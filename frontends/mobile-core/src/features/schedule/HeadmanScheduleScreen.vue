@@ -1982,7 +1982,7 @@ defineExpose({ openNotificationAction });
       :assistant-permissions="assistantPermissions"
       :offline="offline"
       :read-only="readOnly"
-      :show-back="true"
+      :show-back="false"
       @view-change="requestsView = $event"
       @back="navigation.back()"
       @error="forwardError"

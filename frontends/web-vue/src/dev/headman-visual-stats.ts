@@ -7,6 +7,20 @@ const metric = (count: number, total: number) => ({ numerator: count, denominato
 export const personalMetric = (count: number, total: number) => ({ numerator: count, denominator: total, percent: total ? count / total * 100 : null })
 const completed = lessons.filter((lesson) => lesson.status === 'CLOSED')
 const typeLabels: Readonly<Record<string, string>> = { LECTURE: 'Лекция', LAB: 'Лабораторная', PRACTICE: 'Практика' }
+// Submitted tickets count once per reason across the semester, regardless of attendance filters.
+const submittedReasonCounts = [
+  { code: 'ILLNESS', label: 'Болезнь', fixtureLabel: 'Болезнь' },
+  { code: 'MEDICAL_EXAMINATION', label: 'Медицинское обследование', fixtureLabel: 'Медосмотр' },
+].map(({ code, label, fixtureLabel }) => ({
+  code,
+  label,
+  count: requests.filter((request) =>
+    request.summary.kind === 'EXCUSE' &&
+    request.summary.reason === fixtureLabel &&
+    request.lessons.some((lesson) => lesson.groupId === groupId && lesson.semesterId === semester.id),
+  ).length,
+})).filter(({ count }) => count > 0)
+  .sort((a, b) => b.count - a.count || a.code.localeCompare(b.code, 'en'))
 export const statsCatalog: HeadmanStatsSemesterCatalog = { groupId, activeSemesterId: semester.id, semesters: semesters.map((item) => ({ ...item, archived: !item.active })) }
 const activeEntries = lessons.filter((lesson) => lesson.date === headmanDate && lesson.status === 'ACTIVE').flatMap((lesson) => report(lesson).entries)
 export const statsOverview: HeadmanStatsOverview = { groupId, membership: { active: members.length, total: members.length }, today: { date: headmanDate, present: personalMetric(activeEntries.filter((entry) => entry.status === 'PRESENT').length, activeEntries.length), presentOrExcused: personalMetric(activeEntries.filter((entry) => entry.status === 'PRESENT' || entry.status === 'EXCUSED').length, activeEntries.length) } }
@@ -51,7 +65,7 @@ export function statsResponse(query: HeadmanStatsQuery): HeadmanStatsResponse {
   const total = p + e + a
   const sumTickets = (kind: 'lateCheckin' | 'excuse') => rows.reduce((sum, row) => ({ submitted: sum.submitted + row[kind].submitted, approved: sum.approved + row[kind].approved, rejected: sum.rejected + row[kind].rejected }), { submitted: 0, approved: 0, rejected: 0 })
   const totalElements = rows.length, totalPages = Math.ceil(totalElements / query.size)
-  return { ...shell, context: context(query.subjectId, query.lessonTypes), summary: { present: metric(p, total), presentOrExcused: metric(p + e, total), excused: metric(e, total), absent: metric(a, total) }, summaryTickets: { lateCheckin: sumTickets('lateCheckin'), excuse: sumTickets('excuse') }, filteredStudents: totalElements, rows: rows.slice(query.page * query.size, (query.page + 1) * query.size), subjects: subjects.map((subject) => ({ id: subject.id, label: subject.name, lessonTypes: subject.lessonTypes.map((code) => ({ code, label: typeLabels[code]! })) })), reasonCounts: [{ code: 'ILLNESS', label: 'Болезнь', count: e }], page: query.page, size: query.size, totalElements, totalPages, hasPrevious: query.page > 0, hasNext: query.page + 1 < totalPages, emptyState: totalElements ? 'NONE' : 'FILTERED_EMPTY' }
+  return { ...shell, context: context(query.subjectId, query.lessonTypes), summary: { present: metric(p, total), presentOrExcused: metric(p + e, total), excused: metric(e, total), absent: metric(a, total) }, summaryTickets: { lateCheckin: sumTickets('lateCheckin'), excuse: sumTickets('excuse') }, filteredStudents: totalElements, rows: rows.slice(query.page * query.size, (query.page + 1) * query.size), subjects: subjects.map((subject) => ({ id: subject.id, label: subject.name, lessonTypes: subject.lessonTypes.map((code) => ({ code, label: typeLabels[code]! })) })), reasonCounts: submittedReasonCounts, page: query.page, size: query.size, totalElements, totalPages, hasPrevious: query.page > 0, hasNext: query.page + 1 < totalPages, emptyState: totalElements ? 'NONE' : 'FILTERED_EMPTY' }
 }
 export function statsTrend(query: HeadmanStatsTrendQuery, studentId?: number): HeadmanStatsTrendResponse {
   const subjectId = query.mode === 'SUBJECT' ? query.subjectId : null, types = query.mode === 'SUBJECT' ? query.lessonTypes ?? [] : []

@@ -1249,6 +1249,7 @@ const sortPresets = computed(() =>
 const sortPreset = computed(
   () => `${sorts.value[0]?.field ?? 'displayName'}:${sorts.value[0]?.descending ? 'desc' : 'asc'}`,
 );
+const defaultSortPreset = 'displayName:asc';
 const visibleTools = computed(() =>
   (['filters', 'sort', 'export', 'tickets'] as const).filter(
     (tool) =>
@@ -1263,7 +1264,7 @@ const subjectCatalog = computed(
 function chooseSort(value: string): void {
   if (
     block.value !== 'group' ||
-    (value !== 'displayName:asc' && !sortPresets.value.some((item) => item.value === value))
+    (value !== defaultSortPreset && !sortPresets.value.some((item) => item.value === value))
   )
     return;
   const [field, direction] = value.split(':');
@@ -1448,7 +1449,13 @@ defineExpose({
                 tickets: 'Тикеты',
               }[tool]
             "
-            :aria-pressed="tool === 'filters' ? filters.length > 0 : undefined"
+            :aria-pressed="
+              tool === 'filters'
+                ? filters.length > 0
+                : tool === 'sort'
+                  ? sortPreset !== defaultSortPreset
+                  : undefined
+            "
             @click="openTool(tool)"
           >
             <svg
@@ -1946,8 +1953,8 @@ defineExpose({
           <button
             type="button"
             class="headman-stats__sort-reset"
-            :disabled="sortPreset === 'displayName:asc'"
-            @click="chooseSort('displayName:asc')"
+            :disabled="sortPreset === defaultSortPreset"
+            @click="chooseSort(defaultSortPreset)"
           >
             <MobileIcon name="retry" />По алфавиту · А–Я
           </button>

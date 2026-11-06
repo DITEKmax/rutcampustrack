@@ -170,6 +170,7 @@ describe('заявки старосты', () => {
       })
     })
     await settle()
+    expect(byAttr(root, 'aria-label', 'Назад')).toHaveLength(0)
     await press(button(root, 'Показать ещё'))
     expect(find(root, (node) => node.tag === 'h2').map(text)).toEqual([
       'Андреев Пётр',
@@ -195,6 +196,7 @@ describe('заявки старосты', () => {
 
     await press(button(root, 'Архив'))
     expect(byAttr(root, 'data-request-view', 'archive')).toHaveLength(1)
+    expect(byAttr(root, 'aria-label', 'Назад')).toHaveLength(0)
     await press(button(root, 'уУважительные причины'))
     expect(byAttr(root, 'data-request-id', 'approved').map(text).join()).toContain('Одобрена')
     expect(byAttr(root, 'data-request-id', 'rejected')).toHaveLength(0)
@@ -202,7 +204,7 @@ describe('заявки старосты', () => {
     await press(button(root, 'нЗабыл отметиться'))
     expect(byAttr(root, 'data-request-id', 'rejected').map(text).join()).toContain('Отклонена')
     expect(urls.at(-1)?.searchParams.get('bucket')).toBe('ARCHIVE')
-    await press(byAttr(root, 'aria-label', 'Назад')[0])
+    await press(button(root, 'Архив'))
     expect(byAttr(root, 'data-request-view', 'queue')).toHaveLength(1)
   })
 
@@ -235,6 +237,7 @@ describe('заявки старосты', () => {
     await settle()
     await press(button(root, 'Архив'))
     await press(byAttr(root, 'data-request-id', 'legacy')[0])
+    expect(byAttr(root, 'aria-label', 'Назад')).toHaveLength(1)
 
     expect(byAttr(root, 'data-comparison', 'before')).toHaveLength(0)
     const after = byAttr(root, 'data-comparison', 'after')

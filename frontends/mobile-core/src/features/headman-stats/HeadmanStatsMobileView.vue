@@ -390,21 +390,56 @@ function toggleType(code: string): void {
         </template>
       </template>
       <section
-        v-else-if="response"
+        v-else-if="response || catalog"
         class="headman-stats-mobile__students"
         aria-label="Студенты группы"
       >
         <h2>Группа</h2>
         <slot name="search" />
-        <div v-if="!rows.length" class="headman-stats-mobile__empty">
+        <div
+          v-if="response && !rows.length"
+          class="headman-stats-mobile__empty"
+        >
+          <svg
+            v-if="filtersActive"
+            class="headman-stats-mobile__empty-art"
+            viewBox="0 0 48 48"
+            fill="none"
+            aria-hidden="true"
+          >
+            <circle
+              class="headman-stats-mobile__empty-halo"
+              cx="24"
+              cy="24"
+              r="22"
+            />
+            <g
+              stroke="currentColor"
+              stroke-width="1.75"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M13 13h14a3 3 0 0 1 3 3v3M13 13a3 3 0 0 0-3 3v15a3 3 0 0 0 3 3h8M15 19h10m-10 5h5m-5 5h3" />
+              <circle
+                cx="30"
+                cy="28"
+                r="7"
+              />
+              <path d="m35 33 5 5" />
+            </g>
+          </svg>
           <p role="status">
-            {{ filtersActive ? 'Нет студентов, подходящих под фильтры.' : 'Нет данных о студентах за выбранный семестр.' }}
+            {{ filtersActive ? 'Нет подходящих вариантов' : 'Нет данных о студентах за выбранный семестр.' }}
           </p>
-          <button v-if="filtersActive" type="button" @click="emit('clear-filters')">
+          <button
+            v-if="filtersActive"
+            type="button"
+            @click="emit('clear-filters')"
+          >
             Сбросить фильтры
           </button>
         </div>
-        <ul v-else>
+        <ul v-else-if="rows.length">
           <li
             v-for="row in rows"
             :key="row.studentId"
@@ -430,17 +465,21 @@ function toggleType(code: string): void {
           </li>
         </ul>
       </section>
-      <details
+      <section
         v-if="block === 'group' && (metrics || response)"
         class="headman-stats-mobile__details"
+        :aria-labelledby="tabId + '-overview-details'"
       >
-        <summary>Подробная сводка</summary>
+        <h2 :id="tabId + '-overview-details'">
+          Подробная сводка
+        </h2>
         <div class="headman-stats-mobile__details-content">
           <section
-            v-if="block === 'group' && metrics"
+            v-if="metrics"
             class="headman-stats-mobile__card"
           >
-            <h2>Состав посещаемости</h2><div
+            <h3>Состав посещаемости</h3>
+            <div
               class="headman-stats-mobile__composition"
               role="img"
               :aria-label="`Присутствовал ${headmanStatsPercent(metrics.present)}, уважительно ${headmanStatsPercent(metrics.excused)}, отсутствовал ${headmanStatsPercent(metrics.absent)}`"
@@ -463,11 +502,11 @@ function toggleType(code: string): void {
             </div>
           </section>
           <section
-            v-if="block === 'group' && response"
+            v-if="response"
             class="headman-stats-mobile__card"
             aria-label="Поданные уважительные причины"
           >
-            <h2>Поданные уважительные причины</h2>
+            <h3>Поданные уважительные причины</h3>
             <p v-if="response.reasonCounts == null">
               Разбивка причин недоступна.
             </p>
@@ -484,7 +523,7 @@ function toggleType(code: string): void {
             </ul>
           </section>
         </div>
-      </details>
+      </section>
     </template>
     <div
       v-if="detailStudentId !== null || subjectId !== null"

@@ -62,4 +62,27 @@ describe('exact Web teacher proof authorization', () => {
     await expect(verifyTeacherAttachment(access, source, file, new AbortController().signal))
       .rejects.toThrow('Документ больше недоступен для этой отметки.')
   })
+
+  it('rejects a manual proof when a fresh roster no longer exposes the selected mark’s descriptor', async () => {
+    const manualSource = { lessonId: source.lessonId, studentId: source.studentId }
+    const manualRow = {
+      ...row, status: 'excused', symbol: 'у', source: 'NO_TICKET', pendingTicket: false,
+      ticketId: null, attachmentId: file.id, attachmentName: file.fileName,
+      attachmentContentType: file.contentType, attachmentSize: file.size,
+      attachmentExpiresAt: file.expiresAt,
+    }
+    const access = api(request, [manualRow])
+    const { signal } = new AbortController()
+    await verifyTeacherAttachment(access, manualSource, file, signal)
+    access.lesson.mockResolvedValueOnce({
+      lesson, roster: [{ ...manualRow, attachmentId: null }], serverNow: request.serverNow,
+    })
+    await expect(verifyTeacherAttachment(access, manualSource, file, signal))
+      .rejects.toThrow('Документ больше недоступен для этой отметки.')
+    expect(access.lesson.mock.calls).toEqual([
+      [manualSource.lessonId, { cache: 'no-store', signal }],
+      [manualSource.lessonId, { cache: 'no-store', signal }],
+    ])
+    expect(access.excuse).not.toHaveBeenCalled()
+  })
 })

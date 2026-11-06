@@ -120,12 +120,11 @@ async function refreshProof(loadFile: boolean) {
   const current = () => operation === controller && props.scope.current() && !hidden.value;
   verifyError.value = '';
   try {
-    // A ticket's binary route can admit another lesson on the same request.
-    // Manual bytes already have an exact lesson and student check at the binary route.
-    if (!loadFile || !manual) await checkSource(controller);
+    await checkSource(controller);
     if (!current() || !loadFile) return;
     await preview.load(controller.signal);
-    if (current() && !manual && state.value.status === 'ready') await checkSource(controller);
+    // The selected mark can change while the authorized bytes are in flight.
+    if (current() && state.value.status === 'ready') await checkSource(controller);
   } catch (cause) {
     if (!current() || expired.value) return;
     resetPreview();

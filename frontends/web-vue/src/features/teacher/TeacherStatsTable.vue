@@ -18,7 +18,9 @@ const emit = defineEmits<{
 }>();
 const tableRegion = ref<HTMLElement | null>(null);
 function focusGroup(groupId: number) {
-  tableRegion.value?.querySelector<HTMLButtonElement>(`[data-teacher-group="${groupId}"]`)?.focus();
+  const target = tableRegion.value?.querySelector<HTMLButtonElement>(`[data-teacher-group="${groupId}"]`);
+  target?.focus();
+  return !!target;
 }
 defineExpose({ focusGroup });
 const nameColumn = computed(() => (props.data.scope === 'groups' ? 'groupName' : 'displayName'));
@@ -45,12 +47,23 @@ const rows = computed(() =>
         lessonsCount: null,
       })),
 );
+const defaultSort = { column: 'present', descending: false };
+const appliedSorts = computed(() => props.sorts.length ? props.sorts : [defaultSort]);
+const primarySort = computed(() => appliedSorts.value[0]);
+const sortSummary = computed(() => appliedSorts.value.map(sort =>
+  `${columns.value.find(column => column.key === sort.column)?.label ?? sort.column} ${sort.descending ? '↓' : '↑'}`,
+).join(', '));
 function sortLabel(column: string) {
   const index = props.sorts.findIndex((sort) => sort.column === column);
   return index >= 0 ? `${index + 1} ${props.sorts[index]!.descending ? '↓' : '↑'}` : '';
 }
 </script>
 <template>
+  <p class="web-caption">
+    Сортировка: {{ sortSummary }}<template v-if="!sorts.length">
+      (по умолчанию)
+    </template>
+  </p>
   <div
     ref="tableRegion"
     class="teacher-table-scroll"
@@ -66,8 +79,8 @@ function sortLabel(column: string) {
             :key="column.key"
             scope="col"
             :aria-sort="
-              sorts[0]?.column === column.key
-                ? sorts[0].descending
+              primarySort?.column === column.key
+                ? primarySort.descending
                   ? 'descending'
                   : 'ascending'
                 : undefined
@@ -76,9 +89,9 @@ function sortLabel(column: string) {
             <div class="teacher-column-tools">
               <button
                 class="teacher-text-button"
-                :disabled="busy"
-                :aria-label="`${column.label}: сортировка ${sortLabel(column.key) || 'не задана'}`"
-                @click="emit('sort', column.key)"
+                :aria-disabled="busy"
+                :aria-label="`${column.label}: сортировка ${sortLabel(column.key) || (primarySort?.column === column.key ? 'по возрастанию, по умолчанию' : 'не задана')}`"
+                @click="!busy && emit('sort', column.key)"
               >
                 {{ column.label }} <span>{{ sortLabel(column.key) }}</span><span
                   v-if="column.symbol"
@@ -99,9 +112,9 @@ function sortLabel(column: string) {
               v-if="data.scope === 'groups'"
               class="teacher-text-button"
               :data-teacher-group="row.id"
-              :disabled="busy"
+              :aria-disabled="busy"
               :aria-label="`Открыть студентов группы ${row.name}`"
-              @click="emit('group', row.id)"
+              @click="!busy && emit('group', row.id)"
             >
               {{ row.name }}
             </button>

@@ -45,6 +45,7 @@ export class TeacherAttachmentPreview {
   private revision = 0
   private disposed = false
   private ownedUrl: string | null = null
+  private ownedBlob: Blob | null = null
   private readyOwner: TeacherAttachmentOwner | null = null
   private timer: ReturnType<typeof setTimeout> | undefined
   private state = idle()
@@ -62,6 +63,7 @@ export class TeacherAttachmentPreview {
     this.timer = undefined
     if (this.ownedUrl) this.urls.revokeObjectURL(this.ownedUrl)
     this.ownedUrl = null
+    this.ownedBlob = null
     this.readyOwner = null
   }
   private fail(message: string): void {
@@ -159,6 +161,7 @@ export class TeacherAttachmentPreview {
         return
       }
       this.ownedUrl = url
+      this.ownedBlob = blob
       this.readyOwner = owner
       this.set({ status: 'ready', url, mime, error: null })
       this.expireLater(run, owner)
@@ -183,6 +186,10 @@ export class TeacherAttachmentPreview {
       return null
     }
     return this.state.url
+  }
+  /** Give the renderer the already validated bytes without a fetch of a private blob URL. */
+  openBlob(url: string): Blob | null {
+    return this.openUrl() === url ? this.ownedBlob : null
   }
   imageFailed(url: string): void {
     if (url === this.ownedUrl) this.fail('Изображение повреждено. Не удалось показать файл.')

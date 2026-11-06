@@ -9,9 +9,15 @@ import {
 import workerUrl from 'pdfjs-dist/legacy/build/pdf.worker.min.mjs?url';
 import { readPdfPreviewBytes } from './attachment-pdf-bytes';
 import './attachment-pdf-preview.pcss';
-const props = withDefaults(defineProps<{ url: string; openFile: () => void; label?: string }>(), {
-  label: 'Первая страница PDF',
-});
+const props = withDefaults(
+  defineProps<{
+    url: string;
+    openFile: () => void;
+    label?: string;
+    resolveBlob?: ((url: string) => Blob | null) | null;
+  }>(),
+  { label: 'Первая страница PDF', resolveBlob: null },
+);
 GlobalWorkerOptions.workerSrc = workerUrl;
 const canvas = ref<HTMLCanvasElement | null>(null);
 const ready = ref(false);
@@ -41,15 +47,24 @@ watch(
     dispose();
     error.value = null;
     const run = generation;
-    const current = () => run === generation && url === props.url;
+    let ownedBlob: Blob | null = null;
+    const current = () => run === generation && url === props.url &&
+      (!ownedBlob || props.resolveBlob?.(url) === ownedBlob);
+    let decoding = false;
     try {
       if (!url.startsWith('blob:')) throw new Error('Нет безопасного адреса PDF.');
       const controller = new AbortController();
       abort = controller;
-      const response = await fetch(url, { signal: controller.signal });
+      // A caller with admitted bytes can render without relaxing connect-src for blob: URLs.
+      ownedBlob = props.resolveBlob?.(url) ?? null;
+      if (props.resolveBlob && !ownedBlob) throw new Error('Нет безопасного доступа к PDF.');
+      const response = ownedBlob
+        ? new Response(ownedBlob, { headers: { 'Content-Length': String(ownedBlob.size) } })
+        : await fetch(url, { signal: controller.signal });
       if (!response.ok) throw new Error('Не удалось прочитать PDF.');
       const bytes = await readPdfPreviewBytes(response, controller.signal);
       if (!current()) return;
+      decoding = true;
       const task = getDocument({
         data: bytes,
         stopAtErrors: true,
@@ -98,7 +113,9 @@ watch(
     } catch (cause) {
       if (!current()) return;
       dispose();
-      error.value = cause instanceof Error ? cause.message : 'Не удалось показать PDF.';
+      error.value = !decoding && cause instanceof Error
+        ? cause.message
+        : 'Не удалось показать первую страницу PDF. Открой файл отдельно.';
     }
   },
   { immediate: true, flush: 'sync' },

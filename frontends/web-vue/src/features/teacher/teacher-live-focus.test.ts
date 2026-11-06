@@ -120,6 +120,7 @@ async function mounted(screen: 'stats' | 'journal' = 'stats', journalPages = 1) 
   let projection = 'Прежняя студентка контроля'
   const exports: Array<{ requestId: string; report: unknown }> = []
   const journalQueries: URLSearchParams[] = []
+  const statsQueries: URLSearchParams[] = []
   const journalHolds = new Map<number, Promise<void>>()
   vi.stubGlobal('fetch', async (input: RequestInfo | URL, init?: RequestInit) => {
     const url = new URL(String(input), 'http://fixture.test')
@@ -135,10 +136,15 @@ async function mounted(screen: 'stats' | 'journal' = 'stats', journalPages = 1) 
       return catalogFailure ? new Response(null, { status: catalogFailure }) : Response.json(catalog)
     }
     if (url.pathname.endsWith('/stats')) {
+      statsQueries.push(new URLSearchParams(url.search))
       await statsHold
+      const scope = url.searchParams.get('scope')
+      const noMatches = url.searchParams.getAll('filter').some(filter => filter.endsWith('~несуществующий'))
       return statsFailure ? new Response(null, { status: statsFailure }) : Response.json({
-        scope: 'students', semesterId: '1', periodFrom: null, periodTo: null, lessonsCount: 2,
-        students: [{ studentId: '1000', displayName: projection, present: metric, presentOrExcused: metric, excused: metric, absent: metric }], groups: [], subjectOptions: catalog.subjectOptions, serverNow: '2026-10-24T09:00:00Z',
+        scope, semesterId: '1', periodFrom: null, periodTo: null, lessonsCount: 2,
+        students: scope === 'students' && !noMatches ? [{ studentId: '1000', displayName: projection, present: metric, presentOrExcused: metric, excused: metric, absent: metric }] : [],
+        groups: scope === 'groups' && !noMatches ? [{ groupId: '20', groupName: 'Удаляемая группа', lessonsCount: 2, present: metric, presentOrExcused: metric, excused: metric, absent: metric }] : [],
+        subjectOptions: catalog.subjectOptions, serverNow: '2026-10-24T09:00:00Z',
       })
     }
     if (url.pathname.endsWith('/journal')) {
@@ -180,7 +186,7 @@ async function mounted(screen: 'stats' | 'journal' = 'stats', journalPages = 1) 
     return field
   }
   return {
-    root, group, openDraft, exports, journalQueries, webSession,
+    root, group, openDraft, exports, journalQueries, statsQueries, webSession,
     changed: () => realtime.changed(),
     removeOtherGroup: () => { catalog = { ...initialCatalog, groups: initialCatalog.groups.slice(0, 1), subjectOptions: [subject] } },
     removeCurrentScope: (keepOther = false) => { catalog = { ...initialCatalog, groups: keepOther ? initialCatalog.groups.slice(1) : [], subjectOptions: keepOther ? initialCatalog.subjectOptions.slice(1) : [], taughtSubjectOptions: [] } },
@@ -283,6 +289,57 @@ describe('teacher live reads while a mounted filter is focused', () => {
     expect(f.journalQueries.at(-1)?.get('groupId')).toBe('10')
     expect(f.journalQueries.at(-1)?.has('dateFrom')).toBe(false)
     expect(f.journalQueries.at(-1)?.has('dateTo')).toBe(false)
+  })
+
+  it('keeps the applied period in the journal and its export when a date draft is invalid', async () => {
+    const f = await mounted('journal')
+    const [from, to] = nodes(f.root).filter(n => n.tag === 'input' && n.props.placeholder === 'ДД.ММ.ГГГГ')
+    const form = nodes(f.root).find(n => n.tag === 'form')!
+    const apply = () => (form.props.onSubmit as (event: { preventDefault(): void }) => void)({ preventDefault() {} })
+    from!.input('01.10.2026'); to!.input('20.10.2026'); await nextTick()
+    apply(); await settle()
+    expect(f.journalQueries.at(-1)?.get('dateFrom')).toBe('2026-10-01')
+    expect(f.journalQueries.at(-1)?.get('dateTo')).toBe('2026-10-20')
+    const count = f.journalQueries.length
+    from!.input('ошибка'); await nextTick()
+    apply(); await settle()
+    expect(f.journalQueries).toHaveLength(count)
+    expect(text(f.root)).toContain('Прежняя студентка контроля')
+    expect(from!.value).toBe('ошибка')
+    click(f.root, 'Лекция'); await settle()
+    click(f.root, 'Лекция'); await settle()
+    expect(f.journalQueries.at(-1)?.get('dateFrom')).toBe('2026-10-01')
+    click(f.root, 'Экспортировать'); await settle()
+    expect(f.exports[0]?.report).toMatchObject({
+      teacherJournal: { dateFrom: '2026-10-01', dateTo: '2026-10-20' },
+    })
+  })
+
+  it('keeps student and group searches and sort separate from the group drill and reset', async () => {
+    const f = await mounted()
+    await f.openDraft()
+    click(f.root, 'Отсутствия: сортировка не задана'); await settle()
+    click(f.root, 'По моим группам'); await settle()
+    expect(f.statsQueries.at(-1)?.getAll('filter')).toEqual([])
+    const field = () => nodes(f.root).find(n => n.tag === 'input' && n.props.type === 'search')!
+    const search = async (value: string) => {
+      field().input(value)
+      await new Promise(resolve => setTimeout(resolve, 270)); await settle()
+    }
+    await search('несуществующий')
+    expect(text(f.root)).toContain('По заданным условиям ничего не найдено.')
+    click(f.root, 'Сбросить фильтры и сортировку'); await settle()
+    expect(f.statsQueries.at(-1)?.getAll('filter')).toEqual([])
+    await search('Удаляемая')
+    click(f.root, 'Открыть студентов группы Удаляемая группа'); await settle()
+    expect(f.statsQueries.at(-1)?.get('groupId')).toBe('20')
+    expect(f.statsQueries.at(-1)?.getAll('filter')).toEqual([])
+    click(f.root, 'Вернуться к моим группам'); await settle()
+    expect(f.statsQueries.at(-1)?.getAll('filter')).toEqual(['groupName~Удаляемая'])
+    click(f.root, 'По студентам группы'); await settle()
+    expect(f.statsQueries.at(-1)?.get('groupId')).toBe('10')
+    expect(f.statsQueries.at(-1)?.getAll('filter')).toEqual(['displayName~37'])
+    expect(f.statsQueries.at(-1)?.getAll('sort')).toEqual(['absent'])
   })
 
   it('ignores a late background roster after its admitted session retires', async () => {

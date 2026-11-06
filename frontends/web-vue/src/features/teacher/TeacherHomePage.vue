@@ -81,13 +81,29 @@ watch(
       v-if="scope.catalog.value"
       class="teacher-home-layout"
     >
+      <section
+        class="web-stack"
+        aria-labelledby="teacher-day"
+      >
+        <h2 id="teacher-day">
+          Пары на {{ shortDate(date) }}
+        </h2>
+        <TeacherDayPanel
+          v-model="date"
+          :semester="scope.semester.value"
+          :data="day.data.value"
+          :loading="day.loading.value"
+          :error="day.error.value"
+          @retry="loadDay"
+        />
+      </section>
       <div class="web-stack">
         <section
           class="teacher-panel web-stack"
           aria-labelledby="teacher-groups"
         >
           <h2 id="teacher-groups">
-            Мои группы
+            Группы
           </h2>
           <p v-if="!groups.length">
             Сейчас нет назначенных групп.
@@ -110,7 +126,7 @@ watch(
           aria-labelledby="teacher-assignments"
         >
           <h2 id="teacher-assignments">
-            Мои предметы
+            Назначения
           </h2>
           <TeacherNotice
             :loading="assignments.loading.value"
@@ -161,22 +177,6 @@ watch(
           </div>
         </section>
       </div>
-      <section
-        class="web-stack"
-        aria-label="Пары на день"
-      >
-        <h2 class="web-sr-only">
-          Пары на {{ shortDate(date) }}
-        </h2>
-        <TeacherDayPanel
-          v-model="date"
-          :semester="scope.semester.value"
-          :data="day.data.value"
-          :loading="day.loading.value"
-          :error="day.error.value"
-          @retry="loadDay"
-        />
-      </section>
     </div>
   </TeacherRegion>
 </template>

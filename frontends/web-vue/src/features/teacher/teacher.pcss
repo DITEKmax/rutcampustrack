@@ -1,12 +1,14 @@
 .teacher-page {
-  --web-teacher-journal-name-width: 14rem;
-  --web-teacher-journal-column-width: 4.25rem;
+  --web-teacher-journal-name-width: 11rem;
+  --web-teacher-journal-column-width: 4rem;
   --web-teacher-filter-width: 22.5rem;
+  --web-teacher-date-width: 12rem;
   --web-teacher-stats-metric-width: 12rem;
   --web-teacher-panel-width: 45rem;
   --web-teacher-attachment-height: 28rem;
-  --web-teacher-grid-width: 1rem;
   min-inline-size: 0;
+  gap: var(--space-5);
+  overflow-wrap: anywhere;
   font-size: var(--rct-font-size-body);
   color: var(--rct-color-text-primary);
 }
@@ -17,21 +19,21 @@
 }
 .teacher-home-layout {
   display: grid;
-  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
-  gap: var(--rct-space-6);
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+  gap: var(--space-5);
   align-items: start;
 }
 .teacher-lesson-layout {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--rct-space-6);
+  gap: var(--space-5);
   align-items: start;
 }
 .teacher-panel {
   background: var(--rct-color-surface-raised);
-  border: var(--rct-border-hairline) solid var(--rct-color-border-subtle);
-  border-radius: var(--rct-radius-2xl);
-  padding: var(--rct-space-6);
+  border: var(--web-border) solid var(--web-panel-line);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
   min-inline-size: 0;
 }
 .teacher-links,
@@ -49,8 +51,10 @@
   min-inline-size: 0;
   max-inline-size: 100%;
   overflow-x: auto;
-  border: var(--rct-border-hairline) solid var(--rct-color-border-subtle);
-  border-radius: var(--rct-radius-xl);
+  border: var(--web-border) solid var(--web-panel-line);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-raised);
+  scrollbar-gutter: stable;
 }
 .teacher-table {
   inline-size: 100%;
@@ -77,19 +81,19 @@
   border-block-end: 0;
 }
 .teacher-table thead th {
-  background: var(--rct-color-surface-raised);
+  background: var(--web-data-header-surface);
   color: var(--rct-color-text-secondary);
   font-weight: var(--rct-font-weight-medium);
 }
 .teacher-table tbody td,
 .teacher-table tbody th {
-  background: var(--rct-color-surface-base);
+  background: var(--color-surface-raised);
 }
 .teacher-filters {
   display: flex;
   flex-wrap: wrap;
   align-items: end;
-  gap: var(--rct-space-6);
+  gap: var(--space-3);
 }
 .teacher-filters > .web-field,
 .teacher-types {
@@ -97,16 +101,28 @@
   min-inline-size: 0;
   max-inline-size: var(--web-teacher-filter-width);
 }
+.teacher-filters .web-field-value { white-space: normal; overflow: visible; }
 .teacher-types {
   display: grid;
-  gap: var(--rct-space-2);
+  gap: var(--space-1);
   font-size: var(--rct-font-size-dense);
 }
-.teacher-types-label { color: var(--rct-color-text-muted); }
-.teacher-type-buttons { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: var(--rct-space-2); }
-.teacher-type-buttons > .web-button { min-inline-size: 0; inline-size: 100%; padding-inline: var(--rct-space-2); overflow-wrap: anywhere; }
-.teacher-type-buttons > .web-button[aria-pressed='true'] { background: var(--rct-color-accent-now); color: var(--rct-color-accent-on-now); border-color: var(--rct-color-accent-now); }
-.teacher-filters .web-field-trigger, .teacher-export-format .web-field-trigger { padding-inline-start: var(--rct-space-3); padding-inline-end: var(--rct-space-6); }
+.teacher-types-label { color: var(--color-text-secondary); font-weight: var(--font-weight-medium); }
+.teacher-type-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+.teacher-type-buttons > .web-button {
+  flex: 1 1 auto;
+  padding-inline: var(--space-2);
+}
+.teacher-page .web-button {
+  min-inline-size: 0;
+  max-inline-size: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
 .teacher-toolbar {
   display: flex;
   flex-wrap: wrap;
@@ -116,30 +132,34 @@
 .teacher-toolbar .web-field {
   min-inline-size: 0;
 }
+.teacher-period > .web-field {
+  flex: 0 1 var(--web-teacher-date-width);
+  max-inline-size: 100%;
+}
 .teacher-day-pager {
   display: grid;
-  grid-template-columns: var(--control-height) minmax(0, 1fr) repeat(2, var(--control-height));
+  grid-template-columns: var(--web-workspace-control-height) minmax(0, 1fr) repeat(2, var(--web-workspace-control-height));
   align-items: center;
   gap: var(--rct-space-2);
   padding: var(--rct-space-2);
-  border: var(--rct-border-hairline) solid var(--rct-color-border-default);
-  border-radius: var(--rct-radius-2xl);
+  border: var(--web-border) solid var(--web-panel-line);
+  border-radius: var(--radius-lg);
   background: var(--rct-color-surface-raised);
 }
 .teacher-day-pager > .web-field { min-inline-size: 0; margin: 0; }
-.teacher-day-pager .web-icon-button { inline-size: var(--control-height); block-size: var(--control-height); padding: 0; }
+.teacher-day-pager .web-icon-button { inline-size: var(--web-workspace-control-height); block-size: var(--web-workspace-control-height); padding: 0; }
 .teacher-day-list {
-  gap: var(--rct-space-8);
+  gap: var(--space-2);
 }
 .teacher-day-list li {
-  position: relative;
-  isolation: isolate;
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
   align-items: start;
   gap: var(--rct-space-3);
-  border-radius: var(--rct-radius-md);
-  padding: var(--rct-space-3);
+  border: var(--web-border) solid var(--web-panel-line);
+  border-radius: var(--radius-lg);
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-surface-raised);
   font-size: var(--rct-font-size-dense);
 }
 .teacher-day-content {
@@ -148,17 +168,27 @@
   overflow-wrap: anywhere;
 }
 .teacher-day-content a {
-  text-decoration: none;
+  justify-self: start;
+  font-weight: var(--font-weight-medium);
+  color: inherit;
 }
-.teacher-day-cancelled {
-  color: var(--rct-color-text-muted);
+.teacher-day-list .teacher-day-cancelled {
+  color: var(--color-state-danger-text);
+  background: var(--color-state-danger-bg);
+  border-color: var(--color-state-danger-border);
 }
-.teacher-day-cancelled::after { content: ''; position: absolute; inset: 0; z-index: 1; border-radius: inherit; pointer-events: none; background-image: repeating-linear-gradient(45deg, transparent, transparent calc(var(--rct-space-1) - var(--rct-border-hairline) * 1.5), color-mix(in srgb, var(--rct-color-border-default) 55%, transparent) calc(var(--rct-space-1) - var(--rct-border-hairline) * 1.5), color-mix(in srgb, var(--rct-color-border-default) 55%, transparent) var(--rct-space-1)); }
-.teacher-day-exception { color: var(--rct-color-danger-text); font-weight: var(--rct-font-weight-bold); }
-.teacher-day-active .teacher-day-exception { justify-self: start; padding: var(--rct-space-1) var(--rct-space-2); border-radius: var(--rct-radius-md); background: var(--rct-color-surface-base); }
-.teacher-day-active {
-  background: var(--rct-color-accent-now);
-  color: var(--rct-color-accent-on-now);
+.teacher-day-list .teacher-day-one-off {
+  color: var(--color-state-success-text);
+  background: var(--color-state-success-bg);
+  border-color: var(--color-state-success-border);
+}
+.teacher-day-moved .teacher-day-status,
+.teacher-request-pending { color: var(--color-state-warning-text); }
+.teacher-day-status { font-weight: var(--font-weight-medium); }
+.teacher-day-list .teacher-day-active {
+  color: var(--web-action-ink);
+  background: var(--web-action-fill);
+  border-color: var(--web-action-fill);
 }
 .teacher-mark {
   display: inline-flex;
@@ -212,26 +242,46 @@
   inline-size: max-content;
   min-inline-size: 100%;
 }
+.teacher-journal {
+  scroll-padding-inline-start: calc(var(--web-teacher-journal-name-width) + var(--space-2));
+}
 .teacher-journal .teacher-table > thead > tr > th { text-align: center; }
 .teacher-journal .teacher-table > thead > tr:nth-child(n+2) > th:last-child { border-inline-end: var(--rct-border-hairline) solid var(--rct-color-border-default); }
 .teacher-journal td {
-  min-inline-size: var(--web-teacher-journal-column-width);
   text-align: center;
   padding-block: var(--rct-space-1);
 }
+.teacher-journal .teacher-journal-slot {
+  inline-size: var(--web-teacher-journal-column-width);
+  min-inline-size: var(--web-teacher-journal-column-width);
+  max-inline-size: var(--web-teacher-journal-column-width);
+  padding-inline: var(--space-2);
+}
+.teacher-journal-times .teacher-journal-slot {
+  background: color-mix(in srgb, var(--web-data-header-surface) 70%, var(--color-surface-raised));
+}
+.teacher-journal-types .teacher-journal-slot {
+  background: color-mix(in srgb, var(--web-data-header-surface) 35%, var(--color-surface-raised));
+}
+.teacher-journal-times th > span,
+.teacher-journal-dates .web-caption { display: block; }
 .teacher-journal .teacher-sticky-name {
   position: sticky;
   inset-inline-start: 0;
   z-index: 1;
+  inline-size: var(--web-teacher-journal-name-width);
   min-inline-size: var(--web-teacher-journal-name-width);
   max-inline-size: var(--web-teacher-journal-name-width);
   overflow-wrap: anywhere;
 }
-.teacher-journal .teacher-cross > td,
-.teacher-journal .teacher-cross > th,
-.teacher-journal td.teacher-cross,
-.teacher-journal th.teacher-cross {
-  background: var(--rct-color-surface-float);
+.teacher-journal .teacher-cross > :is(th, td),
+.teacher-journal :is(th, td).teacher-cross {
+  background: color-mix(in srgb, var(--web-action-fill) 50%, var(--color-surface-raised));
+  color: var(--color-text-primary);
+}
+.teacher-journal tr.teacher-cross .teacher-journal-slot.teacher-cross {
+  background: var(--web-action-fill);
+  color: var(--web-action-ink);
 }
 .teacher-excuse-header { display: flex; align-items: start; justify-content: space-between; gap: var(--rct-space-4); }
 .teacher-excuse-header > .web-icon-button { flex-shrink: 0; }
@@ -242,7 +292,7 @@
 .teacher-definitions {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--rct-space-6);
+  gap: var(--space-3) var(--space-5);
   margin: 0;
 }
 .teacher-definitions dt {
@@ -254,19 +304,23 @@
   margin: 0;
 }
 .teacher-attachment {
-  border: var(--rct-border-hairline) solid var(--rct-color-border-default);
-  border-radius: var(--rct-radius-xl);
-  padding: var(--rct-space-3);
+  border: var(--web-border) solid var(--web-panel-line);
+  border-radius: var(--radius-lg);
+  padding: var(--space-3);
   overflow-wrap: anywhere;
 }
-.teacher-attachment-header { display: grid; grid-template-columns: var(--rct-space-6) minmax(0, 1fr) auto; align-items: center; gap: var(--rct-space-3); inline-size: 100%; min-inline-size: 0; min-block-size: var(--rct-control-min-touch); padding: 0; border: 0; border-radius: var(--rct-radius-md); background: transparent; color: var(--rct-color-text-primary); text-align: start; cursor: pointer; }
+.teacher-attachment-header {
+  display: grid;
+  grid-template-columns: var(--space-6) minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-2);
+  min-inline-size: 0;
+}
 .teacher-attachment-header > strong { min-inline-size: 0; overflow-wrap: anywhere; }
-.teacher-attachment-header:disabled { cursor: default; }
-.teacher-attachment-header-state { grid-column: 2 / -1; color: var(--rct-color-text-muted); font-size: var(--rct-font-size-caption); }
-.teacher-checkbox { display: inline-flex; align-items: center; gap: var(--rct-space-2); min-block-size: var(--rct-control-min-touch); }
+.teacher-checkbox { display: inline-flex; align-items: center; gap: var(--rct-space-2); min-block-size: var(--web-workspace-control-height); }
 .teacher-checkbox input { appearance: none; display: inline-grid; place-items: center; flex-shrink: 0; inline-size: var(--rct-space-5); block-size: var(--rct-space-5); margin: 0; border: var(--rct-border-hairline) solid var(--rct-color-border-default); border-radius: var(--rct-radius-xs); background: var(--rct-color-surface-raised); }
-.teacher-checkbox input:checked { background: var(--rct-color-accent-now); border-color: var(--rct-color-accent-now); }
-.teacher-checkbox input::after { content: ''; inline-size: var(--rct-space-2); block-size: var(--rct-space-3); border: solid var(--rct-color-accent-on-now); border-width: 0 calc(var(--rct-border-hairline) * 2) calc(var(--rct-border-hairline) * 2) 0; transform: rotate(45deg); opacity: 0; }
+.teacher-checkbox input:checked { background: var(--web-action-fill); border-color: var(--web-action-ink); }
+.teacher-checkbox input::after { content: ''; inline-size: var(--rct-space-2); block-size: var(--rct-space-3); border: solid var(--web-action-ink); border-width: 0 calc(var(--rct-border-hairline) * 2) calc(var(--rct-border-hairline) * 2) 0; transform: rotate(45deg); opacity: 0; }
 .teacher-checkbox input:checked::after { opacity: 1; }
 .teacher-attachment-image {
   max-inline-size: 100%;
@@ -274,7 +328,6 @@
   object-fit: contain;
   align-self: start;
 }
-.teacher-export-format > label { position: absolute; inline-size: var(--rct-border-hairline); block-size: var(--rct-border-hairline); padding: 0; margin: calc(-1 * var(--rct-border-hairline)); overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 .teacher-export .web-field {
   max-inline-size: var(--web-teacher-filter-width);
 }
@@ -303,6 +356,8 @@
   cursor: pointer;
   font: inherit;
 }
+.teacher-text-button[aria-disabled='true'],
+.teacher-attachment .web-button[aria-disabled='true'] { cursor: default; }
 .teacher-text-button .web-caption {
   flex-basis: 100%;
 }
@@ -316,29 +371,17 @@
   display: block;
 }
 .teacher-statistics-page .teacher-filters { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); inline-size: 100%; }
-.teacher-statistics-page .teacher-filters > :is(.web-field, .teacher-types),
-.teacher-statistics-page > .teacher-statistics-group-types { inline-size: 100%; max-inline-size: none; }
-.teacher-statistics-search { inline-size: 100%; min-inline-size: 0; }
-.teacher-page :where(input, select, button, a):focus-visible,
-.teacher-table-scroll:focus-visible {
-  outline: var(--rct-focus-width) solid var(--rct-color-border-focus);
-  outline-offset: var(--rct-focus-offset);
-}
+.teacher-statistics-page .teacher-filters > :is(.web-field, .teacher-types) { inline-size: 100%; max-inline-size: none; }
+.teacher-statistics-search { flex: 1 1 var(--web-teacher-filter-width); max-inline-size: var(--web-teacher-filter-width); }
+.teacher-statistics-page .teacher-applied-context { margin-block-end: calc(-1 * var(--space-3)); }
 @media (width < 64rem) {
-  .teacher-home-layout,
   .teacher-lesson-layout {
     grid-template-columns: minmax(0, 1fr);
   }
-  .teacher-home-layout > section:last-child {
-    grid-row: 1;
-  }
 }
 @media (width < 48rem) {
+  .teacher-home-layout,
   .teacher-statistics-page .teacher-filters { grid-template-columns: minmax(0, 1fr); }
-  .teacher-panel {
-    padding: var(--rct-space-4);
-    border-radius: var(--rct-radius-xl);
-  }
   .teacher-filters {
     flex-direction: column;
     gap: var(--rct-space-3);
@@ -349,10 +392,12 @@
     max-inline-size: none;
     flex-basis: auto;
   }
-  .teacher-day-list li {
-    grid-template-columns: minmax(0, 1fr);
-  }
   .teacher-page {
     --web-teacher-journal-name-width: 9rem;
+    --web-teacher-stats-metric-width: 9rem;
   }
+}
+@media (width < 32rem) {
+  .teacher-day-list li { grid-template-columns: minmax(0, 1fr); }
+  .teacher-page { --web-teacher-journal-name-width: 8rem; }
 }

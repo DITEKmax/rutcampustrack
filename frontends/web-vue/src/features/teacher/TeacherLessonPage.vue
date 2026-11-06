@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+import { computed, shallowRef, watch } from 'vue';
 import { RouterLink, useRoute } from 'vue-router';
 import {
   toTeacherJournalReportRequest,
   type TeacherLessonResponse,
+  type TeacherRosterEntry,
 } from '../../../../mobile-core/src/features/teacher/teacher-client';
 import { teacherLessonTypeLabel } from '../../../../mobile-core/src/features/teacher/teacher-ui-format';
 import { shortDate, useTeacherResource, useTeacherScope } from './teacher-state';
@@ -13,11 +14,31 @@ import TeacherMark from './TeacherMark.vue';
 import { teacherAttendanceLabel } from './teacher-mark';
 import TeacherExcusePanel from './TeacherExcusePanel.vue';
 import TeacherExport from './TeacherExport.vue';
+import { isManualEvidence, type TeacherEvidenceSource } from './teacher-evidence';
 
 const scope = useTeacherScope(),
   route = useRoute();
 const lesson = useTeacherResource<TeacherLessonResponse>(scope);
-const ticketId = ref<string | null>(null);
+const selected = shallowRef<TeacherEvidenceSource | null>(null);
+const trigger = shallowRef<HTMLElement | null>(null);
+const selectedEntry = computed(() => {
+  const source = selected.value;
+  const current = lesson.data.value;
+  if (!source || !current || current.lesson.id !== source.lessonId) return null;
+  const entry = current.roster.find(row => row.studentId === source.studentId);
+  if (!entry) return null;
+  return ('ticketId' in source ? entry.ticketId === source.ticketId : !current.lesson.cancelled && isManualEvidence(entry))
+    ? entry
+    : null;
+});
+watch(selectedEntry, entry => { if (!entry) selected.value = null; });
+function openEvidence(entry: TeacherRosterEntry, event: MouseEvent) {
+  const current = lesson.data.value?.lesson;
+  if (!current || (!entry.ticketId && (current.cancelled || !isManualEvidence(entry)))) return;
+  trigger.value = event.currentTarget as HTMLElement;
+  const source = { lessonId: current.id, studentId: entry.studentId };
+  selected.value = entry.ticketId ? { ...source, ticketId: entry.ticketId } : source;
+}
 function load(background = false) {
   const id = Number(route.params.lessonId);
   const previous = lesson.data.value?.lesson;
@@ -25,7 +46,7 @@ function load(background = false) {
     previous.semesterId === scope.semester.value?.id &&
     scope.catalog.value?.subjectOptions.some(option => option.groupId === previous.groupId &&
       option.subjectId === previous.subjectId && option.lessonTypes.includes(previous.lessonType));
-  if (!retain) ticketId.value = null;
+  if (!retain) selected.value = null;
   if (!Number.isSafeInteger(id) || id < 1) {
     lesson.clear();
     lesson.error.value = 'Некорректный адрес пары.';
@@ -44,7 +65,7 @@ watch(
   (value) => {
     if (!value) {
       lesson.clear();
-      ticketId.value = null;
+      selected.value = null;
     }
   },
 );
@@ -88,7 +109,7 @@ const exportRequest = computed(() => {
       class="teacher-lesson-layout"
     >
       <section
-        class="web-stack"
+        class="teacher-panel web-stack"
         aria-label="Контекст пары"
       >
         <h2>{{ lesson.data.value.lesson.subjectName }}</h2><p>
@@ -124,9 +145,21 @@ const exportRequest = computed(() => {
         <p class="web-caption">
           Только чтение. Отметки ведёт староста.
         </p>
+        <RouterLink
+          :to="{
+            name: 'teacher-journal',
+            query: {
+              group: lesson.data.value.lesson.groupId,
+              subject: lesson.data.value.lesson.subjectId,
+              type: lesson.data.value.lesson.lessonType,
+            },
+          }"
+        >
+          Открыть журнал за семестр
+        </RouterLink>
       </section>
       <section
-        class="web-stack"
+        class="teacher-panel web-stack"
         aria-label="Посещаемость студентов"
       >
         <p
@@ -159,10 +192,10 @@ const exportRequest = computed(() => {
                   {{ student.displayName }}
                 </th><td>
                   <button
-                    v-if="student.ticketId"
+                    v-if="student.ticketId || (!lesson.data.value.lesson.cancelled && isManualEvidence(student))"
                     class="teacher-cell-button"
-                    :aria-label="`Открыть заявку: ${student.displayName}, ${teacherAttendanceLabel(student)}`"
-                    @click="ticketId = student.ticketId"
+                    :aria-label="`${student.ticketId ? 'Открыть заявку' : 'Открыть причину'}: ${student.displayName}, ${teacherAttendanceLabel(student)}`"
+                    @click="openEvidence(student, $event)"
                   >
                     <TeacherMark :cell="student" />
                   </button><TeacherMark
@@ -178,26 +211,16 @@ const exportRequest = computed(() => {
           :scope="scope"
           :request="exportRequest"
         />
-        <RouterLink
-          :to="{
-            name: 'teacher-journal',
-            query: {
-              group: lesson.data.value.lesson.groupId,
-              subject: lesson.data.value.lesson.subjectId,
-              type: lesson.data.value.lesson.lessonType,
-            },
-          }"
-        >
-          Открыть журнал по этому предмету за семестр
-        </RouterLink>
       </section>
     </div>
     <TeacherExcusePanel
-      v-if="ticketId"
-      :key="ticketId"
+      v-if="selected && selectedEntry"
+      :key="`${selected.lessonId}:${selected.studentId}:${selectedEntry.ticketId ?? ''}`"
       :scope="scope"
-      :ticket-id="ticketId"
-      @close="ticketId = null"
+      :source="selected"
+      :entry="selectedEntry"
+      :trigger="trigger"
+      @close="selected = null"
     />
   </TeacherRegion>
 </template>

@@ -1,8 +1,10 @@
 <script setup lang="ts">
+import { computed } from 'vue';
 import { RouterLink } from 'vue-router';
 import WebDateField from '../../shared/WebDateField.vue';
 import MobileIcon from '../../../../mobile-core/src/shared/components/MobileIcon.vue';
 import type {
+  TeacherDayLesson,
   TeacherDayResponse,
   TeacherSemester,
 } from '../../../../mobile-core/src/features/teacher/teacher-client';
@@ -20,6 +22,23 @@ const props = defineProps<{
 }>();
 const model = defineModel<string>({ required: true });
 defineEmits<{ retry: [] }>();
+function dayStatus(lesson: TeacherDayLesson): keyof typeof statusLabels {
+  if (lesson.cancelled || lesson.status === 'CANCELLED') return 'cancelled';
+  if (lesson.oneOff) return 'one-off';
+  if (lesson.moved) return 'moved';
+  if (lesson.status === 'ACTIVE') return 'active';
+  if (lesson.status === 'CLOSED') return 'closed';
+  return 'planned';
+}
+const statusLabels = {
+  cancelled: 'Отменена',
+  'one-off': 'Разовая',
+  moved: 'Перенесена',
+  active: 'Сейчас',
+  closed: 'Завершена',
+  planned: 'По расписанию',
+};
+const lessons = computed(() => props.data?.lessons.map(lesson => ({ lesson, status: dayStatus(lesson) })) ?? []);
 function step(direction: number) {
   const date = new Date(`${model.value}T12:00:00Z`);
   date.setUTCDate(date.getUTCDate() + direction);
@@ -82,27 +101,28 @@ function reset() {
     @retry="$emit('retry')"
   />
   <ol
-    v-if="data?.lessons.length"
+    v-if="lessons.length"
     class="teacher-day-list"
   >
     <li
-      v-for="lesson in data.lessons"
+      v-for="{ lesson, status } in lessons"
       :key="lesson.id"
-      :class="{
-        'teacher-day-cancelled': lesson.cancelled,
-        'teacher-day-active': !lesson.cancelled && lesson.status === 'ACTIVE',
-      }"
+      :class="`teacher-day-${status}`"
     >
       <time>{{ lesson.startsAt?.slice(0, 5) ?? `Пара ${lesson.lessonNumber}`
       }}<template v-if="lesson.endsAt">–{{ lesson.endsAt.slice(0, 5) }}</template></time>
       <div class="teacher-day-content">
         <RouterLink :to="{ name: 'teacher-lesson', params: { lessonId: lesson.id } }">
-          {{
-            lesson.subjectName
-          }}
-        </RouterLink><span>{{ teacherLessonTypeLabel(lesson.lessonType) }} ·
-          {{ lesson.room ?? 'Аудитория не указана' }} · {{ lesson.groupName }}</span><span v-if="lesson.cancelled">Отменена<template v-if="lesson.cancellationReason">
-          · {{ lesson.cancellationReason }}</template></span><strong v-if="lesson.moved" class="teacher-day-exception">Перенесена</strong><strong v-if="lesson.oneOff" class="teacher-day-exception">Разовая</strong><span v-if="!lesson.cancelled && !lesson.moved && !lesson.oneOff">{{ lesson.status === 'ACTIVE' ? 'Сейчас' : lesson.status === 'CLOSED' ? 'Завершена' : 'По расписанию' }}</span>
+          {{ lesson.subjectName }}
+        </RouterLink>
+        <span>{{ teacherLessonTypeLabel(lesson.lessonType) }} ·
+          {{ lesson.room ?? 'Аудитория не указана' }} · {{ lesson.groupName }}</span>
+        <span
+          class="teacher-day-status"
+          :class="{ 'web-sr-only': status === 'active' || status === 'closed' || status === 'planned' }"
+        >{{ statusLabels[status] }}<template v-if="status === 'cancelled' && lesson.cancellationReason">
+          · {{ lesson.cancellationReason }}
+        </template></span>
       </div>
     </li>
   </ol>

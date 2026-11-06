@@ -6,6 +6,7 @@ import {
   teacherJournalTypes,
   type TeacherJournalQuery,
   type TeacherJournalResponse,
+  type TeacherJournalCell,
 } from '../../../../mobile-core/src/features/teacher/teacher-client';
 import { teacherLessonTypeLabel } from '../../../../mobile-core/src/features/teacher/teacher-ui-format';
 import {
@@ -23,6 +24,7 @@ import TeacherExcusePanel from './TeacherExcusePanel.vue';
 import TeacherExport from './TeacherExport.vue';
 import { useJournalPagination } from './use-journal-pagination';
 import WebDateField from '../../shared/WebDateField.vue';
+import type { TeacherRequestSource } from './teacher-evidence';
 
 const scope = useTeacherScope();
 const selection = useTeacherSelection(scope);
@@ -58,31 +60,67 @@ function dateChanged(field: 'from' | 'to', value: string) {
   scope.dirty.value = true;
 }
 const pastOnly = ref(false);
-const ticketId = ref<string | null>(null);
-const activeStudent = ref<number | null>(null),
-  activeLesson = ref<number | null>(null);
-const validation = computed(() =>
-  !datesValid.value
-    ? 'Исправь дату периода.'
-    : (from.value || to.value) && (!from.value || !to.value || from.value > to.value)
-      ? 'Укажи начало и конец периода в правильном порядке.'
-      : '',
+const appliedPeriod = shallowRef({ from: '', to: '', pastOnly: false });
+const ticket = shallowRef<TeacherRequestSource | null>(null);
+const ticketTrigger = shallowRef<HTMLElement | null>(null);
+const visibleTicket = computed(() => {
+  const target = ticket.value;
+  if (!target || !journal.data.value?.lessons.some(lesson => lesson.id === target.lessonId)) return null;
+  const student = journal.data.value.students.find(row => row.studentId === target.studentId);
+  return student?.cells.some(cell => cell.lessonId === target.lessonId && cell.ticketId === target.ticketId)
+    ? target
+    : null;
+});
+watch(visibleTicket, value => { if (!value) ticket.value = null; });
+function openTicket(cell: TeacherJournalCell | undefined, lessonId: number, studentId: number, event: MouseEvent) {
+  if (!cell?.ticketId || cell.lessonId !== lessonId) return;
+  ticketTrigger.value = event.currentTarget as HTMLElement;
+  ticket.value = { ticketId: cell.ticketId, lessonId, studentId };
+}
+type JournalPosition = { studentId: number | null; lessonId: number };
+const hovered = shallowRef<JournalPosition | null>(null);
+const focused = shallowRef<JournalPosition | null>(null);
+const active = computed(() => hovered.value ?? focused.value);
+function focusLesson(lessonId: number, studentId: number | null, event: FocusEvent) {
+  hovered.value = null;
+  focused.value = { studentId, lessonId };
+  const target = event.target as HTMLElement;
+  const sticky = journalRegion.value?.querySelector<HTMLElement>('.teacher-sticky-name');
+  if (sticky && target.getBoundingClientRect().left < sticky.getBoundingClientRect().right)
+    target.scrollIntoView({ block: 'nearest', inline: 'start' });
+}
+const rangeError = computed(() =>
+  datesValid.value && (from.value || to.value) && (!from.value || !to.value || from.value > to.value)
+    ? 'Укажи начало и конец периода в правильном порядке.'
+    : '',
 );
 const query = computed<TeacherJournalQuery | null>(() =>
-  selection.ready.value && scope.semester.value && !validation.value
+  selection.ready.value && scope.semester.value
     ? {
         semesterId: scope.semester.value.id,
         groupId: selection.groupId.value,
         subjectId: selection.subjectId.value,
         lessonTypes: [...selection.lessonTypes.value],
-        pastOnly: pastOnly.value,
+        pastOnly: appliedPeriod.value.pastOnly,
         includeMetrics: true,
         pageSize: 30,
-        ...(from.value && to.value ? { dateFrom: from.value, dateTo: to.value } : {}),
+        ...(appliedPeriod.value.from && appliedPeriod.value.to
+          ? { dateFrom: appliedPeriod.value.from, dateTo: appliedPeriod.value.to }
+          : {}),
       }
     : null,
 );
+const appliedLabel = computed(() => {
+  const current = loadedQuery.value;
+  if (!current || !journal.data.value) return '';
+  const period = current.dateFrom && current.dateTo
+    ? `${shortDate(current.dateFrom)} — ${shortDate(current.dateTo)}`
+    : 'весь семестр';
+  return `Период: ${period}${current.pastOnly ? ' · только прошедшие пары' : ''}`;
+});
+let loadRevision = 0;
 function load(background = false) {
+  const run = ++loadRevision;
   const previous = loadedQuery.value;
   const retain = background === true && previous !== null &&
     previous.semesterId === scope.semester.value?.id &&
@@ -91,8 +129,10 @@ function load(background = false) {
   // A live hint refreshes the applied period, never submits the date-field draft.
   const requested = retain ? previous : query.value;
   if (!retain) {
-    ticketId.value = null;
+    ticket.value = null;
     loadedQuery.value = null;
+    hovered.value = null;
+    focused.value = null;
   }
   if (!requested) {
     journal.clear();
@@ -101,15 +141,29 @@ function load(background = false) {
   void journal.load(async () => {
     const data = retain ? await pagination.refreshWindow(requested) : await scope.api.journal(requested);
     scope.transport.assertCurrent();
-    if (JSON.stringify(query.value) === JSON.stringify(requested)) loadedQuery.value = requested;
+    if (run === loadRevision && scope.current()) loadedQuery.value = requested;
     return data;
   }, undefined, retain);
+}
+function applyPeriod() {
+  if (!datesValid.value || rangeError.value || !selection.ready.value || !scope.semester.value) return;
+  scope.dirty.value = false;
+  const next = { from: from.value, to: to.value, pastOnly: pastOnly.value };
+  const previous = appliedPeriod.value;
+  if (loadedQuery.value && !journal.error.value && next.from === previous.from &&
+      next.to === previous.to && next.pastOnly === previous.pastOnly) return;
+  appliedPeriod.value = next;
+  load();
 }
 
 watch(
   () => scope.refreshed.value,
   () => {
     selection.reconcile();
+    const semester = scope.semester.value;
+    const period = appliedPeriod.value;
+    if (semester && period.from && (period.from < semester.dateFrom || period.to > semester.dateTo))
+      appliedPeriod.value = { from: '', to: '', pastOnly: period.pastOnly };
     load(scope.backgroundRefresh.value);
   },
 );
@@ -117,18 +171,21 @@ watch(
   () => scope.catalog.value,
   (value) => {
     if (!value) {
+      loadRevision++;
       journal.clear();
       loadedQuery.value = null;
-      ticketId.value = null;
+      ticket.value = null;
     }
   },
 );
 const exportRequest = computed(() =>
-  !validation.value &&
   journal.data.value?.lessons.length &&
   loadedQuery.value &&
+  !journal.error.value &&
+  !scope.loading.value &&
   !journal.loading.value &&
-  !pagination.loading.value
+  !pagination.loading.value &&
+  !pagination.refreshing.value
     ? (format: Parameters<typeof toTeacherJournalReportRequest>[1]) =>
         toTeacherJournalReportRequest(loadedQuery.value!, format)
     : null,
@@ -162,8 +219,8 @@ function metric(studentId: number, column: 'present' | 'presentOrExcused' | 'exc
         @change="load"
       />
       <form
-        class="teacher-toolbar"
-        @submit.prevent="load()"
+        class="teacher-toolbar teacher-period"
+        @submit.prevent="applyPeriod"
       >
         <WebDateField
           ref="fromField"
@@ -191,18 +248,25 @@ function metric(studentId: number, column: 'present' | 'presentOrExcused' | 'exc
           @change="scope.dirty.value = true"
         >
           Только прошедшие пары</label><button
-          class="web-button"
-          @click="scope.dirty.value = false"
+          class="web-button web-button-primary"
+          type="submit"
+          :disabled="scope.loading.value || !selection.ready.value"
         >
-          Применить период
+          Применить
         </button>
       </form>
       <p
-        v-if="validation"
+        v-if="rangeError"
         class="web-error"
         role="alert"
       >
-        {{ validation }}
+        {{ rangeError }}
+      </p>
+      <p
+        v-if="appliedLabel"
+        class="web-caption"
+      >
+        {{ appliedLabel }}
       </p>
       <TeacherNotice
         :loading="journal.loading.value && !journal.data.value"
@@ -222,59 +286,102 @@ function metric(studentId: number, column: 'present' | 'presentOrExcused' | 'exc
         v-if="journal.data.value?.lessons.length"
         ref="journalRegion"
         class="teacher-table-scroll teacher-journal"
+        role="region"
         tabindex="0"
         aria-label="Журнал. Прокрути, чтобы увидеть все пары"
-        @mouseleave="
-          activeStudent = null;
-          activeLesson = null;
-        "
-        @focusout="
-          activeStudent = null;
-          activeLesson = null;
-        "
+        @mouseleave="hovered = null"
+        @focusout="focused = null"
       >
         <table class="teacher-table">
           <caption class="web-sr-only">
             Посещаемость, только чтение
           </caption><thead>
-            <tr>
-              <th class="teacher-sticky-name" scope="col" rowspan="3">Студенты</th>
+            <tr class="teacher-journal-dates">
               <th
-                v-for="lesson in journal.data.value.lessons"
-                :key="lesson.id"
+                class="teacher-sticky-name"
                 scope="col"
-                :class="{ 'teacher-cross': activeLesson === lesson.id }"
+                rowspan="3"
               >
-                <RouterLink :to="{ name: 'teacher-lesson', params: { lessonId: lesson.id } }">{{ shortDate(lesson.date) }}</RouterLink>
-                <span v-if="lesson.cancelled" class="web-caption"> · отменена</span>
+                Студенты
               </th>
-              <th scope="col" rowspan="3">Присутствия</th>
-              <th scope="col" rowspan="3">Присутствия и ув.</th>
-              <th scope="col" rowspan="3">Уважительные</th>
-              <th ref="journalEdge" scope="col" rowspan="3">Отсутствия</th>
-            </tr>
-            <tr>
               <th
                 v-for="lesson in journal.data.value.lessons"
                 :key="lesson.id"
                 scope="col"
-                :class="{ 'teacher-cross': activeLesson === lesson.id }"
-              >{{ lesson.startsAt?.slice(0, 5) ?? `Пара ${lesson.lessonNumber}` }}<template v-if="lesson.endsAt">–{{ lesson.endsAt.slice(0, 5) }}</template></th>
+                class="teacher-journal-slot"
+                :class="{ 'teacher-cross': active?.lessonId === lesson.id }"
+                @mouseenter="hovered = { studentId: null, lessonId: lesson.id }"
+                @mouseleave="hovered = null"
+              >
+                <RouterLink
+                  :to="{ name: 'teacher-lesson', params: { lessonId: lesson.id } }"
+                  @focus="focusLesson(lesson.id, null, $event)"
+                >
+                  {{ shortDate(lesson.date) }}
+                </RouterLink>
+                <span
+                  v-if="lesson.cancelled"
+                  class="web-caption"
+                > · отменена</span>
+              </th>
+              <th
+                scope="col"
+                rowspan="3"
+              >
+                Присутствия
+              </th>
+              <th
+                scope="col"
+                rowspan="3"
+              >
+                Присутствия и ув.
+              </th>
+              <th
+                scope="col"
+                rowspan="3"
+              >
+                Уважительные
+              </th>
+              <th
+                ref="journalEdge"
+                scope="col"
+                rowspan="3"
+              >
+                Отсутствия
+              </th>
             </tr>
-            <tr>
+            <tr class="teacher-journal-times">
               <th
                 v-for="lesson in journal.data.value.lessons"
                 :key="lesson.id"
                 scope="col"
-                :class="{ 'teacher-cross': activeLesson === lesson.id }"
-              >{{ teacherLessonTypeLabel(lesson.lessonType) }}</th>
+                class="teacher-journal-slot"
+                :class="{ 'teacher-cross': active?.lessonId === lesson.id }"
+                @mouseenter="hovered = { studentId: null, lessonId: lesson.id }"
+                @mouseleave="hovered = null"
+              >
+                {{ lesson.startsAt?.slice(0, 5) ?? `Пара ${lesson.lessonNumber}` }}<span v-if="lesson.endsAt">–{{ lesson.endsAt.slice(0, 5) }}</span>
+              </th>
+            </tr>
+            <tr class="teacher-journal-types">
+              <th
+                v-for="lesson in journal.data.value.lessons"
+                :key="lesson.id"
+                scope="col"
+                class="teacher-journal-slot"
+                :class="{ 'teacher-cross': active?.lessonId === lesson.id }"
+                @mouseenter="hovered = { studentId: null, lessonId: lesson.id }"
+                @mouseleave="hovered = null"
+              >
+                {{ teacherLessonTypeLabel(lesson.lessonType) }}
+              </th>
             </tr>
           </thead>
           <tbody>
             <tr
               v-for="student in journal.data.value.students"
               :key="student.studentId"
-              :class="{ 'teacher-cross': activeStudent === student.studentId }"
+              :class="{ 'teacher-cross': active?.studentId === student.studentId }"
             >
               <th
                 class="teacher-sticky-name"
@@ -284,24 +391,17 @@ function metric(studentId: number, column: 'present' | 'presentOrExcused' | 'exc
               </th><td
                 v-for="lesson in journal.data.value.lessons"
                 :key="lesson.id"
-                :class="{ 'teacher-cross': activeLesson === lesson.id }"
-                @mouseenter="
-                  activeStudent = student.studentId;
-                  activeLesson = lesson.id;
-                "
+                class="teacher-journal-slot"
+                :class="{ 'teacher-cross': active?.lessonId === lesson.id }"
+                @mouseenter="hovered = { studentId: student.studentId, lessonId: lesson.id }"
+                @mouseleave="hovered = null"
               >
                 <button
                   v-if="student.cells.find((cell) => cell.lessonId === lesson.id)?.ticketId"
                   class="teacher-cell-button"
                   :aria-label="`Открыть заявку: ${student.displayName}, ${shortDate(lesson.date)}, ${teacherAttendanceLabel(student.cells.find(cell => cell.lessonId === lesson.id))}`"
-                  @focus="
-                    activeStudent = student.studentId;
-                    activeLesson = lesson.id;
-                  "
-                  @click="
-                    ticketId =
-                      student.cells.find((cell) => cell.lessonId === lesson.id)?.ticketId ?? null
-                  "
+                  @focus="focusLesson(lesson.id, student.studentId, $event)"
+                  @click="openTicket(student.cells.find(cell => cell.lessonId === lesson.id), lesson.id, student.studentId, $event)"
                 >
                   <TeacherMark
                     :cell="student.cells.find((cell) => cell.lessonId === lesson.id)"
@@ -338,11 +438,12 @@ function metric(studentId: number, column: 'present' | 'presentOrExcused' | 'exc
         :request="exportRequest"
       />
       <TeacherExcusePanel
-        v-if="ticketId"
-        :key="ticketId"
+        v-if="visibleTicket"
+        :key="`${visibleTicket.ticketId}:${visibleTicket.lessonId}:${visibleTicket.studentId}`"
         :scope="scope"
-        :ticket-id="ticketId"
-        @close="ticketId = null"
+        :source="visibleTicket"
+        :trigger="ticketTrigger"
+        @close="ticket = null"
       />
     </template>
   </TeacherRegion>

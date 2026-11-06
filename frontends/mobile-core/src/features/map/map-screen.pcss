@@ -56,18 +56,6 @@
   gap: var(--rct-space-3);
   min-inline-size: 0;
 }
-.map-card__heading {
-  display: flex;
-  align-items: start;
-  justify-content: space-between;
-  gap: var(--rct-space-3);
-}
-.map-card h2 {
-  margin: 0;
-  overflow-wrap: anywhere;
-  @mixin rct-type-list-title;
-}
-.map-card__heading p,
 .map-card__status {
   margin: 0;
   color: var(--rct-color-text-secondary);
@@ -76,7 +64,6 @@
 .map-viewer {
   position: relative;
   display: grid;
-  gap: var(--rct-space-2);
   min-inline-size: 0;
 }
 .map-zoom-controls {
@@ -106,9 +93,13 @@
   cursor: default;
 }
 .map-zoom-status {
+  position: absolute;
+  inline-size: var(--rct-border-hairline);
+  block-size: var(--rct-border-hairline);
   margin: 0;
-  color: var(--rct-color-text-secondary);
-  @mixin rct-type-lesson-meta;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 .map-preview {
   position: relative;
@@ -257,27 +248,6 @@
   display: grid;
   gap: var(--rct-space-3);
   min-inline-size: 0;
-}
-:where([data-student-ui]) .map-card__heading,
-:where([data-student-ui]):is(.map-card__heading) {
-  display: flex;
-  align-items: start;
-  justify-content: space-between;
-  gap: var(--rct-space-3);
-}
-:where([data-student-ui]) .map-card h2,
-:where([data-student-ui]):is(.map-card h2) {
-  margin: 0;
-  overflow-wrap: anywhere;
-  @mixin rct-type-list-title;
-}
-:where([data-student-ui]) .map-card__heading p,
-:where([data-student-ui]):is(.map-card__heading p),
-:where([data-student-ui]) .map-card__status,
-:where([data-student-ui]):is(.map-card__status) {
-  margin: 0;
-  color: var(--rct-color-text-secondary);
-  @mixin rct-type-lesson-meta;
 }
 :where([data-student-ui]) .map-preview::-webkit-scrollbar,
 :where([data-student-ui]):is(.map-preview::-webkit-scrollbar) {

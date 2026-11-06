@@ -66,7 +66,6 @@ const floorOptions = computed(() =>
     ? floors.value.map((item) => ({ ...item, label: numberLabel(item.label, 'Этаж') }))
     : floors.value,
 );
-const showPlanHeading = computed(() => !props.studentPresentation && !props.headmanPresentation);
 const selectedFloor = computed(
   () => floors.value.find((item) => item.id === selectedFloorId.value) ?? null,
 );
@@ -521,17 +520,12 @@ function formatMessage(state: string | undefined, format: 'SVG' | 'PNG'): string
             class="map-card"
             aria-live="polite"
           >
-            <div v-if="showPlanHeading || loadingAsset" class="map-card__heading">
-              <div v-if="showPlanHeading">
-                <h2>{{ selectedPlan.label }}</h2
-                ><p v-if="!compactPresentation">Версия {{ selectedPlan.version }}</p>
-              </div>
-              <span
-                v-if="loadingAsset"
-                class="map-card__status"
-                >Загружаем…</span
-              >
-            </div>
+            <p
+              v-if="loadingAsset"
+              class="map-card__status"
+            >
+              Загружаем…
+            </p>
             <div
               v-if="previewUrl"
               class="map-viewer"

@@ -407,7 +407,9 @@ public class ExportJobService {
     public void complete(ExportJobRepository.Job job, GeneratedFile file) {
         admit(job.identity(), job.requiresFull() || file.requiresFull(), null, null);
         local.require(job.identity(), false);
-        var captured = local.capture(job.identity(), file.teacherScopeHash());
+        var captured = LocalReportAuthority.selectedStudent(job.identity().report()) == null
+                ? local.capture(job.identity(), file.teacherScopeHash())
+                : local.captureSelected(job.identity(), file.selectedStudent());
         // Local scope is checked again in the final CAS transaction, after remote admission.
         jobs.complete(
                 job.id(),
@@ -505,7 +507,14 @@ public class ExportJobService {
             String contentType,
             int rowCount,
             boolean requiresFull,
-            String teacherScopeHash) {
+            String teacherScopeHash,
+            LocalReportAuthority.SelectedStudentSnapshot selectedStudent) {
+        public GeneratedFile(
+                byte[] content, String contentType, int rowCount, boolean requiresFull,
+                String teacherScopeHash) {
+            this(content, contentType, rowCount, requiresFull, teacherScopeHash, null);
+        }
+
         @Override
         public String toString() {
             return "GeneratedExport[bytes=" + (content == null ? 0 : content.length) + "]";

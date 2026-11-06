@@ -231,6 +231,7 @@ export interface TeacherStatsFilter {
 export interface TeacherStatsQuery {
   readonly semesterId: number
   readonly scope: TeacherStatsScope
+  readonly studentId?: number
   readonly groupId?: number | null
   readonly subjectId?: number | null
   readonly lessonTypes?: readonly string[]
@@ -249,6 +250,7 @@ export function toTeacherStatsReportSelector(
   return {
     semesterId: query.semesterId,
     scope: query.scope,
+    ...(query.studentId !== undefined ? { studentId: query.studentId } : {}),
     ...(query.groupId != null ? { groupId: query.groupId } : {}),
     ...(query.subjectId != null ? { subjectId: query.subjectId } : {}),
     ...(lessonTypes.length > 0 ? { lessonTypes } : {}),
@@ -316,6 +318,7 @@ export interface TeacherStatsResponse {
   readonly lessonsCount: number
   readonly students: readonly TeacherStatsStudent[]
   readonly groups: readonly TeacherStatsGroup[]
+  readonly studentGroupOptions?: TeacherCatalogResponse['groups']
   readonly subjectOptions: readonly TeacherStatsSubjectOption[]
   readonly serverNow: string
 }
@@ -551,7 +554,10 @@ export class TeacherApi {
 
   stats(query: TeacherStatsQuery): Promise<TeacherStatsResponse> {
     const params = this.statsQueryParams(query)
-    return this.request<unknown>(`/api/v1/teacher/stats?${params.toString()}`).then(normalizeStats)
+    return this.request<unknown>(
+      `/api/v1/teacher/stats?${params.toString()}`,
+      query.studentId === undefined ? undefined : { cache: 'no-store' },
+    ).then((value) => normalizeStats(value, query))
   }
 
   statsExportFormats(): Promise<readonly TeacherExportFormat[]> {
@@ -700,15 +706,25 @@ function createTeacherStatsQueryParams(query: TeacherStatsQuery): URLSearchParam
   if (query.scope !== 'students' && query.scope !== 'groups')
     throw new RangeError('scope is invalid')
   const allGroups = query.scope === 'groups' && query.groupId == null && query.subjectId == null
-  if (!allGroups) {
+  if (query.studentId !== undefined) {
+    assertPositiveInteger(query.studentId, 'studentId')
+    if (query.scope !== 'students') throw new RangeError('studentId requires students scope')
+    if (query.groupId != null) assertPositiveInteger(query.groupId, 'groupId')
+    if (query.subjectId != null) {
+      assertPositiveInteger(query.groupId ?? 0, 'groupId')
+      assertPositiveInteger(query.subjectId, 'subjectId')
+    }
+  } else if (!allGroups) {
     assertPositiveInteger(query.groupId ?? 0, 'groupId')
     assertPositiveInteger(query.subjectId ?? 0, 'subjectId')
   }
-  if (!query.lessonTypes?.length) throw new RangeError('select at least one lessonType')
+  if (query.studentId === undefined && !query.lessonTypes?.length)
+    throw new RangeError('select at least one lessonType')
   const params = new URLSearchParams({
     semesterId: String(query.semesterId),
     scope: query.scope,
   })
+  if (query.studentId !== undefined) params.set('studentId', String(query.studentId))
   if (query.groupId != null) params.set('groupId', String(query.groupId))
   if (query.subjectId != null) params.set('subjectId', String(query.subjectId))
   for (const lessonType of query.lessonTypes ?? []) {
@@ -970,22 +986,50 @@ function normalizeJournalMetrics(value: unknown): TeacherJournalMetrics {
   }
 }
 
-function normalizeStats(value: unknown): TeacherStatsResponse {
+function normalizeStats(value: unknown, query: TeacherStatsQuery): TeacherStatsResponse {
   const record = requiredRecord(value)
   const scope = requiredString(record.scope, 'stats.scope')
   if (scope !== 'students' && scope !== 'groups')
     throw new Error('Сервер вернул неизвестный разрез статистики.')
+  const semesterId = positiveInteger(record.semesterId, 'stats.semesterId')
+  const students = arrayValue(record.students).map(normalizeStatsStudent)
+  const groups = arrayValue(record.groups).map(normalizeStatsGroup)
+  if (
+    query.studentId !== undefined &&
+    (scope !== 'students' || semesterId !== query.semesterId || groups.length > 0 ||
+      students.length > 1 || (students[0] && students[0].studentId !== query.studentId))
+  ) {
+    throw new Error('Сервер вернул статистику за пределами выбранного студента.')
+  }
+  const studentGroupOptions = record.studentGroupOptions == null
+    ? undefined
+    : normalizeStudentGroupOptions(record.studentGroupOptions)
   return {
     scope,
-    semesterId: positiveInteger(record.semesterId, 'stats.semesterId'),
+    semesterId,
     periodFrom: nullableDate(record.periodFrom, 'stats.periodFrom'),
     periodTo: nullableDate(record.periodTo, 'stats.periodTo'),
     lessonsCount: nonNegativeInteger(record.lessonsCount, 'stats.lessonsCount'),
-    students: arrayValue(record.students).map(normalizeStatsStudent),
-    groups: arrayValue(record.groups).map(normalizeStatsGroup),
+    students,
+    groups,
+    ...(studentGroupOptions === undefined ? {} : { studentGroupOptions }),
     subjectOptions: arrayValue(record.subjectOptions).map(normalizeStatsSubjectOption),
     serverNow: requiredString(record.serverNow, 'stats.serverNow'),
   }
+}
+
+function normalizeStudentGroupOptions(value: unknown): TeacherCatalogResponse['groups'] {
+  if (!Array.isArray(value)) throw new Error('Сервер вернул некорректный список групп студента.')
+  const groups = value.map((item) => {
+    const group = requiredRecord(item)
+    return {
+      id: positiveInteger(group.id, 'stats.studentGroupOption.id'),
+      name: requiredString(group.name, 'stats.studentGroupOption.name'),
+    }
+  })
+  if (new Set(groups.map((group) => group.id)).size !== groups.length)
+    throw new Error('Сервер вернул повторяющиеся группы студента.')
+  return groups
 }
 
 function normalizeCatalog(value: unknown): TeacherCatalogResponse {

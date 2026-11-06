@@ -40,6 +40,7 @@ export function validatedTeacherJournalReportSelector(
 export interface TeacherStatsReportSelector {
   readonly semesterId: number
   readonly scope: TeacherReportStatsScope
+  readonly studentId?: number
   readonly groupId?: number
   readonly subjectId?: number
   readonly lessonTypes?: readonly string[]
@@ -743,6 +744,7 @@ export function validateTicketRequest(request: ReportDownloadTicketRequest): voi
     TEACHER_STATS: [
       'semesterId',
       'scope',
+      'studentId',
       'groupId',
       'subjectId',
       'lessonTypes',
@@ -811,13 +813,19 @@ export function validateTicketRequest(request: ReportDownloadTicketRequest): voi
         throw new RangeError('Проверь параметры журнала.')
       }
       break
-    case 'TEACHER_STATS':
+    case 'TEACHER_STATS': {
+      const hasStudent = selector.studentId !== undefined
+      const validContext = hasStudent
+        ? selector.scope === 'students' && isPositiveInteger(selector.studentId) &&
+          (selector.groupId === undefined || isPositiveInteger(selector.groupId)) &&
+          (selector.subjectId === undefined ||
+            (isPositiveInteger(selector.groupId) && isPositiveInteger(selector.subjectId)))
+        : (selector.scope === 'students' &&
+            isPositiveInteger(selector.groupId) && isPositiveInteger(selector.subjectId)) ||
+          (selector.scope === 'groups' && selector.groupId === undefined && selector.subjectId === undefined)
       if (
         !isPositiveInteger(selector.semesterId) ||
-        (selector.scope !== 'students' && selector.scope !== 'groups') ||
-        (selector.scope === 'students'
-          ? !isPositiveInteger(selector.groupId) || !isPositiveInteger(selector.subjectId)
-          : selector.groupId !== undefined || selector.subjectId !== undefined) ||
+        !validContext ||
         (selector.lessonTypes !== undefined && !isStringList(selector.lessonTypes, 0, 20, 64)) ||
         (selector.sorts !== undefined && !isStringList(selector.sorts, 0, 20, 128)) ||
         (selector.filters !== undefined && !isStringList(selector.filters, 0, 20, 128))
@@ -825,6 +833,7 @@ export function validateTicketRequest(request: ReportDownloadTicketRequest): voi
         throw new RangeError('Проверь параметры статистики.')
       }
       break
+    }
     case 'HEADMAN_SUBJECT_JOURNAL':
       if (
         !isPositiveInteger(selector.subjectId) ||

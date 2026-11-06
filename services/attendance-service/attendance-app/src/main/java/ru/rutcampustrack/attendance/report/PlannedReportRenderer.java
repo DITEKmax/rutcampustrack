@@ -207,7 +207,8 @@ public final class PlannedReportRenderer {
                                                 filter.hasMinValue() ? filter.getMinValue() : null,
                                                 filter.hasMaxValue() ? filter.getMaxValue() : null))
                         .toList(),
-                value.getSemesterId());
+                value.getSemesterId(),
+                value.hasStudentId() ? value.getStudentId() : null);
     }
 
     private static List<LocalDate> dates(List<String> values) {

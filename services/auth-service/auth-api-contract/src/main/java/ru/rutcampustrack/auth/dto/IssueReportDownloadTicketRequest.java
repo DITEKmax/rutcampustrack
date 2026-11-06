@@ -77,6 +77,7 @@ public record IssueReportDownloadTicketRequest(
         if (selected == null || count != 1) return false;
         return switch (kind) {
             case TEACHER_JOURNAL -> teacherJournal.isLessonIdValid();
+            case TEACHER_STATS -> teacherStats.isStudentSelectionValid();
             case HEADMAN_STATS_TREND -> headmanStatsTrend.isConsistent();
             case HEADMAN_GROUP_COMPOSITION -> headmanGroupComposition.format() != null;
             case ADMIN_GROUP_ATTENDANCE -> adminGroupAttendance.isConsistent();
@@ -207,6 +208,10 @@ public record IssueReportDownloadTicketRequest(
                 appendList(canonical, teacherStats.sorts());
                 appendList(canonical, teacherStats.filters());
                 append(canonical, teacherStats.format().code());
+                if (teacherStats.studentId() != null) {
+                    append(canonical, "teacher-stats-student-selection-v1");
+                    append(canonical, teacherStats.studentId());
+                }
             }
             case HEADMAN_WEEKLY_CURRENT -> {
                 append(canonical, teacherlessDate(headmanWeeklyCurrent.weekStart()));
@@ -577,11 +582,33 @@ public record IssueReportDownloadTicketRequest(
                     List<@NotBlank @Size(max = MAX_PARAMETER_LENGTH) String> sorts,
             @Size(max = MAX_PARAMETER_VALUES)
                     List<@NotBlank @Size(max = MAX_PARAMETER_LENGTH) String> filters,
-            @NotNull ReportDownloadFormat format) {
+            @NotNull ReportDownloadFormat format,
+            @Positive Long studentId) {
         public TeacherStatsParameters {
             lessonTypes = immutable(lessonTypes);
             sorts = immutable(sorts);
             filters = immutable(filters);
+        }
+
+        public TeacherStatsParameters(
+                Long semesterId,
+                String scope,
+                Long groupId,
+                Long subjectId,
+                List<String> lessonTypes,
+                List<String> sorts,
+                List<String> filters,
+                ReportDownloadFormat format) {
+            this(semesterId, scope, groupId, subjectId, lessonTypes, sorts, filters, format, null);
+        }
+
+        @JsonIgnore
+        public boolean isStudentSelectionValid() {
+            return studentId == null
+                    || studentId > 0
+                            && ("student".equalsIgnoreCase(scope) || "students".equalsIgnoreCase(scope))
+                            && (groupId == null || groupId > 0)
+                            && (subjectId == null || groupId != null && subjectId > 0);
         }
     }
 

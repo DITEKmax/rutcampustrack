@@ -14,7 +14,18 @@ public record StoredReportIdentity(
         Instant expiresAt,
         long academicRevision,
         Long semesterId,
-        TeacherReportScope teacherScope) {
+        TeacherReportScope teacherScope,
+        Long selectedStudentAcademicRevision) {
+    public StoredReportIdentity(
+            InternalJwtClaims actor,
+            IssueReportDownloadTicketRequest report,
+            Instant expiresAt,
+            long academicRevision,
+            Long semesterId,
+            TeacherReportScope teacherScope) {
+        this(actor, report, expiresAt, academicRevision, semesterId, teacherScope, null);
+    }
+
     public StoredReportIdentity {
         Objects.requireNonNull(actor);
         Objects.requireNonNull(report);
@@ -30,7 +41,13 @@ public record StoredReportIdentity(
 
     public StoredReportIdentity withTeacherScope(TeacherReportScope scope) {
         return new StoredReportIdentity(
-                actor, report, expiresAt, academicRevision, semesterId, scope);
+                actor, report, expiresAt, academicRevision, semesterId, scope,
+                selectedStudentAcademicRevision);
+    }
+
+    public StoredReportIdentity withSelectedStudent(TeacherReportScope scope, long revision) {
+        return new StoredReportIdentity(
+                actor, report, expiresAt, academicRevision, semesterId, scope, revision);
     }
 
     @Override

@@ -49,6 +49,8 @@ class AcademicBotHomeworkMetadataTest {
         assertThat(result.getGroupId()).isEqualTo(12);
         assertThat(result.getTelegramId()).isEqualTo(42);
         assertThat(result.getRolesVersion()).isEqualTo(5);
+        assertThat(result.hasAcademicRevision()).isTrue();
+        assertThat(result.getAcademicRevision()).isEqualTo(8L);
         assertThat(result.getRoles(0).getGrantId()).isEqualTo(17);
         assertThat(result.getRoles(0).getRole()).isEqualTo("STUDENT");
     }

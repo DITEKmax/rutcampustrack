@@ -57,7 +57,9 @@ public class ReportPlanSnapshotReader {
         local.requireWithinSnapshot(job.identity(), false);
         var p = job.identity().report();
         List<Long> groupIds;
-        if (p.kind() == ReportDownloadKind.TEACHER_STATS && LocalReportAuthority.unscoped(p))
+        if (p.kind() == ReportDownloadKind.TEACHER_STATS
+                && (LocalReportAuthority.unscoped(p)
+                        || p.teacherStats().studentId() != null && p.teacherStats().groupId() == null))
             groupIds =
                     local.teacherScope(job.identity().actor().userId()).tuples().stream()
                             .map(t -> t.groupId())
@@ -184,6 +186,7 @@ public class ReportPlanSnapshotReader {
         if (lessons.size() > 5000) throw ExportJobRepository.error(HttpStatus.PAYLOAD_TOO_LARGE);
         var p = job.identity().report();
         var actor = job.identity().actor();
+        Long studentId = LocalReportAuthority.selectedStudent(p);
         var identity =
                 StoredSessionIdentity.newBuilder()
                         .setUserId(actor.userId())
@@ -276,6 +279,18 @@ public class ReportPlanSnapshotReader {
                 throw ExportJobRepository.error(HttpStatus.SERVICE_UNAVAILABLE);
             subjectIds.add(lesson.getSubjectId());
         }
+        if (studentId != null) {
+            lessons = selectedStudentLessons(plan, job, lessons, semester.getId(), studentId);
+            subjectIds.clear();
+            lessons.forEach(lesson -> subjectIds.add(lesson.getSubjectId()));
+            var contributingGroups = lessons.stream().map(LessonResponse::getGroupId)
+                    .collect(java.util.stream.Collectors.toSet());
+            plan.clearGroups();
+            groupMap.values().stream()
+                    .filter(group -> contributingGroups.contains(group.getId()))
+                    .forEach(group -> plan.addGroups(GroupResponse.newBuilder()
+                            .setId(group.getId()).setName(group.getName()).setIsActive(group.isActive())));
+        }
         if (p.kind() == ReportDownloadKind.TEACHER_JOURNAL)
             subjectIds.add(p.teacherJournal().subjectId());
         if (p.kind() == ReportDownloadKind.TEACHER_STATS && p.teacherStats().subjectId() != null)
@@ -318,7 +333,7 @@ public class ReportPlanSnapshotReader {
                                         .thenComparingLong(LessonResponse::getId))
                         .toList());
         var uniqueStudents = new HashSet<Long>();
-        for (Long groupId : discovery.groupIds()) {
+        if (studentId == null) for (Long groupId : discovery.groupIds()) {
             var current = GroupMembersResponse.newBuilder();
             for (User user : reads.fetchGroupMembers(groupId)) {
                 uniqueStudents.add(user.getId());
@@ -440,6 +455,48 @@ public class ReportPlanSnapshotReader {
         if (uniqueStudents.size() > 5000 || plan.build().getSerializedSize() > 20 * 1024 * 1024)
             throw ExportJobRepository.error(HttpStatus.PAYLOAD_TOO_LARGE);
         return plan.build();
+    }
+
+    private List<LessonResponse> selectedStudentLessons(
+            ReportRenderPlan.Builder plan,
+            ExportJobRepository.Job job,
+            List<LessonResponse> lessons,
+            long semesterId,
+            long studentId) {
+        var selector = job.identity().report().teacherStats();
+        var current = new HashSet<>(local.teacherScope(job.identity().actor().userId()).tuples());
+        record RosterDate(long groupId, LocalDate date) {}
+        Map<RosterDate, Optional<User>> rosters = new LinkedHashMap<>();
+        var selected = new ArrayList<LessonResponse>();
+        for (var lesson : lessons) {
+            if (!current.contains(new ru.rutcampustrack.shared.security.teacher.TeacherReportScope.Tuple(
+                    lesson.getGroupId(), lesson.getSubjectId()))) {
+                throw ExportJobRepository.error(HttpStatus.FORBIDDEN);
+            }
+            if (selector.subjectId() != null && lesson.getSubjectId() != selector.subjectId())
+                continue;
+            String status = lesson.getStatus().toLowerCase(Locale.ROOT);
+            if (Set.of("cancelled", "transferred").contains(status)) continue;
+            if (!Set.of("planned", "active", "closed").contains(status))
+                throw ExportJobRepository.error(HttpStatus.SERVICE_UNAVAILABLE);
+            var key = new RosterDate(lesson.getGroupId(), LocalDate.parse(lesson.getDate()));
+            var member = rosters.computeIfAbsent(key,
+                    date -> reads.fetchHistoricalGroupMembers(date.groupId(), date.date(), semesterId)
+                            .students().stream()
+                            .filter(user -> user.getId() == studentId)
+                            .findFirst());
+            if (member.isPresent()) selected.add(lesson);
+        }
+        if (selected.isEmpty()) throw ExportJobRepository.error(HttpStatus.FORBIDDEN);
+        plan.setSelectedStudentAcademicRevision(local.selectedStudentRevision(studentId));
+        rosters.forEach((date, member) -> member.ifPresent(user ->
+                plan.addRosters(ReportGroupRoster.newBuilder()
+                        .setGroupId(date.groupId())
+                        .setRoster(GroupMembersResponse.newBuilder()
+                                .setAsOfDate(date.date().toString())
+                                .setSemesterId(semesterId)
+                                .addStudents(student(user))))));
+        return selected;
     }
 
     static boolean requiresHeadmanScope(ExportJobRepository.Job job) {

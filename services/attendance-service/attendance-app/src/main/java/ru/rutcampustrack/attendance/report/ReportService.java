@@ -42,6 +42,7 @@ import ru.rutcampustrack.attendance.shared.port.JournalAttachmentPort.ManualRefe
 import ru.rutcampustrack.attendance.shared.port.JournalAttachmentPort.ManualVerification;
 import ru.rutcampustrack.schedule.grpc.LessonInfo;
 import ru.rutcampustrack.schedule.grpc.LessonResponse;
+import ru.rutcampustrack.shared.security.teacher.TeacherReportScope;
 import ru.rutcampustrack.shared.web.time.AcademicWeekCalendar;
 import ru.rutcampustrack.shared.web.time.EducationalTime;
 
@@ -908,7 +909,27 @@ public class ReportService {
 
     public record AuthorizedTeacherStats(
             TeacherStatsResult stats,
-            ru.rutcampustrack.shared.security.teacher.TeacherReportScope scope) {}
+            TeacherReportScope scope,
+            ReportAcademicReadPort.SelectedStudentIdentity selectedStudent) {
+        public AuthorizedTeacherStats(TeacherStatsResult stats, TeacherReportScope scope) {
+            this(stats, scope, null);
+        }
+    }
+
+    /** Recheck the contributing authority and fenced presentation before releasing selected data. */
+    public void requireSelectedTeacherStats(AuthorizedTeacherStats result, long teacherId) {
+        var selected = result.selectedStudent();
+        if (selected == null) throw new AccessDeniedException("No selected student authority");
+        if (!selected.equals(academicGrpcClient.selectedStudentIdentity(selected.studentId()))) {
+            throw new AcademicServiceUnavailableException("Selected student authority changed");
+        }
+        var current = currentTeacherSubjectKeys(academicGrpcClient.getCurrentTeacherSubjects(teacherId));
+        for (var tuple : result.scope().tuples()) {
+            if (!current.contains(new TeacherStatsSubjectKey(tuple.groupId(), tuple.subjectId()))) {
+                throw new AccessDeniedException("Teacher is not active in the selected group and subject");
+            }
+        }
+    }
 
     public AuthorizedTeacherStats getAuthorizedTeacherStats(
             TeacherStatsQuery query, long teacherId) {
@@ -937,7 +958,8 @@ public class ReportService {
                         .collect(Collectors.toSet());
         boolean allGroups = allTeacherGroups(query);
         if (activeGroupIds.isEmpty()
-                || !allGroups
+                || query.groupId() > 0 && !activeGroupIds.contains(query.groupId())
+                || query.subjectId() > 0
                         && !allowedSubjects.contains(
                                 new TeacherStatsSubjectKey(query.groupId(), query.subjectId()))) {
             throw new AccessDeniedException(
@@ -977,6 +999,11 @@ public class ReportService {
         for (LessonInfo lesson : authoritativeLessons) {
             authorizeTeacherStatsLesson(lesson, teacherAuthority);
             requireStatsLessonStatus(lesson);
+        }
+        if (query.studentId() != null) {
+            var result = selectedStudentStats(query, teacherAuthority, authoritativeLessons);
+            requireSelectedTeacherStats(result, teacherId);
+            return result;
         }
         List<TeacherStatsSubjectOption> subjectOptions =
                 buildSubjectOptions(authoritativeLessons, teacherAuthority);
@@ -1057,15 +1084,105 @@ public class ReportService {
                         groupRows,
                         subjectOptions,
                         clock.instant()),
-                ru.rutcampustrack.shared.security.teacher.TeacherReportScope.of(
+                TeacherReportScope.of(
                         allowedSubjects.stream()
-                                .map(
-                                        pair ->
-                                                new ru.rutcampustrack.shared.security.teacher
-                                                        .TeacherReportScope.Tuple(
-                                                        pair.groupId(), pair.subjectId()))
+                                .map(pair -> new TeacherReportScope.Tuple(
+                                        pair.groupId(), pair.subjectId()))
                                 .toList()));
     }
+
+    private AuthorizedTeacherStats selectedStudentStats(
+            TeacherStatsQuery query,
+            TeacherSubjectsResponse authority,
+            List<LessonInfo> lessons) {
+        long studentId = query.studentId();
+        List<LessonInfo> candidates = lessons.stream()
+                .filter(lesson -> !isCancelled(lesson)
+                        && !"transferred".equalsIgnoreCase(lesson.getStatus()))
+                .filter(lesson -> query.groupId() == 0 || query.groupId() == lesson.getGroupId())
+                .filter(lesson -> query.subjectId() == 0 || query.subjectId() == lesson.getSubjectId())
+                .sorted(Comparator.comparing(LessonInfo::getDate)
+                        .thenComparingLong(LessonInfo::getLessonId))
+                .toList();
+        Map<TeacherStatsRosterDate, Boolean> roster = new HashMap<>();
+        if (candidates.stream().noneMatch(lesson -> isDatedMember(lesson, studentId, roster))) {
+            throw new AccessDeniedException("Student is outside the dated teacher stats scope");
+        }
+
+        var target = academicGrpcClient.selectedStudentIdentity(studentId);
+        // The preliminary roster is only admission for the identity read. Rebuild the projection
+        // under the captured generation so a concurrent move cannot mix old and new membership.
+        roster.clear();
+        List<LessonInfo> memberLessons = candidates.stream()
+                .filter(lesson -> isDatedMember(lesson, studentId, roster))
+                .toList();
+        if (memberLessons.isEmpty()) {
+            throw new AccessDeniedException("Student is outside the dated teacher stats scope");
+        }
+
+        Set<String> types = normalizedTypes(query.lessonTypes());
+        List<LessonInfo> completed = memberLessons.stream()
+                .filter(ReportService::isCompleted)
+                .filter(lesson -> types.isEmpty() || types.contains(normalize(lesson.getLessonType())))
+                .toList();
+        Set<Long> completedIds = completed.stream().map(LessonInfo::getLessonId)
+                .collect(Collectors.toSet());
+        Map<Long, AttendanceRecord> marks = completed.isEmpty()
+                ? Map.of()
+                : attendanceReadPort.findByUserId(studentId, query.semesterId()).stream()
+                        .filter(record -> record != null && Objects.equals(record.userId(), studentId)
+                                && completedIds.contains(record.lessonId()))
+                        .collect(Collectors.toMap(AttendanceRecord::lessonId, value -> value,
+                                (first, ignored) -> first));
+        var student = new StudentStatsAccumulator(studentId, target.displayName());
+        for (var lesson : completed) {
+            AttendanceRecord mark = marks.get(lesson.getLessonId());
+            student.counter.add(mark == null || mark.status() == null
+                    ? AttendanceStatus.ABSENT : mark.status());
+        }
+
+        List<TeacherStatsStudentGroupOption> groupOptions = memberLessons.stream()
+                .map(LessonInfo::getGroupId)
+                .distinct()
+                .sorted()
+                .map(groupId -> {
+                    GroupResponse group = academicGrpcClient.getGroup(groupId);
+                    if (group == null || group.getId() != groupId || group.getName().isBlank()) {
+                        throw new AcademicServiceUnavailableException(
+                                "Academic returned incomplete selected-student group metadata");
+                    }
+                    return new TeacherStatsStudentGroupOption(groupId, group.getName());
+                })
+                .toList();
+        TeacherStudentStats row = student.toResult();
+        return new AuthorizedTeacherStats(
+                new TeacherStatsResult(
+                        query.scope(),
+                        query.semesterId(),
+                        completed.isEmpty() ? null : parseLessonDate(completed.getFirst().getDate()),
+                        completed.isEmpty() ? null : parseLessonDate(completed.getLast().getDate()),
+                        completed.size(),
+                        matchesFilters(row, query.filters()) ? List.of(row) : List.of(),
+                        List.of(),
+                        buildSubjectOptions(memberLessons, authority),
+                        groupOptions,
+                        clock.instant()),
+                TeacherReportScope.of(memberLessons.stream()
+                        .map(lesson -> new TeacherReportScope.Tuple(
+                                lesson.getGroupId(), lesson.getSubjectId()))
+                        .toList()),
+                target);
+    }
+
+    private boolean isDatedMember(
+            LessonInfo lesson, long studentId, Map<TeacherStatsRosterDate, Boolean> roster) {
+        return roster.computeIfAbsent(
+                new TeacherStatsRosterDate(lesson.getGroupId(), lesson.getDate()),
+                key -> historicalMembersFor(lesson).getStudentsList().stream()
+                        .anyMatch(student -> student.getUserId() == studentId));
+    }
+
+    private record TeacherStatsRosterDate(long groupId, String date) {}
 
     /**
      * Internal calculation only: callers must establish current authority and complete snapshots.
@@ -1419,12 +1536,18 @@ public class ReportService {
         if (query == null || query.scope() == null || teacherId <= 0) {
             throw new BadRequestException("Invalid teacher stats query");
         }
-        if (!allTeacherGroups(query) && (query.groupId() <= 0 || query.subjectId() <= 0)) {
+        if (query.studentId() != null) {
+            if (query.studentId() <= 0 || query.scope() != TeacherStatsScope.STUDENTS
+                    || query.groupId() < 0 || query.subjectId() < 0
+                    || query.subjectId() > 0 && query.groupId() == 0) {
+                throw new BadRequestException("Invalid selected student stats context");
+            }
+        } else if (!allTeacherGroups(query) && (query.groupId() <= 0 || query.subjectId() <= 0)) {
             throw new BadRequestException("Stats require group and subject");
         }
-        if (query.lessonTypes() == null
-                || query.lessonTypes().isEmpty()
-                || query.lessonTypes().stream()
+        List<String> types = query.lessonTypes() == null ? List.of() : query.lessonTypes();
+        if (query.studentId() == null && types.isEmpty()
+                || types.stream()
                         .anyMatch(
                                 type ->
                                         type == null
@@ -1660,7 +1783,20 @@ public class ReportService {
             List<String> lessonTypes,
             List<TeacherStatsSort> sorts,
             List<TeacherStatsFilter> filters,
-            long semesterId) {}
+            long semesterId,
+            Long studentId) {
+        public TeacherStatsQuery(
+                List<Long> lessonIds,
+                TeacherStatsScope scope,
+                long groupId,
+                long subjectId,
+                List<String> lessonTypes,
+                List<TeacherStatsSort> sorts,
+                List<TeacherStatsFilter> filters,
+                long semesterId) {
+            this(lessonIds, scope, groupId, subjectId, lessonTypes, sorts, filters, semesterId, null);
+        }
+    }
 
     public record TeacherStatsSort(String column, boolean descending) {}
 
@@ -1727,7 +1863,24 @@ public class ReportService {
             List<TeacherStudentStats> students,
             List<TeacherGroupStats> groups,
             List<TeacherStatsSubjectOption> subjectOptions,
-            java.time.Instant serverNow) {}
+            List<TeacherStatsStudentGroupOption> studentGroupOptions,
+            java.time.Instant serverNow) {
+        public TeacherStatsResult(
+                TeacherStatsScope scope,
+                long semesterId,
+                LocalDate periodFrom,
+                LocalDate periodTo,
+                int lessonsCount,
+                List<TeacherStudentStats> students,
+                List<TeacherGroupStats> groups,
+                List<TeacherStatsSubjectOption> subjectOptions,
+                Instant serverNow) {
+            this(scope, semesterId, periodFrom, periodTo, lessonsCount, students, groups,
+                    subjectOptions, List.of(), serverNow);
+        }
+    }
+
+    public record TeacherStatsStudentGroupOption(long id, String name) {}
 
     public record TeacherStatsSubjectOption(
             long groupId, long subjectId, String subjectName, List<String> lessonTypes) {}

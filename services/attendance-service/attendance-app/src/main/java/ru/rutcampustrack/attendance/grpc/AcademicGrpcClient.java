@@ -422,6 +422,17 @@ public class AcademicGrpcClient {
         }
     }
 
+    /** Fenced Academic presentation after the dated roster has admitted the exact target. */
+    public UserResponse getSelectedStudentIdentity(long studentId) {
+        try {
+            return stub.withDeadlineAfter(3, TimeUnit.SECONDS)
+                    .getUserById(UserRequest.newBuilder().setUserId(studentId).build());
+        } catch (StatusRuntimeException error) {
+            throw new AcademicServiceUnavailableException(
+                    "Selected student authority is unavailable", error.getStatus().getCode());
+        }
+    }
+
     /**
      * Optional audit enrichment after the caller's authorization; never manufactures an ID-based
      * name.

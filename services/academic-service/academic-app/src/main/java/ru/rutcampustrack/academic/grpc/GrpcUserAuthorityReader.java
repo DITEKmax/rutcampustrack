@@ -81,7 +81,8 @@ public class GrpcUserAuthorityReader {
                         .setIsHeadman(profile.headman())
                         .setAvatarId(profile.avatarId() == null ? "" : profile.avatarId())
                         .setTelegramId(after.hasTelegramId() ? after.getTelegramId() : 0)
-                        .setRolesVersion(after.getRolesVersion());
+                        .setRolesVersion(after.getRolesVersion())
+                        .setAcademicRevision(profile.revision());
         after.getGrantsList()
                 .forEach(
                         grant -> {

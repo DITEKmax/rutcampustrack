@@ -14,6 +14,7 @@ import ru.rutcampustrack.reportrendering.grpc.*;
 import ru.rutcampustrack.schedule.grpc.*;
 import ru.rutcampustrack.shared.security.InternalJwtClaims;
 import ru.rutcampustrack.teacher.grpc.TeacherAssignmentsResponse;
+import ru.rutcampustrack.teacher.grpc.TeacherStatsScope;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -39,6 +40,7 @@ public final class AdmittedReportPlan
     private final Map<Long, LessonResponse> lessons;
     private final Map<Long, SemesterStateResponse> semesterStates;
     private final Set<Long> allowedGroups;
+    private final SelectedStudentIdentity selectedStudentIdentity;
 
     private record RosterKey(long groupId, String date, long semesterId) {}
 
@@ -140,14 +142,35 @@ public final class AdmittedReportPlan
             if (to.isBefore(from) || plan.getSemester().getName().isBlank()) throw malformed();
         } else if (!Set.of("HEADMAN_GROUP_COMPOSITION", "HEADMAN_STATS", "HEADMAN_STATS_TREND")
                 .contains(plan.getReportKind())) throw malformed();
+        var stats = plan.getTeacherStats().getStatsRequest();
+        boolean selectedStudent = plan.hasTeacherStats() && stats.hasStudentId();
+        if (selectedStudent != plan.hasSelectedStudentAcademicRevision()
+                || selectedStudent && (stats.getStudentId() <= 0
+                        || plan.getSelectedStudentAcademicRevision() <= 0
+                        || stats.getScope() != TeacherStatsScope.TEACHER_STATS_STUDENTS
+                        || stats.getSemesterId() != semesterId
+                        || stats.getGroupId() < 0 || stats.getSubjectId() < 0
+                        || stats.getSubjectId() > 0 && stats.getGroupId() == 0
+                        || stats.getLessonIdsCount() == 0
+                        || stats.getLessonIdsCount() != plan.getLessonsCount())) {
+            throw malformed();
+        }
         Map<RosterKey, GroupMembersResponse> dated = new HashMap<>();
         Set<Long> students = new HashSet<>();
+        String selectedName = null;
         for (var value : plan.getRostersList()) {
             requireGroup(value.getGroupId());
             var roster = value.getRoster();
             if (!value.hasRoster() || roster.hasAsOfDate() != roster.hasSemesterId())
                 throw malformed();
             if (admin && !roster.hasAsOfDate()) throw malformed();
+            if (selectedStudent && (!roster.hasAsOfDate() || roster.getStudentsCount() != 1
+                    || roster.getStudents(0).getUserId() != stats.getStudentId())) throw denied();
+            if (selectedStudent) {
+                String name = roster.getStudents(0).getDisplayName();
+                if (selectedName != null && !selectedName.equals(name)) throw malformed();
+                selectedName = name;
+            }
             String date = roster.hasAsOfDate() ? roster.getAsOfDate() : "";
             long rosterSemester = roster.hasSemesterId() ? roster.getSemesterId() : 0;
             if (roster.hasSemesterId()
@@ -166,11 +189,21 @@ public final class AdmittedReportPlan
                 checkCount(students.size());
             }
         }
+        if (selectedStudent && (selectedName == null || selectedName.isBlank())) throw malformed();
+        selectedStudentIdentity = selectedStudent
+                ? new SelectedStudentIdentity(stats.getStudentId(), selectedName,
+                        plan.getSelectedStudentAcademicRevision())
+                : null;
         rosters = Map.copyOf(dated);
         lessons = index(plan.getLessonsList(), LessonResponse::getId);
+        if (selectedStudent && !lessons.keySet().equals(Set.copyOf(stats.getLessonIdsList())))
+            throw malformed();
         for (var lesson : lessons.values()) {
             requireGroup(lesson.getGroupId());
             if (admin && !lesson.getStatus().equalsIgnoreCase("closed")) throw malformed();
+            if (selectedStudent && (stats.getGroupId() > 0 && stats.getGroupId() != lesson.getGroupId()
+                    || stats.getSubjectId() > 0 && stats.getSubjectId() != lesson.getSubjectId()))
+                throw denied();
             if (lesson.getSemesterId() != semesterId
                     || lesson.getSubjectId() <= 0
                     || !subjects.containsKey(lesson.getSubjectId())
@@ -387,6 +420,13 @@ public final class AdmittedReportPlan
                 || teacherId != actor.userId()
                 || !source.hasTeacherSubjects()) throw denied();
         return source.getTeacherSubjects();
+    }
+
+    @Override
+    public SelectedStudentIdentity selectedStudentIdentity(long studentId) {
+        if (selectedStudentIdentity == null || selectedStudentIdentity.studentId() != studentId)
+            throw denied();
+        return selectedStudentIdentity;
     }
 
     @Override

@@ -686,6 +686,7 @@ public final class TeacherReadFacade {
     public TeacherApiModels.StatsResponse stats(
             long semesterId,
             String scopeValue,
+            Long studentId,
             Long selectedGroupId,
             Long selectedSubjectId,
             List<String> lessonTypes,
@@ -698,6 +699,7 @@ public final class TeacherReadFacade {
                                 claims,
                                 semesterId,
                                 scopeValue,
+                                studentId,
                                 selectedGroupId,
                                 selectedSubjectId,
                                 lessonTypes,
@@ -713,6 +715,7 @@ public final class TeacherReadFacade {
     public Download exportStats(
             long semesterId,
             String scopeValue,
+            Long studentId,
             Long selectedGroupId,
             Long selectedSubjectId,
             List<String> lessonTypes,
@@ -730,6 +733,7 @@ public final class TeacherReadFacade {
                         claims,
                         semesterId,
                         scopeValue,
+                        studentId,
                         selectedGroupId,
                         selectedSubjectId,
                         lessonTypes,
@@ -770,6 +774,7 @@ public final class TeacherReadFacade {
             InternalJwtClaims claims,
             long semesterId,
             String scopeValue,
+            Long studentId,
             Long selectedGroupId,
             Long selectedSubjectId,
             List<String> lessonTypes,
@@ -783,22 +788,30 @@ public final class TeacherReadFacade {
                 scope == TeacherStatsScope.TEACHER_STATS_GROUPS
                         && selectedGroupId == null
                         && selectedSubjectId == null;
-        if (!allGroups
+        if (studentId != null
+                && (scope != TeacherStatsScope.TEACHER_STATS_STUDENTS
+                        || studentId <= 0
+                        || selectedGroupId != null && selectedGroupId <= 0
+                        || selectedSubjectId != null
+                                && (selectedGroupId == null || selectedSubjectId <= 0))) {
+            throw invalidStats("Некорректный выбор студента, группы или предмета");
+        }
+        if (studentId == null && !allGroups
                 && (selectedGroupId == null
                         || selectedGroupId <= 0
                         || selectedSubjectId == null
                         || selectedSubjectId <= 0)) {
             throw invalidStats("Для выбранной статистики нужны группа и предмет");
         }
-        if (lessonTypes == null
-                || lessonTypes.isEmpty()
-                || lessonTypes.stream()
+        List<String> requestedTypes = lessonTypes == null ? List.of() : lessonTypes;
+        if (studentId == null && requestedTypes.isEmpty()
+                || requestedTypes.stream()
                         .anyMatch(
                                 value -> value == null || value.isBlank() || value.length() > 64)) {
             throw invalidStats("Выбери типы занятий");
         }
         List<String> selectedTypes =
-                lessonTypes.stream()
+                requestedTypes.stream()
                         .map(value -> value.trim().toLowerCase(Locale.ROOT))
                         .distinct()
                         .toList();
@@ -810,7 +823,8 @@ public final class TeacherReadFacade {
         Set<TeacherSubjectKey> allowedSubjects = currentTeacherSubjectKeys(authority);
         Set<Long> activeGroupIds = currentTeacherGroups(authority).keySet();
         if (activeGroupIds.isEmpty()
-                || !allGroups
+                || selectedGroupId != null && !activeGroupIds.contains(selectedGroupId)
+                || selectedSubjectId != null
                         && !allowedSubjects.contains(
                                 new TeacherSubjectKey(selectedGroupId, selectedSubjectId))) {
             throw new MobileBffException(
@@ -821,7 +835,7 @@ public final class TeacherReadFacade {
         DateRange range = semesterRange(academic.teacherAssignmentsForSemester(semesterId));
         Map<Long, LessonResponse> concreteById = new HashMap<>();
         for (Long groupId :
-                (allGroups
+                (allGroups || studentId != null && selectedGroupId == null
                         ? activeGroupIds.stream().sorted().toList()
                         : List.of(selectedGroupId))) {
             LessonsResponse scheduled =
@@ -840,6 +854,8 @@ public final class TeacherReadFacade {
                 }
                 if (!allowedSubjects.contains(
                         new TeacherSubjectKey(groupId, lesson.getSubjectId()))) continue;
+                if (studentId != null && selectedSubjectId != null
+                        && lesson.getSubjectId() != selectedSubjectId) continue;
                 if (!Set.of("lecture", "practice", "lab")
                                 .contains(lesson.getLessonType().toLowerCase(Locale.ROOT))
                         || !Set.of("planned", "active", "closed", "cancelled", "transferred")
@@ -869,6 +885,7 @@ public final class TeacherReadFacade {
                         .addAllLessonTypes(selectedTypes)
                         .addAllSorts(sorts)
                         .addAllFilters(filters);
+        if (studentId != null) request.setStudentId(studentId);
         if (selectedGroupId != null) request.setGroupId(selectedGroupId);
         if (selectedSubjectId != null) request.setSubjectId(selectedSubjectId);
         return request.build();
@@ -1122,6 +1139,10 @@ public final class TeacherReadFacade {
                 response.getGroupsList().stream().map(TeacherReadFacade::statsGroup).toList(),
                 response.getSubjectOptionsList().stream()
                         .map(TeacherReadFacade::statsSubjectOption)
+                        .toList(),
+                response.getStudentGroupOptionsList().stream()
+                        .map(group -> new TeacherApiModels.StatsStudentGroupOption(
+                                Long.toString(group.getId()), group.getName()))
                         .toList(),
                 parseInstant(response.getServerNow()));
     }

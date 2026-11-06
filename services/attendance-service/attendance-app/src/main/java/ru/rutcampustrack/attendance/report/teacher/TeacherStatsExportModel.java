@@ -52,9 +52,9 @@ public record TeacherStatsExportModel(Context context, List<Row> rows) {
             subjectLabel = Objects.requireNonNullElse(subjectLabel, "");
             typeLabels = List.copyOf(Objects.requireNonNull(typeLabels, "typeLabels"));
             generatedAt = Objects.requireNonNull(generatedAt, "generatedAt");
-            if (scope == Scope.STUDENTS && (groupLabels.size() != 1 || subjectLabel.isBlank())) {
+            if (scope == Scope.STUDENTS && (groupLabels.isEmpty() || subjectLabel.isBlank())) {
                 throw new IllegalArgumentException(
-                        "Student statistics require one group and a subject");
+                        "Student statistics require group and subject context");
             }
         }
     }

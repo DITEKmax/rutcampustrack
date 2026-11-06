@@ -253,12 +253,13 @@ message TeacherStatsRequest {
   // the actor's current active group authority.
   repeated int64 lesson_ids = 1;
   TeacherStatsScope scope = 2;
-  int64 group_id = 3; // required for TEACHER_STATS_STUDENTS
-  int64 subject_id = 4; // required for TEACHER_STATS_STUDENTS
+  int64 group_id = 3; // optional with student_id; subject_id requires this group
+  int64 subject_id = 4;
   repeated string lesson_types = 5;
   repeated TeacherStatsSort sorts = 6;
   repeated TeacherStatsFilter filters = 7;
   int64 semester_id = 8;
+  optional int64 student_id = 9; // exact identity, only for TEACHER_STATS_STUDENTS
 }
 
 message TeacherStatsSort {
@@ -285,6 +286,12 @@ message TeacherStatsResponse {
   repeated TeacherGroupStats groups = 7;
   string server_now = 8;
   repeated TeacherStatsSubjectOption subject_options = 9;
+  repeated TeacherStatsStudentGroupOption student_group_options = 10;
+}
+
+message TeacherStatsStudentGroupOption {
+  int64 id = 1;
+  string name = 2;
 }
 
 message TeacherStatsSubjectOption {

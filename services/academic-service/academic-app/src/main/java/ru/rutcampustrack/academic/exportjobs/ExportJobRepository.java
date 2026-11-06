@@ -162,7 +162,7 @@ public class ExportJobRepository extends AbstractEventPublisher {
                             + " OR ?,lease_until=NULL,error_code=NULL WHERE job_id=? AND"
                             + " state='preparing' AND lease_id=? AND lease_until>NOW() AND"
                             + " expires_at>NOW()"
-                                + READY_GUARD,
+                                + readyGuard(captured),
                         arguments.toArray());
         if (changed != 1) throw error(HttpStatus.CONFLICT);
         if (job.identity().report().kind().name().startsWith("ADMIN_"))
@@ -249,7 +249,7 @@ public class ExportJobRepository extends AbstractEventPublisher {
                 jdbc.query(
                         "SELECT content FROM academic_export_jobs WHERE job_id=? AND state='ready'"
                                 + " AND expires_at>NOW()"
-                                + READY_GUARD,
+                                + readyGuard(job.identity()),
                         (rs, n) -> rs.getBytes(1),
                         arguments.toArray());
         if (rows.size() != 1 || rows.getFirst() == null || rows.getFirst().length == 0) {
@@ -276,6 +276,40 @@ public class ExportJobRepository extends AbstractEventPublisher {
  AND NOT EXISTS(SELECT 1 FROM academic_group_availability_guards WHERE ? OR group_id=ANY(?::bigint[]))
 """;
 
+    // Selected-student bytes are bound to their historical membership revision and the
+    // exact currently authorized pairs used by the report, including at the final statement.
+    private static final String SELECTED_STUDENT_READY_GUARD =
+            """
+ AND EXISTS(SELECT 1 FROM academic_profiles WHERE id=? AND academic_revision=?)
+ AND NOT EXISTS(SELECT 1 FROM academic_identity_operation_targets t
+   JOIN academic_identity_operations o ON o.operation_id=t.operation_id
+   WHERE t.fenced AND o.phase<>'SUCCEEDED' AND t.user_id=?)
+ AND NOT EXISTS(SELECT 1 FROM academic_group_availability_headmen WHERE user_id=?)
+ AND NOT EXISTS(SELECT 1 FROM group_deletion_operations WHERE group_id=ANY(?::bigint[])
+   AND phase NOT IN ('COMPLETED','CANCELLED'))
+ AND EXISTS(SELECT 1 FROM semesters WHERE id=? AND deletion_phase IS NULL)
+ AND NOT EXISTS(
+   SELECT 1 FROM unnest(?::bigint[], ?::bigint[]) AS selected(group_id,subject_id)
+   WHERE NOT EXISTS(
+     SELECT 1 FROM assignments a
+     JOIN semesters s ON s.id=a.semester_id
+     JOIN academic_role_eligibility e ON e.user_id=a.teacher_id
+       AND e.role='TEACHER' AND e.status='ACTIVE' AND e.group_id IS NULL
+     WHERE a.teacher_id=? AND a.group_id=selected.group_id AND a.subject_id=selected.subject_id
+       AND s.is_active=TRUE AND a.lifecycle_state='ACTIVE'
+       AND (now() AT TIME ZONE 'Europe/Moscow')::date BETWEEN s.date_from AND s.date_to
+       AND a.valid_from<=(now() AT TIME ZONE 'Europe/Moscow')::date
+       AND (now() AT TIME ZONE 'Europe/Moscow')::date<COALESCE(a.valid_until_exclusive,s.date_to+1)
+   )
+ )
+""";
+
+    private static String readyGuard(StoredReportIdentity identity) {
+        return LocalReportAuthority.selectedStudent(identity.report()) == null
+                ? READY_GUARD
+                : READY_GUARD + SELECTED_STUDENT_READY_GUARD;
+    }
+
     private static List<Object> readyGuardArguments(StoredReportIdentity identity) {
         var groups = new TreeSet<Long>();
         var p = identity.report();
@@ -287,12 +321,9 @@ public class ExportJobRepository extends AbstractEventPublisher {
             if (identity.teacherScope() != null)
                 identity.teacherScope().tuples().forEach(tuple -> groups.add(tuple.groupId()));
         }
-        String groupArray =
-                groups.stream()
-                        .map(String::valueOf)
-                        .collect(java.util.stream.Collectors.joining(",", "{", "}"));
+        String groupArray = sqlArray(groups.stream());
         boolean registry = p.kind().name().startsWith("ADMIN_");
-        return List.of(
+        var arguments = new ArrayList<Object>(List.of(
                 identity.actor().userId(),
                 identity.academicRevision(),
                 identity.actor().rolesVersion(),
@@ -303,7 +334,29 @@ public class ExportJobRepository extends AbstractEventPublisher {
                 registry,
                 identity.actor().userId(),
                 registry,
-                groupArray);
+                groupArray));
+        Long studentId = LocalReportAuthority.selectedStudent(p);
+        if (studentId != null) {
+            if (identity.selectedStudentAcademicRevision() == null || identity.teacherScope() == null)
+                throw error(HttpStatus.FORBIDDEN);
+            var tuples = identity.teacherScope().tuples();
+            arguments.addAll(List.of(
+                    studentId,
+                    identity.selectedStudentAcademicRevision(),
+                    studentId,
+                    studentId,
+                    groupArray,
+                    identity.semesterId(),
+                    sqlArray(tuples.stream().map(tuple -> tuple.groupId())),
+                    sqlArray(tuples.stream().map(tuple -> tuple.subjectId())),
+                    identity.actor().userId()));
+        }
+        return arguments;
+    }
+
+    private static String sqlArray(java.util.stream.Stream<Long> values) {
+        return values.map(String::valueOf)
+                .collect(java.util.stream.Collectors.joining(",", "{", "}"));
     }
 
     @Transactional

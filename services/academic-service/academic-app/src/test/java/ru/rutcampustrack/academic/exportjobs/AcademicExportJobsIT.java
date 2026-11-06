@@ -509,33 +509,7 @@ class AcademicExportJobsIT
 
     @Test
     void teacherReadyArtifactRequiresEveryCapturedCurrentAssignmentAfterScopeShrinks() {
-        var teacher =
-                new InternalJwtClaims(
-                        101, actor.sessionId(), 1, 1, "TEACHER", "ACTIVE", null, false, false);
-        jdbc.update(
-                "INSERT INTO academic_role_eligibility(user_id,role,status,group_id,updated_at)"
-                        + " VALUES(101,'TEACHER','ACTIVE',NULL,NOW())");
-        jdbc.update(
-                "INSERT INTO semesters(id,name,is_active,date_from,date_to)"
-                        + " VALUES(1,'Current',TRUE,current_date-2,current_date+2)");
-        jdbc.update(
-                "INSERT INTO groups(id,name,is_active)"
-                        + " VALUES(501,'JOB-501',true),(502,'JOB-502',true)");
-        new org.springframework.transaction.support.TransactionTemplate(
-                        new DataSourceTransactionManager(jdbc.getDataSource()))
-                .executeWithoutResult(
-                        tx -> {
-                            jdbc.update(
-                                    "INSERT INTO subjects(id,name,type,group_id,semester_id)"
-                                        + " VALUES(601,'One','lecture',501,1),(602,'Two','lecture',502,1)");
-                            jdbc.update(
-                                    "INSERT INTO subject_lesson_types(subject_id,lesson_type)"
-                                            + " VALUES(601,'lecture'),(602,'lecture')");
-                        });
-        jdbc.update(
-                "INSERT INTO"
-                    + " assignments(id,teacher_id,semester_id,group_id,subject_id,lesson_type,lifecycle_state,valid_from)"
-                    + " VALUES(1,101,1,501,601,'lecture','ACTIVE',current_date-1),(2,101,1,502,602,'lecture','ACTIVE',current_date-1)");
+        var teacher = teacherReportActor();
         var selector =
                 new IssueReportDownloadTicketRequest(
                         ReportDownloadKind.TEACHER_STATS,
@@ -566,6 +540,107 @@ class AcademicExportJobsIT
                 .isInstanceOfSatisfying(
                         ResponseStatusException.class,
                         e -> assertThat(e.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN));
+    }
+
+    @Test
+    void selectedStudentArtifactFencesTargetRevisionAndContributingPairsAtPublicationAndFileRead() {
+        var teacher = teacherReportActor();
+        insertProfile(202);
+        insertProfile(203);
+        var selector = selectedStudentSelector(202L);
+        var identity = local.plan(teacher, selector, Instant.now().plusSeconds(599));
+        UUID request = UUID.randomUUID();
+        var job = claim(jobs.enqueue(request, identity, false));
+        var otherStudent = local.plan(teacher, selectedStudentSelector(203L), identity.expiresAt());
+        assertThatThrownBy(() -> jobs.enqueue(request, otherStudent, false))
+                .isInstanceOfSatisfying(ResponseStatusException.class,
+                        e -> assertThat(e.getStatusCode()).isEqualTo(HttpStatus.CONFLICT));
+
+        var scope = ru.rutcampustrack.shared.security.teacher.TeacherReportScope.of(List.of(
+                new ru.rutcampustrack.shared.security.teacher.TeacherReportScope.Tuple(502, 602)));
+        var evidence = new LocalReportAuthority.SelectedStudentSnapshot(scope, 1);
+        var captured = local.captureSelected(identity, evidence);
+        var bytes = "<html>exact student</html>".getBytes(StandardCharsets.UTF_8);
+
+        UUID operation = UUID.randomUUID();
+        insertIdentityOperation(operation);
+        jdbc.update(
+                "INSERT INTO academic_identity_operation_targets"
+                        + " (operation_id,target_index,user_id,previous_academic_revision,fenced)"
+                        + " VALUES(?,0,202,1,TRUE)",
+                operation);
+        assertThatThrownBy(() -> jobs.complete(job.id(), job.leaseId(), bytes,
+                "text/html", 1, false, captured))
+                .isInstanceOfSatisfying(ResponseStatusException.class,
+                        e -> assertThat(e.getStatusCode()).isEqualTo(HttpStatus.SERVICE_UNAVAILABLE));
+        jdbc.update("UPDATE academic_identity_operations SET phase='SUCCEEDED' WHERE operation_id=?",
+                operation);
+
+        var ready = jobs.complete(job.id(), job.leaseId(), bytes, "text/html", 1, false, captured);
+        assertThat(ready.identity().report().teacherStats().studentId()).isEqualTo(202L);
+        assertThat(ready.identity().selectedStudentAcademicRevision()).isEqualTo(1L);
+        assertThat(jobs.content(ready)).isEqualTo(bytes);
+
+        jdbc.update("UPDATE academic_profiles SET academic_revision=academic_revision+1 WHERE id=203");
+        assertThat(jobs.content(ready)).isEqualTo(bytes);
+        jdbc.update("UPDATE academic_profiles SET academic_revision=academic_revision+1 WHERE id=202");
+        assertThatThrownBy(() -> jobs.content(ready))
+                .isInstanceOfSatisfying(ResponseStatusException.class,
+                        e -> assertThat(e.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN));
+        assertThatThrownBy(() -> local.captureSelected(identity, evidence))
+                .isInstanceOfSatisfying(ResponseStatusException.class,
+                        e -> assertThat(e.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN));
+
+        var newer = claim(jobs.enqueue(UUID.randomUUID(), identity, false));
+        var newerCaptured = local.captureSelected(identity,
+                new LocalReportAuthority.SelectedStudentSnapshot(scope, 2));
+        var newerReady = jobs.complete(newer.id(), newer.leaseId(), bytes, "text/html", 1, false,
+                newerCaptured);
+        closeAssignment(2);
+        local.require(identity, false);
+        assertThatThrownBy(() -> jobs.content(newerReady))
+                .isInstanceOfSatisfying(ResponseStatusException.class,
+                        e -> assertThat(e.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN));
+    }
+
+    private static IssueReportDownloadTicketRequest selectedStudentSelector(long studentId) {
+        return new IssueReportDownloadTicketRequest(
+                ReportDownloadKind.TEACHER_STATS, null,
+                new IssueReportDownloadTicketRequest.TeacherStatsParameters(
+                        1L, "students", null, null, null, null, null, ReportDownloadFormat.HTML,
+                        studentId),
+                null, null, null);
+    }
+
+    private InternalJwtClaims teacherReportActor() {
+        var teacher =
+                new InternalJwtClaims(
+                        101, actor.sessionId(), 1, 1, "TEACHER", "ACTIVE", null, false, false);
+        jdbc.update(
+                "INSERT INTO academic_role_eligibility(user_id,role,status,group_id,updated_at)"
+                        + " VALUES(101,'TEACHER','ACTIVE',NULL,NOW())");
+        jdbc.update(
+                "INSERT INTO semesters(id,name,is_active,date_from,date_to)"
+                        + " VALUES(1,'Current',TRUE,current_date-2,current_date+2)");
+        jdbc.update(
+                "INSERT INTO groups(id,name,is_active)"
+                        + " VALUES(501,'JOB-501',true),(502,'JOB-502',true)");
+        new org.springframework.transaction.support.TransactionTemplate(
+                        new DataSourceTransactionManager(jdbc.getDataSource()))
+                .executeWithoutResult(
+                        tx -> {
+                            jdbc.update(
+                                    "INSERT INTO subjects(id,name,type,group_id,semester_id)"
+                                        + " VALUES(601,'One','lecture',501,1),(602,'Two','lecture',502,1)");
+                            jdbc.update(
+                                    "INSERT INTO subject_lesson_types(subject_id,lesson_type)"
+                                            + " VALUES(601,'lecture'),(602,'lecture')");
+                        });
+        jdbc.update(
+                "INSERT INTO"
+                    + " assignments(id,teacher_id,semester_id,group_id,subject_id,lesson_type,lifecycle_state,valid_from)"
+                    + " VALUES(1,101,1,501,601,'lecture','ACTIVE',current_date-1),(2,101,1,502,602,'lecture','ACTIVE',current_date-1)");
+        return teacher;
     }
 
     @Test

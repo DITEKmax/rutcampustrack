@@ -16962,6 +16962,10 @@
           "format" : {
             "type" : "string",
             "enum" : [ "docx", "pdf", "png", "html", "xlsx" ]
+          },
+          "studentId" : {
+            "type" : "integer",
+            "format" : "int64"
           }
         },
         "required" : [ "format", "scope", "semesterId" ]

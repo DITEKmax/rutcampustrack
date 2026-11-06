@@ -116,6 +116,7 @@ public interface TeacherApi {
     ResponseEntity<StatsResponse> stats(
             @RequestParam String semesterId,
             @RequestParam String scope,
+            @RequestParam(required = false) String studentId,
             @RequestParam(required = false) String groupId,
             @RequestParam(required = false) String subjectId,
             @RequestParam(required = false, name = "lessonType") List<String> lessonTypes,
@@ -131,6 +132,7 @@ public interface TeacherApi {
     ResponseEntity<byte[]> exportStats(
             @RequestParam String semesterId,
             @RequestParam String scope,
+            @RequestParam(required = false) String studentId,
             @RequestParam(required = false) String groupId,
             @RequestParam(required = false) String subjectId,
             @RequestParam(required = false, name = "lessonType") List<String> lessonTypes,

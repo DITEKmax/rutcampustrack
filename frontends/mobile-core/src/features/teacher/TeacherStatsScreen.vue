@@ -39,13 +39,11 @@ const props = withDefaults(
   defineProps<{
     api: TeacherApi | null;
     semesterId: number | null;
-    initialGroupId?: number | null;
     closeToolSignal?: number;
     realtimeRevision?: number;
     reportDownload?: ReportDownloadPort | null;
   }>(),
   {
-    initialGroupId: null,
     closeToolSignal: 0,
     realtimeRevision: 0,
     reportDownload: null,
@@ -60,7 +58,6 @@ const emit = defineEmits<{
 }>();
 
 interface TeacherStatsScopeMemory {
-  lessonTypes: string[];
   sorts: TeacherStatsSort[];
   filters: TeacherStatsFilter[];
 }
@@ -68,12 +65,10 @@ interface TeacherStatsScopeMemory {
 function createDefaultScopeMemory(): Record<TeacherStatsScope, TeacherStatsScopeMemory> {
   return {
     students: {
-      lessonTypes: [],
       sorts: [{ column: 'present', descending: false }],
       filters: [],
     },
     groups: {
-      lessonTypes: [],
       sorts: [{ column: 'present', descending: false }],
       filters: [],
     },
@@ -84,22 +79,26 @@ const scope = ref<TeacherStatsScope>('students');
 const authorizedGroups = ref<readonly { id: number; name: string }[]>([]);
 const catalogSubjectOptions = ref<readonly TeacherStatsSubjectOption[]>([]);
 const authorizedSubjectOptions = ref<readonly TeacherStatsSubjectOption[]>([]);
-const selectedGroupId = ref<number | null>(props.initialGroupId);
-const selectedSubjectId = ref<number | null>(null);
 const scopeMemory = ref(createDefaultScopeMemory());
-const selectedTypes = computed({
-  get: () => scopeMemory.value[scope.value].lessonTypes,
-  set: (value: string[]) => {
-    scopeMemory.value[scope.value].lessonTypes = value;
-  },
-});
+const groupTypes = ref<string[]>([]);
+const exactStudent = ref<{
+  id: number;
+  displayName: string;
+  groupId: number | null;
+  subjectId: number | null;
+  lessonTypes: string[];
+} | null>(null);
+const studentGroups = ref<NonNullable<TeacherStatsResponse['studentGroupOptions']>>([]);
+const studentSubjects = ref<readonly TeacherStatsSubjectOption[]>([]);
+let completeStudentOptions = false;
+const selectedTypes = computed(() => exactStudent.value?.lessonTypes ?? groupTypes.value);
 const directoryInput = ref<HTMLInputElement | null>(null);
 const directoryQuery = ref('');
 const directoryResult = ref<TeacherSearchResponse | null>(null);
-const selectedStudent = ref<TeacherSearchResponse['students'][number] | null>(null);
 const directoryStudents = computed(() =>
-  (directoryResult.value?.students ?? []).filter((student) =>
-    groups.value.some((group) => String(group.id) === student.groupId),
+  (directoryResult.value?.students ?? []).filter(
+    (student) => positiveInteger(student.id) &&
+      groups.value.some((group) => String(group.id) === student.groupId),
   ),
 );
 const directoryProjectionReady = ref(false);
@@ -123,7 +122,9 @@ const loading = computed(() => contextLoading.value || statsLoading.value);
 let contextRevision = 0;
 const contextReady = ref(false);
 const canChooseContext = computed(() => contextReady.value && authorizedGroups.value.length > 0);
-const canSearchDirectory = computed(() => canChooseContext.value && directoryProjectionReady.value);
+const canSearchDirectory = computed(
+  () => scope.value === 'students' && canChooseContext.value && directoryProjectionReady.value,
+);
 const error = ref<string | null>(null);
 const projectionError = ref<string | null>(null);
 const revision = ref(0);
@@ -138,7 +139,7 @@ const activeTool = ref<'filters' | 'sort' | null>(null);
 const filtersOpen = computed(() => activeTool.value === 'filters');
 const filterDrafts = ref<Record<string, TeacherStatsRangeDraft>>({});
 const sortDrafts = ref<TeacherStatsSort[]>([]);
-const toolPanel = ref<HTMLElement | null>(null);
+const toolForm = ref<HTMLFormElement | null>(null);
 const filterTrigger = ref<HTMLButtonElement | null>(null);
 const sortTrigger = ref<HTMLButtonElement | null>(null);
 watch(activeTool, (tool) => emit('tool-open', tool !== null), { flush: 'sync' });
@@ -160,24 +161,33 @@ const visibleRows = computed(() =>
         key: row.groupId,
         name: row.groupName,
         groupId: row.groupId,
-        selected: false,
       }))
     : studentRows.value.map((row) => ({
         ...row,
         key: row.studentId,
         name: row.displayName,
         groupId: null,
-        selected:
-          selectedStudent.value?.id === String(row.studentId) &&
-          selectedStudent.value?.groupId === String(selectedGroupId.value),
       })),
 );
-const groupOptions = computed(() =>
-  groups.value.map((group) => ({ value: String(group.id), label: group.name })),
-);
-const subjectOptions = computed(() =>
-  subjects.value.map((subject) => ({ value: String(subject.id), label: subject.name })),
-);
+const groupOptions = computed(() => [
+  { value: '', label: 'Все группы' },
+  ...studentGroups.value.map((group) => ({ value: String(group.id), label: group.name })),
+]);
+const subjectOptions = computed(() => {
+  const groupId = exactStudent.value?.groupId;
+  const options = studentSubjects.value
+    .filter((option) => groupId == null || option.groupId === groupId)
+    .map((subject) => {
+      const group = studentGroups.value.find((item) => item.id === subject.groupId);
+      return {
+        value: `${subject.groupId}:${subject.subjectId}`,
+        label: groupId == null && group ? `${subject.subjectName} · ${group.name}` : subject.subjectName,
+        groupId: subject.groupId,
+        subjectId: subject.subjectId,
+      };
+    });
+  return [{ value: '', label: 'Все предметы', groupId: null, subjectId: null }, ...options];
+});
 const visibleSorts = computed(() =>
   sorts.value.length ? sorts.value : [{ column: 'present', descending: false }],
 );
@@ -198,6 +208,12 @@ const displayedStats = computed(() =>
     ? stats.value
     : null,
 );
+const exportQuery = computed(() => {
+  const query = statsQuery.value;
+  if (query?.scope !== scope.value || query.studentId !== exactStudent.value?.id) return null;
+  if (exactStudent.value && !displayedStats.value?.students[0]?.present.denominator) return null;
+  return query;
+});
 let disposed = false;
 
 const groups = computed(() => authorizedGroups.value);
@@ -206,14 +222,28 @@ const singleAuthorizedGroup = computed(() =>
     ? groups.value[0]
     : null,
 );
-const subjects = computed(() => subjectsForGroup(selectedGroupId.value));
-const types = computed(() =>
-  scope.value === 'groups'
-    ? lessonTypesForContext(null, null)
-    : selectedGroupId.value && selectedSubjectId.value
-      ? lessonTypesForContext(selectedGroupId.value, selectedSubjectId.value)
-      : [],
-);
+const types = computed(() => {
+  const student = exactStudent.value;
+  if (student) return lessonTypesForContext(studentSubjects.value, student.groupId, student.subjectId);
+  return scope.value === 'groups' ? lessonTypesForContext(authorizedSubjectOptions.value) : [];
+});
+const journalQuery = computed<TeacherJournalQuery | null>(() => {
+  const student = exactStudent.value;
+  const semesterId = props.semesterId;
+  if (!student?.groupId || !student.subjectId || !semesterId || loading.value || error.value)
+    return null;
+  const lessonTypes = student.lessonTypes.length ? student.lessonTypes : types.value;
+  if (!lessonTypes.length || lessonTypes.some((type) => !types.value.includes(type))) return null;
+  return {
+    semesterId,
+    groupId: student.groupId,
+    subjectId: student.subjectId,
+    lessonTypes: [...lessonTypes],
+    pastOnly: true,
+    page: 0,
+    pageSize: 100,
+  };
+});
 const groupRows = computed(() => displayedStats.value?.groups ?? []);
 const studentRows = computed(() => displayedStats.value?.students ?? []);
 const visibleRowCount = computed(() =>
@@ -221,12 +251,11 @@ const visibleRowCount = computed(() =>
 );
 
 watch(
-  () => [props.api, props.semesterId, props.initialGroupId] as const,
+  () => [props.api, props.semesterId] as const,
   () => {
     clearDirectorySearch();
-    selectedGroupId.value = props.initialGroupId;
-    selectedSubjectId.value = null;
     scope.value = 'students';
+    groupTypes.value = [];
     scopeMemory.value = createDefaultScopeMemory();
     stats.value = null;
     statsQuery.value = null;
@@ -257,18 +286,32 @@ function cancelDirectoryRequest(): void {
   directoryResult.value = null;
   directoryError.value = null;
 }
-function clearDirectorySearch(restoreFocus = false): void {
+function clearStudentOptions(): void {
+  studentGroups.value = [];
+  studentSubjects.value = [];
+  completeStudentOptions = false;
+}
+function clearDirectorySearch(): void {
   cancelDirectoryRequest();
+  exactStudent.value = null;
+  clearStudentOptions();
   directoryQuery.value = '';
-  selectedStudent.value = null;
-  if (restoreFocus) void nextTick(() => directoryInput.value?.focus?.());
+}
+function clearDirectoryInput(): void {
+  const hadStudent = exactStudent.value !== null;
+  clearDirectorySearch();
+  if (hadStudent) {
+    if (directoryProjectionReady.value) void loadStats();
+    else void loadContext();
+  }
+  void nextTick(() => directoryInput.value?.focus());
 }
 watch(
   directoryQuery,
   () => {
     cancelDirectoryRequest();
-    selectedStudent.value = null;
-    if (!directoryQuery.value.trim() || directoryValidation.value) return;
+    if (!directoryQuery.value.trim() || directoryValidation.value ||
+      directoryQuery.value === exactStudent.value?.displayName) return;
     directoryTimer = setTimeout(() => {
       directoryTimer = null;
       void loadDirectorySearch();
@@ -307,30 +350,20 @@ async function loadDirectorySearch(): Promise<void> {
   }
 }
 function chooseDirectoryStudent(student: TeacherSearchResponse['students'][number]): void {
+  const id = positiveInteger(student.id);
   if (
+    id === null ||
     !canSearchDirectory.value ||
     !directoryStudents.value.some(
       (value) => value.id === student.id && value.groupId === student.groupId,
     )
   )
     return;
-  const group = groups.value.find((value) => String(value.id) === student.groupId);
-  if (!group) return;
-  const sameGroup = selectedGroupId.value === group.id;
-  scope.value = 'students';
   closeTool();
-  if (
-    !sameGroup ||
-    !subjectsForGroup(group.id).some((subject) => subject.id === selectedSubjectId.value)
-  ) {
-    selectedGroupId.value = group.id;
-    selectedSubjectId.value = null;
-    clearChildCriteria();
-  }
-  selectedTypes.value = selectedTypes.value.filter((type) => types.value.includes(type));
   cancelDirectoryRequest();
-  selectedStudent.value = student;
-  persistContext();
+  clearStudentOptions();
+  exactStudent.value = { id, displayName: student.displayName, groupId: null, subjectId: null, lessonTypes: [] };
+  directoryQuery.value = student.displayName;
   void loadStats();
 }
 
@@ -347,7 +380,6 @@ function studentResultContext(student: TeacherSearchResponse['students'][number]
 function invalidateDirectoryProjection(): void {
   directoryProjectionReady.value = false;
   cancelDirectoryRequest();
-  selectedStudent.value = null;
 }
 
 watch(
@@ -355,12 +387,20 @@ watch(
   () => {
     directoryProjectionEpoch += 1;
     invalidateDirectoryProjection();
+    if (exactStudent.value) {
+      revision.value += 1;
+      stats.value = null;
+      statsQuery.value = null;
+      statsLoading.value = true;
+      clearStudentOptions();
+    }
   },
   { flush: 'sync' },
 );
 
 async function loadContext(): Promise<void> {
   invalidateDirectoryProjection();
+  clearStudentOptions();
   const directoryEpoch = directoryProjectionEpoch;
   closeTool();
   projectionError.value = null;
@@ -394,7 +434,7 @@ async function loadContext(): Promise<void> {
     contextReady.value = true;
     directoryProjectionReady.value = directoryEpoch === directoryProjectionEpoch;
     contextLoading.value = false;
-    if (catalog.groups.length === 0) {
+    if (catalog.groups.length === 0 && !exactStudent.value) {
       stats.value = null;
       statsQuery.value = null;
       return;
@@ -402,6 +442,10 @@ async function loadContext(): Promise<void> {
     await loadStatsForRevision(++revision.value);
   } catch (cause) {
     if (!isCurrentContext(current) || cause instanceof StaleSessionGenerationError) return;
+    if (exactStudent.value && isAuthorityLoss(cause)) {
+      failProjection(cause, 'Не удалось получить назначения преподавателя.');
+      return;
+    }
     error.value =
       cause instanceof TeacherApiError
         ? cause.message
@@ -433,28 +477,17 @@ async function refreshProjection(): Promise<void> {
     );
     authorizedSubjectOptions.value = mergeSubjectOptions(catalogSubjectOptions.value, []);
     directoryProjectionReady.value = directoryEpoch === directoryProjectionEpoch;
-    if (
-      selectedGroupId.value !== null &&
-      !catalog.groups.some((group) => group.id === selectedGroupId.value)
-    ) {
-      selectedGroupId.value = null;
-      selectedSubjectId.value = null;
-      selectedStudent.value = null;
-      closeTool();
-      stats.value = null;
-      statsQuery.value = null;
-      return;
-    }
     projectionError.value = null;
-    await loadStatsForRevision(++revision.value, true);
+    await loadStatsForRevision(++revision.value, !exactStudent.value);
   } catch (cause) {
     if (!isCurrentContext(current) || cause instanceof StaleSessionGenerationError) return;
+    if (exactStudent.value) statsLoading.value = false;
     failProjection(cause, 'Не удалось получить назначения преподавателя.');
   }
 }
 
 async function loadStats(): Promise<void> {
-  if (!canChooseContext.value) return;
+  if (!contextReady.value) return;
   const current = ++revision.value;
   await loadStatsForRevision(current);
 }
@@ -483,22 +516,20 @@ async function loadStatsForRevision(current: number, retainProjection = false): 
     }
     const response = await api.stats(query);
     if (!isCurrent(current)) return;
-    const currentAssignmentOptions = catalogSubjectOptions.value.filter(
-      (option) => query.groupId == null || option.groupId === query.groupId,
-    );
-    const responseOptions = mergeSubjectOptions(currentAssignmentOptions, response.subjectOptions);
-    authorizedSubjectOptions.value =
-      query.groupId == null
-        ? responseOptions
-        : [
-            ...authorizedSubjectOptions.value.filter((option) => option.groupId !== query.groupId),
-            ...responseOptions,
-          ];
+    if (query.studentId !== undefined) {
+      const fullContext = query.groupId == null;
+      if (fullContext || !completeStudentOptions) setStudentOptions(response, fullContext);
+      if (!fullContext && !completeStudentOptions)
+        void refreshStudentOptions(api, query.semesterId, query.studentId, current);
+    } else {
+      authorizedSubjectOptions.value = mergeSubjectOptions(catalogSubjectOptions.value, response.subjectOptions);
+    }
     stats.value = response;
     statsQuery.value = query;
   } catch (cause) {
     if (!isCurrent(current) || cause instanceof StaleSessionGenerationError) return;
-    if (retainProjection) failProjection(cause, 'Не удалось получить статистику.');
+    if (retainProjection || (exactStudent.value && isAuthorityLoss(cause)))
+      failProjection(cause, 'Не удалось получить статистику.');
     else {
       error.value =
         cause instanceof TeacherApiError ? cause.message : 'Не удалось получить статистику.';
@@ -509,11 +540,62 @@ async function loadStatsForRevision(current: number, retainProjection = false): 
   }
 }
 
+function setStudentOptions(response: TeacherStatsResponse, complete: boolean): void {
+  studentGroups.value = response.studentGroupOptions ?? groups.value.filter((group) =>
+    response.subjectOptions.some((option) => option.groupId === group.id),
+  );
+  studentSubjects.value = response.subjectOptions;
+  completeStudentOptions = complete;
+}
+
+async function refreshStudentOptions(
+  api: TeacherApi,
+  semesterId: number,
+  studentId: number,
+  current: number,
+): Promise<void> {
+  // A scoped read can succeed even if another group needed for this menu is unavailable.
+  try {
+    const response = await api.stats({ semesterId, scope: 'students', studentId });
+    const student = exactStudent.value;
+    if (!isCurrent(current) || student?.id !== studentId) return;
+    setStudentOptions(response, true);
+    if (pruneStudentContext(student)) {
+      closeTool();
+      void loadStats();
+    }
+  } catch (cause) {
+    if (isCurrent(current) && isAuthorityLoss(cause))
+      failProjection(cause, 'Не удалось получить статистику.');
+  }
+}
+
+function pruneStudentContext(student: NonNullable<typeof exactStudent.value>): boolean {
+  const { groupId, subjectId, lessonTypes } = student;
+  if (groupId !== null && !studentGroups.value.some((group) => group.id === groupId)) {
+    student.groupId = null;
+    student.subjectId = null;
+    student.lessonTypes = [];
+    return true;
+  }
+  if (subjectId !== null && !studentSubjects.value.some((subject) =>
+    subject.groupId === groupId && subject.subjectId === subjectId,
+  )) student.subjectId = null;
+  const validTypes = lessonTypes.filter((type) => types.value.includes(type));
+  if (validTypes.length !== lessonTypes.length) student.lessonTypes = validTypes;
+  return student.subjectId !== subjectId || validTypes.length !== lessonTypes.length;
+}
+
+function isAuthorityLoss(cause: unknown): boolean {
+  return cause instanceof TeacherApiError && [401, 403, 404].includes(cause.response.status);
+}
+
 function failProjection(cause: unknown, fallback: string): void {
   const message = cause instanceof Error ? cause.message : fallback;
-  if (cause instanceof TeacherApiError && [401, 403, 404].includes(cause.response.status)) {
+  if (isAuthorityLoss(cause)) {
     // Confirmed authority/target loss still retires the inadmissible projection.
     invalidateDirectoryProjection();
+    clearStudentOptions();
     closeTool();
     stats.value = null;
     statsQuery.value = null;
@@ -527,14 +609,26 @@ function failProjection(cause: unknown, fallback: string): void {
 }
 
 function currentStatsQuery(): TeacherStatsQuery | null {
+  const semesterId = props.semesterId;
+  if (!contextReady.value || !semesterId) return null;
+  if (scope.value === 'students') {
+    const student = exactStudent.value;
+    if (!student) return null;
+    return {
+      semesterId,
+      scope: 'students',
+      studentId: student.id,
+      ...(student.groupId === null ? {} : { groupId: student.groupId }),
+      ...(student.subjectId === null ? {} : { subjectId: student.subjectId }),
+      lessonTypes: [...student.lessonTypes],
+      sorts: sorts.value.map((sort) => ({ ...sort })),
+      filters: scopeMemory.value.students.filters.map((filter) => ({ ...filter })),
+    };
+  }
   if (
-    !contextReady.value ||
     groups.value.length === 0 ||
-    (scope.value === 'students' &&
-      (!groups.value.some((group) => group.id === selectedGroupId.value) ||
-        !subjects.value.some((subject) => subject.id === selectedSubjectId.value))) ||
-    !selectedTypes.value.length ||
-    selectedTypes.value.some((type) => !types.value.includes(type))
+    !groupTypes.value.length ||
+    groupTypes.value.some((type) => !types.value.includes(type))
   )
     return null;
   return teacherStatsQueryForContext(currentRouteContext());
@@ -544,30 +638,17 @@ function restoreContext(semesterId: number): void {
   const restored = readRecoverableTeacherStatsContext();
   const saved = restored.context;
   routeNotice.value = restored.notice;
+  if (exactStudent.value) return;
   if (!saved || saved.semesterId !== semesterId) {
     scope.value = 'students';
-    selectedGroupId.value = groups.value.some((group) => group.id === props.initialGroupId)
-      ? props.initialGroupId
-      : null;
-    selectedSubjectId.value = null;
-    selectedTypes.value = [];
+    groupTypes.value = [];
     sorts.value = [{ column: 'present', descending: false }];
     return;
   }
 
   scope.value = saved.scope;
-  selectedGroupId.value = groups.value.some((group) => group.id === saved.groupId)
-    ? saved.groupId
-    : null;
-  selectedSubjectId.value = subjectsForGroup(selectedGroupId.value).some(
-    (subject) => subject.id === saved.subjectId,
-  )
-    ? saved.subjectId
-    : null;
-  selectedTypes.value =
-    scope.value === 'groups' || selectedSubjectId.value
-      ? saved.lessonTypes.filter((type) => types.value.includes(type))
-      : [];
+  if (scope.value === 'groups')
+    groupTypes.value = saved.lessonTypes.filter((type) => types.value.includes(type));
   sorts.value = saved.sorts.map((sort) => ({ ...sort }));
   scopeMemory.value[scope.value].filters = saved.filters.map((filter) => ({ ...filter }));
 }
@@ -580,9 +661,9 @@ function currentRouteContext(): TeacherStatsRouteContext {
   return {
     semesterId: props.semesterId,
     scope: scope.value,
-    groupId: scope.value === 'groups' ? null : selectedGroupId.value,
-    subjectId: scope.value === 'groups' ? null : selectedSubjectId.value,
-    lessonTypes: selectedTypes.value,
+    groupId: null,
+    subjectId: null,
+    lessonTypes: scope.value === 'groups' ? groupTypes.value : [],
     search: '',
     sorts: sorts.value,
     filters: scopeMemory.value[scope.value].filters,
@@ -591,57 +672,53 @@ function currentRouteContext(): TeacherStatsRouteContext {
 
 function switchScope(next: TeacherStatsScope): void {
   if (!canChooseContext.value || scope.value === next) return;
-  cancelDirectoryRequest();
-  selectedStudent.value = null;
+  clearDirectorySearch();
   scope.value = next;
   fieldErrors.value = {};
   closeTool();
   persistContext();
-  void loadStats();
+  if (next === 'students' && !directoryProjectionReady.value) void loadContext();
+  else void loadStats();
 }
 
 function changeGroup(rawValue: string): void {
-  if (!canChooseContext.value) return;
-  const nextGroupId = positiveInteger(rawValue);
-  const validGroupId =
-    nextGroupId && groups.value.some((value) => value.id === nextGroupId) ? nextGroupId : null;
-  cancelDirectoryRequest();
-  selectedStudent.value = null;
+  const student = exactStudent.value;
+  if (!canChooseContext.value || !student || !groupOptions.value.some((option) => option.value === rawValue)) return;
+  const groupId = positiveInteger(rawValue);
+  if (student.groupId === groupId) return;
+  student.groupId = groupId;
+  student.subjectId = null;
+  student.lessonTypes = [];
   closeTool();
-  selectedGroupId.value = validGroupId;
-  selectedSubjectId.value = null;
-  clearChildCriteria();
-  persistContext();
   void loadStats();
 }
 
 function changeSubject(rawValue: string): void {
-  if (!canChooseContext.value) return;
-  cancelDirectoryRequest();
+  const student = exactStudent.value;
+  const option = subjectOptions.value.find((item) => item.value === rawValue);
+  if (!canChooseContext.value || !student || !option) return;
+  const groupId = option.groupId ?? student.groupId;
+  if (student.groupId === groupId && student.subjectId === option.subjectId) return;
+  student.groupId = groupId;
+  student.subjectId = option.subjectId;
+  student.lessonTypes = [];
   closeTool();
-  const nextSubjectId = positiveInteger(rawValue);
-  selectedSubjectId.value =
-    nextSubjectId && subjects.value.some((value) => value.id === nextSubjectId)
-      ? nextSubjectId
-      : null;
-  clearChildCriteria();
-  persistContext();
   void loadStats();
 }
 
-function clearChildCriteria(): void {
-  scopeMemory.value.students.lessonTypes = [];
-}
-
-function toggleType(type: string): void {
-  if (!canChooseContext.value || !types.value.includes(type)) return;
-  cancelDirectoryRequest();
+function toggleType(type: string | null): void {
+  if (!canChooseContext.value || (type !== null && !types.value.includes(type))) return;
+  const student = exactStudent.value;
+  if (type === null && !student?.lessonTypes.length) return;
   closeTool();
-  const next = selectedTypes.value.includes(type)
-    ? selectedTypes.value.filter((value) => value !== type)
-    : [...selectedTypes.value, type];
-  selectedTypes.value = next;
-  persistContext();
+  const next = type === null ? [] : selectedTypes.value.includes(type)
+      ? selectedTypes.value.filter((value) => value !== type)
+      : [...selectedTypes.value, type];
+  if (student) student.lessonTypes = next;
+  else {
+    groupTypes.value = next;
+    persistContext();
+  }
   void loadStats();
 }
 
@@ -722,7 +799,7 @@ function openTool(tool: 'filters' | 'sort'): void {
   sortDrafts.value = visibleSorts.value.map((sort) => ({ ...sort }));
   fieldErrors.value = {};
   activeTool.value = tool;
-  void nextTick(() => toolPanel.value?.querySelector?.<HTMLElement>('input, button')?.focus?.());
+  void nextTick(() => toolForm.value?.querySelector<HTMLElement>('input, button')?.focus());
 }
 
 function closeTool(restoreFocus = false): void {
@@ -739,15 +816,28 @@ function toolKeydown(event: KeyboardEvent): void {
   closeTool(true);
 }
 
-function resetFilterDraft(): void {
+function resetFilters(): void {
   if (!canChooseContext.value) return;
-  filterDrafts.value = {};
-  fieldErrors.value = {};
+  if (filtersOpen.value) {
+    filterDrafts.value = {};
+    fieldErrors.value = {};
+    return;
+  }
+  clearMetricFilters();
 }
 
-function resetSortDraft(): void {
+function resetSort(): void {
   if (!canChooseContext.value) return;
-  sortDrafts.value = [{ column: 'present', descending: false }];
+  const defaults = [{ column: 'present', descending: false }];
+  if (activeTool.value === 'sort') {
+    sortDrafts.value = defaults;
+    return;
+  }
+  if (!activeSort.value) return;
+  sorts.value = defaults;
+  void nextTick(() => sortTrigger.value?.focus());
+  persistContext();
+  void loadStats();
 }
 
 function applySort(): void {
@@ -759,10 +849,10 @@ function applySort(): void {
 }
 
 function clearMetricFilters(): void {
-  if (!canChooseContext.value) return;
+  if (!canChooseContext.value || !activeCriteria.value) return;
   scopeMemory.value[scope.value].filters = [];
-  closeTool();
-  fieldErrors.value = {};
+  if (filtersOpen.value) closeTool();
+  void nextTick(() => filterTrigger.value?.focus());
   persistContext();
   void loadStats();
 }
@@ -794,23 +884,7 @@ function openGroup(groupId: number): void {
 }
 
 function openJournal(): void {
-  if (
-    scope.value !== 'students' ||
-    !currentStatsQuery() ||
-    !selectedGroupId.value ||
-    !selectedSubjectId.value ||
-    !props.semesterId
-  )
-    return;
-  emit('open-journal', {
-    semesterId: props.semesterId,
-    groupId: selectedGroupId.value,
-    subjectId: selectedSubjectId.value,
-    lessonTypes: [...selectedTypes.value],
-    pastOnly: true,
-    page: 0,
-    pageSize: 100,
-  });
+  if (journalQuery.value) emit('open-journal', journalQuery.value);
 }
 
 function formatMetric(metric: TeacherStatsMetric | undefined): string {
@@ -847,22 +921,13 @@ function mergeSubjectOptions(
   return [...values.values()];
 }
 
-function subjectsForGroup(groupId: number | null): Array<{ id: number; name: string }> {
-  if (groupId == null) return [];
-  const values = new Map<number, { id: number; name: string }>();
-  for (const option of authorizedSubjectOptions.value) {
-    if (option.groupId === groupId)
-      values.set(option.subjectId, {
-        id: option.subjectId,
-        name: option.subjectName,
-      });
-  }
-  return [...values.values()].sort((left, right) => left.name.localeCompare(right.name, 'ru'));
-}
-
-function lessonTypesForContext(groupId: number | null, subjectId: number | null): string[] {
+function lessonTypesForContext(
+  options: readonly TeacherStatsSubjectOption[],
+  groupId: number | null = null,
+  subjectId: number | null = null,
+): string[] {
   const values = new Set<string>();
-  for (const option of authorizedSubjectOptions.value) {
+  for (const option of options) {
     if (
       (groupId == null || option.groupId === groupId) &&
       (subjectId == null || option.subjectId === subjectId)
@@ -903,15 +968,37 @@ useProjectionRefresh(refreshProjection, { revision: () => props.realtimeRevision
       <button
         type="button"
         class="teacher-stats__icon-button teacher-stats__journal-button"
-        aria-label="Открыть журнал"
+        aria-label="Открыть журнал группы"
         data-teacher-action="journal-open"
-        :disabled="scope !== 'students' || !currentStatsQuery()"
+        :disabled="!journalQuery"
         @click="openJournal"
       >
         <MobileIcon name="table" />
       </button>
     </header>
+    <div
+      class="teacher-stats__tabs"
+      aria-label="Разрез статистики"
+    >
+      <button
+        type="button"
+        :disabled="!canChooseContext"
+        :aria-pressed="scope === 'students'"
+        @click="switchScope('students')"
+      >
+        По студентам
+      </button>
+      <button
+        type="button"
+        :disabled="!canChooseContext"
+        :aria-pressed="scope === 'groups'"
+        @click="switchScope('groups')"
+      >
+        По моим группам
+      </button>
+    </div>
     <form
+      v-if="scope === 'students'"
       class="teacher-stats__directory"
       role="search"
       aria-label="Поиск по имени"
@@ -920,7 +1007,7 @@ useProjectionRefresh(refreshProjection, { revision: () => props.realtimeRevision
       <label
         class="teacher-stats__field"
         for="teacher-stats-directory"
-      ><span>Поиск по имени</span><input
+      ><span class="teacher-stats__visually-hidden">Поиск по имени</span><input
         id="teacher-stats-directory"
         ref="directoryInput"
         v-model="directoryQuery"
@@ -932,11 +1019,11 @@ useProjectionRefresh(refreshProjection, { revision: () => props.realtimeRevision
         placeholder="Фамилия, имя или отчество"
       ></label>
       <button
-        v-if="directoryQuery"
+        v-if="directoryQuery || exactStudent"
         class="teacher-stats__icon-button"
         type="button"
         aria-label="Очистить поиск"
-        @click="clearDirectorySearch(true)"
+        @click="clearDirectoryInput"
       >
         <MobileIcon name="close" />
       </button>
@@ -950,7 +1037,7 @@ useProjectionRefresh(refreshProjection, { revision: () => props.realtimeRevision
       </p>
     </form>
     <section
-      v-if="directoryLoading || directoryError || directoryResult"
+      v-if="scope === 'students' && (directoryLoading || directoryError || directoryResult)"
       class="teacher-stats__directory-results"
       aria-label="Результаты поиска"
       :aria-busy="directoryLoading"
@@ -994,42 +1081,13 @@ useProjectionRefresh(refreshProjection, { revision: () => props.realtimeRevision
         </p>
       </template>
     </section>
-    <p
-      v-if="selectedStudent"
-      class="teacher-stats__search-context"
-      role="status"
-    >
-      {{ selectedStudent.displayName }} · {{ selectedStudent.groupName }}. Итоги по всей группе;
-      выбранный студент выделен в результатах.
-    </p>
     <StudentWarningBlock
       v-if="routeNotice"
       title="Отбор восстановлен"
       :message="routeNotice"
     />
-    <div
-      class="teacher-stats__tabs"
-      aria-label="Разрез статистики"
-    >
-      <button
-        type="button"
-        :disabled="!canChooseContext"
-        :aria-pressed="scope === 'students'"
-        @click="switchScope('students')"
-      >
-        По студентам
-      </button>
-      <button
-        type="button"
-        :disabled="!canChooseContext"
-        :aria-pressed="scope === 'groups'"
-        @click="switchScope('groups')"
-      >
-        По моим группам
-      </button>
-    </div>
     <section
-      v-if="scope === 'students'"
+      v-if="exactStudent"
       class="teacher-stats__context"
       aria-label="Выбор контекста"
     >
@@ -1037,32 +1095,39 @@ useProjectionRefresh(refreshProjection, { revision: () => props.realtimeRevision
         <span>Группа</span><HeadmanStatsSelect
           label="Группа"
           :disabled="!canChooseContext"
-          :model-value="String(selectedGroupId ?? '')"
+          :model-value="String(exactStudent.groupId ?? '')"
           :options="groupOptions"
-          placeholder="Выбери группу"
+          placeholder="Группа недоступна"
           @update:model-value="changeGroup"
         />
       </div>
-      <div
-        v-if="selectedGroupId"
-        class="teacher-stats__field"
-      >
+      <div class="teacher-stats__field">
         <span>Предмет</span><HeadmanStatsSelect
           label="Предмет"
-          :model-value="String(selectedSubjectId ?? '')"
+          :model-value="exactStudent.subjectId ? `${exactStudent.groupId}:${exactStudent.subjectId}` : ''"
           :options="subjectOptions"
-          placeholder="Выбери предмет"
-          :disabled="!canChooseContext || !selectedGroupId"
+          placeholder="Предмет недоступен"
+          :disabled="!canChooseContext || subjectOptions.length < 2"
           @update:model-value="changeSubject"
         />
       </div>
     </section>
     <fieldset
-      v-if="types.length"
+      v-if="types.length || exactStudent?.lessonTypes.length"
       class="teacher-stats__types"
+      :class="{ 'teacher-stats__types--exact': exactStudent }"
       :disabled="!canChooseContext"
     >
-      <legend>Тип занятия</legend><button
+      <legend>Тип занятия</legend>
+      <button
+        v-if="exactStudent"
+        type="button"
+        :aria-pressed="selectedTypes.length === 0"
+        @click="toggleType(null)"
+      >
+        Все типы
+      </button>
+      <button
         v-for="type in types"
         :key="type"
         type="button"
@@ -1073,9 +1138,25 @@ useProjectionRefresh(refreshProjection, { revision: () => props.realtimeRevision
       </button>
     </fieldset>
     <section
+      v-if="scope === 'groups' || exactStudent"
       class="teacher-stats__tools"
       aria-label="Отбор и выгрузка"
     >
+      <ExportButton
+        v-if="api && exportQuery"
+        inline
+        :port="reportDownload"
+        :formats="() => api!.statsExportFormats()"
+        :request="
+          (format) => ({
+            kind: 'TEACHER_STATS',
+            teacherStats: toTeacherStatsReportSelector(exportQuery!, format),
+          })
+        "
+        :scope-key="JSON.stringify(exportQuery)"
+        :disabled="loading || !!error"
+        @error="emit('error', $event)"
+      />
       <div class="teacher-stats__toolbar">
         <div class="teacher-stats__tool">
           <button
@@ -1087,16 +1168,21 @@ useProjectionRefresh(refreshProjection, { revision: () => props.realtimeRevision
             data-teacher-action="stats-filters"
             :aria-expanded="filtersOpen"
             :aria-pressed="activeCriteria"
-            aria-controls="teacher-stats-filters"
-            :data-active="activeCriteria"
+            :aria-controls="filtersOpen ? 'teacher-stats-filters' : undefined"
             @click="openTool('filters')"
           >
             <MobileIcon name="filter" />
           </button>
-          <span
-            v-if="activeCriteria"
-            class="teacher-stats__applied"
-          >Применены</span>
+          <button
+            v-if="activeCriteria || filtersOpen"
+            type="button"
+            class="teacher-stats__icon-button teacher-stats__boxed-action"
+            aria-label="Сбросить фильтры"
+            :disabled="!canChooseContext"
+            @click="resetFilters"
+          >
+            <MobileIcon name="retry" />
+          </button>
         </div>
         <div class="teacher-stats__tool">
           <button
@@ -1108,47 +1194,48 @@ useProjectionRefresh(refreshProjection, { revision: () => props.realtimeRevision
             data-teacher-action="stats-sort"
             :aria-expanded="activeTool === 'sort'"
             :aria-pressed="Boolean(activeSort)"
-            aria-controls="teacher-stats-sort"
-            :data-active="Boolean(activeSort)"
+            :aria-controls="activeTool === 'sort' ? 'teacher-stats-sort' : undefined"
             @click="openTool('sort')"
           >
             <MobileIcon name="sort" />
           </button>
-          <span
-            v-if="activeSort"
-            class="teacher-stats__applied"
-          >Применена</span>
+          <button
+            v-if="activeSort || activeTool === 'sort'"
+            type="button"
+            class="teacher-stats__icon-button teacher-stats__boxed-action"
+            aria-label="Сбросить сортировку"
+            :disabled="!canChooseContext"
+            @click="resetSort"
+          >
+            <MobileIcon name="retry" />
+          </button>
         </div>
-        <ExportButton
-          v-if="api && statsQuery"
-          :port="reportDownload"
-          :formats="() => api!.statsExportFormats()"
-          :request="
-            (format) => ({
-              kind: 'TEACHER_STATS',
-              teacherStats: toTeacherStatsReportSelector(statsQuery!, format),
-            })
-          "
-          :scope-key="JSON.stringify(statsQuery)"
-          :disabled="loading || !!error"
-          @error="emit('error', $event)"
-        />
       </div>
       <div
         v-if="activeTool"
-        ref="toolPanel"
         class="teacher-stats__tool-panel"
         role="region"
         :aria-label="activeTool === 'filters' ? 'Фильтры статистики' : 'Сортировка статистики'"
         @keydown="toolKeydown"
       >
+        <div class="teacher-stats__tool-heading">
+          <h2>{{ filtersOpen ? 'Фильтры' : 'Сортировка' }}</h2>
+          <button
+            type="button"
+            class="teacher-stats__icon-button"
+            :aria-label="filtersOpen ? 'Закрыть фильтры' : 'Закрыть сортировку'"
+            @click="closeTool(true)"
+          >
+            <MobileIcon name="close" />
+          </button>
+        </div>
         <form
           v-if="filtersOpen"
           id="teacher-stats-filters"
+          ref="toolForm"
           class="teacher-stats__filters"
           @submit.prevent="applyFilters"
         >
-          <h2>Фильтры</h2>
           <fieldset
             v-for="column in numericColumns"
             :key="column"
@@ -1183,21 +1270,6 @@ useProjectionRefresh(refreshProjection, { revision: () => props.realtimeRevision
           </fieldset>
           <div class="teacher-stats__filter-actions">
             <button
-              type="button"
-              class="teacher-stats__secondary"
-              :disabled="!canChooseContext"
-              @click="resetFilterDraft"
-            >
-              Сбросить фильтры
-            </button>
-            <button
-              type="button"
-              class="teacher-stats__secondary"
-              @click="closeTool(true)"
-            >
-              Отмена
-            </button>
-            <button
               type="submit"
               class="teacher-stats__apply"
               :disabled="!canChooseContext"
@@ -1209,16 +1281,17 @@ useProjectionRefresh(refreshProjection, { revision: () => props.realtimeRevision
         <form
           v-else
           id="teacher-stats-sort"
+          ref="toolForm"
           class="teacher-stats__filters"
           @submit.prevent="applySort"
         >
-          <h2>Сортировка</h2>
           <div
             v-for="(sort, index) in sortDrafts"
             :key="index"
             class="teacher-stats__sort-row"
           >
             <HeadmanStatsSelect
+              popup
               :label="index === 0 ? 'Порядок сортировки' : `Условие сортировки ${index + 1}`"
               :disabled="!canChooseContext"
               :model-value="`${sort.descending ? '-' : ''}${sort.column}`"
@@ -1228,7 +1301,7 @@ useProjectionRefresh(refreshProjection, { revision: () => props.realtimeRevision
             <button
               v-if="index > 0"
               type="button"
-              class="teacher-stats__icon-button"
+              class="teacher-stats__icon-button teacher-stats__boxed-action"
               :aria-label="`Удалить условие ${index + 1}`"
               :disabled="!canChooseContext"
               @click="removeSort(index)"
@@ -1239,28 +1312,13 @@ useProjectionRefresh(refreshProjection, { revision: () => props.realtimeRevision
           <button
             v-if="sortDrafts.length < teacherStatsSortColumns(scope).length"
             type="button"
-            class="teacher-stats__add-sort"
+            class="teacher-stats__add-sort teacher-stats__boxed-action"
             :disabled="!canChooseContext"
             @click="addSort"
           >
             <MobileIcon name="plus" />Добавить условие сортировки
           </button>
           <div class="teacher-stats__filter-actions">
-            <button
-              type="button"
-              class="teacher-stats__secondary"
-              :disabled="!canChooseContext"
-              @click="resetSortDraft"
-            >
-              Сбросить сортировку
-            </button>
-            <button
-              type="button"
-              class="teacher-stats__secondary"
-              @click="closeTool(true)"
-            >
-              Отмена
-            </button>
             <button
               type="submit"
               class="teacher-stats__apply"
@@ -1295,7 +1353,7 @@ useProjectionRefresh(refreshProjection, { revision: () => props.realtimeRevision
       Сессия преподавателя недоступна.
     </p>
     <p
-      v-else-if="contextReady && groups.length === 0"
+      v-else-if="contextReady && groups.length === 0 && !exactStudent"
       class="teacher-stats__state"
       role="status"
     >
@@ -1323,20 +1381,13 @@ useProjectionRefresh(refreshProjection, { revision: () => props.realtimeRevision
       {{
         scope === 'groups'
           ? 'Выбери тип занятия.'
-          : 'Выбери группу, предмет и хотя бы один тип занятия.'
+          : 'Найди студента по имени и выбери его в результатах поиска.'
       }}
     </p>
     <template v-else-if="displayedStats">
       <h2 class="teacher-stats__results-title">
-        {{ scope === 'groups' ? 'Мои группы' : 'Студенты' }}
+        {{ scope === 'groups' ? 'Мои группы' : 'Студент' }}
       </h2>
-      <p
-        v-if="selectedStudent && scope === 'students' && !visibleRows.some((row) => row.selected)"
-        class="teacher-stats__search-context"
-        role="status"
-      >
-        Найденный студент не входит в текущие результаты.
-      </p>
       <section
         v-if="visibleRowCount === 0"
         class="teacher-stats__state teacher-stats__empty"
@@ -1370,13 +1421,8 @@ useProjectionRefresh(refreshProjection, { revision: () => props.realtimeRevision
           v-for="row in visibleRows"
           :key="row.key"
           class="teacher-stats__card"
-          :data-selected="row.selected"
         >
           <h3>
-            <span
-              v-if="row.selected"
-              class="teacher-stats__selected-label"
-            >Найденный студент</span>
             <button
               v-if="row.groupId"
               type="button"
@@ -1410,7 +1456,7 @@ useProjectionRefresh(refreshProjection, { revision: () => props.realtimeRevision
                       'teacher-stats__symbol--absent': symbol === 'н',
                     },
                   ]"
-                >{{ symbol.toUpperCase() }}</span>
+                >{{ scope === 'groups' ? symbol.toUpperCase() : '' }}</span>
               </dt><dd :aria-label="metricLabel(metric.label, row[metric.column])">
                 {{ formatMetric(row[metric.column]) }}
               </dd>

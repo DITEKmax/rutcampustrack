@@ -112,7 +112,10 @@ public class AcademicReportPlanBuilder {
                         TeacherStatsRequest.newBuilder()
                                 .setSemesterId(p.semesterId())
                                 .setScope(scope)
-                                .addAllLessonTypes(types(p.lessonTypes()))
+                                .addAllLessonTypes(
+                                        p.studentId() != null && p.lessonTypes().isEmpty()
+                                                ? List.of()
+                                                : types(p.lessonTypes()))
                                 .addAllLessonIds(
                                         plan.getLessonsList().stream()
                                                 .map(LessonResponse::getId)
@@ -121,6 +124,7 @@ public class AcademicReportPlanBuilder {
                                 .addAllFilters(filters(p.filters(), scope));
                 if (p.groupId() != null) request.setGroupId(p.groupId());
                 if (p.subjectId() != null) request.setSubjectId(p.subjectId());
+                if (p.studentId() != null) request.setStudentId(p.studentId());
                 plan.setTeacherStats(
                         TeacherStatsExportRequest.newBuilder()
                                 .setStatsRequest(request)

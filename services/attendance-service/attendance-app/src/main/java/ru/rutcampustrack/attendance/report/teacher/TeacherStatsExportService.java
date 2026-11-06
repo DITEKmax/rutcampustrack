@@ -81,10 +81,13 @@ public final class TeacherStatsExportService {
                 query.scope() == ReportService.TeacherStatsScope.GROUPS
                         && query.groupId() == 0
                         && query.subjectId() == 0;
-        var authorized =
-                unscoped ? reportService.getAuthorizedTeacherStats(query, teacherId) : null;
-        ReportService.TeacherStatsResult stats =
-                unscoped ? authorized.stats() : reportService.getTeacherStats(query, teacherId);
+        boolean selectedStudent = query.studentId() != null;
+        var authorized = unscoped || selectedStudent
+                ? reportService.getAuthorizedTeacherStats(query, teacherId)
+                : null;
+        ReportService.TeacherStatsResult stats = authorized == null
+                ? reportService.getTeacherStats(query, teacherId)
+                : authorized.stats();
         String scopeHash = unscoped ? authorized.scope().sha256() : "";
         TeacherStatsExportModel model = buildModel(query, stats);
         byte[] content =
@@ -108,6 +111,7 @@ public final class TeacherStatsExportService {
                     .withDescription("Teacher statistics export exceeds the 20 MiB response limit")
                     .asRuntimeException();
         }
+        if (selectedStudent) reportService.requireSelectedTeacherStats(authorized, teacherId);
         String extension = format == ExportFormat.PNG ? "zip" : format.code;
         String filename =
                 "teacher-stats-"
@@ -155,7 +159,21 @@ public final class TeacherStatsExportService {
                         && query.subjectId() == 0;
         List<String> groupLabels;
         String subjectLabel;
-        if (allGroups) {
+        if (query.studentId() != null) {
+            groupLabels = stats.studentGroupOptions().stream()
+                    .filter(group -> query.groupId() == 0 || group.id() == query.groupId())
+                    .map(ReportService.TeacherStatsStudentGroupOption::name)
+                    .toList();
+            subjectLabel = query.subjectId() == 0
+                    ? "Предметы с текущим назначением преподавателя"
+                    : stats.subjectOptions().stream()
+                            .filter(option -> option.groupId() == query.groupId()
+                                    && option.subjectId() == query.subjectId())
+                            .map(ReportService.TeacherStatsSubjectOption::subjectName)
+                            .findFirst()
+                            .orElseThrow(() -> new AcademicServiceUnavailableException(
+                                    "Academic returned incomplete selected-student subject metadata"));
+        } else if (allGroups) {
             groupLabels =
                     stats.groups().stream()
                             .map(ReportService.TeacherGroupStats::groupName)

@@ -2747,6 +2747,8 @@ export interface components {
             filters?: string[];
             /** @enum {string} */
             format: "docx" | "pdf" | "png" | "html" | "xlsx";
+            /** Format: int64 */
+            studentId?: number;
         };
         /** @description Short-lived report download capability */
         ReportDownloadTicketResponse: {

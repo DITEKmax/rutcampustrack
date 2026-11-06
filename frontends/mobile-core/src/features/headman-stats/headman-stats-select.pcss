@@ -62,6 +62,31 @@
   background: var(--rct-color-accent-now);
 }
 
+.headman-stats-select--popup {
+  position: relative;
+}
+.headman-stats-select--popup .headman-stats-select__options {
+  max-block-size: calc(var(--rct-control-min-touch) * 4);
+  overflow: auto;
+  overscroll-behavior: contain;
+  padding: var(--rct-space-2);
+}
+.headman-stats-select__options[data-placement] {
+  position: absolute;
+  z-index: 1;
+  inset-inline: 0;
+  max-block-size: min(
+    calc(var(--rct-control-min-touch) * 4),
+    calc(var(--rct-select-available) - var(--rct-space-2) * 2)
+  );
+}
+.headman-stats-select__options[data-placement='up'] {
+  inset-block-end: calc(100% + var(--rct-space-2));
+}
+.headman-stats-select__options[data-placement='down'] {
+  inset-block-start: calc(100% + var(--rct-space-2));
+}
+
 .headman-stats-select__markers {
   display: inline-flex;
   gap: var(--rct-space-1);

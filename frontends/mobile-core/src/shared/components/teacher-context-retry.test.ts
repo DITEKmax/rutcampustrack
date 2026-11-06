@@ -637,14 +637,12 @@ describe('teacher live projections', () => {
     click(view.root, 'Итоги')
     await settle()
     await chooseStatsContext(view.root)
-    click(view.root, 'Выгрузка')
-    await settle()
     click(view.root, 'Скачать')
     await settle()
     expect(issued).toHaveLength(1)
     const originalId = issued[0]!.requestId
     expect(originalId).toMatch(/^[0-9a-f-]{36}$/)
-    const control = find(view.root, node => node.tag === 'section' && node.props.class === 'rct-export')!
+    const control = find(view.root, node => node.tag === 'section' && String(node.props.class).includes('rct-export--inline'))!
     expect(control.props['aria-busy']).toBe(true)
     const filter = find(view.root, node => node.props['data-teacher-action'] === 'stats-filters')!
     ;(filter.props.onClick as () => void)()
@@ -683,11 +681,11 @@ describe('teacher live projections', () => {
     view.state.realtimeRevision += 1
     await settle()
     expect(text(view.root)).not.toContain(transport.groupName)
+    expect(text(view.root)).toContain('Другая назначенная группа')
     click(view.root, 'По студентам')
     await settle()
-    click(view.root, 'Выбери группу')
-    await settle()
-    expect(text(view.root)).toContain('Другая назначенная группа')
+    expect(text(view.root)).toContain('Найди студента по имени')
+    expect(text(view.root)).not.toContain('Другая назначенная группа')
     expect(view.state.api).toBe(transport.api)
   })
 

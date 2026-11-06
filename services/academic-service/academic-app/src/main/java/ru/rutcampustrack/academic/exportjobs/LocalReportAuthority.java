@@ -60,7 +60,21 @@ public class LocalReportAuthority {
             case TEACHER_JOURNAL, TEACHER_STATS -> {
                 requireEligibility(actor, "TEACHER", null);
                 var current = teacherScope(actor.userId());
-                if (unscoped(report)) {
+                if (selectedStudent(report) != null) {
+                    var selector = report.teacherStats();
+                    if (selector.groupId() != null
+                            && current.tuples().stream().noneMatch(tuple ->
+                                    tuple.groupId() == selector.groupId()
+                                            && (selector.subjectId() == null
+                                                    || tuple.subjectId() == selector.subjectId()))) {
+                        throw denied();
+                    }
+                    if (ready && (!current.containsAll(identity.teacherScope())
+                            || !Objects.equals(identity.selectedStudentAcademicRevision(),
+                                    selectedStudentRevision(selector.studentId())))) {
+                        throw denied();
+                    }
+                } else if (unscoped(report)) {
                     if (ready && !current.containsAll(identity.teacherScope())) throw denied();
                 } else {
                     Long group =
@@ -154,6 +168,32 @@ public class LocalReportAuthority {
         var scope = teacherScope(identity.actor().userId());
         if (producerHash == null || !scope.sha256().equals(producerHash)) throw denied();
         return identity.withTeacherScope(scope);
+    }
+
+    @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
+    public StoredReportIdentity captureSelected(
+            StoredReportIdentity identity, SelectedStudentSnapshot selected) {
+        if (selectedStudent(identity.report()) == null || selected == null) throw denied();
+        var captured = identity.withSelectedStudent(selected.scope(), selected.academicRevision());
+        requireWithinSnapshot(captured, true);
+        return captured;
+    }
+
+    long selectedStudentRevision(long studentId) {
+        fence(() -> fences.requireUserReadable(studentId));
+        var rows = jdbc.queryForList(
+                "SELECT academic_revision FROM academic_profiles WHERE id=?",
+                Long.class,
+                studentId);
+        if (rows.size() != 1 || rows.getFirst() <= 0) throw denied();
+        return rows.getFirst();
+    }
+
+    record SelectedStudentSnapshot(TeacherReportScope scope, long academicRevision) {
+        SelectedStudentSnapshot {
+            Objects.requireNonNull(scope);
+            if (academicRevision <= 0) throw denied();
+        }
     }
 
     @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
@@ -295,6 +335,12 @@ WHERE a.teacher_id=? AND s.is_active=TRUE AND ? BETWEEN s.date_from AND s.date_t
             case HEADMAN_STATS_TREND -> report.headmanStatsTrend().semesterId() == null;
             default -> false;
         };
+    }
+
+    static Long selectedStudent(IssueReportDownloadTicketRequest report) {
+        return report.kind() == ReportDownloadKind.TEACHER_STATS
+                ? report.teacherStats().studentId()
+                : null;
     }
 
     static boolean unscoped(IssueReportDownloadTicketRequest report) {

@@ -86,6 +86,8 @@ message ReportRenderPlan {
   // Academic freshly resolved VIEW_STATS for actor's exact current group.
   // Allows accepted student-helper scope; it is not a permission authority map.
   bool view_stats_authorized = 16;
+  // Academic revision read in the same snapshot as the selected student's dated memberships.
+  optional int64 selected_student_academic_revision = 17;
   oneof selector {
     rutcampustrack.teacher.TeacherAttendanceExportRequest teacher_journal = 20;
     rutcampustrack.teacher.TeacherStatsExportRequest teacher_stats = 21;

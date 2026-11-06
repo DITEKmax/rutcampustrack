@@ -28,6 +28,7 @@ import ru.rutcampustrack.academic.grpc.GroupResponse;
 import ru.rutcampustrack.academic.grpc.StudentInfo;
 import ru.rutcampustrack.academic.grpc.TeacherSubjectInfo;
 import ru.rutcampustrack.academic.grpc.TeacherSubjectsResponse;
+import ru.rutcampustrack.academic.grpc.UserResponse;
 import ru.rutcampustrack.attendance.contract.dto.report.LessonAttendanceResponse;
 import ru.rutcampustrack.attendance.contract.dto.report.StudentStatsResponse;
 import ru.rutcampustrack.attendance.contract.dto.report.SubjectStats;
@@ -38,6 +39,9 @@ import ru.rutcampustrack.attendance.exception.AcademicServiceUnavailableExceptio
 import ru.rutcampustrack.attendance.exception.AccessDeniedException;
 import ru.rutcampustrack.attendance.exception.ScheduleServiceUnavailableException;
 import ru.rutcampustrack.attendance.grpc.AcademicGrpcClient;
+import ru.rutcampustrack.attendance.grpc.DocumentRendererGrpcClient;
+import ru.rutcampustrack.attendance.grpc.TeacherAcademicGrpcClient;
+import ru.rutcampustrack.attendance.report.teacher.TeacherStatsExportService;
 import ru.rutcampustrack.attendance.grpc.ScheduleGrpcClient;
 import ru.rutcampustrack.attendance.security.RequestContext;
 import ru.rutcampustrack.attendance.semester.SemesterCacheService;
@@ -1284,6 +1288,143 @@ class ReportServiceTest {
         verify(attendanceReadPort, never()).findByLessonIds(any());
         verify(attendanceReadPort, never())
                 .findByGroupAndSubject(anyLong(), anyLong(), any(), any());
+    }
+
+    @Test
+    void selectedStudentUsesExactDatedMembershipAcrossTransferAndKeepsOptionsAcrossFilters() {
+        long selected = 100L;
+        long sameNamePeer = 200L;
+        long newGroup = GROUP_ID + 1;
+        var oldAuthority = twoSubjectAuthority();
+        var newPair = oldAuthority.getSubjects(0).toBuilder()
+                .setGroupId(newGroup).setSubjectId(SUBJECT_ID_2).build();
+        var authority = oldAuthority.toBuilder().addSubjects(newPair).build();
+        when(academicGrpcClient.getCurrentTeacherSubjects(USER_ID)).thenReturn(authority);
+        var lessons = List.of(
+                statsLesson(11L, "closed", "2026-04-01"),
+                statsLesson(12L, "closed", "2026-04-01").toBuilder()
+                        .setSubjectId(SUBJECT_ID_2).setLessonType("lab").build(),
+                statsLesson(13L, "closed", "2026-04-02"),
+                statsLesson(14L, "closed", "2026-04-03").toBuilder()
+                        .setGroupId(newGroup).setSubjectId(SUBJECT_ID_2).setLessonType("practice").build(),
+                statsLesson(15L, "planned", "2026-04-03").toBuilder()
+                        .setGroupId(newGroup).setSubjectId(SUBJECT_ID_2).build());
+        var ids = lessons.stream().map(LessonInfo::getLessonId).toList();
+        when(scheduleGrpcClient.getLessonsByIds(ids)).thenReturn(lessons);
+        var target = StudentInfo.newBuilder().setUserId(selected).setDisplayName("А Иванов");
+        var peer = target.clone().setUserId(sameNamePeer);
+        var identity = UserResponse.newBuilder().setId(selected)
+                .setDisplayName("Алексей Иванов").setAcademicRevision(4).build();
+        when(academicGrpcClient.getSelectedStudentIdentity(selected)).thenReturn(identity);
+        var oldRoster = statsRoster().toBuilder().clearStudents().addStudents(target).addStudents(peer);
+        when(academicGrpcClient.getGroupMembers(GROUP_ID, LocalDate.of(2026, 4, 1), SEMESTER_ID))
+                .thenReturn(oldRoster.build());
+        when(academicGrpcClient.getGroupMembers(GROUP_ID, LocalDate.of(2026, 4, 2), SEMESTER_ID))
+                .thenReturn(oldRoster.clone().setAsOfDate("2026-04-02")
+                        .clearStudents().addStudents(peer).build());
+        when(academicGrpcClient.getGroupMembers(newGroup, LocalDate.of(2026, 4, 3), SEMESTER_ID))
+                .thenReturn(oldRoster.clone().setAsOfDate("2026-04-03")
+                        .clearStudents().addStudents(target).build());
+        for (long group : List.of(GROUP_ID, newGroup)) {
+            when(academicGrpcClient.getGroup(group)).thenReturn(GroupResponse.newBuilder()
+                    .setId(group).setName("Группа " + group).build());
+        }
+        when(attendanceReadPort.findByUserId(selected, SEMESTER_ID)).thenReturn(List.of(
+                statsRecord(11, selected, GROUP_ID, SUBJECT_ID_1, AttendanceStatus.PRESENT),
+                statsRecord(12, sameNamePeer, GROUP_ID, SUBJECT_ID_2, AttendanceStatus.PRESENT),
+                statsRecord(13, selected, GROUP_ID, SUBJECT_ID_1, AttendanceStatus.PRESENT),
+                statsRecord(14, selected, newGroup, SUBJECT_ID_2, AttendanceStatus.EXCUSED),
+                statsRecord(15, selected, newGroup, SUBJECT_ID_2, AttendanceStatus.PRESENT)));
+
+        var overall = selectedStats(ids, selected, 0, 0, List.of());
+        assertThat(overall.groups()).isEmpty();
+        assertThat(overall.lessonsCount()).isEqualTo(3);
+        assertThat(overall.periodFrom()).isEqualTo(LocalDate.of(2026, 4, 1));
+        assertThat(overall.periodTo()).isEqualTo(LocalDate.of(2026, 4, 3));
+        assertThat(overall.students()).singleElement().satisfies(row -> {
+            assertThat(row.studentId()).isEqualTo(selected);
+            assertThat(row.displayName()).isEqualTo(identity.getDisplayName());
+            assertThat(row.present()).isEqualTo(new ReportService.TeacherMetric(1, 3, 100.0 / 3));
+            assertThat(row.excused().numerator()).isEqualTo(1);
+            assertThat(row.absent().numerator()).isEqualTo(1);
+        });
+        assertThat(overall.studentGroupOptions())
+                .extracting(ReportService.TeacherStatsStudentGroupOption::id)
+                .containsExactly(GROUP_ID, newGroup);
+        assertThat(overall.subjectOptions()).contains(
+                new ReportService.TeacherStatsSubjectOption(newGroup, SUBJECT_ID_2, "Physics",
+                        List.of("lecture", "practice")));
+
+        var groupOnly = selectedStats(ids, selected, GROUP_ID, 0, List.of());
+        assertThat(groupOnly.lessonsCount()).isEqualTo(2);
+        assertThat(groupOnly.periodTo()).isEqualTo(LocalDate.of(2026, 4, 1));
+        var narrowed = selectedStats(ids, selected, newGroup, SUBJECT_ID_2, List.of("practice"));
+        assertThat(narrowed.lessonsCount()).isEqualTo(1);
+        assertThat(narrowed.students().getFirst().excused().percent()).isEqualTo(100.0);
+        assertThat(narrowed.studentGroupOptions())
+                .extracting(ReportService.TeacherStatsStudentGroupOption::id)
+                .containsExactly(newGroup);
+        assertThat(narrowed.subjectOptions()).containsExactly(
+                new ReportService.TeacherStatsSubjectOption(newGroup, SUBJECT_ID_2, "Physics",
+                        List.of("lecture", "practice")));
+        var emptyTypes = selectedStats(ids, selected, newGroup, SUBJECT_ID_2, List.of("lab"));
+        assertThat(emptyTypes.lessonsCount()).isZero();
+        assertThat(emptyTypes.periodFrom()).isNull();
+        assertThat(emptyTypes.students()).extracting(ReportService.TeacherStudentStats::studentId)
+                .containsExactly(selected);
+
+        assertThatThrownBy(() -> selectedStats(ids, sameNamePeer, newGroup, SUBJECT_ID_2, List.of()))
+                .isInstanceOf(AccessDeniedException.class);
+        assertThatThrownBy(() -> selectedStats(ids, 999L, 0, 0, List.of()))
+                .isInstanceOf(AccessDeniedException.class);
+        verify(academicGrpcClient, never()).getSelectedStudentIdentity(sameNamePeer);
+        verify(academicGrpcClient, never()).getSelectedStudentIdentity(999L);
+
+        when(academicGrpcClient.getSelectedStudentIdentity(selected))
+                .thenReturn(identity, identity.toBuilder().setAcademicRevision(5).build());
+        assertThatThrownBy(() -> selectedStats(ids, selected, 0, 0, List.of()))
+                .isInstanceOf(AcademicServiceUnavailableException.class);
+        when(academicGrpcClient.getSelectedStudentIdentity(selected)).thenThrow(
+                new AcademicServiceUnavailableException("pending target identity"));
+        assertThatThrownBy(() -> selectedStats(ids, selected, 0, 0, List.of()))
+                .isInstanceOf(AcademicServiceUnavailableException.class);
+        org.mockito.Mockito.doReturn(identity).when(academicGrpcClient)
+                .getSelectedStudentIdentity(selected);
+
+        var remaining = TeacherSubjectsResponse.newBuilder().addSubjects(newPair).build();
+        when(academicGrpcClient.getCurrentTeacherSubjects(USER_ID))
+                .thenReturn(authority, remaining);
+        assertThatThrownBy(() -> selectedStats(ids, selected, 0, 0, List.of()))
+                .isInstanceOf(AccessDeniedException.class);
+
+        var metadata = org.mockito.Mockito.mock(TeacherAcademicGrpcClient.class);
+        when(metadata.fullSemesterAssignments(SEMESTER_ID)).thenReturn(
+                ru.rutcampustrack.teacher.grpc.TeacherAssignmentsResponse.newBuilder()
+                        .setSemesterDateFrom("2026-04-01").setSemesterDateTo("2026-04-30")
+                        .build());
+        var renderer = org.mockito.Mockito.mock(DocumentRendererGrpcClient.class);
+        when(renderer.convertDocxForTeacherExport(any(),
+                org.mockito.ArgumentMatchers.eq(ru.rutcampustrack.documentrenderer.grpc.TargetFormat.PDF)))
+                .thenReturn(new byte[] {1});
+        var export = new TeacherStatsExportService(reportService, academicGrpcClient, metadata, renderer);
+        var query = new ReportService.TeacherStatsQuery(
+                ids, ReportService.TeacherStatsScope.STUDENTS, 0, 0, List.of(), List.of(),
+                List.of(), SEMESTER_ID, selected);
+        when(academicGrpcClient.getCurrentTeacherSubjects(USER_ID))
+                .thenReturn(authority, authority, remaining);
+        assertThatThrownBy(() -> export.export(query, USER_ID, "pdf"))
+                .isInstanceOf(AccessDeniedException.class);
+        verify(renderer).convertDocxForTeacherExport(any(),
+                org.mockito.ArgumentMatchers.eq(ru.rutcampustrack.documentrenderer.grpc.TargetFormat.PDF));
+        verify(attendanceReadPort, never()).findByLessonIds(any());
+        verify(attendanceReadPort, never()).findByUserId(sameNamePeer, SEMESTER_ID);
+    }
+
+    private ReportService.TeacherStatsResult selectedStats(
+            List<Long> ids, long student, long group, long subject, List<String> types) {
+        return reportService.getTeacherStats(new ReportService.TeacherStatsQuery(
+                ids, ReportService.TeacherStatsScope.STUDENTS, group, subject, types, List.of(),
+                List.of(), SEMESTER_ID, student), USER_ID);
     }
 
     @Test

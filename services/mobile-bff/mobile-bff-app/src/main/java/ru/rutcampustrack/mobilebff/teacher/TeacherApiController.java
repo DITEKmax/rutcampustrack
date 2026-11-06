@@ -147,6 +147,7 @@ public final class TeacherApiController implements TeacherApi {
     public ResponseEntity<StatsResponse> stats(
             String semesterId,
             String scope,
+            String studentId,
             String groupId,
             String subjectId,
             List<String> lessonTypes,
@@ -158,6 +159,7 @@ public final class TeacherApiController implements TeacherApi {
                         facade.stats(
                                 parseId(semesterId),
                                 parseText(scope, "scope"),
+                                studentId == null ? null : parseId(studentId),
                                 parseOptionalId(groupId, "groupId"),
                                 parseOptionalId(subjectId, "subjectId"),
                                 lessonTypes,
@@ -176,6 +178,7 @@ public final class TeacherApiController implements TeacherApi {
     public ResponseEntity<byte[]> exportStats(
             String semesterId,
             String scope,
+            String studentId,
             String groupId,
             String subjectId,
             List<String> lessonTypes,
@@ -186,6 +189,7 @@ public final class TeacherApiController implements TeacherApi {
                 facade.exportStats(
                         parseId(semesterId),
                         parseText(scope, "scope"),
+                        studentId == null ? null : parseId(studentId),
                         parseOptionalId(groupId, "groupId"),
                         parseOptionalId(subjectId, "subjectId"),
                         lessonTypes,

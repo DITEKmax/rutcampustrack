@@ -618,6 +618,13 @@
             "type" : "string"
           }
         }, {
+          "name" : "studentId",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
           "name" : "groupId",
           "in" : "query",
           "required" : false,
@@ -695,6 +702,13 @@
           "name" : "scope",
           "in" : "query",
           "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "studentId",
+          "in" : "query",
+          "required" : false,
           "schema" : {
             "type" : "string"
           }
@@ -3224,6 +3238,12 @@
               "$ref" : "#/components/schemas/TeacherStatsSubjectOption"
             }
           },
+          "studentGroupOptions" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/TeacherStatsStudentGroupOption"
+            }
+          },
           "serverNow" : {
             "type" : "string",
             "format" : "date-time"
@@ -3294,6 +3314,17 @@
           },
           "absent" : {
             "$ref" : "#/components/schemas/TeacherStatsMetric"
+          }
+        }
+      },
+      "TeacherStatsStudentGroupOption" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string"
+          },
+          "name" : {
+            "type" : "string"
           }
         }
       },

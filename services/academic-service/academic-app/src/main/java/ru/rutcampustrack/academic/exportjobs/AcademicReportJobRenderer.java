@@ -135,8 +135,24 @@ public class AcademicReportJobRenderer implements ReportJobRenderer {
                                                 .toList())
                                 .sha256()
                         : null;
+        LocalReportAuthority.SelectedStudentSnapshot selected = null;
+        Long studentId = LocalReportAuthority.selectedStudent(job.identity().report());
+        if (studentId != null) {
+            var selector = plan.getTeacherStats().getStatsRequest();
+            if (!selector.hasStudentId() || selector.getStudentId() != studentId
+                    || !plan.hasSelectedStudentAcademicRevision() || plan.getLessonsCount() == 0) {
+                throw ExportJobRepository.error(HttpStatus.FORBIDDEN);
+            }
+            var scope = TeacherReportScope.of(plan.getLessonsList().stream()
+                    .map(lesson -> new TeacherReportScope.Tuple(
+                            lesson.getGroupId(), lesson.getSubjectId()))
+                    .toList());
+            selected = new LocalReportAuthority.SelectedStudentSnapshot(
+                    scope, plan.getSelectedStudentAcademicRevision());
+        }
         return new ExportJobService.GeneratedFile(
-                response.getBody().toByteArray(), response.getContentType(), 0, false, scopeHash);
+                response.getBody().toByteArray(), response.getContentType(), 0, false, scopeHash,
+                selected);
     }
 
     private ExportJobService.GeneratedFile owner(ExportJobRepository.Job job) {

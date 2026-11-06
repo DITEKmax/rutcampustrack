@@ -210,6 +210,9 @@ public final class TeacherApiModels {
             List<StatsSubjectOption> taughtSubjectOptions,
             Instant serverNow) {}
 
+    @Schema(name = "TeacherStatsStudentGroupOption")
+    public record StatsStudentGroupOption(String id, String name) {}
+
     @Schema(name = "TeacherStats")
     public record StatsResponse(
             String scope,
@@ -220,5 +223,7 @@ public final class TeacherApiModels {
             List<StatsStudent> students,
             List<StatsGroup> groups,
             List<StatsSubjectOption> subjectOptions,
+            @com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_EMPTY)
+                    List<StatsStudentGroupOption> studentGroupOptions,
             Instant serverNow) {}
 }

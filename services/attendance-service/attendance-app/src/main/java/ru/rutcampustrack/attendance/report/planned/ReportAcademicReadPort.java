@@ -1,6 +1,7 @@
 package ru.rutcampustrack.attendance.report.planned;
 
 import ru.rutcampustrack.academic.grpc.*;
+import ru.rutcampustrack.attendance.exception.AcademicServiceUnavailableException;
 import ru.rutcampustrack.attendance.grpc.AcademicGrpcClient;
 
 import java.time.LocalDate;
@@ -20,6 +21,10 @@ public interface ReportAcademicReadPort {
     Map<Long, AcademicGrpcClient.SubjectDetails> getSubjectDetailsByIds(List<Long> subjectIds);
 
     TeacherSubjectsResponse getCurrentTeacherSubjects(Long teacherId);
+
+    SelectedStudentIdentity selectedStudentIdentity(long studentId);
+
+    record SelectedStudentIdentity(long studentId, String displayName, long academicRevision) {}
 
     boolean hasAssistantPermission(Long groupId, String permission);
 
@@ -64,6 +69,18 @@ public interface ReportAcademicReadPort {
             @Override
             public TeacherSubjectsResponse getCurrentTeacherSubjects(Long id) {
                 return client.getCurrentTeacherSubjects(id);
+            }
+
+            @Override
+            public SelectedStudentIdentity selectedStudentIdentity(long studentId) {
+                var user = client.getSelectedStudentIdentity(studentId);
+                if (user == null || user.getId() != studentId || user.getDisplayName().isBlank()
+                        || !user.hasAcademicRevision() || user.getAcademicRevision() <= 0) {
+                    throw new AcademicServiceUnavailableException(
+                            "Academic returned incomplete selected student authority");
+                }
+                return new SelectedStudentIdentity(studentId, user.getDisplayName(),
+                        user.getAcademicRevision());
             }
 
             @Override

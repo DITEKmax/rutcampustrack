@@ -168,6 +168,48 @@ class PlannedReportRendererTest {
     }
 
     @Test
+    void selectedStudentPlanRoundTripsAndRendersOnlyExactTargetAcrossGroups() throws Exception {
+        var base = ReportPlanFixtures.plan("TEACHER_STATS", "html");
+        var oldGroupRoster = base.getRosters(1).toBuilder()
+                .setRoster(ReportPlanFixtures.roster(true).toBuilder().clearStudents()
+                        .addStudents(ReportPlanFixtures.roster(true).getStudents(1)))
+                .build();
+        var selection = base.getTeacherStats().toBuilder()
+                .setStatsRequest(base.getTeacherStats().getStatsRequest().toBuilder()
+                        .setStudentId(2).setGroupId(0).setSubjectId(0).clearLessonTypes()
+                        .addLessonIds(102));
+        var plan = base.toBuilder()
+                .setTeacherStats(selection)
+                .setSelectedStudentAcademicRevision(8)
+                .clearRosters()
+                .addRosters(oldGroupRoster)
+                .addRosters(oldGroupRoster.toBuilder().setGroupId(44)
+                        .setRoster(oldGroupRoster.getRoster().toBuilder().setAsOfDate("2026-10-15")))
+                .addGroups(base.getGroups(0).toBuilder().setId(44).setName("УИТ-412"))
+                .addSubjects(base.getSubjects(0).toBuilder().setGroupId(44).setSubjectId(23))
+                .setTeacherSubjects(base.getTeacherSubjects().toBuilder()
+                        .addSubjects(base.getTeacherSubjects().getSubjects(0).toBuilder()
+                                .setGroupId(44).setSubjectId(23)))
+                .addLessons(base.getLessons(0).toBuilder()
+                        .setId(102).setGroupId(44).setSubjectId(23).setDate("2026-10-15"))
+                .build();
+        when(marks.findByUserId(2L, 9L)).thenReturn(
+                records(101L, LocalDate.of(2026, 10, 14)));
+        var wire = ReportRenderPlan.parseFrom(plan.toByteArray());
+        String html = renderer.render(admit(wire)).getBody().toStringUtf8();
+        assertThat(html).contains("Студент 2", "УИТ-311", "УИТ-412", "1 / 2 / 50.0%")
+                .doesNotContain("Студент 1", "Студент 3", "2 / 2 / 100.0%");
+        verifyNoInteractions(academic, schedule, caller, converter);
+
+        var wrongStudent = plan.toBuilder().setTeacherStats(selection.setStatsRequest(
+                selection.getStatsRequest().toBuilder().setStudentId(1))).build();
+        assertThat(AdmittedReportPlan.digest(wrongStudent)).isNotEqualTo(AdmittedReportPlan.digest(plan));
+        assertThatThrownBy(() -> admit(wrongStudent)).isInstanceOf(RuntimeException.class);
+        assertThatThrownBy(() -> admit(plan.toBuilder().setRosters(0, base.getRosters(1)).build()))
+                .isInstanceOf(RuntimeException.class);
+    }
+
+    @Test
     void twoDistinctEighteenWeekJobsAndShortPeriodKeepActualDocxMatrices() throws Exception {
         List<String> first = weeks(0, 18), second = weeks(18, 18), shortPeriod = weeks(4, 3);
         List<byte[]> documents = new ArrayList<>();

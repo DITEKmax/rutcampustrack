@@ -14,11 +14,12 @@ const props = withDefaults(
     }[];
     placeholder?: string;
     disabled?: boolean;
-    triggerId?: string;
+    triggerId?: string | undefined;
     invalid?: boolean;
     errorId?: string | undefined;
+    popup?: boolean;
   }>(),
-  { placeholder: 'Выбери вариант', disabled: false },
+  { placeholder: 'Выбери вариант', disabled: false, triggerId: undefined, errorId: undefined },
 );
 const emit = defineEmits<{ 'update:modelValue': [value: string] }>();
 const id = useId();
@@ -27,6 +28,7 @@ const active = ref(0);
 const host = ref<HTMLElement | null>(null);
 const trigger = ref<HTMLButtonElement | null>(null);
 const list = ref<HTMLElement | null>(null);
+const popupPlacement = ref<{ direction: 'up' | 'down'; available: string } | null>(null);
 function focus(): void {
   trigger.value?.focus({ preventScroll: true });
 }
@@ -37,9 +39,32 @@ function focusOption(): void {
     list.value?.querySelectorAll<HTMLButtonElement>('[role="option"]')[active.value]?.focus(),
   );
 }
+function measurePopup(): void {
+  const anchor = trigger.value;
+  if (!props.popup || !anchor?.getBoundingClientRect || !document.documentElement) return;
+  const rect = anchor.getBoundingClientRect();
+  const viewport = window.visualViewport;
+  const viewportTop = viewport?.offsetTop ?? 0;
+  const viewportBottom = viewportTop + (viewport?.height ?? window.innerHeight);
+  const dock = anchor.closest('.mobile-shell')?.querySelector('.mobile-bottom-nav');
+  const bottom = Math.min(viewportBottom, dock?.getBoundingClientRect().top ?? viewportBottom);
+  const above = rect.top - viewportTop;
+  const below = bottom - rect.bottom;
+  const rootFontSize = Number.parseFloat(window.getComputedStyle(document.documentElement).fontSize);
+  if (Math.max(above, below) <= rect.height + rootFontSize) {
+    popupPlacement.value = null;
+    return;
+  }
+  const upwards = below < rect.height * 4 && above > below;
+  popupPlacement.value = {
+    direction: upwards ? 'up' : 'down',
+    available: `${(upwards ? above : below) / rootFontSize}rem`,
+  };
+}
 function toggle(): void {
   open.value = !open.value;
   if (open.value) {
+    measurePopup();
     active.value = Math.max(
       0,
       props.options.findIndex((option) => option.value === props.modelValue),
@@ -102,6 +127,7 @@ onBeforeUnmount(() => {
   <div
     ref="host"
     class="headman-stats-select"
+    :class="{ 'headman-stats-select--popup': popup }"
     @keydown="keydown"
     @focusout="focusout"
   >
@@ -137,6 +163,8 @@ onBeforeUnmount(() => {
       :id="id"
       ref="list"
       class="headman-stats-select__options"
+      :data-placement="popupPlacement?.direction"
+      :style="popupPlacement ? { '--rct-select-available': popupPlacement.available } : undefined"
       role="listbox"
       :aria-label="label"
     >

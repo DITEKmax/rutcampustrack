@@ -330,6 +330,7 @@ message UserResponse {
   string avatar_id = 9;
   repeated UserRoleGrant roles = 10;
   int64 roles_version = 11;
+  optional int64 academic_revision = 12; // fenced Academic presentation generation
 }
 
 message StudentProjectionScopeRequest {

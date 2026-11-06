@@ -72,6 +72,7 @@ import ru.rutcampustrack.teacher.grpc.TeacherStatsMetric;
 import ru.rutcampustrack.teacher.grpc.TeacherStatsRequest;
 import ru.rutcampustrack.teacher.grpc.TeacherStatsResponse;
 import ru.rutcampustrack.teacher.grpc.TeacherStatsScope;
+import ru.rutcampustrack.teacher.grpc.TeacherStatsStudentGroupOption;
 import ru.rutcampustrack.teacher.grpc.TeacherStatsSubjectOption;
 import ru.rutcampustrack.teacher.grpc.TeacherStudentStats;
 
@@ -423,6 +424,11 @@ public final class TeacherAttendanceReadGrpcService
             result.subjectOptions().stream()
                     .map(this::toSubjectOption)
                     .forEach(response::addSubjectOptions);
+            for (var group : result.studentGroupOptions()) {
+                response.addStudentGroupOptions(TeacherStatsStudentGroupOption.newBuilder()
+                        .setId(group.id())
+                        .setName(group.name()));
+            }
             responseObserver.onNext(response.build());
             responseObserver.onCompleted();
         } catch (RuntimeException error) {
@@ -503,7 +509,8 @@ public final class TeacherAttendanceReadGrpcService
                                                 filter.hasMinValue() ? filter.getMinValue() : null,
                                                 filter.hasMaxValue() ? filter.getMaxValue() : null))
                         .toList(),
-                positive(request.getSemesterId(), "semester_id"));
+                positive(request.getSemesterId(), "semester_id"),
+                request.hasStudentId() ? request.getStudentId() : null);
     }
 
     private TeacherStudentStats toStudentStats(ReportService.TeacherStudentStats row) {

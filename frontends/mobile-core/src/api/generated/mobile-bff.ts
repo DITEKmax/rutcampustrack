@@ -1,6 +1,6 @@
 /* eslint-disable */
 // Generated from docs/openapi/mobile-bff.json. Do not edit.
-// Contract: JS-STUDENT-01-r1; SHA-256: 75cbf5b71556b29268dc6c228ec58d3161458ee15954c556fcb09fafef2ea7c1
+// Contract: JS-STUDENT-01-r1; SHA-256: 8bb762e4fec4f03ad64bf9007dc0d7472861229d7a738b76466880081f723ff0
 
 export interface paths {
     "/api/v1/map/buildings/{buildingId}/floors/{floorId}/opens": {
@@ -1496,6 +1496,7 @@ export interface components {
             semesterId?: string;
             /** Format: date-time */
             serverNow?: string;
+            studentGroupOptions?: components["schemas"]["TeacherStatsStudentGroupOption"][];
             students?: components["schemas"]["TeacherStatsStudent"][];
             subjectOptions?: components["schemas"]["TeacherStatsSubjectOption"][];
         };
@@ -1524,6 +1525,10 @@ export interface components {
             present?: components["schemas"]["TeacherStatsMetric"];
             presentOrExcused?: components["schemas"]["TeacherStatsMetric"];
             studentId?: string;
+        };
+        TeacherStatsStudentGroupOption: {
+            id?: string;
+            name?: string;
         };
         TeacherStatsSubjectOption: {
             groupId?: string;
@@ -3247,6 +3252,7 @@ export interface operations {
                 scope: string;
                 semesterId: string;
                 sort?: string[];
+                studentId?: string;
                 subjectId?: string;
             };
             header?: never;
@@ -3276,6 +3282,7 @@ export interface operations {
                 scope: string;
                 semesterId: string;
                 sort?: string[];
+                studentId?: string;
                 subjectId?: string;
             };
             header?: never;

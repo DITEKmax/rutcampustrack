@@ -4,7 +4,7 @@ import {
   validateTicketRequest,
   type ReportDownloadTicketRequest,
 } from './report-download-client'
-import { TeacherApi, toTeacherJournalReportRequest } from '../features/teacher/teacher-client'
+import { TeacherApi, toTeacherJournalReportRequest, toTeacherStatsReportSelector } from '../features/teacher/teacher-client'
 
 describe('teacher real day contract', () => {
   it('keeps a one-off without assignment and the real cancellation reason', async () => {
@@ -70,6 +70,23 @@ describe('teacher real day contract', () => {
 })
 
 describe('teacher exact export selector', () => {
+  it('accepts the exact student report across groups and rejects illegal context combinations', () => {
+    const teacherStats = toTeacherStatsReportSelector(
+      { semesterId: 7, scope: 'students', studentId: 503, lessonTypes: [] },
+      'xlsx',
+    )
+    expect(teacherStats).toEqual({ semesterId: 7, scope: 'students', studentId: 503, format: 'xlsx' })
+    expect(() => validateTicketRequest({ kind: 'TEACHER_STATS', teacherStats })).not.toThrow()
+    expect(() => validateTicketRequest({
+      kind: 'TEACHER_STATS',
+      teacherStats: { ...teacherStats, groupId: 2, subjectId: 3 },
+    })).not.toThrow()
+    for (const invalid of [
+      { ...teacherStats, scope: 'groups' as const },
+      { ...teacherStats, subjectId: 3 },
+      { ...teacherStats, studentId: Number.MAX_SAFE_INTEGER + 1 },
+    ]) expect(() => validateTicketRequest({ kind: 'TEACHER_STATS', teacherStats: invalid })).toThrow(RangeError)
+  })
   it('preserves exact lesson and completed-only selectors in a host ticket', async () => {
     const request = toTeacherJournalReportRequest(
       {

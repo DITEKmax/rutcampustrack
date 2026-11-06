@@ -300,8 +300,8 @@ class TeacherReadFacadeTest {
                                 .build());
         var facade = new TeacherReadFacade(requestContext, academic, schedule, attendance);
         var sorts = List.of("present:asc", "absent:desc", "excused", "-presentOrExcused");
-        facade.stats(9L, "students", 33L, 22L, List.of("lecture"), sorts, List.of());
-        facade.exportStats(9L, "students", 33L, 22L, List.of("lecture"), sorts, List.of(), "pdf");
+        facade.stats(9L, "students", null, 33L, 22L, List.of("lecture"), sorts, List.of());
+        facade.exportStats(9L, "students", null, 33L, 22L, List.of("lecture"), sorts, List.of(), "pdf");
         var stats =
                 org.mockito.ArgumentCaptor.forClass(
                         ru.rutcampustrack.teacher.grpc.TeacherStatsRequest.class);
@@ -791,6 +791,7 @@ class TeacherReadFacadeTest {
                                             9L,
                                             scope,
                                             null,
+                                            null,
                                             22L,
                                             List.of("lecture"),
                                             List.of(),
@@ -799,7 +800,7 @@ class TeacherReadFacadeTest {
             assertThatThrownBy(
                             () ->
                                     facade.stats(
-                                            9L, scope, 33L, 22L, List.of(), List.of(), List.of()))
+                                            9L, scope, null, 33L, 22L, List.of(), List.of(), List.of()))
                     .isInstanceOf(MobileBffException.class);
             for (List<String> invalidTypes :
                     List.of(List.of("garbage"), List.of("lecture", "garbage"))) {
@@ -808,6 +809,7 @@ class TeacherReadFacadeTest {
                                         facade.stats(
                                                 9L,
                                                 scope,
+                                                null,
                                                 33L,
                                                 22L,
                                                 invalidTypes,
@@ -823,6 +825,7 @@ class TeacherReadFacadeTest {
                                         facade.exportStats(
                                                 9L,
                                                 scope,
+                                                null,
                                                 33L,
                                                 22L,
                                                 invalidTypes,
@@ -840,6 +843,7 @@ class TeacherReadFacadeTest {
                                     facade.exportStats(
                                             9L,
                                             scope,
+                                            null,
                                             33L,
                                             null,
                                             List.of("lecture"),
@@ -954,8 +958,8 @@ class TeacherReadFacadeTest {
                                                 "synthetic-pdf"))
                                 .build());
         var facade = new TeacherReadFacade(requestContext, academic, schedule, attendance);
-        facade.stats(9L, "groups", 33L, 23L, List.of("LECTURE"), List.of(), List.of());
-        facade.exportStats(9L, "groups", 33L, 23L, List.of("lecture"), List.of(), List.of(), "pdf");
+        facade.stats(9L, "groups", null, 33L, 23L, List.of("LECTURE"), List.of(), List.of());
+        facade.exportStats(9L, "groups", null, 33L, 23L, List.of("lecture"), List.of(), List.of(), "pdf");
         var stats =
                 org.mockito.ArgumentCaptor.forClass(
                         ru.rutcampustrack.teacher.grpc.TeacherStatsRequest.class);
@@ -1031,6 +1035,7 @@ class TeacherReadFacadeTest {
                 "groups",
                 null,
                 null,
+                null,
                 List.of("lecture", "lab"),
                 List.of("-present"),
                 List.of("groupName~УИТ"));
@@ -1038,6 +1043,7 @@ class TeacherReadFacadeTest {
                 facade.exportStats(
                         9L,
                         "groups",
+                        null,
                         null,
                         null,
                         List.of("lecture", "lab"),
@@ -1075,6 +1081,7 @@ class TeacherReadFacadeTest {
                                 facade.exportStats(
                                         9L,
                                         "groups",
+                                        null,
                                         null,
                                         null,
                                         List.of("lecture", "lab"),
@@ -1128,6 +1135,7 @@ class TeacherReadFacadeTest {
                                     facade.stats(
                                             9L,
                                             scope,
+                                            null,
                                             33L,
                                             23L,
                                             List.of("lecture"),
@@ -1141,6 +1149,7 @@ class TeacherReadFacadeTest {
                                     facade.exportStats(
                                             9L,
                                             scope,
+                                            null,
                                             33L,
                                             23L,
                                             List.of("lecture"),
@@ -1154,6 +1163,42 @@ class TeacherReadFacadeTest {
         verifyNoInteractions(schedule, attendance);
         verify(academic, never())
                 .teacherAssignmentsForSemester(org.mockito.ArgumentMatchers.anyLong());
+    }
+
+    @Test
+    void selectedStudentWithSubjectDiscoversOnlyThatGroupsExactSubjectLessons() {
+        searchContext();
+        var group = currentGroup(33L, "УИТ-311");
+        when(academic.currentTeacherSubjects(71L)).thenReturn(group.toBuilder()
+                .addAllSubjects(currentGroup(44L, "УИТ-412").getSubjectsList())
+                .addSubjects(group.getSubjects(0).toBuilder().setAssignmentId(200L)
+                        .setSubjectId(23L).setSubjectName("Физика"))
+                .build());
+        when(schedule.lessons(33L, 9L, LocalDate.of(2026, 9, 1), LocalDate.of(2026, 9, 30)))
+                .thenReturn(LessonsResponse.newBuilder()
+                        .addLessons(lesson(101L, "2026-09-02", 1, "09:00"))
+                        .addLessons(lesson(102L, "2026-09-02", 2, "10:00").toBuilder()
+                                .setSubjectId(23L)).build());
+        when(attendance.teacherStats(org.mockito.ArgumentMatchers.any())).thenReturn(
+                ru.rutcampustrack.teacher.grpc.TeacherStatsResponse.newBuilder()
+                        .setScope(ru.rutcampustrack.teacher.grpc.TeacherStatsScope.TEACHER_STATS_STUDENTS)
+                        .setSemesterId(9L).setServerNow("2026-09-15T00:00:00Z")
+                        .addStudentGroupOptions(ru.rutcampustrack.teacher.grpc.TeacherStatsStudentGroupOption
+                                .newBuilder().setId(33L).setName("УИТ-311"))
+                        .build());
+        var facade = new TeacherReadFacade(requestContext, academic, schedule, attendance);
+        var result = facade.stats(9L, "students", 55L, 33L, 22L, null, List.of(), List.of());
+        assertThat(result.studentGroupOptions()).singleElement().satisfies(option -> {
+            assertThat(option.id()).isEqualTo("33");
+            assertThat(option.name()).isEqualTo("УИТ-311");
+        });
+        var request = org.mockito.ArgumentCaptor.forClass(
+                ru.rutcampustrack.teacher.grpc.TeacherStatsRequest.class);
+        verify(attendance).teacherStats(request.capture());
+        assertThat(request.getValue().getStudentId()).isEqualTo(55L);
+        assertThat(request.getValue().getLessonIdsList()).containsExactly(101L);
+        assertThat(request.getValue().getLessonTypesList()).isEmpty();
+        verify(schedule, never()).lessons(44L, 9L, LocalDate.of(2026, 9, 1), LocalDate.of(2026, 9, 30));
     }
 
     @Test
@@ -1175,6 +1220,7 @@ class TeacherReadFacadeTest {
                                 facade.stats(
                                         9L,
                                         "groups",
+                                        null,
                                         null,
                                         null,
                                         List.of("lecture"),

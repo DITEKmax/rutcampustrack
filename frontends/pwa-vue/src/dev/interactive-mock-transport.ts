@@ -1,14 +1,22 @@
 import { attendance, homework, initialNotifications, overview, preferences, previewNow, profile, rankingPage, requestDetail, requestOptions, requestPage, schedule, studentSession, subjectDetail, today } from '../../../web-vue/src/dev/visual-review-fixtures'
 import { findPreset } from '../../../shared/profile/avatar-presets'
+import { assistants, groupId, members, permissions, semester } from '../../../web-vue/src/dev/headman-visual-data'
 import { headmanPreview } from '../../../web-vue/src/dev/headman-visual-preview'
 import { teacherPreview } from '../../../web-vue/src/dev/teacher-visual-preview'
 import { adminPreview, campusPreview } from '../../../web-vue/src/dev/admin-visual-preview'
+import type {
+  HeadmanAssistant,
+  HeadmanAssistantPermission,
+  HeadmanCredentialView,
+  HeadmanLateCheckinBudget,
+} from '../../../mobile-core/src/features/headman-group/headman-group-client'
 import type { ProfileSnapshot } from '../../../mobile-core/src/features/profile/profile-types'
 
 /** Isolated PWA state; wire fixtures and role handlers are shared with the WEB preview. */
 export function createInteractiveMockTransport(): typeof fetch {
   let items = structuredClone(initialNotifications)
   let homeworkItems = structuredClone(homework.items)
+  const headmanGroup = createHeadmanGroupPreview()
   let deviceTheme: string | null = null
   let themeRevision = 1
   const roleKey = 'rct:pwa-interactive:active-role'
@@ -72,7 +80,7 @@ export function createInteractiveMockTransport(): typeof fetch {
       // Intentionally no websocket ticket: realtime cannot reach any backend.
       if (path === '/api/auth/ws-ticket') return json({ title: 'Realtime отключён в визуальном preview' }, 503)
       if (activeRole === 'HEADMAN') {
-        const response = await headmanPreview(url, method, body)
+        const response = (await headmanGroup(url, method, body)) ?? (await headmanPreview(url, method, body))
         if (response) return response
       }
       if (activeRole === 'TEACHER' || activeRole === 'ADMIN') {
@@ -159,4 +167,159 @@ export function createInteractiveMockTransport(): typeof fetch {
     return json({ title: 'Операция недоступна в визуальном preview', detail: diagnostic }, 501)
   }
 
+}
+
+const ASSISTANTS_PATH = '/api/academic/assistants'
+const MAX_INT32 = 2147483647
+
+function permissionSet(value: unknown): HeadmanAssistantPermission[] | null {
+  if (!Array.isArray(value)) return null
+  const requested = new Set(value)
+  const selected = permissions.filter(({ code }) => requested.has(code)).map(({ code }) => code)
+  return requested.size === selected.length ? selected : null
+}
+
+/** Mutable fixtures for the mobile stand. The shared Web preview remains read-only here. */
+function createHeadmanGroupPreview() {
+  const credentials = new Map<number, HeadmanCredentialView>()
+  const budgets = new Map<number, HeadmanLateCheckinBudget>()
+  const receipts = new Map<string, { increase: number; budget: HeadmanLateCheckinBudget }>()
+  const assistantRows = new Map(assistants.map(row => [row.id, row]))
+  let nextAssistantId = Math.max(0, ...assistantRows.keys()) + 1
+
+  const json = (value: unknown, status = 200) => Response.json(value, { status })
+  const privateJson = (value: unknown) => Response.json(value, { headers: { 'Cache-Control': 'no-store' } })
+  const problem = (status: number, title: string) => json({ title }, status)
+  const missing = () => problem(404, 'Синтетическая запись не найдена')
+  const findMember = (id: unknown) => members.find(row => row.id === id && row.groupId === groupId && row.status === 'ACTIVE')
+
+  return async (url: URL, method: string, body: () => Promise<Record<string, unknown>>): Promise<Response | null> => {
+    const path = url.pathname
+    const credential = path.match(/^\/api\/auth\/headman\/students\/(\d+)\/(initial-password|generated-password|password-reset-link)$/)
+    if (credential) {
+      const studentId = Number(credential[1])
+      if (!findMember(studentId)) return missing()
+      const current = credentials.get(studentId)
+      if (method === 'GET' && credential[2] === 'initial-password')
+        return current ? privateJson(current) : null
+      if (method === 'POST' && credential[2] === 'generated-password') {
+        const command: Record<string, unknown> = await body().catch(() => ({}))
+        const expected = command.expectedCredentialsVersion
+        if (typeof expected !== 'string' || !/^[1-9][0-9]{0,18}$/.test(expected) || BigInt(expected) > 9223372036854775807n)
+          return problem(400, 'Некорректная версия доступа')
+        // Read after parsing, so concurrent requests cannot both use the same version.
+        const version = credentials.get(studentId)?.credentialsVersion ?? '1'
+        if (version !== expected) return problem(409, 'Версия доступа изменилась')
+        const credentialsVersion = String(BigInt(version) + 1n)
+        const generated: HeadmanCredentialView = {
+          studentId: String(studentId),
+          credentialsVersion,
+          state: 'GENERATED',
+          origin: 'headman_reset',
+          password: `preview-only-${studentId}-${credentialsVersion}`,
+        }
+        credentials.set(studentId, generated)
+        return privateJson(generated)
+      }
+      if (method === 'POST' && credential[2] === 'password-reset-link') {
+        const loopback = ['localhost', '127.0.0.1', '[::1]'].includes(url.hostname)
+        const link = new URL('/password-reset', loopback ? url.origin : 'http://localhost')
+        const expiresInSeconds = 3600
+        const expiresAt = new Date(Date.now() + expiresInSeconds * 1000).toISOString()
+        link.hash = new URLSearchParams({ resetTicket: `preview-only-${crypto.randomUUID()}`, expiresAt }).toString()
+        return privateJson({ url: link.href, expiresAt, expiresInSeconds })
+      }
+    }
+
+    const budget = path.match(/^\/api\/attendance\/requests\/students\/(\d+)\/late-checkin-budget$/)
+    if (budget && (method === 'GET' || method === 'POST')) {
+      const studentId = Number(budget[1])
+      if (!findMember(studentId)) return missing()
+      if (method === 'GET') {
+        const saved = budgets.get(studentId)
+        return saved ? json(saved) : null
+      }
+      const command: Record<string, unknown> = await body().catch(() => ({}))
+      const { increase, requestKey, semesterId } = command
+      if (typeof increase !== 'number' || !Number.isInteger(increase) || increase < 1 || increase > MAX_INT32 ||
+          typeof requestKey !== 'string' || !/^[\x21-\x7e]{16,128}$/.test(requestKey) ||
+          typeof semesterId !== 'number' || !Number.isSafeInteger(semesterId) || semesterId < 1)
+        return problem(400, 'Нужны семестр, положительное число попыток и ключ запроса')
+      if (semesterId !== semester.id) return problem(409, 'Текущий семестр изменился; обнови данные')
+      const receipt = receipts.get(requestKey)
+      if (receipt) {
+        if (receipt.budget.studentId !== studentId || receipt.increase !== increase)
+          return problem(409, 'Ключ уже использован для другого изменения лимита')
+        return json(receipt.budget)
+      }
+      const before = budgets.get(studentId)
+      const used = before?.used ?? studentId % 3
+      const limit = (before?.limit ?? 5) + increase
+      if (limit > MAX_INT32) return problem(409, 'Лимит попыток не помещается в допустимый диапазон')
+      const after = { studentId, semesterId, limit, used, remaining: limit - used }
+      budgets.set(studentId, after)
+      receipts.set(requestKey, { increase, budget: after })
+      return json(after)
+    }
+
+    if (path === ASSISTANTS_PATH && method === 'GET') {
+      if (url.searchParams.get('groupId') !== String(groupId)) return problem(403, 'Группа недоступна')
+      const number = Number(url.searchParams.get('page') ?? 0)
+      const size = Number(url.searchParams.get('size') ?? 100)
+      if (!Number.isSafeInteger(number) || number < 0 || !Number.isSafeInteger(size) || size < 1 || size > 100)
+        return problem(400, 'Некорректная страница preview')
+      const active = [...assistantRows.values()].filter(row => row.active)
+      return json({
+        _embedded: { assistantResponseList: active.slice(number * size, (number + 1) * size) },
+        page: { number, size, totalElements: active.length, totalPages: Math.ceil(active.length / size) },
+      })
+    }
+    if (path === ASSISTANTS_PATH && method === 'POST') {
+      const command: Record<string, unknown> = await body().catch(() => ({}))
+      if (command.groupId !== groupId) return problem(403, 'Группа недоступна')
+      const student = findMember(command.studentId)
+      if (!student) return missing()
+      if (!student.roles?.some(role => role.role === 'STUDENT' && role.status === 'ACTIVE' && role.groupId === groupId))
+        return problem(403, 'Студент не имеет активного права в этой группе')
+      const next = permissionSet(command.permissions)
+      if (!next?.length) return problem(400, 'Укажи права помощника')
+      if ([...assistantRows.values()].some(row => row.studentId === student.id && row.active))
+        return problem(409, 'Студент уже является помощником')
+      const row: HeadmanAssistant = {
+        id: nextAssistantId++,
+        studentId: student.id,
+        studentName: student.fullName,
+        login: student.login,
+        groupId,
+        permissions: next,
+        active: true,
+        assignedAt: new Date().toISOString(),
+        revokedAt: null,
+      }
+      assistantRows.set(row.id, row)
+      return json(row, 201)
+    }
+    const assistant = path.match(/^\/api\/academic\/assistants\/(\d+)\/permissions$/)
+    if (assistant && method === 'PATCH') {
+      const command: Record<string, unknown> = await body().catch(() => ({}))
+      const row = assistantRows.get(Number(assistant[1]))
+      if (!row) return missing()
+      const next = permissionSet(command.permissions)
+      const expected = permissionSet(command.expectedPermissions)
+      if (!next || (expected === null && (!next.length || command.expectedPermissions != null)))
+        return problem(400, 'Некорректный набор прав или снимок прав помощника')
+      if (!row.active) return problem(409, 'Помощник уже отозван')
+      if (expected && (expected.length !== row.permissions.length || !expected.every(code => row.permissions.includes(code))))
+        return json({
+          title: 'Права помощника изменились. Обнови список и подтверди изменения заново.',
+          extras: { code: 'ASSISTANT_PERMISSIONS_CONFLICT' },
+        }, 409)
+      const updated = next.length
+        ? { ...row, permissions: next }
+        : { ...row, active: false, revokedAt: new Date().toISOString() }
+      assistantRows.set(row.id, updated)
+      return json(updated)
+    }
+    return null
+  }
 }

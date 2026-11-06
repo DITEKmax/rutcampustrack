@@ -101,6 +101,9 @@
   color: var(--rct-color-text-primary);
   background: var(--rct-color-surface-raised);
 }
+.admin-users-action--pill {
+  border-radius: var(--rct-radius-full);
+}
 .admin-users-tools {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
@@ -231,6 +234,11 @@
   gap: var(--rct-space-2);
   color: var(--rct-color-text-primary);
 }
+.admin-users-field--selector {
+  gap: var(--rct-space-1);
+  padding: 0;
+  background: transparent;
+}
 .admin-users-field > span,
 .admin-users-names legend,
 .admin-users-select small {
@@ -239,7 +247,6 @@
   line-height: var(--rct-leading-caption);
 }
 .admin-users-field input,
-.admin-users-field select,
 .admin-users-field textarea {
   inline-size: 100%;
   border: 0;
@@ -249,13 +256,6 @@
   background: transparent;
   font-size: var(--rct-font-size-body);
   line-height: var(--rct-leading-snug);
-}
-.admin-users-field select {
-  min-block-size: var(--rct-control-min-touch);
-}
-.admin-users-field select option {
-  color: var(--rct-color-text-primary);
-  background: var(--rct-color-surface-float);
 }
 .admin-users-field textarea {
   min-block-size: var(--rct-form-textarea-height);

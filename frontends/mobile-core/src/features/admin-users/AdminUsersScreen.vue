@@ -44,6 +44,7 @@ import AdminCredentialPanel from './AdminCredentialPanel.vue';
 import AdminNotice from '../../shared/components/AdminNotice.vue';
 import AdminCheckbox from '../../shared/components/AdminCheckbox.vue';
 import MobileToolsSheet from '../../shared/components/MobileToolsSheet.vue';
+import HeadmanStatsSelect from '../headman-stats/HeadmanStatsSelect.vue';
 import {
   AdminAccessConfirmationFlow,
   type AdminAccessConfirmationContext,
@@ -1215,13 +1216,20 @@ const missingEmployeeNumber = computed(
     !editorEmployeeNumber.value.trim(),
 );
 const editorCanUpdate = computed(() => selectedGrant.value?.canUpdate ?? true);
-const editorStatuses = computed(() => {
+const editorStatuses = computed<readonly AdminRoleStatus[]>(() => {
   if (selectedGrant.value)
     return selectedGrant.value.applicableStatuses.filter((status) => status !== 'ARCHIVED');
-  if (editorRole.value === 'ADMIN') return ['ACTIVE'] as const;
-  if (editorRole.value === 'TEACHER') return ['ACTIVE', 'DISMISSED', 'SUSPENDED'] as const;
-  return ['ACTIVE', 'EXPELLED', 'GRADUATED', 'SUSPENDED'] as const;
+  if (editorRole.value === 'ADMIN') return ['ACTIVE'];
+  if (editorRole.value === 'TEACHER') return ['ACTIVE', 'DISMISSED', 'SUSPENDED'];
+  return ['ACTIVE', 'EXPELLED', 'GRADUATED', 'SUSPENDED'];
 });
+const editorStatusOptions = computed(() =>
+  editorStatuses.value.map((status) => ({ value: status, label: statusLabel(status) })),
+);
+function selectEditorStatus(value: string): void {
+  const status = editorStatuses.value.find((option) => option === value);
+  if (status && editorCanUpdate.value) editorStatus.value = status;
+}
 const hasStudentGrant = computed(() =>
   Boolean(selectedUser.value?.roles.some((grant) => grant.role === 'STUDENT')),
 );
@@ -2080,7 +2088,7 @@ function statusLabel(status: AdminRoleStatus): string {
 }
 
 watch(editorStatuses, (statuses) => {
-  if (statuses.length && !statuses.includes(editorStatus.value as never))
+  if (statuses.length && !statuses.includes(editorStatus.value))
     editorStatus.value = statuses[0]!;
 });
 watch(draftRole, () => {
@@ -2554,7 +2562,7 @@ onBeforeUnmount(() => {
           createAccess.mode === 'FULL'
             ? 'Полный доступ'
             : createAccess.permissions.length
-              ? `Выбрано прав: ${createAccess.permissions.length}`
+              ? 'Права выбраны'
               : 'Выбрать права'
         }}</span><MobileIcon name="chevron-down" />
       </button>
@@ -2824,7 +2832,8 @@ onBeforeUnmount(() => {
             v-if="
               grant.role !== 'HEADMAN' && grant.role !== 'ADMIN' && grant.canUpdate && canManage
             "
-            class="admin-users-action admin-users-action--secondary"
+            class="admin-users-action"
+            :class="{ 'admin-users-action--secondary': grant.status === 'ARCHIVED' }"
             type="button"
             :disabled="saving || profileLoading"
             @click="openRole(grant.role)"
@@ -2911,14 +2920,18 @@ onBeforeUnmount(() => {
       <div class="admin-users-summary">
         <strong>{{ selectedUser.fullName }}</strong><small>{{ roleLabel(editorRole) }}</small>
       </div>
-      <label class="admin-users-field"><span>Статус роли</span><select
-        v-model="editorStatus"
-        :disabled="!editorCanUpdate"
-      ><option
-        v-for="status in editorStatuses"
-        :key="status"
-        :value="status"
-      >{{ statusLabel(status) }}</option></select></label>
+      <div class="admin-users-field admin-users-field--selector">
+        <span aria-hidden="true">Статус роли</span>
+        <HeadmanStatsSelect
+          label="Статус роли"
+          popup
+          :model-value="editorStatus"
+          :options="editorStatusOptions"
+          placeholder="Нет доступных статусов"
+          :disabled="!editorCanUpdate"
+          @update:model-value="selectEditorStatus"
+        />
+      </div>
       <AdminUserGroupPicker
         v-if="editorRole === 'STUDENT' && needsRoleAssignment"
         v-model="editorGroupId"
@@ -3132,7 +3145,7 @@ onBeforeUnmount(() => {
           {{ accessOwner === 'create' ? 'Выбрать права' : 'Проверить изменения' }}
         </button><button
           v-if="accessOwner === 'target' && accessProfile?.assigned"
-          class="admin-users-action admin-users-action--secondary"
+          class="admin-users-action admin-users-action--secondary admin-users-action--pill"
           type="button"
           :disabled="saving || accessUncertain || accessPending || accessReadFailed || Boolean(failedAccessRecovery)"
           @click="prepareAccess('revoke')"

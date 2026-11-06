@@ -103,9 +103,6 @@ function toggle(permission: AdminPermission, checked: boolean): void {
           @update:model-value="toggle(permission, $event)"
         />
       </fieldset>
-      <p class="admin-permission-editor__note">
-        Выбрано прав: {{ selected.size }}
-      </p>
     </template>
   </section>
 </template>

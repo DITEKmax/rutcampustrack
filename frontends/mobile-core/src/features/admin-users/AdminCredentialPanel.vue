@@ -239,38 +239,30 @@ onBeforeUnmount(() => {
         Твой сеанс отозван. Скопируй пароль, пока этот экран открыт.
       </p>
       <template v-else-if="confirmation">
-        <p class="admin-users-muted">
-          Новый пароль заменит прежний. Сеансы пользователя и ссылки восстановления будут
-          отозваны.<template v-if="selfTarget">
-            Твой текущий сеанс тоже завершится. Скопируй новый пароль перед выходом с экрана.
-          </template>
+        <ul class="admin-users-muted admin-credential-panel__consequences">
+          <li>Новый пароль заменит прежний.</li>
+          <li>Сеансы пользователя будут отозваны.</li>
+          <li>Ссылки восстановления будут отозваны.</li>
+        </ul>
+        <p
+          v-if="selfTarget"
+          class="admin-users-muted"
+        >
+          Твой текущий сеанс тоже завершится. Скопируй новый пароль перед выходом с экрана.
         </p>
         <AdminCheckbox
           v-model="confirmed"
           label="Подтверждаю генерацию"
           :disabled="disabled"
         />
-        <div class="admin-credential-panel__actions">
-          <button
-            class="admin-users-action admin-users-action--secondary"
-            type="button"
-            :disabled="disabled"
-            @click="
-              confirmation = null;
-              confirmed = false;
-            "
-          >
-            Отмена
-          </button>
-          <button
-            class="admin-users-action"
-            type="button"
-            :disabled="disabled || !confirmed"
-            @click="perform(true)"
-          >
-            Сгенерировать пароль
-          </button>
-        </div>
+        <button
+          class="admin-users-action"
+          type="button"
+          :disabled="disabled || !confirmed"
+          @click="perform(true)"
+        >
+          Сгенерировать пароль
+        </button>
       </template>
       <button
         v-else-if="!initialOnly"

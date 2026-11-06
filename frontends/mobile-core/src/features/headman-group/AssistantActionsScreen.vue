@@ -170,6 +170,7 @@ watch(
   <HeadmanJournalScreen
     v-else-if="surface === 'journal'"
     :api="journalApi"
+    :requests-api="requestsApi"
     :group-id="groupId"
     :assistant-permissions="permissions"
     :offline="offline"

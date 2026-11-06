@@ -7,7 +7,6 @@ import './notification-inbox.pcss';
 
 withDefaults(
   defineProps<{
-    studentUi?: boolean;
     items: readonly NotificationItem[];
     preferences: NotificationPreferencesV2 | null;
     contextKey: string;
@@ -87,7 +86,6 @@ const emit = defineEmits<{
         @click="emit('mark-all-read')"
       >
         <svg
-          v-if="studentUi"
           class="notification-inbox__mark-all-icon"
           viewBox="0 0 24 24"
           fill="none"
@@ -99,7 +97,6 @@ const emit = defineEmits<{
         >
           <path d="m3 12 4 4L17 6M11 16l10-10" />
         </svg>
-        <template v-else>{{ markAllPending ? 'Отмечаем…' : 'Прочитать все' }}</template>
       </button>
     </div>
     <div
@@ -131,7 +128,7 @@ const emit = defineEmits<{
       class="notification-inbox__state notification-inbox__state--empty"
       role="status"
     >
-      <NotificationReadIllustration v-if="studentUi && unreadOnly" />
+      <NotificationReadIllustration v-if="unreadOnly" />
       <p>{{ unreadOnly ? 'Непрочитанных уведомлений нет.' : 'Уведомлений пока нет.' }}</p>
     </div>
     <ul

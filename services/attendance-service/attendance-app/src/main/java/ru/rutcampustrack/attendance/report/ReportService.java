@@ -454,7 +454,10 @@ public class ReportService {
                                             rec == null || rec.status() == null
                                                     ? null
                                                     : rec.markRevision(),
-                                            approvedTicket);
+                                            approvedTicket,
+                                            headmanActor && excuse
+                                                    ? rec.excuseRequestId()
+                                                    : null);
                                 })
                         .toList();
 

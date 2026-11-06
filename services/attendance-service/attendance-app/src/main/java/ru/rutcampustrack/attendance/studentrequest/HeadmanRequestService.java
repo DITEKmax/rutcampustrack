@@ -179,12 +179,12 @@ public class HeadmanRequestService {
     public AttachmentDownload downloadAttachment(
             Identity identity, String requestId, String attachmentId) {
         Loaded loaded = load(requestId);
-        requireHeadmanAuthority(identity, loaded.groupId());
         if (loaded.kind() != StudentRequestKind.EXCUSE) {
+            requireHeadmanAuthority(identity, loaded.groupId());
             throw new ResourceNotFoundException("Attachment", "id", attachmentId);
         }
-        return studentRequestService.fetchExcuseAttachmentForBot(
-                identity.userId(), requestId, attachmentId);
+        return studentRequestService.downloadExcuseAttachmentForHeadman(
+                identity, loaded.excuse(), attachmentId);
     }
 
     private long requireListAuthority(Identity identity) {

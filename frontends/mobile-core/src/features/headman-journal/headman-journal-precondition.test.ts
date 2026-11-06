@@ -107,6 +107,7 @@ describe('journal authoritative mark preconditions', () => {
               markRevision: null,
               editable: false,
               approvedTicket: { kind: 'EXCUSE', id: 'actual-ticket-id', status: 'APPROVED' },
+              currentExcuseRequestId: 'stale-incorrect-id',
             },
             {
               userId: 3,
@@ -114,6 +115,7 @@ describe('journal authoritative mark preconditions', () => {
               status: 'EXCUSED',
               markRevision: 'server-token',
               approvedTicket: null,
+              currentExcuseRequestId: 'separate-exact-id',
             },
           ],
         }),
@@ -123,7 +125,11 @@ describe('journal authoritative mark preconditions', () => {
       status: 'EMPTY',
       editable: false,
       approvedTicket: { id: 'actual-ticket-id', status: 'APPROVED' },
+      currentExcuseRequestId: null,
     })
-    expect(report.entries.find((entry) => entry.userId === 3)?.markRevision).toBe('server-token')
+    expect(report.entries.find((entry) => entry.userId === 3)).toMatchObject({
+      markRevision: 'server-token',
+      currentExcuseRequestId: 'separate-exact-id',
+    })
   })
 })

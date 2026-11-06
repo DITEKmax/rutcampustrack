@@ -15,7 +15,6 @@ import { changeNotificationColor, type NotificationPreferencesEdit } from './not
 import './notification-colors.pcss';
 
 const props = defineProps<{
-  studentUi?: boolean;
   catalog: NotificationCatalog;
   preferences: NotificationPreferencesV2;
   draft: NotificationPreferencesV2 | null;
@@ -187,13 +186,13 @@ function setColor(id: NotificationTypeId, colorId: NotificationPaletteId): void 
               :key="color.id"
               type="button"
               class="notification-colors__swatch"
-              :style="studentUi ? dotStyle(color.id) : undefined"
+              :style="dotStyle(color.id)"
               :aria-label="color.label"
               :aria-pressed="type.preferences.colorId === color.id"
               @click="setColor(type.id, color.id)"
             >
               <svg
-                v-if="studentUi && type.preferences.colorId === color.id"
+                v-if="type.preferences.colorId === color.id"
                 class="notification-colors__selected"
                 viewBox="0 0 16 16"
                 fill="none"
@@ -205,28 +204,8 @@ function setColor(id: NotificationTypeId, colorId: NotificationPaletteId): void 
               >
                 <path d="m4 8 3 3 5-6" />
               </svg>
-              <template v-if="!studentUi">
-                <span
-                  class="notification-colors__dot"
-                  :style="dotStyle(color.id)"
-                  aria-hidden="true"
-                />
-                <span>{{ color.label }}</span>
-                <span
-                  class="notification-colors__selected"
-                  aria-hidden="true"
-                >{{ type.preferences.colorId === color.id ? '✓' : '' }}</span>
-              </template>
             </button>
           </div>
-          <button
-            v-if="!studentUi"
-            type="button"
-            class="notification-colors__reset"
-            @click="setColor(type.id, 'violet')"
-          >
-            Сбросить: фиолетовый
-          </button>
         </fieldset>
       </div>
     </section>

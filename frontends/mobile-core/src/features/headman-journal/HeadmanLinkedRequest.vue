@@ -13,6 +13,7 @@ import StudentWarningBlock from '../../shared/components/StudentWarningBlock.vue
 const props = defineProps<{
   api: HeadmanRequestsApi | null;
   ticket: HeadmanJournalApprovedTicket;
+  studentId?: number;
   offline: boolean;
   allowed: boolean;
 }>();
@@ -47,7 +48,8 @@ async function load(): Promise<void> {
     if (
       value.summary.id !== id ||
       value.summary.kind !== props.ticket.kind ||
-      value.summary.status !== 'APPROVED'
+      value.summary.status !== 'APPROVED' ||
+      (props.studentId !== undefined && value.summary.studentId !== props.studentId)
     )
       throw new Error('Сервер вернул другую заявку.');
     detail.value = value;
@@ -60,7 +62,7 @@ async function load(): Promise<void> {
   }
 }
 watch(
-  () => [props.api, props.ticket.id, props.offline, props.allowed] as const,
+  () => [props.api, props.ticket.id, props.studentId, props.offline, props.allowed] as const,
   () => {
     void load();
   },

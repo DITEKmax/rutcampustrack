@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="96" viewBox="0 0 128 96" fill="none" aria-hidden="true" focusable="false">
+  <rect x="39" y="20" width="51" height="62" rx="10" fill="var(--rct-color-accent-soft, #2f1160)"/>
+  <rect x="29" y="13" width="54" height="64" rx="9" fill="var(--rct-color-surface-raised, #1c1922)" stroke="var(--rct-color-text-muted, #8a8299)" stroke-width="1.5"/>
+  <path d="M42 14V76" stroke="var(--rct-color-text-muted, #8a8299)" stroke-opacity=".35" stroke-width="1.5"/>
+  <path d="M25 28H33M25 42H33M25 56H33" stroke="var(--rct-color-text-muted, #8a8299)" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M51 32H69" stroke="var(--rct-color-accent-now, #b79cfa)" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M51 42H69M51 51H63" stroke="var(--rct-color-text-muted, #8a8299)" stroke-opacity=".45" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="86" cy="69" r="16" fill="var(--rct-color-accent-soft, #2f1160)" stroke="var(--rct-color-surface-raised, #1c1922)" stroke-width="4"/>
+  <path d="M79.5 69L84 73.5L92 65" stroke="var(--rct-color-accent-now, #b79cfa)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M99 27H105M102 24V30" stroke="var(--rct-color-accent-now, #b79cfa)" stroke-opacity=".55" stroke-width="1.5" stroke-linecap="round"/>
+  <circle cx="18" cy="68" r="2" fill="var(--rct-color-text-muted, #8a8299)" fill-opacity=".4"/>
+</svg>

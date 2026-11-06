@@ -3,6 +3,7 @@ import NotificationsEntryButton from '../notifications/NotificationsEntryButton.
 import { computed, nextTick, onBeforeUnmount, ref, shallowRef, watch } from 'vue';
 import StudentWarningBlock from '../../shared/components/StudentWarningBlock.vue';
 import MobileIcon from '../../shared/components/MobileIcon.vue';
+import emptyHomeworkIllustration from '../../assets/headman-homework-empty-compact.svg?raw';
 import { academicWeekOrdinal, type AcademicWeekPolicy } from '../../domain/academic-week';
 import type {
   HeadmanScheduleApi,
@@ -27,8 +28,9 @@ import type {
   HeadmanManagedHomework,
 } from '../homework/headman-homework-client';
 import type { HeadmanAssistantPermission } from '../headman-group/headman-group-client';
+import type { HeadmanRequestsApi } from '../headman-requests/headman-requests-client';
 import HeadmanManualRoster from '../headman-journal/HeadmanManualRoster.vue';
-import HeadmanManualExcuse from '../headman-journal/HeadmanManualExcuse.vue';
+import HeadmanManualMarkTask from '../headman-journal/HeadmanManualMarkTask.vue';
 import { excuseLabel, isAttendanceDenied, reportMatchesLesson, useHeadmanManualMarks } from '../headman-journal/headman-manual-marks';
 import './headman-home-screen.pcss';
 
@@ -44,6 +46,7 @@ const props = withDefaults(
     groupLabel?: string | null;
     subjectsApi?: HeadmanSubjectsApi | null;
     homeworkApi?: HeadmanHomeworkApi | null;
+    requestsApi?: HeadmanRequestsApi | null;
     selectedDate?: string;
     offline?: boolean;
     readOnly?: boolean;
@@ -60,6 +63,7 @@ const props = withDefaults(
     actorUserId: null,
     subjectsApi: null,
     homeworkApi: null,
+    requestsApi: null,
     selectedDate: '',
     offline: false,
     readOnly: false,
@@ -106,13 +110,23 @@ let disposed = false;
 const selectedLesson = computed(
   () => lessons.value.find((lesson) => lesson.id === selectedLessonId.value) ?? null,
 );
+const defaultLesson = computed(
+  () =>
+    lessons.value.find((lesson) => lesson.status === 'ACTIVE' && lesson.current) ??
+    lessons.value.find((lesson) => lesson.status === 'ACTIVE') ??
+    lessons.value[0] ??
+    null,
+);
+const canReturnToToday = computed(
+  () => selectedDate.value !== todayIso() || (selectedLesson.value !== null && selectedLesson.value !== defaultLesson.value),
+);
 const manualRoster = ref<InstanceType<typeof HeadmanManualRoster> | null>(null);
 const lessonNotStarted = computed(
   () => selectedLesson.value?.status === 'PLANNED' && report.value?.editable === false,
 );
 const manual = useHeadmanManualMarks({
   scope: () => ({
-    api: props.api, groupId: props.groupId, date: selectedDate.value, lesson: selectedLesson.value,
+    api: props.api, requestsApi: props.requestsApi, groupId: props.groupId, date: selectedDate.value, lesson: selectedLesson.value,
     actorUserId: props.actorUserId, offline: props.offline, readOnly: props.readOnly,
     permissions: props.assistantPermissions,
   }),
@@ -354,6 +368,11 @@ function pageLesson(delta: number): void {
   const lesson = lessons.value[lessonIndex.value + delta];
   if (lesson) selectedLessonId.value = lesson.id;
 }
+function returnToToday(): void {
+  const today = todayIso();
+  if (selectedDate.value === today) selectedLessonId.value = defaultLesson.value?.id ?? null;
+  else selectDate(today);
+}
 function timeRange(lesson: HeadmanJournalLesson): string {
   return `${lesson.startTime?.slice(0, 5) ?? '—'}–${lesson.endTime?.slice(0, 5) ?? '—'}`;
 }
@@ -416,8 +435,7 @@ async function load(): Promise<void> {
       .slice()
       .sort((left, right) => (left.lessonNumber ?? 99) - (right.lessonNumber ?? 99));
     subjects.value = subjectList.filter((subject) => subject.groupId === groupId);
-    selectedLessonId.value =
-      next.find((lesson) => lesson.status === 'ACTIVE')?.id ?? lessons.value[0]?.id ?? null;
+    selectedLessonId.value = defaultLesson.value?.id ?? null;
   } catch (cause) {
     if (disposed || revision !== loadRevision || cause instanceof StaleSessionGenerationError)
       return;
@@ -608,23 +626,21 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <main v-if="manualEntry && selectedLesson" class="headman-home">
-    <HeadmanManualExcuse
+  <main
+    v-if="manualDraft && manualEntry && selectedLesson"
+    class="headman-home"
+  >
+    <HeadmanManualMarkTask
       :key="manualEntry.userId"
+      :manual="manual"
+      :draft="manualDraft"
       :entry="manualEntry"
       :lesson-id="selectedLesson.id"
       :api="api"
+      :requests-api="requestsApi"
       :context="`${subjectName} · ${selectedLesson.lessonNumber ?? '—'} пара · ${timeRange(selectedLesson)}`"
-      :allowed="manual.canWrite(manualEntry, 'EXCUSED')"
-      :pending="pendingUserId === manualEntry.userId"
-      :blocked="manualBlocked"
-      :stale="staleRows.has(manualEntry.userId)"
-      :issue="rowIssues[manualEntry.userId] ?? null"
-      @back="manual.closeDraft"
-      @save="manual.submitExcuse"
-      @review-conflict="manual.reviewConflict"
-      @refresh="manual.refreshRow(manualEntry.userId, $event)"
       @access-denied="onManualAccessDenied"
+      @error="emit('error', $event)"
     />
   </main>
   <main
@@ -844,7 +860,12 @@ onBeforeUnmount(() => {
         class="headman-home__quick-roster"
         aria-labelledby="headman-home-roster-title"
       >
-        <h2 id="headman-home-roster-title">Отметки выбранной пары</h2>
+        <h2
+          id="headman-home-roster-title"
+          class="headman-home__visually-hidden"
+        >
+          Отметки выбранной пары
+        </h2>
         <HeadmanManualRoster
           ref="manualRoster"
           :entries="report.entries"
@@ -854,7 +875,7 @@ onBeforeUnmount(() => {
           :blocked="manualBlocked"
           :issues="rowIssues"
           :stale-rows="staleRows"
-          :can-write="manual.canWrite"
+          :can-choose="manual.canChoose"
           @choose="manual.choose"
           @refresh="manual.refreshRow"
         />
@@ -873,7 +894,19 @@ onBeforeUnmount(() => {
           :disabled="!homeworks.length"
           @click="homeworkExpanded = !homeworkExpanded"
         >
-          <MobileIcon name="homework" /><span><strong>{{
+          <!-- Trusted project SVG from the headman handoff; its colors use the active theme tokens. -->
+          <!-- eslint-disable vue/no-v-html -->
+          <span
+            v-if="homeworkLoaded && !homeworks.length && !homeworkError"
+            class="headman-home__empty-art"
+            aria-hidden="true"
+            v-html="emptyHomeworkIllustration"
+          />
+          <!-- eslint-enable vue/no-v-html -->
+          <MobileIcon
+            v-else
+            name="homework"
+          /><span><strong>{{
             homeworkError
               ? 'ДЗ недоступно'
               : homeworkLoading
@@ -912,9 +945,8 @@ onBeforeUnmount(() => {
         </p>
       </section>
       <section
-        v-if="canBlock || blockError"
-        class="headman-home__geo"
-        aria-label="Геоотметки выбранной пары"
+        class="headman-home__actions"
+        aria-label="Действия с выбранной парой"
         :aria-busy="blockPending"
       >
         <div
@@ -959,8 +991,6 @@ onBeforeUnmount(() => {
           {{ blockPending ? 'Разблокируем…' : selectedLesson.blockedByHeadman ? 'Разблокировать геоотметки' : 'Заблокировать геоотметки' }}
         </button>
         <p v-if="blockError" class="headman-home__geo-error" role="alert">{{ blockError }}</p>
-      </section>
-      <div class="headman-home__actions">
         <button
           type="button"
           :disabled="offline || readOnly || !homeworkEnabled"
@@ -974,7 +1004,15 @@ onBeforeUnmount(() => {
         >
           Журнал
         </button>
-      </div>
+      </section>
     </template>
+    <button
+      v-if="canReturnToToday"
+      class="headman-home__return-today"
+      type="button"
+      @click="returnToToday"
+    >
+      Сегодня
+    </button>
   </main>
 </template>

@@ -126,6 +126,8 @@ export interface HeadmanJournalRosterEntry {
   readonly symbol: string | null
   readonly markRevision: string | null
   readonly approvedTicket: HeadmanJournalApprovedTicket | null
+  /** Request that created the current EXCUSED mark; separate from archived decisions. */
+  readonly currentExcuseRequestId?: string | null
   readonly source: string | null
   /** Last persisted mark update, when supplied by the server. */
   readonly timestamp?: string | null
@@ -310,11 +312,13 @@ export class HeadmanJournalApi implements HeadmanJournalWritePort {
     return normalizeReport(value, lessonId)
   }
 
-  async downloadAttachment(lessonId: number, userId: number): Promise<Blob> {
+  async downloadAttachment(lessonId: number, userId: number, attachmentId?: string): Promise<Blob> {
     assertPositiveInteger(lessonId, 'lessonId')
     assertPositiveInteger(userId, 'userId')
+    const query =
+      attachmentId === undefined ? '' : '?' + new URLSearchParams({ attachmentId }).toString()
     const response = await this.response(
-      `/api/attendance/lessons/${lessonId}/students/${userId}/attachment`,
+      `/api/attendance/lessons/${lessonId}/students/${userId}/attachment${query}`,
     )
     if (!response.ok) throw await this.apiError(response)
     const blob = await response.blob()
@@ -928,6 +932,7 @@ function normalizeEntry(value: unknown, reportEditable: boolean): HeadmanJournal
     symbol: stringValue(value.symbol),
     markRevision: stringValue(value.markRevision),
     approvedTicket: normalizeApprovedTicket(value.approvedTicket),
+    currentExcuseRequestId: status === 'EXCUSED' ? stringValue(value.currentExcuseRequestId) : null,
     source: stringValue(value.source),
     timestamp: status === 'EMPTY' ? null : isoInstantValue(value.timestamp),
     excuseReason: stringValue(value.excuseReason),

@@ -20,7 +20,7 @@ defineProps<{
   future: boolean;
   issues: Readonly<Record<number, ManualRowIssue>>;
   staleRows: ReadonlySet<number>;
-  canWrite: (entry: HeadmanJournalRosterEntry, choice: ManualChoice) => boolean;
+  canChoose: (entry: HeadmanJournalRosterEntry, choice: ManualChoice) => boolean;
 }>();
 const emit = defineEmits<{
   choose: [entry: HeadmanJournalRosterEntry, choice: ManualChoice, source: EventTarget | null];
@@ -80,7 +80,7 @@ function sourceLabel(source: string | null): string {
             :key="choice"
             type="button"
             :data-choice="choice"
-            :disabled="!canWrite(entry, choice) && !staleRows.has(entry.userId)"
+            :disabled="!canChoose(entry, choice) && !staleRows.has(entry.userId)"
             :aria-disabled="blocked || staleRows.has(entry.userId) ? true : undefined"
             :aria-pressed="entry.status === choice"
             :aria-label="`${manualStatusLabel[choice]}: ${entry.displayName}${entry.status === choice && sourceLabel(entry.source) ? `. ${sourceLabel(entry.source)}` : ''}`"

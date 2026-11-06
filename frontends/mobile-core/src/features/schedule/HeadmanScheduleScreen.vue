@@ -28,7 +28,6 @@ import {
   rootRoute,
   type MobileBottomNavItems,
   type MobileNavigationStack,
-  type MobileRootRouteId,
   type MobileRoute,
 } from '../../shared/navigation';
 import type { MobileHostAdapter } from '../../shared/host';
@@ -719,19 +718,6 @@ function handleTaskBack(): void {
   navigation.back();
 }
 
-function navigateRoot(routeName: MobileRootRouteId): void {
-  if (
-    routeName !== 'headman-today' &&
-    routeName !== 'headman-attendance' &&
-    routeName !== 'headman-requests' &&
-    routeName !== 'headman-more' &&
-    routeName !== 'profile'
-  )
-    return;
-  if (routeName !== 'headman-attendance') selectedLessonId.value = null;
-  navigation.goRoot(routeName);
-}
-
 async function openHomeLog(lesson: HeadmanJournalLesson): Promise<void> {
   if (!props.lessonActionsApi || props.offline) return;
   actionLogLesson.value = lesson;
@@ -759,8 +745,9 @@ async function openHomeLog(lesson: HeadmanJournalLesson): Promise<void> {
 function openHomeLesson(lesson: HeadmanJournalLesson): void {
   selectedDate.value = lesson.date;
   selectedLessonId.value = lesson.id;
-  navigation.goRoot('headman-attendance');
-  navigation.push(nestedRoute('headman-attendance', journalRouteId, 'detail'));
+  navigation.push(nestedRoute('headman-attendance', journalRouteId, 'detail'), {
+    preserveHistory: true,
+  });
 }
 
 function openGroup(): void {
@@ -1922,6 +1909,10 @@ defineExpose({ openNotificationAction });
           :src="homeworkBackIcon"
           alt="Назад"
         />
+        <MobileIcon
+          v-else-if="route.id === journalRouteId"
+          name="back"
+        />
         <template v-else>
           Назад
         </template>
@@ -1970,6 +1961,7 @@ defineExpose({ openNotificationAction });
       :group-label="profile?.groupLabel ?? null"
       :subjects-api="subjectsApi"
       :homework-api="homeworkApi"
+      :requests-api="requestsApi"
       :homework-enabled="moreAvailability.homework"
       :log-enabled="lessonActionsApi !== null"
       :offline="offline"

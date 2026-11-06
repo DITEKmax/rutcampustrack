@@ -22,11 +22,13 @@
 
 В «Ещё → Заявки» тестовые открытые заявки можно отменить и найти в архиве. В [сценарии временного отказа](http://127.0.0.1:14273/viewport?width=320&text=125&requestCancel=fail-once) первая отмена показывает сообщение рядом с заявкой, повтор переносит её в архив.
 
+Для проверки отметок выбери роль «Староста» на [PWA](http://127.0.0.1:14272/viewport?width=390&headman=marks&linked=excuse) или [TMA](http://127.0.0.1:14273/viewport?width=390&headman=marks&linked=excuse). На текущей паре одна отметка «у» ведёт к одобренной тестовой заявке с PDF. На прошедшей паре можно открыть ручную «у» и изменить причину. Счётчик над приложением показывает, когда прошла команда записи. В [сценарии выгрузки](http://127.0.0.1:14272/viewport?width=390&headman=stats) открой пару, нажми «Скачать журнал» и выбери недели и формат. Этот сценарий доступен и в [TMA](http://127.0.0.1:14273/viewport?width=390&headman=stats).
+
 ## Повторный запуск
 
 Рабочая копия Windows находится в `C:/Users/maksd/.codex/worktrees/9689/rutcampustrack/.agent/worktrees/frontend-refactor-v2`. Команды ниже выполняются из её корня. Нужны Node.js 24.14, npm 11.9 и установленные зависимости в `frontends/node_modules`. Если их нужно восстановить, выполни `npm --prefix frontends ci`.
 
-Конфигурации и сценарии хранятся в `.agent/evidence/student-mobile-v2` и `.agent/evidence/web-student-v2`. Их актуальная резервная копия находится в `.agent/evidence/frontend-refactor-v2-stand/fixtures-student-requests.zip` исходной рабочей копии `9689/rutcampustrack`. Для новой рабочей копии этой ветки распакуй архив в её корень. В ZIP 28 файлов с путями от корня рабочей копии. SHA-256 `683a4ada92db2e252fbde699f2e9a3b169875d496fd85f7ab1ae2b76f88d3e7c`.
+Конфигурации и сценарии хранятся в `.agent/evidence/student-mobile-v2` и `.agent/evidence/web-student-v2`. Их актуальная резервная копия находится в `.agent/evidence/frontend-refactor-v2-stand/fixtures-headman-feedback.zip` исходной рабочей копии `9689/rutcampustrack`. Для новой рабочей копии этой ветки распакуй архив в её корень. В ZIP 28 файлов с путями от корня рабочей копии. SHA-256 `607a683cca61bb50cf40f56ecda6d6845429b4821211c0e9ec4b9982be9148cc`.
 
 Каждая команда запускается в своём окне PowerShell.
 

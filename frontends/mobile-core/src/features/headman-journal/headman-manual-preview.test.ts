@@ -48,13 +48,15 @@ function fixture(download: () => Promise<Blob> = async () => pdf()) {
 describe('manual journal preview ownership', () => {
   it('discards late authenticated bytes after student/context change', async () => {
     let resolve!: (blob: Blob) => void
-    const f = fixture(
+    const download = vi.fn(
       () =>
         new Promise<Blob>((next) => {
           resolve = next
         }),
     )
+    const f = fixture(download)
     const pending = f.preview.load()
+    expect(download).toHaveBeenCalledExactlyOnceWith(1, 2, 'a')
     f.change({ userId: 3, ownerKey: 'group2' })
     resolve(pdf())
     await pending

@@ -39,6 +39,7 @@ public class StudentAttendanceEntry {
     private final String editBlockedReason;
     private final String markRevision;
     private final HeadmanStatsStudentLessonsResponse.ApprovedTicket approvedTicket;
+    private final String currentExcuseRequestId;
 
     public StudentAttendanceEntry(Long userId, String displayName, String status, String symbol) {
         this(
@@ -166,6 +167,7 @@ public class StudentAttendanceEntry {
                 editable,
                 editBlockedReason,
                 markRevision,
+                null,
                 null);
     }
 
@@ -185,7 +187,8 @@ public class StudentAttendanceEntry {
             boolean editable,
             String editBlockedReason,
             String markRevision,
-            HeadmanStatsStudentLessonsResponse.ApprovedTicket approvedTicket) {
+            HeadmanStatsStudentLessonsResponse.ApprovedTicket approvedTicket,
+            String currentExcuseRequestId) {
         this.userId = userId;
         this.displayName = displayName;
         this.status = status;
@@ -202,6 +205,7 @@ public class StudentAttendanceEntry {
         this.editBlockedReason = editBlockedReason;
         this.markRevision = markRevision;
         this.approvedTicket = approvedTicket;
+        this.currentExcuseRequestId = currentExcuseRequestId;
     }
 
     public Long getUserId() {
@@ -266,5 +270,12 @@ public class StudentAttendanceEntry {
 
     public HeadmanStatsStudentLessonsResponse.ApprovedTicket getApprovedTicket() {
         return approvedTicket;
+    }
+
+    @Schema(
+            description = "ID заявки, создавшей текущую уважительную отметку; доступен с правом MANAGE_EXCUSES",
+            nullable = true)
+    public String getCurrentExcuseRequestId() {
+        return currentExcuseRequestId;
     }
 }

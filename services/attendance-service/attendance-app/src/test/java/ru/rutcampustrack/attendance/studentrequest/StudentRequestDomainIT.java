@@ -75,6 +75,7 @@ import ru.rutcampustrack.attendance.contract.enums.StudentRequestStatus;
 import ru.rutcampustrack.attendance.contract.enums.UserRole;
 import ru.rutcampustrack.attendance.contract.exception.ResourceNotFoundException;
 import ru.rutcampustrack.attendance.events.EventSchemaValidator;
+import ru.rutcampustrack.attendance.exception.AccessDeniedException;
 import ru.rutcampustrack.attendance.exception.BadRequestException;
 import ru.rutcampustrack.attendance.exception.ConflictException;
 import ru.rutcampustrack.attendance.exception.ScheduleServiceUnavailableException;
@@ -1070,6 +1071,68 @@ class StudentRequestDomainIT {
         assertThat(excuseRepository.findAll()).isEmpty();
         assertThat(receiptRepository.findAll()).isEmpty();
         assertThat(attachmentRepository.findAll()).isEmpty();
+    }
+
+    @Test
+    void headmanWebReadsBoundUnexpiredExcuseAttachmentWithDetailAuthority() {
+        seedAbsent(42L);
+        seedAbsent(43L);
+        byte[] bytes = pdfBytes(64);
+        var original =
+                service.submitExcuse(
+                        STUDENT,
+                        excuse(
+                                List.of(42L),
+                                "web-attachment-original",
+                                List.of(new AttachmentInput("proof.pdf", "application/pdf", bytes))));
+        var unrelated =
+                service.submitExcuse(
+                        STUDENT,
+                        excuse(
+                                List.of(43L),
+                                "web-attachment-unrelated",
+                                List.of(new AttachmentInput("other.pdf", "application/pdf", bytes))));
+        String requestId = original.summary().id();
+        String attachmentId = original.attachments().getFirst().id();
+        String unrelatedAttachment = unrelated.attachments().getFirst().id();
+        service.decideExcuse(HEADMAN, requestId, true, "Проверено");
+
+        var assistant = new Identity(778L, UserRole.STUDENT, GROUP_ID, false);
+        when(academicGrpcClient.hasAssistantPermission(GROUP_ID, "MANAGE_EXCUSES"))
+                .thenReturn(true);
+        when(academicGrpcClient.isHeadman(assistant.userId(), GROUP_ID))
+                .thenReturn(HeadmanCheckResponse.newBuilder().setIsHeadman(false).build());
+        assertThat(headmanRequestService.get(assistant, requestId).summary().status())
+                .isEqualTo("APPROVED");
+        assertThat(headmanRequestService.downloadAttachment(assistant, requestId, attachmentId).bytes())
+                .containsExactly(bytes);
+        var ownerHeadman = new Identity(STUDENT_ID, UserRole.STUDENT, GROUP_ID, true);
+        assertThat(headmanRequestService.downloadAttachment(ownerHeadman, requestId, attachmentId).bytes())
+                .containsExactly(bytes);
+
+        assertThatThrownBy(() -> service.fetchExcuseAttachmentForBot(assistant.userId(), requestId, attachmentId))
+                .isInstanceOf(AccessDeniedException.class);
+        assertThatThrownBy(() -> service.fetchExcuseAttachmentForBot(STUDENT_ID, requestId, attachmentId))
+                .isInstanceOf(AccessDeniedException.class);
+        assertThatThrownBy(() -> headmanRequestService.downloadAttachment(assistant, requestId, unrelatedAttachment))
+                .isInstanceOf(AccessDeniedException.class);
+        var foreign = new Identity(779L, UserRole.STUDENT, GROUP_ID + 1, true);
+        assertThatThrownBy(() -> headmanRequestService.downloadAttachment(foreign, requestId, attachmentId))
+                .isInstanceOf(AccessDeniedException.class);
+        when(academicGrpcClient.hasAssistantPermission(GROUP_ID, "MANAGE_EXCUSES"))
+                .thenReturn(false);
+        assertThatThrownBy(() -> headmanRequestService.downloadAttachment(assistant, requestId, attachmentId))
+                .isInstanceOf(AccessDeniedException.class);
+
+        clock.set(original.attachments().getFirst().expiresAt());
+        assertThatThrownBy(() -> headmanRequestService.downloadAttachment(HEADMAN, requestId, attachmentId))
+                .isInstanceOf(org.springframework.web.server.ResponseStatusException.class)
+                .satisfies(
+                        error ->
+                                assertThat(((org.springframework.web.server.ResponseStatusException) error)
+                                                .getStatusCode()
+                                                .value())
+                                        .isEqualTo(410));
     }
 
     @Test

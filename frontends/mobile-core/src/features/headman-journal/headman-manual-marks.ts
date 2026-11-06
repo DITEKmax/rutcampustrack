@@ -2,9 +2,11 @@ import { computed, nextTick, onBeforeUnmount, ref, shallowRef, watch, type Shall
 import { StaleSessionGenerationError } from '../../shared/session-owner'
 import { journalScopeCurrent, type JournalMutationScope } from './headman-journal-operation'
 import type { HeadmanAssistantPermission } from '../headman-group/headman-group-client'
+import type { HeadmanRequestsApi } from '../headman-requests/headman-requests-client'
 import {
   HeadmanJournalApiError,
   type HeadmanJournalApi,
+  type HeadmanJournalApprovedTicket,
   type HeadmanJournalAttendanceStatus,
   type HeadmanJournalExcuseType,
   type HeadmanJournalLesson,
@@ -101,6 +103,7 @@ export type ManualRowIssue = {
 
 type ManualScope = {
   api: HeadmanJournalApi | null
+  requestsApi: HeadmanRequestsApi | null
   groupId: number | null
   date: string
   lesson: HeadmanJournalLesson | null
@@ -110,6 +113,33 @@ type ManualScope = {
   permissions: readonly HeadmanAssistantPermission[] | null
 }
 type FocusTarget = { userId: number; choice: ManualChoice; source: EventTarget | null }
+type ReplacementChoice = Exclude<ManualChoice, 'EXCUSED'>
+export type ManualMarkDraft = FocusTarget & {
+  condition: HeadmanJournalMarkCondition
+  ticket: HeadmanJournalApprovedTicket | null
+} & (
+  | { kind: 'reason' | 'linked' | 'unknown'; removing: boolean }
+  | { kind: 'replace'; replacement: ReplacementChoice }
+)
+
+function currentExcuseTicket(entry: HeadmanJournalRosterEntry): HeadmanJournalApprovedTicket | null {
+  return entry.status === 'EXCUSED' && entry.currentExcuseRequestId
+    ? { kind: 'EXCUSE', id: entry.currentExcuseRequestId, status: 'APPROVED' }
+    : null
+}
+
+function canEditReason(entry: HeadmanJournalRosterEntry): boolean {
+  return entry.status !== 'EXCUSED' ||
+    (entry.source?.toLowerCase() === 'headman' && !currentExcuseTicket(entry))
+}
+
+function sameDraftMark(draft: ManualMarkDraft, entry: HeadmanJournalRosterEntry): boolean {
+  const condition = markCondition(entry)
+  return !!condition &&
+    draft.condition.expectedStatus === condition.expectedStatus &&
+    draft.condition.expectedRevision === condition.expectedRevision &&
+    (draft.ticket?.id ?? null) === (currentExcuseTicket(entry)?.id ?? null)
+}
 
 type ManualOptions = {
   scope: () => ManualScope
@@ -124,7 +154,7 @@ type ManualOptions = {
 export function useHeadmanManualMarks(options: ManualOptions) {
   const pendingUserId = ref<number | null>(null)
   const refreshUserId = ref<number | null>(null)
-  const draft = shallowRef<FocusTarget | null>(null)
+  const draft = shallowRef<ManualMarkDraft | null>(null)
   const issues = shallowRef<Readonly<Record<number, ManualRowIssue>>>({})
   const staleRows = shallowRef<ReadonlySet<number>>(new Set())
   let generation = 0
@@ -143,6 +173,7 @@ export function useHeadmanManualMarks(options: ManualOptions) {
       const scope = options.scope()
       return [
         scope.api,
+        scope.requestsApi,
         scope.groupId,
         scope.date,
         scope.lesson?.id,
@@ -181,6 +212,10 @@ export function useHeadmanManualMarks(options: ManualOptions) {
   function closeDraft(): boolean {
     if (!draft.value) return false
     if (pendingUserId.value === draft.value.userId) return true
+    if (draft.value.kind !== 'replace' && draft.value.removing) {
+      draft.value = { ...draft.value, removing: false }
+      return true
+    }
     const target = draft.value
     draft.value = null
     restoreFocus(target, generation, true)
@@ -207,6 +242,15 @@ export function useHeadmanManualMarks(options: ManualOptions) {
     () => new Map(options.report.value?.entries.map((entry) => [entry.userId, entry])),
   )
 
+  function canOpenLinked(entry: HeadmanJournalRosterEntry): boolean {
+    const { groupId, date, lesson, permissions, offline } = options.scope()
+    const report = options.report.value
+    return !!lesson && !!report && reportMatchesLesson(report, lesson, groupId, date) &&
+      rowsById.value.get(entry.userId) === entry && !offline &&
+      (permissions === null || permissions.includes('MANAGE_EXCUSES')) &&
+      currentExcuseTicket(entry) !== null && markCondition(entry) !== null
+  }
+
   function canWrite(entry: HeadmanJournalRosterEntry, choice: ManualChoice): boolean {
     const permissions = options.scope().permissions
     const allowed = (permission: HeadmanAssistantPermission) =>
@@ -222,6 +266,10 @@ export function useHeadmanManualMarks(options: ManualOptions) {
     )
   }
 
+  function canChoose(entry: HeadmanJournalRosterEntry, choice: ManualChoice): boolean {
+    return canWrite(entry, choice) || (choice === 'EXCUSED' && canOpenLinked(entry))
+  }
+
   function setIssue(userId: number, issue: ManualRowIssue | null): void {
     const next = { ...issues.value }
     if (issue) next[userId] = issue
@@ -230,7 +278,19 @@ export function useHeadmanManualMarks(options: ManualOptions) {
   }
 
   function reportRefreshed(): void {
-    if (draft.value && !draftEntry.value) draft.value = null
+    const target = draft.value
+    const entry = draftEntry.value
+    if (target && (!entry || !sameDraftMark(target, entry))) {
+      if (entry && target.kind === 'reason' && !target.removing && canEditReason(entry)) {
+        setIssue(target.userId, { kind: 'conflict', message: conflictReviewMessage })
+      } else {
+        draft.value = null
+        if (entry) {
+          setIssue(target.userId, { kind: 'conflict', message: conflictReviewMessage })
+          restoreFocus(target, generation, true)
+        }
+      }
+    }
     staleRows.value = new Set()
     issues.value = Object.fromEntries(
       Object.entries(issues.value).filter(([, issue]) => issue.kind !== 'accepted'),
@@ -276,6 +336,7 @@ export function useHeadmanManualMarks(options: ManualOptions) {
       ...entry,
       status,
       markRevision: null,
+      currentExcuseRequestId: null,
       symbol: manualStatusSymbol[status],
       timestamp,
       source: command ? 'headman' : null,
@@ -381,33 +442,60 @@ export function useHeadmanManualMarks(options: ManualOptions) {
     choice: ManualChoice,
     source: EventTarget | null,
   ) {
-    if (draft.value || blocked.value || !canWrite(entry, choice)) return
+    if (draft.value || blocked.value || !canChoose(entry, choice)) return
     const target = { userId: entry.userId, choice, source }
-    if (entry.status === choice) void write(entry, target, null, false)
-    else if (choice === 'EXCUSED') {
+    const condition = markCondition(entry)
+    if (entry.status === 'EXCUSED' || choice === 'EXCUSED') {
+      if (!condition) return
       setIssue(entry.userId, null)
-      draft.value = target
-    } else void write(entry, target, { status: choice }, false)
+      const ticket = currentExcuseTicket(entry)
+      draft.value = choice === 'EXCUSED'
+        ? {
+            ...target, condition, ticket, removing: false,
+            kind: ticket ? 'linked' : canEditReason(entry) ? 'reason' : 'unknown',
+          }
+        : { ...target, condition, ticket, kind: 'replace', replacement: choice }
+    } else if (entry.status === choice) void write(entry, target, null, false)
+    else void write(entry, target, { status: choice }, false)
   }
 
-  function editExcuse(entry: HeadmanJournalRosterEntry, source: EventTarget | null): void {
-    if (draft.value || blocked.value || entry.status !== 'EXCUSED' || !canWrite(entry, 'EXCUSED'))
-      return
-    setIssue(entry.userId, null)
-    draft.value = { userId: entry.userId, choice: 'EXCUSED', source }
+  function requestRemoval(): void {
+    const target = draft.value
+    const entry = draftEntry.value
+    if (!target || target.kind === 'replace' || !entry || entry.status !== 'EXCUSED' ||
+        blocked.value || !sameDraftMark(target, entry) || !canWrite(entry, 'EXCUSED') ||
+        issues.value[target.userId]?.kind === 'conflict') return
+    draft.value = { ...target, removing: true }
+  }
+
+  function confirmChange(): void {
+    const target = draft.value
+    const entry = draftEntry.value
+    if (!target || !entry || !sameDraftMark(target, entry) ||
+        issues.value[target.userId]?.kind === 'conflict') return
+    if (target.kind === 'replace')
+      void write(entry, target, { status: target.replacement }, true)
+    else if (target.removing && entry.status === 'EXCUSED')
+      void write(entry, target, null, true)
   }
 
   function reviewConflict(): void {
     const target = draft.value
     const entry = draftEntry.value
+    const condition = entry && markCondition(entry)
     if (
       !target ||
+      target.kind !== 'reason' ||
+      target.removing ||
       !entry ||
+      !condition ||
+      !canEditReason(entry) ||
       blocked.value ||
       !canWrite(entry, 'EXCUSED') ||
       issues.value[target.userId]?.kind !== 'conflict'
     )
       return
+    draft.value = { ...target, condition }
     setIssue(target.userId, null)
   }
 
@@ -416,7 +504,11 @@ export function useHeadmanManualMarks(options: ManualOptions) {
     const entry = draftEntry.value
     if (
       !target ||
+      target.kind !== 'reason' ||
+      target.removing ||
       !entry ||
+      !canEditReason(entry) ||
+      !sameDraftMark(target, entry) ||
       issues.value[target.userId]?.kind === 'conflict' ||
       !excuseTypes.some((item) => item.value === command.excuseType)
     )
@@ -432,8 +524,10 @@ export function useHeadmanManualMarks(options: ManualOptions) {
     staleRows,
     issues,
     canWrite,
+    canChoose,
     choose,
-    editExcuse,
+    requestRemoval,
+    confirmChange,
     submitExcuse,
     reviewConflict,
     closeDraft,

@@ -20,7 +20,6 @@ import {
 import './notification-settings.pcss';
 
 const props = defineProps<{
-  studentUi?: boolean;
   catalog: NotificationCatalog;
   preferences: NotificationPreferencesV2;
   draft: NotificationPreferencesV2 | null;
@@ -141,10 +140,7 @@ function setDelivery(
       :disabled="disabled || choiceOpen"
       @click="switchMode"
     >
-      <span class="notification-settings__mode-label">Раздельные настройки<span
-        v-if="!studentUi"
-        class="notification-settings__mode-state"
-      >{{ value.splitChannels ? 'Включены' : 'Выключены' }}</span></span>
+      <span class="notification-settings__mode-label">Раздельные настройки</span>
       <span
         class="notification-settings__slider"
         aria-hidden="true"
@@ -281,7 +277,7 @@ function setDelivery(
             v-for="group in groups"
             :key="group.id"
           >
-            <tr :class="studentUi ? 'notification-settings__sr' : 'notification-settings__group'">
+            <tr class="notification-settings__sr">
               <th
                 :colspan="value.splitChannels ? 3 : 2"
                 scope="rowgroup"
@@ -331,13 +327,7 @@ function setDelivery(
         :disabled="choiceOpen"
         @click="emit('colors')"
       >
-        Цвета уведомлений<MobileIcon
-          v-if="studentUi"
-          name="back"
-        /><span
-          v-else
-          aria-hidden="true"
-        >›</span>
+        Цвета уведомлений<MobileIcon name="back" />
       </button>
     </div>
   </section>

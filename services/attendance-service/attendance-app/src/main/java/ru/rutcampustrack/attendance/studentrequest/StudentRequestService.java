@@ -593,28 +593,19 @@ public class StudentRequestService {
         if (request.summary().kind() != StudentRequestKind.EXCUSE) {
             throw new ResourceNotFoundException("Attachment", "id", attachmentId);
         }
-        RequestAttachmentDocument document =
-                attachmentRepository
-                        .findById(attachmentId)
-                        .orElseThrow(
-                                () ->
-                                        new ResourceNotFoundException(
-                                                "Attachment", "id", attachmentId));
-        if (!Objects.equals(document.getRequestId(), requestId)
-                || !Objects.equals(document.getOwnerStudentId(), studentId)) {
+        return readRetainedExcuseAttachment(requestId, studentId, attachmentId);
+    }
+
+    /** Web read for a persisted ticket loaded by the headman adapter. */
+    AttachmentDownload downloadExcuseAttachmentForHeadman(
+            Identity identity, ExcuseTicket ticket, String attachmentId) {
+        requireHeadmanAuthority(identity, ticket.getGroupId());
+        validateObjectId(ticket.getId(), "request_id");
+        validateObjectId(attachmentId, "attachment_id");
+        if (ticket.getStudentId() == null || ticket.getStudentId() <= 0) {
             throw new AccessDeniedException("Доступ к вложению запрещён");
         }
-        Instant now = retentionClock.instant();
-        if (document.getState() == AttachmentState.EXPIRED
-                || document.getExpiresAt() == null
-                || !now.isBefore(document.getExpiresAt())) {
-            throw new ResponseStatusException(HttpStatus.GONE, "Срок хранения вложения истёк");
-        }
-        if (document.getData() == null) {
-            throw new ResponseStatusException(HttpStatus.GONE, "Вложение больше недоступно");
-        }
-        return new AttachmentDownload(
-                document.getData().getData(), document.getContentType(), document.getName());
+        return readRetainedExcuseAttachment(ticket.getId(), ticket.getStudentId(), attachmentId);
     }
 
     /**
@@ -638,6 +629,11 @@ public class StudentRequestService {
                                         new ResourceNotFoundException(
                                                 "StudentRequest", "id", requestId));
         authorizeBotAttachmentActor(actorUserId, ticket);
+        return readRetainedExcuseAttachment(requestId, ticket.getStudentId(), attachmentId);
+    }
+
+    private AttachmentDownload readRetainedExcuseAttachment(
+            String requestId, Long studentId, String attachmentId) {
         RequestAttachmentDocument document =
                 attachmentRepository
                         .findById(attachmentId)
@@ -646,7 +642,7 @@ public class StudentRequestService {
                                         new ResourceNotFoundException(
                                                 "Attachment", "id", attachmentId));
         if (!Objects.equals(document.getRequestId(), requestId)
-                || !Objects.equals(document.getOwnerStudentId(), ticket.getStudentId())) {
+                || !Objects.equals(document.getOwnerStudentId(), studentId)) {
             throw new AccessDeniedException("Доступ к вложению запрещён");
         }
         Instant now = retentionClock.instant();

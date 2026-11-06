@@ -32,7 +32,6 @@ import MobileIcon from '../../shared/components/MobileIcon.vue';
 import './notifications-screen.pcss';
 
 const props = defineProps<{
-  studentUi?: boolean;
   api: NotificationsV2Api;
   contextKey: string;
   unreadOwner: NotificationsUnreadState;
@@ -559,7 +558,7 @@ onBeforeUnmount(() => {
   <main
     ref="dialogElement"
     class="notifications-screen"
-    :data-student-ui="studentUi ? '' : undefined"
+    data-student-ui
     role="dialog"
     aria-modal="true"
     aria-labelledby="notifications-title"
@@ -618,7 +617,6 @@ onBeforeUnmount(() => {
         </div>
         <NotificationInbox
           v-if="page === 'inbox'"
-          :student-ui="studentUi"
           :items="items"
           :preferences="preferences"
           :loading="loading"
@@ -670,7 +668,6 @@ onBeforeUnmount(() => {
           </div>
           <NotificationSettings
             v-if="page === 'settings'"
-            :student-ui="studentUi"
             :catalog="catalog"
             :preferences="preferences"
             :draft="draft"
@@ -688,7 +685,6 @@ onBeforeUnmount(() => {
           />
           <NotificationColors
             v-else
-            :student-ui="studentUi"
             :catalog="catalog"
             :preferences="preferences"
             :draft="draft"

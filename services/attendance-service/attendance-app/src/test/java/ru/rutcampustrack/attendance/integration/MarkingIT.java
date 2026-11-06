@@ -613,14 +613,22 @@ class MarkingIT extends AbstractAttendanceIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("EXCUSED"));
 
-        mockMvc.perform(headmanHeaders(get("/attendance/reports/lesson/{lessonId}", LESSON_ID)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.lessonStatus").value("CLOSED"))
-                .andExpect(jsonPath("$.entries.length()").value(2))
-                .andExpect(jsonPath("$.entries[0].status").value("excused"))
-                .andExpect(jsonPath("$.entries[0].excuseType").value("ILLNESS"))
-                .andExpect(jsonPath("$.entries[0].attachmentName").value("medical.pdf"))
-                .andExpect(jsonPath("$.entries[1].status").doesNotExist());
+        var report =
+                mockMvc.perform(headmanHeaders(get("/attendance/reports/lesson/{lessonId}", LESSON_ID)))
+                        .andExpect(status().isOk())
+                        .andExpect(jsonPath("$.lessonStatus").value("CLOSED"))
+                        .andExpect(jsonPath("$.entries.length()").value(2))
+                        .andExpect(jsonPath("$.entries[0].status").value("excused"))
+                        .andExpect(jsonPath("$.entries[0].excuseType").value("ILLNESS"))
+                        .andExpect(jsonPath("$.entries[0].attachmentId").isNotEmpty())
+                        .andExpect(jsonPath("$.entries[0].attachmentName").value("medical.pdf"))
+                        .andExpect(jsonPath("$.entries[1].status").doesNotExist())
+                        .andReturn();
+        String attachmentId =
+                objectMapper
+                        .readTree(report.getResponse().getContentAsByteArray())
+                        .at("/entries/0/attachmentId")
+                        .asText();
 
         mockMvc.perform(
                         headmanHeaders(
@@ -631,6 +639,19 @@ class MarkingIT extends AbstractAttendanceIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_PDF))
                 .andExpect(content().bytes(pdf));
+
+        String downloadPath = "/attendance/lessons/{lessonId}/students/{userId}/attachment";
+        mockMvc.perform(
+                        headmanHeaders(
+                                get(downloadPath, LESSON_ID, USER_ID)
+                                        .param("attachmentId", attachmentId)))
+                .andExpect(status().isOk())
+                .andExpect(content().bytes(pdf));
+        mockMvc.perform(
+                        headmanHeaders(
+                                get(downloadPath, LESSON_ID, USER_ID)
+                                        .param("attachmentId", attachmentId + "-stale")))
+                .andExpect(status().isNotFound());
 
         mockMvc.perform(
                         headmanHeaders(

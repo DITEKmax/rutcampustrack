@@ -475,7 +475,7 @@ describe('HeadmanJournalApi', () => {
     ).toThrow('excuseType')
   })
 
-  it('downloads an authorized student attachment through the frozen lesson path', async () => {
+  it('downloads the exact requested attendance attachment through the lesson path', async () => {
     const paths: string[] = []
     const api = new HeadmanJournalApi({
       accessToken: () => 'token',
@@ -488,8 +488,10 @@ describe('HeadmanJournalApi', () => {
       },
     })
 
-    const blob = await api.downloadAttachment(42, 3)
-    expect(paths).toEqual(['/api/attendance/lessons/42/students/3/attachment'])
+    const blob = await api.downloadAttachment(42, 3, 'file+/=&')
+    expect(paths).toEqual([
+      '/api/attendance/lessons/42/students/3/attachment?attachmentId=file%2B%2F%3D%26',
+    ])
     await expect(blob.text()).resolves.toBe('file-body')
   })
 

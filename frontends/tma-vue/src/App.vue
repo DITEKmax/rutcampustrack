@@ -1532,7 +1532,6 @@ onBeforeUnmount(() => {
       :data-admin-ui="profile?.activeRole === 'ADMIN' ? '' : undefined"
       :data-theme="profile?.activeRole === 'ADMIN' ? adminTheme : undefined"
       :style="profile?.activeRole === 'ADMIN' ? { colorScheme: adminTheme } : undefined"
-      :student-ui="studentViewVisible"
       :api="notificationsApi"
       :context-key="notificationContextKey"
       :unread-owner="notificationUnreadOwner"

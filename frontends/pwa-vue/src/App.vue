@@ -2328,7 +2328,6 @@ onBeforeUnmount(() => {
       :data-admin-ui="authSnapshot?.activeRole === 'ADMIN' ? '' : undefined"
       :data-theme="authSnapshot?.activeRole === 'ADMIN' ? adminTheme : undefined"
       :style="authSnapshot?.activeRole === 'ADMIN' ? { colorScheme: adminTheme } : undefined"
-      :student-ui="studentViewVisible"
       :api="notificationsApi"
       :context-key="notificationContextKey"
       :unread-owner="notificationUnreadOwner"

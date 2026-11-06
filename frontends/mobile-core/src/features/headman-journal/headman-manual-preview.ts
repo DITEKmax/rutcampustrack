@@ -64,8 +64,12 @@ export class HeadmanManualPreview {
       return
     this.publish({ ...empty(), loading: true })
     try {
-      const blob = scope.file ?? (await scope.api.downloadAttachment(scope.lessonId, scope.userId))
-      if (!this.current(run, scope)) return
+      const blob = scope.file ?? (
+        scope.attachmentId
+          ? await scope.api.downloadAttachment(scope.lessonId, scope.userId, scope.attachmentId)
+          : null
+      )
+      if (!blob || !this.current(run, scope)) return
       if (blob.size > PDF_PREVIEW_MAX_BYTES)
         throw new Error('Файл слишком большой для предпросмотра.')
       const header = new Uint8Array(await blob.slice(0, 8).arrayBuffer())

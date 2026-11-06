@@ -333,12 +333,20 @@ public class MarkingService {
 
     public AttendanceAttachmentService.AttachmentDownload downloadAttachment(
             Long lessonId, Long userId) {
+        return downloadAttachment(lessonId, userId, null);
+    }
+
+    public AttendanceAttachmentService.AttachmentDownload downloadAttachment(
+            Long lessonId, Long userId, String attachmentId) {
         LessonResponse lesson = requireWritableLesson(lessonId);
         requireAttendancePermission(lesson.getGroupId(), "MANAGE_EXCUSES");
         requireStudentInRoster(membersForLesson(lesson), userId);
         AttendanceDocument document =
                 mongoTemplate.findOne(pairFilter(lessonId, userId), AttendanceDocument.class);
-        if (document == null || document.getAttachmentId() == null || attachmentService == null) {
+        if (document == null
+                || document.getAttachmentId() == null
+                || attachmentService == null
+                || (attachmentId != null && !attachmentId.equals(document.getAttachmentId()))) {
             throw new ResourceNotFoundException("AttendanceAttachment", "lessonId", lessonId);
         }
         return attachmentService.download(lessonId, userId, document.getAttachmentId());

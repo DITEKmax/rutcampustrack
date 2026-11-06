@@ -371,7 +371,7 @@ class ReportServiceTest {
     // -------------------------------------------------------------------------
 
     @Test
-    void lessonAttendance_missingStudentShowsAbsent() {
+    void lessonAttendance_keepsExactExcuseRequestSeparateFromHistoryAndHonorsPermissions() {
         LessonResponse lesson =
                 LessonResponse.newBuilder()
                         .setId(LESSON_ID)
@@ -413,11 +413,19 @@ class ReportServiceTest {
                 .thenReturn(
                         List.of(
                                 recordForUser(100L, SUBJECT_ID_1, AttendanceStatus.PRESENT),
-                                recordForUser(101L, SUBJECT_ID_1, AttendanceStatus.EXCUSED)));
+                                new AttendanceRecord(
+                                        LESSON_ID, 101L, GROUP_ID, SUBJECT_ID_1,
+                                        LocalDate.of(2026, 4, 1), 1, AttendanceStatus.EXCUSED,
+                                        AttendanceSource.HEADMAN_EXCUSE, null, null, null,
+                                        null, null, null, null, "revision", "exact-ticket")));
         when(approvedTicketResolver.resolve(
                         GROUP_ID, SEMESTER_ID, Set.of(100L, 101L, 102L), List.of(LESSON_ID)))
                 .thenReturn(
                         Map.of(
+                                new HeadmanApprovedTicketResolver.Cell(LESSON_ID, 101L),
+                                new ru.rutcampustrack.attendance.contract.dto.report
+                                        .HeadmanStatsStudentLessonsResponse.ApprovedTicket(
+                                        "EXCUSE", "another-approved-ticket", "APPROVED"),
                                 new HeadmanApprovedTicketResolver.Cell(LESSON_ID, 102L),
                                 new ru.rutcampustrack.attendance.contract.dto.report
                                         .HeadmanStatsStudentLessonsResponse.ApprovedTicket(
@@ -434,6 +442,11 @@ class ReportServiceTest {
                         .orElseThrow();
         assertThat(entry100.getStatus()).isEqualTo("present");
         assertThat(entry100.getSymbol()).isEqualTo("+");
+        assertThat(entry100.getCurrentExcuseRequestId()).isNull();
+
+        var entry101 = response.getEntries().get(1);
+        assertThat(entry101.getCurrentExcuseRequestId()).isEqualTo("exact-ticket");
+        assertThat(entry101.getApprovedTicket().id()).isEqualTo("another-approved-ticket");
 
         var entry102 =
                 response.getEntries().stream()
@@ -443,6 +456,7 @@ class ReportServiceTest {
         assertThat(entry102.getStatus()).isNull();
         assertThat(entry102.getSymbol()).isNull();
         assertThat(entry102.getApprovedTicket().id()).isEqualTo("approved-ticket");
+        assertThat(entry102.getCurrentExcuseRequestId()).isNull();
         // A VIEW_STATS assistant's individual cell flags follow actual mark/manage capabilities.
         when(requestContext.isHeadman()).thenReturn(false);
         when(academicGrpcClient.hasAssistantPermission(GROUP_ID, "VIEW_STATS")).thenReturn(true);
@@ -453,11 +467,13 @@ class ReportServiceTest {
         var limited = reportService.getLessonAttendance(LESSON_ID);
         assertThat(limited.getEntries().get(0).isEditable()).isFalse();
         assertThat(limited.getEntries().get(1).isEditable()).isTrue();
+        assertThat(limited.getEntries().get(1).getCurrentExcuseRequestId()).isEqualTo("exact-ticket");
         when(academicGrpcClient.hasAssistantPermission(GROUP_ID, "MANAGE_EXCUSES"))
                 .thenReturn(false);
         var redacted = reportService.getLessonAttendance(LESSON_ID);
         assertThat(redacted.getEntries().get(2).getApprovedTicket()).isNull();
         assertThat(redacted.getEntries().get(1).getStatus()).isEqualTo("excused");
+        assertThat(redacted.getEntries().get(1).getCurrentExcuseRequestId()).isNull();
         when(academicGrpcClient.getHeadmanJournalSemesterState(GROUP_ID, SEMESTER_ID))
                 .thenReturn(
                         ru.rutcampustrack.academic.grpc.SemesterStateResponse.newBuilder()

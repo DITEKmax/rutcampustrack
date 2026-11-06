@@ -14,7 +14,7 @@ import {
   watch,
 } from 'vue';
 import HeadmanManualRoster from './HeadmanManualRoster.vue';
-import HeadmanManualExcuse from './HeadmanManualExcuse.vue';
+import HeadmanManualMarkTask from './HeadmanManualMarkTask.vue';
 import { excuseLabel, isAttendanceDenied, reportMatchesLesson, useHeadmanManualMarks } from './headman-manual-marks';
 import HeadmanLinkedRequest from './HeadmanLinkedRequest.vue';
 import HeadmanStatsSelect from '../headman-stats/HeadmanStatsSelect.vue';
@@ -226,7 +226,7 @@ const lessonNotStarted = computed(
 );
 const manual = useHeadmanManualMarks({
   scope: () => ({
-    api: props.api, groupId: props.groupId, date: selectedDate.value, lesson: selectedLesson.value,
+    api: props.api, requestsApi: props.requestsApi, groupId: props.groupId, date: selectedDate.value, lesson: selectedLesson.value,
     actorUserId: props.actorUserId, offline: props.offline, readOnly: props.readOnly,
     permissions: props.assistantPermissions,
   }),
@@ -1512,11 +1512,12 @@ function closeAttachmentPopup(popup: RequestAttachmentPopup): void {
 function openAttachment(entry: HeadmanJournalRosterEntry): void {
   const lessonId = selectedLessonId.value;
   const api = props.api;
+  const attachmentId = entry.attachmentId;
   if (
     props.offline ||
     !api ||
     lessonId === null ||
-    !entry.attachmentId ||
+    !attachmentId ||
     !canManageExcuses() ||
     attachmentState(entry)?.status === 'pending'
   )
@@ -1530,7 +1531,7 @@ function openAttachment(entry: HeadmanJournalRosterEntry): void {
     currentOwnerGeneration: () => attachmentOwnerGeneration.value,
     isDisposed: () => attachmentDisposed,
     openPopup: () => (typeof window === 'undefined' ? null : openRequestAttachmentPopup(window)),
-    download: () => api.downloadAttachment(lessonId, entry.userId),
+    download: () => api.downloadAttachment(lessonId, entry.userId, attachmentId),
     createObjectUrl: (blob) => {
       if (typeof URL === 'undefined' || typeof URL.createObjectURL !== 'function')
         throw new Error('Не удалось подготовить вложение.');
@@ -1882,23 +1883,21 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <main v-if="manualEntry && selectedLesson" class="headman-journal">
-    <HeadmanManualExcuse
+  <main
+    v-if="manualDraft && manualEntry && selectedLesson"
+    class="headman-journal"
+  >
+    <HeadmanManualMarkTask
       :key="manualEntry.userId"
+      :manual="manual"
+      :draft="manualDraft"
       :entry="manualEntry"
       :lesson-id="selectedLesson.id"
       :api="api"
+      :requests-api="requestsApi"
       :context="`${subjectName()} · ${formatShortDate(selectedDate)} · ${selectedLesson.lessonNumber ?? '—'} пара`"
-      :allowed="manual.canWrite(manualEntry, 'EXCUSED')"
-      :pending="pendingUserId === manualEntry.userId"
-      :blocked="manualBlocked"
-      :stale="staleRows.has(manualEntry.userId)"
-      :issue="rowIssues[manualEntry.userId] ?? null"
-      @back="manual.closeDraft"
-      @save="manual.submitExcuse"
-      @review-conflict="manual.reviewConflict"
-      @refresh="manual.refreshRow(manualEntry.userId, $event)"
       @access-denied="onManualAccessDenied"
+      @error="emit('error', $event)"
     />
   </main>
   <main
@@ -2129,7 +2128,7 @@ onBeforeUnmount(() => {
         :blocked="manualBlocked"
         :issues="rowIssues"
         :stale-rows="staleRows"
-        :can-write="manual.canWrite"
+        :can-choose="manual.canChoose"
         @choose="manual.choose"
         @refresh="manual.refreshRow"
       >
@@ -2137,15 +2136,6 @@ onBeforeUnmount(() => {
           <div v-if="entry.excuseReason || entry.excuseType || entry.attachmentId || entry.approvedTicket" class="headman-journal__row-meta">
               <span v-if="entry.excuseReason">{{ excuseLabel(entry.excuseReason) }}</span>
               <span v-else-if="entry.excuseType">{{ excuseLabel(entry.excuseType) }}</span>
-              <button
-                v-if="entry.status === 'EXCUSED' && manual.canWrite(entry, 'EXCUSED')"
-                class="headman-journal__reason-edit"
-                type="button"
-                :disabled="manualBlocked"
-                @click="manual.editExcuse(entry, $event.currentTarget)"
-              >
-                Изменить причину
-              </button>
               <span
                 v-if="entry.attachmentId && canManageExcuses()"
                 class="headman-journal__attachment-details"
@@ -2447,7 +2437,11 @@ onBeforeUnmount(() => {
           class="headman-journal__weekly-export-controls"
         >
           <details class="headman-journal__weekly-dropdown">
-            <summary>Выбрать недели<MobileIcon name="chevron-down" /></summary>
+            <summary>
+              <span>Выбрать недели</span>
+              <span class="headman-journal__weekly-count">Выбрано: {{ selectedWeeklyCount }}</span>
+              <MobileIcon name="chevron-down" />
+            </summary>
             <fieldset
               class="headman-journal__weekly-weeks"
               :disabled="weeklyExportBusy"
@@ -2459,6 +2453,7 @@ onBeforeUnmount(() => {
                 v-for="week in weeklyExportOptions.weeks"
                 :key="week.weekStart"
                 class="headman-journal__weekly-week"
+                :data-selected="selectedWeeklyStarts.includes(week.weekStart)"
               >
                 <input
                   type="checkbox"

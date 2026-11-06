@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.multipart.MultipartFile;
 import ru.rutcampustrack.attendance.contract.dto.marking.MarkBatchRequest;
@@ -92,10 +93,8 @@ public interface MarkingApi {
     ResponseEntity<Void> clear(
             @PathVariable Long lessonId,
             @PathVariable Long userId,
-            @org.springframework.web.bind.annotation.RequestParam(required = false)
-                    String expectedStatus,
-            @org.springframework.web.bind.annotation.RequestParam(required = false)
-                    String expectedRevision);
+            @RequestParam(required = false) String expectedStatus,
+            @RequestParam(required = false) String expectedRevision);
 
     @Operation(summary = "Скачать вложение индивидуальной отметки")
     @ApiResponses({
@@ -114,7 +113,9 @@ public interface MarkingApi {
     })
     @GetMapping("/lessons/{lessonId}/students/{userId}/attachment")
     ResponseEntity<byte[]> downloadAttachment(
-            @PathVariable Long lessonId, @PathVariable Long userId);
+            @PathVariable Long lessonId,
+            @PathVariable Long userId,
+            @RequestParam(name = "attachmentId", required = false) String attachmentId);
 
     @Operation(
             summary = "Пакетная отметка посещаемости (M05 P2-10/4)",

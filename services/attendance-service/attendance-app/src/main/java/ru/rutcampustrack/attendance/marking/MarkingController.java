@@ -87,9 +87,9 @@ public class MarkingController implements MarkingApi {
 
     @Override
     @RequireRole(UserRole.STUDENT)
-    public ResponseEntity<byte[]> downloadAttachment(Long lessonId, Long userId) {
+    public ResponseEntity<byte[]> downloadAttachment(Long lessonId, Long userId, String attachmentId) {
         AttendanceAttachmentService.AttachmentDownload download =
-                markingService.downloadAttachment(lessonId, userId);
+                markingService.downloadAttachment(lessonId, userId, attachmentId);
         ContentDisposition disposition =
                 ContentDisposition.attachment().filename(download.name(), UTF_8).build();
         return ResponseEntity.ok()

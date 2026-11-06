@@ -613,6 +613,7 @@
 }
 .headman-journal__weekly-export {
   padding: var(--rct-space-3);
+  background: var(--rct-color-surface-raised);
 }
 .headman-journal__weekly-export-controls {
   gap: var(--rct-space-2);
@@ -624,8 +625,18 @@
 .headman-journal__weekly-dropdown > summary {
   min-block-size: var(--rct-control-min-touch);
   padding: var(--rct-space-3);
+  border: var(--rct-border-hairline) solid var(--rct-color-border-default);
   border-radius: var(--rct-radius-lg);
   background: var(--rct-color-surface-float);
+  font-weight: var(--rct-font-weight-medium);
+  cursor: pointer;
+  @mixin rct-focus-ring;
+}
+.headman-journal__weekly-count {
+  margin-inline-start: auto;
+  color: var(--rct-color-text-secondary);
+  font-size: var(--rct-font-size-caption);
+  font-weight: var(--rct-font-weight-regular);
 }
 .headman-journal__weekly-dropdown[open] > summary {
   margin-block-end: var(--rct-space-2);
@@ -635,8 +646,23 @@
 }
 .headman-journal__weekly-week {
   padding: var(--rct-space-3);
+  border: var(--rct-border-hairline) solid var(--rct-color-border-default);
   border-radius: var(--rct-radius-lg);
   background: var(--rct-color-surface-float);
+}
+.headman-journal__weekly-weeks:not(:disabled) .headman-journal__weekly-week[data-selected='true'] {
+  border-color: var(--rct-color-accent-now);
+  background: var(--rct-color-accent-soft);
+}
+.headman-journal__weekly-format {
+  padding: var(--rct-space-3);
+  border: var(--rct-border-hairline) solid var(--rct-color-border-default);
+  border-radius: var(--rct-radius-lg);
+  background: var(--rct-color-surface-float);
+}
+.headman-journal__weekly-format .headman-stats-select__trigger:not(:disabled) {
+  border: var(--rct-border-hairline) solid var(--rct-color-border-default);
+  background: var(--rct-color-surface-raised);
 }
 .headman-journal__request-heading {
   display: flex;

@@ -4295,6 +4295,13 @@
             "type" : "integer",
             "format" : "int64"
           }
+        }, {
+          "name" : "attachmentId",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
         } ],
         "responses" : {
           "200" : {
@@ -5250,6 +5257,12 @@
             }
           },
           "excludedLessons" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/HeadmanRequestLessonResponse"
+            }
+          },
+          "beforeLessons" : {
             "type" : "array",
             "items" : {
               "$ref" : "#/components/schemas/HeadmanRequestLessonResponse"
@@ -6672,6 +6685,10 @@
           },
           "approvedTicket" : {
             "$ref" : "#/components/schemas/ApprovedTicket"
+          },
+          "currentExcuseRequestId" : {
+            "type" : "string",
+            "description" : "ID заявки, создавшей текущую уважительную отметку; доступен с правом MANAGE_EXCUSES"
           }
         }
       },

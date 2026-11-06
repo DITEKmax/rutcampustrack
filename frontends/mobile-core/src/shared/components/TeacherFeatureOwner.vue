@@ -7,6 +7,7 @@ import type { CampusMapClient } from '../../api/map-client';
 import MapScreen from '../../features/map/MapScreen.vue';
 import AccountHistoryScreen from '../../features/profile/AccountHistoryScreen.vue';
 import AppearanceScreen from '../../features/profile/AppearanceScreen.vue';
+import BrowserLoginScreen from '../../features/profile/BrowserLoginScreen.vue';
 import ProfileScreen from '../../features/profile/ProfileScreen.vue';
 import { ProfileState } from '../../features/profile/profile-state';
 import RoleSwitchScreen from '../../features/profile/RoleSwitchScreen.vue';
@@ -17,6 +18,7 @@ import type {
   ProfilePort,
   ProfileRole,
   ProfileRoute,
+  ProfileSnapshot,
   ProfileTheme,
 } from '../../features/profile/profile-types';
 import type {
@@ -68,6 +70,7 @@ const props = withDefaults(
     mapClient?: CampusMapClient | null;
     selectedDate?: string;
     reportDownload?: ReportDownloadPort | null;
+    profile?: ProfileSnapshot | null;
     profilePort?: ProfilePort | null;
     onRecover?: (() => void | Promise<void>) | undefined;
     onLogout?: (() => void | Promise<void>) | undefined;
@@ -85,6 +88,7 @@ const props = withDefaults(
     selectedDate: '',
     mapClient: null,
     reportDownload: null,
+    profile: null,
     profilePort: null,
     onRecover: undefined,
     onLogout: undefined,
@@ -102,7 +106,7 @@ const emit = defineEmits<{
 type ProfileArea = 'sessions' | 'history';
 type ProfileAccountRoute = Extract<
   ProfileRoute,
-  'role-switch' | 'appearance' | 'security' | 'sessions' | 'history'
+  'role-switch' | 'browser-login' | 'appearance' | 'security' | 'sessions' | 'history'
 >;
 
 const navigation: MobileNavigationStack = createMobileNavigationStack(
@@ -169,6 +173,49 @@ const profilePublication = createProfileViewPublication(
 const profileView = profilePublication.view;
 const publishProfileView = profilePublication.publish;
 const profileOwnerStatus = computed(() => profileOwnerStaleMessage(route.value, props.offline));
+function profileIdentity(profile: ProfileSnapshot): string {
+  return JSON.stringify([
+    profile.userId,
+    profile.sessionId,
+    profile.sessionVersion,
+    profile.rolesVersion,
+  ]);
+}
+const profileOwnerKey = computed(() =>
+  props.profile?.activeRole === 'TEACHER' ? profileIdentity(props.profile) : null,
+);
+const verifiedProfileOwnerKey = computed(() => {
+  const ownerKey = profileOwnerKey.value;
+  const { snapshot, snapshotStatus } = profileView.value;
+  if (
+    !ownerKey ||
+    !props.profilePort?.isOnline() ||
+    props.offline ||
+    props.profile?.readOnly ||
+    snapshotStatus !== 'ready' ||
+    snapshot?.activeRole !== 'TEACHER' ||
+    snapshot.readOnly ||
+    profileIdentity(snapshot) !== ownerKey
+  )
+    return null;
+  return ownerKey;
+});
+const browserLoginApproval = computed(() => {
+  const port = props.profilePort?.browserLoginApproval;
+  if (
+    !verifiedProfileOwnerKey.value ||
+    !port?.isOnline() ||
+    !profileView.value.snapshot?.roles.some(
+      (grant) =>
+        grant.role === 'TEACHER' && grant.status === 'ACTIVE' && grant.selectable && !grant.readOnly,
+    )
+  )
+    return null;
+  return port;
+});
+const profilePasswordDisabled = computed(
+  () => !verifiedProfileOwnerKey.value || profileView.value.mutationBusy !== null,
+);
 let disposed = false;
 let teacherContextAttempt = 0;
 let refreshSemesterPending = false;
@@ -279,13 +326,30 @@ watch(
   },
 );
 watch(
-  () => [props.api, props.profilePort] as const,
-  ([, profilePort]) => {
-    profileState.value = profilePort ? new ProfileState(profilePort) : null;
-    profileRoleError.value = null;
-    profilePendingRole.value = null;
-    publishProfileView();
-    ensureProfileRoute(route.value);
+  () =>
+    [props.api, props.profilePort, profileOwnerKey.value, props.profile?.readOnly, props.offline] as const,
+  (
+    [api, profilePort, ownerKey, readOnly, offline],
+    [previousApi, previousPort, previousKey, previousReadOnly, wasOffline],
+  ) => {
+    if (
+      api !== previousApi ||
+      profilePort !== previousPort ||
+      ownerKey !== previousKey ||
+      readOnly !== previousReadOnly
+    ) {
+      profileState.value = profilePort ? new ProfileState(profilePort) : null;
+      profileRoleError.value = null;
+      profilePendingRole.value = null;
+      publishProfileView();
+      ensureProfileRoute(route.value);
+    } else if (
+      !offline &&
+      wasOffline &&
+      (profileView.value.snapshot || route.value.root === 'profile')
+    ) {
+      void loadProfileSnapshot();
+    }
   },
 );
 
@@ -503,11 +567,7 @@ function loadMoreProfile(area: ProfileArea, cursor: string): void {
 }
 
 function profileRoute(routeName: ProfileAccountRoute) {
-  if (routeName === 'role-switch') return nestedRoute('profile', 'profile/role-switch', 'detail');
-  if (routeName === 'appearance') return nestedRoute('profile', 'profile/appearance', 'detail');
-  if (routeName === 'security') return nestedRoute('profile', 'profile/security', 'detail');
-  if (routeName === 'sessions') return nestedRoute('profile', 'profile/sessions', 'detail');
-  return nestedRoute('profile', 'profile/history', 'detail');
+  return nestedRoute('profile', `profile/${routeName}`, 'detail');
 }
 
 function navigateProfile(routeName: ProfileRoute): void {
@@ -515,8 +575,10 @@ function navigateProfile(routeName: ProfileRoute): void {
     navigation.goRoot('profile');
     return;
   }
+  if (routeName === 'browser-login' && !browserLoginApproval.value?.isOnline()) return;
   if (
     routeName === 'role-switch' ||
+    routeName === 'browser-login' ||
     routeName === 'appearance' ||
     routeName === 'security' ||
     routeName === 'sessions' ||
@@ -719,7 +781,7 @@ async function changeProfilePassword(input: {
   currentPassword: string;
   newPassword: string;
 }): Promise<void> {
-  if (!profileState.value || disposed) return;
+  if (profilePasswordDisabled.value || disposed) return;
   await runProfile((state) => state.changePassword(input), { rethrow: true });
 }
 
@@ -734,7 +796,7 @@ async function logoutProfileAll(): Promise<void> {
 
 function ensureProfileRoute(routeValue: MobileRoute): void {
   const state = profileState.value;
-  if (routeValue.root !== 'profile' || !state || disposed) return;
+  if (routeValue.root !== 'profile' || !state || disposed || props.offline) return;
   if (!state.view.snapshot) {
     if (state.view.snapshotStatus === 'loading') return;
     if (routeValue.id === 'profile/sessions' || routeValue.id === 'profile/history') {
@@ -801,6 +863,7 @@ defineExpose({ openNotificationAction });
 <template>
   <MobileShell
     class="teacher-mobile-shell"
+    :data-student-ui="route.root === 'profile' ? '' : undefined"
     :data-theme="resolvedTheme"
     :route="route"
     :navigation="navigation"
@@ -1004,16 +1067,12 @@ defineExpose({ openNotificationAction });
         </p>
         <ProfileScreen
           v-if="route.id === 'profile'"
+          browser-login-page
           :snapshot="profileView.snapshot"
-          :browser-login-approval="
-            !offline && !profileOwnerStatus && profileView.snapshotStatus === 'ready'
-              ? profilePort?.browserLoginApproval ?? null
-              : null
-          "
+          :browser-login-approval="browserLoginApproval"
           :loading="profileView.snapshotStatus === 'loading'"
           :error="profileView.snapshotError"
           :theme="resolvedTheme"
-          :show-active-role="false"
           :on-retry="retryProfileSnapshot"
           :on-navigate="navigateProfile"
           :on-logout="onLogout"
@@ -1029,6 +1088,14 @@ defineExpose({ openNotificationAction });
           :on-back="backRoute"
           :on-select-role="selectProfileRole"
         />
+        <BrowserLoginScreen
+          v-else-if="route.id === 'profile/browser-login'"
+          :port="browserLoginApproval"
+          :offline="offline"
+          :theme="resolvedTheme"
+          :owner-key="browserLoginApproval ? verifiedProfileOwnerKey : null"
+          :on-back="backRoute"
+        />
         <AppearanceScreen
           v-else-if="route.id === 'profile/appearance'"
           :theme="themeMode"
@@ -1039,6 +1106,8 @@ defineExpose({ openNotificationAction });
         />
         <SecurityScreen
           v-else-if="route.id === 'profile/security'"
+          :owner-key="verifiedProfileOwnerKey"
+          :disabled="profilePasswordDisabled"
           :policy="profileView.snapshot?.passwordPolicy ?? DEFAULT_PASSWORD_POLICY"
           :error="profileView.error"
           :busy="profileView.mutationBusy === 'password'"
@@ -1047,7 +1116,6 @@ defineExpose({ openNotificationAction });
           :on-back="backRoute"
           :on-change-password="changeProfilePassword"
           :on-recover="onRecover"
-          recovery-label="Забыли пароль?"
         />
         <SessionsScreen
           v-else-if="route.id === 'profile/sessions'"

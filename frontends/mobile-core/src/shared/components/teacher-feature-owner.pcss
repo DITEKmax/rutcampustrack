@@ -4,8 +4,8 @@
   background: var(--rct-color-surface-base);
 }
 
-.teacher-mobile-shell[data-theme='light'],
-.teacher-mobile-shell [data-theme='light'] {
+.teacher-mobile-shell:where(:not([data-student-ui]))[data-theme='light'],
+.teacher-mobile-shell:where(:not([data-student-ui])) [data-theme='light'] {
   --rct-color-surface-base: #f2f2f4;
 }
 
@@ -19,10 +19,11 @@
   }
 }
 /* The Teacher heading owns the first warning row; other roles keep their UI. */
-.teacher-feature-owner .student-warning {
+:where(.teacher-mobile-shell:not([data-student-ui])) .teacher-feature-owner .student-warning {
   grid-template-columns: calc(var(--rct-icon-size) * 1.5) minmax(0, 1fr);
 }
-.teacher-feature-owner .student-warning .student-warning__icon {
+:where(.teacher-mobile-shell:not([data-student-ui]))
+  .teacher-feature-owner .student-warning .student-warning__icon {
   inline-size: calc(var(--rct-icon-size) * 1.5);
   block-size: calc(var(--rct-icon-size) * 1.5);
   min-inline-size: calc(var(--rct-icon-size) * 1.5);
@@ -35,10 +36,11 @@
   margin-block-start: 0;
   color: var(--rct-color-warning-text);
 }
-.teacher-feature-owner .student-warning[data-severity='error'] .student-warning__icon {
+:where(.teacher-mobile-shell:not([data-student-ui]))
+  .teacher-feature-owner .student-warning[data-severity='error'] .student-warning__icon {
   color: var(--rct-color-danger-text);
 }
-.teacher-feature-owner .student-warning h2 {
+:where(.teacher-mobile-shell:not([data-student-ui])) .teacher-feature-owner .student-warning h2 {
   grid-column: 2;
   grid-row: 1;
   line-height: calc(var(--rct-icon-size) * 1.5);

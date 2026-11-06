@@ -614,6 +614,7 @@ onBeforeUnmount(() => {
     :api="fixtures.api"
     :semester-id="7"
     :selected-date="teacherReviewDate"
+    :profile="fixtures.snapshot"
     :profile-port="fixtures.profile"
     :report-download="reportDownload"
     :on-recover="openRecovery"

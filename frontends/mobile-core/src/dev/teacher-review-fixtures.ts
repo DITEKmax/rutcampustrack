@@ -754,5 +754,5 @@ export function createTeacherReviewFixtures(state: TeacherReviewState) {
       throw new Error(`Unexpected synthetic map request ${url.pathname}`)
     },
   })
-  return { api: new TeacherApi({ accessToken: () => null, fetcher }), profile, map, requests }
+  return { api: new TeacherApi({ accessToken: () => null, fetcher }), snapshot, profile, map, requests }
 }

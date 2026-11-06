@@ -2448,6 +2448,7 @@ onBeforeUnmount(() => {
     :api="teacherApi"
     :semester-id="teacherSemesterId"
     :map-client="mapClient"
+    :profile="authSnapshot"
     :profile-port="profilePort"
     :on-recover="openPasswordRecovery"
     :on-logout="logout"

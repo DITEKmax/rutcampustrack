@@ -3,6 +3,11 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import TeacherFeatureOwner from './TeacherFeatureOwner.vue'
 import { ReportDownloadClient, type ReportDownloadPort } from '../report-download-client'
 import { TeacherApi } from '../../features/teacher/teacher-client'
+import {
+  DEFAULT_PASSWORD_POLICY,
+  type ProfilePort,
+  type ProfileSnapshot,
+} from '../../features/profile/profile-types'
 
 class HostNode {
   children: HostNode[] = []
@@ -29,6 +34,12 @@ class HostNode {
   get options() { return this.children.filter(node => node.tag === 'option') }
   get tagName() { return this.tag.toUpperCase() }
 }
+function insertHostNode(node: HostNode, parent: HostNode, anchor: HostNode | null = null): void {
+  if (node.parent) node.parent.children.splice(node.parent.children.indexOf(node), 1)
+  const index = anchor ? parent.children.indexOf(anchor) : -1
+  parent.children.splice(index < 0 ? parent.children.length : index, 0, node)
+  node.parent = parent
+}
 const renderer = createRenderer<HostNode, HostNode>({
   createElement: (tag) => new HostNode(tag),
   createText: (text) => Object.assign(new HostNode('#text'), { text }),
@@ -45,11 +56,11 @@ const renderer = createRenderer<HostNode, HostNode>({
   patchProp: (node, key, _old, value) => {
     node.props[key] = value
   },
-  insert: (node, parent, anchor = null) => {
-    if (node.parent) node.parent.children.splice(node.parent.children.indexOf(node), 1)
-    const index = anchor ? parent.children.indexOf(anchor) : -1
-    parent.children.splice(index < 0 ? parent.children.length : index, 0, node)
-    node.parent = parent
+  insert: insertHostNode,
+  insertStaticContent(content, parent, anchor) {
+    const node = Object.assign(new HostNode('#static'), { text: content })
+    insertHostNode(node, parent, anchor)
+    return [node, node]
   },
   remove: (node) => {
     node.parent?.children.splice(node.parent.children.indexOf(node), 1)
@@ -290,24 +301,39 @@ function fixture(
     catalogues: () => catalogues,
   }
 }
-function mount(api: TeacherApi, reportDownload?: ReportDownloadPort, selectedDate = '2026-10-08') {
+function mount(
+  api: TeacherApi,
+  reportDownload?: ReportDownloadPort,
+  selectedDate = '2026-10-08',
+  account?: { profile: ProfileSnapshot; profilePort: ProfilePort },
+) {
   const location = { href: 'https://fixture.test/app', search: '' }
-  vi.stubGlobal('window', {
-    location,
-    history: {
-      state: null,
-      replaceState(_state: unknown, _title: string, value: string) {
-        const next = new URL(value, location.href)
-        location.href = next.href
-        location.search = next.search
+  vi.stubGlobal(
+    'window',
+    Object.assign(new EventTarget(), {
+      location,
+      history: {
+        state: null,
+        replaceState(_state: unknown, _title: string, value: string) {
+          const next = new URL(value, location.href)
+          location.href = next.href
+          location.search = next.search
+        },
       },
-    },
-  })
+    }),
+  )
   vi.stubGlobal('Document', class {})
   vi.stubGlobal('ShadowRoot', class {})
   const page = Object.assign(new EventTarget(), { activeElement: null, visibilityState: 'visible' })
   vi.stubGlobal('document', page)
-  const state = shallowReactive({ api, semesterId: 7, realtimeRevision: 0 })
+  const state = shallowReactive({
+    api,
+    semesterId: 7,
+    realtimeRevision: 0,
+    profile: account?.profile ?? null,
+    profilePort: account?.profilePort ?? null,
+    offline: false,
+  })
   const root = new HostNode('root')
   const app = renderer.createApp({
     render: () =>
@@ -317,12 +343,104 @@ function mount(api: TeacherApi, reportDownload?: ReportDownloadPort, selectedDat
         selectedDate,
         semesterId: state.semesterId,
         realtimeRevision: state.realtimeRevision,
+        profile: state.profile,
+        profilePort: state.profilePort,
+        offline: state.offline,
       }),
   })
   apps.push(app)
   app.mount(root)
   return { root, state, page }
 }
+
+describe('teacher browser login authority', () => {
+  it.each(['sessionVersion', 'rolesVersion'] as const)(
+    'releases a pending QR camera on a same-role %s change and waits for verified reconnect',
+    async (versionField) => {
+      const profile: ProfileSnapshot = {
+        sessionId: 'synthetic-session',
+        userId: 'synthetic-teacher',
+        displayName: 'Мария Иванова',
+        sessionVersion: '1',
+        rolesVersion: '1',
+        activeRole: 'TEACHER',
+        roles: [
+          { grantId: 'teacher', role: 'TEACHER', status: 'ACTIVE', selectable: true, readOnly: false },
+        ],
+        readOnly: false,
+        passwordPolicy: DEFAULT_PASSWORD_POLICY,
+      }
+      const refreshed = { ...profile, [versionField]: '2' }
+      let verifyReconnect!: (snapshot: ProfileSnapshot) => void
+      const reconnect = new Promise<ProfileSnapshot>((resolve) => {
+        verifyReconnect = resolve
+      })
+      const approval = { isOnline: () => true, preview: vi.fn(), decide: vi.fn() }
+      const profilePort: ProfilePort = {
+        isOnline: () => true,
+        getSnapshot: vi.fn()
+          .mockResolvedValueOnce(profile)
+          .mockResolvedValueOnce(profile)
+          .mockReturnValueOnce(reconnect),
+        selectRole: vi.fn(),
+        listSessions: vi.fn(),
+        listHistory: vi.fn(),
+        changePassword: vi.fn(),
+        logoutAll: vi.fn(),
+        browserLoginApproval: approval,
+      }
+      const track = { stop: vi.fn() }
+      const media = { getTracks: () => [track] }
+      let finishAcquisition!: (value: typeof media) => void
+      const acquire = vi.fn(
+        () =>
+          new Promise<typeof media>((resolve) => {
+            finishAcquisition = resolve
+          }),
+      )
+      vi.stubGlobal(
+        'BarcodeDetector',
+        class {
+          async detect() {
+            return []
+          }
+        },
+      )
+      vi.stubGlobal('navigator', { mediaDevices: { getUserMedia: acquire } })
+      const { root, state } = mount(fixture().api, undefined, undefined, { profile, profilePort })
+      await settle()
+      click(root, 'Профиль')
+      await settle()
+      expect(text(root)).toContain('Преподаватель')
+      click(root, 'Вход в браузере')
+      await settle()
+      click(root, 'Сканировать QR')
+      await settle()
+      expect(acquire).toHaveBeenCalledOnce()
+
+      state.profile = refreshed
+      await settle()
+      finishAcquisition(media)
+      await settle()
+      expect(track.stop).toHaveBeenCalledOnce()
+      expect(approval.preview).not.toHaveBeenCalled()
+      expect(find(root, (node) => text(node).trim() === 'Сканировать QR')).toBeUndefined()
+
+      state.offline = true
+      await settle()
+      state.offline = false
+      await settle()
+      expect(find(root, (node) => text(node).trim() === 'Сканировать QR')).toBeUndefined()
+      verifyReconnect(refreshed)
+      await settle()
+      expect(button(root, 'Сканировать QR').props.disabled).toBe(false)
+      expect(acquire).toHaveBeenCalledOnce()
+      click(root, 'Назад')
+      await settle()
+      expect(button(root, 'Вход в браузере')).toBeDefined()
+    },
+  )
+})
 
 describe('teacher home semester', () => {
   it('keeps all assignments visible while day requests change or complete out of order', async () => {

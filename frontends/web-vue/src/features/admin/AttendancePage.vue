@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useWebLiveRefresh } from '../../app/live';
 import { onMounted, ref, shallowRef } from 'vue';
+import WebSelect from '../../shared/WebSelect.vue';
 import {
   AdminAttendanceClient,
   type AdminAttendanceReport,
@@ -87,21 +88,34 @@ useWebLiveRefresh(
     <form
       v-if="semesters.length && admin.can('DASHBOARD_VIEW')"
       class="admin-toolbar"
+      aria-label="Фильтры посещаемости"
       @submit.prevent="apply"
     >
-      <label class="web-field">Семестр<select v-model="semesterId"><option
-        v-for="semester in semesters"
-        :key="semester.id"
-        :value="semester.id"
-      >{{ semester.name }}{{ semester.archived ? ' · архив' : '' }}</option></select></label><label class="web-field">Группа<input
+      <WebSelect
+        v-model="semesterId"
+        label="Семестр"
+        :options="semesters.map(semester => ({ value: semester.id, label: semester.name + (semester.archived ? ' · архив' : '') }))"
+        :disabled="busy"
+      />
+      <label class="web-field admin-search">Группа<input
         v-model="search"
         type="search"
         placeholder="Название группы"
-      ></label><label class="web-field">Сортировка<select v-model="sort"><option
-        v-for="(label, code) in sortLabels"
-        :key="code"
-        :value="code"
-      >{{ label }}</option></select></label><label class="web-field">Порядок<select v-model="direction"><option value="ASC">По возрастанию</option><option value="DESC">По убыванию</option></select></label><button
+        :disabled="busy"
+      ></label>
+      <WebSelect
+        v-model="sort"
+        label="Сортировка"
+        :options="Object.entries(sortLabels).map(([value, label]) => ({ value: value as AdminAttendanceSort, label }))"
+        :disabled="busy"
+      />
+      <WebSelect
+        v-model="direction"
+        label="Порядок"
+        :options="[{ value: 'ASC', label: 'По возрастанию' }, { value: 'DESC', label: 'По убыванию' }]"
+        :disabled="busy"
+      />
+      <button
         class="web-button"
         :disabled="busy"
       >
@@ -114,79 +128,89 @@ useWebLiveRefresh(
       Нет семестров для отчёта.
     </p>
     <template v-if="report && admin.can('DASHBOARD_VIEW')">
-      <p class="web-caption">
-        {{ report.semester.name }} · {{ dateLabel(report.semester.dateFrom) }} —
-        {{ dateLabel(report.semester.dateTo) }}. Обновлено
-        {{ new Date(report.observedAt).toLocaleString('ru-RU') }}.
-      </p><div
-        v-if="report.rows.length"
-        class="admin-table-wrap"
-        role="region"
-        aria-label="Посещаемость групп"
-        tabindex="0"
-      >
-        <table class="admin-table">
-          <caption class="web-sr-only">
-            Посещаемость групп за выбранный семестр
-          </caption><thead>
-            <tr>
-              <th scope="col">
-                Группа
-              </th><th scope="col">
-                Учтено занятий
-              </th><th scope="col">
-                «+»
-              </th><th scope="col">
-                «н»
-              </th><th scope="col">
-                «у»
-              </th><th scope="col">
-                Доля «+»
-              </th><th scope="col">
-                Доля «+» и «у»
-              </th>
-            </tr>
-          </thead><tbody>
-            <tr
-              v-for="row in report.rows"
-              :key="row.groupId"
+      <section class="admin-panel">
+        <h2>Результаты</h2>
+        <p class="web-caption">
+          {{ report.semester.name }} · {{ dateLabel(report.semester.dateFrom) }} —
+          {{ dateLabel(report.semester.dateTo) }}. Обновлено
+          {{ new Date(report.observedAt).toLocaleString('ru-RU') }}.
+        </p><div
+          v-if="report.rows.length"
+          class="admin-table-wrap"
+          role="region"
+          aria-label="Посещаемость групп"
+          tabindex="0"
+        >
+          <table class="admin-table">
+            <caption class="web-sr-only">
+              Посещаемость групп за выбранный семестр
+            </caption><thead>
+              <tr>
+                <th scope="col">
+                  Группа
+                </th><th scope="col">
+                  Учтено занятий
+                </th><th scope="col">
+                  «+»
+                </th><th scope="col">
+                  «н»
+                </th><th scope="col">
+                  «у»
+                </th><th scope="col">
+                  Доля «+»
+                </th><th scope="col">
+                  Доля «+» и «у»
+                </th>
+              </tr>
+            </thead><tbody>
+              <tr
+                v-for="row in report.rows"
+                :key="row.groupId"
+              >
+                <th scope="row">
+                  {{ row.groupName
+                  }}<span
+                    v-if="row.dataState === 'NO_DATA'"
+                    class="admin-subtext"
+                  >Нет учтённых данных</span>
+                </th><td>{{ row.countedLessons }}</td><td>{{ row.presentCount }}</td><td>{{ row.absentCount }}</td><td>{{ row.excusedCount }}</td><td>{{ percent(row.presentPercent) }}</td><td>{{ percent(row.presentOrExcusedPercent) }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div><p
+          v-else
+          role="status"
+        >
+          Для выбранных фильтров нет групп.
+        </p><div class="admin-pager">
+          <div class="admin-actions">
+            <button
+              class="web-button"
+              :disabled="busy || report.page === 0"
+              @click="admin.run(() => load(report!.page - 1))"
             >
-              <td>
-                {{ row.groupName
-                }}<span
-                  v-if="row.dataState === 'NO_DATA'"
-                  class="admin-subtext"
-                >Нет учтённых данных</span>
-              </td><td>{{ row.countedLessons }}</td><td>{{ row.presentCount }}</td><td>{{ row.absentCount }}</td><td>{{ row.excusedCount }}</td><td>{{ percent(row.presentPercent) }}</td><td>{{ percent(row.presentOrExcusedPercent) }}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div><p
-        v-else
-        role="status"
-      >
-        Для выбранных фильтров нет групп.
-      </p><div class="admin-pager">
-        <div class="admin-actions">
-          <button
-            class="web-button"
-            :disabled="busy || report.page === 0"
-            @click="admin.run(() => load(report!.page - 1))"
-          >
-            Назад
-          </button><span v-if="report.totalPages">{{ report.page + 1 }} / {{ report.totalPages }} ·
-            {{ report.totalElements }} групп</span><button
-            class="web-button"
-            :disabled="busy || report.page + 1 >= report.totalPages"
-            @click="admin.run(() => load(report!.page + 1))"
-          >
-            Дальше
-          </button>
-        </div><ExportControl
+              Назад
+            </button><span v-if="report.totalPages">{{ report.page + 1 }} / {{ report.totalPages }} ·
+              {{ report.totalElements }} групп</span><button
+              class="web-button"
+              :disabled="busy || report.page + 1 >= report.totalPages"
+              @click="admin.run(() => load(report!.page + 1))"
+            >
+              Дальше
+            </button>
+          </div>
+        </div>
+      </section>
+      <section class="admin-panel">
+        <h2>Выгрузка отчёта</h2>
+        <p class="web-caption">
+          Файл использует применённые фильтры и сортировку.
+        </p>
+        <ExportControl
           kind="attendance"
           :selector="applied"
         />
-      </div>
+      </section>
     </template>
   </section>
 </template>

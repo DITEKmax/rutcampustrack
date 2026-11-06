@@ -40,9 +40,27 @@ const activity = shallowRef<AdminDashboardActivity | null>(null);
 const period = ref<AdminActivityPeriod>('today'),
   bucket = ref<AdminActivityBucket>('day');
 const metric = ref<AdminActivityMetricCode>('positiveMarks');
+const metricOptions = ADMIN_ACTIVITY_METRICS.map(code => ({ value: code, label: adminActivityLabels[code] }));
 const points = computed(() =>
   activity.value ? adminActivityChartPoints(activity.value, metric.value) : [],
 );
+const summaryRows = computed(() => {
+  const metrics = activity.value?.summary.metrics;
+  if (!metrics) return [];
+  return ADMIN_ACTIVITY_METRICS.map(code => {
+    const item = metrics[code];
+    return {
+      code,
+      label: adminActivityLabels[code],
+      value: adminActivityValue(item, code),
+      explanation: adminActivityExplanation(item),
+      delta: adminActivityDelta(item, code),
+      basis: code === 'geoMarks' && item.numerator !== null && item.denominator !== null
+        ? `${item.numerator.toLocaleString('ru-RU')} из ${item.denominator.toLocaleString('ru-RU')}`
+        : '',
+    };
+  });
+});
 const overview = computed(() =>
   stats.value
     ? [
@@ -76,6 +94,11 @@ async function load() {
     stats.value = s;
     activity.value = a;
   }
+}
+function changeScope() {
+  if (activity.value?.period !== period.value || activity.value.bucket !== bucket.value)
+    activity.value = null;
+  void admin.run(load);
 }
 let live: EffectScope | null = null;
 onMounted(async () => {
@@ -124,56 +147,93 @@ onBeforeUnmount(() => live?.stop());
       @retry="admin.run(load)"
     />
     <template v-if="admin.can('DASHBOARD_VIEW')">
-      <div
+      <dl
         v-if="stats"
-        class="admin-metrics"
+        class="admin-counts"
       >
-        <article
+        <div
           v-for="item in overview"
           :key="item.label"
-          class="admin-metric"
         >
-          <span>{{ item.label }}</span><strong>{{ item.value.toLocaleString('ru-RU') }}</strong><p class="web-caption">
-            {{
-              item.delta === null || item.delta === undefined
-                ? 'Сравнение за сутки недоступно'
-                : `${item.delta > 0 ? '+' : ''}${item.delta} за сутки`
-            }}
-          </p>
-        </article>
-      </div>
+          <dt>{{ item.label }}</dt>
+          <dd>
+            <strong>{{ item.value.toLocaleString('ru-RU') }}</strong>
+            <small class="web-caption">
+              {{ item.delta == null ? 'Сравнение за сутки недоступно' : `${item.delta > 0 ? '+' : ''}${item.delta} за сутки` }}
+            </small>
+          </dd>
+        </div>
+      </dl>
       <section class="admin-panel">
-        <header class="admin-heading">
-          <h2>Активность</h2><div class="admin-actions">
-            <WebSelect v-model="period" label="Период" :options="[{ value: 'today', label: 'Сегодня' }, { value: 'all_time', label: 'Вся сохранённая история' }]" :disabled="busy" @change="admin.run(load)" /><WebSelect v-model="bucket" label="Шаг" :options="[{ value: 'day', label: 'Дни' }, { value: 'week', label: 'Недели' }]" :disabled="busy" @change="admin.run(load)" />
+        <header class="admin-heading admin-activity-heading">
+          <h2>Активность</h2>
+          <div class="admin-activity-scope">
+            <WebSelect
+              v-model="period"
+              label="Период"
+              :options="[{ value: 'today', label: 'Сегодня' }, { value: 'all_time', label: 'Вся сохранённая история' }]"
+              :disabled="busy"
+              @change="changeScope"
+            />
+            <WebSelect
+              v-model="bucket"
+              label="Шаг"
+              :options="[{ value: 'day', label: 'Дни' }, { value: 'week', label: 'Недели' }]"
+              :disabled="busy"
+              @change="changeScope"
+            />
           </div>
         </header>
         <template v-if="activity">
-<div class="admin-metrics">
-            <article
-              v-for="code in ADMIN_ACTIVITY_METRICS"
-              :key="code"
-              class="admin-metric"
-            >
-              <h3>{{ adminActivityLabels[code] }}</h3><strong>{{ adminActivityValue(activity.summary.metrics[code], code) }}</strong><p
-                v-if="adminActivityExplanation(activity.summary.metrics[code])"
-                class="web-caption"
+          <table class="admin-activity-table">
+            <caption class="web-sr-only">
+              Показатели активности за выбранный период
+            </caption>
+            <thead>
+              <tr>
+                <th scope="col">
+                  Показатель
+                </th>
+                <th scope="col">
+                  Значение
+                </th>
+                <th scope="col">
+                  Изменение<small v-if="activity.period === 'today'">К этому времени вчера</small>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                v-for="row in summaryRows"
+                :key="row.code"
               >
-                {{ adminActivityExplanation(activity.summary.metrics[code]) }}
-              </p><template v-else>
-                <p
-                  v-if="code === 'geoMarks'"
-                  class="web-caption"
-                >
-                  {{ activity.summary.metrics[code].numerator }} /
-                  {{ activity.summary.metrics[code].denominator }}
-                </p><p class="web-caption">
-                  {{ adminActivityDelta(activity.summary.metrics[code], code).description }}
-                </p>
-              </template>
-            </article>
-          </div>
-          <WebSelect v-model="metric" label="Показатель графика" :options="ADMIN_ACTIVITY_METRICS.map(code => ({ value: code, label: adminActivityLabels[code] }))" /><AdminActivityChart
+                <th scope="row">
+                  {{ row.label }}
+                </th>
+                <td>
+                  <strong>{{ row.value }}</strong>
+                  <small v-if="row.basis">{{ row.basis }}</small>
+                </td>
+                <td>
+                  <span v-if="row.explanation">{{ row.explanation }}</span>
+                  <template v-else>
+                    <span
+                      aria-hidden="true"
+                      :title="row.delta.description"
+                    >{{ row.delta.text }}</span>
+                    <span class="web-sr-only">{{ row.delta.description }}</span>
+                  </template>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <WebSelect
+            v-model="metric"
+            class="admin-activity-metric"
+            label="Показатель графика"
+            :options="metricOptions"
+          />
+          <AdminActivityChart
             v-if="points.length"
             :title="adminActivityLabels[metric]"
             :points="points"

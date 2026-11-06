@@ -38,6 +38,13 @@ const uploading = ref(false),
 const png = shallowRef<File | null>(null),
   svg = shallowRef<File | null>(null);
 const fileEpoch = ref(0);
+const uploadFileError = ref('');
+const uploadFileSizeError = computed(() => {
+  const invalid = (file: File | null) => file && (!file.size || file.size > 10 * 1024 * 1024);
+  const formats = [invalid(png.value) ? 'PNG' : '', invalid(svg.value) ? 'SVG' : ''].filter(Boolean);
+  return formats.length ? `${formats.join(' и ')}: допустимый размер файла — от 1 байта до 10 МиБ.` : '';
+});
+const uploadFloors = computed(() => inventory.value.find(building => building.code === buildingCode.value)?.floors ?? []);
 const uploadConfirmation = ref(false);
 const editKind = ref<'building' | 'floor' | null>(null),
   editCode = ref(''),
@@ -100,6 +107,7 @@ async function load() {
 function resetFiles() {
   png.value = null;
   svg.value = null;
+  uploadFileError.value = '';
   fileEpoch.value++;
 }
 function beginUpload(row?: { building: AdminMapBuildingResponse; floor: AdminMapFloorResponse }) {
@@ -108,6 +116,7 @@ function beginUpload(row?: { building: AdminMapBuildingResponse; floor: AdminMap
   floorCode.value = row?.floor.code ?? '';
   label.value = row?.floor.currentPlan?.label ?? '';
   uploading.value = true;
+  editKind.value = null;
   uploadConfirmation.value = false;
   deletionPreview.value = null;
   resetFiles();
@@ -125,6 +134,11 @@ function chooseFile(event: Event, format: MapFormat) {
   const file = (event.target as HTMLInputElement).files?.[0] ?? null;
   if (format === 'png') png.value = file;
   else svg.value = file;
+  uploadFileError.value = '';
+  uploadConfirmation.value = false;
+}
+function changeUploadBuilding() {
+  floorCode.value = '';
   uploadConfirmation.value = false;
 }
 async function hash(file: File | null): Promise<string | null> {
@@ -136,11 +150,11 @@ async function hash(file: File | null): Promise<string | null> {
   return [...new Uint8Array(digest)].map((v) => v.toString(16).padStart(2, '0')).join('');
 }
 async function publish() {
+  if (locked.value || uploadFileSizeError.value) return;
   await admin.run(async () => {
+    uploadFileError.value = '';
     const files = [png.value, svg.value].filter((file): file is File => !!file);
     if (!files.length) throw new Error('Выбери PNG или SVG.');
-    if (files.some((file) => !file.size || file.size > 10 * 1024 * 1024))
-      throw new Error('Каждый файл должен быть от 1 байта до 10 МиБ.');
     const target = await client.resolvePlanTarget(
       buildingCode.value,
       floorCode.value,
@@ -178,6 +192,16 @@ async function publish() {
           : 'Схема заменена. Предыдущая версия сохранена.';
     } catch (cause) {
       admin.assertCurrent();
+      if (cause instanceof MapApiError && (
+        cause.response.status === 413 ||
+        (cause.response.status === 400 && cause.problem && (
+          ('field' in cause.problem && cause.problem.field === 'file') ||
+          cause.problem.extras?.field === 'file'
+        ))
+      )) {
+        uploadFileError.value = cause.message;
+        return;
+      }
       if (!(cause instanceof MapApiError) || cause.response.status >= 500)
         unknownPublication.value = reference;
       throw cause;
@@ -368,14 +392,22 @@ useWebLiveRefresh(
     :aria-busy="busy"
   >
     <header class="admin-heading">
-      <h1>Карта — схемы корпусов</h1><RouterLink class="web-button" to="/map">Открыть карту</RouterLink><button
-        v-if="admin.can('CAMPUS_MAP_MANAGE')"
-        class="web-button web-button-primary"
-        :disabled="locked"
-        @click="beginUpload()"
-      >
-        Добавить схему
-      </button>
+      <h1>Карта — схемы корпусов</h1>
+      <div class="admin-actions">
+        <RouterLink
+          class="web-button"
+          to="/map"
+        >
+          Открыть карту
+        </RouterLink><button
+          v-if="admin.can('CAMPUS_MAP_MANAGE')"
+          class="web-button web-button-primary"
+          :disabled="locked"
+          @click="beginUpload()"
+        >
+          Добавить схему
+        </button>
+      </div>
     </header><AdminState
       :loading="loading"
       :busy="busy"
@@ -389,47 +421,97 @@ useWebLiveRefresh(
         class="admin-panel admin-form"
         @submit.prevent="publish"
       >
-        <h2>{{ selected ? 'Заменить файлы схемы' : 'Новая схема этажа' }}</h2><p class="web-caption">
-          PNG — для скачивания, SVG — для просмотра. Можно загрузить один формат: второй останется
-          недоступен. Каждый файл — до 10 МиБ; SVG проверяется сервером.
-        </p><fieldset
+        <h2>{{ selected ? 'Заменить файлы схемы' : 'Новая схема этажа' }}</h2>
+        <p
+          v-if="selected?.floor.currentPlan"
+          class="web-caption"
+        >
+          Текущая версия схемы: {{ selected.floor.currentPlan.version }}.
+        </p>
+        <fieldset
           class="admin-form-grid"
           :disabled="locked"
         >
-          <legend class="web-sr-only">
-            Новая схема
-          </legend><label class="web-field">Номер корпуса<input
+          <legend>Корпус и этаж</legend>
+          <label class="web-field">Номер корпуса<input
             v-model="buildingCode"
             required
             pattern="[1-9][0-9]{0,63}"
             inputmode="numeric"
             :readonly="!!selected"
-            @input="uploadConfirmation = false"
+            :list="selected ? undefined : 'admin-upload-buildings'"
+            @input="changeUploadBuilding"
           ></label><label class="web-field">Номер этажа<input
             v-model="floorCode"
             required
             pattern="[1-9][0-9]{0,63}"
             inputmode="numeric"
             :readonly="!!selected"
+            :list="selected || !uploadFloors.length ? undefined : 'admin-upload-floors'"
             @input="uploadConfirmation = false"
           ></label><label class="web-field">Название схемы<input
             v-model="label"
             maxlength="255"
-          ></label><label
-            :key="`png-${fileEpoch}`"
-            class="web-field"
-          >Файл PNG<input
-            type="file"
-            accept="image/png,.png"
-            @change="chooseFile($event, 'png')"
-          ></label><label
-            :key="`svg-${fileEpoch}`"
-            class="web-field"
-          >Файл SVG<input
-            type="file"
-            accept="image/svg+xml,.svg"
-            @change="chooseFile($event, 'svg')"
           ></label>
+          <datalist id="admin-upload-buildings">
+            <option
+              v-for="building in inventory"
+              :key="building.id"
+              :value="building.code"
+            >
+              {{ building.label }}
+            </option>
+          </datalist>
+          <datalist id="admin-upload-floors">
+            <option
+              v-for="floor in uploadFloors"
+              :key="floor.id"
+              :value="floor.code"
+            >
+              {{ floor.label }}
+            </option>
+          </datalist>
+        </fieldset>
+        <fieldset
+          class="admin-upload-fields"
+          :disabled="locked"
+          aria-describedby="admin-upload-help"
+        >
+          <legend>Файлы схемы</legend>
+          <p
+            id="admin-upload-help"
+            class="web-caption"
+          >
+            PNG — для скачивания, SVG — для просмотра. Достаточно одного формата. Каждый файл — до
+            10 МиБ; SVG проверяется сервером.
+          </p>
+          <div class="admin-form-grid">
+            <label
+              :key="`png-${fileEpoch}`"
+              class="web-field"
+            >Файл PNG<input
+              type="file"
+              accept="image/png,.png"
+              :aria-describedby="uploadFileSizeError || uploadFileError ? 'admin-upload-error' : undefined"
+              @change="chooseFile($event, 'png')"
+            ></label><label
+              :key="`svg-${fileEpoch}`"
+              class="web-field"
+            >Файл SVG<input
+              type="file"
+              accept="image/svg+xml,.svg"
+              :aria-describedby="uploadFileSizeError || uploadFileError ? 'admin-upload-error' : undefined"
+              @change="chooseFile($event, 'svg')"
+            ></label>
+          </div>
+          <p
+            v-if="uploadFileSizeError || uploadFileError"
+            id="admin-upload-error"
+            class="admin-field-error"
+            role="alert"
+          >
+            {{ uploadFileSizeError || uploadFileError }}
+          </p>
         </fieldset><div
           v-if="uploadConfirmation"
           class="web-notice"
@@ -451,79 +533,88 @@ useWebLiveRefresh(
             Отмена
           </button><button
             class="web-button web-button-primary"
-            :disabled="locked || (!png && !svg)"
+            :disabled="locked || (!png && !svg) || !!uploadFileSizeError"
           >
             {{ uploadConfirmation ? 'Подтвердить замену' : 'Опубликовать схему' }}
           </button>
         </div>
       </form>
-      <WebSelect v-model="selectedBuilding" label="Корпус" :options="[{ value: '', label: 'Все корпуса' }, ...inventory.map(building => ({ value: building.id, label: building.label + ' · ' + building.code }))]" :disabled="locked" /><div
-        v-if="rows.length"
-        class="admin-table-wrap"
-        role="region"
-        aria-label="Схемы корпусов и этажей"
-        tabindex="0"
-      >
-        <table class="admin-table">
-          <caption class="web-sr-only">
-            Схемы этажей и просмотры за всё время
-          </caption><thead>
-            <tr>
-              <th scope="col">
-                Корпус
-              </th><th scope="col">
-                Этаж
-              </th><th scope="col">
-                PNG
-              </th><th scope="col">
-                SVG
-              </th><th scope="col">
-                Просмотры за всё время
-              </th><th scope="col">
-                Действия
-              </th>
-            </tr>
-          </thead><tbody>
-            <tr
-              v-for="row in rows"
-              :key="row.floor.id"
-            >
-              <td>
-                {{ row.building.label
-                }}<span class="admin-subtext">{{ row.building.code }}</span>
-              </td><td>
-                {{ row.floor.label }}<span class="admin-subtext">{{ row.floor.code }}</span>
-              </td><td>
-                {{ statuses[row.floor.currentPlan?.png.state ?? 'absent']
-                }}<span
-                  v-if="row.floor.currentPlan?.png.state !== 'ready'"
-                  class="admin-subtext"
-                >Скачивание PNG недоступно</span>
-              </td><td>
-                {{ statuses[row.floor.currentPlan?.svg.state ?? 'absent']
-                }}<span
-                  v-if="row.floor.currentPlan?.svg.state !== 'ready'"
-                  class="admin-subtext"
-                >Просмотр схемы недоступен</span>
-              </td><td>{{ row.floor.openCount.toLocaleString('ru-RU') }}</td><td>
-                <button
-                  class="web-button"
-                  :disabled="locked"
-                  :aria-label="`Открыть корпус ${row.building.code}, этаж ${row.floor.code}`"
-                  @click="open(row)"
-                >
-                  Открыть
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div><p
-        v-else-if="!loading"
-        role="status"
-      >
-        Схем пока нет. Добавь первую схему, чтобы карта стала доступна пользователям.
-      </p>
+      <section class="admin-panel">
+        <h2>Реестр схем</h2>
+        <WebSelect
+          v-model="selectedBuilding"
+          class="admin-compact-field"
+          label="Корпус"
+          :options="[{ value: '', label: 'Все корпуса' }, ...inventory.map(building => ({ value: building.id, label: building.label + ' · ' + building.code }))]"
+          :disabled="locked"
+        /><div
+          v-if="rows.length"
+          class="admin-table-wrap"
+          role="region"
+          aria-label="Схемы корпусов и этажей"
+          tabindex="0"
+        >
+          <table class="admin-table">
+            <caption class="web-sr-only">
+              Схемы этажей и просмотры за всё время
+            </caption><thead>
+              <tr>
+                <th scope="col">
+                  Корпус
+                </th><th scope="col">
+                  Этаж
+                </th><th scope="col">
+                  PNG
+                </th><th scope="col">
+                  SVG
+                </th><th scope="col">
+                  Просмотры за всё время
+                </th><th scope="col">
+                  Действия
+                </th>
+              </tr>
+            </thead><tbody>
+              <tr
+                v-for="row in rows"
+                :key="row.floor.id"
+              >
+                <td>
+                  {{ row.building.label
+                  }}<span class="admin-subtext">{{ row.building.code }}</span>
+                </td><td>
+                  {{ row.floor.label }}<span class="admin-subtext">{{ row.floor.code }}</span>
+                </td><td>
+                  {{ statuses[row.floor.currentPlan?.png.state ?? 'absent']
+                  }}<span
+                    v-if="row.floor.currentPlan?.png.state !== 'ready'"
+                    class="admin-subtext"
+                  >Скачивание PNG недоступно</span>
+                </td><td>
+                  {{ statuses[row.floor.currentPlan?.svg.state ?? 'absent']
+                  }}<span
+                    v-if="row.floor.currentPlan?.svg.state !== 'ready'"
+                    class="admin-subtext"
+                  >Просмотр схемы недоступен</span>
+                </td><td>{{ row.floor.openCount.toLocaleString('ru-RU') }}</td><td>
+                  <button
+                    class="web-button"
+                    :disabled="locked"
+                    :aria-label="`Открыть корпус ${row.building.code}, этаж ${row.floor.code}`"
+                    @click="open(row)"
+                  >
+                    Открыть
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div><p
+          v-else-if="!loading"
+          role="status"
+        >
+          {{ selectedBuilding ? 'В выбранном корпусе нет этажей со схемами.' : 'Схем пока нет. Добавь первую схему, чтобы карта стала доступна пользователям.' }}
+        </p>
+      </section>
       <section
         v-if="selected && !uploading"
         class="admin-panel"
@@ -646,7 +737,13 @@ useWebLiveRefresh(
           >
             Сервер не подтвердил выбранный объём удаления. Подтверждение недоступно.
             Для удаления всей истории нужен предпросмотр всех версий и файлов.
-          </p><WebSelect v-model="deleteFormat" label="Удалить" :options="[{ value: '', label: 'Всю схему: все версии PNG и SVG' }, { value: 'png', label: 'PNG текущей версии' }, { value: 'svg', label: 'SVG текущей версии' }]" :disabled="locked" @change="deletionPreview = null; password = ''" /><button
+          </p><WebSelect
+            v-model="deleteFormat"
+            label="Удалить"
+            :options="[{ value: '', label: 'Всю схему: все версии PNG и SVG' }, { value: 'png', label: 'PNG текущей версии' }, { value: 'svg', label: 'SVG текущей версии' }]"
+            :disabled="locked"
+            @change="deletionPreview = null; password = ''"
+          /><button
             class="web-button web-button-danger"
             :disabled="locked"
             @click="previewDeletion"

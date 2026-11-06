@@ -87,9 +87,15 @@ vi.mock('./use-admin', async () => {
 type PageState = Record<string, unknown> & {
   initialReceipt: Ref<{ login: string; password: string } | null>
   selected: Ref<unknown>
+  transferGroupId: Ref<number | undefined>
+  transferReason: Ref<string>
+  telegramId: Ref<string>
   name: Ref<string>
   duration: Ref<number>
   resume(): Promise<void>
+  open(user: AdminUser): Promise<void>
+  transfer(): Promise<void>
+  updateRole(): Promise<void>
   save(): Promise<void>
   archiveOrRestore(): Promise<void>
 }
@@ -199,6 +205,42 @@ describe('reviewed ADMIN causal sequences', () => {
     })
     expect(unref(current.initialReceipt)).toBeNull()
     expect(ack).not.toHaveBeenCalled()
+  })
+  it('does not carry a created account receipt or transfer draft into another user card', async () => {
+    const { initialPassword, ...profile } = user
+    const other: AdminUser = { ...profile, id: 23, login: 'another-student', fullName: 'Другой студент' }
+    vi.spyOn(AdminUsersClient.prototype, 'resumeIdentityOperation').mockResolvedValue({ created: true, user })
+    vi.spyOn(AdminUsersClient.prototype, 'listUsers').mockResolvedValue({
+      items: [other], number: 0, size: 30, totalElements: 1, totalPages: 1,
+    })
+    vi.spyOn(AdminUsersClient.prototype, 'getUser').mockResolvedValue(other)
+    const transfer = vi.spyOn(AdminUsersClient.prototype, 'transferStudent')
+    const { html } = await runPage(compiledPage(UsersPage), async (state) => {
+      await state.resume()
+      expect(unref(state.initialReceipt)?.password).toBe(initialPassword)
+      state.transferGroupId.value = 77
+      state.transferReason.value = 'Причина для первой записи'
+      await state.open(other)
+      await state.transfer()
+    })
+    expect(html).toContain(other.fullName)
+    expect(html).not.toContain(initialPassword)
+    expect(html).not.toContain('Причина для первой записи')
+    expect(transfer).not.toHaveBeenCalled()
+  })
+  it('does not submit an unsaved profile binding when updating an existing role', async () => {
+    const existing = { ...user, telegramId: 12345 }
+    vi.spyOn(AdminUsersClient.prototype, 'getUser').mockResolvedValue(existing)
+    vi.spyOn(AdminUsersClient.prototype, 'listUsers').mockResolvedValue({
+      items: [existing], number: 0, size: 30, totalElements: 1, totalPages: 1,
+    })
+    const role = vi.spyOn(AdminUsersClient.prototype, 'updateRole').mockResolvedValue(existing)
+    await runPage(compiledPage(UsersPage), async (state) => {
+      await state.open(existing)
+      state.telegramId.value = '98765'
+      await state.updateRole()
+    })
+    expect(role.mock.calls[0]?.slice(0, 3)).toEqual([existing.id, 'STUDENT', { status: 'ACTIVE', groupId: 1 }])
   })
   it('archives under the authoritative renamed group object instead of the former code', async () => {
     owner.mode = 'groups'

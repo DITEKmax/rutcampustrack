@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import WebSelect from '../../shared/WebSelect.vue';
-import { computed, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue';
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue';
 import MobileIcon from '../../../../mobile-core/src/shared/components/MobileIcon.vue';
-import { onBeforeRouteLeave, RouterLink } from 'vue-router';
+import { onBeforeRouteLeave, RouterLink, useRoute } from 'vue-router';
 import { useWebLiveRefresh } from '../../app/live';
 import { webSession } from '../../auth/session';
 import {
@@ -35,8 +35,13 @@ const currentOwner = computed(
 );
 const { loading, busy, error, notice } = admin;
 const client = new AdminGroupsClient(admin.options);
+const route = useRoute();
+const returnParam = route.query.groupId;
+const returnGroupId = typeof returnParam === 'string' && /^[1-9][0-9]*$/.test(returnParam) &&
+  Number.isSafeInteger(Number(returnParam)) ? Number(returnParam) : undefined;
+const returnStatus = route.query.status;
 const page = shallowRef<AdminGroupsPage | null>(null);
-const status = ref<AdminGroupStatus>('ACTIVE'),
+const status = ref<AdminGroupStatus>(returnGroupId && (returnStatus === 'ARCHIVED' || returnStatus === 'DRAFT') ? returnStatus : 'ACTIVE'),
   search = ref(''),
   course = ref<number | ''>(''),
   studyMode = ref<AdminGroupStudyMode | ''>(''),
@@ -74,6 +79,7 @@ const roster = shallowRef<HeadmanRoster | null>(null),
   headmanPreview = shallowRef<HeadmanAssignmentPreview | null>(null);
 const candidateId = ref<number>(),
   promotion = shallowRef<PromotionSummary | null>(null);
+const promotionPanel = ref<HTMLElement | null>(null);
 const candidateValue = computed({ get: () => candidateId.value ?? '' as const, set: (value: number | '') => { candidateId.value = value === '' ? undefined : value; } });
 const canView = computed(() => currentOwner.value && admin.can('GROUPS_VIEW'));
 const canManage = computed(() => canView.value && admin.can('GROUPS_MANAGE'));
@@ -164,6 +170,9 @@ watch(() => !locked.value && canView.value, ready => {
 onBeforeUnmount(() => { alive = false; listRevision++; cancelFilterTimer(); });
 function open(group: AdminGroup) {
   if (locked.value) return;
+  selectGroup(group);
+}
+function selectGroup(group: AdminGroup) {
   selected.value = group;
   creating.value = false;
   name.value = group.name;
@@ -173,9 +182,21 @@ function open(group: AdminGroup) {
   confirmArchive.value = false;
   promotion.value = null;
 }
+function closeEditor() {
+  selected.value = null;
+  creating.value = false;
+  roster.value = null;
+  headmanPreview.value = null;
+  confirmArchive.value = false;
+  if (promotion.value?.groupId != null) promotion.value = null;
+}
 function beginCreate() {
   if (locked.value) return;
   selected.value = null;
+  roster.value = null;
+  headmanPreview.value = null;
+  confirmArchive.value = false;
+  promotion.value = null;
   creating.value = true;
   alphabeticCode.value = '';
   numericCode.value = '';
@@ -328,9 +349,16 @@ async function assign() {
 }
 async function previewPromotion(groupId?: number) {
   await admin.run(async () => {
+    promotion.value = null;
     const value = await client.previewPromotion(groupId, admin.signal);
     admin.assertCurrent();
+    if (value.groupId !== (groupId ?? null))
+      throw new Error('Сервер не подтвердил выбранную область перевода.');
     promotion.value = value;
+    await nextTick();
+    admin.assertCurrent();
+    promotionPanel.value?.focus({ preventScroll: true });
+    promotionPanel.value?.scrollIntoView({ block: 'start' });
   }, 'GROUPS_MANAGE');
 }
 async function executePromotion() {
@@ -398,7 +426,13 @@ onBeforeRouteLeave(() => {
   }
 });
 onMounted(() => {
-  if (currentOwner.value) void admin.init('GROUPS_VIEW', () => load());
+  if (currentOwner.value) void admin.init('GROUPS_VIEW', async () => {
+    await load();
+    if (!returnGroupId) return;
+    const group = await client.resolveNotificationGroup(returnGroupId);
+    admin.assertCurrent();
+    if (group?.id === returnGroupId && canView.value) selectGroup(group);
+  });
 });
 const refreshDeferred = ref(false);
 const refreshAvailable = computed(
@@ -448,12 +482,6 @@ useWebLiveRefresh(
           @click="beginCreate"
         >
           Создать группу
-        </button><button
-          class="web-button"
-          :disabled="locked"
-          @click="previewPromotion()"
-        >
-          Перевести группы на следующий курс
         </button>
       </div>
     </header>
@@ -469,19 +497,60 @@ useWebLiveRefresh(
       class="admin-toolbar"
       @submit.prevent="apply"
     >
-      <label class="web-field">Поиск<input
+      <label class="web-field admin-search">Поиск<input
         v-model="search"
         type="search"
         placeholder="Код группы"
         :disabled="pending || unknownWrite || deletionLocked"
-      ></label><WebSelect v-model="status" label="Состояние" :options="[{ value: 'ACTIVE', label: 'Активные' }, { value: 'DRAFT', label: 'Черновики' }, { value: 'ARCHIVED', label: 'Архивные' }]" :disabled="pending || unknownWrite || deletionLocked" /><WebSelect v-model="course" label="Курс" :options="[{ value: '' as const, label: 'Все курсы' }, ...[1, 2, 3, 4, 5].map(value => ({ value, label: String(value) }))]" :disabled="pending || unknownWrite || deletionLocked" /><WebSelect v-model="studyMode" label="Форма обучения" :options="[{ value: '', label: 'Все формы' }, { value: 'FULL_TIME', label: 'Очная' }, { value: 'PART_TIME', label: 'Очно-заочная' }, { value: 'EXTRAMURAL', label: 'Заочная' }]" :disabled="pending || unknownWrite || deletionLocked" /><WebSelect v-model="educationLevel" label="Образование" :options="[{ value: '', label: 'Все уровни' }, { value: 'BACHELOR', label: 'Бакалавриат' }, { value: 'SPECIALIST', label: 'Специалитет' }, { value: 'MASTER', label: 'Магистратура' }]" :disabled="pending || unknownWrite || deletionLocked" /><WebSelect v-model="sort" label="Сортировка" :options="[{ value: 'name,asc', label: 'По коду А–Я' }, { value: 'name,desc', label: 'По коду Я–А' }, { value: 'currentCourse,asc', label: 'По курсу' }, { value: 'programType,asc', label: 'По программе' }]" :disabled="pending || unknownWrite || deletionLocked" /><button
+      ></label>
+      <WebSelect
+        v-model="status"
+        label="Состояние"
+        :options="[{ value: 'ACTIVE', label: 'Активные' }, { value: 'DRAFT', label: 'Черновики' }, { value: 'ARCHIVED', label: 'Архивные' }]"
+        :disabled="pending || unknownWrite || deletionLocked"
+      />
+      <WebSelect
+        v-model="course"
+        label="Курс"
+        :options="[{ value: '' as const, label: 'Все курсы' }, ...[1, 2, 3, 4, 5].map(value => ({ value, label: String(value) }))]"
+        :disabled="pending || unknownWrite || deletionLocked"
+      />
+      <button
         type="button"
         class="web-button web-icon-button"
         aria-label="Сбросить поиск и фильтры групп"
         title="Сбросить поиск и фильтры"
         :disabled="pending || unknownWrite || deletionLocked"
         @click="resetFilters"
-      ><MobileIcon name="close" /></button>
+      >
+        <MobileIcon name="close" />
+      </button>
+      <details class="admin-filter-disclosure">
+        <summary>
+          Дополнительные фильтры
+          <small v-if="studyMode || educationLevel || sort !== 'name,asc'"> · Есть отбор или сортировка</small>
+        </summary>
+        <div class="admin-toolbar-detail">
+          <WebSelect
+            v-model="studyMode"
+            label="Форма обучения"
+            :options="[{ value: '', label: 'Все формы' }, { value: 'FULL_TIME', label: 'Очная' }, { value: 'PART_TIME', label: 'Очно-заочная' }, { value: 'EXTRAMURAL', label: 'Заочная' }]"
+            :disabled="pending || unknownWrite || deletionLocked"
+          />
+          <WebSelect
+            v-model="educationLevel"
+            label="Образование"
+            :options="[{ value: '', label: 'Все уровни' }, { value: 'BACHELOR', label: 'Бакалавриат' }, { value: 'SPECIALIST', label: 'Специалитет' }, { value: 'MASTER', label: 'Магистратура' }]"
+            :disabled="pending || unknownWrite || deletionLocked"
+          />
+          <WebSelect
+            v-model="sort"
+            label="Сортировка"
+            :options="[{ value: 'name,asc', label: 'По коду А–Я' }, { value: 'name,desc', label: 'По коду Я–А' }, { value: 'currentCourse,asc', label: 'По курсу' }, { value: 'programType,asc', label: 'По программе' }]"
+            :disabled="pending || unknownWrite || deletionLocked"
+          />
+        </div>
+      </details>
     </form>
     <template v-if="canView">
       <GroupRegistryTable
@@ -492,168 +561,185 @@ useWebLiveRefresh(
         :disabled="locked"
         @open="open"
       >
-        <template #editor>    <section
-      v-if="(creating || selected) && canView"
-      class="admin-panel admin-inline-editor"
-    >
-      <header class="admin-heading">
-        <h2>{{ creating ? 'Новая группа' : selected!.name }}</h2><button
-          class="web-button"
-          :disabled="locked"
-          @click="
-            selected = null;
-            creating = false;
-          "
-        >
-          Закрыть
-        </button>
-      </header>
-      <form
-        v-if="canManage && (creating || selected?.status === 'ACTIVE')"
-        class="admin-form web-stack"
-        @submit.prevent="save"
-      >
-        <template v-if="creating">
-          <label class="web-field">Буквенный код<input
-            v-model="alphabeticCode"
-            required
-            pattern="[А-Яа-яЁё]{2,4}"
-            maxlength="4"
-            :disabled="locked"
-          ></label><label class="web-field">Цифровой код<input
-            v-model="numericCode"
-            required
-            pattern="[1-5][1-9][0-9]"
-            maxlength="3"
-            :disabled="locked"
-          ></label>
-        </template><label
-          v-else
-          class="web-field"
-        >Код группы<input
-          v-model="name"
-          required
-          :disabled="locked"
-        ></label><label class="web-field">Срок обучения, лет<input
-          v-model.number="duration"
-          type="number"
-          min="1"
-          max="5"
-          required
-          :disabled="locked"
-        ></label><button
-          class="web-button web-button-primary"
-          :disabled="locked"
-        >
-          Сохранить группу
-        </button>
-      </form>
-      <template v-if="selected">
-        <dl class="admin-pairs">
-          <dt>Студентов</dt><dd>{{ selected.studentCount }}</dd><dt>Староста</dt><dd>{{ selected.headmanFio ?? 'Не назначен' }}</dd>
-        </dl><div class="admin-actions">
-          <button
-            v-if="canManage && selected.status !== 'ARCHIVED'"
-            class="web-button"
-            :disabled="locked"
-            @click="loadRoster"
+        <template #editor>
+          <section
+            v-if="(creating || selected) && canView"
+            class="admin-panel admin-inline-editor"
           >
-            Назначить или заменить старосту
-          </button><button
-            v-if="canManage && selected.status !== 'ARCHIVED'"
-            class="web-button"
-            :disabled="locked"
-            @click="previewPromotion(selected!.id)"
-          >
-            Предпросмотр перевода
-          </button><button
-            v-if="canManage && selected.status !== 'ARCHIVED'"
-            class="web-button web-button-danger"
-            :disabled="locked"
-            @click="confirmArchive = true"
-          >
-            Архивировать
-          </button><button
-            v-if="canManage && selected.status === 'ARCHIVED'"
-            class="web-button"
-            :disabled="locked"
-            @click="archiveOrRestore"
-          >
-            Восстановить
-          </button><RouterLink
-            v-if="selected.status === 'ARCHIVED' && admin.can('USERS_VIEW')"
-            class="web-button"
-            :to="`/admin/groups/${selected.id}/history`"
-          >
-            Сохранённый состав
-          </RouterLink>
-        </div>
-        <div
-          v-if="confirmArchive"
-          class="web-notice"
-        >
-          <h3>Архивировать {{ selected.name }}?</h3><p>
-            Группа станет архивной, текущие полномочия будут отозваны. Учётные записи и история
-            сохранятся.
-          </p><div class="admin-actions">
-            <button
-              class="web-button"
-              :disabled="locked"
-              @click="confirmArchive = false"
-            >
-              Отмена
-            </button><button
-              class="web-button web-button-danger"
-              :disabled="locked"
-              @click="archiveOrRestore"
-            >
-              Подтвердить архивацию
-            </button>
-          </div>
-        </div>
-        <section
-          v-if="roster"
-          class="admin-panel admin-form"
-        >
-          <h3>Староста группы</h3><WebSelect v-model="candidateValue" label="Студент" :options="[{ value: '' as const, label: 'Выбери студента', disabled: true }, ...roster.candidates.map(candidate => ({ value: candidate.id, label: candidate.fio + (candidate.current ? ' — текущий староста' : '') }))]" :disabled="locked" @change="headmanPreview = null" /><p v-if="!roster.candidates.length">
-            В группе нет подходящих кандидатов.
-          </p><button
-            class="web-button"
-            :disabled="locked || !candidateId"
-            @click="previewHeadman"
-          >
-            Показать последствия
-          </button><div
-            v-if="headmanPreview"
-            class="web-notice"
-          >
-            <p>
-              Новый староста: {{ headmanPreview.candidateFio }}. Текущий:
-              {{ headmanPreview.currentHeadmanFio ?? 'не назначен' }}.
-            </p><p>
-              Помощников потеряют полномочия: {{ headmanPreview.assistantsToRevoke }}.<template
-                v-if="headmanPreview.activatesDraft"
+            <header class="admin-heading">
+              <h2>{{ creating ? 'Новая группа' : selected!.name }}</h2><button
+                class="web-button"
+                :disabled="locked"
+                @click="closeEditor"
               >
-                Группа станет активной.
-              </template>
-            </p><button
-              class="web-button web-button-primary"
-              :disabled="locked || headmanPreview.sameHeadman"
-              @click="assign"
+                Закрыть
+              </button>
+            </header>
+            <form
+              v-if="canManage && (creating || selected?.status === 'ACTIVE')"
+              class="admin-form web-stack"
+              @submit.prevent="save"
             >
-              Подтвердить назначение
-            </button>
-          </div>
-        </section>
-      </template>
-    </section>
-</template>
+              <fieldset
+                v-if="creating"
+                class="admin-form-grid"
+                :disabled="locked"
+              >
+                <legend>Код группы</legend>
+                <label class="web-field">Буквенный код<input
+                  v-model="alphabeticCode"
+                  required
+                  pattern="[А-Яа-яЁё]{2,4}"
+                  maxlength="4"
+                  :disabled="locked"
+                ></label><label class="web-field">Цифровой код<input
+                  v-model="numericCode"
+                  required
+                  pattern="[1-5][1-9][0-9]"
+                  maxlength="3"
+                  :disabled="locked"
+                ></label>
+              </fieldset><label
+                v-else
+                class="web-field"
+              >Код группы<input
+                v-model="name"
+                required
+                :disabled="locked"
+              ></label><label class="web-field">Срок обучения, лет<input
+                v-model.number="duration"
+                type="number"
+                min="1"
+                max="5"
+                required
+                :disabled="locked"
+              ></label><button
+                class="web-button web-button-primary"
+                :disabled="locked"
+              >
+                Сохранить группу
+              </button><p
+                v-if="creating"
+                class="web-caption"
+              >
+                Группа останется черновиком до назначения старосты.
+              </p>
+            </form>
+            <template v-if="selected">
+              <dl class="admin-pairs">
+                <dt>Студентов</dt><dd>{{ selected.studentCount }}</dd><dt>Староста</dt><dd>{{ selected.headmanFio ?? 'Не назначен' }}</dd>
+              </dl><div class="admin-actions">
+                <button
+                  v-if="canManage && selected.status !== 'ARCHIVED'"
+                  class="web-button"
+                  :disabled="locked"
+                  @click="loadRoster"
+                >
+                  Назначить или заменить старосту
+                </button><button
+                  v-if="canManage && selected.status !== 'ARCHIVED'"
+                  class="web-button"
+                  :disabled="locked"
+                  @click="previewPromotion(selected!.id)"
+                >
+                  Предпросмотр перевода
+                </button><button
+                  v-if="canManage && selected.status !== 'ARCHIVED'"
+                  class="web-button web-button-danger"
+                  :disabled="locked"
+                  @click="confirmArchive = true"
+                >
+                  Архивировать
+                </button><button
+                  v-if="canManage && selected.status === 'ARCHIVED'"
+                  class="web-button"
+                  :disabled="locked"
+                  @click="archiveOrRestore"
+                >
+                  Восстановить
+                </button><RouterLink
+                  v-if="selected.status === 'ARCHIVED' && admin.can('USERS_VIEW')"
+                  class="web-button"
+                  :to="`/admin/groups/${selected.id}/history`"
+                >
+                  Сохранённый состав
+                </RouterLink>
+              </div>
+              <div
+                v-if="confirmArchive"
+                class="web-notice"
+              >
+                <h3>Архивировать {{ selected.name }}?</h3><p>
+                  Группа станет архивной, текущие полномочия будут отозваны. Учётные записи и история
+                  сохранятся.
+                </p><div class="admin-actions">
+                  <button
+                    class="web-button"
+                    :disabled="locked"
+                    @click="confirmArchive = false"
+                  >
+                    Отмена
+                  </button><button
+                    class="web-button web-button-danger"
+                    :disabled="locked"
+                    @click="archiveOrRestore"
+                  >
+                    Подтвердить архивацию
+                  </button>
+                </div>
+              </div>
+              <section
+                v-if="roster"
+                class="admin-panel admin-form"
+              >
+                <h3>Староста группы</h3><WebSelect
+                  v-model="candidateValue"
+                  label="Студент"
+                  :options="[{ value: '' as const, label: 'Выбери студента', disabled: true }, ...roster.candidates.map(candidate => ({ value: candidate.id, label: candidate.fio + (candidate.current ? ' — текущий староста' : '') }))]"
+                  :disabled="locked"
+                  @change="headmanPreview = null"
+                /><p v-if="!roster.candidates.length">
+                  В группе нет подходящих кандидатов.
+                </p><button
+                  class="web-button"
+                  :disabled="locked || !candidateId"
+                  @click="previewHeadman"
+                >
+                  Показать последствия
+                </button><div
+                  v-if="headmanPreview"
+                  class="web-notice"
+                >
+                  <p>
+                    Новый староста: {{ headmanPreview.candidateFio }}. Текущий:
+                    {{ headmanPreview.currentHeadmanFio ?? 'не назначен' }}.
+                  </p><p>
+                    Помощников потеряют полномочия: {{ headmanPreview.assistantsToRevoke }}.<template
+                      v-if="headmanPreview.activatesDraft"
+                    >
+                      Группа станет активной.
+                    </template>
+                  </p><button
+                    class="web-button web-button-primary"
+                    :disabled="locked || headmanPreview.sameHeadman"
+                    @click="assign"
+                  >
+                    Подтвердить назначение
+                  </button>
+                </div>
+              </section>
+            </template>
+          </section>
+        </template>
       </GroupRegistryTable><p
         v-if="page && !registryItems.length"
         role="status"
       >
         Группы не найдены.
-      </p><div v-if="page" class="admin-pager">
+      </p><div
+        v-if="page"
+        class="admin-pager"
+      >
         <div class="admin-actions">
           <button
             class="web-button"
@@ -684,11 +770,31 @@ useWebLiveRefresh(
       @locked="deletionLocked = $event"
     />
     <section
-      v-if="promotion && canManage"
+      v-if="canManage"
       class="admin-panel"
     >
+      <h2>Массовый перевод групп</h2>
+      <p class="web-caption">
+        В предпросмотр попадут все подходящие группы. Фильтры реестра на него не влияют.
+      </p>
+      <div class="admin-actions">
+        <button
+          class="web-button"
+          :disabled="locked"
+          @click="previewPromotion()"
+        >
+          Предпросмотр массового перевода
+        </button>
+      </div>
+    </section>
+    <section
+      v-if="promotion && canManage"
+      ref="promotionPanel"
+      class="admin-panel"
+      tabindex="-1"
+    >
       <header class="admin-heading">
-        <h2>{{ promotion.groupId ? 'Перевод выбранной группы' : 'Перевод групп' }}</h2><button
+        <h2>{{ promotion.groupId ? `Перевод группы ${selected?.id === promotion.groupId ? selected.name : `№ ${promotion.groupId}`}` : 'Массовый перевод: предпросмотр' }}</h2><button
           class="web-button"
           :disabled="locked"
           @click="promotion = null"

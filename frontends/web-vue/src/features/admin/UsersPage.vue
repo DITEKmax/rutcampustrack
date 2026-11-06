@@ -59,6 +59,15 @@ const accountStatus = ref(initialQuery.filters.status);
 const filterGroupId = ref(initialQuery.filters.groupId);
 const sortDirection = ref(initialQuery.filters.sortDirection);
 const applied = shallowRef<UserRegistryFilters>(initialQuery.filters);
+const moreApplied = computed(() => [
+  applied.value.roleStatus, applied.value.status, applied.value.groupId, applied.value.sortDirection === 'desc',
+].filter(Boolean).length);
+const moreChanged = computed(() =>
+  roleStatus.value !== applied.value.roleStatus ||
+  accountStatus.value !== applied.value.status ||
+  filterGroupId.value !== applied.value.groupId ||
+  sortDirection.value !== applied.value.sortDirection,
+);
 let navigating = false;
 const creating = ref(false);
 const editor = ref<HTMLElement | null>(null);
@@ -78,6 +87,8 @@ const pending = ref(Boolean(users.failedIdentityOperation)),
 const childLocked = computed(() => accessLocked.value || credentialLocked.value);
 const roleToUpdate = ref<'STUDENT' | 'TEACHER' | 'ADMIN'>('STUDENT');
 const targetStatus = ref<AdminRoleStatus>('ACTIVE');
+const roleEmployeeNumber = ref(''),
+  roleTelegramId = ref('');
 const targetGroupId = ref<number>(),
   transferGroupId = ref<number>(),
   transferReason = ref('');
@@ -93,6 +104,14 @@ const canManage = computed(() => admin.can('USERS_MANAGE'));
 const canArchive = computed(() => admin.can('USERS_ARCHIVE'));
 const activeGrant = computed(() =>
   selected.value?.roles.find((r) => r.role === roleToUpdate.value),
+);
+const needsRoleEmployeeNumber = computed(() =>
+  roleToUpdate.value === 'TEACHER' &&
+  (!activeGrant.value || (targetStatus.value === 'ACTIVE' && !selected.value?.employeeNumber)),
+);
+const needsRoleTelegramId = computed(() =>
+  roleToUpdate.value === 'STUDENT' && !selected.value?.telegramId &&
+  (!activeGrant.value || targetStatus.value === 'ACTIVE'),
 );
 const applicableStatuses = computed(
   () => activeGrant.value?.applicableStatuses ?? (['ACTIVE'] as const),
@@ -124,6 +143,9 @@ function clearSelection() {
   creating.value = false;
   archive.value = null;
   initialReceipt.value = null;
+  password.value = '';
+  transferGroupId.value = undefined;
+  transferReason.value = '';
 }
 async function navigate(number = 0, filters = applied.value) {
   if (locked.value) return;
@@ -150,17 +172,25 @@ async function navigate(number = 0, filters = applied.value) {
 function apply() {
   void navigate(0, draftQuery());
 }
+function setFilters(filters: UserRegistryFilters) {
+  search.value = filters.search;
+  role.value = filters.role;
+  roleStatus.value = filters.roleStatus;
+  accountStatus.value = filters.status;
+  filterGroupId.value = filters.groupId;
+  sortDirection.value = filters.sortDirection;
+}
+function resetFilters() {
+  const { filters } = readUserRegistryQuery({});
+  setFilters(filters);
+  void navigate(0, filters);
+}
 watch(
   () => route.fullPath,
   () => {
     if (navigating) return;
     const current = readUserRegistryQuery(route.query);
-    search.value = current.filters.search;
-    role.value = current.filters.role;
-    roleStatus.value = current.filters.roleStatus;
-    accountStatus.value = current.filters.status;
-    filterGroupId.value = current.filters.groupId;
-    sortDirection.value = current.filters.sortDirection;
+    setFilters(current.filters);
     applied.value = current.filters;
     clearSelection();
     void admin.run(() => load(current.page));
@@ -176,30 +206,34 @@ async function open(user: AdminUser) {
   await admin.run(async () => {
     const value = await users.getUser(user.id, admin.signal);
     admin.assertCurrent();
-    selected.value = value;
-    creating.value = false;
-    archive.value = null;
-    lastName.value = value.lastName;
-    firstName.value = value.firstName;
-    middleName.value = value.middleName ?? '';
-    employeeNumber.value = value.employeeNumber ?? '';
-    telegramId.value = value.telegramId?.toString() ?? '';
-    roleToUpdate.value = value.role;
-    targetStatus.value = value.roles.find((r) => r.role === value.role)?.status ?? 'ACTIVE';
-    targetGroupId.value = value.groupId ?? undefined;
+    if (value.id !== user.id) throw new Error('Не удалось подтвердить выбранного пользователя.');
+    clearSelection();
+    showUser(value);
     await focusEditor();
   });
 }
+function showUser(value: AdminUser) {
+  selected.value = value;
+  lastName.value = value.lastName;
+  firstName.value = value.firstName;
+  middleName.value = value.middleName ?? '';
+  employeeNumber.value = value.employeeNumber ?? '';
+  telegramId.value = value.telegramId?.toString() ?? '';
+  roleToUpdate.value = value.role;
+  chooseRole();
+}
 async function beginCreate() {
-  selected.value = null;
+  clearSelection();
   creating.value = true;
-  archive.value = null;
+  createRole.value = 'STUDENT';
   lastName.value = '';
   firstName.value = '';
   middleName.value = '';
   employeeNumber.value = '';
   telegramId.value = '';
   groupId.value = undefined;
+  accessMode.value = 'LIMITED';
+  permissions.value = [];
   if (full.value)
     await admin.run(async () => {
       const value = await admin.access.getCatalog();
@@ -222,7 +256,8 @@ async function save() {
     async () =>
       identity(async () => {
         let user: AdminUser;
-        if (creating.value) {
+        const wasCreating = creating.value;
+        if (wasCreating) {
           const input: CreateAdminUserInput = {
             lastName: lastName.value,
             firstName: firstName.value,
@@ -258,7 +293,8 @@ async function save() {
           );
         } else return;
         admin.assertCurrent();
-        selected.value = user;
+        if (wasCreating) showUser(user);
+        else selected.value = user;
         creating.value = false;
         await load(page.value?.number ?? 0);
         notice.value = 'Учётная запись сохранена.';
@@ -279,13 +315,14 @@ async function updateRole() {
             ...(roleToUpdate.value === 'STUDENT' && targetGroupId.value
               ? { groupId: targetGroupId.value }
               : {}),
-            ...(roleToUpdate.value === 'TEACHER' ? { employeeNumber: employeeNumber.value } : {}),
-            ...(telegramId.value ? { telegramId: Number(telegramId.value) } : {}),
+            ...(needsRoleEmployeeNumber.value ? { employeeNumber: roleEmployeeNumber.value } : {}),
+            ...(needsRoleTelegramId.value && roleTelegramId.value ? { telegramId: Number(roleTelegramId.value) } : {}),
           },
           admin.signal,
         );
         admin.assertCurrent();
         selected.value = value;
+        chooseRole();
         await load(page.value?.number ?? 0);
         notice.value = 'Роль обновлена.';
       }),
@@ -307,6 +344,8 @@ async function transfer() {
         const grant = value.roles.find((item) => item.role === roleToUpdate.value);
         targetGroupId.value = grant?.groupId ?? undefined;
         targetStatus.value = grant?.status ?? 'ACTIVE';
+        transferGroupId.value = undefined;
+        transferReason.value = '';
         await load(page.value?.number ?? 0);
         notice.value = 'Студент переведён. Предыдущая история сохранена.';
       }),
@@ -382,8 +421,8 @@ async function resume() {
       const result = await users.resumeIdentityOperation();
       admin.assertCurrent();
       if (result.user) {
-        selected.value = result.user;
-        creating.value = false;
+        clearSelection();
+        showUser(result.user);
         if (result.created && result.user.initialPassword)
           initialReceipt.value = {
             login: result.user.login,
@@ -448,14 +487,12 @@ async function reconcileStoredArchive() {
 }
 function chooseRole() {
   targetStatus.value = activeGrant.value?.status ?? 'ACTIVE';
+  targetGroupId.value = activeGrant.value?.groupId ?? undefined;
+  roleEmployeeNumber.value = selected.value?.employeeNumber ?? '';
+  roleTelegramId.value = '';
 }
 function close() {
-  if (!locked.value) {
-    selected.value = null;
-    creating.value = false;
-    archive.value = null;
-    initialReceipt.value = null;
-  }
+  if (!locked.value) clearSelection();
 }
 onBeforeRouteLeave(() => {
   if (locked.value) {
@@ -503,23 +540,68 @@ useWebLiveRefresh(
       class="admin-toolbar"
       @submit.prevent="apply"
     >
-      <GroupFilter
-      v-if="admin.can('USERS_VIEW')"
-      v-model="filterGroupId"
-      :client="users"
-      :assert-current="admin.assertCurrent"
-      :disabled="locked"
-    />
-      <label class="web-field">Поиск<input
+      <label class="web-field admin-search">Поиск<input
         v-model="search"
         type="search"
         placeholder="ФИО, логин или Telegram ID"
-      ></label><WebSelect v-model="role" label="Роль" :options="[{ value: '', label: 'Все роли' }, ...Object.entries(roleLabels).map(([value, label]) => ({ value: value as typeof role, label }))]" :disabled="locked" @change="roleStatus = ''" /><WebSelect v-model="roleStatus" label="Статус роли" :options="[{ value: '', label: 'Все статусы' }, ...Object.entries(statusLabels).map(([value, label]) => ({ value: value as AdminRoleStatus, label }))]" :disabled="locked || !role" /><WebSelect v-model="accountStatus" label="Учётная запись" :options="[{ value: '', label: roleStatus === 'ARCHIVED' ? 'Все состояния записи' : 'Без архивных записей' }, { value: 'ACTIVE', label: 'Активные' }, { value: 'EXPELLED', label: 'Отчисленные' }, { value: 'SUSPENDED', label: 'Приостановленные' }, { value: 'ARCHIVED', label: 'Архивные' }]" :disabled="locked" /><WebSelect v-model="sortDirection" label="ФИО" :options="[{ value: 'asc', label: 'От А до Я' }, { value: 'desc', label: 'От Я до А' }]" :disabled="locked" /><button
-        class="web-button"
         :disabled="locked"
-      >
-        Найти
-      </button>
+      ></label>
+      <WebSelect
+        v-model="role"
+        label="Роль"
+        :options="[{ value: '', label: 'Все роли' }, ...Object.entries(roleLabels).map(([value, label]) => ({ value: value as typeof role, label }))]"
+        :disabled="locked"
+        @change="roleStatus = ''"
+      />
+      <div class="admin-actions">
+        <button
+          class="web-button"
+          :disabled="locked"
+        >
+          Найти
+        </button>
+        <button
+          type="button"
+          class="web-button"
+          :disabled="locked"
+          @click="resetFilters"
+        >
+          Сбросить
+        </button>
+      </div>
+      <details class="admin-filter-disclosure">
+        <summary>
+          Дополнительные фильтры
+          <small v-if="moreApplied"> · Применено: {{ moreApplied }}</small>
+          <small v-if="moreChanged"> · Есть изменения</small>
+        </summary>
+        <div class="admin-toolbar-detail">
+          <GroupFilter
+            v-model="filterGroupId"
+            :client="users"
+            :assert-current="admin.assertCurrent"
+            :disabled="locked"
+          />
+          <WebSelect
+            v-model="roleStatus"
+            label="Статус роли"
+            :options="[{ value: '', label: 'Все статусы' }, ...Object.entries(statusLabels).map(([value, label]) => ({ value: value as AdminRoleStatus, label }))]"
+            :disabled="locked || !role"
+          />
+          <WebSelect
+            v-model="accountStatus"
+            label="Учётная запись"
+            :options="[{ value: '', label: roleStatus === 'ARCHIVED' ? 'Все состояния записи' : 'Без архивных записей' }, { value: 'ACTIVE', label: 'Активные' }, { value: 'EXPELLED', label: 'Отчисленные' }, { value: 'SUSPENDED', label: 'Приостановленные' }, { value: 'ARCHIVED', label: 'Архивные' }]"
+            :disabled="locked"
+          />
+          <WebSelect
+            v-model="sortDirection"
+            label="Сортировка по ФИО"
+            :options="[{ value: 'asc', label: 'От А до Я' }, { value: 'desc', label: 'От Я до А' }]"
+            :disabled="locked"
+          />
+        </div>
+      </details>
     </form>
     <template v-if="admin.can('USERS_VIEW')">
       <UserRegistryTable
@@ -532,237 +614,291 @@ useWebLiveRefresh(
         @open="open"
       >
         <template #editor>
-    <section
-      v-if="(creating || selected) && admin.can('USERS_VIEW')"
-      ref="editor"
-      class="admin-panel admin-inline-editor"
-      :inert="busy || (pending && !archiveRecovery)"
-      tabindex="-1"
-      :aria-label="creating ? 'Создание пользователя' : selected!.fullName"
-    >
-      <header class="admin-heading">
-        <h2>{{ creating ? 'Новый пользователь' : selected!.fullName }}</h2><button
-          class="web-button"
-          :disabled="locked"
-          @click="close"
-        >
-          Закрыть
-        </button>
-      </header>
-      <div
-        v-if="initialReceipt"
-        class="web-notice"
-        role="status"
-      >
-        <h3>Начальный доступ</h3><p>
-          Логин: <output class="admin-secret">{{ initialReceipt.login }}</output>
-        </p><p>
-          Пароль: <output class="admin-secret">{{ initialReceipt.password }}</output>
-        </p><p class="web-caption">
-          Передай эти данные пользователю. Пароль не сохраняется в браузере.
-        </p><button
-          class="web-button"
-          @click="initialReceipt = null"
-        >
-          Данные сохранены
-        </button>
-      </div>
-      <dl
-        v-if="selected"
-        class="admin-pairs"
-      >
-        <dt>Логин</dt><dd>{{ selected.login }}</dd><dt>Состояние</dt><dd>{{ statusLabels[selected.status] }}</dd>
-      </dl>
-      <div class="admin-editor-sections" :class="{ 'is-creating': creating }">
-      <form
-        v-if="canManage"
-        class="admin-form web-stack"
-        @submit.prevent="save"
-      >
-        <h3 v-if="!creating">Профиль</h3>
-        <fieldset
-          class="admin-form-grid"
-          :disabled="locked"
-        >
-          <legend class="web-sr-only">
-            Данные пользователя
-          </legend><WebSelect v-if="creating" v-model="createRole" label="Роль" :options="[{ value: 'STUDENT', label: 'Студент' }, { value: 'TEACHER', label: 'Преподаватель' }, ...(full ? [{ value: 'ADMIN' as const, label: 'Администратор' }] : [])]" :disabled="locked" /><label class="web-field">Фамилия<input
-            v-model="lastName"
-            required
-            maxlength="128"
-          ></label><label class="web-field">Имя<input
-            v-model="firstName"
-            required
-            maxlength="128"
-          ></label><label class="web-field">Отчество<input
-            v-model="middleName"
-            maxlength="128"
-          ></label><label
-            v-if="!creating || createRole === 'TEACHER'"
-            class="web-field"
-          >Табельный номер<input
-            v-model="employeeNumber"
-            :required="creating && createRole === 'TEACHER'"
-          ></label><label class="web-field">Telegram ID<input
-            v-model="telegramId"
-            inputmode="numeric"
-            pattern="[1-9][0-9]*"
-            :required="creating && createRole === 'STUDENT'"
-          ></label>
-        </fieldset>
-        <GroupPicker
-          v-if="creating && createRole === 'STUDENT'"
-          v-model="groupId"
-          :client="users"
-          :assert-current="admin.assertCurrent"
-          label="Учебная группа"
-          :disabled="locked"
-        />
-        <PermissionFields
-          v-if="creating && createRole === 'ADMIN' && catalog"
-          v-model:mode="accessMode"
-          v-model:permissions="permissions"
-          :catalog="catalog"
-          :disabled="locked"
-        />
-        <button
-          class="web-button web-button-primary"
-          :disabled="
-            locked ||
-              (creating && createRole === 'STUDENT' && !groupId) ||
-              (creating && createRole === 'ADMIN' && accessMode === 'LIMITED' && !permissions.length)
-          "
-        >
-          {{ creating ? 'Создать учётную запись' : 'Сохранить данные' }}
-        </button>
-      </form>
-      <template v-if="selected && !creating">
-        <section
-          v-if="canManage"
-          class="admin-panel admin-form"
-        >
-          <h3>Текущие роли</h3><form
-            class="web-stack"
-            @submit.prevent="updateRole"
+          <section
+            v-if="(creating || selected) && admin.can('USERS_VIEW')"
+            ref="editor"
+            class="admin-panel admin-inline-editor"
+            :inert="busy || (pending && !archiveRecovery)"
+            tabindex="-1"
+            :aria-label="creating ? 'Создание пользователя' : selected!.fullName"
           >
-            <WebSelect v-model="roleToUpdate" label="Роль" :options="[{ value: 'STUDENT', label: 'Студент' }, { value: 'TEACHER', label: 'Преподаватель' }, ...(full ? [{ value: 'ADMIN' as const, label: 'Администратор' }] : [])]" :disabled="locked" @change="chooseRole" /><p
-              v-if="activeGrant?.blockedReason"
-              class="admin-warning"
+            <header class="admin-heading">
+              <h2>{{ creating ? 'Новый пользователь' : selected!.fullName }}</h2><button
+                class="web-button"
+                :disabled="locked"
+                @click="close"
+              >
+                Закрыть
+              </button>
+            </header>
+            <div
+              v-if="initialReceipt"
+              class="web-notice"
+              role="status"
             >
-              {{ activeGrant.blockedReason }}
-            </p><WebSelect v-model="targetStatus" label="Статус" :options="applicableStatuses.map(status => ({ value: status, label: statusLabels[status] }))" :disabled="locked" /><GroupPicker
-              v-if="roleToUpdate === 'STUDENT' && !activeGrant"
-              v-model="targetGroupId"
-              :client="users"
-              :assert-current="admin.assertCurrent"
-              label="Группа для новой роли"
-              :disabled="locked"
-            /><button
-              class="web-button"
-              :disabled="locked || activeGrant?.canUpdate === false"
+              <h3>Начальный доступ</h3><p>
+                Логин: <output class="admin-secret">{{ initialReceipt.login }}</output>
+              </p><p>
+                Пароль: <output class="admin-secret">{{ initialReceipt.password }}</output>
+              </p><p class="web-caption">
+                Передай эти данные пользователю. Пароль не сохраняется в браузере.
+              </p><button
+                class="web-button"
+                @click="initialReceipt = null"
+              >
+                Данные сохранены
+              </button>
+            </div>
+            <dl
+              v-if="selected"
+              class="admin-pairs"
             >
-              {{ activeGrant ? 'Обновить роль' : 'Добавить роль' }}
-            </button>
-          </form>
-        </section>
-        <form
-          v-if="
-            canManage && selected.roles.some((r) => r.role === 'STUDENT' && r.status === 'ACTIVE')
-          "
-          class="admin-panel admin-form"
-          @submit.prevent="transfer"
-        >
-          <h3>Перевод в другую группу</h3><p class="web-caption">
-            История в предыдущей группе сохранится. Права старосты и помощника не переносятся.
-          </p><GroupPicker
-            v-model="transferGroupId"
-            :client="users"
-            :assert-current="admin.assertCurrent"
-            label="Новая группа"
-            :disabled="locked"
-          /><label class="web-field">Причина<input
-            v-model="transferReason"
-            required
-            maxlength="500"
-          ></label><button
-            class="web-button"
-            :disabled="locked || !transferGroupId"
-          >
-            Перевести студента
-          </button>
-        </form>
-        <UserAccess
-          v-if="full"
-          :key="`access-${selected.id}`"
-          :user-id="selected.id"
-          :inert="credentialLocked"
-          @locked="accessLocked = $event"
-          @saved="admin.run(() => load(page?.number ?? 0))"
-        />
-        <UserCredentials
-          v-if="admin.can('USER_CREDENTIALS_MANAGE')"
-          :key="`credentials-${selected.id}`"
-          :user="selected"
-          :inert="accessLocked"
-          @locked="credentialLocked = $event"
-        />
-        <div
-          v-if="canArchive"
-          class="admin-actions"
-        >
-          <button
-            v-if="selected.status !== 'ARCHIVED'"
-            class="web-button web-button-danger"
-            :disabled="locked"
-            @click="previewArchive"
-          >
-            Архивировать пользователя
-          </button><button
-            v-else
-            class="web-button"
-            :disabled="locked"
-            @click="restore"
-          >
-            Восстановить без прежних прав
-          </button>
-        </div>
-        <form
-          v-if="archive && !archiveRecovery"
-          class="admin-panel admin-form"
-          @submit.prevent="archiveUser"
-        >
-          <h3>Архивировать {{ selected.fullName }}?</h3><p>
-            Связанных групп: {{ archive.linkedGroupCount }}. Отметок в истории:
-            {{ archive.attendanceMarksCount }}. Групп со старостой:
-            {{ archive.activeHeadmanGroupCount }}. Назначений единственного преподавателя:
-            {{ archive.soleTeacherAssignmentCount }}.
-          </p><p>Активные права и сессии будут отозваны. История сохранится.</p><label
-            v-if="archive.requiresPassword"
-            class="web-field"
-          >Твой пароль<input
-            v-model="password"
-            type="password"
-            autocomplete="current-password"
-            required
-          ></label><div class="admin-actions">
-            <button
-              type="button"
-              class="web-button"
-              :disabled="locked"
-              @click="archive = null"
+              <dt>Логин</dt><dd>{{ selected.login }}</dd><dt>Состояние</dt><dd>{{ statusLabels[selected.status] }}</dd>
+            </dl>
+            <div
+              class="admin-editor-sections"
+              :class="{ 'is-creating': creating }"
             >
-              Отмена
-            </button><button
-              class="web-button web-button-danger"
-              :disabled="busy || childLocked"
-            >
-              Подтвердить архивацию
-            </button>
-          </div>
-        </form>
-      </template>
-      </div>
-    </section>
+              <form
+                v-if="canManage"
+                class="admin-panel admin-form"
+                @submit.prevent="save"
+              >
+                <h3>{{ creating ? 'Данные пользователя' : 'Профиль' }}</h3>
+                <fieldset
+                  class="admin-form-grid"
+                  :disabled="locked"
+                >
+                  <legend class="web-sr-only">
+                    Данные пользователя
+                  </legend><label class="web-field">Фамилия<input
+                    v-model="lastName"
+                    required
+                    maxlength="128"
+                  ></label><label class="web-field">Имя<input
+                    v-model="firstName"
+                    required
+                    maxlength="128"
+                  ></label><label class="web-field">Отчество<input
+                    v-model="middleName"
+                    maxlength="128"
+                  ></label><label
+                    v-if="!creating || createRole === 'TEACHER'"
+                    class="web-field"
+                  >Табельный номер<input
+                    v-model="employeeNumber"
+                    :required="creating && createRole === 'TEACHER'"
+                  ></label><label class="web-field">Telegram ID<input
+                    v-model="telegramId"
+                    inputmode="numeric"
+                    pattern="[1-9][0-9]*"
+                    :required="creating && createRole === 'STUDENT'"
+                  ></label>
+                </fieldset>
+                <div
+                  v-if="creating"
+                  class="admin-form-section"
+                >
+                  <h3>Роль и права</h3>
+                  <WebSelect
+                    v-model="createRole"
+                    label="Роль"
+                    :options="[{ value: 'STUDENT', label: 'Студент' }, { value: 'TEACHER', label: 'Преподаватель' }, ...(full ? [{ value: 'ADMIN' as const, label: 'Администратор' }] : [])]"
+                    :disabled="locked"
+                  />
+                  <GroupPicker
+                    v-if="createRole === 'STUDENT'"
+                    v-model="groupId"
+                    :client="users"
+                    :assert-current="admin.assertCurrent"
+                    label="Учебная группа"
+                    :disabled="locked"
+                  />
+                  <PermissionFields
+                    v-if="createRole === 'ADMIN' && catalog"
+                    v-model:mode="accessMode"
+                    v-model:permissions="permissions"
+                    :catalog="catalog"
+                    :disabled="locked"
+                  />
+                </div>
+                <div
+                  v-if="creating"
+                  class="admin-form-section"
+                >
+                  <h3>Начальный доступ</h3>
+                  <p class="web-caption">
+                    Логин и начальный пароль появятся после создания записи.
+                  </p>
+                </div>
+                <div class="admin-actions">
+                  <button
+                    class="web-button web-button-primary"
+                    :disabled="
+                      locked ||
+                        (creating && createRole === 'STUDENT' && !groupId) ||
+                        (creating && createRole === 'ADMIN' && accessMode === 'LIMITED' && !permissions.length)
+                    "
+                  >
+                    {{ creating ? 'Создать учётную запись' : 'Сохранить данные' }}
+                  </button>
+                </div>
+              </form>
+              <template v-if="selected && !creating">
+                <section
+                  v-if="canManage"
+                  class="admin-panel admin-form"
+                >
+                  <h3>Текущие роли</h3><form
+                    class="web-stack"
+                    @submit.prevent="updateRole"
+                  >
+                    <WebSelect
+                      v-model="roleToUpdate"
+                      label="Роль"
+                      :options="[{ value: 'STUDENT', label: 'Студент' }, { value: 'TEACHER', label: 'Преподаватель' }, ...(full ? [{ value: 'ADMIN' as const, label: 'Администратор' }] : [])]"
+                      :disabled="locked"
+                      @change="chooseRole"
+                    /><p
+                      v-if="activeGrant?.blockedReason"
+                      class="admin-warning"
+                    >
+                      {{ activeGrant.blockedReason }}
+                    </p><WebSelect
+                      v-model="targetStatus"
+                      label="Статус"
+                      :options="applicableStatuses.map(status => ({ value: status, label: statusLabels[status] }))"
+                      :disabled="locked"
+                    /><GroupPicker
+                      v-if="roleToUpdate === 'STUDENT' && !activeGrant"
+                      v-model="targetGroupId"
+                      :client="users"
+                      :assert-current="admin.assertCurrent"
+                      label="Группа для новой роли"
+                      :disabled="locked"
+                    /><label
+                      v-if="needsRoleEmployeeNumber"
+                      class="web-field"
+                    >Табельный номер для роли<input
+                      v-model="roleEmployeeNumber"
+                      maxlength="32"
+                      required
+                      :disabled="locked"
+                    ></label><label
+                      v-if="needsRoleTelegramId"
+                      class="web-field"
+                    >Telegram ID для роли<input
+                      v-model="roleTelegramId"
+                      inputmode="numeric"
+                      pattern="[1-9][0-9]*"
+                      required
+                      :disabled="locked"
+                    ></label><button
+                      class="web-button"
+                      :disabled="locked || activeGrant?.canUpdate === false"
+                    >
+                      {{ activeGrant ? 'Обновить роль' : 'Добавить роль' }}
+                    </button>
+                  </form>
+                </section>
+                <form
+                  v-if="
+                    canManage && selected.roles.some((r) => r.role === 'STUDENT' && r.status === 'ACTIVE')
+                  "
+                  class="admin-panel admin-form"
+                  @submit.prevent="transfer"
+                >
+                  <h3>Перевод в другую группу</h3><p class="web-caption">
+                    История в предыдущей группе сохранится. Права старосты и помощника не переносятся.
+                  </p><GroupPicker
+                    v-model="transferGroupId"
+                    :client="users"
+                    :assert-current="admin.assertCurrent"
+                    label="Новая группа"
+                    :disabled="locked"
+                  /><label class="web-field">Причина<input
+                    v-model="transferReason"
+                    required
+                    maxlength="500"
+                  ></label><button
+                    class="web-button"
+                    :disabled="locked || !transferGroupId"
+                  >
+                    Перевести студента
+                  </button>
+                </form>
+                <UserAccess
+                  v-if="full"
+                  :key="`access-${selected.id}`"
+                  :user-id="selected.id"
+                  :inert="credentialLocked"
+                  @locked="accessLocked = $event"
+                  @saved="admin.run(() => load(page?.number ?? 0))"
+                />
+                <UserCredentials
+                  v-if="admin.can('USER_CREDENTIALS_MANAGE')"
+                  :key="`credentials-${selected.id}`"
+                  :user="selected"
+                  :inert="accessLocked"
+                  @locked="credentialLocked = $event"
+                />
+                <div
+                  v-if="canArchive"
+                  class="admin-actions"
+                >
+                  <button
+                    v-if="selected.status !== 'ARCHIVED'"
+                    class="web-button web-button-danger"
+                    :disabled="locked"
+                    @click="previewArchive"
+                  >
+                    Архивировать пользователя
+                  </button><button
+                    v-else
+                    class="web-button"
+                    :disabled="locked"
+                    @click="restore"
+                  >
+                    Восстановить без прежних прав
+                  </button>
+                </div>
+                <form
+                  v-if="archive && !archiveRecovery"
+                  class="admin-panel admin-form"
+                  @submit.prevent="archiveUser"
+                >
+                  <h3>Архивировать {{ selected.fullName }}?</h3><p>
+                    Связанных групп: {{ archive.linkedGroupCount }}. Отметок в истории:
+                    {{ archive.attendanceMarksCount }}. Групп со старостой:
+                    {{ archive.activeHeadmanGroupCount }}. Назначений единственного преподавателя:
+                    {{ archive.soleTeacherAssignmentCount }}.
+                  </p><p>Активные права и сессии будут отозваны. История сохранится.</p><label
+                    v-if="archive.requiresPassword"
+                    class="web-field"
+                  >Твой пароль<input
+                    v-model="password"
+                    type="password"
+                    autocomplete="current-password"
+                    required
+                  ></label><div class="admin-actions">
+                    <button
+                      type="button"
+                      class="web-button"
+                      :disabled="locked"
+                      @click="archive = null"
+                    >
+                      Отмена
+                    </button><button
+                      class="web-button web-button-danger"
+                      :disabled="busy || childLocked"
+                    >
+                      Подтвердить архивацию
+                    </button>
+                  </div>
+                </form>
+              </template>
+            </div>
+          </section>
         </template>
       </UserRegistryTable><p
         v-else-if="page"
@@ -770,7 +906,10 @@ useWebLiveRefresh(
       >
         Пользователи не найдены. Измени поиск или фильтры.
       </p>
-      <div v-if="page" class="admin-pager">
+      <div
+        v-if="page"
+        class="admin-pager"
+      >
         <div class="admin-actions">
           <button
             class="web-button"

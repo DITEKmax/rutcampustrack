@@ -2,6 +2,9 @@
 import { useWebLiveRefresh } from '../../app/live';
 import { computed, onMounted, ref, shallowRef } from 'vue';
 import { onBeforeRouteLeave } from 'vue-router';
+import WebDateField from '../../shared/WebDateField.vue';
+import WebSelect from '../../shared/WebSelect.vue';
+import { academicToday } from '../../../../mobile-core/src/features/attendance/attendance-periods';
 import {
   AdminSemesterClient,
   AdminSemesterApiError,
@@ -24,6 +27,7 @@ const selected = shallowRef<AdminSemester | null>(null);
 const editing = ref(false),
   dateFrom = ref(''),
   dateTo = ref(''),
+  overlapError = ref(''),
   semesterType = ref<AdminSemesterType>('AUTUMN'),
   academicYear = ref(new Date().getFullYear());
 const name = computed(
@@ -156,12 +160,14 @@ function edit(semester?: AdminSemester) {
   editing.value = true;
   dateFrom.value = semester?.dateFrom ?? '';
   dateTo.value = semester?.dateTo ?? '';
+  overlapError.value = '';
   semesterType.value = semester?.semesterType ?? 'AUTUMN';
   academicYear.value = semester?.academicYear ?? new Date().getFullYear();
   deletionPreview.value = null;
 }
 async function save() {
   await admin.run(async () => {
+    overlapError.value = '';
     const overlap = await client.checkOverlap(
       dateFrom.value,
       dateTo.value,
@@ -169,10 +175,10 @@ async function save() {
       admin.signal,
     );
     admin.assertCurrent();
-    if (overlap.overlaps)
-      throw new Error(
-        `Даты пересекаются с семестром «${overlap.conflictingName ?? 'без названия'}».`,
-      );
+    if (overlap.overlaps) {
+      overlapError.value = `Даты пересекаются с семестром «${overlap.conflictingName ?? 'без названия'}».`;
+      return;
+    }
     const input = {
       name: name.value,
       dateFrom: dateFrom.value,
@@ -491,10 +497,18 @@ useWebLiveRefresh(
       :notice="notice"
       @retry="admin.run(load)"
     />
-    <label
+    <div
       v-if="admin.can('SEMESTERS_VIEW')"
-      class="web-field"
-    >Показывать<select v-model="filter"><option value="ALL">Все семестры</option><option value="CURRENT">Текущие</option><option value="ARCHIVED">Архивные</option></select></label>
+      class="admin-toolbar"
+    >
+      <WebSelect
+        v-model="filter"
+        class="admin-compact-field"
+        label="Показывать"
+        :options="[{ value: 'ALL', label: 'Все семестры' }, { value: 'CURRENT', label: 'Текущие' }, { value: 'ARCHIVED', label: 'Архивные' }]"
+        :disabled="locked"
+      />
+    </div>
     <div
       v-if="visible.length && admin.can('SEMESTERS_VIEW')"
       class="admin-table-wrap"
@@ -573,27 +587,55 @@ useWebLiveRefresh(
           class="admin-form-grid"
           :disabled="locked"
         >
-          <legend class="web-sr-only">
-            Параметры семестра
-          </legend><label class="web-field">Тип<select v-model="semesterType"><option value="AUTUMN">Осенний</option><option value="SPRING">Весенний</option></select></label><label class="web-field">Первый год учебного года<input
+          <legend>Название семестра</legend>
+          <WebSelect
+            v-model="semesterType"
+            label="Тип"
+            :options="[{ value: 'AUTUMN', label: 'Осенний' }, { value: 'SPRING', label: 'Весенний' }]"
+            :disabled="locked"
+          />
+          <label class="web-field">Первый год учебного года<input
             v-model.number="academicYear"
             type="number"
             min="1"
             max="9998"
             required
-          ></label><label class="web-field">Начало<input
+          ></label>
+        </fieldset>
+        <fieldset
+          class="admin-form-grid"
+          :disabled="locked"
+          :aria-describedby="overlapError ? 'admin-semester-overlap' : undefined"
+          @input="overlapError = ''"
+        >
+          <legend>Даты семестра</legend>
+          <WebDateField
             v-model="dateFrom"
-            type="date"
+            label="Начало"
+            :today="academicToday()"
             required
-            :disabled="selected?.archived"
-          ></label><label class="web-field">Конец<input
+            :disabled="locked || !!selected?.archived"
+            @change="overlapError = ''"
+          />
+          <WebDateField
             v-model="dateTo"
-            type="date"
+            label="Конец"
+            :today="academicToday()"
             required
             :min="dateFrom"
-            :disabled="selected?.archived"
-          ></label>
-        </fieldset><p
+            :disabled="locked || !!selected?.archived"
+            @change="overlapError = ''"
+          />
+        </fieldset>
+        <p
+          v-if="overlapError"
+          id="admin-semester-overlap"
+          class="admin-field-error"
+          role="alert"
+        >
+          {{ overlapError }}
+        </p>
+        <p
           v-if="selected?.archived"
           class="web-caption"
         >

@@ -15,6 +15,7 @@ import {
   readUserRegistryQuery,
   userRegistryLocation,
   userRegistryExportSelector,
+  type UserRegistryFilters,
 } from './user-registry-query';
 import AdminState from './AdminState.vue';
 import UserRegistryTable from './UserRegistryTable.vue';
@@ -32,7 +33,12 @@ const group = shallowRef<AdminGroup | null>(null),
 const initial = readUserRegistryQuery(route.query);
 const filters = ref(initial.filters);
 const applied = shallowRef(initial.filters);
-const exportSelector = computed(() => userRegistryExportSelector(applied.value));
+const loadedFilters = shallowRef<UserRegistryFilters | null>(null);
+const reportConfirmed = ref(false);
+const exportSelector = computed(() => userRegistryExportSelector(loadedFilters.value ?? applied.value));
+const reportMatches = computed(() =>
+  reportConfirmed.value && !!page.value && JSON.stringify(loadedFilters.value) === JSON.stringify(applied.value),
+);
 let navigating = false,
   revision = 0;
 function targetId() {
@@ -41,22 +47,41 @@ function targetId() {
     throw new Error('Некорректная ссылка на группу.');
   return Number(value);
 }
+function clearReport() {
+  group.value = null;
+  page.value = null;
+  loadedFilters.value = null;
+}
 async function load(number = 0, resolve = false) {
-  const own = ++revision,
+  reportConfirmed.value = false;
+  const own = ++revision;
+  let id: number;
+  try {
     id = targetId();
+  } catch (cause) {
+    clearReport();
+    throw cause;
+  }
   if (resolve || group.value?.id !== id) {
-    group.value = null;
-    page.value = null;
+    if (group.value?.id !== id) clearReport();
     const value = await groups.resolveNotificationGroup(id);
     admin.assertCurrent();
     if (own !== revision) return;
-    if (!value || value.id !== id) throw new Error('Группа не найдена в доступном реестре.');
+    if (!value || value.id !== id) {
+      clearReport();
+      throw new Error('Группа не найдена в доступном реестре.');
+    }
     group.value = value;
   }
-  applied.value = { ...applied.value, groupId: id };
-  const value = await users.listUsers({ ...applied.value, page: number, size: 30 }, admin.signal);
+  const requested = { ...applied.value, groupId: id };
+  applied.value = requested;
+  const value = await users.listUsers({ ...requested, page: number, size: 30 }, admin.signal);
   admin.assertCurrent();
-  if (own === revision) page.value = value;
+  if (own === revision) {
+    page.value = value;
+    loadedFilters.value = requested;
+    reportConfirmed.value = true;
+  }
 }
 async function navigate(number = 0) {
   if (busy.value) return;
@@ -125,7 +150,7 @@ useWebLiveRefresh(() => admin.refresh(refresh), { blocked: busy });
         </p>
       </div><RouterLink
         class="web-button"
-        to="/admin/groups"
+        :to="{ path: '/admin/groups', query: group ? { groupId: String(group.id), status: group.status } : {} }"
       >
         К группам
       </RouterLink>
@@ -138,22 +163,11 @@ useWebLiveRefresh(() => admin.refresh(refresh), { blocked: busy });
       @retry="admin.run(refresh)"
     />
     <template v-if="group && admin.can('USERS_VIEW') && admin.can('GROUPS_VIEW')">
-      <p class="web-caption">
-        {{
-          group.status === 'ARCHIVED'
-            ? 'Архивная'
-            : group.status === 'DRAFT'
-              ? 'Черновая'
-              : 'Активная'
-        }}
-        группа · {{ page?.totalElements ?? '…' }} учётных записей по фильтрам. Просмотр без
-        изменения прав.
-      </p>
       <form
         class="admin-toolbar"
         @submit.prevent="navigate()"
       >
-        <label class="web-field">Поиск<input
+        <label class="web-field admin-search">Поиск<input
           v-model="filters.search"
           type="search"
           placeholder="ФИО или логин"
@@ -185,38 +199,60 @@ useWebLiveRefresh(() => admin.refresh(refresh), { blocked: busy });
           Найти
         </button>
       </form>
-      <template v-if="page">
-        <UserRegistryTable
-          v-if="page.items.length"
-          :items="page.items"
-          read-only
-        /><p
-          v-else
+      <section class="admin-panel">
+        <h2>Связи группы</h2>
+        <p class="web-caption">
+          {{ group.status === 'ARCHIVED' ? 'Архивная' : group.status === 'DRAFT' ? 'Черновая' : 'Активная' }}
+          группа. Просмотр без изменения прав.
+        </p>
+        <p
+          v-if="page && !reportMatches"
+          class="web-caption"
           role="status"
         >
-          Для выбранных фильтров нет сохранённых связей.
+          Показан последний успешно загруженный результат.
         </p>
-        <div class="admin-pager">
-          <div class="admin-actions">
-            <button
-              class="web-button"
-              :disabled="busy || page.number === 0"
-              @click="navigate(page!.number - 1)"
-            >
-              Назад
-            </button><span v-if="page.totalPages">{{ page.number + 1 }} / {{ page.totalPages }}</span><button
-              class="web-button"
-              :disabled="busy || page.number + 1 >= page.totalPages"
-              @click="navigate(page!.number + 1)"
-            >
-              Дальше
-            </button>
-          </div><ExportControl
-            kind="users"
-            :selector="exportSelector"
-          />
-        </div>
-      </template>
+        <template v-if="page">
+          <UserRegistryTable
+            v-if="page.items.length"
+            :items="page.items"
+            read-only
+          /><p
+            v-else
+            role="status"
+          >
+            Для выбранных фильтров нет сохранённых связей.
+          </p>
+          <div class="admin-pager">
+            <div class="admin-actions">
+              <button
+                class="web-button"
+                :disabled="busy || page.number === 0"
+                @click="navigate(page!.number - 1)"
+              >
+                Назад
+              </button><span v-if="page.totalPages">{{ page.number + 1 }} / {{ page.totalPages }}</span><button
+                class="web-button"
+                :disabled="busy || page.number + 1 >= page.totalPages"
+                @click="navigate(page!.number + 1)"
+              >
+                Дальше
+              </button>
+            </div>
+          </div>
+        </template>
+      </section>
     </template>
+    <section
+      v-if="admin.can('USERS_VIEW') && admin.can('GROUPS_VIEW')"
+      class="admin-panel"
+    >
+      <h2>Выгрузка связей</h2>
+      <ExportControl
+        kind="users"
+        :selector="exportSelector"
+        :disabled="busy || !group || !reportMatches"
+      />
+    </section>
   </section>
 </template>

@@ -34,8 +34,13 @@ class HostNode {
   getRootNode() { return document }
   matches() { return false }
   setCustomValidity(message: string) { this.props.validationMessage = message }
-  querySelector(selector: string) { return nodes(this).find(n => n.tag === selector) ?? null }
+  querySelector(selector: string) {
+    const group = /^\[data-teacher-group="(\d+)"\]$/.exec(selector)
+    return nodes(this).find(n => group ? String(n.props['data-teacher-group']) === group[1] : n.tag === selector) ?? null
+  }
   focus() {
+    const previous = document.activeElement
+    if (previous && previous !== this) (previous.props.onBlur as (() => void) | undefined)?.()
     document.activeElement = this
     this.focusIn()
   }
@@ -122,6 +127,7 @@ async function mounted(screen: 'stats' | 'journal' = 'stats', journalPages = 1) 
   const journalQueries: URLSearchParams[] = []
   const statsQueries: URLSearchParams[] = []
   const journalHolds = new Map<number, Promise<void>>()
+  const journalPageMetadata = new Map<number, { pageSize: number; totalLessons: number }>()
   vi.stubGlobal('fetch', async (input: RequestInfo | URL, init?: RequestInit) => {
     const url = new URL(String(input), 'http://fixture.test')
     if (url.pathname.endsWith('/login')) return Response.json({ accessToken: 'synthetic-bearer' })
@@ -155,6 +161,7 @@ async function mounted(screen: 'stats' | 'journal' = 'stats', journalPages = 1) 
         lessons: Array.from({ length: size }, (_, index) => ({ id: String(300 + page * size + index), groupId: '10', groupName: 'Контрольная группа', subjectId: '100', subjectName: 'Предмет контроля', semesterId: '1', lessonType: 'lecture', date: '2026-10-20', lessonNumber: index + 1, status: 'CLOSED', oneOff: false, moved: false, cancelled: false })),
         students: [{ studentId: '1000', displayName: projection, cells: [] }],
         serverNow: '2026-10-24T09:00:00Z', page, pageSize: 30, totalLessons: size * journalPages, hasMore: page + 1 < journalPages,
+        ...journalPageMetadata.get(page),
       })
     }
     if (url.pathname === '/api/auth/export-jobs') {
@@ -197,6 +204,10 @@ async function mounted(screen: 'stats' | 'journal' = 'stats', journalPages = 1) 
     holdStats: () => { let release!: () => void; statsHold = new Promise<void>(resolve => { release = resolve }); return () => { statsHold = null; release() } },
     holdExport: () => { let release!: () => void; exportHold = new Promise<void>(resolve => { release = resolve }); return () => { exportHold = null; release() } },
     holdJournalPage: (page: number) => { let release!: () => void; journalHolds.set(page, new Promise<void>(resolve => { release = resolve })); return () => { journalHolds.delete(page); release() } },
+    driftJournalPage: (page: number, metadata: { pageSize: number; totalLessons: number }) => {
+      journalPageMetadata.set(page, metadata)
+      return () => journalPageMetadata.delete(page)
+    },
   }
 }
 
@@ -342,6 +353,24 @@ describe('teacher live reads while a mounted filter is focused', () => {
     expect(f.statsQueries.at(-1)?.getAll('sort')).toEqual(['absent'])
   })
 
+  it('moves focus during a slow group drill and leaves it with the user after returning', async () => {
+    const f = await mounted()
+    click(f.root, 'По моим группам'); await settle()
+    const finishDrill = f.holdStats()
+    click(f.root, 'Открыть студентов группы Удаляемая группа'); await settle()
+    expect(document.activeElement?.tag).toBe('h2')
+    expect(text(document.activeElement!)).toContain('Студенты группы')
+    finishDrill(); await settle()
+    const finishReturn = f.holdStats()
+    click(f.root, 'Вернуться к моим группам'); await settle()
+    const groupTab = document.activeElement!
+    expect(text(groupTab).trim()).toBe('По моим группам')
+    nodes(f.root).find(n => n.tag === 'input' && n.props.type === 'search')!.focus()
+    groupTab.focus()
+    finishReturn(); await settle()
+    expect(document.activeElement).toBe(groupTab)
+  })
+
   it('ignores a late background roster after its admitted session retires', async () => {
     const f = await mounted(), field = await f.openDraft(), release = f.holdStats()
     f.projection('Поздний приватный ответ'); f.changed(); await settle()
@@ -372,5 +401,20 @@ describe('teacher live reads while a mounted filter is focused', () => {
     expect(document.activeElement).toBe(link)
     click(f.root, 'Загрузить ещё пары'); await settle()
     expect(lessonLinks()).toHaveLength(90)
+  })
+
+  it('does not merge a drifting next page or start a fresh export before the journal reloads', async () => {
+    const f = await mounted('journal', 3)
+    const clearDrift = f.driftJournalPage(1, { pageSize: 30, totalLessons: 91 })
+    click(f.root, 'Загрузить ещё пары'); await settle()
+    expect(text(f.root)).toContain('Список пар изменился.')
+    expect(nodes(f.root).filter(n => n.tag === 'a' && /^\/teacher\/lessons\/\d+$/.test(String(n.props.href)))).toHaveLength(30)
+    const exportButton = () => nodes(f.root).find(n => n.tag === 'button' && text(n).trim() === 'Экспортировать')!
+    expect(exportButton().props.disabled).toBe(true)
+    const releaseCatalog = f.holdCatalog()
+    click(f.root, 'Повторить'); await settle()
+    expect(exportButton().props.disabled).toBe(true)
+    clearDrift(); releaseCatalog(); await settle()
+    expect(exportButton().props.disabled).toBe(false)
   })
 })

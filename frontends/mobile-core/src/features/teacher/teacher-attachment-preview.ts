@@ -53,6 +53,8 @@ export class TeacherAttachmentPreview {
     private readonly owner: () => TeacherAttachmentOwner,
     private readonly publish: (state: TeacherAttachmentState) => void,
     private readonly urls: ObjectUrls = URL,
+    private readonly formatError = (cause: unknown) =>
+      cause instanceof Error ? cause.message : 'Не удалось получить файл.',
   ) {}
   private set(state: TeacherAttachmentState): void {
     this.state = state
@@ -103,7 +105,7 @@ export class TeacherAttachmentPreview {
       Math.min(remaining, 2_147_483_647),
     )
   }
-  async load(): Promise<void> {
+  async load(signal?: AbortSignal): Promise<void> {
     const owner = this.owner()
     const run = ++this.revision
     this.release()
@@ -133,12 +135,14 @@ export class TeacherAttachmentPreview {
     }
     this.set({ status: 'loading', url: null, mime: null, error: null })
     try {
+      const options: [options?: Pick<RequestInit, 'signal'>] = signal ? [{ signal }] : []
       const blob = owner.requestId
-        ? await owner.api.downloadAttachment(owner.requestId, owner.attachment.id)
+        ? await owner.api.downloadAttachment(owner.requestId, owner.attachment.id, ...options)
         : await owner.api.downloadManualExcuseAttachment!(
             owner.lessonId!,
             owner.studentId!,
             owner.attachment.id,
+            ...options,
           )
       if (!this.current(run, owner)) return
       if (expired(owner)) {
@@ -171,7 +175,7 @@ export class TeacherAttachmentPreview {
         this.set(idle())
         return
       }
-      this.fail(cause instanceof Error ? cause.message : 'Не удалось получить файл.')
+      this.fail(this.formatError(cause))
     }
   }
   openUrl(): string | null {

@@ -139,7 +139,7 @@ function load(background = false) {
     return;
   }
   void journal.load(async () => {
-    const data = retain ? await pagination.refreshWindow(requested) : await scope.api.journal(requested);
+    const data = retain ? await pagination.refreshWindow(requested) : await pagination.firstPage(requested);
     scope.transport.assertCurrent();
     if (run === loadRevision && scope.current()) loadedQuery.value = requested;
     return data;
@@ -185,7 +185,8 @@ const exportRequest = computed(() =>
   !scope.loading.value &&
   !journal.loading.value &&
   !pagination.loading.value &&
-  !pagination.refreshing.value
+  !pagination.refreshing.value &&
+  !pagination.reloadRequired.value
     ? (format: Parameters<typeof toTeacherJournalReportRequest>[1]) =>
         toTeacherJournalReportRequest(loadedQuery.value!, format)
     : null,

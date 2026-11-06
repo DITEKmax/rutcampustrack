@@ -605,9 +605,12 @@ export class TeacherApi {
     return createTeacherStatsQueryParams(query)
   }
 
-  excuse(requestId: string): Promise<TeacherExcuseResponse> {
+  excuse(
+    requestId: string,
+    options?: Pick<RequestInit, 'cache' | 'signal'>,
+  ): Promise<TeacherExcuseResponse> {
     assertText(requestId, 'requestId')
-    return this.request<unknown>(`/api/v1/teacher/excuses/${encodeURIComponent(requestId)}`).then(
+    return this.request<unknown>(`/api/v1/teacher/excuses/${encodeURIComponent(requestId)}`, options).then(
       normalizeExcuse,
     )
   }
@@ -616,13 +619,14 @@ export class TeacherApi {
     lessonId: number,
     studentId: number,
     attachmentId: string,
+    options?: Pick<RequestInit, 'signal'>,
   ): Promise<Blob> {
     assertPositiveInteger(lessonId, 'lessonId')
     assertPositiveInteger(studentId, 'studentId')
     assertText(attachmentId, 'attachmentId')
     const response = await this.response(
       `/api/v1/teacher/lessons/${lessonId}/students/${studentId}/excuse/attachments/${encodeURIComponent(attachmentId)}`,
-      { cache: 'no-store', headers: { Accept: 'application/octet-stream' } },
+      { ...options, cache: 'no-store', headers: { Accept: 'application/octet-stream' } },
     )
     if (!response.ok) {
       const cause = await this.apiError(response)
@@ -639,12 +643,16 @@ export class TeacherApi {
     return blob
   }
 
-  async downloadAttachment(requestId: string, attachmentId: string): Promise<Blob> {
+  async downloadAttachment(
+    requestId: string,
+    attachmentId: string,
+    options?: Pick<RequestInit, 'signal'>,
+  ): Promise<Blob> {
     assertText(requestId, 'requestId')
     assertText(attachmentId, 'attachmentId')
     const response = await this.response(
       `/api/v1/teacher/excuses/${encodeURIComponent(requestId)}/attachments/${encodeURIComponent(attachmentId)}`,
-      { headers: { Accept: 'application/octet-stream' } },
+      { ...options, cache: 'no-store', headers: { Accept: 'application/octet-stream' } },
     )
     if (!response.ok) throw await this.apiError(response)
     const blob = await response.blob()

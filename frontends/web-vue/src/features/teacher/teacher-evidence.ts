@@ -1,4 +1,5 @@
 import type {
+  TeacherApi,
   TeacherExcuseResponse,
   TeacherRosterEntry,
 } from '../../../../mobile-core/src/features/teacher/teacher-client'
@@ -44,4 +45,31 @@ export function teacherAttachmentKey(attachment: TeacherPreviewAttachment) {
     attachment.id, attachment.fileName, attachment.contentType, attachment.size,
     attachment.uploadedAt, attachment.expiresAt,
   ])
+}
+
+/** The ticket download route can also be reached from other lessons on the same ticket. */
+export async function verifyTeacherAttachment(
+  api: Pick<TeacherApi, 'lesson' | 'excuse'>,
+  source: TeacherEvidenceSource,
+  attachment: TeacherPreviewAttachment,
+  signal: AbortSignal,
+) {
+  const options = { cache: 'no-store', signal } as const
+  const [lesson, request] = await Promise.all([
+    api.lesson(source.lessonId, options),
+    'ticketId' in source ? api.excuse(source.ticketId, options) : null,
+  ])
+  const row = lesson.roster.find(entry => entry.studentId === source.studentId)
+  let file: TeacherPreviewAttachment | null = null
+  if (lesson.lesson.id === source.lessonId && row) {
+    if ('ticketId' in source) {
+      if (row.ticketId === source.ticketId && request && matchesTeacherRequest(source, request)) {
+        file = request.attachments.find(entry => entry.id === attachment.id) ?? null
+      }
+    } else if (!lesson.lesson.cancelled) {
+      file = manualAttachment(row)
+    }
+  }
+  if (!file || teacherAttachmentKey(file) !== teacherAttachmentKey(attachment))
+    throw new Error('Документ больше недоступен для этой отметки.')
 }

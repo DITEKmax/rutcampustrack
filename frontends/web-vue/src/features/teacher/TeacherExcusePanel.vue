@@ -11,6 +11,7 @@ import { shortDate, useTeacherResource, type TeacherScope } from './teacher-stat
 import TeacherNotice from './TeacherNotice.vue';
 import TeacherAttachment from './TeacherAttachment.vue';
 import { formatRequestDate, requestTime } from '../../../../mobile-core/src/features/requests/state';
+import { useWebLiveRefresh } from '../../app/live';
 import {
   manualAttachment,
   matchesTeacherRequest,
@@ -28,6 +29,10 @@ defineEmits<{ close: [] }>();
 const excuse = useTeacherResource<TeacherExcuseResponse>(props.scope);
 const heading = ref<HTMLElement | null>(null);
 const panel = ref<HTMLElement | null>(null);
+const evidenceRevision = ref(0);
+const proofRevision = () => evidenceRevision.value;
+// Signal each invalidation immediately, even if a page admission read is already waiting.
+useWebLiveRefresh(() => { evidenceRevision.value++; });
 const statusLabels: Record<string, string> = {
   APPROVED: 'Подтверждена',
   REJECTED: 'Отклонена',
@@ -50,7 +55,7 @@ function load(background = false) {
   const source = props.source;
   if (!('ticketId' in source)) return;
   void excuse.load(async () => {
-    const data = await props.scope.api.excuse(source.ticketId);
+    const data = await props.scope.api.excuse(source.ticketId, { cache: 'no-store' });
     if (!matchesTeacherRequest(source, data)) throw new Error('Заявка для этой пары недоступна.');
     return data;
   }, undefined, background === true && !excuse.error.value);
@@ -105,6 +110,7 @@ onBeforeUnmount(() => {
         :key="teacherAttachmentKey(attachment)"
         :scope="scope"
         :source="source"
+        :proof-revision="proofRevision"
         :attachment="attachment"
       />
       <p
@@ -174,6 +180,7 @@ onBeforeUnmount(() => {
         :key="teacherAttachmentKey(file)"
         :scope="scope"
         :source="source"
+        :proof-revision="proofRevision"
         :attachment="file"
       />
       <p

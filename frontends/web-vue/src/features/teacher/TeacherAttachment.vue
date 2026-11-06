@@ -5,8 +5,9 @@ import {
   type TeacherAttachmentState,
   type TeacherPreviewAttachment,
 } from '../../../../mobile-core/src/features/teacher/teacher-attachment-preview';
+import { TeacherApiError } from '../../../../mobile-core/src/features/teacher/teacher-client';
 import { teacherError, type TeacherScope } from './teacher-state';
-import { manualAttachment, teacherAttachmentKey, type TeacherEvidenceSource } from './teacher-evidence';
+import { verifyTeacherAttachment, type TeacherEvidenceSource } from './teacher-evidence';
 import SvgIcon from '../../../../shared/foundation/SvgIcon.vue';
 import documentIcon from './document.svg';
 
@@ -14,6 +15,7 @@ const props = defineProps<{
   scope: TeacherScope;
   source: TeacherEvidenceSource;
   attachment: TeacherPreviewAttachment;
+  proofRevision: () => number;
 }>();
 const AttachmentPdfPreview = defineAsyncComponent(
   () => import('../../../../mobile-core/src/shared/components/AttachmentPdfPreview.vue'),
@@ -24,13 +26,22 @@ const state = shallowRef<TeacherAttachmentState>({
   mime: null,
   error: null,
 });
-const suspended = ref(false);
+const checking = ref(false);
+const hidden = ref(document.visibilityState === 'hidden');
 const verifyError = ref('');
 const manual = !('ticketId' in props.source);
 const verificationInterval = 15_000;
 const verificationDeadline = 8_000;
 let timer: ReturnType<typeof setTimeout> | undefined;
-let verification: AbortController | null = null;
+let operation: AbortController | null = null;
+function attachmentError(cause: unknown) {
+  if (cause instanceof TeacherApiError && cause.response.status !== 410) {
+    if (cause.message !== `HTTP ${cause.response.status}`) return cause.message;
+    if (cause.response.status >= 500) return 'Не удалось получить файл. Повтори попытку.';
+    if (![403, 404].includes(cause.response.status)) return 'Файл недоступен. Повтори попытку.';
+  }
+  return teacherError(cause);
+}
 function createPreview() {
   return new TeacherAttachmentPreview(
     () => ({
@@ -43,12 +54,15 @@ function createPreview() {
     (value) => {
       if (props.scope.current()) state.value = value;
     },
+    URL,
+    attachmentError,
   );
 }
 let preview = createPreview();
 const expired = computed(
   () =>
     state.value.error === 'Срок хранения файла истёк.' ||
+    verifyError.value === 'Срок хранения файла истёк.' ||
     (props.attachment.expiresAt !== null &&
       (Date.parse(props.attachment.expiresAt) <= Date.now() ||
         (!manual && !Number.isFinite(Date.parse(props.attachment.expiresAt))))),
@@ -56,93 +70,112 @@ const expired = computed(
 const error = computed(() => verifyError.value || state.value.error);
 const unavailable = computed(() => manual &&
   (props.attachment.expiresAt === null || !Number.isFinite(Date.parse(props.attachment.expiresAt))));
-const busy = computed(() => suspended.value || state.value.status === 'loading');
+const blocked = computed(() => checking.value || hidden.value);
+const busy = computed(() => blocked.value || state.value.status === 'loading');
+function stopOperation() {
+  const previous = operation;
+  operation = null;
+  previous?.abort();
+}
+function resetPreview() {
+  preview.dispose();
+  preview = createPreview();
+}
 function scheduleVerification() {
   clearTimeout(timer);
-  if (manual && state.value.status === 'ready' && !suspended.value && !verification &&
-      document.visibilityState !== 'hidden')
-    timer = setTimeout(() => void verifyManual(), verificationInterval);
+  if (state.value.status === 'ready' && !hidden.value && !operation)
+    timer = setTimeout(() => void refreshProof(false), verificationInterval);
 }
-// The exact binary endpoint admits the first preview. Keep a manual proof only
-// while the current roster still links that same descriptor to this pair and student.
-async function verifyManual() {
-  if (!manual || !props.scope.current() || state.value.status !== 'ready' || verification) return;
-  const { lessonId, studentId } = props.source;
-  const controller = new AbortController();
-  verification = controller;
-  const expected = teacherAttachmentKey(props.attachment);
+async function checkSource(controller: AbortController) {
   const deadline = setTimeout(
     () => controller.abort(new Error('Не удалось проверить доступ к документу вовремя.')),
     verificationDeadline,
   );
+  const { signal } = controller;
+  let onAbort = () => {};
   try {
-    const { signal } = controller;
-    const aborted = new Promise<never>((_, reject) =>
-      signal.addEventListener('abort', () => reject(signal.reason), { once: true }));
-    const data = await Promise.race([props.scope.api.lesson(lessonId, { cache: 'no-store', signal }), aborted]);
-    if (verification !== controller || !props.scope.current()) return;
-    const row = data.roster.find(entry => entry.studentId === studentId);
-    const file = row && manualAttachment(row);
-    if (data.lesson.id !== lessonId || data.lesson.cancelled || !file || teacherAttachmentKey(file) !== expected)
-      throw new Error('Документ больше недоступен для этой отметки.');
-  } catch (cause) {
-    if (verification !== controller || !props.scope.current()) return;
-    preview.dispose();
-    preview = createPreview();
-    verifyError.value = teacherError(cause);
+    signal.throwIfAborted();
+    // Race the signal as session recovery may still be waiting after the fetch is aborted.
+    const aborted = new Promise<never>((_, reject) => {
+      onAbort = () => reject(signal.reason);
+      signal.addEventListener('abort', onAbort, { once: true });
+    });
+    await Promise.race([
+      verifyTeacherAttachment(props.scope.api, props.source, props.attachment, signal),
+      aborted,
+    ]);
   } finally {
     clearTimeout(deadline);
-    if (verification === controller) {
-      verification = null;
-      suspended.value = false;
+    signal.removeEventListener('abort', onAbort);
+  }
+}
+async function refreshProof(loadFile: boolean) {
+  if (!props.scope.current() || hidden.value || expired.value || unavailable.value) return;
+  checking.value = true;
+  clearTimeout(timer);
+  stopOperation();
+  if (state.value.status === 'loading') resetPreview();
+  const controller = new AbortController();
+  operation = controller;
+  const current = () => operation === controller && props.scope.current() && !hidden.value;
+  verifyError.value = '';
+  try {
+    // A ticket's binary route can admit another lesson on the same request.
+    // Manual bytes already have an exact lesson and student check at the binary route.
+    if (!loadFile || !manual) await checkSource(controller);
+    if (!current() || !loadFile) return;
+    await preview.load(controller.signal);
+    if (current() && !manual && state.value.status === 'ready') await checkSource(controller);
+  } catch (cause) {
+    if (!current() || expired.value) return;
+    resetPreview();
+    verifyError.value = attachmentError(cause);
+  } finally {
+    if (operation === controller) {
+      stopOperation();
+      checking.value = false;
       scheduleVerification();
     }
   }
 }
-function visibilityChanged() {
-  if (document.visibilityState === 'hidden') {
-    clearTimeout(timer);
-    suspended.value = state.value.status === 'ready' || state.value.status === 'loading';
-    const previous = verification;
-    verification = null;
-    previous?.abort();
-  } else if (suspended.value && state.value.status === 'ready') {
-    void verifyManual();
-  } else {
-    suspended.value = false;
-    scheduleVerification();
-  }
+function invalidateProof() {
+  if (state.value.status === 'ready') void refreshProof(false);
+  else if (operation) void refreshProof(true);
 }
-watch(() => state.value.status, scheduleVerification);
-onMounted(() => {
-  if (manual) document.addEventListener('visibilitychange', visibilityChanged);
-});
+function visibilityChanged() {
+  hidden.value = document.visibilityState === 'hidden';
+  if (hidden.value) {
+    clearTimeout(timer);
+    stopOperation();
+    if (state.value.status === 'loading') resetPreview();
+    checking.value = false;
+  } else invalidateProof();
+}
+watch(props.proofRevision, invalidateProof, { flush: 'sync' });
+onMounted(() => document.addEventListener('visibilitychange', visibilityChanged));
 function show() {
   if (busy.value || expired.value || unavailable.value) return;
   if (state.value.url) {
     open();
     return;
   }
-  verifyError.value = '';
-  void preview.load();
+  void refreshProof(true);
 }
 function open() {
-  if (!props.scope.current() || suspended.value) return;
+  if (!props.scope.current() || blocked.value) return;
   const url = preview.openUrl();
   if (url) window.open(url, '_blank', 'noopener,noreferrer');
 }
 function resolveBlob(url: string) {
-  return props.scope.current() && !suspended.value ? preview.openBlob(url) : null;
+  return props.scope.current() && !blocked.value ? preview.openBlob(url) : null;
 }
 function download(event: Event) {
-  if (!props.scope.current() || suspended.value || !preview.openUrl()) event.preventDefault();
+  if (!props.scope.current() || blocked.value || !preview.openUrl()) event.preventDefault();
 }
 onBeforeUnmount(() => {
   clearTimeout(timer);
-  const previous = verification;
-  verification = null;
-  previous?.abort();
-  if (manual) document.removeEventListener('visibilitychange', visibilityChanged);
+  stopOperation();
+  document.removeEventListener('visibilitychange', visibilityChanged);
   preview.dispose();
 });
 </script>
@@ -189,7 +222,7 @@ onBeforeUnmount(() => {
         :aria-disabled="busy"
         @click="show"
       >
-        {{ suspended ? 'Проверяем доступ…' : busy ? 'Загружаем…' : state.url ? 'Открыть в новой вкладке' : error ? 'Повторить загрузку' : 'Показать файл' }}
+        {{ state.status === 'loading' ? 'Загружаем…' : blocked ? 'Проверяем доступ…' : state.url ? 'Открыть в новой вкладке' : error ? 'Повторить загрузку' : 'Показать файл' }}
       </button>
       <a
         v-if="state.url && !busy"

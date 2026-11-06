@@ -3,6 +3,31 @@ import { TeacherApiError, type TeacherJournalQuery, type TeacherJournalResponse 
 import { mergeJournalPage } from '../../../../mobile-core/src/features/teacher/teacher-journal-model'
 import { teacherError, type TeacherScope } from './teacher-state'
 
+class JournalPageDrift extends Error {
+  constructor() {
+    super('Список пар изменился. Обнови журнал, чтобы продолжить.')
+  }
+}
+
+function mergeVerifiedPage(
+  previous: TeacherJournalResponse | null,
+  next: TeacherJournalResponse,
+  page: number,
+  pageSize: number | undefined,
+) {
+  const previousCount = previous?.lessons.length ?? 0
+  const expectedCount = Math.min(next.pageSize, Math.max(0, next.totalLessons - previousCount))
+  const merged = mergeJournalPage(previous, next)
+  if (next.page !== page ||
+      next.pageSize !== (previous?.pageSize ?? pageSize ?? next.pageSize) ||
+      (previous && next.totalLessons !== previous.totalLessons) ||
+      next.lessons.length !== expectedCount ||
+      merged.lessons.length !== previousCount + expectedCount ||
+      next.hasMore !== (merged.lessons.length < next.totalLessons))
+    throw new JournalPageDrift()
+  return merged
+}
+
 /** Append one owned server page when the horizontal journal edge becomes visible. */
 export function useJournalPagination(
   scope: TeacherScope,
@@ -19,10 +44,15 @@ export function useJournalPagination(
   let observer: IntersectionObserver | null = null
   let revision = 0
   let alive = true
-  let reloadRequired = false
+  const reloadRequired = ref(false)
+  let retrying = false
 
-  watch(query, () => { revision++; loading.value = false; refreshing.value = false; error.value = ''; reloadRequired = false }, { flush: 'sync' })
+  watch(query, () => { revision++; loading.value = false; refreshing.value = false; error.value = ''; reloadRequired.value = false }, { flush: 'sync' })
 
+  async function firstPage(requested: TeacherJournalQuery) {
+    const next = await scope.api.journal(requested)
+    return mergeVerifiedPage(null, next, 0, requested.pageSize)
+  }
   /** Replace only a complete refresh of the window already opened under this applied query. */
   async function refreshWindow(requested: TeacherJournalQuery): Promise<TeacherJournalResponse> {
     const lastPage = data.value?.page ?? 0
@@ -31,7 +61,6 @@ export function useJournalPagination(
     refreshing.value = true
     loading.value = false
     error.value = ''
-    reloadRequired = false
     let merged: TeacherJournalResponse | null = null
     try {
       for (let page = 0; page <= lastPage; page++) {
@@ -39,17 +68,13 @@ export function useJournalPagination(
         const next = await scope.api.journal({ ...requested, page, includeMetrics: page === 0 })
         scope.transport.assertCurrent()
         if (!current()) throw new Error('Контекст журнала изменился. Обнови данные.')
-        const combined = mergeJournalPage(merged, next)
-        if (next.page !== page || (merged && next.totalLessons !== merged.totalLessons) ||
-          (next.hasMore && combined.lessons.length <= (merged?.lessons.length ?? 0)) ||
-          (!next.hasMore && combined.lessons.length !== next.totalLessons))
-          throw new Error('Список пар изменился. Обнови журнал, чтобы продолжить.')
-        merged = combined
+        merged = mergeVerifiedPage(merged, next, page, requested.pageSize)
         if (!next.hasMore) break
       }
+      reloadRequired.value = false
       return merged!
     } catch (cause) {
-      if (run === revision) reloadRequired = true
+      if (run === revision) reloadRequired.value = true
       throw cause
     } finally {
       if (run === revision) refreshing.value = false
@@ -58,7 +83,7 @@ export function useJournalPagination(
 
   async function more(retry = false) {
     const requested = query.value, previous = data.value
-    if (!requested || !previous?.hasMore || initialLoading.value || loading.value || refreshing.value || reloadRequired || (error.value && !retry)) return
+    if (!requested || !previous?.hasMore || initialLoading.value || loading.value || refreshing.value || reloadRequired.value || (error.value && !retry)) return
     const run = ++revision
     const current = () => alive && scope.current() && run === revision && query.value === requested && data.value === previous
     loading.value = true
@@ -67,20 +92,16 @@ export function useJournalPagination(
       const next = await scope.api.journal({ ...requested, page: previous.page + 1, includeMetrics: false })
       scope.transport.assertCurrent()
       if (!current()) return
-      const merged = mergeJournalPage(previous, next)
-      if (next.page !== previous.page + 1 || merged.lessons.length <= previous.lessons.length || (!next.hasMore && merged.lessons.length !== next.totalLessons)) {
-        reloadRequired = true
-        throw new Error('Список пар изменился. Обнови журнал, чтобы продолжить.')
-      }
-      data.value = merged
+      data.value = mergeVerifiedPage(previous, next, previous.page + 1, requested.pageSize)
     } catch (cause) {
       if (!current()) return
       error.value = teacherError(cause)
+      if (cause instanceof JournalPageDrift) reloadRequired.value = true
       if (cause instanceof TeacherApiError && [401, 403, 404].includes(cause.response.status)) {
         data.value = null
         query.value = null
         error.value = teacherError(cause)
-        reloadRequired = true
+        reloadRequired.value = true
       }
     } finally {
       if (alive && scope.current() && run === revision) loading.value = false
@@ -90,7 +111,7 @@ export function useJournalPagination(
   watch([region, edge, data, query, loading, refreshing, initialLoading], () => {
     observer?.disconnect()
     observer = null
-    if (!automatic || !region.value || !edge.value || !data.value?.hasMore || !query.value || loading.value || refreshing.value || reloadRequired || initialLoading.value || error.value) return
+    if (!automatic || !region.value || !edge.value || !data.value?.hasMore || !query.value || loading.value || refreshing.value || reloadRequired.value || initialLoading.value || error.value) return
     // IntersectionObserver accepts pixels; derive its eight-rem prefetch distance from the actual root font.
     const margin = Number.parseFloat(getComputedStyle(document.documentElement).fontSize) * 8
     const nextObserver = new IntersectionObserver(entries => {
@@ -101,11 +122,15 @@ export function useJournalPagination(
   }, { flush: 'post' })
   onBeforeUnmount(() => { alive = false; revision++; observer?.disconnect() })
   async function retry() {
-    if (!query.value || reloadRequired) {
-      error.value = ''
-      reloadRequired = false
-      await scope.load()
+    if (!query.value || reloadRequired.value) {
+      if (retrying) return
+      retrying = true
+      try {
+        await scope.load()
+      } finally {
+        retrying = false
+      }
     } else await more(true)
   }
-  return { region, edge, loading, refreshing, error, automatic, more: retry, refreshWindow }
+  return { region, edge, loading, refreshing, error, reloadRequired, automatic, more: retry, firstPage, refreshWindow }
 }

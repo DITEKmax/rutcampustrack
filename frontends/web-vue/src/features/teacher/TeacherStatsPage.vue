@@ -132,14 +132,20 @@ async function load(background = false) {
     return data;
   }, sameContext ? (_old, next) => next : undefined, retain);
 }
+let returnFocusRevision = 0;
+function cancelGroupReturnFocus() {
+  returnFocusRevision++;
+}
 function changeScope(value: TeacherStatsScope) {
   if (kind.value === value && drillGroup.value === null) return;
+  cancelGroupReturnFocus();
   kind.value = value;
   drillGroup.value = null;
   void load();
 }
 async function openGroup(groupId: number) {
   if (kind.value !== 'groups' || !scope.catalog.value?.groups.some(group => group.id === groupId)) return;
+  const transition = ++returnFocusRevision;
   drill.groupId.value = groupId;
   drill.subjectId.value = students.subjectId.value;
   drill.lessonTypes.value = [...groupTypes.value];
@@ -147,17 +153,26 @@ async function openGroup(groupId: number) {
   memory.drill = { sorts: [], filters: [] };
   drillGroup.value = groupId;
   kind.value = 'students';
-  await load();
+  void load();
   await nextTick();
-  if (drillGroup.value === groupId) drillHeading.value?.focus();
+  if (transition === returnFocusRevision && drillGroup.value === groupId) drillHeading.value?.focus();
 }
 async function returnToGroups() {
   const groupId = drillGroup.value;
+  const transition = ++returnFocusRevision;
   drillGroup.value = null;
   kind.value = 'groups';
-  await load();
+  const loading = load();
+  const request = loadRevision;
   await nextTick();
-  if (kind.value === 'groups' && (groupId === null || !statsTable.value?.focusGroup(groupId))) groupsTab.value?.focus();
+  if (transition !== returnFocusRevision || kind.value !== 'groups') return;
+  const tab = groupsTab.value;
+  tab?.focus();
+  await loading;
+  await nextTick();
+  if (groupId !== null && tab && document.activeElement === tab && transition === returnFocusRevision &&
+      kind.value === 'groups' && request === loadRevision)
+    statsTable.value?.focusGroup(groupId);
 }
 function sort(column: string) {
   const sorts = memory[context.value].sorts;
@@ -276,6 +291,7 @@ const exportRequest = computed(() =>
           :class="{ 'web-button-selected': kind === 'groups' }"
           :aria-pressed="kind === 'groups'"
           @click="changeScope('groups')"
+          @blur="cancelGroupReturnFocus"
         >
           По моим группам
         </button>

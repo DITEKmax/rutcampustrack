@@ -7,7 +7,8 @@ from urllib.parse import parse_qs, urlsplit
 import pytest
 
 from bot.grpc_client import attendance_pb2 as pb
-from bot.notifications.presentation import render
+from bot.notifications.presentation import message_options, notification_action, render
+from bot.services.mini_app_links import encode_notification_action
 from bot.services.notification_prefs import type_for_event
 from tests.business_delivery import assert_business_delivery, assert_terminal_cards
 
@@ -108,10 +109,6 @@ async def test_queued_canonical_summary_is_private_after_authority_changes(kind,
 
 
 def test_addressed_action_uses_only_existing_target_and_verified_context():
-
-    from bot.notifications.presentation import message_options, notification_action
-    from bot.services.mini_app_links import encode_notification_action
-
     event = {"event_type": "excuse.requested", "payload": {"ticket_id": "request-1"}}
     action = notification_action(event, role="HEADMAN")
     assert action == {"kind": "request", "role": "HEADMAN", "requestKind": "EXCUSE", "requestId": "request-1"}
@@ -126,3 +123,43 @@ def test_addressed_action_uses_only_existing_target_and_verified_context():
     assert notification_action(
         {"event_type": "homework.due_reminder", "payload": {"homework": {"homework_id": 3}}}
     ) == {"kind": "homework", "role": "STUDENT", "homeworkId": "3"}
+
+
+@pytest.mark.parametrize(
+    "config, start_key",
+    [
+        (SimpleNamespace(mini_app_web_url="https://safe.test/mini-app/"), "tgWebAppStartParam"),
+        (SimpleNamespace(mini_app_url="https://t.me/ruttrack_bot/ruttrack"), "startapp"),
+    ],
+)
+def test_student_lesson_started_button_uses_checkin_wire_format(config, start_key):
+    event = {"event_type": "lesson.started", "payload": {"lesson_id": 77, "date": "2026-10-10"}}
+    options = message_options(event, config=config, role="STUDENT")
+    button = options["reply_markup"].inline_keyboard[0][0]
+    url = button.web_app.url if start_key == "tgWebAppStartParam" else button.url
+    assert button.text == "Открыть отметку"
+    assert button.callback_data is None
+    assert parse_qs(urlsplit(url).query) == {
+        start_key: ["n2_eyJ2IjoyLCJhY3Rpb24iOnsia2luZCI6ImNoZWNraW4iLCJyb2xlIjoiU1RVREVOVCIsImxlc3NvbklkIjoiNzcifX0"]
+    }
+
+
+@pytest.mark.parametrize(
+    "event_type, role",
+    [
+        ("lesson.started", "HEADMAN"),
+        ("lesson.started", "TEACHER"),
+        ("lesson.started", "ADMIN"),
+        ("lesson.reminder", "STUDENT"),
+        ("lesson.closed", "STUDENT"),
+        ("lesson.cancelled", "STUDENT"),
+    ],
+)
+def test_other_lesson_notifications_keep_the_lesson_action(event_type, role):
+    event = {"event_type": event_type, "payload": {"lesson_id": 77, "date": "2026-10-10"}}
+    assert notification_action(event, role=role) == {
+        "kind": "lesson",
+        "role": role,
+        "lessonId": "77",
+        "lessonDate": "2026-10-10",
+    }

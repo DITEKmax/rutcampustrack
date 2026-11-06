@@ -1,4 +1,6 @@
-from bot.services.mini_app_links import build_mini_app_button, build_mini_app_url
+import pytest
+
+from bot.services.mini_app_links import build_mini_app_button, build_mini_app_url, encode_notification_action
 
 
 def test_build_mini_app_url_adds_startapp_for_telegram_deep_link():
@@ -63,8 +65,6 @@ def test_typed_launch_allowlist_roundtrip_and_unsafe_values_rejected():
     import base64
     import json
 
-    from bot.services.mini_app_links import encode_notification_action
-
     action = {"kind": "request", "role": "HEADMAN", "requestKind": "EXCUSE", "requestId": "request-1"}
     encoded = encode_notification_action(action)
     assert encoded is not None and "=" not in encoded and len(encoded) <= 384
@@ -78,3 +78,22 @@ def test_typed_launch_allowlist_roundtrip_and_unsafe_values_rejected():
         is None
     )
     assert encode_notification_action({"kind": "group", "role": "STUDENT", "groupId": "9223372036854775808"}) is None
+
+
+@pytest.mark.parametrize(
+    "fields",
+    [
+        {"role": "HEADMAN"},
+        {"role": "TEACHER"},
+        {"role": "ADMIN"},
+        {"lessonId": 77},
+        {"lessonId": "0"},
+        {"lessonId": "-1"},
+        {"lessonId": "077"},
+        {"lessonId": "9223372036854775808"},
+        {"lessonDate": "2026-10-10"},
+        {"subject": "Теормех"},
+    ],
+)
+def test_checkin_launch_rejects_invalid_role_id_or_extra_fields(fields):
+    assert encode_notification_action({"kind": "checkin", "role": "STUDENT", "lessonId": "77", **fields}) is None

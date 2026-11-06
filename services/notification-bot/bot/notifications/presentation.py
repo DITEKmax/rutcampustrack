@@ -307,6 +307,8 @@ def notification_action(event, *, facts=None, role="STUDENT"):
         return None
     elif notification_type.startswith("GROUP_"):
         action = {"kind": "group", "role": role, "groupId": _positive_id(payload.get("group_id"))}
+    elif notification_type == "LESSON_STARTED" and role == "STUDENT":
+        action = {"kind": "checkin", "role": role, "lessonId": _positive_id(payload.get("lesson_id"))}
     else:
         action = {"kind": "lesson", "role": role, "lessonId": _positive_id(payload.get("lesson_id"))}
     day = payload.get("date") or payload.get("lesson_date")
@@ -323,6 +325,7 @@ def message_options(event, *, config=None, facts=None, fallback_markup=None, rol
     action = notification_action(event, facts=facts, role=role)
     encoded = encode_notification_action(action) if action is not None else None
     labels = {
+        "checkin": "Открыть отметку",
         "lesson": "Открыть занятие",
         "request": "Открыть заявку",
         "homework": "Открыть задание",

@@ -106,6 +106,7 @@ def build_mini_app_button(
 
 
 _ACTION_KEYS = {
+    "checkin": {"kind", "role", "lessonId"},
     "lesson": {"kind", "role", "lessonId", "lessonDate"},
     "request": {"kind", "role", "requestId", "requestKind"},
     "homework": {"kind", "role", "homeworkId", "lessonDate"},
@@ -127,6 +128,8 @@ def encode_notification_action(action: dict) -> str | None:
         return None
     required = _ACTION_KEYS[kind] - {"lessonDate"}
     if not required.issubset(action):
+        return None
+    if kind == "checkin" and action["role"] != "STUDENT":
         return None
     for name in ("lessonId", "homeworkId", "groupId"):
         if name in action and (

@@ -27,8 +27,7 @@ async def test_lesson_started_adds_mini_app_checkin_web_app_url(fake_redis):
         fake_redis,
         "lesson.started",
         extra={"lesson_id": 77},
-        missing_fields=("subject_name", "date", "lesson_date", "semester_id", "lesson_type"),
-        app_action={"kind": "lesson", "role": "STUDENT", "lessonId": "77"},
+        app_action={"kind": "checkin", "role": "STUDENT", "lessonId": "77"},
         expected=("Занятие началось",),
     )
 

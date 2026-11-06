@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { ProfileSnapshot } from '../../auth/session'
 import UsersPage from './UsersPage.vue'
 import GroupsPage from './GroupsPage.vue'
+import GroupHistoryPage from './GroupHistoryPage.vue'
 import {
   AdminUsersClient,
   type AdminUser,
@@ -12,7 +13,12 @@ import {
   AdminGroupsClient,
   type AdminGroup,
 } from '../../../../mobile-core/src/features/admin-groups/admin-groups-client'
-const owner = vi.hoisted(() => ({ retired: false, mode: 'users' }))
+const owner = vi.hoisted(() => ({
+  retired: false,
+  mode: 'users',
+  returnGroupId: undefined as string | undefined,
+  failedAdmission: false,
+}))
 vi.mock('../../app/live', () => ({ useWebLiveRefresh: () => {} }))
 vi.mock('../../auth/session', async () => {
   const { ref, shallowRef } = await import('vue')
@@ -44,7 +50,11 @@ vi.mock('../../auth/session', async () => {
   }
 })
 vi.mock('vue-router', () => ({
-  useRoute: () => ({ query: {}, params: {}, fullPath: '/admin/users' }),
+  useRoute: () => ({
+    query: owner.returnGroupId ? { groupId: owner.returnGroupId, status: 'ARCHIVED' } : {},
+    params: owner.mode === 'history' ? { id: '22' } : {},
+    fullPath: '/admin/users',
+  }),
   useRouter: () => ({ replace: async () => undefined }),
   onBeforeRouteLeave: () => {},
   onBeforeRouteUpdate: () => {},
@@ -54,7 +64,7 @@ vi.mock('./use-admin', async () => {
   const { ref } = await import('vue')
   return {
     bindAdminRecovery: () => {},
-    roleLabels: { STUDENT: 'Студент' },
+    roleLabels: { STUDENT: 'Студент', TEACHER: 'Преподаватель' },
     statusLabels: { ACTIVE: 'Активна' },
     useAdmin: () => {
       const assertCurrent = () => {
@@ -72,14 +82,18 @@ vi.mock('./use-admin', async () => {
         can: (code: string) =>
           (owner.mode === 'users'
             ? ['USERS_VIEW', 'USERS_MANAGE']
-            : ['GROUPS_VIEW', 'GROUPS_MANAGE']
+            : owner.mode === 'history'
+              ? ['GROUPS_VIEW', 'USERS_VIEW']
+              : ['GROUPS_VIEW', 'GROUPS_MANAGE']
           ).includes(code),
         access: {},
         guardUnfinished: () => {},
         run: async (task: () => Promise<void>) => task(),
         refresh: async (task: () => Promise<void>) => task(),
         init: async () => {},
-        requirePermission: async () => {},
+        requirePermission: async () => {
+          if (owner.failedAdmission) throw new Error('Не удалось подтвердить владельца прав.')
+        },
       }
     },
   }
@@ -90,10 +104,20 @@ type PageState = Record<string, unknown> & {
   transferGroupId: Ref<number | undefined>
   transferReason: Ref<string>
   telegramId: Ref<string>
+  firstName: Ref<string>
+  roleToUpdate: Ref<'STUDENT' | 'TEACHER' | 'ADMIN'>
+  roleEmployeeNumber: Ref<string>
+  reportMatches: Ref<boolean>
   name: Ref<string>
   duration: Ref<number>
   resume(): Promise<void>
   open(user: AdminUser): Promise<void>
+  chooseRole(): void
+  load(): Promise<void>
+  loadRegistry(): Promise<void>
+  retry(): Promise<void>
+  apply(): Promise<void>
+  refresh(): Promise<void>
   transfer(): Promise<void>
   updateRole(): Promise<void>
   save(): Promise<void>
@@ -135,6 +159,33 @@ const user: AdminUser = {
     },
   ],
 }
+const registryGroup: AdminGroup = {
+  id: 22,
+  name: 'УИТ-311',
+  trainingDurationYears: 4,
+  status: 'ACTIVE',
+  studentCount: 0,
+  headmanFio: null,
+  alphabeticCode: 'УИТ',
+  numericCode: '311',
+  currentCourse: 3,
+  programTypeDigit: 1,
+  studyMode: 'FULL_TIME',
+  educationLevel: 'BACHELOR',
+  durationStatus: 'KNOWN',
+  draftReason: null,
+  createdAt: null,
+}
+const groupsPage = {
+  items: [registryGroup],
+  number: 0,
+  size: 30,
+  totalElements: 1,
+  totalPages: 1,
+  activeCount: 1,
+  draftCount: 0,
+  archivedCount: 0,
+}
 async function runPage(page: TestPage, run: (state: PageState) => Promise<void>) {
   let state!: PageState
   const app = createSSRApp({
@@ -150,6 +201,8 @@ async function runPage(page: TestPage, run: (state: PageState) => Promise<void>)
 beforeEach(() => {
   owner.retired = false
   owner.mode = 'users'
+  owner.returnGroupId = undefined
+  owner.failedAdmission = false
   const storage = new Map<string, string>()
   vi.stubGlobal('sessionStorage', {
     getItem: (key: string) => storage.get(key) ?? null,
@@ -242,38 +295,90 @@ describe('reviewed ADMIN causal sequences', () => {
     })
     expect(role.mock.calls[0]?.slice(0, 3)).toEqual([existing.id, 'STUDENT', { status: 'ACTIVE', groupId: 1 }])
   })
+  it('uses the number assigned with the teacher role when saving an independent profile edit', async () => {
+    const teacher: AdminUser = {
+      ...user,
+      employeeNumber: 'TN-42',
+      roles: [...user.roles, { ...user.roles[0]!, role: 'TEACHER', groupId: null, groupName: null }],
+    }
+    vi.spyOn(AdminUsersClient.prototype, 'getUser').mockResolvedValue(user)
+    vi.spyOn(AdminUsersClient.prototype, 'listUsers').mockResolvedValue({
+      items: [teacher], number: 0, size: 30, totalElements: 1, totalPages: 1,
+    })
+    const role = vi.spyOn(AdminUsersClient.prototype, 'updateRole').mockResolvedValue(teacher)
+    const profile = vi.spyOn(AdminUsersClient.prototype, 'updateProfile').mockResolvedValue({
+      ...teacher, firstName: 'Елена',
+    })
+    await runPage(compiledPage(UsersPage), async (state) => {
+      await state.open(user)
+      state.firstName.value = 'Елена'
+      state.roleToUpdate.value = 'TEACHER'
+      state.chooseRole()
+      state.roleEmployeeNumber.value = 'TN-42'
+      await state.updateRole()
+      await state.save()
+    })
+    expect(role.mock.calls[0]?.slice(0, 3)).toEqual([
+      user.id, 'TEACHER', { status: 'ACTIVE', employeeNumber: 'TN-42' },
+    ])
+    expect(profile.mock.calls[0]?.slice(0, 2)).toEqual([
+      user.id, { firstName: 'Елена', lastName: user.lastName, middleName: '', employeeNumber: 'TN-42' },
+    ])
+  })
+  it.each(['list', 'target'])('retries the exact history return after a failed %s read', async (failure) => {
+    owner.mode = 'groups'
+    owner.returnGroupId = String(registryGroup.id)
+    const list = vi.spyOn(AdminGroupsClient.prototype, 'listGroups').mockResolvedValue(groupsPage)
+    const target = vi.spyOn(AdminGroupsClient.prototype, 'resolveNotificationGroup').mockResolvedValue(registryGroup)
+    if (failure === 'list') list.mockRejectedValueOnce(new Error('list unavailable'))
+    else target.mockRejectedValueOnce(new Error('target unavailable'))
+    await runPage(compiledPage(GroupsPage), async (state) => {
+      await expect(state.loadRegistry()).rejects.toThrow('unavailable')
+      expect(unref(state.selected)).toBeNull()
+      await state.retry()
+      expect(unref(state.selected)).toEqual(registryGroup)
+    })
+    expect(target.mock.calls.map(([id]) => id)).toEqual(
+      failure === 'list' ? [registryGroup.id] : [registryGroup.id, registryGroup.id],
+    )
+    expect(list.mock.lastCall?.[0]?.status).toBe('ACTIVE')
+  })
+  it('does not reopen the history target after the administrator applies a different group view', async () => {
+    owner.mode = 'groups'
+    owner.returnGroupId = String(registryGroup.id)
+    vi.spyOn(AdminGroupsClient.prototype, 'listGroups').mockResolvedValue(groupsPage)
+    const target = vi.spyOn(AdminGroupsClient.prototype, 'resolveNotificationGroup')
+      .mockRejectedValueOnce(new Error('target unavailable')).mockResolvedValue(registryGroup)
+    await runPage(compiledPage(GroupsPage), async (state) => {
+      await expect(state.loadRegistry()).rejects.toThrow('unavailable')
+      await state.apply()
+      await state.retry()
+      expect(unref(state.selected)).toBeNull()
+    })
+    expect(target).toHaveBeenCalledTimes(1)
+  })
+  it('invalidates the history export when a permission refresh cannot confirm its owner', async () => {
+    owner.mode = 'history'
+    vi.spyOn(AdminGroupsClient.prototype, 'resolveNotificationGroup').mockResolvedValue(registryGroup)
+    const rows = vi.spyOn(AdminUsersClient.prototype, 'listUsers').mockResolvedValue({
+      items: [user], number: 0, size: 30, totalElements: 1, totalPages: 1,
+    })
+    await runPage(compiledPage(GroupHistoryPage), async (state) => {
+      await state.load()
+      expect(unref(state.reportMatches)).toBe(true)
+      owner.failedAdmission = true
+      await expect(state.refresh()).rejects.toThrow('владельца')
+      expect(unref(state.reportMatches)).toBe(false)
+    })
+    expect(rows).toHaveBeenCalledTimes(1)
+  })
   it('archives under the authoritative renamed group object instead of the former code', async () => {
     owner.mode = 'groups'
-    const old: AdminGroup = {
-      id: 22,
-      name: 'УИТ-311',
-      trainingDurationYears: 4,
-      status: 'ACTIVE',
-      studentCount: 0,
-      headmanFio: null,
-      alphabeticCode: 'УИТ',
-      numericCode: '311',
-      currentCourse: 3,
-      programTypeDigit: 1,
-      studyMode: 'FULL_TIME',
-      educationLevel: 'BACHELOR',
-      durationStatus: 'KNOWN',
-      draftReason: null,
-      createdAt: null,
-    }
+    const old = registryGroup
     const confirmed = { ...old, name: 'УИТ-312' }
     vi.spyOn(AdminGroupsClient.prototype, 'renameGroup').mockResolvedValue()
     vi.spyOn(AdminGroupsClient.prototype, 'resolveNotificationGroup').mockResolvedValue(confirmed)
-    vi.spyOn(AdminGroupsClient.prototype, 'listGroups').mockResolvedValue({
-      items: [confirmed],
-      number: 0,
-      size: 30,
-      totalElements: 1,
-      totalPages: 1,
-      activeCount: 1,
-      draftCount: 0,
-      archivedCount: 0,
-    })
+    vi.spyOn(AdminGroupsClient.prototype, 'listGroups').mockResolvedValue({ ...groupsPage, items: [confirmed] })
     const archive = vi.spyOn(AdminGroupsClient.prototype, 'archiveGroup').mockResolvedValue()
     await runPage(compiledPage(GroupsPage), async (state) => {
       state.selected.value = old

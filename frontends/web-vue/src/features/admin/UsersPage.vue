@@ -306,9 +306,10 @@ async function updateRole() {
   await admin.run(
     async () =>
       identity(async () => {
-        if (!selected.value) return;
+        const previous = selected.value;
+        if (!previous) return;
         const value = await users.updateRole(
-          selected.value.id,
+          previous.id,
           roleToUpdate.value,
           {
             status: targetStatus.value,
@@ -321,6 +322,11 @@ async function updateRole() {
           admin.signal,
         );
         admin.assertCurrent();
+        if (value.id !== previous.id) throw new Error('Сервер вернул другую учётную запись.');
+        if (employeeNumber.value === (previous.employeeNumber ?? ''))
+          employeeNumber.value = value.employeeNumber ?? '';
+        if (telegramId.value === (previous.telegramId?.toString() ?? ''))
+          telegramId.value = value.telegramId?.toString() ?? '';
         selected.value = value;
         chooseRole();
         await load(page.value?.number ?? 0);

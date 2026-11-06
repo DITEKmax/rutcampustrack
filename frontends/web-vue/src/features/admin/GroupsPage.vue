@@ -40,6 +40,8 @@ const returnParam = route.query.groupId;
 const returnGroupId = typeof returnParam === 'string' && /^[1-9][0-9]*$/.test(returnParam) &&
   Number.isSafeInteger(Number(returnParam)) ? Number(returnParam) : undefined;
 const returnStatus = route.query.status;
+let pendingReturnGroupId = returnGroupId;
+let applyingReturnStatus = false;
 const page = shallowRef<AdminGroupsPage | null>(null);
 const status = ref<AdminGroupStatus>(returnGroupId && (returnStatus === 'ARCHIVED' || returnStatus === 'DRAFT') ? returnStatus : 'ACTIVE'),
   search = ref(''),
@@ -134,7 +136,32 @@ async function load(number = 0) {
   page.value = value;
   loadedQueryKey.value = key;
 }
+async function loadRegistry() {
+  const target = pendingReturnGroupId;
+  await load();
+  if (target === undefined || pendingReturnGroupId !== target || !canView.value) return;
+  const group = await client.resolveNotificationGroup(target);
+  admin.assertCurrent();
+  if (!alive || pendingReturnGroupId !== target || !canView.value) return;
+  if (group?.id !== target) throw new Error('Группа не найдена в доступном реестре.');
+  if (group.status !== status.value) {
+    applyingReturnStatus = true;
+    status.value = group.status;
+    applyingReturnStatus = false;
+    applied.value = query();
+    page.value = null;
+    loadedQueryKey.value = '';
+    await load();
+    if (!alive || pendingReturnGroupId !== target || !canView.value) return;
+  }
+  pendingReturnGroupId = undefined;
+  selectGroup(group);
+}
+function retry() {
+  return admin.run(loadRegistry, 'GROUPS_VIEW');
+}
 async function apply() {
+  pendingReturnGroupId = undefined;
   cancelFilterTimer();
   queryQueued = true;
   if (!alive || !canView.value || locked.value) return;
@@ -152,6 +179,8 @@ async function apply() {
   await admin.refresh(() => load());
 }
 function scheduleApply() {
+  if (applyingReturnStatus) return;
+  pendingReturnGroupId = undefined;
   queryQueued = true;
   filterPending.value = true;
   listRevision++;
@@ -170,6 +199,7 @@ watch(() => !locked.value && canView.value, ready => {
 onBeforeUnmount(() => { alive = false; listRevision++; cancelFilterTimer(); });
 function open(group: AdminGroup) {
   if (locked.value) return;
+  pendingReturnGroupId = undefined;
   selectGroup(group);
 }
 function selectGroup(group: AdminGroup) {
@@ -192,6 +222,7 @@ function closeEditor() {
 }
 function beginCreate() {
   if (locked.value) return;
+  pendingReturnGroupId = undefined;
   selected.value = null;
   roster.value = null;
   headmanPreview.value = null;
@@ -349,6 +380,7 @@ async function assign() {
 }
 async function previewPromotion(groupId?: number) {
   await admin.run(async () => {
+    pendingReturnGroupId = undefined;
     promotion.value = null;
     const value = await client.previewPromotion(groupId, admin.signal);
     admin.assertCurrent();
@@ -426,14 +458,12 @@ onBeforeRouteLeave(() => {
   }
 });
 onMounted(() => {
-  if (currentOwner.value) void admin.init('GROUPS_VIEW', async () => {
-    await load();
-    if (!returnGroupId) return;
-    const group = await client.resolveNotificationGroup(returnGroupId);
-    admin.assertCurrent();
-    if (group?.id === returnGroupId && canView.value) selectGroup(group);
-  });
+  if (currentOwner.value) void admin.init('GROUPS_VIEW', loadRegistry);
 });
+function movePage(number: number) {
+  pendingReturnGroupId = undefined;
+  return admin.run(() => load(number));
+}
 const refreshDeferred = ref(false);
 const refreshAvailable = computed(
   () =>
@@ -490,7 +520,7 @@ useWebLiveRefresh(
       :busy="busy"
       :error="error"
       :notice="notice"
-      @retry="admin.run(() => load())"
+      @retry="retry"
     />
     <form
       v-if="canView"
@@ -744,13 +774,13 @@ useWebLiveRefresh(
           <button
             class="web-button"
             :disabled="locked || page.number === 0"
-            @click="admin.run(() => load(page!.number - 1))"
+            @click="movePage(page!.number - 1)"
           >
             Назад
           </button><span v-if="page.totalPages">{{ page.number + 1 }} / {{ page.totalPages }}</span><button
             class="web-button"
             :disabled="locked || page.number + 1 >= page.totalPages"
-            @click="admin.run(() => load(page!.number + 1))"
+            @click="movePage(page!.number + 1)"
           >
             Дальше
           </button>

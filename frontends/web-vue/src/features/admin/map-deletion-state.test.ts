@@ -66,11 +66,21 @@ type State = {
   deletionPreview: Ref<AdminMapPlanDeletionPreview | null>
   permanentDeletionAvailable: Ref<boolean>
   unknownDeletion: Ref<Reference | null>
+  unknownPublication: Ref<unknown>
   inventory: Ref<readonly AdminMapBuildingResponse[]>
+  selected: Ref<{
+    building: AdminMapBuildingResponse
+    floor: AdminMapBuildingResponse['floors'][number]
+  } | null>
+  version: Ref<string>
+  png: Ref<File | null>
   open(row: {
     building: AdminMapBuildingResponse
     floor: AdminMapBuildingResponse['floors'][number]
   }): void
+  beginUpload(row: NonNullable<State['selected']['value']>): void
+  publish(): Promise<void>
+  readVersion(): Promise<void>
   previewDeletion(): Promise<void>
   removePlan(): Promise<void>
   inspectDeletion(): Promise<void>
@@ -197,6 +207,42 @@ function select(state: State) {
 beforeEach(() => {
   owner.retired = false
   owner.permissions = ['DATA_DELETE', 'CAMPUS_MAP_MANAGE']
+})
+it('keeps the confirmed replacement current when a historical plan was open and the registry refresh fails', async () => {
+  const initial = building({ ...replacement, version: '3' })
+  const floor = initial.floors[0]!
+  let publications = 0
+  owner.fetcher = async (path, init) => {
+    const url = String(path)
+    if (url.endsWith('/floors/20/versions/2')) return Response.json({ ...replacement, version: '2' })
+    if (url.includes('/plans/target?')) return Response.json({
+      buildingCode: initial.code, floorCode: floor.code, status: 'found', floor,
+    })
+    if (url.endsWith('/plans') && init?.method === 'POST') {
+      publications++
+      return Response.json({
+        status: 'replaced', buildingCreated: false, floorCreated: false, plan: replacement,
+      })
+    }
+    if (url.endsWith('/buildings')) return Response.json({}, { status: 503 })
+    throw new Error(`Unexpected map read/write: ${url}`)
+  }
+  const { html } = await runPage(async (state) => {
+    const row = { building: initial, floor }
+    state.open(row)
+    state.version.value = '2'
+    await state.readVersion()
+    state.beginUpload(row)
+    state.png.value = new File(['synthetic PNG'], 'scheme.png', { type: 'image/png' })
+    await state.publish()
+    expect(publications).toBe(0)
+    await state.publish()
+    expect(state.unknownPublication.value).toBeNull()
+    expect(state.version.value).toBe('4')
+    state.beginUpload(state.selected.value!)
+  })
+  expect(publications).toBe(1)
+  expect(html).toContain('Текущая версия схемы: 4.')
 })
 describe('ADMIN map deletion intent and receipt', () => {
   it.each([undefined, null])(

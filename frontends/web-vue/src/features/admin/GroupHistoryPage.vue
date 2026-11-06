@@ -109,6 +109,7 @@ async function navigate(number = 0) {
   await admin.run(() => load(number));
 }
 async function refresh() {
+  reportConfirmed.value = false;
   await admin.requirePermission('GROUPS_VIEW');
   await admin.requirePermission('USERS_VIEW');
   await load(page.value?.number ?? 0, true);
@@ -117,6 +118,8 @@ watch(
   () => route.fullPath,
   () => {
     if (navigating) return;
+    reportConfirmed.value = false;
+    if (group.value && String(route.params.id ?? '') !== String(group.value.id)) clearReport();
     const current = readUserRegistryQuery(route.query);
     filters.value = current.filters;
     applied.value = current.filters;

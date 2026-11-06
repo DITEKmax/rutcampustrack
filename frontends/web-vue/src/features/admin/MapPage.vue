@@ -54,9 +54,11 @@ const plan = shallowRef<AdminMapPlan | null>(null),
 const deletionPreview = shallowRef<AdminMapPlanDeletionPreview | null>(null),
   deleteFormat = ref<MapFormat | ''>(''),
   password = ref('');
+type FloorIdentity = Pick<AdminMapFloorResponse, 'id' | 'buildingId'>;
 type UnknownPublication = {
   buildingCode: string;
   floorCode: string;
+  expectedFloor: FloorIdentity | null;
   pngHash: string | null;
   svgHash: string | null;
 };
@@ -149,6 +151,19 @@ async function hash(file: File | null): Promise<string | null> {
   admin.assertCurrent();
   return [...new Uint8Array(digest)].map((v) => v.toString(16).padStart(2, '0')).join('');
 }
+function planMatchesFloor(value: AdminMapPlan, floor: FloorIdentity) {
+  return value.floorId === floor.id && value.buildingId === floor.buildingId;
+}
+function acceptPublication(value: AdminMapPlan) {
+  const row = selected.value;
+  if (row && planMatchesFloor(value, row.floor))
+    selected.value = { building: row.building, floor: { ...row.floor, currentPlan: value } };
+  plan.value = value;
+  version.value = value.version;
+  uploading.value = false;
+  uploadConfirmation.value = false;
+  resetFiles();
+}
 async function publish() {
   if (locked.value || uploadFileSizeError.value) return;
   await admin.run(async () => {
@@ -161,6 +176,9 @@ async function publish() {
       admin.signal,
     );
     admin.assertCurrent();
+    const row = selected.value;
+    if (row && (target.floor?.id !== row.floor.id || target.floor.buildingId !== row.building.id))
+      throw new Error('Сервер не подтвердил выбранный этаж. Открой его в реестре заново.');
     if (target.status === 'found' && target.floor?.currentPlan && !uploadConfirmation.value) {
       uploadConfirmation.value = true;
       return;
@@ -168,12 +186,14 @@ async function publish() {
     const reference: UnknownPublication = {
       buildingCode: buildingCode.value,
       floorCode: floorCode.value,
+      expectedFloor: target.floor && { id: target.floor.id, buildingId: target.floor.buildingId },
       pngHash: await hash(png.value),
       svgHash: await hash(svg.value),
     };
     admin.assertCurrent();
+    let publication: Awaited<ReturnType<AdminMapClient['uploadPlan']>>;
     try {
-      const value = await client.uploadPlan({
+      publication = await client.uploadPlan({
         buildingCode: reference.buildingCode,
         floorCode: reference.floorCode,
         ...(label.value ? { label: label.value } : {}),
@@ -181,15 +201,8 @@ async function publish() {
         ...(svg.value ? { svg: svg.value } : {}),
       });
       admin.assertCurrent();
-      plan.value = value.plan;
-      uploading.value = false;
-      uploadConfirmation.value = false;
-      resetFiles();
-      await load();
-      notice.value =
-        value.status === 'created'
-          ? 'Схема опубликована.'
-          : 'Схема заменена. Предыдущая версия сохранена.';
+      if (reference.expectedFloor && !planMatchesFloor(publication.plan, reference.expectedFloor))
+        throw new Error('Ответ о публикации относится к другой схеме.');
     } catch (cause) {
       admin.assertCurrent();
       if (cause instanceof MapApiError && (
@@ -206,6 +219,12 @@ async function publish() {
         unknownPublication.value = reference;
       throw cause;
     }
+    acceptPublication(publication.plan);
+    notice.value =
+      publication.status === 'created'
+        ? 'Схема опубликована.'
+        : 'Схема заменена. Предыдущая версия сохранена.';
+    await load();
   }, 'CAMPUS_MAP_MANAGE');
 }
 async function inspectPublication() {
@@ -221,16 +240,17 @@ async function inspectPublication() {
     const current = target.floor?.currentPlan;
     if (
       current &&
+      target.floor &&
+      planMatchesFloor(current, target.floor) &&
+      (!reference.expectedFloor || planMatchesFloor(current, reference.expectedFloor)) &&
       (!reference.pngHash || current.png.sha256 === reference.pngHash) &&
       (!reference.svgHash || current.svg.sha256 === reference.svgHash)
     ) {
       unknownPublication.value = null;
-      plan.value = current;
-      uploading.value = false;
-      resetFiles();
-      await load();
+      acceptPublication(current);
       notice.value =
         'Текущее содержимое схемы совпадает с выбранными файлами. Повторной загрузки не было.';
+      await load();
     } else
       notice.value = 'Публикация пока не подтверждена. Автоматической повторной загрузки не будет.';
   });

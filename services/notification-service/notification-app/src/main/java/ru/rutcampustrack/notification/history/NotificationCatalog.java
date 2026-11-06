@@ -417,18 +417,83 @@ public class NotificationCatalog {
     }
 
     public NotificationInboxDto.Item present(NotificationHistoryDocument doc, String role) {
+        return present(doc, role, null);
+    }
+
+    NotificationInboxDto.Item presentInbox(
+            NotificationHistoryDocument doc, String role, Map<Long, String> subjectNames) {
+        InboxLesson snapshot = inboxLesson(doc);
+        String name = snapshot.subjectName();
+        if (name == null && snapshot.subjectId() != null)
+            name = text(subjectNames.get(snapshot.subjectId()));
+        return present(doc, role, new InboxLesson(snapshot.subjectId(), name, snapshot.lessonType()));
+    }
+
+    static Long inboxSubjectLookupId(NotificationHistoryDocument doc) {
+        InboxLesson snapshot = inboxLesson(doc);
+        return snapshot.subjectName() == null ? snapshot.subjectId() : null;
+    }
+
+    private static InboxLesson inboxLesson(NotificationHistoryDocument doc) {
+        Map<String, Object> payload = doc.getPayload() == null ? Map.of() : doc.getPayload();
+        Map<?, ?> scope = payload;
+        if (Set.of(NotificationType.LESSON_UPDATED, NotificationType.LESSON_TRANSFERRED)
+                        .contains(doc.getType())
+                && payload.get("target") instanceof Map<?, ?> target) {
+            scope = target;
+        } else if (doc.getType() == NotificationType.HOMEWORK_DUE_REMINDER
+                && payload.get("homework") instanceof Map<?, ?> homework) {
+            scope = homework;
+        }
+        String nestedId = positiveId(scope.get("subject_id"));
+        String rootId = positiveId(payload.get("subject_id"));
+        String name = text(scope.get("subject_name"));
+        String type = text(scope.get("lesson_type"));
+        if (scope != payload && (rootId == null || nestedId == null || nestedId.equals(rootId))) {
+            if (name == null) name = text(payload.get("subject_name"));
+            if (type == null) type = text(payload.get("lesson_type"));
+        }
+        String id = nestedId == null ? rootId : nestedId;
+        return new InboxLesson(id == null ? null : Long.valueOf(id), name, type);
+    }
+
+    private record InboxLesson(Long subjectId, String subjectName, String lessonType) {}
+
+    private record RoomChange(String previous, String current) {}
+
+    private static RoomChange roomChange(NotificationType type, Map<String, Object> payload) {
+        if (type != NotificationType.LESSON_UPDATED
+                || !(payload.get("source") instanceof Map<?, ?> before)
+                || !(payload.get("target") instanceof Map<?, ?> after))
+            return null;
+        String previous = text(before.get("room"));
+        String current = text(after.get("room"));
+        return Objects.equals(previous, current) ? null : new RoomChange(previous, current);
+    }
+
+    private NotificationInboxDto.Item present(
+            NotificationHistoryDocument doc, String role, InboxLesson inboxLesson) {
         var view = doc.getRoleViews().get(role);
         Map<String, Object> payload = doc.getPayload() == null ? Map.of() : doc.getPayload();
         String heading = meaning(doc.getType()).heading();
         if (doc.getType() == NotificationType.EXCUSE_APPROVED && excluded(payload).size() > 0) {
             heading = "Уважительная причина одобрена частично";
         }
+        RoomChange rooms = inboxLesson == null ? null : roomChange(doc.getType(), payload);
+        if (rooms != null) heading = "Изменилась аудитория";
         List<NotificationInboxDto.Detail> details = new ArrayList<>();
-        detail(details, payload, "subject_name", "Предмет");
+        String subjectName =
+                inboxLesson == null ? text(payload.get("subject_name")) : inboxLesson.subjectName();
+        if (subjectName != null) details.add(new NotificationInboxDto.Detail("Предмет", subjectName));
         String number = positiveId(payload.get("lesson_number"));
         if (number != null) details.add(new NotificationInboxDto.Detail("Номер занятия", number));
+        String rawType =
+                inboxLesson == null
+                        ? Objects.toString(payload.get("lesson_type"), "")
+                        : Objects.toString(inboxLesson.lessonType(), "")
+                                .toLowerCase(Locale.ROOT);
         String lessonType =
-                switch (Objects.toString(payload.get("lesson_type"), "")) {
+                switch (rawType) {
                     case "lecture" -> "Лекция";
                     case "practice" -> "Практика";
                     case "lab" -> "Лабораторная работа";
@@ -440,7 +505,14 @@ public class NotificationCatalog {
         detail(details, payload, "lesson_date", "Дата занятия");
         detail(details, payload, "start_time", "Начало");
         detail(details, payload, "end_time", "Окончание");
-        detail(details, payload, "room", "Аудитория");
+        if (rooms == null) {
+            detail(details, payload, "room", "Аудитория");
+        } else {
+            details.add(new NotificationInboxDto.Detail(
+                    "Предыдущая аудитория", Objects.toString(rooms.previous(), "Не указана")));
+            details.add(new NotificationInboxDto.Detail(
+                    "Новая аудитория", Objects.toString(rooms.current(), "Не указана")));
+        }
         detail(details, payload, "title", "Задание");
         detail(details, payload, "deadline", "Срок");
         detail(details, payload, "due_date", "Срок");
@@ -452,8 +524,8 @@ public class NotificationCatalog {
         detail(details, payload, "semester_name", "Семестр");
         detail(details, payload, "date_from", "Начало семестра");
         detail(details, payload, "date_to", "Конец семестра");
-        scopeDetail(details, payload.get("source"), "До изменения");
-        scopeDetail(details, payload.get("target"), "После изменения");
+        scopeDetail(details, payload.get("source"), "До изменения", rooms == null);
+        scopeDetail(details, payload.get("target"), "После изменения", rooms == null);
         if (payload.get("after_active") instanceof Boolean active) {
             details.add(
                     new NotificationInboxDto.Detail(
@@ -547,6 +619,8 @@ public class NotificationCatalog {
                 && payload.get("homework") instanceof Map<?, ?> homework) {
             List<String> parts = new ArrayList<>();
             for (String key : List.of("subject_name", "title", "lesson_date")) {
+                if (inboxLesson != null && subjectName != null && "subject_name".equals(key))
+                    continue;
                 String value = text(homework.get(key));
                 if (value != null) parts.add(value);
             }
@@ -577,12 +651,11 @@ public class NotificationCatalog {
                     };
             if (mark != null) details.add(new NotificationInboxDto.Detail("Отметка", mark));
         }
-        String summary = text(payload.get("subject_name"));
         return new NotificationInboxDto.Item(
                 doc.getId(),
                 doc.getType().name(),
                 heading,
-                summary,
+                subjectName,
                 doc.getSentAt(),
                 view.getOrderAt(),
                 view.getReadAt(),
@@ -710,10 +783,14 @@ public class NotificationCatalog {
     }
 
     private static void scopeDetail(
-            List<NotificationInboxDto.Detail> details, Object value, String label) {
+            List<NotificationInboxDto.Detail> details,
+            Object value,
+            String label,
+            boolean includeRoom) {
         if (!(value instanceof Map<?, ?> scope)) return;
         List<String> parts = new ArrayList<>();
         for (String key : List.of("lesson_date", "start_time", "end_time", "room")) {
+            if (!includeRoom && "room".equals(key)) continue;
             String text = text(scope.get(key));
             if (text != null) parts.add(text);
         }

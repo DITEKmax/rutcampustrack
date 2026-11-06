@@ -4,9 +4,16 @@ import {
   type NotificationPreferencesV2,
   type NotificationPreferencesV2Update,
   type NotificationTypeId,
+  type NotificationTypePreferences,
 } from './notifications-v2-models'
 
 export type NotificationDeliveryChannel = 'appPush' | 'telegram'
+export type NotificationPreferencesEdit = (
+  value: NotificationPreferencesV2,
+) => NotificationPreferencesV2
+type EditableField = keyof NotificationTypePreferences
+type PreferenceField = 'splitChannels' | `${NotificationTypeId}.${EditableField}`
+const editableFields: readonly EditableField[] = ['appPush', 'telegram', 'colorId']
 
 /** Clone every type: the host's confirmed preferences must never become a mutable draft. */
 export function copyNotificationPreferences(
@@ -84,13 +91,68 @@ export function notificationPreferencesUpdate(
   }
 }
 
-/** Reapply is explicit and may only change the revision within the same complete type set. */
+/** Collect changed fields, including reversals hidden by a still-unchanged confirmed baseline. */
+export function notificationPreferenceEdits(
+  baseline: NotificationPreferencesV2,
+  draft: NotificationPreferencesV2,
+  previouslyEdited: ReadonlySet<PreferenceField> = new Set(),
+): Set<PreferenceField> {
+  const edits = new Set(previouslyEdited)
+  if (draft.splitChannels !== baseline.splitChannels) edits.add('splitChannels')
+  for (const id of Object.keys(draft.types) as NotificationTypeId[]) {
+    for (const field of editableFields) {
+      if (draft.types[id]![field] !== baseline.types[id]?.[field]) edits.add(`${id}.${field}`)
+    }
+  }
+  return edits
+}
+
+/** Apply local changes over a compatible authoritative profile. */
+export function mergeNotificationPreferenceEdits(
+  baseline: NotificationPreferencesV2,
+  draft: NotificationPreferencesV2,
+  current: NotificationPreferencesV2,
+  uncertain: ReadonlySet<PreferenceField> = new Set(),
+  unifiedChannel: NotificationDeliveryChannel = 'appPush',
+): NotificationPreferencesV2 {
+  const edits = notificationPreferenceEdits(baseline, draft, uncertain)
+  const next = copyNotificationPreferences(current)
+  const changedMode = edits.has('splitChannels')
+  if (changedMode) next.splitChannels = draft.splitChannels
+  for (const id of Object.keys(current.types) as NotificationTypeId[]) {
+    const local = draft.types[id]!
+    const entry = next.types[id]!
+    const appPushEdited = edits.has(`${id}.appPush`)
+    const telegramEdited = edits.has(`${id}.telegram`)
+    if (edits.has(`${id}.colorId`)) entry.colorId = local.colorId
+    if (appPushEdited) entry.appPush = local.appPush
+    if (telegramEdited) entry.telegram = local.telegram
+    if (!next.splitChannels && !draft.splitChannels) {
+      const channel = changedMode ? unifiedChannel : telegramEdited ? 'telegram' : 'appPush'
+      const enabled = entry[channel]
+      entry.appPush = enabled
+      entry.telegram = enabled
+    }
+  }
+  // An independent split-channel edit must not change the other channel when the remote
+  // profile was unified. Keep split mode only if it is needed to represent those choices.
+  if (!next.splitChannels && notificationChannelsDiverge(next)) next.splitChannels = true
+  return next
+}
+
+/** Reapply is explicit and may only merge within the same complete type set. */
 export function reapplyNotificationPreferences(
   draft: NotificationPreferencesV2,
   current: NotificationPreferencesV2,
+  baseline: NotificationPreferencesV2,
+  uncertain?: ReadonlySet<PreferenceField>,
+  unifiedChannel?: NotificationDeliveryChannel,
 ): NotificationPreferencesV2Update | null {
   if (!notificationTypeSetsMatch(Object.keys(draft.types), Object.keys(current.types))) return null
-  return notificationPreferencesUpdate(draft, current.revision)
+  return notificationPreferencesUpdate(
+    mergeNotificationPreferenceEdits(baseline, draft, current, uncertain, unifiedChannel),
+    current.revision,
+  )
 }
 
 /** Compare only the editable delivery/color payload, independent of server metadata or key order. */

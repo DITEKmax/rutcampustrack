@@ -3,6 +3,7 @@ import { computed, onBeforeUnmount, onMounted, ref, useId, watch } from 'vue';
 import MobileIcon from '../../shared/components/MobileIcon.vue';
 import type { NotificationItem, NotificationPaletteId } from './notifications-v2-models';
 import { NotificationInboxHold } from './notification-inbox-gesture';
+import { notificationInboxPresentation } from './notification-inbox-presentation';
 import './notification-inbox.pcss';
 
 const props = withDefaults(
@@ -29,11 +30,7 @@ const instructionsId = `${useId()}-instructions`;
 const unread = computed(() => props.item.readAt === null);
 const commandsDisabled = computed(() => props.pending || props.offline);
 const readRequestedRevision = ref<string | null>(null);
-const displayedSummary = computed(() =>
-  props.item.summary?.trim() && props.item.summary.trim() !== props.item.heading.trim()
-    ? props.item.summary
-    : null,
-);
+const presentation = computed(() => notificationInboxPresentation(props.item));
 const sentLabel = computed(() => {
   const date = new Date(props.item.sentAt);
   return Number.isNaN(date.getTime())
@@ -173,7 +170,11 @@ onBeforeUnmount(() => {
           aria-hidden="true"
         />
         <span class="notification-card__compact">
-          <span class="notification-card__heading">{{ item.heading }}</span>
+          <span class="notification-card__heading">{{ presentation.heading }}</span>
+          <span
+            v-if="presentation.event"
+            class="notification-card__event"
+          >{{ presentation.event }}</span>
           <time
             class="notification-card__time"
             :datetime="item.sentAt"
@@ -183,7 +184,7 @@ onBeforeUnmount(() => {
       <button
         type="button"
         class="notification-card__disclosure"
-        :aria-label="`${expanded ? 'Свернуть' : 'Подробности'}: ${item.heading}`"
+        :aria-label="`${expanded ? 'Свернуть' : 'Подробности'}: ${presentation.heading}`"
         :aria-expanded="expanded"
         :aria-controls="detailsId"
         @click="expand"
@@ -195,7 +196,7 @@ onBeforeUnmount(() => {
         type="button"
         class="notification-card__more"
         :disabled="commandsDisabled"
-        :aria-label="`Действия: ${item.heading}`"
+        :aria-label="`Действия: ${presentation.heading}`"
         :aria-expanded="menuOpen"
         :aria-controls="menuId"
         @click="menuOpen = !menuOpen"
@@ -218,18 +219,47 @@ onBeforeUnmount(() => {
       :hidden="!expanded"
       class="notification-card__details"
     >
+      <h2
+        v-if="presentation.detailHeading"
+        class="notification-card__heading"
+      >
+        {{ presentation.detailHeading }}
+      </h2>
+      <dl
+        v-if="presentation.rooms"
+        class="notification-card__rooms"
+      >
+        <div v-if="presentation.rooms.previous">
+          <dt class="notification-inbox__sr-only">
+            Предыдущая аудитория
+          </dt>
+          <dd><s>{{ presentation.rooms.previous }}</s></dd>
+        </div>
+        <div v-if="presentation.rooms.current">
+          <dt class="notification-inbox__sr-only">
+            Новая аудитория
+          </dt>
+          <dd>
+            <span
+              v-if="presentation.rooms.previous"
+              aria-hidden="true"
+            >→</span>
+            {{ presentation.rooms.current }}
+          </dd>
+        </div>
+      </dl>
       <p
-        v-if="displayedSummary"
+        v-if="presentation.summary"
         class="notification-card__summary"
       >
-        {{ displayedSummary }}
+        {{ presentation.summary }}
       </p>
       <dl
-        v-if="item.details.length"
+        v-if="presentation.details.length"
         class="notification-card__facts"
       >
         <div
-          v-for="(field, index) in item.details"
+          v-for="(field, index) in presentation.details"
           :key="index"
         >
           <dt v-if="field.label">
@@ -239,7 +269,7 @@ onBeforeUnmount(() => {
         </div>
       </dl>
       <p
-        v-if="!displayedSummary && !item.details.length"
+        v-if="!presentation.detailHeading && !presentation.rooms && !presentation.summary && !presentation.details.length"
         class="notification-card__hint"
       >
         Дополнительных сведений нет.

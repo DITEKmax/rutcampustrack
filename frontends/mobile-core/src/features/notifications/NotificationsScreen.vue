@@ -4,8 +4,13 @@ import { NotificationsApiError, notificationsErrorMessage } from './notification
 import { NotificationsConflictError } from './notifications-v2-client';
 import { notificationCatalogMatchesPreferences } from './notifications-v2-models';
 import {
+  mergeNotificationPreferenceEdits,
+  notificationPreferenceEdits,
   notificationPreferencesDiffer,
+  notificationPreferencesUpdate,
   reapplyNotificationPreferences,
+  type NotificationDeliveryChannel,
+  type NotificationPreferencesEdit,
 } from './notification-preferences-draft';
 import type {
   NotificationAction,
@@ -58,13 +63,14 @@ const catalog = shallowRef<NotificationCatalog | null>(null);
 const preferences = shallowRef<NotificationPreferencesV2 | null>(null);
 const draft = shallowRef<NotificationPreferencesV2 | null>(null);
 const preferencesBusy = ref(false);
-const preferencesRefreshing = ref(false);
 const preferencesError = ref<string | null>(null);
 const preferencesBlocked = ref(false);
 const catalogChangedMessage =
   'Каталог уведомлений изменился. Черновик сохранён. Загрузи актуальные настройки, чтобы продолжить.';
 const preferencesErrorTone = ref<'warning' | 'error'>('error');
 const conflict = shallowRef<NotificationPreferencesV2 | null>(null);
+const uncertainPreferences = shallowRef<ReturnType<typeof notificationPreferenceEdits>>(new Set());
+const confirmDiscardPreferences = ref(false);
 const permissionDenied = ref(false);
 const unread = shallowRef({ ...props.unreadOwner.view });
 const stopUnread = props.unreadOwner.subscribe(() => {
@@ -87,7 +93,21 @@ let restoreHostBack: (() => void) | undefined;
 let stopHostBack: (() => void) | undefined;
 let refreshPending = false;
 let refreshRunning = false;
+let preferencesRefreshPending = false;
+let preferencesWriteFailed = false;
+let savingPreferences = false;
+let closeAfterPreferences = false;
+let unifiedChannel: NotificationDeliveryChannel = 'appPush';
 const nativeBack = computed(() => props.host?.backOwner === 'host' && !!props.host?.claimBack);
+const appPushAvailable = computed(
+  () => !props.host || (!!props.host.push && pushState.value?.status !== 'unsupported'),
+);
+const dirtyPreferences = computed(
+  () => !!draft.value && !!preferences.value && notificationPreferencesDiffer(draft.value, preferences.value),
+);
+const pendingPreferences = computed(
+  () => dirtyPreferences.value || uncertainPreferences.value.size > 0 || (!!draft.value && !!conflict.value),
+);
 function current(run: number): boolean {
   return !disposed && run === epoch && !permissionDenied.value;
 }
@@ -98,6 +118,8 @@ function clearPrivate(): void {
   preferences.value = null;
   draft.value = null;
   conflict.value = null;
+  uncertainPreferences.value = new Set();
+  confirmDiscardPreferences.value = false;
   preferencesBlocked.value = false;
 }
 function fail(cause: unknown): string | null {
@@ -109,6 +131,36 @@ function fail(cause: unknown): string | null {
     emit('owner-error', cause);
   }
   return notificationsErrorMessage(cause);
+}
+function confirmPreferences(saved: NotificationPreferencesV2, pending: NotificationPreferencesV2 | null = null): void {
+  preferences.value = saved;
+  draft.value = pending && notificationPreferencesDiffer(pending, saved) ? pending : null;
+  conflict.value = null;
+  uncertainPreferences.value = new Set();
+  preferencesWriteFailed = false;
+  preferencesError.value = null;
+  if (!draft.value) confirmDiscardPreferences.value = false;
+}
+function rebasedPreferences(currentPreferences: NotificationPreferencesV2): NotificationPreferencesV2 | null {
+  if (!draft.value || !preferences.value) return null;
+  const update = reapplyNotificationPreferences(
+    draft.value, currentPreferences, preferences.value, uncertainPreferences.value, unifiedChannel,
+  );
+  return update
+    ? { ...currentPreferences, splitChannels: update.splitChannels, types: update.types }
+    : null;
+}
+function reconcilePreferences(saved: NotificationPreferencesV2): void {
+  const next = rebasedPreferences(saved);
+  if (!next) {
+    preferencesBlocked.value = true;
+    preferencesErrorTone.value = 'error';
+    preferencesError.value = catalogChangedMessage;
+  } else if (!notificationPreferencesDiffer(next, saved)) {
+    confirmPreferences(saved);
+    return;
+  }
+  conflict.value = saved;
 }
 async function loadInbox(append = false): Promise<void> {
   if (props.offline || permissionDenied.value || (append && !nextCursor.value)) return;
@@ -142,11 +194,12 @@ async function loadInbox(append = false): Promise<void> {
   }
 }
 async function loadPreferences(preserveDraft = false): Promise<void> {
-  if (props.offline || permissionDenied.value || preferencesBusy.value) return;
+  if (!current(epoch) || props.offline || preferencesBusy.value) return;
+  preferencesRefreshPending = false;
   const run = epoch,
     request = ++prefsRequest;
+  let staleSession = false;
   preferencesBusy.value = true;
-  preferencesRefreshing.value = preserveDraft && preferences.value !== null;
   preferencesError.value = null;
   try {
     const [nextCatalog, saved] = await Promise.all([
@@ -161,11 +214,9 @@ async function loadPreferences(preserveDraft = false): Promise<void> {
       );
     }
     const previous = preferences.value;
-    const hasDraftChanges =
-      draft.value && previous && notificationPreferencesDiffer(draft.value, previous);
+    const keepDraft = preserveDraft && pendingPreferences.value;
     if (
-      preserveDraft &&
-      hasDraftChanges &&
+      keepDraft &&
       draft.value &&
       !notificationCatalogMatchesPreferences(nextCatalog, draft.value)
     ) {
@@ -176,14 +227,17 @@ async function loadPreferences(preserveDraft = false): Promise<void> {
       return;
     }
     catalog.value = nextCatalog;
-    preferences.value = saved;
     preferencesBlocked.value = false;
-    if (!preserveDraft || !hasDraftChanges) {
-      draft.value = structuredClone(saved);
-      conflict.value = null;
-    } else if (previous?.revision !== saved.revision) conflict.value = saved;
+    if (!keepDraft) {
+      confirmPreferences(saved);
+    } else if (previous?.revision !== saved.revision) {
+      reconcilePreferences(saved);
+    } else {
+      preferences.value = saved;
+    }
   } catch (cause) {
     if (current(run) && request === prefsRequest) {
+      staleSession = cause instanceof StaleSessionGenerationError;
       preferencesErrorTone.value =
         cause instanceof NotificationsApiError && cause.status === 503 ? 'warning' : 'error';
       preferencesError.value = fail(cause);
@@ -191,28 +245,35 @@ async function loadPreferences(preserveDraft = false): Promise<void> {
   } finally {
     if (!disposed && run === epoch && request === prefsRequest) {
       preferencesBusy.value = false;
-      preferencesRefreshing.value = false;
+      if (!staleSession) advancePreferences();
     }
   }
 }
 async function savePreferences(update: NotificationPreferencesV2Update): Promise<void> {
   if (
     props.offline ||
-    permissionDenied.value ||
+    !current(epoch) ||
     preferencesBusy.value ||
     preferencesBlocked.value ||
     !preferences.value ||
-    !catalog.value
+    !catalog.value ||
+    !draft.value
   )
     return;
   if (!notificationCatalogMatchesPreferences(catalog.value, update)) {
     preferencesBlocked.value = true;
+    preferencesErrorTone.value = 'error';
     preferencesError.value = catalogChangedMessage;
     return;
   }
   const run = epoch,
     request = ++prefsRequest;
+  let staleSession = false;
+  const baseline = preferences.value;
+  const submitted = draft.value;
+  savingPreferences = true;
   preferencesBusy.value = true;
+  preferencesWriteFailed = false;
   preferencesError.value = null;
   try {
     const saved = await props.api.updatePreferences(update);
@@ -224,41 +285,79 @@ async function savePreferences(update: NotificationPreferencesV2Update): Promise
       preferencesError.value = catalogChangedMessage;
       return;
     }
-    preferences.value = saved;
-    draft.value = structuredClone(saved);
-    conflict.value = null;
+    const pending = draft.value;
+    const remaining =
+      pending && notificationPreferencesDiffer(pending, submitted)
+        ? mergeNotificationPreferenceEdits(submitted, pending, saved)
+        : null;
+    confirmPreferences(saved, remaining);
   } catch (cause) {
     if (!current(run) || request !== prefsRequest) return;
+    staleSession = cause instanceof StaleSessionGenerationError;
     preferencesErrorTone.value =
       cause instanceof NotificationsApiError && cause.status === 503 ? 'warning' : 'error';
     preferencesError.value = fail(cause);
-    if (cause instanceof NotificationsConflictError) {
-      conflict.value = cause.currentPreferences;
-      if (
-        conflict.value &&
-        draft.value &&
-        !reapplyNotificationPreferences(draft.value, conflict.value)
-      ) {
-        preferencesBlocked.value = true;
-        preferencesError.value = catalogChangedMessage;
+    preferencesWriteFailed = !!preferencesError.value && !(cause instanceof NotificationsConflictError);
+    if (preferencesWriteFailed) {
+      uncertainPreferences.value = notificationPreferenceEdits(
+        baseline, submitted, uncertainPreferences.value,
+      );
+    } else if (cause instanceof NotificationsConflictError) {
+      if (draft.value) {
+        uncertainPreferences.value = notificationPreferenceEdits(
+          submitted, draft.value, uncertainPreferences.value,
+        );
       }
+      if (cause.currentPreferences) reconcilePreferences(cause.currentPreferences);
     }
   } finally {
-    if (!disposed && run === epoch && request === prefsRequest) preferencesBusy.value = false;
+    if (!disposed && run === epoch && request === prefsRequest) {
+      savingPreferences = false;
+      preferencesBusy.value = false;
+      if (!staleSession) advancePreferences();
+    }
   }
 }
+function advancePreferences(): void {
+  if (!current(epoch) || preferencesBusy.value) return;
+  if (
+    !props.offline && !preferencesBlocked.value && !conflict.value && !preferencesError.value &&
+    dirtyPreferences.value && preferences.value && draft.value
+  ) {
+    void savePreferences(notificationPreferencesUpdate(draft.value, preferences.value.revision));
+    return;
+  }
+  if (closeAfterPreferences) {
+    closeAfterPreferences = false;
+    if (pendingPreferences.value) offerCloseWithoutSaving();
+    else emit('close');
+    return;
+  }
+  if (preferencesRefreshPending && !preferencesWriteFailed && !conflict.value && !props.offline)
+    void loadPreferences(true);
+}
+function editPreferences(change: NotificationPreferencesEdit, keep?: NotificationDeliveryChannel): void {
+  if (!current(epoch) || !preferences.value || props.offline || preferencesBlocked.value || conflict.value)
+    return;
+  draft.value = change(draft.value ?? preferences.value);
+  if (keep) unifiedChannel = keep;
+  advancePreferences();
+}
 function reloadPreferences(): void {
+  if (preferencesWriteFailed && preferences.value && draft.value) {
+    void savePreferences(notificationPreferencesUpdate(draft.value, preferences.value.revision));
+    return;
+  }
+  preferencesWriteFailed = false;
   void loadPreferences(conflict.value === null && !preferencesBlocked.value);
 }
 function reapplyPreferences(): void {
-  if (!draft.value || !conflict.value) return;
-  const update = reapplyNotificationPreferences(draft.value, conflict.value);
-  if (!update) {
-    preferencesBlocked.value = true;
-    preferencesError.value = catalogChangedMessage;
-    return;
-  }
-  void savePreferences(update);
+  if (!conflict.value || preferencesBusy.value || props.offline || preferencesBlocked.value) return;
+  const currentPreferences = conflict.value;
+  const next = rebasedPreferences(currentPreferences);
+  if (!next) return;
+  confirmPreferences(currentPreferences, next);
+  advancePreferences();
 }
 async function setReadState(item: NotificationItem, read: boolean): Promise<boolean> {
   if (props.offline || permissionDenied.value || pendingIds.value.has(item.id)) return false;
@@ -302,7 +401,7 @@ async function openItem(item: NotificationItem): Promise<void> {
   if (!(await setReadState(item, true)) || !current(run)) return;
   try {
     if (await props.openAction?.(item.action)) {
-      if (current(run)) emit('close');
+      if (current(run)) requestClose();
     } else if (current(run))
       error.value = {
         message: 'Объект сейчас недоступен в выбранной роли. Детали уведомления сохранены.',
@@ -359,9 +458,31 @@ async function changePage(value: typeof page.value): Promise<void> {
   dialogElement.value?.querySelector('.notifications-screen__content')?.scrollTo({ top: 0 });
 }
 function back(): void {
-  if (page.value === 'colors') void changePage('settings');
+  if (confirmDiscardPreferences.value) confirmDiscardPreferences.value = false;
+  else if (page.value === 'colors') void changePage('settings');
   else if (page.value === 'settings') void changePage('inbox');
-  else emit('close');
+  else requestClose();
+}
+function requestClose(): void {
+  if (savingPreferences || (preferencesBusy.value && pendingPreferences.value)) {
+    closeAfterPreferences = true;
+  } else if (pendingPreferences.value) {
+    offerCloseWithoutSaving();
+  } else {
+    emit('close');
+  }
+}
+function offerCloseWithoutSaving(): void {
+  confirmDiscardPreferences.value = true;
+  void changePage('settings');
+}
+async function refreshPreferences(): Promise<void> {
+  if (preferencesWriteFailed || conflict.value) return;
+  if (preferencesBusy.value) {
+    preferencesRefreshPending = true;
+  } else {
+    await loadPreferences(true);
+  }
 }
 async function refresh(): Promise<void> {
   refreshPending = true;
@@ -373,7 +494,7 @@ async function refresh(): Promise<void> {
       await Promise.all([
         loadInbox(),
         props.unreadOwner.invalidate(),
-        preferences.value ? loadPreferences(true) : Promise.resolve(),
+        preferences.value ? refreshPreferences() : Promise.resolve(),
       ]);
     }
   } finally {
@@ -496,8 +617,8 @@ onBeforeUnmount(() => {
           </button>
         </div>
         <NotificationInbox
-          :student-ui="studentUi"
           v-if="page === 'inbox'"
+          :student-ui="studentUi"
           :items="items"
           :preferences="preferences"
           :loading="loading"
@@ -521,34 +642,53 @@ onBeforeUnmount(() => {
         <template
           v-else-if="
             catalog &&
-            preferences &&
-            notificationCatalogMatchesPreferences(catalog, preferences) &&
-            (!draft || notificationCatalogMatchesPreferences(catalog, draft))
+              preferences &&
+              notificationCatalogMatchesPreferences(catalog, preferences) &&
+              (!draft || notificationCatalogMatchesPreferences(catalog, draft))
           "
         >
+          <div
+            v-if="page === 'settings' && confirmDiscardPreferences && pendingPreferences"
+            class="notifications-screen__notice"
+            role="group"
+            aria-label="Несохранённые настройки"
+          >
+            <p>Есть несохранённые изменения.</p>
+            <button
+              type="button"
+              @click="confirmDiscardPreferences = false"
+            >
+              Остаться
+            </button>
+            <button
+              type="button"
+              :disabled="preferencesBusy"
+              @click="emit('close')"
+            >
+              Закрыть без сохранения
+            </button>
+          </div>
           <NotificationSettings
-            :student-ui="studentUi"
             v-if="page === 'settings'"
+            :student-ui="studentUi"
             :catalog="catalog"
             :preferences="preferences"
             :draft="draft"
             :busy="preferencesBusy"
-            :refreshing="preferencesRefreshing"
             :blocked="preferencesBlocked"
             :error="preferencesError"
             :error-tone="preferencesErrorTone"
             :conflict="conflict"
             :offline="offline"
-            :app-push-available="pushState?.status !== 'unsupported'"
-            @update:draft="draft = $event"
-            @save="savePreferences"
+            :app-push-available="appPushAvailable"
+            @edit="editPreferences"
             @reload="reloadPreferences"
             @reapply="reapplyPreferences"
             @colors="changePage('colors')"
           />
           <NotificationColors
-            :student-ui="studentUi"
             v-else
+            :student-ui="studentUi"
             :catalog="catalog"
             :preferences="preferences"
             :draft="draft"
@@ -558,23 +698,22 @@ onBeforeUnmount(() => {
             :error-tone="preferencesErrorTone"
             :conflict="conflict"
             :offline="offline"
-            :app-push-available="pushState?.status !== 'unsupported'"
-            @update:draft="draft = $event"
-            @save="savePreferences"
+            @edit="editPreferences"
             @reload="reloadPreferences"
             @reapply="reapplyPreferences"
           />
           <section
-            v-if="page === 'settings' && host?.push && pushState"
+            v-if="page === 'settings' && host?.push && pushState && pushState.status !== 'unsupported'"
             class="notifications-screen__device"
             aria-labelledby="notifications-device-title"
           >
-            <h2 id="notifications-device-title"> Уведомления на устройстве </h2
-            ><p role="status">
+            <h2 id="notifications-device-title">
+              Уведомления на устройстве
+            </h2><p role="status">
               {{ pushState.message }}
             </p>
             <button
-              v-if="!['unsupported', 'signed-out', 'enabled'].includes(pushState.status)"
+              v-if="!['signed-out', 'enabled'].includes(pushState.status)"
               type="button"
               :disabled="offline || ['busy', 'denied'].includes(pushState.status)"
               @click="host.push.enable()"

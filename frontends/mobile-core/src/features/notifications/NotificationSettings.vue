@@ -9,15 +9,13 @@ import {
 import type {
   NotificationCatalog,
   NotificationPreferencesV2,
-  NotificationPreferencesV2Update,
   NotificationTypeId,
 } from './notifications-v2-models';
 import {
   changeNotificationChannelMode,
   changeNotificationDelivery,
-  notificationPreferencesUpdate,
-  notificationPreferencesDiffer,
   type NotificationDeliveryChannel,
+  type NotificationPreferencesEdit,
 } from './notification-preferences-draft';
 import './notification-settings.pcss';
 
@@ -28,7 +26,6 @@ const props = defineProps<{
   draft: NotificationPreferencesV2 | null;
   blocked?: boolean;
   busy?: boolean;
-  refreshing?: boolean;
   error?: string | null;
   errorTone?: 'warning' | 'error';
   conflict?: NotificationPreferencesV2 | null;
@@ -36,14 +33,12 @@ const props = defineProps<{
   appPushAvailable?: boolean;
 }>();
 const emit = defineEmits<{
-  'update:draft': [value: NotificationPreferencesV2];
-  save: [value: NotificationPreferencesV2Update];
+  edit: [change: NotificationPreferencesEdit, unifiedChannel?: NotificationDeliveryChannel];
   reload: [];
   reapply: [];
   colors: [];
 }>();
 const value = computed(() => props.draft ?? props.preferences);
-const dirty = computed(() => notificationPreferencesDiffer(value.value, props.preferences));
 const compatible = computed(
   () =>
     notificationCatalogMatchesPreferences(props.catalog, props.preferences) &&
@@ -62,10 +57,13 @@ const editingBlocked = computed(() =>
   Boolean(props.offline || props.conflict || props.blocked || !compatible.value),
 );
 const disabled = computed(() => Boolean(props.busy || editingBlocked.value));
-// A background read must not disable an already confirmed checkbox under the pointer.
-// Saving and channel-mode changes still wait for the read's current CAS revision.
-const deliveryDisabled = computed(() =>
-  Boolean((props.busy && !props.refreshing) || editingBlocked.value),
+const unavailable = computed(() =>
+  value.value.splitChannels
+    ? { appPush: props.appPushAvailable === false, telegram: !props.preferences.telegramLinked }
+    : {
+        appPush: props.appPushAvailable === false && !props.preferences.telegramLinked,
+        telegram: false,
+      },
 );
 const groups = computed(() =>
   compatible.value
@@ -84,26 +82,24 @@ const switchButton = ref<HTMLButtonElement | null>(null);
 const choiceElement = ref<HTMLElement | null>(null);
 const choiceId = useId();
 watch(
-  () => props.preferences.revision,
+  () => [props.preferences.revision, editingBlocked.value],
   () => {
     choiceOpen.value = false;
   },
 );
 
-function save(next = value.value): void {
-  if (disabled.value || choiceOpen.value || !notificationPreferencesDiffer(next, props.preferences))
-    return;
-  emit('save', notificationPreferencesUpdate(next, props.preferences.revision));
-}
-function commitMode(next: NotificationPreferencesV2): void {
+function commitMode(split: boolean, keep?: NotificationDeliveryChannel): void {
   choiceOpen.value = false;
-  emit('update:draft', next);
-  save(next);
+  emit(
+    'edit',
+    (latest) => changeNotificationChannelMode(latest, split, keep) ?? latest,
+    split ? undefined : (keep ?? 'appPush'),
+  );
 }
 async function switchMode(): Promise<void> {
   if (disabled.value || choiceOpen.value) return;
   const next = changeNotificationChannelMode(value.value, !value.value.splitChannels);
-  if (next) commitMode(next);
+  if (next) commitMode(next.splitChannels);
   else {
     choiceOpen.value = true;
     await nextTick();
@@ -112,8 +108,7 @@ async function switchMode(): Promise<void> {
 }
 function chooseColumn(channel: NotificationDeliveryChannel): void {
   if (disabled.value) return;
-  const next = changeNotificationChannelMode(value.value, false, channel);
-  if (next) commitMode(next);
+  commitMode(false, channel);
   void nextTick(() => switchButton.value?.focus());
 }
 function cancelChoice(): void {
@@ -125,8 +120,8 @@ function setDelivery(
   channel: NotificationDeliveryChannel,
   enabled: boolean,
 ): void {
-  if (deliveryDisabled.value || choiceOpen.value) return;
-  emit('update:draft', changeNotificationDelivery(value.value, id, channel, enabled));
+  if (editingBlocked.value || unavailable.value[channel] || choiceOpen.value) return;
+  emit('edit', (latest) => changeNotificationDelivery(latest, id, channel, enabled));
 }
 </script>
 
@@ -146,18 +141,14 @@ function setDelivery(
       :disabled="disabled || choiceOpen"
       @click="switchMode"
     >
-      <span class="notification-settings__mode-label"
-        >Раздельные настройки<span
-          v-if="!studentUi"
-          class="notification-settings__mode-state"
-          >{{ value.splitChannels ? 'Включены' : 'Выключены' }}</span
-        ></span
-      >
+      <span class="notification-settings__mode-label">Раздельные настройки<span
+        v-if="!studentUi"
+        class="notification-settings__mode-state"
+      >{{ value.splitChannels ? 'Включены' : 'Выключены' }}</span></span>
       <span
         class="notification-settings__slider"
         aria-hidden="true"
-        ><span
-      /></span>
+      ><span /></span>
     </button>
     <div
       v-if="choiceOpen"
@@ -226,7 +217,6 @@ function setDelivery(
     >
       <p>{{ error }}</p>
       <button
-        v-if="errorTone === 'warning' || blocked || !compatible"
         type="button"
         :disabled="busy || offline"
         @click="emit('reload')"
@@ -241,16 +231,7 @@ function setDelivery(
     >
       Нет подключения. Настройки доступны для просмотра.
     </p>
-    <div
-      v-if="appPushAvailable === false || !preferences.telegramLinked"
-      class="notification-settings__capability"
-      role="status"
-    >
-      <p v-if="appPushAvailable === false"> Web Push недоступен на этом устройстве </p>
-      <p v-if="!preferences.telegramLinked"> Telegram не привязан </p>
-    </div>
-    <slot name="capability" />
-    <form @submit.prevent="save()">
+    <div>
       <div
         class="notification-settings__matrix-scroll"
         role="region"
@@ -261,22 +242,38 @@ function setDelivery(
           class="notification-settings__matrix"
           :data-split="value.splitChannels"
         >
-          <caption class="notification-settings__sr"> Доставка по типам уведомлений </caption>
+          <caption class="notification-settings__sr">
+            Доставка по типам уведомлений
+          </caption>
           <colgroup>
-            <col /><col class="notification-settings__channel-col" /><col
+            <col><col class="notification-settings__channel-col"><col
               v-if="value.splitChannels"
               class="notification-settings__channel-col"
-            />
+            >
           </colgroup>
           <thead>
             <tr>
-              <th scope="col"> <span class="notification-settings__sr">Тип уведомления</span> </th
-              ><th scope="col"> {{ value.splitChannels ? 'TMA/PWA' : 'Получать' }} </th
-              ><th
+              <th scope="col">
+                <span class="notification-settings__sr">Тип уведомления</span>
+              </th><th
+                scope="col"
+                :data-unavailable="unavailable.appPush ? '' : undefined"
+              >
+                {{ value.splitChannels ? 'TMA/PWA' : 'Получать' }}
+                <span
+                  v-if="unavailable.appPush"
+                  class="notification-settings__sr"
+                >недоступно</span>
+              </th><th
                 v-if="value.splitChannels"
                 scope="col"
+                :data-unavailable="unavailable.telegram ? '' : undefined"
               >
                 Telegram
+                <span
+                  v-if="unavailable.telegram"
+                  class="notification-settings__sr"
+                >недоступно</span>
               </th>
             </tr>
           </thead>
@@ -300,22 +297,26 @@ function setDelivery(
               <th scope="row">
                 {{ type.label }}
               </th>
-              <td class="notification-settings__channel">
+              <td
+                class="notification-settings__channel"
+                :data-unavailable="unavailable.appPush ? '' : undefined"
+              >
                 <AdminCheckbox
                   :model-value="type.preferences.appPush"
                   :label="`${type.label}: ${value.splitChannels ? 'TMA/PWA' : 'TMA/PWA и Telegram'}`"
-                  :disabled="deliveryDisabled || choiceOpen"
+                  :disabled="editingBlocked || unavailable.appPush || choiceOpen"
                   @update:model-value="setDelivery(type.id, 'appPush', $event)"
                 />
               </td>
               <td
                 v-if="value.splitChannels"
                 class="notification-settings__channel"
+                :data-unavailable="unavailable.telegram ? '' : undefined"
               >
                 <AdminCheckbox
                   :model-value="type.preferences.telegram"
                   :label="`${type.label}: Telegram`"
-                  :disabled="deliveryDisabled || choiceOpen"
+                  :disabled="editingBlocked || unavailable.telegram || choiceOpen"
                   @update:model-value="setDelivery(type.id, 'telegram', $event)"
                 />
               </td>
@@ -327,7 +328,7 @@ function setDelivery(
         class="notification-settings__colors"
         aria-label="Цвета уведомлений"
         type="button"
-        :disabled="busy || choiceOpen"
+        :disabled="choiceOpen"
         @click="emit('colors')"
       >
         Цвета уведомлений<MobileIcon
@@ -336,16 +337,8 @@ function setDelivery(
         /><span
           v-else
           aria-hidden="true"
-          >›</span
-        >
+        >›</span>
       </button>
-      <button
-        class="notification-settings__save"
-        type="submit"
-        :disabled="disabled || choiceOpen || !dirty"
-      >
-        {{ busy ? 'Сохраняем…' : 'Сохранить настройки' }}
-      </button>
-    </form>
+    </div>
   </section>
 </template>

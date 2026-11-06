@@ -139,7 +139,7 @@ describe('actual-key drafts and cross-set reapply boundary', () => {
     current.types.ADMIN_ACCESS_CHANGED = { appPush: false, telegram: false, colorId: 'grey' }
     const beforeDraft = structuredClone(draft),
       beforeCurrent = structuredClone(current)
-    expect(reapplyNotificationPreferences(draft, current)).toBeNull()
+    expect(reapplyNotificationPreferences(draft, current, beforeDraft)).toBeNull()
     expect(draft).toEqual(beforeDraft)
     expect(current).toEqual(beforeCurrent)
   })
@@ -149,15 +149,28 @@ describe('actual-key drafts and cross-set reapply boundary', () => {
   ])(
     'allows explicit $name same-set reapply with new revision and preserved choices',
     ({ ids }) => {
-      const draft = changeNotificationColor(preferences(ids), 'LESSON_STARTED', 'red')
+      const baseline = preferences(ids)
+      const draft = changeNotificationColor(baseline, 'LESSON_STARTED', 'red')
       const current = { ...preferences(ids), revision: 'current-revision' }
-      const update = reapplyNotificationPreferences(draft, current)!
+      current.types.GROUP_RENAMED.colorId = 'green'
+      const update = reapplyNotificationPreferences(draft, current, baseline)!
       expect(update.expectedRevision).toBe(current.revision)
       expect(update.types.LESSON_STARTED.colorId).toBe('red')
+      expect(update.types.GROUP_RENAMED.colorId).toBe('green')
       expect(Object.keys(update.types)).toHaveLength(ids.length)
       expect(update).not.toHaveProperty('mutedUntil')
     },
   )
+  it('keeps the chosen column when unifying over concurrent channel changes', () => {
+    const baseline = changeNotificationChannelMode(preferences(), true)!
+    baseline.types.LESSON_STARTED.telegram = false
+    const draft = changeNotificationChannelMode(baseline, false, 'telegram')!
+    const current = changeNotificationDelivery(baseline, 'HOMEWORK_UPDATED', 'telegram', true)
+    const update = reapplyNotificationPreferences(draft, current, baseline, undefined, 'telegram')!
+    expect(update.splitChannels).toBe(false)
+    expect(update.types.LESSON_STARTED).toMatchObject({ appPush: false, telegram: false })
+    expect(update.types.HOMEWORK_UPDATED).toMatchObject({ appPush: true, telegram: true })
+  })
 })
 
 describe('editable notification payload comparison', () => {

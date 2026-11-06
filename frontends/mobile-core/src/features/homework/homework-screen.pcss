@@ -19,6 +19,30 @@
   gap: var(--rct-space-3);
 }
 
+.homework-notification-nav {
+  inline-size: min(calc(100% - 2 * var(--rct-space-4)), var(--rct-mobile-content-width));
+  margin-inline: auto;
+  padding-block-start: calc(env(safe-area-inset-top) + var(--rct-space-5));
+}
+
+.homework-notification-back {
+  display: grid;
+  place-items: center;
+  inline-size: var(--rct-control-min-touch);
+  block-size: var(--rct-control-min-touch);
+  border: 0;
+  border-radius: var(--rct-task-back-radius);
+  padding: 0;
+  color: var(--rct-color-text-secondary);
+  background: var(--rct-color-surface-float);
+  cursor: pointer;
+  @mixin rct-focus-ring;
+}
+
+.homework-notification-nav + .homework-screen .homework-content {
+  padding-block-start: var(--rct-space-2);
+}
+
 .homework-content h1 {
   margin: 0;
   color: var(--rct-color-text-primary);

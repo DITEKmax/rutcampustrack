@@ -2397,7 +2397,6 @@ defineExpose({ openNotificationAction });
       @select-date="navigateHomeworkPeriod(() => homework.selectDate($event))"
       @step-period="navigateHomeworkPeriod(() => homework.stepPeriod($event))"
       @navigate="navigate"
-      @back="navigation.back()"
     />
     <MobileShell
       v-else-if="route.root === 'attendance'"

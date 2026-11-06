@@ -24,12 +24,11 @@ public class NotificationInboxService {
     private final MongoTemplate mongo;
     private final NotificationCatalog catalog;
     private final Clock clock;
-    private NotificationProjectionSignals signals;
+    private final NotificationProjectionSignals signals;
+    private final NotificationSubjectNames subjectNames;
 
     public NotificationInboxService(MongoTemplate mongo, NotificationCatalog catalog, Clock clock) {
-        this.mongo = mongo;
-        this.catalog = catalog;
-        this.clock = clock;
+        this(mongo, catalog, clock, null, null);
     }
 
     @org.springframework.beans.factory.annotation.Autowired
@@ -37,9 +36,13 @@ public class NotificationInboxService {
             MongoTemplate mongo,
             NotificationCatalog catalog,
             Clock clock,
-            NotificationProjectionSignals signals) {
-        this(mongo, catalog, clock);
+            NotificationProjectionSignals signals,
+            NotificationSubjectNames subjectNames) {
+        this.mongo = mongo;
+        this.catalog = catalog;
+        this.clock = clock;
         this.signals = signals;
+        this.subjectNames = subjectNames;
     }
 
     public NotificationInboxDto.Page list(
@@ -80,8 +83,19 @@ public class NotificationInboxService {
         boolean hasMore = documents.size() > limit;
         if (hasMore) documents = documents.subList(0, limit);
         String next = hasMore ? encode(documents.getLast(), context, unreadOnly) : null;
+        Map<Long, String> names = subjectNames(documents);
         return new NotificationInboxDto.Page(
-                role, documents.stream().map(doc -> catalog.present(doc, role)).toList(), next);
+                role, documents.stream().map(doc -> catalog.presentInbox(doc, role, names)).toList(), next);
+    }
+
+    private Map<Long, String> subjectNames(List<NotificationHistoryDocument> documents) {
+        if (subjectNames == null) return Map.of();
+        Set<Long> ids = new LinkedHashSet<>();
+        for (NotificationHistoryDocument doc : documents) {
+            Long id = NotificationCatalog.inboxSubjectLookupId(doc);
+            if (id != null) ids.add(id);
+        }
+        return ids.isEmpty() ? Map.of() : subjectNames.lookup(ids);
     }
 
     public NotificationInboxDto.Count count(RequestContext context) {
@@ -96,6 +110,11 @@ public class NotificationInboxService {
 
     public NotificationInboxDto.ReadResult readState(
             RequestContext context, String id, NotificationInboxDto.ReadState request) {
+        return readState(context, id, request, true);
+    }
+
+    private NotificationInboxDto.ReadResult readState(
+            RequestContext context, String id, NotificationInboxDto.ReadState request, boolean enrich) {
         String role = context.requireSelectedRole();
         if (request == null
                 || request.read() == null
@@ -123,11 +142,11 @@ public class NotificationInboxService {
         if (view.getRevision() != expected) {
             if (Objects.equals(view.getLastExpected(), expected)
                     && Objects.equals(view.getLastRead(), request.read())) {
-                return result(before, context, role);
+                return result(before, context, role, enrich);
             }
             throw conflict();
         }
-        if ((view.getReadAt() != null) == request.read()) return result(before, context, role);
+        if ((view.getReadAt() != null) == request.read()) return result(before, context, role, enrich);
         Instant now = Instant.now(clock);
         Update update =
                 new Update()
@@ -155,13 +174,17 @@ public class NotificationInboxService {
                 throw conflict();
         }
         if (signals != null && changed) signals.changed(context.getUserId());
-        return result(saved, context, role);
+        return result(saved, context, role, enrich);
     }
 
     private NotificationInboxDto.ReadResult result(
-            NotificationHistoryDocument doc, RequestContext context, String role) {
+            NotificationHistoryDocument doc, RequestContext context, String role, boolean enrich) {
         return new NotificationInboxDto.ReadResult(
-                role, catalog.present(doc, role), count(context).count());
+                role,
+                enrich
+                        ? catalog.presentInbox(doc, role, subjectNames(List.of(doc)))
+                        : catalog.present(doc, role),
+                count(context).count());
     }
 
     public long markAllRead(RequestContext context) {
@@ -197,7 +220,8 @@ public class NotificationInboxService {
                 context,
                 id,
                 new NotificationInboxDto.ReadState(
-                        true, Long.toString(doc.getRoleViews().get(role).getRevision())));
+                        true, Long.toString(doc.getRoleViews().get(role).getRevision())),
+                false);
         return true;
     }
 

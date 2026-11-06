@@ -110,6 +110,7 @@ const emit = defineEmits<{
 }>();
 
 const homeworkRoute = rootRoute('homework');
+const openedFromNotification = computed(() => props.route?.id === 'homework/notification-target');
 const shellOptionalProps = computed(() =>
   props.keyboardVisible === undefined ? {} : { keyboardVisible: props.keyboardVisible },
 );
@@ -450,6 +451,24 @@ onBeforeUnmount(() => {
     @navigate="emit('navigate', $event)"
     @back="emit('back', $event)"
   >
+    <template
+      v-if="openedFromNotification"
+      #back="{ visible, onBack }"
+    >
+      <div
+        v-if="visible"
+        class="homework-notification-nav"
+      >
+        <button
+          class="homework-notification-back"
+          type="button"
+          aria-label="Назад"
+          @click="onBack"
+        >
+          <MobileIcon name="back" />
+        </button>
+      </div>
+    </template>
     <main
       class="homework-screen"
       aria-labelledby="homework-title"
@@ -801,7 +820,7 @@ onBeforeUnmount(() => {
       </div>
 
       <button
-        v-if="historical"
+        v-if="historical && !openedFromNotification"
         class="homework-return-today"
         type="button"
         aria-label="Вернуться к сегодняшним заданиям"

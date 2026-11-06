@@ -83,15 +83,8 @@
   background: var(--rct-error-surface);
 }
 .notification-settings__choice p,
-.notification-settings__notice p,
-.notification-settings__capability p {
+.notification-settings__notice p {
   margin: 0;
-}
-.notification-settings__capability {
-  display: grid;
-  gap: var(--rct-space-1);
-  margin-block-end: var(--rct-space-3);
-  color: var(--rct-color-text-secondary);
 }
 .notification-settings__matrix {
   inline-size: 100%;
@@ -159,10 +152,6 @@
   margin-block: var(--rct-space-4);
   text-align: start;
 }
-.notification-settings__save {
-  inline-size: 100%;
-}
-
 /* Accepted Student presentation; existing roles retain their base rules. */
 :where([data-student-ui]) .notification-settings,
 :where([data-student-ui]):is(.notification-settings) {
@@ -271,17 +260,8 @@
 :where([data-student-ui]) .notification-settings__choice p,
 :where([data-student-ui]):is(.notification-settings__choice p),
 :where([data-student-ui]) .notification-settings__notice p,
-:where([data-student-ui]):is(.notification-settings__notice p),
-:where([data-student-ui]) .notification-settings__capability p,
-:where([data-student-ui]):is(.notification-settings__capability p) {
+:where([data-student-ui]):is(.notification-settings__notice p) {
   margin: 0;
-}
-:where([data-student-ui]) .notification-settings__capability,
-:where([data-student-ui]):is(.notification-settings__capability) {
-  display: grid;
-  gap: var(--rct-space-1);
-  margin-block-end: var(--rct-space-3);
-  color: var(--rct-color-text-secondary);
 }
 :where([data-student-ui]) .notification-settings__matrix-scroll,
 :where([data-student-ui]):is(.notification-settings__matrix-scroll) {
@@ -368,11 +348,6 @@
   margin-block: var(--rct-space-4);
   text-align: start;
 }
-:where([data-student-ui]) .notification-settings__save,
-:where([data-student-ui]):is(.notification-settings__save) {
-  inline-size: 100%;
-}
-
 :where([data-student-ui]) .notification-settings__colors .mobile-icon,
 :where([data-student-ui]):is(.notification-settings__colors .mobile-icon) {
   flex: 0 0 var(--rct-icon-size);
@@ -380,12 +355,8 @@
   block-size: var(--rct-icon-size);
   transform: rotate(180deg);
 }
-:where([data-student-ui]) .notification-settings .notification-settings__save:not(:disabled),
-:where([data-student-ui]):is(.notification-settings .notification-settings__save:not(:disabled)) {
-  color: var(--rct-color-accent-on-now);
-  background: var(--rct-color-accent-now);
-}
-:where([data-student-ui]) .notification-settings .notification-settings__save:disabled,
-:where([data-student-ui]):is(.notification-settings .notification-settings__save:disabled) {
+.notification-settings__matrix thead th[data-unavailable],
+.notification-settings__row td[data-unavailable] {
+  color: var(--rct-color-disabled-text);
   background: var(--rct-color-disabled-surface);
 }

@@ -9,14 +9,9 @@ import type {
   NotificationCatalog,
   NotificationPaletteId,
   NotificationPreferencesV2,
-  NotificationPreferencesV2Update,
   NotificationTypeId,
 } from './notifications-v2-models';
-import {
-  changeNotificationColor,
-  notificationPreferencesUpdate,
-  notificationPreferencesDiffer,
-} from './notification-preferences-draft';
+import { changeNotificationColor, type NotificationPreferencesEdit } from './notification-preferences-draft';
 import './notification-colors.pcss';
 
 const props = defineProps<{
@@ -32,13 +27,11 @@ const props = defineProps<{
   offline?: boolean;
 }>();
 const emit = defineEmits<{
-  'update:draft': [value: NotificationPreferencesV2];
-  save: [value: NotificationPreferencesV2Update];
+  edit: [change: NotificationPreferencesEdit];
   reload: [];
   reapply: [];
 }>();
 const value = computed(() => props.draft ?? props.preferences);
-const dirty = computed(() => notificationPreferencesDiffer(value.value, props.preferences));
 const compatible = computed(
   () =>
     notificationCatalogMatchesPreferences(props.catalog, props.preferences) &&
@@ -54,7 +47,7 @@ const catalogChanged = computed(
       )),
 );
 const disabled = computed(() =>
-  Boolean(props.busy || props.offline || props.conflict || props.blocked || !compatible.value),
+  Boolean(props.offline || props.conflict || props.blocked || !compatible.value),
 );
 const groups = computed(() =>
   compatible.value
@@ -88,11 +81,7 @@ async function toggleType(id: NotificationTypeId): Promise<void> {
 }
 function setColor(id: NotificationTypeId, colorId: NotificationPaletteId): void {
   if (disabled.value) return;
-  emit('update:draft', changeNotificationColor(value.value, id, colorId));
-}
-function save(): void {
-  if (!disabled.value && dirty.value)
-    emit('save', notificationPreferencesUpdate(value.value, props.preferences.revision));
+  emit('edit', (latest) => changeNotificationColor(latest, id, colorId));
 }
 </script>
 
@@ -138,7 +127,6 @@ function save(): void {
     >
       <p>{{ error }}</p>
       <button
-        v-if="errorTone === 'warning' || blocked || !compatible"
         type="button"
         :disabled="busy || offline"
         @click="emit('reload')"
@@ -227,8 +215,7 @@ function save(): void {
                 <span
                   class="notification-colors__selected"
                   aria-hidden="true"
-                  >{{ type.preferences.colorId === color.id ? '✓' : '' }}</span
-                >
+                >{{ type.preferences.colorId === color.id ? '✓' : '' }}</span>
               </template>
             </button>
           </div>
@@ -237,18 +224,11 @@ function save(): void {
             type="button"
             class="notification-colors__reset"
             @click="setColor(type.id, 'violet')"
-            >Сбросить: фиолетовый</button
           >
+            Сбросить: фиолетовый
+          </button>
         </fieldset>
       </div>
     </section>
-    <button
-      type="button"
-      class="notification-colors__save"
-      :disabled="disabled || !dirty"
-      @click="save"
-    >
-      {{ busy ? 'Сохраняем…' : 'Сохранить цвета' }}
-    </button>
   </section>
 </template>

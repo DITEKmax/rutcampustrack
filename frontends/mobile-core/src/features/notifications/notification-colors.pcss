@@ -22,14 +22,15 @@
   cursor: not-allowed;
 }
 .notification-colors__group {
-  margin-block-end: var(--rct-space-4);
+  margin-block-end: var(--rct-space-5);
 }
 .notification-colors__group h2 {
   margin: 0;
-  padding-block: var(--rct-space-3);
-  color: var(--rct-color-text-secondary);
-  font-size: var(--rct-font-size-caption);
-  font-weight: var(--rct-font-weight-medium);
+  padding-block: var(--rct-space-2);
+  color: var(--rct-color-text-primary);
+  font-size: var(--rct-font-size-title-block);
+  font-weight: var(--rct-font-weight-bold);
+  line-height: var(--rct-leading-snug);
 }
 .notification-colors__item {
   border-block-end: var(--rct-border-hairline) solid var(--rct-color-border-default);
@@ -37,6 +38,7 @@
 .notification-colors .notification-colors__type {
   display: flex;
   inline-size: 100%;
+  min-block-size: var(--rct-profile-row-height);
   align-items: center;
   gap: var(--rct-space-3);
   border: 0;
@@ -101,9 +103,6 @@
   inline-size: 100%;
   margin-block-start: var(--rct-space-2);
 }
-.notification-colors__save {
-  inline-size: 100%;
-}
 .notification-colors__notice {
   display: grid;
   gap: var(--rct-space-2);
@@ -146,21 +145,6 @@
 :where([data-student-ui]):is(.notification-colors button:disabled) {
   color: var(--rct-color-disabled-text);
   cursor: not-allowed;
-}
-:where([data-student-ui]) .notification-colors__group,
-:where([data-student-ui]):is(.notification-colors__group) {
-  margin-block-end: var(--rct-space-4);
-}
-:where([data-student-ui]) .notification-colors__group h2,
-:where([data-student-ui]):is(.notification-colors__group h2) {
-  position: absolute;
-  inline-size: var(--rct-border-hairline);
-  block-size: var(--rct-border-hairline);
-  margin: 0;
-  padding: 0;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
 }
 :where([data-student-ui]) .notification-colors__item,
 :where([data-student-ui]):is(.notification-colors__item) {
@@ -259,10 +243,6 @@
   color: var(--rct-color-text-primary);
   background: var(--rct-color-surface-base);
 }
-:where([data-student-ui]) .notification-colors__save,
-:where([data-student-ui]):is(.notification-colors__save) {
-  inline-size: 100%;
-}
 :where([data-student-ui]) .notification-colors__notice,
 :where([data-student-ui]):is(.notification-colors__notice) {
   display: grid;
@@ -282,14 +262,4 @@
 :where([data-student-ui]) .notification-colors__notice p,
 :where([data-student-ui]):is(.notification-colors__notice p) {
   margin: 0;
-}
-
-:where([data-student-ui]) .notification-colors .notification-colors__save:not(:disabled),
-:where([data-student-ui]):is(.notification-colors .notification-colors__save:not(:disabled)) {
-  color: var(--rct-color-accent-on-now);
-  background: var(--rct-color-accent-now);
-}
-:where([data-student-ui]) .notification-colors .notification-colors__save:disabled,
-:where([data-student-ui]):is(.notification-colors .notification-colors__save:disabled) {
-  background: var(--rct-color-disabled-surface);
 }

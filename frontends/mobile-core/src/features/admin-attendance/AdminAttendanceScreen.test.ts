@@ -16,7 +16,7 @@ vi.mock('../../shared/components/ExportButton.vue', () => ({
         h(
           'button',
           { disabled: props.disabled, onClick: () => exports.push(props.request('html')) },
-          'Выгрузка',
+          'Скачать',
         )
     },
   },
@@ -25,14 +25,6 @@ class TestElement extends EventTarget {
   children: TestElement[] = []
   parentElement: TestElement | null = null
   props: Record<string, unknown> = {}
-  selected = false
-  selectedIndex = -1
-  get options(): TestElement[] {
-    return this.children.filter((node) => node.tag === 'option')
-  }
-  get multiple(): boolean {
-    return Boolean(this.props.multiple)
-  }
   value = ''
   text = ''
   composing = false
@@ -52,8 +44,13 @@ class TestElement extends EventTarget {
   focus(): void {
     testDocument.activeElement = this
   }
+  querySelectorAll(selector: string): TestElement[] {
+    return selector === '[role="option"]'
+      ? nodes(this).filter((node) => node.props.role === 'option')
+      : []
+  }
 }
-class TestDocument {
+class TestDocument extends EventTarget {
   activeElement: TestElement | null = null
 }
 const testDocument = new TestDocument()
@@ -102,9 +99,18 @@ function text(root: TestElement): string {
     .join(' ')
 }
 function button(root: TestElement, label: string): TestElement {
-  const node = nodes(root).find((node) => node.tag === 'button' && text(node).trim() === label)
+  const node = nodes(root).find(
+    (node) => node.tag === 'button' && (node.props['aria-label'] ?? text(node).trim()) === label,
+  )
   if (!node) throw new Error('Missing ' + label)
   return node
+}
+async function choose(root: TestElement, label: string, option: string): Promise<void> {
+  ;(button(root, label).props.onClick as () => void)()
+  await flush()
+  expect(nodes(root).some((node) => node.props.role === 'listbox')).toBe(true)
+  ;(button(root, option).props.onClick as () => void)()
+  await flush()
 }
 
 async function flush(): Promise<void> {
@@ -196,7 +202,7 @@ describe('current administrator group attendance view', () => {
     expect(
       nodes(root).some((node) => node.tag === 'button' && text(node).includes('Своя группа')),
     ).toBe(false)
-    ;(button(root, 'Выгрузка').props.onClick as () => void)()
+    ;(button(root, 'Скачать').props.onClick as () => void)()
     expect(exports).toEqual([
       {
         kind: 'ADMIN_GROUP_ATTENDANCE',
@@ -210,27 +216,34 @@ describe('current administrator group attendance view', () => {
       },
     ])
   })
-  it('applies the trimmed server filter and exports all matching rows without page parameters', async () => {
+  it('applies search and popup selections to the server and exports the matching rows without paging', async () => {
     const { root, client } = mount()
     await flush()
     const field = nodes(root).find((node) => node.tag === 'input')!
     ;(field.props['onUpdate:modelValue'] as (value: string) => void)('  АБ  ')
     const form = nodes(root).find((node) => node.tag === 'form')!
+    expect(button(root, 'Найти группу').props.type).toBe('submit')
     ;(form.props.onSubmit as (event: Event) => void)(new Event('submit', { cancelable: true }))
     await flush()
     expect(client.getReport).toHaveBeenLastCalledWith(
       { semesterId: '31', search: 'АБ', sort: 'GROUP_NAME', direction: 'ASC', page: 0, size: 25 },
       expect.any(AbortSignal),
     )
-    ;(button(root, 'Выгрузка').props.onClick as () => void)()
+    await choose(root, 'Сортировка', 'По отметкам +')
+    await choose(root, 'Порядок', 'По убыванию')
+    expect(client.getReport).toHaveBeenLastCalledWith(
+      { semesterId: '31', search: 'АБ', sort: 'PRESENT', direction: 'DESC', page: 0, size: 25 },
+      expect.any(AbortSignal),
+    )
+    ;(button(root, 'Скачать').props.onClick as () => void)()
     expect(exports).toEqual([
       {
         kind: 'ADMIN_GROUP_ATTENDANCE',
         adminGroupAttendance: {
           semesterId: '31',
           search: 'АБ',
-          sort: 'GROUP_NAME',
-          direction: 'ASC',
+          sort: 'PRESENT',
+          direction: 'DESC',
           format: 'html',
         },
       },
@@ -292,7 +305,7 @@ describe('current administrator group attendance view', () => {
     finishOld({ ...prior, rows: [{ ...prior.rows[0]!, groupName: 'Старый закрытый scope' }] })
     await flush()
     expect(text(root)).not.toContain('Старый закрытый scope')
-    expect(text(root)).not.toContain('Выгрузка')
+    expect(text(root)).not.toContain('Скачать')
     finishCurrent(result(query))
     await flush()
     expect(text(root)).toContain('Своя группа')

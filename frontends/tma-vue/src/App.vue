@@ -1517,7 +1517,8 @@ onBeforeUnmount(() => {
         !studentViewVisible &&
         !headmanViewVisible &&
         !teacherViewVisible &&
-        !adminHomeViewVisible
+        !adminHomeViewVisible &&
+        !adminAttendanceViewVisible
     "
     :data-admin-ui="profile?.activeRole === 'ADMIN' ? '' : undefined"
     :data-theme="profile?.activeRole === 'ADMIN' ? adminTheme : undefined"

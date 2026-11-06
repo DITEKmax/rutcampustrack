@@ -2323,7 +2323,8 @@ onBeforeUnmount(() => {
         !studentViewVisible &&
         !headmanViewVisible &&
         !teacherViewVisible &&
-        !adminHomeViewVisible
+        !adminHomeViewVisible &&
+        !adminAttendanceViewVisible
     "
     :data-admin-ui="authSnapshot?.activeRole === 'ADMIN' ? '' : undefined"
     :data-theme="authSnapshot?.activeRole === 'ADMIN' ? adminTheme : undefined"

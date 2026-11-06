@@ -150,10 +150,23 @@ describe('dashboard event invalidation lifecycle', () => {
     )
     const { root, props } = mount({ getStats, getActivity } as unknown as AdminDashboardClient)
     await flush()
-    expect(text(root)).toContain('прирост +2 за сутки')
-    expect(text(root)).toContain('снижение −1 за сутки')
-    expect(text(root)).toContain('без изменений за сутки')
     const descendants = (node: Element): Element[] => [node, ...node.children.flatMap(descendants)]
+    const scaleDeltas = () =>
+      descendants(root)
+        .filter((node) => node.tag === 'small' && 'data-tone' in node.props)
+        .map((node) => ({
+          tone: node.props['data-tone'],
+          visible: text(node.children.find((child) => child.props['aria-hidden'] === 'true')!),
+          accessible: text(
+            node.children.find((child) => child.tag === 'span' && !child.props['aria-hidden'])!,
+          ),
+        }))
+    const expected = [
+      { tone: 'positive', visible: '↑ 2', accessible: 'Прирост за сутки: 2' },
+      { tone: 'negative', visible: '↓ 1', accessible: 'Снижение за сутки: 1' },
+      { tone: 'neutral', visible: '—', accessible: 'Без изменений за сутки' },
+    ]
+    expect(scaleDeltas()).toEqual(expected)
     const allTime = descendants(root).find(
       (node) => node.tag === 'button' && text(node).trim() === 'Всё время',
     )!
@@ -161,14 +174,17 @@ describe('dashboard event invalidation lifecycle', () => {
     await flush()
     expect(getActivity.mock.calls.at(-1)?.[0]).toBe('all_time')
     expect(getStats).toHaveBeenCalledTimes(1)
-    expect(text(root)).toContain('прирост +2 за сутки')
-    expect(text(root)).toContain('снижение −1 за сутки')
-    expect(text(root)).toContain('без изменений за сутки')
+    expect(scaleDeltas()).toEqual(expected)
     props.invalidationRevision++
     await flush()
-    expect(text(root).match(/нет данных за вчера/g)).toHaveLength(3)
+    expect(scaleDeltas()).toEqual(
+      Array.from({ length: 3 }, () => ({
+        tone: 'missing',
+        visible: 'Нет данных',
+        accessible: 'Нет данных за вчера',
+      })),
+    )
     expect(text(root)).toContain('19')
-    expect(text(root)).not.toContain('прирост +2 за сутки')
   })
 
   it('preserves visible data during quiet refresh and rejects a superseded response', async () => {

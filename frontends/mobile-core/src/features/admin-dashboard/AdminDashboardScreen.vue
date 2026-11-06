@@ -44,15 +44,33 @@ const bucket = ref<AdminActivityBucket>('day');
 const metricCode = ref<AdminActivityMetricCode>('positiveMarks');
 const metricOptionsOpen = ref(false);
 const stats = ref<AdminDashboardStats | null>(null);
-function scaleGrowth(field: 'studentsDelta' | 'teachersDelta' | 'groupsDelta'): string {
-  const growth = stats.value?.dailyGrowth;
-  const value = growth?.status === 'AVAILABLE' ? growth[field] : null;
-  if (value === null || value === undefined) return 'нет данных за вчера';
-  if (value === 0) return 'без изменений за сутки';
+function scaleGrowth(value: number | null | undefined): {
+  text: string;
+  tone: 'positive' | 'negative' | 'neutral' | 'missing';
+  description: string;
+} {
+  if (value == null)
+    return { text: 'Нет данных', tone: 'missing', description: 'Нет данных за вчера' };
+  if (value === 0) return { text: '—', tone: 'neutral', description: 'Без изменений за сутки' };
+  const magnitude = formatCount(Math.abs(value));
   return value > 0
-    ? `прирост +${formatCount(value)} за сутки`
-    : `снижение −${formatCount(-value)} за сутки`;
+    ? { text: `↑ ${magnitude}`, tone: 'positive', description: `Прирост за сутки: ${magnitude}` }
+    : { text: `↓ ${magnitude}`, tone: 'negative', description: `Снижение за сутки: ${magnitude}` };
 }
+const scaleCards = computed(() => {
+  const current = stats.value;
+  if (!current) return [];
+  const growth = current.dailyGrowth?.status === 'AVAILABLE' ? current.dailyGrowth : null;
+  return [
+    { label: 'Студенты', total: current.totalStudents, delta: scaleGrowth(growth?.studentsDelta) },
+    {
+      label: 'Преподаватели',
+      total: current.totalTeachers,
+      delta: scaleGrowth(growth?.teachersDelta),
+    },
+    { label: 'Группы', total: current.activeGroups, delta: scaleGrowth(growth?.groupsDelta) },
+  ];
+});
 const loading = ref(false);
 const error = ref<string | null>(null);
 const activity = ref<AdminDashboardActivity | null>(null);
@@ -206,19 +224,23 @@ onBeforeUnmount(() => {
       class="admin-dashboard-screen__stats"
       aria-label="Активные аккаунты и группы"
     >
-      <div class="admin-dashboard-screen__stat">
-        <dt>Студенты</dt><dd>
-          <span>{{ formatCount(stats.totalStudents) }}</span><small class="admin-dashboard-screen__delta">{{ scaleGrowth('studentsDelta') }}</small>
-        </dd>
-      </div>
-      <div class="admin-dashboard-screen__stat">
-        <dt>Преподаватели</dt><dd>
-          <span>{{ formatCount(stats.totalTeachers) }}</span><small class="admin-dashboard-screen__delta">{{ scaleGrowth('teachersDelta') }}</small>
-        </dd>
-      </div>
-      <div class="admin-dashboard-screen__stat">
-        <dt>Группы</dt><dd>
-          <span>{{ formatCount(stats.activeGroups) }}</span><small class="admin-dashboard-screen__delta">{{ scaleGrowth('groupsDelta') }}</small>
+      <div
+        v-for="card in scaleCards"
+        :key="card.label"
+        class="admin-dashboard-screen__stat"
+      >
+        <dt>{{ card.label }}</dt>
+        <dd>
+          <span>{{ formatCount(card.total) }}</span>
+          <small
+            class="admin-dashboard-screen__delta"
+            :data-tone="card.delta.tone"
+          >
+            <span aria-hidden="true">{{ card.delta.text }}</span>
+            <span class="admin-dashboard-screen__visually-hidden">{{
+              card.delta.description
+            }}</span>
+          </small>
         </dd>
       </div>
     </dl>
@@ -330,14 +352,21 @@ onBeforeUnmount(() => {
           </tr>
         </tbody>
       </table>
-      <div class="admin-dashboard-screen__period admin-dashboard-screen__period--attendance">
+    </section>
+    <section
+      class="admin-dashboard-screen__chart-panel"
+      aria-label="График активности"
+      :aria-busy="activityLoading"
+    >
+      <h2>
         <button
+          class="admin-dashboard-screen__attendance-link"
           type="button"
           @click="emit('open-attendance')"
         >
-          Посещаемость групп
+          Посещаемость групп <MobileIcon name="chevron-down" />
         </button>
-      </div>
+      </h2>
       <div
         class="admin-dashboard-screen__period"
         role="group"
@@ -359,23 +388,20 @@ onBeforeUnmount(() => {
         </button>
       </div>
       <template v-if="activity">
-        <div class="admin-dashboard-screen__metric-picker">
-          <span>Показатель графика</span>
-          <button
-            class="admin-dashboard-screen__metric-trigger"
-            type="button"
-            aria-haspopup="dialog"
-            :aria-expanded="metricOptionsOpen"
-            data-admin-metric-trigger
-            @click="metricOptionsOpen = true"
-          >
-            <span>{{ adminActivityLabels[metricCode] }}</span>
-            <MobileIcon name="back" />
-          </button>
-        </div>
+        <button
+          class="admin-dashboard-screen__metric-trigger"
+          type="button"
+          aria-haspopup="dialog"
+          :aria-expanded="metricOptionsOpen"
+          data-admin-metric-trigger
+          @click="metricOptionsOpen = true"
+        >
+          <span>{{ adminActivityLabels[metricCode] }}</span>
+          <MobileIcon name="chevron-down" />
+        </button>
         <MobileToolsSheet
           v-model:open="metricOptionsOpen"
-          title="Показатель графика"
+          title="Показатели"
           icon-close
         >
           <div
@@ -423,6 +449,20 @@ onBeforeUnmount(() => {
           </p>
         </AdminNotice>
       </template>
+      <p
+        v-else-if="activityLoading"
+        class="admin-dashboard-screen__note"
+        aria-hidden="true"
+      >
+        Загружаем график…
+      </p>
+      <p
+        v-else-if="activityError"
+        class="admin-dashboard-screen__note"
+        aria-hidden="true"
+      >
+        График недоступен. Повтори загрузку в блоке активности.
+      </p>
     </section>
     <button
       class="admin-dashboard-screen__refresh"

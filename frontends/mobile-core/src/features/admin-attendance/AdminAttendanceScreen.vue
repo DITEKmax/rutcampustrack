@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { adminHasPermission, type AdminAccessProfile } from '../admin-access/admin-access-client';
+import HeadmanStatsSelect from '../headman-stats/HeadmanStatsSelect.vue';
 import { StaleSessionGenerationError } from '../../shared/session-owner';
 import AdminNotice from '../../shared/components/AdminNotice.vue';
 import ExportButton from '../../shared/components/ExportButton.vue';
+import MobileIcon from '../../shared/components/MobileIcon.vue';
 import type {
   ReportDownloadFormat,
   ReportDownloadPort,
@@ -31,6 +33,9 @@ const canView = computed(
   () => props.online && adminHasPermission(props.authority, 'DASHBOARD_VIEW'),
 );
 const semesters = ref<readonly AdminAttendanceSemester[]>([]);
+const semesterOptions = computed(() =>
+  semesters.value.map(({ id, name }) => ({ value: id, label: name })),
+);
 const semesterId = ref(''),
   search = ref(''),
   appliedSearch = ref('');
@@ -51,6 +56,21 @@ const sortOptions: readonly { value: AdminAttendanceSort; label: string }[] = [
   { value: 'PRESENT', label: 'По отметкам +' },
   { value: 'ABSENT', label: 'По отметкам н' },
   { value: 'EXCUSED', label: 'По отметкам у' },
+];
+const directionOptions = [
+  { value: 'ASC', label: 'По возрастанию' },
+  { value: 'DESC', label: 'По убыванию' },
+] as const;
+const legend = [
+  { label: '% +', description: 'Доля отметок о присутствии' },
+  { label: '% (+ и у)', description: 'Доля отметок о присутствии или уважительной причине' },
+  { label: 'Пары', description: 'Число учтённых пар. Отменённые пары не учитываются' },
+  {
+    label: '+ / н / у',
+    description: 'Число отметок: присутствие / отсутствие / уважительная причина',
+  },
+  { label: '0 %', description: 'Данные есть, доля равна нулю' },
+  { label: 'Нет данных', description: 'Процент нельзя рассчитать' },
 ];
 function invalidate(): void {
   ++sequence;
@@ -105,6 +125,23 @@ async function load(reloadSemesters = false): Promise<void> {
 function filtersChanged(): void {
   page.value = 0;
   void load();
+}
+function selectSemester(value: string): void {
+  if (value === semesterId.value || !semesters.value.some((item) => item.id === value)) return;
+  semesterId.value = value;
+  filtersChanged();
+}
+function selectSort(value: string): void {
+  const option = sortOptions.find((item) => item.value === value);
+  if (!option || option.value === sort.value) return;
+  sort.value = option.value;
+  filtersChanged();
+}
+function selectDirection(value: string): void {
+  const option = directionOptions.find((item) => item.value === value);
+  if (!option || option.value === direction.value) return;
+  direction.value = option.value;
+  filtersChanged();
 }
 function submitSearch(): void {
   appliedSearch.value = search.value.trim();
@@ -187,10 +224,12 @@ onBeforeUnmount(() => {
     <header class="admin-attendance-screen__header">
       <button
         v-if="showBack"
+        class="admin-attendance-screen__icon-action"
         type="button"
+        aria-label="Назад"
         @click="emit('back')"
       >
-        Назад
+        <MobileIcon name="back" />
       </button>
       <h1 id="admin-attendance-title">
         Посещаемость групп
@@ -209,67 +248,68 @@ onBeforeUnmount(() => {
       Нет доступа к отчёту посещаемости.
     </p>
     <template v-else>
-      <label
-        class="admin-attendance-screen__field"
-        for="admin-attendance-semester"
-      >Семестр
-        <select
-          id="admin-attendance-semester"
-          v-model="semesterId"
+      <div class="admin-attendance-screen__field">
+        <span aria-hidden="true">Семестр</span>
+        <HeadmanStatsSelect
+          label="Семестр"
+          popup
+          :model-value="semesterId"
+          :options="semesterOptions"
+          placeholder="Нет семестров"
           :disabled="loading || semesters.length === 0"
-          @change="filtersChanged"
-        >
-          <option
-            v-for="item in semesters"
-            :key="item.id"
-            :value="item.id"
-          >{{ item.name }}</option>
-        </select>
-      </label>
+          @update:model-value="selectSemester"
+        />
+      </div>
       <form
         class="admin-attendance-screen__search"
+        role="search"
+        aria-label="Поиск по группам"
         @submit.prevent="submitSearch"
       >
         <label
-          class="admin-attendance-screen__field"
+          class="admin-attendance-screen__visually-hidden"
           for="admin-attendance-search"
-        >Найти группу<input
+        >Название группы</label>
+        <input
           id="admin-attendance-search"
           v-model="search"
           type="search"
+          placeholder="Найти группу"
           maxlength="200"
           :disabled="loading || !semesterId"
-        ></label>
+        >
         <button
+          class="admin-attendance-screen__icon-action"
           type="submit"
+          aria-label="Найти группу"
           :disabled="loading || !semesterId"
         >
-          Найти
+          <MobileIcon name="search" />
         </button>
       </form>
       <div class="admin-attendance-screen__filters">
-        <label
-          class="admin-attendance-screen__field"
-          for="admin-attendance-sort"
-        >Сортировка<select
-          id="admin-attendance-sort"
-          v-model="sort"
-          :disabled="loading || !semesterId"
-          @change="filtersChanged"
-        ><option
-          v-for="item in sortOptions"
-          :key="item.value"
-          :value="item.value"
-        >{{ item.label }}</option></select></label>
-        <label
-          class="admin-attendance-screen__field"
-          for="admin-attendance-direction"
-        >Порядок<select
-          id="admin-attendance-direction"
-          v-model="direction"
-          :disabled="loading || !semesterId"
-          @change="filtersChanged"
-        ><option value="ASC">По возрастанию</option><option value="DESC">По убыванию</option></select></label>
+        <div class="admin-attendance-screen__field">
+          <span aria-hidden="true">Сортировка</span>
+          <HeadmanStatsSelect
+            label="Сортировка"
+            popup
+            :model-value="sort"
+            :options="sortOptions"
+            :disabled="loading || !semesterId"
+            @update:model-value="selectSort"
+          />
+        </div>
+        <div class="admin-attendance-screen__field">
+          <span aria-hidden="true">Порядок</span>
+          <HeadmanStatsSelect
+            label="Порядок"
+            popup
+            :model-value="direction"
+            :options="directionOptions"
+            :disabled="loading || !semesterId"
+            @update:model-value="selectDirection"
+          />
+        </div>
       </div>
       <p
         v-if="loading"
@@ -298,10 +338,8 @@ onBeforeUnmount(() => {
         Семестров пока нет.
       </p>
       <template v-if="report">
-        <p class="admin-attendance-screen__note">
-          % + — посещаемость; % (+ и у) — посещаемость с уважительными причинами. Отменённые пары не учитываются.
-        </p>
         <ExportButton
+          inline
           :port="reportDownload"
           :formats="() => client.getFormats()"
           :request="exportRequest"
@@ -317,62 +355,108 @@ onBeforeUnmount(() => {
         </p>
         <div
           v-else
-          class="admin-attendance-screen__table"
-          role="region"
-          aria-label="Посещаемость групп за семестр"
-          tabindex="0"
+          class="admin-attendance-screen__report"
         >
-          <table>
-            <caption>{{ report.semester.name }}</caption><thead>
-              <tr>
-                <th scope="col">
-                  Группа
-                </th><th scope="col">
-                  % +
-                </th><th scope="col">
-                  % (+ и у)
-                </th><th scope="col">
-                  Пар учтено
-                </th><th scope="col">
-                  + (присутствовал)
-                </th><th scope="col">
-                  н (отсутствовал)
-                </th><th scope="col">
-                  у (уважительная)
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr
-                v-for="row in report.rows"
-                :key="row.groupId"
-                :data-group-id="row.groupId"
-              >
-                <th scope="row">
-                  {{ row.groupName }}
-                </th><td>{{ percent(row.presentPercent) }}</td><td>{{ percent(row.presentOrExcusedPercent) }}</td><td>{{ count(row.countedLessons) }}</td><td>{{ count(row.presentCount) }}</td><td>{{ count(row.absentCount) }}</td><td>{{ count(row.excusedCount) }}</td>
-              </tr>
-            </tbody>
-          </table>
+          <h2
+            id="admin-attendance-report-semester"
+            class="admin-attendance-screen__report-title"
+          >
+            {{ report.semester.name }}
+          </h2>
+          <div
+            class="admin-attendance-screen__table"
+            role="region"
+            aria-label="Посещаемость групп за семестр"
+            tabindex="0"
+          >
+            <table aria-labelledby="admin-attendance-report-semester">
+              <thead>
+                <tr>
+                  <th scope="col">
+                    Группа
+                  </th><th
+                    scope="col"
+                    aria-label="Процент посещаемости"
+                  >
+                    % +
+                  </th><th
+                    scope="col"
+                    aria-label="Процент посещаемости с уважительными причинами"
+                  >
+                    % (+ и у)
+                  </th><th
+                    scope="col"
+                    aria-label="Пар учтено"
+                  >
+                    Пары
+                  </th><th
+                    scope="col"
+                    aria-label="Присутствовал"
+                  >
+                    +
+                  </th><th
+                    scope="col"
+                    aria-label="Отсутствовал"
+                  >
+                    н
+                  </th><th
+                    scope="col"
+                    aria-label="Уважительная причина"
+                  >
+                    у
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr
+                  v-for="row in report.rows"
+                  :key="row.groupId"
+                  :data-group-id="row.groupId"
+                >
+                  <th scope="row">
+                    {{ row.groupName }}
+                  </th><td>{{ percent(row.presentPercent) }}</td><td>{{ percent(row.presentOrExcusedPercent) }}</td><td>{{ count(row.countedLessons) }}</td><td>{{ count(row.presentCount) }}</td><td>{{ count(row.absentCount) }}</td><td>{{ count(row.excusedCount) }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
         <nav
           class="admin-attendance-screen__pagination"
           aria-label="Страницы отчёта"
         >
           <button
+            class="admin-attendance-screen__icon-action"
             type="button"
+            aria-label="Предыдущая страница"
             :disabled="loading || page === 0"
             @click="turn(-1)"
           >
-            Предыдущая
+            <MobileIcon name="back" />
           </button><span role="status">{{ page + 1 }} / {{ Math.max(1, report.totalPages) }}</span><button
+            class="admin-attendance-screen__icon-action admin-attendance-screen__next"
             type="button"
+            aria-label="Следующая страница"
             :disabled="loading || page + 1 >= report.totalPages"
             @click="turn(1)"
           >
-            Следующая
+            <MobileIcon name="back" />
           </button>
         </nav>
+        <table class="admin-attendance-screen__legend">
+          <caption>Что означают показатели</caption>
+          <tbody>
+            <tr
+              v-for="item in legend"
+              :key="item.label"
+            >
+              <th scope="row">
+                {{ item.label }}
+              </th>
+              <td>{{ item.description }}</td>
+            </tr>
+          </tbody>
+        </table>
       </template>
     </template>
   </main>

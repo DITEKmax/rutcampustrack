@@ -1,6 +1,8 @@
 @import '../../styles/tokens.pcss';
 .admin-attendance-screen {
+  box-sizing: border-box;
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--rct-space-4);
   max-inline-size: calc(var(--rct-mobile-content-width) + var(--rct-space-4) * 2);
   margin-inline: auto;
@@ -11,80 +13,191 @@
   font-family: var(--rct-font-family-sans);
   @mixin rct-type-dense;
 }
-.admin-attendance-screen__header,
-.admin-attendance-screen__filters,
-.admin-attendance-screen__search,
-.admin-attendance-screen__pagination {
+.admin-attendance-screen__header {
   display: flex;
-  flex-wrap: wrap;
-  align-items: end;
+  align-items: center;
   gap: var(--rct-space-3);
 }
 .admin-attendance-screen__header h1 {
+  min-inline-size: 0;
   margin: 0;
   font-size: var(--rct-task-title-size);
   line-height: var(--rct-leading-snug);
+  overflow-wrap: anywhere;
+}
+.admin-attendance-screen__filters {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--rct-space-2);
 }
 .admin-attendance-screen__field {
   display: grid;
-  gap: var(--rct-space-2);
-  flex: 1;
+  align-content: start;
+  gap: var(--rct-space-1);
   min-inline-size: 0;
+  color: var(--rct-color-text-secondary);
+  font-size: var(--rct-font-size-caption);
 }
-.admin-attendance-screen button,
-.admin-attendance-screen input,
-.admin-attendance-screen select {
+.admin-attendance-screen__icon-action {
   box-sizing: border-box;
+  display: grid;
+  flex: none;
+  place-items: center;
+  inline-size: var(--rct-control-min-touch);
   min-block-size: var(--rct-control-min-touch);
-  max-inline-size: 100%;
-  padding: var(--rct-space-2) var(--rct-space-3);
-  border: var(--rct-border-hairline) solid var(--rct-color-border-default);
-  border-radius: var(--rct-radius-lg);
+  padding: 0;
+  border: 0;
+  border-radius: var(--rct-radius-full);
   color: var(--rct-color-text-primary);
   background: var(--rct-color-surface-raised);
-  font: inherit;
+  cursor: pointer;
   @mixin rct-focus-ring;
 }
-.admin-attendance-screen button {
-  cursor: pointer;
+.admin-attendance-screen__icon-action .mobile-icon {
+  display: block;
+  inline-size: var(--rct-icon-size);
+  block-size: var(--rct-icon-size);
 }
-.admin-attendance-screen button:disabled,
-.admin-attendance-screen input:disabled,
-.admin-attendance-screen select:disabled {
-  color: var(--rct-color-text-muted);
+.admin-attendance-screen__icon-action:disabled,
+.admin-attendance-screen .headman-stats-select__trigger:disabled,
+.admin-attendance-screen .rct-export button:disabled {
+  color: var(--rct-color-disabled-text);
   cursor: not-allowed;
 }
-.admin-attendance-screen__note {
+.admin-attendance-screen__search {
+  display: flex;
+  align-items: center;
+  min-inline-size: 0;
+  border-radius: var(--rct-radius-xl);
+  background: var(--rct-color-surface-raised);
+}
+.admin-attendance-screen__search:focus-within {
+  outline: var(--rct-focus-width) solid var(--rct-color-border-focus);
+  outline-offset: var(--rct-focus-offset);
+}
+.admin-attendance-screen__search input {
+  flex: 1;
+  min-inline-size: 0;
+  min-block-size: var(--rct-control-min-touch);
+  padding: var(--rct-space-2) var(--rct-space-3);
+  border: 0;
+  border-radius: inherit;
+  outline: 0;
+  color: var(--rct-color-text-primary);
+  background: transparent;
+  font: inherit;
+}
+.admin-attendance-screen__search input::placeholder {
+  color: var(--rct-color-text-secondary);
+  opacity: 1;
+}
+.admin-attendance-screen__search .admin-attendance-screen__icon-action {
+  color: var(--rct-color-text-secondary);
+  background: transparent;
+  outline-offset: calc(-1 * var(--rct-focus-offset));
+}
+.admin-attendance-screen__search .admin-attendance-screen__icon-action:disabled {
+  color: var(--rct-color-disabled-text);
+}
+.admin-attendance-screen__visually-hidden {
+  position: absolute;
+  inline-size: var(--rct-border-hairline);
+  block-size: var(--rct-border-hairline);
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.admin-attendance-screen > p {
   margin: 0;
   color: var(--rct-color-text-secondary);
 }
+.admin-attendance-screen .rct-export button {
+  border: 0;
+}
+.admin-attendance-screen__report {
+  min-inline-size: 0;
+  border-radius: var(--rct-radius-xl);
+  background: var(--rct-color-surface-raised);
+}
+.admin-attendance-screen__report-title {
+  margin: 0;
+  padding: var(--rct-space-2);
+  border-block-end: var(--rct-border-hairline) solid var(--rct-color-border-default);
+  font-size: var(--rct-font-size-caption);
+  font-weight: var(--rct-font-weight-medium);
+  overflow-wrap: anywhere;
+}
 .admin-attendance-screen__table {
   overflow: auto;
-  border: var(--rct-border-hairline) solid var(--rct-color-border-default);
-  border-radius: var(--rct-radius-lg);
+  border-end-start-radius: var(--rct-radius-xl);
+  border-end-end-radius: var(--rct-radius-xl);
   @mixin rct-focus-ring;
 }
 .admin-attendance-screen table {
   inline-size: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
 }
 .admin-attendance-screen caption,
 .admin-attendance-screen th,
 .admin-attendance-screen td {
-  padding: var(--rct-space-3);
-  text-align: end;
-  white-space: nowrap;
+  padding: var(--rct-space-2);
+  text-align: start;
+}
+.admin-attendance-screen :is(caption, thead th, tbody tr:not(:last-child) > *) {
   border-block-end: var(--rct-border-hairline) solid var(--rct-color-border-default);
 }
 .admin-attendance-screen caption,
-.admin-attendance-screen th:first-child {
-  text-align: start;
-}
 .admin-attendance-screen th {
+  font-weight: var(--rct-font-weight-medium);
+}
+.admin-attendance-screen__table table {
+  font-size: var(--rct-font-size-micro);
+}
+.admin-attendance-screen__table thead {
   color: var(--rct-color-text-secondary);
-  font-weight: var(--rct-font-weight-bold);
+}
+.admin-attendance-screen__table tr > :first-child {
+  position: sticky;
+  inset-inline-start: 0;
+  min-inline-size: calc(var(--rct-space-5) * 4);
+  border-inline-end: var(--rct-border-hairline) solid var(--rct-color-border-default);
+  background: var(--rct-color-surface-raised);
+  overflow-wrap: anywhere;
+}
+.admin-attendance-screen__table tr > :not(:first-child) {
+  padding-inline: var(--rct-space-1);
+  text-align: end;
+  white-space: nowrap;
+}
+.admin-attendance-screen__table td:last-child,
+.admin-attendance-screen__table th:last-child {
+  padding-inline-end: var(--rct-space-2);
+}
+.admin-attendance-screen__legend {
+  border-radius: var(--rct-radius-xl);
+  background: var(--rct-color-surface-raised);
+  font-size: var(--rct-font-size-caption);
+}
+.admin-attendance-screen__legend caption {
+  border-radius: var(--rct-radius-xl) var(--rct-radius-xl) 0 0;
+  background: var(--rct-color-surface-raised);
+}
+.admin-attendance-screen__legend th {
+  white-space: nowrap;
+}
+.admin-attendance-screen__legend td {
+  color: var(--rct-color-text-secondary);
 }
 .admin-attendance-screen__pagination {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: var(--rct-space-2);
   align-items: center;
-  justify-content: space-between;
+  color: var(--rct-color-text-secondary);
+  font-size: var(--rct-font-size-caption);
+  text-align: center;
+}
+.admin-attendance-screen__next .mobile-icon {
+  transform: rotate(180deg);
 }

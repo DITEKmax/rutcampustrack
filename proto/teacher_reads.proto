@@ -24,6 +24,8 @@ service TeacherAttendanceReadService {
   rpc GetTeacherExcuse(TeacherExcuseRequest) returns (TeacherExcuseResponse);
   rpc DownloadTeacherExcuseAttachment(TeacherExcuseAttachmentRequest)
       returns (TeacherAttachmentDownload);
+  rpc DownloadTeacherManualExcuseAttachment(TeacherManualExcuseAttachmentRequest)
+      returns (TeacherAttachmentDownload);
   rpc GetTeacherStats(TeacherStatsRequest) returns (TeacherStatsResponse);
   rpc ExportTeacherStats(TeacherStatsExportRequest)
       returns (TeacherStatsExportResponse);
@@ -134,6 +136,8 @@ message TeacherRosterEntry {
   string attachment_name = 14;
   string attachment_content_type = 15;
   int64 attachment_size = 16;
+  // ISO-8601 expiry of a readable manual attachment; empty if unavailable.
+  string attachment_expires_at = 17;
 }
 
 message TeacherJournalRequest {
@@ -222,6 +226,12 @@ message TeacherExcuseAttachment {
 message TeacherExcuseAttachmentRequest {
   string request_id = 1;
   string attachment_id = 2;
+}
+
+message TeacherManualExcuseAttachmentRequest {
+  int64 lesson_id = 1;
+  int64 student_id = 2;
+  string attachment_id = 3;
 }
 
 message TeacherAttachmentDownload {

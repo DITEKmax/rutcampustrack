@@ -215,7 +215,17 @@ public final class TeacherApiController implements TeacherApi {
 
     @Override
     public ResponseEntity<byte[]> excuseAttachment(String requestId, String attachmentId) {
-        TeacherReadFacade.Download download = facade.attachment(requestId, attachmentId);
+        return attachmentResponse(facade.attachment(requestId, attachmentId));
+    }
+
+    @Override
+    public ResponseEntity<byte[]> manualExcuseAttachment(
+            String lessonId, String studentId, String attachmentId) {
+        return attachmentResponse(
+                facade.manualAttachment(parseId(lessonId), parseId(studentId), attachmentId));
+    }
+
+    private static ResponseEntity<byte[]> attachmentResponse(TeacherReadFacade.Download download) {
         MediaType contentType;
         try {
             contentType = MediaType.parseMediaType(download.contentType());

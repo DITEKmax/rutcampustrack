@@ -1,5 +1,8 @@
 package ru.rutcampustrack.attendance.shared.port;
 
+import java.time.Instant;
+import java.util.Map;
+
 /**
  * Pair-scoped lifecycle for journal attachments.
  *
@@ -18,4 +21,17 @@ public interface JournalAttachmentPort {
      * result is fail-closed and does not mutate storage.
      */
     boolean isAvailable(long lessonId, long studentId, String attachmentId);
+
+    /** Actual expiry of each matching manual descriptor, keyed by roster student. */
+    Map<Long, Instant> manualAttachmentExpiries(
+            long lessonId, long groupId, long semesterId, Map<Long, ManualReference> references,
+            ManualVerification verification);
+
+    /** Metadata alone is only an intermediate check; public roster and download verify bytes. */
+    enum ManualVerification {
+        METADATA_ONLY,
+        VERIFY_SIGNATURE
+    }
+
+    record ManualReference(String id, String name, String contentType, Long size) {}
 }

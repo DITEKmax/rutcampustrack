@@ -21,6 +21,8 @@ import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import net.devh.boot.grpc.server.service.GrpcService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessResourceFailureException;
+import org.springframework.dao.QueryTimeoutException;
 import ru.rutcampustrack.attendance.contract.dto.report.LessonAttendanceResponse;
 import ru.rutcampustrack.attendance.contract.dto.report.StudentAttendanceEntry;
 import ru.rutcampustrack.attendance.contract.enums.ExcuseTicketStatus;
@@ -31,9 +33,12 @@ import ru.rutcampustrack.attendance.exception.ReportExportUnavailableException;
 import ru.rutcampustrack.attendance.exception.ScheduleServiceUnavailableException;
 import ru.rutcampustrack.attendance.excuse.ExcuseRepository;
 import ru.rutcampustrack.attendance.excuse.entity.ExcuseTicket;
+import ru.rutcampustrack.attendance.marking.AttendanceAttachmentService;
 import ru.rutcampustrack.attendance.report.ReportService;
+import ru.rutcampustrack.attendance.report.ReportService.TeacherLessonRoster;
 import ru.rutcampustrack.attendance.report.teacher.TeacherAttendanceExportService;
 import ru.rutcampustrack.attendance.report.teacher.TeacherStatsExportService;
+import ru.rutcampustrack.attendance.shared.port.JournalAttachmentPort.ManualReference;
 import ru.rutcampustrack.attendance.studentrequest.AttachmentState;
 import ru.rutcampustrack.attendance.studentrequest.RequestAttachmentRepository;
 import ru.rutcampustrack.attendance.studentrequest.entity.RequestAttachmentDescriptorDocument;
@@ -59,6 +64,7 @@ import ru.rutcampustrack.teacher.grpc.TeacherJournalStudent;
 import ru.rutcampustrack.teacher.grpc.TeacherLessonRequest;
 import ru.rutcampustrack.teacher.grpc.TeacherLessonResponse;
 import ru.rutcampustrack.teacher.grpc.TeacherLessonSummary;
+import ru.rutcampustrack.teacher.grpc.TeacherManualExcuseAttachmentRequest;
 import ru.rutcampustrack.teacher.grpc.TeacherRosterEntry;
 import ru.rutcampustrack.teacher.grpc.TeacherStatsExportRequest;
 import ru.rutcampustrack.teacher.grpc.TeacherStatsExportResponse;
@@ -166,16 +172,26 @@ public final class TeacherAttendanceReadGrpcService
         try {
             InternalJwtClaims claims = requireTeacher();
             long lessonId = positive(request.getLessonId(), "lesson_id");
-            LessonAttendanceResponse response =
-                    reportService.getTeacherLessonAttendance(lessonId, claims.userId());
-            LessonResponse lesson = scheduleGrpcClient.getLessonById(lessonId);
+            TeacherLessonRoster roster = reportService.getTeacherLessonRoster(lessonId, claims.userId());
             Map<Long, TicketMarker> markers = ticketMarkers(lessonId);
+            TeacherLessonSummary summary = toSummary(roster.lesson());
+            Instant now = clock.instant();
             TeacherLessonResponse.Builder result =
                     TeacherLessonResponse.newBuilder()
-                            .setLesson(toSummary(lesson))
-                            .setServerNow(clock.instant().toString());
-            for (StudentAttendanceEntry entry : response.getEntries()) {
-                result.addRoster(toRosterEntry(entry, markers.get(entry.getUserId())));
+                            .setLesson(summary)
+                            .setServerNow(now.toString());
+            for (StudentAttendanceEntry entry : roster.attendance().getEntries()) {
+                TeacherRosterEntry row = toRosterEntry(entry, markers.get(entry.getUserId()));
+                Instant expiry = roster.manualAttachmentExpiries().get(entry.getUserId());
+                if (expiry != null) {
+                    if (!now.isBefore(expiry)) {
+                        row = row.toBuilder().clearAttachmentId().clearAttachmentName()
+                                .clearAttachmentContentType().clearAttachmentSize().build();
+                    } else if ("NO_TICKET".equals(row.getSource())) {
+                        row = row.toBuilder().setAttachmentExpiresAt(expiry.toString()).build();
+                    }
+                }
+                result.addRoster(row);
             }
             responseObserver.onNext(result.build());
             responseObserver.onCompleted();
@@ -690,6 +706,95 @@ public final class TeacherAttendanceReadGrpcService
         }
     }
 
+    @Override
+    public void downloadTeacherManualExcuseAttachment(
+            TeacherManualExcuseAttachmentRequest request,
+            StreamObserver<TeacherAttachmentDownload> responseObserver) {
+        try {
+            InternalJwtClaims claims = requireTeacher();
+            long lessonId = positive(request.getLessonId(), "lesson_id");
+            long studentId = positive(request.getStudentId(), "student_id");
+            String attachmentId = required(request.getAttachmentId(), "attachment_id");
+            ManualAttachmentScope scope = manualAttachmentScope(lessonId, studentId, attachmentId,
+                    claims.userId());
+            RequestAttachmentDocument document =
+                    attachmentRepository.findById(attachmentId).orElseThrow(
+                            TeacherAttendanceReadGrpcService::manualAttachmentNotFound);
+            byte[] data = document.getData() == null ? null : document.getData().getData();
+            if (!matchesManualAttachment(document, lessonId, studentId, scope)
+                    || !AttendanceAttachmentService.hasValidManualBytes(document, data)) {
+                throw manualAttachmentNotFound();
+            }
+
+            // Re-read live authorization, the roster reference and the blob after fetching bytes.
+            // This detects observable changes during the read without taking writer locks.
+            ManualAttachmentScope current = manualAttachmentScope(lessonId, studentId, attachmentId,
+                    claims.userId());
+            if (!scope.equals(current)) {
+                throw manualAttachmentNotFound();
+            }
+            RequestAttachmentDocument rechecked =
+                    attachmentRepository.findById(attachmentId).orElseThrow(
+                            TeacherAttendanceReadGrpcService::manualAttachmentNotFound);
+            if (!document.equals(rechecked)
+                    || !matchesManualAttachment(rechecked, lessonId, studentId, current)) {
+                throw manualAttachmentNotFound();
+            }
+            TeacherAttachmentDownload download =
+                    TeacherAttachmentDownload.newBuilder()
+                            .setFileName(document.getName())
+                            .setContentType(document.getContentType())
+                            .setSize(data.length)
+                            .setData(ByteString.copyFrom(data))
+                            .build();
+            if (!clock.instant().isBefore(current.expiresAt())) {
+                throw manualAttachmentNotFound();
+            }
+            responseObserver.onNext(download);
+            responseObserver.onCompleted();
+        } catch (DataAccessResourceFailureException | QueryTimeoutException error) {
+            responseObserver.onError(Status.UNAVAILABLE
+                    .withDescription("attachment storage unavailable")
+                    .withCause(error).asRuntimeException());
+        } catch (RuntimeException error) {
+            responseObserver.onError(toStatus(error));
+        }
+    }
+
+    private ManualAttachmentScope manualAttachmentScope(
+            long lessonId, long studentId, String attachmentId, long teacherId) {
+        TeacherLessonRoster roster =
+                reportService.getTeacherManualAttachmentRoster(lessonId, teacherId, studentId, attachmentId);
+        StudentAttendanceEntry entry = roster.attendance().getEntries().stream()
+                .filter(row -> Objects.equals(row.getUserId(), studentId))
+                .filter(row -> "excused".equalsIgnoreCase(row.getStatus()))
+                .filter(row -> attachmentId.equals(row.getAttachmentId()))
+                .findFirst()
+                .orElseThrow(TeacherAttendanceReadGrpcService::manualAttachmentNotFound);
+        Instant expiry = roster.manualAttachmentExpiries().get(studentId);
+        if (expiry == null || ticketMarkers(lessonId).containsKey(studentId)
+                || !clock.instant().isBefore(expiry)) {
+            throw manualAttachmentNotFound();
+        }
+        return new ManualAttachmentScope(
+                JournalScope.from(roster.lesson()),
+                new ManualReference(entry.getAttachmentId(), entry.getAttachmentName(),
+                        entry.getAttachmentContentType(), entry.getAttachmentSize()),
+                entry.getMarkRevision(), expiry);
+    }
+
+    private boolean matchesManualAttachment(RequestAttachmentDocument document, long lessonId,
+            long studentId, ManualAttachmentScope scope) {
+        return Objects.equals(scope.expiresAt(), document.getExpiresAt())
+                && AttendanceAttachmentService.matchesManualReference(document, lessonId,
+                        scope.lessonScope().groupId(), scope.lessonScope().semesterId(), studentId,
+                        scope.reference(), clock.instant());
+    }
+
+    private static io.grpc.StatusRuntimeException manualAttachmentNotFound() {
+        return Status.NOT_FOUND.withDescription("attachment not found").asRuntimeException();
+    }
+
     private InternalJwtClaims requireTeacher() {
         InternalJwtClaims claims = TeacherAttendanceGrpcIdentity.requireClaims();
         if (!"TEACHER".equals(claims.domainRole())
@@ -879,6 +984,9 @@ public final class TeacherAttendanceReadGrpcService
     }
 
     private record TicketMarker(String ticketId, boolean pending) {}
+
+    private record ManualAttachmentScope(
+            JournalScope lessonScope, ManualReference reference, String markRevision, Instant expiresAt) {}
 
     private record LessonRoster(LessonResponse lesson, List<TeacherRosterEntry> entries) {}
 

@@ -7,7 +7,6 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -339,6 +338,8 @@ public class TeacherAttendanceReadGrpcServiceTest {
                                 22L,
                                 new AcademicGrpcClient.SubjectDetails("Математика", "lecture")));
         when(report.getTeacherLessonAttendance(101L, 71L)).thenReturn(attendance(101L));
+        when(report.getTeacherLessonRoster(101L, 71L))
+                .thenReturn(new ReportService.TeacherLessonRoster(own, attendance(101L), Map.of()));
         when(report.getTeacherLessonAttendance(202L, 71L)).thenReturn(attendance(202L));
         when(report.getTeacherLessonAttendance(303L, 71L)).thenReturn(attendance(303L));
         when(excuses.findByLessonIdsInAndStatusIn(
@@ -435,7 +436,8 @@ public class TeacherAttendanceReadGrpcServiceTest {
                                 assertThat(student.getCellsList())
                                         .extracting(cell -> cell.getLessonId())
                                         .containsExactly(101L, 202L));
-        verify(report, times(2)).getTeacherLessonAttendance(101L, 71L);
+        verify(report).getTeacherLessonRoster(101L, 71L);
+        verify(report).getTeacherLessonAttendance(101L, 71L);
         verify(report).getTeacherLessonAttendance(202L, 71L);
 
         RecordingObserver<TeacherJournalResponse> journalObserver = new RecordingObserver<>();

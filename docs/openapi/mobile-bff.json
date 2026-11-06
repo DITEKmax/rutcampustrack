@@ -879,6 +879,63 @@
         } ]
       }
     },
+    "/api/v1/teacher/lessons/{lessonId}/students/{studentId}/excuse/attachments/{attachmentId}" : {
+      "get" : {
+        "tags" : [ "teacher-api-controller" ],
+        "summary" : "Current manual excuse attachment for a student in a teacher's lesson",
+        "operationId" : "manualExcuseAttachment",
+        "parameters" : [ {
+          "name" : "lessonId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "studentId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "attachmentId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Original document bytes",
+            "content" : {
+              "application/pdf" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "binary"
+                }
+              },
+              "image/jpeg" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "binary"
+                }
+              },
+              "image/png" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "binary"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
     "/api/v1/teacher/journal" : {
       "get" : {
         "tags" : [ "teacher-api-controller" ],
@@ -3485,6 +3542,11 @@
           "attachmentSize" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "attachmentExpiresAt" : {
+            "type" : "string",
+            "format" : "date-time",
+            "nullable" : true
           }
         }
       },

@@ -30,6 +30,7 @@ import ru.rutcampustrack.teacher.grpc.TeacherJournalRequest;
 import ru.rutcampustrack.teacher.grpc.TeacherJournalResponse;
 import ru.rutcampustrack.teacher.grpc.TeacherLessonRequest;
 import ru.rutcampustrack.teacher.grpc.TeacherLessonResponse;
+import ru.rutcampustrack.teacher.grpc.TeacherManualExcuseAttachmentRequest;
 import ru.rutcampustrack.teacher.grpc.TeacherStatsExportRequest;
 import ru.rutcampustrack.teacher.grpc.TeacherStatsExportResponse;
 import ru.rutcampustrack.teacher.grpc.TeacherStatsFilter;
@@ -282,6 +283,22 @@ public class MobileAttendanceClient {
                                 .downloadTeacherExcuseAttachment(
                                         TeacherExcuseAttachmentRequest.newBuilder()
                                                 .setRequestId(requestId)
+                                                .setAttachmentId(attachmentId)
+                                                .build()),
+                ProblemCode.ATTACHMENT_NOT_FOUND);
+    }
+
+    public TeacherAttachmentDownload teacherManualExcuseAttachment(
+            long lessonId, long studentId, String attachmentId) {
+        return call(
+                "teacherManualExcuseAttachment",
+                () ->
+                        auth.attach(teacherStub)
+                                .withDeadlineAfter(10, TimeUnit.SECONDS)
+                                .downloadTeacherManualExcuseAttachment(
+                                        TeacherManualExcuseAttachmentRequest.newBuilder()
+                                                .setLessonId(lessonId)
+                                                .setStudentId(studentId)
                                                 .setAttachmentId(attachmentId)
                                                 .build()),
                 ProblemCode.ATTACHMENT_NOT_FOUND);

@@ -75,7 +75,8 @@ public final class TeacherApiModels {
             String attachmentId,
             String attachmentName,
             String attachmentContentType,
-            long attachmentSize) {}
+            long attachmentSize,
+            @Schema(nullable = true) Instant attachmentExpiresAt) {}
 
     @Schema(name = "TeacherLesson")
     public record LessonResponse(DayLesson lesson, List<RosterEntry> roster, Instant serverNow) {}

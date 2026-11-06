@@ -1,6 +1,9 @@
 package ru.rutcampustrack.mobilebff.contract.api;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import java.util.List;
 import org.springframework.http.MediaType;
@@ -145,4 +148,21 @@ public interface TeacherApi {
             produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     ResponseEntity<byte[]> excuseAttachment(
             @PathVariable String requestId, @PathVariable String attachmentId);
+
+    @Operation(
+            summary = "Current manual excuse attachment for a student in a teacher's lesson",
+            responses = @ApiResponse(responseCode = "200", description = "Original document bytes",
+                    content = {
+                        @Content(mediaType = MediaType.APPLICATION_PDF_VALUE,
+                                schema = @Schema(type = "string", format = "binary")),
+                        @Content(mediaType = MediaType.IMAGE_JPEG_VALUE,
+                                schema = @Schema(type = "string", format = "binary")),
+                        @Content(mediaType = MediaType.IMAGE_PNG_VALUE,
+                                schema = @Schema(type = "string", format = "binary"))
+                    }))
+    @GetMapping("/lessons/{lessonId}/students/{studentId}/excuse/attachments/{attachmentId}")
+    ResponseEntity<byte[]> manualExcuseAttachment(
+            @PathVariable String lessonId,
+            @PathVariable String studentId,
+            @PathVariable String attachmentId);
 }

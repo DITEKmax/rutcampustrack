@@ -38,15 +38,19 @@ import ru.rutcampustrack.attendance.semester.SemesterCacheService;
 import ru.rutcampustrack.attendance.shared.port.AttendanceReadPort;
 import ru.rutcampustrack.attendance.shared.port.AttendanceRecord;
 import ru.rutcampustrack.attendance.shared.port.JournalAttachmentPort;
+import ru.rutcampustrack.attendance.shared.port.JournalAttachmentPort.ManualReference;
+import ru.rutcampustrack.attendance.shared.port.JournalAttachmentPort.ManualVerification;
 import ru.rutcampustrack.schedule.grpc.LessonInfo;
 import ru.rutcampustrack.schedule.grpc.LessonResponse;
 import ru.rutcampustrack.shared.web.time.AcademicWeekCalendar;
 import ru.rutcampustrack.shared.web.time.EducationalTime;
 
 import java.time.Clock;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -203,7 +207,7 @@ public class ReportService {
         }
         authorizeHeadmanOrTeacher(lesson);
 
-        return buildLessonAttendance(lesson, false);
+        return buildLessonAttendance(lesson, null).attendance();
     }
 
     /**
@@ -266,17 +270,61 @@ public class ReportService {
      * boundary. Current group and subject authority also permits historical lesson reads.
      */
     public LessonAttendanceResponse getTeacherLessonAttendance(Long lessonId, long teacherId) {
+        return getTeacherLessonRoster(lessonId, teacherId, TeacherAttachmentSelection.NONE)
+                .attendance();
+    }
+
+    public TeacherLessonRoster getTeacherLessonRoster(Long lessonId, long teacherId) {
+        return getTeacherLessonRoster(lessonId, teacherId, TeacherAttachmentSelection.ALL_READABLE);
+    }
+
+    /** Only the exact requested reference is eligible here; the downloader checks its bytes. */
+    public TeacherLessonRoster getTeacherManualAttachmentRoster(
+            long lessonId, long teacherId, long studentId, String attachmentId) {
+        return getTeacherLessonRoster(lessonId, teacherId,
+                new TeacherAttachmentSelection(
+                        ManualVerification.METADATA_ONLY, studentId, attachmentId));
+    }
+
+    private TeacherLessonRoster getTeacherLessonRoster(
+            Long lessonId, long teacherId, TeacherAttachmentSelection selection) {
         LessonResponse lesson = scheduleGrpcClient.getLessonById(lessonId);
         if (lesson == null) {
             throw new BadRequestException("Пара недоступна");
         }
+        if (lesson.getId() != lessonId) {
+            throw new ScheduleServiceUnavailableException("Schedule returned a mismatched lesson");
+        }
         authorizeTeacherLesson(lesson, teacherId);
-        return buildLessonAttendance(lesson, true);
+        LessonAttendanceData roster = buildLessonAttendance(lesson, selection);
+        return new TeacherLessonRoster(lesson, roster.attendance(), roster.manualAttachmentExpiries());
     }
 
-    private LessonAttendanceResponse buildLessonAttendance(
-            LessonResponse lesson, boolean teacherBoundary) {
+    public record TeacherLessonRoster(
+            LessonResponse lesson,
+            LessonAttendanceResponse attendance,
+            Map<Long, Instant> manualAttachmentExpiries) {}
+
+    private record LessonAttendanceData(
+            LessonAttendanceResponse attendance, Map<Long, Instant> manualAttachmentExpiries) {}
+
+    private record TeacherAttachmentSelection(
+            ManualVerification verification, Long studentId, String attachmentId) {
+        private static final TeacherAttachmentSelection NONE =
+                new TeacherAttachmentSelection(null, null, null);
+        private static final TeacherAttachmentSelection ALL_READABLE =
+                new TeacherAttachmentSelection(ManualVerification.VERIFY_SIGNATURE, null, null);
+
+        private boolean includes(long studentId, String attachmentId) {
+            return this.studentId == null
+                    || (this.studentId == studentId && Objects.equals(this.attachmentId, attachmentId));
+        }
+    }
+
+    private LessonAttendanceData buildLessonAttendance(
+            LessonResponse lesson, TeacherAttachmentSelection teacherAttachments) {
         Long lessonId = lesson.getId();
+        boolean teacherBoundary = teacherAttachments != null;
 
         JournalLessonPolicy.Timing timing = JournalLessonPolicy.requireTiming(lesson);
         GroupMembersResponse members = membersForLesson(lesson);
@@ -330,6 +378,8 @@ public class ReportService {
                                         of();
 
         Map<Long, AttendanceRecord> recordsByUserId = lessonAttendanceRecords(lessonId);
+        Map<Long, Instant> attachmentExpiries =
+                teacherManualAttachmentExpiries(lesson, members, recordsByUserId, teacherAttachments);
 
         List<StudentAttendanceEntry> entries =
                 members.getStudentsList().stream()
@@ -352,8 +402,10 @@ public class ReportService {
                                     boolean attachmentAvailable =
                                             excuse
                                                     && journalAttachmentPort != null
-                                                    && journalAttachmentPort.isAvailable(
-                                                            lessonId, uid, rec.attachmentId());
+                                                    && (teacherBoundary
+                                                            ? attachmentExpiries.containsKey(uid)
+                                                            : journalAttachmentPort.isAvailable(
+                                                                    lessonId, uid, rec.attachmentId()));
                                     String attachmentId =
                                             attachmentAvailable ? rec.attachmentId() : null;
                                     String attachmentName =
@@ -406,7 +458,7 @@ public class ReportService {
                                 })
                         .toList();
 
-        return new LessonAttendanceResponse(
+        LessonAttendanceResponse attendance = new LessonAttendanceResponse(
                 lessonId,
                 lesson.getGroupId(),
                 lesson.getSubjectId(),
@@ -420,6 +472,39 @@ public class ReportService {
                                 && !"PENDING".equalsIgnoreCase(lesson.getTransferState())
                         : editable,
                 entries);
+        return new LessonAttendanceData(attendance, attachmentExpiries);
+    }
+
+    private Map<Long, Instant> teacherManualAttachmentExpiries(
+            LessonResponse lesson,
+            GroupMembersResponse members,
+            Map<Long, AttendanceRecord> records,
+            TeacherAttachmentSelection selection) {
+        if (selection == null || selection.verification() == null || journalAttachmentPort == null) {
+            return Map.of();
+        }
+        Map<Long, ManualReference> references = new HashMap<>();
+        for (StudentInfo student : members.getStudentsList()) {
+            AttendanceRecord rec = records.get(student.getUserId());
+            if (rec != null
+                    && rec.status() == AttendanceStatus.EXCUSED
+                    && Objects.equals(rec.lessonId(), lesson.getId())
+                    && Objects.equals(rec.groupId(), lesson.getGroupId())
+                    && Objects.equals(rec.subjectId(), lesson.getSubjectId())
+                    && (rec.excuseRequestId() == null || rec.excuseRequestId().isBlank())
+                    && rec.attachmentId() != null
+                    && !rec.attachmentId().isBlank()
+                    && selection.includes(student.getUserId(), rec.attachmentId())) {
+                references.put(student.getUserId(), new ManualReference(rec.attachmentId(),
+                        rec.attachmentName(), rec.attachmentContentType(), rec.attachmentSize()));
+            }
+        }
+        if (references.isEmpty()) {
+            return Map.of();
+        }
+        return journalAttachmentPort.manualAttachmentExpiries(
+                lesson.getId(), lesson.getGroupId(), lesson.getSemesterId(), references,
+                selection.verification());
     }
 
     private GroupMembersResponse membersForLesson(LessonResponse lesson) {

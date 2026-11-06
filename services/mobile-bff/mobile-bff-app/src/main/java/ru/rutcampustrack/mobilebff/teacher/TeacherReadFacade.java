@@ -1166,8 +1166,15 @@ public final class TeacherReadFacade {
 
     public Download attachment(String requestId, String attachmentId) {
         requireTeacher();
-        TeacherAttachmentDownload download =
-                attendance.teacherExcuseAttachment(requestId, attachmentId);
+        return download(attendance.teacherExcuseAttachment(requestId, attachmentId));
+    }
+
+    public Download manualAttachment(long lessonId, long studentId, String attachmentId) {
+        requireTeacher();
+        return download(attendance.teacherManualExcuseAttachment(lessonId, studentId, attachmentId));
+    }
+
+    private static Download download(TeacherAttachmentDownload download) {
         return new Download(
                 download.getFileName(),
                 download.getContentType(),
@@ -1288,7 +1295,8 @@ public final class TeacherReadFacade {
                 nullable(entry.getAttachmentId()),
                 nullable(entry.getAttachmentName()),
                 nullable(entry.getAttachmentContentType()),
-                entry.getAttachmentSize());
+                entry.getAttachmentSize(),
+                parseInstant(entry.getAttachmentExpiresAt()));
     }
 
     private static TeacherApiModels.JournalStudent journalStudent(TeacherJournalStudent student) {

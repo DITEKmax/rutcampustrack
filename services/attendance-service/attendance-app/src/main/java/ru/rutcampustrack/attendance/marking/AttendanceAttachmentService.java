@@ -7,9 +7,11 @@ import java.security.NoSuchAlgorithmException;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
+import java.util.HashMap;
 import java.util.HexFormat;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
 import org.bson.types.Binary;
 import org.bson.types.ObjectId;
@@ -35,6 +37,7 @@ import ru.rutcampustrack.attendance.studentrequest.entity.RequestAttachmentDocum
 public class AttendanceAttachmentService implements JournalAttachmentPort {
 
     static final long MAX_BYTES = 10L * 1024 * 1024;
+    private static final int METADATA_BATCH_SIZE = 256;
     private static final List<String> ALLOWED_TYPES =
             List.of("image/jpeg", "image/png", "application/pdf");
 
@@ -133,6 +136,84 @@ public class AttendanceAttachmentService implements JournalAttachmentPort {
                 && document.getData() != null
                 && document.getExpiresAt() != null
                 && now.isBefore(document.getExpiresAt());
+    }
+
+    @Override
+    public Map<Long, Instant> manualAttachmentExpiries(
+            long lessonId, long groupId, long semesterId, Map<Long, ManualReference> references,
+            ManualVerification verification) {
+        List<String> ids = references.values().stream()
+                .map(ManualReference::id)
+                .distinct()
+                .toList();
+        Map<String, RequestAttachmentDocument> byId = new HashMap<>();
+        for (int start = 0; start < ids.size(); start += METADATA_BATCH_SIZE) {
+            List<String> batch = ids.subList(start, Math.min(ids.size(), start + METADATA_BATCH_SIZE));
+            for (RequestAttachmentDocument document :
+                    repository.findReadableMetadata(batch, clock.instant(), MAX_BYTES)) {
+                byId.put(document.getId(), document);
+            }
+        }
+        Map<Long, Instant> expiries = new HashMap<>();
+        for (var entry : references.entrySet()) {
+            long studentId = entry.getKey();
+            ManualReference reference = entry.getValue();
+            RequestAttachmentDocument document = byId.get(reference.id());
+            if (!matchesManualReference(document, lessonId, groupId, semesterId, studentId,
+                    reference, clock.instant())) {
+                continue;
+            }
+            if (verification == ManualVerification.VERIFY_SIGNATURE) {
+                // Read one already scoped candidate at a time; retain only its expiry.
+                document = repository.findById(reference.id()).orElse(null);
+                if (!matchesManualReference(document, lessonId, groupId, semesterId, studentId,
+                        reference, clock.instant())
+                        || document.getData() == null
+                        || !hasValidManualBytes(document, document.getData().getData())) {
+                    continue;
+                }
+            }
+            expiries.put(studentId, document.getExpiresAt());
+        }
+        return Map.copyOf(expiries);
+    }
+
+    /** The common binding and lifecycle policy for roster metadata and manual download. */
+    public static boolean matchesManualReference(
+            RequestAttachmentDocument document,
+            long lessonId,
+            long groupId,
+            long semesterId,
+            long studentId,
+            ManualReference reference,
+            Instant now) {
+        return document != null
+                && Objects.equals(reference.id(), document.getId())
+                && Objects.equals(document.getRequestId(), PairWriteCoordinator.pairId(studentId, lessonId))
+                && Objects.equals(document.getOwnerStudentId(), studentId)
+                && Objects.equals(document.getGroupId(), groupId)
+                && (document.getSemesterId() == null || document.getSemesterId() == semesterId)
+                && document.getState() == AttachmentState.ACTIVE
+                && document.getExpiresAt() != null
+                && now.isBefore(document.getExpiresAt())
+                && document.getSize() != null
+                && document.getSize() > 0
+                && document.getSize() <= MAX_BYTES
+                && Objects.equals(document.getSize(), reference.size())
+                && document.getName() != null
+                && document.getName().equals(reference.name())
+                && document.getName().equals(safeFilename(document.getName()))
+                && document.getContentType() != null
+                && Objects.equals(document.getContentType(), reference.contentType())
+                && extensionMatches(document.getContentType(), extension(document.getName()));
+    }
+
+    public static boolean hasValidManualBytes(RequestAttachmentDocument document, byte[] data) {
+        return data != null
+                && data.length > 0
+                && data.length <= MAX_BYTES
+                && Objects.equals(document.getSize(), (long) data.length)
+                && Objects.equals(document.getContentType(), detectType(data));
     }
 
     public AttachmentDownload download(long lessonId, long userId, String attachmentId) {

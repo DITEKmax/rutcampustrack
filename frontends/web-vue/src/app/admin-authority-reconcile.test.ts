@@ -224,7 +224,9 @@ async function mounted(options: { savedDeletion?: boolean; unavailableStorage?: 
   app.mount(root)
   await settle()
   const controls = () =>
-    nodes(root).filter((n) => String(n.props.class ?? '').includes('admin-toolbar'))
+    nodes(root).filter(
+      (n) => n.tag === 'form' && String(n.props.class ?? '').split(/\s+/).includes('admin-toolbar'),
+    )
   expect(controls()).toHaveLength(1)
   return {
     webSession,

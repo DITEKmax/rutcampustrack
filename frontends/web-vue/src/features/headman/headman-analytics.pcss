@@ -1,9 +1,9 @@
-.headman-analytics { gap: var(--space-6); min-inline-size: 0; }
+.headman-analytics { gap: var(--space-5); min-inline-size: 0; }
 .headman-analytics h2 { font-size: var(--font-size-title-block); }
-.headman-period-toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-3); padding: var(--space-3); border: var(--web-border) solid var(--color-border-accent); border-radius: var(--radius-2xl); background: var(--color-surface-raised); }
+.headman-period-toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-3); padding: var(--space-3); border: var(--web-border) solid var(--web-panel-line); border-radius: var(--radius-lg); background: var(--color-surface-raised); }
 .headman-period-toolbar .student-period-context { flex: 1 1 50%; inline-size: 100%; border: 0; padding: 0; background: transparent; }
 .headman-period-title { flex: 1; padding-inline: var(--space-3); font-size: var(--font-size-dense); font-weight: var(--font-weight-medium); }
-.headman-filter-bar { display: flex; align-items: end; flex-wrap: wrap; gap: var(--space-4); padding: var(--space-4); border: var(--web-border) solid var(--color-border-subtle); border-radius: var(--radius-2xl); background: var(--color-surface-raised); }
+.headman-filter-bar { display: flex; align-items: end; flex-wrap: wrap; gap: var(--space-3); padding: var(--space-3); border: var(--web-border) solid var(--web-panel-line); border-radius: var(--radius-lg); background: var(--color-surface-raised); }
 .headman-filter-bar > .web-field { flex: 1 1 calc(var(--control-height) * 5); min-inline-size: 0; }
 .headman-analytics .headman-type-picker { flex: 1 1 calc(var(--control-height) * 6); border: 0; border-radius: 0; padding: 0; margin: 0; }
 .headman-type-picker legend { margin-block-end: var(--space-2); padding: 0; font-size: var(--font-size-caption); color: var(--color-text-secondary); }
@@ -21,18 +21,19 @@
 .headman-analytics-scroll::-webkit-scrollbar-button { display: none; inline-size: 0; block-size: 0; }
 .headman-analytics-scroll:focus-visible { outline: var(--focus-width) solid var(--color-border-focus); outline-offset: var(--space-1); }
 @supports selector(::-webkit-scrollbar) { .headman-analytics-scroll { scrollbar-width: auto; scrollbar-color: auto; } }
-.headman-journal-viewport { --journal-column: calc(var(--control-height) * 2); --journal-name: 14rem; overflow-x: auto; overflow-y: hidden; overscroll-behavior-y: auto; border: var(--web-border) solid var(--color-border-default); border-radius: var(--radius-2xl); }
+.headman-journal-viewport { --journal-column: calc(var(--control-height) * 2); --journal-name: 14rem; max-block-size: max(24rem, 68dvh); overflow: auto; scrollbar-gutter: stable; border: var(--web-border) solid var(--web-panel-line); border-radius: var(--radius-lg); background: var(--color-surface-raised); }
 .headman-journal-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--space-5); min-block-size: calc(var(--control-height) * 9); padding: var(--space-8) var(--space-4); text-align: center; color: var(--color-text-secondary); }
 .headman-journal-empty > p { margin: 0; }
 .headman-journal-grid { table-layout: fixed; inline-size: max(100%, calc(var(--journal-name) + var(--journal-columns) * var(--journal-column))); border-collapse: separate; border-spacing: 0; font-size: var(--font-size-micro); }
 .headman-journal-grid :is(th, td) { position: relative; isolation: isolate; padding: 0; border-inline-end: var(--web-border) solid var(--color-border-default); border-block-end: var(--web-border) solid var(--color-border-default); text-align: center; vertical-align: middle; }
 .headman-journal-grid .headman-journal-name { position: sticky; inset-inline-start: 0; z-index: 2; inline-size: var(--journal-name); min-inline-size: var(--journal-name); max-inline-size: var(--journal-name); padding-inline: var(--space-3); background: var(--color-surface-base); text-align: start; font-weight: var(--font-weight-medium); }
-.headman-journal-grid thead .headman-journal-name { text-align: center; z-index: 3; }
-.headman-journal-grid thead th { color: var(--color-text-secondary); background: var(--color-surface-base); font-weight: var(--font-weight-medium); }
+.headman-journal-grid thead .headman-journal-name { background: var(--web-data-header-surface); text-align: center; z-index: 3; }
+.headman-journal-grid thead { position: sticky; inset-block-start: 0; z-index: 4; }
+.headman-journal-grid thead th { color: var(--color-text-secondary); background: var(--web-data-header-surface); font-weight: var(--font-weight-medium); }
 .headman-journal-grid thead tr:nth-child(-n+2) th:not(.headman-journal-name) { padding-block: var(--space-1); }
 .headman-journal-grid thead tr:nth-child(4) th { padding-block: var(--space-2); }
 .headman-journal-grid .is-day-end { border-inline-end: calc(var(--web-border) * 2) solid var(--color-border-strong); }
-.headman-journal-grid .is-current { background: var(--color-accent-now); color: var(--color-accent-on-now); }
+.headman-journal-grid .is-current { background: var(--web-action-fill); color: var(--web-action-ink); }
 .headman-journal-subject { display: flex; align-items: center; justify-content: center; inline-size: 100%; block-size: var(--student-attendance-subject-height, 13.3125rem); padding: var(--space-3); border: 0; border-radius: 0; color: inherit; background: transparent; font: inherit; font-weight: var(--font-weight-medium); overflow-wrap: anywhere; cursor: pointer; }
 .headman-journal-subject > span { writing-mode: vertical-rl; rotate: 180deg; max-inline-size: 100%; text-align: center; }
 .headman-journal-date .web-date-label-trigger > .mobile-icon { display: none; }
@@ -73,17 +74,17 @@
 .headman-metric-card[data-metric='absent'] .headman-donut { color: var(--color-status-absent-text); }
 .headman-analytics-footer { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: var(--space-4); }
 .headman-analytics-footer > .web-field { inline-size: min(100%, calc(var(--control-height) * 6)); }
-.headman-stats-viewport { border: var(--web-border) solid var(--color-border-default); border-radius: var(--radius-2xl); }
+.headman-stats-viewport { border: var(--web-border) solid var(--web-panel-line); border-radius: var(--radius-lg); background: var(--color-surface-raised); }
 .headman-statistics-table { inline-size: 100%; min-inline-size: calc(var(--control-height) * 30); border-collapse: separate; border-spacing: 0; font-size: var(--font-size-dense); }
 .headman-statistics-table :is(th, td) { padding: var(--space-2); border-inline-end: var(--web-border) solid var(--color-border-subtle); border-block-end: var(--web-border) solid var(--color-border-subtle); text-align: center; }
-.headman-statistics-table thead th { background: var(--color-surface-raised); color: var(--color-text-secondary); font-size: var(--font-size-caption); font-weight: var(--font-weight-medium); }
+.headman-statistics-table thead th { background: var(--web-data-header-surface); color: var(--color-text-secondary); font-size: var(--font-size-caption); font-weight: var(--font-weight-medium); }
 .headman-statistics-table > thead > tr > th { border-inline-end-color: var(--color-border-default); }
 .headman-statistics-table > thead > tr:first-child > :is(:nth-child(5), :nth-child(6), :nth-child(7)),
 .headman-statistics-table > thead > tr:nth-child(2) > :is(:nth-child(3), :nth-child(6)),
 .headman-statistics-table > tbody > tr:not(.headman-student-reveal) > :is(:nth-child(5), :nth-child(8), :nth-child(11)) { border-inline-end: calc(var(--web-border) * 2) solid var(--color-border-strong); }
 .headman-statistics-table thead button { border: 0; padding: 0; font: inherit; background: transparent; color: inherit; cursor: pointer; }
 .headman-statistics-table .headman-stats-name { position: sticky; inset-inline-start: 0; z-index: 1; inline-size: calc(var(--control-height) * 6); min-inline-size: calc(var(--control-height) * 6); text-align: start; background: var(--color-surface-base); }
-.headman-statistics-table thead .headman-stats-name { background: var(--color-surface-raised); }
+.headman-statistics-table thead .headman-stats-name { background: var(--web-data-header-surface); }
 .headman-statistics-table tbody td { block-size: calc(var(--control-height) + var(--space-4)); }
 .headman-statistics-table td > strong { display: block; font-size: var(--font-size-dense); font-weight: var(--font-weight-medium); }
 .headman-statistics-table td > small { display: block; color: var(--color-text-muted); font-size: var(--font-size-caption); }

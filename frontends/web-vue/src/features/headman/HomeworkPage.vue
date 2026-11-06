@@ -40,6 +40,7 @@ import './headman-workflows.pcss';
 
 const feature = useHeadmanFeature();
 const loading = ref(false),
+  listResolved = ref(false),
   busy = ref(false),
   error = ref<string | null>(null),
   archive = ref(false);
@@ -165,6 +166,7 @@ function restore() {
 async function load() {
   const revision = ++run;
   loading.value = true;
+  listResolved.value = false;
   error.value = null;
   try {
     await feature.initialize();
@@ -187,7 +189,10 @@ async function load() {
       archive.value,
     );
     feature.assertCurrent();
-    if (revision === run) rows.value = result;
+    if (revision === run) {
+      rows.value = result;
+      listResolved.value = true;
+    }
   } catch (cause) {
     if (revision === run) error.value = message(cause);
   } finally {
@@ -485,20 +490,45 @@ useWebLiveRefresh(load, {
       <button type="button" class="web-button" :class="{ 'web-button-selected': !editor && archive }" :aria-pressed="!editor && archive" :disabled="loading || busy || !!pending" @click="selectSection(true)">Архив</button>
     </div>
     <p v-if="pending" class="web-notice" role="status">Сохранено незавершённое изменение. Новая запись заблокирована до проверки результата. <button class="web-button" :disabled="busy" @click="execute(true)">Проверить результат</button></p>
-    <form v-if="editor" class="headman-homework-composer web-stack" @submit.prevent="save">
+    <form
+      v-if="editor"
+      class="headman-panel headman-homework-composer web-stack" @submit.prevent="save"
+    >
       <h2>{{ editing ? 'Изменить задание' : 'Добавить задание' }}</h2>
       <fieldset :disabled="busy || !!pending" class="headman-flow-fields">
-        <WebSelect v-model="draft.subjectId" label="Предмет" :options="subjects.map(item => ({ value: item.id, label: item.name }))" :disabled="!!editing || busy || !!pending" required @change="changePlacementContext" />
-        <WebSelect v-model="draft.lessonType" label="Тип занятия" :options="types.map(type => ({ value: type, label: lessonTypes[type] ?? type }))" :disabled="busy || !!pending" required @change="changePlacementContext" />
-        <label class="headman-flow-toggle"><input v-model="draft.bound" type="checkbox" @change="changePlacementContext" /><span>{{ draft.bound ? 'Привязано к паре' : 'На выбранную дату' }}</span></label>
-        <div class="headman-homework-placement-row">
-          <button v-if="draft.bound" type="button" class="web-button" :disabled="placementLoading || busy || !!pending" @click="findNext">Ближайшая пара</button>
-          <WebDateField v-model="draft.date" label="Дата" :min="editing && !placementTouched && editing.lessonDate < today() ? editing.lessonDate : today()" :max="semester?.dateTo" :today="today()" :allowed-dates="draft.bound ? placementDates : undefined" :disabled="busy || !!pending || (draft.bound && placementLoading)" required @change="chooseDate" @validity="dateValidity" />
-        </div>
-        <WebSelect v-if="draft.bound && dateLessons.length > 1" v-model="selectedLessonId" label="Пара" :options="[{ value: 0, label: 'Выбери пару' }, ...dateLessons.map(lesson => ({ value: lesson.id, label: `№${lesson.lessonNumber} · ${lesson.startTime?.slice(0, 5) ?? '—'} — ${lesson.endTime?.slice(0, 5) ?? '—'}` }))]" :disabled="busy || !!pending || placementLoading" required />
-        <p v-if="placementLoading" class="web-caption" role="status">Загрузка расписания…</p>
-        <p v-else-if="placementError" class="web-error" role="alert">{{ placementError }}</p>
-        <p v-else-if="draft.bound && !nextLesson" class="web-caption">{{ editing && !placementTouched ? 'Сохранение прежней привязки.' : placementLessons.length ? 'Выбери дату и пару в расписании.' : 'Подходящих будущих пар нет.' }}</p>
+        <fieldset class="headman-homework-assignment">
+          <legend>Предмет и дата</legend>
+          <WebSelect v-model="draft.subjectId" label="Предмет" :options="subjects.map(item => ({ value: item.id, label: item.name }))" :disabled="!!editing || busy || !!pending" required @change="changePlacementContext" />
+          <WebSelect v-model="draft.lessonType" label="Тип занятия" :options="types.map(type => ({ value: type, label: lessonTypes[type] ?? type }))" :disabled="busy || !!pending" required @change="changePlacementContext" />
+          <div class="headman-homework-placement">
+            <label class="headman-flow-toggle"><input v-model="draft.bound" type="checkbox" @change="changePlacementContext" /><span>{{ draft.bound ? 'Привязано к паре' : 'На выбранную дату' }}</span></label>
+            <div class="headman-homework-placement-row">
+              <button v-if="draft.bound" type="button" class="web-button" :disabled="placementLoading || busy || !!pending" @click="findNext">Ближайшая пара</button>
+              <WebDateField v-model="draft.date" label="Дата" :min="editing && !placementTouched && editing.lessonDate < today() ? editing.lessonDate : today()" :max="semester?.dateTo" :today="today()" :allowed-dates="draft.bound ? placementDates : undefined" :disabled="busy || !!pending || (draft.bound && placementLoading)" required @change="chooseDate" @validity="dateValidity" />
+            </div>
+            <WebSelect v-if="draft.bound && dateLessons.length > 1" v-model="selectedLessonId" label="Пара" :options="[{ value: 0, label: 'Выбери пару' }, ...dateLessons.map(lesson => ({ value: lesson.id, label: `№${lesson.lessonNumber} · ${lesson.startTime?.slice(0, 5) ?? '—'} — ${lesson.endTime?.slice(0, 5) ?? '—'}` }))]" :disabled="busy || !!pending || placementLoading" required />
+            <p
+              v-if="placementLoading"
+              class="web-caption"
+              role="status"
+            >
+              Загрузка расписания…
+            </p>
+            <p
+              v-else-if="placementError"
+              class="web-error"
+              role="alert"
+            >
+              {{ placementError }}
+            </p>
+            <p
+              v-else-if="draft.bound && !nextLesson"
+              class="web-caption"
+            >
+              {{ editing && !placementTouched ? 'Сохранение прежней привязки.' : placementLessons.length ? 'Выбери дату и пару в расписании.' : 'Подходящих будущих пар нет.' }}
+            </p>
+          </div>
+        </fieldset>
         <label class="web-field">Заголовок<input v-model="draft.title" maxlength="255" required /></label>
         <label class="web-field">Основная ссылка<input v-model="draft.link" type="url" maxlength="2048" placeholder="https://" /></label>
         <label class="web-field">Описание<textarea v-model="draft.description" maxlength="4000" rows="6" /></label>
@@ -513,15 +543,113 @@ useWebLiveRefresh(load, {
         <label class="web-field">Поиск<input v-model="search" type="search" /></label>
       </form>
       <section v-for="group in grouped" :key="group.date" class="headman-homework-group web-stack"><h2>{{ group.date === today() ? 'Сегодня, ' : '' }}{{ dateLabel(group.date) }}</h2>
-        <div v-for="item in group.items" :key="item.id" class="headman-homework-entry"><article class="headman-flow-card headman-homework-card">
-          <div class="headman-heading"><div class="web-stack"><p v-if="item.title" class="web-caption">{{ subjects.find(subject => subject.id === item.subjectId)?.name ?? 'Предмет недоступен' }}</p><h3>{{ item.title || subjects.find(subject => subject.id === item.subjectId)?.name }}</h3></div><span v-if="item.archived" class="headman-flow-status" data-status="CANCELLED">Архив</span></div>
-          <p v-if="item.description" class="headman-flow-description"><LinkifiedText :text="item.description" /></p><a v-if="item.link" :href="item.link" target="_blank" rel="noopener noreferrer" :title="item.link">Основная ссылка<span class="web-sr-only"> (откроется в новой вкладке)</span></a>
-          <div class="headman-flow-card-footer"><p v-if="publisher(item.publishedBy)" class="web-caption">{{ publisher(item.publishedBy) }}</p><div class="headman-actions"><button type="button" class="web-button" :aria-expanded="historyId === item.id" :aria-controls="`homework-history-${item.id}`" @click="showHistory(item)">История</button><template v-if="!item.archived && writable"><button type="button" class="web-button" :disabled="busy || !!pending" @click="openEditor(item)">Изменить</button><button type="button" class="web-button" :disabled="busy || !!pending" @click="remove(item)">Удалить</button></template></div></div>
-        </article>
+        <div v-for="item in group.items" :key="item.id" class="headman-homework-entry">
+          <article class="headman-flow-card headman-homework-card">
+            <div class="headman-heading">
+              <div class="web-stack">
+                <p
+                  v-if="item.title"
+                  class="web-caption"
+                >
+                  {{ subjects.find(subject => subject.id === item.subjectId)?.name ?? 'Предмет недоступен' }}
+                </p><h3>{{ item.title || subjects.find(subject => subject.id === item.subjectId)?.name }}</h3>
+              </div><span
+                v-if="item.archived"
+                class="headman-flow-status" data-status="CANCELLED"
+              >Архив</span>
+            </div>
+            <details
+              v-if="item.description || item.link"
+              class="headman-disclosure headman-homework-content"
+            >
+              <summary>{{ item.description && item.link ? 'Описание и ссылка' : item.description ? 'Описание' : 'Ссылка' }}</summary>
+              <div class="web-stack">
+                <p
+                  v-if="item.description"
+                  class="headman-flow-description"
+                >
+                  <LinkifiedText :text="item.description" />
+                </p>
+                <a v-if="item.link" :href="item.link" target="_blank" rel="noopener noreferrer" :title="item.link">Основная ссылка<span class="web-sr-only"> (откроется в новой вкладке)</span></a>
+              </div>
+            </details>
+            <div class="headman-flow-card-footer">
+              <p
+                v-if="publisher(item.publishedBy)"
+                class="web-caption"
+              >
+                {{ publisher(item.publishedBy) }}
+              </p><div class="headman-actions">
+                <button
+                  type="button"
+                  class="web-button" :aria-expanded="historyId === item.id" :aria-controls="`homework-history-${item.id}`" @click="showHistory(item)"
+                >
+                  История
+                </button><template v-if="!item.archived && writable">
+                  <button
+                    type="button"
+                    class="web-button" :disabled="busy || !!pending" @click="openEditor(item)"
+                  >
+                    Изменить
+                  </button><button
+                    type="button"
+                    class="web-button" :disabled="busy || !!pending" @click="remove(item)"
+                  >
+                    Удалить
+                  </button>
+                </template>
+              </div>
+            </div>
+          </article>
         <HomeworkHistory v-if="historyId === item.id" :id="`homework-history-${item.id}`" :title="item.title" :entries="history" :loading="historyLoading" :error="historyError" @close="closeHistory" />
         </div>
       </section>
-      <p v-if="!loading && !error && !visible.length" class="headman-flow-empty">Заданий по этим условиям нет.</p><p v-if="loading && !rows.length" class="web-caption" role="status">Загрузка заданий…</p>
+      <p
+        v-if="loading && !rows.length"
+        class="web-caption"
+        role="status"
+      >
+        Загрузка заданий…
+      </p>
+      <div
+        v-else-if="listResolved && !error && !visible.length && feature.allowed('MANAGE_HOMEWORK')"
+        class="headman-flow-empty"
+        role="status"
+      >
+        <svg
+          aria-hidden="true"
+          focusable="false"
+          viewBox="0 0 56 44"
+          fill="none"
+        >
+          <rect
+            x="3"
+            y="5"
+            width="42"
+            height="35"
+            rx="9"
+            fill="currentColor"
+            opacity=".12"
+          />
+          <rect
+            x="9"
+            y="11"
+            width="35"
+            height="25"
+            rx="4"
+            stroke="currentColor"
+            stroke-width="2"
+          />
+          <path
+            d="M10 18h33m-25-10v6m17-6v6m-14 13 4 4 9-9"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+        <p>Заданий по этим условиям нет.</p>
+      </div>
     </template>
   </HeadmanPage>
 </template>

@@ -116,7 +116,15 @@ function eventText(action: HeadmanLessonAction) {
         <p v-if="markError" class="web-error headman-home-mark-error" role="alert">{{ markError }} <button v-if="markPending" type="button" class="web-button" :disabled="markBusy" @click="home.reconcileMark">Проверить отметку</button> <button v-if="markCanAccept" type="button" class="web-button" @click="home.acceptCurrentMark">Принять текущее состояние</button></p>
         <span class="web-sr-only" role="status">{{ markNotice }}</span>
         </div>
-        <div v-if="manualLesson && manualReport" ref="rosterRoot" class="headman-home-roster headman-home-scroll" role="region" aria-label="Отметки выбранной пары" :aria-busy="manualLoading">
+        <div
+          v-if="manualLesson && manualReport"
+          ref="rosterRoot"
+          class="headman-home-roster headman-home-scroll"
+          role="region"
+          tabindex="0"
+          aria-label="Отметки выбранной пары"
+          :aria-busy="manualLoading"
+        >
           <table class="headman-home-table">
             <thead><tr><th scope="col">ФИО</th><th scope="col">Статус</th><th scope="col">Источник</th><th scope="col">Время</th></tr></thead>
             <tbody><template v-for="entry in roster" :key="entry.userId">
@@ -129,44 +137,56 @@ function eventText(action: HeadmanLessonAction) {
         <p v-else-if="!manualError" class="headman-home-empty" role="status">{{ loading || manualLoading ? 'Загрузка отметок…' : 'На сегодня пар нет.' }}</p>
       </section>
 
-      <section class="headman-home-panel headman-home-audit-panel" aria-label="Журнал действий по паре">
-        <nav aria-label="Пара в журнале действий">
-          <StudentPeriodPager :label="lessonLabel(auditLesson)" unit="период журнала действий" :previous-disabled="auditIndex <= 0" :next-disabled="auditIndex < 0 || auditIndex >= lessons.length - 1" :busy="loading || auditLoading || interactionLocked" @step="home.step('audit', $event)" @reset="home.reset('audit')" />
-        </nav>
-        <div class="headman-home-card headman-home-audit">
-          <h2>Журнал действий</h2>
-          <p v-if="auditError" class="web-error" role="alert">{{ auditError }} <button class="web-button" :disabled="auditLoading || interactionLocked" @click="home.readAudit(auditId)">Обновить журнал</button></p>
-          <div v-if="audit.length" class="headman-home-scroll headman-home-audit-scroll" role="region" aria-label="Действия выбранной пары" tabindex="0" :aria-busy="auditLoading">
-            <ol class="headman-home-events"><li v-for="action in audit" :key="action.id"><time :datetime="action.occurredAt">{{ instant(action.occurredAt) }}</time><div><p>{{ eventText(action) }}</p><p v-if="action.geo" class="web-caption">Геопроверка<template v-if="action.geo.distanceMeters !== null"> · {{ action.geo.distanceMeters }} м от центра</template></p></div></li></ol>
+      <aside class="headman-home-rail" aria-label="Контекст пары">
+        <details class="headman-disclosure headman-home-audit-panel">
+          <summary>Журнал действий</summary>
+          <nav aria-label="Пара в журнале действий">
+            <StudentPeriodPager :label="lessonLabel(auditLesson)" unit="период журнала действий" :previous-disabled="auditIndex <= 0" :next-disabled="auditIndex < 0 || auditIndex >= lessons.length - 1" :busy="loading || auditLoading || interactionLocked" @step="home.step('audit', $event)" @reset="home.reset('audit')" />
+          </nav>
+          <div class="headman-home-audit">
+            <p v-if="auditError" class="web-error" role="alert">{{ auditError }} <button class="web-button" :disabled="auditLoading || interactionLocked" @click="home.readAudit(auditId)">Обновить журнал</button></p>
+            <div
+              v-if="audit.length"
+              class="headman-home-scroll headman-home-audit-scroll"
+              role="region"
+              aria-label="Действия выбранной пары"
+              tabindex="0"
+              :aria-busy="auditLoading"
+            >
+              <ol class="headman-home-events"><li v-for="action in audit" :key="action.id"><time :datetime="action.occurredAt">{{ instant(action.occurredAt) }}</time><div><p>{{ eventText(action) }}</p><p v-if="action.geo" class="web-caption">Геопроверка<template v-if="action.geo.distanceMeters !== null"> · {{ action.geo.distanceMeters }} м от центра</template></p></div></li></ol>
+            </div>
+            <p v-else-if="!auditError" class="web-caption" role="status">{{ loading || auditLoading ? 'Загрузка журнала…' : auditLesson ? 'Действий пока нет.' : 'На сегодня пар нет.' }}</p>
+            <button v-if="cursor" class="web-button" :disabled="auditLoading || interactionLocked" @click="home.readAudit(auditId, true)">Показать ещё</button>
           </div>
-          <p v-else-if="!auditError" class="web-caption" role="status">{{ loading || auditLoading ? 'Загрузка журнала…' : auditLesson ? 'Действий пока нет.' : 'На сегодня пар нет.' }}</p>
-          <button v-if="cursor" class="web-button" :disabled="auditLoading || interactionLocked" @click="home.readAudit(auditId, true)">Показать ещё</button>
-        </div>
-      </section>
-    </div>
+        </details>
+        <section class="headman-home-homework" aria-label="Домашнее задание на сегодня">
+          <h2 class="web-sr-only">Домашнее задание на сегодня</h2>
+          <p v-if="homeworkError" class="web-error" role="alert">{{ homeworkError }}</p>
+          <div
+            v-if="homeworks?.length"
+            class="headman-home-homework-list headman-home-scroll"
+            role="region"
+            aria-label="Задания на сегодня"
+            tabindex="0"
+          >
+            <article v-for="homework in homeworks" :key="homework.id" class="headman-home-card headman-home-homework-card">
+              <p class="web-caption">{{ subjectName(homework.subjectId) }}</p><h3>{{ homework.title || subjectName(homework.subjectId) }}</h3>
+              <p v-if="homework.description" class="headman-home-homework-description"><LinkifiedText :text="homework.description" /></p>
+              <a v-if="homework.link" :href="homework.link" target="_blank" rel="noopener noreferrer">Основная ссылка <span class="web-sr-only">(откроется в новой вкладке)</span></a>
 
-    <div class="headman-home-bottom">
-      <section class="headman-home-homework" aria-label="Домашнее задание на сегодня">
-        <h2 class="web-sr-only">Домашнее задание на сегодня</h2>
-        <p v-if="homeworkError" class="web-error" role="alert">{{ homeworkError }}</p>
-        <div v-if="homeworks?.length" class="headman-home-homework-list headman-home-scroll" role="region" aria-label="Задания на сегодня" tabindex="0">
-          <article v-for="homework in homeworks" :key="homework.id" class="headman-home-card headman-home-homework-card">
-            <p class="web-caption">{{ subjectName(homework.subjectId) }}</p><h3>{{ homework.title || subjectName(homework.subjectId) }}</h3>
-            <p v-if="homework.description" class="headman-home-homework-description"><LinkifiedText :text="homework.description" /></p>
-            <a v-if="homework.link" :href="homework.link" target="_blank" rel="noopener noreferrer">Основная ссылка <span class="web-sr-only">(откроется в новой вкладке)</span></a>
-
-          </article>
-        </div>
-        <p v-else-if="!homeworkError" class="headman-home-card web-caption">{{ loading && homeworks === null ? 'Загрузка заданий…' : 'Заданий на сегодня нет.' }}</p>
-      </section>
-      <aside class="headman-home-requests" aria-label="Открытые заявки за сегодня">
-        <section v-for="group in requestGroups" :key="group.kind" class="headman-home-card headman-home-request-group">
-          <h2><RouterLink :to="{ name: 'headman-requests', query: { type: group.kind } }">{{ group.label }}<span v-if="group.page" class="web-sr-only"> · показано за сегодня {{ group.items.length }}</span></RouterLink></h2>
-          <p v-if="group.error" class="web-error" role="alert">{{ group.error }}</p>
-          <RouterLink v-for="request in group.items" :key="request.id" class="headman-home-request" :to="{ name: 'headman-requests', query: { type: group.kind, request: request.id } }">
-            <span>№ {{ request.id }}</span><div><p>Автор: {{ request.studentName ?? 'Не указан' }}<template v-if="request.coverageStart"> · на {{ dateLabel(request.coverageStart) }}<template v-if="request.coverageEnd && request.coverageEnd !== request.coverageStart">–{{ dateLabel(request.coverageEnd) }}</template></template></p><p v-if="created(request.createdAt)" class="web-caption">Создана {{ created(request.createdAt) }}</p></div>
-          </RouterLink>
-          <p v-if="!group.error && !group.items.length" class="web-caption">{{ loading && !group.page ? 'Загрузка заявок…' : 'За сегодня открытых заявок нет.' }}</p>
+            </article>
+          </div>
+          <p v-else-if="!homeworkError" class="headman-home-card web-caption">{{ loading && homeworks === null ? 'Загрузка заданий…' : 'Заданий на сегодня нет.' }}</p>
+        </section>
+        <section class="headman-home-requests" aria-label="Открытые заявки за сегодня">
+          <section v-for="group in requestGroups" :key="group.kind" class="headman-home-card headman-home-request-group">
+            <h2><RouterLink :to="{ name: 'headman-requests', query: { type: group.kind } }">{{ group.label }}<span v-if="group.page" class="web-sr-only"> · показано за сегодня {{ group.items.length }}</span></RouterLink></h2>
+            <p v-if="group.error" class="web-error" role="alert">{{ group.error }}</p>
+            <RouterLink v-for="request in group.items" :key="request.id" class="headman-home-request" :to="{ name: 'headman-requests', query: { type: group.kind, request: request.id } }">
+              <span>№ {{ request.id }}</span><div><p>{{ request.studentName ?? 'Не указан' }}<template v-if="request.coverageStart"> · на {{ dateLabel(request.coverageStart) }}<template v-if="request.coverageEnd && request.coverageEnd !== request.coverageStart">–{{ dateLabel(request.coverageEnd) }}</template></template></p><p v-if="created(request.createdAt)" class="web-caption">Создана {{ created(request.createdAt) }}</p></div>
+            </RouterLink>
+            <p v-if="!group.error && !group.items.length" class="web-caption">{{ loading && !group.page ? 'Загрузка заявок…' : 'За сегодня открытых заявок нет.' }}</p>
+          </section>
         </section>
       </aside>
     </div>

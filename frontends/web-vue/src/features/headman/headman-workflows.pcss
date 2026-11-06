@@ -1,9 +1,9 @@
-.headman-workflows { gap: var(--space-6); }
+.headman-workflows { gap: var(--space-5); }
 .headman-flow-tabs { display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-2); }
 .headman-flow-filters > summary { inline-size: fit-content; cursor: pointer; list-style: none; }
 .headman-flow-filters > summary::-webkit-details-marker { display: none; }
 .headman-flow-filters[open] > summary { margin-block-end: var(--space-3); }
-.headman-flow-filter-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, calc(var(--control-height) * 5)), 1fr)); align-items: end; gap: var(--space-4); padding: var(--space-4); border: var(--web-border) solid var(--color-border-subtle); border-radius: var(--radius-2xl); background: var(--color-surface-raised); }
+.headman-flow-filter-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, calc(var(--control-height) * 5)), 1fr)); align-items: end; gap: var(--space-4); padding: var(--space-4); border: var(--web-border) solid var(--web-panel-line); border-radius: var(--radius-lg); background: var(--color-surface-raised); }
 .headman-workflows .headman-flow-fields { display: grid; gap: var(--space-4); padding: 0; border: 0; border-radius: 0; }
 .headman-homework-composer { inline-size: min(100%, calc(var(--control-height) * 18)); }
 .headman-homework-composer h2 { font-size: var(--font-size-title-block); }
@@ -17,7 +17,7 @@
 .headman-homework-group { gap: var(--space-3); }
 .headman-homework-group + .headman-homework-group { padding-block-start: var(--space-3); }
 .headman-homework-group > h2 { font-size: var(--font-size-dense); font-weight: var(--font-weight-medium); }
-.headman-flow-card { display: grid; min-inline-size: 0; gap: var(--space-3); padding: var(--space-4); border: var(--web-border) solid var(--color-border-subtle); border-radius: var(--radius-2xl); background: var(--color-surface-raised); }
+.headman-flow-card { display: grid; min-inline-size: 0; gap: var(--space-3); padding: var(--space-4); border: var(--web-border) solid var(--web-panel-line); border-radius: var(--radius-lg); background: var(--color-surface-raised); }
 .headman-flow-card h3 { font-size: var(--font-size-title-block); font-weight: var(--font-weight-medium); }
 .headman-flow-card .headman-heading > .web-stack { gap: var(--space-1); }
 .headman-flow-description { white-space: pre-wrap; overflow-wrap: anywhere; }
@@ -29,16 +29,17 @@
 .headman-flow-status[data-status='APPROVED'] { color: var(--color-state-success-text); background: var(--color-state-success-bg); border-color: var(--color-state-success-border); }
 .headman-flow-status[data-status='REJECTED'] { color: var(--color-state-danger-text); background: var(--color-state-danger-bg); border-color: var(--color-state-danger-border); }
 .headman-flow-status[data-status='CANCELLED'] { color: var(--color-text-muted); background: var(--color-surface-base); }
-.headman-flow-empty { padding: var(--space-6); text-align: center; color: var(--color-text-secondary); }
+.headman-flow-empty { display: flex; gap: var(--space-3); align-items: center; padding: var(--space-4); color: var(--color-text-secondary); }
+.headman-flow-empty svg { flex: none; inline-size: var(--space-10); color: var(--web-focus-color); }
 .headman-request-list { display: grid; gap: var(--space-4); }
 .headman-request-card h2 { font-size: var(--font-size-title-block); font-weight: var(--font-weight-medium); }
 .headman-request-expand[aria-expanded='true'] svg { transform: rotate(180deg); }
-.headman-request-meta { padding-block-start: var(--space-3); border-block-start: var(--web-border) solid var(--color-border-subtle); color: var(--color-text-muted); font-size: var(--font-size-caption); }
 .headman-request-detail { padding-block-start: var(--space-3); border-block-start: var(--web-border) solid var(--color-border-subtle); }
-.headman-request-lessons { max-block-size: calc(var(--control-height) * 8); overflow: auto; border: var(--web-border) solid var(--color-border-subtle); border-radius: var(--radius-xl); }
+.headman-request-lessons { max-block-size: calc(var(--control-height) * 8); overflow: auto; border: var(--web-border) solid var(--web-panel-line); border-radius: var(--radius-lg); }
 .headman-request-table { border-collapse: separate; border-spacing: 0; inline-size: 100%; font-size: var(--font-size-dense); }
 .headman-request-table :is(th, td) { padding: var(--space-3); border-block-end: var(--web-border) solid var(--color-border-subtle); text-align: start; }
-.headman-request-table th { color: var(--color-text-secondary); font-weight: var(--font-weight-medium); }
+.headman-request-table td small { display: block; }
+.headman-request-table th { background: var(--web-data-header-surface); color: var(--color-text-secondary); font-weight: var(--font-weight-medium); }
 .headman-request-table tr:last-child td { border-block-end: 0; }
 .headman-request-files { display: grid; justify-items: start; gap: var(--space-2); }
 .headman-request-decision { max-inline-size: calc(var(--control-height) * 18); }
@@ -72,5 +73,18 @@
 
 .headman-request-filters { grid-template-columns: repeat(4, minmax(0, 1fr)) auto; }
 .headman-request-filters > .web-button { align-self: end; }
-.headman-request-card .headman-heading > .web-stack { flex: 1 1 auto; min-inline-size: 0; }
+.headman-request-summary { flex: 1 1 12rem; display: grid; gap: var(--space-1); min-inline-size: 0; overflow-wrap: anywhere; }
 @media (max-width: 60rem) { .headman-request-filters { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+.headman-request-context, .headman-request-section { display: grid; gap: var(--space-3); min-inline-size: 0; }
+.headman-request-context h3 { overflow-wrap: anywhere; }
+.headman-request-context dl { margin: 0; }
+.headman-request-section { padding: var(--space-4); border: var(--web-border) solid var(--web-panel-line); border-radius: var(--radius-lg); }
+.headman-request-section h3 { margin: 0; }
+.headman-homework-assignment { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3); }
+.headman-homework-assignment legend { padding-inline: var(--space-2); }
+.headman-homework-placement { grid-column: 1 / -1; display: grid; gap: var(--space-2); }
+.headman-homework-content { padding-block: var(--space-1); }
+@media (width <= 36rem) {
+  .headman-homework-assignment, .headman-request-filters { grid-template-columns: minmax(0, 1fr); }
+}

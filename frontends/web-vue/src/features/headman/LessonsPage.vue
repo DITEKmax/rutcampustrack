@@ -60,7 +60,7 @@ const date = ref(
   selected = shallowRef<HeadmanJournalLesson | null>(null);
 const task = ref<'ROOM' | 'TRANSFER' | 'CANCEL' | 'RESTORE' | 'ONE_OFF' | null>(null);
 const form = reactive({ date: today(), number: 1, assignmentId: 0, room: '', reason: '' });
-const target = shallowRef<readonly HeadmanJournalLesson[]>([]),
+const targetOccupied = shallowRef<ReadonlySet<number>>(new Set()),
   targetDate = ref(''),
   targetBusy = ref(false);
 const geoBusy = ref(false),
@@ -80,6 +80,8 @@ const slot = computed(() => state.catalog?.slots.find((item) => item.lessonNumbe
 const navigationBusy = ref(false);
 const locked = computed(() => state.locked || geoBusy.value || !!geoUnknown.value || navigationBusy.value);
 const weekLessons = shallowRef<readonly HeadmanJournalLesson[]>([]);
+const weekOneOffIds = shallowRef<ReadonlySet<number>>(new Set());
+const weekOneOffUnavailable = ref(false);
 const weekError = ref<string | null>(null);
 const weekLoading = ref(false);
 const publishedWeek = ref('');
@@ -92,10 +94,12 @@ function isTransferred(lesson: HeadmanJournalLesson) {
   return lesson.status !== 'CANCELLED' && (lesson.status === 'TRANSFERRED' || !!lesson.transferOperationId);
 }
 function cardStatus(lesson: HeadmanJournalLesson) {
-  if (lesson.status === 'CANCELLED') return 'Отменена';
-  if (isTransferred(lesson))
-    return lesson.status === 'UNSUPPORTED' ? 'Перенесена · Статус недоступен' : 'Перенесена';
-  return lesson.status === 'UNSUPPORTED' ? lessonStatus[lesson.status] : '';
+  return [
+    lesson.status === 'CANCELLED' ? 'Отменена' : null,
+    isTransferred(lesson) ? 'Перенесена' : null,
+    weekOneOffIds.value.has(lesson.id) ? 'Разовая' : null,
+    lesson.status === 'ACTIVE' || lesson.status === 'UNSUPPORTED' ? lessonStatus[lesson.status] : null,
+  ].filter(Boolean).join(' · ');
 }
 function lessonsInSlot(day: string, number: number) {
   return weekLessons.value
@@ -119,12 +123,25 @@ async function readWeek() {
   const from = weekFrom.value;
   weekLoading.value = true;
   weekError.value = null;
-  if (publishedWeek.value !== from) weekLessons.value = [];
+  weekOneOffUnavailable.value = false;
+  if (publishedWeek.value !== from) {
+    weekLessons.value = [];
+    weekOneOffIds.value = new Set();
+  }
   try {
-    const result = await feature.journal.listLessons(feature.groupId, from, addDays(from, 5));
+    const to = addDays(from, 5);
+    const [result, oneOffs] = await Promise.allSettled([
+      feature.journal.listLessons(feature.groupId, from, to),
+      feature.schedule.listOneOffLessons(feature.groupId, from, to),
+    ]);
     feature.assertCurrent();
     if (revision !== weekRevision || from !== weekFrom.value) return;
-    weekLessons.value = result.filter(lesson => lesson.groupId === feature.groupId && lesson.current && lesson.date >= from && lesson.date <= addDays(from, 5));
+    if (result.status === 'rejected') throw result.reason;
+    weekLessons.value = result.value.filter(lesson => lesson.groupId === feature.groupId && lesson.current && lesson.date >= from && lesson.date <= to);
+    weekOneOffIds.value = new Set(oneOffs.status === 'fulfilled'
+      ? oneOffs.value.filter(item => item.groupId === feature.groupId && item.date >= from && item.date <= to).map(item => item.physicalLessonId)
+      : []);
+    weekOneOffUnavailable.value = oneOffs.status === 'rejected';
     publishedWeek.value = from;
   } catch (cause) {
     if (revision === weekRevision) weekError.value = message(cause);
@@ -208,11 +225,12 @@ async function loadTarget() {
   targetBusy.value = true;
   targetDate.value = '';
   try {
-    const result = await state.targetLessons(form.date);
+    const requestedDate = form.date;
+    const occupied = await state.targetOccupiedSlots(requestedDate);
     feature.assertCurrent();
-    if (revision !== read) return;
-    target.value = result;
-    targetDate.value = form.date;
+    if (revision !== read || requestedDate !== form.date) return;
+    targetOccupied.value = occupied;
+    targetDate.value = requestedDate;
   } catch (cause) {
     if (revision === read) error.value = message(cause);
   } finally {
@@ -220,13 +238,7 @@ async function loadTarget() {
   }
 }
 function unavailable(number: number) {
-  return (
-    targetDate.value !== form.date ||
-    target.value.some(
-      (lesson) =>
-        lesson.current && lesson.lessonNumber === number && lesson.status !== 'TRANSFERRED',
-    )
-  );
+  return targetDate.value !== form.date || targetOccupied.value.has(number);
 }
 async function submit() {
   const lesson = selected.value;
@@ -314,7 +326,10 @@ async function submit() {
     }
     await state.submit(command);
     feature.assertCurrent();
-    if (!state.intent) {
+    if (!state.intent && !state.error) {
+      if (command.kind === 'ONE_OFF' && state.confirmedOneOff) {
+        date.value = state.confirmedOneOff.date;
+      }
       task.value = null;
       await load();
     }
@@ -323,9 +338,13 @@ async function submit() {
   }
 }
 async function recover() {
+  const command = state.intent?.command;
   await state.recover();
   feature.assertCurrent();
-  if (!state.intent) {
+  if (!state.intent && !state.error) {
+    if (command?.kind === 'ONE_OFF' && state.confirmedOneOff) {
+      date.value = state.confirmedOneOff.date;
+    }
     task.value = null;
     await load();
   }
@@ -419,13 +438,32 @@ useWebLiveRefresh(load, { blocked: () => locked.value || state.loading || !!task
       ></p
     >
     <p v-if="weekError" class="web-error" role="alert">{{ weekError }} <button type="button" class="web-button" :disabled="weekLoading" @click="readWeek">Повторить</button></p>
-    <div class="headman-timetable-scroll" :aria-busy="weekLoading">
+    <p
+      v-else-if="weekOneOffUnavailable"
+      class="web-notice"
+      role="status"
+    >
+      Пометки разовых пар недоступны. <button
+        type="button"
+        class="web-button"
+        :disabled="weekLoading"
+        @click="readWeek"
+      >
+        Обновить сетку
+      </button>
+    </p>
+    <div
+      class="headman-timetable-scroll"
+      role="region"
+      aria-label="Пары на неделю"
+      tabindex="0" :aria-busy="weekLoading"
+    >
       <table class="headman-timetable headman-timetable-management">
         <thead><tr><th><span class="web-sr-only">Пара и время</span></th><th v-for="day in weekDays" :key="day" scope="col"><strong>{{ weekday.format(new Date(`${day}T12:00:00Z`)) }}</strong><small>{{ dateLabel(day) }}</small></th></tr></thead>
         <tbody><template v-for="item in state.catalog?.slots" :key="item.lessonNumber"><tr>
           <th scope="row">{{ item.lessonNumber }} пара<small>{{ item.startTime.slice(0, 5) }} — {{ item.endTime.slice(0, 5) }}</small></th>
           <td v-for="day in weekDays" :key="day"><div class="headman-timetable-cell">
-            <button v-for="lesson in lessonsInSlot(day, item.lessonNumber)" :key="lesson.id" type="button" class="headman-timetable-lesson" :class="{ 'is-selected': selected?.id === lesson.id, 'is-current': lesson.status === 'ACTIVE', 'is-cancelled': lesson.status === 'CANCELLED', 'is-transferred': isTransferred(lesson) }" :aria-pressed="selected?.id === lesson.id" :aria-label="lessonLabel(lesson)" :title="lessonLabel(lesson)" :disabled="locked || state.loading || !!task" @click="chooseWeekLesson(lesson)">
+            <button v-for="lesson in lessonsInSlot(day, item.lessonNumber)" :key="lesson.id" type="button" class="headman-timetable-lesson" :class="{ 'is-selected': selected?.id === lesson.id, 'is-current': lesson.status === 'ACTIVE', 'is-cancelled': lesson.status === 'CANCELLED', 'is-transferred': isTransferred(lesson), 'is-one-off': weekOneOffIds.has(lesson.id) }" :aria-pressed="selected?.id === lesson.id" :aria-label="lessonLabel(lesson)" :title="lessonLabel(lesson)" :disabled="locked || state.loading || !!task" @click="chooseWeekLesson(lesson)">
               <strong>{{ subjectName(lesson) }}</strong><span>{{ lessonTypes[lessonTypeCode(lesson.lessonType)] ?? 'Тип не указан' }}<template v-if="lesson.room"> · {{ lesson.room }}</template></span><small v-if="cardStatus(lesson)">{{ cardStatus(lesson) }}</small>
             </button>
             <button v-if="feature.isHeadman && publishedWeek === weekFrom && !weekLessons.some(value => value.date === day && value.lessonNumber === item.lessonNumber)" type="button" class="headman-timetable-free" :disabled="locked || state.loading || weekLoading || !!task || !feature.writable()" :aria-label="`Добавить пару: ${dateLabel(day)}, ${item.lessonNumber} пара`" @click="createWeekSlot(day, item.lessonNumber)"><MobileIcon name="plus" /></button>
@@ -433,7 +471,19 @@ useWebLiveRefresh(load, { blocked: () => locked.value || state.loading || !!task
         </tr><tr v-if="selected && !task && selected.lessonNumber === item.lessonNumber"><td colspan="7" class="headman-timetable-reveal">    <section
       v-if="selected && !task"
       class="headman-panel web-stack headman-lesson-detail"
-      ><div class="headman-lesson-detail-heading"><h2>Пара №{{ selected.lessonNumber }} · {{ dateLabel(selected.date) }}</h2><button type="button" class="web-button web-icon-button" aria-label="Закрыть действия пары" :disabled="locked" @click="selected = null"><MobileIcon name="close" /></button></div><p>{{ subjectName(selected) }} · {{ selected.room ?? 'Аудитория не указана' }}</p>
+      ><div class="headman-lesson-detail-heading">
+           <h2>Пара №{{ selected.lessonNumber }} · {{ dateLabel(selected.date) }}</h2><button
+             type="button"
+             class="web-button web-icon-button"
+             aria-label="Закрыть действия пары" :disabled="locked" @click="selected = null"
+           >
+             <MobileIcon name="close" />
+           </button>
+         </div><p>
+           {{ subjectName(selected) }} · {{ selected.room ?? 'Аудитория не указана' }}<template v-if="cardStatus(selected)">
+             · {{ cardStatus(selected) }}
+           </template>
+         </p>
       <p v-if="typeof selected.blockedByHeadman === 'boolean'"
         >Взаимодействие студентов {{ selected.blockedByHeadman ? 'заблокировано' : 'разрешено' }}.
         Блокировка оставляет только заявку на уважительную причину.</p
@@ -485,7 +535,8 @@ useWebLiveRefresh(load, { blocked: () => locked.value || state.loading || !!task
       v-if="task"
       class="headman-panel web-stack headman-timetable-editor"
       @submit.prevent="submit"
-      ><h2>{{
+    >
+      <h2>{{
         {
           CANCEL: 'Отменить пару',
           RESTORE: 'Восстановить пару',
@@ -493,8 +544,20 @@ useWebLiveRefresh(load, { blocked: () => locked.value || state.loading || !!task
           TRANSFER: 'Перенести пару',
           ONE_OFF: 'Разовая пара',
         }[task]
-      }}</h2
-      ><p
+      }}</h2>
+      <p
+        v-if="selected"
+        class="web-caption"
+      >
+        {{ dateLabel(selected.date) }} · пара {{ selected.lessonNumber }} · {{ subjectName(selected) }}
+      </p>
+      <p
+        v-else
+        class="web-caption"
+      >
+        {{ dateLabel(form.date) }} · {{ state.semester?.name }}
+      </p>
+      <p
         v-if="task === 'CANCEL'"
         class="web-notice"
         >Пара будет отменена. Связанные отметки и заявки изменятся по правилам отмены; история
@@ -505,7 +568,7 @@ useWebLiveRefresh(load, { blocked: () => locked.value || state.loading || !!task
         >Пара снова станет доступна в расписании. Восстановление отметок и заявок определяется
         сервером.</p
       ><fieldset :disabled="locked"
-        ><label
+        ><legend>{{ task === 'CANCEL' || task === 'RESTORE' ? 'Подтверждение' : 'Параметры пары' }}</legend><label
           v-if="task === 'CANCEL'"
           class="web-field"
           >Причина<textarea
@@ -524,7 +587,8 @@ useWebLiveRefresh(load, { blocked: () => locked.value || state.loading || !!task
             maxlength="64" /></label></fieldset
       ><div class="headman-actions"
         ><button
-          class="web-button web-button-primary"
+        class="web-button"
+        :class="task === 'CANCEL' ? 'web-button-danger' : 'web-button-primary'"
           :disabled="locked || targetBusy"
           >Подтвердить</button
         ><button

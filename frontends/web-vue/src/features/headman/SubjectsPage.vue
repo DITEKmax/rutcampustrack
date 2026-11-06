@@ -406,9 +406,22 @@ useWebLiveRefresh(load, {
       <h2>{{ selected ? 'Изменить предмет' : 'Добавить предмет' }}</h2>
       <p v-if="!selected" class="web-caption">Добавленные назначения сохранятся вместе с предметом.</p>
       <fieldset :disabled="locked" class="headman-subject-top"><label class="web-field">Название предмета<input v-model="draft.name" required maxlength="255" @keydown.enter.prevent /></label><fieldset><legend>Типы занятий</legend><div class="headman-subject-types"><label v-for="(label, code) in lessonTypes" :key="code" class="headman-subject-type"><input v-model="draft.types" type="checkbox" :value="code" /><span>{{ label }}</span></label></div></fieldset></fieldset>
-      <div class="headman-subject-panels" :class="`has-${draft.types.length}`">
-        <TeacherAssignmentPanel v-for="type in enabledTypes" :key="`${editorRevision}:${type}`" :feature="feature" :semester="semester" :type="type" :label="lessonTypes[type] ?? type" :teachers="teachers" :assignments="selected?.assignments.filter(item => item.semesterId === semesterId && item.lessonType === type) ?? []" :staged="draft.initial.filter(item => item.lessonType === type)" :existing="!!selected" :locked="locked || !writable" :assignment-enabled="!selected || selected.lessonTypes.includes(type)" @remember="rememberTeachers" @add="addTeacher" @remove="removeTeacher" @replace="replaceTeacher" @unstage="removeInitial" />
-      </div>
+      <details
+        v-if="enabledTypes.length"
+        :key="editorRevision"
+        class="headman-disclosure"
+      >
+        <summary>Преподаватели и сроки назначения</summary>
+        <p class="web-caption headman-subject-semester">
+          {{ semester.name }}
+        </p>
+        <div class="headman-subject-panels" :class="`has-${draft.types.length}`">
+          <TeacherAssignmentPanel
+            v-for="type in enabledTypes"
+            :key="`${editorRevision}:${type}`" :feature="feature" :semester="semester" :type="type" :label="lessonTypes[type] ?? type" :teachers="teachers" :assignments="selected?.assignments.filter(item => item.semesterId === semesterId && item.lessonType === type) ?? []" :staged="draft.initial.filter(item => item.lessonType === type)" :existing="!!selected" :locked="locked || !writable" :assignment-enabled="!selected || selected.lessonTypes.includes(type)" @remember="rememberTeachers" @add="addTeacher" @remove="removeTeacher" @replace="replaceTeacher" @unstage="removeInitial"
+          />
+        </div>
+      </details>
       <div class="headman-actions headman-subject-form-actions"><button type="button" class="web-button" :disabled="locked" @click="editor = false">Отмена</button><button type="button" class="web-button web-button-primary" :disabled="locked || !writable" @click="save">Сохранить предмет</button></div>
     </section>
     <SubjectDeletion

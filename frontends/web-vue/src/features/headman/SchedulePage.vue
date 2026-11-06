@@ -444,6 +444,9 @@ useWebLiveRefresh(load, { blocked: () => loading.value || locked.value || editor
     >
     <p class="web-caption headman-constructor-legend">Сверху — 1 неделя · снизу — 2 неделя</p>
     <div class="headman-timetable-scroll"
+         tabindex="0"
+         role="region"
+         aria-label="Регулярное расписание"
       ><table class="headman-timetable headman-timetable-constructor"
         ><thead
           ><tr
@@ -516,8 +519,11 @@ useWebLiveRefresh(load, { blocked: () => loading.value || locked.value || editor
       ><h2
         >{{ selected?.active === false ? 'Ранее убранный шаблон' : selected ? 'Изменить регулярный слот' : 'Добавить регулярный слот' }} ·
         {{ days[form.day - 1] }} · {{ form.number }} пара</h2
-      ><fieldset :disabled="locked || selected?.active === false"
-        ><WebSelect class="web-field" v-model="form.assignmentId" label="Предмет, тип и преподаватель" :options="assignments.flatMap(assignment => assignment.id ? [{ value: assignment.id, label: `${assignment.subjectName} · ${lessonTypes[assignment.lessonType ?? ''] ?? 'Тип не указан'} · ${assignment.teacherName}` }] : [])" :disabled="locked || !!selected" required  /><WebSelect class="web-field" v-model="form.week" label="Недели" :options="(policy?.weekTypes ?? []).map(week => ({ value: week.weekType, label: week.label }))" :disabled="locked" @change="preview = null"  /><label class="web-field"
+     ><p class="web-caption">
+       {{ semester?.name }} · {{ weekLabel(form.week) }}
+     </p>
+      <fieldset :disabled="locked || selected?.active === false"
+      ><legend>Параметры слота</legend><WebSelect class="web-field" v-model="form.assignmentId" label="Предмет, тип и преподаватель" :options="assignments.flatMap(assignment => assignment.id ? [{ value: assignment.id, label: `${assignment.subjectName} · ${lessonTypes[assignment.lessonType ?? ''] ?? 'Тип не указан'} · ${assignment.teacherName}` }] : [])" :disabled="locked || !!selected" required  /><WebSelect class="web-field" v-model="form.week" label="Недели" :options="(policy?.weekTypes ?? []).map(week => ({ value: week.weekType, label: week.label }))" :disabled="locked" @change="preview = null"  /><label class="web-field"
           >Аудитория<input
             v-model="form.room"
             maxlength="64"

@@ -1,21 +1,20 @@
-.headman-management { gap: var(--space-6); }
-.headman-management-toolbar { display: flex; align-items: end; flex-wrap: wrap; gap: var(--space-4); }
+.headman-management-toolbar { display: flex; align-items: end; flex-wrap: wrap; gap: var(--space-3); padding: var(--space-3); border: var(--web-border) solid var(--web-panel-line); border-radius: var(--radius-lg); background: var(--color-surface-raised); }
 .headman-management-toolbar > .web-field { flex: 1 1 calc(var(--control-height) * 6); min-inline-size: 0; max-inline-size: calc(var(--control-height) * 12); }
 .headman-group-toolbar.headman-management-toolbar { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr); grid-template-rows: auto auto; align-items: start; gap: var(--space-2) var(--space-4); inline-size: 100%; }
 .headman-group-toolbar > .web-field { display: grid; grid-template-rows: subgrid; grid-row: 1 / span 2; inline-size: 100%; max-inline-size: none; }
 .headman-group-toolbar > .web-field :is(input, .web-field-trigger) { align-self: start; inline-size: 100%; }
 .headman-group-toolbar > .headman-group-export { grid-column: 3; grid-row: 2; min-inline-size: 0; }
 .headman-group-export > .web-button { inline-size: 100%; min-inline-size: 0; white-space: normal; overflow-wrap: anywhere; }
-.headman-management-scroll { min-inline-size: 0; overflow: auto; border: var(--web-border) solid var(--color-border-default); border-radius: var(--radius-2xl); scrollbar-width: thin; scrollbar-color: color-mix(in srgb, var(--color-border-accent) 55%, transparent) transparent; overscroll-behavior: contain; }
+.headman-management-scroll { container-type: inline-size; min-inline-size: 0; overflow: auto; border: var(--web-border) solid var(--web-panel-line); border-radius: var(--radius-lg); background: var(--color-surface-raised); scrollbar-width: thin; scrollbar-color: color-mix(in srgb, var(--color-border-accent) 55%, transparent) transparent; overscroll-behavior: contain; }
 .headman-management-scroll::-webkit-scrollbar { inline-size: var(--space-1); block-size: var(--space-1); }
 .headman-management-scroll::-webkit-scrollbar-track, .headman-management-scroll::-webkit-scrollbar-corner { background: transparent; }
 .headman-management-scroll::-webkit-scrollbar-thumb { border-radius: var(--radius-full); background: color-mix(in srgb, var(--color-border-accent) 55%, transparent); }
 .headman-management-scroll::-webkit-scrollbar-button { display: none; inline-size: 0; block-size: 0; }
 @supports selector(::-webkit-scrollbar) { .headman-management-scroll { scrollbar-width: auto; scrollbar-color: auto; } }
 .headman-management-table { min-inline-size: calc(var(--control-height) * 24); inline-size: 100%; border-collapse: separate; border-spacing: 0; font-size: var(--font-size-dense); }
-.headman-management-table :is(th, td) { padding: var(--space-3) var(--space-4); border-inline-end: var(--web-border) solid var(--color-border-subtle); border-block-end: var(--web-border) solid var(--color-border-subtle); text-align: start; vertical-align: middle; }
+.headman-management-table :is(th, td) { padding: var(--space-2) var(--space-3); border-inline-end: var(--web-border) solid var(--color-border-subtle); border-block-end: var(--web-border) solid var(--color-border-subtle); text-align: start; vertical-align: middle; }
 .headman-management-table :is(th, td):last-child { border-inline-end: 0; }
-.headman-management-table thead th { background: var(--color-surface-raised); color: var(--color-text-secondary); font-size: var(--font-size-dense); font-weight: var(--font-weight-medium); }
+.headman-management-table thead th { background: var(--web-data-header-surface); color: var(--color-text-secondary); font-size: var(--font-size-dense); font-weight: var(--font-weight-medium); }
 .headman-management-table tbody th { font-weight: var(--font-weight-medium); }
 .headman-management-table tbody th small { display: block; margin-block-start: var(--space-1); color: var(--color-text-muted); font-size: var(--font-size-caption); font-weight: var(--font-weight-regular); }
 .headman-management-table .is-selected > :is(th, td) { background: var(--color-accent-now); color: var(--color-accent-on-now); }
@@ -49,12 +48,13 @@
 .headman-subject-type input:focus-visible + span { outline: var(--focus-width) solid var(--color-border-focus); outline-offset: var(--space-1); }
 .headman-subject-type input:disabled + span { opacity: .55; cursor: default; }
 
-.headman-member-detail { position: relative; }
-.headman-member-close { position: absolute; inset-block-start: var(--space-4); inset-inline-end: var(--space-4); }
-.headman-member-panel:last-child > h3 { padding-inline-end: calc(var(--control-height) + var(--space-2)); }
+.headman-member-reveal > td { padding: 0; }
+.headman-member-detail { position: sticky; inset-inline-start: 0; inline-size: 100cqi; max-inline-size: 100%; background: var(--color-surface-base); }
+.headman-member-heading { display: flex; justify-content: space-between; align-items: start; gap: var(--space-3); }
+.headman-member-heading h2 { margin: 0; font-size: var(--font-size-title-block); overflow-wrap: anywhere; }
 .headman-members-table .is-selected .web-icon-button { background: var(--color-surface-raised); color: var(--color-text-primary); border-color: var(--color-border-default); }
 .headman-member-panels { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: start; gap: var(--space-5); }
-.headman-member-panel { min-inline-size: 0; overflow-wrap: anywhere; }
+.headman-member-panel { min-inline-size: 0; padding: var(--space-4); border: var(--web-border) solid var(--web-panel-line); border-radius: var(--radius-lg); background: var(--color-surface-raised); overflow-wrap: anywhere; }
 .headman-member-panel > h3, .headman-member-panel legend { font-size: var(--font-size-title-block); font-weight: var(--font-weight-medium); }
 .headman-member-panel > h3, .headman-member-panel legend { inline-size: 100%; padding-block-end: var(--space-3); border-block-end: var(--web-border) solid var(--color-border-default); }
 .headman-member-panel > fieldset { min-inline-size: 0; margin: 0; padding: 0; border: 0; }
@@ -62,7 +62,6 @@
 .headman-member-panel .headman-list > label { display: flex; align-items: start; gap: var(--space-2); }
 @media (max-width: 60rem) {
   .headman-member-panels { grid-template-columns: minmax(0, 1fr); }
-  .headman-member-panel + .headman-member-panel { padding-block-start: var(--space-5); border-block-start: var(--web-border) solid var(--color-border-default); }
   .headman-group-toolbar.headman-management-toolbar { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto; }
   .headman-group-toolbar > .web-field { grid-template-rows: auto auto; grid-row: auto; }
   .headman-group-toolbar > .headman-group-export { grid-column: auto; grid-row: auto; }
@@ -107,3 +106,6 @@
 .headman-teacher-dates.is-replacement { grid-template-columns: minmax(0, 1fr); }
 .headman-replacement-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3); }
 .headman-replacement-actions > .web-button { inline-size: 100%; }
+
+.headman-subject-semester { margin-block-end: var(--space-3); }
+.headman-teacher-panel { overflow-wrap: anywhere; }

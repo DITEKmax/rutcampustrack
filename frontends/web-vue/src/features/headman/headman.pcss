@@ -6,6 +6,7 @@
   --headman-chart-height: 12rem;
   --headman-border: var(--rct-border-hairline);
   min-inline-size: 0;
+  gap: var(--space-5);
 }
 .headman-heading,
 .headman-toolbar,
@@ -19,11 +20,27 @@
   justify-content: space-between;
 }
 .headman-panel {
-  padding: var(--rct-space-6);
-  border: var(--headman-border) solid var(--rct-color-border-default);
-  border-radius: var(--rct-radius-2xl);
+  padding: var(--space-4);
+  border: var(--headman-border) solid var(--web-panel-line);
+  border-radius: var(--radius-lg);
   background: var(--rct-color-surface-raised);
   min-inline-size: 0;
+}
+.headman-disclosure {
+  min-inline-size: 0;
+  padding: var(--space-3) var(--space-4);
+  border: var(--web-border) solid var(--web-panel-line);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-raised);
+}
+.headman-disclosure > summary {
+  padding-block: var(--space-2);
+  font-weight: var(--font-weight-bold);
+  cursor: pointer;
+}
+.headman-disclosure[open] > summary {
+  margin-block-end: var(--space-3);
+  border-block-end: var(--web-border) solid var(--web-panel-line);
 }
 .headman-toolbar {
   align-items: end;

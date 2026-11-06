@@ -1,7 +1,14 @@
+.headman-page:has(.headman-timetable) {
+  --headman-timetable-row-heading: 6rem;
+  --headman-constructor-width: 70rem;
+  --headman-constructor-slot-height: 8.75rem;
+  --headman-management-slot-height: 6rem;
+  --headman-timetable-field-width: 14rem;
+}
 .headman-constructor-toolbar { display: flex; flex-wrap: wrap; align-items: end; gap: var(--space-4); }
 .headman-constructor-toolbar > .web-field { inline-size: min(100%, calc(var(--control-height) * 10)); }
 .headman-constructor-toolbar > .web-caption { margin-inline-start: auto; padding-block: var(--space-3); }
-.headman-timetable-scroll { min-inline-size: 0; overflow: auto; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: color-mix(in srgb, var(--color-border-accent) 55%, transparent) transparent; }
+.headman-timetable-scroll { min-inline-size: 0; overflow: auto; scrollbar-gutter: stable; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: color-mix(in srgb, var(--color-border-accent) 55%, transparent) transparent; }
 .headman-timetable-scroll::-webkit-scrollbar { inline-size: var(--space-1); block-size: var(--space-1); }
 .headman-timetable-scroll::-webkit-scrollbar-track, .headman-timetable-scroll::-webkit-scrollbar-corner { background: transparent; }
 .headman-timetable-scroll::-webkit-scrollbar-thumb { background: color-mix(in srgb, var(--color-border-accent) 55%, transparent); border-radius: var(--radius-full); }
@@ -12,29 +19,30 @@
 .headman-timetable tbody { display: table-row-group; }
 .headman-timetable tr { display: table-row; }
 .headman-timetable :is(th, td) { display: table-cell; padding: 0; border: 0; vertical-align: top; text-align: start; }
-.headman-timetable th { padding: var(--space-3) var(--space-2); border: var(--web-border) solid var(--color-border-default); border-radius: var(--radius-2xl); background: var(--color-surface-raised); color: var(--color-text-primary); font-size: var(--font-size-dense); text-align: center; font-weight: var(--font-weight-medium); }
-.headman-timetable th:first-child { inline-size: calc(var(--control-height) * 2 + var(--space-8)); }
+.headman-timetable th { padding: var(--space-3) var(--space-2); border: var(--web-border) solid var(--color-border-default); border-radius: var(--radius-md); background: var(--color-surface-raised); color: var(--color-text-primary); font-size: var(--font-size-dense); text-align: center; font-weight: var(--font-weight-medium); }
+.headman-timetable th:first-child { inline-size: var(--headman-timetable-row-heading); }
 .headman-timetable thead th:first-child { border: 0; background: transparent; }
 .headman-timetable th strong { display: block; font-weight: var(--font-weight-medium); text-transform: capitalize; }
 .headman-timetable th small { display: block; margin-block-start: var(--space-1); color: var(--color-text-muted); font-size: var(--font-size-caption); font-weight: var(--font-weight-regular); }
 .headman-timetable-cell { display: flex; flex-direction: column; gap: var(--space-1); min-block-size: calc(var(--control-height) * 2); }
-.headman-timetable-lesson, .headman-timetable-free { inline-size: 100%; min-block-size: calc(var(--control-height) * 2); padding: var(--space-3); border: var(--web-border) solid var(--color-border-default); border-radius: var(--radius-2xl); color: var(--color-text-primary); background: var(--color-surface-raised); font: inherit; font-size: var(--font-size-dense); line-height: 1.4; text-align: start; overflow-wrap: anywhere; cursor: pointer; }
+.headman-timetable-lesson, .headman-timetable-free { inline-size: 100%; min-block-size: calc(var(--control-height) * 2); padding: var(--space-3); border: var(--web-border) solid var(--color-border-default); border-radius: var(--radius-md); color: var(--color-text-primary); background: var(--color-surface-raised); font: inherit; font-size: var(--font-size-dense); line-height: 1.4; text-align: start; overflow-wrap: anywhere; cursor: pointer; }
 .headman-timetable-lesson strong { font-weight: var(--font-weight-medium); }
 .headman-timetable-lesson :is(span, small) { display: block; margin-block-start: var(--space-1); color: var(--color-text-secondary); font-size: var(--font-size-caption); }
-.headman-timetable-free { display: grid; place-items: center; flex: 1; border-style: dashed; border-color: var(--color-state-success-border); background: var(--color-state-success-bg); color: var(--color-state-success-text); }
+.headman-timetable-free { display: grid; place-items: center; flex: 1; border-style: dashed; border-color: var(--web-panel-line); background: var(--color-surface-raised); color: var(--color-text-muted); }
 .headman-timetable-free .mobile-icon { inline-size: var(--space-6); block-size: var(--space-6); }
-.headman-timetable-lesson.is-current { background: var(--color-accent-now); color: var(--color-accent-on-now); border-color: var(--color-accent-now); }
 .headman-timetable-lesson.is-cancelled { background: var(--color-state-danger-bg); color: var(--color-state-danger-text); border-color: var(--color-state-danger-border); }
 .headman-timetable-lesson.is-transferred { background: var(--color-state-warning-bg); color: var(--color-state-warning-text); border-color: var(--color-state-warning-border); }
+.headman-timetable-lesson.is-current { background: var(--web-action-fill); color: var(--web-action-ink); border-color: var(--web-action-fill); }
+.headman-timetable-lesson.is-one-off small { font-weight: var(--font-weight-medium); }
 .headman-timetable-lesson:is(.is-current, .is-cancelled, .is-transferred) :is(span, small) { color: inherit; }
-.headman-timetable-lesson.is-selected { outline: var(--focus-width) solid var(--color-border-focus); outline-offset: calc(var(--web-border) * -3); }
-.headman-timetable :is(button:focus-visible) { outline: var(--focus-width) solid var(--color-border-focus); outline-offset: calc(var(--web-border) * -3); }
+.headman-timetable-lesson.is-selected { outline: var(--focus-width) solid var(--web-focus-color); outline-offset: calc(var(--web-border) * -3); }
+.headman-timetable :is(button:focus-visible) { outline: var(--focus-width) solid var(--web-focus-color); outline-offset: calc(var(--web-border) * -3); }
 .headman-timetable button:disabled { cursor: default; opacity: .6; }
-.headman-timetable:is(.headman-timetable-constructor, .headman-timetable-management) thead th:not(:first-child) { background: var(--color-surface-float); border-color: var(--color-border-strong); font-weight: var(--font-weight-bold); }
+.headman-timetable:is(.headman-timetable-constructor, .headman-timetable-management) thead th:not(:first-child) { background: var(--web-data-header-surface); border-color: var(--web-panel-line); font-weight: var(--font-weight-bold); }
 .headman-timetable:is(.headman-timetable-constructor, .headman-timetable-management) thead th strong { font-weight: inherit; }
 .headman-constructor-legend { margin: 0; }
-.headman-timetable-constructor { min-inline-size: calc(var(--control-height) * 36); }
-.headman-timetable-constructor .headman-timetable-cell { display: grid; grid-template-rows: repeat(2, minmax(0, 1fr)); grid-template-columns: minmax(0, 1fr); block-size: calc(var(--control-height) * 6 + var(--space-1)); min-block-size: 0; }
+.headman-timetable-constructor { min-inline-size: var(--headman-constructor-width); }
+.headman-timetable-constructor .headman-timetable-cell { display: grid; grid-template-rows: repeat(2, minmax(0, 1fr)); grid-template-columns: minmax(0, 1fr); block-size: var(--headman-constructor-slot-height); min-block-size: 0; }
 .headman-timetable-constructor :is(.headman-timetable-lesson, .headman-timetable-free) { display: flex; flex-direction: column; justify-content: center; min-inline-size: 0; min-block-size: 0; block-size: 100%; padding: var(--space-2); }
 .headman-timetable-constructor .headman-timetable-lesson > strong { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; line-clamp: 3; min-block-size: 0; overflow: hidden; }
 .headman-timetable-constructor .headman-timetable-lesson > span { flex-shrink: 0; }
@@ -43,7 +51,7 @@
 .headman-timetable-constructor .is-even-week { grid-row: 2; }
 .headman-timetable-constructor .is-both-weeks { grid-row: 1 / 3; }
 .headman-timetable-constructor tbody th { vertical-align: middle; }
-.headman-timetable-management .headman-timetable-cell { block-size: calc(var(--control-height) * 3.5); min-block-size: 0; overflow: auto; scrollbar-width: thin; scrollbar-color: var(--color-border-strong) transparent; }
+.headman-timetable-management .headman-timetable-cell { block-size: var(--headman-management-slot-height); min-block-size: 0; overflow: auto; scrollbar-width: thin; scrollbar-color: var(--color-border-strong) transparent; }
 @supports selector(::-webkit-scrollbar) { .headman-timetable-management .headman-timetable-cell { scrollbar-width: auto; scrollbar-color: auto; } }
 .headman-timetable-management :is(.headman-timetable-lesson, .headman-timetable-free) { flex-shrink: 0; block-size: 100%; min-block-size: 100%; min-inline-size: 0; padding: var(--space-2); }
 .headman-timetable-management .headman-timetable-lesson { display: flex; flex-direction: column; justify-content: center; overflow: hidden; }
@@ -52,7 +60,13 @@
 .headman-timetable-management .headman-timetable-lesson > span { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 .headman-timetable-management tbody th { vertical-align: middle; }
 .headman-timetable-editor { inline-size: min(100%, calc(var(--control-height) * 18)); }
-.headman-timetable-editor > fieldset { display: grid; gap: var(--space-4); }
+.headman-timetable-editor > fieldset {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--headman-timetable-field-width)), 1fr));
+  gap: var(--space-4);
+}
+.headman-timetable-editor legend { padding-inline: var(--space-2); }
+.headman-timetable-editor .web-field:has(textarea) { grid-column: 1 / -1; }
 .headman-timetable-editor h2, .headman-lesson-detail h2 { font-size: var(--font-size-title-block); }
 .headman-timetable-editor .web-field { min-inline-size: 0; }
 .headman-lesson-period { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-4); padding: var(--space-4); border: var(--web-border) solid var(--color-border-accent); border-radius: var(--radius-2xl); background: var(--color-surface-raised); }

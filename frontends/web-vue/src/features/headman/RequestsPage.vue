@@ -270,7 +270,42 @@ useWebLiveRefresh(load, {
       <WebSelect v-model="filters.type" label="Тип заявки" :options="[{ value: '', label: 'Все заявки' }, { value: 'EXCUSE', label: 'Уважительная причина' }, { value: 'LATE_CHECKIN', label: 'Апелляция отметки' }]" :disabled="locked" @change="applyFilters" />
       <label class="web-field">Студент<input v-model="filters.name" type="search" :disabled="locked" /></label><WebDateField v-model="filters.from" label="Пары с даты" :max="filters.to || undefined" :disabled="locked" /><WebDateField v-model="filters.to" label="Пары по дату" :min="filters.from || undefined" :disabled="locked" /><button type="submit" class="web-button web-icon-button" aria-label="Показать заявки по фильтрам" title="Показать заявки по фильтрам" :disabled="locked"><MobileIcon name="search" /></button>
     </form>
-    <p v-if="loading && !page" class="web-caption" role="status">Загрузка заявок…</p><p v-if="page && !page.content.length && !error" class="headman-flow-empty">Заявок по этим условиям нет.</p>
+    <p
+      v-if="loading && !page?.content.length"
+      class="web-caption"
+      role="status"
+    >
+      Загрузка заявок…
+    </p>
+    <div
+      v-else-if="page && !page.content.length && !error && feature.allowed('MANAGE_EXCUSES')"
+      class="headman-flow-empty"
+      role="status"
+    >
+      <svg
+        aria-hidden="true"
+        focusable="false"
+        viewBox="0 0 56 44"
+        fill="none"
+      >
+        <rect
+          x="3"
+          y="5"
+          width="42"
+          height="35"
+          rx="9"
+          fill="currentColor"
+          opacity=".12"
+        />
+        <path
+          d="M12 13h31l5 12v9H7v-9l5-12Z M7 25h12l3 4h11l3-4h12"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linejoin="round"
+        />
+      </svg>
+      <p>Заявок по этим условиям нет.</p>
+    </div>
     <div v-if="page?.content.length" class="headman-request-list">
       <HeadmanRequestCard v-for="request in page.content" :key="request.id" :request="detail?.summary.id === request.id ? detail.summary : request" :expanded="detail?.summary.id === request.id" :locked="locked" @toggle="toggle(request.id)">
         <HeadmanRequestDetails v-if="detail?.summary.id === request.id" v-model:proposed="proposed" v-model:reason="reason" :detail="detail" :affected="affected" :excluded="excluded" :busy="busy" :pending="!!pending" :decision-available="decisionAvailable" :own-request="ownRequest" :writable="feature.writable('MANAGE_EXCUSES')" @exclude="exclude" @download="download" @refresh="open(detail.summary.id)" @decide="decide" />

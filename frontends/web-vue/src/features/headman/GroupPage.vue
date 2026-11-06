@@ -36,6 +36,8 @@ const loading = ref(false),
   uncertain = ref(false),
   search = ref(''),
   selectedId = ref(0);
+const detailHeading = ref<HTMLElement | null>(null);
+const rosterRoot = ref<HTMLElement | null>(null);
 const selected = computed(() => members.value.find((member) => member.id === selectedId.value));
 function roleLabel(member: HeadmanGroupMember) {
   if (member.roles?.some(grant => grant.role === 'HEADMAN' && grant.status === 'ACTIVE' && grant.groupId === feature.groupId)) return 'Староста';
@@ -190,19 +192,24 @@ async function load() {
     if (alive && currentRun === loadRun) loading.value = false;
   }
 }
-function choose(member: HeadmanGroupMember) {
+async function choose(member: HeadmanGroupMember) {
   if (managementLocked.value) return;
   closeConfirmation();
   credentials.clear();
   selectedId.value = member.id;
   draft.value = [...(assistant.value?.permissions ?? [])];
   void readBudget(member.id, true);
+  await nextTick();
+  if (selectedId.value === member.id) detailHeading.value?.focus();
 }
-function closeMember() {
+async function closeMember() {
   if (managementLocked.value) return;
   closeConfirmation();
+  const memberId = selectedId.value;
   selectedId.value = 0;
   credentials.clear();
+  await nextTick();
+  rosterRoot.value?.querySelector<HTMLButtonElement>("#headman-member-" + memberId)?.focus();
 }
 function context(): PermissionConfirmationContext | null {
   if (!selected.value) return null;
@@ -397,13 +404,55 @@ onMounted(load);
     @reload="load"
 >
     <div class="headman-management-toolbar headman-group-toolbar"><label class="web-field">Найти студента<input v-model="search" type="search" /></label><WebSelect v-model="format" label="Формат состава" :options="rosterFormats.map(item => ({ value: item.code, label: item.label }))" /><ReportExport class="headman-group-export" :transport="feature.transport" scope="roster" :report="{ kind: 'HEADMAN_GROUP_COMPOSITION', headmanGroupComposition: { format } }" :disabled="loading" label="Скачать состав группы" /></div>
-    <div class="headman-management-scroll" role="region" aria-label="Состав группы" tabindex="0"><table class="headman-management-table headman-members-table"><thead><tr><th scope="col">№</th><th scope="col">ФИО</th><th scope="col">Логин</th><th scope="col">Статус</th><th scope="col">Дополнительные права</th><th scope="col">Бюджет заявок</th><th scope="col">Действия</th></tr></thead><tbody>
-      <template v-for="(member, index) in visible" :key="member.id"><tr :class="{ 'is-selected': selectedId === member.id }"><td>{{ index + 1 }}</td><th scope="row"><span>{{ member.fullName }}</span><small>{{ roleLabel(member) }}</small></th><td><span class="headman-member-login">{{ member.login }}</span></td><td>{{ statusLabel(member.status) }}</td><td><ul class="headman-member-rights"><li v-for="code in assistants.find(item => item.studentId === member.id && item.active)?.permissions ?? []" :key="code">{{ options.find(option => option.code === code)?.label ?? 'Неизвестное право' }}</li></ul><span v-if="!assistants.find(item => item.studentId === member.id && item.active)?.permissions.length" class="web-caption">—</span></td><td><span v-if="budgetState(member.id)?.error" class="web-error">{{ budgetState(member.id)?.error }}</span><span v-else-if="budgetState(member.id)?.loading" class="web-caption" role="status">Загрузка…</span><span v-else-if="budgetState(member.id)?.value" :aria-label="`Осталось заявок: ${budgetState(member.id)?.value?.remaining} из ${budgetState(member.id)?.value?.limit}`">{{ budgetState(member.id)?.value?.remaining }} / {{ budgetState(member.id)?.value?.limit }}</span><span v-else class="web-caption">Недоступен</span></td><td><button type="button" class="web-button web-icon-button" :aria-label="`Настройки: ${member.fullName}`" :aria-expanded="selectedId === member.id" :disabled="managementLocked" @click="choose(member)"><MobileIcon name="settings" /></button></td></tr>
+    <div
+      ref="rosterRoot"
+      class="headman-management-scroll" role="region" aria-label="Состав группы" tabindex="0"
+    ><table class="headman-management-table headman-members-table"><thead><tr><th scope="col">№</th><th scope="col">ФИО</th><th scope="col">Логин</th><th scope="col">Статус</th><th scope="col">Дополнительные права</th><th scope="col">Бюджет заявок</th><th scope="col">Действия</th></tr></thead><tbody>
+      <template v-for="(member, index) in visible" :key="member.id"><tr :class="{ 'is-selected': selectedId === member.id }">
+                                                                      <td>{{ index + 1 }}</td><th scope="row"><span>{{ member.fullName }}</span><small>{{ roleLabel(member) }}</small></th><td><span class="headman-member-login">{{ member.login }}</span></td><td>{{ statusLabel(member.status) }}</td><td>
+                                                                        <ul class="headman-member-rights"><li v-for="code in assistants.find(item => item.studentId === member.id && item.active)?.permissions ?? []" :key="code">{{ options.find(option => option.code === code)?.label ?? 'Неизвестное право' }}</li></ul><span
+                                                                          v-if="!assistants.find(item => item.studentId === member.id && item.active)?.permissions.length"
+                                                                          class="web-caption"
+                                                                        >—</span>
+                                                                      </td><td>
+                                                                        <span
+                                                                          v-if="budgetState(member.id)?.error"
+                                                                          class="web-error"
+                                                                        >{{ budgetState(member.id)?.error }}</span><span
+                                                                          v-else-if="budgetState(member.id)?.loading"
+                                                                          class="web-caption" role="status"
+                                                                        >Загрузка…</span><span v-else-if="budgetState(member.id)?.value" :aria-label="`Осталось заявок: ${budgetState(member.id)?.value?.remaining} из ${budgetState(member.id)?.value?.limit}`">{{ budgetState(member.id)?.value?.remaining }} / {{ budgetState(member.id)?.value?.limit }}</span><span
+                                                                          v-else
+                                                                          class="web-caption"
+                                                                        >Недоступен</span>
+                                                                      </td><td>
+                                                                        <button
+                                                                          :id="'headman-member-' + member.id"
+                                                                          type="button" class="web-button web-icon-button" :aria-label="`Настройки: ${member.fullName}`" :aria-expanded="selectedId === member.id" :disabled="managementLocked" @click="choose(member)"
+                                                                        >
+                                                                          <MobileIcon name="settings" />
+                                                                        </button>
+                                                                      </td>
+                                                                    </tr>
       <tr v-if="selectedId === member.id" class="headman-member-reveal"><td colspan="7">    <section
       v-if="selected"
       class="headman-member-detail web-stack"
       :aria-label="`Настройки: ${selected.fullName}`"
-      ><button type="button" class="web-button web-icon-button headman-member-close" aria-label="Закрыть настройки студента" :disabled="managementLocked" @click="closeMember"><MobileIcon name="close" /></button>
+        >
+          <div class="headman-member-heading">
+            <h2
+              ref="detailHeading"
+              tabindex="-1"
+            >
+              {{ selected.fullName }}
+            </h2>
+            <button
+              type="button"
+              class="web-button web-icon-button" aria-label="Закрыть настройки студента" :disabled="managementLocked" @click="closeMember"
+            >
+              <MobileIcon name="close" />
+            </button>
+          </div>
       <div class="headman-member-panels">
       <form
         class="web-stack headman-member-panel"
@@ -438,6 +487,52 @@ onMounted(load);
           ></p
         ></form
       >
+            <form
+              class="web-stack headman-member-panel"
+              @submit.prevent="increaseBudget()"
+            ><h3>Бюджет заявок</h3><p
+              v-if="budgetState(selected.id)?.loading"
+              class="web-caption" role="status"
+            >
+              Загрузка бюджета…
+            </p><p
+              v-else-if="budgetState(selected.id)?.error"
+              class="web-error"
+            >
+              {{ budgetState(selected.id)?.error }}
+            </p><p v-else-if="budget" :aria-label="`Осталось заявок: ${budget.remaining} из ${budget.limit}`">{{ budget.remaining }} / {{ budget.limit }}</p><p
+              v-else
+              class="web-caption"
+            >
+              Бюджет недоступен.
+            </p><template v-if="budget && !budgetIntent"
+            ><label class="web-field"
+            >Увеличить лимит на<input
+              v-model.number="increase"
+              :disabled="managementLocked"
+              type="number"
+              min="1"
+              max="2147483647"
+              required
+            /></label
+            ><button
+              class="web-button"
+              :disabled="managementLocked || !feature.writable()"
+            >
+              Увеличить бюджет
+            </button
+            ></template
+            ><button
+              v-else-if="budgetIntent"
+              type="button"
+              class="web-button"
+              :disabled="busy || credentialLocked || !!confirmation"
+              @click="increaseBudget(true)"
+            >
+              Проверить сохранённое увеличение
+            </button
+            ></form
+            >
       <div
         class="web-stack headman-member-panel"
         ><h3>Доступ</h3><p v-if="!feature.writable() || !credentialEligible" class="web-caption">Доступ к реквизитам недоступен.</p><p v-if="credentials.loading.value">Проверка доступа…</p
@@ -481,32 +576,6 @@ onMounted(load);
           >Проверить данные доступа</button
         ></div
       >
-      <form
-        class="web-stack headman-member-panel"
-        @submit.prevent="increaseBudget()"
-        ><h3>Бюджет заявок</h3><p v-if="budgetState(selected.id)?.loading" class="web-caption" role="status">Загрузка бюджета…</p><p v-else-if="budgetState(selected.id)?.error" class="web-error">{{ budgetState(selected.id)?.error }}</p><p v-else-if="budget" :aria-label="`Осталось заявок: ${budget.remaining} из ${budget.limit}`">{{ budget.remaining }} / {{ budget.limit }}</p><p v-else class="web-caption">Бюджет недоступен.</p><template v-if="budget && !budgetIntent"
-          ><label class="web-field"
-            >Увеличить лимит на<input
-              v-model.number="increase"
-              :disabled="managementLocked"
-              type="number"
-              min="1"
-              max="2147483647"
-              required /></label
-          ><button
-            class="web-button"
-            :disabled="managementLocked || !feature.writable()"
-            >Увеличить бюджет</button
-          ></template
-        ><button
-          v-else-if="budgetIntent"
-          type="button"
-          class="web-button"
-          :disabled="busy || credentialLocked || !!confirmation"
-          @click="increaseBudget(true)"
-          >Проверить сохранённое увеличение</button
-        ></form
-      >
       </div>
     </section>
 </td></tr></template>
@@ -538,7 +607,8 @@ onMounted(load);
             "
             >Отмена</button
           ><button
-            class="web-button web-button-primary"
+      class="web-button"
+      :class="credentialConfirmation.action === 'generate' ? 'web-button-danger' : 'web-button-primary'"
             @click="commitCredential"
             >Подтвердить</button
           ></div

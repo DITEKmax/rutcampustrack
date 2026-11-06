@@ -66,6 +66,7 @@ const date = ref(props.initialDate || today()),
   view = ref<ManagementView>('agenda'),
   addMode = ref(false),
   showCancelled = ref(false);
+const agendaHeading = ref<HTMLHeadingElement | null>(null);
 const model = shallowRef<LessonManagementState | null>(null);
 const state = computed(() => model.value);
 const selected = shallowRef<HeadmanJournalLesson | null>(null),
@@ -281,6 +282,11 @@ function targetDayAllowed(value: string): boolean {
     value >= (view.value === 'transfer' ? datePlus(today(), 1) : today()) &&
     (view.value !== 'transfer' || new Date(value + 'T00:00:00Z').getUTCDay() !== 0)
   );
+}
+function returnToToday(): void {
+  if (state.value?.locked) return;
+  date.value = today();
+  agendaHeading.value?.focus();
 }
 function openLesson(lesson: HeadmanJournalLesson): void {
   if (state.value?.locked) return;
@@ -621,7 +627,12 @@ onBeforeUnmount(() => {
       >
         <MobileIcon name="back" />
       </button>
-      <h1>{{ title }}</h1>
+      <h1
+        ref="agendaHeading"
+        :tabindex="view === 'agenda' ? -1 : undefined"
+      >
+        {{ title }}
+      </h1>
     </header>
     <StudentWarningBlock
       v-if="offline"
@@ -1127,6 +1138,16 @@ onBeforeUnmount(() => {
         />
       </template>
     </template>
+    <button
+      v-if="view === 'agenda' && !offline && state && !state.denied && date !== today()"
+      type="button"
+      class="lesson-management__today"
+      aria-label="Сегодня — вернуться к текущей дате"
+      :disabled="state.locked"
+      @click="returnToToday"
+    >
+      Сегодня
+    </button>
   </main>
   <div
     v-if="view === 'log' && selected"

@@ -36,6 +36,33 @@
   cursor: default;
   opacity: 0.5;
 }
+.lesson-management:has(> .lesson-management__today) {
+  --lesson-management-today-bottom: calc(env(safe-area-inset-bottom, 0rem) + var(--rct-space-4));
+  padding-block-end: calc(
+    var(--lesson-management-today-bottom) + var(--rct-control-min-touch) + var(--rct-space-6)
+  );
+}
+.mobile-shell[data-dock-visible='true'] .lesson-management:has(> .lesson-management__today) {
+  --lesson-management-today-bottom: calc(
+    env(safe-area-inset-bottom, 0rem) + var(--rct-mobile-dock-height) + var(--rct-mobile-dock-bottom) +
+      var(--rct-space-3)
+  );
+}
+.lesson-management__today {
+  position: fixed;
+  z-index: 2;
+  inset-inline: var(--rct-space-4);
+  inset-block-end: var(--lesson-management-today-bottom);
+  inline-size: calc(100% - var(--rct-space-4) * 2);
+  max-inline-size: var(--rct-mobile-content-width);
+  min-block-size: var(--rct-control-min-touch);
+  margin-inline: auto;
+  border: 0;
+  border-radius: var(--rct-radius-xl);
+  padding: var(--rct-space-2) var(--rct-space-3);
+  color: var(--rct-color-text-primary);
+  background: var(--rct-color-surface-raised);
+}
 .lesson-management__child-header {
   display: grid;
   grid-template-columns: var(--rct-control-min-touch) minmax(0, 1fr) var(--rct-control-min-touch);

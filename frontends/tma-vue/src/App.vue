@@ -99,6 +99,7 @@ import {
   executeNotificationAction,
   notificationNumericId,
   decodeNotificationLaunch,
+  type NotificationLaunchAction,
   NotificationLaunchOwner,
   type NotificationTargetIntent,
 } from '@rct/mobile-core';
@@ -229,17 +230,16 @@ const notificationStartParam =
 const notificationLaunchEncoded = notificationStartParam?.startsWith('n2_')
   ? notificationStartParam.slice(3)
   : null;
-const notificationLaunch = new NotificationLaunchOwner(
-  decodeNotificationLaunch(notificationLaunchEncoded),
-);
+const notificationLaunchAction = decodeNotificationLaunch(notificationLaunchEncoded);
+const notificationLaunch = new NotificationLaunchOwner(notificationLaunchAction);
 const notificationLaunchNotice = ref<string | null>(
-  notificationLaunchEncoded && !decodeNotificationLaunch(notificationLaunchEncoded)
+  notificationLaunchEncoded && !notificationLaunchAction
     ? 'Ссылка уведомления недействительна.'
     : null,
 );
 let notificationTargetIntentId = 0;
 const studentNotificationOwner = ref<{
-  openNotificationAction(action: NotificationAction, current: () => boolean): boolean;
+  openNotificationAction(action: NotificationLaunchAction, current: () => boolean): boolean;
 } | null>(null);
 const headmanNotificationOwner = ref<{
   openNotificationAction(action: NotificationAction, current: () => boolean): Promise<boolean>;
@@ -561,7 +561,7 @@ function closeNotifications(): void {
   notificationsGeneration.value = null;
 }
 
-async function openNotificationAction(action: NotificationAction): Promise<boolean> {
+async function openNotificationAction(action: NotificationLaunchAction): Promise<boolean> {
   return executeNotificationAction(
     action,
     () => ({
@@ -583,7 +583,7 @@ async function openNotificationAction(action: NotificationAction): Promise<boole
             currentScope.resetGeneration !== sessionOwner.currentGeneration()
           )
             return false;
-          if (target.kind === 'group' || target.kind === 'homework-week')
+          if (target.kind === 'group' || target.kind === 'homework-week' || target.kind === 'checkin')
             return (
               studentNotificationOwner.value?.openNotificationAction(target, isCurrent) ?? false
             );

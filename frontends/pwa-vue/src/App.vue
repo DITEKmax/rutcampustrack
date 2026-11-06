@@ -97,6 +97,8 @@ import {
   executeNotificationAction,
   notificationNumericId,
   decodeNotificationLaunch,
+  consumePwaNotificationLaunch,
+  type NotificationLaunchAction,
   NotificationLaunchOwner,
   type NotificationTargetIntent,
 } from '@rct/mobile-core';
@@ -266,24 +268,23 @@ const adminCredentialsCovered = () => notificationsOpen.value;
 const notificationsGeneration = ref<number | null>(null);
 const notificationTargetIntent = shallowRef<NotificationTargetIntent | null>(null);
 const notificationLaunchUrl = new URL(window.location.href);
-const notificationLaunchEncoded = notificationLaunchUrl.searchParams.get('notificationAction');
-if (notificationLaunchEncoded !== null) {
-  notificationLaunchUrl.searchParams.delete('notificationAction');
+const initialNotificationLaunch = consumePwaNotificationLaunch(notificationLaunchUrl);
+if (initialNotificationLaunch.consumed) {
   window.history.replaceState(window.history.state, '', notificationLaunchUrl);
 }
 let notificationLaunch = new NotificationLaunchOwner(
-  decodeNotificationLaunch(notificationLaunchEncoded),
+  initialNotificationLaunch.action,
   notificationLaunchUrl.searchParams.get('pushOwner'),
 );
 const notificationLaunchRevision = ref(0);
 const notificationLaunchNotice = ref<string | null>(
-  notificationLaunchEncoded && !decodeNotificationLaunch(notificationLaunchEncoded)
+  initialNotificationLaunch.invalid
     ? 'Ссылка уведомления недействительна.'
     : null,
 );
 let notificationTargetIntentId = 0;
 const studentNotificationOwner = ref<{
-  openNotificationAction(action: NotificationAction, current: () => boolean): boolean;
+  openNotificationAction(action: NotificationLaunchAction, current: () => boolean): boolean;
 } | null>(null);
 const headmanNotificationOwner = ref<{
   openNotificationAction(action: NotificationAction, current: () => boolean): Promise<boolean>;
@@ -691,7 +692,7 @@ function closeNotifications(): void {
   notificationsGeneration.value = null;
 }
 
-async function openNotificationAction(action: NotificationAction): Promise<boolean> {
+async function openNotificationAction(action: NotificationLaunchAction): Promise<boolean> {
   return executeNotificationAction(
     action,
     () => ({
@@ -713,7 +714,7 @@ async function openNotificationAction(action: NotificationAction): Promise<boole
             currentScope.resetGeneration !== auth.currentGeneration()
           )
             return false;
-          if (target.kind === 'group' || target.kind === 'homework-week')
+          if (target.kind === 'group' || target.kind === 'homework-week' || target.kind === 'checkin')
             return (
               studentNotificationOwner.value?.openNotificationAction(target, isCurrent) ?? false
             );

@@ -1,6 +1,11 @@
 import { computed, ref, toValue, watch, type MaybeRefOrGetter, type Ref } from 'vue'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query'
-import { applyCheckinAck, isPendingCheckin } from '../../domain/checkin'
+import {
+  applyCheckinAck,
+  CheckinBeforeSendCancelled,
+  CheckinMismatchedAck,
+  isPendingCheckin,
+} from '../../domain/checkin'
 import type { StudentApi } from '../../api/student-client'
 import type { StudentCheckinAck, StudentCheckinCommand, StudentToday } from '../../api/types'
 import { studentFeatureScopeIdentity, type StudentFeatureScope } from '../../shared/session-owner'
@@ -41,6 +46,7 @@ export interface TodayCheckinInput {
   command: StudentCheckinCommand
   key: string
   scope?: StudentTodayQueryScope
+  canSend?: () => boolean
 }
 
 export function normalizeTodayScope(
@@ -147,11 +153,13 @@ export function useToday(
   const mutation = useMutation<StudentCheckinAck, unknown, TodayCheckinInput>({
     mutationFn: async (input) => {
       const requestScope = normalizeTodayScope(input.scope ?? scope.value)
+      if (input.canSend && !input.canSend()) throw new CheckinBeforeSendCancelled()
       if (requestScope.readOnly) throw new TodayReadOnlyError()
       if (studentFeatureScopeIdentity(scope.value) !== studentFeatureScopeIdentity(requestScope)) {
         throw new TodayStaleResponseError()
       }
       const ack = await api.checkin(input.lessonId, input.command, input.key)
+      if (ack.lessonId !== input.lessonId) throw new CheckinMismatchedAck()
       if (studentFeatureScopeIdentity(scope.value) !== studentFeatureScopeIdentity(requestScope)) {
         throw new TodayStaleResponseError()
       }

@@ -1,5 +1,8 @@
 import { parseNotificationAction } from './notifications-v2-client'
 import type { NotificationAction, NotificationSignedRole } from './notifications-v2-models'
+export type CheckinLaunchAction = { kind: 'checkin'; role: 'STUDENT'; lessonId: string }
+export type NotificationLaunchAction = NotificationAction | CheckinLaunchAction
+
 const MAX_ENCODED = 384
 const actionFields: Record<NotificationAction['kind'], readonly string[]> = {
   lesson: ['kind', 'role', 'lessonId', 'lessonDate'],
@@ -8,7 +11,7 @@ const actionFields: Record<NotificationAction['kind'], readonly string[]> = {
   group: ['kind', 'role', 'groupId'],
   'homework-week': ['kind', 'role', 'weekStart'],
 }
-export function decodeNotificationLaunch(encoded: string | null): NotificationAction | null {
+export function decodeNotificationLaunch(encoded: string | null): NotificationLaunchAction | null {
   if (!encoded || encoded.length > MAX_ENCODED || !/^[A-Za-z0-9_-]+$/.test(encoded)) return null
   try {
     const bytes = Uint8Array.from(atob(encoded.replace(/-/g, '+').replace(/_/g, '/')), (c) =>
@@ -19,6 +22,19 @@ export function decodeNotificationLaunch(encoded: string | null): NotificationAc
     const body = envelope as Record<string, unknown>
     if (body.v !== 2 || Object.keys(body).some((key) => key !== 'v' && key !== 'action'))
       return null
+    const raw: unknown = body.action
+    if (raw && typeof raw === 'object' && !Array.isArray(raw) && 'kind' in raw && raw.kind === 'checkin') {
+      if (
+        Object.keys(raw).length !== 3 ||
+        !('role' in raw) ||
+        raw.role !== 'STUDENT' ||
+        !('lessonId' in raw) ||
+        typeof raw.lessonId !== 'string' ||
+        !/^[1-9]\d{0,18}$/.test(raw.lessonId) ||
+        BigInt(raw.lessonId) > 9_223_372_036_854_775_807n
+      ) return null
+      return { kind: 'checkin', role: 'STUDENT', lessonId: raw.lessonId }
+    }
     const action = parseNotificationAction(body.action)
     if (
       !action ||
@@ -32,7 +48,7 @@ export function decodeNotificationLaunch(encoded: string | null): NotificationAc
     return null
   }
 }
-export function encodeNotificationLaunch(action: NotificationAction): string | null {
+export function encodeNotificationLaunch(action: NotificationLaunchAction): string | null {
   const bytes = new TextEncoder().encode(JSON.stringify({ v: 2, action }))
   const encoded = btoa(String.fromCharCode(...bytes))
     .replace(/\+/g, '-')
@@ -40,12 +56,31 @@ export function encodeNotificationLaunch(action: NotificationAction): string | n
     .replace(/=+$/, '')
   return encoded.length <= MAX_ENCODED && decodeNotificationLaunch(encoded) ? encoded : null
 }
+/** Mutates only consumed launch parameters; push ownership stays with the caller. */
+export function consumePwaNotificationLaunch(url: URL): {
+  action: NotificationLaunchAction | null
+  consumed: boolean
+  invalid: boolean
+} {
+  const explicit = url.searchParams.get('notificationAction')
+  const start = url.searchParams.get('tgWebAppStartParam')
+  const telegram = start?.startsWith('n2_') ? start.slice(3) : null
+  if (explicit !== null) url.searchParams.delete('notificationAction')
+  if (telegram !== null) url.searchParams.delete('tgWebAppStartParam')
+  const parsed = decodeNotificationLaunch(explicit ?? telegram)
+  const action = explicit !== null || parsed?.kind === 'checkin' ? parsed : null
+  return {
+    action,
+    consumed: explicit !== null || telegram !== null,
+    invalid: (explicit !== null || telegram !== null) && parsed === null,
+  }
+}
 /** Launch data is intent only; the signed session and protected action port grant access. */
 export class NotificationLaunchOwner {
   private boundUser: string | null
   private running = false
   constructor(
-    private action: NotificationAction | null,
+    private action: NotificationLaunchAction | null,
     expectedUserId: string | null = null,
   ) {
     this.boundUser = expectedUserId
@@ -59,7 +94,7 @@ export class NotificationLaunchOwner {
   async consume(
     userId: string | null,
     role: NotificationSignedRole | null,
-    open: (action: NotificationAction) => Promise<boolean>,
+    open: (action: NotificationLaunchAction) => Promise<boolean>,
   ): Promise<'waiting' | 'role-required' | 'opened' | 'unavailable' | 'empty'> {
     if (!this.action) return 'empty'
     if (!userId || !role || this.running) return 'waiting'

@@ -13,9 +13,20 @@ export interface CheckinAttempt {
   key: string
 }
 
+/** The owner cancelled before the command reached the transport. */
+export class CheckinBeforeSendCancelled extends Error {}
+
+export class CheckinMismatchedAck extends Error {
+  constructor() {
+    super('Не удалось подтвердить результат отметки. Попробуй ещё раз.');
+    this.name = 'CheckinMismatchedAck'
+  }
+}
+
 interface PendingCheckin {
   attempt: Promise<CheckinAttempt>
   inFlight: Promise<StudentCheckinAck> | null
+  uncertain: boolean
 }
 
 /** Keeps a retryable command only for this running shell instance. */
@@ -36,7 +47,7 @@ export class CheckinCommandRecovery {
         command: await acquireCommand(),
         key: this.createKey(),
       }))
-      pending = { attempt, inFlight: null }
+      pending = { attempt, inFlight: null, uncertain: false }
       this.pending.set(lessonId, pending)
       void attempt.catch(() => {
         if (this.pending.get(lessonId) === pending) this.pending.delete(lessonId)
@@ -52,7 +63,9 @@ export class CheckinCommandRecovery {
           return ack
         },
         (error: unknown) => {
-          if (!isAmbiguousCheckinFailure(error) && this.pending.get(lessonId) === pending)
+          if (!(error instanceof CheckinBeforeSendCancelled))
+            pending.uncertain = isAmbiguousCheckinFailure(error)
+          if (!pending.uncertain && this.pending.get(lessonId) === pending)
             this.pending.delete(lessonId)
           throw error
         },

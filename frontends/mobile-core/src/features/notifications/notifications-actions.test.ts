@@ -5,10 +5,12 @@ import {
   type NotificationActionContext,
 } from './notifications-actions'
 import {
+  consumePwaNotificationLaunch,
   decodeNotificationLaunch,
   encodeNotificationLaunch,
   NotificationLaunchOwner,
 } from './notifications-launch'
+import { parseNotificationAction } from './notifications-v2-client'
 import type { NotificationAction } from './notifications-v2-models'
 const action: NotificationAction = { kind: 'lesson', role: 'TEACHER', lessonId: '22' }
 const context = (): NotificationActionContext => ({
@@ -61,6 +63,40 @@ describe('protected action and one-time launch', () => {
     ).replace(/=+$/, '')
     expect(decodeNotificationLaunch(bad)).toBeNull()
     expect(decodeNotificationLaunch('x'.repeat(385))).toBeNull()
+  })
+  it('accepts only an exact student check-in launch with a signed-64-bit string ID', async () => {
+    const checkin = { kind: 'checkin', role: 'STUDENT', lessonId: '9223372036854775807' } as const
+    const encodeRaw = (value: unknown) =>
+      btoa(JSON.stringify(value)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
+    const decodeRaw = (value: unknown) => decodeNotificationLaunch(encodeRaw({ v: 2, action: value }))
+    expect(decodeRaw(checkin)).toEqual(checkin)
+    for (const bad of [
+      { ...checkin, role: 'HEADMAN' }, { ...checkin, role: 'TEACHER' },
+      { ...checkin, lessonId: '9223372036854775808' }, { ...checkin, lessonId: '077' },
+      { ...checkin, lessonId: 77 }, { ...checkin, lessonId: '0' }, { ...checkin, lessonId: '-1' },
+      { ...checkin, lessonDate: '2026-11-06' }, { ...checkin, url: 'https://example.test' },
+    ]) expect(decodeRaw(bad)).toBeNull()
+    expect(parseNotificationAction(checkin)).toBeNull()
+    const open = vi.fn(async () => true)
+    const launch = new NotificationLaunchOwner(decodeRaw(checkin), '7')
+    expect(await launch.consume('7', 'HEADMAN', open)).toBe('role-required')
+    expect(await launch.consume('7', 'STUDENT', open)).toBe('opened')
+    expect(await launch.consume('7', 'STUDENT', open)).toBe('empty')
+    expect(open).toHaveBeenCalledExactlyOnceWith(checkin)
+  })
+  it('consumes the PWA Telegram fallback once and preserves explicit push ownership and precedence', () => {
+    const checkin = { kind: 'checkin', role: 'STUDENT', lessonId: '77' } as const
+    const telegram = `n2_${encodeNotificationLaunch(checkin)}`
+    const url = new URL(`https://app.test/?tgWebAppStartParam=${telegram}&pushOwner=7&pushNotifications=1#tab`)
+    expect(consumePwaNotificationLaunch(url)).toEqual({ action: checkin, consumed: true, invalid: false })
+    expect(url.search).toBe('?pushOwner=7&pushNotifications=1')
+    expect(url.hash).toBe('#tab')
+    expect(consumePwaNotificationLaunch(url).action).toBeNull()
+    url.searchParams.set('tgWebAppStartParam', telegram)
+    url.searchParams.set('notificationAction', encodeNotificationLaunch(action)!)
+    expect(consumePwaNotificationLaunch(url)).toEqual({ action, consumed: true, invalid: false })
+    url.searchParams.set('tgWebAppStartParam', `n2_${encodeNotificationLaunch(action)}`)
+    expect(consumePwaNotificationLaunch(url)).toEqual({ action: null, consumed: true, invalid: false })
   })
   it('rejects a push recipient before the first authenticated consumer', async () => {
     const open = vi.fn(async () => true)

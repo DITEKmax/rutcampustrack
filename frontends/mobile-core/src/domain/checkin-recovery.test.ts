@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest'
-import { CheckinCommandRecovery } from './checkin'
+import { describe, expect, it, vi } from 'vitest'
+import { CheckinBeforeSendCancelled, CheckinCommandRecovery } from './checkin'
 import type { StudentCheckinAck, StudentCheckinCommand } from '../api/types'
 import { StudentApiError } from '../api/student-client'
 
@@ -80,5 +80,19 @@ describe('check-in command recovery', () => {
     ).rejects.toMatchObject({ response: expect.objectContaining({ status: 503 }) })
     await expect(recovery.execute('77', acquire, async () => ack)).resolves.toEqual(ack)
     expect(acquired).toBe(1)
+  })
+
+  it('discards unsent geolocation but retains a previously ambiguous command across route cancellation', async () => {
+    const recovery = new CheckinCommandRecovery(vi.fn().mockReturnValueOnce('discard').mockReturnValueOnce('keep'))
+    const acquire = vi.fn(async () => command)
+    const cancel = async () => { throw new CheckinBeforeSendCancelled() }
+    const failAfterSend = async () => { throw new TypeError('response lost') }
+    await expect(recovery.execute('77', acquire, cancel)).rejects.toBeInstanceOf(CheckinBeforeSendCancelled)
+    await expect(recovery.execute('77', acquire, failAfterSend)).rejects.toThrow('response lost')
+    await expect(recovery.execute('77', acquire, cancel)).rejects.toBeInstanceOf(CheckinBeforeSendCancelled)
+    const send = vi.fn(async () => ack)
+    await expect(recovery.execute('77', acquire, send)).resolves.toEqual(ack)
+    expect(acquire).toHaveBeenCalledTimes(2)
+    expect(send).toHaveBeenCalledExactlyOnceWith({ lessonId: '77', command, key: 'keep' })
   })
 })

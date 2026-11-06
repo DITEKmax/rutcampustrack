@@ -3,7 +3,8 @@ import { QueryClient, VueQueryPlugin } from '@tanstack/vue-query'
 import { environmentManager } from '@tanstack/query-core'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { StudentApi } from '../../api/student-client'
-import type { StudentCheckinCommand, StudentToday } from '../../api/types'
+import type { StudentCheckinAck, StudentCheckinCommand, StudentToday } from '../../api/types'
+import { CheckinBeforeSendCancelled, CheckinMismatchedAck } from '../../domain/checkin'
 import { TodayReadOnlyError, useToday, type StudentTodayQueryScope } from './use-today'
 
 const renderer = createRenderer({
@@ -87,6 +88,35 @@ describe('useToday mutation boundaries', () => {
         scope: readOnlyScope,
       }),
     ).rejects.toBeInstanceOf(TodayReadOnlyError)
+    expect(checkin).not.toHaveBeenCalled()
+  })
+  it('rejects a different lesson acknowledgement before applying it to the Today cache', async () => {
+    const serverNow = '2026-11-06T08:30:00Z'
+    const projection = {
+      date: '2026-11-06', serverNow, timeZone: 'Europe/Moscow', _links: {},
+      lessons: ['77', '78'].map((id) => ({
+        schedule: { id }, attendance: null, request: null,
+        checkinEligibility: { allowed: true, reason: 'ELIGIBLE', retryAt: null },
+      })),
+    } as StudentToday
+    const wrongAck: StudentCheckinAck = {
+      lessonId: '78', outcome: 'PRESENT', request: null, retryAt: null, serverNow, _links: {},
+      attendance: { status: 'PRESENT', source: 'STUDENT_GEO', markedAt: serverNow },
+    }
+    const api = { getToday: async () => projection, checkin: async () => wrongAck } as unknown as StudentApi
+    const state = mountToday(api, ref({ ...readOnlyScope, readOnly: false }))
+    await state.query.refetch()
+    await expect(state.mutation.mutateAsync({ lessonId: '77', command, key: 'key' }))
+      .rejects.toBeInstanceOf(CheckinMismatchedAck)
+    expect(state.query.data.value?.lessons.map((lesson) => lesson.attendance)).toEqual([null, null])
+  })
+
+  it('does not send a command that lost its route before transport started', async () => {
+    const checkin = vi.fn()
+    const state = mountToday({ checkin } as unknown as StudentApi, ref({ ...readOnlyScope, readOnly: false }))
+    await expect(state.mutation.mutateAsync({
+      lessonId: '77', command, key: 'key', canSend: () => false,
+    })).rejects.toBeInstanceOf(CheckinBeforeSendCancelled)
     expect(checkin).not.toHaveBeenCalled()
   })
 

@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { useProjectionRefresh } from '../projection-refresh';
-import type { NotificationAction } from '../../features/notifications/notifications-v2-models';
 import { computed, onBeforeUnmount, reactive, ref, shallowRef, watch } from 'vue';
 import { useQueryClient } from '@tanstack/vue-query';
 import type { CampusMapClient } from '../../api/map-client';
 import { StudentApi, StudentApiError } from '../../api/student-client';
 import type {
+  StudentCheckinAck,
   StudentCheckinCommand,
   StudentHomework,
   StudentHomeworkItem,
@@ -13,7 +13,8 @@ import type {
   StudentToday,
   TodayLesson,
 } from '../../api/types';
-import { CheckinCommandRecovery } from '../../domain/checkin';
+import { CheckinBeforeSendCancelled, CheckinCommandRecovery } from '../../domain/checkin';
+import type { NotificationLaunchAction } from '../../features/notifications/notifications-launch';
 import type {
   NotificationHomeworkTarget,
   NotificationLessonTarget,
@@ -61,6 +62,9 @@ import type {
   ProfileTheme,
 } from '../../features/profile/profile-types';
 import TodayScreen from '../../features/today/TodayScreen.vue';
+import CheckinImpulseScreen from '../../features/today/CheckinImpulseScreen.vue';
+import CheckinArrivalCover from '../../features/today/CheckinArrivalCover.vue';
+import { useCheckinImpulse } from '../../features/today/checkin-impulse';
 import RoleSwitchDialog from './RoleSwitchDialog.vue';
 import { todayQueryKey, useToday } from '../../features/today/use-today';
 import ExcuseRequestScreen from '../../features/requests/ExcuseRequestScreen.vue';
@@ -249,6 +253,7 @@ const stopScope = watch(
 const offline = computed(() => props.offline || props.api === null);
 const navigation: MobileNavigationStack = createMobileNavigationStack(rootRoute('today'));
 const route = ref<MobileRoute>(navigation.current);
+const checkinImpulseRoute = nestedRoute('today', 'today/checkin-impulse', 'task');
 const homeworkNotificationRoute = nestedRoute('homework', 'homework/notification-target', 'detail');
 const requestNotificationRoute = nestedRoute('more', 'more/requests/notification-target', 'detail');
 const lessonNotificationRoute = nestedRoute(
@@ -280,6 +285,7 @@ const homeRoleError = shallowRef<ProfileRequestError | null>(null);
 const todayRequestAck = shallowRef<RequestDetail | null>(null);
 const acquiringLessonId = ref<string | null>(null);
 const checkinError = ref<string | null>(null);
+const checkinRunning = ref(false);
 const navItems = computed<MobileBottomNavItems>(() =>
   createStudentNavigationItems({
     homeworkEnabled: true,
@@ -288,7 +294,7 @@ const navItems = computed<MobileBottomNavItems>(() =>
     profileEnabled: props.profilePort !== null,
   }),
 );
-const checkinRecovery = new CheckinCommandRecovery();
+let checkinRecovery = new CheckinCommandRecovery();
 const profileState = props.profilePort ? new ProfileState(props.profilePort) : null;
 const profilePendingRole = ref<ProfileRole | null>(null);
 const themeMode = ref<ProfileTheme>(props.themeController?.mode ?? 'system');
@@ -490,6 +496,41 @@ const homeworkLoading = computed(
 const ownerIdentity = computed(() =>
   scope.value ? studentFeatureScopeIdentity(scope.value) : null,
 );
+const studentRoot = ref<HTMLElement | null>(null);
+const impulseScreen = ref<InstanceType<typeof CheckinImpulseScreen> | null>(null);
+const impulse = useCheckinImpulse({
+  authority: () =>
+    scope.value?.activeRole === 'STUDENT' && props.ownerKey && ownerIdentity.value
+      ? JSON.stringify([props.ownerKey, ownerIdentity.value])
+      : null,
+  route: () =>
+    route.value.id === checkinImpulseRoute.id ? 'impulse' : route.value.id === 'today' ? 'today' : 'other',
+  offline: () => offline.value,
+  readOnly: () => props.readOnly || scope.value?.readOnly === true,
+  data: () => today.query.data.value ?? null,
+  read: async () => {
+    await today.query.refetch({ throwOnError: true, cancelRefetch: false });
+  },
+  pendingStage: (lessonId) => {
+    if (acquiringLessonId.value === lessonId) return 'locating';
+    if (today.mutation.isPending.value && today.mutation.variables.value?.lessonId === lessonId)
+      return 'submitting';
+    return null;
+  },
+  busy: () => checkinRunning.value || today.mutation.isPending.value,
+  submit: performCheckin,
+  onReadError: (error) => {
+    const terminal = terminalAuthError(error);
+    if (terminal) emit('ownerError', terminal);
+  },
+  navigateToday: () => {
+    navigation.goRoot('today');
+    if (typeof window.scrollTo === 'function') window.scrollTo(0, 0);
+  },
+  focusToday: () => studentRoot.value?.querySelector<HTMLElement>('#today-title')?.focus({ preventScroll: true }),
+  measure: () => impulseScreen.value?.measure() ?? null,
+  reduceMotion: () => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false,
+});
 const realAttendanceDocuments = useAttendanceDocuments(() => ({
   api: props.api, ownerKey: ownerIdentity.value ?? "",
   semesterId: scope.value?.semesterId ?? null,
@@ -960,6 +1001,8 @@ watch(ownerIdentity, (identity, previous) => {
   todayRequestAck.value = null;
   acquiringLessonId.value = null;
   checkinError.value = null;
+  checkinRecovery = new CheckinCommandRecovery();
+  checkinRunning.value = false;
   const todayDate = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Moscow' });
   attendanceSelectedDate.value = todayDate;
 });
@@ -1986,36 +2029,58 @@ function navigate(next: MobileRootRouteId): void {
   navigation.goRoot(next);
 }
 
-function checkin(lesson: TodayLesson): void {
+function performCheckin(
+  lesson: TodayLesson,
+  isCurrent?: () => boolean,
+): Promise<StudentCheckinAck> | null {
   const currentScope = scope.value;
   if (
     offline.value ||
     props.readOnly ||
     disposed ||
-    !currentScope ||
-    acquiringLessonId.value !== null ||
+    currentScope?.activeRole !== 'STUDENT' ||
+    currentScope.readOnly ||
+    (isCurrent && !isCurrent()) ||
+    checkinRunning.value ||
     today.mutation.isPending.value
   )
-    return;
+    return null;
   const requestScope = { ...currentScope };
   const requestIdentity = studentFeatureScopeIdentity(requestScope);
+  const canSend = () =>
+    !disposed && !offline.value && !props.readOnly &&
+    ownerIdentity.value === requestIdentity && (isCurrent?.() ?? true);
+  checkinRunning.value = true;
   acquiringLessonId.value = lesson.schedule.id;
-  checkinError.value = null;
-  void checkinRecovery
-    .execute(lesson.schedule.id, props.acquireCheckinCommand, (attempt) => {
-      if (disposed || offline.value || props.readOnly || ownerIdentity.value !== requestIdentity) {
-        return Promise.reject(new Error('Отметка относится к завершившейся сессии'));
-      }
-      acquiringLessonId.value = null;
-      return today.mutation.mutateAsync({ ...attempt, scope: requestScope });
-    })
+  return checkinRecovery
+    .execute(
+      lesson.schedule.id,
+      () => !isCurrent || canSend()
+        ? props.acquireCheckinCommand()
+        : Promise.reject(new CheckinBeforeSendCancelled()),
+      (attempt) => {
+        if (!canSend()) {
+          return Promise.reject(
+            isCurrent
+              ? new CheckinBeforeSendCancelled()
+              : new Error('Отметка относится к завершившейся сессии'),
+          );
+        }
+        acquiringLessonId.value = null;
+        return today.mutation.mutateAsync({
+          ...attempt,
+          scope: requestScope,
+          ...(isCurrent ? { canSend } : {}),
+        });
+      },
+    )
     .then((ack) => {
       if (
         disposed ||
         ownerIdentity.value !== requestIdentity ||
         scope.value?.activeRole !== 'STUDENT'
       )
-        return;
+        return ack;
       void attendance.query.refetch();
       void statistics.query.refetch();
       void requests.loadOptions().catch(handleRequestsError);
@@ -2023,16 +2088,32 @@ function checkin(lesson: TodayLesson): void {
         requests.controller.invalidateOpenBucket();
         if (route.value.id === 'more/requests') ensureRequestsRoute(route.value);
       }
+      return ack;
     })
     .catch((error: unknown) => {
-      if (disposed || ownerIdentity.value !== requestIdentity) return;
-      checkinError.value = requestErrorText(error);
-      const terminal = terminalAuthError(error);
-      if (terminal) emit('ownerError', terminal);
+      if (!disposed && ownerIdentity.value === requestIdentity) {
+        const terminal = terminalAuthError(error);
+        if (terminal) emit('ownerError', terminal);
+      }
+      throw error;
     })
     .finally(() => {
-      if (!disposed && ownerIdentity.value === requestIdentity) acquiringLessonId.value = null;
+      if (!disposed && ownerIdentity.value === requestIdentity) {
+        checkinRunning.value = false;
+        acquiringLessonId.value = null;
+      }
     });
+}
+
+function checkin(lesson: TodayLesson): void {
+  const identity = ownerIdentity.value;
+  const result = performCheckin(lesson);
+  if (!result) return;
+  checkinError.value = null;
+  void result.catch((error: unknown) => {
+    if (!disposed && ownerIdentity.value === identity)
+      checkinError.value = requestErrorText(error);
+  });
 }
 
 function complete(item: StudentHomeworkItem, completed: boolean): void {
@@ -2059,6 +2140,7 @@ function openMaterialFromItem(url: string, item: StudentHomeworkItem): void {
 
 onBeforeUnmount(() => {
   disposed = true;
+  impulse.reset();
   releaseRoleBack?.();
   releaseAttendanceBack?.();
   stopReadFreshness();
@@ -2075,7 +2157,7 @@ onBeforeUnmount(() => {
   stopNavigation();
   stopTheme();
 });
-function openNotificationAction(action: NotificationAction, isCurrent: () => boolean): boolean {
+function openNotificationAction(action: NotificationLaunchAction, isCurrent: () => boolean): boolean {
   if (
     !isCurrent() ||
     disposed ||
@@ -2085,6 +2167,12 @@ function openNotificationAction(action: NotificationAction, isCurrent: () => boo
     action.role !== 'STUDENT'
   )
     return false;
+  if (action.kind === 'checkin') {
+    if (!props.ownerKey || !scope.value.userId) return false;
+    navigation.push(checkinImpulseRoute);
+    impulse.start(action.lessonId, isCurrent);
+    return true;
+  }
   if (action.kind === 'group') {
     if (scope.value.groupId !== action.groupId || !props.profilePort) return false;
     navigateProfile('profile');
@@ -2130,15 +2218,41 @@ defineExpose({ openNotificationAction });
 
 <template>
   <div
+    ref="studentRoot"
     data-student-ui
     :data-theme="resolvedTheme"
   >
     <MobileShell
-      v-if="
-        route.id === 'today/excuse' ||
-        route.id === 'today/late' ||
-        route.id === 'attendance/excuse' ||
-        route.id === 'attendance/late'
+      v-if="route.id === checkinImpulseRoute.id"
+      custom-back
+      :route="route"
+      :navigation="navigation"
+      :nav-items="navItems"
+      :host="host"
+      :host-back-action="studentHostBack"
+    >
+      <template #back />
+      <CheckinImpulseScreen
+        ref="impulseScreen"
+        :lesson="impulse.lesson.value"
+        :state="impulse.state.value"
+        :feedback="impulse.feedback.value"
+        :error="impulse.commandError.value"
+        :can-submit="impulse.canSubmit.value"
+        :animate="impulse.animate.value"
+        :host-back="host?.backOwner === 'host'"
+        @back="studentHostBack"
+        @submit="impulse.submit"
+        @retry="impulse.load()"
+        @today="impulse.goToday"
+      />
+    </MobileShell>
+    <MobileShell
+      v-else-if="
+          route.id === 'today/excuse' ||
+          route.id === 'today/late' ||
+          route.id === 'attendance/excuse' ||
+          route.id === 'attendance/late'
       "
       custom-back
       :route="route"
@@ -2210,6 +2324,7 @@ defineExpose({ openNotificationAction });
     </MobileShell>
     <TodayScreen
       v-else-if="route.root === 'today'"
+      :inert="impulse.arrival.value !== null"
       :on-notifications="onNotifications"
       :unread-count="unreadCount"
       :today="displayToday"
@@ -2681,6 +2796,10 @@ defineExpose({ openNotificationAction });
         @submit="submitLateCheckin"
       />
     </MobileShell>
+    <CheckinArrivalCover
+      v-if="impulse.arrival.value"
+      :arrival="impulse.arrival.value"
+    />
     <RoleSwitchDialog
       v-if="homeRoleDialogOpen"
       full-width

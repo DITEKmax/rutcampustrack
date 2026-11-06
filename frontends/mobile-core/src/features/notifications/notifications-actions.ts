@@ -6,14 +6,14 @@ export interface NotificationActionContext {
   authorityKey: string
   online: boolean
 }
-export interface NotificationActionPort {
-  open(action: NotificationAction, isCurrent: () => boolean): boolean | Promise<boolean>
+export interface NotificationActionPort<Action = NotificationAction> {
+  open(action: Action, isCurrent: () => boolean): boolean | Promise<boolean>
 }
 /** Every async protected read and final route commit uses the same signed context. */
-export async function executeNotificationAction(
-  action: NotificationAction,
+export async function executeNotificationAction<Action extends Pick<NotificationAction, 'role'>>(
+  action: Action,
   current: () => NotificationActionContext,
-  port: NotificationActionPort,
+  port: NotificationActionPort<Action>,
 ): Promise<boolean> {
   const captured = { ...current() }
   const isCurrent = (): boolean => {

@@ -227,6 +227,7 @@ function lessonKind(lesson: TodayLesson): string {
         <h1
           id="today-title"
           class="today-visually-hidden"
+          tabindex="-1"
         >
           Сегодня
         </h1>

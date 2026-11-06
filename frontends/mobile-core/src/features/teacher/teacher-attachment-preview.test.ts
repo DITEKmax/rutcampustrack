@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
+import { TeacherApi } from './teacher-client'
 import {
   TeacherAttachmentPreview,
   type TeacherAttachmentOwner,
@@ -57,6 +58,129 @@ afterEach(() => {
   vi.useRealTimers()
 })
 describe('teacher authenticated attachment ownership', () => {
+  it('uses the exact private GET without caching and preserves a typed attachment denial', async () => {
+    const problem = { code: 'ATTACHMENT_NOT_FOUND', detail: 'Документ недоступен.' }
+    const fetcher = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(new Response(png()))
+      .mockResolvedValueOnce(Response.json(problem, { status: 404 }))
+    const api = new TeacherApi({ accessToken: () => 'teacher-session', fetcher })
+    const result = await api.downloadManualExcuseAttachment(11, 22, 'file/a')
+    expect(result.type).toBe('image/png')
+    expect(result.size).toBe(png().size)
+    const [path, init] = fetcher.mock.calls[0]!
+    expect(path).toBe('/api/v1/teacher/lessons/11/students/22/excuse/attachments/file%2Fa')
+    expect(init?.method ?? 'GET').toBe('GET')
+    expect(init?.cache).toBe('no-store')
+    expect(new Headers(init?.headers).get('Authorization')).toBe('Bearer teacher-session')
+    await expect(api.downloadManualExcuseAttachment(11, 22, 'missing')).rejects.toMatchObject({
+      problem,
+      response: { status: 404 },
+    })
+    await expect(api.downloadManualExcuseAttachment(11.5, 22, 'file/a')).rejects.toThrow()
+    expect(fetcher).toHaveBeenCalledTimes(2)
+  })
+  it('uses the authorized manual route and revokes its blob when lesson or student ownership changes', async () => {
+    const downloadAttachment = vi.fn(async () => png())
+    const downloadManualExcuseAttachment = vi.fn(async () => png())
+    const initial = {
+      ...owner(),
+      requestId: null,
+      attachment: { ...owner().attachment, expiresAt: '2030-01-01T00:00:00Z' },
+      lessonId: 11,
+      studentId: 22,
+      api: { downloadAttachment, downloadManualExcuseAttachment },
+    }
+    const h = harness(initial)
+    await h.preview.load()
+    expect(downloadManualExcuseAttachment).toHaveBeenCalledWith(11, 22, 'file-a')
+    expect(downloadAttachment).not.toHaveBeenCalled()
+    expect(h.preview.openUrl()).toBe('blob:teacher-0')
+    h.setOwner({ ...initial, studentId: 23 })
+    expect(h.preview.openUrl()).toBeNull()
+    expect(h.revoked).toEqual(h.created)
+    await h.preview.load()
+    h.setOwner({ ...initial, lessonId: 12, studentId: 23 })
+    expect(h.preview.openUrl()).toBeNull()
+    expect(h.revoked).toEqual(h.created)
+  })
+  it('rejects late manual bytes after changing their lesson context', async () => {
+    let finish!: (value: Blob) => void
+    const initial = {
+      ...owner(),
+      requestId: null,
+      attachment: { ...owner().attachment, expiresAt: '2030-01-01T00:00:00Z' },
+      lessonId: 11,
+      studentId: 22,
+      api: {
+        downloadAttachment: async () => png(),
+        downloadManualExcuseAttachment: () =>
+          new Promise<Blob>((resolve) => {
+            finish = resolve
+          }),
+      },
+    }
+    const h = harness(initial)
+    const loading = h.preview.load()
+    h.setOwner({ ...initial, lessonId: 12 })
+    finish(png())
+    await loading
+    expect(h.created).toEqual([])
+    expect(h.preview.openUrl()).toBeNull()
+  })
+  it('does not download or invent a lifetime for old manual metadata without its actual expiry', async () => {
+    const download = vi.fn(async () => png())
+    const h = harness({
+      ...owner(),
+      requestId: null,
+      lessonId: 11,
+      studentId: 22,
+      api: { downloadAttachment: download, downloadManualExcuseAttachment: download },
+    })
+    await h.preview.load()
+    expect(download).not.toHaveBeenCalled()
+    expect(h.state.error).toContain('Сервер не предоставил срок хранения')
+    expect(h.created).toEqual([])
+  })
+  it('discards manual bytes arriving after their deadline and expires an already owned manual blob', async () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date('2026-11-05T09:00:00Z'))
+    let finish!: (value: Blob) => void
+    const initial = {
+      ...owner(),
+      requestId: null,
+      lessonId: 11,
+      studentId: 22,
+      attachment: { ...owner().attachment, expiresAt: '2026-11-05T09:00:01Z' },
+      api: {
+        downloadAttachment: async () => png(),
+        downloadManualExcuseAttachment: () =>
+          new Promise<Blob>((resolve) => {
+            finish = resolve
+          }),
+      },
+    }
+    const h = harness(initial)
+    const loading = h.preview.load()
+    vi.setSystemTime(new Date('2026-11-05T09:00:02Z'))
+    finish(png())
+    await loading
+    expect(h.created).toEqual([])
+    expect(h.state.error).toContain('истёк')
+    h.setOwner({
+      ...initial,
+      attachment: { ...initial.attachment, expiresAt: '2026-11-05T09:00:03Z' },
+      api: {
+        downloadAttachment: async () => png(),
+        downloadManualExcuseAttachment: async () => png(),
+      },
+    })
+    await h.preview.load()
+    expect(h.preview.openUrl()).toBe('blob:teacher-0')
+    await vi.advanceTimersByTimeAsync(1001)
+    expect(h.state.url).toBeNull()
+    expect(h.revoked).toEqual(h.created)
+  })
   it('opens validated bytes and revokes on request change/unmount', async () => {
     const h = harness()
     await h.preview.load()

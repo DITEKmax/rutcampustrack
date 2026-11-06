@@ -10,10 +10,19 @@ import TeacherAttachmentPreview from './TeacherAttachmentPreview.vue';
 import { TeacherApiError, type TeacherApi, type TeacherExcuseResponse } from './teacher-client';
 import './teacher-screen.pcss';
 const props = withDefaults(
-  defineProps<{ api: TeacherApi | null; requestId: string | null; showBack?: boolean }>(),
-  { showBack: true },
+  defineProps<{
+    api: TeacherApi | null;
+    requestId: string | null;
+    showBack?: boolean;
+    attachmentCloseSignal?: number;
+  }>(),
+  { showBack: true, attachmentCloseSignal: 0 },
 );
-const emit = defineEmits<{ back: []; error: [cause: unknown] }>();
+const emit = defineEmits<{
+  back: [];
+  error: [cause: unknown];
+  'attachment-open': [open: boolean];
+}>();
 const state = ref<TeacherExcuseResponse | null>(null);
 const loading = ref(false);
 const error = ref<string | null>(null);
@@ -200,6 +209,8 @@ useProjectionRefresh(() => load(true));
           :api="api"
           :request-id="state.id"
           :attachment="attachment"
+          :close-signal="attachmentCloseSignal"
+          @fullscreen-open="emit('attachment-open', $event)"
         />
       </section>
     </template>

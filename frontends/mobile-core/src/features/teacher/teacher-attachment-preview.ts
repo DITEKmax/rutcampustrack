@@ -1,9 +1,17 @@
 import { StaleSessionGenerationError } from '../../shared/session-owner'
 import type { TeacherApi, TeacherExcuseAttachment } from './teacher-client'
+export type TeacherPreviewAttachment = Omit<TeacherExcuseAttachment, 'size'> & {
+  readonly size: number | null
+}
 export interface TeacherAttachmentOwner {
-  readonly api: Pick<TeacherApi, 'downloadAttachment'> | null
-  readonly requestId: string
-  readonly attachment: TeacherExcuseAttachment
+  readonly api:
+    | (Pick<TeacherApi, 'downloadAttachment'> &
+        Partial<Pick<TeacherApi, 'downloadManualExcuseAttachment'>>)
+    | null
+  readonly requestId: string | null
+  readonly lessonId?: number | null
+  readonly studentId?: number | null
+  readonly attachment: TeacherPreviewAttachment
 }
 export interface TeacherAttachmentState {
   readonly status: 'idle' | 'loading' | 'ready' | 'error'
@@ -13,6 +21,7 @@ export interface TeacherAttachmentState {
 }
 type ObjectUrls = Pick<typeof URL, 'createObjectURL' | 'revokeObjectURL'>
 const idle = (): TeacherAttachmentState => ({ status: 'idle', url: null, mime: null, error: null })
+const isoInstant = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/
 function expired(owner: TeacherAttachmentOwner): boolean {
   const expiry = owner.attachment.expiresAt
   return (
@@ -66,8 +75,13 @@ export class TeacherAttachmentPreview {
       run === this.revision &&
       owner.api === next.api &&
       owner.requestId === next.requestId &&
+      owner.lessonId === next.lessonId &&
+      owner.studentId === next.studentId &&
       owner.attachment.id === next.attachment.id &&
       owner.attachment.expiresAt === next.attachment.expiresAt &&
+      owner.attachment.fileName === next.attachment.fileName &&
+      owner.attachment.contentType === next.attachment.contentType &&
+      owner.attachment.size === next.attachment.size &&
       next.api !== null
     )
   }
@@ -92,14 +106,38 @@ export class TeacherAttachmentPreview {
     const run = ++this.revision
     this.release()
     this.set(idle())
-    if (this.disposed || !owner.api || !owner.requestId) return
+    if (this.disposed || !owner.api) return
+    if (
+      !owner.requestId &&
+      (owner.lessonId == null ||
+        owner.studentId == null ||
+        !owner.api.downloadManualExcuseAttachment)
+    )
+      return
+    if (
+      !owner.requestId &&
+      (owner.attachment.expiresAt === null ||
+        !isoInstant.test(owner.attachment.expiresAt) ||
+        !Number.isFinite(Date.parse(owner.attachment.expiresAt)))
+    ) {
+      this.fail(
+        'Сервер не предоставил срок хранения документа ручной причины. Для просмотра требуется обновление сервера.',
+      )
+      return
+    }
     if (expired(owner)) {
       this.fail('Срок хранения файла истёк.')
       return
     }
     this.set({ status: 'loading', url: null, mime: null, error: null })
     try {
-      const blob = await owner.api.downloadAttachment(owner.requestId, owner.attachment.id)
+      const blob = owner.requestId
+        ? await owner.api.downloadAttachment(owner.requestId, owner.attachment.id)
+        : await owner.api.downloadManualExcuseAttachment!(
+            owner.lessonId!,
+            owner.studentId!,
+            owner.attachment.id,
+          )
       if (!this.current(run, owner)) return
       if (expired(owner)) {
         this.fail('Срок хранения файла истёк.')

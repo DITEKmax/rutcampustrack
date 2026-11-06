@@ -1,4 +1,4 @@
-import { createRenderer, h, markRaw, nextTick, type App } from 'vue'
+import { createRenderer, h, markRaw, nextTick, ref, type App } from 'vue'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import TeacherStatsScreen from './TeacherStatsScreen.vue'
 import {
@@ -33,6 +33,9 @@ class Node {
     }
     this.children.forEach(walk)
     return result
+  }
+  querySelector(selector: string): Node | null {
+    return find(this, (node) => selector.split(', ').includes(node.tag)) ?? null
   }
   focus(): void {}
   close(): void {}
@@ -132,13 +135,15 @@ function harness(
     route?: string
     assignedOnly?: boolean
     noData?: boolean
+    filteredEmpty?: boolean
     multipleSubjects?: boolean
     multipleGroups?: boolean
   } = {},
 ) {
+  const route = options.route ?? '?teacherStats=1&teacherStatsSemester=7&teacherStatsScope=groups'
   const location = {
-    href: `https://fixture.test/app${options.route ?? ''}`,
-    search: options.route ?? '',
+    href: `https://fixture.test/app${route}`,
+    search: route,
   }
   vi.stubGlobal('window', {
     location,
@@ -169,6 +174,9 @@ function harness(
   let holdSearch = false
   let releaseSearch: (() => void) | null = null
   let failSearch = false
+  let searchStudents = [
+    { id: '4', displayName: 'Анна Белова', groupId: '2', groupName: 'ИКБО-01-24' },
+  ]
   const currentCatalog = options.multipleSubjects
     ? {
         ...catalog,
@@ -232,9 +240,7 @@ function harness(
         }
         const reply = json({
           groups: [{ id: '2', name: holdSearch ? 'Устаревший поиск' : 'ИКБО-01-24' }],
-          students: [
-            { id: '4', displayName: 'Анна Белова', groupId: '2', groupName: 'ИКБО-01-24' },
-          ],
+          students: searchStudents,
           truncated: false,
         })
         if (holdSearch) {
@@ -261,6 +267,7 @@ function harness(
           return new Response(JSON.stringify({ code: 'DEPENDENCY_UNAVAILABLE' }), { status: 503 })
         }
         const students = url.searchParams.get('scope') === 'students'
+        const filteredEmpty = options.filteredEmpty && url.searchParams.has('filter')
         const value = options.noData ? { numerator: 0, denominator: 0, percent: 0 } : metric
         const row = { present: value, presentOrExcused: value, excused: value, absent: value }
         const reply = json({
@@ -271,7 +278,7 @@ function harness(
           periodTo: null,
           subjectOptions: options.assignedOnly ? [] : subjectOptions,
           students:
-            students && !options.noData
+            students && !options.noData && !filteredEmpty
               ? [{ ...row, studentId: '4', displayName: 'Анна Белова' }]
               : [],
           groups: students
@@ -298,13 +305,50 @@ function harness(
     },
   })
   const root = new Node('root')
+  const openedGroups: [number, string][] = []
+  const openedJournals: unknown[] = []
+  const semesterId = ref(7)
+  const realtimeRevision = ref(0)
+  const toolOpen = ref(false)
+  const closeToolSignal = ref(0)
+  const popup = {
+    hasOpen: toolOpen,
+    dismissTop: () => {
+      if (!toolOpen.value) return false
+      closeToolSignal.value += 1
+      return true
+    },
+  }
   const app = renderer.createApp({
-    render: () => h(TeacherStatsScreen, { api: markRaw(api), semesterId: 7 }),
+    render: () =>
+      h(TeacherStatsScreen, {
+        api: markRaw(api),
+        semesterId: semesterId.value,
+        realtimeRevision: realtimeRevision.value,
+        closeToolSignal: closeToolSignal.value,
+        'onTool-open': (open: boolean) => {
+          toolOpen.value = open
+        },
+        'onOpen-journal': (query: unknown) => openedJournals.push(query),
+        'onOpen-group': (id: number, name: string) => openedGroups.push([id, name]),
+      }),
   })
   apps.push(app)
   app.mount(root)
   return {
     root,
+    openedGroups,
+    openedJournals,
+    popup,
+    invalidate: () => {
+      realtimeRevision.value += 1
+    },
+    changeSemester: (value: number) => {
+      semesterId.value = value
+    },
+    searchStudents: (values: typeof searchStudents) => {
+      searchStudents = values
+    },
     api,
     queries,
     searches,
@@ -352,7 +396,275 @@ async function searchDirectory(root: Node, query: string): Promise<void> {
   ;(form.props.onSubmit as (event: { preventDefault(): void }) => void)({ preventDefault() {} })
   await settle()
 }
+function submit(root: Node, id: string): void {
+  const form = find(root, (node) => node.props.id === id)!
+  expect(form).toBeDefined()
+  ;(form.props.onSubmit as (event: { preventDefault(): void }) => void)({ preventDefault() {} })
+}
+function input(root: Node, id: string, value: string): void {
+  const node = find(root, (item) => item.props.id === id)!
+  expect(node).toBeDefined()
+  ;(node.props['onUpdate:modelValue'] as (value: string) => void)(value)
+}
 describe('teacher statistics selectors and races', () => {
+  it('v3 starts with the ordinary group chain and keeps a selected name local to authorized results and journal context', async () => {
+    const fixture = harness({ route: '', multipleGroups: true })
+    await settle()
+    expect(find(fixture.root, (node) => node.props['aria-label'] === 'Группа')).toBeDefined()
+    expect(find(fixture.root, (node) => node.props['aria-label'] === 'Назад')).toBeUndefined()
+    expect(fixture.queries).toHaveLength(0)
+    await searchDirectory(fixture.root, 'Анна')
+    expect(
+      find(fixture.root, (node) => node.props['aria-label'] === 'Найденные группы'),
+    ).toBeUndefined()
+    click(fixture.root, 'Анна Белова ИКБО-01-24')
+    await settle()
+    expect(fixture.queries).toHaveLength(0)
+    click(fixture.root, 'Предмет')
+    await settle()
+    click(fixture.root, 'Программирование')
+    await settle()
+    click(fixture.root, 'Лекция')
+    await settle()
+    const selected = find(fixture.root, (node) => node.props['data-selected'] === true)
+    expect(selected && text(selected)).toContain('Анна Белова')
+    const request = fixture.queries.at(-1)!
+    expect(request.get('scope')).toBe('students')
+    expect(request.get('groupId')).toBe('2')
+    expect(request.get('subjectId')).toBe('3')
+    expect(request.has('studentId')).toBe(false)
+    expect(request.has('search')).toBe(false)
+    click(fixture.root, 'Открыть журнал')
+    expect(fixture.openedJournals).toEqual([
+      {
+        semesterId: 7,
+        groupId: 2,
+        subjectId: 3,
+        lessonTypes: ['lecture'],
+        pastOnly: true,
+        page: 0,
+        pageSize: 100,
+      },
+    ])
+    const count = fixture.queries.length
+    click(fixture.root, 'Очистить поиск')
+    await settle()
+    expect(find(fixture.root, (node) => node.props['data-selected'] === true)).toBeUndefined()
+    expect(fixture.queries).toHaveLength(count)
+    expect(request.get('groupId')).toBe('2')
+  })
+
+  it('v3 disambiguates duplicate names and clears incompatible subject and types on a different authorized group', async () => {
+    const fixture = harness({ route: '', multipleGroups: true })
+    await settle()
+    await chooseContext(fixture.root)
+    fixture.searchStudents([
+      { id: '4', displayName: 'Анна Белова', groupId: '2', groupName: 'ИКБО-01-24' },
+      { id: '9', displayName: 'Анна Белова', groupId: '6', groupName: 'ИКБО-02-24' },
+      { id: '10', displayName: 'Анна Белова', groupId: '6', groupName: 'ИКБО-02-24' },
+      { id: '11', displayName: 'Чужая Анна', groupId: '99', groupName: 'Недоступная группа' },
+    ])
+    await searchDirectory(fixture.root, 'Анна')
+    expect(text(fixture.root)).not.toContain('Чужая Анна')
+    expect(text(fixture.root)).toContain('ИКБО-02-24 · ID 9')
+    const count = fixture.queries.length
+    click(fixture.root, 'Анна Белова ИКБО-02-24 · ID 9')
+    await settle()
+    expect(fixture.queries).toHaveLength(count)
+    expect(
+      find(fixture.root, (node) => node.props['aria-label'] === 'Открыть журнал')?.props.disabled,
+    ).toBe(true)
+    click(fixture.root, 'Предмет')
+    await settle()
+    click(fixture.root, 'Программирование')
+    await settle()
+    click(fixture.root, 'Лекция')
+    await settle()
+    expect(fixture.queries.at(-1)?.get('groupId')).toBe('6')
+    expect(fixture.queries.at(-1)?.get('subjectId')).toBe('7')
+    expect(find(fixture.root, (node) => node.props['data-selected'] === true)).toBeUndefined()
+    expect(text(fixture.root)).toContain('Найденный студент не входит в текущие результаты.')
+  })
+
+  it('v3 fences search replies after group changes, clearing and semester replacement', async () => {
+    const fixture = harness({ route: '', multipleGroups: true })
+    await settle()
+    fixture.holdSearch()
+    await searchDirectory(fixture.root, 'Анна')
+    click(fixture.root, 'Группа')
+    await settle()
+    click(fixture.root, 'ИКБО-01-24')
+    await settle()
+    fixture.releaseSearch()
+    await settle()
+    expect(
+      find(fixture.root, (node) => node.props['aria-label'] === 'Результаты поиска'),
+    ).toBeUndefined()
+    fixture.holdSearch()
+    await searchDirectory(fixture.root, 'Белова')
+    click(fixture.root, 'Очистить поиск')
+    fixture.releaseSearch()
+    await settle()
+    expect(
+      find(fixture.root, (node) => node.props['aria-label'] === 'Результаты поиска'),
+    ).toBeUndefined()
+    fixture.holdSearch()
+    await searchDirectory(fixture.root, 'Анна')
+    fixture.changeSemester(8)
+    await settle()
+    fixture.releaseSearch()
+    await settle()
+    expect(
+      find(fixture.root, (node) => node.props['aria-label'] === 'Результаты поиска'),
+    ).toBeUndefined()
+    expect(fixture.queries).toHaveLength(0)
+  })
+
+  it('retires a selected student and fences search started before an authoritative refresh', async () => {
+    const fixture = harness({ route: '', multipleGroups: true })
+    await settle()
+    await chooseContext(fixture.root)
+    await searchDirectory(fixture.root, 'Анна')
+    click(fixture.root, 'Анна Белова ИКБО-01-24')
+    await settle()
+    expect(find(fixture.root, (node) => node.props['data-selected'] === true)).toBeDefined()
+
+    fixture.delayCatalog()
+    fixture.invalidate()
+    await settle()
+    expect(find(fixture.root, (node) => node.props['data-selected'] === true)).toBeUndefined()
+    fixture.releaseCatalog()
+    await settle()
+
+    fixture.holdSearch()
+    await searchDirectory(fixture.root, 'Белова')
+    fixture.delayCatalog()
+    fixture.invalidate()
+    await settle()
+    fixture.releaseSearch()
+    await settle()
+    expect(
+      find(fixture.root, (node) => node.props['aria-label'] === 'Результаты поиска'),
+    ).toBeUndefined()
+    fixture.searchStudents([
+      { id: '4', displayName: 'Анна Белова', groupId: '6', groupName: 'ИКБО-02-24' },
+    ])
+    fixture.releaseCatalog()
+    await settle()
+    await searchDirectory(fixture.root, 'Белова')
+    click(fixture.root, 'Анна Белова ИКБО-02-24')
+    await settle()
+    expect(text(fixture.root)).toContain('Анна Белова · ИКБО-02-24')
+    expect(text(fixture.root)).not.toContain('Анна Белова · ИКБО-01-24')
+  })
+
+  it('v3 composes applied ranges and sorting while cancel, reset drafts and host Back leave the current result intact', async () => {
+    const fixture = harness({ route: '', filteredEmpty: true })
+    await settle()
+    await chooseContext(fixture.root)
+    await searchDirectory(fixture.root, 'Анна')
+    click(fixture.root, 'Анна Белова ИКБО-01-24')
+    await settle()
+    expect(find(fixture.root, (node) => node.props['data-selected'] === true)).toBeDefined()
+    const before = fixture.queries.length
+    click(fixture.root, 'Фильтры')
+    await settle()
+    input(fixture.root, 'teacher-stats-present-min', ' 75,5 ')
+    click(fixture.root, 'Отмена')
+    await settle()
+    expect(fixture.queries).toHaveLength(before)
+    click(fixture.root, 'Фильтры')
+    await settle()
+    expect(find(fixture.root, (node) => node.props.id === 'teacher-stats-present-min')?.value).toBe(
+      '',
+    )
+    input(fixture.root, 'teacher-stats-present-min', '75,5')
+    submit(fixture.root, 'teacher-stats-filters')
+    await settle()
+    expect(fixture.queries.at(-1)?.getAll('filter')).toEqual(['present>=75.5'])
+    expect(text(fixture.root)).toContain('По этим фильтрам никого не нашли.')
+    expect(find(fixture.root, (node) => node.props['data-selected'] === true)).toBeUndefined()
+    expect(text(fixture.root)).toContain('Найденный студент не входит в текущие результаты.')
+    click(fixture.root, 'Сортировка')
+    await settle()
+    click(fixture.root, 'Порядок сортировки')
+    await settle()
+    click(fixture.root, 'Отсутствия: сначала выше')
+    await settle()
+    expect(fixture.queries).toHaveLength(before + 1)
+    submit(fixture.root, 'teacher-stats-sort')
+    await settle()
+    expect(fixture.queries.at(-1)?.getAll('sort')).toEqual(['-absent'])
+    expect(fixture.queries.at(-1)?.getAll('filter')).toEqual(['present>=75.5'])
+    const composed = fixture.queries.length
+    click(fixture.root, 'Фильтры')
+    await settle()
+    click(fixture.root, 'Сбросить фильтры')
+    expect(fixture.queries).toHaveLength(composed)
+    expect(fixture.popup.dismissTop()).toBe(true)
+    await settle()
+    expect(fixture.popup.hasOpen.value).toBe(false)
+    expect(fixture.queries).toHaveLength(composed)
+    click(fixture.root, 'Фильтры')
+    await settle()
+    expect(find(fixture.root, (node) => node.props.id === 'teacher-stats-present-min')?.value).toBe(
+      '75.5',
+    )
+    click(fixture.root, 'Сбросить фильтры')
+    submit(fixture.root, 'teacher-stats-filters')
+    await settle()
+    expect(fixture.queries.at(-1)?.getAll('filter')).toEqual([])
+    expect(fixture.queries.at(-1)?.getAll('sort')).toEqual(['-absent'])
+    expect(text(fixture.root)).toContain('Анна Белова')
+    click(fixture.root, 'Сортировка')
+    await settle()
+    click(fixture.root, 'Сбросить сортировку')
+    submit(fixture.root, 'teacher-stats-sort')
+    await settle()
+    expect(fixture.queries.at(-1)?.getAll('sort')).toEqual(['present'])
+    expect(fixture.queries.at(-1)?.getAll('lessonType')).toEqual(['lecture'])
+  })
+
+  it('v3 rejects invalid percentage and count ranges without replacing the applied API result', async () => {
+    const fixture = harness({ multipleGroups: true })
+    await settle()
+    await chooseContext(fixture.root)
+    const before = fixture.queries.length
+    click(fixture.root, 'Фильтры')
+    await settle()
+    for (const [minimum, maximum] of [
+      ['NaN', ''],
+      ['101', ''],
+      ['90', '80'],
+      ['-1', ''],
+    ]) {
+      input(fixture.root, 'teacher-stats-present-min', minimum!)
+      input(fixture.root, 'teacher-stats-present-max', maximum!)
+      submit(fixture.root, 'teacher-stats-filters')
+      await settle()
+      expect(fixture.queries).toHaveLength(before)
+      expect(
+        find(fixture.root, (node) => node.props.id === 'teacher-stats-present-error'),
+      ).toBeDefined()
+    }
+    input(fixture.root, 'teacher-stats-present-min', '0')
+    input(fixture.root, 'teacher-stats-present-max', '100')
+    input(fixture.root, 'teacher-stats-lessonsCount-min', '1.5')
+    submit(fixture.root, 'teacher-stats-filters')
+    await settle()
+    expect(fixture.queries).toHaveLength(before)
+    input(fixture.root, 'teacher-stats-lessonsCount-min', '0')
+    input(fixture.root, 'teacher-stats-lessonsCount-max', '2')
+    submit(fixture.root, 'teacher-stats-filters')
+    await settle()
+    expect(fixture.queries.at(-1)?.getAll('filter')).toEqual([
+      'present>=0',
+      'present<=100',
+      'lessonsCount>=0',
+      'lessonsCount<=2',
+    ])
+  })
+
   it('defers lens and sort controls until delayed catalog arrives without discarding its context', async () => {
     const fixture = harness({ delayedCatalog: true })
     await settle()
@@ -366,7 +678,7 @@ describe('teacher statistics selectors and races', () => {
     // Custom host events deliberately bypass native disabled handling; the
     // domain handlers must still preserve the pending catalog generation.
     click(fixture.root, 'По студентам')
-    click(fixture.root, 'Добавить условие сортировки')
+    click(fixture.root, 'Сортировка')
     await settle()
     expect(fixture.queries).toHaveLength(0)
     fixture.releaseCatalog()
@@ -412,7 +724,8 @@ describe('teacher statistics selectors and races', () => {
     click(fixture.root, 'Лекция')
     const form = find(fixture.root, (item) => item.tag === 'form')!
     ;(form.props.onSubmit as (event: { preventDefault(): void }) => void)({ preventDefault() {} })
-    click(fixture.root, 'Сбросить фильтры и сортировку')
+    click(fixture.root, 'Фильтры')
+    click(fixture.root, 'Сортировка')
     await settle()
     expect(fixture.queries).toHaveLength(before)
     expect(
@@ -458,7 +771,11 @@ describe('teacher statistics selectors and races', () => {
     ).toBeUndefined()
     click(fixture.root, 'Сортировка')
     await settle()
+    click(fixture.root, 'Порядок сортировки')
+    await settle()
     click(fixture.root, 'Отсутствия: сначала выше')
+    await settle()
+    submit(fixture.root, 'teacher-stats-sort')
     await settle()
     expect(fixture.queries.at(-1)?.getAll('sort')).toEqual(['-absent'])
     expect(text(fixture.root)).toContain('Анна Белова')
@@ -477,7 +794,11 @@ describe('teacher statistics selectors and races', () => {
     fixture.hold()
     click(fixture.root, 'Сортировка')
     await settle()
+    click(fixture.root, 'Порядок сортировки')
+    await settle()
     click(fixture.root, 'Отсутствия: сначала выше')
+    await settle()
+    submit(fixture.root, 'teacher-stats-sort')
     await settle()
     click(fixture.root, 'По студентам')
     await settle()
@@ -493,24 +814,37 @@ describe('teacher statistics selectors and races', () => {
     click(fixture.root, 'По моим группам')
     await settle()
     expect(fixture.queries.at(-1)?.getAll('sort')).toEqual(['-absent'])
+    click(fixture.root, 'Сортировка')
+    await settle()
     click(fixture.root, 'Добавить условие сортировки')
     await settle()
+    submit(fixture.root, 'teacher-stats-sort')
+    await settle()
     expect(fixture.queries.at(-1)?.getAll('sort')).toEqual(['-absent', 'groupName'])
+    click(fixture.root, 'Сортировка')
+    await settle()
     click(fixture.root, 'Удалить условие 2')
+    await settle()
+    submit(fixture.root, 'teacher-stats-sort')
     await settle()
     expect(fixture.queries.at(-1)?.getAll('sort')).toEqual(['-absent'])
   })
-  it('explains a single authorized group and opens its students with an explicit subject choice', async () => {
+  it('opens its sole authorized group and keeps the student scope subject choice explicit', async () => {
     const fixture = harness()
     await settle()
-    expect(text(fixture.root)).toContain('У тебя одна группа — сравнивать не с чем.')
+    expect(text(fixture.root)).toContain('Моя группа')
     expect(find(fixture.root, (node) => node.props.class === 'teacher-stats__card')).toBeUndefined()
     expect(fixture.queries).toHaveLength(0)
-    click(fixture.root, 'Перейти к студентам')
+    click(fixture.root, 'Открыть группу ИКБО-01-24')
+    expect(fixture.openedGroups).toEqual([[2, 'ИКБО-01-24']])
+    click(fixture.root, 'По студентам')
     await settle()
-    expect(text(fixture.root)).not.toContain('сравнивать не с чем')
-    expect(find(fixture.root, (node) => node.props['aria-label'] === 'Предмет')).toBeDefined()
+    expect(find(fixture.root, (node) => node.props['aria-label'] === 'Предмет')).toBeUndefined()
     expect(fixture.queries).toHaveLength(0)
+    click(fixture.root, 'Группа')
+    await settle()
+    click(fixture.root, 'ИКБО-01-24')
+    await settle()
     click(fixture.root, 'Предмет')
     await settle()
     click(fixture.root, 'Программирование')
@@ -543,8 +877,15 @@ describe('teacher statistics selectors and races', () => {
     ;(group.props.onClick as () => void)()
     await settle()
     expect(fixture.queries).toHaveLength(1)
-    expect(find(fixture.root, (node) => node.props['aria-label'] === 'Предмет')).toBeDefined()
-    expect(find(fixture.root, (node) => node.props.class === 'teacher-stats__card')).toBeUndefined()
+    expect(fixture.openedGroups).toEqual([[2, 'ИКБО-01-24']])
+    // The owner opens the subject screen; the retained statistics stay in their group scope.
+    expect(find(fixture.root, (node) => node.props['aria-label'] === 'Предмет')).toBeUndefined()
+    click(fixture.root, 'По студентам')
+    await settle()
+    click(fixture.root, 'Группа')
+    await settle()
+    click(fixture.root, 'ИКБО-01-24')
+    await settle()
     click(fixture.root, 'Предмет')
     await settle()
     expect(
@@ -652,6 +993,31 @@ describe('teacher statistics selectors and races', () => {
     await searchDirectory(fixture.root, 'я')
     await searchDirectory(fixture.root, '   ')
     expect(fixture.searches).toHaveLength(2)
+  })
+  it('applies one server criterion and clears a filtered empty result without losing its context', async () => {
+    const fixture = harness({ filteredEmpty: true })
+    await settle()
+    click(fixture.root, 'По студентам')
+    await settle()
+    await chooseContext(fixture.root)
+    const context = fixture.queries.at(-1)!
+    click(fixture.root, 'Фильтры')
+    await settle()
+    const minimum = find(fixture.root, (node) => node.props.id === 'teacher-stats-present-min')!
+    ;(minimum.props['onUpdate:modelValue'] as (value: string) => void)('75')
+    const form = find(fixture.root, (node) => node.props.id === 'teacher-stats-filters')!
+    ;(form.props.onSubmit as (event: { preventDefault(): void }) => void)({ preventDefault() {} })
+    await settle()
+    expect(fixture.queries.at(-1)?.getAll('filter')).toEqual(['present>=75'])
+    expect(text(fixture.root)).toContain('По этим фильтрам никого не нашли.')
+    click(fixture.root, 'Сбросить фильтры')
+    await settle()
+    const cleared = fixture.queries.at(-1)!
+    expect(cleared.getAll('filter')).toEqual([])
+    for (const key of ['scope', 'groupId', 'subjectId', 'lessonType']) {
+      expect(cleared.getAll(key)).toEqual(context.getAll(key))
+    }
+    expect(text(fixture.root)).toContain('Анна Белова')
   })
   it('keeps search failure and retry independent of metric filters', async () => {
     const fixture = harness()
@@ -768,8 +1134,7 @@ describe('teacher statistics selectors and races', () => {
       expect(fixture.queries[0]?.get('subjectId')).toBe(scope === 'students' ? '3' : null)
       expect(fixture.queries[0]?.getAll('lessonType')).toEqual(['lecture'])
       expect(text(fixture.root)).not.toContain('Статистика недоступна')
-      if (scope === 'groups')
-        expect(text(fixture.root)).toContain('У тебя одна группа — сравнивать не с чем.')
+      if (scope === 'groups') expect(text(fixture.root)).toContain('Моя группа')
       else
         expect(
           find(fixture.root, (node) => node.props.class === 'teacher-stats__card'),

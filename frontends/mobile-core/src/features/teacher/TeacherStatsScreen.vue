@@ -2,7 +2,7 @@
 import { useProjectionRefresh } from '../../shared/projection-refresh';
 import ExportButton from '../../shared/components/ExportButton.vue';
 import { toTeacherStatsReportSelector } from './teacher-client';
-import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue';
+import { computed, nextTick, onBeforeUnmount, onDeactivated, ref, watch } from 'vue';
 import { StaleSessionGenerationError } from '../../shared/session-owner';
 import type { ReportDownloadPort } from '../../shared/report-download-client';
 import {
@@ -20,7 +20,6 @@ import {
 } from './teacher-client';
 import {
   readRecoverableTeacherStatsContext,
-  resetTeacherStatsCriteria,
   writeTeacherStatsContext,
   parseTeacherStatsRanges,
   teacherStatsNumericColumns,
@@ -32,6 +31,8 @@ import {
 import HeadmanStatsSelect from '../headman-stats/HeadmanStatsSelect.vue';
 import MobileIcon from '../../shared/components/MobileIcon.vue';
 import StudentWarningBlock from '../../shared/components/StudentWarningBlock.vue';
+import emptyFilterArtwork from './teacher-stats-empty-filter.svg?raw';
+import { teacherLessonTypeLabel } from './teacher-ui-format';
 import './teacher-stats-screen.pcss';
 
 const props = withDefaults(
@@ -39,16 +40,20 @@ const props = withDefaults(
     api: TeacherApi | null;
     semesterId: number | null;
     initialGroupId?: number | null;
+    closeToolSignal?: number;
+    realtimeRevision?: number;
     reportDownload?: ReportDownloadPort | null;
   }>(),
   {
     initialGroupId: null,
+    closeToolSignal: 0,
+    realtimeRevision: 0,
     reportDownload: null,
   },
 );
 
 const emit = defineEmits<{
-  back: [];
+  'tool-open': [open: boolean];
   error: [cause: unknown];
   'open-journal': [query: TeacherJournalQuery];
   'open-group': [groupId: number, groupName: string];
@@ -58,7 +63,6 @@ interface TeacherStatsScopeMemory {
   lessonTypes: string[];
   sorts: TeacherStatsSort[];
   filters: TeacherStatsFilter[];
-  ranges: Record<string, TeacherStatsRangeDraft>;
 }
 
 function createDefaultScopeMemory(): Record<TeacherStatsScope, TeacherStatsScopeMemory> {
@@ -67,18 +71,16 @@ function createDefaultScopeMemory(): Record<TeacherStatsScope, TeacherStatsScope
       lessonTypes: [],
       sorts: [{ column: 'present', descending: false }],
       filters: [],
-      ranges: {},
     },
     groups: {
       lessonTypes: [],
       sorts: [{ column: 'present', descending: false }],
       filters: [],
-      ranges: {},
     },
   };
 }
 
-const scope = ref<TeacherStatsScope>('groups');
+const scope = ref<TeacherStatsScope>('students');
 const authorizedGroups = ref<readonly { id: number; name: string }[]>([]);
 const catalogSubjectOptions = ref<readonly TeacherStatsSubjectOption[]>([]);
 const authorizedSubjectOptions = ref<readonly TeacherStatsSubjectOption[]>([]);
@@ -94,6 +96,13 @@ const selectedTypes = computed({
 const directoryInput = ref<HTMLInputElement | null>(null);
 const directoryQuery = ref('');
 const directoryResult = ref<TeacherSearchResponse | null>(null);
+const selectedStudent = ref<TeacherSearchResponse['students'][number] | null>(null);
+const directoryStudents = computed(() =>
+  (directoryResult.value?.students ?? []).filter((student) =>
+    groups.value.some((group) => String(group.id) === student.groupId),
+  ),
+);
+const directoryProjectionReady = ref(false);
 const directoryLoading = ref(false);
 const directoryError = ref<string | null>(null);
 const directoryValidation = computed(() =>
@@ -104,6 +113,7 @@ const directoryValidation = computed(() =>
       : null,
 );
 let directoryRevision = 0;
+let directoryProjectionEpoch = 0;
 let directoryTimer: ReturnType<typeof setTimeout> | null = null;
 const stats = ref<TeacherStatsResponse | null>(null);
 const statsQuery = ref<TeacherStatsQuery | null>(null);
@@ -113,6 +123,7 @@ const loading = computed(() => contextLoading.value || statsLoading.value);
 let contextRevision = 0;
 const contextReady = ref(false);
 const canChooseContext = computed(() => contextReady.value && authorizedGroups.value.length > 0);
+const canSearchDirectory = computed(() => canChooseContext.value && directoryProjectionReady.value);
 const error = ref<string | null>(null);
 const projectionError = ref<string | null>(null);
 const revision = ref(0);
@@ -122,9 +133,20 @@ const sorts = computed({
     scopeMemory.value[scope.value].sorts = value;
   },
 });
-const criteriaError = ref<string | null>(null);
 const fieldErrors = ref<Record<string, string>>({});
-const filtersOpen = ref(false);
+const activeTool = ref<'filters' | 'sort' | null>(null);
+const filtersOpen = computed(() => activeTool.value === 'filters');
+const filterDrafts = ref<Record<string, TeacherStatsRangeDraft>>({});
+const sortDrafts = ref<TeacherStatsSort[]>([]);
+const toolPanel = ref<HTMLElement | null>(null);
+const filterTrigger = ref<HTMLButtonElement | null>(null);
+const sortTrigger = ref<HTMLButtonElement | null>(null);
+watch(activeTool, (tool) => emit('tool-open', tool !== null), { flush: 'sync' });
+watch(
+  () => props.closeToolSignal,
+  () => closeTool(true),
+);
+onDeactivated(() => closeTool());
 const metrics = [
   { column: 'present', label: 'Присутствия', symbols: ['+'] },
   { column: 'presentOrExcused', label: 'Присутствия и уважительные причины', symbols: ['+', 'у'] },
@@ -138,12 +160,16 @@ const visibleRows = computed(() =>
         key: row.groupId,
         name: row.groupName,
         groupId: row.groupId,
+        selected: false,
       }))
     : studentRows.value.map((row) => ({
         ...row,
         key: row.studentId,
         name: row.displayName,
         groupId: null,
+        selected:
+          selectedStudent.value?.id === String(row.studentId) &&
+          selectedStudent.value?.groupId === String(selectedGroupId.value),
       })),
 );
 const groupOptions = computed(() =>
@@ -155,8 +181,12 @@ const subjectOptions = computed(() =>
 const visibleSorts = computed(() =>
   sorts.value.length ? sorts.value : [{ column: 'present', descending: false }],
 );
-const activeCriteria = computed(
-  () => selectedTypes.value.length > 0 || scopeMemory.value[scope.value].filters.length > 0,
+const activeCriteria = computed(() => scopeMemory.value[scope.value].filters.length > 0);
+const activeSort = computed(
+  () =>
+    visibleSorts.value.length > 1 ||
+    visibleSorts.value[0]?.column !== 'present' ||
+    visibleSorts.value[0]?.descending,
 );
 const routeNotice = ref<string | null>(null);
 const numericColumns = computed(() => teacherStatsNumericColumns(scope.value));
@@ -167,15 +197,6 @@ const displayedStats = computed(() =>
   JSON.stringify(statsQuery.value) === JSON.stringify(currentStatsQuery())
     ? stats.value
     : null,
-);
-const canReset = computed(
-  () =>
-    selectedTypes.value.length > 0 ||
-    sorts.value.length > 0 ||
-    scopeMemory.value[scope.value].filters.length > 0 ||
-    Object.values(scopeMemory.value[scope.value].ranges).some(
-      (range) => range.minimum !== '' || range.maximum !== '',
-    ),
 );
 let disposed = false;
 
@@ -205,17 +226,16 @@ watch(
     clearDirectorySearch();
     selectedGroupId.value = props.initialGroupId;
     selectedSubjectId.value = null;
-    scope.value = 'groups';
+    scope.value = 'students';
     scopeMemory.value = createDefaultScopeMemory();
     stats.value = null;
     statsQuery.value = null;
     authorizedGroups.value = [];
     catalogSubjectOptions.value = [];
     authorizedSubjectOptions.value = [];
-    criteriaError.value = null;
     routeNotice.value = null;
     fieldErrors.value = {};
-    filtersOpen.value = false;
+    closeTool();
     void loadContext();
   },
   { immediate: true, flush: 'sync' },
@@ -224,6 +244,7 @@ watch(
 onBeforeUnmount(() => {
   disposed = true;
   cancelDirectoryRequest();
+  closeTool();
   contextRevision += 1;
   revision.value += 1;
 });
@@ -239,12 +260,14 @@ function cancelDirectoryRequest(): void {
 function clearDirectorySearch(restoreFocus = false): void {
   cancelDirectoryRequest();
   directoryQuery.value = '';
-  if (restoreFocus) void nextTick(() => directoryInput.value?.focus());
+  selectedStudent.value = null;
+  if (restoreFocus) void nextTick(() => directoryInput.value?.focus?.());
 }
 watch(
   directoryQuery,
   () => {
     cancelDirectoryRequest();
+    selectedStudent.value = null;
     if (!directoryQuery.value.trim() || directoryValidation.value) return;
     directoryTimer = setTimeout(() => {
       directoryTimer = null;
@@ -258,14 +281,16 @@ async function loadDirectorySearch(): Promise<void> {
   const api = props.api;
   const semesterId = props.semesterId;
   const query = directoryQuery.value;
-  if (!api || !semesterId || !query.trim() || directoryValidation.value) return;
+  if (!canSearchDirectory.value || !api || !semesterId || !query.trim() || directoryValidation.value)
+    return;
   const current = directoryRevision;
   const isCurrentSearch = () =>
     !disposed &&
     current === directoryRevision &&
     api === props.api &&
     semesterId === props.semesterId &&
-    query === directoryQuery.value;
+    query === directoryQuery.value &&
+    canSearchDirectory.value;
   directoryLoading.value = true;
   try {
     const response = await api.search(semesterId, query);
@@ -281,17 +306,63 @@ async function loadDirectorySearch(): Promise<void> {
     if (isCurrentSearch()) directoryLoading.value = false;
   }
 }
-function chooseDirectoryGroup(id: string): void {
-  if (!canChooseContext.value) return;
-  if (!groups.value.some((group) => String(group.id) === id)) {
-    directoryError.value = 'Назначения изменились. Обнови экран.';
-    directoryResult.value = null;
+function chooseDirectoryStudent(student: TeacherSearchResponse['students'][number]): void {
+  if (
+    !canSearchDirectory.value ||
+    !directoryStudents.value.some(
+      (value) => value.id === student.id && value.groupId === student.groupId,
+    )
+  )
     return;
+  const group = groups.value.find((value) => String(value.id) === student.groupId);
+  if (!group) return;
+  const sameGroup = selectedGroupId.value === group.id;
+  scope.value = 'students';
+  closeTool();
+  if (
+    !sameGroup ||
+    !subjectsForGroup(group.id).some((subject) => subject.id === selectedSubjectId.value)
+  ) {
+    selectedGroupId.value = group.id;
+    selectedSubjectId.value = null;
+    clearChildCriteria();
   }
-  openGroup(Number(id));
+  selectedTypes.value = selectedTypes.value.filter((type) => types.value.includes(type));
+  cancelDirectoryRequest();
+  selectedStudent.value = student;
+  persistContext();
+  void loadStats();
 }
 
+function studentResultContext(student: TeacherSearchResponse['students'][number]): string {
+  const duplicate = directoryStudents.value.some(
+    (value) =>
+      value.id !== student.id &&
+      value.groupId === student.groupId &&
+      value.displayName === student.displayName,
+  );
+  return duplicate ? `${student.groupName} · ID ${student.id}` : student.groupName;
+}
+
+function invalidateDirectoryProjection(): void {
+  directoryProjectionReady.value = false;
+  cancelDirectoryRequest();
+  selectedStudent.value = null;
+}
+
+watch(
+  () => props.realtimeRevision,
+  () => {
+    directoryProjectionEpoch += 1;
+    invalidateDirectoryProjection();
+  },
+  { flush: 'sync' },
+);
+
 async function loadContext(): Promise<void> {
+  invalidateDirectoryProjection();
+  const directoryEpoch = directoryProjectionEpoch;
+  closeTool();
   projectionError.value = null;
   contextReady.value = false;
   const api = props.api;
@@ -321,6 +392,7 @@ async function loadContext(): Promise<void> {
     restoreContext(semesterId);
     persistContext();
     contextReady.value = true;
+    directoryProjectionReady.value = directoryEpoch === directoryProjectionEpoch;
     contextLoading.value = false;
     if (catalog.groups.length === 0) {
       stats.value = null;
@@ -341,7 +413,12 @@ async function loadContext(): Promise<void> {
 }
 
 async function refreshProjection(): Promise<void> {
-  if (!contextReady.value) { await loadContext(); return; }
+  invalidateDirectoryProjection();
+  const directoryEpoch = directoryProjectionEpoch;
+  if (!contextReady.value) {
+    await loadContext();
+    return;
+  }
   const api = props.api,
     semesterId = props.semesterId,
     current = ++contextRevision;
@@ -355,12 +432,15 @@ async function refreshProjection(): Promise<void> {
       catalog.subjectOptions,
     );
     authorizedSubjectOptions.value = mergeSubjectOptions(catalogSubjectOptions.value, []);
+    directoryProjectionReady.value = directoryEpoch === directoryProjectionEpoch;
     if (
       selectedGroupId.value !== null &&
       !catalog.groups.some((group) => group.id === selectedGroupId.value)
     ) {
       selectedGroupId.value = null;
       selectedSubjectId.value = null;
+      selectedStudent.value = null;
+      closeTool();
       stats.value = null;
       statsQuery.value = null;
       return;
@@ -382,7 +462,11 @@ async function loadStats(): Promise<void> {
 async function loadStatsForRevision(current: number, retainProjection = false): Promise<void> {
   const api = props.api;
   const semesterId = props.semesterId;
-  if (!retainProjection) { stats.value = null; statsQuery.value = null; projectionError.value = null; }
+  if (!retainProjection) {
+    stats.value = null;
+    statsQuery.value = null;
+    projectionError.value = null;
+  }
   statsLoading.value = !retainProjection;
   error.value = null;
   try {
@@ -416,7 +500,8 @@ async function loadStatsForRevision(current: number, retainProjection = false): 
     if (!isCurrent(current) || cause instanceof StaleSessionGenerationError) return;
     if (retainProjection) failProjection(cause, 'Не удалось получить статистику.');
     else {
-      error.value = cause instanceof TeacherApiError ? cause.message : 'Не удалось получить статистику.';
+      error.value =
+        cause instanceof TeacherApiError ? cause.message : 'Не удалось получить статистику.';
       emit('error', cause);
     }
   } finally {
@@ -428,6 +513,8 @@ function failProjection(cause: unknown, fallback: string): void {
   const message = cause instanceof Error ? cause.message : fallback;
   if (cause instanceof TeacherApiError && [401, 403, 404].includes(cause.response.status)) {
     // Confirmed authority/target loss still retires the inadmissible projection.
+    invalidateDirectoryProjection();
+    closeTool();
     stats.value = null;
     statsQuery.value = null;
     error.value = message;
@@ -458,7 +545,7 @@ function restoreContext(semesterId: number): void {
   const saved = restored.context;
   routeNotice.value = restored.notice;
   if (!saved || saved.semesterId !== semesterId) {
-    scope.value = 'groups';
+    scope.value = 'students';
     selectedGroupId.value = groups.value.some((group) => group.id === props.initialGroupId)
       ? props.initialGroupId
       : null;
@@ -483,10 +570,6 @@ function restoreContext(semesterId: number): void {
       : [];
   sorts.value = saved.sorts.map((sort) => ({ ...sort }));
   scopeMemory.value[scope.value].filters = saved.filters.map((filter) => ({ ...filter }));
-  for (const filter of saved.filters) {
-    rangeDraft(filter.column).minimum = String(filter.minPercent ?? filter.minValue ?? '');
-    rangeDraft(filter.column).maximum = String(filter.maxPercent ?? filter.maxValue ?? '');
-  }
 }
 
 function persistContext(): void {
@@ -508,10 +591,11 @@ function currentRouteContext(): TeacherStatsRouteContext {
 
 function switchScope(next: TeacherStatsScope): void {
   if (!canChooseContext.value || scope.value === next) return;
+  cancelDirectoryRequest();
+  selectedStudent.value = null;
   scope.value = next;
-  criteriaError.value = null;
   fieldErrors.value = {};
-  filtersOpen.value = false;
+  closeTool();
   persistContext();
   void loadStats();
 }
@@ -521,6 +605,9 @@ function changeGroup(rawValue: string): void {
   const nextGroupId = positiveInteger(rawValue);
   const validGroupId =
     nextGroupId && groups.value.some((value) => value.id === nextGroupId) ? nextGroupId : null;
+  cancelDirectoryRequest();
+  selectedStudent.value = null;
+  closeTool();
   selectedGroupId.value = validGroupId;
   selectedSubjectId.value = null;
   clearChildCriteria();
@@ -530,6 +617,8 @@ function changeGroup(rawValue: string): void {
 
 function changeSubject(rawValue: string): void {
   if (!canChooseContext.value) return;
+  cancelDirectoryRequest();
+  closeTool();
   const nextSubjectId = positiveInteger(rawValue);
   selectedSubjectId.value =
     nextSubjectId && subjects.value.some((value) => value.id === nextSubjectId)
@@ -546,6 +635,8 @@ function clearChildCriteria(): void {
 
 function toggleType(type: string): void {
   if (!canChooseContext.value || !types.value.includes(type)) return;
+  cancelDirectoryRequest();
+  closeTool();
   const next = selectedTypes.value.includes(type)
     ? selectedTypes.value.filter((value) => value !== type)
     : [...selectedTypes.value, type];
@@ -555,7 +646,7 @@ function toggleType(type: string): void {
 }
 
 function sortOptions(index: number): Array<{ value: string; label: string }> {
-  const used = visibleSorts.value
+  const used = sortDrafts.value
     .filter((_, position) => position !== index)
     .map((sort) => sort.column);
   return teacherStatsSortColumns(scope.value)
@@ -575,30 +666,24 @@ function changeSort(index: number, value: string): void {
   if (!canChooseContext.value) return;
   const column = value.replace(/^-/, '');
   if (!sortOptions(index).some((option) => option.value === value)) return;
-  const next = visibleSorts.value.map((sort) => ({ ...sort }));
+  const next = sortDrafts.value.map((sort) => ({ ...sort }));
   next[index] = { column, descending: value.startsWith('-') };
-  sorts.value = next;
-  persistContext();
-  void loadStats();
+  sortDrafts.value = next;
 }
 function addSort(): void {
   if (!canChooseContext.value) return;
   const column = teacherStatsSortColumns(scope.value).find(
-    (value) => !visibleSorts.value.some((sort) => sort.column === value),
+    (value) => !sortDrafts.value.some((sort) => sort.column === value),
   );
   if (!column) return;
-  sorts.value = [...visibleSorts.value, { column, descending: false }];
-  persistContext();
-  void loadStats();
+  sortDrafts.value = [...sortDrafts.value, { column, descending: false }];
 }
 function removeSort(index: number): void {
   if (!canChooseContext.value) return;
-  sorts.value = visibleSorts.value.filter((_, position) => position !== index);
-  persistContext();
-  void loadStats();
+  sortDrafts.value = sortDrafts.value.filter((_, position) => position !== index);
 }
 function applyFilters(): void {
-  if (!canChooseContext.value) return;
+  if (!canChooseContext.value || activeTool.value !== 'filters') return;
   fieldErrors.value = {};
   for (const column of numericColumns.value) {
     try {
@@ -608,41 +693,82 @@ function applyFilters(): void {
     }
   }
   if (Object.keys(fieldErrors.value).length) return;
-  scopeMemory.value[scope.value].filters = parseTeacherStatsRanges(
-    scope.value,
-    scopeMemory.value[scope.value].ranges,
-  );
-  criteriaError.value = null;
-  filtersOpen.value = false;
+  scopeMemory.value[scope.value].filters = parseTeacherStatsRanges(scope.value, filterDrafts.value);
+  closeTool(true);
   persistContext();
   void loadStats();
 }
 
 function rangeDraft(column: string): TeacherStatsRangeDraft {
-  const ranges = scopeMemory.value[scope.value].ranges;
+  const ranges = filterDrafts.value;
   return (ranges[column] ??= { minimum: '', maximum: '' });
 }
 
-function resetCriteria(): void {
+function openTool(tool: 'filters' | 'sort'): void {
   if (!canChooseContext.value) return;
-  const cleared = resetTeacherStatsCriteria(currentRouteContext());
-  selectedTypes.value = [...cleared.lessonTypes];
-  sorts.value = [...cleared.sorts];
-  scopeMemory.value[scope.value].filters = [...cleared.filters];
-  scopeMemory.value[scope.value].ranges = {};
-  criteriaError.value = null;
+  if (activeTool.value === tool) {
+    closeTool(true);
+    return;
+  }
+  filterDrafts.value = Object.fromEntries(
+    scopeMemory.value[scope.value].filters.map((filter) => [
+      filter.column,
+      {
+        minimum: String(filter.minPercent ?? filter.minValue ?? ''),
+        maximum: String(filter.maxPercent ?? filter.maxValue ?? ''),
+      },
+    ]),
+  );
+  sortDrafts.value = visibleSorts.value.map((sort) => ({ ...sort }));
   fieldErrors.value = {};
-  routeNotice.value = null;
+  activeTool.value = tool;
+  void nextTick(() => toolPanel.value?.querySelector?.<HTMLElement>('input, button')?.focus?.());
+}
+
+function closeTool(restoreFocus = false): void {
+  const trigger = activeTool.value === 'filters' ? filterTrigger.value : sortTrigger.value;
+  activeTool.value = null;
+  fieldErrors.value = {};
+  if (restoreFocus) void nextTick(() => trigger?.focus?.());
+}
+
+function toolKeydown(event: KeyboardEvent): void {
+  if (event.key !== 'Escape') return;
+  event.preventDefault();
+  event.stopPropagation();
+  closeTool(true);
+}
+
+function resetFilterDraft(): void {
+  if (!canChooseContext.value) return;
+  filterDrafts.value = {};
+  fieldErrors.value = {};
+}
+
+function resetSortDraft(): void {
+  if (!canChooseContext.value) return;
+  sortDrafts.value = [{ column: 'present', descending: false }];
+}
+
+function applySort(): void {
+  if (!canChooseContext.value || activeTool.value !== 'sort') return;
+  sorts.value = sortDrafts.value.map((sort) => ({ ...sort }));
+  closeTool(true);
+  persistContext();
+  void loadStats();
+}
+
+function clearMetricFilters(): void {
+  if (!canChooseContext.value) return;
+  scopeMemory.value[scope.value].filters = [];
+  closeTool();
+  fieldErrors.value = {};
   persistContext();
   void loadStats();
 }
 
 function lessonTypeLabel(type: string): string {
-  return (
-    ({ LECTURE: 'Лекция', PRACTICE: 'Практика', LAB: 'Лабораторная' } as Record<string, string>)[
-      type.toUpperCase()
-    ] ?? 'Занятие'
-  );
+  return teacherLessonTypeLabel(type);
 }
 
 function columnLabel(column: string): string {
@@ -662,19 +788,25 @@ function columnLabel(column: string): string {
 }
 
 function openGroup(groupId: number): void {
-  if (!canChooseContext.value || !groups.value.some((value) => value.id === groupId)) return;
-  scope.value = 'students';
-  // A group summary spans distinct authorized subjects; never infer one by its name.
-  changeGroup(String(groupId));
+  const group = groups.value.find((value) => value.id === groupId);
+  if (!canChooseContext.value || !group) return;
+  emit('open-group', group.id, group.name);
 }
 
 function openJournal(): void {
-  if (!selectedGroupId.value || !selectedSubjectId.value || !props.semesterId) return;
+  if (
+    scope.value !== 'students' ||
+    !currentStatsQuery() ||
+    !selectedGroupId.value ||
+    !selectedSubjectId.value ||
+    !props.semesterId
+  )
+    return;
   emit('open-journal', {
     semesterId: props.semesterId,
     groupId: selectedGroupId.value,
     subjectId: selectedSubjectId.value,
-    lessonTypes: [],
+    lessonTypes: [...selectedTypes.value],
     pastOnly: true,
     page: 0,
     pageSize: 100,
@@ -682,8 +814,20 @@ function openJournal(): void {
 }
 
 function formatMetric(metric: TeacherStatsMetric | undefined): string {
-  if (!metric || metric.denominator === 0) return 'нет данных';
-  return `${new Intl.NumberFormat('ru', { maximumFractionDigits: 1 }).format(metric.percent)} % · ${metric.numerator}/${metric.denominator}`;
+  if (!metric || metric.denominator === 0) return '—';
+  return `${new Intl.NumberFormat('ru', { maximumFractionDigits: 1 }).format(metric.percent)} %`;
+}
+
+function metricLabel(label: string, metric: TeacherStatsMetric | undefined): string {
+  return !metric || metric.denominator === 0
+    ? `${label}: нет данных`
+    : `${label}: ${formatMetric(metric)}, ${metric.numerator} из ${metric.denominator}`;
+}
+
+function compactName(name: string): string {
+  if (name.length <= 25) return name;
+  const [surname, ...parts] = name.trim().split(/\s+/);
+  return [surname, ...parts.map((part) => `${part[0]}.`)].join(' ');
 }
 
 function mergeSubjectOptions(
@@ -743,7 +887,7 @@ function isCurrentContext(requestRevision: number): boolean {
 function isCurrent(requestRevision: number): boolean {
   return !disposed && requestRevision === revision.value;
 }
-useProjectionRefresh(refreshProjection);
+useProjectionRefresh(refreshProjection, { revision: () => props.realtimeRevision });
 </script>
 
 <template>
@@ -752,9 +896,112 @@ useProjectionRefresh(refreshProjection);
     aria-labelledby="teacher-stats-title"
     :aria-busy="loading"
   >
-    <h1 id="teacher-stats-title">
-      Статистика
-    </h1>
+    <header class="teacher-stats__header">
+      <h1 id="teacher-stats-title">
+        Статистика
+      </h1>
+      <button
+        type="button"
+        class="teacher-stats__icon-button teacher-stats__journal-button"
+        aria-label="Открыть журнал"
+        data-teacher-action="journal-open"
+        :disabled="scope !== 'students' || !currentStatsQuery()"
+        @click="openJournal"
+      >
+        <MobileIcon name="table" />
+      </button>
+    </header>
+    <form
+      class="teacher-stats__directory"
+      role="search"
+      aria-label="Поиск по имени"
+      @submit.prevent="loadDirectorySearch"
+    >
+      <label
+        class="teacher-stats__field"
+        for="teacher-stats-directory"
+      ><span>Поиск по имени</span><input
+        id="teacher-stats-directory"
+        ref="directoryInput"
+        v-model="directoryQuery"
+        type="search"
+        autocomplete="off"
+        :disabled="!canSearchDirectory"
+        :aria-invalid="Boolean(directoryValidation)"
+        :aria-describedby="directoryValidation ? 'teacher-stats-directory-error' : undefined"
+        placeholder="Фамилия, имя или отчество"
+      ></label>
+      <button
+        v-if="directoryQuery"
+        class="teacher-stats__icon-button"
+        type="button"
+        aria-label="Очистить поиск"
+        @click="clearDirectorySearch(true)"
+      >
+        <MobileIcon name="close" />
+      </button>
+      <p
+        v-if="directoryValidation"
+        id="teacher-stats-directory-error"
+        class="teacher-stats__field-error"
+        role="status"
+      >
+        {{ directoryValidation }}
+      </p>
+    </form>
+    <section
+      v-if="directoryLoading || directoryError || directoryResult"
+      class="teacher-stats__directory-results"
+      aria-label="Результаты поиска"
+      :aria-busy="directoryLoading"
+    >
+      <p
+        v-if="directoryLoading"
+        role="status"
+      >
+        Ищем студентов…
+      </p>
+      <StudentWarningBlock
+        v-else-if="directoryError"
+        title="Поиск недоступен"
+        :message="directoryError"
+        severity="error"
+        action-label="Повторить поиск"
+        @action="loadDirectorySearch"
+      />
+      <template v-else-if="directoryResult">
+        <section aria-label="Найденные студенты">
+          <h2>Студенты</h2><button
+            v-for="student in directoryStudents"
+            :key="`${student.groupId}:${student.id}`"
+            type="button"
+            :disabled="!canChooseContext"
+            @click="chooseDirectoryStudent(student)"
+          >
+            <span>{{ student.displayName }}</span><span>{{ studentResultContext(student) }}</span>
+          </button><p
+            v-if="!directoryStudents.length"
+            role="status"
+          >
+            Студентов не найдено.
+          </p>
+        </section>
+        <p
+          v-if="directoryResult.truncated"
+          role="status"
+        >
+          Показаны первые совпадения. Уточни запрос.
+        </p>
+      </template>
+    </section>
+    <p
+      v-if="selectedStudent"
+      class="teacher-stats__search-context"
+      role="status"
+    >
+      {{ selectedStudent.displayName }} · {{ selectedStudent.groupName }}. Итоги по всей группе;
+      выбранный студент выделен в результатах.
+    </p>
     <StudentWarningBlock
       v-if="routeNotice"
       title="Отбор восстановлен"
@@ -825,291 +1072,76 @@ useProjectionRefresh(refreshProjection);
         {{ lessonTypeLabel(type) }}
       </button>
     </fieldset>
-    <StudentWarningBlock
-      v-if="error || projectionError"
-      title="Статистика недоступна"
-      :message="error ?? projectionError ?? ''"
-      severity="error"
-      action-label="Повторить"
-      @action="projectionError ? refreshProjection() : loadContext()"
-    />
-    <p
-      v-else-if="loading"
-      class="teacher-stats__state"
-      role="status"
-    >
-      Загружаем статистику…
-    </p>
-    <p
-      v-else-if="!api || !semesterId"
-      class="teacher-stats__state"
-      role="status"
-    >
-      Сессия преподавателя недоступна.
-    </p>
-    <p
-      v-else-if="contextReady && groups.length === 0"
-      class="teacher-stats__state"
-      role="status"
-    >
-      Нет доступных групп.
-    </p>
     <section
-      v-else-if="singleAuthorizedGroup"
-      class="teacher-stats__state"
+      class="teacher-stats__tools"
+      aria-label="Отбор и выгрузка"
     >
-      <p role="status">
-        У тебя одна группа — сравнивать не с чем.
-      </p>
-      <div class="teacher-stats__journal">
-        <button
-          type="button"
-          @click="openGroup(singleAuthorizedGroup.id)"
-        >
-          Перейти к студентам
-        </button>
-      </div>
-    </section>
-    <p
-      v-else-if="!currentStatsQuery()"
-      class="teacher-stats__state"
-      role="status"
-    >
-      {{ scope === 'groups'
-        ? 'Выбери хотя бы один тип занятия. Учитываем только твои предметы в доступных группах.'
-        : 'Выбери группу, предмет и хотя бы один тип занятия.' }}
-    </p>
-    <template v-else-if="displayedStats">
-      <h2 class="teacher-stats__results-title">
-        {{ scope === 'groups' ? 'Мои группы' : 'Студенты'
-        }}<span v-if="scope === 'students'"> · Пар учтено: {{ displayedStats.lessonsCount }}</span>
-      </h2>
-      <p
-        v-if="visibleRowCount === 0"
-        class="teacher-stats__state"
-        role="status"
-      >
-        {{
-          activeCriteria ? 'По заданным фильтрам данных нет.' : 'Пока нет данных для статистики.'
-        }}
-      </p>
-      <div
-        v-else
-        class="teacher-stats__cards"
-      >
-        <article
-          v-for="row in visibleRows"
-          :key="row.key"
-          class="teacher-stats__card"
-        >
-          <h3>
-            <button
-              v-if="row.groupId"
-              type="button"
-              @click="openGroup(row.groupId)"
-            >
-              <span class="teacher-stats__row-name">{{ row.name }}</span><span
-                v-if="'lessonsCount' in row"
-                class="teacher-stats__lesson-count"
-              >{{ row.lessonsCount }} пар</span><MobileIcon name="chevron-down" />
-            </button><template v-else>
-              {{ row.name }}
-            </template>
-          </h3>
-          <dl class="teacher-stats__metrics">
-            <div
-              v-for="metric in metrics"
-              :key="metric.column"
-            >
-              <dt :aria-label="metric.label">
-                <span
-                  v-for="symbol in metric.symbols"
-                  :key="symbol"
-                  aria-hidden="true"
-                  :class="[
-                    'teacher-stats__symbol',
-                    {
-                      'teacher-stats__symbol--present': symbol === '+',
-                      'teacher-stats__symbol--excused': symbol === 'у',
-                      'teacher-stats__symbol--absent': symbol === 'н',
-                    },
-                  ]"
-                />
-              </dt><dd>{{ formatMetric(row[metric.column]) }}</dd>
-            </div>
-          </dl>
-        </article>
-      </div>
-      <div
-        v-if="scope === 'students' && selectedSubjectId && types.length"
-        class="teacher-stats__journal"
-      >
-        <button
-          type="button"
-          @click="openJournal"
-        >
-          Открыть журнал
-        </button>
-      </div>
-    </template>
-    <details class="teacher-stats__tools">
-      <summary>Поиск, фильтры и экспорт</summary>
-      <div class="teacher-stats__tools-content">
-        <form
-          class="teacher-stats__directory"
-          role="search"
-          aria-label="Поиск групп и студентов"
-          @submit.prevent="loadDirectorySearch"
-        >
-          <label
-            class="teacher-stats__field"
-            for="teacher-stats-directory"
-          ><span>Поиск групп и студентов</span><input
-            id="teacher-stats-directory"
-            ref="directoryInput"
-            v-model="directoryQuery"
-            type="search"
-            autocomplete="off"
-            :disabled="!api || !semesterId"
-            :aria-invalid="Boolean(directoryValidation)"
-            :aria-describedby="directoryValidation ? 'teacher-stats-directory-error' : undefined"
-            placeholder="Название группы или полное имя"
-          ></label>
+      <div class="teacher-stats__toolbar">
+        <div class="teacher-stats__tool">
           <button
-            v-if="directoryQuery"
-            class="teacher-stats__icon-button"
-            type="button"
-            aria-label="Очистить поиск"
-            @click="clearDirectorySearch(true)"
-          >
-            <MobileIcon name="close" />
-          </button>
-          <p
-            v-if="directoryValidation"
-            id="teacher-stats-directory-error"
-            class="teacher-stats__field-error"
-            role="status"
-          >
-            {{ directoryValidation }}
-          </p>
-        </form>
-        <section
-          v-if="directoryLoading || directoryError || directoryResult"
-          class="teacher-stats__directory-results"
-          aria-label="Результаты поиска"
-          :aria-busy="directoryLoading"
-        >
-          <p
-            v-if="directoryLoading"
-            role="status"
-          >
-            Ищем группы и студентов…
-          </p>
-          <StudentWarningBlock
-            v-else-if="directoryError"
-            title="Поиск недоступен"
-            :message="directoryError"
-            severity="error"
-            action-label="Повторить поиск"
-            @action="loadDirectorySearch"
-          />
-          <template v-else-if="directoryResult">
-            <section aria-label="Найденные группы">
-              <h2>Группы</h2><button
-                v-for="group in directoryResult.groups"
-                :key="group.id"
-                type="button"
-                :disabled="!canChooseContext"
-                @click="chooseDirectoryGroup(group.id)"
-              >
-                {{ group.name }}
-              </button><p
-                v-if="!directoryResult.groups.length"
-                role="status"
-              >
-                Групп не найдено.
-              </p>
-            </section>
-            <section aria-label="Найденные студенты">
-              <h2>Студенты</h2><button
-                v-for="student in directoryResult.students"
-                :key="`${student.groupId}:${student.id}`"
-                type="button"
-                :disabled="!canChooseContext"
-                @click="chooseDirectoryGroup(student.groupId)"
-              >
-                <span>{{ student.displayName }}</span><span>{{ student.groupName }}</span>
-              </button><p
-                v-if="!directoryResult.students.length"
-                role="status"
-              >
-                Студентов не найдено.
-              </p>
-            </section>
-            <p
-              v-if="directoryResult.truncated"
-              role="status"
-            >
-              Показаны первые совпадения. Уточни запрос.
-            </p>
-          </template>
-        </section>
-        <div
-          class="teacher-stats__toolbar"
-          data-teacher-action="stats-sort"
-        >
-          <HeadmanStatsSelect
-            label="Сортировка"
-            :disabled="!canChooseContext"
-            :model-value="`${visibleSorts[0]?.descending ? '-' : ''}${visibleSorts[0]?.column}`"
-            :options="sortOptions(0)"
-            @update:model-value="changeSort(0, $event)"
-          />
-          <button
+            ref="filterTrigger"
             type="button"
             class="teacher-stats__icon-button"
             aria-label="Фильтры"
             :disabled="!canChooseContext"
             data-teacher-action="stats-filters"
             :aria-expanded="filtersOpen"
+            :aria-pressed="activeCriteria"
             aria-controls="teacher-stats-filters"
-            :data-active="filtersOpen || activeCriteria"
-            @click="filtersOpen = !filtersOpen"
+            :data-active="activeCriteria"
+            @click="openTool('filters')"
           >
             <MobileIcon name="filter" />
           </button>
+          <span
+            v-if="activeCriteria"
+            class="teacher-stats__applied"
+          >Применены</span>
         </div>
-        <div
-          v-for="(sort, index) in visibleSorts.slice(1)"
-          :key="sort.column"
-          class="teacher-stats__toolbar"
-        >
-          <HeadmanStatsSelect
-            :label="`Условие сортировки ${index + 2}`"
-            :disabled="!canChooseContext"
-            :model-value="`${sort.descending ? '-' : ''}${sort.column}`"
-            :options="sortOptions(index + 1)"
-            @update:model-value="changeSort(index + 1, $event)"
-          />
+        <div class="teacher-stats__tool">
           <button
+            ref="sortTrigger"
             type="button"
             class="teacher-stats__icon-button"
-            :aria-label="`Удалить условие ${index + 2}`"
+            aria-label="Сортировка"
             :disabled="!canChooseContext"
-            @click="removeSort(index + 1)"
+            data-teacher-action="stats-sort"
+            :aria-expanded="activeTool === 'sort'"
+            :aria-pressed="Boolean(activeSort)"
+            aria-controls="teacher-stats-sort"
+            :data-active="Boolean(activeSort)"
+            @click="openTool('sort')"
           >
-            <MobileIcon name="close" />
+            <MobileIcon name="sort" />
           </button>
+          <span
+            v-if="activeSort"
+            class="teacher-stats__applied"
+          >Применена</span>
         </div>
-        <button
-          v-if="visibleSorts.length < teacherStatsSortColumns(scope).length"
-          type="button"
-          class="teacher-stats__add-sort"
-          :disabled="!canChooseContext"
-          @click="addSort"
-        >
-          <MobileIcon name="plus" />Добавить условие сортировки
-        </button>
+        <ExportButton
+          v-if="api && statsQuery"
+          :port="reportDownload"
+          :formats="() => api!.statsExportFormats()"
+          :request="
+            (format) => ({
+              kind: 'TEACHER_STATS',
+              teacherStats: toTeacherStatsReportSelector(statsQuery!, format),
+            })
+          "
+          :scope-key="JSON.stringify(statsQuery)"
+          :disabled="loading || !!error"
+          @error="emit('error', $event)"
+        />
+      </div>
+      <div
+        v-if="activeTool"
+        ref="toolPanel"
+        class="teacher-stats__tool-panel"
+        role="region"
+        :aria-label="activeTool === 'filters' ? 'Фильтры статистики' : 'Сортировка статистики'"
+        @keydown="toolKeydown"
+      >
         <form
           v-if="filtersOpen"
           id="teacher-stats-filters"
@@ -1152,13 +1184,20 @@ useProjectionRefresh(refreshProjection);
           <div class="teacher-stats__filter-actions">
             <button
               type="button"
-              class="teacher-stats__icon-button"
-              aria-label="Сбросить фильтры и сортировку"
-              :disabled="!canChooseContext || !canReset"
-              @click="resetCriteria"
+              class="teacher-stats__secondary"
+              :disabled="!canChooseContext"
+              @click="resetFilterDraft"
             >
-              <MobileIcon name="retry" />
-            </button><button
+              Сбросить фильтры
+            </button>
+            <button
+              type="button"
+              class="teacher-stats__secondary"
+              @click="closeTool(true)"
+            >
+              Отмена
+            </button>
+            <button
               type="submit"
               class="teacher-stats__apply"
               :disabled="!canChooseContext"
@@ -1167,21 +1206,218 @@ useProjectionRefresh(refreshProjection);
             </button>
           </div>
         </form>
-        <ExportButton
-          v-if="api && statsQuery"
-          :port="reportDownload"
-          :formats="() => api!.statsExportFormats()"
-          :request="
-            (format) => ({
-              kind: 'TEACHER_STATS',
-              teacherStats: toTeacherStatsReportSelector(statsQuery!, format),
-            })
-          "
-          :scope-key="JSON.stringify(statsQuery)"
-          :disabled="loading || !!error"
-          @error="emit('error', $event)"
-        />
+        <form
+          v-else
+          id="teacher-stats-sort"
+          class="teacher-stats__filters"
+          @submit.prevent="applySort"
+        >
+          <h2>Сортировка</h2>
+          <div
+            v-for="(sort, index) in sortDrafts"
+            :key="index"
+            class="teacher-stats__sort-row"
+          >
+            <HeadmanStatsSelect
+              :label="index === 0 ? 'Порядок сортировки' : `Условие сортировки ${index + 1}`"
+              :disabled="!canChooseContext"
+              :model-value="`${sort.descending ? '-' : ''}${sort.column}`"
+              :options="sortOptions(index)"
+              @update:model-value="changeSort(index, $event)"
+            />
+            <button
+              v-if="index > 0"
+              type="button"
+              class="teacher-stats__icon-button"
+              :aria-label="`Удалить условие ${index + 1}`"
+              :disabled="!canChooseContext"
+              @click="removeSort(index)"
+            >
+              <MobileIcon name="close" />
+            </button>
+          </div>
+          <button
+            v-if="sortDrafts.length < teacherStatsSortColumns(scope).length"
+            type="button"
+            class="teacher-stats__add-sort"
+            :disabled="!canChooseContext"
+            @click="addSort"
+          >
+            <MobileIcon name="plus" />Добавить условие сортировки
+          </button>
+          <div class="teacher-stats__filter-actions">
+            <button
+              type="button"
+              class="teacher-stats__secondary"
+              :disabled="!canChooseContext"
+              @click="resetSortDraft"
+            >
+              Сбросить сортировку
+            </button>
+            <button
+              type="button"
+              class="teacher-stats__secondary"
+              @click="closeTool(true)"
+            >
+              Отмена
+            </button>
+            <button
+              type="submit"
+              class="teacher-stats__apply"
+              :disabled="!canChooseContext"
+            >
+              Применить
+            </button>
+          </div>
+        </form>
       </div>
-    </details>
+    </section>
+    <StudentWarningBlock
+      v-if="error || projectionError"
+      title="Статистика недоступна"
+      :message="error ?? projectionError ?? ''"
+      severity="error"
+      action-label="Повторить"
+      @action="projectionError ? refreshProjection() : loadContext()"
+    />
+    <p
+      v-else-if="loading"
+      class="teacher-stats__state"
+      role="status"
+    >
+      Загружаем статистику…
+    </p>
+    <p
+      v-else-if="!api || !semesterId"
+      class="teacher-stats__state"
+      role="status"
+    >
+      Сессия преподавателя недоступна.
+    </p>
+    <p
+      v-else-if="contextReady && groups.length === 0"
+      class="teacher-stats__state"
+      role="status"
+    >
+      Нет доступных групп.
+    </p>
+    <section
+      v-else-if="singleAuthorizedGroup"
+      class="teacher-stats__single-group"
+    >
+      <h2>Моя группа</h2>
+      <button
+        class="teacher-stats__group-link"
+        type="button"
+        :aria-label="`Открыть группу ${singleAuthorizedGroup.name}`"
+        @click="openGroup(singleAuthorizedGroup.id)"
+      >
+        <span>{{ singleAuthorizedGroup.name }}</span><MobileIcon name="chevron-down" />
+      </button>
+    </section>
+    <p
+      v-else-if="!currentStatsQuery()"
+      class="teacher-stats__state"
+      role="status"
+    >
+      {{
+        scope === 'groups'
+          ? 'Выбери тип занятия.'
+          : 'Выбери группу, предмет и хотя бы один тип занятия.'
+      }}
+    </p>
+    <template v-else-if="displayedStats">
+      <h2 class="teacher-stats__results-title">
+        {{ scope === 'groups' ? 'Мои группы' : 'Студенты' }}
+      </h2>
+      <p
+        v-if="selectedStudent && scope === 'students' && !visibleRows.some((row) => row.selected)"
+        class="teacher-stats__search-context"
+        role="status"
+      >
+        Найденный студент не входит в текущие результаты.
+      </p>
+      <section
+        v-if="visibleRowCount === 0"
+        class="teacher-stats__state teacher-stats__empty"
+        role="status"
+      >
+        <!-- eslint-disable vue/no-v-html -->
+        <div
+          class="teacher-stats__empty-art"
+          aria-hidden="true"
+          v-html="emptyFilterArtwork"
+        />
+        <!-- eslint-enable vue/no-v-html -->
+        <p>
+          {{
+            activeCriteria ? 'По этим фильтрам никого не нашли.' : 'Данных для статистики пока нет.'
+          }}
+        </p>
+        <button
+          v-if="activeCriteria"
+          type="button"
+          @click="clearMetricFilters"
+        >
+          Сбросить фильтры
+        </button>
+      </section>
+      <div
+        v-else
+        class="teacher-stats__cards"
+      >
+        <article
+          v-for="row in visibleRows"
+          :key="row.key"
+          class="teacher-stats__card"
+          :data-selected="row.selected"
+        >
+          <h3>
+            <span
+              v-if="row.selected"
+              class="teacher-stats__selected-label"
+            >Найденный студент</span>
+            <button
+              v-if="row.groupId"
+              type="button"
+              @click="openGroup(row.groupId)"
+            >
+              <span class="teacher-stats__row-name">{{ row.name }}</span><span
+                v-if="'lessonsCount' in row"
+                class="teacher-stats__lesson-count"
+              >{{ row.lessonsCount }} пар</span><MobileIcon name="chevron-down" />
+            </button><span
+              v-else
+              :aria-label="row.name"
+              :title="row.name"
+            >{{ compactName(row.name) }}</span>
+          </h3>
+          <dl class="teacher-stats__metrics">
+            <div
+              v-for="metric in metrics"
+              :key="metric.column"
+            >
+              <dt :aria-label="metric.label">
+                <span
+                  v-for="symbol in metric.symbols"
+                  :key="symbol"
+                  aria-hidden="true"
+                  :class="[
+                    'teacher-stats__symbol',
+                    {
+                      'teacher-stats__symbol--present': symbol === '+',
+                      'teacher-stats__symbol--excused': symbol === 'у',
+                      'teacher-stats__symbol--absent': symbol === 'н',
+                    },
+                  ]"
+                >{{ symbol.toUpperCase() }}</span>
+              </dt><dd :aria-label="metricLabel(metric.label, row[metric.column])">
+                {{ formatMetric(row[metric.column]) }}
+              </dd>
+            </div>
+          </dl>
+        </article>
+      </div>
+    </template>
   </main>
 </template>

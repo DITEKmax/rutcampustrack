@@ -1,3 +1,14 @@
+.teacher-mobile-shell {
+  min-block-size: 100dvh;
+  color: var(--rct-color-text-primary);
+  background: var(--rct-color-surface-base);
+}
+
+.teacher-mobile-shell[data-theme='light'],
+.teacher-mobile-shell [data-theme='light'] {
+  --rct-color-surface-base: #f2f2f4;
+}
+
 /* Teacher five-item dock: keep complete labels at narrow mobile widths. */
 @media (max-width: 22.5rem) {
   .mobile-shell:has(> .teacher-feature-owner) > .mobile-bottom-nav .mobile-bottom-nav__label {

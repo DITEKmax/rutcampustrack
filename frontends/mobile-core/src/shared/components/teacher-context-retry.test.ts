@@ -107,8 +107,9 @@ function openGroup(root: HostNode, name: string): void {
     root,
     (node) =>
       node.tag === 'button' &&
-      text(node).includes(name) &&
-      node.children.some((child) => String(child.props.class).includes('teacher-stats__row-name')),
+      (node.props['aria-label'] === `Открыть группу ${name}` ||
+        (text(node).includes(name) &&
+          node.children.some((child) => String(child.props.class).includes('teacher-stats__row-name')))),
   )
   expect(button).toBeDefined()
   ;(button!.props.onClick as () => void)()
@@ -120,6 +121,8 @@ async function settle(): Promise<void> {
   }
 }
 async function chooseStatsContext(root: HostNode): Promise<void> {
+  click(root, 'По моим группам')
+  await settle()
   click(root, 'Лекция')
   await settle()
 }
@@ -512,8 +515,7 @@ describe('teacher owner catalogue recovery', () => {
     expect(text(view.root)).not.toContain(obsolete.groupName)
     openGroup(view.root, current.groupName)
     await settle()
-    click(view.root, 'Предмет')
-    await settle()
+    expect(text(view.root)).toContain('Мои предметы')
     expect(text(view.root)).toContain(current.subjectName)
     expect(text(view.root)).not.toContain(obsolete.subjectName)
     click(view.root, current.subjectName)

@@ -291,7 +291,7 @@ function validateCriteria(context: TeacherStatsRouteContext): void {
 }
 
 function rangeNumber(raw: string, count: boolean): number | undefined {
-  const text = raw.trim()
+  const text = raw.trim().replace(',', '.')
   if (!text) return undefined
   if (!/^\d+(?:\.\d+)?$/.test(text)) throw new RangeError(rangeError(count))
   const value = Number(text)
@@ -302,7 +302,7 @@ function rangeNumber(raw: string, count: boolean): number | undefined {
 function rangeError(count: boolean): string {
   return count
     ? 'Количество пар должно быть целым неотрицательным числом.'
-    : 'Процент должен быть числом от 0 до 100. Для дробной части используй точку.'
+    : 'Процент должен быть числом от 0 до 100. Для дробной части используй точку или запятую.'
 }
 function readSearchParams(): URLSearchParams | null {
   return typeof window === 'undefined' ? null : new URLSearchParams(window.location.search)

@@ -2,7 +2,7 @@
 import { provideProjectionRevision, useProjectionRefresh } from '../projection-refresh';
 import type { NotificationAction } from '../../features/notifications/notifications-v2-models';
 import { notificationNumericId } from '../../features/notifications/notifications-actions';
-import { computed, onBeforeUnmount, ref, shallowRef, watch } from 'vue';
+import { computed, inject, onBeforeUnmount, ref, shallowRef, watch } from 'vue';
 import type { CampusMapClient } from '../../api/map-client';
 import MapScreen from '../../features/map/MapScreen.vue';
 import AccountHistoryScreen from '../../features/profile/AccountHistoryScreen.vue';
@@ -49,7 +49,11 @@ import { createMobileNavigationStack, nestedRoute, rootRoute } from '../navigati
 import type { MobileNavigationStack, MobileRootRouteId, MobileRoute } from '../navigation';
 import { createTeacherNavigationItems } from '../mobile-navigation-items';
 import type { MobileHostAdapter } from '../host';
-import type { MobileThemeController, MobileThemeResolvedMode } from '../theme';
+import {
+  createMobileTheme,
+  mobileThemeSystemSourceKey,
+  type MobileThemeController,
+} from '../theme';
 import type { ReportDownloadPort } from '../report-download-client';
 import { createProfileViewPublication } from './profile-view-publication';
 import './teacher-feature-owner.pcss';
@@ -127,11 +131,25 @@ const calendarCloseSignal = ref(0);
 const exportOpen = ref(false);
 const exportOpenSignal = ref(0);
 const exportCloseSignal = ref(0);
+const attachmentOpen = ref(false);
+const attachmentCloseSignal = ref(0);
+const statsToolOpen = ref(false);
+const statsToolCloseSignal = ref(0);
 const profileState = shallowRef(props.profilePort ? new ProfileState(props.profilePort) : null);
 const profilePendingRole = ref<ProfileRole | null>(null);
 const profileRoleError = shallowRef<ProfileRequestError | null>(null);
 const themeMode = ref<ProfileTheme>(props.themeController?.mode ?? 'system');
-const resolvedTheme = ref<MobileThemeResolvedMode>(props.themeController?.resolvedMode ?? 'dark');
+const systemThemeSource = inject(mobileThemeSystemSourceKey, undefined);
+const scopedTheme = createMobileTheme({
+  target: null,
+  mode: themeMode.value,
+  ...(systemThemeSource === undefined ? {} : { systemSource: systemThemeSource }),
+});
+const resolvedTheme = ref(scopedTheme.resolvedMode);
+const stopScopedTheme = scopedTheme.subscribe(({ resolvedMode }) => {
+  resolvedTheme.value = resolvedMode;
+});
+watch(themeMode, (mode) => scopedTheme.setMode(mode), { flush: 'sync' });
 const navItems = computed(() => createTeacherNavigationItems(props.profilePort !== null));
 const profilePublication = createProfileViewPublication(
   () => profileState.value?.view ?? null,
@@ -150,6 +168,14 @@ let contextInFlight: {
 } | null = null;
 let stopTheme = (): void => undefined;
 const stopOverlayBack = navigation.beforeBack(() => {
+  if (attachmentOpen.value) {
+    attachmentCloseSignal.value += 1;
+    return false;
+  }
+  if (statsToolOpen.value) {
+    statsToolCloseSignal.value += 1;
+    return false;
+  }
   if (calendarOpen.value) {
     calendarCloseSignal.value += 1;
     return false;
@@ -210,6 +236,8 @@ watch(
     ownerGeneration.value += 1;
     calendarOpen.value = false;
     exportOpen.value = false;
+    attachmentOpen.value = false;
+    statsToolOpen.value = false;
     teacherContextError.value = null;
     void loadTeacherContext();
     if (nextDate) selectedDate.value = nextDate;
@@ -292,23 +320,28 @@ function bindTheme(controller: MobileThemeController | null): void {
   stopTheme = (): void => undefined;
   if (!controller) {
     themeMode.value = 'system';
-    resolvedTheme.value = 'dark';
     return;
   }
   themeMode.value = controller.mode;
-  resolvedTheme.value = controller.resolvedMode;
   stopTheme = controller.subscribe((snapshot) => {
     themeMode.value = snapshot.mode;
-    resolvedTheme.value = snapshot.resolvedMode;
   });
 }
 
 watch(() => props.themeController, bindTheme, { immediate: true });
 watch(
-  () => [props.host, route.value.kind, calendarOpen.value, exportOpen.value] as const,
-  ([host, kind, calendar, exporting]) => {
+  () =>
+    [
+      props.host,
+      route.value.kind,
+      calendarOpen.value,
+      exportOpen.value,
+      attachmentOpen.value,
+      statsToolOpen.value,
+    ] as const,
+  ([host, kind, calendar, exporting, attachment, statsTool]) => {
     if (host?.backOwner === 'host')
-      host.setBackVisible?.(kind === 'nested' || calendar || exporting);
+      host.setBackVisible?.(kind === 'nested' || calendar || exporting || attachment || statsTool);
   },
   { immediate: true, flush: 'post' },
 );
@@ -410,6 +443,8 @@ function navigateRoot(routeName: MobileRootRouteId): void {
   exportCloseSignal.value += 1;
   calendarOpen.value = false;
   exportOpen.value = false;
+  attachmentOpen.value = false;
+  statsToolOpen.value = false;
   navigation.goRoot(routeName);
 }
 
@@ -432,7 +467,7 @@ function openJournal(
     semesterId: query.semesterId,
     groupId: query.groupId,
     subjectId: query.subjectId,
-    lessonTypes: query.lessonType ? teacherJournalTypes(query) : [],
+    lessonTypes: returnSurface === 'stats' || query.lessonType ? teacherJournalTypes(query) : [],
     pastOnly: true,
   };
   lessonId.value = null;
@@ -626,6 +661,8 @@ onBeforeUnmount(() => {
   stopNavigation();
   stopOverlayBack();
   stopTheme();
+  stopScopedTheme();
+  scopedTheme.dispose();
 });
 async function openNotificationAction(
   action: NotificationAction,
@@ -661,6 +698,8 @@ defineExpose({ openNotificationAction });
 
 <template>
   <MobileShell
+    class="teacher-mobile-shell"
+    :data-theme="resolvedTheme"
     :route="route"
     :navigation="navigation"
     :nav-items="navItems"
@@ -702,7 +741,7 @@ defineExpose({ openNotificationAction });
         "
         :api="api"
         :lesson-id="lessonId"
-        :show-back="true"
+        :show-back="host?.backOwner !== 'host'"
         :report-download="reportDownload"
         :export-open-signal="exportOpenSignal"
         :export-close-signal="exportCloseSignal"
@@ -725,7 +764,7 @@ defineExpose({ openNotificationAction });
             catalog?.groups.find((group) => group.id === journalQuery?.groupId)?.name ?? ''
           "
           :semester="semester"
-          :show-back="true"
+          :show-back="host?.backOwner !== 'host'"
           :report-download="reportDownload"
           @back="backRoute"
           @open-lesson="openJournalLesson"
@@ -741,7 +780,11 @@ defineExpose({ openNotificationAction });
         :api="api"
         :lesson-id="manualLessonId"
         :student-id="manualStudentId"
-        :show-back="true"
+        :realtime-revision="realtimeRevision"
+        :offline="offline"
+        :show-back="host?.backOwner !== 'host'"
+        :attachment-close-signal="attachmentCloseSignal"
+        @attachment-open="attachmentOpen = $event"
         @back="backRoute"
         @error="forwardError"
       />
@@ -750,7 +793,7 @@ defineExpose({ openNotificationAction });
         :group-id="selectedGroup.id"
         :group-name="selectedGroup.name"
         :subject-options="catalog.taughtSubjectOptions"
-        :show-back="true"
+        :show-back="host?.backOwner !== 'host'"
         @back="backRoute"
         @open-subject="openSubject"
       />
@@ -762,6 +805,7 @@ defineExpose({ openNotificationAction });
       >
         <header class="teacher-screen__detail-header">
           <button
+            v-if="host?.backOwner !== 'host'"
             class="teacher-screen__icon-button"
             type="button"
             aria-label="Назад"
@@ -794,7 +838,9 @@ defineExpose({ openNotificationAction });
         v-if="route.id.endsWith('/excuse')"
         :api="api"
         :request-id="requestId"
-        :show-back="true"
+        :show-back="host?.backOwner !== 'host'"
+        :attachment-close-signal="attachmentCloseSignal"
+        @attachment-open="attachmentOpen = $event"
         @back="backRoute"
         @error="forwardError"
       />
@@ -804,7 +850,9 @@ defineExpose({ openNotificationAction });
           :api="api"
           :semester-id="semesterId"
           :report-download="reportDownload"
-          @back="navigateRoot('teacher-home')"
+          :close-tool-signal="statsToolCloseSignal"
+          :realtime-revision="realtimeRevision"
+          @tool-open="statsToolOpen = $event"
           @open-journal="openStatsJournal"
           @open-group="openGroup"
           @error="forwardError"
@@ -864,6 +912,7 @@ defineExpose({ openNotificationAction });
           v-else-if="route.id === 'profile/appearance'"
           :theme="themeMode"
           :resolved-theme="resolvedTheme"
+          theme-unlocked
           :on-back="backRoute"
           :on-theme-change="changeProfileTheme"
         />

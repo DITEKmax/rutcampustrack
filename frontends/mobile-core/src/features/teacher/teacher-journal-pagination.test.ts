@@ -9,6 +9,7 @@ import {
 } from 'vue'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import TeacherJournalScreen from './TeacherJournalScreen.vue'
+import TeacherJournalTable from './TeacherJournalTable.vue'
 import {
   TeacherApiError,
   TeacherApi,
@@ -47,6 +48,9 @@ vi.mock('../headman-stats/HeadmanStatsSelect.vue', () => ({
   }),
 }))
 class Node {
+  scrollWidth = 0
+  clientWidth = 0
+  scrollLeft = 0
   children: Node[] = []
   parent: Node | null = null
   props: Record<string, unknown> = {}
@@ -223,6 +227,7 @@ function mount(
 ) {
   const calls: TeacherJournalQuery[] = []
   const manual: [number, number][] = []
+  const openedLessons: [number, number][] = []
   const ownerErrors: unknown[] = []
   const api =
     options.api ??
@@ -265,6 +270,7 @@ function mount(
         'onUpdate-query': (query: TeacherJournalQuery) => {
           state.query = query
         },
+        'onOpen-lesson': (id: number, page: number) => openedLessons.push([id, page]),
         'onOpen-manual-excuse': (lessonId: number, studentId: number) => {
           manual.push([lessonId, studentId])
         },
@@ -272,9 +278,52 @@ function mount(
   })
   apps.push(app)
   app.mount(root)
-  return { root, state, calls, manual, ownerErrors }
+  return { root, state, calls, manual, openedLessons, ownerErrors }
 }
 describe('teacher journal context and navigation', () => {
+  it('opens the lesson from its journal heading with the loaded page context', async () => {
+    const view = mount({ initialTypes: ['lecture'] })
+    await settle()
+    click(view.root, 'Открыть 1-ю пару, 01.10, Лекция')
+    expect(view.openedLessons).toEqual([[30, 0]])
+    expect(view.calls).toHaveLength(1)
+  })
+  it('selects a name and date independently without navigation, toggles them, and clears a new query context', async () => {
+    const view = mount({ initialTypes: ['lecture'] })
+    await settle()
+    const name = () =>
+      find(view.root, (node) => node.tag === 'button' && node.props['aria-label'] === 'Анна')!
+    const date = () =>
+      find(view.root, (node) => node.props['aria-label'] === 'Выделить 1-ю пару, 01.10, Лекция')!
+    click(view.root, 'Анна')
+    click(view.root, 'Выделить 1-ю пару, 01.10, Лекция')
+    await settle()
+    expect(name().props['aria-pressed']).toBe(true)
+    expect(date().props['aria-pressed']).toBe(true)
+    expect(view.openedLessons).toEqual([])
+    expect(view.calls).toHaveLength(1)
+    expect(
+      find(view.root, (node) => node.tag === 'tr' && node.props['data-selected-row'] === true),
+    ).toBeDefined()
+    expect(
+      find(view.root, (node) => node.tag === 'td' && node.props['data-selected-column'] === true),
+    ).toBeDefined()
+    click(view.root, 'Анна')
+    await settle()
+    expect(name().props['aria-pressed']).toBe(false)
+    expect(date().props['aria-pressed']).toBe(true)
+    click(view.root, 'Выделить 1-ю пару, 01.10, Лекция')
+    await settle()
+    expect(date().props['aria-pressed']).toBe(false)
+    click(view.root, 'Анна')
+    click(view.root, 'Выделить 1-ю пару, 01.10, Лекция')
+    view.state.query = { ...view.state.query, subjectId: 9 }
+    await settle()
+    expect(name().props['aria-pressed']).toBe(false)
+    expect(date().props['aria-pressed']).toBe(false)
+    click(view.root, 'Открыть 1-ю пару, 01.10, Лекция')
+    expect(view.openedLessons).toEqual([[30, 0]])
+  })
   it.each([403, 503])(
     'keeps journal HTTP %i local and recovers the same query without a stale host error',
     async (status) => {
@@ -409,7 +458,14 @@ describe('teacher journal context and navigation', () => {
     await settle()
     // The only cell is EXCUSED: these values cannot come from counting that cell.
     expect(text(view.root)).toContain('25 %')
-    expect(text(view.root)).toContain('+ и у: 75 %')
+    expect(
+      find(
+        view.root,
+        (node) =>
+          node.props['aria-label'] === 'Присутствия и уважительные причины: 3 из 4' &&
+          text(node) === '75 %',
+      ),
+    ).toBeDefined()
     click(view.root, 'Показать график')
     await settle()
     expect(
@@ -464,7 +520,14 @@ describe('teacher journal context and navigation', () => {
     ).toBeDefined()
     click(view.root, 'Показать таблицу')
     await settle()
-    expect(text(view.root)).toContain('+ и у: 75 %')
+    expect(
+      find(
+        view.root,
+        (node) =>
+          node.props['aria-label'] === 'Присутствия и уважительные причины: 3 из 4' &&
+          text(node) === '75 %',
+      ),
+    ).toBeDefined()
   })
   it('keeps missing server metrics unavailable instead of recomputing from cells', async () => {
     const view = mount({
@@ -513,14 +576,16 @@ describe('teacher journal context and navigation', () => {
     const lessonHeading = () =>
       find(
         view.root,
-        (node) => node.tag === 'th' && node.children.some((child) => child.tag === 'time'),
+        (node) => node.tag === 'button' && String(node.props['aria-label']).startsWith('Открыть '),
       )
     expect(lessonHeading()).toBeDefined()
-    expect(text(lessonHeading()!)).not.toContain('Лекция')
+    expect(text(lessonHeading()!)).toContain('ЛК')
+    expect(lessonHeading()!.props['aria-label']).toContain('Лекция')
     click(view.root, 'Практика')
     await settle()
     // The response still contains only lecture lessons: selected types own this label.
-    expect(text(lessonHeading()!)).toContain('Лекция')
+    expect(text(lessonHeading()!)).toContain('ЛК')
+    expect(lessonHeading()!.props['aria-label']).toContain('Лекция')
     expect(view.state.query.lessonTypes).toEqual(['lecture', 'practice'])
     expect(view.calls.at(-1)?.lessonTypes).toEqual(['lecture', 'practice'])
     expect(view.calls.every((query) => query.pastOnly && query.page === 0)).toBe(true)
@@ -677,5 +742,129 @@ describe('teacher journal context and navigation', () => {
     release('accepted')
     await settle()
     expect(text(view.root)).not.toContain('Telegram принял')
+  })
+})
+
+describe('journal local threshold preferences and linked scrolling', () => {
+  function mountTable() {
+    const state = shallowReactive({ journal: response(), contextKey: 'semester:group:subject' })
+    const root = new Node('root')
+    const app = renderer.createApp({
+      render: () => h(TeacherJournalTable, { ...state }),
+    })
+    apps.push(app)
+    app.mount(root)
+    const all = (node: Node, predicate: (node: Node) => boolean): Node[] => [
+      ...(predicate(node) ? [node] : []),
+      ...node.children.flatMap((child) => all(child, predicate)),
+    ]
+    const inputs = () => all(root, (node) => node.tag === 'input' && node.props.type === 'text')
+    const cells = () =>
+      all(root, (node) => node.tag === 'td' && node.props.class === 'teacher-journal__percent')
+    const input = (index: number, value: string) => {
+      ;(inputs()[index]!.props.onInput as (event: unknown) => void)({ target: { value } })
+    }
+    return { root, state, inputs, cells, input }
+  }
+
+  it('compares each authoritative metric independently, handles equality, and resets only with dataset context', async () => {
+    const view = mountTable()
+    const original = JSON.stringify(view.state.journal)
+    view.input(0, '0')
+    view.input(1, '100')
+    view.input(2, '100,0')
+    view.input(3, '0,1')
+    await settle()
+    expect(view.cells().map((cell) => cell.props['data-threshold'])).toEqual([
+      'meets',
+      'meets',
+      'meets',
+      'below',
+    ])
+    expect(JSON.stringify(view.state.journal)).toBe(original)
+    expect(view.cells()[3]!.props['aria-label']).toContain('ниже порога')
+    view.state.journal = {
+      ...view.state.journal,
+      page: 1,
+      lessons: [{ ...view.state.journal.lessons[0]!, id: 31 }, ...view.state.journal.lessons],
+      students: [...view.state.journal.students].reverse(),
+    }
+    await settle()
+    expect(view.inputs().map((input) => input.props.value)).toEqual(['0', '100', '100,0', '0,1'])
+    view.input(0, '101')
+    view.input(1, ' ')
+    await settle()
+    expect(view.inputs()[0]!.props['aria-invalid']).toBe(true)
+    expect(view.cells().map((cell) => cell.props['data-threshold'])).toEqual([
+      null,
+      null,
+      'meets',
+      'below',
+    ])
+    const metric = view.state.journal.metrics!
+    view.state.journal = {
+      ...view.state.journal,
+      metrics: {
+        ...metric,
+        students: [
+          { ...metric.students[0]!, excused: { numerator: 0, denominator: 0, percent: 0 } },
+        ],
+      },
+    }
+    await settle()
+    expect(view.cells()[2]!.props['data-threshold']).toBeNull()
+    view.state.contextKey = 'other:group:subject'
+    await settle()
+    expect(view.inputs().map((input) => input.props.value)).toEqual(['', '', '', ''])
+    expect(view.cells().every((cell) => cell.props['data-threshold'] === null)).toBe(true)
+  })
+
+  it('links the bottom range to actual overflow, reflects table scrolling, and updates on resize', async () => {
+    let resize: (() => void) | undefined
+    const disconnect = vi.fn()
+    vi.stubGlobal(
+      'ResizeObserver',
+      class {
+        constructor(callback: () => void) {
+          resize = callback
+        }
+        observe() {}
+        disconnect = disconnect
+      },
+    )
+    const view = mountTable()
+    const viewport = find(
+      view.root,
+      (node) => node.props.class === 'teacher-journal__table-scroll',
+    )!
+    const range = () =>
+      find(view.root, (node) => node.tag === 'input' && node.props.type === 'range')!
+    await settle()
+    expect(range().props.disabled).toBe(true)
+    viewport.scrollWidth = 1100
+    viewport.clientWidth = 300
+    resize!()
+    await settle()
+    expect(range().props.max).toBe(800)
+    expect(range().props.disabled).toBe(false)
+    ;(range().props.onInput as (event: unknown) => void)({ target: { value: '600' } })
+    await settle()
+    expect(viewport.scrollLeft).toBe(600)
+    expect(range().props.value).toBe(600)
+    viewport.scrollLeft = 200
+    ;(viewport.props.onScroll as () => void)()
+    await settle()
+    expect(range().props.value).toBe(200)
+    viewport.clientWidth = 1100
+    viewport.scrollLeft = 0
+    resize!()
+    await settle()
+    expect(range().props.disabled).toBe(true)
+    expect(range().props.value).toBe(0)
+    view.state.contextKey = 'new-context'
+    await settle()
+    expect(viewport.scrollLeft).toBe(0)
+    apps.pop()!.unmount()
+    expect(disconnect).toHaveBeenCalledOnce()
   })
 })

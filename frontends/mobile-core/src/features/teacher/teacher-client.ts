@@ -75,6 +75,8 @@ export interface TeacherRosterEntry {
   readonly attachmentName: string | null
   readonly attachmentContentType: string | null
   readonly attachmentSize: number | null
+  /** Future server metadata; legacy absence must not grant an unbounded manual preview. */
+  readonly attachmentExpiresAt?: string | null
 }
 
 export interface TeacherLessonResponse {
@@ -402,11 +404,12 @@ export class TeacherApi {
     return this.request<unknown>(`/api/v1/teacher/day?${query.toString()}`).then(normalizeDay)
   }
 
-  lesson(lessonId: number): Promise<TeacherLessonResponse> {
+  lesson(
+    lessonId: number,
+    options?: Pick<RequestInit, 'cache' | 'signal'>,
+  ): Promise<TeacherLessonResponse> {
     assertPositiveInteger(lessonId, 'lessonId')
-    return this.request<unknown>(`/api/v1/teacher/lessons/${lessonId}`).then((value) =>
-      normalizeLesson(value),
-    )
+    return this.request<unknown>(`/api/v1/teacher/lessons/${lessonId}`, options).then(normalizeLesson)
   }
 
   journal(query: TeacherJournalQuery): Promise<TeacherJournalResponse> {
@@ -607,6 +610,33 @@ export class TeacherApi {
     return this.request<unknown>(`/api/v1/teacher/excuses/${encodeURIComponent(requestId)}`).then(
       normalizeExcuse,
     )
+  }
+
+  async downloadManualExcuseAttachment(
+    lessonId: number,
+    studentId: number,
+    attachmentId: string,
+  ): Promise<Blob> {
+    assertPositiveInteger(lessonId, 'lessonId')
+    assertPositiveInteger(studentId, 'studentId')
+    assertText(attachmentId, 'attachmentId')
+    const response = await this.response(
+      `/api/v1/teacher/lessons/${lessonId}/students/${studentId}/excuse/attachments/${encodeURIComponent(attachmentId)}`,
+      { cache: 'no-store', headers: { Accept: 'application/octet-stream' } },
+    )
+    if (!response.ok) {
+      const cause = await this.apiError(response)
+      if ((response.status === 404 || response.status === 405) && cause.problem === null) {
+        throw new TeacherApiError(response, {
+          detail:
+            'Сервер не предоставил документ ручной причины. Для просмотра требуется поддержка этих вложений на сервере.',
+        })
+      }
+      throw cause
+    }
+    const blob = await response.blob()
+    this.options.assertCurrent?.()
+    return blob
   }
 
   async downloadAttachment(requestId: string, attachmentId: string): Promise<Blob> {
@@ -1118,6 +1148,7 @@ function normalizeRoster(value: unknown): TeacherRosterEntry {
     attachmentName: nullableString(record.attachmentName),
     attachmentContentType: nullableString(record.attachmentContentType),
     attachmentSize: nullableNonNegativeInteger(record.attachmentSize, 'roster.attachmentSize'),
+    attachmentExpiresAt: nullableString(record.attachmentExpiresAt),
   }
 }
 

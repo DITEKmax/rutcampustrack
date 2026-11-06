@@ -1,0 +1,26 @@
+@import '../../styles/tokens.pcss';
+.teacher-pdf-document {
+  display: grid;
+  gap: var(--rct-space-3);
+  min-inline-size: 0;
+}
+.teacher-pdf-document__navigation {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--rct-space-2);
+  flex-wrap: wrap;
+}
+.teacher-pdf-document__navigation button {
+  min-block-size: var(--rct-control-min-touch);
+  padding: var(--rct-space-2) var(--rct-space-3);
+  border: 0;
+  border-radius: var(--rct-radius-full);
+  color: var(--rct-color-text-primary);
+  background: var(--rct-color-surface-raised);
+}
+.teacher-pdf-document canvas {
+  display: block;
+  inline-size: 100%;
+  block-size: auto;
+}

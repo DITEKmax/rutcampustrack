@@ -4,6 +4,7 @@ import MobileIcon from '../../../../mobile-core/src/shared/components/MobileIcon
 import type { RequestDetail } from '../../../../mobile-core/src/features/requests/types';
 import {
   canCancelRequest,
+  formatDecisionDate,
   formatLessonDate,
   formatLessonTime,
   formatRequestDate,
@@ -158,9 +159,8 @@ const kindAndReason = computed(() => {
         v-if="request.decision?.decidedAt"
         class="web-caption"
       >
-        Решение принято:
         <time :datetime="request.decision.decidedAt">
-          {{ formatRequestDate(request.decision.decidedAt) }}, {{ requestTime(request.decision.decidedAt) }} МСК
+          {{ formatDecisionDate(request.decision.decidedAt) }}, {{ requestTime(request.decision.decidedAt) }} МСК
         </time>
       </p>
       <button

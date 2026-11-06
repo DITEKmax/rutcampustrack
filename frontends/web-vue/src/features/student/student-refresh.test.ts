@@ -538,6 +538,34 @@ describe('student SFC live reading and retained selections', () => {
     expect(text(card)).toContain('Новая заявка')
     expect(text(card)).toContain('Заявка №saved-request')
   })
+  it('labels the submission and decision timestamps separately in an expanded archive card', async () => {
+    const { default: Card } = await import('./StudentRequestCard.vue')
+    const { useStudentScope } = await import('./student-state')
+    const createdAt = '2026-10-24T08:00:00Z'
+    const decidedAt = '2026-10-25T08:30:00Z'
+    const root = mount(defineComponent({
+      setup() {
+        const scope = useStudentScope()
+        return () => h(Card, {
+          request: {
+            summary: { id: 'archived', kind: 'EXCUSE', status: 'APPROVED', origin: 'MANUAL', createdAt },
+            decision: { decidedAt },
+          },
+          scope,
+          authority: null,
+          busy: false,
+          cancelBlocked: false,
+          initialExpanded: true,
+        })
+      },
+    }))
+    await settle()
+    const timestamps = flatten(root).filter((node) => node.tag === 'time')
+    expect(timestamps.map((node) => [node.props.datetime, text(node).trim()])).toEqual([
+      [createdAt, '· Подана 24 октября, 11:00 МСК'],
+      [decidedAt, 'Решение принято 25 октября, 11:30 МСК'],
+    ])
+  })
   it('prefills the exact lesson, then clears it when the student edits an overlapping date range', async () => {
     const { default: Page } = await import('./StudentRequestsPage.vue')
     const root = mount(Page)

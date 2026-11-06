@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import SvgIcon from '../../../../shared/foundation/SvgIcon.vue';
-import { computed, onBeforeUnmount, ref, shallowRef, watch } from 'vue';
+import { computed, nextTick, onBeforeUnmount, ref, shallowRef, watch } from 'vue';
 import type { MobileHostAdapter } from '../../shared/host';
 import AdminNotice from '../../shared/components/AdminNotice.vue';
 import StudentWarningBlock from '../../shared/components/StudentWarningBlock.vue';
@@ -52,6 +52,7 @@ import previousIcon from '../../assets/headman-homework-previous.svg';
 import nextIcon from '../../assets/headman-homework-next.svg';
 import downIcon from '../../assets/headman-homework-down.svg';
 import linkIcon from '../../assets/homework-external-link.svg';
+import emptyHomeworkIllustration from '../../assets/headman-homework-empty-compact.svg?raw';
 import './headman-homework-screen.pcss';
 
 const props = withDefaults(
@@ -80,24 +81,29 @@ const props = withDefaults(
 );
 const emit = defineEmits<{
   error: [cause: unknown];
-  landingChange: [landing: boolean];
+  taskDockChange: [visible: boolean];
 }>();
 const today = () => props.now().toLocaleDateString('en-CA', { timeZone: 'Europe/Moscow' });
 const view = ref<'calendar' | 'detail' | 'wizard' | 'history'>('calendar');
 const step = ref(0);
 const stepNames = ['Предмет', 'Тип занятия', 'Дата', 'Содержание'];
 const selectedDate = ref(today());
+const weekCalendar = ref<HTMLDivElement | null>(null);
 const monthDate = ref(today());
 const semester = shallowRef<HeadmanHomeworkSemester | null>(null);
 const semesterOptions = shallowRef<readonly HeadmanHomeworkSemester[]>([]);
 const subjects = shallowRef<readonly HeadmanSubject[]>([]);
 const homeworks = shallowRef<readonly HeadmanManagedHomework[]>([]);
+const currentHomeworkDates = shallowRef<ReadonlySet<string>>(new Set());
 const lessons = shallowRef<readonly HeadmanJournalLesson[]>([]);
 const loading = ref(false);
 const calendarLoading = ref(false);
 const nextLoading = ref(false);
 const busy = ref(false);
 const error = ref<string | null>(null);
+const dayError = ref<string | null>(null);
+const weekMarkersUnavailable = ref(false);
+const displayedError = computed(() => error.value ?? dayError.value);
 const notice = ref<string | null>(null);
 const success = ref<string | null>(null);
 const denied = ref(false);
@@ -370,7 +376,7 @@ function itemLesson(item: HeadmanManagedHomework): HeadmanJournalLesson | null {
 function detailType(item: HeadmanManagedHomework): string {
   return typeName(item.lessonType ?? itemLesson(item)?.lessonType);
 }
-function reportError(cause: unknown, revision: number): void {
+function reportError(cause: unknown, revision: number, target = error): void {
   if (disposed || revision !== ownerRevision || cause instanceof StaleSessionGenerationError)
     return;
   if (
@@ -382,12 +388,13 @@ function reportError(cause: unknown, revision: number): void {
     denied.value = true;
     success.value = null;
     homeworks.value = [];
+    currentHomeworkDates.value = new Set();
     dayLoaded.value = false;
     detail.value = null;
     clearDraft();
     view.value = 'calendar';
   }
-  error.value = cause instanceof Error ? cause.message : 'Не удалось получить домашние задания.';
+  target.value = cause instanceof Error ? cause.message : 'Не удалось получить домашние задания.';
   emit('error', cause);
 }
 function clearDraft(): void {
@@ -421,9 +428,12 @@ async function load(): Promise<void> {
   nextLoading.value = false;
   denied.value = false;
   error.value = null;
+  dayError.value = null;
+  weekMarkersUnavailable.value = false;
   notice.value = null;
   success.value = null;
   homeworks.value = [];
+  currentHomeworkDates.value = new Set();
   dayLoaded.value = false;
   dayLoading.value = false;
   lessons.value = [];
@@ -516,6 +526,12 @@ function selectRootDate(value: string): void {
   void loadCalendar(value, false);
   void loadDayHomeworks(value);
 }
+function returnToToday(): void {
+  selectRootDate(today());
+  void nextTick(() =>
+    weekCalendar.value?.querySelector<HTMLButtonElement>('[aria-current="date"]')?.focus(),
+  );
+}
 function shiftCalendar(delta: number): void {
   if (view.value === 'wizard') {
     const date = new Date(`${monthDate.value.slice(0, 7)}-01T12:00:00Z`);
@@ -532,11 +548,13 @@ async function loadDayHomeworks(date: string): Promise<void> {
   const readSemester = homeworkSemesterForDate(date, semesterOptions.value);
   const intent = readIntent.value;
   homeworks.value = [];
+  currentHomeworkDates.value = new Set();
   dayLoaded.value = false;
   dayLoading.value = false;
-  if (!api || group === null || !readSemester || intent === null || props.offline || denied.value)
+  dayError.value = null;
+  weekMarkersUnavailable.value = false;
+  if (!api || group === null || intent === null || props.offline || denied.value)
     return;
-  dayLoading.value = true;
   const current = () =>
     !disposed &&
     run === dayRevision &&
@@ -547,17 +565,48 @@ async function loadDayHomeworks(date: string): Promise<void> {
     intent === readIntent.value &&
     !props.offline &&
     !denied.value;
-  try {
-    const items = await readPublishedHomeworks(api, group, readSemester.id, current, intent);
-    if (current() && items !== null) {
-      homeworks.value = items;
-      dayLoaded.value = true;
+  const weekSemesterByDate = new Map<string, number>();
+  if (intent === 'current') {
+    for (const day of homeworkWeek(date)) {
+      const weekSemester = homeworkSemesterForDate(day, semesterOptions.value);
+      if (weekSemester) weekSemesterByDate.set(day, weekSemester.id);
     }
-  } catch (cause) {
-    if (current()) reportError(cause, owner);
-  } finally {
-    if (!disposed && run === dayRevision && owner === ownerRevision) dayLoading.value = false;
   }
+  const readSemesterHomeworks = async (semesterId: number, selected: boolean): Promise<void> => {
+    try {
+      const items = await readPublishedHomeworks(api, group, semesterId, current, intent);
+      if (!current() || items === null) return;
+      if (selected) {
+        homeworks.value = items;
+        dayLoaded.value = true;
+      }
+      if (intent === 'current') {
+        const marked = new Set(currentHomeworkDates.value);
+        for (const item of items)
+          if (!item.archived && weekSemesterByDate.get(item.lessonDate) === semesterId)
+            marked.add(item.lessonDate);
+        currentHomeworkDates.value = marked;
+      }
+    } catch (cause) {
+      if (!current() || cause instanceof StaleSessionGenerationError) return;
+      if (selected) reportError(cause, owner, dayError);
+      else if (
+        cause instanceof HeadmanHomeworkApiError &&
+        (cause.response.status === 401 || cause.response.status === 403)
+      )
+        reportError(cause, owner);
+      else weekMarkersUnavailable.value = true;
+    } finally {
+      if (selected && !disposed && run === dayRevision && owner === ownerRevision)
+        dayLoading.value = false;
+    }
+  };
+  // A neighboring semester supplies markers only; it cannot decide the selected day's list.
+  if (readSemester) dayLoading.value = true;
+  const selectedRead = readSemester ? readSemesterHomeworks(readSemester.id, true) : undefined;
+  for (const semesterId of new Set(weekSemesterByDate.values()))
+    if (semesterId !== readSemester?.id) void readSemesterHomeworks(semesterId, false);
+  await selectedRead;
 }
 async function openDetail(item: HeadmanManagedHomework): Promise<void> {
   success.value = null;
@@ -1017,8 +1066,8 @@ function openUrl(url: string | null): void {
   if (!props.offline && result.supported) props.openMaterial?.(result.original);
 }
 watch(
-  () => view.value === 'calendar' && readIntent.value === null,
-  (landing) => emit('landingChange', landing),
+  () => view.value === 'calendar' && readIntent.value !== 'archive',
+  (visible) => emit('taskDockChange', visible),
   { immediate: true },
 );
 watch(
@@ -1046,6 +1095,7 @@ watchHeadmanHomeworkAvailability({
     calendarRevision += 1;
     dayLoading.value = false;
     dayLoaded.value = false;
+    currentHomeworkDates.value = new Set();
     calendarLoading.value = false;
   },
   loadContext: () => {
@@ -1115,10 +1165,10 @@ defineExpose({ back, openCreate, selectRootDate, openDetail });
       message="Сейчас у тебя нет доступа к заданиям группы."
     />
     <StudentWarningBlock
-      v-else-if="error"
+      v-else-if="displayedError"
       severity="error"
       title="Не удалось завершить действие"
-      :message="error"
+      :message="displayedError"
       v-bind="view === 'calendar' ? { actionLabel: 'Повторить' } : {}"
       @action="load"
     />
@@ -1164,13 +1214,6 @@ defineExpose({ back, openCreate, selectRootDate, openDetail });
           Открыть архив
         </button>
         <p
-          v-if="readIntent === null"
-          class="headman-homework__state"
-          role="status"
-        >
-          Выбери действие: выдать ДЗ, посмотреть актуальные или открыть архив.
-        </p>
-        <p
           v-if="dayLoading"
           role="status"
         >
@@ -1184,6 +1227,7 @@ defineExpose({ back, openCreate, selectRootDate, openDetail });
         <section
           v-if="readIntent !== null && semesterOptions.length > 0"
           class="headman-homework__calendar"
+          :data-current-homework="readIntent === 'current'"
           aria-label="Неделя домашних заданий"
         >
           <div class="headman-homework__calendar-heading">
@@ -1208,19 +1252,32 @@ defineExpose({ back, openCreate, selectRootDate, openDetail });
               </button>
             </div>
           </div>
-          <div class="headman-homework__week">
+          <div
+            ref="weekCalendar"
+            class="headman-homework__week"
+          >
             <button
               v-for="date in calendarDays"
               :key="date"
               type="button"
               :aria-pressed="selectedDate === date"
               :aria-current="date === today() ? 'date' : undefined"
-              :aria-label="formatDate(date)"
+              :aria-label="
+                currentHomeworkDates.has(date) ? `${formatDate(date)} · Есть задания` : formatDate(date)
+              "
+              :data-has-homework="currentHomeworkDates.has(date)"
               @click="selectRootDate(date)"
             >
               <span>{{ shortWeekday(date) }}</span><strong>{{ Number(date.slice(8)) }}</strong>
             </button>
           </div>
+          <p
+            v-if="weekMarkersUnavailable"
+            class="headman-homework__state"
+            role="status"
+          >
+            Не удалось показать все отметки в календаре.
+          </p>
         </section>
         <h2
           v-if="readIntent !== null && semesterOptions.length > 0"
@@ -1238,12 +1295,20 @@ defineExpose({ back, openCreate, selectRootDate, openDetail });
         >
           <span aria-hidden="true">＋</span>Выдать ДЗ
         </button>
-        <p
-          v-if="dayLoaded && !dayLoading && !error && dateItems.length === 0"
-          class="headman-homework__state"
+        <div
+          v-if="dayLoaded && !dayLoading && !displayedError && dateItems.length === 0"
+          class="headman-homework__empty"
         >
-          На этот день заданий нет.
-        </p>
+          <!-- Trusted project SVG; its colors use the active theme tokens. -->
+          <!-- eslint-disable vue/no-v-html -->
+          <span
+            class="headman-homework__empty-art"
+            aria-hidden="true"
+            v-html="emptyHomeworkIllustration"
+          />
+          <!-- eslint-enable vue/no-v-html -->
+          <p>На этот день заданий нет.</p>
+        </div>
         <button
           v-for="item in dateItems"
           :key="item.id"
@@ -1255,6 +1320,14 @@ defineExpose({ back, openCreate, selectRootDate, openDetail });
           <span><strong>{{ subjectName(item.subjectId) }}</strong><span>{{ item.title }}</span></span><SvgIcon
             :src="nextIcon"
           />
+        </button>
+        <button
+          v-if="readIntent === 'current' && selectedDate !== today()"
+          class="headman-homework__secondary headman-homework__today"
+          type="button"
+          @click="returnToToday"
+        >
+          Сегодня
         </button>
       </template>
       <template v-else-if="view === 'detail' && detail">
@@ -1581,7 +1654,7 @@ defineExpose({ back, openCreate, selectRootDate, openDetail });
             class="headman-homework__content"
             @submit.prevent="primaryAction"
           >
-            <label class="headman-homework__field"><span>Название</span><input
+            <label class="headman-homework__field headman-homework__field--text"><span>Название</span><input
               v-model="title"
               maxlength="255"
               required

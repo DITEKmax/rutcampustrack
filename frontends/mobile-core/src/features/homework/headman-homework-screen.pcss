@@ -85,6 +85,7 @@
   gap: var(--rct-space-1);
 }
 .headman-homework__week button {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -107,9 +108,42 @@
 .headman-homework__week button[aria-pressed='true'] span {
   color: inherit;
 }
+.headman-homework__calendar[data-current-homework='true']
+  button[aria-current='date'] strong {
+  text-decoration: underline;
+  text-underline-offset: var(--rct-space-1);
+}
+.headman-homework__week button[data-has-homework='true']::after {
+  position: absolute;
+  inset-block-start: var(--rct-space-1);
+  inset-inline-end: var(--rct-space-1);
+  inline-size: var(--rct-homework-calendar-dot-size);
+  block-size: var(--rct-homework-calendar-dot-size);
+  border-radius: var(--rct-radius-full);
+  background: currentColor;
+  content: '';
+}
 .headman-homework__day-title {
   font-size: var(--rct-font-size-body);
   margin-block-start: var(--rct-space-1) !important;
+}
+.headman-homework__empty {
+  display: grid;
+  justify-items: center;
+  gap: var(--rct-space-2);
+  padding-block: var(--rct-space-4);
+  color: var(--rct-color-text-secondary);
+  font-size: var(--rct-font-size-caption);
+  text-align: center;
+}
+.headman-homework__empty-art {
+  inline-size: calc(var(--rct-space-6) * 4);
+  max-inline-size: 100%;
+}
+.headman-homework__empty-art svg {
+  display: block;
+  inline-size: 100%;
+  block-size: auto;
 }
 .headman-homework__primary {
   min-block-size: calc(var(--rct-control-min-touch) + var(--rct-space-1));
@@ -392,6 +426,13 @@
   min-block-size: calc(var(--rct-form-textarea-height) + var(--rct-space-4) * 2);
   line-height: var(--rct-leading-snug);
 }
+.headman-homework__field--text:focus-within {
+  outline: var(--rct-focus-width) solid var(--rct-color-accent-now);
+  outline-offset: var(--rct-focus-offset);
+}
+.headman-homework__field--text :is(input, textarea):focus {
+  outline: none;
+}
 .headman-homework__field--link input {
   background: var(--rct-color-surface-float);
   border-radius: var(--rct-radius-xl);
@@ -478,6 +519,29 @@
   padding: var(--rct-space-3);
   background: var(--rct-color-surface-float);
   color: var(--rct-color-text-primary);
+}
+.headman-homework:has(> .headman-homework__today) {
+  --headman-homework-today-bottom: calc(env(safe-area-inset-bottom, 0rem) + var(--rct-space-4));
+  padding-block-end: calc(
+    var(--headman-homework-today-bottom) + var(--rct-control-min-touch) + var(--rct-space-6)
+  );
+}
+.mobile-shell[data-dock-visible='true'] .headman-homework:has(> .headman-homework__today) {
+  --headman-homework-today-bottom: calc(
+    env(safe-area-inset-bottom, 0rem) + var(--rct-mobile-dock-height) +
+      var(--rct-mobile-dock-bottom) + var(--rct-space-3)
+  );
+}
+.headman-homework__today {
+  position: fixed;
+  z-index: 2;
+  inset-inline: var(--rct-space-4);
+  inset-block-end: var(--headman-homework-today-bottom);
+  inline-size: calc(100% - var(--rct-space-4) * 2);
+  max-inline-size: var(--rct-mobile-content-width);
+  margin-inline: auto;
+  padding-block: var(--rct-space-2);
+  background: var(--rct-color-surface-raised);
 }
 .headman-homework__history {
   padding-inline-start: var(--rct-space-5);

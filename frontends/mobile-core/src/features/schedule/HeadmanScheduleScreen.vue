@@ -308,7 +308,7 @@ const actionLogSubject = ref('Занятие группы');
 const actionLogRouteId = 'headman-today/actions' as const;
 const homeworkStartContext = shallowRef<HeadmanHomeworkLessonContext | null>(null);
 const homeworkFromMore = ref(false);
-const homeworkLanding = ref(false);
+const homeworkTaskDock = ref(false);
 const homeworkScreen = ref<InstanceType<typeof HeadmanHomeworkScreen> | null>(null);
 const homeTaskOpen = ref(false);
 const homeScreen = ref<InstanceType<typeof HeadmanHomeScreen> | null>(null);
@@ -475,7 +475,7 @@ let stopNavigation = navigation.subscribe(() => {
   if (next.id !== homeworkRouteId) {
     homeworkStartContext.value = null;
     homeworkFromMore.value = false;
-    homeworkLanding.value = false;
+    homeworkTaskDock.value = false;
   }
   if (next.root !== 'headman-attendance') journalTaskOpen.value = false;
   journalOpen.value = next.root === 'headman-attendance';
@@ -773,7 +773,7 @@ function openHomework(
   if (context && (route.value.id !== 'headman-today' || props.offline || props.readOnly)) return;
   homeworkStartContext.value = context;
   homeworkFromMore.value = fromMore;
-  homeworkLanding.value = fromMore;
+  homeworkTaskDock.value = fromMore;
   navigation.push(nestedRoute('headman-more', homeworkRouteId, 'task'), {
     preserveHistory: context !== null,
   });
@@ -1876,8 +1876,8 @@ defineExpose({ openNotificationAction });
     :host="host"
     :show-task-dock="
       route.id === scheduleRouteId ||
-      (route.id === lessonManagementRouteId && managementView === 'agenda') ||
-      (route.id === homeworkRouteId && homeworkFromMore && homeworkLanding)
+        (route.id === lessonManagementRouteId && managementView === 'agenda') ||
+        (route.id === homeworkRouteId && homeworkFromMore && homeworkTaskDock)
     "
     data-headman-ui
     :data-theme="resolvedTheme"
@@ -2087,7 +2087,7 @@ defineExpose({ openNotificationAction });
       :user-id="homeworkActorUserId"
       :offline="offline"
       :read-only="readOnly"
-      @landing-change="homeworkLanding = $event"
+      @task-dock-change="homeworkTaskDock = $event"
       @error="forwardError"
     />
     <template v-else-if="route.root === 'profile'">

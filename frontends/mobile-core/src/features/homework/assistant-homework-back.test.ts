@@ -40,6 +40,7 @@ import {
   type HeadmanHomeworkCreateInput,
   type HeadmanHomeworkCreateResult,
   type HeadmanHomeworkPublicationReceipt,
+  type HeadmanHomeworkSemester,
   type HeadmanHomeworkUpdateInput,
   type HeadmanManagedHomework,
 } from './headman-homework-client'
@@ -71,21 +72,25 @@ interface Node {
   text: string
   value: unknown
   selected: boolean
+  focused: boolean
   props: Record<string, unknown>
   children: Node[]
   parent: Node | null
   options: Node[]
   addEventListener: () => void
   getRootNode: () => { activeElement: null }
+  querySelector: (selector: string) => Node | null
+  focus: () => void
   close?: () => void
 }
 function node(tag = ''): Node {
-  return {
+  const element: Node = {
     tag,
     tagName: tag.toUpperCase(),
     text: '',
     value: '',
     selected: false,
+    focused: false,
     props: {},
     children: [],
     parent: null,
@@ -94,9 +99,17 @@ function node(tag = ''): Node {
     },
     addEventListener: () => undefined,
     getRootNode: () => ({ activeElement: null }),
+    querySelector: (selector) =>
+      selector === '[aria-current="date"]'
+        ? nodes(element).find((child) => child.props['aria-current'] === 'date') ?? null
+        : null,
+    focus: () => {
+      element.focused = true
+    },
     // These tests never open a dialog; native close() on a closed dialog is a no-op.
     ...(tag === 'dialog' ? { close: () => undefined } : {}),
   }
+  return element
 }
 function remove(node: Node): void {
   if (node.parent) node.parent.children = node.parent.children.filter((child) => child !== node)
@@ -147,9 +160,15 @@ const apps: App[] = []
 afterEach(() => {
   for (const app of apps.splice(0)) app.unmount()
   vi.unstubAllGlobals()
+  vi.useRealTimers()
 })
 
-async function mount(hostBack = false, editing = false, entryOnly = false) {
+async function mount(
+  hostBack = false,
+  editing = false,
+  entryOnly = false,
+  semesterOverrides?: readonly HeadmanHomeworkSemester[],
+) {
   vi.stubGlobal('Document', class {})
   vi.stubGlobal('ShadowRoot', class {})
   const today = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Moscow' })
@@ -177,6 +196,7 @@ async function mount(hostBack = false, editing = false, entryOnly = false) {
     receipt: HeadmanHomeworkPublicationReceipt | null
   }[] = []
   const lists: {
+    semester: number
     archived: boolean
     response: ReturnType<typeof deferred<readonly HeadmanManagedHomework[]>>
   }[] = []
@@ -191,10 +211,10 @@ async function mount(hostBack = false, editing = false, entryOnly = false) {
       dateTo: null,
       active: true,
     }),
-    listHomeworks: async (_group: number, _semester: number, archived = false) => {
+    listHomeworks: async (_group: number, semester: number, archived = false) => {
       if (!entryOnly) return editing ? [existing] : [...records.values()]
       const response = deferred<readonly HeadmanManagedHomework[]>()
-      lists.push({ archived, response })
+      lists.push({ semester, archived, response })
       return response.promise
     },
     listSubjects: async () => [{ id: 88, name: 'Предмет' }],
@@ -286,9 +306,10 @@ async function mount(hostBack = false, editing = false, entryOnly = false) {
         ],
       },
     ],
-    listSemesters: async () => [
-      { id: 12, name: 'Семестр', dateFrom: '2026-01-01', dateTo: '2027-12-31', active: true },
-    ],
+    listSemesters: async () =>
+      semesterOverrides ?? [
+        { id: 12, name: 'Семестр', dateFrom: '2026-01-01', dateTo: '2027-12-31', active: true },
+      ],
   } as unknown as HeadmanSubjectsApi
   const props = shallowReactive({
     subjectsApi,
@@ -417,11 +438,14 @@ async function mount(hostBack = false, editing = false, entryOnly = false) {
 }
 
 describe('homework mutation across real parent navigation and form', () => {
-  it('defers list reads until a chosen action and distinguishes an unread day from a successful empty read', async () => {
+  it('defers list reads until a chosen action and only illustrates a successful empty read', async () => {
     const screen = await mount(false, false, true)
+    const emptyArt = () =>
+      nodes(screen.root).find((node) => node.props.class === 'headman-homework__empty-art')
     expect(screen.lists).toHaveLength(0)
-    expect(text(screen.root)).toContain('Выбери действие')
+    expect(text(screen.root)).not.toContain('Выбери действие')
     expect(text(screen.root)).not.toContain('На этот день заданий нет.')
+    expect(emptyArt()).toBeUndefined()
     screen.props.offline = true
     await settle()
     screen.props.offline = false
@@ -435,9 +459,11 @@ describe('homework mutation across real parent navigation and form', () => {
     await screen.click('Посмотреть актуальные')
     expect(screen.lists.map((read) => read.archived)).toEqual([false])
     expect(text(screen.root)).not.toContain('На этот день заданий нет.')
+    expect(emptyArt()).toBeUndefined()
     screen.lists[0]!.response.resolve([])
     await settle()
     expect(text(screen.root)).toContain('На этот день заданий нет.')
+    expect(emptyArt()?.props['aria-hidden']).toBe('true')
     await screen.click('Открыть архив')
     expect(screen.lists.map((read) => read.archived)).toEqual([false, true])
     expect(text(screen.root)).not.toContain('На этот день заданий нет.')
@@ -445,6 +471,58 @@ describe('homework mutation across real parent navigation and form', () => {
     await settle()
     expect(text(screen.root)).toContain(screen.existing.title)
     expect(text(screen.root)).not.toContain('На этот день заданий нет.')
+    await screen.click('Посмотреть актуальные')
+    screen.lists[2]!.response.reject(new Error('Список заданий недоступен.'))
+    await settle()
+    expect(text(screen.root)).toContain('Список заданий недоступен.')
+    expect(emptyArt()).toBeUndefined()
+  })
+
+  it('marks current homework across semester boundaries without delaying the selected day', async () => {
+    vi.setSystemTime(new Date('2026-11-03T22:00:00Z'))
+    const screen = await mount(false, false, true, [
+      { id: 13, name: 'Предыдущий', dateFrom: '2026-09-01', dateTo: '2026-11-03', active: false },
+      { id: 12, name: 'Текущий', dateFrom: '2026-11-05', dateTo: '2027-01-30', active: true },
+    ])
+    const dates = () =>
+      nodes(screen.root)
+        .find((node) => node.props.class === 'headman-homework__week')!
+        .children.filter((node) => node.tag === 'button')
+    const actualToday = () => dates().find((node) => node.props['aria-current'] === 'date')
+    const first = { ...screen.existing, semesterId: 13, lessonDate: '2026-11-02' }
+    const second = { ...screen.existing, lessonDate: '2026-11-05', title: 'Задание соседнего дня' }
+
+    await screen.click('Посмотреть актуальные')
+    expect(screen.lists.map(({ semester }) => semester)).toEqual([13, 12])
+    expect(nodes(screen.root).find((node) => node.props['data-dock-visible'] === true)).toBeDefined()
+    expect(actualToday()?.props['aria-label']).toContain('4 ноября')
+    expect(actualToday()?.props['aria-pressed']).toBe(true)
+    screen.lists[0]!.response.resolve([first, { ...first, lessonDate: '2026-11-03', archived: true }])
+    screen.lists[1]!.response.resolve([second])
+    await settle()
+    const marked = dates().filter((node) => String(node.props['aria-label']).includes('Есть задания'))
+    expect(marked.map((node) => node.props['aria-label'])).toEqual([
+      expect.stringContaining('2 ноября'),
+      expect.stringContaining('5 ноября'),
+    ])
+    expect(text(screen.root)).not.toContain(second.title)
+
+    await screen.click(String(marked[1]!.props['aria-label']))
+    expect(actualToday()?.props['aria-pressed']).toBe(false)
+    expect(screen.lists.slice(2).map(({ semester }) => semester)).toEqual([12, 13])
+    screen.lists[2]!.response.resolve([second])
+    await settle()
+    expect(text(screen.root)).toContain(second.title)
+    screen.lists[3]!.response.reject(new Error('Соседний семестр недоступен.'))
+    await settle()
+    expect(text(screen.root)).toContain('Не удалось показать все отметки в календаре.')
+    expect(text(screen.root)).toContain(second.title)
+
+    await screen.click('Сегодня')
+    expect(actualToday()?.props['aria-pressed']).toBe(true)
+    expect(actualToday()?.focused).toBe(true)
+    expect(text(screen.root)).not.toContain(second.title)
+    expect(text(screen.root)).not.toContain('Не удалось показать все отметки в календаре.')
   })
 
   it('does not publish a late current-list result after the archive action takes ownership', async () => {

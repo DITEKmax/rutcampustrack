@@ -74,21 +74,27 @@
   @mixin rct-type-lesson-meta;
 }
 .map-viewer {
+  position: relative;
   display: grid;
   gap: var(--rct-space-2);
   min-inline-size: 0;
 }
 .map-zoom-controls {
+  position: absolute;
+  z-index: 1;
+  inset-block-start: var(--rct-space-2);
+  inset-inline-end: var(--rct-space-2);
   display: flex;
-  flex-wrap: wrap;
-  gap: var(--rct-space-2);
+  gap: var(--rct-space-1);
 }
 .map-zoom-button {
-  min-inline-size: var(--rct-control-min-touch);
+  display: grid;
+  place-items: center;
+  inline-size: var(--rct-control-min-touch);
   min-block-size: var(--rct-control-min-touch);
-  padding: 0 var(--rct-space-3);
+  padding: 0;
   border: 0;
-  border-radius: var(--rct-radius-full);
+  border-radius: var(--rct-radius-lg);
   color: var(--rct-color-text-primary);
   background: var(--rct-color-surface-float);
   font: inherit;
@@ -107,6 +113,8 @@
 .map-preview {
   position: relative;
   aspect-ratio: var(--map-aspect-ratio);
+  inline-size: 100%;
+  min-inline-size: 0;
   min-block-size: var(--rct-state-min-height);
   overflow: auto;
   border-radius: var(--rct-radius-lg);
@@ -270,62 +278,6 @@
   margin: 0;
   color: var(--rct-color-text-secondary);
   @mixin rct-type-lesson-meta;
-}
-:where([data-student-ui]) .map-viewer,
-:where([data-student-ui]):is(.map-viewer) {
-  position: relative;
-  display: grid;
-  gap: var(--rct-space-2);
-  min-inline-size: 0;
-}
-:where([data-student-ui]) .map-zoom-controls,
-:where([data-student-ui]):is(.map-zoom-controls) {
-  position: absolute;
-  z-index: 1;
-  inset-block-start: var(--rct-space-2);
-  inset-inline-end: var(--rct-space-2);
-  display: flex;
-  gap: var(--rct-space-1);
-}
-:where([data-student-ui]) .map-zoom-button,
-:where([data-student-ui]):is(.map-zoom-button) {
-  min-inline-size: var(--rct-control-min-touch);
-  min-block-size: var(--rct-control-min-touch);
-  display: grid;
-  place-items: center;
-  inline-size: var(--rct-control-min-touch);
-  padding: 0;
-  border: 0;
-  border-radius: var(--rct-radius-lg);
-  color: var(--rct-color-text-primary);
-  background: var(--rct-color-surface-float);
-  font: inherit;
-  cursor: pointer;
-  @mixin rct-focus-ring;
-}
-:where([data-student-ui]) .map-zoom-button:disabled,
-:where([data-student-ui]):is(.map-zoom-button:disabled) {
-  color: var(--rct-color-text-secondary);
-  cursor: default;
-}
-:where([data-student-ui]) .map-zoom-status,
-:where([data-student-ui]):is(.map-zoom-status) {
-  grid-row: 2;
-  margin: 0;
-  color: var(--rct-color-text-secondary);
-  @mixin rct-type-lesson-meta;
-}
-:where([data-student-ui]) .map-preview,
-:where([data-student-ui]):is(.map-preview) {
-  grid-row: 1;
-  position: relative;
-  aspect-ratio: var(--map-aspect-ratio);
-  min-block-size: var(--rct-state-min-height);
-  overflow: auto;
-  border-radius: var(--rct-radius-lg);
-  background: var(--rct-color-surface-raised);
-  scrollbar-width: none;
-  @mixin rct-focus-ring;
 }
 :where([data-student-ui]) .map-preview::-webkit-scrollbar,
 :where([data-student-ui]):is(.map-preview::-webkit-scrollbar) {

@@ -35,7 +35,6 @@ const currentPlan = ref<MapPlan | null>(null);
 const currentPlanFloorKey = ref<string | null>(null);
 const svgUrl = ref<string | null>(null);
 const pngUrl = ref<string | null>(null);
-const usageError = ref<string | null>(null);
 const svgAssetRequest = ref(0);
 let assetRequest = 0;
 let assetGeneration: number | undefined;
@@ -308,9 +307,6 @@ async function loadCurrentFloorPlan(): Promise<void> {
       openRecording = false;
     }
     if (!openRecorded) openRecording = false;
-    usageError.value = openIntentId
-      ? null
-      : 'Просмотр доступен, но статистику открытия сохранить не удалось.';
 
     const downloads: Promise<void>[] = [];
     if (plan.svg.state === 'ready' && plan.svg.id) {
@@ -400,18 +396,10 @@ function handleSvgLoaded(): void {
         props.client.isCurrentGeneration(generation)
       ) {
         openRecorded = true;
-        usageError.value = null;
       }
     })
-    .catch((cause: unknown) => {
-      if (
-        requestId === assetRequest &&
-        !disposed &&
-        !isAbortError(cause) &&
-        props.client.isCurrentGeneration(generation)
-      ) {
-        usageError.value = 'Просмотр доступен, но статистику открытия сохранить не удалось.';
-      }
+    .catch(() => {
+      // Recording a view is optional for the map viewer.
     })
     .finally(() => {
       if (requestId === assetRequest && intentKey === openIntentKey && intentId === openIntentId) {
@@ -426,7 +414,6 @@ function invalidateOpenIntent(): void {
   openIntentGeneration = undefined;
   openRecorded = false;
   openRecording = false;
-  usageError.value = null;
 }
 
 function isAbortError(cause: unknown): boolean {
@@ -579,20 +566,9 @@ function formatMessage(state: string | undefined, format: 'SVG' | 'PNG'): string
                   :disabled="!viewerReady || zoom === 1"
                   @click="resetView"
                 >
-                  <MobileIcon
-                    v-if="studentPresentation || headmanPresentation"
-                    name="retry"
-                  /><span v-else>Сбросить масштаб</span>
+                  <MobileIcon name="retry" />
                 </button>
               </div>
-              <p
-                class="map-zoom-status"
-                role="status"
-                aria-live="polite"
-                aria-atomic="true"
-              >
-                Масштаб {{ Math.round(zoom * 100) }}%
-              </p>
               <div
                 ref="viewport"
                 class="map-preview"
@@ -617,6 +593,14 @@ function formatMessage(state: string | undefined, format: 'SVG' | 'PNG'): string
                   @load="previewLoaded"
                 />
               </div>
+              <p
+                class="map-zoom-status"
+                role="status"
+                aria-live="polite"
+                aria-atomic="true"
+              >
+                Масштаб {{ Math.round(zoom * 100) }}%
+              </p>
             </div>
             <div
               v-else-if="!loadingAsset && !error"
@@ -659,11 +643,6 @@ function formatMessage(state: string | undefined, format: 'SVG' | 'PNG'): string
               :severity="selectedPlan[format].state === 'failed' ? 'error' : 'warning'"
               :title="formatMessage(selectedPlan[format].state, format === 'svg' ? 'SVG' : 'PNG')"
               message="Выбери другой этаж или воспользуйся доступным форматом схемы."
-            />
-            <StudentWarningBlock
-              v-if="!studentPresentation && usageError"
-              title="Открытие не сохранено"
-              :message="usageError"
             />
           </section>
           <div

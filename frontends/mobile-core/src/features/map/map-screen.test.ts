@@ -87,7 +87,7 @@ afterEach(() => {
   vi.restoreAllMocks()
 })
 
-it('keeps reset, zoom bounds, keyboard and mouse pan usable on the loaded student map', async () => {
+it.each([true, false])('keeps the loaded map usable (student: %s)', async (student) => {
   vi.stubGlobal('HTMLImageElement', Element)
   const client = new CampusMapClient({ accessToken: () => null })
   vi.spyOn(client, 'getManifest').mockResolvedValue({
@@ -123,9 +123,13 @@ it('keeps reset, zoom bounds, keyboard and mouse pan usable on the loaded studen
   vi.spyOn(client, 'downloadAsset').mockResolvedValue(
     new Blob(['<svg/>'], { type: 'image/svg+xml' }),
   )
-  vi.spyOn(client, 'recordFloorOpen').mockResolvedValue()
+  const recordFloorOpen = vi
+    .spyOn(client, 'recordFloorOpen')
+    .mockRejectedValue(new Error('Usage request failed'))
   const root = new Element('root')
-  app = renderer.createApp({ render: () => h(MapScreen, { client, studentPresentation: true }) })
+  app = renderer.createApp({
+    render: () => h(MapScreen, { client, studentPresentation: student, compactPresentation: !student }),
+  })
   app.mount(root)
   await flush()
   const button = (label: string) =>
@@ -138,6 +142,8 @@ it('keeps reset, zoom bounds, keyboard and mouse pan usable on the loaded studen
   const image = all(root, (n) => n.tag === 'img')[0]!
   ;(image.props.onLoad as (event: unknown) => void)({ currentTarget: image })
   await flush()
+  expect(recordFloorOpen).toHaveBeenCalledOnce()
+  expect(content(root)).not.toContain('Открытие не сохранено')
   expect(zoomIn.props.disabled).toBe(false)
   expect(zoomOut.props.disabled).toBe(true)
   const click = async (node: Element) => {

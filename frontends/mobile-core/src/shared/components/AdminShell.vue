@@ -11,6 +11,7 @@ import type { AdminAccessProfile } from '../../features/admin-access/admin-acces
 import type { AdminRoleRoute } from '../admin-navigation';
 import type { MobileHostAdapter } from '../host';
 import { nestedRoute, rootRoute, type MobileRootRouteId } from '../navigation';
+import type { MobileThemeResolvedMode } from '../theme';
 import './admin-shell.pcss';
 
 const props = withDefaults(
@@ -19,8 +20,9 @@ const props = withDefaults(
     authority?: AdminAccessProfile | null;
     task?: boolean;
     host?: MobileHostAdapter | null;
+    theme?: MobileThemeResolvedMode | null;
   }>(),
-  { authority: null, task: false, host: null },
+  { authority: null, task: false, host: null, theme: null },
 );
 const emit = defineEmits<{ navigate: [route: AdminRoleRoute]; back: [] }>();
 const items = computed(() => createAdminNavigationItems(props.authority));
@@ -42,6 +44,8 @@ function navigate(id: MobileRootRouteId): void {
 <template>
   <MobileShell
     class="admin-shell"
+    :data-theme="theme"
+    :style="theme ? { colorScheme: theme } : undefined"
     :data-back-owner="host?.backOwner ?? 'product'"
     :route="route"
     :nav-items="items"

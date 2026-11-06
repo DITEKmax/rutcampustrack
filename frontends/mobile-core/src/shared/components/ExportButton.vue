@@ -23,9 +23,10 @@ const props = withDefaults(
     weeks?: (() => Promise<readonly HeadmanWeeklyWeekOption[]>) | null;
     scopeKey: string;
     disabled?: boolean;
+    inline?: boolean;
     label?: string;
   }>(),
-  { disabled: false, label: 'Выгрузка', weeks: null },
+  { disabled: false, inline: false, label: 'Выгрузка', weeks: null },
 );
 const emit = defineEmits<{ error: [cause: unknown] }>();
 const open = ref(false),
@@ -49,13 +50,12 @@ function invalidate(): void {
   status.value = null;
   error.value = null;
 }
-watch(() => [props.scopeKey, props.port, props.disabled] as const, invalidate, { flush: 'sync' });
 onBeforeUnmount(() => {
   disposed = true;
   invalidate();
 });
 async function show(): Promise<void> {
-  if (open.value) {
+  if (!props.inline && open.value) {
     open.value = false;
     return;
   }
@@ -85,6 +85,19 @@ async function show(): Promise<void> {
     if (current === revision) busy.value = false;
   }
 }
+watch(
+  () => [props.scopeKey, props.port, props.disabled, props.inline] as const,
+  () => {
+    invalidate();
+    if (!props.inline) return;
+    formatOptions.value = [];
+    selected.value = '';
+    availableWeeks.value = [];
+    selectedWeeks.value = [];
+    void show();
+  },
+  { immediate: true, flush: 'sync' },
+);
 async function download(): Promise<void> {
   const port = props.port,
     format = selected.value;
@@ -142,9 +155,11 @@ async function download(): Promise<void> {
 <template>
   <section
     class="rct-export"
+    :class="{ 'rct-export--inline': inline }"
     :aria-busy="busy"
   >
     <button
+      v-if="!inline"
       type="button"
       :disabled="disabled || !port || busy"
       :aria-expanded="open"
@@ -153,12 +168,12 @@ async function download(): Promise<void> {
       <MobileIcon name="download" />{{ label }}
     </button>
     <div
-      v-if="open"
+      v-if="open || inline"
       class="rct-export__options"
     >
       <label>Формат выгрузки<select
         v-model="selected"
-        :disabled="busy"
+        :disabled="busy || (inline && (!port || disabled || !formatOptions.length))"
       ><option
         v-for="format in formatOptions"
         :key="format.code"
@@ -200,6 +215,7 @@ async function download(): Promise<void> {
           busy ||
             !selected ||
             disabled ||
+            (inline && !port) ||
             (!!weeks && period === 'weeks' && selectedWeeks.length === 0)
         "
         @click="download"
@@ -229,7 +245,16 @@ async function download(): Promise<void> {
       role="alert"
     >
       {{ error }}
-    </p><p
+    </p>
+    <button
+      v-if="inline && error && !open"
+      type="button"
+      :disabled="disabled || !port || busy"
+      @click="show"
+    >
+      Повторить загрузку форматов
+    </button>
+    <p
       v-else-if="status"
       role="status"
     >

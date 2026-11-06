@@ -129,6 +129,19 @@ export interface AdminRecoveryLink {
   readonly expiresInSeconds: number
 }
 
+/** Direct, no-store disclosure; never include this value in identity recovery references. */
+export interface AdminCredentialView {
+  readonly userId: string
+  readonly credentialsVersion: string
+  readonly state: 'GENERATED' | 'USER_CHANGED' | 'UNAVAILABLE'
+  readonly origin: 'initial' | 'headman_reset' | 'admin_reset' | null
+  readonly password: string | null
+}
+
+interface AdminUserReceiptOptions {
+  readonly includeInitialPassword?: boolean
+}
+
 export interface AdminUsersApiOptions {
   readonly accessToken: () => string | null
   readonly sessionScopeFor?: () => string | null
@@ -409,7 +422,8 @@ export class AdminUsersClient {
         const archived = group.archived === undefined && !includeArchived ? false : group.archived
         if (typeof archived !== 'boolean')
           throw new Error('Не удалось подтвердить состояние группы.')
-        if (!includeArchived && archived) throw new Error('Архивная группа недоступна для новой роли.')
+        if (!includeArchived && archived)
+          throw new Error('Архивная группа недоступна для новой роли.')
         return {
           id: positiveInteger(group.id, 'group.id'),
           name: requiredText(group.name, 'group.name'),
@@ -427,17 +441,21 @@ export class AdminUsersClient {
     positiveInteger(id, 'userId')
     return this.request<unknown>(
       `${AdminUsersClient.basePath}/${id}`,
-      signal ? { signal } : undefined,
-    ).then((value) => normalizeUser(value, true))
+      { cache: 'no-store', ...(signal ? { signal } : {}) },
+    ).then((value) => normalizeUser(value))
   }
 
-  createUser(input: CreateAdminUserInput, signal?: AbortSignal): Promise<AdminUser> {
+  createUser(
+    input: CreateAdminUserInput,
+    signal?: AbortSignal,
+    options: AdminUserReceiptOptions = {},
+  ): Promise<AdminUser> {
     const payload = normalizeCreateInput(input)
     return this.identityRequest(AdminUsersClient.basePath, {
       method: 'POST',
       body: JSON.stringify(payload),
       ...(signal ? { signal } : {}),
-    }).then((value) => normalizeUser(value, true))
+    }).then((value) => normalizeUser(value, options.includeInitialPassword !== false))
   }
 
   updateProfile(
@@ -552,6 +570,46 @@ export class AdminUsersClient {
     )
   }
 
+  async readCredential(id: number, signal?: AbortSignal): Promise<AdminCredentialView> {
+    positiveInteger(id, 'userId')
+    return normalizeCredential(
+      await this.request<unknown>(`/api/auth/admin/users/${id}/initial-password`, {
+        cache: 'no-store',
+        ...(signal ? { signal } : {}),
+      }),
+      id,
+    )
+  }
+
+  async generatePassword(
+    id: number,
+    expectedCredentialsVersion: string,
+    signal?: AbortSignal,
+  ): Promise<AdminCredentialView> {
+    positiveInteger(id, 'userId')
+    credentialVersion(expectedCredentialsVersion)
+    const result = normalizeCredential(
+      await this.request<unknown>(
+        `/api/auth/admin/users/${id}/generated-password`,
+        {
+          method: 'POST',
+          cache: 'no-store',
+          body: JSON.stringify({ expectedCredentialsVersion }),
+          ...(signal ? { signal } : {}),
+        },
+        true,
+      ),
+      id,
+    )
+    if (
+      result.state !== 'GENERATED' ||
+      result.origin !== 'admin_reset' ||
+      BigInt(result.credentialsVersion) <= BigInt(expectedCredentialsVersion)
+    )
+      throw new Error('Сервер не подтвердил текущий сгенерированный пароль.')
+    return result
+  }
+
   async issueRecoveryLink(id: number, signal?: AbortSignal): Promise<AdminRecoveryLink> {
     positiveInteger(id, 'userId')
     const value = requiredRecord(
@@ -603,7 +661,7 @@ export class AdminUsersClient {
     return this.identity.pending || Boolean(this.recovery?.reconcileId)
   }
 
-  async resumeIdentityOperation(): Promise<{
+  async resumeIdentityOperation(options: AdminUserReceiptOptions = {}): Promise<{
     user: AdminUser | null
     created: boolean
     recovered?: boolean
@@ -646,10 +704,8 @@ export class AdminUsersClient {
       return { user: null, created: false }
     const value = (await response.json()) as unknown
     this.options.assertCurrent?.()
-    return {
-      user: normalizeUser(value, path === AdminUsersClient.basePath),
-      created: path === AdminUsersClient.basePath,
-    }
+    const created = path === AdminUsersClient.basePath
+    return { user: normalizeUser(value, created && options.includeInitialPassword !== false), created }
   }
 
   private async identityRequest(path: string, init: RequestInit): Promise<unknown> {
@@ -661,7 +717,9 @@ export class AdminUsersClient {
 
   private async request<T>(path: string, init?: RequestInit, retried = false): Promise<T> {
     const response = await this.requestResponse(path, init, retried)
+    init?.signal?.throwIfAborted()
     const value = (await response.json()) as T
+    init?.signal?.throwIfAborted()
     this.options.assertCurrent?.()
     return value
   }
@@ -671,6 +729,7 @@ export class AdminUsersClient {
     init?: RequestInit,
     retried = false,
   ): Promise<Response> {
+    init?.signal?.throwIfAborted()
     this.options.assertCurrent?.()
     const token = this.options.accessToken()
     const headers = new Headers(init?.headers)
@@ -678,6 +737,7 @@ export class AdminUsersClient {
     if (typeof init?.body === 'string') headers.set('Content-Type', 'application/json')
     if (token) headers.set('Authorization', `Bearer ${token}`)
     const response = await this.fetcher(path, { ...init, headers, credentials: 'include' })
+    init?.signal?.throwIfAborted()
     this.options.assertCurrent?.()
     if (response.ok) return response
     if (response.status === 401 && !retried && this.options.onUnauthorized) {
@@ -692,6 +752,40 @@ export class AdminUsersClient {
     }
     this.options.assertCurrent?.()
     throw new AdminUsersApiError(response, problem)
+  }
+}
+
+function credentialVersion(value: unknown): string {
+  if (
+    typeof value !== 'string' ||
+    !/^[1-9][0-9]{0,18}$/.test(value) ||
+    BigInt(value) > 9223372036854775807n
+  )
+    throw new Error('Не удалось подтвердить версию данных для входа.')
+  return value
+}
+
+function normalizeCredential(value: unknown, userId: number): AdminCredentialView {
+  const record = requiredRecord(value, 'credential')
+  const credentialsVersion = credentialVersion(record.credentialsVersion)
+  const state = record.state
+  if (
+    record.userId !== String(userId) ||
+    !['GENERATED', 'USER_CHANGED', 'UNAVAILABLE'].includes(String(state)) ||
+    (state === 'GENERATED'
+      ? !['initial', 'headman_reset', 'admin_reset'].includes(String(record.origin)) ||
+        typeof record.password !== 'string' ||
+        !record.password.trim() ||
+        record.password.length > 128
+      : record.origin !== null || record.password !== null)
+  )
+    throw new Error('Не удалось подтвердить текущие данные для входа.')
+  return {
+    userId: String(userId),
+    credentialsVersion,
+    state: state as AdminCredentialView['state'],
+    origin: record.origin as AdminCredentialView['origin'],
+    password: record.password as string | null,
   }
 }
 

@@ -200,9 +200,36 @@
   inline-size: var(--rct-icon-size);
   block-size: var(--rct-icon-size);
 }
-.admin-dashboard-screen__stats--activity .admin-dashboard-screen__stat {
-  background: var(--rct-color-surface-float);
-  gap: var(--rct-space-2) var(--rct-space-3);
+.admin-dashboard-screen__metrics {
+  inline-size: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  font-size: var(--rct-font-size-caption);
+}
+.admin-dashboard-screen__metrics :is(th, td) {
+  padding: var(--rct-space-3) var(--rct-space-1);
+  border-block-end: var(--rct-border-hairline) solid var(--rct-color-border-default);
+  vertical-align: middle;
+  overflow-wrap: anywhere;
+}
+.admin-dashboard-screen__metrics th {
+  text-align: start;
+  font-weight: var(--rct-font-weight-medium);
+}
+.admin-dashboard-screen__metrics thead {
+  color: var(--rct-color-text-secondary);
+}
+.admin-dashboard-screen__metrics th:first-child {
+  inline-size: 45%;
+}
+.admin-dashboard-screen__metrics td,
+.admin-dashboard-screen__metrics thead th:not(:first-child) {
+  text-align: end;
+}
+.admin-dashboard-screen__metrics td small {
+  display: block;
+  color: var(--rct-color-text-secondary);
+  font-size: var(--rct-font-size-micro);
 }
 .admin-dashboard-screen__stat dd {
   display: grid;

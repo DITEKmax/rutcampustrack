@@ -3,6 +3,11 @@
   min-block-size: 100dvh;
   background: var(--rct-color-surface-base);
 }
+.admin-shell[data-theme='light'],
+.admin-shell [data-theme='light'],
+[data-admin-ui][data-theme='light'] {
+  --rct-color-surface-base: #f2f2f4;
+}
 .admin-shell[data-dock-visible='true'] {
   padding-block-end: calc(
     var(--rct-mobile-dock-height) + var(--rct-mobile-dock-bottom) + var(--rct-space-4) +

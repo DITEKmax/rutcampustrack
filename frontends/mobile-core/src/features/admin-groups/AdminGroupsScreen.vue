@@ -16,6 +16,8 @@ import {
   adminGroupProgramTypes,
   type AdminGroupSort,
   type AdminGroup,
+  type AdminGroupsListInput,
+  normalizeAdminGroupCreate,
   type AdminGroupStatus,
   type HeadmanAssignmentPreview,
   type HeadmanRoster,
@@ -30,10 +32,11 @@ const props = withDefaults(
     reportDownload?: ReportDownloadPort | null;
     client: AdminGroupsClient;
     authority: AdminAccessProfile | null;
-    theme?: 'dark' | 'light';
+    theme?: 'dark' | 'light' | null;
   }>(),
   {
     reportDownload: null,
+    theme: null,
   },
 );
 
@@ -60,6 +63,8 @@ const identityChecking = ref(false);
 const recoveryCandidate = ref(Boolean(props.client.failedGroupOperationId));
 const recoveryOperationId = ref<string | null>(null);
 const recoveryReadFailed = ref(false);
+const creationReceipt = ref<Pick<AdminGroup, 'id' | 'name'> | null>(null);
+const creationReadFailed = ref(false);
 let identityObserverRevision = 0;
 const restoreSavingId = ref<number | null>(null);
 const restoreRefreshPendingIds = ref<ReadonlySet<number>>(new Set());
@@ -83,32 +88,27 @@ const sortOptions: readonly { value: AdminGroupSort | null; label: string }[] = 
   { value: 'programType,asc', label: 'По типу программы: 1–9' },
   { value: 'programType,desc', label: 'По типу программы: 9–1' },
 ];
-const exportScope = computed(() =>
-  JSON.stringify([
-    status.value,
-    search.value,
-    course.value,
-    programType.value,
-    registrySort.value,
-    props.authority,
-  ]),
-);
+const appliedRegistryQuery = ref<AdminGroupsListInput | null>(null);
+const exportScope = computed(() => JSON.stringify([appliedRegistryQuery.value, props.authority]));
 function exportRequest(format: ReportDownloadFormat): ReportDownloadTicketRequest {
-  const program = adminGroupProgramTypes.find((item) => item.digit === programType.value);
-  const sort = registrySort.value?.split(',');
+  const query = appliedRegistryQuery.value;
+  if (!query?.status) throw new Error('Сначала обнови реестр групп.');
+  const sort = query.sort?.[0]?.split(',');
   return {
     kind: 'ADMIN_GROUPS',
     adminGroups: {
-      status: status.value,
-      ...(search.value.trim() ? { search: search.value.trim() } : {}),
-      ...(course.value === null ? {} : { course: course.value }),
-      ...(program ? { studyMode: program.studyMode, educationLevel: program.educationLevel } : {}),
+      status: query.status,
+      ...(query.search?.trim() ? { search: query.search.trim() } : {}),
+      ...(query.course === undefined ? {} : { course: query.course }),
+      ...(query.studyMode ? { studyMode: query.studyMode } : {}),
+      ...(query.educationLevel ? { educationLevel: query.educationLevel } : {}),
       ...(sort ? { sorts: [{ field: sort[0]!, descending: sort[1] === 'desc' }] } : {}),
       format,
     },
   };
 }
 function openFilters(): void {
+  if (creationReceipt.value) return;
   filterStatus.value = status.value;
   filterCourse.value = course.value;
   filterProgramType.value = programType.value;
@@ -117,6 +117,7 @@ function openFilters(): void {
   filtersVisible.value = true;
 }
 function applyFilters(): void {
+  if (creationReceipt.value) return;
   invalidateRestoreForScopeChange();
   course.value = filterCourse.value;
   programType.value = filterProgramType.value;
@@ -128,6 +129,7 @@ function applyFilters(): void {
   void refresh();
 }
 function resetFilters(): void {
+  if (creationReceipt.value) return;
   course.value = null;
   programType.value = null;
   registrySort.value = null;
@@ -143,6 +145,17 @@ const archiveGroupSaving = ref(false);
 const alphabeticCode = ref('');
 const numericCode = ref('');
 const trainingDurationYears = ref('');
+const createInput = computed(() => {
+  try {
+    return normalizeAdminGroupCreate({
+      alphabeticCode: alphabeticCode.value,
+      numericCode: numericCode.value,
+      trainingDurationYears: Number(trainingDurationYears.value),
+    });
+  } catch {
+    return null;
+  }
+});
 const error = ref<string | null>(null);
 const notice = ref<string | null>(null);
 const assignmentGroup = ref<AdminGroup | null>(null);
@@ -340,6 +353,7 @@ const tabs: readonly { value: AdminGroupStatus; label: string }[] = [
 onMounted(() => void refresh());
 
 async function refresh(preserveMessages = false): Promise<'success' | 'failed' | 'stale'> {
+  appliedRegistryQuery.value = null;
   if (!canView.value) {
     groups.value = [];
     loading.value = false;
@@ -351,25 +365,42 @@ async function refresh(preserveMessages = false): Promise<'success' | 'failed' |
   listController = controller;
   loading.value = true;
   if (!preserveMessages) error.value = null;
+  const client = props.client;
+  const receipt = creationReceipt.value;
   try {
-    const result = await props.client.listGroups(
-      {
-        status: status.value,
-        search: search.value,
-        page: page.value,
-        size: 3,
-        ...(course.value === null ? {} : { course: course.value }),
-        ...(() => {
-          const program = adminGroupProgramTypes.find((item) => item.digit === programType.value);
-          return program
-            ? { studyMode: program.studyMode, educationLevel: program.educationLevel }
-            : {};
-        })(),
-        ...(registrySort.value === null ? {} : { sort: [registrySort.value] }),
-      },
-      controller.signal,
-    );
+    const program = adminGroupProgramTypes.find((item) => item.digit === programType.value);
+    const query: AdminGroupsListInput = {
+      status: receipt ? 'DRAFT' : status.value,
+      search: receipt?.name ?? search.value,
+      size: 3,
+      ...(course.value === null ? {} : { course: course.value }),
+      ...(program ? { studyMode: program.studyMode, educationLevel: program.educationLevel } : {}),
+      ...(registrySort.value === null ? {} : { sort: [registrySort.value] }),
+    };
+    const readPage = (number: number) =>
+      client.listGroups({ ...query, page: number }, controller.signal);
+    let locatedPage = receipt ? 0 : page.value;
+    let result = await readPage(locatedPage);
     if (!isCurrent(revision, controller)) return 'stale';
+    if (receipt) {
+      // The search is a substring search. Confirm the exact id before showing its actions.
+      const availablePages = result.totalPages;
+      const hasCreatedGroup = () =>
+        result.items.some((group) => group.id === receipt.id && group.status === 'DRAFT');
+      while (
+        !hasCreatedGroup() &&
+        locatedPage + 1 < Math.min(availablePages, result.totalPages)
+      ) {
+        result = await readPage(++locatedPage);
+        if (!isCurrent(revision, controller)) return 'stale';
+      }
+      if (!hasCreatedGroup())
+        throw new Error('Созданная группа пока не появилась в реестре.');
+      page.value = locatedPage;
+      expandedGroupId.value = receipt.id;
+      creationReadFailed.value = false;
+      creationReceipt.value = null;
+    }
     groups.value = result.items;
     if (status.value === 'ARCHIVED') {
       const returnedArchivedIds = new Set(result.items.map((group) => group.id));
@@ -392,6 +423,7 @@ async function refresh(preserveMessages = false): Promise<'success' | 'failed' |
       page.value = result.totalPages - 1;
       return await refresh(preserveMessages);
     }
+    appliedRegistryQuery.value = query;
     return 'success';
   } catch (cause) {
     if (
@@ -400,7 +432,11 @@ async function refresh(preserveMessages = false): Promise<'success' | 'failed' |
       isAbortError(cause)
     )
       return 'stale';
-    if (!preserveMessages) showError(cause, 'Реестр групп не удалось загрузить.');
+    if (receipt) {
+      creationReadFailed.value = true;
+      if (cause instanceof AdminGroupsApiError && [401, 403, 426].includes(cause.response.status))
+        emit('ownerError', cause);
+    } else if (!preserveMessages) showError(cause, 'Реестр групп не удалось загрузить.');
     return 'failed';
   } finally {
     if (isCurrent(revision, controller)) {
@@ -415,7 +451,7 @@ function isCurrent(revision: number, controller: AbortController): boolean {
 }
 
 function selectStatus(next: AdminGroupStatus): void {
-  if (status.value === next) return;
+  if (creationReceipt.value || status.value === next) return;
   expandedGroupId.value = null;
   invalidateRestoreForScopeChange();
   status.value = next;
@@ -424,13 +460,14 @@ function selectStatus(next: AdminGroupStatus): void {
 }
 
 function submitSearch(): void {
+  if (creationReceipt.value) return;
   invalidateRestoreForScopeChange();
   page.value = 0;
   void refresh();
 }
 
 function changePage(next: number): void {
-  if (next === page.value) return;
+  if (creationReceipt.value || next === page.value) return;
   invalidateRestoreForScopeChange();
   page.value = next;
   void refresh();
@@ -1130,47 +1167,57 @@ function isHeadmanMutationCurrent(
 }
 
 async function createGroup(): Promise<void> {
-  if (!canManage.value || saving.value) return;
+  if (!canManage.value || saving.value || creationReceipt.value || identityPending.value) return;
+  const client = props.client;
   const authority = props.authority;
   const scope = registryScopeRevision;
-  const duration = Number(trainingDurationYears.value);
-  if (!alphabeticCode.value.trim() || !numericCode.value.trim() || !Number.isInteger(duration)) {
-    error.value = 'Укажи буквенный код, трёхзначный цифровой код и срок обучения.';
+  const current = () =>
+    !disposed &&
+    client === props.client &&
+    authority === props.authority &&
+    scope === registryScopeRevision;
+  const input = createInput.value;
+  if (!input) {
+    error.value = 'Проверь буквенный код, трёхзначный цифровой код и срок обучения.';
     return;
   }
   saving.value = true;
   error.value = null;
   notice.value = null;
   try {
-    await props.client.createGroup({
-      alphabeticCode: alphabeticCode.value,
-      numericCode: numericCode.value,
-      trainingDurationYears: duration,
-    });
-    if (disposed || authority !== props.authority || scope !== registryScopeRevision) return;
+    const created = await client.createGroup(input);
+    if (!current()) return;
     alphabeticCode.value = '';
     numericCode.value = '';
     trainingDurationYears.value = '';
     formVisible.value = false;
+    creationReceipt.value = { id: created.id, name: created.name };
+    creationReadFailed.value = false;
     status.value = 'DRAFT';
     page.value = 0;
-    search.value = '';
+    course.value = null;
+    programType.value = null;
+    registrySort.value = null;
+    expandedGroupId.value = null;
+    groups.value = [];
+    totalElements.value = 0;
+    totalPages.value = 0;
+    search.value = created.name;
     saving.value = false;
     invalidateRestoreForScopeChange();
-    notice.value = 'Группа создана и добавлена в черновики.';
-    await refresh();
+    notice.value = `Группа ${created.name} создана и добавлена в черновики.`;
+    await refresh(true);
   } catch (cause) {
-    if (
-      !disposed &&
-      authority === props.authority &&
-      scope === registryScopeRevision &&
-      !(cause instanceof StaleSessionGenerationError)
-    )
+    if (current() && !(cause instanceof StaleSessionGenerationError))
       showError(cause, 'Группу не удалось создать.');
   } finally {
-    if (!disposed && authority === props.authority && scope === registryScopeRevision)
-      saving.value = false;
+    if (current()) saving.value = false;
   }
+}
+
+function retryCreatedGroupRead(): void {
+  if (creationReceipt.value && creationReadFailed.value && !loading.value && canView.value)
+    void refresh(true);
 }
 
 function acknowledgeGroupOperation(client: AdminGroupsClient): void {
@@ -1407,6 +1454,17 @@ function durationLabel(group: AdminGroup): string {
 watch(
   () => props.client,
   () => {
+    appliedRegistryQuery.value = null;
+    if (creationReceipt.value) {
+      listRevision += 1;
+      listController?.abort();
+      listController = null;
+      creationReceipt.value = null;
+      creationReadFailed.value = false;
+      search.value = '';
+      if (canView.value) void refresh();
+    }
+    saving.value = false;
     identityPending.value = Boolean(props.client.hasPendingIdentityOperation);
     recoveryCandidate.value = Boolean(props.client.failedGroupOperationId);
     recoveryOperationId.value = null;
@@ -1439,6 +1497,10 @@ watch(
     props.authority?.permissions.join('|'),
   ],
   () => {
+    appliedRegistryQuery.value = null;
+    if (creationReceipt.value) search.value = '';
+    creationReceipt.value = null;
+    creationReadFailed.value = false;
     recoveryCandidate.value = false;
     recoveryOperationId.value = null;
     listRevision += 1;
@@ -1591,6 +1653,23 @@ onBeforeUnmount(() => {
           @click="reconcileGroupOperation"
         >
           Восстановить операцию
+        </button>
+      </template>
+    </AdminNotice>
+    <AdminNotice
+      v-if="creationReadFailed && creationReceipt && canView"
+      tone="warning"
+      title="Реестр ещё не обновлён"
+    >
+      Группа уже создана. Повтори загрузку, чтобы открыть её в черновиках.
+      <template #actions>
+        <button
+          class="admin-groups-action"
+          type="button"
+          :disabled="loading"
+          @click="retryCreatedGroupRead"
+        >
+          Обновить реестр
         </button>
       </template>
     </AdminNotice>
@@ -1813,6 +1892,7 @@ onBeforeUnmount(() => {
       <label><span>Срок обучения, лет</span><input
         v-model="trainingDurationYears"
         min="1"
+        max="5"
         required
         type="number"
         :disabled="saving"
@@ -1824,7 +1904,7 @@ onBeforeUnmount(() => {
       <button
         class="admin-groups-action admin-groups-form__submit"
         type="submit"
-        :disabled="saving"
+        :disabled="saving || !createInput"
         :aria-busy="saving"
       >
         <MobileIcon name="plus" />{{ saving ? 'Сохраняем…' : 'Создать группу' }}
@@ -1844,6 +1924,7 @@ onBeforeUnmount(() => {
           :key="tab.value"
           type="button"
           role="tab"
+          :disabled="Boolean(creationReceipt)"
           :aria-selected="status === tab.value"
           class="admin-groups-tabs__item"
           :class="{ 'admin-groups-tabs__item--active': status === tab.value }"
@@ -1875,12 +1956,14 @@ onBeforeUnmount(() => {
           type="search"
           placeholder="Найти группу"
           autocomplete="off"
+          :disabled="Boolean(creationReceipt)"
           @change="submitSearch"
         >
         <button
           v-if="search"
           type="button"
           aria-label="Очистить поиск"
+          :disabled="Boolean(creationReceipt)"
           @click="
             search = '';
             submitSearch();
@@ -1893,6 +1976,7 @@ onBeforeUnmount(() => {
         <button
           type="button"
           class="admin-groups-table__action"
+          :disabled="Boolean(creationReceipt)"
           @click="openFilters"
         >
           Фильтры и сортировка
@@ -1900,6 +1984,7 @@ onBeforeUnmount(() => {
           type="button"
           class="admin-groups-table__action"
           aria-label="Сбросить фильтры и поиск"
+          :disabled="Boolean(creationReceipt)"
           @click="resetFilters"
         >
           ×
@@ -1919,7 +2004,7 @@ onBeforeUnmount(() => {
         Загружаем группы…
       </p>
       <div
-        v-else-if="groups.length === 0"
+        v-else-if="groups.length === 0 && !creationReceipt"
         class="admin-groups-empty"
       >
         <h2>{{ search ? 'Ничего не найдено' : 'Групп пока нет' }}</h2><p>
@@ -1929,7 +2014,7 @@ onBeforeUnmount(() => {
         </p>
       </div>
       <div
-        v-else
+        v-else-if="groups.length"
         class="admin-groups-list"
       >
         <article
@@ -2068,6 +2153,7 @@ onBeforeUnmount(() => {
         <button
           class="admin-groups-action admin-groups-create"
           type="button"
+          :disabled="Boolean(creationReceipt) || identityPending"
           @click="
             formVisible = true;
             error = null;
@@ -2079,18 +2165,19 @@ onBeforeUnmount(() => {
           v-if="status !== 'ARCHIVED'"
           class="admin-groups-table__action"
           type="button"
-          :disabled="promotionMutationPending || counts.active + counts.draft === 0"
+          :disabled="Boolean(creationReceipt) || promotionMutationPending || counts.active + counts.draft === 0"
           @click="openPromotion()"
         >
           Перевести все группы на следующий курс
         </button>
       </div>
       <ExportButton
+        inline
         :port="reportDownload"
         :formats="() => client.exportFormats()"
         :request="exportRequest"
         :scope-key="exportScope"
-        :disabled="!canView"
+        :disabled="!canView || !appliedRegistryQuery || Boolean(creationReceipt)"
         @error="emit('ownerError', $event)"
       />
     </section>
@@ -2296,7 +2383,7 @@ onBeforeUnmount(() => {
                 v-for="group in correctionGroups(conflict)"
                 :key="group.id"
                 type="button"
-                class="admin-groups-table__action"
+                class="admin-groups-table__action admin-groups-table__action--edit"
                 :disabled="renameSaving || promotionMutationPending"
                 @click="openRename(group)"
               >

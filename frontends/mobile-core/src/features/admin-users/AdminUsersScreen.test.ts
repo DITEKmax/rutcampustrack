@@ -4,10 +4,12 @@ import AdminUsersScreen from './AdminUsersScreen.vue'
 import AdminGroupsScreen from '../admin-groups/AdminGroupsScreen.vue'
 import { adminGroupsAuthority, createAdminGroupsFixture } from '../../dev/admin-groups-fixtures'
 import RecoveryLinkPanel from './RecoveryLinkPanel.vue'
+import AdminCredentialPanel from './AdminCredentialPanel.vue'
 import { IdentityOperationError } from '../../shared/identity-operation'
 import {
   AdminUsersApiError,
   AdminUsersClient,
+  type AdminCredentialView,
   type IdentityRecoveryReference,
 } from './admin-users-client'
 import {
@@ -60,9 +62,10 @@ class TestElement extends EventTarget {
     return this.parentElement !== null
   }
 }
-class TestDocument {
+class TestDocument extends EventTarget {
   documentElement = { dataset: {} as Record<string, string> }
   activeElement: TestElement | null = null
+  visibilityState: DocumentVisibilityState = 'visible'
 }
 const testDocument = new TestDocument()
 const renderer = createRenderer<TestElement, TestElement>({
@@ -98,6 +101,7 @@ const renderer = createRenderer<TestElement, TestElement>({
 const apps: App[] = []
 afterEach(() => {
   apps.splice(0).forEach((app) => app.unmount())
+  testDocument.visibilityState = 'visible'
   vi.restoreAllMocks()
   vi.unstubAllGlobals()
   vi.useRealTimers()
@@ -157,6 +161,81 @@ function failure(status: number, code = ''): AdminUsersApiError {
   } as never)
 }
 describe('role editor and current profile load', () => {
+  it('requires a nonblank employee number before assigning a new teacher role', async () => {
+    const { client, accessClient, authority } = createAdminUsersReviewApis('recovery')
+    const original = await client.getUser(1)
+    const update = vi.spyOn(client, 'updateRole').mockResolvedValue(original)
+    const root = mount(() => h(AdminUsersScreen, { client, accessClient, authority }))
+    await flush()
+    await click(nodes(root).find((node) => node.props['data-user-id'] === 1)!)
+    await click(button(root, 'Настроить роли'))
+    await click(button(root, 'Добавить роль'))
+    await click(button(root, 'Преподаватель'))
+    const employee = nodes(root).find((node) => node.tag === 'input' && node.props.maxlength === '32')!
+    expect(button(root, 'Назначить роль').props.disabled).toBe(true)
+    await input(employee, '   ')
+    expect(button(root, 'Назначить роль').props.disabled).toBe(true)
+    await submit(root)
+    expect(update).not.toHaveBeenCalled()
+    await input(employee, ' T-42 ')
+    expect(button(root, 'Назначить роль').props.disabled).toBe(false)
+    await submit(root)
+    expect(update.mock.calls[0]!.slice(0, 3)).toEqual([
+      1,
+      'TEACHER',
+      { status: 'ACTIVE', employeeNumber: 'T-42' },
+    ])
+  })
+
+  it('opens Roles directly, then uses the current grant instead of the list snapshot', async () => {
+    const { client, accessClient, authority } = createAdminUsersReviewApis('recovery')
+    const original = await client.getUser(3)
+    const grant = original.roles.find((role) => role.role === 'TEACHER')!
+    const load = vi
+      .spyOn(client, 'getUser')
+      .mockResolvedValueOnce(original)
+      .mockResolvedValueOnce({
+        ...original,
+        roles: [{ ...grant, canUpdate: false, blockedReason: 'Изменение роли недоступно' }],
+      })
+    const root = mount(() => h(AdminUsersScreen, { client, accessClient, authority }))
+    await flush()
+    await click(nodes(root).find((node) => node.props['data-user-id'] === 3)!)
+    await click(button(root, 'Настроить роли'))
+    expect(load).toHaveBeenCalledTimes(2)
+    expect(nodes(root).some((node) => node.props['data-view'] === 'roles')).toBe(true)
+    expect(text(root)).toContain('Изменение роли недоступно')
+    expect(text(root)).not.toContain('Изменить статус')
+    expect(text(root)).not.toContain('Сохранить данные')
+  })
+
+  it('changes a student Telegram ID without writing on invalid or blank input', async () => {
+    const { client, accessClient, authority } = createAdminUsersReviewApis('recovery')
+    let current = await client.getUser(1)
+    expect(current.role).toBe('STUDENT')
+    vi.spyOn(client, 'getUser').mockImplementation(async () => current)
+    const update = vi.spyOn(client, 'updateProfile').mockImplementation(async (_id, patch) => {
+      current = { ...current, ...patch }
+      return current
+    })
+    const root = mount(() => h(AdminUsersScreen, { client, accessClient, authority }))
+    await flush()
+    await click(nodes(root).find((node) => node.props['data-user-id'] === 1)!)
+    await click(button(root, 'Редактировать данные'))
+    const telegram = nodes(root).find((node) => node.tag === 'input' && node.props.inputmode === 'numeric')!
+    for (const invalid of ['12e2', '0', '']) {
+      await input(telegram, invalid)
+      expect(button(root, 'Сохранить данные').props.disabled).toBe(true)
+      await submit(root)
+      expect(update).not.toHaveBeenCalled()
+    }
+    await input(telegram, '987654321')
+    expect(button(root, 'Сохранить данные').props.disabled).toBe(false)
+    await submit(root)
+    expect(update.mock.calls[0]!.slice(0, 2)).toEqual([1, { telegramId: 987654321 }])
+    expect(text(root)).toContain('987654321')
+  })
+
   it.each(['recovery', 'limited-manage'])(
     'binds an existing teacher through the current profile editor with %s authority',
     async (state) => {
@@ -406,6 +485,193 @@ describe('non-idempotent recovery correction', () => {
   })
 })
 
+describe('temporary credential disclosure', () => {
+  const initial: AdminCredentialView = {
+    userId: '3',
+    credentialsVersion: '12',
+    state: 'GENERATED',
+    origin: 'initial',
+    password: 'synthetic-initial-value',
+  }
+  const generated: AdminCredentialView = {
+    ...initial,
+    credentialsVersion: '13',
+    origin: 'admin_reset',
+    password: 'synthetic-generated-value',
+  }
+
+  it('clears a mounted password and confirmation under notifications and drops late GET and POST', async () => {
+    const { client, accessClient, authority } = createAdminUsersReviewApis('recovery')
+    const notificationsOpen = shallowRef(false)
+    const credentialsCovered = () => notificationsOpen.value
+    let finishRead!: (value: AdminCredentialView) => void
+    let finishPost!: (value: AdminCredentialView) => void
+    const read = vi.spyOn(client, 'readCredential')
+      .mockResolvedValue(initial)
+      .mockResolvedValueOnce(initial)
+      .mockImplementationOnce(() => new Promise((resolve) => { finishRead = resolve }))
+    const generate = vi.spyOn(client, 'generatePassword')
+      .mockImplementation(() => new Promise((resolve) => { finishPost = resolve }))
+    const root = mount(() => h(AdminUsersScreen, { client, accessClient, authority, credentialsCovered }))
+    await flush()
+    await click(nodes(root).find((node) => node.props['data-user-id'] === 3)!)
+    await click(button(root, 'Восстановить доступ'))
+    await click(button(root, 'Показать текущий пароль'))
+    await click(button(root, 'Создать новый пароль'))
+    expect(text(root)).toContain(initial.password)
+    expect(text(root)).toContain('Подтверждаю генерацию')
+    notificationsOpen.value = true
+    await flush()
+    expect(nodes(root).some((node) => node.props['data-view'] === 'recovery')).toBe(true)
+    expect(text(root)).not.toContain(initial.password)
+    expect(text(root)).not.toContain('Подтверждаю генерацию')
+    expect(button(root, 'Показать текущий пароль').props.disabled).toBe(true)
+    await click(button(root, 'Показать текущий пароль'))
+    expect(read).toHaveBeenCalledOnce()
+    notificationsOpen.value = false
+    await flush()
+    expect(read).toHaveBeenCalledOnce()
+    await click(button(root, 'Показать текущий пароль'))
+    notificationsOpen.value = true
+    expect(read.mock.calls[1]?.[1]?.aborted).toBe(true)
+    notificationsOpen.value = false
+    finishRead(generated)
+    await flush()
+    expect(text(root)).not.toContain(generated.password)
+    await click(button(root, 'Показать текущий пароль'))
+    await click(button(root, 'Создать новый пароль'))
+    await check(nodes(root).find((node) => node.tag === 'input' && node.type === 'checkbox')!)
+    await click(button(root, 'Сгенерировать пароль'))
+    notificationsOpen.value = true
+    expect(generate.mock.calls[0]?.[2]?.aborted).toBe(true)
+    notificationsOpen.value = false
+    finishPost(generated)
+    await flush()
+    expect(generate).toHaveBeenCalledOnce()
+    expect(text(root)).not.toContain(generated.password)
+    expect(button(root, 'Показать текущий пароль').props.disabled).toBe(false)
+  })
+
+  it('shows a newly created user without a secret until explicit Auth disclosure of initial origin', async () => {
+    const { client, accessClient, authority } = createAdminUsersReviewApis('recovery')
+    const create = vi.spyOn(client, 'createUser')
+    const read = vi.spyOn(client, 'readCredential')
+      .mockResolvedValueOnce({ ...generated, userId: '4' })
+      .mockResolvedValueOnce({ ...initial, userId: '4' })
+    const root = mount(() => h(AdminUsersScreen, { client, accessClient, authority }))
+    await flush()
+    await click(button(root, 'Создать пользователя'))
+    expect(button(root, 'Создать пользователя').props.disabled).toBe(true)
+    ;(button(root, 'Преподаватель').props.onClick as (event: unknown) => void)({
+      currentTarget: { closest: () => null },
+    })
+    await flush()
+    const field = (placeholder: string) =>
+      nodes(root).find((node) => node.props.placeholder === placeholder)!
+    await input(field('Фамилия'), 'Синтетическая')
+    await input(field('Имя'), 'Запись')
+    await input(field('Т-00421'), '  ')
+    expect(button(root, 'Создать пользователя').props.disabled).toBe(true)
+    await input(field('Т-00421'), 'T-123')
+    expect(button(root, 'Создать пользователя').props.disabled).toBe(false)
+    await submit(root)
+    expect(text(root)).toContain('Пользователь создан')
+    expect(text(root)).not.toContain('demo-A8mQ-42ks')
+    expect(create.mock.calls[0]?.[2]).toEqual({ includeInitialPassword: false })
+    expect(read).not.toHaveBeenCalled()
+    await click(button(root, 'Показать начальный пароль'))
+    expect(read.mock.calls[0]?.[0]).toBe(4)
+    expect(text(root)).toContain('Начальный пароль больше недоступен')
+    expect(text(root)).not.toContain(generated.password)
+    await click(button(root, 'Показать начальный пароль'))
+    expect(text(root)).toContain(initial.password)
+    expect(text(root)).not.toContain('Создать новый пароль')
+    testDocument.visibilityState = 'hidden'
+    testDocument.dispatchEvent(new Event('visibilitychange'))
+    await flush()
+    expect(text(root)).not.toContain(initial.password)
+    expect(read).toHaveBeenCalledTimes(2)
+    expect(button(root, 'Показать начальный пароль')).toBeDefined()
+  })
+
+  it.each([failure(409), new TypeError('Synthetic disconnect')])(
+    'needs a fresh explicit GET after an unconfirmed POST: %s',
+    async (cause) => {
+      const { client } = createAdminUsersReviewApis('recovery')
+      const read = vi.spyOn(client, 'readCredential')
+        .mockResolvedValueOnce(initial)
+        .mockResolvedValueOnce(generated)
+      const generate = vi.spyOn(client, 'generatePassword').mockRejectedValueOnce(cause)
+      const root = mount(() =>
+        h(AdminCredentialPanel, { client, userId: 3, scopeKey: 'same', selfTarget: false }),
+      )
+      expect(read).not.toHaveBeenCalled()
+      await click(button(root, 'Показать текущий пароль'))
+      expect(text(root)).toContain(initial.password)
+      await click(button(root, 'Создать новый пароль'))
+      expect(button(root, 'Сгенерировать пароль').props.disabled).toBe(true)
+      await check(nodes(root).find((node) => node.tag === 'input' && node.type === 'checkbox')!)
+      await click(button(root, 'Сгенерировать пароль'))
+      expect(generate.mock.calls[0]!.slice(0, 2)).toEqual([3, '12'])
+      expect(text(root)).not.toContain(initial.password)
+      expect(text(root)).toContain('Результат не подтверждён')
+      expect(read).toHaveBeenCalledOnce()
+      expect(text(root)).not.toContain('Создать новый пароль')
+      await click(button(root, 'Проверить текущий пароль'))
+      expect(read).toHaveBeenCalledTimes(2)
+      expect(generate).toHaveBeenCalledOnce()
+      expect(text(root)).toContain(generated.password)
+    },
+  )
+
+  it('clears a shown password when hidden, and discards a late result after authority changes', async () => {
+    const { client } = createAdminUsersReviewApis('recovery')
+    let finish!: (result: AdminCredentialView) => void
+    const read = vi.spyOn(client, 'readCredential')
+      .mockResolvedValueOnce(initial)
+      .mockImplementationOnce(() => new Promise((resolve) => { finish = resolve }))
+    const scope = shallowRef('previous')
+    const root = mount(() =>
+      h(AdminCredentialPanel, { client, userId: 3, scopeKey: scope.value, selfTarget: false }),
+    )
+    await click(button(root, 'Показать текущий пароль'))
+    testDocument.visibilityState = 'hidden'
+    testDocument.dispatchEvent(new Event('visibilitychange'))
+    await flush()
+    expect(text(root)).not.toContain(initial.password)
+    testDocument.visibilityState = 'visible'
+    await click(button(root, 'Показать текущий пароль'))
+    scope.value = 'replacement'
+    await flush()
+    expect(read.mock.calls[1]?.[1]?.aborted).toBe(true)
+    finish(generated)
+    await flush()
+    expect(text(root)).not.toContain(generated.password)
+  })
+
+  it('leaves only the copyable ACK after a self reset and clears it on hiding', async () => {
+    const { client } = createAdminUsersReviewApis('recovery')
+    vi.spyOn(client, 'readCredential').mockResolvedValue(initial)
+    vi.spyOn(client, 'generatePassword').mockResolvedValue(generated)
+    const selfReset = vi.fn()
+    const root = mount(() =>
+      h(AdminCredentialPanel, { client, userId: 3, scopeKey: 'same', selfTarget: true, onSelfReset: selfReset }),
+    )
+    await click(button(root, 'Показать текущий пароль'))
+    await click(button(root, 'Создать новый пароль'))
+    expect(text(root)).toContain('Твой текущий сеанс тоже завершится.')
+    await check(nodes(root).find((node) => node.tag === 'input' && node.type === 'checkbox')!)
+    await click(button(root, 'Сгенерировать пароль'))
+    expect(selfReset).toHaveBeenCalledOnce()
+    expect(text(root)).toContain(generated.password)
+    expect(text(root)).not.toContain('Проверить текущий пароль')
+    testDocument.visibilityState = 'hidden'
+    testDocument.dispatchEvent(new Event('visibilitychange'))
+    await flush()
+    expect(text(root)).not.toContain(generated.password)
+  })
+})
+
 describe('R2 recovery issued task lifecycle', () => {
   it('clears the result on Done and issues a fresh link only on the next explicit request', async () => {
     const { client } = createAdminUsersReviewApis('recovery')
@@ -527,7 +793,6 @@ describe('user export follows the displayed registry', () => {
       'Новый поиск',
     )
     expect(list).toHaveBeenCalledTimes(1)
-    await click(button(root, 'Выгрузка'))
     await click(button(root, 'Скачать'))
     expect(download.mock.calls[0]![0]).toMatchObject({
       kind: 'ADMIN_USERS',
@@ -540,7 +805,6 @@ describe('user export follows the displayed registry', () => {
     expect(list).toHaveBeenCalledTimes(2)
     const nextApplied = list.mock.calls.at(-1)![0]!
     expect(nextApplied.search).toBe('Новый поиск')
-    await click(button(root, 'Выгрузка'))
     await click(button(root, 'Скачать'))
     expect(
       (download.mock.calls[1]![0] as { adminUsers: { search: string } }).adminUsers.search,
@@ -595,6 +859,82 @@ describe('R2 actual screen permission confirmations', () => {
     ).toBe(false)
     expect(text(root)).toContain('Права изменились')
     expect(nodes(root).some((node) => node.props['data-tone'] === 'danger')).toBe(true)
+  })
+})
+
+describe('created group receipt', () => {
+  it('opens the returned draft ID despite old filters, similar codes and a failed first read', async () => {
+    vi.stubGlobal('document', testDocument)
+    vi.stubGlobal('window', { location: { origin: 'https://synthetic.invalid' } })
+    const client = createAdminGroupsFixture('active')
+    const authority = adminGroupsAuthority('active')
+    const original = await client.listGroups({ status: 'ACTIVE', size: 3 })
+    const created = {
+      ...original.items[0]!,
+      id: 987,
+      status: 'DRAFT' as const,
+      name: 'ТЕСТ-123',
+      alphabeticCode: 'ТЕСТ',
+      numericCode: '123',
+    }
+    const similar = { ...created, id: 654, name: 'ПРТЕСТ-123' }
+    const create = vi.spyOn(client, 'createGroup').mockResolvedValue(created)
+    let firstRead = true
+    const list = vi.spyOn(client, 'listGroups').mockImplementation(async (query) => {
+      if (query?.search !== created.name) return original
+      if (firstRead) {
+        firstRead = false
+        throw new Error('Synthetic registry read failed')
+      }
+      return {
+        ...original,
+        number: query.page ?? 0,
+        totalPages: 2,
+        totalElements: 4,
+        items: query.page === 1 ? [created] : [similar],
+      }
+    })
+    const root = mount(() => h(AdminGroupsScreen, { client, authority }))
+    await flush()
+    const search = () => nodes(root).find((node) => node.props.id === 'admin-groups-search-input')!
+    await input(search(), 'Старый поиск')
+    await submit(root)
+    await click(button(root, 'Фильтры и сортировка'))
+    await click(button(root, 'Все курсы'))
+    await click(button(root, '2 курс'))
+    await click(button(root, 'Все типы программ'))
+    await click(button(root, '1 · Очный бакалавриат'))
+    await click(button(root, 'По умолчанию'))
+    await click(button(root, 'По коду: Я–А'))
+    await submit(root)
+    expect(list.mock.calls.at(-1)?.[0]).toMatchObject({
+      search: 'Старый поиск', course: 2, studyMode: 'FULL_TIME', educationLevel: 'BACHELOR',
+      sort: ['name,desc'], page: 0,
+    })
+    await click(button(root, 'Создать группу'))
+    expect(button(root, 'Создать группу').props.disabled).toBe(true)
+    const fields = nodes(root).filter((node) => node.tag === 'input')
+    await input(fields[0]!, 'тест')
+    await input(fields[1]!, '103')
+    await input(fields[2]!, '4')
+    expect(button(root, 'Создать группу').props.disabled).toBe(true)
+    await input(fields[1]!, '123')
+    expect(button(root, 'Создать группу').props.disabled).toBe(false)
+    await submit(root)
+    expect(create).toHaveBeenCalledOnce()
+    expect(text(root)).toContain('Группа ТЕСТ-123 создана и добавлена в черновики')
+    expect(search().value).toBe(created.name)
+    expect(button(root, 'Создать группу').props.disabled).toBe(true)
+    expect(nodes(root).some((node) => node.props['data-group-id'] === created.id)).toBe(false)
+    await click(button(root, 'Обновить реестр'))
+    expect(create).toHaveBeenCalledOnce()
+    expect(list.mock.calls.slice(-3).map(([query]) => query)).toEqual(
+      [0, 0, 1].map((page) => ({ search: created.name, status: 'DRAFT', page, size: 3 })),
+    )
+    const exact = nodes(root).find((node) => node.props['data-group-id'] === created.id)!
+    expect(text(exact)).toContain(created.name)
+    expect(nodes(exact).some((node) => node.props['aria-expanded'] === true)).toBe(true)
+    expect(text(root)).not.toContain('Реестр ещё не обновлён')
   })
 })
 

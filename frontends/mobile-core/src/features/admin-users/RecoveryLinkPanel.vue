@@ -16,7 +16,12 @@ const props = defineProps<{
   disabled?: boolean;
   embedded?: boolean;
 }>();
-const emit = defineEmits<{ ownerError: [cause: unknown]; issued: [visible: boolean]; done: [] }>();
+const emit = defineEmits<{
+  ownerError: [cause: unknown];
+  issued: [visible: boolean];
+  pending: [value: boolean];
+  done: [];
+}>();
 const link = ref<AdminRecoveryLink | null>(null);
 const busy = ref(false),
   uncertain = ref(false),
@@ -55,6 +60,7 @@ async function issue(): Promise<void> {
   feedback.value = null;
   uncertain.value = false;
   busy.value = true;
+  emit('pending', true);
   try {
     const result = await props.client.issueRecoveryLink(props.userId, controller.signal);
     if (disposed || request !== revision || controller.signal.aborted) return;
@@ -88,7 +94,10 @@ async function issue(): Promise<void> {
       feedback.value = 'Ссылка не выдана. Попробуй ещё раз.';
     }
   } finally {
-    if (!disposed && request === revision) busy.value = false;
+    if (!disposed && request === revision) {
+      busy.value = false;
+      emit('pending', false);
+    }
   }
 }
 async function copy(): Promise<void> {
@@ -127,16 +136,19 @@ watch(
     abort?.abort();
     clearLink();
     busy.value = false;
+    emit('pending', false);
     feedback.value = null;
     expired.value = false;
     uncertain.value = false;
   },
+  { flush: 'sync' },
 );
 onBeforeUnmount(() => {
   disposed = true;
   ++revision;
   abort?.abort();
   clearLink();
+  emit('pending', false);
 });
 </script>
 <template>
@@ -169,9 +181,25 @@ onBeforeUnmount(() => {
         :disabled="disabled"
         @click="copy"
       ><MobileIcon name="copy" /></button></label>
-      <p class="admin-users-muted">
-        Действует до {{ expiryLabel }}. Осталось {{ remaining }} сек.
-      </p>
+      <table
+        class="recovery-link-panel__details"
+        aria-label="Срок действия ссылки"
+      >
+        <tbody>
+          <tr>
+            <th scope="row">
+              Действует до
+            </th>
+            <td>{{ expiryLabel }}</td>
+          </tr>
+          <tr>
+            <th scope="row">
+              Осталось
+            </th>
+            <td>{{ remaining }} сек.</td>
+          </tr>
+        </tbody>
+      </table>
       <AdminNotice
         v-if="feedback"
         :tone="feedbackTone"

@@ -94,6 +94,7 @@ const formats: readonly ReportFormatOption[] = ['docx', 'pdf', 'png', 'html', 'x
 function mount(
   port: ReportDownloadPort,
   catalogue: () => Promise<readonly ReportFormatOption[]> = async () => formats,
+  inline = false,
 ) {
   vi.stubGlobal('document', { activeElement: null })
   const state = reactive({ search: 'ЭК', disabled: false })
@@ -105,7 +106,8 @@ function mount(
         formats: catalogue,
         scopeKey: state.search,
         disabled: state.disabled,
-        request: (format: ReportFormatOption['code']) => ({
+        inline,
+        request: (format: ReportFormatOption['code']): ReportDownloadTicketRequest => ({
           kind: 'ADMIN_GROUPS',
           adminGroups: {
             status: 'DRAFT',
@@ -123,6 +125,27 @@ function mount(
 }
 
 describe('export action state and scope', () => {
+  it('loads inline formats immediately and keeps the newest scope after a late catalogue', async () => {
+    let release!: (value: readonly ReportFormatOption[]) => void
+    const catalogue = vi.fn<() => Promise<readonly ReportFormatOption[]>>()
+      .mockImplementationOnce(() => new Promise((resolve) => { release = resolve }))
+      .mockResolvedValueOnce([{ code: 'xlsx', label: 'XLSX' }])
+    const download = vi.fn<ReportDownloadPort['download']>(async () => 'accepted')
+    const { root, state } = mount({ carrier: 'browser', download }, catalogue, true)
+    expect(catalogue).toHaveBeenCalledOnce()
+    expect(nodes(root).some((node) => node.tag === 'select')).toBe(true)
+    state.search = 'Актуальный фильтр'
+    await settle()
+    release(formats)
+    await settle()
+    expect(nodes(root).filter((node) => node.tag === 'option').map((node) => text(node).trim()))
+      .toEqual(['XLSX'])
+    await click(root, 'Скачать')
+    expect(download.mock.calls[0]?.[0]).toMatchObject({
+      adminGroups: { format: 'xlsx', search: 'Актуальный фильтр' },
+    })
+  })
+
   it('uses the server catalogue and captured filters, shows queue/preparing, and identifies the browser handoff', async () => {
     let progress!: ExportStateListener
     let finish!: (value: 'accepted') => void

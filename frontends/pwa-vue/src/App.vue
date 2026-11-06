@@ -189,9 +189,15 @@ const theme =
   typeof document === 'undefined'
     ? null
     : createMobileTheme({ mode: themePreference.read() ?? 'system', lockedMode: 'dark' });
+const adminThemeController = createMobileTheme({ target: null, mode: theme?.mode ?? 'system' });
+const adminTheme = ref(adminThemeController.resolvedMode);
+const stopAdminTheme = adminThemeController.subscribe(({ resolvedMode }) => {
+  adminTheme.value = resolvedMode;
+});
 const resolvedTheme = ref(theme?.resolvedMode ?? 'dark');
 const stopThemeSnapshot = theme?.subscribe((snapshot) => {
   resolvedTheme.value = snapshot.resolvedMode;
+  adminThemeController.setMode(snapshot.mode);
 });
 const themeMirror = theme
   ? createDeviceThemeMirror({
@@ -256,6 +262,7 @@ const notificationContextKey = computed(() =>
   ].join('|'),
 );
 const notificationsOpen = ref(false);
+const adminCredentialsCovered = () => notificationsOpen.value;
 const notificationsGeneration = ref<number | null>(null);
 const notificationTargetIntent = shallowRef<NotificationTargetIntent | null>(null);
 const notificationLaunchUrl = new URL(window.location.href);
@@ -2265,6 +2272,8 @@ onBeforeUnmount(() => {
       onServiceWorkerControllerChange,
     );
   stopThemeSnapshot?.();
+  stopAdminTheme();
+  adminThemeController.dispose();
   themeMirror?.dispose();
   themePreference.dispose();
   theme?.dispose();
@@ -2302,20 +2311,25 @@ onBeforeUnmount(() => {
   <NotificationsEntryButton
     v-if="
       notificationsEntryVisible &&
-      !studentViewVisible &&
-      !headmanViewVisible &&
-      !teacherViewVisible &&
-      !adminHomeViewVisible
+        !studentViewVisible &&
+        !headmanViewVisible &&
+        !teacherViewVisible &&
+        !adminHomeViewVisible
     "
+    :data-admin-ui="authSnapshot?.activeRole === 'ADMIN' ? '' : undefined"
+    :data-theme="authSnapshot?.activeRole === 'ADMIN' ? adminTheme : undefined"
     floating
     :count="notificationUnread.count"
     @click="openNotifications"
   />
   <Teleport to="body">
     <NotificationsScreen
-      :student-ui="studentViewVisible"
       v-if="notificationsOpen && notificationsApi"
       :key="notificationContextKey"
+      :data-admin-ui="authSnapshot?.activeRole === 'ADMIN' ? '' : undefined"
+      :data-theme="authSnapshot?.activeRole === 'ADMIN' ? adminTheme : undefined"
+      :style="authSnapshot?.activeRole === 'ADMIN' ? { colorScheme: adminTheme } : undefined"
+      :student-ui="studentViewVisible"
       :api="notificationsApi"
       :context-key="notificationContextKey"
       :unread-owner="notificationUnreadOwner"
@@ -2445,6 +2459,7 @@ onBeforeUnmount(() => {
     :authority="adminAuthority"
     active="more"
     :host="host"
+    :theme="adminTheme"
     @navigate="navigateAdmin"
   >
     <AdminMoreScreen
@@ -2458,6 +2473,7 @@ onBeforeUnmount(() => {
     active="home"
     :task="!adminNavigationVisible"
     :host="host"
+    :theme="adminTheme"
     @navigate="navigateAdmin"
     @back="adminTaskOwner?.back()"
   >
@@ -2467,7 +2483,7 @@ onBeforeUnmount(() => {
       :unread-count="notificationUnread.count"
       :client="adminDashboardApi"
       :invalidation-revision="adminDashboardRevision"
-      :theme="resolvedTheme"
+      :theme="adminTheme"
       @owner-error="onOwnerError"
       @open-role-switch="openAdminRoleSwitch"
       @open-attendance="navigateAdmin('attendance')"
@@ -2479,6 +2495,7 @@ onBeforeUnmount(() => {
     active="attendance"
     :task="true"
     :host="host"
+    :theme="adminTheme"
     @navigate="navigateAdmin"
     @back="navigateAdmin('home')"
   >
@@ -2499,6 +2516,7 @@ onBeforeUnmount(() => {
     active="map-statistics"
     :task="true"
     :host="host"
+    :theme="adminTheme"
     @navigate="navigateAdmin"
     @back="navigateAdmin('more')"
   >
@@ -2506,7 +2524,7 @@ onBeforeUnmount(() => {
       :authority="adminAuthority"
       :client="adminMapClient"
       :show-back="host.backOwner === 'product'"
-      :theme="resolvedTheme"
+      :theme="adminTheme"
       @back="navigateAdmin('more')"
       @owner-error="onOwnerError"
     />
@@ -2517,6 +2535,7 @@ onBeforeUnmount(() => {
     active="map"
     :task="true"
     :host="host"
+    :theme="adminTheme"
     @navigate="navigateAdmin"
     @back="navigateAdmin('more')"
   >
@@ -2524,7 +2543,7 @@ onBeforeUnmount(() => {
       :authority="adminAuthority"
       :client="adminMapClient"
       :show-back="host.backOwner === 'product'"
-      :theme="resolvedTheme"
+      :theme="adminTheme"
       @back="navigateAdmin('more')"
       @owner-error="onOwnerError"
     />
@@ -2535,6 +2554,7 @@ onBeforeUnmount(() => {
     active="semesters"
     :task="!adminNavigationVisible"
     :host="host"
+    :theme="adminTheme"
     @navigate="navigateAdmin"
     @back="adminTaskOwner?.back()"
   >
@@ -2542,7 +2562,7 @@ onBeforeUnmount(() => {
       ref="adminTaskOwner"
       :authority="adminAuthority"
       :client="adminSemesterApi"
-      :theme="resolvedTheme"
+      :theme="adminTheme"
       @navigation-visibility="adminNavigationVisible = $event"
       @back="navigateAdmin('more')"
       @owner-error="onOwnerError"
@@ -2554,16 +2574,18 @@ onBeforeUnmount(() => {
     active="users"
     :task="!adminNavigationVisible"
     :host="host"
+    :theme="adminTheme"
     @navigate="navigateAdmin"
     @back="adminTaskOwner?.back()"
   >
     <AdminUsersScreen
       ref="adminTaskOwner"
+      :credentials-covered="adminCredentialsCovered"
       :report-download="reportDownload"
       :access-client="adminAccessActionsApi"
       :authority="adminAuthority"
       :client="adminUsersApi"
-      :theme="resolvedTheme"
+      :theme="adminTheme"
       @navigation-visibility="adminNavigationVisible = $event"
       @owner-error="onOwnerError"
     />
@@ -2574,6 +2596,7 @@ onBeforeUnmount(() => {
     active="groups"
     :task="!adminNavigationVisible"
     :host="host"
+    :theme="adminTheme"
     @navigate="navigateAdmin"
     @back="adminTaskOwner?.back()"
   >
@@ -2582,7 +2605,7 @@ onBeforeUnmount(() => {
       :report-download="reportDownload"
       :authority="adminAuthority"
       :client="adminGroupsApi"
-      :theme="resolvedTheme"
+      :theme="adminTheme"
       @navigation-visibility="adminNavigationVisible = $event"
       @owner-error="onOwnerError"
     />
@@ -2593,6 +2616,7 @@ onBeforeUnmount(() => {
     active="profile"
     :task="!adminNavigationVisible"
     :host="host"
+    :theme="adminTheme"
     @navigate="navigateAdmin"
     @back="adminTaskOwner?.back()"
   >
@@ -2630,6 +2654,7 @@ onBeforeUnmount(() => {
       :key="'admin-profile-' + ownerRevision"
       :profile-port="profilePort"
       :theme-controller="theme"
+      :resolved-theme="adminTheme"
       :offline="offline"
       :on-logout="logout"
       @navigation-visibility="adminNavigationVisible = $event"
@@ -2642,11 +2667,12 @@ onBeforeUnmount(() => {
     active="home"
     :task="true"
     :host="host"
+    :theme="adminTheme"
     @navigate="navigateAdmin"
     @back="closeAdminRoleSwitch"
   >
     <RoleSwitchScreen
-      :theme="resolvedTheme"
+      :theme="adminTheme"
       compact
       :snapshot="authSnapshot"
       :pending-role="pendingRole"

@@ -20,11 +20,13 @@ const props = withDefaults(
   defineProps<{
     profilePort: ProfilePort | null;
     themeController?: MobileThemeController | null;
+    resolvedTheme?: MobileThemeResolvedMode | null;
     offline?: boolean;
     onLogout?: (() => void | Promise<void>) | undefined;
   }>(),
   {
     themeController: null,
+    resolvedTheme: null,
     offline: false,
     onLogout: undefined,
   },
@@ -40,7 +42,8 @@ const navigation: MobileNavigationStack = createMobileNavigationStack(rootRoute(
 const route = ref<MobileRoute>(navigation.current);
 const profileState = shallowRef(props.profilePort ? new ProfileState(props.profilePort) : null);
 const themeMode = ref<ProfileTheme>(props.themeController?.mode ?? 'system');
-const resolvedTheme = ref<MobileThemeResolvedMode>(props.themeController?.resolvedMode ?? 'dark');
+const controllerTheme = ref<MobileThemeResolvedMode>(props.themeController?.resolvedMode ?? 'dark');
+const resolvedTheme = computed(() => props.resolvedTheme ?? controllerTheme.value);
 const logoutBusy = ref(false);
 let disposed = false;
 let stopTheme = (): void => undefined;
@@ -79,14 +82,14 @@ function bindTheme(controller: MobileThemeController | null): void {
   stopTheme = (): void => undefined;
   if (!controller) {
     themeMode.value = 'system';
-    resolvedTheme.value = 'dark';
+    controllerTheme.value = 'dark';
     return;
   }
   themeMode.value = controller.mode;
-  resolvedTheme.value = controller.resolvedMode;
+  controllerTheme.value = controller.resolvedMode;
   stopTheme = controller.subscribe((snapshot) => {
     themeMode.value = snapshot.mode;
-    resolvedTheme.value = snapshot.resolvedMode;
+    controllerTheme.value = snapshot.resolvedMode;
   });
 }
 
@@ -263,6 +266,7 @@ onBeforeUnmount(() => {
       v-else-if="route.id === 'profile/appearance'"
       :theme="themeMode"
       :resolved-theme="resolvedTheme"
+      :theme-unlocked="props.resolvedTheme !== null"
       :on-back="backRoute"
       :on-theme-change="changeProfileTheme"
     />

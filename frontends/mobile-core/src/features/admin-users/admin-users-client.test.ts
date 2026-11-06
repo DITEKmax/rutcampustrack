@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { IdentityOperationError } from '../../shared/identity-operation'
 import type { IdentityRecoveryReference } from './admin-users-client'
 import { AdminUsersClient } from './admin-users-client'
@@ -18,6 +18,76 @@ const userResponse = {
   createdAt: '2026-09-01T10:00:00Z',
   roles: [],
 }
+
+describe('AdminUsersClient current credential contract', () => {
+  const credential = {
+    userId: '42',
+    credentialsVersion: '9007199254740993',
+    state: 'GENERATED',
+    origin: 'admin_reset',
+    password: 'synthetic-only-password',
+  }
+  it('uses string CAS versions, no-store and validates the disclosed target and generation', async () => {
+    const calls: { path: string; init: RequestInit | undefined }[] = []
+    const client = new AdminUsersClient({
+      accessToken: () => 'synthetic',
+      fetcher: async (path, init) => {
+        calls.push({ path: String(path), init })
+        return new Response(JSON.stringify(credential))
+      },
+    })
+    await expect(client.readCredential(42)).resolves.toEqual(credential)
+    await expect(client.generatePassword(42, '9007199254740992')).resolves.toEqual(credential)
+    expect(calls.map((call) => call.init?.cache)).toEqual(['no-store', 'no-store'])
+    expect(calls[1]!.path).toBe('/api/auth/admin/users/42/generated-password')
+    expect(JSON.parse(String(calls[1]!.init?.body))).toEqual({
+      expectedCredentialsVersion: '9007199254740992',
+    })
+    await expect(client.readCredential(43)).rejects.toThrow('Не удалось подтвердить текущие данные')
+    await expect(client.generatePassword(42, credential.credentialsVersion)).rejects.toThrow(
+      'Сервер не подтвердил',
+    )
+    await expect(client.generatePassword(42, '9223372036854775808')).rejects.toThrow('версию')
+    expect(calls).toHaveLength(4)
+  })
+  it('never retries generation after an unauthorized response or an unknown transport outcome', async () => {
+    const unauthorized = vi.fn(async () => {})
+    const fetcher = vi.fn<typeof fetch>(async () => new Response(null, { status: 401 }))
+    const client = new AdminUsersClient({
+      accessToken: () => 'synthetic',
+      onUnauthorized: unauthorized,
+      fetcher,
+    })
+    await expect(client.generatePassword(42, '1')).rejects.toThrow()
+    expect(unauthorized).not.toHaveBeenCalled()
+    expect(fetcher).toHaveBeenCalledTimes(1)
+    fetcher.mockRejectedValueOnce(new TypeError('synthetic disconnect'))
+    await expect(client.generatePassword(42, '1')).rejects.toThrow('disconnect')
+    expect(fetcher).toHaveBeenCalledTimes(2)
+  })
+  it('does not send another reveal request when the panel closes during a token refresh', async () => {
+    let finishRefresh!: () => void
+    let startedRefresh!: () => void
+    const refreshStarted = new Promise<void>((resolve) => { startedRefresh = resolve })
+    const unauthorized = () => new Promise<void>((resolve) => {
+      finishRefresh = resolve
+      startedRefresh()
+    })
+    const fetcher = vi.fn<typeof fetch>(async () => new Response(null, { status: 401 }))
+    const client = new AdminUsersClient({
+      accessToken: () => 'synthetic',
+      onUnauthorized: unauthorized,
+      fetcher,
+    })
+    const controller = new AbortController()
+    const reveal = client.readCredential(42, controller.signal)
+    await refreshStarted
+    controller.abort()
+    finishRefresh()
+    await expect(reveal).rejects.toMatchObject({ name: 'AbortError' })
+    expect(fetcher).toHaveBeenCalledOnce()
+  })
+})
 
 describe('AdminUsersClient.updateProfile', () => {
   it('sends only supplied profile properties as PATCH and preserves empty-string clearing', async () => {
@@ -87,25 +157,45 @@ describe('AdminUsersClient.updateProfile', () => {
 })
 
 describe('AdminUsersClient credential and lifecycle safeguards', () => {
-  it('reads only returned detail credentials and clears their projection from list/profile responses', async () => {
+  it('discards credentials from ordinary Academic detail, list and profile responses', async () => {
     const client = new AdminUsersClient({
       accessToken: () => null,
-      fetcher: async (input, init) =>
+      fetcher: async (input) =>
         new Response(
           JSON.stringify(
             String(input).includes('?')
               ? [{ ...userResponse, initialPassword: 'synthetic-only' }]
               : {
                   ...userResponse,
-                  initialPassword: init?.method === 'PATCH' ? null : 'synthetic-only',
+                  initialPassword: 'synthetic-only',
                 },
           ),
           { status: 200 },
         ),
     })
-    expect((await client.getUser(42)).initialPassword).toBe('synthetic-only')
+    expect((await client.getUser(42)).initialPassword).toBeNull()
     expect((await client.listUsers()).items[0]?.initialPassword).toBeNull()
     expect((await client.updateProfile(42, { firstName: 'Иван' })).initialPassword).toBeNull()
+  })
+  it('can discard the create password while preserving the desktop receipt by default', async () => {
+    const input = {
+      role: 'TEACHER' as const,
+      firstName: 'Тест',
+      lastName: 'Тестов',
+      employeeNumber: 'T-1',
+    }
+    const client = new AdminUsersClient({
+      accessToken: () => null,
+      fetcher: async () =>
+        new Response(JSON.stringify({ ...userResponse, initialPassword: 'synthetic-only' }), {
+          status: 201,
+        }),
+    })
+    const mobile = await client.createUser(input, undefined, { includeInitialPassword: false })
+    expect(mobile.initialPassword).toBeNull()
+    client.acknowledgeIdentityOperation()
+    const desktop = await client.createUser(input)
+    expect(desktop.initialPassword).toBe('synthetic-only')
   })
   it('rejects a different archive preview target and never submits it', async () => {
     let calls = 0

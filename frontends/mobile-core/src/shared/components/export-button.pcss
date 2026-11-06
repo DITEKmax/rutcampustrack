@@ -57,3 +57,22 @@
   gap: var(--rct-space-2);
   min-block-size: var(--rct-control-min-touch);
 }
+
+.rct-export--inline .rct-export__options {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+}
+.rct-export--inline select {
+  min-inline-size: 0;
+}
+.rct-export--inline .rct-export__options > button:not(:disabled) {
+  justify-content: center;
+  color: var(--rct-color-accent-on-now);
+  background: var(--rct-color-accent-now);
+  border-color: transparent;
+}
+.rct-export--inline .rct-export__weeks {
+  grid-column: 1 / -1;
+  inline-size: auto;
+}

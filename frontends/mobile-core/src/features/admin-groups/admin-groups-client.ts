@@ -450,7 +450,7 @@ export class AdminGroupsClient {
   }
 
   createGroup(input: CreateAdminGroupInput, signal?: AbortSignal): Promise<AdminGroup> {
-    const payload = normalizeCreateInput(input)
+    const payload = normalizeAdminGroupCreate(input)
     return this.request<unknown>(AdminGroupsClient.basePath, {
       method: 'POST',
       body: JSON.stringify(payload),
@@ -1087,7 +1087,7 @@ function requiredDate(value: unknown, field: string): string {
   return date
 }
 
-function normalizeCreateInput(input: CreateAdminGroupInput): CreateAdminGroupInput {
+export function normalizeAdminGroupCreate(input: CreateAdminGroupInput): CreateAdminGroupInput {
   const alphabeticCode = requiredText(input.alphabeticCode, 'alphabeticCode').toUpperCase()
   if (!/^[А-ЯЁ][А-ЯЁа-яё]{1,3}$/.test(alphabeticCode)) {
     throw new RangeError('Буквенный код должен содержать 2–4 кириллических символа')
@@ -1098,8 +1098,11 @@ function normalizeCreateInput(input: CreateAdminGroupInput): CreateAdminGroupInp
     input.trainingDurationYears,
     'trainingDurationYears',
   )
+  if (trainingDurationYears > 5) throw new RangeError('Срок обучения должен быть от 1 до 5 лет')
   const course = Number(numericCode[0])
   if (course < 1 || course > 5) throw new RangeError('Курс должен быть от 1 до 5.')
+  if (!adminGroupProgramTypes.some((program) => program.digit === Number(numericCode[1])))
+    throw new RangeError('Средняя цифра должна обозначать существующий тип программы.')
   if (course > trainingDurationYears) {
     throw new RangeError('Первая цифра цифрового кода должна быть не больше срока обучения')
   }

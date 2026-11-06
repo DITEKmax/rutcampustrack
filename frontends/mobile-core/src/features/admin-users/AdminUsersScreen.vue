@@ -40,6 +40,7 @@ import {
 } from '../admin-access/admin-access-client';
 import AdminPermissionEditor from '../admin-access/AdminPermissionEditor.vue';
 import RecoveryLinkPanel from './RecoveryLinkPanel.vue';
+import AdminCredentialPanel from './AdminCredentialPanel.vue';
 import AdminNotice from '../../shared/components/AdminNotice.vue';
 import AdminCheckbox from '../../shared/components/AdminCheckbox.vue';
 import MobileToolsSheet from '../../shared/components/MobileToolsSheet.vue';
@@ -55,12 +56,15 @@ const props = withDefaults(
     client: AdminUsersClient;
     accessClient?: AdminAccessClient | null;
     authority?: AdminAccessProfile | null;
-    theme?: 'dark' | 'light';
+    credentialsCovered?: () => boolean;
+    theme?: 'dark' | 'light' | null;
   }>(),
   {
     reportDownload: null,
     accessClient: null,
     authority: null,
+    credentialsCovered: () => false,
+    theme: null,
   },
 );
 
@@ -84,6 +88,9 @@ const totalPages = ref(0);
 const totalElements = ref(0);
 const loading = ref(true);
 const saving = ref(false);
+const credentialPending = ref(false);
+const recoveryLinkPending = ref(false);
+const selfCredentialReset = ref(false);
 const identityPending = ref(Boolean(props.client.hasPendingIdentityOperation));
 const failedUserRecovery = ref<IdentityRecoveryReference | null>(null);
 const failedAccessRecovery = ref<IdentityRecoveryReference | null>(null);
@@ -104,6 +111,7 @@ type View =
   | 'create'
   | 'created'
   | 'edit'
+  | 'roles'
   | 'role'
   | 'transfer'
   | 'recovery'
@@ -122,6 +130,7 @@ const title = computed(
       create: 'Создать пользователя',
       created: 'Пользователь создан',
       edit: 'Редактировать данные',
+      roles: 'Роли пользователя',
       role: 'Настроить роль',
       transfer: 'Перевести студента',
       recovery: 'Восстановление доступа',
@@ -174,6 +183,15 @@ const canCredentials = computed(
 const canArchive = computed(
   () =>
     adminHasPermission(props.authority, 'USERS_ARCHIVE') && (isFull.value || !targetIsAdmin.value),
+);
+const credentialScope = computed(() => JSON.stringify(props.authority));
+const credentialActionsDisabled = computed(
+  () =>
+    saving.value ||
+    recoveryLinkPending.value ||
+    unknownMutation.value ||
+    identityPending.value ||
+    accessPending.value,
 );
 const canEditAccess = computed(
   () =>
@@ -283,6 +301,7 @@ async function openPermissions(owner: 'create' | 'target'): Promise<void> {
       : { mode: 'LIMITED', permissions: [] };
   accessProfile.value = null;
   accessUncertain.value = false;
+  accessReturnView.value = view.value === 'roles' ? 'roles' : 'edit';
   view.value = 'permissions';
   error.value = null;
   const revision = ++accessRevision;
@@ -650,6 +669,15 @@ watch(
 );
 
 const unknownMutation = ref(false);
+const accessReturnView = ref<'edit' | 'roles'>('edit');
+const roleReturnView = ref<'detail' | 'roles'>('detail');
+watch(
+  () => [props.client, credentialScope.value, selectedUser.value?.id] as const,
+  () => {
+    selfCredentialReset.value = false;
+  },
+  { flush: 'sync' },
+);
 const copied = ref(false);
 const draftStatuses = computed(() => (draftRole.value ? roleStatusOptions[draftRole.value] : []));
 function back(): void {
@@ -659,7 +687,7 @@ function back(): void {
     ++accessRevision;
     accessAbort?.abort();
     accessLoading.value = false;
-    view.value = accessOwner.value === 'create' ? 'create' : 'edit';
+    view.value = accessOwner.value === 'create' ? 'create' : accessReturnView.value;
     return;
   }
   cancelProfileLoad();
@@ -673,8 +701,10 @@ function back(): void {
   error.value = null;
   notice.value = null;
   copied.value = false;
-  if (
-    ['edit', 'role', 'transfer', 'recovery', 'recovery-issued', 'archive', 'restore'].includes(
+  if (view.value === 'role') {
+    view.value = roleReturnView.value;
+  } else if (
+    ['edit', 'roles', 'transfer', 'recovery', 'recovery-issued', 'archive', 'restore'].includes(
       view.value,
     )
   )
@@ -774,7 +804,16 @@ async function copyCredential(value: string): Promise<void> {
   }
 }
 function openRole(role: Exclude<AdminManagedRole, 'HEADMAN'>): void {
-  if (profileLoading.value || saving.value) return;
+  const grant = selectedUser.value?.roles.find((item) => item.role === role);
+  if (
+    profileLoading.value ||
+    saving.value ||
+    !canManage.value ||
+    role === 'ADMIN' ||
+    (grant && !grant.canUpdate)
+  )
+    return;
+  roleReturnView.value = view.value === 'roles' ? 'roles' : 'detail';
   editorRole.value = role;
   if (selectedUser.value) syncEditorFromUser(selectedUser.value);
   view.value = 'role';
@@ -803,6 +842,15 @@ const profileFirstName = ref('');
 const profileMiddleName = ref('');
 const profileEmployeeNumber = ref('');
 const profileTelegramId = ref('');
+const profileTelegramValid = computed(() => {
+  const original = profileOriginal.value;
+  if (!original) return false;
+  const text = profileTelegramId.value.trim();
+  return (
+    text === (original.telegramId === null ? '' : String(original.telegramId)) ||
+    isPositiveId(text)
+  );
+});
 const editorRole = ref<Exclude<AdminManagedRole, 'HEADMAN'>>('STUDENT');
 const editorStatus = ref<AdminRoleStatus>('ACTIVE');
 const editorGroupId = ref('');
@@ -1157,6 +1205,12 @@ const selectedGrant = computed<AdminRoleGrant | null>(
 const needsRoleAssignment = computed(
   () => !selectedGrant.value || selectedGrant.value.status === 'ARCHIVED',
 );
+const missingEmployeeNumber = computed(
+  () =>
+    editorRole.value === 'TEACHER' &&
+    needsRoleAssignment.value &&
+    !editorEmployeeNumber.value.trim(),
+);
 const editorCanUpdate = computed(() => selectedGrant.value?.canUpdate ?? true);
 const editorStatuses = computed(() => {
   if (selectedGrant.value)
@@ -1449,14 +1503,7 @@ async function refresh(): Promise<'loaded' | 'failed' | 'stale'> {
   }
 }
 
-async function createUser(): Promise<void> {
-  if (
-    saving.value ||
-    unknownMutation.value ||
-    profileEditorVisible.value ||
-    !adminHasPermission(props.authority, 'USERS_MANAGE')
-  )
-    return;
+const createForm = computed(() => {
   const role = createRole.value;
   if (
     role === 'ADMIN' &&
@@ -1464,12 +1511,10 @@ async function createUser(): Promise<void> {
       !createAccessConfirmed.value ||
       (createAccess.value.mode === 'LIMITED' && !createAccess.value.permissions.length))
   ) {
-    error.value = 'Выбери права администратора.';
-    return;
+    return { input: null, message: 'Выбери права администратора.' };
   }
-  let input: CreateAdminUserInput;
   try {
-    input = {
+    const input: CreateAdminUserInput = {
       lastName: createLastName.value,
       firstName: createFirstName.value,
       middleName: createMiddleName.value,
@@ -1490,8 +1535,26 @@ async function createUser(): Promise<void> {
       throw new Error('Выбери группу и укажи Telegram ID студента.');
     if (role === 'TEACHER' && !input.employeeNumber?.trim())
       throw new Error('Укажи табельный номер преподавателя.');
+    return { input, message: null };
   } catch (cause) {
-    error.value = cause instanceof Error ? cause.message : 'Проверь данные пользователя.';
+    return {
+      input: null,
+      message: cause instanceof Error ? cause.message : 'Проверь данные пользователя.',
+    };
+  }
+});
+
+async function createUser(): Promise<void> {
+  if (
+    saving.value ||
+    unknownMutation.value ||
+    profileEditorVisible.value ||
+    !adminHasPermission(props.authority, 'USERS_MANAGE')
+  )
+    return;
+  const { input, message } = createForm.value;
+  if (!input) {
+    error.value = message;
     return;
   }
   const { revision, controller } = beginMutation();
@@ -1499,7 +1562,9 @@ async function createUser(): Promise<void> {
   error.value = null;
   notice.value = null;
   try {
-    const created = await props.client.createUser(input, controller.signal);
+    const created = await props.client.createUser(input, controller.signal, {
+      includeInitialPassword: false,
+    });
     if (!isCurrentMutation(revision, controller)) return;
     acknowledgeIdentityOperation();
     selectedUser.value = created;
@@ -1535,14 +1600,19 @@ async function updateRole(): Promise<void> {
   )
     return;
   if (editorRole.value === 'ADMIN') return;
+  if (missingEmployeeNumber.value) {
+    error.value = 'Укажи табельный номер преподавателя.';
+    return;
+  }
   let input: UpdateAdminRoleInput;
   try {
+    const employeeNumber = editorEmployeeNumber.value.trim();
     input = {
       status: editorStatus.value,
       ...(editorGroupId.value.trim()
         ? { groupId: parsePositive(editorGroupId.value, 'groupId') }
         : {}),
-      ...(editorEmployeeNumber.value.trim() ? { employeeNumber: editorEmployeeNumber.value } : {}),
+      ...(employeeNumber ? { employeeNumber } : {}),
       ...(editorTelegramId.value.trim()
         ? { telegramId: parsePositive(editorTelegramId.value, 'telegramId') }
         : {}),
@@ -1586,22 +1656,29 @@ async function updateRole(): Promise<void> {
   }
 }
 
-async function beginProfileEdit(): Promise<void> {
+async function beginProfileEdit(destination: 'edit' | 'roles' = 'edit'): Promise<void> {
   const user = selectedUser.value;
-  if (!user || saving.value || profileLoading.value || createVisible.value || !canManage.value)
+  if (
+    !user ||
+    saving.value ||
+    profileLoading.value ||
+    createVisible.value ||
+    !(canManage.value || (destination === 'roles' && canEditAccess.value))
+  )
     return;
   cancelProfileLoad();
   const revision = ++profileLoadRevision;
   const controller = new AbortController();
   profileLoadAbortController = controller;
-  profileEditorVisible.value = true;
+  view.value = destination;
   profileLoading.value = true;
   profileOriginal.value = null;
   error.value = null;
   notice.value = null;
   try {
     const fresh = await props.client.getUser(user.id, controller.signal);
-    if (!isCurrentProfileLoad(revision, controller, user.id)) return;
+    if (!isCurrentProfileLoad(revision, controller, user.id) || view.value !== destination) return;
+    if (fresh.id !== user.id) throw new Error('Сервер вернул другого пользователя.');
     selectedUser.value = fresh;
     profileOriginal.value = fresh;
     unknownMutation.value = false;
@@ -1618,7 +1695,7 @@ async function beginProfileEdit(): Promise<void> {
       cause instanceof StaleSessionGenerationError
     )
       return;
-    profileEditorVisible.value = false;
+    view.value = 'detail';
     showError(cause, 'Данные пользователя не удалось загрузить.');
   } finally {
     if (isCurrentProfileLoad(revision, controller, user.id)) {
@@ -1669,7 +1746,6 @@ async function updateProfile(): Promise<void> {
     telegramId?: number;
   } = {};
   if (
-    profileHasTeacherRole.value &&
     profileTelegramId.value.trim() !==
       (original.telegramId === null ? '' : String(original.telegramId))
   ) {
@@ -1886,7 +1962,7 @@ async function resumeIdentityOperation(): Promise<void> {
     view.value === contextView;
   saving.value = true;
   try {
-    const result = await props.client.resumeIdentityOperation();
+    const result = await props.client.resumeIdentityOperation({ includeInitialPassword: false });
     if (!current()) return;
     acknowledgeIdentityOperation();
     if (result.recovered) {
@@ -1960,12 +2036,16 @@ function showError(cause: unknown, fallback: string, mutation = false): void {
 }
 
 function parsePositive(value: string, field: string): number {
-  const parsed = Number(value.trim());
-  if (!Number.isSafeInteger(parsed) || parsed <= 0)
+  const text = value.trim();
+  if (!isPositiveId(text))
     throw new Error(
       `${field.includes('roup') ? 'Выбери группу' : 'Укажи корректный Telegram ID'}.`,
     );
-  return parsed;
+  return Number(text);
+}
+
+function isPositiveId(text: string): boolean {
+  return /^\d+$/.test(text) && Number.isSafeInteger(Number(text)) && Number(text) > 0;
 }
 
 function isAbortError(cause: unknown): boolean {
@@ -2058,6 +2138,7 @@ watch(
     lifecycleUncertain.value = false;
     void refresh();
   },
+  { flush: 'sync' },
 );
 
 onBeforeUnmount(() => {
@@ -2296,6 +2377,7 @@ onBeforeUnmount(() => {
         </button>
       </nav>
       <ExportButton
+        inline
         :port="reportDownload"
         :formats="() => client.exportFormats()"
         :request="exportRequest"
@@ -2502,13 +2584,7 @@ onBeforeUnmount(() => {
       <button
         class="admin-users-action admin-users-footer"
         type="submit"
-        :disabled="
-          saving ||
-            unknownMutation ||
-            (createRole === 'ADMIN' &&
-              (!createAccessConfirmed ||
-                (createAccess.mode === 'LIMITED' && !createAccess.permissions.length)))
-        "
+        :disabled="saving || unknownMutation || !createForm.input"
         :aria-busy="saving"
       >
         {{ saving ? 'Создаём…' : 'Создать пользователя' }}
@@ -2540,19 +2616,21 @@ onBeforeUnmount(() => {
             :src="copyIcon"
             aria-hidden="true"
           />
-        </button><button
-          v-if="selectedUser.initialPassword"
-          class="admin-users-credential"
-          type="button"
-          aria-label="Скопировать начальный пароль"
-          @click="copyCredential(selectedUser.initialPassword!)"
-        >
-          <span><small>Начальный пароль</small><strong>{{ selectedUser.initialPassword }}</strong></span><SvgIcon
-            :src="copyIcon"
-            aria-hidden="true"
-          />
         </button>
-      </div><p
+      </div>
+      <AdminCredentialPanel
+        v-if="canCredentials && selectedUser.status === 'ACTIVE'"
+        :key="'initial-' + selectedUser.id"
+        initial-only
+        :client="client"
+        :user-id="selectedUser.id"
+        :scope-key="credentialScope"
+        :self-target="false"
+        :disabled="credentialActionsDisabled"
+        :covered="credentialsCovered"
+        @owner-error="ownerError"
+      />
+      <p
         v-if="copied"
         role="status"
       >
@@ -2640,6 +2718,15 @@ onBeforeUnmount(() => {
         Скопировано
       </p>
       <button
+        v-if="canManage || canEditAccess"
+        class="admin-users-action admin-users-action--secondary"
+        type="button"
+        :disabled="profileLoading || saving"
+        @click="beginProfileEdit('roles')"
+      >
+        Настроить роли
+      </button>
+      <button
         v-if="canManage || canCredentials || canArchive || canEditAccess"
         class="admin-users-action admin-users-footer"
         type="button"
@@ -2650,7 +2737,7 @@ onBeforeUnmount(() => {
       </button>
     </template>
 
-    <template v-else-if="view === 'edit' && selectedUser">
+    <template v-else-if="(view === 'edit' || view === 'roles') && selectedUser">
       <div class="admin-users-summary">
         <strong>{{ selectedUser.fullName }}</strong><small>{{ selectedUser.login }} ·
           {{ selectedUser.status === 'ARCHIVED' ? 'аккаунт в архиве' : 'аккаунт активен' }}</small>
@@ -2662,7 +2749,7 @@ onBeforeUnmount(() => {
         Загружаем данные…
       </p>
       <form
-        v-else-if="canManage"
+        v-else-if="canManage && view === 'edit'"
         class="admin-users-form"
         @submit.prevent="updateProfile"
       >
@@ -2691,28 +2778,28 @@ onBeforeUnmount(() => {
           maxlength="32"
           autocomplete="off"
         ></label><label
-          v-if="profileHasTeacherRole"
           class="admin-users-field"
         ><span>Telegram ID</span><input
           v-model="profileTelegramId"
           inputmode="numeric"
           pattern="[0-9]+"
           autocomplete="off"
-        ></label><div
-          v-else-if="selectedUser.telegramId"
-          class="admin-users-field"
-        >
-          <span>Telegram ID</span><p>{{ selectedUser.telegramId }}</p>
-        </div><button
+          :aria-invalid="!profileTelegramValid"
+          :aria-describedby="profileTelegramValid ? undefined : 'admin-users-telegram-help'"
+        ><small
+          v-if="!profileTelegramValid"
+          id="admin-users-telegram-help"
+          class="admin-users-muted"
+        >Укажи корректный Telegram ID. Отвязка через эту форму недоступна.</small></label><button
           class="admin-users-action"
           type="submit"
-          :disabled="saving || unknownMutation"
+          :disabled="saving || unknownMutation || !profileTelegramValid"
         >
           {{ saving ? 'Сохраняем…' : 'Сохранить данные' }}
         </button>
       </form>
       <button
-        v-if="canEditAccess"
+        v-if="canEditAccess && !profileLoading"
         class="admin-users-action admin-users-action--secondary"
         type="button"
         :disabled="saving"
@@ -2791,7 +2878,7 @@ onBeforeUnmount(() => {
         </div>
       </div>
       <button
-        v-if="canTransfer && canManage"
+        v-if="canTransfer && canManage && !profileLoading"
         class="admin-users-action admin-users-action--secondary"
         type="button"
         :disabled="saving"
@@ -2808,7 +2895,7 @@ onBeforeUnmount(() => {
         Восстановить доступ
       </button>
       <button
-        v-if="canArchive"
+        v-if="canArchive && !profileLoading"
         class="admin-users-action admin-users-action--secondary"
         type="button"
         :disabled="saving"
@@ -2870,6 +2957,7 @@ onBeforeUnmount(() => {
             unknownMutation ||
             !editorCanUpdate ||
             !editorStatuses.length ||
+            missingEmployeeNumber ||
             editorRole === 'ADMIN'
         "
       >
@@ -3131,10 +3219,24 @@ onBeforeUnmount(() => {
         :key="selectedUser.id"
         :client="client"
         :user-id="selectedUser.id"
-        :disabled="saving"
+        :disabled="saving || credentialPending || selfCredentialReset"
         embedded
         @issued="view = $event ? 'recovery-issued' : 'recovery'"
+        @pending="recoveryLinkPending = $event"
         @done="back"
+        @owner-error="ownerError"
+      />
+      <AdminCredentialPanel
+        v-if="view === 'recovery' && selectedUser.status === 'ACTIVE'"
+        :key="'credential-' + selectedUser.id"
+        :client="client"
+        :user-id="selectedUser.id"
+        :scope-key="credentialScope"
+        :self-target="authority?.userId === selectedUser.id"
+        :disabled="credentialActionsDisabled"
+        :covered="credentialsCovered"
+        @pending="credentialPending = $event"
+        @self-reset="selfCredentialReset = true"
         @owner-error="ownerError"
       />
     </section>

@@ -79,6 +79,15 @@
   margin-block-end: var(--rct-space-3);
   color: var(--rct-color-text-secondary);
 }
+.admin-groups-search:focus-within,
+.admin-groups-form label:focus-within {
+  outline: var(--rct-focus-width) solid var(--rct-color-border-focus);
+  outline-offset: var(--rct-focus-offset);
+}
+.admin-groups-search :is(input, button):focus-visible,
+.admin-groups-form label :is(input, select):focus-visible {
+  outline: none;
+}
 .admin-groups-search input {
   inline-size: 100%;
   min-inline-size: 0;
@@ -88,7 +97,6 @@
   color: var(--rct-color-text-primary);
   font: inherit;
   font-size: var(--rct-font-size-dense);
-  @mixin rct-focus-ring;
 }
 .admin-groups-search input::placeholder {
   color: var(--rct-color-text-secondary);
@@ -210,7 +218,6 @@
   background: var(--rct-color-surface-raised);
   color: var(--rct-color-text-primary);
   font: inherit;
-  @mixin rct-focus-ring;
 }
 .admin-groups-form input {
   min-block-size: var(--rct-space-6);
@@ -316,15 +323,24 @@
 .admin-groups-filterbar {
   display: grid;
   grid-template-columns: minmax(0, 1fr) var(--rct-control-min-touch);
-  gap: var(--rct-space-2);
+  gap: var(--rct-space-3);
+  align-items: stretch;
+  margin-block-end: var(--rct-space-4);
 }
 .admin-groups-filterbar button {
+  box-sizing: border-box;
+  min-inline-size: 0;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  color: var(--rct-color-text-secondary);
   text-align: start;
   background: var(--rct-color-surface-raised);
   margin: 0;
   border-radius: var(--rct-radius-xl);
 }
 .admin-groups-filterbar button:last-child {
+  inline-size: var(--rct-control-min-touch);
+  padding: 0;
   text-align: center;
 }
 .admin-groups-form select {
@@ -334,7 +350,6 @@
   background: transparent;
   color: var(--rct-color-text-primary);
   font: inherit;
-  @mixin rct-focus-ring;
 }
 .admin-groups-form select:disabled {
   opacity: 0.7;
@@ -357,7 +372,6 @@
   flex: none;
   min-inline-size: var(--rct-control-min-touch);
   padding: 0;
-  @mixin rct-focus-ring;
 }
 
 /* R2 explicit actions and surfaced registry controls. */
@@ -369,6 +383,16 @@
 }
 .admin-groups-management button {
   margin: 0;
+}
+.admin-groups-item__action-options {
+  display: grid;
+  gap: var(--rct-space-2);
+}
+.admin-groups-item__actions .admin-groups-table__action:not(:disabled),
+.admin-groups-management .admin-groups-table__action:not(:disabled),
+.admin-groups-table__action--edit:not(:disabled) {
+  background: var(--rct-color-accent-now);
+  color: var(--rct-color-accent-on-now);
 }
 .admin-groups-selector {
   display: flex;
@@ -500,6 +524,7 @@
 
 .admin-groups-headman select {
   padding: var(--rct-space-3);
+  @mixin rct-focus-ring;
 }
 .admin-groups-screen[data-admin-groups-view='headman'] > .admin-groups-state--error {
   margin-block-end: var(--rct-space-4);

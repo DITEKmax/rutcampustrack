@@ -26,6 +26,7 @@ function historyTone(status: StatisticsHistoryStatus): string {
     </div>
     <div
       class="statistics-type-card__metrics"
+      role="group"
       aria-label="Метрики посещаемости"
     >
       <span
@@ -38,7 +39,8 @@ function historyTone(status: StatisticsHistoryStatus): string {
         class="statistics-type-card__metric"
         :class="`statistics-type-card__metric--${metric.key}`"
       >
-        <span>{{ metric.label }}</span>
+        <span class="statistics-visually-hidden">{{ metric.label }}</span>
+        <i aria-hidden="true" />
         <strong>{{ displayPercent(metric.value.percent) }}</strong>
         <span class="statistics-type-card__count"
           >{{ metric.value.count }} из {{ card.metrics.held }}</span

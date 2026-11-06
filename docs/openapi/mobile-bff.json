@@ -5026,6 +5026,9 @@
           },
           "explanation" : {
             "$ref" : "#/components/schemas/StudentAttendanceExplanation"
+          },
+          "pendingRequest" : {
+            "type" : "boolean"
           }
         }
       },

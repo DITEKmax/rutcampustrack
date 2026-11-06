@@ -90,6 +90,21 @@ const selectedEligible = computed(() => canRequestLesson(selectedOption.value, '
 const todaySelectionMatches = computed(
   () => !contextLesson.value || props.lessonId === contextLesson.value.id,
 );
+const contextUnavailable = computed(() => {
+  if (!todaySelectionMatches.value) return true;
+  if (selectedEligible.value) return false;
+  const option = selectedOption.value;
+  // An exhausted quota already explains why the exact, closed lesson cannot
+  // be submitted. Keep explicit pending/blocked/missing lesson warnings.
+  return !(
+    props.selectedLesson &&
+    budgetExhausted.value &&
+    option?.lesson?.status?.toUpperCase() === 'CLOSED' &&
+    option.lesson.blocked === false &&
+    !option.pendingRequests?.length &&
+    !option.unavailableReason
+  );
+});
 const budgetLimitText = computed(() => {
   const limit = props.budget?.limit;
   return typeof limit === 'number' && Number.isFinite(limit)
@@ -196,12 +211,7 @@ function onSubmit(): void {
           :attendance-status="contextStatus"
         />
         <p
-          v-if="
-            contextLesson &&
-            !props.lessonsLoading &&
-            !props.lessonsError &&
-            (!todaySelectionMatches || !selectedEligible)
-          "
+          v-if="contextLesson && !props.lessonsLoading && !props.lessonsError && contextUnavailable"
           class="request-validation-hint"
           role="alert"
         >

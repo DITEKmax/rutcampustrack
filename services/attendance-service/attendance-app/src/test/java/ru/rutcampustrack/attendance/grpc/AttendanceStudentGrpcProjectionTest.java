@@ -311,6 +311,54 @@ class AttendanceStudentGrpcProjectionTest {
     }
 
     @Test
+    void absenceKeepsItsMarkAndFencesBothActionsForEitherPendingKind() {
+        var semesters = mock(SemesterCacheService.class);
+        when(semesters.getActiveSemesterId()).thenReturn(SEMESTER_ID);
+        var requests = mock(StudentRequestService.class);
+        var projections = mock(StudentAttendanceProjectionService.class);
+        when(projections.project(CLAIMS, SEMESTER_ID, null, "days", List.of()))
+                .thenReturn(projection());
+        var handler =
+                new AttendanceStudentGrpcServiceImpl(
+                        null, null, null, null, semesters, requests, projections);
+        var request =
+                StudentAttendanceProjectionRequest.newBuilder()
+                        .setSemesterId(SEMESTER_ID)
+                        .setRange("days")
+                        .build();
+        var snapshot = new StudentRequestModels.LessonSnapshot(
+                77L, 10L, 20L, "Математика", "LECTURE", SEMESTER_ID, 1, DATE,
+                LocalTime.of(9, 0), LocalTime.of(10, 30), "closed", false);
+        var budget = new StudentRequestModels.Budget(SEMESTER_ID, 5, 5, 0);
+
+        for (var kind : ru.rutcampustrack.attendance.contract.enums.StudentRequestKind.values()) {
+            var pending = new StudentRequestModels.PendingRequestRef(
+                    "pending-id", kind,
+                    ru.rutcampustrack.attendance.contract.enums.StudentRequestOrigin.MANUAL);
+            when(requests.attendanceOptions(any()))
+                    .thenReturn(new StudentRequestModels.RequestOptions(List.of(), null, budget,
+                            List.of(new StudentRequestModels.LessonOption(
+                                    snapshot, true, true, List.of(pending)))));
+            var lesson = invoke(handler, request).responses.getFirst().getDays(0).getLessons(0);
+            assertThat(lesson.getStatus()).isEqualTo("ABSENT");
+            assertThat(lesson.getPendingRequest()).isTrue();
+            assertThat(lesson.getRequestOptionsList())
+                    .extracting(StudentAttendanceRequestOption::getEnabled)
+                    .containsExactly(false, false);
+        }
+
+        when(requests.attendanceOptions(any()))
+                .thenReturn(new StudentRequestModels.RequestOptions(List.of(), null, budget,
+                        List.of(new StudentRequestModels.LessonOption(
+                                snapshot, true, true, List.of()))));
+        var clear = invoke(handler, request).responses.getFirst().getDays(0).getLessons(0);
+        assertThat(clear.getPendingRequest()).isFalse();
+        assertThat(clear.getRequestOptionsList())
+                .extracting(StudentAttendanceRequestOption::getEnabled)
+                .containsExactly(true, true);
+    }
+
+    @Test
     void semesterOutageAfterProjectionPreservesReadWithoutRequestActions() throws Exception {
         AcademicGrpcServiceGrpc.AcademicGrpcServiceBlockingStub stub =
                 mock(AcademicGrpcServiceGrpc.AcademicGrpcServiceBlockingStub.class);
@@ -324,7 +372,7 @@ class AttendanceStudentGrpcProjectionTest {
         stubField.set(academic, stub);
         SemesterCacheService semesters = new SemesterCacheService(academic);
         StudentRequestService requests = mock(StudentRequestService.class);
-        when(requests.options(any()))
+        when(requests.attendanceOptions(any()))
                 .thenReturn(
                         new StudentRequestModels.RequestOptions(List.of(), null, null, List.of()));
         StudentAttendanceProjectionService projections =

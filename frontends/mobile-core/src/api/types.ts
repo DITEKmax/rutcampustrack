@@ -247,6 +247,7 @@ export interface StudentAttendanceLesson {
   }
   readonly status: StudentAttendanceLessonStatus
   readonly requestOptions: readonly StudentAttendanceRequestOption[]
+  readonly pendingRequest?: boolean
   readonly explanation?: StudentAttendanceExplanation | null
 }
 

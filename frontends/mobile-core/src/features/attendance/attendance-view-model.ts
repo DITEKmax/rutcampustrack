@@ -91,6 +91,7 @@ export interface AttendanceLesson {
   }
   readonly status: AttendanceLessonStatus
   readonly requestOptions: readonly AttendanceRequestOption[]
+  readonly pendingRequest?: boolean
   readonly explanation?: StudentAttendanceExplanation | null
 }
 
@@ -228,7 +229,7 @@ export function graphForRange(
 
 /** Eligibility is a server-owned option; status alone never enables a request. */
 export function hasEnabledRequestOption(lesson: AttendanceLesson): boolean {
-  return lesson.requestOptions.some((option) => option.enabled)
+  return !lesson.pendingRequest && lesson.requestOptions.some((option) => option.enabled)
 }
 
 /** Use server display text, never expose an unknown machine code as a reason. */

@@ -79,6 +79,7 @@ import {
 } from '../../features/requests/request-attachment-action';
 import {
   canRequestLesson,
+  pendingReason,
   requestSelectionEligible,
   requestsSessionGeneration,
   getOrCreateRequestsDraft,
@@ -496,6 +497,14 @@ const homeworkLoading = computed(
 const ownerIdentity = computed(() =>
   scope.value ? studentFeatureScopeIdentity(scope.value) : null,
 );
+const attendanceRefreshRevision = ref(0);
+let attendanceRefreshOwner: string | null = null;
+function queueAttendanceRefresh(): void {
+  attendanceRefreshOwner = ownerIdentity.value;
+  if (attendanceRefreshOwner) attendanceRefreshRevision.value += 1;
+}
+watch(() => props.realtimeRevision, queueAttendanceRefresh);
+
 const studentRoot = ref<HTMLElement | null>(null);
 const impulseScreen = ref<InstanceType<typeof CheckinImpulseScreen> | null>(null);
 const impulse = useCheckinImpulse({
@@ -540,14 +549,15 @@ const realAttendanceDocuments = useAttendanceDocuments(() => ({
 const attendanceDocumentResolver: AttendanceDocumentResolver = (lessonId, explanation) =>
   props.attendanceDocumentForLesson?.(lessonId, explanation) ?? realAttendanceDocuments(lessonId, explanation);
 
-function refreshTodayAfterRequestDecision(ownerScopeAtStart: StudentFeatureScope | null): void {
+function refreshAfterRequestDecision(ownerScopeAtStart: StudentFeatureScope | null): void {
   if (
     !ownerScopeAtStart ||
     disposed ||
-    offline.value ||
     ownerIdentity.value !== studentFeatureScopeIdentity(ownerScopeAtStart)
   )
     return;
+  queueAttendanceRefresh();
+  if (offline.value) return;
   void today.refresh(ownerScopeAtStart);
   void requests.loadOptions().catch(handleRequestsError);
 }
@@ -1045,6 +1055,18 @@ const requestOpenCount = computed(() => requests.controller.openCount());
 const requestHasNextPage = computed(() => requests.hasNextPage.value);
 const requestOptions = computed(() => requests.view.options);
 const requestLessons = computed(() => requestOptions.value?.lessons ?? []);
+const attendanceFormLessons = computed(() => {
+  const option = requestLessons.value.find(
+    (value) => value.lesson?.id === attendanceRequestLesson.value?.id,
+  );
+  if (!option) return [];
+  const reason = pendingReason(option.pendingRequests);
+  return [
+    reason
+      ? { ...option, excuseEligible: false, lateCheckinEligible: false, unavailableReason: reason }
+      : option,
+  ];
+});
 const requestReasons = computed(() => requestOptions.value?.reasons ?? []);
 const requestFileLimits = computed(() => requestOptions.value?.files ?? null);
 const requestBudget = computed(() => requestOptions.value?.budget ?? null);
@@ -1612,6 +1634,7 @@ function openAttendanceRequest(
     offline.value ||
     requestReadOnly.value ||
     attendance.terminalReadOnly.value ||
+    lesson.pendingRequest ||
     !option.enabled
   )
     return;
@@ -1812,7 +1835,7 @@ function cancelRequest(id: string): void {
     void requests
       .cancelTargetRequest(id, targetState.target.requestKind)
       .then((detail) => {
-        refreshTodayAfterRequestDecision(ownerScopeAtStart);
+        refreshAfterRequestDecision(ownerScopeAtStart);
         if (!isActiveNotificationTargetRequest(targetIntent)) return;
         const current = notificationTargetState.value;
         if (
@@ -1866,7 +1889,7 @@ function cancelRequest(id: string): void {
   requestCancellingId.value = id;
   void requests
     .cancelRequest(id)
-    .then(() => refreshTodayAfterRequestDecision(ownerScopeAtStart))
+    .then(() => refreshAfterRequestDecision(ownerScopeAtStart))
     .catch(handleRequestsError)
     .finally(() => {
       if (!disposed) requestCancellingId.value = null;
@@ -1963,6 +1986,8 @@ async function submitExcuse(payload: Parameters<typeof requests.submitExcuse>[0]
   try {
     const ack = await requests.submitExcuse(payload);
     if (disposed || ownerIdentity.value !== identity) return;
+    if (fromAttendance && ack.summary.status === 'PENDING')
+      attendance.markRequestPending(ack.summary.lessons?.map((lesson) => lesson.id) ?? []);
     updateRequestDraft({
       view: 'inbox',
       excuseLessonIds: [],
@@ -1996,6 +2021,8 @@ async function submitLateCheckin(
   try {
     const ack = await requests.submitLateCheckin(payload);
     if (disposed || ownerIdentity.value !== identity) return;
+    if (fromAttendance && ack.summary.status === 'PENDING')
+      attendance.markRequestPending(ack.summary.lessons?.map((lesson) => lesson.id) ?? []);
     updateRequestDraft({ view: 'inbox', lateLessonId: null });
     requests.selectBucket('open');
     void requests.loadOptions().catch(handleRequestsError);
@@ -2185,24 +2212,44 @@ function openNotificationAction(action: NotificationLaunchAction, isCurrent: () 
   }
   return false;
 }
+const projectionRefreshBlocked = computed(
+  () =>
+    offline.value ||
+    props.readOnly ||
+    today.mutation.isPending.value ||
+    homework.mutation.isPending.value ||
+    requests.view.mutation === 'submitting' ||
+    route.value.surface === 'task',
+);
 useProjectionRefresh(
   async () => {
     // Reads preserve the mounted form, request draft, and pending/unknown command owners.
     const id = route.value.id;
     if (id === 'today') await today.refresh();
     else if (id === 'homework') await homework.query.refetch();
-    else if (id === 'attendance') await attendance.query.refetch();
     else if (id.startsWith('more/statistics')) await statistics.query.refetch();
   },
   {
     revision: () => props.realtimeRevision,
+    blocked: projectionRefreshBlocked,
+  },
+);
+useProjectionRefresh(
+  async () => {
+    const identity = attendanceRefreshOwner;
+    if (!identity || identity !== ownerIdentity.value) return;
+    if (!attendance.query.data.value && attendance.query.isFetching.value) {
+      // A refetch without cached data would join the read started before this change.
+      void queryClient.cancelQueries({ queryKey: attendance.queryKey.value, exact: true });
+    }
+    await attendance.query.refetch();
+  },
+  {
+    revision: () => attendanceRefreshRevision.value,
     blocked: () =>
-      offline.value ||
-      props.readOnly ||
-      today.mutation.isPending.value ||
-      homework.mutation.isPending.value ||
-      requests.view.mutation === 'submitting' ||
-      route.value.surface === 'task',
+      projectionRefreshBlocked.value ||
+      route.value.id !== 'attendance' ||
+      !attendance.scopeReady.value,
   },
 );
 
@@ -2273,7 +2320,7 @@ defineExpose({ openNotificationAction });
           route.root === 'attendance' ? 'Вернуться к посещаемости' : 'Вернуться на сегодня'
         "
         :access="requests.view.access"
-        :lessons="requestLessons"
+        :lessons="route.root === 'attendance' ? attendanceFormLessons : requestLessons"
         :lesson-ids="requestDraft?.excuseLessonIds ?? []"
         :reasons="requestReasons"
         :reason="requestDraft?.excuseReason ?? null"
@@ -2305,7 +2352,7 @@ defineExpose({ openNotificationAction });
           route.root === 'attendance' ? 'Вернуться к посещаемости' : 'Вернуться на сегодня'
         "
         :access="requests.view.access"
-        :lessons="requestLessons"
+        :lessons="route.root === 'attendance' ? attendanceFormLessons : requestLessons"
         :lesson-id="requestDraft?.lateLessonId ?? null"
         :budget="requestBudget"
         :lessons-loading="requests.view.optionsLoading"

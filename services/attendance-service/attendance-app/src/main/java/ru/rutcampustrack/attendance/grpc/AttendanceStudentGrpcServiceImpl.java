@@ -571,7 +571,7 @@ public class AttendanceStudentGrpcServiceImpl
 
     private static StudentAttendanceProjectionResponse toProto(
             StudentAttendanceProjectionService.Projection projection,
-            Map<Long, List<StudentAttendanceRequestOption>> requestOptions) {
+            Map<Long, StudentRequestModels.LessonOption> requestOptions) {
         StudentAttendanceProjectionResponse.Builder result =
                 StudentAttendanceProjectionResponse.newBuilder()
                         .setStudentId(projection.studentId())
@@ -590,7 +590,7 @@ public class AttendanceStudentGrpcServiceImpl
 
     private static StudentAttendanceDay toProto(
             StudentAttendanceProjectionService.Day day,
-            Map<Long, List<StudentAttendanceRequestOption>> requestOptions) {
+            Map<Long, StudentRequestModels.LessonOption> requestOptions) {
         StudentAttendanceDay.Builder result =
                 StudentAttendanceDay.newBuilder()
                         .setDate(day.date().toString())
@@ -603,7 +603,10 @@ public class AttendanceStudentGrpcServiceImpl
 
     private static StudentAttendanceLesson toProto(
             StudentAttendanceProjectionService.Lesson lesson,
-            Map<Long, List<StudentAttendanceRequestOption>> requestOptions) {
+            Map<Long, StudentRequestModels.LessonOption> requestOptions) {
+        StudentRequestModels.LessonOption option = requestOptions.get(lesson.lessonId());
+        boolean pending = option != null && "ABSENT".equals(lesson.uiStatus())
+                && !option.pendingRequests().isEmpty();
         StudentAttendanceLesson.Builder result =
                 StudentAttendanceLesson.newBuilder()
                         .setLessonId(lesson.lessonId())
@@ -615,14 +618,30 @@ public class AttendanceStudentGrpcServiceImpl
                         .setStartsAt(lesson.startsAt().toString())
                         .setEndsAt(lesson.endsAt().toString())
                         .setStatus(lesson.uiStatus())
-                        .addAllRequestOptions(
-                                requestOptions.getOrDefault(lesson.lessonId(), List.of()));
+                        .setPendingRequest(pending);
+        if (option != null) {
+            result.addRequestOptions(requestOption("EXCUSE", "Уважительная причина",
+                    option.excuseEligible(), pending));
+            result.addRequestOptions(requestOption("LATE_CHECKIN", "Забыл отметиться",
+                    option.lateCheckinEligible(), pending));
+        }
         if (lesson.room() != null) result.setRoom(lesson.room());
         if (lesson.explanation() != null) result.setExplanation(toProto(lesson.explanation()));
         return result.build();
     }
 
-    private Map<Long, List<StudentAttendanceRequestOption>> projectionRequestOptions(
+    private static StudentAttendanceRequestOption requestOption(
+            String kind, String label, boolean eligible, boolean pending) {
+        var result = StudentAttendanceRequestOption.newBuilder()
+                .setId(kind)
+                .setKind(kind)
+                .setLabel(label)
+                .setEnabled(eligible && !pending);
+        if (pending) result.setReason("Есть активная заявка по этой паре");
+        return result.build();
+    }
+
+    private Map<Long, StudentRequestModels.LessonOption> projectionRequestOptions(
             InternalJwtClaims claims,
             StudentAttendanceProjectionRequest request,
             StudentAttendanceProjectionService.Projection projection) {
@@ -635,24 +654,10 @@ public class AttendanceStudentGrpcServiceImpl
                 return Map.of();
             }
             StudentRequestModels.RequestOptions options =
-                    requestService.options(requestIdentity(claims));
-            Map<Long, List<StudentAttendanceRequestOption>> result = new HashMap<>();
+                    requestService.attendanceOptions(requestIdentity(claims));
+            Map<Long, StudentRequestModels.LessonOption> result = new HashMap<>();
             for (StudentRequestModels.LessonOption option : options.lessons()) {
-                List<StudentAttendanceRequestOption> mapped =
-                        List.of(
-                                StudentAttendanceRequestOption.newBuilder()
-                                        .setId("EXCUSE")
-                                        .setKind("EXCUSE")
-                                        .setLabel("Уважительная причина")
-                                        .setEnabled(option.excuseEligible())
-                                        .build(),
-                                StudentAttendanceRequestOption.newBuilder()
-                                        .setId("LATE_CHECKIN")
-                                        .setKind("LATE_CHECKIN")
-                                        .setLabel("Поздняя отметка")
-                                        .setEnabled(option.lateCheckinEligible())
-                                        .build());
-                result.put(option.lesson().lessonId(), mapped);
+                result.put(option.lesson().lessonId(), option);
             }
             return result;
         } catch (RuntimeException unavailable) {

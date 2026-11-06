@@ -327,48 +327,49 @@ function description(point: StatisticsSeriesPoint): string {
             />
           </svg>
         </div>
-      </div>
-      <div
-        class="statistics-chart__legend"
-        aria-label="Линии графика"
-      >
-        <span class="statistics-chart__legend-own">Моя посещаемость</span>
-        <span class="statistics-chart__legend-group">Средняя группы</span>
+        <div
+          ref="tickContainer"
+          class="statistics-chart__ticks"
+          :class="{ 'statistics-chart__ticks--stacked': axis.stacked }"
+          aria-hidden="true"
+        >
+          <div
+            ref="tickMeasure"
+            class="statistics-chart__tick-measure"
+          >
+            <span
+              v-for="label in axisLabels"
+              :key="label"
+            >{{ label }}</span>
+          </div>
+          <span
+            v-for="(tick, index) in axis.ticks"
+            :key="tick.position"
+            class="statistics-chart__tick"
+            :class="{
+              'statistics-chart__tick--first': axis.ticks.length > 1 && index === 0,
+              'statistics-chart__tick--last':
+                axis.ticks.length > 1 && index === axis.ticks.length - 1,
+            }"
+            :style="{ left: `${tick.position * 100}%` }"
+            :title="tick.date"
+          >
+            {{ tick.label }}
+          </span>
+        </div>
+        <div
+          class="statistics-chart__legend"
+          role="group"
+          aria-label="Линии графика"
+        >
+          <span class="statistics-chart__legend-own">Моя посещаемость</span>
+          <span class="statistics-chart__legend-group">Средняя группы</span>
+        </div>
       </div>
       <p class="statistics-visually-hidden">
         Моя посещаемость и средняя посещаемость своей группы.
         <span v-if="!geometry.groupPaths.length">Для сравнения с группой нет данных.</span>
       </p>
-      <div
-        ref="tickContainer"
-        class="statistics-chart__ticks"
-        :class="{ 'statistics-chart__ticks--stacked': axis.stacked }"
-        aria-hidden="true"
-      >
-        <div
-          ref="tickMeasure"
-          class="statistics-chart__tick-measure"
-        >
-          <span
-            v-for="label in axisLabels"
-            :key="label"
-            >{{ label }}</span
-          >
-        </div>
-        <span
-          v-for="(tick, index) in axis.ticks"
-          :key="tick.position"
-          class="statistics-chart__tick"
-          :class="{
-            'statistics-chart__tick--first': axis.ticks.length > 1 && index === 0,
-            'statistics-chart__tick--last':
-              axis.ticks.length > 1 && index === axis.ticks.length - 1,
-          }"
-          :style="{ left: `${tick.position * 100}%` }"
-          :title="tick.date"
-          >{{ tick.label }}</span
-        >
-      </div>
       <div class="statistics-visually-hidden">
         <table class="statistics-chart__data-table">
           <caption>Посещаемость по периодам</caption>

@@ -1830,6 +1830,15 @@ class StudentRequestDomainIT {
         assertThat(exhausted.lessons())
                 .singleElement()
                 .satisfies(option -> assertThat(option.lateCheckinEligible()).isFalse());
+
+        currentLessonIds.retainAll(List.of(76L, 77L));
+        blockedLessonIds.add(77L);
+        var journal = service.attendanceOptions(STUDENT);
+        assertThat(journal.budget().remaining()).isZero();
+        assertThat(journal.lessons())
+                .extracting(option -> option.lesson().lessonId(), option -> option.lateCheckinEligible())
+                .containsExactly(tuple(76L, true), tuple(77L, false));
+
         assertThatThrownBy(
                         () ->
                                 service.submitLateCheckin(

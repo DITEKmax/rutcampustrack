@@ -250,6 +250,7 @@ message StudentAttendanceLesson {
   string status = 10; // PRESENT, ABSENT, EXCUSED, ACTIVE, FUTURE, NO_DATA, CANCELLED
   repeated StudentAttendanceRequestOption request_options = 11;
   optional StudentAttendanceExplanation explanation = 12;
+  bool pending_request = 13;
 }
 
 message StudentAttendanceExplanation {

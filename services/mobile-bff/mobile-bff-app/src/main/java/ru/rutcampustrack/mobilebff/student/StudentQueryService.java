@@ -671,7 +671,8 @@ public class StudentQueryService {
                                                 option.getEnabled(),
                                                 option.hasReason() ? option.getReason() : null))
                         .toList(),
-                source.hasExplanation() ? explanation(source.getExplanation()) : null);
+                source.hasExplanation() ? explanation(source.getExplanation()) : null,
+                source.getPendingRequest());
     }
 
     private static StudentAttendanceSubject subject(

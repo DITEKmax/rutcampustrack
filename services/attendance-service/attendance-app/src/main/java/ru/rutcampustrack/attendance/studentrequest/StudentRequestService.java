@@ -447,6 +447,15 @@ public class StudentRequestService {
      * allowed to fail closed through their client exceptions.
      */
     public RequestOptions options(Identity identity) {
+        return optionsFromSchedule(identity, false);
+    }
+
+    /** Journal entry shows lesson eligibility; the confirmation screen checks the quota. */
+    public RequestOptions attendanceOptions(Identity identity) {
+        return optionsFromSchedule(identity, true);
+    }
+
+    private RequestOptions optionsFromSchedule(Identity identity, boolean deferLateBudget) {
         long studentId = requireStudentIdentity(identity);
         Long semesterId = requireCurrentSemester();
         Instant now = clock.instant();
@@ -462,7 +471,7 @@ public class StudentRequestService {
                         .filter(Objects::nonNull)
                         .toList();
         validateOptionSnapshots(identity, lessons, semesterId);
-        return optionsFor(studentId, semesterId, enrichSnapshots(lessons));
+        return optionsFor(studentId, semesterId, enrichSnapshots(lessons), deferLateBudget);
     }
 
     /** Purely supplied snapshot variant used by transport adapters and focused tests. */
@@ -471,7 +480,7 @@ public class StudentRequestService {
         Long semesterId = requireCurrentSemester();
         validateOptionSnapshots(identity, lessons, semesterId);
         return optionsFor(
-                studentId, semesterId, enrichSnapshots(lessons == null ? List.of() : lessons));
+                studentId, semesterId, enrichSnapshots(lessons == null ? List.of() : lessons), false);
     }
 
     /** Owner-only cancellation. It is idempotent for an already-cancelled request. */
@@ -1590,13 +1599,6 @@ public class StudentRequestService {
         }
     }
 
-    private boolean hasRemainingBudget(long studentId, long semesterId) {
-        StudentLateCheckinBudgetDocument budget =
-                budgetRepository.findByStudentIdAndSemesterId(studentId, semesterId).orElse(null);
-        int used = budget == null || budget.getUsed() == null ? 0 : budget.getUsed();
-        return used < effectiveBudgetLimit(budget);
-    }
-
     private static int effectiveBudgetLimit(StudentLateCheckinBudgetDocument budget) {
         return budget == null || budget.getLimit() == null ? MANUAL_LATE_LIMIT : budget.getLimit();
     }
@@ -1720,7 +1722,11 @@ public class StudentRequestService {
     }
 
     private RequestOptions optionsFor(
-            long studentId, long semesterId, List<LessonSnapshot> lessons) {
+            long studentId, long semesterId, List<LessonSnapshot> lessons, boolean deferLateBudget) {
+        StudentLateCheckinBudgetDocument budget =
+                budgetRepository.findByStudentIdAndSemesterId(studentId, semesterId).orElse(null);
+        int used = budget == null || budget.getUsed() == null ? 0 : budget.getUsed();
+        int limit = effectiveBudgetLimit(budget);
         List<LessonOption> options = new ArrayList<>();
         for (LessonSnapshot lesson : lessons) {
             AttendanceDocument attendance =
@@ -1759,7 +1765,7 @@ public class StudentRequestService {
                                 toDocument(lesson)),
                         attendance,
                         studentId);
-                lateEligible = hasRemainingBudget(studentId, semesterId);
+                lateEligible = deferLateBudget || used < limit;
             } catch (RuntimeException rejected) {
                 lateEligible = false;
             }
@@ -1770,10 +1776,6 @@ public class StudentRequestService {
                             lateEligible,
                             pendingForLesson(studentId, lesson.lessonId())));
         }
-        StudentLateCheckinBudgetDocument budget =
-                budgetRepository.findByStudentIdAndSemesterId(studentId, semesterId).orElse(null);
-        int used = budget == null || budget.getUsed() == null ? 0 : budget.getUsed();
-        int limit = effectiveBudgetLimit(budget);
         return new RequestOptions(
                 STUDENT_REASONS.stream()
                         .map(

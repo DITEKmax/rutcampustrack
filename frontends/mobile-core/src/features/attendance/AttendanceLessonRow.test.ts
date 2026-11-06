@@ -122,6 +122,33 @@ async function invoke(target: Node, name: string) {
   await settle()
 }
 describe('student attendance status explanation', () => {
+  it('keeps the absence and shows both choices disabled for a pending request', async () => {
+    const root = mount(() =>
+      h(AttendanceLessonRow, {
+        lesson: {
+          ...lesson,
+          status: 'ABSENT',
+          explanation: null,
+          pendingRequest: true,
+          requestOptions: [
+            { id: 'excuse', kind: 'EXCUSE', label: 'Уважительная причина', enabled: true },
+            { id: 'late', kind: 'LATE_CHECKIN', label: 'Забыл отметиться', enabled: false },
+          ],
+        },
+        actionsOpen: true,
+      }),
+    )
+    await settle()
+    const buttons = nodes(root).filter((item) => item.tag === 'button')
+    expect(text(buttons[0]!).trim()).toBe('н')
+    expect(buttons[0]?.props['aria-label']).toContain('Запрос на рассмотрении')
+    expect(text(root)).toContain('Запрос отправлен')
+    expect(buttons.slice(1).map((item) => [text(item), item.props.disabled])).toEqual([
+      ['Уважительная причина', true],
+      ['Забыл отметиться', true],
+    ])
+  })
+
   it.each(['EXCUSED', 'CANCELLED'] as const)(
     'reveals %s by hover, focus and tap in read-only mode without enabling a request',
     async (status) => {

@@ -16,11 +16,13 @@
 
 Чтобы проверить переключатели доставки, открой уведомления на стенде с тестовой привязкой Telegram. [PWA](http://127.0.0.1:14272/viewport?width=390&notifications=linked) · [TMA](http://127.0.0.1:14273/viewport?width=390&notifications=linked)
 
+В «Учёте» перейди к первой неделе сентября. У «н» за 1 сентября доступны обе формы. На других парах этой недели есть примеры активных заявок обоих типов. В разрезе «По предметам» открой «Компьютерные сети» и нажми первый жёлтый сегмент в «Практике». Он показывает причину, комментарий и тестовую справку. [TMA с исчерпанным лимитом](http://127.0.0.1:14273/viewport?width=390&attendanceBudget=zero) показывает ноль попыток на следующем шаге.
+
 ## Повторный запуск
 
 Рабочая копия Windows находится в `C:/Users/maksd/.codex/worktrees/9689/rutcampustrack/.agent/worktrees/frontend-refactor-v2`. Команды ниже выполняются из её корня. Нужны Node.js 24.14, npm 11.9 и установленные зависимости в `frontends/node_modules`. Если их нужно восстановить, выполни `npm --prefix frontends ci`.
 
-Конфигурации и сценарии хранятся в `.agent/evidence/student-mobile-v2` и `.agent/evidence/web-student-v2`. Их актуальная резервная копия находится в `.agent/evidence/frontend-refactor-v2-stand/fixtures-notifications.zip` исходной рабочей копии `9689/rutcampustrack`. Для новой рабочей копии этой ветки распакуй архив в её корень. В ZIP 25 файлов с относительными путями от `.agent/evidence`. SHA-256 `8346c02dda7dee8ac46a60d756e597ad1b1022bd202eaecf424ee4fb5f24df10`.
+Конфигурации и сценарии хранятся в `.agent/evidence/student-mobile-v2` и `.agent/evidence/web-student-v2`. Их актуальная резервная копия находится в `.agent/evidence/frontend-refactor-v2-stand/fixtures-attendance.zip` исходной рабочей копии `9689/rutcampustrack`. Для новой рабочей копии этой ветки распакуй архив в её корень. В ZIP 26 файлов с путями от корня рабочей копии. SHA-256 `ec0ab9aa4e52c676d7f847d435aae6fe4d514e74e0fbc80fc90c826d1177284c`.
 
 Каждая команда запускается в своём окне PowerShell.
 

@@ -39,8 +39,10 @@ const emit = defineEmits<{
 }>();
 
 const requestOptions = computed(() => props.lesson.requestOptions);
-const hasRequestOptions = computed(() => requestOptions.value.length > 0);
-const canOpenActions = computed(() => hasEnabledRequestOption(props.lesson) && !props.terminal);
+const pendingRequest = computed(() => props.lesson.status === 'ABSENT' && props.lesson.pendingRequest);
+const canOpenActions = computed(
+  () => !props.terminal && (pendingRequest.value || hasEnabledRequestOption(props.lesson)),
+);
 const documentPreview = ref<InstanceType<typeof AttendanceDocumentPreview>[]>([]);
 function closeOverlay(): boolean {
   if (documentPreview.value.some(preview => preview.closeOverlay())) return true;
@@ -104,11 +106,12 @@ function statusSymbol(status: AttendanceLesson['status']): string {
 const badgeClasses = computed(() => `attendance-status-badge--${statusTone(props.lesson.status)}`);
 
 function optionDisabled(option: AttendanceRequestOption): boolean {
-  return props.terminal || !option.enabled;
+  return props.terminal || Boolean(pendingRequest.value) || !option.enabled;
 }
 
 function optionLabel(option: AttendanceRequestOption): string {
-  if (optionDisabled(option) && option.reason) return `${option.label} · ${option.reason}`;
+  if (optionDisabled(option) && option.reason && !pendingRequest.value)
+    return `${option.label} · ${option.reason}`;
   return option.label;
 }
 </script>
@@ -149,21 +152,28 @@ function optionLabel(option: AttendanceRequestOption): string {
           {{ statusSymbol(lesson.status) }}
         </button>
         <button
-          v-else-if="hasRequestOptions"
+          v-else-if="requestOptions.length"
           class="attendance-status-badge"
           :class="badgeClasses"
           :data-request-trigger="lesson.id"
           type="button"
           :disabled="!canOpenActions"
           :aria-label="
-            canOpenActions
-              ? `Действия для отметки ${lessonStatusLabel(lesson.status)}`
-              : 'Действия недоступны'
+            pendingRequest
+              ? 'Отсутствовал. Запрос на рассмотрении'
+              : canOpenActions
+                ? `Действия для отметки ${lessonStatusLabel(lesson.status)}`
+                : 'Действия недоступны'
           "
           :aria-expanded="canOpenActions ? actionsOpen : undefined"
           @click="emit('toggle-actions', lesson.id)"
         >
           {{ statusSymbol(lesson.status) }}
+          <MobileIcon
+            v-if="pendingRequest"
+            name="clock"
+            class="attendance-status-badge__pending"
+          />
         </button>
         <span
           v-else
@@ -171,8 +181,14 @@ function optionLabel(option: AttendanceRequestOption): string {
           :class="badgeClasses"
           role="img"
           :aria-label="`Статус: ${lessonStatusLabel(lesson.status)}`"
-          >{{ statusSymbol(lesson.status) }}</span
         >
+          {{ statusSymbol(lesson.status) }}
+          <MobileIcon
+            v-if="pendingRequest"
+            name="clock"
+            class="attendance-status-badge__pending"
+          />
+        </span>
       </header>
       <div
         v-if="explanationOpen && (explanationText || explanationDocument.length)"
@@ -223,6 +239,13 @@ function optionLabel(option: AttendanceRequestOption): string {
           {{ lessonTypeLabel(lesson.type) }}
         </span>
       </div>
+      <p
+        v-if="pendingRequest"
+        class="attendance-lesson-row__pending"
+        role="status"
+      >
+        Запрос отправлен
+      </p>
       <div
         v-if="actionsOpen"
         class="attendance-lesson-row__actions"

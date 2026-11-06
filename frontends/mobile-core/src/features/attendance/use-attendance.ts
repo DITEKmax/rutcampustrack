@@ -1,5 +1,5 @@
 import { computed, toValue, type MaybeRefOrGetter } from 'vue'
-import { useQuery } from '@tanstack/vue-query'
+import { useQuery, useQueryClient } from '@tanstack/vue-query'
 import { StudentApiError, type StudentApi } from '../../api/student-client'
 import type {
   StudentAttendanceDay,
@@ -108,6 +108,7 @@ function mapLesson(
     type: lesson.type,
     schedule: { ...lesson.schedule },
     status: lesson.status,
+    pendingRequest: lesson.pendingRequest === true,
     explanation: lesson.explanation ? { ...lesson.explanation } : null,
     requestOptions: lesson.requestOptions.map((option) => ({ ...option })),
   }
@@ -262,6 +263,7 @@ export function useAttendance(
   const scopeReady = computed(() => isAttendanceScopeReady(toValue(scopeInput)))
   const offline = computed(() => Boolean(toValue(offlineInput)))
   const queryKey = computed(() => attendanceQueryKey(scope.value))
+  const queryClient = useQueryClient()
 
   const query = useQuery<StudentAttendanceResponse>({
     queryKey,
@@ -282,6 +284,21 @@ export function useAttendance(
 
   const data = computed(() => (query.data.value ? toAttendanceViewModel(query.data.value) : null))
   const terminalReadOnly = computed(() => query.data.value?.terminalReadOnly === true)
+  function markRequestPending(lessonIds: readonly string[]): void {
+    if (!lessonIds.length) return
+    const ids = new Set(lessonIds)
+    queryClient.setQueryData<StudentAttendanceResponse>(queryKey.value, (response) => response && ({
+      ...response,
+      days: response.days.map((day) => ({
+        ...day,
+        lessons: day.lessons.map((lesson) =>
+          lesson.status === 'ABSENT' && ids.has(lesson.id)
+            ? { ...lesson, pendingRequest: true }
+            : lesson,
+        ),
+      })),
+    }))
+  }
   const state = computed<AttendanceReadState<AttendanceViewModel>>(() => {
     if (offline.value) return { status: 'offline' }
     if (!scope.value.semesterId) return { status: 'no-semester' }
@@ -294,5 +311,5 @@ export function useAttendance(
     return { status: 'empty' }
   })
 
-  return { query, scope, scopeReady, data, state, terminalReadOnly, queryKey }
+  return { query, scope, scopeReady, data, state, terminalReadOnly, queryKey, markRequestPending }
 }

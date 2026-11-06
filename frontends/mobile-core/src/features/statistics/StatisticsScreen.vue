@@ -133,7 +133,17 @@ function rankLabel(rank: StatisticsOverviewData['ownRank']): string {
     aria-labelledby="statistics-title"
   >
     <header class="statistics-screen__header">
-      <h1 id="statistics-title"> Статистика </h1>
+      <button
+        class="statistics-back-button"
+        type="button"
+        aria-label="Назад в раздел «Ещё»"
+        @click="emit('back')"
+      >
+        <MobileIcon name="back" />
+      </button>
+      <h1 id="statistics-title">
+        Статистика
+      </h1>
     </header>
 
     <section
@@ -188,6 +198,7 @@ function rankLabel(rank: StatisticsOverviewData['ownRank']): string {
           <template v-else-if="rankingState.status === 'ready'">
             <ol
               class="statistics-ranking__rows"
+              tabindex="0"
               aria-label="Рейтинг группы"
             >
               <li
@@ -236,7 +247,7 @@ function rankLabel(rank: StatisticsOverviewData['ownRank']): string {
           v-for="metric in [
             { key: 'present', label: 'Был', value: data.metrics.present },
             {
-              key: 'presentOrExcused',
+              key: 'combined',
               label: 'С учётом уважительных',
               value: data.metrics.presentOrExcused,
             },
@@ -247,10 +258,21 @@ function rankLabel(rank: StatisticsOverviewData['ownRank']): string {
           class="statistics-metric"
           :class="`statistics-metric--${metric.key}`"
         >
-          <span class="statistics-metric__label">{{ metric.label }}</span>
+          <span class="statistics-visually-hidden">{{ metric.label }}</span>
           <strong class="statistics-metric__value">{{
             displayPercent(metric.value.percent)
           }}</strong>
+          <span
+            class="statistics-metric__symbols"
+            aria-hidden="true"
+          >
+            <i
+              v-for="tone in metric.key === 'combined' ? ['present', 'excused'] : [metric.key]"
+              :key="tone"
+              class="statistics-metric__symbol"
+              :class="`statistics-metric__symbol--${tone}`"
+            />
+          </span>
           <span class="statistics-metric__count"
             >{{ metric.value.count }} из {{ data.metrics.held }} пар</span
           >

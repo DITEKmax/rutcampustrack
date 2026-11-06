@@ -47,15 +47,6 @@ function historyTone(status: AttendanceSubjectTypeSummary['history'][number]['st
   return status.toLowerCase().replace('_', '-');
 }
 
-function metricLabel(status: 'present' | 'excused' | 'absent', percent: number | null): string {
-  const labels: Record<typeof status, string> = {
-    present: 'Присутствовал',
-    excused: 'Уважительная причина',
-    absent: 'Отсутствовал',
-  };
-  return `${labels[status]}: ${displayPercent(percent)}`;
-}
-
 const documentPreviews = ref<InstanceType<typeof AttendanceDocumentPreview>[]>([]);
 function closeOverlay(): boolean {
   if (documentPreviews.value.some((preview) => preview.closeOverlay())) return true;
@@ -156,10 +147,12 @@ const hasSubjects = computed(() => props.subjects.length > 0);
             :key="card.type"
             class="attendance-type-card"
           >
-            <div class="attendance-type-card__pill">
-              {{ lessonTypeLabel(card.type) }}
-            </div>
-            <h4>Пары {{ card.metrics.held }}/{{ card.metrics.planned }}</h4>
+            <header class="attendance-type-card__heading">
+              <h4>Пары {{ card.metrics.held }}/{{ card.metrics.planned }}</h4>
+              <div class="attendance-type-card__pill">
+                {{ lessonTypeLabel(card.type) }}
+              </div>
+            </header>
             <div
               class="attendance-type-card__metrics"
               role="group"
@@ -167,20 +160,20 @@ const hasSubjects = computed(() => props.subjects.length > 0);
             >
               <span
                 class="attendance-type-card__metric attendance-type-card__metric--present"
-                :aria-label="metricLabel('present', card.metrics.present.percent)"
               >
+                <span class="attendance-visually-hidden">Присутствовал: </span>
                 <i aria-hidden="true" />{{ displayPercent(card.metrics.present.percent) }}
               </span>
               <span
                 class="attendance-type-card__metric attendance-type-card__metric--excused"
-                :aria-label="metricLabel('excused', card.metrics.excused.percent)"
               >
+                <span class="attendance-visually-hidden">Уважительная причина: </span>
                 <i aria-hidden="true" />{{ displayPercent(card.metrics.excused.percent) }}
               </span>
               <span
                 class="attendance-type-card__metric attendance-type-card__metric--absent"
-                :aria-label="metricLabel('absent', card.metrics.absent.percent)"
               >
+                <span class="attendance-visually-hidden">Отсутствовал: </span>
                 <i aria-hidden="true" />{{ displayPercent(card.metrics.absent.percent) }}
               </span>
             </div>

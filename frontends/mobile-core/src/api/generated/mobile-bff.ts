@@ -1,6 +1,6 @@
 /* eslint-disable */
 // Generated from docs/openapi/mobile-bff.json. Do not edit.
-// Contract: JS-STUDENT-01-r1; SHA-256: 96b3f8bdca7f080451d97c31b5aaf0511615a5fac490f6145d5f5df0d9cc536f
+// Contract: JS-STUDENT-01-r1; SHA-256: 75cbf5b71556b29268dc6c228ec58d3161458ee15954c556fcb09fafef2ea7c1
 
 export interface paths {
     "/api/v1/map/buildings/{buildingId}/floors/{floorId}/opens": {
@@ -603,6 +603,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/teacher/lessons/{lessonId}/students/{studentId}/excuse/attachments/{attachmentId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Current manual excuse attachment for a student in a teacher's lesson */
+        get: operations["manualExcuseAttachment"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/teacher/search": {
         parameters: {
             query?: never;
@@ -861,6 +878,7 @@ export interface components {
             explanation?: components["schemas"]["StudentAttendanceExplanation"];
             id: string;
             number: string;
+            pendingRequest?: boolean;
             requestOptions: components["schemas"]["StudentAttendanceRequestOption"][];
             schedule: components["schemas"]["StudentAttendanceLessonSchedule"];
             /** @enum {string} */
@@ -1428,6 +1446,8 @@ export interface components {
         };
         TeacherRosterEntry: {
             attachmentContentType?: string;
+            /** Format: date-time */
+            attachmentExpiresAt?: string | null;
             attachmentId?: string;
             attachmentName?: string;
             /** Format: int64 */
@@ -3145,6 +3165,32 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["TeacherLesson"];
+                };
+            };
+        };
+    };
+    manualExcuseAttachment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                attachmentId: string;
+                lessonId: string;
+                studentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Original document bytes */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/pdf": string;
+                    "image/jpeg": string;
+                    "image/png": string;
                 };
             };
         };

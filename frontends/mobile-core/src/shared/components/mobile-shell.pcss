@@ -60,14 +60,14 @@
   @mixin rct-focus-ring;
 }
 
-/* Student native host owns Back; product handlers remain the same in PWA. */
+/* Student native host owns Back; Statistics overview also keeps its header action. */
 :where([data-student-ui])
   .mobile-shell[data-student='true'][data-back-owner='host']
   :is(
     .profile-back,
     .today-back,
     .requests-back-button,
-    .statistics-back-button,
+    :where(.statistics-detail) .statistics-back-button,
     .attendance-back-button,
     .map-screen__back
   ),
@@ -77,7 +77,7 @@
       .profile-back,
       .today-back,
       .requests-back-button,
-      .statistics-back-button,
+      :where(.statistics-detail) .statistics-back-button,
       .attendance-back-button,
       .map-screen__back
     )

@@ -16,6 +16,7 @@ import type { StudentApi } from '../../api/student-client'
 import type { NotificationTargetIntent } from '../../features/notifications/notifications-client'
 import { CheckinCommandRecovery } from '../../domain/checkin'
 import type {
+  StudentAttendanceResponse,
   StudentCheckinAck,
   StudentCheckinCommand,
   StudentRequestDetail,
@@ -102,6 +103,11 @@ vi.mock('../../features/today/TodayScreen.vue', () => ({
             'button',
             { class: 'test-enter-homework', onClick: () => emit('navigate', 'homework') },
             'ДЗ',
+          ),
+          h(
+            'button',
+            { class: 'test-owner-attendance', onClick: () => emit('navigate', 'attendance') },
+            'Учёт',
           ),
         ])
     },
@@ -488,6 +494,14 @@ vi.mock('./MobileShell.vue', async () => {
                   },
                   'Сегодня',
                 ),
+                h(
+                  'button',
+                  {
+                    class: 'test-owner-attendance',
+                    onClick: () => (attrs.navigation as MobileNavigationStack).goRoot('attendance'),
+                  },
+                  'Учёт',
+                ),
                 h('button', { class: 'test-owner-profile', onClick: () => (attrs.navigation as MobileNavigationStack).goRoot('profile') }, 'Профиль'),
                 slots.default?.(),
               ])
@@ -805,6 +819,44 @@ function requestDetail(summary: StudentRequestSummary): StudentRequestDetail {
 
 function requestPage(content: StudentRequestSummary[]): StudentRequestPage {
   return { content, page: 0, size: 10, totalElements: content.length, totalPages: 1 }
+}
+
+function attendanceWithRequest(pendingRequest: boolean): StudentAttendanceResponse {
+  const date = '2026-09-08'
+  const emptyMetric = { count: 0, percent: 0 }
+  return {
+    semester: { id: 'semester-1', name: 'Осень', startsOn: '2026-09-01', endsOn: '2026-12-31' },
+    serverNow: '2026-09-30T10:00:00Z',
+    terminalReadOnly: false,
+    metrics: {
+      present: emptyMetric,
+      presentOrExcused: emptyMetric,
+      excused: emptyMetric,
+      absent: { count: 1, percent: 100 },
+      held: 1,
+      planned: 1,
+    },
+    days: [{
+      date, dayNumber: '8', weekday: 'Вторник', state: 'PAST',
+      lessons: [{
+        id: 'lesson-1', date, number: '1', status: 'ABSENT', type: 'LECTURE',
+        subject: { id: 'subject-1', name: 'Математика' },
+        schedule: { startsAt: '10:00', endsAt: '11:00', room: null },
+        pendingRequest,
+        requestOptions: [
+          { id: 'EXCUSE', kind: 'EXCUSE', label: 'Уважительная причина', enabled: !pendingRequest },
+          { id: 'LATE_CHECKIN', kind: 'LATE_CHECKIN', label: 'Забыл отметиться', enabled: !pendingRequest },
+        ],
+      }],
+    }],
+    subjects: [],
+    graph: { days: [], weeks: [] },
+  }
+}
+
+function attendanceStatusAction(root: OwnerTestHostNode): unknown {
+  return findOwnerTestNode(root, (node) => node.props['data-request-trigger'] === 'lesson-1')
+    ?.props['aria-label']
 }
 
 function mountOwnerTest(
@@ -1439,13 +1491,14 @@ describe('StudentFeatureOwner requests route', () => {
     },
   )
 
-  it('refreshes Today after a successful local request cancellation', async () => {
+  it('refreshes Today and removes the Attendance pending badge after local cancellation', async () => {
     let cancelled = false
     const pending = requestSummary('PENDING')
     const cancelledDetail = requestDetail(requestSummary('CANCELLED'))
     const api = {
       getToday: vi.fn(() => Promise.resolve({} as StudentToday)),
       getHomework: vi.fn(() => Promise.resolve({} as StudentHomework)),
+      getAttendance: vi.fn(async () => attendanceWithRequest(!cancelled)),
       listRequests: vi.fn((bucket: 'OPEN' | 'ARCHIVE') =>
         Promise.resolve(
           bucket === 'OPEN' && !cancelled
@@ -1470,6 +1523,10 @@ describe('StudentFeatureOwner requests route', () => {
     const root = mountOwnerTest(api)
 
     await settleOwnerTestRender()
+    clickOwnerTestButton(root, 'test-owner-attendance')
+    await vi.waitFor(() => expect(attendanceStatusAction(root)).toContain('Запрос на рассмотрении'))
+    clickOwnerTestButton(root, 'test-owner-today')
+    await settleOwnerTestRender()
     clickOwnerTestButton(root, 'test-enter-more')
     await settleOwnerTestRender()
     clickOwnerTestButton(root, 'test-enter-requests')
@@ -1479,6 +1536,11 @@ describe('StudentFeatureOwner requests route', () => {
 
     expect(api.cancelRequest).toHaveBeenCalledWith('request-1')
     expect(refreshToday).toHaveBeenCalledWith(scope)
+    expect(api.getAttendance).toHaveBeenCalledOnce()
+
+    clickOwnerTestButton(root, 'test-owner-attendance')
+    await vi.waitFor(() => expect(attendanceStatusAction(root)).toContain('Действия для отметки'))
+    expect(api.getAttendance).toHaveBeenCalledTimes(2)
   })
 
   it('localizes a request port network failure and clears only its error on explicit abandon', async () => {
@@ -1962,4 +2024,27 @@ it('refreshes real active Student reads on a hint and cannot restore private dat
   await settleOwnerTestRender()
   expect(ownerTestOutput(root, 'test-today-data')).toBe('null')
   expect(checkinSubmit).not.toHaveBeenCalled()
+})
+
+it('coalesces realtime hints received off Attendance and refreshes the visible mark on return', async () => {
+  const getAttendance = vi.fn()
+    .mockResolvedValueOnce(attendanceWithRequest(true))
+    .mockResolvedValueOnce(attendanceWithRequest(false))
+  const props = reactive({ realtimeRevision: 0 })
+  const root = mountOwnerTest({ getAttendance } as unknown as StudentApi, props)
+
+  await settleOwnerTestRender()
+  clickOwnerTestButton(root, 'test-owner-attendance')
+  await vi.waitFor(() => expect(attendanceStatusAction(root)).toContain('Запрос на рассмотрении'))
+  clickOwnerTestButton(root, 'test-owner-today')
+  await settleOwnerTestRender()
+  props.realtimeRevision += 1
+  await settleOwnerTestRender()
+  props.realtimeRevision += 1
+  await settleOwnerTestRender()
+  expect(getAttendance).toHaveBeenCalledOnce()
+
+  clickOwnerTestButton(root, 'test-owner-attendance')
+  await vi.waitFor(() => expect(attendanceStatusAction(root)).toContain('Действия для отметки'))
+  expect(getAttendance).toHaveBeenCalledTimes(2)
 })

@@ -40,6 +40,7 @@
 .statistics-detail__header {
   display: flex;
   align-items: center;
+  gap: var(--rct-space-2-half);
   min-block-size: var(--statistics-control);
   margin-block-end: var(--rct-space-3);
 }
@@ -95,7 +96,7 @@
 
 .statistics-metric {
   display: grid;
-  grid-template-columns: auto 1fr;
+  grid-template-columns: minmax(0, 1fr) auto;
   gap: var(--rct-space-2);
   align-items: center;
   justify-content: space-between;
@@ -117,12 +118,6 @@
   font-weight: var(--statistics-font-weight-regular);
 }
 
-.statistics-metric--combined .statistics-metric__symbol {
-  inline-size: auto;
-  color: var(--statistics-present-text);
-  font-size: var(--statistics-font-caption);
-}
-
 .statistics-ranking__button {
   min-block-size: var(--statistics-control);
   border: var(--statistics-border-hairline) solid var(--statistics-border-default);
@@ -140,10 +135,14 @@
 }
 .statistics-ranking__rows {
   display: grid;
+  align-content: start;
   gap: var(--rct-space-2);
+  max-block-size: calc(var(--rct-control-min-touch) * 5);
+  overflow-y: auto;
   margin: 0;
   padding: 0;
   list-style: none;
+  @mixin statistics-focus-ring;
 }
 .statistics-ranking__row {
   display: grid;
@@ -167,24 +166,32 @@
   justify-content: space-between;
   gap: var(--rct-space-2);
 }
-.statistics-metric__symbol {
-  display: grid;
-  place-items: center;
-  inline-size: var(--rct-attendance-summary-symbol);
-  block-size: var(--rct-attendance-summary-symbol);
-  flex: 0 0 auto;
-  border-radius: var(--statistics-radius-full);
-  color: var(--rct-color-status-on-fill);
-  font-size: var(--rct-today-present-font-size);
+.statistics-metric__symbols {
+  grid-column: 2;
+  grid-row: 1;
+  align-self: start;
+  display: flex;
+  gap: var(--rct-space-1);
 }
 
-.statistics-metric--present .statistics-metric__symbol {
+.statistics-metric__symbol {
+  inline-size: var(--rct-space-2-half);
+  block-size: var(--rct-space-2-half);
+  border-radius: var(--statistics-radius-full);
+}
+
+.statistics-metric__value {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.statistics-metric__symbol--present {
   background: var(--statistics-present-fill);
 }
-.statistics-metric--absent .statistics-metric__symbol {
+.statistics-metric__symbol--absent {
   background: var(--statistics-absent-fill);
 }
-.statistics-metric--excused .statistics-metric__symbol {
+.statistics-metric__symbol--excused {
   background: var(--statistics-excused-fill);
 }
 
@@ -283,7 +290,7 @@
 .statistics-chart__plot {
   display: grid;
   grid-template-columns: calc(var(--rct-control-min-touch) - var(--rct-space-2)) minmax(0, 1fr);
-  gap: var(--rct-space-2);
+  gap: var(--rct-space-3) var(--rct-space-2);
 }
 .statistics-chart__axis {
   display: flex;
@@ -340,8 +347,8 @@
 }
 .statistics-chart__ticks {
   position: relative;
+  grid-column: 2;
   block-size: var(--rct-space-5);
-  margin-inline-start: var(--rct-control-min-touch);
   column-gap: var(--rct-space-2);
   color: var(--statistics-text-secondary);
   font-size: var(--statistics-font-micro);
@@ -582,10 +589,6 @@
   text-align: center;
 }
 
-.statistics-detail__header {
-  gap: var(--rct-space-2-half);
-}
-
 .statistics-detail {
   padding-block-end: calc(env(safe-area-inset-bottom) + var(--rct-space-5));
 }
@@ -666,9 +669,7 @@
 }
 
 .statistics-type-card__pill {
-  position: absolute;
-  inset-block-start: var(--rct-attendance-type-pill-offset);
-  inset-inline-end: var(--rct-space-3);
+  justify-self: end;
   min-block-size: var(--rct-attendance-summary-symbol);
   border: var(--statistics-border-hairline) solid var(--statistics-border-default);
   border-radius: var(--statistics-radius-full);
@@ -690,16 +691,18 @@
 
 .statistics-type-card__metrics {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   justify-content: space-between;
   gap: var(--rct-space-2);
+  margin-block-start: var(--rct-space-2);
   color: var(--statistics-text-primary);
   font-size: var(--statistics-font-micro);
   font-weight: var(--statistics-font-weight-bold);
 }
 
 .statistics-type-card__metric {
-  display: inline-flex;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
   align-items: center;
   min-inline-size: 0;
   gap: var(--statistics-meta-gap);
@@ -709,7 +712,7 @@
   inline-size: var(--rct-space-2);
   block-size: var(--rct-space-2);
   flex: 0 0 auto;
-  border-radius: var(--rct-space-1);
+  border-radius: var(--statistics-radius-full);
 }
 
 .statistics-type-card__metric--present i {
@@ -792,10 +795,6 @@
     flex-wrap: wrap;
     font-size: var(--statistics-font-dense);
   }
-  .statistics-metric__symbol {
-    inline-size: var(--rct-space-6);
-    block-size: var(--rct-space-6);
-  }
 }
 
 @media (min-width: 26.625rem) {
@@ -863,11 +862,8 @@
   white-space: nowrap;
 }
 
-.statistics-type-card__metric {
-  flex-wrap: wrap;
-}
 .statistics-type-card__count {
-  flex-basis: 100%;
+  grid-column: 1 / -1;
   color: var(--statistics-text-secondary);
   font-weight: var(--statistics-font-weight-regular);
 }
@@ -926,6 +922,7 @@
 :where([data-student-ui]):is(.statistics-detail__header) {
   display: flex;
   align-items: center;
+  gap: var(--rct-space-2-half);
   min-block-size: var(--statistics-control);
   margin-block-end: var(--rct-space-3);
 }
@@ -997,14 +994,6 @@
   padding: var(--rct-space-3);
   color: var(--statistics-text-primary);
   background: var(--statistics-surface-raised);
-}
-:where([data-student-ui]) .statistics-metric__label,
-:where([data-student-ui]):is(.statistics-metric__label) {
-  min-block-size: calc(var(--statistics-font-caption) * 2.7);
-  color: var(--statistics-text-secondary);
-  font-size: var(--statistics-font-caption);
-  line-height: 1.35;
-  overflow-wrap: anywhere;
 }
 :where([data-student-ui]) .statistics-metric__value,
 :where([data-student-ui]):is(.statistics-metric__value) {
@@ -1224,7 +1213,7 @@
 :where([data-student-ui]):is(.statistics-chart__plot) {
   display: grid;
   grid-template-columns: calc(var(--rct-control-min-touch) - var(--rct-space-2)) minmax(0, 1fr);
-  gap: var(--rct-space-2);
+  gap: var(--rct-space-3) var(--rct-space-2);
 }
 :where([data-student-ui]) .statistics-chart__axis,
 :where([data-student-ui]):is(.statistics-chart__axis) {
@@ -1294,7 +1283,6 @@
 :where([data-student-ui]):is(.statistics-chart__ticks) {
   position: relative;
   block-size: var(--rct-space-5);
-  margin-inline-start: var(--rct-control-min-touch);
   column-gap: var(--rct-space-2);
   color: var(--statistics-text-secondary);
   font-size: var(--statistics-font-micro);
@@ -1584,11 +1572,6 @@
   text-align: center;
 }
 
-:where([data-student-ui]) .statistics-detail__header,
-:where([data-student-ui]):is(.statistics-detail__header) {
-  gap: var(--rct-space-2-half);
-}
-
 :where([data-student-ui]) .statistics-detail,
 :where([data-student-ui]):is(.statistics-detail) {
   padding-block-end: calc(env(safe-area-inset-bottom) + var(--rct-space-5));
@@ -1679,7 +1662,7 @@
 
 :where([data-student-ui]) .statistics-type-card__pill,
 :where([data-student-ui]):is(.statistics-type-card__pill) {
-  justify-self: start;
+  justify-self: end;
   min-block-size: var(--rct-attendance-summary-symbol);
   border: var(--statistics-border-hairline) solid var(--statistics-border-default);
   border-radius: var(--statistics-radius-full);
@@ -1713,7 +1696,7 @@
 
 :where([data-student-ui]) .statistics-type-card__metric,
 :where([data-student-ui]):is(.statistics-type-card__metric) {
-  display: inline-flex;
+  display: grid;
   align-items: center;
   min-inline-size: 0;
   gap: var(--statistics-meta-gap);
@@ -1724,7 +1707,7 @@
   inline-size: var(--rct-space-2);
   block-size: var(--rct-space-2);
   flex: 0 0 auto;
-  border-radius: var(--rct-space-1);
+  border-radius: var(--statistics-radius-full);
 }
 
 :where([data-student-ui]) .statistics-type-card__metric--present i,
@@ -1902,9 +1885,6 @@
 
 :where([data-student-ui]) .statistics-type-card__metric,
 :where([data-student-ui]):is(.statistics-type-card__metric) {
-  display: grid;
-  align-content: start;
-  gap: var(--rct-space-1);
   font-weight: var(--statistics-font-weight-regular);
   overflow-wrap: anywhere;
 }
@@ -1918,28 +1898,27 @@
   color: var(--statistics-text-secondary);
   font-size: var(--statistics-font-caption);
 }
-:where([data-student-ui]) .statistics-chart__legend,
-:where([data-student-ui]):is(.statistics-chart__legend) {
+.statistics-chart__legend {
   display: flex;
+  grid-column: 2;
+  min-inline-size: 0;
   flex-wrap: wrap;
   gap: var(--rct-space-2) var(--rct-space-4);
   color: var(--statistics-text-secondary);
   font-size: var(--statistics-font-caption);
 }
-:where([data-student-ui]) .statistics-chart__legend span,
-:where([data-student-ui]):is(.statistics-chart__legend span) {
+.statistics-chart__legend span {
   display: inline-flex;
   align-items: center;
   gap: var(--rct-space-2);
 }
-:where([data-student-ui]) .statistics-chart__legend span::before,
-:where([data-student-ui]):is(.statistics-chart__legend span::before) {
+.statistics-chart__legend span::before {
   content: '';
+  flex: 0 0 auto;
   inline-size: var(--rct-space-4);
   border-block-start: var(--rct-border-hairline) solid var(--statistics-text-primary);
 }
-:where([data-student-ui]) .statistics-chart__legend .statistics-chart__legend-group::before,
-:where([data-student-ui]):is(.statistics-chart__legend .statistics-chart__legend-group::before) {
+.statistics-chart__legend .statistics-chart__legend-group::before {
   border-color: var(--statistics-accent-now);
   border-block-start-style: dashed;
 }
@@ -1949,7 +1928,6 @@
 }
 :where([data-student-ui]) .statistics-type-card__count,
 :where([data-student-ui]):is(.statistics-type-card__count) {
-  flex-basis: 100%;
   color: var(--statistics-text-secondary);
   font-weight: var(--statistics-font-weight-regular);
 }

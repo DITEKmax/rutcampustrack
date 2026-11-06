@@ -264,10 +264,15 @@
   background: var(--rct-color-surface-raised);
 }
 
+.attendance-type-card__heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--rct-space-2);
+}
+
 .attendance-type-card__pill {
-  position: absolute;
-  inset-block-start: var(--rct-attendance-type-pill-offset);
-  inset-inline-end: var(--rct-space-3);
   min-block-size: var(--rct-attendance-type-card-gap);
   border: 0;
   border-radius: var(--rct-radius-full);
@@ -277,7 +282,7 @@
   @mixin rct-type-micro;
 }
 
-.attendance-type-card h3 {
+.attendance-type-card h4 {
   margin: 0;
   color: var(--rct-color-text-primary);
   @mixin rct-type-lesson-meta;
@@ -292,7 +297,7 @@
 .attendance-type-card__metric i {
   inline-size: var(--rct-space-2);
   block-size: var(--rct-space-2);
-  border-radius: var(--rct-space-1);
+  border-radius: var(--rct-radius-full);
 }
 
 .attendance-type-card__metric--present i {
@@ -721,6 +726,7 @@ button.attendance-status-badge::after {
   @mixin rct-type-micro;
   color: var(--rct-color-text-primary);
   gap: var(--rct-space-2);
+  margin-block-start: var(--rct-space-2);
   justify-content: space-between;
   display: flex;
   flex-wrap: wrap;
@@ -1010,6 +1016,22 @@ button.attendance-status-badge::after {
   gap: var(--rct-space-2);
   padding-block-start: var(--rct-space-2);
   grid-column: 1 / -1;
+}
+
+.attendance-status-badge__pending {
+  position: absolute;
+  inset-block-start: var(--rct-status-hit-offset);
+  inset-inline-end: var(--rct-status-hit-offset);
+  border-radius: var(--rct-radius-full);
+  color: var(--rct-color-text-primary);
+  background: var(--rct-color-surface-raised);
+}
+
+.attendance-lesson-row__pending {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: var(--rct-color-success-text);
+  @mixin rct-type-role;
 }
 
 .attendance-day-rail {
@@ -1422,9 +1444,6 @@ button.attendance-status-badge::after {
 
 :where([data-student-ui]) .attendance-type-card__pill,
 :where([data-student-ui]):is(.attendance-type-card__pill) {
-  position: absolute;
-  inset-block-start: var(--rct-attendance-type-pill-offset);
-  inset-inline-end: var(--rct-space-3);
   min-block-size: var(--rct-attendance-type-card-gap);
   border: 0;
   border-radius: var(--rct-radius-full);
@@ -1452,7 +1471,7 @@ button.attendance-status-badge::after {
 :where([data-student-ui]):is(.attendance-type-card__metric i) {
   inline-size: var(--rct-space-2);
   block-size: var(--rct-space-2);
-  border-radius: var(--rct-space-1);
+  border-radius: var(--rct-radius-full);
 }
 
 :where([data-student-ui]) .attendance-type-card__metric--present i,

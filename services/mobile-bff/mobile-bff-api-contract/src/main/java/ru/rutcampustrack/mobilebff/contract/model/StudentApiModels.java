@@ -376,7 +376,8 @@ public final class StudentApiModels {
             AttendanceLessonSchedule schedule,
             StudentAttendanceLessonStatus status,
             List<StudentAttendanceRequestOption> requestOptions,
-            @Schema(nullable = true) StudentAttendanceExplanation explanation) {
+            @Schema(nullable = true) StudentAttendanceExplanation explanation,
+            boolean pendingRequest) {
         public StudentAttendanceLesson(
                 String id,
                 LocalDate date,
@@ -386,7 +387,7 @@ public final class StudentApiModels {
                 AttendanceLessonSchedule schedule,
                 StudentAttendanceLessonStatus status,
                 List<StudentAttendanceRequestOption> requestOptions) {
-            this(id, date, number, subject, type, schedule, status, requestOptions, null);
+            this(id, date, number, subject, type, schedule, status, requestOptions, null, false);
         }
     }
 

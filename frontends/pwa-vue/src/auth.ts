@@ -72,6 +72,8 @@ export interface PwaAuthOptions {
   fetcher?: typeof fetch
   /** Current-session readmission must not rotate an uncertain refresh again. */
   canRefresh?: (generation: number) => boolean
+  /** Reports refresh and current-session read failures before features handle them locally. */
+  onAuthorityError?: (error: unknown, generation: number) => void
   /** Injected in tests; production uses a browser BroadcastChannel when available. */
   channel?: PwaAuthInvalidationChannel
   /** Injected in tests; production uses localStorage to survive reloads and coordinate tabs. */
@@ -126,7 +128,11 @@ export function usePwaAuth(options: PwaAuthOptions = {}) {
     fetcher: request,
     accessToken: () => accessToken.value,
   })
-  let refreshInFlight: { generation: number; promise: Promise<void> } | null = null
+  let refreshInFlight: {
+    generation: number
+    promise: Promise<void>
+    controller: AbortController
+  } | null = null
   let deviceCleanup: Promise<void> | null = null
   const invalidationListeners = new Set<(reason: PwaAuthInvalidationReason) => void>()
   const channel = options.channel ?? createBrowserChannel()
@@ -189,6 +195,23 @@ export function usePwaAuth(options: PwaAuthOptions = {}) {
     if (generation !== currentGeneration()) throw new StaleSessionGenerationError()
   }
 
+  function rethrowAuthorityError(error: unknown, generation: number): never {
+    assertCurrent(generation)
+    options.onAuthorityError?.(error, generation)
+    // The shell may close the current generation in response to this error.
+    assertCurrent(generation)
+    throw error
+  }
+
+  async function readCurrentProfile(generation: number): Promise<ProfileSnapshot> {
+    assertCurrent(generation)
+    const profile = await client
+      .getSnapshot()
+      .catch((error: unknown) => rethrowAuthorityError(error, generation))
+    assertCurrent(generation)
+    return profile
+  }
+
   function accessTokenFor(generation: number): string | null {
     assertCurrent(generation)
     return accessToken.value
@@ -216,8 +239,9 @@ export function usePwaAuth(options: PwaAuthOptions = {}) {
     }
     if (refreshInFlight?.generation === generation) return refreshInFlight.promise
 
+    const controller = new AbortController()
     const promise = client
-      .refresh()
+      .refresh(controller.signal)
       .then(async (token) => {
         assertCurrent(generation)
         const expectedProfile = knownProfileGeneration === generation ? knownProfile : null
@@ -247,14 +271,11 @@ export function usePwaAuth(options: PwaAuthOptions = {}) {
         }
         accessToken.value = token.accessToken
       })
-      .catch((error: unknown) => {
-        assertCurrent(generation)
-        throw error
-      })
+      .catch((error: unknown) => rethrowAuthorityError(error, generation))
       .finally(() => {
         if (refreshInFlight?.promise === promise) refreshInFlight = null
       })
-    refreshInFlight = { generation, promise }
+    refreshInFlight = { generation, promise, controller }
     return promise
   }
 
@@ -291,11 +312,7 @@ export function usePwaAuth(options: PwaAuthOptions = {}) {
     assertCurrent(generation)
     const expectedProfile = knownProfileGeneration === generation ? knownProfile : null
     const token = accessToken.value
-    const snapshot = await client.getSnapshot().catch((error: unknown) => {
-      // A denied request from an old generation cannot close a newer owner.
-      assertCurrent(generation)
-      throw error
-    })
+    const snapshot = await readCurrentProfile(generation)
     assertCurrent(generation)
     if (
       options.revalidate &&
@@ -551,7 +568,8 @@ export function usePwaAuth(options: PwaAuthOptions = {}) {
       if (typeof navigator !== 'undefined' && navigator.onLine === false)
         throw new Error('Подключись к сети')
       const expected = knownProfileGeneration === generation ? knownProfile : null
-      const profile = await guarded(() => client.getSnapshot())
+      const profile = await readCurrentProfile(generation)
+      assertPortCurrent()
       if (!expected || authAuthorityIdentity(expected) !== authAuthorityIdentity(profile)) {
         clear()
         notifyInvalidation('authority-changed')
@@ -587,11 +605,12 @@ export function usePwaAuth(options: PwaAuthOptions = {}) {
         },
       },
       getSnapshot: async () => {
-        const snapshot = await guarded(() => client.getSnapshot())
+        const snapshot = await readCurrentProfile(generation)
         const telegramId =
           snapshot.activeRole === null
             ? undefined
             : await guarded(() => client.getOwnTelegramId(snapshot.userId))
+        assertPortCurrent()
         const profile = telegramId === undefined ? snapshot : { ...snapshot, telegramId }
         rememberProfile(profile, generation)
         return profile
@@ -639,7 +658,11 @@ export function usePwaAuth(options: PwaAuthOptions = {}) {
     } catch {
       deviceCleanup = null
     }
+    const previousRefresh = refreshInFlight
+    refreshInFlight = null
     resetGeneration.value += 1
+    // A superseded refresh must not deliver a cookie to a new login.
+    previousRefresh?.controller.abort()
     // Keep only the confirmed account binding across role replacement, never its old bearer.
     deviceSession.value = preserved
       ? { ...preserved, generation: resetGeneration.value, token: null }

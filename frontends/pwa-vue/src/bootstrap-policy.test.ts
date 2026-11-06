@@ -11,12 +11,20 @@ vi.mock('@rct/mobile-core', async importOriginal => {
   const actual = await importOriginal<typeof import('@rct/mobile-core')>()
   const { h } = await import('vue')
   return { ...actual, StudentFeatureOwner: {
-    props: ['scope', 'offline', 'readOnly', 'onRetryConnection', 'onLogout', 'onRecover'],
+    props: ['api', 'scope', 'profilePort', 'offline', 'readOnly', 'onRetryConnection', 'onLogout', 'onRecover'],
     setup(props: any) { return () => h('section', [
       h('output', { 'data-owner': true }, JSON.stringify({ userId: props.scope?.userId, sessionId: props.scope?.sessionId, offline: props.offline, readOnly: props.readOnly })),
       h('button', { onClick: props.onRetryConnection }, 'Retry connection'),
       h('button', { onClick: props.onLogout }, 'Logout'),
       h('button', { onClick: props.onRecover }, 'Recover password'),
+      h('button', { onClick: () => void props.api?.getToday().catch(() => undefined) }, 'Load protected data'),
+      h('button', {
+        onClick: () => void props.profilePort?.browserLoginApproval?.preview({
+          purpose: 'LOGIN',
+          challengeId: props.scope.sessionId,
+          approvalToken: 'a'.repeat(43),
+        }).catch(() => undefined),
+      }, 'Preview browser login'),
     ]) },
   } }
 })
@@ -185,7 +193,13 @@ function deferred() {
   const promise = new Promise<Response>((done, fail) => { resolve = done; reject = fail })
   return { promise, resolve, reject }
 }
-function mountApp(options: { initialRefresh?: ReturnType<typeof deferred>; initialProfile?: unknown } = {}) {
+function mountApp(options: {
+  initialRefresh?: ReturnType<typeof deferred>
+  initialProfile?: unknown
+  loginResponse?: Response
+  roleResponse?: Response | Promise<Response>
+  logoutResponse?: Response
+} = {}) {
   const channels: EventTarget[] = []
   const browser = Object.assign(new EventTarget(), { location: { origin: 'https://synthetic.invalid', pathname: '/', search: '', hash: '', href: 'https://synthetic.invalid/' },
     localStorage: storage(), sessionStorage: storage(), BroadcastChannel: class extends EventTarget { constructor() { super(); channels.push(this) }; postMessage() {}; close() {} }, innerHeight: 900, setInterval: globalThis.setInterval, clearInterval: globalThis.clearInterval, history: { replaceState() {} } })
@@ -212,8 +226,14 @@ function mountApp(options: { initialRefresh?: ReturnType<typeof deferred>; initi
       if (nextCurrent) { const pending = nextCurrent; nextCurrent = undefined; return pending.promise }
       return Response.json(currentProfile)
     }
-    if (url.pathname === '/api/auth/logout') return new Response(null, { status: 204 })
+    if (url.pathname === '/api/auth/login')
+      return options.loginResponse ?? Response.json({ accessToken: 'synthetic-login', expiresIn: 3600 })
+    if (url.pathname === '/api/auth/session/active-role' && options.roleResponse)
+      return options.roleResponse
+    if (url.pathname === '/api/auth/logout')
+      return options.logoutResponse ?? new Response(null, { status: 204 })
     if (url.pathname === '/api/v1/student/session') return Response.json(currentSession)
+    if (url.pathname === '/api/v1/student/today') return new Response(null, { status: 401 })
     if (url.pathname.includes('/schedule')) return Response.json(schedule)
     if (url.pathname.includes('/permissions')) return Response.json([])
     if (url.pathname.includes('unread')) return Response.json({ unreadCount: 0 })
@@ -228,13 +248,13 @@ function mountApp(options: { initialRefresh?: ReturnType<typeof deferred>; initi
   vi.spyOn(SemesterSnapshotStore.prototype, 'clearMismatchedCurrent').mockResolvedValue(null)
   const cleanup = { previousOwnerId: null, ownerId: bff.user.id, retryRequired: false, failures: [] }
   vi.spyOn(SemesterSnapshotStore.prototype, 'switchToDetailed').mockResolvedValue(cleanup as any)
-  vi.spyOn(SemesterSnapshotStore.prototype, 'clearDetailed').mockResolvedValue(cleanup as any)
+  const clearDetailed = vi.spyOn(SemesterSnapshotStore.prototype, 'clearDetailed').mockResolvedValue(cleanup as any)
   vi.spyOn(SemesterSnapshotStore.prototype, 'write').mockResolvedValue(undefined)
   const root = new Node('root')
   const app = renderer.createApp(AppComponent, { installPrompt: { subscribe: () => () => {}, snapshot: () => ({ status: 'unavailable' }) } })
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   queryClients.push(client); app.use(VueQueryPlugin, { queryClient: client }); apps.push(app); app.mount(root)
-  return { root, app, browser, requestLog, readCurrent, invalidate: () => channels.forEach(channel => channel.dispatchEvent(new MessageEvent('message', { data: { type: 'rct-auth-invalidate-v1' } }))), deferCurrent: () => (nextCurrent = deferred()), setAuthority: (value: any) => { currentProfile = value; currentSession = { ...bff, sessionVersion: value.sessionVersion, rolesVersion: value.rolesVersion } }, onInvalidate: (callback: () => void) => { onInvalidate = callback } }
+  return { root, app, browser, requestLog, readCurrent, clearDetailed, invalidate: () => channels.forEach(channel => channel.dispatchEvent(new MessageEvent('message', { data: { type: 'rct-auth-invalidate-v1' } }))), deferRefresh: () => (refresh = deferred()), deferCurrent: () => (nextCurrent = deferred()), setAuthority: (value: any) => { currentProfile = value; currentSession = { ...bff, sessionVersion: value.sessionVersion, rolesVersion: value.rolesVersion } }, onInvalidate: (callback: () => void) => { onInvalidate = callback } }
 }
 function owner(root: Node) {
   const output = nodes(root).find(node => node.props['data-owner'])
@@ -242,6 +262,21 @@ function owner(root: Node) {
 }
 async function admitted(view: ReturnType<typeof mountApp>) {
   await vi.waitFor(() => expect(owner(view.root)).toMatchObject({ userId: bff.user.id, offline: false, readOnly: false }))
+}
+function expectSilentLogin(root: Node): void {
+  expect(owner(root)).toBeNull()
+  expect(nodes(root).find(node => node.tag === 'form')?.props['aria-busy']).toBe(false)
+  expect(nodes(root).filter(node => node.props.role === 'alert')).toHaveLength(0)
+}
+async function submitPassword(root: Node): Promise<void> {
+  for (const id of ['login-username', 'login-password']) {
+    const input = nodes(root).find(node => node.props.id === id)!
+    input.value = 'synthetic-input'
+    input.dispatchEvent(new Event('input'))
+  }
+  await nextTick()
+  const form = nodes(root).find(node => node.tag === 'form')!
+  ;(form.props.onSubmit as (event: Event) => void)(new Event('submit', { cancelable: true }))
 }
 describe('actual PWA bootstrap and reconnect boundaries', () => {
   it('admits a matching real Auth/BFF owner and keeps failed narrow recovery typed', async () => {
@@ -263,9 +298,201 @@ describe('actual PWA bootstrap and reconnect boundaries', () => {
   it.each([401, 403, 500])('refuses snapshot hydration on confirmed/protocol HTTP %i', async status => {
     const first = deferred(); const view = mountApp({ initialRefresh: first })
     first.resolve(Response.json({ status, title: 'synthetic failure' }, { status }))
-    await settle()
+    if (status === 401) await vi.waitFor(() => expectSilentLogin(view.root))
+    else await vi.waitFor(() => {
+      const alert = nodes(view.root).find(node => node.props.role === 'alert')
+      expect(alert && text(alert)).toContain('synthetic failure')
+    })
     expect(view.readCurrent).not.toHaveBeenCalled()
     expect(owner(view.root)).toBeNull()
+  })
+  it('returns to interactive login before confirmed denial cleanup and keeps a manual login', async () => {
+    const view = mountApp()
+    await admitted(view)
+    let finishCleanup!: () => void
+    view.clearDetailed.mockImplementationOnce(() => new Promise(resolve => {
+      finishCleanup = () => resolve({ retryRequired: true } as Awaited<ReturnType<typeof view.clearDetailed>>)
+    }))
+
+    const current = view.deferCurrent()
+    view.browser.dispatchEvent(new Event('offline'))
+    await click(view.root, 'Retry connection')
+    current.resolve(Response.json({ code: 'SESSION_REVOKED' }, { status: 401 }))
+    await vi.waitFor(() => expectSilentLogin(view.root))
+
+    const requestCount = view.requestLog.length
+    view.browser.dispatchEvent(new Event('online'))
+    await settle()
+    expect(view.requestLog).toHaveLength(requestCount)
+
+    await submitPassword(view.root)
+    await admitted(view)
+    finishCleanup()
+    await settle()
+    expect(owner(view.root)).toMatchObject({ userId: bff.user.id, readOnly: false })
+    expect(nodes(view.root).some(node => node.props['data-cleanup-state'] === 'pending')).toBe(false)
+  })
+  it('returns to silent login when a feature catches the denied refresh locally', async () => {
+    const view = mountApp()
+    await admitted(view)
+    const refresh = view.deferRefresh()
+    await click(view.root, 'Load protected data')
+    refresh.resolve(Response.json({ code: 'REFRESH_REJECTED' }, { status: 401 }))
+
+    await vi.waitFor(() => expectSilentLogin(view.root))
+    expect(view.requestLog.filter(row => row.url === '/api/v1/student/today')).toHaveLength(1)
+    expect(view.requestLog.filter(row => row.url === '/api/auth/refresh')).toHaveLength(2)
+  })
+  it.each([
+    { status: 401, code: 'SESSION_REVOKED' },
+    { status: 403, code: 'WRONG_ROLE' },
+  ])('returns to silent login when browser approval preflight denies current authority ($status)', async problem => {
+    const view = mountApp()
+    await admitted(view)
+    const current = view.deferCurrent()
+    await click(view.root, 'Preview browser login')
+    current.resolve(Response.json(problem, { status: problem.status }))
+
+    await vi.waitFor(() => expectSilentLogin(view.root))
+    expect(view.requestLog.filter(row => row.url === '/api/auth/session')).toHaveLength(2)
+    expect(view.requestLog.some(row => row.url === '/api/auth/qr/preview')).toBe(false)
+  })
+  it.each([401, 409])('opens silent login when role selection HTTP %i confirms revocation', async status => {
+    const view = mountApp({
+      initialProfile: { ...profile(), activeRole: null },
+      roleResponse: Response.json({ code: status === 409 ? 'SESSION_VERSION_CONFLICT' : 'SESSION_REVOKED' }, { status }),
+    })
+    const roleButton = () => nodes(view.root).find(node => node.props.class === 'profile-role-card')
+    await vi.waitFor(() => expect(roleButton()).toBeDefined())
+    const current = status === 409 ? view.deferCurrent() : null
+    ;(roleButton()!.props.onClick as () => void)()
+    current?.resolve(Response.json({ code: 'SESSION_REVOKED' }, { status: 401 }))
+    await vi.waitFor(() => expectSilentLogin(view.root))
+    expect(roleButton()).toBeUndefined()
+  })
+  it('allows a fresh login while an invalidated role request is still pending', async () => {
+    const role = deferred()
+    const view = mountApp({
+      initialProfile: { ...profile(), activeRole: null },
+      roleResponse: role.promise,
+    })
+    const roleButton = () => nodes(view.root).find(node => node.props.class === 'profile-role-card')
+    await vi.waitFor(() => expect(roleButton()).toBeDefined())
+    const roleSelection = (roleButton()!.props.onClick as () => Promise<void>)()
+    await vi.waitFor(() => expect(view.requestLog).toContainEqual(
+      expect.objectContaining({ url: '/api/auth/session/active-role', method: 'PUT' }),
+    ))
+
+    view.invalidate()
+    await nextTick()
+    expect(roleButton()).toBeUndefined()
+    expectSilentLogin(view.root)
+
+    const current = view.deferCurrent()
+    await submitPassword(view.root)
+    await vi.waitFor(() => expect(view.requestLog).toContainEqual(
+      expect.objectContaining({ url: '/api/auth/session', authorization: 'Bearer synthetic-login' }),
+    ))
+
+    role.resolve(Response.json({ code: 'ROLE_NOT_GRANTED' }, { status: 403 }))
+    await roleSelection
+    await nextTick()
+    expect(nodes(view.root).find(node => node.tag === 'form')?.props['aria-busy']).toBe(true)
+    expect(roleButton()).toBeUndefined()
+
+    current.resolve(Response.json(profile()))
+    await admitted(view)
+  })
+  it('shows the new role choices while an invalidated bootstrap read is still pending', async () => {
+    const initialRefresh = deferred()
+    const view = mountApp({ initialRefresh })
+    const oldCurrent = view.deferCurrent()
+    initialRefresh.resolve(Response.json({ accessToken: 'synthetic-access', expiresIn: 3600 }))
+    await vi.waitFor(() => expect(view.requestLog).toContainEqual(
+      expect.objectContaining({ url: '/api/auth/session', authorization: 'Bearer synthetic-access' }),
+    ))
+
+    view.invalidate()
+    await nextTick()
+    expectSilentLogin(view.root)
+    view.setAuthority({ ...profile(), activeRole: null })
+    await submitPassword(view.root)
+    const roleButton = () => nodes(view.root).find(node => node.props.class === 'profile-role-card')
+    await vi.waitFor(() => expect(roleButton()?.props.disabled).toBe(false))
+
+    oldCurrent.resolve(Response.json(profile()))
+    await settle()
+    expect(roleButton()?.props.disabled).toBe(false)
+    expect(owner(view.root)).toBeNull()
+  })
+  it('allows a fresh login while the previous accepted login waits for current authority', async () => {
+    const initialRefresh = deferred()
+    const view = mountApp({ initialRefresh })
+    initialRefresh.resolve(new Response(null, { status: 401 }))
+    await settle()
+    await vi.waitFor(() => expectSilentLogin(view.root))
+
+    const loginCurrentReads = () => view.requestLog.filter(
+      row => row.url === '/api/auth/session' && row.authorization === 'Bearer synthetic-login',
+    )
+    const oldCurrent = view.deferCurrent()
+    await submitPassword(view.root)
+    await vi.waitFor(() => expect(loginCurrentReads()).toHaveLength(1))
+
+    view.invalidate()
+    await nextTick()
+    expectSilentLogin(view.root)
+    const newCurrent = view.deferCurrent()
+    await submitPassword(view.root)
+    await vi.waitFor(() => expect(loginCurrentReads()).toHaveLength(2))
+
+    oldCurrent.resolve(new Response(null, { status: 401 }))
+    await settle()
+    expect(nodes(view.root).find(node => node.tag === 'form')?.props['aria-busy']).toBe(true)
+
+    newCurrent.resolve(Response.json(profile()))
+    await admitted(view)
+  })
+  it('keeps a failed password login as a form error', async () => {
+    const initialRefresh = deferred()
+    const view = mountApp({
+      initialRefresh,
+      loginResponse: Response.json({ code: 'INVALID_CREDENTIALS' }, { status: 401 }),
+    })
+    initialRefresh.resolve(new Response(null, { status: 401 }))
+    await settle()
+    await vi.waitFor(() => expectSilentLogin(view.root))
+    await submitPassword(view.root)
+    await vi.waitFor(() => {
+      expect(view.requestLog).toContainEqual(expect.objectContaining({ url: '/api/auth/login', method: 'POST' }))
+      expect(nodes(view.root).find(node => node.props.id === 'login-error')).toBeDefined()
+    })
+    expect(owner(view.root)).toBeNull()
+  })
+  it('keeps login silent if the new session is revoked after credentials were accepted', async () => {
+    const initialRefresh = deferred()
+    const view = mountApp({ initialRefresh })
+    initialRefresh.resolve(new Response(null, { status: 401 }))
+    await settle()
+    await vi.waitFor(() => expectSilentLogin(view.root))
+
+    const current = view.deferCurrent()
+    await submitPassword(view.root)
+    await vi.waitFor(() => expect(view.requestLog).toContainEqual(
+      expect.objectContaining({ url: '/api/auth/session', authorization: 'Bearer synthetic-login' }),
+    ))
+    current.resolve(Response.json({ code: 'SESSION_REVOKED' }, { status: 401 }))
+    await vi.waitFor(() => expectSilentLogin(view.root))
+  })
+  it('preserves the notice when explicit logout cannot revoke the session', async () => {
+    const view = mountApp({ logoutResponse: new Response(null, { status: 503 }) })
+    await admitted(view)
+    await click(view.root, 'Logout')
+    await vi.waitFor(() => {
+      expect(owner(view.root)).toBeNull()
+      const alert = nodes(view.root).find(node => node.props.role === 'alert')
+      expect(alert && text(alert)).toContain('Не удалось подтвердить отзыв текущей сессии')
+    })
   })
   it('keeps the admitted owner read-only until explicit current-only retry completes', async () => {
     const view = mountApp(); await admitted(view)
@@ -316,7 +543,11 @@ describe('actual PWA bootstrap and reconnect boundaries', () => {
       await settle()
       const sentBefore = view.requestLog.filter(row => row.url === '/api/auth/refresh').length
       view.browser.dispatchEvent(new Event('online'))
-      if (reason === 'new-generation') view.invalidate()
+      if (reason === 'new-generation') {
+        view.invalidate()
+        await nextTick()
+        expectSilentLogin(view.root)
+      }
       else if (reason === 'logout') {
         await click(view.root, 'Logout')
       } else if (reason === 'auto-bootstrap-disabled') {
@@ -325,6 +556,7 @@ describe('actual PWA bootstrap and reconnect boundaries', () => {
       pending.resolve(Response.json(profile()))
       await settle()
       expect(view.requestLog.filter(row => row.url === '/api/auth/refresh')).toHaveLength(sentBefore)
+      if (reason === 'logout' || reason === 'new-generation') expectSilentLogin(view.root)
       if (reason !== 'auto-bootstrap-disabled') expect(owner(view.root)).toBeNull()
     },
   )

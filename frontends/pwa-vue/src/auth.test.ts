@@ -182,6 +182,29 @@ describe('PWA memory session', () => {
     vi.unstubAllGlobals()
   })
 
+  it('aborts a superseded refresh and ignores a late response from a fetcher that disregards abort', async () => {
+    let resolve!: (response: Response) => void
+    const fetcher = vi.fn<typeof fetch>().mockReturnValue(new Promise<Response>((done) => {
+      resolve = done
+    }))
+    const onAuthorityError = vi.fn()
+    const auth = usePwaAuth({ fetcher, onAuthorityError })
+    const pending = auth.refresh()
+    const rejected = expect(pending).rejects.toBeInstanceOf(StaleSessionGenerationError)
+    const signal = fetcher.mock.calls[0]?.[1]?.signal
+    expect(signal?.aborted).toBe(false)
+
+    auth.clear()
+    expect(signal?.aborted).toBe(true)
+    auth.setToken('new-authority')
+    resolve(response({ accessToken: 'superseded' }))
+
+    await rejected
+    expect(auth.accessToken.value).toBe('new-authority')
+    expect(onAuthorityError).not.toHaveBeenCalled()
+    auth.dispose()
+  })
+
   it.each([
     ['HTTP 503', 503],
     ['network failure', 0],

@@ -35,6 +35,7 @@ const names = [
   'goOffline',
   'goOnline',
   'handleExternalInvalidation',
+  'returnToLogin',
   'invalidateOwnerSynchronously',
   'clearOwnerSnapshot',
   'observeCleanupResult',
@@ -261,6 +262,7 @@ async function setup() {
     offline: false,
     readOnly: false,
     sessionReady: true,
+    sessionEnded: false,
     authView: 'student',
     authSnapshot: profile,
     featureVisible: true,
@@ -275,6 +277,10 @@ async function setup() {
     `const { ${Object.keys(deps).join(',')} } = deps;
     let cleanupUiGeneration = 0;
     let currentOnlyGeneration = null;
+    let bootstrapAttempt = 0;
+    let loginAttempt = 0;
+    let loginAdmissionAttempt = null;
+    let roleSelectionAttempt = 0;
     ${queue.join('\n')}
     ${declarations.join('\n')}
     return { bootstrap, goOnline, goOffline, handleExternalInvalidation,
@@ -409,13 +415,14 @@ describe('retained PWA owner recovery after a pre-online Student 401 refresh fai
     expect(c.state.readOnly!.value).toBe(true)
     expect(c.calls.filter((x) => x === 'POST /api/auth/refresh')).toHaveLength(1)
   })
-  it('uses explicit login on current 401, invalidating old commands without remote logout', async () => {
+  it('uses silent login on current 401, invalidating old commands without remote logout', async () => {
     const c = await setup()
     await failedReconnect(c)
     c.currentStatus(401)
     await c.control.recover()
     expect(c.state.authView!.value).toBe('login')
-    expect(c.state.bootstrapError!.value).toContain('Войди снова')
+    expect(c.state.bootstrapError!.value).toBeNull()
+    expect(c.state.authError!.value).toBeNull()
     await expect(c.ownerApi.getSession()).rejects.toBeInstanceOf(StaleSessionGenerationError)
     expect(c.calls.filter((x) => x.startsWith('POST '))).toEqual(['POST /api/auth/refresh'])
   })

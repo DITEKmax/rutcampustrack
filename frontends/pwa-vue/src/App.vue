@@ -154,6 +154,10 @@ const auth = usePwaAuth({
   // offline owner must not turn that background 401 into another rotation.
   canRefresh: (generation) =>
     generation !== currentOnlyGeneration && (!offline.value || bootstrapping.value),
+  onAuthorityError: (error, generation) => {
+    if (auth.isCurrent(generation) && isConfirmedOnlineAuthDenial(error))
+      void handleOnlineAuthDenial();
+  },
 });
 watch(auth.resetGeneration, () => authSuccess.clear(), { flush: 'sync' });
 const reportDownload = computed(() =>
@@ -325,7 +329,9 @@ if (directPasswordRecoveryEntry) {
 }
 const passwordRecoveryNotice = ref<string | null>(null);
 const sessionReady = ref(false);
+const sessionEnded = ref(false);
 const bootstrapping = ref(false);
+let bootstrapAttempt = 0;
 const bootstrapError = ref<string | null>(null);
 const authView = ref<
   | 'login'
@@ -371,12 +377,13 @@ const logoutPending = ref(false);
 const logoutNotice = ref<string | null>(
   persistedLogoutState === 'unconfirmed' || persistedLogoutState === 'pending'
     ? 'Auth не подтвердил отзыв предыдущей сессии. Автоматический вход отключён; войди вручную.'
-    : persistedLogoutState === 'confirmed'
-      ? 'Ты вышел из аккаунта. Чтобы войти снова, введи данные.'
-      : null,
+    : null,
 );
 const authLoading = ref(false);
 const pendingRole = ref<ProfileRole | null>(null);
+let loginAttempt = 0;
+let loginAdmissionAttempt: number | null = null;
+let roleSelectionAttempt = 0;
 const fixtureDiagnosticLines = ref<string[]>([]);
 const ownerRevision = ref(0);
 const cleanupResult = ref<SnapshotCleanupResult | null>(null);
@@ -520,7 +527,10 @@ const adminAccessMessage = computed(() =>
         : null,
 );
 async function refreshAdminAuthority(): Promise<void> {
+  const generation = auth.currentGeneration();
   await adminAuthorityOwner.refresh();
+  if (auth.isCurrent(generation) && isConfirmedOnlineAuthDenial(adminAuthorityOwner.snapshot.error))
+    void handleOnlineAuthDenial();
 }
 const featureVisible = computed(
   () =>
@@ -914,15 +924,7 @@ watch(
           if (!auth.isCurrent(generation)) throw new StaleSessionGenerationError();
           return auth.accessToken.value;
         },
-        refreshFor: async (generation) => {
-          try {
-            await auth.refreshFor(generation);
-          } catch (cause) {
-            if (auth.isCurrent(generation) && isConfirmedOnlineAuthDenial(cause))
-              await handleOnlineAuthDenial(cause);
-            throw cause;
-          }
-        },
+        refreshFor: (generation) => auth.refreshFor(generation),
       },
       scope: {
         userId,
@@ -1159,32 +1161,44 @@ function observeCleanupResult(result: SnapshotCleanupResult): void {
 
 async function clearOwnerSnapshot(previous: StudentSession | null): Promise<SnapshotCleanupResult> {
   const uiGeneration = cleanupUiGeneration;
+  const generation = auth.currentGeneration();
   const result = await snapshotStore.clearDetailed(previous?.user.id);
-  if (uiGeneration === cleanupUiGeneration) observeCleanupResult(result);
+  if (uiGeneration === cleanupUiGeneration && auth.isCurrent(generation)) observeCleanupResult(result);
   return result;
 }
 
-async function handleProfileInvalidated(
-  reason: 'logout-all' | 'password-changed' | 'session-terminated' | 'account-invalidated',
-  generation: number,
-): Promise<void> {
-  if (!auth.isCurrent(generation)) return;
-  const previous = invalidateOwnerSynchronously();
+function returnToLogin(options: { clearAuth?: boolean } = {}): StudentSession | null {
+  const previous = invalidateOwnerSynchronously(options);
+  bootstrapAttempt += 1;
+  bootstrapping.value = false;
+  currentOnlyGeneration = null;
+  pendingOnlineGeneration = null;
+  queuedBootstrapAfterInvalidation = false;
+  sessionEnded.value = true;
+  if (pendingRole.value !== null) {
+    roleSelectionAttempt += 1;
+    pendingRole.value = null;
+    authLoading.value = false;
+  }
+  if (loginAdmissionAttempt !== null) {
+    loginAttempt += 1;
+    loginAdmissionAttempt = null;
+    authLoading.value = false;
+  }
   authSnapshot.value = null;
   authError.value = null;
+  bootstrapError.value = null;
+  passwordRecoveryNotice.value = null;
+  if (isPasswordRecoveryView()) replacePasswordResetRouteWithLogin();
   authView.value = 'login';
   sessionReady.value = true;
   offline.value = false;
   readOnly.value = true;
-  bootstrapError.value =
-    reason === 'password-changed'
-      ? 'Пароль изменён. Войди снова.'
-      : reason === 'logout-all'
-        ? 'Сеанс завершён на всех устройствах.'
-        : 'Сессия больше недоступна.';
-  // Publish sign-out before storage I/O; its late completion cannot replace
-  // a manual login that has already installed a new authenticated owner.
-  await clearOwnerSnapshot(previous);
+  return previous;
+}
+
+async function handleProfileInvalidated(generation: number): Promise<void> {
+  if (auth.isCurrent(generation)) await handleOnlineAuthDenial();
 }
 
 async function retryPendingCleanup(): Promise<void> {
@@ -1200,43 +1214,8 @@ async function retryPendingCleanup(): Promise<void> {
   }
 }
 
-async function handleOnlineAuthDenial(
-  error: unknown,
-  options: { initialAnonymousSessionRequest?: boolean } = {},
-): Promise<void> {
-  const hadAuthenticatedOwner =
-    authSnapshot.value !== null ||
-    auth.accessToken.value !== null ||
-    api.value !== null ||
-    teacherApi.value !== null ||
-    headmanApi.value !== null ||
-    snapshot.value !== null;
-  const explicitRevocation =
-    error instanceof AuthRequestError &&
-    ['INVALID_SESSION', 'SESSION_REVOKED', 'ACCOUNT_INVALIDATED', 'REFRESH_REJECTED'].includes(
-      error.serverCode ?? '',
-    );
-  const expectedInitialAnonymousDenial =
-    options.initialAnonymousSessionRequest === true &&
-    !hadAuthenticatedOwner &&
-    !explicitRevocation &&
-    error instanceof AuthRequestError &&
-    error.operation === 'current-session' &&
-    error.status === 401;
-  const previous = invalidateOwnerSynchronously();
-  await clearOwnerSnapshot(previous);
-  offline.value = false;
-  readOnly.value = true;
-  authSnapshot.value = null;
-  authView.value = 'login';
-  authError.value = null;
-  bootstrapError.value = expectedInitialAnonymousDenial
-    ? null
-    : authDenialStatus(error) === 401 || hadAuthenticatedOwner || explicitRevocation
-      ? 'Сессия завершена или больше недоступна. Войди снова.'
-      : error instanceof Error
-        ? error.message
-        : 'Сессия больше недоступна';
+async function handleOnlineAuthDenial(): Promise<void> {
+  await clearOwnerSnapshot(returnToLogin());
 }
 
 async function fetchAuthForCurrentGeneration(
@@ -1497,9 +1476,8 @@ async function activateCandidate(candidate: StudentCandidate): Promise<void> {
   scope.value = nextScope;
   if (!sameOwner || profilePort.value === null) {
     profilePort.value = auth.createProfilePort(candidate.generation, {
-      onInvalidated: (reason) => handleProfileInvalidated(reason, candidate.generation),
-      onRefreshAlreadyRotated: () =>
-        handleProfileInvalidated('account-invalidated', candidate.generation),
+      onInvalidated: () => handleProfileInvalidated(candidate.generation),
+      onRefreshAlreadyRotated: () => handleProfileInvalidated(candidate.generation),
     });
   }
   if (needsFreshOwner) ownerRevision.value += 1;
@@ -1522,9 +1500,8 @@ async function activateHeadmanCandidate(candidate: HeadmanCandidate): Promise<vo
   headmanHomeworkActorUserId.value = candidate.homeworkActorUserId;
   headmanGroupId.value = candidate.groupId;
   profilePort.value = auth.createProfilePort(candidate.generation, {
-    onInvalidated: (reason) => handleProfileInvalidated(reason, candidate.generation),
-    onRefreshAlreadyRotated: () =>
-      handleProfileInvalidated('account-invalidated', candidate.generation),
+    onInvalidated: () => handleProfileInvalidated(candidate.generation),
+    onRefreshAlreadyRotated: () => handleProfileInvalidated(candidate.generation),
   });
   authSnapshot.value = candidate.profile;
   offline.value = false;
@@ -1539,9 +1516,8 @@ async function activateTeacherCandidate(candidate: TeacherCandidate): Promise<vo
   teacherApi.value = candidate.api;
   teacherSemesterId.value = candidate.semesterId;
   profilePort.value = auth.createProfilePort(candidate.generation, {
-    onInvalidated: (reason) => handleProfileInvalidated(reason, candidate.generation),
-    onRefreshAlreadyRotated: () =>
-      handleProfileInvalidated('account-invalidated', candidate.generation),
+    onInvalidated: () => handleProfileInvalidated(candidate.generation),
+    onRefreshAlreadyRotated: () => handleProfileInvalidated(candidate.generation),
   });
   authSnapshot.value = candidate.profile;
   offline.value = false;
@@ -1567,9 +1543,8 @@ async function activateMapRole(profile: ProfileSnapshot, generation: number): Pr
   profilePort.value =
     profile.activeRole === 'ADMIN'
       ? auth.createProfilePort(generation, {
-          onInvalidated: (reason) => handleProfileInvalidated(reason, generation),
-          onRefreshAlreadyRotated: () =>
-            handleProfileInvalidated('account-invalidated', generation),
+          onInvalidated: () => handleProfileInvalidated(generation),
+          onRefreshAlreadyRotated: () => handleProfileInvalidated(generation),
         })
       : null;
   offline.value = false;
@@ -1674,7 +1649,7 @@ async function bootstrap(
   options: { refresh?: boolean; currentOnly?: boolean } = {},
 ): Promise<void> {
   if (isPasswordRecoveryView()) return;
-  if (!auth.canAutoBootstrap()) {
+  if (sessionEnded.value || !auth.canAutoBootstrap()) {
     void push.invalidate();
     authView.value = 'login';
     sessionReady.value = true;
@@ -1683,11 +1658,14 @@ async function bootstrap(
     return;
   }
   if (bootstrapping.value) return;
+  const attempt = ++bootstrapAttempt;
   bootstrapping.value = true;
-  currentOnlyGeneration = options.currentOnly ? auth.currentGeneration() : null;
+  const generation = auth.currentGeneration();
+  currentOnlyGeneration = options.currentOnly ? generation : null;
   let uncertainAuthRequest = false;
   try {
     const authCandidate = await fetchAuthForCurrentGeneration(options);
+    assertCandidateCurrent(generation);
     authSnapshot.value = authCandidate.profile;
     authError.value = null;
     if (authCandidate.profile.activeRole === 'HEADMAN') {
@@ -1697,6 +1675,7 @@ async function bootstrap(
       );
       if (!candidate) throw new ProfileRequestError('ROLE_NOT_GRANTED', 'Роль старосты недоступна');
       await activateHeadmanCandidate(candidate);
+      assertCandidateCurrent(generation);
       authView.value = 'headman';
       sessionReady.value = true;
     } else if (authCandidate.profile.activeRole !== 'STUDENT') {
@@ -1708,12 +1687,14 @@ async function bootstrap(
         if (!candidate)
           throw new ProfileRequestError('ROLE_NOT_GRANTED', 'Роль преподавателя недоступна');
         await activateTeacherCandidate(candidate);
+        assertCandidateCurrent(generation);
         authView.value = 'teacher';
       } else if (authCandidate.profile.activeRole === 'ADMIN') {
         await activateMapRole(authCandidate.profile, authCandidate.generation);
       } else {
         const previous = invalidateOwnerSynchronously({ clearAuth: false });
         await clearOwnerSnapshot(previous);
+        assertCandidateCurrent(generation);
         authView.value = 'role';
         offline.value = false;
         readOnly.value = true;
@@ -1726,16 +1707,19 @@ async function bootstrap(
       );
       if (!candidate) throw new ProfileRequestError('ROLE_NOT_GRANTED', 'Роль студента недоступна');
       await activateCandidate(candidate);
+      assertCandidateCurrent(generation);
       authView.value = 'student';
     }
+    assertCandidateCurrent(generation);
     sessionReady.value = true;
   } catch (error) {
     uncertainAuthRequest = isOfflineBootstrapRecoveryError(error);
-    if (error instanceof StaleSessionGenerationError) {
+    if (!auth.isCurrent(generation) || error instanceof StaleSessionGenerationError) {
       return;
     }
     if (isConfirmedOnlineAuthDenial(error)) {
-      await handleOnlineAuthDenial(error, { initialAnonymousSessionRequest: true });
+      void handleOnlineAuthDenial();
+      return;
     } else if (
       error instanceof AuthRequestError &&
       authSnapshot.value &&
@@ -1745,7 +1729,9 @@ async function bootstrap(
       bootstrapError.value = error.message;
     } else if (error instanceof ProfileRequestError && error.code === 'SESSION_STATE_STALE') {
       const previous = invalidateOwnerSynchronously();
+      const invalidatedGeneration = auth.currentGeneration();
       await clearOwnerSnapshot(previous);
+      if (!auth.isCurrent(invalidatedGeneration)) return;
       authSnapshot.value = null;
       authError.value = error;
       authView.value = 'login';
@@ -1758,6 +1744,7 @@ async function bootstrap(
       isOfflineBootstrapRecoveryError(error)
     ) {
       const recovered = await loadOfflineSnapshot();
+      if (!auth.isCurrent(generation)) return;
       if (!recovered) {
         authView.value = 'login';
         bootstrapError.value = error instanceof Error ? error.message : 'Не удалось открыть Today';
@@ -1781,25 +1768,28 @@ async function bootstrap(
     }
     sessionReady.value = true;
   } finally {
-    bootstrapping.value = false;
-    currentOnlyGeneration = null;
-    const onlineGeneration = pendingOnlineGeneration;
-    pendingOnlineGeneration = null;
-    if (
-      !uncertainAuthRequest &&
-      onlineGeneration !== null &&
-      onlineGeneration === auth.currentGeneration() &&
-      auth.canAutoBootstrap() &&
-      !isPasswordRecoveryView() &&
-      (typeof navigator === 'undefined' || navigator.onLine !== false)
-    ) {
-      queuedBootstrapAfterInvalidation = false;
-      offline.value = true;
-      readOnly.value = true;
-      void bootstrap(options.currentOnly ? { currentOnly: true } : {});
-    } else if (queuedBootstrapAfterInvalidation) {
-      queuedBootstrapAfterInvalidation = false;
-      void bootstrap({ refresh: false, ...(options.currentOnly ? { currentOnly: true } : {}) });
+    if (attempt === bootstrapAttempt) {
+      bootstrapping.value = false;
+      currentOnlyGeneration = null;
+      const onlineGeneration = pendingOnlineGeneration;
+      pendingOnlineGeneration = null;
+      if (
+        !uncertainAuthRequest &&
+        onlineGeneration !== null &&
+        onlineGeneration === auth.currentGeneration() &&
+        !sessionEnded.value &&
+        auth.canAutoBootstrap() &&
+        !isPasswordRecoveryView() &&
+        (typeof navigator === 'undefined' || navigator.onLine !== false)
+      ) {
+        queuedBootstrapAfterInvalidation = false;
+        offline.value = true;
+        readOnly.value = true;
+        void bootstrap(options.currentOnly ? { currentOnly: true } : {});
+      } else if (queuedBootstrapAfterInvalidation) {
+        queuedBootstrapAfterInvalidation = false;
+        void bootstrap({ refresh: false, ...(options.currentOnly ? { currentOnly: true } : {}) });
+      }
     }
   }
 }
@@ -1836,13 +1826,20 @@ async function submitLogin(
   input: { login: string; password: string } | { code: string },
 ): Promise<void> {
   if (authLoading.value) return;
+  const attempt = ++loginAttempt;
   authLoading.value = true;
   authError.value = null;
   bootstrapError.value = null;
+  let generation = auth.currentGeneration();
   try {
     const result = 'code' in input ? await auth.loginOtp(input) : await auth.login(input);
+    generation = result.generation;
+    assertCandidateCurrent(generation);
+    loginAdmissionAttempt = attempt;
+    sessionEnded.value = false;
     logoutNotice.value = null;
-    const profile = await auth.getSessionFor(result.generation);
+    const profile = await auth.getSessionFor(generation);
+    assertCandidateCurrent(generation);
     authSnapshot.value = profile;
     if (
       profile.activeRole !== 'STUDENT' &&
@@ -1853,37 +1850,48 @@ async function submitLogin(
       authView.value = 'role';
       readOnly.value = true;
       sessionReady.value = true;
-      if (auth.isCurrent(result.generation)) authSuccess.show();
+      authSuccess.show();
       return;
     }
     if (profile.activeRole === 'HEADMAN') {
-      const candidate = await fetchHeadmanCandidate(result.generation, profile);
+      const candidate = await fetchHeadmanCandidate(generation, profile);
       if (!candidate) throw new ProfileRequestError('ROLE_NOT_GRANTED', 'Роль старосты недоступна');
       await activateHeadmanCandidate(candidate);
+      assertCandidateCurrent(generation);
       authView.value = 'headman';
     } else if (profile.activeRole === 'TEACHER') {
-      const candidate = await fetchTeacherCandidate(result.generation, profile);
+      const candidate = await fetchTeacherCandidate(generation, profile);
       if (!candidate)
         throw new ProfileRequestError('ROLE_NOT_GRANTED', 'Роль преподавателя недоступна');
       await activateTeacherCandidate(candidate);
+      assertCandidateCurrent(generation);
       authView.value = 'teacher';
     } else if (profile.activeRole === 'ADMIN') {
-      await activateMapRole(profile, result.generation);
+      await activateMapRole(profile, generation);
     } else {
-      const candidate = await fetchStudentCandidate(result.generation, profile);
+      const candidate = await fetchStudentCandidate(generation, profile);
       if (!candidate) throw new ProfileRequestError('ROLE_NOT_GRANTED', 'Роль студента недоступна');
       await activateCandidate(candidate);
+      assertCandidateCurrent(generation);
       authView.value = 'student';
     }
+    assertCandidateCurrent(generation);
     sessionReady.value = true;
-    if (auth.isCurrent(result.generation)) authSuccess.show();
+    authSuccess.show();
   } catch (error) {
-    if (error instanceof StaleSessionGenerationError) return;
+    if (!auth.isCurrent(generation) || error instanceof StaleSessionGenerationError) return;
+    if (loginAdmissionAttempt === attempt && isConfirmedOnlineAuthDenial(error)) {
+      void handleOnlineAuthDenial();
+      return;
+    }
     authError.value = asProfileError(error);
     bootstrapError.value = authError.value.message;
     authView.value = 'login';
   } finally {
-    authLoading.value = false;
+    if (attempt === loginAttempt) {
+      loginAdmissionAttempt = null;
+      authLoading.value = false;
+    }
   }
 }
 
@@ -1894,6 +1902,7 @@ async function selectRole(
 ): Promise<void> {
   const request = createPwaRoleSelection(role, expectedSessionVersion);
   if (!request || authLoading.value || !authSnapshot.value) return;
+  const attempt = ++roleSelectionAttempt;
   authLoading.value = true;
   pendingRole.value = role;
   authError.value = null;
@@ -1901,9 +1910,11 @@ async function selectRole(
   // Keep the old token available for the role PUT, while hiding the old
   // feature owner until the response has passed the generation boundary.
   if (!options.preserveProfileOwner) authView.value = 'role';
-  const generation = auth.currentGeneration();
+  let generation = auth.currentGeneration();
   try {
     const selection = await auth.selectRoleFor(generation, request);
+    generation = selection.generation;
+    assertCandidateCurrent(generation);
     if (options.preserveProfileOwner) {
       invalidateOwnerSynchronously({ clearAuth: false });
       authView.value = 'role';
@@ -1913,17 +1924,20 @@ async function selectRole(
       const candidate = await fetchHeadmanCandidate(selection.generation, selection.session);
       if (!candidate) throw new ProfileRequestError('ROLE_NOT_GRANTED', 'Роль старосты недоступна');
       await activateHeadmanCandidate(candidate);
+      assertCandidateCurrent(generation);
       authView.value = 'headman';
     } else if (selection.session.activeRole === 'STUDENT') {
       const candidate = await fetchStudentCandidate(selection.generation, selection.session);
       if (!candidate) throw new ProfileRequestError('ROLE_NOT_GRANTED', 'Роль студента недоступна');
       await activateCandidate(candidate);
+      assertCandidateCurrent(generation);
       authView.value = 'student';
     } else if (selection.session.activeRole === 'TEACHER') {
       const candidate = await fetchTeacherCandidate(selection.generation, selection.session);
       if (!candidate)
         throw new ProfileRequestError('ROLE_NOT_GRANTED', 'Роль преподавателя недоступна');
       await activateTeacherCandidate(candidate);
+      assertCandidateCurrent(generation);
       authView.value = 'teacher';
     } else if (selection.session.activeRole === 'ADMIN') {
       await activateMapRole(selection.session, selection.generation);
@@ -1933,9 +1947,14 @@ async function selectRole(
         'Выбранная роль недоступна в этом приложении',
       );
     }
+    assertCandidateCurrent(generation);
     sessionReady.value = true;
   } catch (error) {
-    if (error instanceof StaleSessionGenerationError) return;
+    if (!auth.isCurrent(generation) || error instanceof StaleSessionGenerationError) return;
+    if (isConfirmedOnlineAuthDenial(error)) {
+      void handleOnlineAuthDenial();
+      return;
+    }
     authError.value = asProfileError(error);
     bootstrapError.value = authError.value.message;
     // A version conflict belongs to the old generation. Read the new
@@ -1947,16 +1966,24 @@ async function selectRole(
     ) {
       try {
         const current = await auth.getSessionFor(generation);
+        assertCandidateCurrent(generation);
         authSnapshot.value = current;
       } catch (refreshError) {
-        if (isConfirmedOnlineAuthDenial(refreshError)) await handleOnlineAuthDenial(refreshError);
+        if (!auth.isCurrent(generation) || refreshError instanceof StaleSessionGenerationError)
+          return;
+        if (isConfirmedOnlineAuthDenial(refreshError)) {
+          void handleOnlineAuthDenial();
+          return;
+        }
       }
     }
     if (!options.preserveProfileOwner) authView.value = 'role';
     else throw error;
   } finally {
-    pendingRole.value = null;
-    authLoading.value = false;
+    if (attempt === roleSelectionAttempt) {
+      pendingRole.value = null;
+      authLoading.value = false;
+    }
   }
 }
 
@@ -1966,16 +1993,9 @@ function selectProfileRole(role: ProfileRole, expectedSessionVersion: string): P
 
 async function logout(): Promise<void> {
   if (logoutPending.value) return;
-  const previous = invalidateOwnerSynchronously({ clearAuth: false });
   logoutPending.value = true;
   logoutNotice.value = null;
-  authSnapshot.value = null;
-  authError.value = null;
-  bootstrapError.value = null;
-  authView.value = 'login';
-  sessionReady.value = true;
-  offline.value = false;
-  readOnly.value = true;
+  const previous = returnToLogin({ clearAuth: false });
 
   const logoutRequest = auth.logout(async () => {
     await clearOwnerSnapshot(previous);
@@ -1988,9 +2008,6 @@ async function logout(): Promise<void> {
     logoutFailure = cause;
   } finally {
     if (auth.isCurrent(logoutGeneration)) {
-      authSnapshot.value = null;
-      authError.value = null;
-      bootstrapError.value = null;
       logoutNotice.value =
         auth.explicitLogoutState() === 'unconfirmed'
           ? `${
@@ -2000,11 +2017,7 @@ async function logout(): Promise<void> {
             }. Локальный доступ закрыт; автоматический вход отключён. Войди вручную, чтобы продолжить.`
           : logoutFailure
             ? 'Сессия отозвана, но локальная очистка не завершилась. Автоматический вход отключён; повтори вход вручную.'
-            : 'Ты вышел из аккаунта. Чтобы войти снова, введи данные.';
-      authView.value = 'login';
-      sessionReady.value = true;
-      offline.value = false;
-      readOnly.value = true;
+            : null;
     }
     logoutPending.value = false;
   }
@@ -2038,16 +2051,7 @@ function handleExternalInvalidation(reason: PwaAuthInvalidationReason = 'externa
     void bootstrap({ refresh: false });
     return;
   }
-  const previous = invalidateOwnerSynchronously({ clearAuth: false });
-  authSnapshot.value = null;
-  authError.value = null;
-  bootstrapError.value = 'Сессия завершена в другой вкладке';
-  replacePasswordResetRouteWithLogin();
-  authView.value = 'login';
-  sessionReady.value = true;
-  offline.value = false;
-  readOnly.value = true;
-  void clearOwnerSnapshot(previous);
+  void clearOwnerSnapshot(returnToLogin({ clearAuth: false }));
 }
 
 async function persistHomework(homework: StudentHomework): Promise<void> {
@@ -2132,6 +2136,11 @@ function openMaterial(url: string): void {
 }
 
 function onOwnerError(error: unknown): void {
+  if (sessionEnded.value || error instanceof StaleSessionGenerationError) return;
+  if (isConfirmedOnlineAuthDenial(error)) {
+    void handleOnlineAuthDenial();
+    return;
+  }
   if (
     authSnapshot.value?.activeRole === 'ADMIN' &&
     authDenialStatus(error) === 403 &&
@@ -2140,13 +2149,11 @@ function onOwnerError(error: unknown): void {
     void refreshAdminAuthority();
     return;
   }
-  if (isConfirmedOnlineAuthDenial(error)) {
-    void handleOnlineAuthDenial(error);
-    return;
-  }
   if (isAssistantCapabilityForbiddenError(error)) {
+    const generation = auth.currentGeneration();
     void assistantPermissionRefresher.refresh('forbidden').catch((cause: unknown) => {
-      if (isConfirmedOnlineAuthDenial(cause)) void handleOnlineAuthDenial(cause);
+      if (auth.isCurrent(generation) && isConfirmedOnlineAuthDenial(cause))
+        void handleOnlineAuthDenial();
     });
   }
   if (error instanceof StudentApiError)
@@ -2162,6 +2169,7 @@ function goOffline(): void {
 
 function goOnline(): void {
   themeMirror?.reconcile();
+  if (sessionEnded.value) return;
   // Reconnect must verify the current session before restoring mutation
   // authority. Bootstrap mounts a fresh bound owner only after getSession and
   // schedule have passed the generation gate.
@@ -2177,8 +2185,10 @@ function goOnline(): void {
 
 function onAssistantForeground(): void {
   if (typeof document === 'undefined' || document.visibilityState !== 'visible') return;
+  const generation = auth.currentGeneration();
   void assistantPermissionRefresher.refresh('foreground').catch((cause: unknown) => {
-    if (isConfirmedOnlineAuthDenial(cause)) void handleOnlineAuthDenial(cause);
+    if (auth.isCurrent(generation) && isConfirmedOnlineAuthDenial(cause))
+      void handleOnlineAuthDenial();
   });
 }
 

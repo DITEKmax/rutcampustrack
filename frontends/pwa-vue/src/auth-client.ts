@@ -130,7 +130,7 @@ export interface AuthClient {
     proof: BrowserLoginProof,
     decision: 'CONFIRM' | 'REJECT',
   ): Promise<BrowserLoginStatus>
-  refresh(): Promise<AuthToken>
+  refresh(signal?: AbortSignal): Promise<AuthToken>
   getSnapshot(): Promise<ProfileSnapshot>
   getOwnTelegramId(userId: string): Promise<string | null | undefined>
   selectRole(input: AuthSelectRoleInput): Promise<ProfileRoleSelection>
@@ -195,7 +195,8 @@ export function createAuthClient(options: AuthClientOptions = {}): AuthClient {
         ),
         proof,
       ),
-    refresh: () => requestToken('refresh', '/api/auth/refresh', undefined, fetcher, accessToken),
+    refresh: (signal) =>
+      requestToken('refresh', '/api/auth/refresh', undefined, fetcher, accessToken, signal),
     getSnapshot: async () => {
       const value = await requestJson<GeneratedCurrentSessionResponse>(
         'current-session',
@@ -325,6 +326,7 @@ async function requestToken(
   body: AuthLoginInput | { code: string } | undefined,
   fetcher: typeof fetch,
   accessToken: () => string | null,
+  signal?: AbortSignal,
 ): Promise<AuthToken> {
   const value = await requestJson<GeneratedTokenResponse>(
     operation,
@@ -333,6 +335,7 @@ async function requestToken(
     body,
     fetcher,
     accessToken,
+    signal ? { signal } : undefined,
   )
   return adaptToken(value, operation, true)
 }
@@ -409,9 +412,9 @@ async function requestJson<T>(
   body: unknown,
   fetcher: typeof fetch,
   accessToken: () => string | null,
-  options: { allowEmpty?: boolean } = {},
+  options: { allowEmpty?: boolean; signal?: AbortSignal } = {},
 ): Promise<T> {
-  const response = await sendRequest(operation, path, method, body, fetcher, accessToken)
+  const response = await sendRequest(operation, path, method, body, fetcher, accessToken, options.signal)
   if (options.allowEmpty && (response.status === 204 || response.status === 205)) return null as T
   try {
     return (await response.json()) as T
@@ -427,6 +430,7 @@ async function sendRequest(
   body: unknown,
   fetcher: typeof fetch,
   accessToken: () => string | null,
+  signal?: AbortSignal,
 ): Promise<Response> {
   const headers = new Headers({ Accept: 'application/json' })
   if (body !== undefined) headers.set('Content-Type', 'application/json')
@@ -439,6 +443,7 @@ async function sendRequest(
       method,
       headers,
       credentials: 'include',
+      ...(signal ? { signal } : {}),
       ...(body === undefined ? {} : { body: JSON.stringify(body) }),
     })
   } catch (error) {

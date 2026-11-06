@@ -26,6 +26,8 @@
 
 Для сравнения карточек ДЗ выбери роль «Староста» на [PWA](http://127.0.0.1:14272/viewport?width=390&headman=marks) или [TMA](http://127.0.0.1:14273/viewport?width=390&headman=marks). В проверочном расписании открой «Сегодня» и прокрути до блока ДЗ на второй паре. Затем нажми «Предыдущая пара». На первой паре есть тестовые задания, которые можно раскрыть.
 
+Для проверки завершения сессии открой две вкладки изолированного стенда PWA. [Студент](http://127.0.0.1:14279/?role=STUDENT) · [Староста](http://127.0.0.1:14279/?role=HEADMAN). В первой вкладке выбери «Профиль → Выйти». В обеих откроется форма входа. «Сбросить сессию стенда» возвращает исходные синтетические данные для повтора. «Отозвать сессию на стенде» имитирует подтверждённый отказ Auth. Локальная конфигурация для повторного запуска находится в `.agent/evidence/pwa-session-end-feedback/vite.config.mjs`.
+
 ## Повторный запуск
 
 Рабочая копия Windows находится в `C:/Users/maksd/.codex/worktrees/9689/rutcampustrack/.agent/worktrees/frontend-refactor-v2`. Команды ниже выполняются из её корня. Нужны Node.js 24.14, npm 11.9 и установленные зависимости в `frontends/node_modules`. Если их нужно восстановить, выполни `npm --prefix frontends ci`.
@@ -38,6 +40,7 @@
     node frontends/node_modules/vite/bin/vite.js --config .agent/evidence/student-mobile-v2/tma-qa/vite.config.mjs
     node frontends/node_modules/vite/bin/vite.js --config .agent/evidence/web-student-v2/vite.config.mjs
     node frontends/node_modules/vite/bin/vite.js --config .agent/evidence/student-mobile-v2/pwa-qa/recovery.config.mjs
+    node frontends/node_modules/vite/bin/vite.js --config .agent/evidence/pwa-session-end-feedback/vite.config.mjs
 
 Для HTML запусти две команды из исходной рабочей копии `9689/rutcampustrack`. Каталог Web-эталонов содержит четыре оригинальных HTML. Остальные оригиналы лежат по отдельным каталогам в `.agent/inputs/frontend-refactor-v2`. ZIP владельца сохранены в `C:/Users/maksd/OneDrive/Desktop/frontendrefactor`.
 

@@ -26,8 +26,18 @@
 .headman-timetable th small { display: block; margin-block-start: var(--space-1); color: var(--color-text-muted); font-size: var(--font-size-caption); font-weight: var(--font-weight-regular); }
 .headman-timetable-cell { display: flex; flex-direction: column; gap: var(--space-1); min-block-size: calc(var(--control-height) * 2); }
 .headman-timetable-lesson, .headman-timetable-free { inline-size: 100%; min-block-size: calc(var(--control-height) * 2); padding: var(--space-3); border: var(--web-border) solid var(--color-border-default); border-radius: var(--radius-md); color: var(--color-text-primary); background: var(--color-surface-raised); font: inherit; font-size: var(--font-size-dense); line-height: 1.4; text-align: start; overflow-wrap: anywhere; cursor: pointer; }
+.headman-timetable-lesson { line-height: 1.3; }
+.headman-timetable-lesson > :is(strong, span, small) { flex-shrink: 0; }
+.headman-timetable-lesson > :is(strong, small) {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+}
 .headman-timetable-lesson strong { font-weight: var(--font-weight-medium); }
-.headman-timetable-lesson :is(span, small) { display: block; margin-block-start: var(--space-1); color: var(--color-text-secondary); font-size: var(--font-size-caption); }
+.headman-timetable-lesson > :is(span, small) { margin-block-start: var(--space-1); color: var(--color-text-secondary); font-size: var(--font-size-caption); }
+.headman-timetable-lesson > span { display: block; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 .headman-timetable-free { display: grid; place-items: center; flex: 1; border-style: dashed; border-color: var(--web-panel-line); background: var(--color-surface-raised); color: var(--color-text-muted); }
 .headman-timetable-free .mobile-icon { inline-size: var(--space-6); block-size: var(--space-6); }
 .headman-timetable-lesson.is-cancelled { background: var(--color-state-danger-bg); color: var(--color-state-danger-text); border-color: var(--color-state-danger-border); }
@@ -43,9 +53,7 @@
 .headman-constructor-legend { margin: 0; }
 .headman-timetable-constructor { min-inline-size: var(--headman-constructor-width); }
 .headman-timetable-constructor .headman-timetable-cell { display: grid; grid-template-rows: repeat(2, minmax(0, 1fr)); grid-template-columns: minmax(0, 1fr); block-size: var(--headman-constructor-slot-height); min-block-size: 0; }
-.headman-timetable-constructor :is(.headman-timetable-lesson, .headman-timetable-free) { display: flex; flex-direction: column; justify-content: center; min-inline-size: 0; min-block-size: 0; block-size: 100%; padding: var(--space-2); }
-.headman-timetable-constructor .headman-timetable-lesson > strong { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; line-clamp: 3; min-block-size: 0; overflow: hidden; }
-.headman-timetable-constructor .headman-timetable-lesson > span { flex-shrink: 0; }
+.headman-timetable-constructor :is(.headman-timetable-lesson, .headman-timetable-free) { display: flex; flex-direction: column; justify-content: center; min-inline-size: 0; min-block-size: 0; block-size: 100%; padding: var(--space-1) var(--space-2); }
 .headman-timetable-constructor .headman-timetable-free { align-items: center; }
 .headman-timetable-constructor .is-odd-week { grid-row: 1; }
 .headman-timetable-constructor .is-even-week { grid-row: 2; }
@@ -53,11 +61,12 @@
 .headman-timetable-constructor tbody th { vertical-align: middle; }
 .headman-timetable-management .headman-timetable-cell { block-size: var(--headman-management-slot-height); min-block-size: 0; overflow: auto; scrollbar-width: thin; scrollbar-color: var(--color-border-strong) transparent; }
 @supports selector(::-webkit-scrollbar) { .headman-timetable-management .headman-timetable-cell { scrollbar-width: auto; scrollbar-color: auto; } }
-.headman-timetable-management :is(.headman-timetable-lesson, .headman-timetable-free) { flex-shrink: 0; block-size: 100%; min-block-size: 100%; min-inline-size: 0; padding: var(--space-2); }
+.headman-timetable-management :is(.headman-timetable-lesson, .headman-timetable-free) { flex-shrink: 0; block-size: 100%; min-block-size: 100%; min-inline-size: 0; padding: var(--space-1) var(--space-2); }
 .headman-timetable-management .headman-timetable-lesson { display: flex; flex-direction: column; justify-content: center; overflow: hidden; }
-.headman-timetable-management .headman-timetable-lesson > strong { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; line-clamp: 3; min-block-size: 0; overflow: hidden; }
-.headman-timetable-management .headman-timetable-lesson > :is(span, small) { flex-shrink: 0; }
-.headman-timetable-management .headman-timetable-lesson > span { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.headman-timetable-management .headman-timetable-lesson:has(> small) > strong {
+  -webkit-line-clamp: 1;
+  line-clamp: 1;
+}
 .headman-timetable-management tbody th { vertical-align: middle; }
 .headman-timetable-editor { inline-size: min(100%, calc(var(--control-height) * 18)); }
 .headman-timetable-editor > fieldset {

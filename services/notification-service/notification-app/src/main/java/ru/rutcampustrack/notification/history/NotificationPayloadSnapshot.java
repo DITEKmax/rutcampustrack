@@ -70,6 +70,11 @@ public final class NotificationPayloadSnapshot {
             return Collections.unmodifiableMap(minimal);
         }
         Map<String, Object> result = factual(source);
+        boolean dueReminder = "homework.due_reminder".equals(eventType);
+        if (dueReminder) {
+            preserveExplicitNull(result, source, "homework_id");
+            preserveExplicitNull(result, source, "lesson_date");
+        }
         if (eventType.equals("excuse.decided") || eventType.equals("late_checkin.decided")) {
             Object comment = source.get("decision_comment");
             if (comment instanceof String text) result.put("decision_comment", bounded(text));
@@ -110,8 +115,16 @@ public final class NotificationPayloadSnapshot {
                                 .toList());
             }
         }
-        if (source.get("homework") instanceof Map<?, ?> homework)
-            result.put("homework", factual(homework));
+        if (source.get("homework") instanceof Map<?, ?> homework) {
+            Map<String, Object> snapshot = factual(homework);
+            if (dueReminder) {
+                String id = dueReminderHomeworkId(homework);
+                if (id != null) snapshot.put("homework_id", Long.valueOf(id));
+                // An explicit null date forbids falling back to the date in the root payload.
+                preserveExplicitNull(snapshot, homework, "lesson_date");
+            }
+            result.put("homework", snapshot);
+        }
         if (source.get("items") instanceof List<?> items)
             result.put(
                     "items",
@@ -126,6 +139,19 @@ public final class NotificationPayloadSnapshot {
                                     })
                             .toList());
         return Collections.unmodifiableMap(result);
+    }
+
+    static String dueReminderHomeworkId(Map<?, ?> homework) {
+        Object value =
+                homework.containsKey("homework_id") ? homework.get("homework_id") : homework.get("id");
+        return value instanceof Number || value instanceof String
+                ? NotificationCatalog.positiveId(value)
+                : null;
+    }
+
+    private static void preserveExplicitNull(
+            Map<String, Object> target, Map<?, ?> source, String key) {
+        if (source.containsKey(key) && source.get(key) == null) target.put(key, null);
     }
 
     private static Map<String, Object> factual(Map<?, ?> source) {

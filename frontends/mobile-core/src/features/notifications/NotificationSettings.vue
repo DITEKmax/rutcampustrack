@@ -3,12 +3,14 @@ import { computed, nextTick, ref, useId, watch } from 'vue';
 import MobileIcon from '../../shared/components/MobileIcon.vue';
 import AdminCheckbox from '../../shared/components/AdminCheckbox.vue';
 import {
+  notificationCatalogGroupsForRole,
   notificationCatalogMatchesPreferences,
   notificationTypeSetsMatch,
 } from './notifications-v2-models';
 import type {
   NotificationCatalog,
   NotificationPreferencesV2,
+  NotificationSignedRole,
   NotificationTypeId,
 } from './notifications-v2-models';
 import {
@@ -21,6 +23,7 @@ import './notification-settings.pcss';
 
 const props = defineProps<{
   catalog: NotificationCatalog;
+  signedRole: NotificationSignedRole;
   preferences: NotificationPreferencesV2;
   draft: NotificationPreferencesV2 | null;
   blocked?: boolean;
@@ -66,14 +69,10 @@ const unavailable = computed(() =>
 );
 const groups = computed(() =>
   compatible.value
-    ? props.catalog.groups
-        .map((group) => ({
-          ...group,
-          types: props.catalog.types
-            .filter((type) => type.groupId === group.id)
-            .map((type) => ({ ...type, preferences: value.value.types[type.id]! })),
-        }))
-        .filter((group) => group.types.length)
+    ? notificationCatalogGroupsForRole(props.catalog, props.signedRole).map((group) => ({
+        ...group,
+        types: group.types.map((type) => ({ ...type, preferences: value.value.types[type.id]! })),
+      }))
     : [],
 );
 const choiceOpen = ref(false);

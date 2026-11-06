@@ -2,36 +2,7 @@ import { createRenderer, h, markRaw, nextTick, shallowReactive, type App } from 
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import TeacherFeatureOwner from './TeacherFeatureOwner.vue'
 import { ReportDownloadClient, type ReportDownloadPort } from '../report-download-client'
-import { TeacherApi, type TeacherJournalQuery } from '../../features/teacher/teacher-client'
-
-// The day emitter is a seam; the real owner, journal, query mapping and rendered type remain mounted.
-vi.mock('../../features/teacher/TeacherHomeScreen.vue', async () => {
-  const { h } = await import('vue')
-  return {
-    default: {
-      emits: ['open-journal'],
-      setup(
-        _props: unknown,
-        { emit }: { emit: (event: 'open-journal', query: TeacherJournalQuery) => void },
-      ) {
-        return () =>
-          h(
-            'button',
-            {
-              onClick: () =>
-                emit('open-journal', {
-                  semesterId: 7,
-                  groupId: 101,
-                  subjectId: 201,
-                  lessonType: 'lecture',
-                }),
-            },
-            'Открыть журнал назначения',
-          )
-      },
-    },
-  }
-})
+import { TeacherApi } from '../../features/teacher/teacher-client'
 
 class HostNode {
   children: HostNode[] = []
@@ -45,6 +16,9 @@ class HostNode {
   }
   querySelectorAll(): HostNode[] {
     return []
+  }
+  querySelector(): null {
+    return null
   }
   focus(): void {}
   addEventListener(): void {}
@@ -93,14 +67,23 @@ function find(root: HostNode, predicate: (node: HostNode) => boolean): HostNode 
   }
   return undefined
 }
-function click(root: HostNode, label: string): void {
-  const button = find(
+function button(root: HostNode, label: string): HostNode {
+  const node = find(
     root,
     (node) =>
       node.tag === 'button' && (node.props['aria-label'] === label || text(node).trim() === label),
   )
-  expect(button).toBeDefined()
-  ;(button!.props.onClick as () => void)()
+  expect(node).toBeDefined()
+  return node!
+}
+function click(root: HostNode, label: string): void {
+  const node = button(root, label)
+  ;(node.props.onClick as (event: { currentTarget: HostNode }) => void)({ currentTarget: node })
+}
+function clickAssignment(root: HostNode): void {
+  const assignment = find(root, (node) => node.props['data-teacher-action'] === 'journal-open')
+  expect(assignment).toBeDefined()
+  ;(assignment!.props.onClick as () => void)()
 }
 function openGroup(root: HostNode, name: string): void {
   const button = find(
@@ -129,6 +112,7 @@ async function chooseStatsContext(root: HostNode): Promise<void> {
 const apps: App[] = []
 afterEach(() => {
   for (const app of apps.splice(0)) app.unmount()
+  vi.useRealTimers()
   vi.unstubAllGlobals()
 })
 const json = (value: unknown): Response => Response.json(value)
@@ -137,20 +121,37 @@ const unavailable = (): Response =>
 function fixture(
   options: {
     semesterId?: number
+    dateFrom?: string
+    dateTo?: string
     groupName?: string
     subjectName?: string
+    semester?: (attempt: number, success: () => Response) => Promise<Response> | Response
+    day?: (date: string, success: () => Response) => Promise<Response> | Response
+    assignments?: (success: () => Response) => Promise<Response> | Response
     catalogue?: (attempt: number, success: () => Response) => Promise<Response> | Response
     groupIds?: () => readonly string[]
     failStats?: () => boolean
   } = {},
 ) {
   const requests: string[] = []
+  const dates: string[] = []
+  const daySemesterIds: Array<string | null> = []
+  const assignmentRanges: Array<[string | null, string | null]> = []
+  const assignmentSemesterIds: Array<string | null> = []
+  const catalogueSemesterIds: Array<string | null> = []
   const journalQueries: URLSearchParams[] = []
   let catalogues = 0
+  let semesters = 0
   const semesterId = options.semesterId ?? 7
+  const dateFrom = options.dateFrom ?? '2026-09-01'
+  const dateTo = options.dateTo ?? '2027-01-31'
   const groupName = options.groupName ?? 'ИВТ-241'
   const subjectName = options.subjectName ?? 'Программирование'
   const option = { groupId: '101', subjectId: '201', subjectName, lessonTypes: ['lecture'] }
+  const assignment = {
+    id: '43', teacherId: '71', semesterId, groupId: '101', groupName, subjectId: '201',
+    subjectName, lessonType: 'lecture', validFrom: dateFrom, validUntilExclusive: null,
+  }
   const catalog = () =>
     json({
       groups: [
@@ -165,15 +166,53 @@ function fixture(
     new TeacherApi({
       accessToken: () => null,
       fetcher: async (input) => {
-        const path = new URL(String(input), 'https://fixture.test').pathname
+        const { pathname: path, searchParams } = new URL(String(input), 'https://fixture.test')
         requests.push(path)
-        if (path.endsWith('/semester'))
-          return json({
+        if (path.endsWith('/semester')) {
+          semesters += 1
+          const success = () => json({
             id: String(semesterId),
             name: 'Осень',
-            dateFrom: '2026-09-01',
-            dateTo: '2027-01-31',
+            dateFrom,
+            dateTo,
           })
+          return options.semester ? options.semester(semesters, success) : success()
+        }
+        if (path.endsWith('/day')) {
+          const date = searchParams.get('date')!
+          dates.push(date)
+          daySemesterIds.push(searchParams.get('semesterId'))
+          const success = () => json({
+            semesterId: searchParams.get('semesterId'),
+            date,
+            lessons: date === dateFrom || date === '2026-09-16' ? [{
+              ...assignment,
+              id: '73',
+              assignmentId: assignment.id,
+              date,
+              lessonNumber: 1,
+              status: 'PLANNED',
+              oneOff: false,
+              moved: false,
+              cancelled: false,
+            }] : [],
+            serverNow: '2026-10-09T08:00:00Z',
+          })
+          return options.day ? options.day(date, success) : success()
+        }
+        if (path.endsWith('/assignments')) {
+          assignmentRanges.push([searchParams.get('dateFrom'), searchParams.get('dateTo')])
+          assignmentSemesterIds.push(searchParams.get('semesterId'))
+          const success = () => json([
+            { ...assignment, semesterId: searchParams.get('semesterId') },
+            {
+              ...assignment, semesterId: searchParams.get('semesterId'),
+              id: '44', groupId: '102', groupName: 'ИВТ-242',
+              subjectId: '202', subjectName: 'Сети', validFrom: dateTo,
+            },
+          ])
+          return options.assignments ? options.assignments(success) : success()
+        }
         if (path.endsWith('/lesson-slots'))
           return json({
             timezone: 'Europe/Moscow',
@@ -185,6 +224,7 @@ function fixture(
           })
         if (path.endsWith('/catalog')) {
           catalogues += 1
+          catalogueSemesterIds.push(searchParams.get('semesterId'))
           return options.catalogue ? options.catalogue(catalogues, catalog) : catalog()
         }
         if (path.endsWith('/journal')) {
@@ -238,6 +278,11 @@ function fixture(
   return {
     api,
     requests,
+    dates,
+    daySemesterIds,
+    assignmentRanges,
+    assignmentSemesterIds,
+    catalogueSemesterIds,
     journalQueries,
     groupName,
     subjectName,
@@ -245,7 +290,7 @@ function fixture(
     catalogues: () => catalogues,
   }
 }
-function mount(api: TeacherApi, reportDownload?: ReportDownloadPort) {
+function mount(api: TeacherApi, reportDownload?: ReportDownloadPort, selectedDate = '2026-10-08') {
   const location = { href: 'https://fixture.test/app', search: '' }
   vi.stubGlobal('window', {
     location,
@@ -260,11 +305,8 @@ function mount(api: TeacherApi, reportDownload?: ReportDownloadPort) {
   })
   vi.stubGlobal('Document', class {})
   vi.stubGlobal('ShadowRoot', class {})
-  vi.stubGlobal('document', {
-    activeElement: null,
-    addEventListener() {},
-    removeEventListener() {},
-  })
+  const page = Object.assign(new EventTarget(), { activeElement: null, visibilityState: 'visible' })
+  vi.stubGlobal('document', page)
   const state = shallowReactive({ api, semesterId: 7, realtimeRevision: 0 })
   const root = new HostNode('root')
   const app = renderer.createApp({
@@ -272,21 +314,290 @@ function mount(api: TeacherApi, reportDownload?: ReportDownloadPort) {
       h(TeacherFeatureOwner, {
         api: state.api,
         reportDownload,
+        selectedDate,
         semesterId: state.semesterId,
         realtimeRevision: state.realtimeRevision,
       }),
   })
   apps.push(app)
   app.mount(root)
-  return { root, state }
+  return { root, state, page }
 }
+
+describe('teacher home semester', () => {
+  it('keeps all assignments visible while day requests change or complete out of order', async () => {
+    let finishOlderDay!: () => void
+    const transport = fixture({
+      dateFrom: '2026-09-15',
+      dateTo: '2027-01-18',
+      day: (date, success) => date === '2026-09-16'
+        ? new Promise((resolve) => { finishOlderDay = () => resolve(success()) })
+        : success(),
+    })
+    const { root, state } = mount(transport.api, undefined, '2026-08-15')
+    await settle()
+    expect(button(root, 'Предыдущий день').props.disabled).toBe(true)
+    const lesson = () => find(root, (node) => node.props['data-teacher-action'] === 'lesson-open')
+    expect(lesson()).toBeDefined()
+    const assignmentRows = () => {
+      const section = find(root, (node) => node.props['aria-labelledby'] === 'teacher-assignments-title')
+      expect(section).toBeDefined()
+      expect(text(section!)).toContain('Программирование')
+      expect(text(section!)).toContain('Сети')
+    }
+    assignmentRows()
+    click(root, 'Следующий день')
+    await settle()
+    expect(text(root)).toContain('Загружаем расписание')
+    assignmentRows()
+    click(root, 'Следующий день')
+    await settle()
+    expect(lesson()).toBeUndefined()
+    assignmentRows()
+    finishOlderDay()
+    await settle()
+    expect(lesson()).toBeUndefined()
+    expect(transport.dates).toEqual(['2026-09-15', '2026-09-16', '2026-09-17'])
+    expect(transport.assignmentRanges).toEqual([['2026-09-15', '2027-01-18']])
+
+    state.realtimeRevision += 1
+    await settle()
+    assignmentRows()
+    expect(transport.assignmentRanges).toEqual([
+      ['2026-09-15', '2027-01-18'],
+      ['2026-09-15', '2027-01-18'],
+    ])
+  })
+
+  it('ignores the former owner’s day and assignments after changing the authenticated semester', async () => {
+    let finishDay!: () => void
+    let finishAssignments!: () => void
+    const obsolete = fixture({
+      dateFrom: '2026-10-08',
+      groupName: 'Прежняя группа',
+      day: (_date, success) =>
+        new Promise((resolve) => { finishDay = () => resolve(success()) }),
+      assignments: (success) =>
+        new Promise((resolve) => { finishAssignments = () => resolve(success()) }),
+    })
+    const current = fixture({
+      semesterId: 8,
+      dateFrom: '2026-09-08',
+      dateTo: '2026-09-24',
+      groupName: 'Текущая группа',
+    })
+    const { root, state } = mount(obsolete.api)
+    await settle()
+    state.api = current.api
+    state.semesterId = 8
+    await settle()
+    expect(current.dates).toEqual(['2026-09-24'])
+    expect(button(root, 'Следующий день').props.disabled).toBe(true)
+    finishDay()
+    finishAssignments()
+    await settle()
+    expect(find(root, (node) => node.props['data-teacher-action'] === 'lesson-open')).toBeUndefined()
+    expect(text(root)).toContain('Текущая группа')
+    expect(text(root)).not.toContain('Прежняя группа')
+  })
+
+  it('waits for the real semester bounds and recovers with the context retry', async () => {
+    const transport = fixture({
+      semester: (attempt, success) => attempt === 1 ? unavailable() : success(),
+    })
+    const { root } = mount(transport.api)
+    await settle()
+    expect(button(root, 'Предыдущий день').props.disabled).toBe(true)
+    expect(button(root, 'Следующий день').props.disabled).toBe(true)
+    expect(transport.dates).toEqual([])
+    expect(transport.assignmentRanges).toEqual([])
+
+    click(root, 'Повторить')
+    await settle()
+    expect(transport.dates).toEqual(['2026-10-08'])
+    expect(transport.assignmentRanges).toEqual([['2026-09-01', '2027-01-31']])
+    expect(text(root)).toContain('Мои назначения')
+  })
+
+  it('uses the latest active semester during coalesced realtime invalidations and leaves the former journal', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] })
+    vi.setSystemTime(new Date('2026-11-07T12:00:00Z'))
+    let finishObsolete!: () => void
+    const transport = fixture({
+      semester: (attempt, success) => {
+        if (attempt === 1) return success()
+        if (attempt === 2) {
+          return new Promise((resolve) => {
+            finishObsolete = () => resolve(json({
+              id: '8', name: 'Следующий', dateFrom: '2098-02-01', dateTo: '2098-06-01',
+            }))
+          })
+        }
+        return json({
+          id: '9', name: 'Активный', dateFrom: '2026-10-02', dateTo: '2026-11-01',
+        })
+      },
+    })
+    const { root, state } = mount(transport.api)
+    await settle()
+    clickAssignment(root)
+    await settle()
+    expect(transport.journalQueries.at(-1)?.get('semesterId')).toBe('7')
+    state.realtimeRevision += 1
+    await settle()
+    state.realtimeRevision += 1
+    await settle()
+    expect(transport.requests.filter((path) => path.endsWith('/semester'))).toHaveLength(2)
+    finishObsolete()
+    await settle()
+    expect(state.semesterId).toBe(7)
+    expect(transport.catalogueSemesterIds).toEqual(['7', '9'])
+    expect(transport.daySemesterIds).toEqual(['7', '9'])
+    expect(transport.assignmentSemesterIds).toEqual(['7', '9'])
+    expect(transport.dates.at(-1)).toBe('2026-11-01')
+    expect(transport.assignmentRanges.at(-1)).toEqual(['2026-10-02', '2026-11-01'])
+    expect(button(root, 'Следующий день').props.disabled).toBe(true)
+    clickAssignment(root)
+    await settle()
+    expect(transport.journalQueries.map((query) => query.get('semesterId'))).toEqual(['7', '9'])
+  })
+
+  it('retries a failed semester refresh and clamps the selected day to the changed bounds', async () => {
+    let failForegroundCheck!: () => void
+    const transport = fixture({
+      semester: (attempt, success) => {
+        if (attempt === 1) return success()
+        if (attempt === 2) return new Promise((resolve) => {
+          failForegroundCheck = () => resolve(unavailable())
+        })
+        return json({
+          id: '7', name: 'Осень', dateFrom: '2026-10-09', dateTo: '2026-10-20',
+        })
+      },
+    })
+    const { root, page } = mount(transport.api)
+    await settle()
+    expect(button(root, 'Предыдущий день').props.disabled).toBe(false)
+    expect(button(root, 'Следующий день').props.disabled).toBe(false)
+    page.visibilityState = 'hidden'
+    page.dispatchEvent(new Event('visibilitychange'))
+    await settle()
+    expect(transport.requests.filter((path) => path.endsWith('/semester'))).toHaveLength(1)
+    page.visibilityState = 'visible'
+    page.dispatchEvent(new Event('visibilitychange'))
+    await settle()
+    expect(button(root, 'Предыдущий день').props.disabled).toBe(true)
+    expect(button(root, 'Следующий день').props.disabled).toBe(true)
+    click(root, 'Предыдущий день')
+    await settle()
+    expect(transport.dates).toEqual(['2026-10-08'])
+    failForegroundCheck()
+    await settle()
+    expect(text(root)).toContain('Программирование')
+    expect(find(root, (node) => node.props['data-teacher-action'] === 'journal-open')).toBeUndefined()
+    expect(button(root, 'Предыдущий день').props.disabled).toBe(true)
+    expect(button(root, 'Следующий день').props.disabled).toBe(true)
+    click(root, 'Следующий день')
+    await settle()
+    expect(transport.dates).toEqual(['2026-10-08'])
+    click(root, 'Повторить')
+    await settle()
+    expect(button(root, 'Предыдущий день').props.disabled).toBe(true)
+    expect(button(root, 'Следующий день').props.disabled).toBe(false)
+    expect(transport.dates).toEqual(['2026-10-08', '2026-10-09'])
+    expect(transport.assignmentRanges).toEqual([
+      ['2026-09-01', '2027-01-31'],
+      ['2026-10-09', '2026-10-20'],
+    ])
+    expect(transport.catalogueSemesterIds).toEqual(['7', '7'])
+    expect(find(root, (node) => node.props['data-teacher-action'] === 'journal-open')).toBeDefined()
+  })
+
+  it('verifies the semester before choosing a calendar day and can retry inside an open dialog', async () => {
+    let failCalendarCheck!: () => void
+    const transport = fixture({
+      semester: (attempt, success) => {
+        if (attempt === 1) return success()
+        if (attempt === 2) return new Promise((resolve) => {
+          failCalendarCheck = () => resolve(unavailable())
+        })
+        return json({
+          id: '7', name: 'Осень', dateFrom: '2026-10-09', dateTo: '2026-10-20',
+        })
+      },
+    })
+    const { root } = mount(transport.api)
+    await settle()
+    const trigger = find(root, (node) => node.props['aria-controls'] === 'teacher-date-choice')!
+    ;(trigger.props.onClick as () => void)()
+    await settle()
+    const dialog = () => find(root, (node) => node.props.role === 'dialog')!
+    const date = (value: string) => find(dialog(), (node) => node.props['data-date'] === value)!
+    expect(date('2026-10-09').props.disabled).toBe(true)
+    expect(button(dialog(), 'Закрыть календарь')).toBeDefined()
+    failCalendarCheck()
+    await settle()
+    expect(date('2026-10-09').props.disabled).toBe(true)
+    click(dialog(), 'Повторить')
+    await settle()
+    expect(date('2026-10-08').props.disabled).toBe(true)
+    expect(date('2026-10-09').props.disabled).toBe(false)
+    expect(date('2026-10-09').props['aria-pressed']).toBe(true)
+    ;(date('2026-10-10').props.onClick as () => void)()
+    await settle()
+    expect(dialog()).toBeUndefined()
+    expect(transport.dates).toEqual(['2026-10-08', '2026-10-09', '2026-10-10'])
+  })
+
+  it('lists all assignments while the catalogue is pending or failed and opens only current group and subject pairs', async () => {
+    let finishCatalogue!: () => void
+    const transport = fixture({
+      catalogue: (attempt, success) => {
+        if (attempt === 1) return new Promise((resolve) => {
+          finishCatalogue = () => resolve(unavailable())
+        })
+        return success().json().then((data) => json({
+          ...data,
+          subjectOptions: [...data.subjectOptions, {
+            groupId: '102', subjectId: '202', subjectName: 'Сети', lessonTypes: ['lecture'],
+          }],
+          taughtSubjectOptions: [
+            { ...data.taughtSubjectOptions[0], lessonTypes: ['practice'] },
+            { ...data.taughtSubjectOptions[1], subjectId: '201' },
+            { ...data.taughtSubjectOptions[1], groupId: '101' },
+          ],
+        }))
+      },
+    })
+    const { root } = mount(transport.api)
+    const row = (name: string) => find(root, (node) =>
+      node.props.class === 'teacher-screen__assignment' && text(node).includes(name),
+    )
+    await settle()
+    expect(row('Программирование')?.tag).toBe('div')
+    expect(row('Сети')?.tag).toBe('div')
+    finishCatalogue()
+    await settle()
+    expect(row('Программирование')?.tag).toBe('div')
+    expect(row('Сети')?.tag).toBe('div')
+    click(root, 'Повторить')
+    await settle()
+    expect(row('Программирование')?.tag).toBe('button')
+    expect(row('Сети')?.tag).toBe('div')
+    expect(row('Сети')?.props.onClick).toBeUndefined()
+    expect(transport.journalQueries).toHaveLength(0)
+    clickAssignment(root)
+    await settle()
+    expect(transport.journalQueries.at(-1)?.getAll('lessonType')).toEqual(['lecture'])
+  })
+})
 
 describe('teacher live projections', () => {
   it('refreshes the mounted journal and catalog without resetting its selected context', async () => {
     const transport = fixture()
     const view = mount(transport.api)
     await settle()
-    click(view.root, 'Открыть журнал назначения')
+    clickAssignment(view.root)
     await settle()
     const first = transport.journalQueries.at(-1)!.toString()
     const before = transport.journalQueries.length
@@ -416,7 +727,7 @@ describe('teacher owner catalogue recovery', () => {
     const transport = fixture()
     const view = mount(transport.api)
     await settle()
-    click(view.root, 'Открыть журнал назначения')
+    clickAssignment(view.root)
     await settle()
     const lecture = find(
       view.root,

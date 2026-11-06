@@ -9,6 +9,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HexFormat;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -30,6 +31,7 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 import ru.rutcampustrack.notification.history.AcademicGroupMemberClient;
+import ru.rutcampustrack.notification.history.NotificationCatalog;
 import ru.rutcampustrack.notification.preferences.NotificationPreferencesService;
 import ru.rutcampustrack.notification.reminder.ReminderAttendanceStateService;
 
@@ -169,11 +171,16 @@ public class WebPushDeliveryService {
                                                         .getBytes(StandardCharsets.UTF_8)));
         String body =
                 item.details().stream()
+                        .sorted(
+                                Comparator.comparing(
+                                        detail -> !NotificationCatalog.isRoomChangeDetail(detail.label())))
                         .limit(3)
                         .map(
                                 detail ->
                                         (detail.label() == null ? "" : detail.label() + ": ")
-                                                + detail.value())
+                                                + (NotificationCatalog.isRoomChangeDetail(detail.label())
+                                                        ? boundedText(detail.value(), 128)
+                                                        : detail.value()))
                         .collect(Collectors.joining("\n"));
         if (body.isBlank()) body = "Открой приложение для подробностей";
         Map<String, Object> json = new LinkedHashMap<>();

@@ -173,6 +173,7 @@ const failure = ref(params.get('failure') === '503'),
   conflictNext = ref(false);
 const count = () => rows.get(role.value)!.filter((item) => item.readAt === null).length;
 const api: NotificationsV2Api = {
+  get signedRole() { return role.value; },
   async catalog() {
     if (failure.value) throw new NotificationsApiError('Временно недоступно', 503);
     return structuredClone(catalog);

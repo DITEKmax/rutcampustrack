@@ -132,7 +132,9 @@ public final class TeacherAcademicReadGrpcService
                         .withDescription("date_to must not precede date_from")
                         .asRuntimeException();
             }
-            if (!request.getFullSemester() && dateFrom.plusDays(MAX_RANGE_DAYS).isBefore(dateTo)) {
+            boolean exactSemester =
+                    dateFrom.equals(semester.getDateFrom()) && dateTo.equals(semester.getDateTo());
+            if (!exactSemester && dateFrom.plusDays(MAX_RANGE_DAYS).isBefore(dateTo)) {
                 throw Status.INVALID_ARGUMENT
                         .withDescription("assignment range is too large")
                         .asRuntimeException();

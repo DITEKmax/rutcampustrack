@@ -8,10 +8,12 @@ import static org.mockito.Mockito.*;
 
 import java.time.Clock;
 import java.time.Instant;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import org.bson.Document;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -104,6 +106,134 @@ class NotificationInboxPresentationTest {
                         new NotificationInboxDto.Detail("Предмет", "Точное имя"),
                         new NotificationInboxDto.Detail("Предыдущая аудитория", "А-214"),
                         new NotificationInboxDto.Detail("Новая аудитория", "Не указана"));
+    }
+
+    @Test
+    void pushUsesTheSavedRoomAndSubjectSnapshotWithoutAnAcademicLookup() {
+        var catalog = new NotificationCatalog();
+        var room = document("room", NotificationType.LESSON_UPDATED,
+                Map.of("subject_id", 42L, "subject_name", "Имя другого предмета",
+                        "source", Map.of("room", "А-214"),
+                        "target", Map.of("subject_id", 23L, "subject_name", "Имя из события",
+                                "lesson_type", "practice", "room", "А-508")));
+        var push = catalog.present(room, "STUDENT");
+        assertThat(push.heading()).isEqualTo("Изменилась аудитория");
+        assertThat(push.details()).containsExactly(
+                new NotificationInboxDto.Detail("Предмет", "Имя из события"),
+                new NotificationInboxDto.Detail("Тип занятия", "Практика"),
+                new NotificationInboxDto.Detail("Предыдущая аудитория", "А-214"),
+                new NotificationInboxDto.Detail("Новая аудитория", "А-508"));
+        assertThat(push).isEqualTo(catalog.presentInbox(room, "STUDENT", Map.of()));
+    }
+
+    @Test
+    void dueReminderUsesTheExactNestedTargetAndKeepsRoutableLegacyDates() {
+        var catalog = new NotificationCatalog();
+        var type = NotificationType.HOMEWORK_DUE_REMINDER;
+        var current = document("reminder", type,
+                Map.of("homework_id", 7L, "lesson_date", "2026-10-10", "due_date", "2026-10-17",
+                        "homework", Map.of("homework_id", 73L, "lesson_date", "2026-10-15")));
+        var action = catalog.present(current, "STUDENT").action();
+        assertThat(action.homeworkId()).isEqualTo("73");
+        assertThat(action.lessonDate()).isEqualTo("2026-10-15");
+        assertThat(catalog.presentInbox(current, "STUDENT", Map.of()).action()).isEqualTo(action);
+        assertThat(catalog.action(type, Map.of("homework_id", 73L, "date", "2026-10-15"), "STUDENT"))
+                .isEqualTo(action);
+        assertThat(catalog.action(type, Map.of("lesson_date", "2026-10-15",
+                "homework", Map.of("homework_id", 73L)), "STUDENT")).isEqualTo(action);
+        assertThat(catalog.action(type, Map.of("homework_id", 7L, "lesson_date", "2026-10-10",
+                "homework", Map.of("homework_id", 0L, "lesson_date", "2026-10-15")), "STUDENT"))
+                .isNull();
+        assertThat(catalog.action(type, Map.of("homework_id", 7L, "lesson_date", "2026-10-10",
+                "homework", Map.of("lesson_date", "2026-10-15")), "STUDENT")).isNull();
+        assertThat(catalog.action(type, Map.of("homework_id", 7L, "lesson_date", "2026-10-10",
+                "homework", Map.of("homework_id", 73L)), "STUDENT")).isNull();
+        assertThat(catalog.action(type, Map.of("homework", Map.of("homework_id", 73L,
+                "lesson_date", "2026-02-30")), "STUDENT")).isNull();
+        assertThat(catalog.action(type, Map.of("homework", Map.of("homework_id", 73L),
+                "due_date", "2026-10-17"), "STUDENT")).isNull();
+    }
+
+    @Test
+    void legacyReminderTargetSurvivesInboxAdoptionAndBothPushProjections() {
+        var catalog = new NotificationCatalog();
+        var type = NotificationType.HOMEWORK_DUE_REMINDER;
+        Map<String, Object> payload =
+                Map.of(
+                        "homework_id", 7L,
+                        "lesson_date", "2026-10-10",
+                        "homework",
+                                Map.of(
+                                        "id", "73",
+                                        "lesson_date", "2026-10-15",
+                                        "description", "Не сохраняется в уведомлении"));
+        var legacy = catalog.presentInbox(document("legacy", type, payload), "STUDENT", Map.of());
+        assertThat(legacy.action().homeworkId()).isEqualTo("73");
+        assertThat(legacy.action().lessonDate()).isEqualTo("2026-10-15");
+
+        var projected = retainedDueReminder(payload);
+        assertThat(projected.get("homework"))
+                .isEqualTo(Map.of("homework_id", 73L, "lesson_date", "2026-10-15"));
+        assertThat(catalog.present(document("push", type, projected), "STUDENT").action())
+                .isEqualTo(legacy.action());
+        assertThat(NotificationPayloadSnapshot.forRecipient("homework.updated", payload, 11)
+                        .get("homework"))
+                .isEqualTo(Map.of("lesson_date", "2026-10-15"));
+    }
+
+    @Test
+    void reminderProjectionKeepsExplicitNullAndNeverGuessesAConflictingDateOrId() {
+        var catalog = new NotificationCatalog();
+        var type = NotificationType.HOMEWORK_DUE_REMINDER;
+        Map<String, Object> nullDate = new LinkedHashMap<>(Map.of("id", 73L));
+        nullDate.put("lesson_date", null);
+        Map<String, Object> nullCanonicalId = new LinkedHashMap<>(Map.of("id", 73L));
+        nullCanonicalId.put("homework_id", null);
+        for (var homework :
+                List.of(nullDate, nullCanonicalId, Map.of("id", 74L), Map.of("id", "73.0"))) {
+            Map<String, Object> payload =
+                    Map.of("homework_id", 73L, "lesson_date", "2026-10-15", "homework", homework);
+            assertThat(catalog.action(type, payload, "STUDENT")).isNull();
+            assertThat(catalog.action(type, retainedDueReminder(payload), "STUDENT")).isNull();
+        }
+
+        Map<String, Object> current =
+                Map.of("homework", Map.of("homework_id", 73L, "id", 74L,
+                        "lesson_date", "2026-10-15"));
+        assertThat(catalog.action(type, retainedDueReminder(current), "STUDENT").homeworkId())
+                .isEqualTo("73");
+        Map<String, Object> invalidCanonical =
+                Map.of("homework", Map.of("homework_id", 0L, "id", 73L,
+                        "lesson_date", "2026-10-15"));
+        assertThat(catalog.action(type, invalidCanonical, "STUDENT")).isNull();
+        assertThatThrownBy(() -> retainedDueReminder(invalidCanonical))
+                .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    private static Map<String, Object> retainedDueReminder(Map<String, Object> payload) {
+        var stored =
+                NotificationPayloadSnapshot.forRecipient("homework.due_reminder", payload, 11);
+        Document retained = Document.parse(new Document("payload", stored).toJson());
+        return NotificationPayloadSnapshot.forRecipient(
+                "homework.due_reminder", retained.get("payload", Document.class), 11);
+    }
+
+    @Test
+    void homeworkActionRequiresAnExistingTargetAndASupportedRole() {
+        var catalog = new NotificationCatalog();
+        Map<String, Object> data = Map.of("homework_id", 73L, "lesson_date", "2026-10-15",
+                "title", "Упражнение");
+        assertThat(catalog.action(NotificationType.HOMEWORK_PUBLISHED, data, "TEACHER")).isNull();
+        assertThat(catalog.action(NotificationType.HOMEWORK_UPDATED, data, "TEACHER")).isNull();
+        assertThat(catalog.action(NotificationType.HOMEWORK_PUBLISHED, data, "STUDENT").homeworkId())
+                .isEqualTo("73");
+        assertThat(catalog.action(NotificationType.HOMEWORK_UPDATED,
+                Map.of("homework_id", 73L), "HEADMAN").homeworkId()).isEqualTo("73");
+
+        var withdrawn = document("withdrawn", NotificationType.HOMEWORK_WITHDRAWN, data);
+        assertThat(catalog.present(withdrawn, "STUDENT").action()).isNull();
+        assertThat(catalog.presentInbox(withdrawn, "STUDENT", Map.of()).details())
+                .contains(new NotificationInboxDto.Detail("Задание", "Упражнение"));
     }
 
     @Test

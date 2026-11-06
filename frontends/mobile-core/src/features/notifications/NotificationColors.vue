@@ -2,6 +2,7 @@
 import { computed, nextTick, ref, useId } from 'vue';
 import MobileIcon from '../../shared/components/MobileIcon.vue';
 import {
+  notificationCatalogGroupsForRole,
   notificationCatalogMatchesPreferences,
   notificationTypeSetsMatch,
 } from './notifications-v2-models';
@@ -9,6 +10,7 @@ import type {
   NotificationCatalog,
   NotificationPaletteId,
   NotificationPreferencesV2,
+  NotificationSignedRole,
   NotificationTypeId,
 } from './notifications-v2-models';
 import { changeNotificationColor, type NotificationPreferencesEdit } from './notification-preferences-draft';
@@ -16,6 +18,7 @@ import './notification-colors.pcss';
 
 const props = defineProps<{
   catalog: NotificationCatalog;
+  signedRole: NotificationSignedRole;
   preferences: NotificationPreferencesV2;
   draft: NotificationPreferencesV2 | null;
   blocked?: boolean;
@@ -50,14 +53,10 @@ const disabled = computed(() =>
 );
 const groups = computed(() =>
   compatible.value
-    ? props.catalog.groups
-        .map((group) => ({
-          ...group,
-          types: props.catalog.types
-            .filter((type) => type.groupId === group.id)
-            .map((type) => ({ ...type, preferences: value.value.types[type.id]! })),
-        }))
-        .filter((group) => group.types.length)
+    ? notificationCatalogGroupsForRole(props.catalog, props.signedRole).map((group) => ({
+        ...group,
+        types: group.types.map((type) => ({ ...type, preferences: value.value.types[type.id]! })),
+      }))
     : [],
 );
 const selectedType = ref<NotificationTypeId | null>(null);

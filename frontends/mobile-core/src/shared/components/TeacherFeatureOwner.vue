@@ -2,7 +2,7 @@
 import { provideProjectionRevision, useProjectionRefresh } from '../projection-refresh';
 import type { NotificationAction } from '../../features/notifications/notifications-v2-models';
 import { notificationNumericId } from '../../features/notifications/notifications-actions';
-import { computed, inject, onBeforeUnmount, ref, shallowRef, watch } from 'vue';
+import { computed, inject, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue';
 import type { CampusMapClient } from '../../api/map-client';
 import MapScreen from '../../features/map/MapScreen.vue';
 import AccountHistoryScreen from '../../features/profile/AccountHistoryScreen.vue';
@@ -121,11 +121,22 @@ const manualStudentId = ref<number | null>(null);
 const manualLessonId = ref<number | null>(null);
 const selectedGroup = ref<{ id: number; name: string } | null>(null);
 const catalog = shallowRef<TeacherCatalogResponse | null>(null);
+const catalogVerified = ref(false);
+const currentJournalSubjects = computed(() =>
+  catalogVerified.value ? catalog.value?.taughtSubjectOptions ?? [] : [],
+);
 const semester = shallowRef<TeacherSemester | null>(null);
+const effectiveSemesterId = computed(() => semester.value?.id ?? null);
 const lessonSlots = shallowRef<readonly HeadmanLessonSlot[]>([]);
 const teacherContextError = ref<string | null>(null);
 const teacherContextLoading = ref(false);
+const semesterChecking = ref(false);
+const semesterCheckFailed = ref(false);
 const ownerGeneration = ref(0);
+const projectionRevision = ref(0);
+const todayProjectionRevision = ref(0);
+const localContextRevision = ref(0);
+const contextRevision = computed(() => props.realtimeRevision + localContextRevision.value);
 const calendarOpen = ref(false);
 const calendarCloseSignal = ref(0);
 const exportOpen = ref(false);
@@ -160,10 +171,10 @@ const publishProfileView = profilePublication.publish;
 const profileOwnerStatus = computed(() => profileOwnerStaleMessage(route.value, props.offline));
 let disposed = false;
 let teacherContextAttempt = 0;
+let refreshSemesterPending = false;
 let contextInFlight: {
   readonly api: TeacherApi;
-  readonly semesterId: number;
-  readonly generation: number;
+  readonly admissionSemesterId: number;
   readonly promise: Promise<void>;
 } | null = null;
 let stopTheme = (): void => undefined;
@@ -218,101 +229,187 @@ const stopNavigation = navigation.subscribe(() => {
   ensureProfileRoute(route.value);
 });
 
+function resetSemesterScope(): void {
+  lessonId.value = null;
+  journalQuery.value = null;
+  journalVisited.value = false;
+  journalEntry.value = 'history';
+  attendanceQuery.value = null;
+  attendanceVisited.value = false;
+  requestId.value = null;
+  manualStudentId.value = null;
+  manualLessonId.value = null;
+  selectedGroup.value = null;
+  catalog.value = null;
+  catalogVerified.value = false;
+  ownerGeneration.value += 1;
+  calendarOpen.value = false;
+  exportOpen.value = false;
+  attachmentOpen.value = false;
+  statsToolOpen.value = false;
+}
+
 watch(
-  () => [props.api, props.semesterId, props.selectedDate, props.profilePort] as const,
-  ([, , nextDate, profilePort]) => {
-    lessonId.value = null;
-    journalQuery.value = null;
-    journalVisited.value = false;
-    attendanceQuery.value = null;
-    attendanceVisited.value = false;
-    requestId.value = null;
-    manualStudentId.value = null;
-    manualLessonId.value = null;
-    selectedGroup.value = null;
-    catalog.value = null;
+  () => [props.api, props.semesterId] as const,
+  ([api, admissionSemesterId], [previousApi, previousAdmissionSemesterId]) => {
+    if (api === previousApi && admissionSemesterId !== null && previousAdmissionSemesterId !== null) {
+      void loadTeacherContext(true);
+      return;
+    }
+    ++teacherContextAttempt;
+    contextInFlight = null;
+    refreshSemesterPending = false;
+    resetSemesterScope();
     semester.value = null;
     lessonSlots.value = [];
-    ownerGeneration.value += 1;
-    calendarOpen.value = false;
-    exportOpen.value = false;
-    attachmentOpen.value = false;
-    statsToolOpen.value = false;
     teacherContextError.value = null;
+    semesterChecking.value = false;
+    semesterCheckFailed.value = false;
+    selectedDate.value = props.selectedDate || moscowToday();
+    navigation.goRoot(hasTeacherStatsRoute() ? 'teacher-stats' : 'teacher-home');
     void loadTeacherContext();
-    if (nextDate) selectedDate.value = nextDate;
+  },
+);
+watch(
+  () => props.selectedDate,
+  (date) => {
+    const nextDate = date || moscowToday();
+    selectedDate.value = semester.value ? clampDate(nextDate, semester.value) : nextDate;
+  },
+);
+watch(
+  () => [props.api, props.profilePort] as const,
+  ([, profilePort]) => {
     profileState.value = profilePort ? new ProfileState(profilePort) : null;
     profileRoleError.value = null;
     profilePendingRole.value = null;
     publishProfileView();
-    navigation.goRoot(hasTeacherStatsRoute() ? 'teacher-stats' : 'teacher-home');
+    ensureProfileRoute(route.value);
   },
 );
 
-provideProjectionRevision(() => props.realtimeRevision);
+provideProjectionRevision(() => projectionRevision.value);
 useProjectionRefresh(() => loadTeacherContext(true), {
-  revision: () => props.realtimeRevision,
+  revision: () => contextRevision.value,
   blocked: () => props.offline,
 });
 
-function loadTeacherContext(refreshCatalog = false): Promise<void> {
+function refreshContextOnVisible(): void {
+  if (globalThis.document?.visibilityState === 'visible') localContextRevision.value += 1;
+}
+onMounted(() => globalThis.document?.addEventListener?.('visibilitychange', refreshContextOnVisible));
+
+function changeCalendarOpen(open: boolean): void {
+  calendarOpen.value = open;
+  if (open && !props.offline) {
+    semesterChecking.value = true;
+    localContextRevision.value += 1;
+  }
+}
+
+function loadTeacherContext(refresh = false): Promise<void> {
   const api = props.api;
-  const semesterId = props.semesterId;
-  const generation = ownerGeneration.value;
-  if (!api || semesterId == null) {
+  const admissionSemesterId = props.semesterId;
+  if (!api || admissionSemesterId == null) {
     teacherContextLoading.value = false;
     return Promise.resolve();
   }
   if (
-    !refreshCatalog &&
+    !refresh &&
     contextInFlight?.api === api &&
-    contextInFlight.semesterId === semesterId &&
-    contextInFlight.generation === generation
+    contextInFlight.admissionSemesterId === admissionSemesterId
   ) {
     return contextInFlight.promise;
   }
+  refreshSemesterPending ||= refresh;
+  if (refresh) catalogVerified.value = false;
   const attempt = ++teacherContextAttempt;
-  const current = () =>
+  const refreshSemester = refreshSemesterPending;
+  const revision = contextRevision.value;
+  const ownsAttempt = () =>
     !disposed &&
     attempt === teacherContextAttempt &&
-    generation === ownerGeneration.value &&
     api === props.api &&
-    semesterId === props.semesterId;
+    admissionSemesterId === props.semesterId;
+  const current = () =>
+    ownsAttempt() && (!refreshSemester || revision === contextRevision.value);
   teacherContextLoading.value = true;
   teacherContextError.value = null;
-  const promise = (async () => {
-    try {
-      const requests = await Promise.allSettled([
-        semester.value ? Promise.resolve(semester.value) : api.semester(),
-        catalog.value && !refreshCatalog ? Promise.resolve(catalog.value) : api.catalog(semesterId),
-        lessonSlots.value.length
-          ? Promise.resolve(lessonSlots.value)
-          : api.lessonSlots().then((result) => result.slots),
-      ]);
+  async function loadSemesterAndCatalog(client: TeacherApi): Promise<void> {
+    const previous = semester.value;
+    // The App's bootstrap ID admits this owner; only the teacher API resolves its current scope.
+    let active = previous;
+    if (!active || refreshSemester) {
+      semesterChecking.value = true;
+      semesterCheckFailed.value = false;
+      try {
+        active = await client.semester();
+      } catch (cause) {
+        if (current()) {
+          semesterChecking.value = false;
+          semesterCheckFailed.value = true;
+        }
+        throw cause;
+      }
+    }
+    if (!current()) return;
+    semesterChecking.value = false;
+    refreshSemesterPending = false;
+    if (previous && previous.id !== active.id) {
+      resetSemesterScope();
+      selectedDate.value = moscowToday();
+      clearTeacherStatsRoute();
+      if (route.value.root !== 'profile' && route.value.root !== 'teacher-map')
+        navigation.goRoot('teacher-home');
+    }
+    semester.value = active;
+    selectedDate.value = clampDate(selectedDate.value, active);
+    if (refreshSemester && previous?.id === active.id) {
+      projectionRevision.value += 1;
+      // Bounds changes already reload Today through its scope watchers.
+      if (previous.dateFrom === active.dateFrom && previous.dateTo === active.dateTo)
+        todayProjectionRevision.value += 1;
+    }
+    if (!catalogVerified.value) {
+      const data = await client.catalog(active.id);
       if (!current()) return;
-      const [semesterResult, catalogResult, slotsResult] = requests;
-      if (semesterResult.status === 'fulfilled') semester.value = semesterResult.value;
-      if (catalogResult.status === 'fulfilled') catalog.value = catalogResult.value;
-      if (slotsResult.status === 'fulfilled') lessonSlots.value = slotsResult.value;
-      const rejected = requests.find((result) => result.status === 'rejected');
+      catalog.value = data;
+      catalogVerified.value = true;
+    }
+  }
+  const promise = Promise.allSettled([
+    loadSemesterAndCatalog(api),
+    lessonSlots.value.length
+      ? Promise.resolve()
+      : api.lessonSlots().then(({ slots }) => {
+          if (current()) lessonSlots.value = slots;
+        }),
+  ])
+    .then((results) => {
+      if (!current()) return;
+      const rejected = results.find((result) => result.status === 'rejected');
       if (rejected?.status === 'rejected') {
         teacherContextError.value = 'Не удалось загрузить учебный контекст. Попробуй ещё раз.';
         forwardError(rejected.reason);
       }
-    } finally {
-      if (current()) {
+    })
+    .finally(() => {
+      if (ownsAttempt()) {
         teacherContextLoading.value = false;
         contextInFlight = null;
       }
-    }
-  })();
-  contextInFlight = { api, semesterId, generation, promise };
+    });
+  contextInFlight = { api, admissionSemesterId, promise };
   return promise;
 }
 void loadTeacherContext();
 
 function moscowToday(): string {
   return new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Moscow' });
+}
+
+function clampDate(date: string, { dateFrom, dateTo }: TeacherSemester): string {
+  return date < dateFrom ? dateFrom : date > dateTo ? dateTo : date;
 }
 
 function bindTheme(controller: MobileThemeController | null): void {
@@ -524,11 +621,12 @@ function openGroup(groupId: number, groupName: string): void {
 }
 
 function openSubject(option: TeacherStatsSubjectOption): void {
-  if (!props.semesterId || !selectedGroup.value || option.groupId !== selectedGroup.value.id)
+  const semesterId = effectiveSemesterId.value;
+  if (!semesterId || !selectedGroup.value || option.groupId !== selectedGroup.value.id)
     return;
   openJournal(
     {
-      semesterId: props.semesterId,
+      semesterId,
       groupId: option.groupId,
       subjectId: option.subjectId,
       lessonTypes: [],
@@ -655,6 +753,7 @@ function forwardError(cause: unknown): void {
 
 onBeforeUnmount(() => {
   disposed = true;
+  globalThis.document?.removeEventListener?.('visibilitychange', refreshContextOnVisible);
   lessonId.value = null;
   journalQuery.value = null;
   requestId.value = null;
@@ -719,18 +818,25 @@ defineExpose({ openNotificationAction });
           :on-notifications="onNotifications"
           :unread-count="unreadCount"
           :api="api"
-          :semester-id="semesterId"
+          :semester="semester"
+          :current-journal-subjects="currentJournalSubjects"
+          :context-loading="teacherContextLoading"
+          :context-error="teacherContextError"
+          :semester-checking="semesterChecking"
+          :semester-check-failed="semesterCheckFailed"
           :selected-date="selectedDate"
+          :realtime-revision="todayProjectionRevision"
           :lesson-slots="lessonSlots"
           :calendar-close-signal="calendarCloseSignal"
           :role-switch-enabled="profilePort !== null"
           @select-date="selectedDate = $event"
+          @retry-context="loadTeacherContext()"
           @open-lesson="openLesson"
           @open-journal="openJournal"
           @open-stats="navigateRoot('teacher-stats')"
           @open-role-switch="navigateProfile('role-switch')"
           @error="forwardError"
-          @calendar-open="calendarOpen = $event"
+          @calendar-open="changeCalendarOpen"
         />
       </KeepAlive>
       <TeacherLessonScreen
@@ -848,16 +954,27 @@ defineExpose({ openNotificationAction });
         <TeacherStatsScreen
           v-if="route.id === 'teacher-stats'"
           :api="api"
-          :semester-id="semesterId"
+          :semester-id="effectiveSemesterId"
           :report-download="reportDownload"
           :close-tool-signal="statsToolCloseSignal"
-          :realtime-revision="realtimeRevision"
+          :realtime-revision="projectionRevision"
           @tool-open="statsToolOpen = $event"
           @open-journal="openStatsJournal"
           @open-group="openGroup"
           @error="forwardError"
         />
       </KeepAlive>
+      <StudentWarningBlock
+        v-if="
+          !semester && teacherContextError &&
+            (route.id === 'teacher-stats' || route.id === 'teacher-attendance')
+        "
+        title="Учебный контекст недоступен"
+        :message="teacherContextError"
+        severity="error"
+        action-label="Повторить"
+        @action="loadTeacherContext()"
+      />
       <MapScreen
         v-if="route.id === 'teacher-map' && mapClient"
         :client="mapClient"
@@ -962,7 +1079,7 @@ defineExpose({ openNotificationAction });
           v-if="attendanceVisited"
           v-show="route.id === 'teacher-attendance'"
           :api="api"
-          :semester-id="semesterId"
+          :semester-id="effectiveSemesterId"
           :initial-query="attendanceQuery"
           :active="route.id === 'teacher-attendance'"
           @change-context="rememberAttendanceContext"

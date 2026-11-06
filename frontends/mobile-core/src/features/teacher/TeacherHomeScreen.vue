@@ -2,7 +2,7 @@
 import { useProjectionRefresh } from '../../shared/projection-refresh';
 import NotificationsEntryButton from '../notifications/NotificationsEntryButton.vue';
 import { teacherLessonTypeLabel } from './teacher-ui-format';
-import { computed, onBeforeUnmount, ref, watch } from 'vue';
+import { computed, nextTick, onBeforeUnmount, onDeactivated, ref, watch } from 'vue';
 import TeacherDayCalendar from './TeacherDayCalendar.vue';
 import { teacherDayTimeline, type TeacherDaySlot } from './teacher-day-timeline';
 import MobileIcon from '../../shared/components/MobileIcon.vue';
@@ -14,6 +14,8 @@ import {
   type TeacherAssignment,
   type TeacherDayLesson,
   type TeacherJournalQuery,
+  type TeacherSemester,
+  type TeacherStatsSubjectOption,
 } from './teacher-client';
 import { StaleSessionGenerationError } from '../../shared/session-owner';
 import './teacher-screen.pcss';
@@ -23,8 +25,14 @@ const props = withDefaults(
     unreadCount?: number | null | undefined;
     onNotifications?: (() => void) | undefined;
     api: TeacherApi | null;
-    semesterId: number | null;
+    semester: TeacherSemester | null;
+    currentJournalSubjects: readonly TeacherStatsSubjectOption[];
+    contextLoading?: boolean;
+    contextError?: string | null;
+    semesterChecking?: boolean;
+    semesterCheckFailed?: boolean;
     selectedDate?: string;
+    realtimeRevision?: number;
     profileEnabled?: boolean;
     roleSwitchEnabled?: boolean;
     lessonSlots?: readonly TeacherDaySlot[];
@@ -33,7 +41,12 @@ const props = withDefaults(
   {
     unreadCount: null,
     onNotifications: undefined,
+    contextLoading: false,
+    contextError: null,
+    semesterChecking: false,
+    semesterCheckFailed: false,
     selectedDate: '',
+    realtimeRevision: 0,
     profileEnabled: false,
     roleSwitchEnabled: false,
     lessonSlots: () => [],
@@ -48,14 +61,24 @@ const emit = defineEmits<{
   'open-profile': [];
   'open-role-switch': [];
   'calendar-open': [open: boolean];
+  'retry-context': [];
   error: [cause: unknown];
 }>();
 const assignments = ref<readonly TeacherAssignment[]>([]);
+const currentJournalKeys = computed(
+  () => new Set(props.currentJournalSubjects.map(({ groupId, subjectId }) => `${groupId}:${subjectId}`)),
+);
+const assignmentRows = computed(() =>
+  assignments.value.map((assignment) => ({ assignment, opensJournal: canOpenJournal(assignment) })),
+);
 const lessons = ref<readonly TeacherDayLesson[]>([]);
-const loading = ref(false);
-const error = ref<string | null>(null);
+const dayLoading = ref(false);
+const dayError = ref<string | null>(null);
+const assignmentsLoading = ref(false);
+const assignmentsError = ref<string | null>(null);
 const dateOpen = ref(false);
-let revision = 0;
+let dayRevision = 0;
+let assignmentsRevision = 0;
 const ordered = computed(() =>
   [...lessons.value].sort(
     (a, b) =>
@@ -72,16 +95,14 @@ const otherTimeline = computed(() =>
   timeline.value.filter((item) => item.kind !== 'lesson' || item.lesson.id !== current.value?.id),
 );
 const dateTrigger = ref<HTMLButtonElement | null>(null);
-const extraAssignments = computed(() =>
-  assignments.value.filter(
-    (assignment) =>
-      !lessons.value.some(
-        (lesson) =>
-          lesson.groupId === assignment.groupId &&
-          lesson.subjectId === assignment.subjectId &&
-          lesson.lessonType === assignment.lessonType,
-      ),
-  ),
+const navigationSemester = computed(() =>
+  props.semesterChecking || props.semesterCheckFailed ? null : props.semester,
+);
+const canGoBack = computed(
+  () => navigationSemester.value !== null && props.selectedDate > navigationSemester.value.dateFrom,
+);
+const canGoForward = computed(
+  () => navigationSemester.value !== null && props.selectedDate < navigationSemester.value.dateTo,
 );
 const dayLabel = computed(() => {
   const date = new Date(`${props.selectedDate}T12:00:00`);
@@ -91,13 +112,21 @@ const dayLabel = computed(() => {
         date,
       );
 });
+const semesterScope = [
+  () => props.api,
+  () => props.semester?.id,
+  () => props.semester?.dateFrom,
+  () => props.semester?.dateTo,
+] as const;
 watch(
-  () => [props.api, props.semesterId, props.selectedDate] as const,
-  () => {
-    void load();
-  },
+  semesterScope,
+  () => void loadAssignments(),
   { immediate: true },
 );
+watch([() => props.api, () => props.semester?.id], () => {
+  dateOpen.value = false;
+});
+watch([...semesterScope, () => props.selectedDate], () => void loadDay(), { immediate: true });
 watch(dateOpen, (open) => {
   emit('calendar-open', open);
 });
@@ -108,43 +137,86 @@ watch(
   },
 );
 onBeforeUnmount(() => {
-  revision += 1;
+  dayRevision += 1;
+  assignmentsRevision += 1;
   if (dateOpen.value) emit('calendar-open', false);
 });
-async function load(retainProjection = false): Promise<void> {
-  const api = props.api;
-  const semesterId = props.semesterId;
-  const date = props.selectedDate;
-  const run = ++revision;
-  if (!retainProjection) { lessons.value = []; assignments.value = []; }
-  error.value = null;
-  loading.value = false;
-  if (!api || !semesterId || !date) return;
-  loading.value = !retainProjection;
+onDeactivated(() => {
+  dateOpen.value = false;
+});
+function inSemester(date: string): boolean {
+  const { semester } = props;
+  return semester !== null && date >= semester.dateFrom && date <= semester.dateTo;
+}
+async function loadDay(retainProjection = false): Promise<void> {
+  const { api, semester, selectedDate } = props;
+  const run = ++dayRevision;
+  if (!retainProjection) lessons.value = [];
+  dayError.value = null;
+  if (!api || !semester || !inSemester(selectedDate)) {
+    dayLoading.value = false;
+    return;
+  }
+  if (!retainProjection) dayLoading.value = true;
   try {
-    const [day, assigned] = await Promise.all([
-      api.day(semesterId, date),
-      api.assignments(semesterId, date, date),
-    ]);
-    if (run !== revision) return;
-    lessons.value = day.lessons;
-    assignments.value = assigned;
+    const day = await api.day(semester.id, selectedDate);
+    if (run === dayRevision) lessons.value = day.lessons;
   } catch (cause) {
-    if (run !== revision || cause instanceof StaleSessionGenerationError) return;
-    error.value =
+    if (run !== dayRevision || cause instanceof StaleSessionGenerationError) return;
+    lessons.value = [];
+    dayError.value =
       cause instanceof TeacherApiError ? cause.message : 'Не удалось получить расписание.';
     emit('error', cause);
   } finally {
-    if (run === revision) loading.value = false;
+    if (run === dayRevision) dayLoading.value = false;
   }
 }
-function moveDay(delta: number): void {
+async function loadAssignments(retainProjection = false): Promise<void> {
+  const { api, semester } = props;
+  const run = ++assignmentsRevision;
+  if (!retainProjection) assignments.value = [];
+  assignmentsError.value = null;
+  if (!api || !semester) {
+    assignmentsLoading.value = false;
+    return;
+  }
+  if (!retainProjection) assignmentsLoading.value = true;
+  try {
+    const assigned = await api.assignments(semester.id, semester.dateFrom, semester.dateTo);
+    if (run === assignmentsRevision) assignments.value = assigned;
+  } catch (cause) {
+    if (run !== assignmentsRevision || cause instanceof StaleSessionGenerationError) return;
+    assignments.value = [];
+    assignmentsError.value =
+      cause instanceof TeacherApiError ? cause.message : 'Не удалось получить назначения.';
+    emit('error', cause);
+  } finally {
+    if (run === assignmentsRevision) assignmentsLoading.value = false;
+  }
+}
+async function moveDay(delta: -1 | 1, event: MouseEvent): Promise<void> {
+  const canMove = delta < 0 ? canGoBack : canGoForward;
+  if (!canMove.value) return;
+  const restoreFocus = event.currentTarget === document.activeElement;
   const date = new Date(`${props.selectedDate}T12:00:00Z`);
   if (Number.isNaN(date.getTime())) return;
   date.setUTCDate(date.getUTCDate() + delta);
-  emit('select-date', date.toISOString().slice(0, 10));
+  selectDay(date.toISOString().slice(0, 10));
+  if (restoreFocus) {
+    await nextTick();
+    if (!canMove.value) dateTrigger.value?.focus();
+  }
+}
+function selectDay(date: string): void {
+  if (!inSemester(date)) return;
+  emit('select-date', date);
+  dateOpen.value = false;
+}
+function canOpenJournal({ semesterId, groupId, subjectId }: TeacherAssignment): boolean {
+  return semesterId === props.semester?.id && currentJournalKeys.value.has(`${groupId}:${subjectId}`);
 }
 function openAssignment(assignment: TeacherAssignment): void {
+  if (!canOpenJournal(assignment)) return;
   emit('open-journal', {
     semesterId: assignment.semesterId,
     groupId: assignment.groupId,
@@ -154,13 +226,14 @@ function openAssignment(assignment: TeacherAssignment): void {
     pageSize: 100,
   });
 }
-useProjectionRefresh(() => load(true));
+useProjectionRefresh(() => loadDay(true), { revision: () => props.realtimeRevision });
+useProjectionRefresh(() => loadAssignments(true), { revision: () => props.realtimeRevision });
 </script>
 <template>
   <main
     class="teacher-screen teacher-home"
     aria-label="Сегодня у преподавателя"
-    :aria-busy="loading"
+    :aria-busy="dayLoading || (!semester && contextLoading)"
   >
     <h1 class="teacher-screen__sr">
       Сегодня
@@ -190,7 +263,8 @@ useProjectionRefresh(() => load(true));
         class="teacher-screen__icon-button"
         type="button"
         aria-label="Предыдущий день"
-        @click="moveDay(-1)"
+        :disabled="!canGoBack"
+        @click="moveDay(-1, $event)"
       >
         <MobileIcon name="back" />
       </button>
@@ -198,6 +272,7 @@ useProjectionRefresh(() => load(true));
         ref="dateTrigger"
         class="teacher-home__date-trigger"
         type="button"
+        :disabled="!semester"
         :aria-expanded="dateOpen"
         aria-controls="teacher-date-choice"
         aria-haspopup="dialog"
@@ -209,7 +284,8 @@ useProjectionRefresh(() => load(true));
         class="teacher-screen__icon-button"
         type="button"
         aria-label="Следующий день"
-        @click="moveDay(1)"
+        :disabled="!canGoForward"
+        @click="moveDay(1, $event)"
       >
         <MobileIcon
           name="back"
@@ -218,29 +294,39 @@ useProjectionRefresh(() => load(true));
       </button>
     </div>
     <TeacherDayCalendar
-      v-if="dateOpen"
+      v-if="dateOpen && semester"
       :selected-date="selectedDate"
+      :min-date="semester.dateFrom"
+      :max-date="semester.dateTo"
       :return-focus="dateTrigger"
-      @select="
-        emit('select-date', $event);
-        dateOpen = false;
-      "
+      :checking-semester="semesterChecking"
+      :semester-check-failed="semesterCheckFailed"
+      @select="selectDay"
       @close="dateOpen = false"
+      @retry="emit('retry-context')"
     />
     <p
-      v-if="loading"
+      v-if="dayLoading || (!semester && contextLoading)"
       class="teacher-screen__state"
       role="status"
     >
       Загружаем расписание…
     </p>
     <StudentWarningBlock
-      v-else-if="error"
+      v-else-if="!semester"
       title="Расписание недоступно"
-      :message="error"
+      :message="contextError ?? 'Границы активного семестра недоступны.'"
       severity="error"
       action-label="Повторить"
-      @action="load()"
+      @action="emit('retry-context')"
+    />
+    <StudentWarningBlock
+      v-else-if="dayError"
+      title="Расписание недоступно"
+      :message="dayError"
+      severity="error"
+      action-label="Повторить"
+      @action="loadDay()"
     />
     <p
       v-else-if="!timeline.length"
@@ -287,7 +373,7 @@ useProjectionRefresh(() => load(true));
       </ol>
     </template>
     <section
-      v-if="!loading && !error && extraAssignments.length"
+      v-if="semester && (contextError || assignmentsLoading || assignmentsError || assignments.length)"
       class="teacher-screen__section"
       aria-labelledby="teacher-assignments-title"
     >
@@ -297,23 +383,51 @@ useProjectionRefresh(() => load(true));
       >
         Мои назначения
       </h2>
-      <ul class="teacher-screen__list">
+      <StudentWarningBlock
+        v-if="semester && contextError"
+        title="Учебный контекст недоступен"
+        :message="contextError"
+        severity="error"
+        action-label="Повторить"
+        @action="emit('retry-context')"
+      />
+      <p
+        v-if="assignmentsLoading"
+        class="teacher-screen__state"
+        role="status"
+      >
+        Загружаем назначения…
+      </p>
+      <StudentWarningBlock
+        v-else-if="assignmentsError"
+        title="Назначения недоступны"
+        :message="assignmentsError"
+        severity="error"
+        action-label="Повторить"
+        @action="loadAssignments()"
+      />
+      <ul
+        v-else
+        class="teacher-screen__list"
+      >
         <li
-          v-for="assignment in extraAssignments"
+          v-for="{ assignment, opensJournal } in assignmentRows"
           :key="assignment.id"
         >
-          <button
+          <component
+            :is="opensJournal ? 'button' : 'div'"
             class="teacher-screen__assignment"
-            type="button"
-            data-teacher-action="journal-open"
-            @click="openAssignment(assignment)"
+            :type="opensJournal ? 'button' : undefined"
+            :data-teacher-action="opensJournal ? 'journal-open' : undefined"
+            v-on="opensJournal ? { click: () => openAssignment(assignment) } : {}"
           >
             <span><strong>{{ assignment.subjectName }}</strong><small>{{ assignment.groupName }} ·
               {{ teacherLessonTypeLabel(assignment.lessonType) }}</small></span><MobileIcon
+              v-if="opensJournal"
               name="back"
               class="teacher-screen__next"
             />
-          </button>
+          </component>
         </li>
       </ul>
     </section>

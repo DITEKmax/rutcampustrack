@@ -100,6 +100,7 @@ let notificationPreferences: NotificationPreferencesV2 = {
 const countUnread = () => notificationRows.filter((item) => item.readAt === null).length;
 // Every operation stays inside this disposable local fixture, including read/settings changes.
 const notificationFixture: NotificationsV2Api = {
+  signedRole: 'STUDENT',
   async catalog() { return structuredClone(notificationCatalog); },
   async inbox(options = {}) {
     return { role: 'STUDENT', nextCursor: null,

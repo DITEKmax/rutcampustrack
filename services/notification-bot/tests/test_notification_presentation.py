@@ -120,9 +120,85 @@ def test_addressed_action_uses_only_existing_target_and_verified_context():
         "tgWebAppStartParam": ["n2_" + encode_notification_action(action)]
     }
     assert notification_action({"event_type": "lesson.cancelled", "payload": {}}) is None
-    assert notification_action(
-        {"event_type": "homework.due_reminder", "payload": {"homework": {"homework_id": 3}}}
-    ) == {"kind": "homework", "role": "STUDENT", "homeworkId": "3"}
+
+
+@pytest.mark.parametrize(
+    "payload",
+    [
+        {
+            "homework_id": 7,
+            "lesson_date": "2026-10-10",
+            "due_date": "2026-10-17",
+            "homework": {"homework_id": 73, "lesson_date": "2026-10-15"},
+        },
+        {"homework_id": 73, "date": "2026-10-15"},
+        {"lesson_date": "2026-10-15", "homework": {"homework_id": 73}},
+        {"homework": {"id": 73, "lesson_date": "2026-10-15"}},
+    ],
+)
+def test_due_reminder_opens_the_exact_homework_on_the_lesson_date(payload):
+    assert notification_action({"event_type": "homework.due_reminder", "payload": payload}) == {
+        "kind": "homework",
+        "role": "STUDENT",
+        "homeworkId": "73",
+        "lessonDate": "2026-10-15",
+    }
+
+
+@pytest.mark.parametrize(
+    "homework",
+    [
+        {"homework_id": 0, "id": 73, "lesson_date": "2026-10-15"},
+        {"homework_id": None, "lesson_date": "2026-10-15"},
+        {"lesson_date": "2026-10-15"},
+        {"homework_id": 73, "lesson_date": "2026-02-30"},
+        {"homework_id": 73},
+    ],
+)
+def test_due_reminder_does_not_guess_a_student_target_from_an_invalid_snapshot(homework):
+    event = {
+        "event_type": "homework.due_reminder",
+        "payload": {"homework_id": 7, "lesson_date": "2026-10-10", "homework": homework},
+    }
+    assert notification_action(event) is None
+
+
+def test_student_due_reminder_cannot_open_homework_using_the_due_date():
+    event = {
+        "event_type": "homework.due_reminder",
+        "payload": {"due_date": "2026-10-15", "homework": {"homework_id": 73}},
+    }
+    assert notification_action(event) is None
+
+
+@pytest.mark.parametrize(
+    "event_type, role",
+    [
+        ("homework.published", "TEACHER"),
+        ("homework.updated", "TEACHER"),
+        ("homework.withdrawn", "STUDENT"),
+        ("homework.withdrawn", "HEADMAN"),
+    ],
+)
+def test_unsupported_homework_actions_keep_the_message(event_type, role):
+    event = {
+        "event_type": event_type,
+        "payload": {"homework_id": 73, "lesson_date": "2026-10-15", "title": "Упражнение"},
+    }
+    options = message_options(
+        event, role=role, config=SimpleNamespace(mini_app_web_url="https://safe.test/mini-app/")
+    )
+    assert "Упражнение" in options["text"]
+    assert options["reply_markup"].inline_keyboard[0][0].web_app.url == "https://safe.test/mini-app/"
+
+
+def test_headman_homework_action_still_accepts_a_target_without_a_lesson_date():
+    event = {"event_type": "homework.updated", "payload": {"homework_id": 73}}
+    assert notification_action(event, role="HEADMAN") == {
+        "kind": "homework",
+        "role": "HEADMAN",
+        "homeworkId": "73",
+    }
 
 
 @pytest.mark.parametrize(

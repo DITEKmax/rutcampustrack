@@ -132,6 +132,19 @@ export interface NotificationCatalog {
   }[]
   palette: readonly { id: NotificationPaletteId; label: string }[]
 }
+/** Display projection only; the account-wide catalog and preferences stay complete. */
+export function notificationCatalogGroupsForRole(
+  catalog: NotificationCatalog,
+  role: NotificationSignedRole,
+) {
+  const visibleTypes = catalog.types.filter((type) => type.roles.includes(role))
+  return catalog.groups
+    .map((group) => ({
+      ...group,
+      types: visibleTypes.filter((type) => type.groupId === group.id),
+    }))
+    .filter((group) => group.types.length > 0)
+}
 export interface NotificationTypePreferences {
   appPush: boolean
   telegram: boolean
@@ -179,6 +192,7 @@ export interface NotificationMarkAllAck {
   unreadCount: number
 }
 export interface NotificationsV2Api {
+  readonly signedRole: NotificationSignedRole
   catalog(): Promise<NotificationCatalog>
   inbox(options?: { unreadOnly?: boolean; cursor?: string }): Promise<NotificationInboxPage>
   unreadCount(): Promise<number>

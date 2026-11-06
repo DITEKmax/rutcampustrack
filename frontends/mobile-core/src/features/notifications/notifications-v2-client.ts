@@ -110,6 +110,7 @@ export function createGenerationBoundNotificationsV2Api(
     return value
   }
   return {
+    signedRole: role,
     async catalog() {
       return parseNotificationCatalog(await request('/catalog'))
     },

@@ -877,11 +877,16 @@ function downloadFilename(contentDisposition: string | null): string | null {
 
 function normalizeSemester(value: unknown): TeacherSemester {
   const record = requiredRecord(value)
+  const dateFrom = requiredDate(record.dateFrom, 'semester.dateFrom')
+  const dateTo = requiredDate(record.dateTo, 'semester.dateTo')
+  if (dateFrom < '0001-01-01' || dateFrom > dateTo) {
+    throw new Error('Сервер вернул некорректные границы семестра.')
+  }
   return {
     id: positiveInteger(record.id, 'semester.id'),
     name: requiredString(record.name, 'semester.name'),
-    dateFrom: requiredDate(record.dateFrom, 'semester.dateFrom'),
-    dateTo: requiredDate(record.dateTo, 'semester.dateTo'),
+    dateFrom,
+    dateTo,
   }
 }
 

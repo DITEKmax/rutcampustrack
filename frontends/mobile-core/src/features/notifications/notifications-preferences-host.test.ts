@@ -145,11 +145,13 @@ async function activate(root: Node, label: string) {
 function host(
   ids: readonly models.NotificationTypeId[] = models.notificationTypeIds,
   initialMismatch = false,
+  serverCatalog = catalog(ids),
 ) {
   const onClose = vi.fn()
   const api = {
+    signedRole: 'HEADMAN' as const,
     inbox: vi.fn(async () => ({ items: [], nextCursor: null })),
-    catalog: vi.fn<NotificationsV2Api['catalog']>().mockResolvedValue(catalog(ids)),
+    catalog: vi.fn<NotificationsV2Api['catalog']>().mockResolvedValue(serverCatalog),
     getPreferences: vi
       .fn<NotificationsV2Api['getPreferences']>()
       .mockResolvedValue(profile(initialMismatch ? models.legacyNotificationTypeIds : ids)),
@@ -225,6 +227,47 @@ function expectPrivateGone(root: Node) {
   expect(nodes(root).filter((node) => node.tag === 'input')).toHaveLength(0)
 }
 describe('host catalog/profile/CAS compatibility', () => {
+  it('shows only signed-role types on both pages and saves edits with the complete profile', async () => {
+    const server = catalog()
+    const hiddenType = 'ADMIN_ACCESS_CHANGED'
+    const view = host(undefined, false, {
+      ...server,
+      groups: [...server.groups, { id: 'other-role', label: 'Раздел другой роли' }],
+      types: server.types.map((type) =>
+        type.id === hiddenType
+          ? { ...type, groupId: 'other-role', roles: ['ADMIN'] }
+          : type.id === 'LESSON_STARTED'
+            ? { ...type, roles: ['STUDENT', 'HEADMAN'] }
+            : type,
+      ),
+    })
+    view.api.updatePreferences.mockImplementation(async (update) => ({
+      ...profile(undefined, 'p2'),
+      types: update.types,
+    }))
+    await settle()
+    await activate(view.root, 'Настройки уведомлений')
+    expect(text(view.root)).not.toContain(hiddenType)
+    expect(text(view.root)).not.toContain('Раздел другой роли')
+    changeDelivery(view.root, 'LESSON_STARTED', true)
+    await settle()
+    await activate(view.root, 'Цвета уведомлений')
+    expect(text(view.root)).not.toContain(hiddenType)
+    expect(text(view.root)).not.toContain('Раздел другой роли')
+    await chooseGrey(view.root)
+    expect(view.api.updatePreferences).toHaveBeenCalledTimes(2)
+    const initial = profile().types
+    const delivery = {
+      ...initial,
+      LESSON_STARTED: { ...initial.LESSON_STARTED, appPush: true },
+    }
+    expect(view.api.updatePreferences.mock.calls[0]![0].types).toEqual(delivery)
+    expect(view.api.updatePreferences.mock.calls[1]![0].types).toEqual({
+      ...delivery,
+      LESSON_STARTED: { ...delivery.LESSON_STARTED, colorId: 'grey' },
+    })
+  })
+
   it('keeps old rendering pair plus dirty21 on incoming compatible32 until explicit reload', async () => {
     const view = host(models.legacyNotificationTypeIds)
     await settle()
@@ -384,6 +427,7 @@ describe('host catalog/profile/CAS compatibility', () => {
     async (state) => {
       const view = mount(NotificationSettings, {
         catalog: catalog(),
+        signedRole: 'HEADMAN',
         preferences: profile(),
         draft: null,
         ...state,
@@ -424,6 +468,7 @@ describe('host catalog/profile/CAS compatibility', () => {
         name === 'NotificationSettings' ? NotificationSettings : NotificationColors,
         {
           catalog: catalog(),
+          signedRole: 'HEADMAN',
           preferences: profile(),
           draft: profile(models.legacyNotificationTypeIds),
         },
@@ -438,7 +483,7 @@ describe('host catalog/profile/CAS compatibility', () => {
       const server = catalog([...models.notificationTypeIds].reverse())
       const view = mount(
         name === 'NotificationSettings' ? NotificationSettings : NotificationColors,
-        { catalog: server, preferences: profile(), draft: null },
+        { catalog: server, signedRole: 'HEADMAN', preferences: profile(), draft: null },
       )
       await settle()
       const visible =
@@ -472,6 +517,7 @@ describe('host catalog/profile/CAS compatibility', () => {
         name === 'NotificationSettings' ? NotificationSettings : NotificationColors,
         {
           catalog: catalog(),
+          signedRole: 'HEADMAN',
           preferences: profile(),
           draft: profile(),
           conflict: profile(models.notificationTypeIds, 'p2'),

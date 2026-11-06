@@ -11,6 +11,8 @@ import ru.rutcampustrack.notification.contract.enums.NotificationType;
 @Component
 public class NotificationCatalog {
     public static final String REVISION = "notifications-v2-20261010-all-roles-32";
+    private static final String PREVIOUS_ROOM_LABEL = "Предыдущая аудитория";
+    private static final String NEW_ROOM_LABEL = "Новая аудитория";
     public static final List<String> COLORS =
             List.of(
                     "violet",
@@ -417,24 +419,25 @@ public class NotificationCatalog {
     }
 
     public NotificationInboxDto.Item present(NotificationHistoryDocument doc, String role) {
-        return present(doc, role, null);
+        return present(doc, role, lessonSnapshot(doc));
     }
 
     NotificationInboxDto.Item presentInbox(
             NotificationHistoryDocument doc, String role, Map<Long, String> subjectNames) {
-        InboxLesson snapshot = inboxLesson(doc);
+        LessonSnapshot snapshot = lessonSnapshot(doc);
         String name = snapshot.subjectName();
         if (name == null && snapshot.subjectId() != null)
             name = text(subjectNames.get(snapshot.subjectId()));
-        return present(doc, role, new InboxLesson(snapshot.subjectId(), name, snapshot.lessonType()));
+        return present(
+                doc, role, new LessonSnapshot(snapshot.subjectId(), name, snapshot.lessonType()));
     }
 
     static Long inboxSubjectLookupId(NotificationHistoryDocument doc) {
-        InboxLesson snapshot = inboxLesson(doc);
+        LessonSnapshot snapshot = lessonSnapshot(doc);
         return snapshot.subjectName() == null ? snapshot.subjectId() : null;
     }
 
-    private static InboxLesson inboxLesson(NotificationHistoryDocument doc) {
+    private static LessonSnapshot lessonSnapshot(NotificationHistoryDocument doc) {
         Map<String, Object> payload = doc.getPayload() == null ? Map.of() : doc.getPayload();
         Map<?, ?> scope = payload;
         if (Set.of(NotificationType.LESSON_UPDATED, NotificationType.LESSON_TRANSFERRED)
@@ -454,12 +457,16 @@ public class NotificationCatalog {
             if (type == null) type = text(payload.get("lesson_type"));
         }
         String id = nestedId == null ? rootId : nestedId;
-        return new InboxLesson(id == null ? null : Long.valueOf(id), name, type);
+        return new LessonSnapshot(id == null ? null : Long.valueOf(id), name, type);
     }
 
-    private record InboxLesson(Long subjectId, String subjectName, String lessonType) {}
+    private record LessonSnapshot(Long subjectId, String subjectName, String lessonType) {}
 
     private record RoomChange(String previous, String current) {}
+
+    public static boolean isRoomChangeDetail(String label) {
+        return PREVIOUS_ROOM_LABEL.equals(label) || NEW_ROOM_LABEL.equals(label);
+    }
 
     private static RoomChange roomChange(NotificationType type, Map<String, Object> payload) {
         if (type != NotificationType.LESSON_UPDATED
@@ -472,26 +479,21 @@ public class NotificationCatalog {
     }
 
     private NotificationInboxDto.Item present(
-            NotificationHistoryDocument doc, String role, InboxLesson inboxLesson) {
+            NotificationHistoryDocument doc, String role, LessonSnapshot snapshot) {
         var view = doc.getRoleViews().get(role);
         Map<String, Object> payload = doc.getPayload() == null ? Map.of() : doc.getPayload();
         String heading = meaning(doc.getType()).heading();
         if (doc.getType() == NotificationType.EXCUSE_APPROVED && excluded(payload).size() > 0) {
             heading = "Уважительная причина одобрена частично";
         }
-        RoomChange rooms = inboxLesson == null ? null : roomChange(doc.getType(), payload);
+        RoomChange rooms = roomChange(doc.getType(), payload);
         if (rooms != null) heading = "Изменилась аудитория";
         List<NotificationInboxDto.Detail> details = new ArrayList<>();
-        String subjectName =
-                inboxLesson == null ? text(payload.get("subject_name")) : inboxLesson.subjectName();
+        String subjectName = snapshot.subjectName();
         if (subjectName != null) details.add(new NotificationInboxDto.Detail("Предмет", subjectName));
         String number = positiveId(payload.get("lesson_number"));
         if (number != null) details.add(new NotificationInboxDto.Detail("Номер занятия", number));
-        String rawType =
-                inboxLesson == null
-                        ? Objects.toString(payload.get("lesson_type"), "")
-                        : Objects.toString(inboxLesson.lessonType(), "")
-                                .toLowerCase(Locale.ROOT);
+        String rawType = Objects.toString(snapshot.lessonType(), "").toLowerCase(Locale.ROOT);
         String lessonType =
                 switch (rawType) {
                     case "lecture" -> "Лекция";
@@ -509,9 +511,9 @@ public class NotificationCatalog {
             detail(details, payload, "room", "Аудитория");
         } else {
             details.add(new NotificationInboxDto.Detail(
-                    "Предыдущая аудитория", Objects.toString(rooms.previous(), "Не указана")));
+                    PREVIOUS_ROOM_LABEL, Objects.toString(rooms.previous(), "Не указана")));
             details.add(new NotificationInboxDto.Detail(
-                    "Новая аудитория", Objects.toString(rooms.current(), "Не указана")));
+                    NEW_ROOM_LABEL, Objects.toString(rooms.current(), "Не указана")));
         }
         detail(details, payload, "title", "Задание");
         detail(details, payload, "deadline", "Срок");
@@ -619,8 +621,7 @@ public class NotificationCatalog {
                 && payload.get("homework") instanceof Map<?, ?> homework) {
             List<String> parts = new ArrayList<>();
             for (String key : List.of("subject_name", "title", "lesson_date")) {
-                if (inboxLesson != null && subjectName != null && "subject_name".equals(key))
-                    continue;
+                if (subjectName != null && "subject_name".equals(key)) continue;
                 String value = text(homework.get(key));
                 if (value != null) parts.add(value);
             }
@@ -710,6 +711,8 @@ public class NotificationCatalog {
                     null,
                     null);
         }
+        if (type == NotificationType.HOMEWORK_WITHDRAWN
+                || ("TEACHER".equals(role) && type.name().startsWith("HOMEWORK_"))) return null;
         if (type == NotificationType.HOMEWORK_WEEKLY_DIGEST) {
             String start = date(payload.get("week_start"));
             return start == null
@@ -717,9 +720,21 @@ public class NotificationCatalog {
                     : new NotificationInboxDto.Action(
                             "homework-week", role, null, null, null, null, null, null, start);
         }
-        if (type.name().startsWith("HOMEWORK")) {
-            String id = positiveId(payload.get("homework_id"));
-            return id == null
+        if (type.name().startsWith("HOMEWORK_")) {
+            String rootId = positiveId(payload.get("homework_id"));
+            String id = rootId;
+            if (type == NotificationType.HOMEWORK_DUE_REMINDER
+                    && payload.get("homework") instanceof Map<?, ?> homework) {
+                // Never substitute a legacy root ID for a missing or invalid nested ID.
+                id = NotificationPayloadSnapshot.dueReminderHomeworkId(homework);
+                if (homework.containsKey("lesson_date")) {
+                    date = date(homework.get("lesson_date"));
+                } else if (payload.containsKey("homework_id") && !Objects.equals(id, rootId)) {
+                    date = null;
+                }
+            }
+            // The student homework view uses the exact lesson date to look up the assignment.
+            return id == null || ("STUDENT".equals(role) && !studentHomeworkDate(date))
                     ? null
                     : new NotificationInboxDto.Action(
                             "homework", role, null, date, null, null, id, null, null);
@@ -753,6 +768,11 @@ public class NotificationCatalog {
         } catch (RuntimeException error) {
             return null;
         }
+    }
+
+    private static boolean studentHomeworkDate(String date) {
+        // The mobile YYYY-MM-DD parser cannot route years before 0100.
+        return date != null && date.length() == 10 && !date.startsWith("00");
     }
 
     private static boolean nonempty(Object value) {

@@ -10,7 +10,9 @@ import nl.martijndwars.webpush.*;
 import org.apache.http.HttpVersion;
 import org.apache.http.message.BasicHttpResponse;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import ru.rutcampustrack.notification.contract.dto.history.NotificationInboxDto;
 import ru.rutcampustrack.notification.contract.enums.NotificationType;
 import ru.rutcampustrack.notification.history.*;
 
@@ -66,6 +68,7 @@ class WebPushDeliveryServiceTest {
         var json = mapper.readTree(wire[0]);
         assertThat(json.path("recipientUserId").asText()).isEqualTo("12");
         assertThat(json.path("subscriptionFingerprint").asText()).matches("[a-f0-9]{64}");
+        assertThat(json.path("body").asText()).isEqualTo("Дата занятия: 2026-10-10");
         assertThat(json.path("data").size()).isZero();
         assertThat(new String(wire[0], java.nio.charset.StandardCharsets.UTF_8))
                 .doesNotContain("synthetic-key", "synthetic-auth", "https://push.example");
@@ -75,6 +78,36 @@ class WebPushDeliveryServiceTest {
         assertThat(action.path("action").path("lessonId").asText()).isEqualTo("51");
         assertThat(action.path("action").path("role").asText()).isEqualTo("TEACHER");
         verify(mongo).updateMulti(any(), any(), eq(PushSubscriptionDocument.class));
+    }
+
+    @Test
+    void roomChangeProviderBodyKeepsBothRoomsBeforeTheDetailAndTextLimits() throws Exception {
+        Notification notification = mock(Notification.class);
+        doReturn(notification).when(service).createNotification(eq(sub), any(byte[].class));
+        when(provider.send(notification, Encoding.AES128GCM))
+                .thenReturn(new BasicHttpResponse(HttpVersion.HTTP_1_1, 201, "Created"));
+        var changedRoom =
+                item(
+                        NotificationType.LESSON_UPDATED,
+                        Map.of(
+                                "lesson_number", 1,
+                                "source", Map.of("room", "А-214"),
+                                "target",
+                                        Map.of(
+                                                "lesson_id", 51L,
+                                                "subject_name", "Математика".repeat(80),
+                                                "lesson_type", "practice",
+                                                "room", "А-508")));
+
+        assertThat(service.sendToSubscription(sub, "lesson.updated", changedRoom)).isEqualTo(201);
+
+        var wire = ArgumentCaptor.forClass(byte[].class);
+        verify(service).createNotification(eq(sub), wire.capture());
+        var json = mapper.readTree(wire.getValue());
+        assertThat(json.path("title").asText()).isEqualTo("Изменилась аудитория");
+        assertThat(json.path("body").asText())
+                .startsWith("Предыдущая аудитория: А-214 Новая аудитория: А-508 Предмет:")
+                .hasSizeLessThanOrEqualTo(601);
     }
 
     @Test
@@ -91,14 +124,19 @@ class WebPushDeliveryServiceTest {
         verifyNoInteractions(mongo);
     }
 
-    private ru.rutcampustrack.notification.contract.dto.history.NotificationInboxDto.Item item() {
+    private NotificationInboxDto.Item item() {
+        return item(NotificationType.LESSON_CANCELLED,
+                Map.of("lesson_id", 51L, "lesson_date", "2026-10-10"));
+    }
+
+    private NotificationInboxDto.Item item(NotificationType type, Map<String, Object> payload) {
         Instant now = Instant.parse("2026-10-10T10:00:00Z");
         var doc =
                 NotificationHistoryDocument.builder()
                         .id("wire")
-                        .type(NotificationType.LESSON_CANCELLED)
+                        .type(type)
                         .sentAt(now)
-                        .payload(Map.of("lesson_id", 51L, "lesson_date", "2026-10-10"))
+                        .payload(payload)
                         .roleViews(
                                 Map.of(
                                         "TEACHER",

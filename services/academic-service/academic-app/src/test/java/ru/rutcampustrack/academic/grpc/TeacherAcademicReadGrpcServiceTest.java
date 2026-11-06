@@ -83,6 +83,59 @@ class TeacherAcademicReadGrpcServiceTest {
     }
 
     @Test
+    void exactSemesterDatesReturnAllAssignmentsWhenArbitraryRangeWouldBeTooLarge() {
+        AssignmentRepository assignments = mock(AssignmentRepository.class);
+        GroupRepository groups = mock(GroupRepository.class);
+        SemesterRepository semesters = mock(SemesterRepository.class);
+        SubjectRepository subjects = mock(SubjectRepository.class);
+        UserRoleGrantRepository grants = mock(UserRoleGrantRepository.class);
+        LocalDate start = LocalDate.of(2025, 9, 1);
+        LocalDate end = LocalDate.of(2027, 1, 31);
+        Semester semester = mock(Semester.class);
+        when(semester.getDateFrom()).thenReturn(start);
+        when(semester.getDateTo()).thenReturn(end);
+        when(semesters.findById(9L)).thenReturn(Optional.of(semester));
+        Assignment first = assignment(12L, start, start.plusDays(1));
+        Assignment last = assignment(13L, end, null);
+        when(assignments.findByTeacherIdAndSemesterId(TEACHER_ID, 9L))
+                .thenReturn(List.of(first, last));
+        Subject subject = mock(Subject.class);
+        Group group = mock(Group.class);
+        when(subject.getName()).thenReturn("Математика");
+        when(group.getName()).thenReturn("УИТ-311");
+        when(subjects.findById(22L)).thenReturn(Optional.of(subject));
+        when(groups.findById(33L)).thenReturn(Optional.of(group));
+        var activeGrant = mock(ru.rutcampustrack.academic.entity.UserRoleGrant.class);
+        when(grants.findByUserIdAndRoleAndStatus(TEACHER_ID, "teacher", "active"))
+                .thenReturn(List.of(activeGrant));
+        TeacherAcademicReadGrpcService service =
+                new TeacherAcademicReadGrpcService(assignments, groups, semesters, subjects, grants);
+        TeacherAssignmentsRequest request = TeacherAssignmentsRequest.newBuilder()
+                .setSemesterId(9L)
+                .setDateFrom(start.toString())
+                .setDateTo(end.toString())
+                .build();
+        RecordingObserver<TeacherAssignmentsResponse> exact = new RecordingObserver<>();
+        RecordingObserver<TeacherAssignmentsResponse> partial = new RecordingObserver<>();
+        Context.current()
+                .withValue(TeacherAcademicGrpcIdentity.CLAIMS, teacherClaims())
+                .run(() -> {
+                    service.listTeacherAssignments(request, exact);
+                    service.listTeacherAssignments(
+                            request.toBuilder().setDateFrom(start.plusDays(1).toString()).build(),
+                            partial);
+                });
+
+        assertThat(exact.error).isNull();
+        assertThat(exact.value.getAssignmentsList())
+                .extracting(ru.rutcampustrack.teacher.grpc.TeacherAssignment::getAssignmentId)
+                .containsExactly(12L, 13L);
+        assertThat(partial.value).isNull();
+        assertThat(io.grpc.Status.fromThrowable(partial.error).getCode())
+                .isEqualTo(io.grpc.Status.Code.INVALID_ARGUMENT);
+    }
+
+    @Test
     void teacherRoleIsRequiredAtDedicatedBoundary() {
         TeacherAcademicReadGrpcService service =
                 new TeacherAcademicReadGrpcService(

@@ -669,6 +669,7 @@ onBeforeUnmount(() => {
           <NotificationSettings
             v-if="page === 'settings'"
             :catalog="catalog"
+            :signed-role="api.signedRole"
             :preferences="preferences"
             :draft="draft"
             :busy="preferencesBusy"
@@ -686,6 +687,7 @@ onBeforeUnmount(() => {
           <NotificationColors
             v-else
             :catalog="catalog"
+            :signed-role="api.signedRole"
             :preferences="preferences"
             :draft="draft"
             :busy="preferencesBusy"

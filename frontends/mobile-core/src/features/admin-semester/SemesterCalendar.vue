@@ -3,8 +3,15 @@ import { computed, nextTick, ref, watch } from 'vue';
 import MobileIcon from '../../shared/components/MobileIcon.vue';
 import './semester-calendar.pcss';
 const props = withDefaults(
-  defineProps<{ modelValue: string; label: string; disabled?: boolean; showToday?: boolean }>(),
-  { showToday: true },
+  defineProps<{
+    modelValue: string;
+    label: string;
+    disabled?: boolean;
+    showToday?: boolean;
+    minDate?: string | undefined;
+    maxDate?: string | undefined;
+  }>(),
+  { showToday: true, minDate: undefined, maxDate: undefined },
 );
 const emit = defineEmits<{ 'update:modelValue': [date: string] }>();
 function iso(date: Date): string {
@@ -13,8 +20,14 @@ function iso(date: Date): string {
 const today = iso(new Date());
 const month = ref((props.modelValue || today).slice(0, 7));
 const calendar = ref<HTMLElement | null>(null);
+const canGoBack = computed(
+  () => !props.disabled && (props.minDate === undefined || month.value > props.minDate.slice(0, 7)),
+);
+const canGoForward = computed(
+  () => !props.disabled && (props.maxDate === undefined || month.value < props.maxDate.slice(0, 7)),
+);
 watch(
-  () => props.label,
+  [() => props.label, () => props.minDate, () => props.maxDate],
   () => {
     month.value = (props.modelValue || today).slice(0, 7);
   },
@@ -33,14 +46,32 @@ const days = computed(() => {
     return iso(day);
   });
 });
-function stepMonth(step: number): void {
+async function stepMonth(step: -1 | 1, event: MouseEvent): Promise<void> {
+  const canStep = step < 0 ? canGoBack : canGoForward;
+  if (!canStep.value) return;
   const date = new Date(month.value + '-01T00:00:00Z');
   date.setUTCMonth(date.getUTCMonth() + step);
-  if (date.getUTCFullYear() >= 1 && date.getUTCFullYear() <= 9999)
-    month.value = iso(date).slice(0, 7);
+  if (date.getUTCFullYear() < 1 || date.getUTCFullYear() > 9999) return;
+  month.value = iso(date).slice(0, 7);
+  if (!canStep.value && event.currentTarget === document.activeElement) {
+    await nextTick();
+    calendar.value
+      ?.querySelector<HTMLButtonElement>(`[data-date^="${month.value}-"]:not(:disabled)`)
+      ?.focus();
+  }
 }
 function validDay(day: string): boolean {
   return /^\d{4}-\d{2}-\d{2}$/.test(day) && day >= '0001-01-01' && day <= '9999-12-31';
+}
+function availableDay(day: string): boolean {
+  return (
+    validDay(day) &&
+    (props.minDate === undefined || day >= props.minDate) &&
+    (props.maxDate === undefined || day <= props.maxDate)
+  );
+}
+function selectDay(day: string): void {
+  if (!props.disabled && availableDay(day)) emit('update:modelValue', day);
 }
 function accessibleDate(day: string): string {
   if (!validDay(day)) return 'Дата недоступна';
@@ -52,7 +83,7 @@ function accessibleDate(day: string): string {
   }).format(new Date(day + 'T00:00:00Z'));
 }
 async function move(event: KeyboardEvent, day: string): Promise<void> {
-  if (props.disabled) return;
+  if (props.disabled || !availableDay(day)) return;
   const delta: Record<string, number> = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -7, ArrowDown: 7 };
   if (!(event.key in delta) && event.key !== 'Home' && event.key !== 'End') return;
   event.preventDefault();
@@ -62,8 +93,10 @@ async function move(event: KeyboardEvent, day: string): Promise<void> {
     date.getUTCDate() +
       (event.key === 'Home' ? -weekday : event.key === 'End' ? 6 - weekday : delta[event.key]!),
   );
-  const target = iso(date);
-  if (!validDay(target)) return;
+  let target = iso(date);
+  if (event.key === 'Home' && props.minDate && target < props.minDate) target = props.minDate;
+  if (event.key === 'End' && props.maxDate && target > props.maxDate) target = props.maxDate;
+  if (!availableDay(target)) return;
   month.value = target.slice(0, 7);
   await nextTick();
   calendar.value?.querySelector<HTMLButtonElement>(`[data-date="${target}"]`)?.focus();
@@ -78,16 +111,16 @@ async function move(event: KeyboardEvent, day: string): Promise<void> {
     <div class="semester-calendar__pager">
       <button
         type="button"
-        :disabled="disabled"
+        :disabled="!canGoBack"
         aria-label="Предыдущий месяц"
-        @click="stepMonth(-1)"
+        @click="stepMonth(-1, $event)"
       >
         <MobileIcon name="back" />
       </button><strong>{{ monthLabel }}</strong><button
         type="button"
-        :disabled="disabled"
+        :disabled="!canGoForward"
         aria-label="Следующий месяц"
-        @click="stepMonth(1)"
+        @click="stepMonth(1, $event)"
       >
         <MobileIcon
           name="back"
@@ -110,14 +143,14 @@ async function move(event: KeyboardEvent, day: string): Promise<void> {
         v-for="day in days"
         :key="day"
         type="button"
-        :disabled="disabled || !validDay(day)"
+        :disabled="disabled || !availableDay(day)"
         :data-date="day"
         :data-outside="day.slice(0, 7) !== month"
         :aria-label="accessibleDate(day)"
         :aria-pressed="day === modelValue"
-        :aria-current="day === today ? 'date' : undefined"
+        :aria-current="day === today && availableDay(day) ? 'date' : undefined"
         @keydown="move($event, day)"
-        @click="emit('update:modelValue', day)"
+        @click="selectDay(day)"
       >
         {{ Number(day.slice(-2)) }}
       </button>

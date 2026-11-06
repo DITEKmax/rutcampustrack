@@ -275,6 +275,11 @@ def notification_action(event, *, facts=None, role="STUDENT"):
     notification_type = type_for_event(event)
     if notification_type not in HEADINGS:
         return None
+    if notification_type == "HOMEWORK_WITHDRAWN" or (
+        role == "TEACHER" and notification_type.startswith("HOMEWORK_")
+    ):
+        return None
+    day = payload.get("date") or payload.get("lesson_date")
     if notification_type.startswith(("EXCUSE_", "LATE_CHECKIN_")):
         action = {
             "kind": "request",
@@ -284,15 +289,29 @@ def notification_action(event, *, facts=None, role="STUDENT"):
         }
     elif notification_type == "HOMEWORK_WEEKLY_DIGEST":
         action = {"kind": "homework-week", "role": role, "weekStart": payload.get("week_start")}
-    elif notification_type == "HOMEWORK_WITHDRAWN":
-        return None
     elif notification_type.startswith("HOMEWORK_"):
         homework = payload.get("homework")
-        homework = homework if isinstance(homework, dict) else {}
+        if notification_type == "HOMEWORK_DUE_REMINDER":
+            root_id = _positive_id(payload.get("homework_id"))
+            homework_id = root_id
+            day = payload.get("lesson_date", payload.get("date"))
+            if isinstance(homework, dict):
+                # Never substitute a legacy root ID for a missing or invalid nested ID.
+                homework_id = _positive_id(homework.get("homework_id", homework.get("id")))
+                if "lesson_date" in homework:
+                    day = homework["lesson_date"]
+                elif "homework_id" in payload and homework_id != root_id:
+                    day = None
+        else:
+            homework = homework if isinstance(homework, dict) else {}
+            homework_id = _positive_id(payload.get("homework_id") or homework.get("homework_id") or homework.get("id"))
+        # The student homework view requires a lesson date. The encoder checks ISO date validity.
+        if role == "STUDENT" and (not isinstance(day, str) or not day or day.startswith("00")):
+            return None
         action = {
             "kind": "homework",
             "role": role,
-            "homeworkId": _positive_id(payload.get("homework_id") or homework.get("homework_id") or homework.get("id")),
+            "homeworkId": homework_id,
         }
     elif notification_type in {
         "HEADMAN_ACCESS_CHANGED",
@@ -302,7 +321,6 @@ def notification_action(event, *, facts=None, role="STUDENT"):
         "SEMESTER_OPERATION_COMPLETED",
         "GROUP_PROMOTION_COMPLETED",
         "GROUP_MEMBERSHIP_CHANGED",
-        "HOMEWORK_WITHDRAWN",
     }:
         return None
     elif notification_type.startswith("GROUP_"):
@@ -311,7 +329,6 @@ def notification_action(event, *, facts=None, role="STUDENT"):
         action = {"kind": "checkin", "role": role, "lessonId": _positive_id(payload.get("lesson_id"))}
     else:
         action = {"kind": "lesson", "role": role, "lessonId": _positive_id(payload.get("lesson_id"))}
-    day = payload.get("date") or payload.get("lesson_date")
     if day and action["kind"] in {"lesson", "homework"}:
         action["lessonDate"] = day
     return action if encode_notification_action(action) is not None else None

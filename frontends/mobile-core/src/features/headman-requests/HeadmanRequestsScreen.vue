@@ -137,24 +137,35 @@ const preview = computed(() =>
     ? previewApproval(selected.value, excludedIds.value)
     : null,
 );
-const stored = computed(() =>
-  selected.value && selected.value.summary.status !== 'PENDING'
-    ? storedDecisionRows(selected.value)
-    : null,
-);
+const stored = computed(() => {
+  const detail = selected.value;
+  if (!detail?.decisionSelection || detail.summary.status === 'PENDING') return null;
+  const { before, after } = storedDecisionRows(detail);
+  return { before: detail.decisionSelection.beforeLessons ? before : [], after };
+});
+const comparison = computed(() => preview.value ?? stored.value);
 const originalDistinct = computed(() => {
   const detail = selected.value;
   if (!detail) return false;
-  const compared = stored.value
+  const archived = detail.summary.status !== 'PENDING';
+  const compared = archived
     ? detail.decisionSelection?.beforeLessons
     : detail.currentAffectedLessons;
+  if (archived && (!detail.lessons.length || !compared?.length)) return false;
   return !!compared && hasDifferentOriginalLessons(detail.lessons, compared);
 });
-const legacyCurrentRows = computed(() =>
-  selected.value?.currentAffectedLessons
-    ? currentLessonRows(selected.value.currentAffectedLessons)
-    : [],
-);
+const archiveCurrentRows = computed(() => {
+  const detail = selected.value;
+  if (
+    !detail?.currentAffectedLessons ||
+    detail.summary.status === 'PENDING' ||
+    stored.value?.before.length ||
+    stored.value?.after.length
+  ) {
+    return [];
+  }
+  return currentLessonRows(detail.currentAffectedLessons);
+});
 const title = computed(
   () =>
     ({
@@ -728,9 +739,7 @@ defineExpose({ back, openNotificationRequest });
             class="headman-requests__kind"
             :data-kind="item.kind"
             aria-hidden="true"
-          >
-            {{ item.kind === 'EXCUSE' ? 'у' : 'н' }}
-          </span>
+          />
           <span class="headman-requests__ticket-copy">
             <span class="headman-requests__sr">{{
               item.kind === 'EXCUSE' ? 'Уважительная причина' : 'Забыл отметиться'
@@ -857,26 +866,22 @@ defineExpose({ back, openNotificationRequest });
         </RequestLessonList>
       </template>
       <div
-        v-if="preview || stored"
+        v-if="comparison && (preview || comparison.before.length || comparison.after.length)"
         class="headman-requests__comparison"
       >
         <section
+          v-if="preview || comparison.before.length"
           class="headman-requests__comparison-panel"
           data-comparison="before"
         >
           <h2>До</h2>
           <p class="headman-requests__hint">
-            {{
-              preview
-                ? 'Текущие отметки'
-                : selected.decisionSelection?.beforeLessons
-                  ? 'Отметки перед решением'
-                  : 'Исходные пары заявки. Отметки до решения не сохранены.'
-            }}
+            {{ preview ? 'Текущие отметки' : 'Отметки перед решением' }}
           </p>
-          <RequestLessonList :rows="preview?.before ?? stored?.before ?? []" />
+          <RequestLessonList :rows="comparison.before" />
         </section>
         <section
+          v-if="preview || comparison.after.length"
           class="headman-requests__comparison-panel"
           data-comparison="after"
         >
@@ -885,25 +890,20 @@ defineExpose({ back, openNotificationRequest });
             {{
               preview
                 ? 'Прогноз после одобрения. Подтверждённое присутствие сохранится.'
-                : selected.decisionSelection
-                  ? 'Отметки на момент решения'
-                  : 'Отметки на момент решения не сохранены.'
+                : 'Отметки на момент решения'
             }}
           </p>
-          <RequestLessonList
-            v-if="preview || stored?.after.length"
-            :rows="preview?.after ?? stored?.after ?? []"
-          />
+          <RequestLessonList :rows="comparison.after" />
         </section>
       </div>
       <section
-        v-if="stored && !selected.decisionSelection && legacyCurrentRows.length"
+        v-if="archiveCurrentRows.length"
         class="headman-requests__original"
       >
         <h2 class="headman-requests__section-title">
           Текущие отметки в журнале
         </h2>
-        <RequestLessonList :rows="legacyCurrentRows" />
+        <RequestLessonList :rows="archiveCurrentRows" />
       </section>
       <section
         v-if="view !== 'reject' && originalDistinct"

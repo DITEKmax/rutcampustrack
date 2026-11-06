@@ -181,6 +181,16 @@ describe('заявки старосты', () => {
     expect(
       find(andreev, (node) => node.tag === 'button').map((node) => node.attrs['data-request-id']),
     ).toEqual(['multi', 'late'])
+    const excuseCard = byAttr(andreev, 'data-request-id', 'multi')[0]!
+    const lateCard = byAttr(andreev, 'data-request-id', 'late')[0]!
+    const indicators = [
+      byAttr(excuseCard, 'data-kind', 'EXCUSE')[0],
+      byAttr(lateCard, 'data-kind', 'LATE_CHECKIN')[0],
+    ]
+    expect(indicators.map((node) => node?.attrs['aria-hidden'])).toEqual(['true', 'true'])
+    expect(indicators.map(text)).toEqual(['', ''])
+    expect(text(excuseCard)).toContain('Уважительная причина')
+    expect(text(lateCard)).toContain('Забыл отметиться')
     expect(urls.every((url) => url.pathname === '/api/attendance/requests')).toBe(true)
 
     await press(button(root, 'Архив'))
@@ -194,6 +204,54 @@ describe('заявки старосты', () => {
     expect(urls.at(-1)?.searchParams.get('bucket')).toBe('ARCHIVE')
     await press(byAttr(root, 'aria-label', 'Назад')[0])
     expect(byAttr(root, 'data-request-view', 'queue')).toHaveLength(1)
+  })
+
+  it.each([
+    { scenario: 'без квитанции', hasReceipt: false },
+    { scenario: 'с квитанцией без снимка «До»', hasReceipt: true },
+  ])('показывает только имеющиеся архивные отметки $scenario', async ({ hasReceipt }) => {
+    const archived = summary('legacy', 'Андреев Пётр', 7, 'EXCUSE', 'APPROVED')
+    const result = lesson(2, '2026-09-03', 'EXCUSED')
+    const detail: HeadmanRequestDetail = {
+      summary: archived,
+      lessons: [{ ...lesson(1, '2026-09-02', 'PRESENT'), subjectName: 'Исходный предмет' }],
+      currentAffectedLessons: [{ ...result, attendanceStatus: 'ABSENT' }],
+      attachments: [],
+      decisionSelection: hasReceipt
+        ? {
+            requestKey: 'legacy-key',
+            expectedRevision: 'a'.repeat(64),
+            includedLessons: [result],
+            excludedLessons: [],
+          }
+        : null,
+    }
+    const root = mount(async (input) => {
+      const url = new URL(String(input), 'http://fixture.local')
+      if (url.pathname.endsWith('/legacy')) return json(detail)
+      const content = url.searchParams.get('bucket') === 'ARCHIVE' ? [archived] : []
+      return json({ content, page: 0, totalPages: 1, totalElements: content.length })
+    })
+    await settle()
+    await press(button(root, 'Архив'))
+    await press(byAttr(root, 'data-request-id', 'legacy')[0])
+
+    expect(byAttr(root, 'data-comparison', 'before')).toHaveLength(0)
+    const after = byAttr(root, 'data-comparison', 'after')
+    expect(after).toHaveLength(hasReceipt ? 1 : 0)
+    expect(text(root)).not.toContain('не сохранены')
+    expect(text(root)).not.toContain('Исходные пары заявки')
+    expect(text(root)).not.toContain('Исходный предмет')
+    if (hasReceipt) {
+      expect(byAttr(after[0]!, 'data-status', 'EXCUSED')).toHaveLength(1)
+      expect(text(root)).not.toContain('Текущие отметки в журнале')
+    } else {
+      const journal = find(
+        root,
+        (node) => node.tag === 'h2' && text(node).trim() === 'Текущие отметки в журнале',
+      )[0]!.parent!
+      expect(byAttr(journal, 'data-status', 'ABSENT')).toHaveLength(1)
+    }
   })
 
   it('использует текущие цели для прогноза и точную квитанцию при повторном открытии', async () => {

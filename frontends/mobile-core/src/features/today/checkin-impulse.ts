@@ -246,15 +246,19 @@ export function useCheckinImpulse(options: ImpulseOptions) {
       await options.read()
       if (!isActive(value) || version !== readVersion) return
       now.value = Date.now()
-      const freshEligibility = currentLesson.value?.checkinEligibility
-      if (
-        freshEligibility?.allowed &&
-        freshEligibility.reason === 'ELIGIBLE' &&
-        rejectionCooldown.value &&
-        now.value >= rejectionCooldown.value.dueAt
-      ) {
-        rejectionCooldown.value = null
-        commandError.value = ''
+      const rejection = rejectionCooldown.value
+      if (rejection) {
+        const freshLesson = currentLesson.value
+        const eligibility = freshLesson?.checkinEligibility
+        const eligible = eligibility?.reason === 'ELIGIBLE' && eligibility.allowed
+        const canRetry =
+          freshLesson?.attendance?.status !== 'PRESENT' &&
+          (eligible || eligibility?.reason === 'COOLDOWN')
+        if (!canRetry || (eligible && now.value >= rejection.dueAt)) {
+          rejectionCooldown.value = null
+          commandError.value = ''
+          if (!canRetry) pendingAck.value = null
+        }
       }
       readState.value = 'ready'
     } catch (error) {

@@ -46,6 +46,17 @@ const pending: StudentCheckinAck = {
 }
 const at = (milliseconds: number): string =>
   new Date(Date.parse(serverNow) + milliseconds).toISOString()
+const cooldownRejection = () =>
+  new StudentApiError(new Response(null, { status: 429, headers: { 'Retry-After': '7' } }), {
+    status: 429,
+    title: 'Отметка пока недоступна',
+    detail: 'Попробуй ещё раз позже.',
+    instance: '/api/v1/student/lessons/77/checkin',
+    type: 'urn:rct:problem:checkin-cooldown',
+    code: 'CHECKIN_COOLDOWN',
+    timestamp: serverNow,
+    retryAt: at(7000),
+  })
 const duringCooldown = (retryAt: string, observedAt = serverNow): StudentToday => ({
   ...projection({
     ...current,
@@ -245,18 +256,7 @@ describe('check-in impulse route', () => {
     const test = setup()
     test.start()
     await nextTick()
-    test.submit.mockRejectedValueOnce(
-      new StudentApiError(new Response(null, { status: 429, headers: { 'Retry-After': '7' } }), {
-        status: 429,
-        title: 'Отметка пока недоступна',
-        detail: 'Попробуй ещё раз позже.',
-        instance: '/api/v1/student/lessons/77/checkin',
-        type: 'urn:rct:problem:checkin-cooldown',
-        code: 'CHECKIN_COOLDOWN',
-        timestamp: serverNow,
-        retryAt: at(7000),
-      }),
-    )
+    test.submit.mockRejectedValueOnce(cooldownRejection())
     await test.impulse.submit()
     await vi.advanceTimersByTimeAsync(6999)
     expect(test.impulse.state.value).toBe('cooldown')
@@ -272,6 +272,29 @@ describe('check-in impulse route', () => {
     await test.impulse.load()
     expect(test.read).toHaveBeenCalledTimes(4)
     expect(test.impulse.canSubmit.value).toBe(true)
+    expect(test.submit).toHaveBeenCalledTimes(1)
+  })
+
+  it('shows a fresh closed window with no pending request after a 429 and drops the old timer', async () => {
+    const test = setup()
+    test.start()
+    await nextTick()
+    test.submit.mockRejectedValueOnce(cooldownRejection())
+    test.read.mockImplementationOnce(async () => {
+      test.data.value = projection({
+        ...current,
+        checkinEligibility: { allowed: false, reason: 'WINDOW_CLOSED', retryAt: null },
+      })
+    })
+
+    await test.impulse.submit()
+    expect(test.impulse.state.value).toBe('closed')
+    expect(test.impulse.feedback.value).toBe('Время отметки закончилось')
+    expect(test.impulse.commandError.value).toBe('')
+    expect(test.impulse.canSubmit.value).toBe(false)
+    expect(test.impulse.canRetryRead.value).toBe(false)
+    await vi.advanceTimersByTimeAsync(8000)
+    expect(test.read).toHaveBeenCalledTimes(2)
     expect(test.submit).toHaveBeenCalledTimes(1)
   })
 

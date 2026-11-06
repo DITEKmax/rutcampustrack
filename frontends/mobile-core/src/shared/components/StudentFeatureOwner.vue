@@ -103,6 +103,7 @@ import type {
 } from '../../features/requests/types';
 import StatisticsScreen from '../../features/statistics/StatisticsScreen.vue';
 import { useStatistics } from '../../features/statistics/use-statistics';
+import MobileIcon from './MobileIcon.vue';
 import MobileShell from './MobileShell.vue';
 import { canRunProfileNetworkAction, profileOwnerStaleMessage } from '../profile-owner-status';
 import {
@@ -2499,9 +2500,10 @@ defineExpose({ openNotificationAction });
           <button
             class="attendance-back-button"
             type="button"
+            aria-label="Назад к посещаемости"
             @click="backFromLessonNotificationTarget"
           >
-            Назад к посещаемости
+            <MobileIcon name="back" />
           </button>
           <span
             v-if="activeLessonNotification.status === 'loading'"

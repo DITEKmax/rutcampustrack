@@ -69,7 +69,7 @@ import type { HeadmanStatsApi } from '../headman-stats/headman-stats-client';
 import HeadmanHomeScreen from '../headman-home/HeadmanHomeScreen.vue';
 import HeadmanMoreScreen from '../headman-home/HeadmanMoreScreen.vue';
 import HeadmanHomeworkScreen from '../homework/HeadmanHomeworkScreen.vue';
-import homeworkBackIcon from '../../assets/headman-homework-previous.svg';
+import homeworkBackIcon from '../../assets/headman-homework-back.svg';
 import scheduleEmptyDay from '../../assets/headman-schedule-empty-day.svg?raw';
 import type { HeadmanHomeworkApi } from '../homework/headman-homework-client';
 import type { HeadmanHomeworkLessonContext } from '../homework/headman-homework-state';

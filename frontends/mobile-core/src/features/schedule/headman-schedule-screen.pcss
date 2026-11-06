@@ -282,10 +282,13 @@
   font-size: var(--rct-font-size-title);
 }
 .headman-schedule__back {
+  display: grid;
+  place-items: center;
   inline-size: var(--rct-control-min-touch);
   block-size: var(--rct-control-min-touch);
   border: 0;
   border-radius: var(--rct-radius-full);
+  padding: 0;
   background: var(--rct-color-surface-float);
   color: var(--rct-color-text-primary);
   @mixin rct-focus-ring;

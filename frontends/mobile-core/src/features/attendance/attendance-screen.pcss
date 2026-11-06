@@ -362,10 +362,9 @@
   color: var(--rct-color-text-primary);
   background: transparent;
   cursor: pointer;
-  transform: rotate(90deg);
 }
 
-.attendance-back-button :is(img, .rct-svg-icon) {
+.attendance-back-button .mobile-icon {
   inline-size: var(--rct-space-4);
   block-size: var(--rct-space-4);
 }
@@ -1555,11 +1554,10 @@ button.attendance-status-badge::after {
   color: var(--rct-color-text-primary);
   background: transparent;
   cursor: pointer;
-  transform: rotate(90deg);
 }
 
-:where([data-student-ui]) .attendance-back-button :is(img, .rct-svg-icon),
-:where([data-student-ui]):is(.attendance-back-button :is(img, .rct-svg-icon)) {
+:where([data-student-ui]) .attendance-back-button .mobile-icon,
+:where([data-student-ui]):is(.attendance-back-button .mobile-icon) {
   inline-size: var(--rct-space-4);
   block-size: var(--rct-space-4);
 }

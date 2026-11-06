@@ -3,7 +3,6 @@ import SvgIcon from '../../../../shared/foundation/SvgIcon.vue';
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import attendanceTab from '../../assets/attendance-tab.svg';
 import attendanceRest from '../../assets/student-attendance-rest.svg?raw';
-import chevronDown from '../../assets/chevron-down.svg';
 import moreTab from '../../assets/more-tab.svg';
 import profileTab from '../../assets/profile-tab.svg';
 import scheduleTab from '../../assets/schedule-tab.svg';
@@ -348,10 +347,7 @@ function dateLabel(date: string): string {
           aria-label="Назад к посещаемости"
           @click="emit('back')"
         >
-          <SvgIcon
-            :src="chevronDown"
-            aria-hidden="true"
-          />
+          <MobileIcon name="back" />
         </button>
         <h1 id="attendance-title">
           {{ selectedRequestOption?.label ?? 'Форма заявки' }}

@@ -13,7 +13,7 @@ import {
   headmanHomeworkStates,
   headmanHomeworkClock,
 } from './headman-homework-fixtures';
-import backIcon from '../assets/headman-homework-previous.svg';
+import backIcon from '../assets/headman-homework-back.svg';
 import './headman-homework-review.pcss';
 
 const query = new URLSearchParams(window.location.search);

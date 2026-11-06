@@ -60,7 +60,7 @@ defineProps<{
     />
     <path
       v-else-if="name === 'back'"
-      d="M10 3.5 5.5 8 10 12.5"
+      d="M10.25 3.5 5.75 8 10.25 12.5"
     />
     <path
       v-else-if="name === 'chevron-down'"

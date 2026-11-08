@@ -390,11 +390,14 @@ describe('headman statistics reviewed regressions', () => {
     expect(text(root)).not.toContain('Лаборатор')
     props.offline = true
     await nextTick()
+    expect(text(root)).toContain('Предметов: 1')
     expect(text(root)).not.toContain('2 из 7')
+    expect(text(root)).not.toContain('0 из 0')
     expect(text(root)).toContain('Прогресс недоступен')
     reply = null
     props.offline = false
     await vi.waitFor(() => expect(text(root)).not.toContain('Загружаем прогресс'))
+    expect(text(root)).not.toContain('2 из 7')
     expect(text(root)).not.toContain('0 из 0')
   })
   it('history403 invalidates an in-flight approved-ticket intent and prevents late private detail publication', async () => {

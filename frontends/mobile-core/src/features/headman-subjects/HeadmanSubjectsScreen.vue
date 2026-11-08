@@ -611,9 +611,11 @@ function progressText(subjectId: number, type: HeadmanSubjectType): string {
 
 watch(
   [() => props.api, () => props.groupId, () => props.offline],
-  () => {
+  ([api, groupId, offline], [previousApi, previousGroupId]) => {
     progressRevision++;
-    progress.value = null;
+    // Keep the last confirmed semester association during a connection loss.
+    // progressText hides its stale values; a new context or reconnect must reload.
+    if (!offline || api !== previousApi || groupId !== previousGroupId) progress.value = null;
     progressLoading.value = false;
     progressError.value = false;
   },

@@ -732,7 +732,8 @@ onBeforeUnmount(() => {
         :key="day.iso"
         type="button"
         :aria-label="day.iso"
-        :aria-current="day.iso === selectedDate ? 'date' : undefined"
+        :aria-current="day.iso === todayIso() ? 'date' : undefined"
+        :aria-pressed="day.iso === selectedDate"
         @click="selectDate(day.iso)"
       >
         <span>{{ day.name }}</span><strong>{{ day.number }}</strong>

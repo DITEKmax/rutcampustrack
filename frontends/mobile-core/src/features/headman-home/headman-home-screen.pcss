@@ -74,15 +74,9 @@
   font-size: var(--rct-today-action-size);
   font-weight: var(--rct-font-weight-medium);
 }
-.headman-home__calendar button[aria-current='date']::after {
-  position: absolute;
-  inset-block-end: var(--rct-space-1);
-  inset-inline-start: calc(50% - var(--rct-headman-calendar-mark-width) / 2);
-  inline-size: var(--rct-headman-calendar-mark-width);
-  block-size: var(--rct-headman-calendar-mark-height);
-  border-radius: var(--rct-radius-full);
-  background: var(--rct-color-text-primary);
-  content: '';
+.headman-home__calendar button[aria-current='date'] strong {
+  text-decoration: underline;
+  text-underline-offset: var(--rct-space-1);
 }
 .headman-home__date-choice {
   font-size: var(--rct-font-size-micro);
@@ -334,6 +328,29 @@
 .headman-home__actions button:disabled {
   color: var(--rct-color-text-muted);
 }
+.headman-home:has(> .headman-home__return-today) {
+  --headman-home-today-bottom: calc(env(safe-area-inset-bottom, 0rem) + var(--rct-space-4));
+  padding-block-end: calc(
+    var(--headman-home-today-bottom) + var(--rct-control-min-touch) + var(--rct-space-6)
+  );
+}
+.mobile-shell[data-dock-visible='true'] .headman-home:has(> .headman-home__return-today) {
+  --headman-home-today-bottom: calc(
+    env(safe-area-inset-bottom, 0rem) + var(--rct-mobile-dock-height) +
+      var(--rct-mobile-dock-bottom) + var(--rct-space-3)
+  );
+}
+.headman-home__return-today {
+  position: fixed;
+  z-index: 2;
+  inset-inline: var(--rct-space-4);
+  inset-block-end: var(--headman-home-today-bottom);
+  inline-size: calc(100% - var(--rct-space-4) * 2);
+  max-inline-size: var(--rct-mobile-content-width);
+  min-block-size: var(--rct-control-min-touch);
+  margin-inline: auto;
+  padding: var(--rct-space-2) var(--rct-space-3);
+}
 .headman-home__state {
   display: grid;
   gap: var(--rct-space-2);
@@ -392,7 +409,7 @@
   min-block-size: var(--rct-headman-calendar-day-size);
 }
 
-.headman-home__calendar button[aria-current='date'] {
+.headman-home__calendar button[aria-pressed='true'] {
   color: var(--rct-color-text-on-inverse);
   background: var(--rct-color-surface-inverse);
   border-radius: var(--rct-radius-xl);
@@ -402,11 +419,8 @@
   justify-items: center;
 }
 
-.headman-home__calendar button[aria-current='date'] span {
+.headman-home__calendar button[aria-pressed='true'] span {
   color: inherit;
-}
-.headman-home__calendar button[aria-current='date']::after {
-  display: none;
 }
 
 .headman-home__block-confirm {

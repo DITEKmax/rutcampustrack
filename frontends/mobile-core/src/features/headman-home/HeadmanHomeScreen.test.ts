@@ -167,6 +167,10 @@ describe('Today uses the selected lesson report', () => {
     expect(byClass(root, 'headman-home__ongoing')).toBeUndefined()
     expect(byClass(root, 'headman-manual-roster')).toBeDefined()
     const present = () => all(root, (node) => node.props['data-mark'] === 'PRESENT')
+    const dayButton = (date: string) =>
+      all(root, (node) => node.tag === 'button' && node.props['aria-label'] === date)[0]!
+    expect(dayButton(today).props['aria-current']).toBe('date')
+    expect(dayButton(today).props['aria-pressed']).toBe(true)
     expect(present()).toHaveLength(1)
     const reason = byClass(root, 'headman-home__excused')!
     expect(reason.tag).toBe('section')
@@ -174,6 +178,10 @@ describe('Today uses the selected lesson report', () => {
 
     props.selectedDate = nextDate
     await flush()
+    expect(dayButton(today).props['aria-current']).toBe('date')
+    expect(dayButton(today).props['aria-pressed']).toBe(false)
+    expect(dayButton(nextDate).props['aria-current']).toBeUndefined()
+    expect(dayButton(nextDate).props['aria-pressed']).toBe(true)
     expect(byClass(root, 'headman-home')?.props['data-lesson-id']).toBe(3)
     expect(present()).toHaveLength(0)
     props.selectedDate = today

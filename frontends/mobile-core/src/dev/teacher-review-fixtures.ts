@@ -3,6 +3,7 @@ import {
   type TeacherDayLesson,
   type TeacherRosterEntry,
   type TeacherStatsMetric,
+  type TeacherJournalMetrics,
   type TeacherExportFormat,
 } from '../features/teacher/teacher-client'
 import { CampusMapClient } from '../api/map-client'
@@ -339,6 +340,40 @@ function metrics(selected: readonly TeacherDayLesson[], members: readonly Teache
     absent: metric(cells.length - present - excused, cells.length),
   }
 }
+function journalMembers(selected: readonly TeacherDayLesson[]) {
+  return roster.filter((member) => cellsFor(member, selected).length > 0)
+}
+function journalMetrics(
+  selected: readonly TeacherDayLesson[],
+  members: readonly TeacherRosterEntry[],
+  selectedStudentId: number | null,
+): TeacherJournalMetrics {
+  // Match attendance-service eligibility; page boundaries never limit the period.
+  const eligible = selected.filter(
+    (lesson) =>
+      lesson.status === 'CLOSED' &&
+      !lesson.cancelled &&
+      Date.parse(`${lesson.date}T${lesson.startsAt}+03:00`) <= Date.parse(serverNow),
+  )
+  return {
+    students: members.map((member) => ({
+      studentId: member.studentId,
+      displayName: member.displayName,
+      ...metrics(eligible, [member]),
+    })),
+    series: eligible.map((lesson) => ({
+      lessonId: lesson.id,
+      ...metrics(
+        [lesson],
+        selectedStudentId === null
+          ? members
+          : members.filter((member) => member.studentId === selectedStudentId),
+      ),
+    })),
+    selectedStudentId,
+    serverNow,
+  }
+}
 const formats: TeacherExportFormat[] = [
   {
     code: 'docx',
@@ -515,6 +550,15 @@ export function createTeacherReviewFixtures(state: TeacherReviewState) {
       if (state === 'attendance-retry' && journalAttempts === 1) return error()
       const page = Number(url.searchParams.get('page') ?? 0)
       const pageSize = Number(url.searchParams.get('pageSize') ?? 100)
+      const includeMetrics = url.searchParams.get('includeMetrics') === 'true'
+      const selectedStudentId = url.searchParams.has('metricsStudentId')
+        ? Number(url.searchParams.get('metricsStudentId'))
+        : null
+      if (
+        selectedStudentId !== null &&
+        (!includeMetrics || !Number.isSafeInteger(selectedStudentId) || selectedStudentId <= 0)
+      )
+        return Response.json({ code: 'INVALID_REQUEST' }, { status: 400 })
       const selected =
         state === 'attendance-empty' || state === 'journal-empty'
           ? []
@@ -536,6 +580,12 @@ export function createTeacherReviewFixtures(state: TeacherReviewState) {
                   a.date.localeCompare(b.date) || a.lessonNumber - b.lessonNumber || a.id - b.id,
               )
       const pageLessons = selected.slice(page * pageSize, (page + 1) * pageSize)
+      const members = includeMetrics ? journalMembers(selected) : []
+      if (
+        selectedStudentId !== null &&
+        !members.some((member) => member.studentId === selectedStudentId)
+      )
+        return error(403)
       return response({
         lessons: pageLessons,
         students: roster.map((item) => ({
@@ -548,6 +598,9 @@ export function createTeacherReviewFixtures(state: TeacherReviewState) {
         pageSize,
         totalLessons: selected.length,
         hasMore: (page + 1) * pageSize < selected.length,
+        ...(includeMetrics
+          ? { metrics: journalMetrics(selected, members, selectedStudentId) }
+          : {}),
       })
     }
     if (path === '/stats') {

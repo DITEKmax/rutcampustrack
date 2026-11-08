@@ -185,9 +185,7 @@ def test_unsupported_homework_actions_keep_the_message(event_type, role):
         "event_type": event_type,
         "payload": {"homework_id": 73, "lesson_date": "2026-10-15", "title": "Упражнение"},
     }
-    options = message_options(
-        event, role=role, config=SimpleNamespace(mini_app_web_url="https://safe.test/mini-app/")
-    )
+    options = message_options(event, role=role, config=SimpleNamespace(mini_app_web_url="https://safe.test/mini-app/"))
     assert "Упражнение" in options["text"]
     assert options["reply_markup"].inline_keyboard[0][0].web_app.url == "https://safe.test/mini-app/"
 

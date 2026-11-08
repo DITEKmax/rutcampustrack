@@ -238,12 +238,14 @@ async function begin(kind: NonNullable<typeof task.value>) {
   if (kind === 'TRANSFER' || kind === 'ONE_OFF') await loadTarget();
 }
 async function loadTarget() {
+  const kind = task.value;
+  if (kind !== 'TRANSFER' && kind !== 'ONE_OFF') return;
   const revision = ++read;
   targetBusy.value = true;
   targetDate.value = '';
   try {
     const requestedDate = form.date;
-    const occupied = await state.targetOccupiedSlots(requestedDate);
+    const occupied = await state.targetOccupiedSlots(requestedDate, kind === 'TRANSFER' ? 'transfer' : 'oneoff');
     feature.assertCurrent();
     if (revision !== read || requestedDate !== form.date) return;
     targetOccupied.value = occupied;

@@ -275,9 +275,7 @@ def notification_action(event, *, facts=None, role="STUDENT"):
     notification_type = type_for_event(event)
     if notification_type not in HEADINGS:
         return None
-    if notification_type == "HOMEWORK_WITHDRAWN" or (
-        role == "TEACHER" and notification_type.startswith("HOMEWORK_")
-    ):
+    if notification_type == "HOMEWORK_WITHDRAWN" or (role == "TEACHER" and notification_type.startswith("HOMEWORK_")):
         return None
     day = payload.get("date") or payload.get("lesson_date")
     if notification_type.startswith(("EXCUSE_", "LATE_CHECKIN_")):

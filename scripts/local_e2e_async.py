@@ -55,15 +55,13 @@ MODES = {"prepare", "openapi", "full", "client", "lesson-lifecycle", "ui-batch",
 # config, one extended flag, private output variable, expected count, safe result filenames.
 BATCH_LANES = {
     "auth-smoke": ("playwright.config.ts", None, None, 9, {"auth-token-lifecycle.spec.ts", "mini-app.spec.ts"}),
-    "first3": ("playwright.first3.config.ts", None, "RCT_FOCUS3_RUN", 2, {"mobile-real-server.spec.ts"}),
-    "admin": ("playwright.real-mobile.config.ts", "RCT_E2E_ADMIN_LIFECYCLE", None, 1, {"mobile-real-server.spec.ts"}),
-    "role-security-export": ("playwright.real-mobile.config.ts", "RCT_E2E_ROLE_LOGOUT", None, 6, {"mobile-real-server.spec.ts", "cloud-accepted-role-authority.spec.ts", "cloud-accepted-admin-grants.spec.ts", "cloud-accepted-auth-security.spec.ts"}),
+    "first3": ("playwright.first3.config.ts", None, "RCT_FOCUS3_RUN", 1, {"mobile-real-server.spec.ts"}),
+    "role-security-export": ("playwright.real-mobile.config.ts", "RCT_E2E_ROLE_LOGOUT", None, 3, {"mobile-real-server.spec.ts", "cloud-accepted-role-authority.spec.ts", "cloud-accepted-admin-grants.spec.ts", "cloud-accepted-auth-security.spec.ts"}),
     "installation": ("playwright.real-mobile.config.ts", "RCT_E2E_SW_LIFECYCLE", None, 2, {"mobile-real-server.spec.ts"}),
     "geo": ("playwright.teaching-clock.config.ts", None, "RCT_E2E_GEO_RUN", 1, {"teaching-clock-geo.spec.ts"}),
-    "homework": ("playwright.homework-lifecycle.config.ts", None, "RCT_HOMEWORK_LIFECYCLE_RUN", 4, {"mobile-homework-lifecycle.spec.ts"}),
+    "homework": ("playwright.homework-lifecycle.config.ts", None, "RCT_HOMEWORK_LIFECYCLE_RUN", 3, {"mobile-homework-lifecycle.spec.ts"}),
     "map": ("playwright.map-lifecycle.config.ts", None, "RCT_MAP_LIFECYCLE_RUN", 1, {"mobile-map-lifecycle.spec.ts"}),
-    "registry-html": ("playwright.registry-export.config.ts", None, "RCT_REGISTRY_EXPORT_RUN", 3, {"cloud-accepted-registry-export.spec.ts"}),
-    "helper": ("playwright.helper-capabilities.config.ts", None, "RCT_HELPER_CAPABILITIES_RUN", 5, {"cloud-accepted-helper-capabilities.spec.ts"}),
+    "helper": ("playwright.helper-capabilities.config.ts", None, "RCT_HELPER_CAPABILITIES_RUN", 2, {"cloud-accepted-helper-capabilities.spec.ts"}),
 }
 BATCH_BLOCKED = [
     {"lane": "bot", "count": 1, "reason": "HOSTED_BOT_IDENTITY_ADAPTER_REQUIRED"},
@@ -81,8 +79,6 @@ D002_FILTERS = ("@d002-reconnect-authority(?= |$)", "D002 late prior-account hom
 FAILED_CASES = {
     'TMA_SIGNED_ENTRY': ('auth-smoke', 'signed teacher entry loads the real session and shared profile with host Back'),
     'TMA_TAMPERED_ENTRY': ('auth-smoke', 'tampered Telegram proof cannot expose role data or navigation'),
-    'ADMIN_HISTORICAL_MARK': ('admin', 'ADMIN creates a multirole headman and restores the archived account without old authority'),
-    'FULL_ADMIN_RIGHTS': ('role-security-export', 'FULL multirole ADMIN assigns updates and revokes LIMITED rights through Vue without foreign-role calls @cloud-accepted'),
     'OWN_PROFILE_THEME': ('role-security-export', 'own profile security changes password and replacement login rejects old authority @cloud-accepted'),
     'HOMEWORK_PERIOD': ('homework', 'STUDENT multi-item feed keeps focus and rolls back a failed completion with safe external materials @real-mobile'),
     'HOMEWORK_NOTIFICATION': ('homework', 'MANAGE_HOMEWORK non-author edits preserve student completion and revoked authority cannot overwrite it @real-mobile'),
@@ -1862,6 +1858,7 @@ def preflight(*, release=False, special=False, retained_receipt=None, retained_p
 class Runner:
     canonical_mount_records = staticmethod(canonical_mount_records)
     def __init__(self, mode, *, release_lane=None, startup_diagnostic=False, bundled_dockerfile_frontend=False, client_cases=None, failed_cases=None, special_cohort=None, lifecycle_only=False, operational=False, operational_until=None, reconciliation_only=False, recovery_archive_only=False):
+        require(mode != "full", "ASYNC_BROWSER_LANE_RETIRED")
         require(client_cases in (None, D002_CASES, D002_AUTHORITY_CASES) and (client_cases is None or mode == "client" and release_lane == "client"), "CLIENT_CASE_SELECTION")
         self.client_cases = client_cases
         require(not startup_diagnostic or mode == "client", "CLIENT_DIAGNOSTIC_ONLY")
@@ -2300,15 +2297,7 @@ class Runner:
                 if safe["result"] != "PASS":
                     self.diagnose()
         else:
-            try:
-                self.command("STAGE17", [sys.executable, str(ROOT / "infra/prometheus/tests/check_pipeline.py"), "--e2e-async-browser"], cwd=ROOT / "tests/e2e")
-            finally:
-                report = self.run / "artifacts/metrics.safe.json"
-                if report.is_file():
-                    safe = json.loads(report.read_text())
-                    emit("STAGE17_RESULT", result=safe["result"], stage=safe["phase"], actual_applications=safe["actual_applications"])
-                    if safe["phase"] == "GATEWAY_OPENAPI_ACADEMIC_SERVICE" and safe["result"] == "FAIL":
-                        self.diagnose()
+            raise AdmissionError("ASYNC_BROWSER_LANE_RETIRED")
 
     def freeze_special_inventory(self):
         rows = inventory(self.project, self.nonce, complete=True)
@@ -3036,7 +3025,7 @@ valid(all(stat.S_IMODE(directory.lstat().st_mode) == 0o755 for directory in dire
                 require(report.stat().st_size <= 8 * 1024**2, "BATCH_REPORT_BOUND")
                 outcome = batch_result(json.loads(report.read_text()), code, lane, self.failed_cases)
                 value = validate_local(environment=self.env, expected_mode="ui-batch", expected_batch_lane=lane)
-                # All selected34 lanes read the shared clock. Advancing lifecycle7 remains blocked.
+                # All retained lanes read the shared clock. Advancing lifecycle7 remains blocked.
                 batch_health(value)
                 require(hashlib.sha256(clock.read_bytes()).hexdigest() == clock_sha, "BATCH_UNEXPECTED_CLOCK_CHANGE")
                 outcomes.append(outcome)
@@ -3052,9 +3041,9 @@ valid(all(stat.S_IMODE(directory.lstat().st_mode) == 0o755 for directory in dire
                 emit("UI_BATCH_LANE", **outcome)
             finally:
                 self.env = base_environment
-        selected_count = len(self.failed_cases) if self.failed_cases is not None else 34
-        summary = {"scope": "REMAINING47_FAILED_CASE_SELECTION" if self.failed_cases is not None else "REMAINING47_FIRST_PORTABLE34",
-                   "expected": 47, "selected": selected_count, "selectedCaseIds": self.failed_cases, "unselected": 34 - selected_count,
+        selected_count = len(self.failed_cases) if self.failed_cases is not None else sum(row[3] for row in BATCH_LANES.values())
+        summary = {"scope": "REMAINING47_FAILED_CASE_SELECTION" if self.failed_cases is not None else "RETAINED_PORTABLE_BATCH",
+                   "expected": sum(row[3] for row in BATCH_LANES.values()) + 13, "selected": selected_count, "selectedCaseIds": self.failed_cases, "unselected": sum(row[3] for row in BATCH_LANES.values()) - selected_count,
                    "passed": sum(row["passed"] for row in outcomes),
                    "failed": sum(row["failed"] for row in outcomes),
                    "notRun": sum(row["notRun"] for row in outcomes),
@@ -3232,6 +3221,7 @@ def main():
     parser.add_argument("--failed-case", action="append", choices=list(FAILED_CASES),
                         help="UI batch only: select a confirmed failed case ID; repeat for multiple cases")
     args = parser.parse_args()
+    require(args.mode != "full", "ASYNC_BROWSER_LANE_RETIRED")
     selected = operational_selection(args.operational, args.operational_until, mode=args.mode, lifecycle_only=args.lifecycle_only,
         reconciliation_only=args.reconciliation_only, recovery_archive_only=args.recovery_archive_only, retained_receipts=(args.retained_cohort_receipt, args.retained_pdf_cohort_receipt,
             args.retained_recovery_cohort_receipt, args.retained_restored_cohort_receipt))

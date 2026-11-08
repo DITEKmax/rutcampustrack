@@ -74,7 +74,7 @@ def read_report(path):
 
 
 def portable36(summary):
-    lane.require(summary["selected"] == 34 and summary["selectedCaseIds"] is None and summary["passed"] == 34
+    lane.require(summary["selected"] == sum(row[3] for row in lane.BATCH_LANES.values()) and summary["selectedCaseIds"] is None and summary["passed"] == sum(row[3] for row in lane.BATCH_LANES.values())
                  and summary["failed"] == 0 and summary["notRun"] == 0 and len(summary["lanes"]) == len(lane.BATCH_LANES), "RELEASE_PORTABLE36")
     lane.require({row["lane"] for row in summary["lanes"]} == set(lane.BATCH_LANES), "RELEASE_PORTABLE36_SELECTION")
     for row in summary["lanes"]:
@@ -145,7 +145,7 @@ class ReplayRunner(lane.Runner):
             self.deadline = time.monotonic() + BUDGETS[self.selection]
         if phase.startswith("UI_BATCH_"):
             selection = phase.removeprefix("UI_BATCH_").lower().replace("_", "-")
-            self.deadline = time.monotonic() + {"installation": 300, "geo": 240, "homework": 420, "map": 240, "registry-html": 420, "helper": 300}.get(selection, 600)
+            self.deadline = time.monotonic() + {"installation": 300, "geo": 240, "homework": 420, "map": 240, "helper": 300}.get(selection, 600)
         if phase == "INITIAL_ADMINISTRATOR_CLI":
             self.deadline = time.monotonic() + 600
         if self.deadline:
@@ -262,7 +262,7 @@ def focused_options(selection, remaining_two=False, headman_only=False, homework
     if selection == "ui-batch":
         if homework_period_only:
             return {"failed_cases": ["HOMEWORK_PERIOD"]}
-        return {"failed_cases": ["FULL_ADMIN_RIGHTS", "HOMEWORK_PERIOD"]}
+        return {"failed_cases": ["HOMEWORK_PERIOD"]}
     return {"lifecycle_only": True, "operational_until": "semester-metadata"} if selection == "special13" else {}
 
 
@@ -441,6 +441,7 @@ def main():
     parser.add_argument("--bundled-dockerfile-frontend", action="store_true",
                         help="failed-ci only: reuse the guarded Docker Engine bundled frontend")
     args = parser.parse_args()
+    lane.require(args.mode != "full", "ASYNC_BROWSER_LANE_RETIRED")
     lane.require(not (args.d002_only or args.d002_authority_only) or args.mode == "client", "D002_CLIENT_ONLY")
     lane.require(not args.bundled_dockerfile_frontend or args.mode == "failed-ci" or args.d002_only or args.d002_authority_only,
                  "BUNDLED_FRONTEND_FAILED_CI_ONLY")

@@ -5,8 +5,9 @@ export const failedCases = {
   TMA_TAMPERED_ENTRY: { lane: 'auth-smoke', title: 'tampered Telegram proof cannot expose role data or navigation' },
   // Retired browser case: retained only as a synthetic privacy-control identity.
   HEADMAN_TEACHER_READ: { lane: 'first3', title: 'HEADMAN marks the real roster and TEACHER reads without acquiring write permission' },
-  ADMIN_HISTORICAL_MARK: { lane: 'admin', title: 'ADMIN creates a multirole headman and restores the archived account without old authority' },
-  FULL_ADMIN_RIGHTS: { lane: 'role-security-export', title: 'FULL multirole ADMIN assigns updates and revokes LIMITED rights through Vue without foreign-role calls @cloud-accepted' },
+  // Retired browser cases remain synthetic privacy-control identities only.
+  ADMIN_HISTORICAL_MARK: { lane: 'retired', title: 'ADMIN creates a multirole headman and restores the archived account without old authority' },
+  FULL_ADMIN_RIGHTS: { lane: 'retired', title: 'FULL multirole ADMIN assigns updates and revokes LIMITED rights through Vue without foreign-role calls @cloud-accepted' },
   OWN_PROFILE_THEME: { lane: 'role-security-export', title: 'own profile security changes password and replacement login rejects old authority @cloud-accepted' },
   HOMEWORK_PERIOD: { lane: 'homework', title: 'STUDENT multi-item feed keeps focus and rolls back a failed completion with safe external materials @real-mobile' },
   SEMESTER_METADATA: { lane: 'semester-metadata', title: 'FULL admin manages owned semester metadata and historical group promotion through the ready UI' },

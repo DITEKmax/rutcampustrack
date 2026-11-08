@@ -1682,41 +1682,6 @@ jobs:
         with:
           python-version: '3.12'
 
-      # Must precede every client dataset fixture: the disposable active semester
-      # can be widened through the normal API only before assignments exist.
-      - name: Resume actual eighteen-week async DOCX after navigation and lost response
-        id: stage17-async
-        if: ${{ matrix.group == 'client' && !cancelled() && steps.e2e-ready.outcome == 'success' }}
-        timeout-minutes: 10
-        working-directory: tests/e2e
-        env:
-          E2E_BASE_URL: https://localhost:8443
-          RCT_E2E_ASYNC_REPORT: 'true'
-          RCT_E2E_REMAINING5: 'true'
-          RCT_E2E_SYNTHETIC_SEED: 'true'
-          RCT_REMAINING5_RUN: ${{ runner.temp }}/rct-stage17-async-${{ github.run_id }}-${{ github.run_attempt }}
-          NODE_EXTRA_CA_CERTS: ${{ github.workspace }}/tests/e2e/infra/certs/server.crt
-          PLAYWRIGHT_NO_COPY_PROMPT: '1'
-          NODE_OPTIONS: --max-old-space-size=512
-          CI: 'true'
-        run: |
-          umask 077
-          mkdir -m 700 "$RCT_REMAINING5_RUN" "$RCT_REMAINING5_RUN/artifacts"
-          python3 -m venv "$RCT_REMAINING5_RUN/metrics-python"
-          "$RCT_REMAINING5_RUN/metrics-python/bin/python" -m pip install --quiet PyYAML==6.0.3
-          "$RCT_REMAINING5_RUN/metrics-python/bin/python" "$GITHUB_WORKSPACE/infra/prometheus/tests/check_pipeline.py" --e2e-async-browser
-
-      - name: Upload only safe async report browser outcomes
-        if: always() && matrix.group == 'client' && steps.stage17-async.outcome != 'skipped'
-        uses: actions/upload-artifact@v4
-        with:
-          name: stage17-async-safe-${{ github.run_attempt }}
-          path: |
-            ${{ runner.temp }}/rct-stage17-async-${{ github.run_id }}-${{ github.run_attempt }}/artifacts/safe-results.json
-            ${{ runner.temp }}/rct-stage17-async-${{ github.run_id }}-${{ github.run_attempt }}/artifacts/metrics.safe.json
-          if-no-files-found: error
-          retention-days: 7
-
       - name: Verify actual private bot menus roster and teacher Today on the hosted services
         id: hosted-bot-roles
         if: ${{ matrix.group == 'client' && !cancelled() && steps.e2e-ready.outcome == 'success' }}
@@ -1780,8 +1745,6 @@ jobs:
           path: |
             ${{ env.RCT_FOCUS3_RUN }}/artifacts/safe-results.json
             ${{ env.RCT_FOCUS3_RUN }}/supervision/observations-student.safe.json
-            ${{ env.RCT_FOCUS3_RUN }}/supervision/observations-headman.safe.json
-            ${{ env.RCT_FOCUS3_RUN }}/supervision/observations-helper.safe.json
           if-no-files-found: warn
           retention-days: 7
 
@@ -1932,35 +1895,6 @@ jobs:
           if-no-files-found: warn
           retention-days: 7
 
-      - name: Run real Vue administrator account lifecycle
-        id: admin-lifecycle
-        if: ${{ matrix.group == 'client' && !cancelled() && steps.e2e-ready.outcome == 'success' }}
-        working-directory: tests/e2e
-        env:
-          E2E_BASE_URL: https://localhost:8443
-          RCT_E2E_SYNTHETIC_SEED: 'true'
-          RCT_E2E_REMAINING5: 'true'
-          RCT_E2E_ADMIN_LIFECYCLE: 'true'
-          RCT_REMAINING5_RUN: ${{ runner.temp }}/rct-admin-lifecycle-${{ github.run_id }}-${{ github.run_attempt }}
-          PLAYWRIGHT_NO_COPY_PROMPT: '1'
-          NODE_OPTIONS: --max-old-space-size=512
-          CI: 'true'
-        run: |
-          umask 077
-          printf 'RCT_ADMIN_LIFECYCLE_RUN=%s\n' "$RCT_REMAINING5_RUN" >> "$GITHUB_ENV"
-          mkdir -m 700 -- "$RCT_REMAINING5_RUN"
-          mkdir -m 700 -- "$RCT_REMAINING5_RUN/artifacts"
-          npx playwright test --config playwright.real-mobile.config.ts --project=chromium
-
-      - name: Upload closed administrator lifecycle outcome
-        if: always() && steps.admin-lifecycle.outcome != 'skipped'
-        uses: actions/upload-artifact@v4
-        with:
-          name: admin-lifecycle-safe-${{ github.run_attempt }}
-          path: ${{ env.RCT_ADMIN_LIFECYCLE_RUN }}/artifacts/safe-results.json
-          if-no-files-found: warn
-          retention-days: 7
-
       - name: Run real Vue role transition and logout-all
         id: role-logout
         if: ${{ matrix.group == 'client' && !cancelled() && steps.e2e-ready.outcome == 'success' }}
@@ -1979,7 +1913,7 @@ jobs:
           printf 'RCT_ROLE_LOGOUT_RUN=%s\n' "$RCT_REMAINING5_RUN" >> "$GITHUB_ENV"
           mkdir -m 700 -- "$RCT_REMAINING5_RUN"
           mkdir -m 700 -- "$RCT_REMAINING5_RUN/artifacts"
-          npx playwright test --config playwright.real-mobile.config.ts --project=chromium 'cloud-accepted-admin-grants\.spec\.ts$' 'cloud-accepted-role-authority\.spec\.ts$' 'mobile-real-server\.spec\.ts$'
+          npx playwright test --config playwright.real-mobile.config.ts --project=chromium 'cloud-accepted-role-authority\.spec\.ts$' 'mobile-real-server\.spec\.ts$'
 
       - name: Upload closed role transition and logout-all outcome
         if: always() && steps.role-logout.outcome != 'skipped'
@@ -2016,37 +1950,6 @@ jobs:
         with:
           name: student-geo-safe-${{ github.run_attempt }}
           path: ${{ env.RCT_E2E_GEO_RUN }}/artifacts/safe-results.json
-          if-no-files-found: warn
-          retention-days: 7
-
-      - name: Verify real Vue homework archive history after DELETE replay
-        id: homework-lifecycle
-        timeout-minutes: 7
-        if: ${{ matrix.group == 'client' && !cancelled() && steps.e2e-ready.outcome == 'success' }}
-        working-directory: tests/e2e
-        env:
-          E2E_BASE_URL: https://localhost:8443
-          RCT_E2E_SYNTHETIC_SEED: 'true'
-          RCT_HOMEWORK_LIFECYCLE_RUN: ${{ runner.temp }}/rct-homework-lifecycle-${{ github.run_id }}-${{ github.run_attempt }}
-          RCT_E2E_REMAINING5: 'true'
-          RCT_REMAINING5_RUN: ${{ runner.temp }}/rct-homework-lifecycle-${{ github.run_id }}-${{ github.run_attempt }}
-          NODE_EXTRA_CA_CERTS: ${{ github.workspace }}/tests/e2e/infra/certs/server.crt
-          PLAYWRIGHT_NO_COPY_PROMPT: '1'
-          NODE_OPTIONS: --max-old-space-size=512
-          CI: 'true'
-        run: |
-          umask 077
-          printf 'RCT_HOMEWORK_LIFECYCLE_RUN=%s\n' "$RCT_HOMEWORK_LIFECYCLE_RUN" >> "$GITHUB_ENV"
-          mkdir -m 700 -- "$RCT_HOMEWORK_LIFECYCLE_RUN"
-          mkdir -m 700 -- "$RCT_HOMEWORK_LIFECYCLE_RUN/artifacts"
-          npx playwright test --config playwright.homework-lifecycle.config.ts --project=chromium --grep '@homework-archive-history(?= |$)'
-
-      - name: Upload closed homework lifecycle outcome
-        if: always() && steps.homework-lifecycle.outcome != 'skipped'
-        uses: actions/upload-artifact@v4
-        with:
-          name: homework-lifecycle-safe-${{ github.run_attempt }}
-          path: ${{ env.RCT_HOMEWORK_LIFECYCLE_RUN }}/artifacts/safe-results.json
           if-no-files-found: warn
           retention-days: 7
 

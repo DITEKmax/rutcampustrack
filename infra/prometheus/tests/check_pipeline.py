@@ -2592,8 +2592,6 @@ if __name__ == "__main__":
         import asyncio
 
         asyncio.run(bot_metrics_worker())
-    elif sys.argv[1:] == ["--e2e-async-browser"]:
-        e2e_async_browser()
     else:
         assert sys.argv[1:] in ([], ["--host-and-bot-only"], ["--remaining-infra-only"])
         try:

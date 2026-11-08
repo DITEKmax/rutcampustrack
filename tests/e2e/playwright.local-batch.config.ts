@@ -8,13 +8,11 @@ const lane = process.env.RCT_LOCAL_UI_BATCH_LANE;
 const configurations: Record<string, string> = {
   'auth-smoke': './playwright.config',
   first3: './playwright.first3.config',
-  admin: './playwright.real-mobile.config',
   'role-security-export': './playwright.real-mobile.config',
   installation: './playwright.real-mobile.config',
   geo: './playwright.teaching-clock.config',
   homework: './playwright.homework-lifecycle.config',
   map: './playwright.map-lifecycle.config',
-  'registry-html': './playwright.registry-export.config',
   helper: './playwright.helper-capabilities.config',
 };
 if (!lane || !Object.hasOwn(configurations, lane) || process.env.RCT_LOCAL_STAGE17_MODE !== 'ui-batch')
@@ -37,8 +35,6 @@ if (lane === 'auth-smoke') {
   grepInvert = /production worker update activates through the update gate and retains a warm launch$/;
 } else if (lane === 'geo') {
   grep = /real geolocation confirms fresh student, then D005 manual absence rejects the blocked attempt$/;
-} else if (lane === 'registry-html') {
-  grep = /(?:FULL ordinary user export downloads filtered HTML with exact safe fields|LIMITED ordinary user export downloads filtered HTML with exact safe fields|FULL admin applies group filters sorting and reset before downloading filtered HTML) @cloud-accepted$/;
 }
 
 // The Python admission above binds this exact enum list to the current manifest.

@@ -1943,6 +1943,7 @@ defineExpose({ openNotificationAction });
             !(route.id === mapRouteId && mapClient) &&
             !groupOpen &&
             !subjectsOpen &&
+            route.id !== statsRouteId &&
             !requestsOpen &&
             !homeTaskOpen &&
             !journalScreen?.manualOpen &&
@@ -2056,8 +2057,9 @@ defineExpose({ openNotificationAction });
       :assistant-permissions="assistantPermissions"
       :offline="offline"
       :report-download="reportDownload"
-      :show-back="false"
+      :show-back="host?.backOwner !== 'host'"
       @view-change="statsView = $event"
+      @back="navigation.back()"
       @error="forwardError"
     />
     <HeadmanLessonManagementScreen

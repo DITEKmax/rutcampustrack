@@ -14,9 +14,11 @@
   gap: var(--rct-space-4);
   padding-block-end: var(--rct-space-1);
 }
-.headman-stats-mobile__header h1 {
+.headman-stats-mobile__header h1,
+.headman-stats .headman-stats-mobile__header h1 {
+  min-inline-size: 0;
   margin: 0;
-  font-size: var(--rct-font-size-title-screen);
+  font-size: var(--rct-font-size-title);
   overflow-wrap: anywhere;
 }
 .headman-stats-mobile h2,
@@ -31,6 +33,7 @@
   flex: none;
   inline-size: var(--rct-control-min-touch);
   block-size: var(--rct-control-min-touch);
+  padding: 0;
   border: 0;
   border-radius: var(--rct-radius-full);
   color: var(--rct-color-text-secondary);
@@ -38,6 +41,7 @@
   @mixin rct-focus-ring;
 }
 .headman-stats-mobile__back svg {
+  display: block;
   inline-size: var(--rct-icon-size);
   block-size: var(--rct-icon-size);
 }

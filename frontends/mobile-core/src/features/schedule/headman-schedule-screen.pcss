@@ -1,5 +1,28 @@
 @import '../../styles/tokens.pcss';
 
+.mobile-shell .headman-lesson-back {
+  position: absolute;
+  z-index: 1;
+  inset-block-start: var(--rct-space-5);
+  inset-inline-start: max(
+    var(--rct-space-4),
+    calc((100% - var(--rct-today-content-max)) / 2 + var(--rct-space-4))
+  );
+  display: grid;
+  place-items: center;
+  inline-size: var(--rct-control-min-touch);
+  block-size: var(--rct-control-min-touch);
+  padding: 0;
+  border-radius: var(--rct-radius-full);
+  color: var(--rct-color-text-primary);
+  background: var(--rct-color-surface-raised);
+}
+.headman-lesson-back svg {
+  display: block;
+  inline-size: var(--rct-icon-size);
+  block-size: var(--rct-icon-size);
+}
+
 .headman-schedule {
   display: grid;
   gap: var(--rct-space-4);

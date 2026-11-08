@@ -1951,7 +1951,10 @@ defineExpose({ openNotificationAction });
         "
         class="mobile-shell__back"
         aria-label="Назад"
-        :class="{ 'headman-homework-back': route.id === homeworkRouteId }"
+        :class="{
+          'headman-homework-back': route.id === homeworkRouteId,
+          'headman-lesson-back': route.id === journalRouteId,
+        }"
         type="button"
         @click="onBack"
       >

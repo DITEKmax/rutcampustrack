@@ -1,6 +1,6 @@
 /* eslint-disable */
 // Generated from docs/openapi/mobile-bff.json. Do not edit.
-// Contract: JS-STUDENT-01-r1; SHA-256: 8bb762e4fec4f03ad64bf9007dc0d7472861229d7a738b76466880081f723ff0
+// Contract: JS-STUDENT-01-r1; SHA-256: 95345393b8d286a6e30a801eb1ebe4a611951774ea109e08bf7ef23dbfc7a2c3
 
 export interface paths {
     "/api/v1/map/buildings/{buildingId}/floors/{floorId}/opens": {
@@ -726,6 +726,22 @@ export interface components {
             /** @enum {string} */
             status: "PENDING" | "APPROVED" | "REJECTED" | "CANCELLED";
         } | null;
+        CheckinDiagnostics: {
+            /** Format: double */
+            accuracyMeters?: number | null;
+            /** Format: int32 */
+            acquisitionDurationMs?: number;
+            /** @enum {string} */
+            completionReason?: "QUALITY_REACHED" | "BUDGET_EXPIRED" | "PERMISSION_DENIED" | "POSITION_UNAVAILABLE" | "TIMEOUT" | "UNSUPPORTED" | "APP_DISABLED";
+            /** Format: date-time */
+            fixTimestamp?: string | null;
+            /** Format: date-time */
+            receivedAt?: string | null;
+            /** Format: int32 */
+            sampleCount?: number;
+            /** @enum {string} */
+            source: "BROWSER" | "TMA";
+        } | null;
         CheckinEligibility: {
             allowed: boolean;
             /** @enum {string} */
@@ -976,6 +992,7 @@ export interface components {
             serverNow: string;
         };
         StudentCheckinCommand: {
+            diagnostics?: components["schemas"]["CheckinDiagnostics"];
             geo: components["schemas"]["GeoInput"];
         };
         StudentExcuseRequest: {

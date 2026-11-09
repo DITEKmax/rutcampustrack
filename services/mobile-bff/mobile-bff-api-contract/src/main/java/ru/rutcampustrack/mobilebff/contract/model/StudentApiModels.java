@@ -13,6 +13,8 @@ import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Max;
 
 import java.net.URI;
 import java.time.Instant;
@@ -695,7 +697,28 @@ public final class StudentApiModels {
     @Schema(
             name = "StudentCheckinCommand",
             requiredProperties = {"geo"})
-    public record CheckinRequest(@NotNull @Valid GeoInput geo) {}
+    public record CheckinRequest(
+            @NotNull @Valid GeoInput geo,
+            @Valid @Schema(nullable = true) CheckinDiagnostics diagnostics) {
+        public CheckinRequest(GeoInput geo) { this(geo, null); }
+    }
+
+    public enum GeoDiagnosticSource { BROWSER, TMA }
+
+    public enum GeoCompletionReason {
+        QUALITY_REACHED, BUDGET_EXPIRED, PERMISSION_DENIED, POSITION_UNAVAILABLE,
+        TIMEOUT, UNSUPPORTED, APP_DISABLED
+    }
+
+    @Schema(name = "CheckinDiagnostics", requiredProperties = {"source"})
+    public record CheckinDiagnostics(
+            @NotNull GeoDiagnosticSource source,
+            @DecimalMin("0") @DecimalMax("10000000") @Schema(nullable = true) Double accuracyMeters,
+            @Schema(nullable = true) Instant fixTimestamp,
+            @Schema(nullable = true) Instant receivedAt,
+            @Min(0) @Max(64) Integer sampleCount,
+            @Min(0) @Max(60000) Integer acquisitionDurationMs,
+            GeoCompletionReason completionReason) {}
 
     @Schema(
             name = "StudentCheckinAck",

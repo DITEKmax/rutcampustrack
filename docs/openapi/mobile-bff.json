@@ -3042,6 +3042,52 @@
           }
         }
       },
+      "CheckinDiagnostics" : {
+        "required" : [ "source" ],
+        "type" : "object",
+        "properties" : {
+          "source" : {
+            "type" : "string",
+            "enum" : [ "BROWSER", "TMA" ]
+          },
+          "accuracyMeters" : {
+            "maximum" : 10000000,
+            "exclusiveMaximum" : false,
+            "minimum" : 0,
+            "exclusiveMinimum" : false,
+            "type" : "number",
+            "format" : "double",
+            "nullable" : true
+          },
+          "fixTimestamp" : {
+            "type" : "string",
+            "format" : "date-time",
+            "nullable" : true
+          },
+          "receivedAt" : {
+            "type" : "string",
+            "format" : "date-time",
+            "nullable" : true
+          },
+          "sampleCount" : {
+            "maximum" : 64,
+            "minimum" : 0,
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "acquisitionDurationMs" : {
+            "maximum" : 60000,
+            "minimum" : 0,
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "completionReason" : {
+            "type" : "string",
+            "enum" : [ "QUALITY_REACHED", "BUDGET_EXPIRED", "PERMISSION_DENIED", "POSITION_UNAVAILABLE", "TIMEOUT", "UNSUPPORTED", "APP_DISABLED" ]
+          }
+        },
+        "nullable" : true
+      },
       "CoordinatesGeo" : {
         "required" : [ "kind", "latitude", "longitude" ],
         "type" : "object",
@@ -3089,6 +3135,9 @@
         "properties" : {
           "geo" : {
             "$ref" : "#/components/schemas/GeoInput"
+          },
+          "diagnostics" : {
+            "$ref" : "#/components/schemas/CheckinDiagnostics"
           }
         }
       },

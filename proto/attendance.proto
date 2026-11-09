@@ -353,6 +353,35 @@ message StudentCheckinCommand {
     Coordinates coordinates = 3;
     GeoUnavailable unavailable = 4;
   }
+  GeoDiagnostics diagnostics = 5;
+}
+
+// Advisory acquisition metadata. It never establishes presence or authorization.
+message GeoDiagnostics {
+  GeoDiagnosticSource source = 1;
+  optional double accuracy_meters = 2;
+  optional string fix_timestamp = 3;
+  optional string received_at = 4;
+  optional int32 sample_count = 5;
+  optional int32 acquisition_duration_ms = 6;
+  optional GeoCompletionReason completion_reason = 7;
+}
+
+enum GeoDiagnosticSource {
+  GEO_DIAGNOSTIC_SOURCE_UNSPECIFIED = 0;
+  GEO_DIAGNOSTIC_SOURCE_BROWSER = 1;
+  GEO_DIAGNOSTIC_SOURCE_TMA = 2;
+}
+
+enum GeoCompletionReason {
+  GEO_COMPLETION_REASON_UNSPECIFIED = 0;
+  GEO_COMPLETION_REASON_QUALITY_REACHED = 1;
+  GEO_COMPLETION_REASON_BUDGET_EXPIRED = 2;
+  GEO_COMPLETION_REASON_PERMISSION_DENIED = 3;
+  GEO_COMPLETION_REASON_POSITION_UNAVAILABLE = 4;
+  GEO_COMPLETION_REASON_TIMEOUT = 5;
+  GEO_COMPLETION_REASON_UNSUPPORTED = 6;
+  GEO_COMPLETION_REASON_APP_DISABLED = 7;
 }
 
 message Coordinates {

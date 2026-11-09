@@ -8,6 +8,8 @@ from pathlib import Path
 
 import yaml
 
+from check_grpc import unit as grpc_rule_tests
+
 ROOT = Path(__file__).resolve().parents[3]
 DASH = ROOT / "infra/grafana/provisioning/dashboards"
 
@@ -572,6 +574,7 @@ def main():
         fixture = Path(td) / "formulas.yml"
         fixture.write_text(yaml.safe_dump({"evaluation_interval": "1m", "tests": tests}, sort_keys=False))
         subprocess.run([os.environ.get("PROMTOOL", "promtool"), "test", "rules", str(fixture)], check=True)
+    grpc_rule_tests()
 
 
 if __name__ == "__main__":

@@ -1,7 +1,9 @@
-/** Provisional device policy; server geofence and eligibility remain authoritative. */
+import type { StudentToday } from '../api/types'
+
+/** Acquisition hints never override the server's final attendance decision. */
 export const GEO_BUDGET_MS = 28_000
 export const GEO_FRESH_MS = 30_000
-export const GEO_GOOD_METERS = 50
+export const GEO_MAX_ATTEMPTS = 3
 export type GeoFailure =
   | 'PERMISSION_DENIED'
   | 'POSITION_UNAVAILABLE'
@@ -12,29 +14,30 @@ export interface GeoSample {
   latitude: number
   longitude: number
   accuracy: number | null
-  /** Native Telegram LocationData has no fix timestamp. */
+  /** Telegram LocationData has no fix timestamp. */
   timestamp: number | null
   receivedAt: number
 }
 export interface GeoSource {
   readonly source: 'BROWSER' | 'TMA'
-  watch(sample: (sample: GeoSample) => void, failed: (reason: GeoFailure) => void): () => void
+  watch(
+    sample: (sample: GeoSample) => void,
+    failed: (reason: GeoFailure) => void,
+    context?: { probe?: boolean },
+  ): () => void
 }
+export type GeoGeofence = NonNullable<StudentToday['checkinGeofence']>
 export interface GeoResult {
   source: GeoSource['source']
   sample: GeoSample | null
   sampleCount: number
   duration: number
-  reason: GeoFailure | 'QUALITY_REACHED' | 'BUDGET_EXPIRED'
-  needsReview: boolean
-  conflicting: boolean
+  reason: GeoFailure | 'WITHIN_GEOFENCE' | 'ATTEMPTS_EXHAUSTED' | 'BUDGET_EXPIRED'
 }
 export type GeoAcquisitionTerminal = Pick<GeoResult, 'source' | 'duration' | 'sampleCount'> & {
   reason: GeoResult['reason'] | 'CANCELLED'
 }
 export type GeoTerminalHook = (event: GeoAcquisitionTerminal) => void | Promise<void>
-
-/** Only bounded, non-identifying terminal values leave the sensor owner. Never await telemetry. */
 export function notifyGeoTerminal(
   hook: GeoTerminalHook | undefined,
   event: GeoAcquisitionTerminal,
@@ -43,10 +46,9 @@ export function notifyGeoTerminal(
   try {
     void Promise.resolve(hook(Object.freeze({ ...event }))).catch(() => undefined)
   } catch {
-    /* Optional reporting must not affect acquisition or session state. */
+    /* Optional only. */
   }
 }
-
 export function isFreshBrowserFix(timestamp: number | null, now = Date.now()): boolean {
   return (
     timestamp !== null &&
@@ -55,143 +57,187 @@ export function isFreshBrowserFix(timestamp: number | null, now = Date.now()): b
     timestamp <= now + 1_000
   )
 }
-
-function valid(sample: GeoSample, source: GeoSource['source'], now: number): boolean {
+function valid(sample: GeoSample, source: GeoSource['source']): boolean {
   return (
     Number.isFinite(sample.latitude) &&
     Math.abs(sample.latitude) <= 90 &&
     Number.isFinite(sample.longitude) &&
     Math.abs(sample.longitude) <= 180 &&
-    (source === 'TMA' || isFreshBrowserFix(sample.timestamp, now))
+    (source === 'TMA' || isFreshBrowserFix(sample.timestamp))
   )
 }
-function accuracy(sample: GeoSample): number {
-  return sample.accuracy !== null &&
-    Number.isFinite(sample.accuracy) &&
-    sample.accuracy >= 0 &&
-    sample.accuracy <= 10_000_000
-    ? sample.accuracy
-    : Infinity
+export function validGeofence(policy: GeoGeofence | null | undefined): policy is GeoGeofence {
+  return (
+    !!policy &&
+    Number.isFinite(policy.latitude) &&
+    Math.abs(policy.latitude) <= 90 &&
+    Number.isFinite(policy.longitude) &&
+    Math.abs(policy.longitude) <= 180 &&
+    Number.isFinite(policy.radiusMeters) &&
+    policy.radiusMeters > 0
+  )
 }
-function distance(a: GeoSample, b: GeoSample): number {
+export function withinGeofence(sample: GeoSample, policy: GeoGeofence): boolean {
   const rad = Math.PI / 180
-  const dlat = (b.latitude - a.latitude) * rad
-  const dlon = (b.longitude - a.longitude) * rad
+  const dlat = (sample.latitude - policy.latitude) * rad
+  const dlon = (sample.longitude - policy.longitude) * rad
   const h =
     Math.sin(dlat / 2) ** 2 +
-    Math.cos(a.latitude * rad) * Math.cos(b.latitude * rad) * Math.sin(dlon / 2) ** 2
-  return 6_371_000 * 2 * Math.atan2(Math.sqrt(h), Math.sqrt(Math.max(0, 1 - h)))
+    Math.cos(sample.latitude * rad) * Math.cos(policy.latitude * rad) * Math.sin(dlon / 2) ** 2
+  const meters = 6_371_000 * 2 * Math.atan2(Math.sqrt(h), Math.sqrt(Math.max(0, 1 - h)))
+  return (
+    meters <= policy.radiusMeters ||
+    Math.abs(meters - policy.radiusMeters) <=
+      Number.EPSILON * Math.max(meters, policy.radiusMeters) * 8
+  )
 }
-
-/** One bounded source, deterministic deadline, no campus-distance selection or averaging. */
-export function acquireGeolocation(
+interface Reading {
+  sample: GeoSample | null
+  reason: GeoFailure | 'BUDGET_EXPIRED' | null
+}
+/** One fresh reading. Settings uses this directly, without coordinator telemetry or retries. */
+export function readGeolocationOnce(
   source: GeoSource,
   options: {
     signal?: AbortSignal
-    progress?: (stage: 'determining' | 'refining') => void
     budgetMs?: number
-    terminal?: GeoTerminalHook
+    afterTimestamp?: number | null
+    probe?: boolean
   } = {},
-): Promise<GeoResult> {
+): Promise<Reading> {
   return new Promise((resolve, reject) => {
-    const started = Date.now()
+    const deadline =
+      performance.now() + Math.max(0, Math.min(GEO_BUDGET_MS, options.budgetMs ?? GEO_BUDGET_MS))
     let done = false
     let stop = () => {}
-    let best: GeoSample | null = null
-    const samples: GeoSample[] = []
-    let count = 0
-    let conflicting = false
-    const finish = (reason: GeoResult['reason']) => {
+    const finish = (reading: Reading) => {
       if (done) return
       done = true
       clearTimeout(timer)
       options.signal?.removeEventListener('abort', abort)
       stop()
-      best = null
-      if (reason !== 'PERMISSION_DENIED' && reason !== 'UNSUPPORTED' && reason !== 'APP_DISABLED')
-        for (const candidate of samples) {
-          if (!valid(candidate, source.source, Date.now())) continue
-          if (
-            !best ||
-            accuracy(candidate) < accuracy(best) ||
-            (accuracy(candidate) === accuracy(best) &&
-              (candidate.timestamp ?? candidate.receivedAt) > (best.timestamp ?? best.receivedAt))
-          )
-            best = candidate
-        }
-      const duration = Math.min(60_000, Math.max(0, Date.now() - started))
-      notifyGeoTerminal(options.terminal, {
-        source: source.source,
-        reason,
-        duration,
-        sampleCount: count,
-      })
-      resolve({
-        source: source.source,
-        sample: best,
-        sampleCount: count,
-        duration,
-        reason,
-        needsReview: conflicting || !best || accuracy(best) > GEO_GOOD_METERS,
-        conflicting,
-      })
+      resolve(reading)
     }
     const abort = () => {
       if (done) return
       done = true
       clearTimeout(timer)
-      stop()
       options.signal?.removeEventListener('abort', abort)
-      notifyGeoTerminal(options.terminal, {
-        source: source.source,
-        reason: 'CANCELLED',
-        duration: Math.min(60_000, Math.max(0, Date.now() - started)),
-        sampleCount: count,
-      })
-      reject(new DOMException('Определение геолокации отменено', 'AbortError'))
+      stop()
+      reject(new DOMException('Geolocation cancelled', 'AbortError'))
     }
     const timer = setTimeout(
-      () => finish('BUDGET_EXPIRED'),
-      Math.min(GEO_BUDGET_MS, options.budgetMs ?? GEO_BUDGET_MS),
+      () => finish({ sample: null, reason: 'BUDGET_EXPIRED' }),
+      Math.max(0, Math.min(GEO_BUDGET_MS, options.budgetMs ?? GEO_BUDGET_MS)),
     )
     options.signal?.addEventListener('abort', abort, { once: true })
     if (options.signal?.aborted) return abort()
-    options.progress?.('determining')
     try {
       stop = source.watch(
         (sample) => {
-          if (done || !valid(sample, source.source, Date.now())) return
-          count = Math.min(64, count + 1)
-          samples.push(sample)
-          if (samples.length > 64) samples.shift()
-          if (best && !valid(best, source.source, Date.now())) best = null
+          if (!done && performance.now() > deadline) {
+            finish({ sample: null, reason: 'BUDGET_EXPIRED' })
+            return
+          }
+          if (done || !valid(sample, source.source)) return
           if (
-            best &&
-            Number.isFinite(accuracy(best)) &&
-            Number.isFinite(accuracy(sample)) &&
-            distance(best, sample) > Math.max(100, accuracy(best) + accuracy(sample))
+            source.source === 'BROWSER' &&
+            options.afterTimestamp != null &&
+            (sample.timestamp ?? -Infinity) <= options.afterTimestamp
           )
-            conflicting = true
-          if (
-            !best ||
-            accuracy(sample) < accuracy(best) ||
-            (accuracy(sample) === accuracy(best) &&
-              (sample.timestamp ?? sample.receivedAt) > (best.timestamp ?? best.receivedAt))
-          )
-            best = sample
-          options.progress?.('refining')
-          if (accuracy(best) <= GEO_GOOD_METERS && !conflicting) finish('QUALITY_REACHED')
+            return
+          finish({ sample, reason: null })
         },
-        (reason) => finish(reason),
+        (reason) => finish({ sample: null, reason }),
+        { probe: options.probe === true },
       )
-      // Some native/fixture implementations invoke the callback synchronously.
       if (done) stop()
     } catch {
-      finish('POSITION_UNAVAILABLE')
+      finish({ sample: null, reason: 'POSITION_UNAVAILABLE' })
     }
   })
 }
-
+/** Initial reading plus two automatic retries, one shared deadline and one terminal event. */
+export async function acquireGeolocation(
+  source: GeoSource,
+  options: {
+    signal?: AbortSignal
+    progress?: (stage: 'determining' | 'refining') => void
+    budgetMs?: number
+    geofence?: GeoGeofence | null
+    terminal?: GeoTerminalHook
+  } = {},
+): Promise<GeoResult> {
+  const started = performance.now()
+  const elapsed = () => Math.max(0, performance.now() - started)
+  const budget = Math.max(0, Math.min(GEO_BUDGET_MS, options.budgetMs ?? GEO_BUDGET_MS))
+  let latest: GeoSample | null = null
+  let count = 0
+  let reason: GeoResult['reason'] = 'POSITION_UNAVAILABLE'
+  try {
+    for (let attempt = 0; attempt < GEO_MAX_ATTEMPTS; attempt++) {
+      if (options.signal?.aborted) throw new DOMException('Geolocation cancelled', 'AbortError')
+      const remaining = budget - elapsed()
+      if (remaining <= 0) {
+        reason = 'BUDGET_EXPIRED'
+        break
+      }
+      try {
+        options.progress?.(attempt === 0 ? 'determining' : 'refining')
+      } catch {
+        /* Presentation only. */
+      }
+      const reading = await readGeolocationOnce(source, {
+        ...(options.signal ? { signal: options.signal } : {}),
+        budgetMs: remaining,
+        afterTimestamp: latest?.timestamp ?? null,
+      })
+      if (reading.sample) count++
+      if (options.signal?.aborted) throw new DOMException('Geolocation cancelled', 'AbortError')
+      if (reading.sample) {
+        latest = reading.sample
+        reason = 'ATTEMPTS_EXHAUSTED'
+        if (validGeofence(options.geofence) && withinGeofence(latest, options.geofence)) {
+          reason = 'WITHIN_GEOFENCE'
+          break
+        }
+      } else {
+        reason = reading.reason ?? 'POSITION_UNAVAILABLE'
+        if (
+          reason === 'PERMISSION_DENIED' ||
+          reason === 'UNSUPPORTED' ||
+          reason === 'APP_DISABLED'
+        ) {
+          latest = null
+          break
+        }
+        if (reason === 'BUDGET_EXPIRED') break
+      }
+    }
+    if (latest && !valid(latest, source.source)) {
+      latest = null
+      if (reason !== 'BUDGET_EXPIRED') reason = 'POSITION_UNAVAILABLE'
+    }
+    if (latest && reason !== 'WITHIN_GEOFENCE' && reason !== 'BUDGET_EXPIRED')
+      reason = 'ATTEMPTS_EXHAUSTED'
+    const duration = Math.min(60_000, Math.floor(elapsed()))
+    notifyGeoTerminal(options.terminal, {
+      source: source.source,
+      reason,
+      duration,
+      sampleCount: count,
+    })
+    return { source: source.source, sample: latest, reason, duration, sampleCount: count }
+  } catch (error) {
+    notifyGeoTerminal(options.terminal, {
+      source: source.source,
+      reason: 'CANCELLED',
+      duration: Math.min(60_000, Math.floor(elapsed())),
+      sampleCount: count,
+    })
+    throw error
+  }
+}
 export function browserGeoSource(
   geo: Geolocation | undefined = globalThis.navigator?.geolocation,
 ): GeoSource {

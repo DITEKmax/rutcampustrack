@@ -78,6 +78,7 @@ function fixture() {
   } as unknown as StudentScope
   let current = {
     lessons: [structuredClone(lesson)],
+    checkinGeofence: { latitude: 55.7, longitude: 37.6, radiusMeters: 400 },
     serverNow: '2026-11-09T07:00:00Z',
   } as StudentToday
   const refresh = vi.fn(async () => {})
@@ -99,6 +100,15 @@ function fixture() {
     refresh,
     watchPosition,
     clearWatch,
+    setPolicyMissing(explicitNull = false) {
+      if (explicitNull) {
+        current = { ...current, checkinGeofence: null }
+        return
+      }
+      const legacy = { ...current }
+      delete legacy.checkinGeofence
+      current = legacy
+    },
     setClosed() {
       current = {
         ...current,
@@ -110,9 +120,9 @@ function fixture() {
         ],
       }
     },
-    emit(accuracy: number) {
+    emit(accuracy: number, latitude = 55.7) {
       sample({
-        coords: { latitude: 55.7, longitude: 37.6, accuracy },
+        coords: { latitude, longitude: 37.6, accuracy },
         timestamp: Date.now(),
       } as GeolocationPosition)
     },
@@ -125,6 +135,58 @@ async function settle() {
   for (let i = 0; i < 10; i++) await Promise.resolve()
 }
 describe('Web consumer of shared acquisition and immutable recovery', () => {
+  it.each(['present', 'omitted', 'null'] as const)(
+    'sends one final automatic pending request after three readings (policy=%s)',
+    async (policyShape) => {
+      const f = fixture()
+      const legacy = policyShape !== 'present'
+      if (legacy) f.setPolicyMissing(policyShape === 'null')
+      f.api.checkin.mockResolvedValue({ lessonId: '77', outcome: 'PENDING_CONFIRMATION' })
+      const submit = f.checkin.submit(lesson, '2026-11-09T07:00:00Z')
+      await settle()
+      f.emit(1, 55.71)
+      await settle()
+      expect(f.api.checkin).not.toHaveBeenCalled()
+      await vi.advanceTimersByTimeAsync(1)
+      f.emit(1, 55.72)
+      await settle()
+      expect(f.api.checkin).not.toHaveBeenCalled()
+      await vi.advanceTimersByTimeAsync(1)
+      f.emit(9000, 55.73)
+      await submit
+      expect(f.watchPosition).toHaveBeenCalledTimes(3)
+      expect(f.api.checkin).toHaveBeenCalledOnce()
+      expect(f.api.checkin.mock.calls[0]?.[1]).toMatchObject({
+        geo: { latitude: 55.73 },
+        diagnostics: { sampleCount: 3 },
+      })
+      expect(f.api.checkin.mock.calls[0]?.[1].diagnostics.completionReason).toBe(
+        legacy ? undefined : 'ATTEMPTS_EXHAUSTED',
+      )
+      expect(f.api.reportCheckinAcquisition).toHaveBeenCalledExactlyOnceWith(
+        expect.objectContaining({ outcome: 'ATTEMPTS_EXHAUSTED', sampleCount: 3 }),
+      )
+      expect(f.checkin.result.value).toContain('запрос старосте')
+    },
+  )
+  it.each([false, true])(
+    'automatically submits unavailable once after denial without another permission request or confirmation (legacy=%s)',
+    async (legacy) => {
+      const f = fixture()
+      if (legacy) f.setPolicyMissing()
+      f.api.checkin.mockResolvedValue({ lessonId: '77', outcome: 'PENDING_CONFIRMATION' })
+      const submit = f.checkin.submit(lesson, '2026-11-09T07:00:00Z')
+      await settle()
+      f.fail()
+      await submit
+      expect(f.watchPosition).toHaveBeenCalledOnce()
+      expect(f.api.checkin).toHaveBeenCalledOnce()
+      expect(f.api.checkin.mock.calls[0]?.[1]).toMatchObject({
+        geo: { kind: 'UNAVAILABLE', reason: 'PERMISSION_DENIED' },
+        diagnostics: { completionReason: 'PERMISSION_DENIED' },
+      })
+    },
+  )
   it('keeps a run reporter bound to the captured API when the account changes during GPS', async () => {
     const f = fixture()
     const submit = f.checkin.submit(lesson, '2026-11-09T07:00:00Z')
@@ -187,7 +249,7 @@ describe('Web consumer of shared acquisition and immutable recovery', () => {
       expect(f.checkin.busy.value).toBe(false)
       expect(f.api.reportCheckinAcquisition).toHaveBeenCalledExactlyOnceWith({
         source: 'BROWSER',
-        outcome: 'QUALITY_REACHED',
+        outcome: 'WITHIN_GEOFENCE',
         durationMs: 0,
         sampleCount: 1,
       })
@@ -218,21 +280,23 @@ describe('Web consumer of shared acquisition and immutable recovery', () => {
     expect(f.watchPosition).toHaveBeenCalledTimes(2)
     expect(f.api.checkin).toHaveBeenCalledOnce()
   })
-  it('waits for explicit continuation of a poor fix before refreshing eligibility and sending once', async () => {
+  it('automatically retries an outside fix and sends exactly once as soon as a subsequent fix is inside', async () => {
     const f = fixture()
     const submit = f.checkin.submit(lesson, '2026-11-09T07:00:00Z')
     await settle()
-    f.emit(500)
-    await vi.advanceTimersByTimeAsync(28_000)
-    expect(f.checkin.deviceAccess.state.stage).toBe('review')
+    f.emit(1, 55.71)
+    await settle()
     expect(f.api.checkin).not.toHaveBeenCalled()
-    f.checkin.deviceAccess.choose('continue')
+    expect(f.watchPosition).toHaveBeenCalledTimes(2)
+    await vi.advanceTimersByTimeAsync(1)
+    f.emit(5000)
     await submit
     expect(f.api.checkin).toHaveBeenCalledOnce()
-    expect(f.api.checkin.mock.calls[0]?.[1].diagnostics).toMatchObject({
-      accuracyMeters: 500,
-      completionReason: 'BUDGET_EXPIRED',
+    expect(f.api.checkin.mock.calls[0]?.[1]).toMatchObject({
+      geo: { latitude: 55.7 },
+      diagnostics: { accuracyMeters: 5000, completionReason: 'WITHIN_GEOFENCE', sampleCount: 2 },
     })
+    expect(f.api.reportCheckinAcquisition).toHaveBeenCalledOnce()
     expect(f.refresh).toHaveBeenCalledTimes(2)
   })
   it('cancels before first POST without creating uncertain mutation state', async () => {

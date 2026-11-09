@@ -237,6 +237,8 @@ export class StudentApi {
   /** One optional observation; never refresh authentication, retry, or decode an error body. */
   async reportCheckinAcquisition(report: CheckinAcquisitionReport): Promise<void> {
     const outcomes = new Set<CheckinAcquisitionReport['outcome']>([
+      'WITHIN_GEOFENCE',
+      'ATTEMPTS_EXHAUSTED',
       'QUALITY_REACHED',
       'BUDGET_EXPIRED',
       'PERMISSION_DENIED',

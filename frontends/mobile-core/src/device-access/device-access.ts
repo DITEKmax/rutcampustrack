@@ -6,8 +6,10 @@ import {
   browserGeoSource,
   isFreshBrowserFix,
   notifyGeoTerminal,
+  validGeofence,
   type GeoTerminalHook,
-  type GeoResult,
+  readGeolocationOnce,
+  type GeoGeofence,
   type GeoSource,
 } from './geolocation'
 import { requestBrowserCamera } from './browser-camera'
@@ -35,6 +37,7 @@ export interface AcquisitionOptions {
   signal?: AbortSignal
   progress?: (stage: 'determining' | 'refining') => void
   terminal?: GeoTerminalHook
+  geofence?: GeoGeofence | null
 }
 const key: InjectionKey<DeviceAccess> = Symbol('device-access')
 export type DeviceAccess = ReturnType<typeof createDeviceAccess>
@@ -69,14 +72,12 @@ export function createDeviceAccess(
   const state = reactive({
     location: { enabled: true, permission: 'unknown' as DevicePermission },
     camera: { enabled: true, permission: 'unknown' as DevicePermission },
-    stage: null as 'determining' | 'refining' | 'review' | null,
-    review: null as GeoResult | null,
+    stage: null as 'determining' | 'refining' | null,
   })
   let account: string | null = null
   let authority: string | null = null
   let generation = 0
   let active: AbortController | null = null
-  let choice: ((value: 'retry' | 'continue') => void) | null = null
   const inspections = new Map<DeviceKind, AbortController>()
   const cleanups = new Set<() => void>()
   function cancel(): void {
@@ -84,9 +85,7 @@ export function createDeviceAccess(
     inspections.clear()
     active?.abort()
     active = null
-    choice = null
     state.stage = null
-    state.review = null
     for (const kind of ['camera', 'location'] as const)
       if (state[kind].permission === 'checking') state[kind].permission = 'unknown'
     for (const cleanup of [...cleanups]) cleanup()
@@ -127,7 +126,8 @@ export function createDeviceAccess(
     inspections.set(kind, inspection)
     state[kind].permission = 'checking'
     const permission = await (
-      platform.inspect?.(kind, inspection.signal) ?? inspectBrowserPermission(kind)
+      platform.inspect?.(kind, inspection.signal) ??
+      inspectBrowserPermission(kind, inspection.signal)
     ).catch(() => 'error' as const)
     if (version === generation && !inspection.signal.aborted) state[kind].permission = permission
     if (inspections.get(kind) === inspection) inspections.delete(kind)
@@ -140,65 +140,36 @@ export function createDeviceAccess(
     options.signal?.addEventListener('abort', abort, { once: true })
     if (options.signal?.aborted) controller.abort()
     try {
-      for (;;) {
-        if (controller.signal.aborted || !authority) throw new CheckinBeforeSendCancelled()
-        const result: GeoResult = !state.location.enabled
-          ? {
-              source: platform.geo.source,
-              sample: null,
-              sampleCount: 0,
-              duration: 0,
-              reason: 'APP_DISABLED',
-              needsReview: true,
-              conflicting: false,
-            }
-          : await acquireGeolocation(platform.geo, {
-              signal: controller.signal,
-              ...(options.terminal ? { terminal: options.terminal } : {}),
-              progress(stage) {
-                state.stage = stage
-                options.progress?.(stage)
-              },
-            })
-        if (result.reason === 'APP_DISABLED')
-          notifyGeoTerminal(options.terminal, {
-            source: result.source,
-            reason: result.reason,
-            duration: result.duration,
-            sampleCount: result.sampleCount,
+      if (controller.signal.aborted || !authority) throw new CheckinBeforeSendCancelled()
+      const result = !state.location.enabled
+        ? {
+            source: platform.geo.source,
+            sample: null,
+            sampleCount: 0,
+            duration: 0,
+            reason: 'APP_DISABLED' as const,
+          }
+        : await acquireGeolocation(platform.geo, {
+            signal: controller.signal,
+            ...(options.geofence ? { geofence: options.geofence } : {}),
+            ...(options.terminal ? { terminal: options.terminal } : {}),
+            progress(stage) {
+              state.stage = stage
+              options.progress?.(stage)
+            },
           })
-        if (controller.signal.aborted) throw new CheckinBeforeSendCancelled()
-        if (result.reason === 'PERMISSION_DENIED') state.location.permission = 'denied'
-        if (result.reason === 'UNSUPPORTED') state.location.permission = 'unsupported'
-        if (result.sample) state.location.permission = 'granted'
-        if (result.needsReview) {
-          state.review = result
-          state.stage = 'review'
-          const decision = await new Promise<'retry' | 'continue'>((resolve, reject) => {
-            const cancelled = () => {
-              choice = null
-              reject(new CheckinBeforeSendCancelled())
-            }
-            controller.signal.addEventListener('abort', cancelled, { once: true })
-            choice = (value) => {
-              controller.signal.removeEventListener('abort', cancelled)
-              choice = null
-              resolve(value)
-            }
-          })
-          state.review = null
-          if (decision === 'retry') continue
-        }
-        if (controller.signal.aborted) throw new CheckinBeforeSendCancelled()
-        // Review can stay open much longer than the original acquisition budget.
-        if (
-          result.source === 'BROWSER' &&
-          result.sample &&
-          !isFreshBrowserFix(result.sample.timestamp)
-        )
-          continue
-        return commandFromGeoResult(result)
-      }
+      if (result.reason === 'APP_DISABLED')
+        notifyGeoTerminal(options.terminal, {
+          source: result.source,
+          reason: result.reason,
+          duration: result.duration,
+          sampleCount: result.sampleCount,
+        })
+      if (controller.signal.aborted) throw new CheckinBeforeSendCancelled()
+      if (result.reason === 'PERMISSION_DENIED') state.location.permission = 'denied'
+      if (result.reason === 'UNSUPPORTED') state.location.permission = 'unsupported'
+      if (result.sample) state.location.permission = 'granted'
+      return commandFromGeoResult(result, validGeofence(options.geofence))
     } catch (error) {
       if (controller.signal.aborted) throw new CheckinBeforeSendCancelled()
       throw error
@@ -207,7 +178,6 @@ export function createDeviceAccess(
       if (active === controller) {
         active = null
         state.stage = null
-        state.review = null
       }
     }
   }
@@ -221,7 +191,10 @@ export function createDeviceAccess(
     state[kind].permission = 'checking'
     try {
       if (kind === 'location') {
-        const result = await acquireGeolocation(platform.geo, { signal: controller.signal })
+        const result = await readGeolocationOnce(platform.geo, {
+          signal: controller.signal,
+          probe: true,
+        })
         if (version !== generation || controller.signal.aborted) return
         state.location.permission = result.sample
           ? 'granted'
@@ -295,9 +268,6 @@ export function createDeviceAccess(
     acquire,
     cancel,
     registerStop,
-    choose(value: 'retry' | 'continue') {
-      choice?.(value)
-    },
     openLocationSettings: platform.openLocationSettings,
     scanQr: platform.scanQr,
     dispose() {
@@ -324,7 +294,10 @@ function safeStorage(): Storage | null {
     return null
   }
 }
-export async function inspectBrowserPermission(kind: DeviceKind): Promise<DevicePermission> {
+export async function inspectBrowserPermission(
+  kind: DeviceKind,
+  signal?: AbortSignal,
+): Promise<DevicePermission> {
   if (
     kind === 'location'
       ? !globalThis.navigator?.geolocation
@@ -332,17 +305,35 @@ export async function inspectBrowserPermission(kind: DeviceKind): Promise<Device
   )
     return 'unsupported'
   if (!navigator.permissions?.query) return 'unknown'
-  try {
-    return (
-      await navigator.permissions.query({
-        name: kind === 'location' ? 'geolocation' : ('camera' as PermissionName),
-      })
-    ).state
-  } catch {
-    return 'unknown'
-  }
+  return new Promise((resolve) => {
+    let done = false
+    const finish = (value: DevicePermission) => {
+      if (done) return
+      done = true
+      clearTimeout(timer)
+      signal?.removeEventListener('abort', abort)
+      resolve(value)
+    }
+    const abort = () => finish('unknown')
+    const timer = setTimeout(abort, 3_000)
+    signal?.addEventListener('abort', abort, { once: true })
+    if (signal?.aborted) return abort()
+    try {
+      void navigator.permissions
+        .query({ name: kind === 'location' ? 'geolocation' : ('camera' as PermissionName) })
+        .then(
+          (value) => finish(value.state),
+          () => finish('unknown'),
+        )
+    } catch {
+      finish('unknown')
+    }
+  })
 }
-export function commandFromGeoResult(result: GeoResult): StudentCheckinCommand {
+export function commandFromGeoResult(
+  result: import('./geolocation').GeoResult,
+  allowNewReasons = true,
+): StudentCheckinCommand {
   const sample = result.sample
   const diagnostics: CheckinDiagnostics = {
     source: result.source,
@@ -361,7 +352,10 @@ export function commandFromGeoResult(result: GeoResult): StudentCheckinCommand {
     receivedAt: sample ? new Date(sample.receivedAt).toISOString() : null,
     sampleCount: result.sampleCount,
     acquisitionDurationMs: result.duration,
-    completionReason: result.reason,
+    ...(allowNewReasons ||
+    (result.reason !== 'WITHIN_GEOFENCE' && result.reason !== 'ATTEMPTS_EXHAUSTED')
+      ? { completionReason: result.reason }
+      : {}),
   }
   return {
     geo: sample

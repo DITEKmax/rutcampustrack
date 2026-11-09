@@ -34,19 +34,27 @@ const labels: Record<DevicePermission, string> = {
   error: 'Не удалось проверить доступ',
 };
 function toggle(kind: DeviceKind): void {
-  if (owner) owner.setEnabled(kind, !owner.state[kind].enabled);
+  if (!owner) return;
+  const enabled = !owner.state[kind].enabled;
+  owner.setEnabled(kind, enabled);
+  if (enabled && kind === 'location') void owner.probe(kind);
 }
 function inspect(): void {
   void owner?.inspect('location');
   void owner?.inspect('camera');
 }
+function visibility(): void {
+  if (document.visibilityState !== 'hidden') inspect();
+}
 onMounted(() => {
   inspect();
   window.addEventListener('focus', inspect);
+  document.addEventListener('visibilitychange', visibility);
 });
 onBeforeUnmount(() => {
   owner?.cancel();
   window.removeEventListener('focus', inspect);
+  document.removeEventListener('visibilitychange', visibility);
 });
 </script>
 
@@ -118,6 +126,20 @@ onBeforeUnmount(() => {
             "
             @click="owner.probe(device.kind)"
             >Запросить и проверить доступ</button
+          >
+          <button
+            v-if="owner.state[device.kind].permission === 'checking'"
+            class="profile-secondary-button"
+            type="button"
+            @click="owner.cancel()"
+            >Остановить проверку</button
+          >
+          <p
+            v-if="device.kind === 'location' && owner.state.location.permission === 'denied'"
+            class="profile-note__body"
+            >Если система больше не показывает запрос, разреши геолокацию в настройках сайта или
+            устройства. В Telegram используй кнопку настроек ниже, затем вернись и проверь доступ
+            снова.</p
           >
           <button
             class="profile-secondary-button"

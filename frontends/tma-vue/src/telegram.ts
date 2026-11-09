@@ -287,17 +287,13 @@ export function telegramDevicePlatform(app: TelegramWebApp | null): DevicePlatfo
     ? browserGeoSource()
     : {
         source: 'TMA',
-        watch(sample, failed) {
+        watch(sample, failed, context) {
           let cancelled = false
           let next: ReturnType<typeof setTimeout> | undefined
           const request = () => {
             if (cancelled) return
-            if (manager.isLocationAvailable === false) {
+            if (!context?.probe && manager.isLocationAvailable === false) {
               failed('UNSUPPORTED')
-              return
-            }
-            if (manager.isAccessRequested && manager.isAccessGranted === false) {
-              failed('PERMISSION_DENIED')
               return
             }
             manager.getLocation((location) => {
@@ -358,7 +354,7 @@ export function telegramDevicePlatform(app: TelegramWebApp | null): DevicePlatfo
               : manager.isAccessGranted
                 ? 'granted'
                 : manager.isAccessRequested
-                  ? 'denied'
+                  ? 'unknown'
                   : 'prompt',
           )
         }

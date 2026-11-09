@@ -2,365 +2,379 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
   acquireGeolocation,
   browserGeoSource,
+  withinGeofence,
   type GeoFailure,
   type GeoSample,
   type GeoSource,
 } from './geolocation'
-import { createDeviceAccess, commandFromGeoResult, inspectBrowserPermission } from './device-access'
+import { createDeviceAccess, inspectBrowserPermission } from './device-access'
 import { CheckinBeforeSendCancelled } from '../domain/checkin'
-
 afterEach(() => {
   vi.useRealTimers()
   vi.unstubAllGlobals()
 })
+const policy = { latitude: 0, longitude: 0, radiusMeters: 400 }
+const at = (meters: number) => (meters * 180) / (Math.PI * 6_371_000)
 function fixture(source: GeoSource['source'] = 'BROWSER') {
-  let sample!: (value: GeoSample) => void
+  const callbacks: Array<(value: GeoSample) => void> = []
   let failed!: (value: GeoFailure) => void
   const stop = vi.fn()
-  const watch = vi.fn((onSample: typeof sample, onFailed: typeof failed) => {
-    sample = onSample
-    failed = onFailed
+  const watch = vi.fn((sample: (value: GeoSample) => void, error: typeof failed) => {
+    callbacks.push(sample)
+    failed = error
     return stop
   })
   return {
     source: { source, watch },
     watch,
     stop,
-    emit: (value: Partial<GeoSample> = {}) =>
-      sample({
-        latitude: 55.7,
-        longitude: 37.6,
-        accuracy: 150,
-        timestamp: Date.now(),
+    callbacks,
+    emit(meters = 600, accuracy: number | null = 1000) {
+      callbacks.at(-1)!({
+        latitude: at(meters),
+        longitude: 0,
+        accuracy,
+        timestamp: source === 'TMA' ? null : Date.now(),
         receivedAt: Date.now(),
-        ...value,
-      }),
-    fail: (value: GeoFailure) => failed(value),
+      })
+    },
+    fail(reason: GeoFailure) {
+      failed(reason)
+    },
   }
 }
 async function settle() {
-  for (let i = 0; i < 8; i++) await Promise.resolve()
+  for (let i = 0; i < 10; i++) await Promise.resolve()
 }
-
-describe('bounded shared geolocation policy', () => {
-  it('retains a fresh alternative when the initially more accurate fix ages out before deadline', async () => {
-    vi.useFakeTimers()
+async function next() {
+  await settle()
+  await vi.advanceTimersByTimeAsync(1)
+}
+describe('owner-requested automatic geofence acquisition', () => {
+  it('lets cancellation win after an inside callback but before coordinator completion', async () => {
     const f = fixture()
-    const result = acquireGeolocation(f.source)
-    f.emit({ accuracy: 100, timestamp: Date.now() - 5_000 })
-    await vi.advanceTimersByTimeAsync(15_000)
-    f.emit({ accuracy: 200 })
-    await vi.advanceTimersByTimeAsync(13_000)
-    await expect(result).resolves.toMatchObject({ sample: { accuracy: 200 }, needsReview: true })
-  })
-  it('refines poor fixes, picks quality rather than proximity and stops one source at a good fix', async () => {
-    vi.useFakeTimers()
-    const f = fixture()
-    const progress = vi.fn()
-    const result = acquireGeolocation(f.source, { progress })
-    f.emit({ accuracy: 400 })
-    f.emit({ accuracy: 120 })
-    f.emit({ accuracy: 30 })
-    await expect(result).resolves.toMatchObject({
-      sample: { accuracy: 30 },
-      sampleCount: 3,
-      reason: 'QUALITY_REACHED',
-      needsReview: false,
+    const controller = new AbortController()
+    const terminal = vi.fn()
+    const run = acquireGeolocation(f.source, {
+      geofence: policy,
+      signal: controller.signal,
+      terminal,
     })
-    expect(f.watch).toHaveBeenCalledOnce()
-    expect(f.stop).toHaveBeenCalledOnce()
-    expect(vi.getTimerCount()).toBe(0)
+    const rejected = expect(run).rejects.toMatchObject({ name: 'AbortError' })
+    f.emit(0)
+    controller.abort()
+    await rejected
+    expect(terminal).toHaveBeenCalledWith(
+      expect.objectContaining({ reason: 'CANCELLED', sampleCount: 1 }),
+    )
   })
-  it('does not silently accept contradictory samples and retains the best quality at deadline', async () => {
-    vi.useFakeTimers()
-    const f = fixture()
-    const result = acquireGeolocation(f.source)
-    f.emit({ accuracy: 80 })
-    f.emit({ latitude: 56.7, accuracy: 15 })
-    await vi.advanceTimersByTimeAsync(28_000)
-    await expect(result).resolves.toMatchObject({
-      sample: { latitude: 56.7, accuracy: 15 },
-      conflicting: true,
-      needsReview: true,
-      reason: 'BUDGET_EXPIRED',
-    })
-    expect(f.stop).toHaveBeenCalledOnce()
-  })
-  it('rejects stale fixes and does not turn native callback time into fix time', async () => {
-    vi.useFakeTimers()
-    const stale = fixture()
-    const result = acquireGeolocation(stale.source)
-    stale.emit({ timestamp: Date.now() - 31_000, accuracy: 1 })
-    await vi.advanceTimersByTimeAsync(28_000)
-    await expect(result).resolves.toMatchObject({ sample: null, sampleCount: 0, needsReview: true })
-    const native = fixture('TMA')
-    const acquired = acquireGeolocation(native.source)
-    native.emit({ timestamp: null, accuracy: 20 })
-    const command = commandFromGeoResult(await acquired)
-    expect(command.diagnostics).toMatchObject({
-      source: 'TMA',
-      fixTimestamp: null,
-      accuracyMeters: 20,
-      sampleCount: 1,
-    })
-    expect(command.diagnostics?.receivedAt).toEqual(expect.any(String))
-  })
-  it.each(['PERMISSION_DENIED', 'UNSUPPORTED'] as const)(
-    'finishes %s immediately without consuming GPS budget',
-    async (reason) => {
+  it.each([1000, null])(
+    'finishes the first inside position immediately without an accuracy hurdle (%s)',
+    async (accuracy) => {
       vi.useFakeTimers()
       const f = fixture()
-      const result = acquireGeolocation(f.source)
-      f.fail(reason)
-      await expect(result).resolves.toMatchObject({ reason, duration: 0, sample: null })
-      expect(vi.getTimerCount()).toBe(0)
+      const terminal = vi.fn()
+      const run = acquireGeolocation(f.source, { geofence: policy, terminal })
+      f.emit(300, accuracy)
+      await expect(run).resolves.toMatchObject({
+        sampleCount: 1,
+        reason: 'WITHIN_GEOFENCE',
+        sample: { accuracy },
+      })
+      expect(f.watch).toHaveBeenCalledOnce()
+      expect(f.stop).toHaveBeenCalledOnce()
+      expect(terminal).toHaveBeenCalledExactlyOnceWith({
+        source: 'BROWSER',
+        reason: 'WITHIN_GEOFENCE',
+        duration: 0,
+        sampleCount: 1,
+      })
     },
   )
-  it('stops the browser watch on abort and ignores callbacks that arrive afterwards', async () => {
+  it('includes the 400m boundary but not 401m in the server-provided hint', () => {
+    const sample = {
+      latitude: at(400),
+      longitude: 0,
+      accuracy: null,
+      timestamp: null,
+      receivedAt: 0,
+    }
+    expect(withinGeofence(sample, policy)).toBe(true)
+    expect(withinGeofence({ ...sample, latitude: at(401) }, policy)).toBe(false)
+  })
+  it('automatically reaches an inside position on the second reading and emits one terminal report', async () => {
     vi.useFakeTimers()
-    let sample!: PositionCallback
+    const f = fixture()
+    const terminal = vi.fn()
+    const run = acquireGeolocation(f.source, { geofence: policy, terminal })
+    f.emit(600)
+    await next()
+    f.emit(300)
+    await expect(run).resolves.toMatchObject({
+      sampleCount: 2,
+      reason: 'WITHIN_GEOFENCE',
+      sample: { latitude: at(300) },
+    })
+    expect(f.watch).toHaveBeenCalledTimes(2)
+    expect(terminal).toHaveBeenCalledOnce()
+  })
+  it('takes at most three outside readings and returns the latest, not nearest or most accurate one', async () => {
+    vi.useFakeTimers()
+    const f = fixture()
+    const terminal = vi.fn()
+    const run = acquireGeolocation(f.source, { geofence: policy, terminal })
+    f.emit(500, 1)
+    await next()
+    f.emit(800, 2)
+    await next()
+    f.emit(1200, 9000)
+    await expect(run).resolves.toMatchObject({
+      sampleCount: 3,
+      reason: 'ATTEMPTS_EXHAUSTED',
+      sample: { latitude: at(1200), accuracy: 9000 },
+    })
+    expect(f.watch).toHaveBeenCalledTimes(3)
+    expect(f.stop).toHaveBeenCalledTimes(3)
+    expect(terminal).toHaveBeenCalledOnce()
+    expect(vi.getTimerCount()).toBe(0)
+  })
+  it('uses three readings with absent or invalid policy without any hardcoded campus rule', async () => {
+    vi.useFakeTimers()
+    const f = fixture('TMA')
+    const run = acquireGeolocation(f.source, { geofence: { ...policy, radiusMeters: NaN } })
+    f.emit(0, null)
+    await next()
+    f.emit(1, null)
+    await next()
+    f.emit(2, null)
+    await expect(run).resolves.toMatchObject({
+      reason: 'ATTEMPTS_EXHAUSTED',
+      sampleCount: 3,
+      sample: { latitude: at(2), timestamp: null },
+    })
+  })
+  it('retries a transient error within the same three-attempt budget', async () => {
+    vi.useFakeTimers()
+    const f = fixture()
+    const run = acquireGeolocation(f.source, { geofence: policy })
+    f.fail('POSITION_UNAVAILABLE')
+    await next()
+    f.emit(600)
+    await next()
+    f.emit(200)
+    await expect(run).resolves.toMatchObject({ reason: 'WITHIN_GEOFENCE', sampleCount: 2 })
+    expect(f.watch).toHaveBeenCalledTimes(3)
+  })
+  it.each(['PERMISSION_DENIED', 'UNSUPPORTED'] as const)(
+    'automatically returns %s without more prompts or manual Continue',
+    async (reason) => {
+      const f = fixture()
+      const run = acquireGeolocation(f.source, { geofence: policy })
+      f.fail(reason)
+      await expect(run).resolves.toMatchObject({ reason, sample: null, sampleCount: 0 })
+      expect(f.watch).toHaveBeenCalledOnce()
+    },
+  )
+  it('bounds a hanging source by the one overall 28s deadline and ignores its late callback', async () => {
+    vi.useFakeTimers()
+    const f = fixture()
+    const terminal = vi.fn()
+    const run = acquireGeolocation(f.source, { geofence: policy, terminal })
+    await vi.advanceTimersByTimeAsync(28_000)
+    await expect(run).resolves.toMatchObject({
+      reason: 'BUDGET_EXPIRED',
+      sample: null,
+      duration: 28_000,
+    })
+    f.emit(0)
+    expect(f.watch).toHaveBeenCalledOnce()
+    expect(terminal).toHaveBeenCalledOnce()
+    expect(vi.getTimerCount()).toBe(0)
+  })
+  it('ignores a repeated browser fix timestamp on an automatic fresh retry', async () => {
+    vi.useFakeTimers()
+    const f = fixture()
+    const run = acquireGeolocation(f.source, { geofence: policy })
+    f.emit(600)
+    await settle()
+    f.emit(200)
+    await settle()
+    expect(f.watch).toHaveBeenCalledTimes(2)
+    await vi.advanceTimersByTimeAsync(1)
+    f.emit(200)
+    await expect(run).resolves.toMatchObject({ reason: 'WITHIN_GEOFENCE', sampleCount: 2 })
+  })
+  it('cancels an automatic retry once, stops resources and sends no later result', async () => {
+    vi.useFakeTimers()
+    const f = fixture()
+    const controller = new AbortController()
+    const terminal = vi.fn()
+    const run = acquireGeolocation(f.source, {
+      geofence: policy,
+      signal: controller.signal,
+      terminal,
+    })
+    const rejected = expect(run).rejects.toMatchObject({ name: 'AbortError' })
+    f.emit(600)
+    await next()
+    controller.abort()
+    f.emit(100)
+    await rejected
+    expect(f.watch).toHaveBeenCalledTimes(2)
+    expect(f.stop).toHaveBeenCalledTimes(2)
+    expect(terminal).toHaveBeenCalledExactlyOnceWith({
+      source: 'BROWSER',
+      reason: 'CANCELLED',
+      duration: 1,
+      sampleCount: 1,
+    })
+    expect(vi.getTimerCount()).toBe(0)
+  })
+})
+describe('permission retries and passive inspection', () => {
+  it('clears a real browser watch on cancellation and rejects its late callback', async () => {
+    let callback!: PositionCallback
     const clearWatch = vi.fn()
     const source = browserGeoSource({
-      watchPosition: vi.fn((callback) => {
-        sample = callback
+      watchPosition: vi.fn((sample) => {
+        callback = sample
         return 7
       }),
       clearWatch,
     } as unknown as Geolocation)
     const controller = new AbortController()
-    const result = acquireGeolocation(source, { signal: controller.signal })
-    const assertion = expect(result).rejects.toMatchObject({ name: 'AbortError' })
+    const run = acquireGeolocation(source, { signal: controller.signal, geofence: policy })
+    const rejected = expect(run).rejects.toMatchObject({ name: 'AbortError' })
     controller.abort()
-    sample({
-      coords: { latitude: 55, longitude: 37, accuracy: 1 },
+    callback({
+      coords: { latitude: 0, longitude: 0, accuracy: 1 },
       timestamp: Date.now(),
     } as GeolocationPosition)
-    await assertion
-    expect(clearWatch).toHaveBeenCalledExactlyOnceWith(7)
-    expect(vi.getTimerCount()).toBe(0)
-  })
-})
-
-describe('permission owner and explicit choice before transport', () => {
-  it('reports one bounded terminal event without coordinates and does not await it or recolor it on later cancel', async () => {
-    vi.useFakeTimers()
-    const f = fixture()
-    const controller = new AbortController()
-    const terminal = vi.fn(() => new Promise<void>(() => {}))
-    const result = acquireGeolocation(f.source, { signal: controller.signal, terminal })
-    f.emit({ accuracy: 400 })
-    f.emit({ accuracy: 20 })
-    await expect(result).resolves.toMatchObject({ reason: 'QUALITY_REACHED' })
-    controller.abort()
-    f.emit({ accuracy: 1 })
-    expect(terminal).toHaveBeenCalledExactlyOnceWith({
-      source: 'BROWSER',
-      reason: 'QUALITY_REACHED',
-      duration: 0,
-      sampleCount: 2,
-    })
-  })
-  it('reports cancellation before terminal once and ignores late callbacks', async () => {
-    vi.useFakeTimers()
-    const f = fixture()
-    const controller = new AbortController()
-    const terminal = vi.fn()
-    const result = acquireGeolocation(f.source, { signal: controller.signal, terminal })
-    const rejected = expect(result).rejects.toMatchObject({ name: 'AbortError' })
-    f.emit({ accuracy: 500 })
-    await vi.advanceTimersByTimeAsync(200)
-    controller.abort()
-    controller.abort()
-    f.emit({ accuracy: 20 })
     await rejected
-    expect(terminal).toHaveBeenCalledExactlyOnceWith({
-      source: 'BROWSER',
-      reason: 'CANCELLED',
-      duration: 200,
-      sampleCount: 1,
-    })
+    expect(clearWatch).toHaveBeenCalledExactlyOnceWith(7)
   })
-  it('reports each improvement run once, but not settings probes or post-terminal cancellation', async () => {
+  it('bounds a hanging browser permission query and permits another fresh inspection', async () => {
     vi.useFakeTimers()
-    const f = fixture()
-    const owner = createDeviceAccess({ geo: f.source }, null)
-    owner.bindOwner('alice', 's1')
-    const terminal = vi.fn()
-    const attempt = owner.acquire({ terminal })
-    f.emit({ accuracy: 500 })
-    await vi.advanceTimersByTimeAsync(28_000)
-    owner.choose('retry')
-    await settle()
-    f.fail('PERMISSION_DENIED')
-    await settle()
-    owner.choose('continue')
-    await attempt
-    owner.cancel()
-    const probe = owner.probe('location')
-    f.emit({ accuracy: 20 })
-    await probe
-    expect(terminal.mock.calls.map(([event]) => event.reason)).toEqual([
-      'BUDGET_EXPIRED',
-      'PERMISSION_DENIED',
-    ])
+    const query = vi
+      .fn()
+      .mockReturnValueOnce(new Promise(() => {}))
+      .mockResolvedValueOnce({ state: 'granted' })
+    vi.stubGlobal('navigator', { geolocation: {}, permissions: { query } })
+    const owner = createDeviceAccess({ geo: fixture().source }, null)
+    owner.bindOwner('a', 's')
+    const pending = owner.inspect('location')
+    await vi.advanceTimersByTimeAsync(3_000)
+    await pending
+    expect(owner.state.location.permission).toBe('unknown')
+    await owner.inspect('location')
+    expect(owner.state.location.permission).toBe('granted')
   })
-  it('reports app-disabled as its own terminal run without requesting sensors', async () => {
-    const f = fixture()
-    const owner = createDeviceAccess({ geo: f.source }, null)
-    owner.bindOwner('alice', 's1')
-    owner.setEnabled('location', false)
-    const terminal = vi.fn()
-    const attempt = owner.acquire({ terminal })
-    owner.choose('continue')
-    await attempt
-    expect(f.watch).not.toHaveBeenCalled()
-    expect(terminal).toHaveBeenCalledExactlyOnceWith({
-      source: 'BROWSER',
-      reason: 'APP_DISABLED',
-      duration: 0,
-      sampleCount: 0,
-    })
-  })
-  it.each(['throws', 'rejects'] as const)(
-    'isolates a terminal reporter that %s',
-    async (failure) => {
-      const f = fixture()
-      const result = acquireGeolocation(f.source, {
-        terminal() {
-          if (failure === 'throws') throw new Error('report unavailable')
-          return Promise.reject(new Error('report unavailable'))
-        },
-      })
-      f.emit({ accuracy: 20 })
-      await expect(result).resolves.toMatchObject({ reason: 'QUALITY_REACHED' })
-      await settle()
-    },
-  )
-  it('reacquires instead of returning a browser fix after a delayed Continue', async () => {
-    vi.useFakeTimers()
-    const f = fixture()
-    const owner = createDeviceAccess({ geo: f.source }, null)
-    owner.bindOwner('alice', 's1')
-    const attempt = owner.acquire()
-    let completed = false
-    void attempt.then(() => {
-      completed = true
-    })
-    f.emit({ accuracy: 500 })
-    await vi.advanceTimersByTimeAsync(28_000)
-    expect(owner.state.stage).toBe('review')
-    await vi.advanceTimersByTimeAsync(60_000)
-    owner.choose('continue')
-    await settle()
-    expect(completed).toBe(false)
-    expect(f.watch).toHaveBeenCalledTimes(2)
-    f.emit({ accuracy: 20 })
-    await expect(attempt).resolves.toMatchObject({
-      diagnostics: { fixTimestamp: new Date(Date.now()).toISOString(), accuracyMeters: 20 },
-    })
-  })
-  it('does not prompt during inspection or restore a system grant from account preferences', async () => {
+  it('keeps device/account preferences separate from OS grant and does not prompt on inspect', async () => {
     const f = fixture()
     const values = new Map<string, string>()
-    const storage = {
-      getItem: (key: string) => values.get(key) ?? null,
-      setItem: (key: string, value: string) => {
-        values.set(key, value)
+    const owner = createDeviceAccess(
+      { geo: f.source, inspect: async () => 'prompt' },
+      {
+        getItem: (k) => values.get(k) ?? null,
+        setItem: (k, v) => {
+          values.set(k, v)
+        },
       },
-    }
-    const owner = createDeviceAccess({ geo: f.source, inspect: async () => 'prompt' }, storage)
+    )
     owner.bindOwner('alice', 's1')
     await owner.inspect('location')
-    expect(f.watch).not.toHaveBeenCalled()
     owner.setEnabled('location', false)
     owner.bindOwner('bob', 's2')
     expect(owner.state.location).toMatchObject({ enabled: true, permission: 'unknown' })
     owner.bindOwner('alice', 's3')
     expect(owner.state.location).toMatchObject({ enabled: false, permission: 'unknown' })
+    expect(f.watch).not.toHaveBeenCalled()
   })
-  it('requires a user choice for poor quality and cancels a pending choice on owner change', async () => {
-    vi.useFakeTimers()
+  it('returns APP_DISABLED automatically, without requesting sensors or another confirmation', async () => {
     const f = fixture()
     const owner = createDeviceAccess({ geo: f.source }, null)
-    owner.bindOwner('alice', 's1')
-    let settled = false
-    const attempt = owner.acquire().then((value) => {
-      settled = true
-      return value
-    })
-    const assertion = expect(attempt).rejects.toBeInstanceOf(CheckinBeforeSendCancelled)
-    f.emit({ accuracy: 500 })
-    await vi.advanceTimersByTimeAsync(28_000)
-    expect(owner.state.stage).toBe('review')
-    expect(settled).toBe(false)
-    owner.bindOwner('bob', 's2')
-    owner.choose('continue')
-    await assertion
-    expect(owner.state.review).toBeNull()
-    expect(vi.getTimerCount()).toBe(0)
-  })
-  it('retries without a POST, then returns the chosen result only on explicit continue', async () => {
-    vi.useFakeTimers()
-    const f = fixture('TMA')
-    const owner = createDeviceAccess({ geo: f.source }, null)
-    owner.bindOwner('alice', 's1')
-    const attempt = owner.acquire()
-    f.emit({ timestamp: null, accuracy: null })
-    await vi.advanceTimersByTimeAsync(28_000)
-    owner.choose('retry')
-    await settle()
-    expect(f.watch).toHaveBeenCalledTimes(2)
-    f.fail('PERMISSION_DENIED')
-    await settle()
-    owner.choose('continue')
-    await expect(attempt).resolves.toMatchObject({
-      geo: { kind: 'UNAVAILABLE', reason: 'PERMISSION_DENIED' },
-      diagnostics: {
-        source: 'TMA',
-        sampleCount: 0,
-        completionReason: 'PERMISSION_DENIED',
-        fixTimestamp: null,
-      },
-    })
-    expect(owner.state.stage).toBeNull()
-  })
-  it('turns off active acquisition immediately and never accepts a late fix', async () => {
-    vi.useFakeTimers()
-    const f = fixture()
-    const owner = createDeviceAccess({ geo: f.source }, null)
-    owner.bindOwner('alice', 's1')
-    const attempt = owner.acquire()
-    const assertion = expect(attempt).rejects.toBeInstanceOf(CheckinBeforeSendCancelled)
+    owner.bindOwner('a', 's')
     owner.setEnabled('location', false)
-    f.emit({ accuracy: 1 })
-    await assertion
-    expect(f.stop).toHaveBeenCalledOnce()
+    const terminal = vi.fn()
+    await expect(owner.acquire({ terminal })).resolves.toMatchObject({
+      geo: { kind: 'UNAVAILABLE' },
+      diagnostics: { completionReason: 'APP_DISABLED' },
+    })
+    expect(f.watch).not.toHaveBeenCalled()
+    expect(terminal).toHaveBeenCalledOnce()
+  })
+  it('cancels an unanswered probe and permits a fresh explicit probe, fencing its late callback and reporting nothing', async () => {
+    vi.useFakeTimers()
+    const f = fixture()
+    const owner = createDeviceAccess({ geo: f.source }, null)
+    owner.bindOwner('a', 's')
+    const first = owner.probe('location')
+    owner.cancel()
+    await first
+    const second = owner.probe('location')
+    expect(f.watch).toHaveBeenCalledTimes(2)
+    f.callbacks[0]!({
+      latitude: 0,
+      longitude: 0,
+      accuracy: 1,
+      timestamp: Date.now(),
+      receivedAt: Date.now(),
+    })
+    await settle()
+    expect(owner.state.location.permission).toBe('checking')
+    f.emit(0, null)
+    await second
+    expect(owner.state.location.permission).toBe('granted')
     expect(vi.getTimerCount()).toBe(0)
   })
-  it('treats an unsupported permission descriptor as unknown, not denied or granted', async () => {
+  it('allows a fresh probe after a denied/dismissed probe without caching a permanent block', async () => {
+    const f = fixture()
+    const owner = createDeviceAccess({ geo: f.source }, null)
+    owner.bindOwner('a', 's')
+    const first = owner.probe('location')
+    f.fail('PERMISSION_DENIED')
+    await first
+    const second = owner.probe('location')
+    f.emit(0)
+    await second
+    expect(f.watch).toHaveBeenCalledTimes(2)
+    expect(owner.state.location.permission).toBe('granted')
+  })
+  it('aborts check-in before business transport on disable/owner cancellation', async () => {
+    const f = fixture()
+    const owner = createDeviceAccess({ geo: f.source }, null)
+    owner.bindOwner('a', 's')
+    const run = owner.acquire()
+    const rejected = expect(run).rejects.toBeInstanceOf(CheckinBeforeSendCancelled)
+    owner.setEnabled('location', false)
+    f.emit(0)
+    await rejected
+  })
+  it('treats unsupported permission descriptors as unknown', async () => {
     vi.stubGlobal('navigator', {
       mediaDevices: { getUserMedia: vi.fn() },
-      permissions: { query: vi.fn().mockRejectedValue(new TypeError('camera unsupported')) },
+      permissions: { query: vi.fn().mockRejectedValue(new TypeError()) },
     })
     await expect(inspectBrowserPermission('camera')).resolves.toBe('unknown')
   })
-  it('bounds a settings camera probe and stops a late stream without an approval', async () => {
+  it('bounds settings camera probes and stops their late streams', async () => {
     vi.useFakeTimers()
-    let resolve!: (value: MediaStream) => void
-    const getUserMedia = vi.fn(
-      () =>
-        new Promise<MediaStream>((done) => {
-          resolve = done
-        }),
-    )
-    vi.stubGlobal('navigator', { mediaDevices: { getUserMedia } })
+    let resolve!: (s: MediaStream) => void
+    vi.stubGlobal('navigator', {
+      mediaDevices: {
+        getUserMedia: vi.fn(
+          () =>
+            new Promise<MediaStream>((done) => {
+              resolve = done
+            }),
+        ),
+      },
+    })
     const owner = createDeviceAccess({ geo: fixture().source }, null)
-    owner.bindOwner('alice', 's1')
+    owner.bindOwner('a', 's')
     const probe = owner.probe('camera')
-    expect(getUserMedia).toHaveBeenCalledExactlyOnceWith({ video: true, audio: false })
     await vi.advanceTimersByTimeAsync(15_000)
     await probe
-    expect(owner.state.camera.permission).toBe('error')
     const stop = vi.fn()
     resolve({ getTracks: () => [{ stop }] } as unknown as MediaStream)
     await settle()

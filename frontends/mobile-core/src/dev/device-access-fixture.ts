@@ -14,16 +14,16 @@ export function fixtureGeoSource(source: GeoSource['source'], scenario: string |
           receivedAt: Date.now(),
         })
       let timer: ReturnType<typeof setTimeout> | undefined
-      if (scenario === 'coordinates') emit(20)
-      else if (scenario === 'refining') {
-        emit(500)
-        timer = setTimeout(() => emit(20), 3_000)
-      } else if (scenario === 'low-accuracy') emit(500)
-      else if (scenario === 'unknown-accuracy') emit(null)
-      else if (scenario === 'conflicting') {
-        emit(80)
-        emit(20, 56.75)
-      } else failed(scenario === 'denied' ? 'PERMISSION_DENIED' : 'POSITION_UNAVAILABLE')
+      timer = setTimeout(
+        () => {
+          if (scenario === 'coordinates') emit(20)
+          else if (scenario === 'refining' || scenario === 'low-accuracy') emit(500)
+          else if (scenario === 'unknown-accuracy') emit(null)
+          else if (scenario === 'conflicting') emit(80, 56.75)
+          else failed(scenario === 'denied' ? 'PERMISSION_DENIED' : 'POSITION_UNAVAILABLE')
+        },
+        scenario === 'refining' ? 1_000 : 1,
+      )
       return () => clearTimeout(timer)
     },
   }

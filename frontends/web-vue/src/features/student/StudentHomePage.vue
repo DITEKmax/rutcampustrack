@@ -95,9 +95,7 @@ const progress = computed(() => {
     :scope="scope"
     screen="WEB-STUDENT-HOME"
   >
-    <h1 class="web-sr-only">
-      Главная студента
-    </h1>
+    <h1 class="web-sr-only"> Главная студента </h1>
     <StudentNotice
       :loading="scope.loading.value"
       :error="scope.error.value"
@@ -159,26 +157,10 @@ const progress = computed(() => {
               aria-label="Определение геолокации"
             >
               <p role="status">{{
-                checkin.deviceAccess.state.stage === 'review'
-                  ? 'Не удалось надёжно определить геолокацию. Ты можешь повторить или продолжить с полученным результатом. Если геолокация не подтвердит присутствие, запрос отправится старосте.'
-                  : checkin.deviceAccess.state.stage === 'refining'
-                    ? 'Уточняем геолокацию…'
-                    : 'Определяем геолокацию…'
+                checkin.deviceAccess.state.stage === 'refining'
+                  ? 'Повторно определяем геолокацию…'
+                  : 'Определяем геолокацию…'
               }}</p>
-              <template v-if="checkin.deviceAccess.state.stage === 'review'">
-                <button
-                  class="web-button"
-                  type="button"
-                  @click="checkin.deviceAccess.choose('retry')"
-                  >Определить ещё раз</button
-                >
-                <button
-                  class="web-button web-button-primary"
-                  type="button"
-                  @click="checkin.deviceAccess.choose('continue')"
-                  >Продолжить</button
-                >
-              </template>
               <button
                 class="web-button"
                 type="button"
@@ -220,9 +202,7 @@ const progress = computed(() => {
           class="web-stack student-current-stats"
           aria-labelledby="student-current-stats-title"
         >
-          <h2 id="student-current-stats-title">
-            По текущему предмету
-          </h2>
+          <h2 id="student-current-stats-title"> По текущему предмету </h2>
           <StudentNotice
             :loading="subject.loading.value"
             :error="subject.error.value"
@@ -245,14 +225,11 @@ const progress = computed(() => {
           class="web-stack"
           aria-labelledby="student-today-title"
         >
-          <h2 id="student-today-title">
-            Расписание на сегодня
-          </h2><p class="web-caption">
+          <h2 id="student-today-title"> Расписание на сегодня </h2
+          ><p class="web-caption">
             {{ formatLessonDate(today.data.value.date) }}
           </p>
-          <p v-if="!today.data.value.lessons.length">
-            Сегодня пар нет.
-          </p>
+          <p v-if="!today.data.value.lessons.length"> Сегодня пар нет. </p>
           <ol class="student-lesson-list">
             <li
               v-for="lesson in today.data.value.lessons"
@@ -283,9 +260,7 @@ const progress = computed(() => {
                         query: { lesson: lesson.schedule.id, kind },
                       }"
                     >
-                      {{
-                        kind === 'EXCUSE' ? 'Подать уважительную причину' : 'Забыл отметиться'
-                      }}
+                      {{ kind === 'EXCUSE' ? 'Подать уважительную причину' : 'Забыл отметиться' }}
                     </RouterLink>
                   </template>
                 </template>

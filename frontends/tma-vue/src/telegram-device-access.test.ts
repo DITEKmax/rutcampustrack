@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { telegramDevicePlatform } from './telegram'
+import { createDeviceAccess } from '../../mobile-core/src/device-access/device-access'
 import { acquireGeolocation } from '../../mobile-core/src/device-access/geolocation'
 type App = NonNullable<NonNullable<Window['Telegram']>['WebApp']>
 afterEach(() => {
@@ -10,6 +11,21 @@ function app(extra: Partial<App>): App {
   return { initData: '', ready() {}, expand() {}, viewportHeight: 800, version: '8.0', ...extra }
 }
 describe('Telegram bounded sensor adapters', () => {
+  it('lets an explicit probe query the native service again after cached unavailability', async () => {
+    const getLocation = vi.fn((callback) => callback({ latitude: 0, longitude: 0 }))
+    const platform = telegramDevicePlatform(
+      app({
+        LocationManager: { isInited: true, isLocationAvailable: false, init() {}, getLocation },
+      }),
+    )
+    await expect(acquireGeolocation(platform.geo)).resolves.toMatchObject({ reason: 'UNSUPPORTED' })
+    expect(getLocation).not.toHaveBeenCalled()
+    const owner = createDeviceAccess(platform, null)
+    owner.bindOwner('a', 's')
+    await owner.probe('location')
+    expect(getLocation).toHaveBeenCalledOnce()
+    expect(owner.state.location.permission).toBe('granted')
+  })
   it.each(['init', 'location'] as const)(
     'bounds a native %s that never calls back',
     async (hang) => {
@@ -23,7 +39,6 @@ describe('Telegram bounded sensor adapters', () => {
       await expect(result).resolves.toMatchObject({
         source: 'TMA',
         reason: 'BUDGET_EXPIRED',
-        needsReview: true,
       })
       expect(getLocation).toHaveBeenCalledTimes(hang === 'location' ? 1 : 0)
       expect(vi.getTimerCount()).toBe(0)
@@ -73,11 +88,62 @@ describe('Telegram bounded sensor adapters', () => {
         },
       }),
     )
-    await expect(platform.inspect?.('location')).resolves.toBe('denied')
+    await expect(platform.inspect?.('location')).resolves.toBe('unknown')
     expect(getLocation).not.toHaveBeenCalled()
     expect(openSettings).not.toHaveBeenCalled()
     platform.openLocationSettings?.()
     expect(openSettings).toHaveBeenCalledOnce()
+  })
+  it('retries getLocation after a not-granted response even when native flags remain cached', async () => {
+    const getLocation = vi
+      .fn()
+      .mockImplementationOnce((callback) => callback(null))
+      .mockImplementationOnce((callback) =>
+        callback({ latitude: 0, longitude: 0, horizontal_accuracy: null }),
+      )
+    const platform = telegramDevicePlatform(
+      app({
+        LocationManager: {
+          isInited: true,
+          isLocationAvailable: true,
+          isAccessRequested: true,
+          isAccessGranted: false,
+          init() {},
+          getLocation,
+        },
+      }),
+    )
+    const owner = createDeviceAccess(platform, null)
+    owner.bindOwner('a', 's')
+    await owner.probe('location')
+    expect(owner.state.location.permission).toBe('denied')
+    await owner.probe('location')
+    expect(owner.state.location.permission).toBe('granted')
+    expect(getLocation).toHaveBeenCalledTimes(2)
+  })
+  it('allows another explicit native probe after an unanswered request and ignores the old callback', async () => {
+    const callbacks: Array<(value: { latitude: number; longitude: number } | null) => void> = []
+    const getLocation = vi.fn((callback) => {
+      callbacks.push(callback)
+    })
+    const platform = telegramDevicePlatform(
+      app({
+        LocationManager: { isInited: true, isLocationAvailable: true, init() {}, getLocation },
+      }),
+    )
+    const owner = createDeviceAccess(platform, null)
+    owner.bindOwner('a', 's')
+    const first = owner.probe('location')
+    owner.cancel()
+    await first
+    const second = owner.probe('location')
+    callbacks[0]!({ latitude: 0, longitude: 0 })
+    await Promise.resolve()
+    expect(owner.state.location.permission).toBe('checking')
+    callbacks[1]!({ latitude: 0, longitude: 0 })
+    await second
+    expect(owner.state.location.permission).toBe('granted')
+    expect(getLocation).toHaveBeenCalledTimes(2)
   })
   it('uses one native QR popup and removes its listeners before handing off a scan', () => {
     vi.useFakeTimers()

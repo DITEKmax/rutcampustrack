@@ -1291,6 +1291,7 @@ describe('StudentFeatureOwner offline read models', () => {
       },
     )
     ownerQueryData.today!.value = {
+      checkinGeofence: { latitude: 55.75, longitude: 37.62, radiusMeters: 400 },
       date: '2026-10-04', timeZone: 'Europe/Moscow', serverNow: '2026-10-04T08:00:00Z', _links: {},
       lessons: [{ schedule: { id: 'lesson-1', date: '2026-10-04', lessonNumber: 1, startsAt: '10:40:00', endsAt: '12:10:00', status: 'ACTIVE', subject: { id: 'subject-1', name: 'Предмет', type: 'LECTURE' }, room: { current: 'А-401', previous: null, changeState: 'UNCHANGED' } }, attendance: null, request: null, checkinEligibility: { allowed: true, reason: 'ELIGIBLE', retryAt: null } }],
     }
@@ -1306,7 +1307,7 @@ describe('StudentFeatureOwner offline read models', () => {
     finish()
     await vi.waitFor(() => expect(ownerTestOutput(root, 'test-acquiring')).toBe(''))
     expect(checkinSubmit).not.toHaveBeenCalled()
-    expect(reportCheckinAcquisition).toHaveBeenCalledExactlyOnceWith({ source: 'BROWSER', outcome: 'QUALITY_REACHED', durationMs: 0, sampleCount: 1 })
+    expect(reportCheckinAcquisition).toHaveBeenCalledExactlyOnceWith({ source: 'BROWSER', outcome: 'WITHIN_GEOFENCE', durationMs: 0, sampleCount: 1 })
   })
 
   it('waits for real warm Vue Query GETs, keeps one read per feed, and accepts a later successful retry', async () => {

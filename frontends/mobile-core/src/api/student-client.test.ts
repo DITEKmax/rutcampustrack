@@ -7,13 +7,33 @@ afterEach(() => {
 })
 
 describe('best-effort acquisition reporting', () => {
+  it.each(['WITHIN_GEOFENCE', 'ATTEMPTS_EXHAUSTED'] as const)(
+    'delivers the automatic coordinator outcome %s without reusing legacy quality semantics',
+    async (outcome) => {
+      const fetcher = vi.fn<typeof fetch>().mockResolvedValue(new Response(null, { status: 204 }))
+      const api = new StudentApi({ accessToken: () => 'synthetic', fetcher })
+      await api.reportCheckinAcquisition({
+        source: 'BROWSER',
+        outcome,
+        sampleCount: 3,
+        durationMs: 5,
+      })
+      expect(fetcher).toHaveBeenCalledOnce()
+      expect(JSON.parse(String(fetcher.mock.calls[0]?.[1]?.body))).toEqual({
+        source: 'BROWSER',
+        outcome,
+        sampleCount: 3,
+        durationMs: 5,
+      })
+    },
+  )
   const report = {
     source: 'BROWSER' as const,
     outcome: 'QUALITY_REACHED' as const,
     durationMs: 200,
     sampleCount: 2,
   }
-  it.each([204, 401, 403, 429, 500])(
+  it.each([204, 401, 403, 404, 429, 500])(
     'allows only bounded scalar report fields and isolates HTTP%s without auth refresh or retries',
     async (status) => {
       const fetcher = vi.fn<typeof fetch>().mockResolvedValue(new Response(null, { status }))

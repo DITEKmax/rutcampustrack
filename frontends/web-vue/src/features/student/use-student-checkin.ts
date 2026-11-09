@@ -67,7 +67,7 @@ export function useStudentCheckin(
     if (busyLesson.value === lesson.schedule.id)
       return acquiring.value
         ? deviceAccess.state.stage === 'refining'
-          ? 'Уточняем геолокацию…'
+          ? 'Повторно определяем геолокацию…'
           : 'Определяем геолокацию…'
         : 'Отправляем отметку…'
     if (scope.readOnly.value) return 'Доступен только просмотр'
@@ -102,6 +102,7 @@ export function useStudentCheckin(
           acquiring.value = true
           const command = await deviceAccess.acquire({
             signal: acquisition.signal,
+            geofence: today()?.checkinGeofence ?? null,
             terminal: (event) =>
               reportApi.reportCheckinAcquisition({
                 source: event.source,

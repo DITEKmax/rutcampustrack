@@ -2142,6 +2142,7 @@ function performCheckin(
         if (!canSend() || acquisition.signal.aborted) throw new CheckinBeforeSendCancelled();
         const command = await props.acquireCheckinCommand({
           signal: acquisition.signal,
+          geofence: today.query.data.value?.checkinGeofence ?? null,
           terminal: (event) => reportApi?.reportCheckinAcquisition({
             source: event.source, outcome: event.reason, durationMs: event.duration, sampleCount: event.sampleCount,
           }),

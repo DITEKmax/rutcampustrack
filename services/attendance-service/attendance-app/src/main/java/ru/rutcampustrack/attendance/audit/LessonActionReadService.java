@@ -1,6 +1,20 @@
 package ru.rutcampustrack.attendance.audit;
 
 import io.grpc.Deadline;
+
+import org.springframework.data.domain.Sort;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.stereotype.Service;
+
+import ru.rutcampustrack.attendance.contract.dto.report.LessonActionsResponse;
+import ru.rutcampustrack.attendance.exception.AccessDeniedException;
+import ru.rutcampustrack.attendance.exception.BadRequestException;
+import ru.rutcampustrack.attendance.grpc.AcademicGrpcClient;
+import ru.rutcampustrack.attendance.grpc.ScheduleGrpcClient;
+import ru.rutcampustrack.attendance.security.RequestContext;
+
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.Base64;
@@ -10,17 +24,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.stereotype.Service;
-import ru.rutcampustrack.attendance.contract.dto.report.LessonActionsResponse;
-import ru.rutcampustrack.attendance.exception.AccessDeniedException;
-import ru.rutcampustrack.attendance.exception.BadRequestException;
-import ru.rutcampustrack.attendance.grpc.AcademicGrpcClient;
-import ru.rutcampustrack.attendance.grpc.ScheduleGrpcClient;
-import ru.rutcampustrack.attendance.security.RequestContext;
 
 @Service
 public class LessonActionReadService {
@@ -147,7 +150,14 @@ public class LessonActionReadService {
                                 number(geo.get("accuracy_meters")),
                                 (String) geo.get("verdict"),
                                 coordinatesVisible ? number(geo.get("latitude")) : null,
-                                coordinatesVisible ? number(geo.get("longitude")) : null),
+                                coordinatesVisible ? number(geo.get("longitude")) : null,
+                                (String) geo.get("unavailable_reason"),
+                                (String) geo.get("source"),
+                                instant(geo.get("fix_timestamp")),
+                                instant(geo.get("received_at")),
+                                integer(geo.get("sample_count")),
+                                integer(geo.get("acquisition_duration_ms")),
+                                (String) geo.get("completion_reason")),
                 excuses ? (Map<String, Object>) p.get("ticket") : null,
                 homework ? (Map<String, Object>) p.get("homework") : null,
                 row.getSource(),
@@ -183,6 +193,14 @@ public class LessonActionReadService {
 
     private static Double number(Object n) {
         return n == null ? null : ((Number) n).doubleValue();
+    }
+
+    private static Integer integer(Object n) {
+        return n == null ? null : ((Number) n).intValue();
+    }
+
+    private static java.time.Instant instant(Object value) {
+        return value == null ? null : java.time.Instant.parse(value.toString());
     }
 
     private static LessonActionsResponse.Person person(

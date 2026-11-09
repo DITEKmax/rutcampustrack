@@ -45,6 +45,7 @@ dependencies {
     testImplementation(testFixtures(project(":services:shared:shared-security")))
     testImplementation(project(":services:attendance-service:attendance-app"))
     testImplementation(project(":services:attendance-service:attendance-api-contract"))
+    testImplementation(project(":services:shared:shared-outbox"))
     testImplementation("org.testcontainers:mongodb:1.20.4")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }

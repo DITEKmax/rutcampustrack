@@ -1,16 +1,18 @@
 package ru.rutcampustrack.mobilebff.student;
 
-import java.net.URI;
-import java.time.Instant;
-import java.util.Map;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+
 import ru.rutcampustrack.attendance.grpc.*;
 import ru.rutcampustrack.mobilebff.contract.model.StudentApiModels.*;
 import ru.rutcampustrack.mobilebff.error.MobileBffException;
 import ru.rutcampustrack.mobilebff.grpc.MobileAttendanceClient;
 import ru.rutcampustrack.mobilebff.security.MobileRequestContext;
 import ru.rutcampustrack.shared.security.InternalJwtClaims;
+
+import java.net.URI;
+import java.time.Instant;
+import java.util.Map;
 
 @Service
 public class StudentCheckinFacade {
@@ -44,17 +46,24 @@ public class StudentCheckinFacade {
         }
         if (request.diagnostics() != null) {
             CheckinDiagnostics input = request.diagnostics();
-            GeoDiagnostics.Builder diagnostics = GeoDiagnostics.newBuilder()
-                    .setSource(ru.rutcampustrack.attendance.grpc.GeoDiagnosticSource.valueOf(
-                            "GEO_DIAGNOSTIC_SOURCE_" + input.source().name()));
-            if (input.accuracyMeters() != null) diagnostics.setAccuracyMeters(input.accuracyMeters());
-            if (input.fixTimestamp() != null) diagnostics.setFixTimestamp(input.fixTimestamp().toString());
-            if (input.receivedAt() != null) diagnostics.setReceivedAt(input.receivedAt().toString());
+            GeoDiagnostics.Builder diagnostics =
+                    GeoDiagnostics.newBuilder()
+                            .setSource(
+                                    ru.rutcampustrack.attendance.grpc.GeoDiagnosticSource.valueOf(
+                                            "GEO_DIAGNOSTIC_SOURCE_" + input.source().name()));
+            if (input.accuracyMeters() != null)
+                diagnostics.setAccuracyMeters(input.accuracyMeters());
+            if (input.fixTimestamp() != null)
+                diagnostics.setFixTimestamp(input.fixTimestamp().toString());
+            if (input.receivedAt() != null)
+                diagnostics.setReceivedAt(input.receivedAt().toString());
             if (input.sampleCount() != null) diagnostics.setSampleCount(input.sampleCount());
-            if (input.acquisitionDurationMs() != null) diagnostics.setAcquisitionDurationMs(input.acquisitionDurationMs());
-            if (input.completionReason() != null) diagnostics.setCompletionReason(
-                    ru.rutcampustrack.attendance.grpc.GeoCompletionReason.valueOf(
-                            "GEO_COMPLETION_REASON_" + input.completionReason().name()));
+            if (input.acquisitionDurationMs() != null)
+                diagnostics.setAcquisitionDurationMs(input.acquisitionDurationMs());
+            if (input.completionReason() != null)
+                diagnostics.setCompletionReason(
+                        ru.rutcampustrack.attendance.grpc.GeoCompletionReason.valueOf(
+                                "GEO_COMPLETION_REASON_" + input.completionReason().name()));
             command.setDiagnostics(diagnostics);
         }
         StudentCheckinResult result = attendance.checkin(command.build());

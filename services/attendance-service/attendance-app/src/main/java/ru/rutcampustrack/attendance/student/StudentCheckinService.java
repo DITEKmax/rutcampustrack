@@ -251,7 +251,7 @@ public class StudentCheckinService {
                             lesson,
                             lessonId,
                             RejectedAttendanceActionService.Code.valueOf(error.code().name()),
-                            geo instanceof Coordinates coordinates ? coordinates : null);
+                            geo);
             default -> {}
         }
     }
@@ -266,7 +266,7 @@ public class StudentCheckinService {
                         lesson,
                         lesson.id(),
                         RejectedAttendanceActionService.Code.ATTENDANCE_WRITE_CONFLICT,
-                        geo instanceof Coordinates coordinates ? coordinates : null);
+                        geo);
             throw error;
         }
     }
@@ -398,11 +398,16 @@ public class StudentCheckinService {
                         ? markPresent(identity, lesson, current, acceptedAt)
                         : createOrReuseRequest(identity, lesson, acceptedAt, retryAt);
         receiptRepository.save(toReceipt(identity, lesson, idempotencyKey, payloadHash, ack));
-        java.util.Map<String, Object> geoEvidence = new java.util.LinkedHashMap<>();
+        // A closed outcome vocabulary only; never coordinates, account IDs, or client timestamps.
+        businessMetrics.incrementAfterCommit(
+                businessMetrics.checkinCounter(
+                        geoDecision == null
+                                ? "geo_unavailable"
+                                : geoAccepted ? "geo_accepted" : "geo_outside_radius"));
+        java.util.Map<String, Object> geoEvidence = geo.evidence();
         geoEvidence.put(
                 "distance_meters", geoDecision == null ? null : geoDecision.distanceMeters());
         geoEvidence.put("radius_meters", geoDecision == null ? null : geoDecision.radiusMeters());
-        geoEvidence.put("accuracy_meters", null);
         geoEvidence.put(
                 "verdict",
                 geoDecision == null ? "UNAVAILABLE" : geoAccepted ? "ACCEPTED" : "OUTSIDE_RADIUS");

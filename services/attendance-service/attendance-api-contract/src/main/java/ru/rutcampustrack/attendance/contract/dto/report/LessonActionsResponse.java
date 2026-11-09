@@ -28,5 +28,35 @@ public record LessonActionsResponse(List<Entry> items, String nextCursor) {
             Double accuracyMeters,
             String verdict,
             Double latitude,
-            Double longitude) {}
+            Double longitude,
+            String unavailableReason,
+            String source,
+            Instant fixTimestamp,
+            Instant receivedAt,
+            Integer sampleCount,
+            Integer acquisitionDurationMs,
+            String completionReason) {
+        public Geo(
+                Double distanceMeters,
+                Double radiusMeters,
+                Double accuracyMeters,
+                String verdict,
+                Double latitude,
+                Double longitude) {
+            this(
+                    distanceMeters,
+                    radiusMeters,
+                    accuracyMeters,
+                    verdict,
+                    latitude,
+                    longitude,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null);
+        }
+    }
 }

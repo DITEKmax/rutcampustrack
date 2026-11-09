@@ -1,15 +1,13 @@
 package ru.rutcampustrack.attendance.grpc;
 
 import io.grpc.stub.StreamObserver;
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+
 import net.devh.boot.grpc.server.service.GrpcService;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+
 import ru.rutcampustrack.attendance.contract.enums.AttendanceSource;
 import ru.rutcampustrack.attendance.contract.enums.AttendanceStatus;
 import ru.rutcampustrack.attendance.contract.enums.ExcuseType;
@@ -30,6 +28,13 @@ import ru.rutcampustrack.attendance.studentrequest.StudentRequestModels;
 import ru.rutcampustrack.attendance.studentrequest.StudentRequestService;
 import ru.rutcampustrack.schedule.grpc.LessonResponse;
 import ru.rutcampustrack.shared.security.InternalJwtClaims;
+
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @GrpcService
 public class AttendanceStudentGrpcServiceImpl
@@ -321,7 +326,8 @@ public class AttendanceStudentGrpcServiceImpl
                     }
                 }
                 log.warn(
-                        "operation=submitExcuse category=CONFLICT originClass={} originMethod={} originLine={}",
+                        "operation=submitExcuse category=CONFLICT originClass={} originMethod={}"
+                                + " originLine={}",
                         origin == null ? "UNKNOWN" : origin.getClassName(),
                         origin == null ? "UNKNOWN" : origin.getMethodName(),
                         origin == null ? "UNKNOWN" : Integer.toString(origin.getLineNumber()));
@@ -394,13 +400,19 @@ public class AttendanceStudentGrpcServiceImpl
     }
 
     @Override
-    public void downloadStudentAttendanceAttachment(StudentAttendanceAttachmentRequest request,
+    public void downloadStudentAttendanceAttachment(
+            StudentAttendanceAttachmentRequest request,
             StreamObserver<StudentRequestAttachmentDownload> observer) {
         try {
             validateObjectId(request.getAttachmentId(), "attachment_id");
-            observer.onNext(StudentRequestGrpcMapper.download(projectionService.downloadAttachment(
-                    requireClaims(), request.getSemesterId(), request.getLessonId(),
-                    request.getAttachmentId(), request.getExpectedMarkRevision())));
+            observer.onNext(
+                    StudentRequestGrpcMapper.download(
+                            projectionService.downloadAttachment(
+                                    requireClaims(),
+                                    request.getSemesterId(),
+                                    request.getLessonId(),
+                                    request.getAttachmentId(),
+                                    request.getExpectedMarkRevision())));
             observer.onCompleted();
         } catch (RuntimeException error) {
             observer.onError(StudentRequestGrpcErrors.toStatus(error));
@@ -492,6 +504,7 @@ public class AttendanceStudentGrpcServiceImpl
                     StudentCheckinException.Code.INVALID_REQUEST,
                     "lesson_id должен быть положительным");
         }
+        StudentCheckinModels.Diagnostics diagnostics = parseDiagnostics(command);
         return switch (command.getGeoCase()) {
             case COORDINATES -> {
                 Coordinates coordinates = command.getCoordinates();
@@ -501,7 +514,7 @@ public class AttendanceStudentGrpcServiceImpl
                             "Обе координаты обязательны");
                 }
                 yield new StudentCheckinModels.Coordinates(
-                        coordinates.getLatitude(), coordinates.getLongitude());
+                        coordinates.getLatitude(), coordinates.getLongitude(), diagnostics);
             }
             case UNAVAILABLE -> {
                 GeoUnavailableReason reason = command.getUnavailable().getReason();
@@ -511,12 +524,38 @@ public class AttendanceStudentGrpcServiceImpl
                             StudentCheckinException.Code.INVALID_REQUEST,
                             "Причина недоступной геолокации обязательна");
                 }
-                yield new StudentCheckinModels.Unavailable(reason.name());
+                yield new StudentCheckinModels.Unavailable(reason.name(), diagnostics);
             }
             case GEO_NOT_SET ->
                     throw new StudentCheckinException(
                             StudentCheckinException.Code.INVALID_REQUEST, "geo обязателен");
         };
+    }
+
+    private static StudentCheckinModels.Diagnostics parseDiagnostics(
+            StudentCheckinCommand command) {
+        if (!command.hasDiagnostics()) return null;
+        var d = command.getDiagnostics();
+        try {
+            return new StudentCheckinModels.Diagnostics(
+                    StudentCheckinModels.DiagnosticSource.valueOf(
+                            d.getSource().name().replace("GEO_DIAGNOSTIC_SOURCE_", "")),
+                    d.hasAccuracyMeters() ? d.getAccuracyMeters() : null,
+                    d.hasFixTimestamp() ? Instant.parse(d.getFixTimestamp()) : null,
+                    d.hasReceivedAt() ? Instant.parse(d.getReceivedAt()) : null,
+                    d.hasSampleCount() ? d.getSampleCount() : null,
+                    d.hasAcquisitionDurationMs() ? d.getAcquisitionDurationMs() : null,
+                    d.hasCompletionReason()
+                            ? StudentCheckinModels.CompletionReason.valueOf(
+                                    d.getCompletionReason()
+                                            .name()
+                                            .replace("GEO_COMPLETION_REASON_", ""))
+                            : null);
+        } catch (IllegalArgumentException | java.time.format.DateTimeParseException invalid) {
+            throw new StudentCheckinException(
+                    StudentCheckinException.Code.INVALID_REQUEST,
+                    "Некорректная диагностика геолокации");
+        }
     }
 
     private static StudentAttendanceEntry toProto(StudentAttendanceSnapshotService.Entry entry) {
@@ -605,8 +644,10 @@ public class AttendanceStudentGrpcServiceImpl
             StudentAttendanceProjectionService.Lesson lesson,
             Map<Long, StudentRequestModels.LessonOption> requestOptions) {
         StudentRequestModels.LessonOption option = requestOptions.get(lesson.lessonId());
-        boolean pending = option != null && "ABSENT".equals(lesson.uiStatus())
-                && !option.pendingRequests().isEmpty();
+        boolean pending =
+                option != null
+                        && "ABSENT".equals(lesson.uiStatus())
+                        && !option.pendingRequests().isEmpty();
         StudentAttendanceLesson.Builder result =
                 StudentAttendanceLesson.newBuilder()
                         .setLessonId(lesson.lessonId())
@@ -620,10 +661,15 @@ public class AttendanceStudentGrpcServiceImpl
                         .setStatus(lesson.uiStatus())
                         .setPendingRequest(pending);
         if (option != null) {
-            result.addRequestOptions(requestOption("EXCUSE", "Уважительная причина",
-                    option.excuseEligible(), pending));
-            result.addRequestOptions(requestOption("LATE_CHECKIN", "Забыл отметиться",
-                    option.lateCheckinEligible(), pending));
+            result.addRequestOptions(
+                    requestOption(
+                            "EXCUSE", "Уважительная причина", option.excuseEligible(), pending));
+            result.addRequestOptions(
+                    requestOption(
+                            "LATE_CHECKIN",
+                            "Забыл отметиться",
+                            option.lateCheckinEligible(),
+                            pending));
         }
         if (lesson.room() != null) result.setRoom(lesson.room());
         if (lesson.explanation() != null) result.setExplanation(toProto(lesson.explanation()));
@@ -632,11 +678,12 @@ public class AttendanceStudentGrpcServiceImpl
 
     private static StudentAttendanceRequestOption requestOption(
             String kind, String label, boolean eligible, boolean pending) {
-        var result = StudentAttendanceRequestOption.newBuilder()
-                .setId(kind)
-                .setKind(kind)
-                .setLabel(label)
-                .setEnabled(eligible && !pending);
+        var result =
+                StudentAttendanceRequestOption.newBuilder()
+                        .setId(kind)
+                        .setKind(kind)
+                        .setLabel(label)
+                        .setEnabled(eligible && !pending);
         if (pending) result.setReason("Есть активная заявка по этой паре");
         return result.build();
     }
@@ -719,11 +766,20 @@ public class AttendanceStudentGrpcServiceImpl
         if (value.cancellationReason() != null)
             result.setCancellationReason(value.cancellationReason());
         for (var file : value.documents()) {
-            StudentAttendanceDocument.Builder document = StudentAttendanceDocument.newBuilder()
-                    .setId(file.id()).setName(file.name()).setContentType(file.contentType())
-                    .setSize(file.size()).setState(file.state()).setMarkRevision(file.markRevision()).setLessonId(file.lessonId());
-            if (file.expiresAt() != null) document.setExpiresAt(com.google.protobuf.Timestamp.newBuilder()
-                    .setSeconds(file.expiresAt().getEpochSecond()).setNanos(file.expiresAt().getNano()));
+            StudentAttendanceDocument.Builder document =
+                    StudentAttendanceDocument.newBuilder()
+                            .setId(file.id())
+                            .setName(file.name())
+                            .setContentType(file.contentType())
+                            .setSize(file.size())
+                            .setState(file.state())
+                            .setMarkRevision(file.markRevision())
+                            .setLessonId(file.lessonId());
+            if (file.expiresAt() != null)
+                document.setExpiresAt(
+                        com.google.protobuf.Timestamp.newBuilder()
+                                .setSeconds(file.expiresAt().getEpochSecond())
+                                .setNanos(file.expiresAt().getNano()));
             result.addDocuments(document);
         }
         return result.build();
@@ -944,6 +1000,12 @@ public class AttendanceStudentGrpcServiceImpl
     }
 
     private static RuntimeException mapError(RuntimeException error) {
+        if (error instanceof ru.rutcampustrack.attendance.exception.ConflictException) {
+            return StudentCheckinGrpcErrors.toStatus(
+                    new StudentCheckinException(
+                            StudentCheckinException.Code.CHECKIN_NOT_ELIGIBLE,
+                            "Условия отметки изменились. Обнови доступность отметки"));
+        }
         if (error instanceof StudentCheckinException checkin) {
             return StudentCheckinGrpcErrors.toStatus(checkin);
         }

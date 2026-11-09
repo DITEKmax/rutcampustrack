@@ -1,11 +1,5 @@
 package ru.rutcampustrack.attendance.audit;
 
-import java.time.Clock;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.util.Map;
-import java.util.Objects;
-import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.mongodb.MongoTransactionManager;
@@ -14,13 +8,20 @@ import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.transaction.support.TransactionTemplate;
+
 import ru.rutcampustrack.attendance.grpc.AcademicGrpcClient;
 import ru.rutcampustrack.attendance.grpc.ScheduleGrpcClient;
 import ru.rutcampustrack.attendance.security.RequestContext;
-import ru.rutcampustrack.attendance.student.StudentCheckinModels.Coordinates;
+import ru.rutcampustrack.attendance.student.StudentCheckinModels.Geo;
 import ru.rutcampustrack.attendance.student.StudentCheckinModels.Identity;
 import ru.rutcampustrack.attendance.student.StudentCheckinModels.Lesson;
 import ru.rutcampustrack.schedule.grpc.LessonResponse;
+
+import java.time.Clock;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.util.Objects;
+import java.util.UUID;
 
 /** Only explicit domain rejection sites enroll an attempt. No request body is retained. */
 @Service
@@ -60,8 +61,7 @@ public class RejectedAttendanceActionService {
         this.requestContext = requestContext;
     }
 
-    public void geo(
-            Identity actor, Lesson lesson, long lessonId, Code code, Coordinates coordinates) {
+    public void geo(Identity actor, Lesson lesson, long lessonId, Code code, Geo geo) {
         if (actor == null || actor.readOnly() || !"STUDENT".equalsIgnoreCase(actor.role())) return;
         enroll(
                 new Attempt(
@@ -75,7 +75,7 @@ public class RejectedAttendanceActionService {
                         actor.userId(),
                         "GEO_ATTEMPT",
                         code,
-                        coordinates));
+                        geo));
     }
 
     public void manual(
@@ -189,13 +189,7 @@ public class RejectedAttendanceActionService {
                                                 attempt.studentId(), "STUDENT", null),
                                         null,
                                         null,
-                                        attempt.coordinates() == null
-                                                ? null
-                                                : Map.of(
-                                                        "latitude",
-                                                        attempt.coordinates().latitude(),
-                                                        "longitude",
-                                                        attempt.coordinates().longitude()),
+                                        attempt.geo() == null ? null : attempt.geo().evidence(),
                                         null,
                                         null,
                                         null);
@@ -228,5 +222,5 @@ public class RejectedAttendanceActionService {
             Long studentId,
             String action,
             Code code,
-            Coordinates coordinates) {}
+            Geo geo) {}
 }

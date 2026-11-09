@@ -596,10 +596,10 @@ services:
       SCHEDULE_GRPC_TRUST_CERT_COLLECTION: file:/run/rct-schedule-tls/schedule-server.crt
       ACADEMIC_GRPC_TRUST_CERT_COLLECTION: file:/run/rct-academic-tls/academic-server.crt
       ACADEMIC_GRPC_TLS_AUTHORITY: ${ACADEMIC_GRPC_TLS_AUTHORITY:?ACADEMIC_GRPC_TLS_AUTHORITY must be set}
-      # M18 hotfix: weekly DOCX export killed prod attendance-service under
-      # 512m/75% heap; gateway saw PrematureClose BEFORE response. Keep heap
-      # lower and leave room for JVM native memory + DOCX zip buffers.
-      JAVA_TOOL_OPTIONS: '-XX:MaxRAMPercentage=60.0 -XX:InitialRAMPercentage=30.0 -XX:+UseG1GC -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp'
+      # Preserve the previous 768m * 60% heap budget while increasing cgroup
+      # headroom for JVM native memory and weekly DOCX export buffers. Explicit
+      # sizes prevent a larger container limit from silently growing the heap.
+      JAVA_TOOL_OPTIONS: '-Xmx460m -Xms230m -XX:+UseG1GC -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp'
     secrets:
       - source: attendance-to-auth-service-token
         target: /run/rct-directed/grpc.service-identity.attendance-to-auth-token
@@ -632,9 +632,10 @@ services:
         condition: service_healthy
       document-renderer-service:
         condition: service_healthy
-    # M18 hotfix: report export allocates on top of Mongo, RabbitMQ, gRPC
-    # and OTel footprint; 512m caused a prod restart during download.
-    mem_limit: 768m
+    # 2026-11 audit: sampled working-set peak ~697MiB at the old 768MiB cap.
+    # 1024MiB leaves ~32% at that historical peak, not a new load-test result.
+    # Keep heap fixed above; verify >=20-25% headroom on check-in + DOCX load.
+    mem_limit: 1024m
     mem_reservation: 384m
     restart: unless-stopped
     healthcheck:

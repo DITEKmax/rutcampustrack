@@ -349,7 +349,7 @@ def e2e_panel_rules(expected):
     """Reuse actual record expressions; only the validation environment changes."""
     groups = []
     short = {"rct_sli:http_eligible_rate5m", "rct_sli:http_error_ratio5m", "rct_sli:report_p95_seconds5m"}
-    for filename in ["expected-targets.yml", "service-objectives.yml", "telemetry-pipeline.yml"]:
+    for filename in ["expected-targets.yml", "service-objectives.yml", "telemetry-pipeline.yml", "grpc-latency.yml"]:
         source = yaml.safe_load((ROOT / "infra/prometheus/rules" / filename).read_text())
         for group in source["groups"]:
             rules = []
@@ -364,6 +364,7 @@ def e2e_panel_rules(expected):
                     "http-slo-long-window",
                     "export-slo-window-rollup",
                     "export-slo-long-window",
+                    "grpc-client-dashboard",
                 }:
                     continue
                 rule = copy.deepcopy(original)
@@ -1752,7 +1753,9 @@ def main(host_and_bot_only=False, remaining_infra_only=False):
         grpc_identity["static_configs"] = [{"targets": ["notification-web:9094"],
                                             "labels": {"service": "academic-service", "environment": "synthetic"}}]
         prom["scrape_configs"].append(grpc_identity)
-        prom["rule_files"] = []
+        # Retained gRPC panels now read recordings. Exercise the production
+        # expressions rather than falling back to raw24h histogram scans.
+        prom["rule_files"] = ["/etc/prometheus/rules/grpc-latency.yml"]
         for job in prom["scrape_configs"]:
             for target in job.get("static_configs", []):
                 target.get("labels", {}).update(environment="synthetic")

@@ -13,7 +13,7 @@
     {
       "type": "timeseries",
       "title": "gRPC p50 latency (по методу)",
-      "description": "Existing bounded gRPC client timer by target service/method/status. Histogram quantiles aggregate buckets per caller instance. No normative SLO is implied.",
+      "description": "5-минутная скользящая квантиль по caller instance и downstream method, записанная каждые 30с. Статусы объединяются по bucket до histogram_quantile. Это не квантиль за весь выбранный период. История доступна только после подключения rules; NaN при нулевом трафике не заменяется нулём.",
       "gridPos": {
         "h": 8,
         "w": 12,
@@ -27,9 +27,10 @@
       },
       "targets": [
         {
-          "expr": "histogram_quantile(0.5, sum by (job, instance, environment, service, grpc_service, method, le) (rate(grpc_client_duration_seconds_bucket{environment=~\"$environment\",job=~\"$job\",instance=~\"$instance\"}[5m])))",
+          "expr": "rct_grpc:client_duration_seconds:quantile5m{quantile=\"0.5\",environment=~\"$environment\",job=~\"$job\",instance=~\"$instance\"}",
           "legendFormat": "{{job}} {{instance}} {{service}} → {{grpc_service}}/{{method}}",
-          "refId": "A"
+          "refId": "A",
+          "interval": "30s"
         }
       ],
       "fieldConfig": {
@@ -37,12 +38,13 @@
           "unit": "s",
           "noValue": "NO DATA"
         }
-      }
+      },
+      "maxDataPoints": 1440
     },
     {
       "type": "timeseries",
       "title": "gRPC p95 latency",
-      "description": "Existing bounded gRPC client timer by target service/method/status. Histogram quantiles aggregate buckets per caller instance. No normative SLO is implied.",
+      "description": "5-минутная скользящая квантиль по caller instance и downstream method, записанная каждые 30с. Статусы объединяются по bucket до histogram_quantile. Это не квантиль за весь выбранный период. История доступна только после подключения rules; NaN при нулевом трафике не заменяется нулём.",
       "gridPos": {
         "h": 8,
         "w": 12,
@@ -56,9 +58,10 @@
       },
       "targets": [
         {
-          "expr": "histogram_quantile(0.95, sum by (job, instance, environment, service, grpc_service, method, le) (rate(grpc_client_duration_seconds_bucket{environment=~\"$environment\",job=~\"$job\",instance=~\"$instance\"}[5m])))",
+          "expr": "rct_grpc:client_duration_seconds:quantile5m{quantile=\"0.95\",environment=~\"$environment\",job=~\"$job\",instance=~\"$instance\"}",
           "legendFormat": "{{job}} {{instance}} {{service}} → {{grpc_service}}/{{method}}",
-          "refId": "A"
+          "refId": "A",
+          "interval": "30s"
         }
       ],
       "fieldConfig": {
@@ -66,12 +69,13 @@
           "unit": "s",
           "noValue": "NO DATA"
         }
-      }
+      },
+      "maxDataPoints": 1440
     },
     {
       "type": "timeseries",
       "title": "gRPC p99 latency",
-      "description": "Existing bounded gRPC client timer by target service/method/status. Histogram quantiles aggregate buckets per caller instance. No normative SLO is implied.",
+      "description": "5-минутная скользящая квантиль по caller instance и downstream method, записанная каждые 30с. Статусы объединяются по bucket до histogram_quantile. Это не квантиль за весь выбранный период. История доступна только после подключения rules; NaN при нулевом трафике не заменяется нулём.",
       "gridPos": {
         "h": 8,
         "w": 12,
@@ -85,9 +89,10 @@
       },
       "targets": [
         {
-          "expr": "histogram_quantile(0.99, sum by (job, instance, environment, service, grpc_service, method, le) (rate(grpc_client_duration_seconds_bucket{environment=~\"$environment\",job=~\"$job\",instance=~\"$instance\"}[5m])))",
+          "expr": "rct_grpc:client_duration_seconds:quantile5m{quantile=\"0.99\",environment=~\"$environment\",job=~\"$job\",instance=~\"$instance\"}",
           "legendFormat": "{{job}} {{instance}} {{service}} → {{grpc_service}}/{{method}}",
-          "refId": "A"
+          "refId": "A",
+          "interval": "30s"
         }
       ],
       "fieldConfig": {
@@ -95,12 +100,13 @@
           "unit": "s",
           "noValue": "NO DATA"
         }
-      }
+      },
+      "maxDataPoints": 1440
     },
     {
       "type": "timeseries",
       "title": "gRPC errors per second (non-OK)",
-      "description": "Existing bounded gRPC client timer by target service/method/status. Histogram quantiles aggregate buckets per caller instance. No normative SLO is implied.",
+      "description": "Non-OK вызовы/с за скользящие 5 минут. Recording series появляются только после подключения rules; отсутствие серии не означает отсутствие ошибок.",
       "gridPos": {
         "h": 8,
         "w": 12,
@@ -114,9 +120,10 @@
       },
       "targets": [
         {
-          "expr": "sum by (job, instance, environment, service, grpc_service, method, status) (rate(grpc_client_duration_seconds_count{status!=\"OK\",environment=~\"$environment\",job=~\"$job\",instance=~\"$instance\"}[5m]))",
+          "expr": "rct_grpc:client_requests:rate5m{status!=\"OK\",environment=~\"$environment\",job=~\"$job\",instance=~\"$instance\"}",
           "legendFormat": "{{job}} {{instance}} {{service}} → {{grpc_service}}/{{method}} [{{status}}]",
-          "refId": "A"
+          "refId": "A",
+          "interval": "30s"
         }
       ],
       "fieldConfig": {
@@ -124,7 +131,8 @@
           "unit": "reqps",
           "noValue": "NO DATA"
         }
-      }
+      },
+      "maxDataPoints": 1440
     },
     {
       "type": "stat",
@@ -143,7 +151,7 @@
       },
       "targets": [
         {
-          "expr": "count(count by (service, grpc_service, method) (rate(grpc_client_duration_seconds_count{environment=~\"$environment\",job=~\"$job\",instance=~\"$instance\"}[5m])))",
+          "expr": "count(count by (service, grpc_service, method) (rct_grpc:client_requests:rate5m{environment=~\"$environment\",job=~\"$job\",instance=~\"$instance\"}))",
           "refId": "A",
           "instant": true,
           "range": false
@@ -152,6 +160,140 @@
       "fieldConfig": {
         "defaults": {
           "noValue": "NO DATA"
+        }
+      }
+    },
+    {
+      "type": "text",
+      "title": "История, прогрев и состояния данных",
+      "id": 6,
+      "gridPos": {
+        "h": 5,
+        "w": 18,
+        "x": 6,
+        "y": 16
+      },
+      "options": {
+        "mode": "markdown",
+        "content": "Квантили — скользящие **5 минут** по отдельным caller instance / downstream method. Recording rules не создают прошлую историю: после обновления подожди минимум два scrape и очередную оценку rule; полное 24ч окно накопится за сутки.\n\nДля проверки сейчас используй сырые 5м ниже: это только instant query, он не сканирует выбранные 24ч. **NaN** + нулевая скорость вызовов = нет трафика. **NO DATA** = нет серий / ещё нет истории; проверь фильтры и scrape target в Prometheus Targets. **up=0** = scrape down. Красная ошибка запроса — query error, её нельзя читать как отсутствие трафика. Не усредняй p95/p99 между экземплярами."
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Диагностика сейчас: сырые p50 / p95 / p99 за 5м",
+      "description": "Ограниченный fallback при прогреве recording rules: три instant-запроса rate[5m] на текущий момент. Не загружает сырые histogram за выбранные 1ч/24ч. NO DATA и NaN не превращаются в latency=0.",
+      "id": 7,
+      "gridPos": {
+        "h": 6,
+        "w": 24,
+        "x": 0,
+        "y": 21
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.5, sum by (job, instance, environment, service, grpc_service, method, le) (rate(grpc_client_duration_seconds_bucket{environment=~\"$environment\",job=~\"$job\",instance=~\"$instance\"}[5m])))",
+          "legendFormat": "p50 {{job}} {{instance}} {{service}} → {{grpc_service}}/{{method}}",
+          "refId": "A",
+          "instant": true,
+          "range": false
+        },
+        {
+          "expr": "histogram_quantile(0.95, sum by (job, instance, environment, service, grpc_service, method, le) (rate(grpc_client_duration_seconds_bucket{environment=~\"$environment\",job=~\"$job\",instance=~\"$instance\"}[5m])))",
+          "legendFormat": "p95 {{job}} {{instance}} {{service}} → {{grpc_service}}/{{method}}",
+          "refId": "B",
+          "instant": true,
+          "range": false
+        },
+        {
+          "expr": "histogram_quantile(0.99, sum by (job, instance, environment, service, grpc_service, method, le) (rate(grpc_client_duration_seconds_bucket{environment=~\"$environment\",job=~\"$job\",instance=~\"$instance\"}[5m])))",
+          "legendFormat": "p99 {{job}} {{instance}} {{service}} → {{grpc_service}}/{{method}}",
+          "refId": "C",
+          "instant": true,
+          "range": false
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "noValue": "NO DATA"
+        }
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Диагностика сейчас: вызовы/с за 5м (0 = нет трафика)",
+      "description": "Сырой count rate на текущий момент. NO DATA означает отсутствие наблюдаемых серий, а не нулевой трафик. Состояние scrape проверяется отдельно.",
+      "id": 8,
+      "gridPos": {
+        "h": 4,
+        "w": 24,
+        "x": 0,
+        "y": 27
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "targets": [
+        {
+          "expr": "sum by (job, instance, environment, service, grpc_service, method) (rate(grpc_client_duration_seconds_count{environment=~\"$environment\",job=~\"$job\",instance=~\"$instance\"}[5m]))",
+          "instant": true,
+          "range": false,
+          "refId": "A",
+          "legendFormat": "{{job}} {{instance}} {{service}} → {{grpc_service}}/{{method}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "noValue": "NO DATA"
+        }
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Scrape gRPC callers сейчас: 1 = UP, 0 = DOWN",
+      "description": "Проверка известных gRPC callers (Academic / Attendance / Schedule), сохраняет фильтры environment/job/instance. NO DATA — нет target под фильтром; query error отображается отдельно.",
+      "id": 9,
+      "gridPos": {
+        "h": 4,
+        "w": 24,
+        "x": 0,
+        "y": 31
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "targets": [
+        {
+          "expr": "up{job=~\"academic-service|attendance-service|schedule-service\",environment=~\"$environment\",job=~\"$job\",instance=~\"$instance\"}",
+          "instant": true,
+          "range": false,
+          "refId": "A",
+          "legendFormat": "{{job}} {{instance}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "NO DATA",
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "0": {
+                  "text": "DOWN"
+                },
+                "1": {
+                  "text": "UP"
+                }
+              }
+            }
+          ]
         }
       }
     }
@@ -227,6 +369,6 @@
   "timezone": "",
   "title": "gRPC Client Latency (M05 G8)",
   "uid": "grpc-latency-m05",
-  "version": 1,
+  "version": 2,
   "weekStart": ""
 }

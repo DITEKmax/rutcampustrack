@@ -138,7 +138,10 @@ class DurableNotificationPreferencesIT {
                             null,
                             mock(
                                     ru.rutcampustrack.notification.history.AcademicGroupMemberClient
-                                            .class)));
+                                            .class),
+                            new ru.rutcampustrack.notification.push.WebPushOutcomeMetrics(
+                                    new io.micrometer.core.instrument.simple
+                                            .SimpleMeterRegistry())));
         }
 
         @Bean

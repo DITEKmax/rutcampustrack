@@ -1,6 +1,6 @@
 /* eslint-disable */
 // Generated from docs/openapi/mobile-bff.json. Do not edit.
-// Contract: JS-STUDENT-01-r1; SHA-256: 95345393b8d286a6e30a801eb1ebe4a611951774ea109e08bf7ef23dbfc7a2c3
+// Contract: JS-STUDENT-01-r1; SHA-256: ef95efd31212bf56a78861cfde78bd0d3ad70900b5eb7bf463e7694271540ac7
 
 export interface paths {
     "/api/v1/map/buildings/{buildingId}/floors/{floorId}/opens": {
@@ -99,6 +99,26 @@ export interface paths {
         get: operations["downloadAttendanceAttachment"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/student/checkin/acquisition-reports": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Report a completed client sensor acquisition run
+         * @description Best-effort client observation. Does not create attendance, requests or history.
+         */
+        post: operations["reportCheckinAcquisition"];
         delete?: never;
         options?: never;
         head?: never;
@@ -726,6 +746,17 @@ export interface components {
             /** @enum {string} */
             status: "PENDING" | "APPROVED" | "REJECTED" | "CANCELLED";
         } | null;
+        /** @description Best-effort client sensor-run report, not proof of presence or a business attempt */
+        CheckinAcquisitionReport: {
+            /** Format: int32 */
+            durationMs?: number;
+            /** @enum {string} */
+            outcome: "QUALITY_REACHED" | "BUDGET_EXPIRED" | "PERMISSION_DENIED" | "POSITION_UNAVAILABLE" | "TIMEOUT" | "UNSUPPORTED" | "APP_DISABLED" | "CANCELLED";
+            /** Format: int32 */
+            sampleCount?: number;
+            /** @enum {string} */
+            source: "BROWSER" | "TMA";
+        };
         CheckinDiagnostics: {
             /** Format: double */
             accuracyMeters?: number | null;
@@ -1934,6 +1965,55 @@ export interface operations {
             };
             /** @description Document expired or removed */
             410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["MobileProblemDetails"];
+                };
+            };
+        };
+    };
+    reportCheckinAcquisition: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CheckinAcquisitionReport"];
+            };
+        };
+        responses: {
+            /** @description Client report recorded */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Invalid report */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["MobileProblemDetails"];
+                };
+            };
+            /** @description Invalid session */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["MobileProblemDetails"];
+                };
+            };
+            /** @description Student write scope required */
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };

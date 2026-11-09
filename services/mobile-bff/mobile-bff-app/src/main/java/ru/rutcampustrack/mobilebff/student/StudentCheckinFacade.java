@@ -18,11 +18,42 @@ import java.util.Map;
 public class StudentCheckinFacade {
     private final MobileAttendanceClient attendance;
     private final MobileRequestContext requestContext;
+    private final io.micrometer.core.instrument.MeterRegistry acquisitionMetrics;
 
     public StudentCheckinFacade(
             MobileAttendanceClient attendance, MobileRequestContext requestContext) {
+        this(
+                attendance,
+                requestContext,
+                new io.micrometer.core.instrument.simple.SimpleMeterRegistry());
+    }
+
+    @org.springframework.beans.factory.annotation.Autowired
+    public StudentCheckinFacade(
+            MobileAttendanceClient attendance,
+            MobileRequestContext requestContext,
+            io.micrometer.core.instrument.MeterRegistry acquisitionMetrics) {
         this.attendance = attendance;
         this.requestContext = requestContext;
+        this.acquisitionMetrics = acquisitionMetrics;
+    }
+
+    public void reportCheckinAcquisition(CheckinAcquisitionReport report) {
+        requireStudentScope();
+        String[] labels = {"source", report.source().name(), "outcome", report.outcome().name()};
+        io.micrometer.core.instrument.Counter.builder("mobile.client.geo.acquisition.reports")
+                .description(
+                        "Best-effort client-reported sensor completions, not business attempts")
+                .tags(labels)
+                .register(acquisitionMetrics)
+                .increment();
+        if (report.durationMs() != null) {
+            io.micrometer.core.instrument.Timer.builder("mobile.client.geo.acquisition.duration")
+                    .description("Client-reported acquisition duration, not server latency")
+                    .tags(labels)
+                    .register(acquisitionMetrics)
+                    .record(report.durationMs(), java.util.concurrent.TimeUnit.MILLISECONDS);
+        }
     }
 
     public CheckinAck checkin(long lessonId, String key, CheckinRequest request) {

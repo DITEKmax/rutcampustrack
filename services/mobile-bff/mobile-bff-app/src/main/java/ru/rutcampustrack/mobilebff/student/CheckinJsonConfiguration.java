@@ -11,6 +11,8 @@ import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilde
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import ru.rutcampustrack.mobilebff.contract.model.StudentApiModels.CheckinAcquisitionOutcome;
+import ru.rutcampustrack.mobilebff.contract.model.StudentApiModels.CheckinAcquisitionReport;
 import ru.rutcampustrack.mobilebff.contract.model.StudentApiModels.CheckinDiagnostics;
 import ru.rutcampustrack.mobilebff.contract.model.StudentApiModels.GeoCompletionReason;
 import ru.rutcampustrack.mobilebff.contract.model.StudentApiModels.GeoDiagnosticSource;
@@ -23,7 +25,45 @@ import java.time.Instant;
 public class CheckinJsonConfiguration {
     @Bean
     public Jackson2ObjectMapperBuilderCustomizer strictCheckinDiagnostics() {
-        return builder -> builder.mixIn(CheckinDiagnostics.class, DiagnosticsMixin.class);
+        return builder -> {
+            builder.mixIn(CheckinDiagnostics.class, DiagnosticsMixin.class);
+            builder.mixIn(CheckinAcquisitionReport.class, AcquisitionReportMixin.class);
+        };
+    }
+
+    @JsonDeserialize(using = AcquisitionReportDeserializer.class)
+    abstract static class AcquisitionReportMixin {}
+
+    static final class AcquisitionReportDeserializer
+            extends JsonDeserializer<CheckinAcquisitionReport> {
+        @Override
+        public CheckinAcquisitionReport deserialize(
+                JsonParser parser, DeserializationContext context) throws IOException {
+            JsonNode node = parser.getCodec().readTree(parser);
+            try {
+                if (!node.isObject()) throw new IllegalArgumentException();
+                var allowed = java.util.Set.of("source", "outcome", "durationMs", "sampleCount");
+                node.fieldNames()
+                        .forEachRemaining(
+                                field -> {
+                                    if (!allowed.contains(field))
+                                        throw new IllegalArgumentException();
+                                });
+                return new CheckinAcquisitionReport(
+                        GeoDiagnosticSource.valueOf(
+                                DiagnosticsDeserializer.text(node.get("source"), false)),
+                        CheckinAcquisitionOutcome.valueOf(
+                                DiagnosticsDeserializer.text(node.get("outcome"), false)),
+                        DiagnosticsDeserializer.integer(node.get("durationMs")),
+                        DiagnosticsDeserializer.integer(node.get("sampleCount")));
+            } catch (IllegalArgumentException invalid) {
+                throw InvalidFormatException.from(
+                        parser,
+                        "Некорректный отчёт измерения геолокации",
+                        null,
+                        CheckinAcquisitionReport.class);
+            }
+        }
     }
 
     @JsonDeserialize(using = DiagnosticsDeserializer.class)

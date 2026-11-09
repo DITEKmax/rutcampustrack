@@ -215,14 +215,14 @@ class StudentGeoDiagnosticsHttpMongoIT {
                         .build();
         try {
             var context = new MobileRequestContext();
-            var attendance = new MobileAttendanceClient(new MobileGrpcAuth(context, ""));
+            var attendance = spy(new MobileAttendanceClient(new MobileGrpcAuth(context, "")));
             ReflectionTestUtils.setField(
                     attendance, "stub", AttendanceStudentGrpcServiceGrpc.newBlockingStub(channel));
             var mvc =
                     MockMvcBuilders.standaloneSetup(
                                     new StudentApiController(
                                             mock(StudentQueryService.class),
-                                            new StudentCheckinFacade(attendance, context),
+                                            new StudentCheckinFacade(attendance, context, meters),
                                             mock(StudentRequestFacade.class),
                                             json))
                             .setControllerAdvice(new MobileProblemHandler(CLOCK))
@@ -242,6 +242,7 @@ class StudentGeoDiagnosticsHttpMongoIT {
                             10L,
                             false,
                             false);
+            verifyAcquisitionReports(mvc, token, signer, meters, mongo, attendance);
             String browser =
                     "{"
                             + GEO
@@ -522,10 +523,265 @@ class StudentGeoDiagnosticsHttpMongoIT {
                     .extracting(row -> row.id())
                     .contains("old-pending")
                     .doesNotContain("foreign-pending");
+            verifyPendingAges(mongo);
         } finally {
             channel.shutdownNow().awaitTermination(5, TimeUnit.SECONDS);
             grpc.shutdownNow().awaitTermination(5, TimeUnit.SECONDS);
         }
+    }
+
+    private static void verifyAcquisitionReports(
+            MockMvc mvc,
+            String token,
+            InternalJwtTestFactory signer,
+            io.micrometer.core.instrument.MeterRegistry meters,
+            MongoTemplate mongo,
+            MobileAttendanceClient attendance)
+            throws Exception {
+        String endpoint = "/api/v1/student/checkin/acquisition-reports";
+        for (String source : List.of("BROWSER", "TMA")) {
+            for (String outcome :
+                    List.of(
+                            "QUALITY_REACHED",
+                            "BUDGET_EXPIRED",
+                            "PERMISSION_DENIED",
+                            "POSITION_UNAVAILABLE",
+                            "TIMEOUT",
+                            "UNSUPPORTED",
+                            "APP_DISABLED",
+                            "CANCELLED")) {
+                mvc.perform(
+                                post(endpoint)
+                                        .header("X-Internal-Token", token)
+                                        .contentType("application/json")
+                                        .content(
+                                                "{\"source\":\""
+                                                        + source
+                                                        + "\",\"outcome\":\""
+                                                        + outcome
+                                                        + "\",\"durationMs\":250,\"sampleCount\":0}"))
+                        .andExpect(status().isNoContent());
+                assertThat(
+                                meters.get("mobile.client.geo.acquisition.reports")
+                                        .tags("source", source, "outcome", outcome)
+                                        .counter()
+                                        .count())
+                        .isEqualTo(1);
+                var timer =
+                        meters.get("mobile.client.geo.acquisition.duration")
+                                .tags("source", source, "outcome", outcome)
+                                .timer();
+                assertThat(timer.count()).isEqualTo(1);
+                assertThat(timer.totalTime(TimeUnit.MILLISECONDS)).isEqualTo(250);
+            }
+        }
+        // Optional measurements stay absent; this does not create a timer sample.
+        mvc.perform(
+                        post(endpoint)
+                                .header("X-Internal-Token", token)
+                                .contentType("application/json")
+                                .content("{\"source\":\"BROWSER\",\"outcome\":\"UNSUPPORTED\"}"))
+                .andExpect(status().isNoContent());
+        for (String invalid :
+                List.of(
+                        "{}",
+                        "null",
+                        "[]",
+                        "{\"source\":0,\"outcome\":\"CANCELLED\"}",
+                        "{\"source\":\"BROWSER\",\"outcome\":0}",
+                        "{\"source\":\"BROWSER\",\"outcome\":\"OTHER\"}")) {
+            mvc.perform(
+                            post(endpoint)
+                                    .header("X-Internal-Token", token)
+                                    .contentType("application/json")
+                                    .content(invalid))
+                    .andExpect(status().isBadRequest());
+        }
+        for (String field :
+                List.of(
+                        "\"durationMs\":-1",
+                        "\"durationMs\":60001",
+                        "\"durationMs\":1.5",
+                        "\"durationMs\":\"20\"",
+                        "\"sampleCount\":65",
+                        "\"sampleCount\":null",
+                        "\"sampleCount\":1.5",
+                        "\"lessonId\":1",
+                        "\"userId\":100",
+                        "\"chatId\":1",
+                        "\"latitude\":55",
+                        "\"longitude\":37",
+                        "\"accuracyMeters\":20",
+                        "\"qr\":\"synthetic\"",
+                        "\"error\":\"synthetic\"")) {
+            mvc.perform(
+                            post(endpoint)
+                                    .header("X-Internal-Token", token)
+                                    .contentType("application/json")
+                                    .content(
+                                            "{\"source\":\"BROWSER\",\"outcome\":\"CANCELLED\","
+                                                    + field
+                                                    + "}"))
+                    .andExpect(status().isBadRequest());
+        }
+        String valid = "{\"source\":\"BROWSER\",\"outcome\":\"CANCELLED\"}";
+        mvc.perform(post(endpoint).contentType("application/json").content(valid))
+                .andExpect(status().isUnauthorized());
+        for (String denied :
+                List.of(
+                        signer.validToken(
+                                100L,
+                                UUID.randomUUID(),
+                                1L,
+                                1L,
+                                "TEACHER",
+                                "ACTIVE",
+                                null,
+                                false,
+                                false),
+                        signer.validToken(
+                                100L,
+                                UUID.randomUUID(),
+                                1L,
+                                1L,
+                                "STUDENT",
+                                "ACTIVE",
+                                null,
+                                false,
+                                false),
+                        signer.validToken(
+                                100L,
+                                UUID.randomUUID(),
+                                1L,
+                                1L,
+                                "STUDENT",
+                                "GRADUATED",
+                                10L,
+                                false,
+                                true))) {
+            mvc.perform(
+                            post(endpoint)
+                                    .header("X-Internal-Token", denied)
+                                    .contentType("application/json")
+                                    .content(valid))
+                    .andExpect(status().isForbidden());
+        }
+        String readOnly =
+                signer.validToken(
+                        100L, UUID.randomUUID(), 1L, 1L, "STUDENT", "GRADUATED", 10L, false, true);
+        mvc.perform(
+                        post(endpoint)
+                                .header("X-Internal-Token", readOnly)
+                                .contentType("application/json")
+                                .content("{"))
+                .andExpect(status().isForbidden());
+        double reports =
+                meters.find("mobile.client.geo.acquisition.reports").counters().stream()
+                        .mapToDouble(c -> c.count())
+                        .sum();
+        assertThat(reports).isEqualTo(17);
+        for (var meter : meters.getMeters()) {
+            if (meter.getId().getName().startsWith("mobile.client.geo.acquisition."))
+                assertThat(meter.getId().getTags())
+                        .extracting(tag -> tag.getKey())
+                        .containsExactlyInAnyOrder("source", "outcome");
+        }
+        verifyNoInteractions(attendance);
+        for (String collection :
+                List.of(
+                        "attendances",
+                        "late_checkin_requests",
+                        "student_checkin_pairs",
+                        "student_checkin_receipts",
+                        "lesson_actions",
+                        "attendance_outbox"))
+            assertThat(mongo.getCollection(collection).countDocuments()).isZero();
+    }
+
+    private static void verifyPendingAges(MongoTemplate mongo) {
+        var meters = new io.micrometer.core.instrument.simple.SimpleMeterRegistry();
+        var sampleTime = new java.util.concurrent.atomic.AtomicReference<>(CLOCK.instant());
+        Clock diagnosticClock =
+                new Clock() {
+                    @Override
+                    public ZoneId getZone() {
+                        return CLOCK.getZone();
+                    }
+
+                    @Override
+                    public Clock withZone(ZoneId zone) {
+                        return this;
+                    }
+
+                    @Override
+                    public Instant instant() {
+                        return sampleTime.get();
+                    }
+                };
+        var mongoReads = spy(mongo);
+        var pending =
+                new ru.rutcampustrack.attendance.metrics.PendingRequestAgeGauge(
+                        mongoReads, meters, diagnosticClock);
+        assertThat(pendingAge(meters, "LATE_CHECKIN", "MANUAL")).isNaN();
+        pending.refresh();
+        clearInvocations(mongoReads);
+        assertThat(pendingAge(meters, "LATE_CHECKIN", "MANUAL")).isEqualTo(86400);
+        assertThat(pendingAge(meters, "LATE_CHECKIN", "AUTO_GEO_FAILURE")).isZero();
+        assertThat(pendingAge(meters, "EXCUSE", "NOT_APPLICABLE")).isZero();
+        verifyNoInteractions(mongoReads); // A scrape reads only the cached timestamps.
+        assertThat(meters.getMeters()).hasSize(3);
+        for (var meter : meters.getMeters()) {
+            assertThat(meter.getId().getTags())
+                    .extracting(tag -> tag.getKey())
+                    .containsExactlyInAnyOrder("kind", "origin");
+        }
+        sampleTime.set(CLOCK.instant().plusSeconds(121));
+        assertThat(pendingAge(meters, "LATE_CHECKIN", "MANUAL")).isNaN();
+        pending.refresh();
+        assertThat(pendingAge(meters, "LATE_CHECKIN", "MANUAL")).isEqualTo(86521);
+        // Legacy null/missing origin follows the same MANUAL rule as the canonical request reader.
+        mongo.getCollection("late_checkin_requests")
+                .insertOne(
+                        new Document("_id", "legacy-pending")
+                                .append("group_id", 10L)
+                                .append("student_id", 100L)
+                                .append("status", "pending")
+                                .append(
+                                        "created_at",
+                                        Date.from(CLOCK.instant().minusSeconds(172800))));
+        pending.refresh();
+        assertThat(pendingAge(meters, "LATE_CHECKIN", "MANUAL")).isEqualTo(172921);
+        mongo.getCollection("late_checkin_requests")
+                .insertOne(
+                        new Document("_id", "invalid-date-pending")
+                                .append("group_id", 10L)
+                                .append("student_id", 100L)
+                                .append("status", "PENDING")
+                                .append("origin", "MANUAL"));
+        pending.refresh();
+        assertThat(pendingAge(meters, "LATE_CHECKIN", "MANUAL")).isNaN();
+        var downMongo = mock(MongoTemplate.class);
+        when(downMongo.getCollection(anyString()))
+                .thenThrow(
+                        new org.springframework.dao.DataAccessResourceFailureException(
+                                "synthetic unavailable"));
+        var downMeters = new io.micrometer.core.instrument.simple.SimpleMeterRegistry();
+        var down =
+                new ru.rutcampustrack.attendance.metrics.PendingRequestAgeGauge(
+                        downMongo, downMeters, diagnosticClock);
+        down.refresh();
+        assertThat(pendingAge(downMeters, "EXCUSE", "NOT_APPLICABLE")).isNaN();
+        assertThat(pendingAge(downMeters, "LATE_CHECKIN", "MANUAL")).isNaN();
+    }
+
+    private static double pendingAge(
+            io.micrometer.core.instrument.MeterRegistry meters, String kind, String origin) {
+        return meters.get(
+                        ru.rutcampustrack.shared.observability.MetricNames
+                                .PENDING_REQUEST_OLDEST_AGE)
+                .tags("kind", kind, "origin", origin)
+                .gauge()
+                .value();
     }
 
     private static LessonResponse lesson(long id) {

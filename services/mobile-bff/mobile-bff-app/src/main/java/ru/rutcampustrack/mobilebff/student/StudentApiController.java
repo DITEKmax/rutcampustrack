@@ -2,11 +2,7 @@ package ru.rutcampustrack.mobilebff.student;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.HexFormat;
-import java.util.List;
+
 import org.springframework.http.CacheControl;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
@@ -14,6 +10,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+
 import ru.rutcampustrack.mobilebff.contract.api.StudentApi;
 import ru.rutcampustrack.mobilebff.contract.model.StudentApiModels.*;
 import ru.rutcampustrack.mobilebff.contract.model.StudentRequestApiModels.Bucket;
@@ -23,12 +20,24 @@ import ru.rutcampustrack.mobilebff.contract.model.StudentRequestApiModels.LateCh
 import ru.rutcampustrack.mobilebff.contract.model.StudentRequestApiModels.Options;
 import ru.rutcampustrack.mobilebff.contract.model.StudentRequestApiModels.Page;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.HexFormat;
+import java.util.List;
+
 @RestController
 public class StudentApiController implements StudentApi {
     private final StudentQueryService queries;
     private final StudentCheckinFacade checkins;
     private final StudentRequestFacade requests;
     private final ObjectMapper objectMapper;
+
+    @Override
+    public ResponseEntity<Void> reportCheckinAcquisition(CheckinAcquisitionReport report) {
+        checkins.reportCheckinAcquisition(report);
+        return ResponseEntity.noContent().cacheControl(CacheControl.noStore()).build();
+    }
 
     public StudentApiController(
             StudentQueryService queries,
@@ -170,10 +179,14 @@ public class StudentApiController implements StudentApi {
     }
 
     @Override
-    public ResponseEntity<byte[]> downloadAttendanceAttachment(String lessonId, String attachmentId,
-            String semesterId, String expectedMarkRevision) {
-        return attachmentResponse(requests.downloadAttendance(Long.parseLong(semesterId),
-                Long.parseLong(lessonId), attachmentId, expectedMarkRevision));
+    public ResponseEntity<byte[]> downloadAttendanceAttachment(
+            String lessonId, String attachmentId, String semesterId, String expectedMarkRevision) {
+        return attachmentResponse(
+                requests.downloadAttendance(
+                        Long.parseLong(semesterId),
+                        Long.parseLong(lessonId),
+                        attachmentId,
+                        expectedMarkRevision));
     }
 
     private ResponseEntity<byte[]> attachmentResponse(StudentRequestFacade.Download download) {

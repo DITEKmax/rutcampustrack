@@ -728,6 +728,30 @@ public final class StudentApiModels {
         APP_DISABLED
     }
 
+    public enum CheckinAcquisitionOutcome {
+        QUALITY_REACHED,
+        BUDGET_EXPIRED,
+        PERMISSION_DENIED,
+        POSITION_UNAVAILABLE,
+        TIMEOUT,
+        UNSUPPORTED,
+        APP_DISABLED,
+        CANCELLED
+    }
+
+    @Schema(
+            name = "CheckinAcquisitionReport",
+            requiredProperties = {"source", "outcome"},
+            additionalProperties = Schema.AdditionalPropertiesValue.FALSE,
+            description =
+                    "Best-effort client sensor-run report, not proof of presence or a business"
+                            + " attempt")
+    public record CheckinAcquisitionReport(
+            @NotNull GeoDiagnosticSource source,
+            @NotNull CheckinAcquisitionOutcome outcome,
+            @Min(0) @Max(60000) Integer durationMs,
+            @Min(0) @Max(64) Integer sampleCount) {}
+
     @Schema(
             name = "CheckinDiagnostics",
             requiredProperties = {"source"})

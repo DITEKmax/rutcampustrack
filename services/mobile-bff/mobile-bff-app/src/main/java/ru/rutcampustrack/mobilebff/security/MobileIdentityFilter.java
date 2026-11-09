@@ -44,6 +44,8 @@ public class MobileIdentityFilter extends OncePerRequestFilter {
                     "/api/v1/student/homework/{homeworkId}/completion");
     private static final PathPattern CHECKIN_PATTERN =
             PathPatternParser.defaultInstance.parse("/api/v1/student/lessons/{lessonId}/checkin");
+    private static final PathPattern ACQUISITION_REPORT_PATTERN =
+            PathPatternParser.defaultInstance.parse("/api/v1/student/checkin/acquisition-reports");
     private static final PathPattern EXCUSE_SUBMISSION_PATTERN =
             PathPatternParser.defaultInstance.parse("/api/v1/student/requests/excuse");
     private static final PathPattern LATE_CHECKIN_SUBMISSION_PATTERN =
@@ -141,6 +143,7 @@ public class MobileIdentityFilter extends OncePerRequestFilter {
         }
         if ("POST".equalsIgnoreCase(request.getMethod())) {
             return CHECKIN_PATTERN.matches(path)
+                    || ACQUISITION_REPORT_PATTERN.matches(path)
                     || EXCUSE_SUBMISSION_PATTERN.matches(path)
                     || LATE_CHECKIN_SUBMISSION_PATTERN.matches(path)
                     || REQUEST_CANCEL_PATTERN.matches(path);

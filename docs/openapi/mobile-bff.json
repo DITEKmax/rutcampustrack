@@ -542,6 +542,62 @@
         } ]
       }
     },
+    "/api/v1/student/checkin/acquisition-reports" : {
+      "post" : {
+        "tags" : [ "Student mobile" ],
+        "summary" : "Report a completed client sensor acquisition run",
+        "description" : "Best-effort client observation. Does not create attendance, requests or history.",
+        "operationId" : "reportCheckinAcquisition",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/CheckinAcquisitionReport"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "204" : {
+            "description" : "Client report recorded"
+          },
+          "400" : {
+            "description" : "Invalid report",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MobileProblemDetails"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Invalid session",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MobileProblemDetails"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Student write scope required",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MobileProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
     "/api/v1/map/buildings/{buildingId}/floors/{floorId}/opens" : {
       "post" : {
         "tags" : [ "Campus map" ],
@@ -3247,6 +3303,34 @@
             }
           }
         }
+      },
+      "CheckinAcquisitionReport" : {
+        "required" : [ "outcome", "source" ],
+        "type" : "object",
+        "properties" : {
+          "source" : {
+            "type" : "string",
+            "enum" : [ "BROWSER", "TMA" ]
+          },
+          "outcome" : {
+            "type" : "string",
+            "enum" : [ "QUALITY_REACHED", "BUDGET_EXPIRED", "PERMISSION_DENIED", "POSITION_UNAVAILABLE", "TIMEOUT", "UNSUPPORTED", "APP_DISABLED", "CANCELLED" ]
+          },
+          "durationMs" : {
+            "maximum" : 60000,
+            "minimum" : 0,
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "sampleCount" : {
+            "maximum" : 64,
+            "minimum" : 0,
+            "type" : "integer",
+            "format" : "int32"
+          }
+        },
+        "additionalProperties" : false,
+        "description" : "Best-effort client sensor-run report, not proof of presence or a business attempt"
       },
       "TeacherStats" : {
         "type" : "object",

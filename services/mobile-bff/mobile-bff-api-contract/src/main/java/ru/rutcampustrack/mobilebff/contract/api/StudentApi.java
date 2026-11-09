@@ -10,12 +10,13 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
-import java.util.List;
+
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,7 +29,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.multipart.MultipartFile;
+
 import ru.rutcampustrack.mobilebff.contract.model.StudentApiModels.CheckinAck;
+import ru.rutcampustrack.mobilebff.contract.model.StudentApiModels.CheckinAcquisitionReport;
 import ru.rutcampustrack.mobilebff.contract.model.StudentApiModels.CheckinRequest;
 import ru.rutcampustrack.mobilebff.contract.model.StudentApiModels.HomeworkCompletionRequest;
 import ru.rutcampustrack.mobilebff.contract.model.StudentApiModels.HomeworkCompletionResponse;
@@ -48,10 +51,47 @@ import ru.rutcampustrack.mobilebff.contract.model.StudentRequestApiModels.LateCh
 import ru.rutcampustrack.mobilebff.contract.model.StudentRequestApiModels.Options;
 import ru.rutcampustrack.mobilebff.contract.model.StudentRequestApiModels.Page;
 
+import java.util.List;
+
 @Tag(name = "Student mobile", description = "PWA/TMA student read model and geo check-in")
 @SecurityRequirement(name = "bearerAuth")
 @RequestMapping("/api/v1/student")
 public interface StudentApi {
+
+    @Operation(
+            summary = "Report a completed client sensor acquisition run",
+            description =
+                    "Best-effort client observation. Does not create attendance, requests or"
+                            + " history.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "204", description = "Client report recorded"),
+        @ApiResponse(
+                responseCode = "400",
+                description = "Invalid report",
+                content =
+                        @Content(
+                                mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
+                                schema = @Schema(implementation = MobileProblemDetails.class))),
+        @ApiResponse(
+                responseCode = "401",
+                description = "Invalid session",
+                content =
+                        @Content(
+                                mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
+                                schema = @Schema(implementation = MobileProblemDetails.class))),
+        @ApiResponse(
+                responseCode = "403",
+                description = "Student write scope required",
+                content =
+                        @Content(
+                                mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
+                                schema = @Schema(implementation = MobileProblemDetails.class)))
+    })
+    @PostMapping(
+            value = "/checkin/acquisition-reports",
+            consumes = MediaType.APPLICATION_JSON_VALUE)
+    ResponseEntity<Void> reportCheckinAcquisition(
+            @Valid @RequestBody CheckinAcquisitionReport report);
 
     @Operation(summary = "Current student session projection")
     @ApiResponses({
@@ -402,7 +442,8 @@ public interface StudentApi {
     @Operation(
             summary = "Set homework completion state",
             description =
-                    "Desired-state mutation for the authenticated student; repeated requests are safe.")
+                    "Desired-state mutation for the authenticated student; repeated requests are"
+                            + " safe.")
     @ApiResponses({
         @ApiResponse(
                 responseCode = "200",
@@ -462,7 +503,8 @@ public interface StudentApi {
     @Operation(
             summary = "Attempt student geo check-in",
             description =
-                    "The attendance domain owns the window, geofence, cooldown, idempotency and automatic request.")
+                    "The attendance domain owns the window, geofence, cooldown, idempotency and"
+                            + " automatic request.")
     @Parameter(
             name = "Idempotency-Key",
             in = ParameterIn.HEADER,
@@ -773,19 +815,49 @@ public interface StudentApi {
     ResponseEntity<byte[]> downloadRequestAttachment(
             @PathVariable @Pattern(regexp = "^[0-9a-fA-F]{24}$") String id,
             @PathVariable @Pattern(regexp = "^[0-9a-fA-F]{24}$") String attachmentId);
+
     @Operation(summary = "Download a document bound to the student's current excused mark")
     @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "Document bytes", content = @Content(mediaType = MediaType.APPLICATION_OCTET_STREAM_VALUE)),
-        @ApiResponse(responseCode = "403", description = "Outside student scope", content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(implementation = MobileProblemDetails.class))),
-        @ApiResponse(responseCode = "404", description = "Document not bound to current mark", content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(implementation = MobileProblemDetails.class))),
-        @ApiResponse(responseCode = "409", description = "Mark revision changed", content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(implementation = MobileProblemDetails.class))),
-        @ApiResponse(responseCode = "410", description = "Document expired or removed", content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(implementation = MobileProblemDetails.class)))
+        @ApiResponse(
+                responseCode = "200",
+                description = "Document bytes",
+                content = @Content(mediaType = MediaType.APPLICATION_OCTET_STREAM_VALUE)),
+        @ApiResponse(
+                responseCode = "403",
+                description = "Outside student scope",
+                content =
+                        @Content(
+                                mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
+                                schema = @Schema(implementation = MobileProblemDetails.class))),
+        @ApiResponse(
+                responseCode = "404",
+                description = "Document not bound to current mark",
+                content =
+                        @Content(
+                                mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
+                                schema = @Schema(implementation = MobileProblemDetails.class))),
+        @ApiResponse(
+                responseCode = "409",
+                description = "Mark revision changed",
+                content =
+                        @Content(
+                                mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
+                                schema = @Schema(implementation = MobileProblemDetails.class))),
+        @ApiResponse(
+                responseCode = "410",
+                description = "Document expired or removed",
+                content =
+                        @Content(
+                                mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
+                                schema = @Schema(implementation = MobileProblemDetails.class)))
     })
     @GetMapping("/attendance/lessons/{lessonId}/attachments/{attachmentId}")
     ResponseEntity<byte[]> downloadAttendanceAttachment(
             @PathVariable @Pattern(regexp = "^[1-9][0-9]*$") String lessonId,
             @PathVariable @Pattern(regexp = "^[0-9a-fA-F]{24}$") String attachmentId,
             @RequestParam @Pattern(regexp = "^[1-9][0-9]*$") String semesterId,
-            @RequestParam @jakarta.validation.constraints.NotBlank @jakarta.validation.constraints.Size(max = 128) String expectedMarkRevision);
-
+            @RequestParam
+                    @jakarta.validation.constraints.NotBlank
+                    @jakarta.validation.constraints.Size(max = 128)
+                    String expectedMarkRevision);
 }

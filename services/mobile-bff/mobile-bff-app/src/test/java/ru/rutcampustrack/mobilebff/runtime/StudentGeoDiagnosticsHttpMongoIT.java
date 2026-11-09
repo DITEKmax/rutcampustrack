@@ -130,10 +130,11 @@ class StudentGeoDiagnosticsHttpMongoIT {
         when(academic.isHeadman(any(), any()))
                 .thenReturn(HeadmanCheckResponse.newBuilder().setIsHeadman(true).build());
         when(schedule.getLessonById(anyLong())).thenAnswer(call -> lesson(call.getArgument(0)));
-        ObjectMapper json =
+        var jsonBuilder =
                 Jackson2ObjectMapperBuilder.json()
-                        .featuresToDisable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-                        .build();
+                        .featuresToDisable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        new CheckinJsonConfiguration().strictCheckinDiagnostics().customize(jsonBuilder);
+        ObjectMapper json = jsonBuilder.build();
         var outbox = new MongoOutboxStorage(mongo, "attendance_outbox");
         var actions = new LessonActionService(mongo, CLOCK, outbox, json);
         actions.setPairs(pairs);
@@ -362,6 +363,14 @@ class StudentGeoDiagnosticsHttpMongoIT {
                             "\"accuracyMeters\":-1",
                             "\"accuracyMeters\":10000001",
                             "\"sampleCount\":65",
+                            "\"sampleCount\":1.5",
+                            "\"sampleCount\":null",
+                            "\"acquisitionDurationMs\":\"10\"",
+                            "\"accuracyMeters\":\"20\"",
+                            "\"fixTimestamp\":123",
+                            "\"receivedAt\":123",
+                            "\"source\":0",
+                            "\"completionReason\":0",
                             "\"acquisitionDurationMs\":60001",
                             "\"fixTimestamp\":\"not-instant\"",
                             "\"source\":\"UNKNOWN\"")) {

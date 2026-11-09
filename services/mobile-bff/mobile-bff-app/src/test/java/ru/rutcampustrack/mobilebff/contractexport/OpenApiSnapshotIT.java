@@ -17,10 +17,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.UUID;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,12 +26,18 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+
 import ru.rutcampustrack.mobilebff.MobileBffApplication;
 import ru.rutcampustrack.mobilebff.contract.model.StudentApiModels.ProblemCode;
 import ru.rutcampustrack.mobilebff.error.MobileBffException;
 import ru.rutcampustrack.mobilebff.student.StudentCheckinFacade;
 import ru.rutcampustrack.shared.security.InternalJwtTestFactory;
 import ru.rutcampustrack.shared.security.PublicKeyProvider;
+
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.UUID;
 
 @SpringBootTest(
         classes = MobileBffApplication.class,
@@ -137,26 +140,49 @@ class OpenApiSnapshotIT {
     }
 
     @Test
-    void attendanceDocumentEndpointUsesReadOnlyStudentScopeAndNoStoreAndMapsFailures() throws Exception {
+    void attendanceDocumentEndpointUsesReadOnlyStudentScopeAndNoStoreAndMapsFailures()
+            throws Exception {
         String file = "0123456789abcdef01234567";
         String endpoint = "/api/v1/student/attendance/lessons/79/attachments/" + file;
-        String token = JWT.validToken(100L, UUID.randomUUID(), 1L, 1L, "STUDENT", "GRADUATED", 10L, false, true);
+        String token =
+                JWT.validToken(
+                        100L, UUID.randomUUID(), 1L, 1L, "STUDENT", "GRADUATED", 10L, false, true);
         when(attendance.downloadAttendanceAttachment(11, 79, file, "mark-1"))
-                .thenReturn(ru.rutcampustrack.attendance.grpc.StudentRequestAttachmentDownload.newBuilder()
-                        .setData(com.google.protobuf.ByteString.copyFromUtf8("%PDF-1.7"))
-                        .setContentType("application/pdf").setFilename("proof.pdf").build());
-        mockMvc.perform(get(endpoint).header("X-Internal-Token", token)
-                        .param("semesterId", "11").param("expectedMarkRevision", "mark-1"))
-                .andExpect(status().isOk()).andExpect(content().contentType("application/pdf"))
-                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.header().string("Cache-Control", "no-store"))
+                .thenReturn(
+                        ru.rutcampustrack.attendance.grpc.StudentRequestAttachmentDownload
+                                .newBuilder()
+                                .setData(com.google.protobuf.ByteString.copyFromUtf8("%PDF-1.7"))
+                                .setContentType("application/pdf")
+                                .setFilename("proof.pdf")
+                                .build());
+        mockMvc.perform(
+                        get(endpoint)
+                                .header("X-Internal-Token", token)
+                                .param("semesterId", "11")
+                                .param("expectedMarkRevision", "mark-1"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType("application/pdf"))
+                .andExpect(
+                        org.springframework.test.web.servlet.result.MockMvcResultMatchers.header()
+                                .string("Cache-Control", "no-store"))
                 .andExpect(content().bytes("%PDF-1.7".getBytes(StandardCharsets.UTF_8)));
         for (HttpStatus status : java.util.List.of(HttpStatus.CONFLICT, HttpStatus.GONE)) {
-            org.mockito.Mockito.doThrow(new MobileBffException(status, status == HttpStatus.CONFLICT
-                            ? ProblemCode.REQUEST_CONFLICT : ProblemCode.ATTACHMENT_EXPIRED, "Document unavailable"))
-                    .when(attendance).downloadAttendanceAttachment(11, 79, file, "mark-1");
-            mockMvc.perform(get(endpoint).header("X-Internal-Token", token)
-                            .param("semesterId", "11").param("expectedMarkRevision", "mark-1"))
-                    .andExpect(status().is(status.value())).andExpect(content().contentTypeCompatibleWith(APPLICATION_PROBLEM_JSON));
+            org.mockito.Mockito.doThrow(
+                            new MobileBffException(
+                                    status,
+                                    status == HttpStatus.CONFLICT
+                                            ? ProblemCode.REQUEST_CONFLICT
+                                            : ProblemCode.ATTACHMENT_EXPIRED,
+                                    "Document unavailable"))
+                    .when(attendance)
+                    .downloadAttendanceAttachment(11, 79, file, "mark-1");
+            mockMvc.perform(
+                            get(endpoint)
+                                    .header("X-Internal-Token", token)
+                                    .param("semesterId", "11")
+                                    .param("expectedMarkRevision", "mark-1"))
+                    .andExpect(status().is(status.value()))
+                    .andExpect(content().contentTypeCompatibleWith(APPLICATION_PROBLEM_JSON));
         }
         mockMvc.perform(get(endpoint).header("X-Internal-Token", token).param("semesterId", "11"))
                 .andExpect(status().isBadRequest());
@@ -175,8 +201,8 @@ class OpenApiSnapshotIT {
                                 .contentType(APPLICATION_JSON)
                                 .content(
                                         """
-                                {"geo":{"kind":"COORDINATES","latitude":55.751244,"longitude":37.618423}}
-                                """))
+{"geo":{"kind":"COORDINATES","latitude":55.751244,"longitude":37.618423}}
+"""))
                 .andExpect(status().isNotFound());
 
         mockMvc.perform(
@@ -186,8 +212,8 @@ class OpenApiSnapshotIT {
                                 .contentType(APPLICATION_JSON)
                                 .content(
                                         """
-                                {"geo":{"kind":"UNAVAILABLE","reason":"TIMEOUT"}}
-                                """))
+                                        {"geo":{"kind":"UNAVAILABLE","reason":"TIMEOUT"}}
+                                        """))
                 .andExpect(status().isNotFound());
     }
 
@@ -200,8 +226,8 @@ class OpenApiSnapshotIT {
                                 .contentType(APPLICATION_JSON)
                                 .content(
                                         """
-                                {"geo":{"kind":"COORDINATES","longitude":37.618423}}
-                                """))
+                                        {"geo":{"kind":"COORDINATES","longitude":37.618423}}
+                                        """))
                 .andExpect(status().isBadRequest());
 
         mockMvc.perform(
@@ -211,8 +237,8 @@ class OpenApiSnapshotIT {
                                 .contentType(APPLICATION_JSON)
                                 .content(
                                         """
-                                {"geo":{"kind":"COORDINATES","latitude":null,"longitude":37.618423}}
-                                """))
+{"geo":{"kind":"COORDINATES","latitude":null,"longitude":37.618423}}
+"""))
                 .andExpect(status().isBadRequest());
     }
 
@@ -221,11 +247,20 @@ class OpenApiSnapshotIT {
         expectProblem(
                 post("/api/v1/student/lessons/77/checkin")
                         .header("X-Internal-Token", studentToken())
+                        .header("Idempotency-Key", "contract-key-0099")
+                        .contentType(APPLICATION_JSON)
+                        .content(
+                                "{\"geo\":{\"kind\":\"UNAVAILABLE\",\"reason\":\"TIMEOUT\"},\"diagnostics\":{\"source\":0,\"sampleCount\":1.5}}"),
+                HttpStatus.BAD_REQUEST,
+                ProblemCode.INVALID_REQUEST);
+        expectProblem(
+                post("/api/v1/student/lessons/77/checkin")
+                        .header("X-Internal-Token", studentToken())
                         .contentType(APPLICATION_JSON)
                         .content(
                                 """
-                                {"geo":{"kind":"COORDINATES","latitude":55.751244,"longitude":37.618423}}
-                                """),
+{"geo":{"kind":"COORDINATES","latitude":55.751244,"longitude":37.618423}}
+"""),
                 HttpStatus.BAD_REQUEST,
                 ProblemCode.INVALID_IDEMPOTENCY_KEY);
 
@@ -236,8 +271,8 @@ class OpenApiSnapshotIT {
                         .contentType(APPLICATION_JSON)
                         .content(
                                 """
-                                {"geo":{"kind":"COORDINATES","latitude":55.751244,"longitude":37.618423}}
-                                """),
+{"geo":{"kind":"COORDINATES","latitude":55.751244,"longitude":37.618423}}
+"""),
                 HttpStatus.BAD_REQUEST,
                 ProblemCode.INVALID_IDEMPOTENCY_KEY);
 
@@ -281,8 +316,8 @@ class OpenApiSnapshotIT {
                         .contentType(APPLICATION_JSON)
                         .content(
                                 """
-                                {"geo":{"kind":"COORDINATES","latitude":55.751244,"longitude":37.618423}}
-                                """),
+{"geo":{"kind":"COORDINATES","latitude":55.751244,"longitude":37.618423}}
+"""),
                 HttpStatus.NOT_FOUND,
                 ProblemCode.LESSON_NOT_FOUND);
     }

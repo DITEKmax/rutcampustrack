@@ -1,5 +1,7 @@
 # Бот, память, разрешения и гео — рабочий план
 
+Актуальное уточнение владельца10.11: [GEO-REVISION-1110.md](GEO-REVISION-1110.md) заменяет старые200м/50м и ручной quality chooser. Теперь400м, первоначальное измерение+2автоповтора и прежняя автоматическая заявка. Остальная история контракта ниже сохранена; не считать её отменённые части текущим поведением.
+
 ## Goal
 Локально реализовать A01–A04 из задания владельца09.11.2026, затем исправить воспроизведённые B-находки и явно отделить наблюдения/backlog. Показать настоящие Vue PWA/TMA с безопасными synthetic данными и точный список затронутых экранов. Текущий запрос разрешает реализацию и отменяет историческую пометку handoff «только подготовить». Push/deploy нового пакета не запрошены.
 
@@ -38,6 +40,15 @@ Acquisition: общая ограниченная политика28s budget, с�
 ### Bot
 Перепроверка роли под существующим per-chat publication lock, bounded background recovery и durable pending/receipt/retry state. Успех только после authoritative scope + TelegramACK + persisted receipt. Narrow paginated Auth bindings RPC с exact bot-service allowlist, без полного Academic catalog. Binding не доказывает writable chat; blocked/not-found terminal отдельно, uncertain/fenced authority retryable, новая привязка или /start реактивирует. Неизменённый content+authority receipt предотвращает лишнюю рассылку, version build не вызывает одинаковые сообщения. Текущие health/backlog/age gauges снимают warning после recovery; historical counters сохраняются.
 
+### Дополнение контракта: наблюдение до POST, 10.11
+Проверено: существующий frontend Sentry errors sink не принимает acquisition counters, а observer stack не развёрнут. Чтобы выполнить A04 без фиктивных метрик, добавляется один authenticated BFF-only endpoint `POST /api/v1/student/checkin/acquisition-reports`, ответ204. Он не вызывает Attendance/RPC, не создаёт отметок/заявок/cooldown/истории и не участвует в fingerprint.
+
+DTO `CheckinAcquisitionReport`: required source=BROWSER|TMA, required outcome=QUALITY_REACHED|BUDGET_EXPIRED|PERMISSION_DENIED|POSITION_UNAVAILABLE|TIMEOUT|UNSUPPORTED|APP_DISABLED|CANCELLED; optional durationMs integer0..60000; optional sampleCount integer0..64. Ни lesson/user/chat IDs, ни координат/QR/accuracy/строк ошибок; неизвестные поля отклоняются. Строгие enum/int JSON types, существующие student-only/read-only/owner guards, global Gateway request budget. Только фиксированные source/outcome labels. Counter `mobile.client.geo.acquisition.reports`, timer `mobile.client.geo.acquisition.duration`; данные явно client-reported/best-effort, не доказательство присутствия и не уникальные бизнес-попытки.
+
+Событие — одно завершение sensor acquisition run (включая отмену до его завершения), не каждый fix и не каждая отправка/повтор checkin. Повтор улучшения — новый run. Settings probe не репортится. Успех измерения не означает POST/отметку; отмена после уже зарегистрированного измерения не превращает его задним числом в другое событие. Клиентский отказ до POST теперь наблюдаем отдельно от server outcome. Отправка не блокирует UI/mutation, не переотправляется и не сохраняется локально; невозможность отправить не меняет auth/результат отметки. Старый owner не использует token нового аккаунта для отчёта.
+
+Geo backend writer владеет HTTP/OpenAPI/generated и BFF metrics/authz/validation proof. Frontend writer — callback и authored StudentApi.reportCheckinAcquisition, alias generated DTO; ни второго ingest SDK, ни новых сервисов. Независимое S3 review дополняется только этим delta.
+
 ## Constraints
 Радиус200m/центр55.788328,37.606637, Haversine, inclusive окно[-5min,+5min], cooldown5min, права/изоляция/history/transaction/receipt fences сохраняются. Не ослаблять реальные тесты. Нет production reads/writes, Telegram user messages, secret/env reads, новых accounts/listeners/observer stack, data deletion, массового replay логов. Визуальные изменения только явные permission rows/page и текущие geo status/cancel/error; использовать существующий дизайн, не переделывать другие экраны.
 
@@ -49,16 +60,16 @@ Shared mobile-core/profile/StudentFeatureOwner/checkin recovery; platform adapte
 
 | ID | Статус | Критерий | Revision/evidence/остаток |
 |---|---|---|---|
-| A01 | IN PROGRESS | outage>3attempts recovery, durable receipt, coverage, 429/terminal/role races, alert resolved | scout source-confirmed; implementation pending |
-| A02 | IN PROGRESS | обоснованный heap/native budget, measured workload/export headroom, persisted config | audit historical768MiB/90%; local measurement pending |
-| A03 | IN PROGRESS | device settings PWA/TMA, truthful states/probe/off/recovery, safe QR lifecycle | real-device prompt acceptance separate |
-| A04 | IN PROGRESS | bounded quality acquisition, one POST, immutable uncertain retry, metadata roundtrip/audit | frozen contract above; native device acceptance separate |
-| B01 | IN PROGRESS | gRPC1h/24h under500k samples, correct quantiles/filter/no-data/warmup | root/scout source assessment |
-| B02 | IN PROGRESS | ConflictException maps domain409, no partial writes/history damage | existing archived fenceIT; mapper gap source-confirmed |
-| B03 | TODO | role-change concurrent reads reproduction, fix only proven defect | generation/stale guards already exist |
-| B04 | IN PROGRESS | provider accepted/expired/skipped/retryable/uncertain metrics | scoped dispatcher inspection pending |
-| B05 | TODO | old pending remains available after lesson/day; counts/permissions | source list has no end/date exclusion; reproduce |
-| B06 | TODO | log replay/startup/auth readiness/polling verified or explicit observation | no invented incident fixes |
+| A01 | LOCAL VERIFIED | outage recovery, durable receipt, coverage, 429/terminal/role races, alert resolved | e7aed1313+c64405c14; realPG/Redis/Python/Auth+independent review PASS; external Telegram delivery pending |
+| A02 | LOCAL FULL PROCESS VERIFIED | обоснованный heap/native budget, measured workload/export headroom, persisted config |19a946d65; fixed1024/460/230; fullAttendance105marks/315outbox+3export/checkin rounds: peakWS790.957MiB=>22.7581%headroom, independentreview PASS; Linuxcgroup/production separate |
+| A03 | LOCAL VERIFIED / DEVICE PENDING | device settings PWA/TMA, repeat after dismissal, truthful system state, safe QR lifecycle |e7f354689;118affected behavior+strict TS+independent SOURCE PASS; actualVuePWA/TMAsyntheticdismiss→retry/off→on PASS; hardware pending |
+| A04 | LOCAL VERIFIED / DEVICE PENDING |400м, initial+2auto fresh positions, one finalPOST/auto pending, immutable retry |d6f0bfb5e+e7f354689+5177c7fb5; nativeSQL3+seed1/Geo7/architecture/HTTPMongo PASS;300PRESENT/accuracy1000,401pending; cache-onlyP2closed, finalreview PASS; actualVue synthetic PASS |
+| B01 | LOCAL VERIFIED | gRPC1h/24h under500k samples, correct quantiles/filter/no-data/warmup |19a946d65+97d11d65b+1cbc1afb7+0c3ed3d9f; actualProm14.5Msamples/formulas+review PASS |
+| B02 | LOCAL VERIFIED | ConflictException maps domain409, no partial writes/history damage |065809cef+ce42bb8ef; actualHTTP→gRPC→Mongo+review PASS |
+| B03 | OBSERVATION | role-change concurrent reads reproduction, fix only proven defect |existing6guard scenarios PASS; liveprofile/notifications/ws-ticket trace NOT_RUN; no inventedfix |
+| B04 | LOCAL VERIFIED | provider accepted/expired/skipped/retryable/uncertain metrics |791bd753e+47f6383ec;30unit+3realMongoIT skip0+review PASS; externalprovider pending |
+| B05 | LOCAL VERIFIED | old pending remains available after lesson/day; counts/permissions; cached bounded age gauge |9ee2298db+cb929ff25; realpastpending/age/NaN/privacy proof+review PASS |
+| B06 | PARTIAL / OBSERVATION | log replay/startup/auth readiness/polling verified or explicit observation |Auth coldrecovery PASS; Alloy source stable, replay NOT_RUN;35sroute/Telegram transient unlocalized |
 | C01 | BACKLOG | observer stack not deployed; geofence cache age/version/invalidation | no installation/keys/listeners in this package |
 
 ## Verification / resources

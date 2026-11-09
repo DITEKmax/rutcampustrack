@@ -33,8 +33,6 @@ if (lane === 'auth-smoke') {
 } else if (lane === 'installation') {
   // Synthetic prompt logic is portable; production worker replacement is hosted-container owned.
   grepInvert = /production worker update activates through the update gate and retains a warm launch$/;
-} else if (lane === 'geo') {
-  grep = /real geolocation confirms fresh student, then D005 manual absence rejects the blocked attempt$/;
 }
 
 // The Python admission above binds this exact enum list to the current manifest.

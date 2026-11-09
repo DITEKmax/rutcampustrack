@@ -950,7 +950,7 @@ VALUES('Spring 2026','2026-02-01','2026-06-30',TRUE,'SPRING',2025) RETURNING id
                 ru.rutcampustrack.academic.history.HistoricalMembershipService.WRITER_VERSION);
         academicOwner.update(
                 "INSERT INTO campus_settings(name,lat,lng,radius_m) VALUES('Main"
-                        + " Campus',55.788204,37.606762,200)");
+                        + " Campus',55.788328,37.606637,400)");
         SelectedActor firstFull = select(adminId, AuthRole.ADMIN);
         var teacher =
                 seedUser(

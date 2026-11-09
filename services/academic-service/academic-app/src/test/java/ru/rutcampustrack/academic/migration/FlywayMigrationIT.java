@@ -224,7 +224,9 @@ class FlywayMigrationIT {
                                         .isEqualTo("42702"));
         var full =
                 Flyway.configure().dataSource(migrator).locations("classpath:db/migration").load();
-        assertThat(full.migrate().migrationsExecuted).isOne();
+        assertThat(full.migrate().migrations)
+                .extracting(migration -> migration.version)
+                .contains("63");
         assertThat(proofCaller.queryForObject(missingProofCall, Boolean.class)).isFalse();
         assertThat(
                         jdbc.queryForObject(

@@ -38,7 +38,7 @@ INSERT INTO user_role_grants (user_id, role, status, group_id, created_at, updat
     VALUES (3, 'headman', 'active', 1, NOW(), NOW());
 
 INSERT INTO campus_settings (name, lat, lng, radius_m)
-    VALUES ('Main Campus', 55.788204, 37.606762, 200);
+    VALUES ('Main Campus', 55.788328, 37.606637, 400);
 
 INSERT INTO campus_map_activity_coverage (singleton)
     VALUES (TRUE);

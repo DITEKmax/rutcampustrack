@@ -53,6 +53,7 @@ public final class AuthDirectedIdentityInterceptor implements ServerInterceptor 
                         Map.ofEntries(
                                 Map.entry(BOT_SERVICE + "GetOwnBotMenuScope", BOT),
                                 Map.entry(BOT_SERVICE + "GetOwnBotProfile", BOT),
+                                Map.entry(BOT_SERVICE + "ListBotKeyboardBindings", BOT),
                                 Map.entry(BOT_SERVICE + "CheckBotOwnAuthority", BFF),
                                 Map.entry(BOT_SERVICE + "CheckAcademicBotOwnAuthority", ACADEMIC),
                                 Map.entry(

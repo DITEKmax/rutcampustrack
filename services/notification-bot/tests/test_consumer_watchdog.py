@@ -146,8 +146,10 @@ async def test_health_down_when_watchdog_dead():
 
 
 @pytest.mark.parametrize("outcome", ["pending", "success", "failure", "cancelled"])
-async def test_one_shot_keyboard_task_metrics_distinguish_completion_failure_and_shutdown(outcome):
+async def test_keyboard_task_completion_never_sets_recipient_success(outcome):
     original = main_module._keyboard_sync_task
+    STARTUP_COMPLETED.labels("keyboard_sync").set(0)
+    STARTUP_FAILED.labels("keyboard_sync").set(1)
 
     async def startup():
         if outcome == "failure":
@@ -163,8 +165,8 @@ async def test_one_shot_keyboard_task_metrics_distinguish_completion_failure_and
             task.cancel()
             await asyncio.gather(task, return_exceptions=True)
         await main_module.metrics_handler(MagicMock())
-        assert STARTUP_COMPLETED.labels("keyboard_sync")._value.get() == int(outcome == "success")
-        assert STARTUP_FAILED.labels("keyboard_sync")._value.get() == int(outcome == "failure")
+        assert STARTUP_COMPLETED.labels("keyboard_sync")._value.get() == 0
+        assert STARTUP_FAILED.labels("keyboard_sync")._value.get() == 1
         assert TASK_ALIVE.labels("keyboard_sync")._value.get() == int(outcome == "pending")
     finally:
         task.cancel()

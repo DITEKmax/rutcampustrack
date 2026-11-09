@@ -62,7 +62,7 @@ class BotMenuCredentials(BotServiceCredentials):
 
     _service_name = "rutcampustrack.authauthority.AuthIdentityGrpcService"
     _header_name = "x-service-token"
-    _allowed_methods = frozenset({"GetOwnBotMenuScope", "GetOwnBotProfile"})
+    _allowed_methods = frozenset({"GetOwnBotMenuScope", "GetOwnBotProfile", "ListBotKeyboardBindings"})
 
 
 class BotReadCredentials(BotServiceCredentials):

@@ -9,6 +9,7 @@
 
 from __future__ import annotations
 
+import json
 import logging
 from hashlib import sha256
 
@@ -104,7 +105,9 @@ def keyboard_signature(
     *, homework_enabled: bool = False, headman_enabled: bool = False, teacher_enabled: bool = False
 ) -> str:
     """Stable signature for backend-driven reply keyboard updates."""
-    raw = "\n".join("|".join(row) for row in _keyboard_layout(homework_enabled, headman_enabled, teacher_enabled))
+    markup = main_keyboard(homework_enabled=homework_enabled, headman_enabled=headman_enabled,
+                           teacher_enabled=teacher_enabled)
+    raw = json.dumps(markup.model_dump(exclude_none=True), ensure_ascii=False, sort_keys=True, separators=(",", ":"))
     return sha256(raw.encode("utf-8")).hexdigest()[:16]
 
 

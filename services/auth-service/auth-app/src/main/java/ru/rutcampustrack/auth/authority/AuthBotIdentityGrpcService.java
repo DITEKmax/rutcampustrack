@@ -45,6 +45,18 @@ public final class AuthBotIdentityGrpcService
     }
 
     @Override
+    public void listBotKeyboardBindings(
+            ListBotKeyboardBindingsRequest request,
+            StreamObserver<ListBotKeyboardBindingsResponse> observer) {
+        respond(
+                observer,
+                () -> {
+                    AuthDirectedIdentityInterceptor.require(AuthDirectedIdentityInterceptor.BOT);
+                    return query.listKeyboardBindings(request);
+                });
+    }
+
+    @Override
     public void getOwnBotProfile(
             GetOwnBotProfileRequest request, StreamObserver<GetOwnBotProfileResponse> observer) {
         respond(

@@ -116,7 +116,9 @@ async def _publish_start(message, telegram_id, keyboard_sync, credential_cards, 
     if keyboard_sync is not None:
         # Keep failures discoverable by the bounded startup recovery, including
         # first-time users and users whose old role signature is still current.
-        await keyboard_sync.register_user(telegram_id)
+        # Reactivation must persist even if the following receipt invalidation
+        # fails; a terminal /start must not become invisible to recovery again.
+        await keyboard_sync.register_user(telegram_id, reactivate=True)
         keyboard_pending = await keyboard_sync.invalidate_user_keyboard(telegram_id)
     keyboard = main_keyboard()
     try:
@@ -146,7 +148,8 @@ async def _publish_start(message, telegram_id, keyboard_sync, credential_cards, 
             footer=f"\n\n{_WHERE_TO_MARK_BLOCK}\n\n{_INSTALL_BLOCK}",
             reply_markup=keyboard,
         ):
-            await mark_keyboard_synced(keyboard_sync, telegram_id, keyboard_signature(**options))
+            await mark_keyboard_synced(keyboard_sync, telegram_id, keyboard_signature(**options),
+                                       scope=scope, bot_menu_client=bot_menu_client)
             return
         response, scope = await _refresh_own_profile(bot_menu_client, telegram_id, response)
         keyboard = main_keyboard(**scope.keyboard_options)
@@ -163,7 +166,8 @@ async def _publish_start(message, telegram_id, keyboard_sync, credential_cards, 
             reply_markup=keyboard,
             parse_mode="HTML",
         )
-        await mark_keyboard_synced(keyboard_sync, telegram_id, keyboard_signature(**scope.keyboard_options))
+        await mark_keyboard_synced(keyboard_sync, telegram_id, keyboard_signature(**scope.keyboard_options),
+                                   scope=scope, bot_menu_client=bot_menu_client)
 
     except Exception:
         # D-14: service unavailability

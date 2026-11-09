@@ -82,6 +82,11 @@ class BotMenuGrpcClient:
             raise BotReadUnavailable("Own profile snapshot unavailable")
         return response
 
+    async def list_keyboard_bindings(self, after_user_id=0, through_user_id=0, page_size=200):
+        return await self._call("ListBotKeyboardBindings", pb.ListBotKeyboardBindingsRequest(
+            after_user_id=after_user_id, through_user_id=through_user_id, page_size=page_size,
+        ))
+
     async def teacher_today(self, telegram_sender_id: int, scope: MenuScope):
         if self._read_client is None:
             raise BotReadUnavailable("Own domain read unavailable")

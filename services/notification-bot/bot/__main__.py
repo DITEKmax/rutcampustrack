@@ -30,8 +30,6 @@ from bot.handlers.role_reads import LessonChoices
 from bot.middlewares import ObservabilityMiddleware
 from bot.observability import (
     METRICS_REGISTRY,
-    STARTUP_COMPLETED,
-    STARTUP_FAILED,
     TASK_ALIVE,
     SendQueueCollector,
     setup_observability,
@@ -43,7 +41,7 @@ from bot.services.bot_credential_cards import BotCredentialCards
 from bot.services.event_publisher import EventPublisher
 from bot.services.idempotency_guard import BotIdempotencyGuard
 from bot.services.jwt_redis_client import JwtRedisClient
-from bot.services.keyboard_sync import KeyboardSyncClient, sync_registered_keyboards
+from bot.services.keyboard_sync import KeyboardSyncClient, run_keyboard_sync
 from bot.services.notification_prefs import NotificationPrefsClient
 from bot.services.otp_message_tracker import OtpMessageTracker
 from bot.services.redis_client import ReminderRedisClient
@@ -85,10 +83,8 @@ async def run_health_server() -> None:
 async def metrics_handler(request: web.Request) -> web.Response:
     for name, task in (("watchdog", _consumer_task), ("polling", _bot_task), ("keyboard_sync", _keyboard_sync_task)):
         TASK_ALIVE.labels(name).set(int(task is not None and not task.done()))
-    settled = _keyboard_sync_task is not None and _keyboard_sync_task.done() and not _keyboard_sync_task.cancelled()
-    failed = settled and _keyboard_sync_task.exception() is not None
-    STARTUP_COMPLETED.labels("keyboard_sync").set(int(settled and not failed))
-    STARTUP_FAILED.labels("keyboard_sync").set(int(failed))
+    # Keyboard completion is computed from durable current health by its worker.
+    # Task.done() never establishes recipient delivery or authoritative coverage.
     return web.Response(body=generate_latest(METRICS_REGISTRY), headers={"Content-Type": CONTENT_TYPE_LATEST})
 
 
@@ -324,7 +320,7 @@ async def main() -> None:
     )
 
     _keyboard_sync_task = asyncio.create_task(
-        sync_registered_keyboards(
+        run_keyboard_sync(
             bot=bot,
             keyboard_sync=keyboard_sync,
             academic_client=academic_client,

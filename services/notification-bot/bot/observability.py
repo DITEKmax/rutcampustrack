@@ -89,13 +89,13 @@ for _task in ("watchdog", "polling", "keyboard_sync"):
     TASK_ALIVE.labels(_task).set(0)
 STARTUP_COMPLETED = Gauge(
     "notification_bot_startup_completed",
-    "One-shot startup task returned successfully",
+    "Current recovery has authoritative coverage and no pending durable receipts",
     ["task"],
     registry=METRICS_REGISTRY,
 )
 STARTUP_FAILED = Gauge(
     "notification_bot_startup_failed",
-    "One-shot startup task raised an exception",
+    "Current recovery has pending work or unavailable durable/authoritative state",
     ["task"],
     registry=METRICS_REGISTRY,
 )
@@ -103,15 +103,38 @@ STARTUP_COMPLETED.labels("keyboard_sync").set(0)
 STARTUP_FAILED.labels("keyboard_sync").set(0)
 KEYBOARD_SYNC_USERS_FAILED = Counter(
     "notification_bot_keyboard_sync_users_failed",
-    "Users still pending after startup retry exhaustion",
+    "Historical failed keyboard recipient attempts; never a current backlog",
     registry=METRICS_REGISTRY,
 )
 KEYBOARD_SYNC_REGISTRY_AVAILABLE = Gauge(
     "notification_bot_keyboard_sync_registry_available",
-    "Last startup registry read succeeded; -1 means not attempted",
+    "Last durable registry operation succeeded; -1 means not attempted",
     registry=METRICS_REGISTRY,
 )
 KEYBOARD_SYNC_REGISTRY_AVAILABLE.set(-1)
+KEYBOARD_SYNC_CATALOG_AVAILABLE = Gauge(
+    "notification_bot_keyboard_sync_catalog_available", "Last authoritative binding sweep completed",
+    registry=METRICS_REGISTRY,
+)
+KEYBOARD_SYNC_CATALOG_AVAILABLE.set(-1)
+KEYBOARD_SYNC_PENDING = Gauge(
+    "notification_bot_keyboard_sync_pending", "Current recipients awaiting a confirmed keyboard receipt",
+    registry=METRICS_REGISTRY,
+)
+KEYBOARD_SYNC_RETRYABLE = Gauge(
+    "notification_bot_keyboard_sync_retryable", "Current recipients deferred for retry", registry=METRICS_REGISTRY,
+)
+KEYBOARD_SYNC_TERMINAL = Gauge(
+    "notification_bot_keyboard_sync_terminal", "Current unbound or Telegram-unreachable recipients",
+    registry=METRICS_REGISTRY,
+)
+KEYBOARD_SYNC_OLDEST_PENDING = Gauge(
+    "notification_bot_keyboard_sync_oldest_pending_seconds", "Age of oldest pending receipt", registry=METRICS_REGISTRY,
+)
+KEYBOARD_SYNC_FRESHNESS = Gauge(
+    "notification_bot_keyboard_sync_snapshot_timestamp_seconds", "Last durable backlog health read",
+    registry=METRICS_REGISTRY,
+)
 
 
 class SendQueueCollector:

@@ -225,22 +225,22 @@ groups:
         recovery.
       runbook_url: https://github.com/DITEKmax/rutcampustrack/blob/main/docs/operations/monitoring/observability.md
   - alert: NotificationBotStartupFailed
-    expr: notification_bot_startup_failed{task="keyboard_sync"} == 1
+    expr: notification_bot_keyboard_sync_registry_available != 1 or notification_bot_keyboard_sync_catalog_available != 1 or (time() - notification_bot_keyboard_sync_snapshot_timestamp_seconds) > 60 or notification_bot_task_alive{task="keyboard_sync"} == 0
     labels:
       severity: warning
       owner: platform
     annotations:
-      summary: Notification bot keyboard startup task failed
-      description: The one-shot task finished with an exception. A completed task is not required to remain alive; successful task completion does not prove every recipient keyboard was updated. Inspect safe startup diagnostics.
+      summary: Notification bot keyboard recovery health is unavailable
+      description: Current durable registry, authoritative discovery, recovery worker or health snapshot is unavailable. A completed task does not prove keyboard delivery. Resolves after current health recovers.
       runbook_url: https://github.com/DITEKmax/rutcampustrack/blob/main/docs/operations/monitoring/observability.md
   - alert: NotificationBotKeyboardSyncUsersFailed
-    expr: notification_bot_keyboard_sync_users_failed_total > 0
+    expr: notification_bot_keyboard_sync_pending > 0
     labels:
       severity: warning
       owner: platform
     annotations:
-      summary: Notification bot startup exhausted keyboard sync for a recipient
-      description: At least one recipient exhausted the bounded startup retries. Successful task completion alone does not prove all recipient keyboards were synchronized. The process counter resets on restart; inspect retained registry progress before retrying.
+      summary: Notification bot has pending keyboard receipts
+      description: Current recipients still await authoritative scope, Telegram ACK and durable receipt. The periodic worker retries with backoff. Resolves when pending reaches zero; historical failure counters remain unchanged. Terminal unbound or unreachable chats are reported separately.
       runbook_url: https://github.com/DITEKmax/rutcampustrack/blob/main/docs/operations/monitoring/observability.md
   - alert: NotificationBotSendExhausted
     expr: notification_bot_send_tasks_exhausted_total > 0

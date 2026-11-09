@@ -6,16 +6,36 @@ option java_package = "ru.rutcampustrack.authauthority.grpc";
 
 // Auth owns these decisions. TLS and the existing x-service-token identify one exact
 // caller and method allow-list; GRPC_SECRET and a caller-supplied role are insufficient.
-// notification-bot: GetOwnBotMenuScope/GetOwnBotProfile only. Domain services:
+// notification-bot: own menu/profile and minimal keyboard binding catalogue only. Domain services:
 // CheckBotOwnAuthority is MobileBFF-only; Academic and Attendance have separate
 // method names so the existing exact-one-principal policy remains unchanged.
 // Existing AcademicGrpcService credential/card messages and field numbers are unchanged.
 service AuthIdentityGrpcService {
   rpc GetOwnBotMenuScope(GetOwnBotMenuScopeRequest) returns (GetOwnBotMenuScopeResponse);
   rpc GetOwnBotProfile(GetOwnBotProfileRequest) returns (GetOwnBotProfileResponse);
+  rpc ListBotKeyboardBindings(ListBotKeyboardBindingsRequest) returns (ListBotKeyboardBindingsResponse);
   rpc CheckBotOwnAuthority(CheckBotOwnAuthorityRequest) returns (CheckBotOwnAuthorityResponse);
   rpc CheckAcademicBotOwnAuthority(CheckBotOwnAuthorityRequest) returns (CheckBotOwnAuthorityResponse);
   rpc CheckAttendanceBotOwnAuthority(CheckBotOwnAuthorityRequest) returns (CheckBotOwnAuthorityResponse);
+}
+
+// Bounded keyset sweep. The first page captures an upper user id; subsequent pages
+// retain it. This is discovery, never authority to publish: reread own menu.
+message ListBotKeyboardBindingsRequest {
+  int64 after_user_id = 1;
+  int64 through_user_id = 2; // zero on the first page
+  int32 page_size = 3; // 1..200
+}
+message BotKeyboardBinding {
+  int64 user_id = 1;
+  int64 telegram_id = 2;
+  int64 telegram_binding_version = 3;
+  int64 roles_version = 4;
+}
+message ListBotKeyboardBindingsResponse {
+  repeated BotKeyboardBinding bindings = 1;
+  int64 through_user_id = 2;
+  int64 next_after_user_id = 3; // zero means the sweep completed
 }
 
 message GetOwnBotMenuScopeRequest {
@@ -72,7 +92,8 @@ message CheckBotOwnAuthorityResponse {
   BotReadCapability capability = 5;
 }
 
-// All positive reads use current Auth account/grants/versions/fence, without cache.
+// Positive own menu/profile/capability reads use current Auth account/grants/versions/fence, without cache.
+// Binding discovery includes fenced/inactive bindings and never authorizes a publication or action.
 // Invalid private sender/binding or denied capability: PERMISSION_DENIED.
 // A stale expected tuple: FAILED_PRECONDITION. Invalid/unknown fields: INVALID_ARGUMENT.
 // Missing dependency/current authority: UNAVAILABLE. No partial authority on failure.

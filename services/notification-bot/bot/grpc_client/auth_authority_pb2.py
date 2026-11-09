@@ -24,7 +24,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x14\x61uth_authority.proto\x12\x1crutcampustrack.authauthority\"P\n\x19GetOwnBotMenuScopeRequest\x12\x1a\n\x12telegram_sender_id\x18\x01 \x01(\x03\x12\x17\n\x0fprivate_chat_id\x18\x02 \x01(\x03\"@\n\x0e\x42otActiveGrant\x12\x0c\n\x04role\x18\x01 \x01(\t\x12\x10\n\x08group_id\x18\x02 \x01(\x03\x12\x0e\n\x06status\x18\x03 \x01(\t\"\xb3\x01\n\x1aGetOwnBotMenuScopeResponse\x12\r\n\x05\x66ound\x18\x01 \x01(\x08\x12\x0f\n\x07user_id\x18\x02 \x01(\x03\x12 \n\x18telegram_binding_version\x18\x03 \x01(\x03\x12\x15\n\rroles_version\x18\x04 \x01(\x03\x12<\n\x06grants\x18\x05 \x03(\x0b\x32,.rutcampustrack.authauthority.BotActiveGrant\"N\n\x17GetOwnBotProfileRequest\x12\x1a\n\x12telegram_sender_id\x18\x01 \x01(\x03\x12\x17\n\x0fprivate_chat_id\x18\x02 \x01(\x03\"\xc6\x01\n\x18GetOwnBotProfileResponse\x12\r\n\x05\x66ound\x18\x01 \x01(\x08\x12\x0f\n\x07user_id\x18\x02 \x01(\x03\x12 \n\x18telegram_binding_version\x18\x03 \x01(\x03\x12\x15\n\rroles_version\x18\x04 \x01(\x03\x12\r\n\x05login\x18\x05 \x01(\t\x12\x18\n\x10password_changed\x18\x06 \x01(\x08\x12\x14\n\x0c\x64isplay_name\x18\x07 \x01(\t\x12\x12\n\ngroup_name\x18\x08 \x01(\t\"\x85\x02\n\x1b\x43heckBotOwnAuthorityRequest\x12\x1a\n\x12telegram_sender_id\x18\x01 \x01(\x03\x12\x17\n\x0fprivate_chat_id\x18\x02 \x01(\x03\x12\x18\n\x10\x65xpected_user_id\x18\x03 \x01(\x03\x12)\n!expected_telegram_binding_version\x18\x04 \x01(\x03\x12\x1e\n\x16\x65xpected_roles_version\x18\x05 \x01(\x03\x12L\n\x13required_capability\x18\x06 \x01(\x0e\x32/.rutcampustrack.authauthority.BotReadCapability\"\xcb\x01\n\x1c\x43heckBotOwnAuthorityResponse\x12\x0f\n\x07user_id\x18\x01 \x01(\x03\x12 \n\x18telegram_binding_version\x18\x02 \x01(\x03\x12\x15\n\rroles_version\x18\x03 \x01(\x03\x12\x1c\n\x14\x61uthorized_group_ids\x18\x04 \x03(\x03\x12\x43\n\ncapability\x18\x05 \x01(\x0e\x32/.rutcampustrack.authauthority.BotReadCapability*\xc4\x01\n\x11\x42otReadCapability\x12#\n\x1f\x42OT_READ_CAPABILITY_UNSPECIFIED\x10\x00\x12%\n!BOT_READ_CAPABILITY_HOMEWORK_READ\x10\x01\x12\x37\n3BOT_READ_CAPABILITY_HEADMAN_CURRENT_ATTENDANCE_READ\x10\x02\x12*\n&BOT_READ_CAPABILITY_TEACHER_TODAY_READ\x10\x03\x32\xe9\x05\n\x17\x41uthIdentityGrpcService\x12\x87\x01\n\x12GetOwnBotMenuScope\x12\x37.rutcampustrack.authauthority.GetOwnBotMenuScopeRequest\x1a\x38.rutcampustrack.authauthority.GetOwnBotMenuScopeResponse\x12\x81\x01\n\x10GetOwnBotProfile\x12\x35.rutcampustrack.authauthority.GetOwnBotProfileRequest\x1a\x36.rutcampustrack.authauthority.GetOwnBotProfileResponse\x12\x8d\x01\n\x14\x43heckBotOwnAuthority\x12\x39.rutcampustrack.authauthority.CheckBotOwnAuthorityRequest\x1a:.rutcampustrack.authauthority.CheckBotOwnAuthorityResponse\x12\x95\x01\n\x1c\x43heckAcademicBotOwnAuthority\x12\x39.rutcampustrack.authauthority.CheckBotOwnAuthorityRequest\x1a:.rutcampustrack.authauthority.CheckBotOwnAuthorityResponse\x12\x97\x01\n\x1e\x43heckAttendanceBotOwnAuthority\x12\x39.rutcampustrack.authauthority.CheckBotOwnAuthorityRequest\x1a:.rutcampustrack.authauthority.CheckBotOwnAuthorityResponseB(\n$ru.rutcampustrack.authauthority.grpcP\x01\x62\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x14\x61uth_authority.proto\x12\x1crutcampustrack.authauthority\"c\n\x1eListBotKeyboardBindingsRequest\x12\x15\n\rafter_user_id\x18\x01 \x01(\x03\x12\x17\n\x0fthrough_user_id\x18\x02 \x01(\x03\x12\x11\n\tpage_size\x18\x03 \x01(\x05\"s\n\x12\x42otKeyboardBinding\x12\x0f\n\x07user_id\x18\x01 \x01(\x03\x12\x13\n\x0btelegram_id\x18\x02 \x01(\x03\x12 \n\x18telegram_binding_version\x18\x03 \x01(\x03\x12\x15\n\rroles_version\x18\x04 \x01(\x03\"\x9a\x01\n\x1fListBotKeyboardBindingsResponse\x12\x42\n\x08\x62indings\x18\x01 \x03(\x0b\x32\x30.rutcampustrack.authauthority.BotKeyboardBinding\x12\x17\n\x0fthrough_user_id\x18\x02 \x01(\x03\x12\x1a\n\x12next_after_user_id\x18\x03 \x01(\x03\"P\n\x19GetOwnBotMenuScopeRequest\x12\x1a\n\x12telegram_sender_id\x18\x01 \x01(\x03\x12\x17\n\x0fprivate_chat_id\x18\x02 \x01(\x03\"@\n\x0e\x42otActiveGrant\x12\x0c\n\x04role\x18\x01 \x01(\t\x12\x10\n\x08group_id\x18\x02 \x01(\x03\x12\x0e\n\x06status\x18\x03 \x01(\t\"\xb3\x01\n\x1aGetOwnBotMenuScopeResponse\x12\r\n\x05\x66ound\x18\x01 \x01(\x08\x12\x0f\n\x07user_id\x18\x02 \x01(\x03\x12 \n\x18telegram_binding_version\x18\x03 \x01(\x03\x12\x15\n\rroles_version\x18\x04 \x01(\x03\x12<\n\x06grants\x18\x05 \x03(\x0b\x32,.rutcampustrack.authauthority.BotActiveGrant\"N\n\x17GetOwnBotProfileRequest\x12\x1a\n\x12telegram_sender_id\x18\x01 \x01(\x03\x12\x17\n\x0fprivate_chat_id\x18\x02 \x01(\x03\"\xc6\x01\n\x18GetOwnBotProfileResponse\x12\r\n\x05\x66ound\x18\x01 \x01(\x08\x12\x0f\n\x07user_id\x18\x02 \x01(\x03\x12 \n\x18telegram_binding_version\x18\x03 \x01(\x03\x12\x15\n\rroles_version\x18\x04 \x01(\x03\x12\r\n\x05login\x18\x05 \x01(\t\x12\x18\n\x10password_changed\x18\x06 \x01(\x08\x12\x14\n\x0c\x64isplay_name\x18\x07 \x01(\t\x12\x12\n\ngroup_name\x18\x08 \x01(\t\"\x85\x02\n\x1b\x43heckBotOwnAuthorityRequest\x12\x1a\n\x12telegram_sender_id\x18\x01 \x01(\x03\x12\x17\n\x0fprivate_chat_id\x18\x02 \x01(\x03\x12\x18\n\x10\x65xpected_user_id\x18\x03 \x01(\x03\x12)\n!expected_telegram_binding_version\x18\x04 \x01(\x03\x12\x1e\n\x16\x65xpected_roles_version\x18\x05 \x01(\x03\x12L\n\x13required_capability\x18\x06 \x01(\x0e\x32/.rutcampustrack.authauthority.BotReadCapability\"\xcb\x01\n\x1c\x43heckBotOwnAuthorityResponse\x12\x0f\n\x07user_id\x18\x01 \x01(\x03\x12 \n\x18telegram_binding_version\x18\x02 \x01(\x03\x12\x15\n\rroles_version\x18\x03 \x01(\x03\x12\x1c\n\x14\x61uthorized_group_ids\x18\x04 \x03(\x03\x12\x43\n\ncapability\x18\x05 \x01(\x0e\x32/.rutcampustrack.authauthority.BotReadCapability*\xc4\x01\n\x11\x42otReadCapability\x12#\n\x1f\x42OT_READ_CAPABILITY_UNSPECIFIED\x10\x00\x12%\n!BOT_READ_CAPABILITY_HOMEWORK_READ\x10\x01\x12\x37\n3BOT_READ_CAPABILITY_HEADMAN_CURRENT_ATTENDANCE_READ\x10\x02\x12*\n&BOT_READ_CAPABILITY_TEACHER_TODAY_READ\x10\x03\x32\x82\x07\n\x17\x41uthIdentityGrpcService\x12\x87\x01\n\x12GetOwnBotMenuScope\x12\x37.rutcampustrack.authauthority.GetOwnBotMenuScopeRequest\x1a\x38.rutcampustrack.authauthority.GetOwnBotMenuScopeResponse\x12\x81\x01\n\x10GetOwnBotProfile\x12\x35.rutcampustrack.authauthority.GetOwnBotProfileRequest\x1a\x36.rutcampustrack.authauthority.GetOwnBotProfileResponse\x12\x96\x01\n\x17ListBotKeyboardBindings\x12<.rutcampustrack.authauthority.ListBotKeyboardBindingsRequest\x1a=.rutcampustrack.authauthority.ListBotKeyboardBindingsResponse\x12\x8d\x01\n\x14\x43heckBotOwnAuthority\x12\x39.rutcampustrack.authauthority.CheckBotOwnAuthorityRequest\x1a:.rutcampustrack.authauthority.CheckBotOwnAuthorityResponse\x12\x95\x01\n\x1c\x43heckAcademicBotOwnAuthority\x12\x39.rutcampustrack.authauthority.CheckBotOwnAuthorityRequest\x1a:.rutcampustrack.authauthority.CheckBotOwnAuthorityResponse\x12\x97\x01\n\x1e\x43heckAttendanceBotOwnAuthority\x12\x39.rutcampustrack.authauthority.CheckBotOwnAuthorityRequest\x1a:.rutcampustrack.authauthority.CheckBotOwnAuthorityResponseB(\n$ru.rutcampustrack.authauthority.grpcP\x01\x62\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -32,22 +32,28 @@ _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'auth_authority_pb2', _globa
 if not _descriptor._USE_C_DESCRIPTORS:
   _globals['DESCRIPTOR']._loaded_options = None
   _globals['DESCRIPTOR']._serialized_options = b'\n$ru.rutcampustrack.authauthority.grpcP\001'
-  _globals['_BOTREADCAPABILITY']._serialized_start=1136
-  _globals['_BOTREADCAPABILITY']._serialized_end=1332
-  _globals['_GETOWNBOTMENUSCOPEREQUEST']._serialized_start=54
-  _globals['_GETOWNBOTMENUSCOPEREQUEST']._serialized_end=134
-  _globals['_BOTACTIVEGRANT']._serialized_start=136
-  _globals['_BOTACTIVEGRANT']._serialized_end=200
-  _globals['_GETOWNBOTMENUSCOPERESPONSE']._serialized_start=203
-  _globals['_GETOWNBOTMENUSCOPERESPONSE']._serialized_end=382
-  _globals['_GETOWNBOTPROFILEREQUEST']._serialized_start=384
-  _globals['_GETOWNBOTPROFILEREQUEST']._serialized_end=462
-  _globals['_GETOWNBOTPROFILERESPONSE']._serialized_start=465
-  _globals['_GETOWNBOTPROFILERESPONSE']._serialized_end=663
-  _globals['_CHECKBOTOWNAUTHORITYREQUEST']._serialized_start=666
-  _globals['_CHECKBOTOWNAUTHORITYREQUEST']._serialized_end=927
-  _globals['_CHECKBOTOWNAUTHORITYRESPONSE']._serialized_start=930
-  _globals['_CHECKBOTOWNAUTHORITYRESPONSE']._serialized_end=1133
-  _globals['_AUTHIDENTITYGRPCSERVICE']._serialized_start=1335
-  _globals['_AUTHIDENTITYGRPCSERVICE']._serialized_end=2080
+  _globals['_BOTREADCAPABILITY']._serialized_start=1511
+  _globals['_BOTREADCAPABILITY']._serialized_end=1707
+  _globals['_LISTBOTKEYBOARDBINDINGSREQUEST']._serialized_start=54
+  _globals['_LISTBOTKEYBOARDBINDINGSREQUEST']._serialized_end=153
+  _globals['_BOTKEYBOARDBINDING']._serialized_start=155
+  _globals['_BOTKEYBOARDBINDING']._serialized_end=270
+  _globals['_LISTBOTKEYBOARDBINDINGSRESPONSE']._serialized_start=273
+  _globals['_LISTBOTKEYBOARDBINDINGSRESPONSE']._serialized_end=427
+  _globals['_GETOWNBOTMENUSCOPEREQUEST']._serialized_start=429
+  _globals['_GETOWNBOTMENUSCOPEREQUEST']._serialized_end=509
+  _globals['_BOTACTIVEGRANT']._serialized_start=511
+  _globals['_BOTACTIVEGRANT']._serialized_end=575
+  _globals['_GETOWNBOTMENUSCOPERESPONSE']._serialized_start=578
+  _globals['_GETOWNBOTMENUSCOPERESPONSE']._serialized_end=757
+  _globals['_GETOWNBOTPROFILEREQUEST']._serialized_start=759
+  _globals['_GETOWNBOTPROFILEREQUEST']._serialized_end=837
+  _globals['_GETOWNBOTPROFILERESPONSE']._serialized_start=840
+  _globals['_GETOWNBOTPROFILERESPONSE']._serialized_end=1038
+  _globals['_CHECKBOTOWNAUTHORITYREQUEST']._serialized_start=1041
+  _globals['_CHECKBOTOWNAUTHORITYREQUEST']._serialized_end=1302
+  _globals['_CHECKBOTOWNAUTHORITYRESPONSE']._serialized_start=1305
+  _globals['_CHECKBOTOWNAUTHORITYRESPONSE']._serialized_end=1508
+  _globals['_AUTHIDENTITYGRPCSERVICE']._serialized_start=1710
+  _globals['_AUTHIDENTITYGRPCSERVICE']._serialized_end=2608
 # @@protoc_insertion_point(module_scope)

@@ -28,7 +28,7 @@ if _version_not_supported:
 class AuthIdentityGrpcServiceStub(object):
     """Auth owns these decisions. TLS and the existing x-service-token identify one exact
     caller and method allow-list; GRPC_SECRET and a caller-supplied role are insufficient.
-    notification-bot: GetOwnBotMenuScope/GetOwnBotProfile only. Domain services:
+    notification-bot: own menu/profile and minimal keyboard binding catalogue only. Domain services:
     CheckBotOwnAuthority is MobileBFF-only; Academic and Attendance have separate
     method names so the existing exact-one-principal policy remains unchanged.
     Existing AcademicGrpcService credential/card messages and field numbers are unchanged.
@@ -50,6 +50,11 @@ class AuthIdentityGrpcServiceStub(object):
                 request_serializer=auth__authority__pb2.GetOwnBotProfileRequest.SerializeToString,
                 response_deserializer=auth__authority__pb2.GetOwnBotProfileResponse.FromString,
                 _registered_method=True)
+        self.ListBotKeyboardBindings = channel.unary_unary(
+                '/rutcampustrack.authauthority.AuthIdentityGrpcService/ListBotKeyboardBindings',
+                request_serializer=auth__authority__pb2.ListBotKeyboardBindingsRequest.SerializeToString,
+                response_deserializer=auth__authority__pb2.ListBotKeyboardBindingsResponse.FromString,
+                _registered_method=True)
         self.CheckBotOwnAuthority = channel.unary_unary(
                 '/rutcampustrack.authauthority.AuthIdentityGrpcService/CheckBotOwnAuthority',
                 request_serializer=auth__authority__pb2.CheckBotOwnAuthorityRequest.SerializeToString,
@@ -70,7 +75,7 @@ class AuthIdentityGrpcServiceStub(object):
 class AuthIdentityGrpcServiceServicer(object):
     """Auth owns these decisions. TLS and the existing x-service-token identify one exact
     caller and method allow-list; GRPC_SECRET and a caller-supplied role are insufficient.
-    notification-bot: GetOwnBotMenuScope/GetOwnBotProfile only. Domain services:
+    notification-bot: own menu/profile and minimal keyboard binding catalogue only. Domain services:
     CheckBotOwnAuthority is MobileBFF-only; Academic and Attendance have separate
     method names so the existing exact-one-principal policy remains unchanged.
     Existing AcademicGrpcService credential/card messages and field numbers are unchanged.
@@ -83,6 +88,12 @@ class AuthIdentityGrpcServiceServicer(object):
         raise NotImplementedError('Method not implemented!')
 
     def GetOwnBotProfile(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def ListBotKeyboardBindings(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -119,6 +130,11 @@ def add_AuthIdentityGrpcServiceServicer_to_server(servicer, server):
                     request_deserializer=auth__authority__pb2.GetOwnBotProfileRequest.FromString,
                     response_serializer=auth__authority__pb2.GetOwnBotProfileResponse.SerializeToString,
             ),
+            'ListBotKeyboardBindings': grpc.unary_unary_rpc_method_handler(
+                    servicer.ListBotKeyboardBindings,
+                    request_deserializer=auth__authority__pb2.ListBotKeyboardBindingsRequest.FromString,
+                    response_serializer=auth__authority__pb2.ListBotKeyboardBindingsResponse.SerializeToString,
+            ),
             'CheckBotOwnAuthority': grpc.unary_unary_rpc_method_handler(
                     servicer.CheckBotOwnAuthority,
                     request_deserializer=auth__authority__pb2.CheckBotOwnAuthorityRequest.FromString,
@@ -145,7 +161,7 @@ def add_AuthIdentityGrpcServiceServicer_to_server(servicer, server):
 class AuthIdentityGrpcService(object):
     """Auth owns these decisions. TLS and the existing x-service-token identify one exact
     caller and method allow-list; GRPC_SECRET and a caller-supplied role are insufficient.
-    notification-bot: GetOwnBotMenuScope/GetOwnBotProfile only. Domain services:
+    notification-bot: own menu/profile and minimal keyboard binding catalogue only. Domain services:
     CheckBotOwnAuthority is MobileBFF-only; Academic and Attendance have separate
     method names so the existing exact-one-principal policy remains unchanged.
     Existing AcademicGrpcService credential/card messages and field numbers are unchanged.
@@ -195,6 +211,33 @@ class AuthIdentityGrpcService(object):
             '/rutcampustrack.authauthority.AuthIdentityGrpcService/GetOwnBotProfile',
             auth__authority__pb2.GetOwnBotProfileRequest.SerializeToString,
             auth__authority__pb2.GetOwnBotProfileResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def ListBotKeyboardBindings(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/rutcampustrack.authauthority.AuthIdentityGrpcService/ListBotKeyboardBindings',
+            auth__authority__pb2.ListBotKeyboardBindingsRequest.SerializeToString,
+            auth__authority__pb2.ListBotKeyboardBindingsResponse.FromString,
             options,
             channel_credentials,
             insecure,

@@ -5,6 +5,7 @@ from dataclasses import replace
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, MagicMock
 
+import fakeredis
 import pytest
 
 from bot.grpc_client.academic_pb2 import UserResponse, UserRoleGrant
@@ -327,19 +328,19 @@ async def test_start_preserves_truthful_role_keyboard_when_pending_invalidation_
     client = KeyboardSyncClient(redis_client=fake_redis)
     scope = MenuScope(17, 2, 1, (BotGrant("TEACHER"), BotGrant("STUDENT", 10)))
     signature = keyboard_signature(**scope.keyboard_options)
-    await client.mark_user_synced(12345, signature)
+    await client.mark_user_synced(12345, signature, scope)
     visible = main_keyboard(**scope.keyboard_options)
-    original_hdel = fake_redis.hdel
+    original_invalidate = client.invalidate_user_keyboard
     invalidations = 0
 
-    async def hdel(*args, **kwargs):
+    async def invalidate(*args, **kwargs):
         nonlocal invalidations
         invalidations += 1
         if invalidations == 1:
-            raise RuntimeError("one-shot Redis failure")
-        return await original_hdel(*args, **kwargs)
+            return False
+        return await original_invalidate(*args, **kwargs)
 
-    monkeypatch.setattr(fake_redis, "hdel", hdel)
+    monkeypatch.setattr(client, "invalidate_user_keyboard", invalidate)
 
     async def answer(*args, **kwargs):
         nonlocal visible
@@ -379,26 +380,7 @@ async def test_start_preserves_truthful_role_keyboard_when_pending_invalidation_
 
 
 def _memory_keyboard_client():
-    versions = {}
-    registered = set()
-
-    async def sadd(key, user):
-        registered.add(user)
-
-    async def hset(key, user, version):
-        versions[user] = version
-
-    async def hdel(key, user):
-        versions.pop(user, None)
-
-    redis = SimpleNamespace(
-        sadd=AsyncMock(side_effect=sadd),
-        smembers=AsyncMock(side_effect=lambda key: registered.copy()),
-        hget=AsyncMock(side_effect=lambda key, user: versions.get(user)),
-        hset=AsyncMock(side_effect=hset),
-        hdel=AsyncMock(side_effect=hdel),
-    )
-    return KeyboardSyncClient(redis_client=redis)
+    return KeyboardSyncClient(redis_client=fakeredis.FakeAsyncRedis(decode_responses=True))
 
 
 @pytest.mark.parametrize("outcome", ["rpc", "unknown", "send", "card_after_keyboard", "success"])
@@ -580,3 +562,44 @@ async def test_start_waits_for_startup_delivery_and_receipt_before_its_fallback(
     await sync_registered_keyboards(bot, client, None, delay_seconds=0, retry_delay_seconds=0, bot_menu_client=menu)
     assert delivered[-1] == main_keyboard(**scope.keyboard_options)
     assert await client.get_user_keyboard_version(12345) == signature
+
+async def test_start_delayed_send_role_change_keeps_pending_until_current_keyboard_recovers(fake_redis):
+    client = KeyboardSyncClient(redis_client=fake_redis)
+    old = MenuScope(17, 2, 1, (BotGrant('STUDENT', 10),))
+    new = replace(old, roles_version=2, grants=(BotGrant('TEACHER'),))
+    menu = SimpleNamespace(own_profile=AsyncMock(return_value=_profile()), menu_scope=AsyncMock(return_value=old))
+    message = _message()
+
+    async def delayed_ack(*args, **kwargs):
+        menu.menu_scope.return_value = new
+
+    message.answer.side_effect = delayed_ack
+    await cmd_start(message, None, None, client, None, menu)
+    assert await client.get_receipt(12345) is None
+    assert (await client.state(12345))['status'] == 'pending'
+    bot = SimpleNamespace(send_message=AsyncMock())
+    await sync_registered_keyboards(bot, client, delay_seconds=0, retry_delay_seconds=0, bot_menu_client=menu)
+    labels = [b.text for row in bot.send_message.await_args.kwargs['reply_markup'].keyboard for b in row]
+    assert HOMEWORK_TODAY_LABEL not in labels
+    assert await client.get_user_keyboard_version(12345) == keyboard_signature(**new.keyboard_options)
+
+async def test_start_reactivates_terminal_durably_even_if_invalidation_and_receipt_fail(fake_redis, monkeypatch):
+    client = KeyboardSyncClient(redis_client=fake_redis)
+    await client.register_user(12345)
+    await client.set_state(12345, dict(status='terminal', reason='provider_unreachable'))
+    scope = MenuScope(17, 2, 1, (BotGrant('STUDENT', 10),))
+    menu = SimpleNamespace(own_profile=AsyncMock(return_value=_profile()), menu_scope=AsyncMock(return_value=scope))
+    monkeypatch.setattr(client, 'invalidate_user_keyboard', AsyncMock(return_value=False))
+    original = client.mark_user_synced
+    monkeypatch.setattr(client, 'mark_user_synced', AsyncMock(side_effect=RuntimeError('receipt unavailable')))
+    message = _message()
+    await cmd_start(message, None, None, client, None, menu)
+    assert (await client.state(12345))['status'] == 'pending'
+    assert await client.get_receipt(12345) is None
+    monkeypatch.setattr(client, 'mark_user_synced', original)
+    # Recovery must remain eligible without a new binding or another /start.
+    monkeypatch.setattr(client, 'invalidate_user_keyboard', AsyncMock(return_value=True))
+    bot = SimpleNamespace(send_message=AsyncMock())
+    await sync_registered_keyboards(bot, client, delay_seconds=0, retry_delay_seconds=0, bot_menu_client=menu)
+    assert await client.get_receipt(12345) is not None
+    bot.send_message.assert_awaited_once()

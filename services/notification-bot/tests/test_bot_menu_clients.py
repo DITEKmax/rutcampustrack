@@ -40,7 +40,7 @@ def read_client(**methods):
         (
             BotMenuCredentials,
             "rutcampustrack.authauthority.AuthIdentityGrpcService",
-            {"GetOwnBotMenuScope", "GetOwnBotProfile"},
+            {"GetOwnBotMenuScope", "GetOwnBotProfile", "ListBotKeyboardBindings"},
         ),
         (
             BotReadCredentials,
@@ -60,6 +60,7 @@ def test_directed_tokens_never_reach_other_authorities_services_or_internal_meth
             (f"https://own.test:19099/{service}", next(iter(allowed))),
             ("https://own.test:19098/rutcampustrack.academic.AcademicGrpcService", next(iter(allowed))),
             (f"https://own.test:19098/{service}", "CheckBotOwnAuthority"),
+            (f"https://own.test:19098/{service}", "ReadIdentityCatalogChanges"),
             (f"https://own.test:19098/{service}", "ResolveOwnBotReadScope"),
             (f"https://own.test:19098/{service}", "GetOwnBotLessonAttendance"),
         ]

@@ -8,9 +8,12 @@ import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 import ru.rutcampustrack.authauthority.grpc.BotActiveGrant;
+import ru.rutcampustrack.authauthority.grpc.BotKeyboardBinding;
 import ru.rutcampustrack.authauthority.grpc.BotReadCapability;
 import ru.rutcampustrack.authauthority.grpc.CheckBotOwnAuthorityRequest;
 import ru.rutcampustrack.authauthority.grpc.CheckBotOwnAuthorityResponse;
+import ru.rutcampustrack.authauthority.grpc.ListBotKeyboardBindingsRequest;
+import ru.rutcampustrack.authauthority.grpc.ListBotKeyboardBindingsResponse;
 import ru.rutcampustrack.shared.security.admin.AdminAccessException;
 import ru.rutcampustrack.shared.security.admin.AdminPermission;
 
@@ -25,6 +28,46 @@ public class AuthBotAuthorityQuery {
 
     public AuthBotAuthorityQuery(JdbcTemplate jdbc) {
         this.jdbc = jdbc;
+    }
+
+    @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
+    public ListBotKeyboardBindingsResponse listKeyboardBindings(
+            ListBotKeyboardBindingsRequest request) {
+        long after = request.getAfterUserId();
+        long upper = request.getThroughUserId();
+        int limit = request.getPageSize();
+        if (after < 0 || upper < 0 || limit < 1 || limit > 200 || (after > 0 && upper < after))
+            throw invalid();
+        if (upper == 0) {
+            Long maximum =
+                    jdbc.queryForObject(
+                            "SELECT COALESCE(MAX(id),0) FROM auth_identities", Long.class);
+            upper = maximum == null ? 0 : maximum;
+        }
+        // Include fenced/inactive bound identities too. A missing menu is retryable,
+        // not evidence of unbinding. No login/profile/credential crosses this RPC.
+        var rows =
+                jdbc.query(
+                        "SELECT id,telegram_id,telegram_binding_version,roles_version FROM"
+                            + " auth_identities WHERE id>? AND id<=? AND telegram_id>0 ORDER BY id"
+                            + " LIMIT ?",
+                        (rs, n) ->
+                                BotKeyboardBinding.newBuilder()
+                                        .setUserId(rs.getLong(1))
+                                        .setTelegramId(rs.getLong(2))
+                                        .setTelegramBindingVersion(rs.getLong(3))
+                                        .setRolesVersion(rs.getLong(4))
+                                        .build(),
+                        after,
+                        upper,
+                        limit + 1);
+        boolean more = rows.size() > limit;
+        var page = more ? rows.subList(0, limit) : rows;
+        return ListBotKeyboardBindingsResponse.newBuilder()
+                .addAllBindings(page)
+                .setThroughUserId(upper)
+                .setNextAfterUserId(more ? page.getLast().getUserId() : 0)
+                .build();
     }
 
     @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)

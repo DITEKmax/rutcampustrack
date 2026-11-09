@@ -52,6 +52,7 @@ class KeyboardSyncClient:
     _USER_VERSION_KEY = "bot:keyboard:user_versions"
     _RECEIPTS_KEY = "bot:keyboard:receipts:v2"
     _STATE_KEY = "bot:keyboard:pending:v2"
+    _UNSAFE_UI_KEY = "bot:keyboard:unsafe_ui:v2"
     _BINDINGS_KEY = "bot:keyboard:bindings:v2"
     _PROVIDER_BACKOFF_KEY = "bot:keyboard:provider_backoff:v2"
 
@@ -84,6 +85,7 @@ class KeyboardSyncClient:
     async def register_user(self, telegram_id: int, *, reactivate=False):
         await self._redis.sadd(self._ACTIVE_USERS_KEY, str(telegram_id))
         if reactivate:
+            await self.note_possible_publication(telegram_id, keyboard_signature())
             await self.set_state(telegram_id, self._pending())
         else:
             await self._redis.hsetnx(self._STATE_KEY, str(telegram_id), json.dumps(self._pending()))
@@ -99,6 +101,43 @@ class KeyboardSyncClient:
     async def set_state(self, telegram_id, state):
         await self._redis.hset(self._STATE_KEY, str(telegram_id), json.dumps(state))
 
+    async def ui_needs_cleanup(self, telegram_id):
+        """Receipt invalidation is not evidence that a previously visible UI vanished."""
+        if await self._redis.hget(self._UNSAFE_UI_KEY, str(telegram_id)) is not None:
+            return True
+        common = keyboard_signature()
+        receipt = await self.get_receipt(telegram_id)
+        if receipt is not None and json.loads(receipt)[0] != common:
+            return True
+        version = await self.get_user_keyboard_version(telegram_id)
+        if version is not None and version != common:
+            return True
+        # Preserve pending work written by the earlier fallback implementation.
+        state = await self.state(telegram_id)
+        return bool(state.get("fallback_needed") and not state.get("fallback_sent"))
+
+    async def note_possible_publication(self, telegram_id, keyboard_version):
+        """Commit UI risk before deleting receipts or attempting an external role send.
+
+        This ledger is separate from retry/catalogue state, which may be reset on
+        binding changes or /start. Only authoritative success/common ACK clears it.
+        """
+        if keyboard_version != keyboard_signature() or await self.ui_needs_cleanup(telegram_id):
+            await self._redis.hset(self._UNSAFE_UI_KEY, str(telegram_id), "1")
+
+    async def mark_common_keyboard(self, telegram_id):
+        """Record a common keyboard ACK without acknowledging current Auth scope."""
+        state = await self.state(telegram_id)
+        state.pop("fallback_needed", None)
+        state.pop("fallback_sent", None)
+        async with self._redis.pipeline(transaction=True) as pipe:
+            pipe.hdel(self._UNSAFE_UI_KEY, str(telegram_id))
+            pipe.hdel(self._USER_VERSION_KEY, str(telegram_id))
+            pipe.hdel(self._RECEIPTS_KEY, str(telegram_id))
+            pipe.hset(self._STATE_KEY, str(telegram_id), json.dumps(state))
+            await pipe.execute()
+        return state
+
     async def mark_user_synced(self, telegram_id, keyboard_version, scope: MenuScope | None = None):
         # Legacy content-only writes cannot acknowledge an authoritative receipt.
         async with self._redis.pipeline(transaction=True) as pipe:
@@ -106,6 +145,7 @@ class KeyboardSyncClient:
             if scope is not None:
                 pipe.hset(self._RECEIPTS_KEY, str(telegram_id), receipt_for(scope))
                 pipe.hset(self._STATE_KEY, str(telegram_id), json.dumps(dict(status="synced")))
+                pipe.hdel(self._UNSAFE_UI_KEY, str(telegram_id))
             await pipe.execute()
 
     async def get_registered_user_ids(self):
@@ -128,6 +168,7 @@ class KeyboardSyncClient:
     async def invalidate_user_keyboard(self, telegram_id, *, reactivate=True):
         """Explicit /start reactivates terminal work; commit pending before replacing UI."""
         try:
+            await self.note_possible_publication(telegram_id, keyboard_signature())
             async with self._redis.pipeline(transaction=True) as pipe:
                 pipe.hdel(self._USER_VERSION_KEY, str(telegram_id))
                 pipe.hdel(self._RECEIPTS_KEY, str(telegram_id))
@@ -181,6 +222,11 @@ class KeyboardSyncClient:
                         # Terminal provider failures stay terminal for the same binding;
                         # a new binding or a reappearing unbound identity reactivates it.
                         if old != identity or state.get("reason") == "unbound":
+                            # The UI ledger and receipts survive this retry reset.
+                            # Promote only the former pending flag; do not make
+                            # discovery depend on a recipient's receipt read.
+                            if state.get("fallback_needed") and not state.get("fallback_sent"):
+                                await self._redis.hset(self._UNSAFE_UI_KEY, str(telegram_id), "1")
                             await self.set_state(telegram_id, self._pending())
                             await self._redis.hset(self._BINDINGS_KEY, str(telegram_id), identity)
                 next_after = page.next_after_user_id
@@ -192,7 +238,24 @@ class KeyboardSyncClient:
             for telegram_id in before.keys() - seen:
                 async with self.publication(telegram_id):
                     if await self.state(telegram_id) == before[telegram_id]:
-                        await self.set_state(telegram_id, dict(status="terminal", reason="unbound"))
+                        state = before[telegram_id]
+                        if state.get("reason") == "provider_unreachable":
+                            continue
+                        if await self.ui_needs_cleanup(telegram_id):
+                            await self.note_possible_publication(telegram_id, keyboard_signature())
+                            if state.get("reason") != "unbound" or state["status"] == "terminal":
+                                await self.set_state(
+                                    telegram_id,
+                                    dict(
+                                        state,
+                                        status="pending",
+                                        reason="unbound",
+                                        next_at=0,
+                                        since=state.get("since", time.time()),
+                                    ),
+                                )
+                        else:
+                            await self.set_state(telegram_id, dict(status="terminal", reason="unbound"))
             KEYBOARD_SYNC_CATALOG_AVAILABLE.set(1)
             self._catalog_available = True
             return True
@@ -223,6 +286,8 @@ async def mark_keyboard_synced(keyboard_sync, telegram_id, keyboard_version, *, 
     if keyboard_sync is None:
         return
     await keyboard_sync.register_user(telegram_id)
+    if keyboard_version == keyboard_signature():
+        await keyboard_sync.mark_common_keyboard(telegram_id)
     # /start also checks after a potentially delayed Telegram ACK/card publication.
     current = await resolve_menu_scope(bot_menu_client, telegram_id) if scope is not None else None
     if current != scope or scope is None:
@@ -253,10 +318,8 @@ async def _reconcile_user(bot, sync, menu, telegram_id, *, now, retry_delay_seco
                 # Revoke a previously published role UI safely, while keeping an
                 # uncertain/fenced/no-grant menu retryable. A common fallback is
                 # never an authoritative success receipt.
-                previous = await sync.get_receipt(telegram_id) or await sync.get_user_keyboard_version(telegram_id)
-                if (previous or state.get("fallback_needed")) and not state.get("fallback_sent"):
-                    state = dict(state, fallback_needed=True)
-                    await sync.set_state(telegram_id, state)
+                if await sync.ui_needs_cleanup(telegram_id):
+                    await sync.note_possible_publication(telegram_id, keyboard_signature())
                     if not await sync.invalidate_user_keyboard(telegram_id, reactivate=False):
                         raise RuntimeError("Keyboard fallback pending unavailable")
                     if await resolve_menu_scope(menu, telegram_id) is not None:
@@ -267,11 +330,14 @@ async def _reconcile_user(bot, sync, menu, telegram_id, *, now, retry_delay_seco
                         reply_markup=main_keyboard(),
                         disable_notification=True,
                     )
-                    state = dict(state, fallback_sent=True)
-                    await sync.set_state(telegram_id, state)
+                    state = await sync.mark_common_keyboard(telegram_id)
+                if state.get("reason") == "unbound":
+                    await sync.set_state(telegram_id, dict(status="terminal", reason="unbound"))
+                    return
                 raise RuntimeError("Current keyboard authority unavailable")
             receipt = receipt_for(scope)
             if await sync.get_receipt(telegram_id) != receipt:
+                await sync.note_possible_publication(telegram_id, keyboard_signature(**scope.keyboard_options))
                 if not await sync.invalidate_user_keyboard(telegram_id, reactivate=False):
                     raise RuntimeError("Keyboard receipt invalidation unavailable")
                 # Reread after storage waits, immediately before publication.
@@ -284,6 +350,8 @@ async def _reconcile_user(bot, sync, menu, telegram_id, *, now, retry_delay_seco
                     reply_markup=main_keyboard(**scope.keyboard_options),
                     disable_notification=True,
                 )
+                if keyboard_signature(**scope.keyboard_options) == keyboard_signature():
+                    state = await sync.mark_common_keyboard(telegram_id)
                 if await resolve_menu_scope(menu, telegram_id) != scope:
                     raise RuntimeError("Keyboard authority changed during publication")
             else:

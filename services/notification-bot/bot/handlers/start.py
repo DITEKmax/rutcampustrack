@@ -134,12 +134,16 @@ async def _publish_start(message, telegram_id, keyboard_sync, credential_cards, 
                 reply_markup=keyboard if keyboard_pending else None,
                 parse_mode="HTML",
             )
+            if keyboard_sync is not None and keyboard_pending:
+                await keyboard_sync.mark_common_keyboard(telegram_id)
             return
 
         # D-02: a found profile needs positive current authority before any own data/card.
         scope = await _require_profile_scope(bot_menu_client, telegram_id, response)
         options = scope.keyboard_options
         keyboard = main_keyboard(**options)
+        if keyboard_sync is not None:
+            await keyboard_sync.note_possible_publication(telegram_id, keyboard_signature(**options))
         display_name = html.escape(str(response.display_name or ""))
         if credential_cards is not None and await credential_cards.deliver(
             message,
@@ -156,6 +160,8 @@ async def _publish_start(message, telegram_id, keyboard_sync, credential_cards, 
         display_name = html.escape(str(response.display_name or ""))
         login = html.escape(str(response.login or ""))
         group_name = html.escape(str(response.group_name or ""))
+        if keyboard_sync is not None:
+            await keyboard_sync.note_possible_publication(telegram_id, keyboard_signature(**scope.keyboard_options))
         await message.answer(
             f"👋 <b>Добро пожаловать, {display_name}</b>\n\n"
             "👤 <b>Профиль</b>\n"
@@ -179,6 +185,8 @@ async def _publish_start(message, telegram_id, keyboard_sync, credential_cards, 
             reply_markup=main_keyboard() if keyboard_pending else None,
             parse_mode="HTML",
         )
+        if keyboard_sync is not None and keyboard_pending:
+            await keyboard_sync.mark_common_keyboard(telegram_id)
 
 
 @start_router.message(Command("credentials"))

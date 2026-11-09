@@ -603,3 +603,24 @@ async def test_start_reactivates_terminal_durably_even_if_invalidation_and_recei
     await sync_registered_keyboards(bot, client, delay_seconds=0, retry_delay_seconds=0, bot_menu_client=menu)
     assert await client.get_receipt(12345) is not None
     bot.send_message.assert_awaited_once()
+
+async def test_start_ack_authority_loss_survives_restart_until_common_ack(fake_redis):
+    client = KeyboardSyncClient(redis_client=fake_redis)
+    scope = MenuScope(17, 2, 1, (BotGrant('STUDENT', 10),))
+    menu = SimpleNamespace(own_profile=AsyncMock(return_value=_profile()), menu_scope=AsyncMock(return_value=scope))
+    message = _message()
+
+    async def delayed_ack(*args, **kwargs):
+        menu.menu_scope.return_value = None
+
+    message.answer.side_effect = delayed_ack
+    await cmd_start(message, None, None, client, None, menu)
+    assert await client.get_receipt(12345) is None
+    assert message.answer.await_args.kwargs['reply_markup'] != main_keyboard()
+    restarted = KeyboardSyncClient(redis_client=fake_redis)
+    bot = SimpleNamespace(send_message=AsyncMock())
+    await sync_registered_keyboards(bot, restarted, delay_seconds=0, retry_delay_seconds=0, bot_menu_client=menu)
+    assert bot.send_message.await_args.kwargs['reply_markup'] == main_keyboard()
+    assert await restarted.get_receipt(12345) is None
+    await sync_registered_keyboards(bot, restarted, delay_seconds=0, retry_delay_seconds=0, bot_menu_client=menu)
+    bot.send_message.assert_awaited_once()

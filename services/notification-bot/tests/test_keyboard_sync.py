@@ -348,3 +348,102 @@ async def test_missing_or_fenced_menu_clears_old_role_ui_once_but_never_acknowle
     await cycle(client, authority, bot)
     assert bot.send_message.await_count == 3
     assert await client.get_receipt(1001) == receipt_for(authority.scopes[1001])
+
+
+@pytest.mark.asyncio
+async def test_completed_unbinding_keeps_cleanup_pending_until_common_ack_after_restart(fake_redis):
+    from bot.handlers.prefs import main_keyboard
+
+    client = KeyboardSyncClient(redis_client=fake_redis)
+    authority = Authority(1)
+    visible = []
+
+    async def delivered(**kwargs):
+        visible.append(kwargs["reply_markup"])
+
+    bot = SimpleNamespace(send_message=AsyncMock(side_effect=delivered))
+    await cycle(client, authority, bot)
+    role_ui = visible[-1]
+    authority.scopes.clear()  # A completed catalogue proves unbound, not safe UI.
+    bot.send_message.side_effect = RuntimeError("common replacement unavailable")
+    await cycle(client, authority, bot)
+    assert visible[-1] == role_ui
+    assert (await client.state(1001))["status"] in {"pending", "retryable"}
+    assert KEYBOARD_SYNC_PENDING._value.get() == 1
+    assert STARTUP_COMPLETED.labels("keyboard_sync")._value.get() == 0
+
+    restarted = KeyboardSyncClient(redis_client=fake_redis)
+    bot.send_message.side_effect = delivered
+    await cycle(restarted, authority, bot)
+    assert visible[-1] == main_keyboard()
+    assert (await restarted.state(1001)) == dict(status="terminal", reason="unbound")
+    assert await restarted.get_receipt(1001) is None  # A common ACK is not an authority receipt.
+    assert KEYBOARD_SYNC_PENDING._value.get() == 0
+    sends = bot.send_message.await_count
+    await cycle(KeyboardSyncClient(redis_client=fake_redis), authority, bot)
+    assert bot.send_message.await_count == sends
+
+
+@pytest.mark.parametrize("loss_at", ["before_send", "after_ack"])
+@pytest.mark.asyncio
+async def test_authority_loss_preserves_unsafe_ui_across_restart_and_catalogue_reset(fake_redis, loss_at):
+    from bot.handlers.prefs import main_keyboard
+
+    client = KeyboardSyncClient(redis_client=fake_redis)
+    authority = Authority(1)
+    visible = []
+
+    async def delivered(**kwargs):
+        visible.append(kwargs["reply_markup"])
+
+    bot = SimpleNamespace(send_message=AsyncMock(side_effect=delivered))
+    await cycle(client, authority, bot)
+    new = replace(authority.scopes[1001], roles_version=2, grants=(BotGrant("TEACHER"),))
+    authority.scopes[1001] = new
+    reads = 0
+
+    async def menu(sender):
+        nonlocal reads
+        reads += 1
+        return new if reads <= (1 if loss_at == "before_send" else 2) else None
+
+    authority.menu_scope = menu
+    await cycle(client, authority, bot)
+    assert await client.get_receipt(1001) is None
+    assert visible[-1] != main_keyboard()
+    if loss_at == "before_send":
+        assert bot.send_message.await_count == 1
+    else:
+        assert bot.send_message.await_count == 2
+
+    # Fresh discovery resets retry state for the changed version; UI risk must
+    # remain durable independently of that state and the deleted receipt.
+    authority.scopes[1001] = replace(new, roles_version=3)
+    restarted = KeyboardSyncClient(redis_client=fake_redis)
+    await cycle(restarted, authority, bot)
+    assert visible[-1] == main_keyboard()
+    assert (await restarted.state(1001))["status"] == "retryable"
+    assert await restarted.get_receipt(1001) is None
+    sends = bot.send_message.await_count
+    await cycle(KeyboardSyncClient(redis_client=fake_redis), authority, bot)
+    assert bot.send_message.await_count == sends  # Known common ACK is not repeated.
+    authority.menu_scope = AsyncMock(return_value=authority.scopes[1001])
+    await cycle(restarted, authority, bot)
+    assert await restarted.get_receipt(1001) == receipt_for(authority.scopes[1001])
+    assert visible[-1] != main_keyboard()
+
+
+@pytest.mark.asyncio
+async def test_unbound_common_cleanup_provider_terminal_is_not_hot_retried(fake_redis):
+    client = KeyboardSyncClient(redis_client=fake_redis)
+    authority = Authority(1)
+    bot = SimpleNamespace(send_message=AsyncMock())
+    await cycle(client, authority, bot)
+    authority.scopes.clear()
+    bot.send_message.side_effect = TelegramForbiddenError(SendMessage(chat_id=1001, text="synthetic"), "blocked")
+    await cycle(client, authority, bot)
+    assert (await client.state(1001)) == dict(status="terminal", reason="provider_unreachable")
+    assert KEYBOARD_SYNC_PENDING._value.get() == 0
+    sends = bot.send_message.await_count
+    await cycle(KeyboardSyncClient(redis_client=fake_redis), authority, bot)
+    assert bot.send_message.await_count == sends

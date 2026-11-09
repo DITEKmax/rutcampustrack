@@ -30,17 +30,22 @@ export interface GeoResult {
   conflicting: boolean
 }
 
+export function isFreshBrowserFix(timestamp: number | null, now = Date.now()): boolean {
+  return (
+    timestamp !== null &&
+    Number.isFinite(timestamp) &&
+    now - timestamp <= GEO_FRESH_MS &&
+    timestamp <= now + 1_000
+  )
+}
+
 function valid(sample: GeoSample, source: GeoSource['source'], now: number): boolean {
   return (
     Number.isFinite(sample.latitude) &&
     Math.abs(sample.latitude) <= 90 &&
     Number.isFinite(sample.longitude) &&
     Math.abs(sample.longitude) <= 180 &&
-    (source === 'TMA' ||
-      (sample.timestamp !== null &&
-        Number.isFinite(sample.timestamp) &&
-        now - sample.timestamp <= GEO_FRESH_MS &&
-        sample.timestamp <= now + 1_000))
+    (source === 'TMA' || isFreshBrowserFix(sample.timestamp, now))
   )
 }
 function accuracy(sample: GeoSample): number {

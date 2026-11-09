@@ -122,6 +122,59 @@ async function settle() {
   for (let i = 0; i < 10; i++) await Promise.resolve()
 }
 describe('Web consumer of shared acquisition and immutable recovery', () => {
+  it.each(['pagehide', 'offline', 'visibility'] as const)(
+    'cancels %s in the GPS-to-preflight gap without the first POST',
+    async (event) => {
+      const f = fixture()
+      let finish!: () => void
+      f.refresh.mockImplementationOnce(
+        () =>
+          new Promise<void>((resolve) => {
+            finish = resolve
+          }),
+      )
+      const submit = f.checkin.submit(lesson, '2026-11-09T07:00:00Z')
+      await settle()
+      f.emit(20)
+      await settle()
+      expect(f.refresh).toHaveBeenCalledOnce()
+      expect(f.checkin.deviceAccess.state.stage).toBeNull()
+      if (event === 'visibility') {
+        Object.defineProperty(document, 'visibilityState', { configurable: true, value: 'hidden' })
+        document.dispatchEvent(new Event('visibilitychange'))
+      } else window.dispatchEvent(new Event(event))
+      finish()
+      await submit
+      expect(f.api.checkin).not.toHaveBeenCalled()
+      expect(f.checkin.uncertain.value).toBeNull()
+      expect(f.checkin.busy.value).toBe(false)
+    },
+  )
+  it('discards an unsent browser fix that expires during the eligibility refresh', async () => {
+    const f = fixture()
+    let finish!: () => void
+    f.refresh.mockImplementationOnce(
+      () =>
+        new Promise<void>((resolve) => {
+          finish = resolve
+        }),
+    )
+    const submit = f.checkin.submit(lesson, '2026-11-09T07:00:00Z')
+    await settle()
+    f.emit(20)
+    await settle()
+    await vi.advanceTimersByTimeAsync(31_000)
+    finish()
+    await submit
+    expect(f.api.checkin).not.toHaveBeenCalled()
+    expect(f.checkin.uncertain.value).toBeNull()
+    const retry = f.checkin.submit(lesson, '2026-11-09T07:00:00Z')
+    await settle()
+    f.emit(20)
+    await retry
+    expect(f.watchPosition).toHaveBeenCalledTimes(2)
+    expect(f.api.checkin).toHaveBeenCalledOnce()
+  })
   it('waits for explicit continuation of a poor fix before refreshing eligibility and sending once', async () => {
     const f = fixture()
     const submit = f.checkin.submit(lesson, '2026-11-09T07:00:00Z')
@@ -172,6 +225,7 @@ describe('Web consumer of shared acquisition and immutable recovery', () => {
     await first
     const sent = f.api.checkin.mock.calls[0]
     expect(f.checkin.uncertain.value).toBe('77')
+    await vi.advanceTimersByTimeAsync(60_000)
     await f.checkin.submit(lesson, '2026-11-09T07:00:00Z', true)
     expect(f.watchPosition).toHaveBeenCalledOnce()
     expect(f.api.checkin.mock.calls[1]).toEqual(sent)

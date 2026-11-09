@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useProjectionRefresh } from '../projection-refresh';
-import { useDeviceAccess, type AcquisitionOptions } from '../../device-access/device-access';
+import { hasFreshCheckinCoordinates, useDeviceAccess, type AcquisitionOptions } from '../../device-access/device-access';
 import GeoAcquisitionFeedback from '../../device-access/GeoAcquisitionFeedback.vue';
 import { computed, onBeforeUnmount, reactive, ref, shallowRef, watch } from 'vue';
 import { useQueryClient } from '@tanstack/vue-query';
@@ -2129,12 +2129,15 @@ function performCheckin(
     ownerIdentity.value === requestIdentity && (isCurrent?.() ?? true);
   const acquisition = new AbortController();
   acquisitionController = acquisition;
+  const releaseAcquisitionStop = deviceAccess?.registerStop(() => acquisition.abort());
+  let firstSend = false;
   checkinRunning.value = true;
   acquiringLessonId.value = lesson.schedule.id;
   return checkinRecovery
     .execute(
       lesson.schedule.id,
       async () => {
+        firstSend = true;
         if (!canSend() || acquisition.signal.aborted) throw new CheckinBeforeSendCancelled();
         const command = await props.acquireCheckinCommand({ signal: acquisition.signal });
         if (!canSend() || acquisition.signal.aborted) throw new CheckinBeforeSendCancelled();
@@ -2144,18 +2147,21 @@ function performCheckin(
         const target = today.query.data.value?.lessons.find(
           (item) => item.schedule.id === lesson.schedule.id,
         );
-        if (!target?.checkinEligibility.allowed) throw new CheckinBeforeSendCancelled();
+        if (!target?.checkinEligibility.allowed || !hasFreshCheckinCoordinates(command))
+          throw new CheckinBeforeSendCancelled();
         return command;
       },
       (attempt) => {
-        if (!canSend() || acquisition.signal.aborted) {
+        const canDispatch = () => canSend() && !acquisition.signal.aborted &&
+          (!firstSend || hasFreshCheckinCoordinates(attempt.command));
+        if (!canDispatch()) {
           return Promise.reject(new CheckinBeforeSendCancelled());
         }
         acquiringLessonId.value = null;
         return today.mutation.mutateAsync({
           ...attempt,
           scope: requestScope,
-          canSend: () => canSend() && !acquisition.signal.aborted,
+          canSend: canDispatch,
         });
       },
     )
@@ -2185,6 +2191,7 @@ function performCheckin(
       throw error;
     })
     .finally(() => {
+      releaseAcquisitionStop?.();
       if (acquisitionController === acquisition) acquisitionController = null;
       if (!disposed && ownerIdentity.value === requestIdentity) {
         checkinRunning.value = false;

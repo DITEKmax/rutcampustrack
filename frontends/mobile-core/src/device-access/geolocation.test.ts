@@ -142,6 +142,29 @@ describe('bounded shared geolocation policy', () => {
 })
 
 describe('permission owner and explicit choice before transport', () => {
+  it('reacquires instead of returning a browser fix after a delayed Continue', async () => {
+    vi.useFakeTimers()
+    const f = fixture()
+    const owner = createDeviceAccess({ geo: f.source }, null)
+    owner.bindOwner('alice', 's1')
+    const attempt = owner.acquire()
+    let completed = false
+    void attempt.then(() => {
+      completed = true
+    })
+    f.emit({ accuracy: 500 })
+    await vi.advanceTimersByTimeAsync(28_000)
+    expect(owner.state.stage).toBe('review')
+    await vi.advanceTimersByTimeAsync(60_000)
+    owner.choose('continue')
+    await settle()
+    expect(completed).toBe(false)
+    expect(f.watch).toHaveBeenCalledTimes(2)
+    f.emit({ accuracy: 20 })
+    await expect(attempt).resolves.toMatchObject({
+      diagnostics: { fixTimestamp: new Date(Date.now()).toISOString(), accuracyMeters: 20 },
+    })
+  })
   it('does not prompt during inspection or restore a system grant from account preferences', async () => {
     const f = fixture()
     const values = new Map<string, string>()

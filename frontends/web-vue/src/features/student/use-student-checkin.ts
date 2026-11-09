@@ -8,7 +8,10 @@ import {
   isPendingCheckin,
   remainingSeconds,
 } from '../../../../mobile-core/src/domain/checkin'
-import { provideDeviceAccess } from '../../../../mobile-core/src/device-access/device-access'
+import {
+  hasFreshCheckinCoordinates,
+  provideDeviceAccess,
+} from '../../../../mobile-core/src/device-access/device-access'
 import { browserGeoSource } from '../../../../mobile-core/src/device-access/geolocation'
 import { studentError, type StudentScope } from './student-state'
 
@@ -87,11 +90,14 @@ export function useStudentCheckin(
     result.value = ''
     const acquisition = new AbortController()
     acquisitionController = acquisition
+    const releaseAcquisitionStop = deviceAccess.registerStop(() => acquisition.abort())
+    let firstSend = false
     let sent = false
     try {
       const ack = await commands.execute(
         id,
         async () => {
+          firstSend = true
           acquiring.value = true
           const command = await deviceAccess.acquire({ signal: acquisition.signal })
           scope.transport.assertCurrent()
@@ -103,7 +109,8 @@ export function useStudentCheckin(
             !scope.current() ||
             acquisition.signal.aborted ||
             scope.readOnly.value ||
-            !fresh?.checkinEligibility.allowed
+            !fresh?.checkinEligibility.allowed ||
+            !hasFreshCheckinCoordinates(command)
           )
             throw new CheckinBeforeSendCancelled()
           acquiring.value = false
@@ -111,7 +118,13 @@ export function useStudentCheckin(
         },
         (attempt) => {
           scope.transport.assertCurrent()
-          if (!scope.current() || scope.readOnly.value || acquisition.signal.aborted) throw new CheckinBeforeSendCancelled()
+          if (
+            !scope.current() ||
+            scope.readOnly.value ||
+            acquisition.signal.aborted ||
+            (firstSend && !hasFreshCheckinCoordinates(attempt.command))
+          )
+            throw new CheckinBeforeSendCancelled()
           sent = true
           return scope.api.checkin(attempt.lessonId, attempt.command, attempt.key)
         },
@@ -131,6 +144,7 @@ export function useStudentCheckin(
       error.value = studentError(cause)
       if (!uncertain.value) await refresh()
     } finally {
+      releaseAcquisitionStop()
       if (acquisitionController === acquisition) acquisitionController = null
       if (scope.current()) {
         busyLesson.value = null

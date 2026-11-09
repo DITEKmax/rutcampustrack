@@ -15,6 +15,7 @@ import type { MobileBottomNavItems, MobileNavigationStack } from '../navigation'
 import { StudentApiError, type StudentApi } from '../../api/student-client'
 import type { NotificationTargetIntent } from '../../features/notifications/notifications-client'
 import { CheckinCommandRecovery } from '../../domain/checkin'
+import { provideDeviceAccess, type AcquisitionOptions, type DeviceAccess } from '../../device-access/device-access'
 import type {
   StudentAttendanceResponse,
   StudentCheckinAck,
@@ -743,6 +744,8 @@ afterEach(() => {
   ownerQueryData.homeworkRefetch.mockReset().mockResolvedValue({ isSuccess: true })
   ownerQueryData.realReads = false
   ownerQueryData.realShell = false
+  vi.useRealTimers()
+  vi.unstubAllGlobals()
 })
 
 const command: StudentCheckinCommand = {
@@ -881,9 +884,11 @@ function attendanceStatusAction(root: OwnerTestHostNode): unknown {
 function mountOwnerTest(
   api: StudentApi,
   overrides: Record<string, unknown> = {},
+  prepare?: () => void,
 ): OwnerTestHostNode {
   const root = ownerTestElement('root')
   const app = ownerTestRenderer.createApp({
+    setup: () => { prepare?.() },
     render: () =>
       h(StudentFeatureOwner, {
         api,
@@ -1266,6 +1271,40 @@ describe('StudentFeatureOwner offline read models', () => {
     expect(ownerTestOutput(root, 'test-acquiring')).toBe('')
     expect(checkinSubmit).not.toHaveBeenCalled()
     expect(ownerError).not.toHaveBeenCalled()
+  })
+
+  it.each(['cancel', 'stale'] as const)('fences a completed GPS fix across a delayed eligibility read (%s)', async (reason) => {
+    vi.useFakeTimers()
+    vi.stubGlobal('window', new EventTarget())
+    vi.stubGlobal('document', Object.assign(new EventTarget(), { visibilityState: 'visible' }))
+    let device!: DeviceAccess
+    const root = mountOwnerTest(
+      { getRequestOptions: async () => requestOptions() } as unknown as StudentApi,
+      { acquireCheckinCommand: (options: AcquisitionOptions) => device.acquire(options) },
+      () => {
+        device = provideDeviceAccess({ geo: { source: 'BROWSER', watch(sample) {
+          sample({ latitude: 55.75, longitude: 37.62, accuracy: 20, timestamp: Date.now(), receivedAt: Date.now() })
+          return () => {}
+        } } })
+        device.bindOwner('synthetic-student', 'synthetic-session')
+      },
+    )
+    ownerQueryData.today!.value = {
+      date: '2026-10-04', timeZone: 'Europe/Moscow', serverNow: '2026-10-04T08:00:00Z', _links: {},
+      lessons: [{ schedule: { id: 'lesson-1', date: '2026-10-04', lessonNumber: 1, startsAt: '10:40:00', endsAt: '12:10:00', status: 'ACTIVE', subject: { id: 'subject-1', name: 'Предмет', type: 'LECTURE' }, room: { current: 'А-401', previous: null, changeState: 'UNCHANGED' } }, attendance: null, request: null, checkinEligibility: { allowed: true, reason: 'ELIGIBLE', retryAt: null } }],
+    }
+    await settleOwnerTestRender()
+    let finish!: () => void
+    ownerQueryData.todayRefetch.mockImplementationOnce(() => new Promise((resolve) => { finish = () => resolve({ isSuccess: true }) }))
+    clickOwnerTestButton(root, 'test-checkin')
+    await settleOwnerTestRender()
+    expect(device.state.stage).toBeNull()
+    expect(ownerTestOutput(root, 'test-acquiring')).toBe('lesson-1')
+    if (reason === 'cancel') window.dispatchEvent(new Event('pagehide'))
+    else await vi.advanceTimersByTimeAsync(31_000)
+    finish()
+    await vi.waitFor(() => expect(ownerTestOutput(root, 'test-acquiring')).toBe(''))
+    expect(checkinSubmit).not.toHaveBeenCalled()
   })
 
   it('waits for real warm Vue Query GETs, keeps one read per feed, and accepts a later successful retry', async () => {

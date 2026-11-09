@@ -1,7 +1,13 @@
 import { inject, onBeforeUnmount, onMounted, provide, reactive, type InjectionKey } from 'vue'
 import type { CheckinDiagnostics, StudentCheckinCommand } from '../api/types'
 import { CheckinBeforeSendCancelled } from '../domain/checkin'
-import { acquireGeolocation, browserGeoSource, type GeoResult, type GeoSource } from './geolocation'
+import {
+  acquireGeolocation,
+  browserGeoSource,
+  isFreshBrowserFix,
+  type GeoResult,
+  type GeoSource,
+} from './geolocation'
 import { requestBrowserCamera } from './browser-camera'
 
 export type DevicePermission =
@@ -173,6 +179,13 @@ export function createDeviceAccess(
           if (decision === 'retry') continue
         }
         if (controller.signal.aborted) throw new CheckinBeforeSendCancelled()
+        // Review can stay open much longer than the original acquisition budget.
+        if (
+          result.source === 'BROWSER' &&
+          result.sample &&
+          !isFreshBrowserFix(result.sample.timestamp)
+        )
+          continue
         return commandFromGeoResult(result)
       }
     } catch (error) {
@@ -281,6 +294,16 @@ export function createDeviceAccess(
       cleanups.clear()
     },
   }
+}
+
+/** First-send guard only. An already-sent ambiguous command must replay unchanged. */
+export function hasFreshCheckinCoordinates(
+  command: StudentCheckinCommand,
+  now = Date.now(),
+): boolean {
+  if (command.geo.kind !== 'COORDINATES' || command.diagnostics?.source !== 'BROWSER') return true
+  const timestamp = command.diagnostics.fixTimestamp
+  return typeof timestamp === 'string' && isFreshBrowserFix(Date.parse(timestamp), now)
 }
 
 function safeStorage(): Storage | null {

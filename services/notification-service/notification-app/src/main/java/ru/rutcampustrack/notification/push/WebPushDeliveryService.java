@@ -1,6 +1,28 @@
 package ru.rutcampustrack.notification.push;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import lombok.extern.slf4j.Slf4j;
+
+import nl.martijndwars.webpush.Encoding;
+import nl.martijndwars.webpush.Notification;
+import nl.martijndwars.webpush.PushService;
+
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpResponseException;
+import org.apache.http.util.EntityUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
+import org.springframework.stereotype.Service;
+
+import ru.rutcampustrack.notification.history.AcademicGroupMemberClient;
+import ru.rutcampustrack.notification.history.NotificationCatalog;
+import ru.rutcampustrack.notification.preferences.NotificationPreferencesService;
+import ru.rutcampustrack.notification.reminder.ReminderAttendanceStateService;
+
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -17,23 +39,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
-import lombok.extern.slf4j.Slf4j;
-import nl.martijndwars.webpush.Encoding;
-import nl.martijndwars.webpush.Notification;
-import nl.martijndwars.webpush.PushService;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpResponseException;
-import org.apache.http.util.EntityUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.data.mongodb.core.query.Update;
-import org.springframework.stereotype.Service;
-import ru.rutcampustrack.notification.history.AcademicGroupMemberClient;
-import ru.rutcampustrack.notification.history.NotificationCatalog;
-import ru.rutcampustrack.notification.preferences.NotificationPreferencesService;
-import ru.rutcampustrack.notification.reminder.ReminderAttendanceStateService;
 
 /**
  * One provider attempt; central admission and durable retry belong to
@@ -84,6 +89,7 @@ public class WebPushDeliveryService {
     private final NotificationPreferencesService preferencesService;
     private final ReminderAttendanceStateService reminderAttendanceStateService;
     private final AcademicGroupMemberClient academicGroupMemberClient;
+    private final WebPushOutcomeMetrics metrics;
 
     @Autowired
     public WebPushDeliveryService(
@@ -94,7 +100,8 @@ public class WebPushDeliveryService {
             Clock clock,
             NotificationPreferencesService preferencesService,
             ReminderAttendanceStateService reminderAttendanceStateService,
-            AcademicGroupMemberClient academicGroupMemberClient) {
+            AcademicGroupMemberClient academicGroupMemberClient,
+            WebPushOutcomeMetrics metrics) {
         this.repository = repository;
         this.webPushService = webPushService;
         this.objectMapper = objectMapper;
@@ -103,6 +110,7 @@ public class WebPushDeliveryService {
         this.preferencesService = preferencesService;
         this.reminderAttendanceStateService = reminderAttendanceStateService;
         this.academicGroupMemberClient = academicGroupMemberClient;
+        this.metrics = metrics;
     }
 
     public WebPushDeliveryService(
@@ -112,7 +120,8 @@ public class WebPushDeliveryService {
             MongoTemplate mongoTemplate,
             Clock clock,
             NotificationPreferencesService preferencesService,
-            ReminderAttendanceStateService reminderAttendanceStateService) {
+            ReminderAttendanceStateService reminderAttendanceStateService,
+            WebPushOutcomeMetrics metrics) {
         this(
                 repository,
                 webPushService,
@@ -121,7 +130,8 @@ public class WebPushDeliveryService {
                 clock,
                 preferencesService,
                 reminderAttendanceStateService,
-                null);
+                null,
+                metrics);
     }
 
     public WebPushDeliveryService(
@@ -129,8 +139,18 @@ public class WebPushDeliveryService {
             PushService webPushService,
             ObjectMapper objectMapper,
             MongoTemplate mongoTemplate,
-            Clock clock) {
-        this(repository, webPushService, objectMapper, mongoTemplate, clock, null, null, null);
+            Clock clock,
+            WebPushOutcomeMetrics metrics) {
+        this(
+                repository,
+                webPushService,
+                objectMapper,
+                mongoTemplate,
+                clock,
+                null,
+                null,
+                null,
+                metrics);
     }
 
     /** Returns true if this event type should trigger a Web Push notification. */
@@ -173,12 +193,15 @@ public class WebPushDeliveryService {
                 item.details().stream()
                         .sorted(
                                 Comparator.comparing(
-                                        detail -> !NotificationCatalog.isRoomChangeDetail(detail.label())))
+                                        detail ->
+                                                !NotificationCatalog.isRoomChangeDetail(
+                                                        detail.label())))
                         .limit(3)
                         .map(
                                 detail ->
                                         (detail.label() == null ? "" : detail.label() + ": ")
-                                                + (NotificationCatalog.isRoomChangeDetail(detail.label())
+                                                + (NotificationCatalog.isRoomChangeDetail(
+                                                                detail.label())
                                                         ? boundedText(detail.value(), 128)
                                                         : detail.value()))
                         .collect(Collectors.joining("\n"));
@@ -208,6 +231,7 @@ public class WebPushDeliveryService {
         int status;
         try {
             status = response.getStatusLine().getStatusCode();
+            metrics.providerResponse(status);
         } finally {
             EntityUtils.consumeQuietly(response.getEntity());
         }
@@ -254,8 +278,8 @@ public class WebPushDeliveryService {
 
     /**
      * M05 G7 (NEW-148): single bulk {@code $set} обновляет {@code last_seen} для всех endpoint'ов с
-     * успешной доставкой. Одна Mongo-operation на fanout вместо N save'ов (write amplification ×
-     * N).
+     * принятием провайдером. Это не квитанция доставки устройству. Одна Mongo-operation на fanout
+     * вместо N save'ов (write amplification × N).
      */
     private void touchLastSeen(List<String> endpoints) {
         if (endpoints.isEmpty()) {

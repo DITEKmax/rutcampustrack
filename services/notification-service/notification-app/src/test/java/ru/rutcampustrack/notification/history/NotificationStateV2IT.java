@@ -3,29 +3,23 @@ package ru.rutcampustrack.notification.history;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoClients;
 import com.sun.net.httpserver.HttpServer;
-import java.net.InetSocketAddress;
-import java.security.KeyPairGenerator;
-import java.security.SecureRandom;
-import java.security.Security;
-import java.security.spec.ECGenParameterSpec;
-import java.time.*;
-import java.util.*;
-import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
+
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
+
 import nl.martijndwars.webpush.PushService;
 import nl.martijndwars.webpush.Utils;
+
 import org.bouncycastle.jce.interfaces.ECPublicKey;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bson.Document;
 import org.junit.jupiter.api.*;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.SimpleMongoClientDatabaseFactory;
 import org.springframework.data.mongodb.core.query.Query;
 import org.testcontainers.containers.MongoDBContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
+
 import ru.rutcampustrack.notification.contract.dto.history.NotificationInboxDto;
 import ru.rutcampustrack.notification.contract.dto.preferences.NotificationPreferencesV2Dto;
 import ru.rutcampustrack.notification.contract.enums.NotificationType;
@@ -35,12 +29,26 @@ import ru.rutcampustrack.notification.push.NotificationPushIntentStore;
 import ru.rutcampustrack.notification.push.PushSubscriptionDocument;
 import ru.rutcampustrack.notification.push.PushSubscriptionRepository;
 import ru.rutcampustrack.notification.push.WebPushDeliveryService;
+import ru.rutcampustrack.notification.push.WebPushOutcomeMetrics;
 import ru.rutcampustrack.notification.security.RequestContext;
 
+import java.net.InetSocketAddress;
+import java.net.URI;
+import java.security.KeyPairGenerator;
+import java.security.SecureRandom;
+import java.security.Security;
+import java.security.spec.ECGenParameterSpec;
+import java.time.*;
+import java.util.*;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+
 /** Real Mongo atomic updates and independent role views; no provider/server/foreign data. */
-@Testcontainers
 class NotificationStateV2IT {
-    @Container static final MongoDBContainer MONGO = new MongoDBContainer("mongo:7");
+    static MongoDBContainer container;
+    static MongoClient mongoClient;
+    static final String DATABASE = "rct_push_1109_" + UUID.randomUUID().toString().replace("-", "");
     MongoTemplate mongo;
     NotificationInboxService inbox;
     NotificationPreferencesV2Service preferences;
@@ -49,12 +57,40 @@ class NotificationStateV2IT {
     static final Instant SENT = Instant.parse("2026-10-09T10:00:00Z");
     static final Instant NOW = SENT.plusSeconds(3600);
 
+    @BeforeAll
+    static void startMongo() {
+        String mongoUri = System.getenv("RCT_PUSH_MONGO_URI");
+        if (mongoUri == null || mongoUri.isBlank()) {
+            // Default CI path remains a real Testcontainers replica set.
+            container = new MongoDBContainer("mongo:7");
+            container.start();
+            mongoUri = container.getReplicaSetUrl();
+        } else {
+            URI uri = URI.create(mongoUri);
+            if (!"mongodb".equals(uri.getScheme())
+                    || uri.getUserInfo() != null
+                    || uri.getHost() == null
+                    || !List.of("127.0.0.1", "localhost", "[::1]", "::1").contains(uri.getHost())
+                    || uri.getPort() != 27293
+                    || (uri.getPath() != null
+                            && !uri.getPath().isEmpty()
+                            && !"/".equals(uri.getPath())))
+                throw new IllegalArgumentException(
+                        "Push verification requires owned loopback Mongo port 27293");
+        }
+        // An unavailable supplied daemon fails the tests; this is never a skip/fallback.
+        mongoClient = MongoClients.create(mongoUri);
+    }
+
+    @AfterAll
+    static void stopMongo() {
+        if (mongoClient != null) mongoClient.close();
+        if (container != null) container.stop();
+    }
+
     @BeforeEach
     void setup() {
-        mongo =
-                new MongoTemplate(
-                        new SimpleMongoClientDatabaseFactory(
-                                MONGO.getReplicaSetUrl("notification_v2_owned_test")));
+        mongo = new MongoTemplate(mongoClient, DATABASE);
         mongo.remove(new Query(), NotificationHistoryDocument.class);
         mongo.remove(new Query(), "user_notification_preferences");
         mongo.remove(new Query(), "telegram_notification_preferences");
@@ -669,7 +705,13 @@ class NotificationStateV2IT {
                 .thenThrow(new IllegalStateException("synthetic authority unavailable"));
         var dispatcher =
                 new ru.rutcampustrack.notification.push.NotificationPushIntentDispatcher(
-                        intents, audience, prefs, subs, provider, new NotificationCatalog());
+                        intents,
+                        audience,
+                        prefs,
+                        subs,
+                        provider,
+                        new NotificationCatalog(),
+                        new WebPushOutcomeMetrics(new SimpleMeterRegistry()));
         dispatcher.dispatchOne();
         verifyNoInteractions(provider);
         assertThat(
@@ -818,6 +860,8 @@ class NotificationStateV2IT {
         try {
             server.start();
             var clock = new DeliveryClock(Instant.now());
+            var metricsRegistry = new SimpleMeterRegistry();
+            var outcomeMetrics = new WebPushOutcomeMetrics(metricsRegistry);
             var intents = new NotificationPushIntentStore(mongo, clock);
             var client = mock(NotificationAudienceClient.class);
             var audience =
@@ -860,7 +904,8 @@ class NotificationStateV2IT {
                             pushService,
                             new com.fasterxml.jackson.databind.ObjectMapper(),
                             mongo,
-                            clock);
+                            clock,
+                            outcomeMetrics);
             var guard =
                     new ru.rutcampustrack.shared.events.IdempotencyGuard(
                             new ru.rutcampustrack.shared.outbox.mongo.MongoIdempotencyStore(mongo));
@@ -913,7 +958,8 @@ class NotificationStateV2IT {
                             prefs,
                             subscriptions,
                             provider,
-                            new NotificationCatalog());
+                            new NotificationCatalog(),
+                            outcomeMetrics);
             dispatcher.dispatchOne();
             assertThat(requests.get()).isEqualTo(1);
             assertThat(handlerFailed.get()).isFalse();
@@ -927,6 +973,20 @@ class NotificationStateV2IT {
             assertThat(pending.getString("error_kind")).isEqualTo("ProviderRejected503");
             assertThat(pending.getList("delivered", String.class)).isEmpty();
             assertThat(pending.containsKey("active_key")).isFalse();
+            assertThat(
+                            metricsRegistry
+                                    .get("notification.webpush.provider.responses")
+                                    .tag("outcome", "retryable")
+                                    .counter()
+                                    .count())
+                    .isEqualTo(1);
+            assertThat(
+                            metricsRegistry
+                                    .get("notification.webpush.provider.responses")
+                                    .tag("outcome", "accepted_by_provider")
+                                    .counter()
+                                    .count())
+                    .isZero();
             var failedPage = deliveryInbox.list(student, 10, null, false);
             assertThat(failedPage.items()).hasSize(1);
             assertThat(failedPage.items().getFirst().equals(unread)).isTrue();
@@ -950,6 +1010,20 @@ class NotificationStateV2IT {
             assertThat(completed.getInteger("attempts")).isEqualTo(2);
             assertThat(completed.getList("delivered", String.class))
                     .containsExactly("11:student-sub");
+            assertThat(
+                            metricsRegistry
+                                    .get("notification.webpush.provider.responses")
+                                    .tag("outcome", "accepted_by_provider")
+                                    .counter()
+                                    .count())
+                    .isEqualTo(1);
+            assertThat(
+                            metricsRegistry
+                                    .get("notification.webpush.dispatch.outcomes")
+                                    .tag("outcome", "uncertain")
+                                    .counter()
+                                    .count())
+                    .isZero();
             var claims =
                     mongo.findAll(
                             Document.class,

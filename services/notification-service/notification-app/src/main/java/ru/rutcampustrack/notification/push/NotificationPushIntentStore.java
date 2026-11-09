@@ -1,8 +1,5 @@
 package ru.rutcampustrack.notification.push;
 
-import java.time.Clock;
-import java.time.Instant;
-import java.util.*;
 import org.bson.Document;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.FindAndModifyOptions;
@@ -11,8 +8,13 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Repository;
+
 import ru.rutcampustrack.notification.history.NotificationAudienceClient;
 import ru.rutcampustrack.notification.history.NotificationPayloadSnapshot;
+
+import java.time.Clock;
+import java.time.Instant;
+import java.util.*;
 
 /**
  * Owned durable external intent, committed in the event transaction; provider uncertainty is never
@@ -135,6 +137,9 @@ public class NotificationPushIntentStore {
                 == 1;
     }
 
+    /**
+     * Historical delivered field means processed terminal ACK keys, including expired endpoints.
+     */
     public void acknowledge(Document job, String key) {
         if (mongo.updateFirst(
                                 owned(job),

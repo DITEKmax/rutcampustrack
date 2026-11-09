@@ -1,13 +1,16 @@
 package ru.rutcampustrack.notification.push;
 
-import java.time.Instant;
-import java.util.*;
 import lombok.extern.slf4j.Slf4j;
+
 import org.bson.Document;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+
 import ru.rutcampustrack.notification.history.*;
 import ru.rutcampustrack.notification.preferences.NotificationPreferencesService;
+
+import java.time.Instant;
+import java.util.*;
 
 /**
  * A pending job survives authority outages. Current grants/preferences are checked before any
@@ -22,6 +25,7 @@ public class NotificationPushIntentDispatcher {
     private final PushSubscriptionRepository subscriptions;
     private final WebPushDeliveryService delivery;
     private final NotificationCatalog catalog;
+    private final WebPushOutcomeMetrics metrics;
 
     public NotificationPushIntentDispatcher(
             NotificationPushIntentStore store,
@@ -29,13 +33,15 @@ public class NotificationPushIntentDispatcher {
             NotificationPreferencesService preferences,
             PushSubscriptionRepository subscriptions,
             WebPushDeliveryService delivery,
-            NotificationCatalog catalog) {
+            NotificationCatalog catalog,
+            WebPushOutcomeMetrics metrics) {
         this.store = store;
         this.audience = audience;
         this.preferences = preferences;
         this.subscriptions = subscriptions;
         this.delivery = delivery;
         this.catalog = catalog;
+        this.metrics = metrics;
     }
 
     @Scheduled(fixedDelay = 1000)
@@ -58,18 +64,27 @@ public class NotificationPushIntentDispatcher {
             String eventType = (String) envelope.get("event_type");
             var type = NotificationCatalog.eventType(eventType, payload).orElseThrow();
             Map<Long, Set<String>> original = NotificationAudienceService.decode(job);
-            Set<String> delivered = new HashSet<>(job.getList("delivered", String.class));
-            for (PushSubscriptionDocument sub :
-                    subscriptions.findAllByUserIdIn(original.keySet())) {
+            // Historical field name: these are processed terminal ACK keys, including 404/410.
+            Set<String> processed = new HashSet<>(job.getList("delivered", String.class));
+            var candidates = subscriptions.findAllByUserIdIn(original.keySet());
+            if (candidates.isEmpty())
+                metrics.dispatch(WebPushOutcomeMetrics.DispatchOutcome.SKIPPED_NO_SUBSCRIPTIONS);
+            for (PushSubscriptionDocument sub : candidates) {
                 if (sub.getUserId() == null
                         || sub.getId() == null
                         || !original.containsKey(sub.getUserId()))
                     throw new IllegalStateException("Delivery subscription recipient is invalid");
                 String key = sub.getUserId() + ":" + sub.getId();
-                if (delivered.contains(key)) continue;
-                if (!preferences.isEnabledForUser(sub.getUserId(), eventType, payload)) continue;
+                if (processed.contains(key)) continue;
+                if (!preferences.isEnabledForUser(sub.getUserId(), eventType, payload)) {
+                    metrics.dispatch(WebPushOutcomeMetrics.DispatchOutcome.SKIPPED_PREFERENCES);
+                    continue;
+                }
                 Map<Long, Set<String>> current = audience.current(envelope, original);
-                if (!current.containsKey(sub.getUserId())) continue;
+                if (!current.containsKey(sub.getUserId())) {
+                    metrics.dispatch(WebPushOutcomeMetrics.DispatchOutcome.SKIPPED_AUDIENCE);
+                    continue;
+                }
                 // The stored is_headman/group flag is never an authority for role selection.
                 Set<String> roles = current.get(sub.getUserId());
                 String role =
@@ -102,7 +117,7 @@ public class NotificationPushIntentDispatcher {
                                 sub, eventType, catalog.present(document, role));
                 if ((status >= 200 && status < 300) || status == 404 || status == 410) {
                     store.acknowledge(job, key);
-                    delivered.add(key);
+                    processed.add(key);
                     providerAttempt = false;
                 } else {
                     // An explicit rejected response is safe to retry; transport ambiguity is
@@ -113,8 +128,15 @@ public class NotificationPushIntentDispatcher {
             }
             store.complete(job);
         } catch (Exception error) {
-            if (providerAttempt) store.uncertain(job, error.getClass().getSimpleName());
-            else store.retry(job, error.getClass().getSimpleName());
+            if (providerAttempt) {
+                // This includes an observed response followed by an unpersisted ACK. The provider
+                // response counter remains factual; the durable intent still needs reconciliation.
+                metrics.dispatch(WebPushOutcomeMetrics.DispatchOutcome.UNCERTAIN);
+                store.uncertain(job, error.getClass().getSimpleName());
+            } else {
+                metrics.dispatch(WebPushOutcomeMetrics.DispatchOutcome.RETRYABLE);
+                store.retry(job, error.getClass().getSimpleName());
+            }
         }
     }
 }

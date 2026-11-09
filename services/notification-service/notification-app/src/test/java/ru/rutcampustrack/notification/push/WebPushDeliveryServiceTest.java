@@ -4,25 +4,37 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.time.*;
-import java.util.*;
+
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
+
 import nl.martijndwars.webpush.*;
+
 import org.apache.http.HttpVersion;
 import org.apache.http.message.BasicHttpResponse;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import org.springframework.data.mongodb.core.MongoTemplate;
+
 import ru.rutcampustrack.notification.contract.dto.history.NotificationInboxDto;
 import ru.rutcampustrack.notification.contract.enums.NotificationType;
 import ru.rutcampustrack.notification.history.*;
+
+import java.time.*;
+import java.util.*;
 
 class WebPushDeliveryServiceTest {
     final PushSubscriptionRepository repository = mock(PushSubscriptionRepository.class);
     final PushService provider = mock(PushService.class);
     final MongoTemplate mongo = mock(MongoTemplate.class);
     final ObjectMapper mapper = new ObjectMapper();
+    final SimpleMeterRegistry registry = new SimpleMeterRegistry();
+    final WebPushOutcomeMetrics metrics = new WebPushOutcomeMetrics(registry);
     final WebPushDeliveryService service =
-            spy(new WebPushDeliveryService(repository, provider, mapper, mongo, Clock.systemUTC()));
+            spy(
+                    new WebPushDeliveryService(
+                            repository, provider, mapper, mongo, Clock.systemUTC(), metrics));
     final PushSubscriptionDocument sub =
             PushSubscriptionDocument.builder()
                     .id("teacher-sub")
@@ -94,10 +106,14 @@ class WebPushDeliveryServiceTest {
                                 "source", Map.of("room", "А-214"),
                                 "target",
                                         Map.of(
-                                                "lesson_id", 51L,
-                                                "subject_name", "Математика".repeat(80),
-                                                "lesson_type", "practice",
-                                                "room", "А-508")));
+                                                "lesson_id",
+                                                51L,
+                                                "subject_name",
+                                                "Математика".repeat(80),
+                                                "lesson_type",
+                                                "practice",
+                                                "room",
+                                                "А-508")));
 
         assertThat(service.sendToSubscription(sub, "lesson.updated", changedRoom)).isEqualTo(201);
 
@@ -124,8 +140,77 @@ class WebPushDeliveryServiceTest {
         verifyNoInteractions(mongo);
     }
 
+    @ParameterizedTest
+    @ValueSource(ints = {200, 201, 204, 404, 410, 429, 500, 503, 403})
+    void providerOutcomeDistinguishesAcceptanceExpirationAndExplicitRejection(int status)
+            throws Exception {
+        Notification notification = mock(Notification.class);
+        doReturn(notification).when(service).createNotification(eq(sub), any(byte[].class));
+        when(provider.send(notification, Encoding.AES128GCM))
+                .thenReturn(new BasicHttpResponse(HttpVersion.HTTP_1_1, status, "Synthetic"));
+
+        assertThat(service.sendToSubscription(sub, "lesson.cancelled", item())).isEqualTo(status);
+
+        String outcome =
+                status >= 200 && status < 300
+                        ? "accepted_by_provider"
+                        : status == 404 || status == 410 ? "expired_subscription" : "retryable";
+        assertThat(
+                        registry.get("notification.webpush.provider.responses")
+                                .tag("outcome", outcome)
+                                .counter()
+                                .count())
+                .isEqualTo(1);
+        assertThat(
+                        registry.getMeters().stream()
+                                .filter(
+                                        m ->
+                                                m.getId()
+                                                        .getName()
+                                                        .equals(
+                                                                "notification.webpush.provider.responses"))
+                                .mapToDouble(
+                                        m -> ((io.micrometer.core.instrument.Counter) m).count())
+                                .sum())
+                .isEqualTo(1);
+        if (status == 404 || status == 410) verify(repository).deleteByEndpoint(sub.getEndpoint());
+        else verifyNoInteractions(repository);
+        if (status >= 200 && status < 300)
+            verify(mongo).updateMulti(any(), any(), eq(PushSubscriptionDocument.class));
+        else verifyNoInteractions(mongo);
+        assertThat(registry.getMeters())
+                .allSatisfy(
+                        m ->
+                                assertThat(m.getId().getTags())
+                                        .hasSize(1)
+                                        .allSatisfy(
+                                                tag ->
+                                                        assertThat(tag.getKey())
+                                                                .isEqualTo("outcome")));
+    }
+
+    @Test
+    void providerAcceptedObservationSurvivesLastSeenWriteFailure() throws Exception {
+        Notification notification = mock(Notification.class);
+        doReturn(notification).when(service).createNotification(eq(sub), any(byte[].class));
+        when(provider.send(notification, Encoding.AES128GCM))
+                .thenReturn(new BasicHttpResponse(HttpVersion.HTTP_1_1, 201, "Created"));
+        when(mongo.updateMulti(any(), any(), eq(PushSubscriptionDocument.class)))
+                .thenThrow(new IllegalStateException("synthetic local persistence failure"));
+
+        assertThatThrownBy(() -> service.sendToSubscription(sub, "lesson.cancelled", item()))
+                .isInstanceOf(IllegalStateException.class);
+        assertThat(
+                        registry.get("notification.webpush.provider.responses")
+                                .tag("outcome", "accepted_by_provider")
+                                .counter()
+                                .count())
+                .isEqualTo(1);
+    }
+
     private NotificationInboxDto.Item item() {
-        return item(NotificationType.LESSON_CANCELLED,
+        return item(
+                NotificationType.LESSON_CANCELLED,
                 Map.of("lesson_id", 51L, "lesson_date", "2026-10-10"));
     }
 

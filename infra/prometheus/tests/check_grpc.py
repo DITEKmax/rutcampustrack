@@ -91,7 +91,7 @@ def unit():
     print("gRPC aggregation, identity/filter, error-rate, idle NaN and warm-up: PASS")
 
 
-def runtime(evidence):
+def runtime(evidence, reuse_seed=None):
     """Replay24h at2415 raw buckets/69 bounds and the unchanged500k cap.
 
     Recordings are offline analytic fixtures for a uniform histogram, not a
@@ -100,55 +100,67 @@ def runtime(evidence):
     """
     evidence = evidence.resolve()
     evidence.mkdir(parents=True, exist_ok=False)
-    assert shutil.disk_usage(evidence).free > 5 * 1024**3, "need5GiB for owned synthetic seed"
-    end = int(time.time()) // 30 * 30 - 3 * 3600
-    start = end - 86400
-    seed = evidence / "grpc.openmetrics"
-    db = evidence / "tsdb"
     env = dict(os.environ, GOMEMLIMIT="192MiB", GOMAXPROCS="2")
-    records = []
-    for i in range(35):
-        job = ["academic-service", "attendance-service", "schedule-service"][i % 3]
-        records.append('job="' + job + '",instance="caller' + str(i // 5) + ':9091",environment="synthetic",'
-                       'service="' + job + '",grpc_service="Target' + str(i % 2) + '",method="Method' + str(i) + '"')
-    seed_samples = 0
-    with seed.open("w", encoding="utf-8", newline="\n") as output:
-        def write(metric, labels, step, value):
-            nonlocal seed_samples
-            line = metric + "{" + labels + "} "
-            for timestamp in range(start - 300, end + 1, step):
-                output.write(line + format(value(timestamp - start + 300), ".12g") + " " + str(timestamp) + "\n")
-                seed_samples += 1
+    if reuse_seed:
+        db = reuse_seed.resolve()
+        assert db.is_relative_to(ROOT / ".agent/evidence"), "reuse only this checkout's owned seed"
+        metadata = [json.loads(p.read_text()) for p in db.glob("*/meta.json")]
+        assert metadata, "owned seed has no blocks"
+        end = (max(m["maxTime"] for m in metadata) - 1) // 1000
+        start = end - 86400
+        assert min(m["minTime"] for m in metadata) <= (start - 300) * 1000
+        seed_samples = json.loads((db.parent / "result.json").read_text())["seed_samples"]
+    else:
+        assert shutil.disk_usage(evidence).free > 5 * 1024**3, "need5GiB for owned synthetic seed"
+        end = int(time.time()) // 30 * 30 - 3 * 3600
+        start = end - 86400
+        seed = evidence / "grpc.openmetrics"
+        db = evidence / "tsdb"
+        env = dict(os.environ, GOMEMLIMIT="192MiB", GOMAXPROCS="2")
+        records = []
+        for i in range(35):
+            job = ["academic-service", "attendance-service", "schedule-service"][i % 3]
+            records.append('job="' + job + '",instance="caller' + str(i // 5) + ':9091",environment="synthetic",'
+                           'service="' + job + '",grpc_service="Target' + str(i % 2) + '",method="Method' + str(i) + '"')
+        seed_samples = 0
+        with seed.open("w", encoding="utf-8", newline="\n") as output:
+            def write(metric, labels, step, value):
+                nonlocal seed_samples
+                line = metric + "{" + labels + "} "
+                for timestamp in range(start - 300, end + 1, step):
+                    output.write(line + format(value(timestamp - start + 300), ".12g") + " " + str(timestamp) + "\n")
+                    seed_samples += 1
 
-        output.write("# TYPE grpc_client_duration_seconds histogram\n")
-        for i, labels in enumerate(records):
-            status = "UNAVAILABLE" if i % 5 == 0 else "OK"
-            for bucket in range(1, 70):
-                edge = format(bucket * .005, ".3f") if bucket < 69 else "+Inf"
-                fraction = min(bucket / 68, 1)
-                write("grpc_client_duration_seconds_bucket", labels + ',status="' + status + '",le="' + edge + '"',
-                      15, lambda seconds, f=fraction: seconds * f)
-            write("grpc_client_duration_seconds_count", labels + ',status="' + status + '"', 15, lambda seconds: seconds)
-        output.write("# TYPE rct_grpc:client_duration_seconds:quantile5m gauge\n")
-        for labels in records:
-            for q in ["0.5", "0.95", "0.99"]:
-                write("rct_grpc:client_duration_seconds:quantile5m", labels + ',quantile="' + q + '"',
-                      30, lambda seconds, q=q: .34 * float(q))
-        output.write("# TYPE rct_grpc:client_requests:rate5m gauge\n")
-        for i, labels in enumerate(records):
-            write("rct_grpc:client_requests:rate5m", labels + ',status="' + ("UNAVAILABLE" if i % 5 == 0 else "OK") + '"',
-                  30, lambda seconds: 1)
-        output.write("# EOF\n")
-    with (evidence / "seed.log").open("w") as log:
-        subprocess.run([os.environ.get("PROMTOOL", "promtool"), "tsdb", "create-blocks-from", "openmetrics", "--quiet",
-                        str(seed), str(db)], stdout=log, stderr=log, env=env, check=True, timeout=300)
-    # Retain the TSDB and logs; remove only this task's verified large text seed.
-    assert seed.parent == evidence and seed.name == "grpc.openmetrics"
-    seed.unlink()
+            output.write("# TYPE grpc_client_duration_seconds histogram\n")
+            for i, labels in enumerate(records):
+                status = "UNAVAILABLE" if i % 5 == 0 else "OK"
+                for bucket in range(1, 70):
+                    edge = format(bucket * .005, ".3f") if bucket < 69 else "+Inf"
+                    fraction = min(bucket / 68, 1)
+                    write("grpc_client_duration_seconds_bucket", labels + ',status="' + status + '",le="' + edge + '"',
+                          15, lambda seconds, f=fraction: seconds * f)
+                write("grpc_client_duration_seconds_count", labels + ',status="' + status + '"', 15, lambda seconds: seconds)
+            output.write("# TYPE rct_grpc:client_duration_seconds:quantile5m gauge\n")
+            for labels in records:
+                for q in ["0.5", "0.95", "0.99"]:
+                    write("rct_grpc:client_duration_seconds:quantile5m", labels + ',quantile="' + q + '"',
+                          30, lambda seconds, q=q: .34 * float(q))
+            output.write("# TYPE rct_grpc:client_requests:rate5m gauge\n")
+            for i, labels in enumerate(records):
+                write("rct_grpc:client_requests:rate5m", labels + ',status="' + ("UNAVAILABLE" if i % 5 == 0 else "OK") + '"',
+                      30, lambda seconds: 1)
+            output.write("# EOF\n")
+        with (evidence / "seed.log").open("w") as log:
+            subprocess.run([os.environ.get("PROMTOOL", "promtool"), "tsdb", "create-blocks-from", "openmetrics", "--quiet",
+                            str(seed), str(db)], stdout=log, stderr=log, env=env, check=True, timeout=300)
+        # Retain the TSDB and logs; remove only this task's verified large text seed.
+        assert seed.parent == evidence and seed.name == "grpc.openmetrics"
+        seed.unlink()
     config = evidence / "prometheus.yml"
     config.write_text(yaml.safe_dump({"global": {"scrape_interval": "15s"}, "scrape_configs": []}))
     result = {"raw_bucket_series": 2415, "bounds": 69, "scrape_seconds": 15,
               "record_seconds": 30, "seed_samples": seed_samples, "max_samples": 500000,
+              "seed_db": str(db), "reused_owned_seed": bool(reuse_seed), "start": start, "end": end,
               "qualification": "Offline analytic recordings; raw equivalence + production rule unit tests, no production history backfill",
               "queries": []}
     with (evidence / "prometheus.log").open("w") as log:
@@ -170,7 +182,8 @@ def runtime(evidence):
                     with urllib.request.urlopen("http://127.0.0.1:19094/-/ready", timeout=2) as ready:
                         assert ready.status == 200
                     break
-                except (urllib.error.URLError, TimeoutError):
+                except (urllib.error.URLError, TimeoutError) as error:
+                    result["last_readiness_error"] = repr(error)
                     time.sleep(.5)
             else:
                 raise AssertionError("owned Prometheus readiness timeout")
@@ -232,7 +245,10 @@ def runtime(evidence):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--runtime", type=Path, help="explicit new owned evidence directory; requires runtime lease")
+    parser.add_argument("--reuse-seed", type=Path, help="reuse a previously imported TSDB owned by this checkout")
     args = parser.parse_args()
+    if args.reuse_seed and not args.runtime:
+        parser.error("--reuse-seed requires a new --runtime evidence directory")
     unit()
     if args.runtime:
-        runtime(args.runtime)
+        runtime(args.runtime, args.reuse_seed)

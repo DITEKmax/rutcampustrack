@@ -3139,7 +3139,7 @@
           },
           "completionReason" : {
             "type" : "string",
-            "enum" : [ "QUALITY_REACHED", "BUDGET_EXPIRED", "PERMISSION_DENIED", "POSITION_UNAVAILABLE", "TIMEOUT", "UNSUPPORTED", "APP_DISABLED" ]
+            "enum" : [ "QUALITY_REACHED", "BUDGET_EXPIRED", "PERMISSION_DENIED", "POSITION_UNAVAILABLE", "TIMEOUT", "UNSUPPORTED", "APP_DISABLED", "WITHIN_GEOFENCE", "ATTEMPTS_EXHAUSTED" ]
           }
         },
         "nullable" : true
@@ -3314,7 +3314,7 @@
           },
           "outcome" : {
             "type" : "string",
-            "enum" : [ "QUALITY_REACHED", "BUDGET_EXPIRED", "PERMISSION_DENIED", "POSITION_UNAVAILABLE", "TIMEOUT", "UNSUPPORTED", "APP_DISABLED", "CANCELLED" ]
+            "enum" : [ "QUALITY_REACHED", "BUDGET_EXPIRED", "PERMISSION_DENIED", "POSITION_UNAVAILABLE", "TIMEOUT", "UNSUPPORTED", "APP_DISABLED", "CANCELLED", "WITHIN_GEOFENCE", "ATTEMPTS_EXHAUSTED" ]
           },
           "durationMs" : {
             "maximum" : 60000,
@@ -4049,6 +4049,32 @@
           }
         }
       },
+      "CheckinGeofence" : {
+        "required" : [ "latitude", "longitude", "radiusMeters" ],
+        "type" : "object",
+        "properties" : {
+          "latitude" : {
+            "maximum" : 90,
+            "minimum" : -90,
+            "type" : "number",
+            "format" : "double"
+          },
+          "longitude" : {
+            "maximum" : 180,
+            "minimum" : -180,
+            "type" : "number",
+            "format" : "double"
+          },
+          "radiusMeters" : {
+            "minimum" : 0,
+            "exclusiveMinimum" : true,
+            "type" : "number",
+            "format" : "double"
+          }
+        },
+        "description" : "Advisory current server geofence; final admission remains server-authoritative",
+        "nullable" : true
+      },
       "LessonSchedule" : {
         "required" : [ "date", "endsAt", "id", "lessonNumber", "room", "startsAt", "status", "subject" ],
         "type" : "object",
@@ -4126,6 +4152,9 @@
             "additionalProperties" : {
               "$ref" : "#/components/schemas/Link"
             }
+          },
+          "checkinGeofence" : {
+            "$ref" : "#/components/schemas/CheckinGeofence"
           }
         }
       },

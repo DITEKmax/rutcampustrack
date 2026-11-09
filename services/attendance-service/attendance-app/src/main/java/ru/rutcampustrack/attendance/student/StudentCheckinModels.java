@@ -78,7 +78,9 @@ public final class StudentCheckinModels {
         POSITION_UNAVAILABLE,
         TIMEOUT,
         UNSUPPORTED,
-        APP_DISABLED
+        APP_DISABLED,
+        WITHIN_GEOFENCE,
+        ATTEMPTS_EXHAUSTED
     }
 
     public record Diagnostics(

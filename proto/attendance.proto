@@ -144,6 +144,14 @@ message StudentAttendanceSnapshotResponse {
   // One entry per requested lesson, including lessons without an attendance mark.
   repeated StudentAttendanceEntry entries = 1;
   string server_now = 2;
+  // Advisory copy of the configuration currently used by Attendance; absent on read failure.
+  StudentCheckinGeofence checkin_geofence = 3;
+}
+
+message StudentCheckinGeofence {
+  double latitude = 1;
+  double longitude = 2;
+  double radius_meters = 3;
 }
 
 // Server-owned student attendance/statistics read model.  The request carries
@@ -382,6 +390,8 @@ enum GeoCompletionReason {
   GEO_COMPLETION_REASON_TIMEOUT = 5;
   GEO_COMPLETION_REASON_UNSUPPORTED = 6;
   GEO_COMPLETION_REASON_APP_DISABLED = 7;
+  GEO_COMPLETION_REASON_WITHIN_GEOFENCE = 8;
+  GEO_COMPLETION_REASON_ATTEMPTS_EXHAUSTED = 9;
 }
 
 message Coordinates {

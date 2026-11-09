@@ -1,13 +1,16 @@
 package ru.rutcampustrack.attendance.geofence;
 
 import jakarta.annotation.PostConstruct;
-import java.time.Duration;
-import java.time.Instant;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+
 import ru.rutcampustrack.academic.grpc.GeofenceResponse;
 import ru.rutcampustrack.attendance.grpc.AcademicGrpcClient;
+
+import java.time.Duration;
+import java.time.Instant;
 
 /**
  * Service for campus geofence validation. Follows SemesterCacheService pattern: volatile cache with
@@ -58,6 +61,25 @@ public class GeofenceService {
     }
 
     public record Decision(boolean accepted, Double distanceMeters, Double radiusMeters) {}
+
+    public record Configuration(double latitude, double longitude, double radiusMeters) {}
+
+    /**
+     * The same cached policy used by evaluate; unavailable/invalid policy is omitted by readers.
+     */
+    public Configuration currentConfiguration() {
+        GeofenceData data = getOrRefresh();
+        if (!Double.isFinite(data.lat())
+                || data.lat() < -90
+                || data.lat() > 90
+                || !Double.isFinite(data.lng())
+                || data.lng() < -180
+                || data.lng() > 180
+                || !Double.isFinite(data.radiusMeters())
+                || data.radiusMeters() <= 0)
+            throw new IllegalStateException("Campus geofence configuration is invalid");
+        return new Configuration(data.lat(), data.lng(), data.radiusMeters());
+    }
 
     /** Forces a refresh of the cached geofence from Academic Service via gRPC. */
     public void refresh() {

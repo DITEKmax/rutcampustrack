@@ -303,7 +303,28 @@ public final class StudentApiModels {
             String timeZone,
             Instant serverNow,
             List<TodayLessonResponse> lessons,
-            @JsonProperty("_links") Map<String, Link> links) {}
+            @JsonProperty("_links") Map<String, Link> links,
+            @Schema(nullable = true) CheckinGeofence checkinGeofence) {
+        public TodayResponse(
+                LocalDate date,
+                String timeZone,
+                Instant serverNow,
+                List<TodayLessonResponse> lessons,
+                Map<String, Link> links) {
+            this(date, timeZone, serverNow, lessons, links, null);
+        }
+    }
+
+    @Schema(
+            name = "CheckinGeofence",
+            requiredProperties = {"latitude", "longitude", "radiusMeters"},
+            description =
+                    "Advisory current server geofence; final admission remains"
+                            + " server-authoritative")
+    public record CheckinGeofence(
+            @Schema(minimum = "-90", maximum = "90") double latitude,
+            @Schema(minimum = "-180", maximum = "180") double longitude,
+            @Schema(minimum = "0", exclusiveMinimum = true) double radiusMeters) {}
 
     @Schema(
             name = "StudentSemesterSchedule",
@@ -725,7 +746,9 @@ public final class StudentApiModels {
         POSITION_UNAVAILABLE,
         TIMEOUT,
         UNSUPPORTED,
-        APP_DISABLED
+        APP_DISABLED,
+        WITHIN_GEOFENCE,
+        ATTEMPTS_EXHAUSTED
     }
 
     public enum CheckinAcquisitionOutcome {
@@ -736,7 +759,9 @@ public final class StudentApiModels {
         TIMEOUT,
         UNSUPPORTED,
         APP_DISABLED,
-        CANCELLED
+        CANCELLED,
+        WITHIN_GEOFENCE,
+        ATTEMPTS_EXHAUSTED
     }
 
     @Schema(

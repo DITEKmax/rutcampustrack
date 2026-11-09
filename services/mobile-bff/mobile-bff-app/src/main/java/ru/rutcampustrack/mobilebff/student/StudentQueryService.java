@@ -138,7 +138,23 @@ public class StudentQueryService {
                 MOSCOW.getId(),
                 serverNow,
                 result,
-                links("self", "/api/v1/student/today", "schedule", "/api/v1/student/schedule"));
+                links("self", "/api/v1/student/today", "schedule", "/api/v1/student/schedule"),
+                checkinGeofence(snapshot));
+    }
+
+    private static CheckinGeofence checkinGeofence(StudentAttendanceSnapshotResponse snapshot) {
+        if (!snapshot.hasCheckinGeofence()) return null;
+        var policy = snapshot.getCheckinGeofence();
+        if (!Double.isFinite(policy.getLatitude())
+                || policy.getLatitude() < -90
+                || policy.getLatitude() > 90
+                || !Double.isFinite(policy.getLongitude())
+                || policy.getLongitude() < -180
+                || policy.getLongitude() > 180
+                || !Double.isFinite(policy.getRadiusMeters())
+                || policy.getRadiusMeters() <= 0) return null;
+        return new CheckinGeofence(
+                policy.getLatitude(), policy.getLongitude(), policy.getRadiusMeters());
     }
 
     public ScheduleResponse schedule(long requestedSemesterId) {
@@ -715,10 +731,23 @@ public class StudentQueryService {
                 source.hasReasonText() ? source.getReasonText() : null,
                 source.hasComment() ? source.getComment() : null,
                 source.hasCancellationReason() ? source.getCancellationReason() : null,
-                source.getDocumentsList().stream().map(file -> new StudentAttendanceDocument(
-                        file.getId(), file.getName(), file.getContentType(), file.getSize(), file.getState(),
-                        file.hasExpiresAt() ? Instant.ofEpochSecond(file.getExpiresAt().getSeconds(), file.getExpiresAt().getNanos()) : null,
-                        file.getMarkRevision(), Long.toString(file.getLessonId()))).toList());
+                source.getDocumentsList().stream()
+                        .map(
+                                file ->
+                                        new StudentAttendanceDocument(
+                                                file.getId(),
+                                                file.getName(),
+                                                file.getContentType(),
+                                                file.getSize(),
+                                                file.getState(),
+                                                file.hasExpiresAt()
+                                                        ? Instant.ofEpochSecond(
+                                                                file.getExpiresAt().getSeconds(),
+                                                                file.getExpiresAt().getNanos())
+                                                        : null,
+                                                file.getMarkRevision(),
+                                                Long.toString(file.getLessonId())))
+                        .toList());
     }
 
     private static StudentAttendanceGraph graph(

@@ -1,6 +1,6 @@
 /* eslint-disable */
 // Generated from docs/openapi/mobile-bff.json. Do not edit.
-// Contract: JS-STUDENT-01-r1; SHA-256: ef95efd31212bf56a78861cfde78bd0d3ad70900b5eb7bf463e7694271540ac7
+// Contract: JS-STUDENT-01-r1; SHA-256: 472528bad4a771fab98707f148e4d70d8ce06560ed17c0a342c12002a6e6188d
 
 export interface paths {
     "/api/v1/map/buildings/{buildingId}/floors/{floorId}/opens": {
@@ -751,7 +751,7 @@ export interface components {
             /** Format: int32 */
             durationMs?: number;
             /** @enum {string} */
-            outcome: "QUALITY_REACHED" | "BUDGET_EXPIRED" | "PERMISSION_DENIED" | "POSITION_UNAVAILABLE" | "TIMEOUT" | "UNSUPPORTED" | "APP_DISABLED" | "CANCELLED";
+            outcome: "QUALITY_REACHED" | "BUDGET_EXPIRED" | "PERMISSION_DENIED" | "POSITION_UNAVAILABLE" | "TIMEOUT" | "UNSUPPORTED" | "APP_DISABLED" | "CANCELLED" | "WITHIN_GEOFENCE" | "ATTEMPTS_EXHAUSTED";
             /** Format: int32 */
             sampleCount?: number;
             /** @enum {string} */
@@ -763,7 +763,7 @@ export interface components {
             /** Format: int32 */
             acquisitionDurationMs?: number;
             /** @enum {string} */
-            completionReason?: "QUALITY_REACHED" | "BUDGET_EXPIRED" | "PERMISSION_DENIED" | "POSITION_UNAVAILABLE" | "TIMEOUT" | "UNSUPPORTED" | "APP_DISABLED";
+            completionReason?: "QUALITY_REACHED" | "BUDGET_EXPIRED" | "PERMISSION_DENIED" | "POSITION_UNAVAILABLE" | "TIMEOUT" | "UNSUPPORTED" | "APP_DISABLED" | "WITHIN_GEOFENCE" | "ATTEMPTS_EXHAUSTED";
             /** Format: date-time */
             fixTimestamp?: string | null;
             /** Format: date-time */
@@ -780,6 +780,15 @@ export interface components {
             /** Format: date-time */
             retryAt: string | null;
         };
+        /** @description Advisory current server geofence; final admission remains server-authoritative */
+        CheckinGeofence: {
+            /** Format: double */
+            latitude: number;
+            /** Format: double */
+            longitude: number;
+            /** Format: double */
+            radiusMeters: number;
+        } | null;
         CoordinatesGeo: {
             /**
              * @description discriminator enum property added by openapi-typescript
@@ -1326,6 +1335,7 @@ export interface components {
             _links: {
                 [key: string]: components["schemas"]["Link"];
             };
+            checkinGeofence?: components["schemas"]["CheckinGeofence"];
             /** Format: date */
             date: string;
             lessons: components["schemas"]["TodayLesson"][];

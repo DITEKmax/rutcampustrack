@@ -50,6 +50,13 @@ public class AttendanceStudentGrpcServiceImpl
     private final SemesterCacheService semesterCacheService;
     private final StudentRequestService requestService;
     private final StudentAttendanceProjectionService projectionService;
+    private ru.rutcampustrack.attendance.geofence.GeofenceService geofenceService;
+
+    @Autowired
+    public void setGeofenceService(
+            ru.rutcampustrack.attendance.geofence.GeofenceService geofenceService) {
+        this.geofenceService = geofenceService;
+    }
 
     public AttendanceStudentGrpcServiceImpl(
             StudentCheckinService checkinService,
@@ -166,6 +173,18 @@ public class AttendanceStudentGrpcServiceImpl
                     StudentAttendanceSnapshotResponse.newBuilder()
                             .setServerNow(snapshot.serverNow().toString());
             snapshot.entries().forEach(entry -> response.addEntries(toProto(entry)));
+            if (geofenceService != null) {
+                try {
+                    var policy = geofenceService.currentConfiguration();
+                    response.setCheckinGeofence(
+                            StudentCheckinGeofence.newBuilder()
+                                    .setLatitude(policy.latitude())
+                                    .setLongitude(policy.longitude())
+                                    .setRadiusMeters(policy.radiusMeters()));
+                } catch (RuntimeException unavailable) {
+                    // Today remains readable without the advisory acquisition policy.
+                }
+            }
             observer.onNext(response.build());
             observer.onCompleted();
         } catch (RuntimeException error) {

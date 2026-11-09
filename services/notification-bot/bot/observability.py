@@ -113,26 +113,34 @@ KEYBOARD_SYNC_REGISTRY_AVAILABLE = Gauge(
 )
 KEYBOARD_SYNC_REGISTRY_AVAILABLE.set(-1)
 KEYBOARD_SYNC_CATALOG_AVAILABLE = Gauge(
-    "notification_bot_keyboard_sync_catalog_available", "Last authoritative binding sweep completed",
+    "notification_bot_keyboard_sync_catalog_available",
+    "Last authoritative binding sweep completed",
     registry=METRICS_REGISTRY,
 )
 KEYBOARD_SYNC_CATALOG_AVAILABLE.set(-1)
 KEYBOARD_SYNC_PENDING = Gauge(
-    "notification_bot_keyboard_sync_pending", "Current recipients awaiting a confirmed keyboard receipt",
+    "notification_bot_keyboard_sync_pending",
+    "Current recipients awaiting a confirmed keyboard receipt",
     registry=METRICS_REGISTRY,
 )
 KEYBOARD_SYNC_RETRYABLE = Gauge(
-    "notification_bot_keyboard_sync_retryable", "Current recipients deferred for retry", registry=METRICS_REGISTRY,
+    "notification_bot_keyboard_sync_retryable",
+    "Current recipients deferred for retry",
+    registry=METRICS_REGISTRY,
 )
 KEYBOARD_SYNC_TERMINAL = Gauge(
-    "notification_bot_keyboard_sync_terminal", "Current unbound or Telegram-unreachable recipients",
+    "notification_bot_keyboard_sync_terminal",
+    "Current unbound or Telegram-unreachable recipients",
     registry=METRICS_REGISTRY,
 )
 KEYBOARD_SYNC_OLDEST_PENDING = Gauge(
-    "notification_bot_keyboard_sync_oldest_pending_seconds", "Age of oldest pending receipt", registry=METRICS_REGISTRY,
+    "notification_bot_keyboard_sync_oldest_pending_seconds",
+    "Age of oldest pending receipt",
+    registry=METRICS_REGISTRY,
 )
 KEYBOARD_SYNC_FRESHNESS = Gauge(
-    "notification_bot_keyboard_sync_snapshot_timestamp_seconds", "Last durable backlog health read",
+    "notification_bot_keyboard_sync_snapshot_timestamp_seconds",
+    "Last durable backlog health read",
     registry=METRICS_REGISTRY,
 )
 

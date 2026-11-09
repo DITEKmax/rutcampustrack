@@ -6766,6 +6766,31 @@
           "longitude" : {
             "type" : "number",
             "format" : "double"
+          },
+          "unavailableReason" : {
+            "type" : "string"
+          },
+          "source" : {
+            "type" : "string"
+          },
+          "fixTimestamp" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "receivedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "sampleCount" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "acquisitionDurationMs" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "completionReason" : {
+            "type" : "string"
           }
         }
       },

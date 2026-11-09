@@ -152,8 +152,9 @@ async def _publish_start(message, telegram_id, keyboard_sync, credential_cards, 
             footer=f"\n\n{_WHERE_TO_MARK_BLOCK}\n\n{_INSTALL_BLOCK}",
             reply_markup=keyboard,
         ):
-            await mark_keyboard_synced(keyboard_sync, telegram_id, keyboard_signature(**options),
-                                       scope=scope, bot_menu_client=bot_menu_client)
+            await mark_keyboard_synced(
+                keyboard_sync, telegram_id, keyboard_signature(**options), scope=scope, bot_menu_client=bot_menu_client
+            )
             return
         response, scope = await _refresh_own_profile(bot_menu_client, telegram_id, response)
         keyboard = main_keyboard(**scope.keyboard_options)
@@ -172,8 +173,13 @@ async def _publish_start(message, telegram_id, keyboard_sync, credential_cards, 
             reply_markup=keyboard,
             parse_mode="HTML",
         )
-        await mark_keyboard_synced(keyboard_sync, telegram_id, keyboard_signature(**scope.keyboard_options),
-                                   scope=scope, bot_menu_client=bot_menu_client)
+        await mark_keyboard_synced(
+            keyboard_sync,
+            telegram_id,
+            keyboard_signature(**scope.keyboard_options),
+            scope=scope,
+            bot_menu_client=bot_menu_client,
+        )
 
     except Exception:
         # D-14: service unavailability

@@ -48,7 +48,7 @@ package = 'ru.rutcampustrack.attendance.integration.OpenApiSnapshotIT'
 method = 'apiDocsMatchesSnapshot'
 app = pathlib.Path('services/attendance-service/attendance-app')
 test_source = app / 'src/test/java/ru/rutcampustrack/attendance/integration/OpenApiSnapshotIT.java'
-test_sha = 'cbfb5fc2fe25e11424e50ea6e0b5a7ddcf4a4a9750a20a5bcdd57a3b962533fe'
+test_sha = '6ce2217e4d03b026204906e286818adb8621d2130dabfa88c78386c896c6d17c'
 source = test_source.read_bytes()
 assert hashlib.sha256(source).hexdigest() == test_sha
 assert source == subprocess.check_output(['git', 'show', 'HEAD:' + test_source.as_posix()])

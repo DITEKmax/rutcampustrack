@@ -175,12 +175,13 @@ public class AttendanceStudentGrpcServiceImpl
             snapshot.entries().forEach(entry -> response.addEntries(toProto(entry)));
             if (geofenceService != null) {
                 try {
-                    var policy = geofenceService.currentConfiguration();
-                    response.setCheckinGeofence(
-                            StudentCheckinGeofence.newBuilder()
-                                    .setLatitude(policy.latitude())
-                                    .setLongitude(policy.longitude())
-                                    .setRadiusMeters(policy.radiusMeters()));
+                    var policy = geofenceService.cachedConfiguration();
+                    if (policy != null)
+                        response.setCheckinGeofence(
+                                StudentCheckinGeofence.newBuilder()
+                                        .setLatitude(policy.latitude())
+                                        .setLongitude(policy.longitude())
+                                        .setRadiusMeters(policy.radiusMeters()));
                 } catch (RuntimeException unavailable) {
                     // Today remains readable without the advisory acquisition policy.
                 }

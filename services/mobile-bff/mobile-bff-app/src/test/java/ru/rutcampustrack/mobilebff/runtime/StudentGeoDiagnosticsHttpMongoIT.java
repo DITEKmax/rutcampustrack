@@ -102,13 +102,7 @@ class StudentGeoDiagnosticsHttpMongoIT {
         var tx = new TransactionTemplate(manager);
         var academic = mock(AcademicGrpcClient.class);
         var schedule = mock(ScheduleGrpcClient.class);
-        when(academic.getCampusGeofence())
-                .thenReturn(
-                        GeofenceResponse.newBuilder()
-                                .setLat(55.788328)
-                                .setLng(37.606637)
-                                .setRadiusM(200)
-                                .build());
+        when(academic.getCampusGeofence()).thenReturn(approvedPolicy());
         when(academic.getUserDisplayName(anyLong())).thenReturn("Тестовый студент");
         when(academic.getSubjectDetailsByIds(any()))
                 .thenReturn(
@@ -143,6 +137,7 @@ class StudentGeoDiagnosticsHttpMongoIT {
         var lateEvents = new LateCheckinEventPublisher(outbox, json);
         lateEvents.setRequestActions(new RequestActionRecorder(actions));
         var meters = new io.micrometer.core.instrument.simple.SimpleMeterRegistry();
+        var geofence = spy(new GeofenceService(academic));
         var checkins =
                 new StudentCheckinService(
                         marks,
@@ -151,7 +146,7 @@ class StudentGeoDiagnosticsHttpMongoIT {
                         late,
                         excuses,
                         pairs,
-                        new GeofenceService(academic),
+                        geofence,
                         attendanceEvents,
                         lateEvents,
                         new BusinessMetrics(meters),
@@ -165,10 +160,17 @@ class StudentGeoDiagnosticsHttpMongoIT {
         var upstream =
                 new AttendanceStudentGrpcServiceImpl(
                         checkins,
-                        mock(StudentAttendanceSnapshotService.class),
+                        new StudentAttendanceSnapshotService(
+                                schedule,
+                                marks,
+                                late,
+                                excuses,
+                                repositories.getRepository(CheckinPairStateRepository.class),
+                                CLOCK),
                         schedule,
                         academic,
                         mock(SemesterCacheService.class));
+        upstream.setGeofenceService(geofence);
         var signer = new InternalJwtTestFactory();
         var keys = mock(PublicKeyProvider.class);
         when(keys.getPublicKey()).thenReturn(signer.publicKey());
@@ -218,10 +220,24 @@ class StudentGeoDiagnosticsHttpMongoIT {
             var attendance = spy(new MobileAttendanceClient(new MobileGrpcAuth(context, "")));
             ReflectionTestUtils.setField(
                     attendance, "stub", AttendanceStudentGrpcServiceGrpc.newBlockingStub(channel));
+            var mobileAcademic = mock(MobileAcademicClient.class);
+            when(mobileAcademic.activeSemester())
+                    .thenReturn(SemesterResponse.newBuilder().setId(30).build());
+            when(mobileAcademic.subjects(any())).thenReturn(Map.of());
+            var mobileSchedule = mock(MobileScheduleClient.class);
+            when(mobileSchedule.lessons(
+                            eq(10L), eq(30L), any(LocalDate.class), any(LocalDate.class)))
+                    .thenReturn(
+                            ru.rutcampustrack.schedule.grpc.LessonsResponse.newBuilder().build());
             var mvc =
                     MockMvcBuilders.standaloneSetup(
                                     new StudentApiController(
-                                            mock(StudentQueryService.class),
+                                            new StudentQueryService(
+                                                    context,
+                                                    mobileAcademic,
+                                                    mobileSchedule,
+                                                    attendance,
+                                                    CLOCK),
                                             new StudentCheckinFacade(attendance, context, meters),
                                             mock(StudentRequestFacade.class),
                                             json))
@@ -243,6 +259,7 @@ class StudentGeoDiagnosticsHttpMongoIT {
                             false,
                             false);
             verifyAcquisitionReports(mvc, token, signer, meters, mongo, attendance);
+            verifyTodayPolicy(mvc, token, geofence, upstream, academic);
             String browser =
                     "{"
                             + GEO
@@ -430,6 +447,37 @@ class StudentGeoDiagnosticsHttpMongoIT {
                                                 .isEqualTo(Status.Code.INVALID_ARGUMENT));
             }
 
+            String inside =
+                    browser.replace(
+                                    "\"latitude\":55.788328",
+                                    "\"latitude\":"
+                                            + (55.788328 + Math.toDegrees(300 / 6_371_000.0)))
+                            .replace("\"accuracyMeters\":20", "\"accuracyMeters\":1000")
+                            .replace("QUALITY_REACHED", "WITHIN_GEOFENCE");
+            assertThat(send(mvc, token, 6, KEY, inside, 200)).contains("\"outcome\":\"PRESENT\"");
+            String outside =
+                    browser.replace(
+                                    "\"latitude\":55.788328",
+                                    "\"latitude\":"
+                                            + (55.788328 + Math.toDegrees(401 / 6_371_000.0)))
+                            .replace("QUALITY_REACHED", "ATTEMPTS_EXHAUSTED");
+            assertThat(send(mvc, token, 7, KEY, outside, 200))
+                    .contains("\"outcome\":\"PENDING_CONFIRMATION\"");
+            assertThat(marks.findByLessonIdAndUserId(6L, 100L)).isPresent();
+            assertThat(marks.findByLessonIdAndUserId(7L, 100L)).isEmpty();
+            assertThat(
+                            late.findFirstByStudentIdAndLessonIdAndStatus(
+                                    100L, 7L, LateCheckinRequestStatus.PENDING))
+                    .isPresent();
+            assertThat(
+                            reads.read(7L, null, 100).items().stream()
+                                    .filter(row -> row.action().equals("GEO_ATTEMPT"))
+                                    .findFirst()
+                                    .orElseThrow()
+                                    .geo()
+                                    .radiusMeters())
+                    .isEqualTo(400);
+
             long beforeMarks = marks.count(),
                     beforeRequests = late.count(),
                     beforeReceipts = receipts.count();
@@ -453,7 +501,7 @@ class StudentGeoDiagnosticsHttpMongoIT {
                                     .tag("status", "geo_accepted")
                                     .counter()
                                     .count())
-                    .isEqualTo(1);
+                    .isEqualTo(2);
             assertThat(
                             meters.get("attendance.checkin")
                                     .tag("status", "geo_unavailable")
@@ -518,7 +566,7 @@ class StudentGeoDiagnosticsHttpMongoIT {
                             null,
                             null,
                             null);
-            assertThat(page.totalElements()).isEqualTo(2);
+            assertThat(page.totalElements()).isEqualTo(3);
             assertThat(page.content())
                     .extracting(row -> row.id())
                     .contains("old-pending")
@@ -528,6 +576,113 @@ class StudentGeoDiagnosticsHttpMongoIT {
             channel.shutdownNow().awaitTermination(5, TimeUnit.SECONDS);
             grpc.shutdownNow().awaitTermination(5, TimeUnit.SECONDS);
         }
+    }
+
+    private static GeofenceResponse approvedPolicy() throws java.io.IOException {
+        String evidence = System.getenv("RCT_GEO_POLICY_JSON");
+        if (evidence == null || evidence.isBlank())
+            return GeofenceResponse.newBuilder()
+                    .setLat(55.788328)
+                    .setLng(37.606637)
+                    .setRadiusM(400)
+                    .build();
+        var row = new ObjectMapper().readTree(java.nio.file.Path.of(evidence).toFile());
+        assertThat(row.path("lat").asDouble()).isEqualTo(55.788328);
+        assertThat(row.path("lng").asDouble()).isEqualTo(37.606637);
+        assertThat(row.path("radius_m").asInt()).isEqualTo(400);
+        return GeofenceResponse.newBuilder()
+                .setLat(row.path("lat").asDouble())
+                .setLng(row.path("lng").asDouble())
+                .setRadiusM(row.path("radius_m").asInt())
+                .build();
+    }
+
+    private static void verifyTodayPolicy(
+            MockMvc mvc,
+            String token,
+            GeofenceService geofence,
+            AttendanceStudentGrpcServiceImpl upstream,
+            AcademicGrpcClient academic)
+            throws Exception {
+        String endpoint = "/api/v1/student/today";
+        mvc.perform(
+                        org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get(
+                                        endpoint)
+                                .header("X-Internal-Token", token))
+                .andExpect(status().isOk())
+                .andExpect(
+                        org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath(
+                                        "$.checkinGeofence")
+                                .value(org.hamcrest.Matchers.nullValue()));
+        verify(academic, never()).getCampusGeofence();
+        geofence.refresh(); // Existing startup/business refresh owns I/O, never the advisory read.
+        mvc.perform(
+                        org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get(
+                                        endpoint)
+                                .header("X-Internal-Token", token))
+                .andExpect(status().isOk())
+                .andExpect(
+                        org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath(
+                                        "$.checkinGeofence.latitude")
+                                .value(55.788328))
+                .andExpect(
+                        org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath(
+                                        "$.checkinGeofence.longitude")
+                                .value(37.606637))
+                .andExpect(
+                        org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath(
+                                        "$.checkinGeofence.radiusMeters")
+                                .value(400.0));
+        ReflectionTestUtils.setField(
+                geofence, "lastRefreshed", Instant.now().minusSeconds(31 * 60));
+        doAnswer(
+                        call -> {
+                            Thread.sleep(
+                                    3100); // Would exceed the BFF's unchanged three-second snapshot
+                            // deadline.
+                            throw new ru.rutcampustrack.attendance.exception
+                                    .AcademicServiceUnavailableException("synthetic unavailable");
+                        })
+                .when(academic)
+                .getCampusGeofence();
+        mvc.perform(
+                        org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get(
+                                        endpoint)
+                                .header("X-Internal-Token", token))
+                .andExpect(status().isOk())
+                .andExpect(
+                        org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath(
+                                        "$.checkinGeofence.radiusMeters")
+                                .value(400.0));
+        verify(academic, times(1)).getCampusGeofence();
+        doReturn(approvedPolicy()).when(academic).getCampusGeofence();
+        doThrow(
+                        new ru.rutcampustrack.attendance.exception
+                                .AcademicServiceUnavailableException("synthetic unavailable"))
+                .when(geofence)
+                .cachedConfiguration();
+        mvc.perform(
+                        org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get(
+                                        endpoint)
+                                .header("X-Internal-Token", token))
+                .andExpect(status().isOk())
+                .andExpect(
+                        org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath(
+                                        "$.checkinGeofence")
+                                .value(org.hamcrest.Matchers.nullValue()));
+        doCallRealMethod().when(geofence).cachedConfiguration();
+        upstream.setGeofenceService(
+                null); // Legacy Attendance omits the new optional protobuf field.
+        mvc.perform(
+                        org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get(
+                                        endpoint)
+                                .header("X-Internal-Token", token))
+                .andExpect(status().isOk())
+                .andExpect(
+                        org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath(
+                                        "$.checkinGeofence")
+                                .value(org.hamcrest.Matchers.nullValue()));
+        upstream.setGeofenceService(geofence);
     }
 
     private static void verifyAcquisitionReports(
@@ -549,7 +704,9 @@ class StudentGeoDiagnosticsHttpMongoIT {
                             "TIMEOUT",
                             "UNSUPPORTED",
                             "APP_DISABLED",
-                            "CANCELLED")) {
+                            "CANCELLED",
+                            "WITHIN_GEOFENCE",
+                            "ATTEMPTS_EXHAUSTED")) {
                 mvc.perform(
                                 post(endpoint)
                                         .header("X-Internal-Token", token)
@@ -679,7 +836,7 @@ class StudentGeoDiagnosticsHttpMongoIT {
                 meters.find("mobile.client.geo.acquisition.reports").counters().stream()
                         .mapToDouble(c -> c.count())
                         .sum();
-        assertThat(reports).isEqualTo(17);
+        assertThat(reports).isEqualTo(21);
         for (var meter : meters.getMeters()) {
             if (meter.getId().getName().startsWith("mobile.client.geo.acquisition."))
                 assertThat(meter.getId().getTags())

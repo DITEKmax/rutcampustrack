@@ -65,19 +65,19 @@ public class GeofenceService {
     public record Configuration(double latitude, double longitude, double radiusMeters) {}
 
     /**
-     * The same cached policy used by evaluate; unavailable/invalid policy is omitted by readers.
+     * Cache-only advisory read. Final business evaluation refreshes independently when required.
      */
-    public Configuration currentConfiguration() {
-        GeofenceData data = getOrRefresh();
-        if (!Double.isFinite(data.lat())
+    public Configuration cachedConfiguration() {
+        GeofenceData data = cachedGeofence;
+        if (data == null
+                || !Double.isFinite(data.lat())
                 || data.lat() < -90
                 || data.lat() > 90
                 || !Double.isFinite(data.lng())
                 || data.lng() < -180
                 || data.lng() > 180
                 || !Double.isFinite(data.radiusMeters())
-                || data.radiusMeters() <= 0)
-            throw new IllegalStateException("Campus geofence configuration is invalid");
+                || data.radiusMeters() <= 0) return null;
         return new Configuration(data.lat(), data.lng(), data.radiusMeters());
     }
 

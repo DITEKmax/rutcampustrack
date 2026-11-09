@@ -25,7 +25,7 @@ class GeofenceServiceTest {
     @Mock private AcademicGrpcClient academicGrpcClient;
 
     @Test
-    void approvedCampusAcceptsCenterAndInsideButRejectsOutsideTwoHundredMeters() {
+    void legacyTwoHundredMeterConfigurationRemainsConfigDriven() {
         when(academicGrpcClient.getCampusGeofence())
                 .thenReturn(
                         GeofenceResponse.newBuilder()
@@ -40,6 +40,61 @@ class GeofenceServiceTest {
         assertThat(service.evaluate(55.788328, 37.606637).accepted()).isTrue();
         assertThat(service.evaluate(insideLat, 37.606637).accepted()).isTrue();
         assertThat(service.evaluate(outsideLat, 37.606637).accepted()).isFalse();
+    }
+
+    @Test
+    void ownerFourHundredMeterConfigurationAcceptsThreeHundredButRejectsFourHundredOne() {
+        when(academicGrpcClient.getCampusGeofence())
+                .thenReturn(
+                        GeofenceResponse.newBuilder()
+                                .setLat(55.788328)
+                                .setLng(37.606637)
+                                .setRadiusM(400)
+                                .build());
+        var service = new GeofenceService(academicGrpcClient);
+        assertThat(
+                        service.evaluate(55.788328 + Math.toDegrees(300 / 6_371_000.0), 37.606637)
+                                .accepted())
+                .isTrue();
+        assertThat(
+                        service.evaluate(55.788328 + Math.toDegrees(401 / 6_371_000.0), 37.606637)
+                                .accepted())
+                .isFalse();
+        assertThat(service.cachedConfiguration())
+                .isEqualTo(new GeofenceService.Configuration(55.788328, 37.606637, 400));
+    }
+
+    @Test
+    void configuredFourHundredMeterBoundaryIsInclusive() {
+        when(academicGrpcClient.getCampusGeofence())
+                .thenReturn(
+                        GeofenceResponse.newBuilder().setLat(0).setLng(0).setRadiusM(400).build());
+        var service = new GeofenceService(academicGrpcClient);
+        var boundary = service.evaluate(0, Math.toDegrees(400 / 6_371_000.0));
+        assertThat(boundary.distanceMeters()).isEqualTo(400.0);
+        assertThat(boundary.accepted()).isTrue();
+        assertThat(service.evaluate(0, Math.toDegrees(400.001 / 6_371_000.0)).accepted()).isFalse();
+    }
+
+    @Test
+    void coldAdvisoryCacheDoesNotCallAcademic() {
+        var service = new GeofenceService(academicGrpcClient);
+        assertThat(service.cachedConfiguration()).isNull();
+        org.mockito.Mockito.verifyNoInteractions(academicGrpcClient);
+    }
+
+    @Test
+    void expiredAdvisoryCacheDoesNotRefreshButBusinessEvaluationStillDoes() throws Exception {
+        when(academicGrpcClient.getCampusGeofence())
+                .thenReturn(mainCampusGeofence())
+                .thenThrow(new AcademicServiceUnavailableException("synthetic unavailable"));
+        var service = new GeofenceService(academicGrpcClient);
+        service.refresh();
+        expireCache(service);
+        assertThat(service.cachedConfiguration()).isNotNull();
+        verify(academicGrpcClient, times(1)).getCampusGeofence();
+        assertThat(service.isWithinCampus(55.788204, 37.606762)).isTrue();
+        verify(academicGrpcClient, times(2)).getCampusGeofence();
     }
 
     @Test

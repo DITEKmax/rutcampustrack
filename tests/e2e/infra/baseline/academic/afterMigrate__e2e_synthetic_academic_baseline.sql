@@ -39,7 +39,7 @@ BEGIN
     -- never turn a partial/unmarked campus inventory into a trusted fixture or overwrite it.
     IF (SELECT count(*) FROM campus_settings) <> 1
        OR NOT EXISTS (SELECT FROM campus_settings WHERE id = 1
-                      AND lat = 55.788328 AND lng = 37.606637 AND radius_m = 200) THEN
+                      AND lat = 55.788328 AND lng = 37.606637 AND radius_m = 400) THEN
         RAISE EXCEPTION 'Academic baseline requires the approved production campus';
     END IF;
 

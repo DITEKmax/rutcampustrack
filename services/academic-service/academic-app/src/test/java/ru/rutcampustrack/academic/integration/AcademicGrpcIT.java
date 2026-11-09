@@ -766,13 +766,13 @@ public class AcademicGrpcIT extends AbstractAcademicIntegrationTest {
 
         GeofenceResponse response = stub.getCampusGeofence(request);
 
-        // Canonical campus: lat=55.788204, lng=37.606762, radius_m=200 (RUT MIIT, ул. Образцова 9)
+        // Owner decision 2026-11-10: canonical center and inclusive radius 400m.
         assertThat(response.getLat()).isNotZero();
         assertThat(response.getLng()).isNotZero();
         assertThat(response.getRadiusM()).isGreaterThan(0);
-        assertThat(response.getLat()).isEqualTo(55.788204);
-        assertThat(response.getLng()).isEqualTo(37.606762);
-        assertThat(response.getRadiusM()).isEqualTo(200);
+        assertThat(response.getLat()).isEqualTo(55.788328);
+        assertThat(response.getLng()).isEqualTo(37.606637);
+        assertThat(response.getRadiusM()).isEqualTo(400);
     }
 
     // =====================================================================

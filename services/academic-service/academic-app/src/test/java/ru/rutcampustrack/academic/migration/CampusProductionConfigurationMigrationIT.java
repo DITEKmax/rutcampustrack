@@ -5,6 +5,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import org.flywaydb.core.Flyway;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.jdbc.core.ConnectionCallback;
@@ -13,8 +15,6 @@ import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.jdbc.datasource.SingleConnectionDataSource;
 import org.springframework.jdbc.datasource.init.ScriptUtils;
 import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
 
 import ru.rutcampustrack.academic.entity.User;
 import ru.rutcampustrack.academic.map.CampusMapAdminRepository;
@@ -34,15 +34,119 @@ import java.util.concurrent.atomic.AtomicInteger;
 import javax.sql.DataSource;
 
 /** Forward production configuration on the independent Academic migration chain. */
-@Testcontainers
 class CampusProductionConfigurationMigrationIT {
-    @Container
     private static final PostgreSQLContainer<?> POSTGRES =
             new PostgreSQLContainer<>("postgres:16-alpine");
+    private static String pgUrl;
+    private static String pgUser;
+    private static String pgPassword;
+
+    @BeforeAll
+    static void startDatabase() {
+        pgUrl = System.getenv("RCT_GEO_PG_URL");
+        if (pgUrl == null || pgUrl.isBlank()) {
+            POSTGRES.start();
+            pgUrl = POSTGRES.getJdbcUrl();
+            pgUser = POSTGRES.getUsername();
+            pgPassword = POSTGRES.getPassword();
+        } else {
+            if (!pgUrl.startsWith("jdbc:postgresql:"))
+                throw new IllegalArgumentException(
+                        "Geo migration proof requires PostgreSQL JDBC URL");
+            java.net.URI uri = java.net.URI.create(pgUrl.substring("jdbc:".length()));
+            if (uri.getUserInfo() != null
+                    || uri.getPort() != 15449
+                    || !"/postgres".equals(uri.getPath())
+                    || uri.getQuery() != null
+                    || !java.util.List.of("127.0.0.1", "localhost", "[::1]")
+                            .contains(uri.getHost()))
+                throw new IllegalArgumentException(
+                        "Geo migration proof requires own loopback PostgreSQL");
+            pgUser = "postgres";
+            pgPassword =
+                    ""; // Own native fixture uses loopback trust, never production credentials.
+        }
+    }
+
+    @AfterAll
+    static void stopDatabase() {
+        if (POSTGRES.isRunning()) POSTGRES.stop();
+    }
 
     private static final AtomicInteger DATABASE_SEQUENCE = new AtomicInteger();
-    private static final String GEOFENCE = "V15__configure_primary_campus_geofence.sql";
+    private static final String GEOFENCE = "V18__expand_primary_campus_geofence.sql";
     private static final String MAP = "V16__initialize_empty_campus_map_catalog.sql";
+
+    @Test
+    void existingTwoHundredMetersUpgradesWithoutRewritingMigrationHistoryOrOtherRows() {
+        DataSource source = baseline();
+        JdbcTemplate jdbc = new JdbcTemplate(source);
+        flyway(source, "17").migrate();
+        assertThat(
+                        jdbc.queryForObject(
+                                "SELECT radius_m FROM campus_settings WHERE id=1", Integer.class))
+                .isEqualTo(200);
+        jdbc.update("INSERT INTO groups(id,name) VALUES(9001,'Retained academic group')");
+        jdbc.update(
+                "INSERT INTO campus_settings(id,name,lat,lng,radius_m) VALUES(9,'Other"
+                        + " campus',51,32,300)");
+        jdbc.execute("SELECT setval('campus_settings_id_seq',100,TRUE)");
+        var group = jdbc.queryForMap("SELECT * FROM groups WHERE id=9001");
+        var other = jdbc.queryForMap("SELECT * FROM campus_settings WHERE id=9");
+        Integer checksum =
+                jdbc.queryForObject(
+                        "SELECT checksum FROM flyway_schema_history WHERE version='15'",
+                        Integer.class);
+        var latest = flyway(source, null);
+        assertThat(latest.migrate().migrationsExecuted).isEqualTo(1);
+        assertApproved(jdbc);
+        String policyEvidence = System.getenv("RCT_GEO_POLICY_JSON");
+        if (policyEvidence != null && !policyEvidence.isBlank()) {
+            try {
+                java.nio.file.Files.writeString(
+                        java.nio.file.Path.of(policyEvidence),
+                        new com.fasterxml.jackson.databind.ObjectMapper()
+                                .writeValueAsString(
+                                        jdbc.queryForMap(
+                                                "SELECT lat,lng,radius_m FROM campus_settings WHERE"
+                                                        + " id=1")));
+            } catch (java.io.IOException unavailable) {
+                throw new IllegalStateException(
+                        "Cannot retain own migration policy evidence", unavailable);
+            }
+        }
+        assertThat(jdbc.queryForMap("SELECT * FROM groups WHERE id=9001")).isEqualTo(group);
+        assertThat(jdbc.queryForMap("SELECT * FROM campus_settings WHERE id=9")).isEqualTo(other);
+        assertThat(
+                        jdbc.queryForObject(
+                                "SELECT checksum FROM flyway_schema_history WHERE version='15'",
+                                Integer.class))
+                .isEqualTo(checksum);
+        var primary = jdbc.queryForMap("SELECT * FROM campus_settings WHERE id=1");
+        replay(jdbc, GEOFENCE);
+        assertThat(jdbc.queryForMap("SELECT * FROM campus_settings WHERE id=1")).isEqualTo(primary);
+        latest.validate();
+        assertThat(latest.migrate().migrationsExecuted).isZero();
+        assertThat(jdbc.queryForObject("SELECT nextval('campus_settings_id_seq')", Long.class))
+                .isEqualTo(101L);
+    }
+
+    @Test
+    void legacyForwardSqlUsesTheSameCampusTableAndIsIdempotentOnExistingAndEmptySettings() {
+        DataSource source = baseline();
+        JdbcTemplate jdbc = new JdbcTemplate(source);
+        jdbc.update(
+                "INSERT INTO campus_settings(id,name,lat,lng,radius_m) VALUES(1,'Retained"
+                        + " name',55.788328,37.606637,200)");
+        replayResource(jdbc, "db/migration/V64__expand_primary_campus_geofence.sql");
+        assertApproved(jdbc);
+        var primary = jdbc.queryForMap("SELECT * FROM campus_settings WHERE id=1");
+        replayResource(jdbc, "db/migration/V64__expand_primary_campus_geofence.sql");
+        assertThat(jdbc.queryForMap("SELECT * FROM campus_settings WHERE id=1")).isEqualTo(primary);
+        JdbcTemplate empty = new JdbcTemplate(baseline());
+        replayResource(empty, "db/migration/V64__expand_primary_campus_geofence.sql");
+        assertApproved(empty);
+    }
 
     @Test
     void emptyProductionUpgradeProvidesApprovedGeofenceAndHonestEmptyManifest() {
@@ -223,25 +327,18 @@ class CampusProductionConfigurationMigrationIT {
         assertThat(jdbc.queryForMap("SELECT lat,lng,radius_m FROM campus_settings WHERE id=1"))
                 .containsEntry("lat", 55.788328)
                 .containsEntry("lng", 37.606637)
-                .containsEntry("radius_m", 200);
+                .containsEntry("radius_m", 400);
     }
 
     private static DataSource baseline() {
-        String database = "campus_config_" + DATABASE_SEQUENCE.incrementAndGet();
-        var admin =
-                new DriverManagerDataSource(
-                        POSTGRES.getJdbcUrl(), POSTGRES.getUsername(), POSTGRES.getPassword());
+        String database = "rct_geo_1110_" + java.util.UUID.randomUUID().toString().replace("-", "");
+        var admin = new DriverManagerDataSource(pgUrl, pgUser, pgPassword);
         new JdbcTemplate(admin).execute("CREATE DATABASE " + database);
         var source =
                 new DriverManagerDataSource(
-                        "jdbc:postgresql://"
-                                + POSTGRES.getHost()
-                                + ":"
-                                + POSTGRES.getMappedPort(5432)
-                                + "/"
-                                + database,
-                        POSTGRES.getUsername(),
-                        POSTGRES.getPassword());
+                        pgUrl.substring(0, pgUrl.lastIndexOf('/') + 1) + database,
+                        pgUser,
+                        pgPassword);
         flyway(source, "14").migrate();
         return source;
     }
@@ -256,6 +353,10 @@ class CampusProductionConfigurationMigrationIT {
     }
 
     private static void replay(JdbcTemplate jdbc, String filename) {
+        replayResource(jdbc, "db/academic-migration/" + filename);
+    }
+
+    private static void replayResource(JdbcTemplate jdbc, String path) {
         jdbc.execute(
                 (ConnectionCallback<Void>)
                         connection -> {
@@ -263,8 +364,7 @@ class CampusProductionConfigurationMigrationIT {
                             connection.setAutoCommit(false);
                             try {
                                 ScriptUtils.executeSqlScript(
-                                        connection,
-                                        new ClassPathResource("db/academic-migration/" + filename));
+                                        connection, new ClassPathResource(path));
                                 connection.commit();
                             } catch (RuntimeException error) {
                                 connection.rollback();

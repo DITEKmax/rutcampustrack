@@ -59,6 +59,10 @@ public class PendingRequestAgeGauge {
 
     // Every instance samples its own cached gauges. A distributed lock would leave other instances
     // permanently unknown. Fixed cardinality and indexed limit(1) keep the read budget bounded.
+    @ru.rutcampustrack.attendance.scheduling.SingleInstanceScheduled(
+            reason =
+                    "Each process must refresh its own read-only metric snapshot; a shared lock"
+                            + " leaves other instances unknown")
     @Scheduled(fixedDelay = 60000, initialDelay = 10000)
     public void refresh() {
         for (Partition partition : partitions) {

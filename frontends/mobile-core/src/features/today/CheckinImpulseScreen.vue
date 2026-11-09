@@ -9,6 +9,8 @@ import {
   type CSSProperties,
 } from 'vue';
 import type { TodayLesson } from '../../api/types';
+import GeoAcquisitionFeedback from '../../device-access/GeoAcquisitionFeedback.vue';
+import { useDeviceAccess } from '../../device-access/device-access';
 import MobileIcon from '../../shared/components/MobileIcon.vue';
 import { checkinArrivalGeometry, type useCheckinImpulse } from './checkin-impulse';
 import { impulseCoins, impulseConfetti, impulseDust, measuredRem } from './checkin-impulse-effects';
@@ -29,7 +31,9 @@ const emit = defineEmits<{
   submit: [];
   retry: [];
   today: [];
+  cancel: [];
 }>();
+const deviceAccess = useDeviceAccess();
 const heading = ref<HTMLElement | null>(null);
 const button = ref<HTMLButtonElement | null>(null);
 const stage = ref<HTMLElement | null>(null);
@@ -262,8 +266,12 @@ defineExpose({ measure });
           role="status"
           :class="{ 'checkin-impulse__feedback--sr': state === 'success' }"
         >
-          {{ feedback }}
+          {{ state === 'locating' && deviceAccess?.state.stage ? '' : feedback }}
         </p>
+        <GeoAcquisitionFeedback
+          :active="state === 'locating'"
+          @cancel="emit('cancel')"
+        />
         <p
           class="checkin-impulse__error"
           role="alert"

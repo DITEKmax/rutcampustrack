@@ -18,7 +18,7 @@ export class CheckinBeforeSendCancelled extends Error {}
 
 export class CheckinMismatchedAck extends Error {
   constructor() {
-    super('Не удалось подтвердить результат отметки. Попробуй ещё раз.');
+    super('Не удалось подтвердить результат отметки. Попробуй ещё раз.')
     this.name = 'CheckinMismatchedAck'
   }
 }
@@ -44,7 +44,7 @@ export class CheckinCommandRecovery {
     if (!pending) {
       const attempt = Promise.resolve().then(async () => ({
         lessonId,
-        command: await acquireCommand(),
+        command: immutableCommand(await acquireCommand()),
         key: this.createKey(),
       }))
       pending = { attempt, inFlight: null, uncertain: false }
@@ -76,6 +76,14 @@ export class CheckinCommandRecovery {
     pending.inFlight = completion
     return completion
   }
+}
+
+function immutableCommand(command: StudentCheckinCommand): StudentCheckinCommand {
+  // Recovery retains an exact value snapshot, including diagnostics, across ambiguous POSTs.
+  const snapshot: StudentCheckinCommand = structuredClone(command)
+  Object.freeze(snapshot.geo)
+  if ('diagnostics' in snapshot && snapshot.diagnostics) Object.freeze(snapshot.diagnostics)
+  return Object.freeze(snapshot)
 }
 
 function isAmbiguousCheckinFailure(error: unknown): boolean {

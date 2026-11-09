@@ -70,16 +70,18 @@ describe('camera lifecycle without camera hardware', () => {
     expect(f.decoder.dispose).toHaveBeenCalledOnce()
     expect(f.video.srcObject).toBeNull()
   })
-  it('disposes a late decoder without asking for media after navigation', async () => {
+  it('requests video in the click turn and disposes a late decoder after navigation', async () => {
     const f = fixture()
     const pending = deferred<typeof f.decoder>()
     f.runtime.decoder.mockReturnValue(pending.promise)
     const start = f.camera.start()
+    expect(f.runtime.acquire).toHaveBeenCalledOnce()
+    await settle()
     f.camera.stop()
     pending.resolve(f.decoder)
     await start
     expect(f.decoder.dispose).toHaveBeenCalledOnce()
-    expect(f.runtime.acquire).not.toHaveBeenCalled()
+    expect(f.track.stop).toHaveBeenCalledOnce()
   })
   it.each(['stop', 'scope'] as const)(
     'stops late acquisition after %s without attaching an old stream',
@@ -94,7 +96,7 @@ describe('camera lifecycle without camera hardware', () => {
       pending.resolve(f.stream)
       await start
       expect(f.track.stop).toHaveBeenCalledOnce()
-      expect(f.decoder.dispose).toHaveBeenCalledOnce()
+      expect(f.decoder.dispose).not.toHaveBeenCalled()
       expect(f.runtime.video).not.toHaveBeenCalled()
       expect(f.runtime.scanned).not.toHaveBeenCalled()
     },
@@ -108,6 +110,21 @@ describe('camera lifecycle without camera hardware', () => {
     f.camera.stop()
     pending.resolve('old LOGIN proof')
     await settle()
+    expect(f.runtime.scanned).not.toHaveBeenCalled()
+    expect(vi.getTimerCount()).toBe(0)
+  })
+  it('bounds an unanswered system permission prompt and stops a stream that arrives afterwards', async () => {
+    vi.useFakeTimers()
+    const f = fixture()
+    const pending = deferred<MediaStream>()
+    f.runtime.acquire.mockReturnValue(pending.promise)
+    const start = f.camera.start()
+    await vi.advanceTimersByTimeAsync(15_000)
+    await start
+    expect(f.runtime.failed).toHaveBeenCalledWith(expect.objectContaining({ name: 'TimeoutError' }))
+    pending.resolve(f.stream)
+    await settle()
+    expect(f.track.stop).toHaveBeenCalledOnce()
     expect(f.runtime.scanned).not.toHaveBeenCalled()
     expect(vi.getTimerCount()).toBe(0)
   })
@@ -129,10 +146,20 @@ describe('camera lifecycle without camera hardware', () => {
     f.runtime.acquire.mockRejectedValueOnce(denied)
     await f.camera.start()
     expect(f.runtime.failed).toHaveBeenCalledWith(denied)
-    expect(f.decoder.dispose).toHaveBeenCalledOnce()
+    expect(f.decoder.dispose).not.toHaveBeenCalled()
     await f.camera.start()
     expect(f.runtime.acquire).toHaveBeenCalledTimes(2)
     f.camera.stop()
+  })
+  it('finishes a synchronous unsupported-camera error without leaving a pending deadline', async () => {
+    vi.useFakeTimers()
+    const f = fixture()
+    const error = new DOMException('unsupported', 'NotSupportedError')
+    f.runtime.acquire.mockImplementationOnce(() => { throw error })
+    await f.camera.start()
+    await settle()
+    expect(f.runtime.failed).toHaveBeenCalledExactlyOnceWith(error)
+    expect(vi.getTimerCount()).toBe(0)
   })
   it('releases the stream when decoding fails', async () => {
     const f = fixture()

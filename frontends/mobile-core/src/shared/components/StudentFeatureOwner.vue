@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { useProjectionRefresh } from '../projection-refresh';
+import { useDeviceAccess, type AcquisitionOptions } from '../../device-access/device-access';
+import GeoAcquisitionFeedback from '../../device-access/GeoAcquisitionFeedback.vue';
 import { computed, onBeforeUnmount, reactive, ref, shallowRef, watch } from 'vue';
 import { useQueryClient } from '@tanstack/vue-query';
 import type { CampusMapClient } from '../../api/map-client';
@@ -35,6 +37,7 @@ import { useAttendanceDocuments } from '../../features/attendance/use-attendance
 import HomeworkScreen from '../../features/homework/HomeworkScreen.vue';
 import type { HeadmanHomeworkApi } from '../../features/homework/headman-homework-client';
 import { homeworkQueryKey, useHomework } from '../../features/homework/use-homework';
+import DeviceAccessScreen from '../../features/profile/DeviceAccessScreen.vue';
 import BrowserLoginScreen from '../../features/profile/BrowserLoginScreen.vue';
 import AccountHistoryScreen from '../../features/profile/AccountHistoryScreen.vue';
 import AppearanceScreen from '../../features/profile/AppearanceScreen.vue';
@@ -145,7 +148,7 @@ const props = withDefaults(
       | ((role: ProfileRole, expectedSessionVersion: string) => void | Promise<void>)
       | undefined;
     themeController?: MobileThemeController | null;
-    acquireCheckinCommand: () => Promise<StudentCheckinCommand>;
+    acquireCheckinCommand: (options?: AcquisitionOptions) => Promise<StudentCheckinCommand>;
     openMaterial: (url: string, item: StudentHomeworkItem) => void;
     assistantPermissions?: readonly HeadmanAssistantPermission[];
     assistantPermissionOptions?: readonly HeadmanPermissionOption[];
@@ -285,6 +288,8 @@ const attendanceRequestLesson = shallowRef<AttendanceLesson | null>(null);
 const homeRoleDialogOpen = ref(false);
 const homeRoleError = shallowRef<ProfileRequestError | null>(null);
 const todayRequestAck = shallowRef<RequestDetail | null>(null);
+const deviceAccess = useDeviceAccess();
+let acquisitionController: AbortController | null = null;
 const acquiringLessonId = ref<string | null>(null);
 const checkinError = ref<string | null>(null);
 const checkinRunning = ref(false);
@@ -514,7 +519,11 @@ const impulse = useCheckinImpulse({
       ? JSON.stringify([props.ownerKey, ownerIdentity.value])
       : null,
   route: () =>
-    route.value.id === checkinImpulseRoute.id ? 'impulse' : route.value.id === 'today' ? 'today' : 'other',
+    route.value.id === checkinImpulseRoute.id
+      ? 'impulse'
+      : route.value.id === 'today'
+        ? 'today'
+        : 'other',
   offline: () => offline.value,
   readOnly: () => props.readOnly || scope.value?.readOnly === true,
   data: () => today.query.data.value ?? null,
@@ -537,18 +546,22 @@ const impulse = useCheckinImpulse({
     navigation.goRoot('today');
     if (typeof window.scrollTo === 'function') window.scrollTo(0, 0);
   },
-  focusToday: () => studentRoot.value?.querySelector<HTMLElement>('#today-title')?.focus({ preventScroll: true }),
+  focusToday: () =>
+    studentRoot.value?.querySelector<HTMLElement>('#today-title')?.focus({ preventScroll: true }),
   measure: () => impulseScreen.value?.measure() ?? null,
   reduceMotion: () => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false,
 });
 const realAttendanceDocuments = useAttendanceDocuments(() => ({
-  api: props.api, ownerKey: ownerIdentity.value ?? "",
+  api: props.api,
+  ownerKey: ownerIdentity.value ?? '',
   semesterId: scope.value?.semesterId ?? null,
   allowed: scope.value?.activeRole === 'STUDENT' && props.api !== null,
-  offline: offline.value, data: attendance.data.value,
+  offline: offline.value,
+  data: attendance.data.value,
 }));
 const attendanceDocumentResolver: AttendanceDocumentResolver = (lessonId, explanation) =>
-  props.attendanceDocumentForLesson?.(lessonId, explanation) ?? realAttendanceDocuments(lessonId, explanation);
+  props.attendanceDocumentForLesson?.(lessonId, explanation) ??
+  realAttendanceDocuments(lessonId, explanation);
 
 function refreshAfterRequestDecision(ownerScopeAtStart: StudentFeatureScope | null): void {
   if (
@@ -1392,6 +1405,8 @@ function loadMoreProfile(area: 'sessions' | 'history', cursor: string): void {
 
 function profileRoute(routeName: ProfileRoute): MobileRoute | null {
   if (routeName === 'role-switch') return nestedRoute('profile', 'profile/role-switch', 'detail');
+  if (routeName === 'device-access')
+    return nestedRoute('profile', 'profile/device-access', 'detail');
   if (routeName === 'appearance') return nestedRoute('profile', 'profile/appearance', 'detail');
   if (routeName === 'security') return nestedRoute('profile', 'profile/security', 'detail');
   if (routeName === 'sessions') return nestedRoute('profile', 'profile/sessions', 'detail');
@@ -2087,6 +2102,10 @@ function navigate(next: MobileRootRouteId): void {
   navigation.goRoot(next);
 }
 
+function cancelAcquisition(): void {
+  acquisitionController?.abort();
+}
+
 function performCheckin(
   lesson: TodayLesson,
   isCurrent?: () => boolean,
@@ -2108,27 +2127,35 @@ function performCheckin(
   const canSend = () =>
     !disposed && !offline.value && !props.readOnly &&
     ownerIdentity.value === requestIdentity && (isCurrent?.() ?? true);
+  const acquisition = new AbortController();
+  acquisitionController = acquisition;
   checkinRunning.value = true;
   acquiringLessonId.value = lesson.schedule.id;
   return checkinRecovery
     .execute(
       lesson.schedule.id,
-      () => !isCurrent || canSend()
-        ? props.acquireCheckinCommand()
-        : Promise.reject(new CheckinBeforeSendCancelled()),
+      async () => {
+        if (!canSend() || acquisition.signal.aborted) throw new CheckinBeforeSendCancelled();
+        const command = await props.acquireCheckinCommand({ signal: acquisition.signal });
+        if (!canSend() || acquisition.signal.aborted) throw new CheckinBeforeSendCancelled();
+        // A GPS warm-up may cross the server's eligibility window. Refresh before first POST.
+        await today.query.refetch({ throwOnError: true, cancelRefetch: false });
+        if (!canSend() || acquisition.signal.aborted) throw new CheckinBeforeSendCancelled();
+        const target = today.query.data.value?.lessons.find(
+          (item) => item.schedule.id === lesson.schedule.id,
+        );
+        if (!target?.checkinEligibility.allowed) throw new CheckinBeforeSendCancelled();
+        return command;
+      },
       (attempt) => {
-        if (!canSend()) {
-          return Promise.reject(
-            isCurrent
-              ? new CheckinBeforeSendCancelled()
-              : new Error('Отметка относится к завершившейся сессии'),
-          );
+        if (!canSend() || acquisition.signal.aborted) {
+          return Promise.reject(new CheckinBeforeSendCancelled());
         }
         acquiringLessonId.value = null;
         return today.mutation.mutateAsync({
           ...attempt,
           scope: requestScope,
-          ...(isCurrent ? { canSend } : {}),
+          canSend: () => canSend() && !acquisition.signal.aborted,
         });
       },
     )
@@ -2152,10 +2179,13 @@ function performCheckin(
       if (!disposed && ownerIdentity.value === requestIdentity) {
         const terminal = terminalAuthError(error);
         if (terminal) emit('ownerError', terminal);
+        if (!isCurrent && error instanceof StudentApiError && error.response.status === 409)
+          void today.query.refetch();
       }
       throw error;
     })
     .finally(() => {
+      if (acquisitionController === acquisition) acquisitionController = null;
       if (!disposed && ownerIdentity.value === requestIdentity) {
         checkinRunning.value = false;
         acquiringLessonId.value = null;
@@ -2163,14 +2193,22 @@ function performCheckin(
     });
 }
 
+watch(
+  () => [route.value.id, ownerIdentity.value, offline.value] as const,
+  () => {
+    acquisitionController?.abort();
+    deviceAccess?.cancel();
+  },
+  { flush: 'sync' },
+);
+
 function checkin(lesson: TodayLesson): void {
   const identity = ownerIdentity.value;
   const result = performCheckin(lesson);
   if (!result) return;
   checkinError.value = null;
   void result.catch((error: unknown) => {
-    if (!disposed && ownerIdentity.value === identity)
-      checkinError.value = requestErrorText(error);
+    if (!disposed && ownerIdentity.value === identity) checkinError.value = requestErrorText(error);
   });
 }
 
@@ -2197,6 +2235,8 @@ function openMaterialFromItem(url: string, item: StudentHomeworkItem): void {
 }
 
 onBeforeUnmount(() => {
+  acquisitionController?.abort();
+  deviceAccess?.cancel();
   disposed = true;
   impulse.reset();
   releaseRoleBack?.();
@@ -2215,7 +2255,10 @@ onBeforeUnmount(() => {
   stopNavigation();
   stopTheme();
 });
-function openNotificationAction(action: NotificationLaunchAction, isCurrent: () => boolean): boolean {
+function openNotificationAction(
+  action: NotificationLaunchAction,
+  isCurrent: () => boolean,
+): boolean {
   if (
     !isCurrent() ||
     disposed ||
@@ -2325,14 +2368,15 @@ defineExpose({ openNotificationAction });
         @submit="impulse.submit"
         @retry="impulse.load()"
         @today="impulse.goToday"
+        @cancel="cancelAcquisition"
       />
     </MobileShell>
     <MobileShell
       v-else-if="
-          route.id === 'today/excuse' ||
-          route.id === 'today/late' ||
-          route.id === 'attendance/excuse' ||
-          route.id === 'attendance/late'
+        route.id === 'today/excuse' ||
+        route.id === 'today/late' ||
+        route.id === 'attendance/excuse' ||
+        route.id === 'attendance/late'
       "
       custom-back
       :route="route"
@@ -2608,6 +2652,11 @@ defineExpose({ openNotificationAction });
         :on-back="backProfile"
         :on-select-role="selectProfileRole"
       />
+      <DeviceAccessScreen
+        v-else-if="route.id === 'profile/device-access'"
+        :theme="resolvedTheme"
+        @back="backProfile"
+      />
       <BrowserLoginScreen
         v-else-if="route.id === 'profile/browser-login'"
         :port="profilePort?.browserLoginApproval ?? null"
@@ -2877,6 +2926,11 @@ defineExpose({ openNotificationAction });
         @submit="submitLateCheckin"
       />
     </MobileShell>
+    <GeoAcquisitionFeedback
+      v-if="route.id !== checkinImpulseRoute.id"
+      :active="acquiringLessonId !== null"
+      @cancel="cancelAcquisition"
+    />
     <CheckinArrivalCover
       v-if="impulse.arrival.value"
       :arrival="impulse.arrival.value"

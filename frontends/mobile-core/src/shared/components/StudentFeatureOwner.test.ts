@@ -2089,7 +2089,8 @@ it('retains the mounted owner uncertain check-in through explicit connection ret
   expect(checkinSubmit).toHaveBeenCalledTimes(1)
   clickOwnerTestButton(root, 'test-checkin')
   await vi.waitFor(() => expect(checkinSubmit).toHaveBeenCalledTimes(2))
-  expect(checkinSubmit.mock.calls[1]![0]).toEqual(first)
+  expect(checkinSubmit.mock.calls[1]![0]).toEqual({ ...first, canSend: expect.any(Function) })
+  expect(checkinSubmit.mock.calls[1]![0].canSend()).toBe(true)
   expect(acquire).toHaveBeenCalledTimes(1)
 })
 

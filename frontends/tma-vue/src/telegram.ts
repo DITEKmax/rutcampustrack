@@ -1,10 +1,17 @@
 import type { SystemThemeSource } from '../../shared/foundation'
-import type { MobileHostAdapter, MobileHostAction, StudentCheckinCommand } from '@rct/mobile-core'
+import type { MobileHostAdapter, MobileHostAction } from '@rct/mobile-core'
 import type { TelegramDownloadFileParams } from './report-download-adapter'
+import { browserGeoSource, type GeoSource } from '../../mobile-core/src/device-access/geolocation'
+import {
+  inspectBrowserPermission,
+  type DevicePlatform,
+  type DevicePermission,
+} from '../../mobile-core/src/device-access/device-access'
 
 interface TelegramLocation {
   latitude: number
   longitude: number
+  horizontal_accuracy?: number | null
 }
 
 interface TelegramButton {
@@ -18,6 +25,10 @@ interface TelegramButton {
 }
 
 interface TelegramWebApp {
+  version?: string
+  isVersionAtLeast?: (version: string) => boolean
+  showScanQrPopup?: (params: { text?: string }, callback: (value: string) => boolean) => void
+  closeScanQrPopup?: () => void
   initData: string
   close?: () => void
   ready(): void
@@ -34,6 +45,11 @@ interface TelegramWebApp {
   openLink?: (url: string) => void
   downloadFile?: (params: TelegramDownloadFileParams, callback: (accepted: boolean) => void) => void
   LocationManager?: {
+    isInited?: boolean
+    isLocationAvailable?: boolean
+    isAccessRequested?: boolean
+    isAccessGranted?: boolean
+    openSettings?: () => void
     init(callback: () => void): void
     getLocation(callback: (location: TelegramLocation | null) => void): void
   }
@@ -73,6 +89,7 @@ export function installFixtureTelegramHost(): void {
   }
   window.Telegram = {
     WebApp: {
+      version: '8.0',
       initData: 'fixture-signed-init-data',
       ready: () => undefined,
       expand: () => undefined,
@@ -88,6 +105,10 @@ export function installFixtureTelegramHost(): void {
       },
       offEvent: (event, callback) => listeners.get(event)?.delete(callback),
       LocationManager: {
+        isInited: true,
+        isLocationAvailable: true,
+        isAccessRequested: true,
+        isAccessGranted: true,
         init: (callback) => callback(),
         getLocation: (callback) => callback({ latitude: 55.7539, longitude: 37.6208 }),
       },
@@ -244,28 +265,150 @@ export class TelegramHost implements MobileHostAdapter {
     return true
   }
 
-  location(): Promise<StudentCheckinCommand> {
-    return new Promise((resolve) => {
-      if (!this.app?.LocationManager) {
-        resolve({ geo: { kind: 'UNAVAILABLE', reason: 'POSITION_UNAVAILABLE' } })
-        return
+  devicePlatform(): DevicePlatform {
+    return telegramDevicePlatform(this.app)
+  }
+}
+
+function supports(app: TelegramWebApp | null, required: string): boolean {
+  if (app?.isVersionAtLeast) return app.isVersionAtLeast(required)
+  const actual = (app?.version ?? '0').split('.').map(Number)
+  const minimum = required.split('.').map(Number)
+  return (
+    (actual[0] ?? 0) > (minimum[0] ?? 0) ||
+    ((actual[0] ?? 0) === minimum[0] && (actual[1] ?? 0) >= (minimum[1] ?? 0))
+  )
+}
+
+export function telegramDevicePlatform(app: TelegramWebApp | null): DevicePlatform {
+  const manager = supports(app, '8.0') ? app?.LocationManager : undefined
+  const nativeQr = supports(app, '6.4') && app?.showScanQrPopup && app.closeScanQrPopup
+  const geo: GeoSource = !manager
+    ? browserGeoSource()
+    : {
+        source: 'TMA',
+        watch(sample, failed) {
+          let cancelled = false
+          let next: ReturnType<typeof setTimeout> | undefined
+          const request = () => {
+            if (cancelled) return
+            if (manager.isLocationAvailable === false) {
+              failed('UNSUPPORTED')
+              return
+            }
+            if (manager.isAccessRequested && manager.isAccessGranted === false) {
+              failed('PERMISSION_DENIED')
+              return
+            }
+            manager.getLocation((location) => {
+              if (cancelled) return
+              if (!location) {
+                failed(
+                  manager.isAccessGranted === false ? 'PERMISSION_DENIED' : 'POSITION_UNAVAILABLE',
+                )
+                return
+              }
+              sample({
+                latitude: location.latitude,
+                longitude: location.longitude,
+                accuracy: location.horizontal_accuracy ?? null,
+                timestamp: null,
+                receivedAt: Date.now(),
+              })
+              // Never overlap native getLocation calls; the shared owner supplies the deadline.
+              if (!cancelled) next = setTimeout(request, 1_500)
+            })
+          }
+          if (manager.isInited) request()
+          else
+            manager.init(() => {
+              if (!cancelled) request()
+            })
+          return () => {
+            cancelled = true
+            clearTimeout(next)
+          }
+        },
       }
-      this.app.LocationManager.init(() =>
-        this.app?.LocationManager?.getLocation((location) => {
+  return {
+    geo,
+    async inspect(kind, signal) {
+      if (kind === 'camera') return nativeQr ? 'unknown' : inspectBrowserPermission(kind)
+      if (!manager) return inspectBrowserPermission(kind)
+      return new Promise<DevicePermission>((resolve) => {
+        let finished = false
+        const finishUnknown = () => {
+          if (finished) return
+          finished = true
+          clearTimeout(timer)
+          signal?.removeEventListener('abort', finishUnknown)
+          resolve('unknown')
+        }
+        const timer = setTimeout(finishUnknown, 3_000)
+        signal?.addEventListener('abort', finishUnknown, { once: true })
+        if (signal?.aborted) return finishUnknown()
+        const read = () => {
+          if (finished) return
+          finished = true
+          clearTimeout(timer)
+          signal?.removeEventListener('abort', finishUnknown)
           resolve(
-            location
-              ? {
-                  geo: {
-                    kind: 'COORDINATES',
-                    latitude: location.latitude,
-                    longitude: location.longitude,
-                  },
-                }
-              : { geo: { kind: 'UNAVAILABLE', reason: 'POSITION_UNAVAILABLE' } },
+            manager.isLocationAvailable === false
+              ? 'unsupported'
+              : manager.isAccessGranted
+                ? 'granted'
+                : manager.isAccessRequested
+                  ? 'denied'
+                  : 'prompt',
           )
-        }),
-      )
-    })
+        }
+        if (manager.isInited) read()
+        else manager.init(read)
+      })
+    },
+    ...(manager?.openSettings ? { openLocationSettings: () => manager.openSettings?.() } : {}),
+    ...(nativeQr
+      ? {
+          scanQr(
+            scanned: (value: string) => void,
+            closed: () => void,
+            failed: (error: unknown) => void,
+          ) {
+            let done = false
+            const stop = () => {
+              if (done) return
+              done = true
+              clearTimeout(timer)
+              if (supports(app, '7.7')) app?.offEvent?.('scanQrPopupClosed', onClose)
+              app?.closeScanQrPopup?.()
+            }
+            const onClose = () => {
+              if (!done) {
+                stop()
+                closed()
+              }
+            }
+            const timer = setTimeout(() => {
+              stop()
+              failed(new DOMException('Сканирование не завершено', 'TimeoutError'))
+            }, 60_000)
+            if (supports(app, '7.7')) app?.onEvent?.('scanQrPopupClosed', onClose)
+            try {
+              app?.showScanQrPopup?.({ text: 'QR для входа в браузере' }, (value) => {
+                if (!done) {
+                  stop()
+                  scanned(value)
+                }
+                return true
+              })
+            } catch (error) {
+              stop()
+              failed(error)
+            }
+            return stop
+          },
+        }
+      : {}),
   }
 }
 

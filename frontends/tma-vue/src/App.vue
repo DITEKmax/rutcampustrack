@@ -1,4 +1,9 @@
 <script setup lang="ts">
+import {
+  provideDeviceAccess,
+  type AcquisitionOptions,
+} from '../../mobile-core/src/device-access/device-access';
+import { fixtureGeoSource } from '../../mobile-core/src/dev/device-access-fixture';
 import TelegramAuthScreen from '../../mobile-core/src/features/auth/TelegramAuthScreen.vue';
 import AuthSuccessOverlay from '../../mobile-core/src/features/auth/AuthSuccessOverlay.vue';
 import { useAuthSuccess } from '../../mobile-core/src/features/auth/use-auth-success';
@@ -142,7 +147,8 @@ const theme =
         systemSource: systemThemeSource,
         lockedMode: 'dark',
       });
-const adminThemeController = createMobileTheme({ target: null, mode: theme?.mode ?? 'system', systemSource: systemThemeSource });
+const adminThemeController = createMobileTheme({ target: null, mode: theme?.mode ?? 'system', systemSource: systemThemeSource,
+});
 const adminTheme = ref(adminThemeController.resolvedMode);
 const stopAdminTheme = adminThemeController.subscribe(({ resolvedMode }) => {
   adminTheme.value = resolvedMode;
@@ -250,6 +256,20 @@ const teacherNotificationOwner = ref<{
 const session = shallowRef<StudentSession | null>(null);
 const scope = shallowRef<StudentFeatureScope | null>(null);
 const profile = shallowRef<ProfileSnapshot | null>(null);
+const deviceAccess = provideDeviceAccess({
+  ...host.devicePlatform(),
+  ...(fixtureMode
+    ? {
+        geo: fixtureGeoSource('TMA', new URLSearchParams(window.location.search).get('fixtureGeo')),
+      }
+    : {}),
+});
+watch(
+  () => [profile.value?.userId, profile.value?.sessionId, profile.value?.sessionVersion] as const,
+  ([account, sid, version]) =>
+    deviceAccess.bindOwner(account ?? null, sid ? JSON.stringify([sid, version]) : null),
+  { immediate: true, flush: 'sync' },
+);
 watch(
   () =>
     [
@@ -1233,7 +1253,7 @@ async function bootstrap(): Promise<void> {
       // cannot complete; a later retry can reuse its recovery intent.
       offline.value = true;
     }
-    proofCode.value = cause instanceof TmaAuthError ? cause.code ?? null : null;
+    proofCode.value = cause instanceof TmaAuthError ? (cause.code ?? null) : null;
     error.value = cause instanceof Error ? cause.message : 'Не удалось открыть приложение';
   } finally {
     if (operation === bootstrapOperation) {
@@ -1382,8 +1402,8 @@ const stopSessionInvalidation = sessionOwner.subscribeInvalidation(() => {
   if (!bootstrapping.value) void bootstrap();
 });
 
-function acquireCheckinCommand(): Promise<StudentCheckinCommand> {
-  return host.location();
+function acquireCheckinCommand(options?: AcquisitionOptions): Promise<StudentCheckinCommand> {
+  return deviceAccess.acquire(options);
 }
 
 function openPasswordRecovery(): void {
@@ -1514,10 +1534,10 @@ onBeforeUnmount(() => {
   <NotificationsEntryButton
     v-if="
       notificationsEntryVisible &&
-        !studentViewVisible &&
-        !headmanViewVisible &&
-        !teacherViewVisible &&
-        profile?.activeRole !== 'ADMIN'
+      !studentViewVisible &&
+      !headmanViewVisible &&
+      !teacherViewVisible &&
+      profile?.activeRole !== 'ADMIN'
     "
     floating
     :count="notificationUnread.count"

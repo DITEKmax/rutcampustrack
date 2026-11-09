@@ -636,6 +636,87 @@ describe('D024 incoming browser approval form', () => {
 })
 
 describe('D024 scanner-only browser login screen', () => {
+  it('offers browser fallback only after a native scanner failure and another user click', async () => {
+    const { provideDeviceAccess } = await import('../../device-access/device-access')
+    vi.useFakeTimers()
+    let failed!: (error: unknown) => void
+    const scanQr = vi.fn((_scanned: (value: string) => void, _closed: () => void, onFailed: (error: unknown) => void) => { failed = onFailed; return () => {} })
+    const acquire = vi.fn().mockResolvedValue({ getTracks: () => [{ stop: vi.fn() }] })
+    vi.stubGlobal('navigator', { mediaDevices: { getUserMedia: acquire } })
+    vi.stubGlobal('BarcodeDetector', class { async detect() { return [] } })
+    vi.stubGlobal('window', new EventTarget())
+    vi.stubGlobal('document', testDocument)
+    const port = markRaw({ isOnline: () => true, preview: vi.fn(), decide: vi.fn() })
+    const root = new TestElement('root')
+    const app = renderer.createApp({ setup() {
+      const owner = provideDeviceAccess({ geo: { source: 'TMA', watch: () => () => {} }, scanQr })
+      owner.bindOwner('synthetic-owner', 'synthetic-session')
+      return () => h(BrowserLoginScreen, { port, offline: false, theme: 'light', ownerKey: 'synthetic-owner' })
+    } })
+    apps.push(app); app.mount(root)
+    click(approvalButton(root, 'Сканировать QR'))
+    expect(scanQr).toHaveBeenCalledOnce()
+    expect(acquire).not.toHaveBeenCalled()
+    failed(new DOMException('native unavailable', 'TimeoutError'))
+    await settleApproval()
+    expect(acquire).not.toHaveBeenCalled()
+    click(approvalButton(root, 'Сканировать камерой браузера'))
+    for (let count = 0; count < 8; count++) await settleApproval()
+    expect(acquire).toHaveBeenCalledOnce()
+    expect(scanQr).toHaveBeenCalledOnce()
+    expect(port.preview).not.toHaveBeenCalled()
+  })
+  it('keeps its own pending permission request through browser blur and releases the resulting video on pagehide', async () => {
+    vi.useFakeTimers()
+    let finish!: (stream: MediaStream) => void
+    const track = { stop: vi.fn() }
+    const acquire = vi.fn(
+      () =>
+        new Promise<MediaStream>((resolve) => {
+          finish = resolve
+        }),
+    )
+    vi.stubGlobal('navigator', { mediaDevices: { getUserMedia: acquire } })
+    vi.stubGlobal(
+      'BarcodeDetector',
+      class {
+        async detect() {
+          return []
+        }
+      },
+    )
+    const windowEvents = new EventTarget()
+    vi.stubGlobal('window', windowEvents)
+    vi.stubGlobal('document', testDocument)
+    const port = markRaw({ isOnline: () => true, preview: vi.fn(), decide: vi.fn() })
+    const root = new TestElement('root')
+    const app = renderer.createApp({
+      setup: () => () =>
+        h(BrowserLoginScreen, {
+          port,
+          offline: false,
+          theme: 'light',
+          ownerKey: 'synthetic-owner',
+        }),
+    })
+    apps.push(app)
+    app.mount(root)
+    click(approvalButton(root, 'Сканировать QR'))
+    expect(acquire).toHaveBeenCalledExactlyOnceWith({
+      video: { facingMode: { ideal: 'environment' } },
+      audio: false,
+    })
+    windowEvents.dispatchEvent(new Event('blur'))
+    finish({ getTracks: () => [track] } as unknown as MediaStream)
+    for (let count = 0; count < 8; count++) await settleApproval()
+    expect(track.stop).not.toHaveBeenCalled()
+    windowEvents.dispatchEvent(new Event('pagehide'))
+    await settleApproval()
+    expect(track.stop).toHaveBeenCalledOnce()
+    expect(port.preview).not.toHaveBeenCalled()
+    expect(port.decide).not.toHaveBeenCalled()
+    expect(vi.getTimerCount()).toBe(0)
+  })
   it('scans through the strict parser and waits for explicit rejection without manual or demo fields', async () => {
     vi.useFakeTimers()
     vi.setSystemTime(new Date(browserPreview.issuedAt))

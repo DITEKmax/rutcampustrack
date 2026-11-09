@@ -2,6 +2,7 @@
 import SvgIcon from '../../../../shared/foundation/SvgIcon.vue';
 import { computed, ref, watch } from 'vue';
 import BrowserLoginApprovalForm from './BrowserLoginApprovalForm.vue';
+import { useDeviceAccess } from '../../device-access/device-access';
 import type { BrowserLoginApprovalPort } from './browser-login-approval';
 import type { HeadmanPermissionOption } from '../headman-group/headman-group-client';
 import type {
@@ -51,6 +52,7 @@ const props = withDefaults(
 );
 
 const approvalOpen = ref(false);
+const deviceAccess = useDeviceAccess();
 const approvalAvailable = computed(
   () =>
     !!props.browserLoginApproval &&
@@ -250,6 +252,21 @@ function logout(): void {
                 aria-hidden="true"
               />
               <span>{{ item.label }}</span>
+            </button>
+            <button
+              v-if="deviceAccess"
+              class="profile-row"
+              type="button"
+              @click="navigate('device-access')"
+            >
+              <SvgIcon
+                :width="24"
+                :height="24"
+                class="profile-icon"
+                :src="profileSecurity"
+                aria-hidden="true"
+              />
+              <span>Доступ к устройству</span>
             </button>
             <button
               v-if="browserLoginPage && approvalAvailable"

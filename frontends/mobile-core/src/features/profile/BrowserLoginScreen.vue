@@ -6,11 +6,14 @@ import type { BrowserLoginApprovalPort } from './browser-login-approval';
 import {
   createBrowserLoginCamera,
   createBrowserQrDecoder,
+  cameraErrorMessage,
   type CameraState,
 } from './browser-login-scanner';
 import type { ProfileResolvedTheme } from './profile-types';
 import securityPrevious from './assets/security-previous.svg';
 import StudentWarningBlock from '../../shared/components/StudentWarningBlock.vue';
+import { useDeviceAccess } from '../../device-access/device-access';
+import { requestBrowserCamera } from '../../device-access/browser-camera';
 import './profile-screen.pcss';
 
 const props = defineProps<{
@@ -26,6 +29,9 @@ const cameraState = ref<CameraState>('idle');
 const approvalBusy = ref(false);
 const cameraMessage = ref('');
 const interrupted = ref(false);
+const deviceAccess = useDeviceAccess();
+const nativeUnavailable = ref(false);
+let nativeStop: (() => void) | null = null;
 function allowed(): boolean {
   return (
     !!props.ownerKey &&
@@ -33,6 +39,7 @@ function allowed(): boolean {
     !props.offline &&
     !interrupted.value &&
     !approvalBusy.value &&
+    deviceAccess?.state.camera.enabled !== false &&
     (typeof document === 'undefined' || document.visibilityState !== 'hidden')
   );
 }
@@ -40,11 +47,7 @@ const camera = createBrowserLoginCamera({
   allowed,
   decoder: createBrowserQrDecoder,
   acquire: () => {
-    if (!navigator.mediaDevices?.getUserMedia) throw new Error('Camera unavailable');
-    return navigator.mediaDevices.getUserMedia({
-      video: { facingMode: { ideal: 'environment' } },
-      audio: false,
-    });
+    return requestBrowserCamera({ facingMode: { ideal: 'environment' } });
   },
   video: async () => {
     await nextTick();
@@ -58,10 +61,7 @@ const camera = createBrowserLoginCamera({
     await approval.value?.inspectScan(value);
   },
   failed: (error) => {
-    cameraMessage.value =
-      error instanceof Error && error.name === 'NotAllowedError'
-        ? 'Доступ к камере не разрешён. Разреши его в настройках браузера и попробуй снова.'
-        : 'Камера или сканирование QR недоступны. Проверь камеру и попробуй снова.';
+    cameraMessage.value = cameraErrorMessage(error);
   },
 });
 function startCamera(): void {
@@ -70,9 +70,33 @@ function startCamera(): void {
   if (!allowed()) return;
   approval.value?.clear();
   cameraMessage.value = '';
+  if (deviceAccess?.scanQr && !nativeUnavailable.value) {
+    cameraState.value = 'scanning';
+    nativeStop = deviceAccess.scanQr(
+      (value) => {
+        nativeStop = null;
+        cameraState.value = 'idle';
+        if (allowed()) void approval.value?.inspectScan(value);
+      },
+      () => {
+        nativeStop = null;
+        cameraState.value = 'idle';
+      },
+      (error) => {
+        nativeStop = null;
+        cameraState.value = 'idle';
+        nativeUnavailable.value = true;
+        cameraMessage.value = cameraErrorMessage(error);
+      },
+    );
+    if (nativeStop) return;
+    cameraState.value = 'idle';
+  }
   void camera.start();
 }
 function stopCamera(): void {
+  nativeStop?.();
+  nativeStop = null;
   camera.stop();
 }
 function interrupt(): void {
@@ -83,6 +107,10 @@ function interrupt(): void {
 function visibility(): void {
   if (document.visibilityState === 'hidden') interrupt();
 }
+function blur(): void {
+  // Browser permission prompts blur the page while getUserMedia is still pending.
+  if (cameraState.value !== 'starting' && !nativeStop) interrupt();
+}
 function back(): void {
   interrupt();
   void props.onBack?.();
@@ -91,20 +119,23 @@ watch(
   () => [props.port, props.ownerKey, props.offline],
   () => {
     interrupt();
+    nativeUnavailable.value = false;
     cameraMessage.value = '';
   },
   { flush: 'sync' },
 );
 onMounted(() => {
   document.addEventListener('visibilitychange', visibility);
-  window.addEventListener('blur', interrupt);
+  window.addEventListener('blur', blur);
   window.addEventListener('pagehide', interrupt);
   window.addEventListener('offline', interrupt);
 });
+const unregisterStop = deviceAccess?.registerStop(interrupt);
 onBeforeUnmount(() => {
   interrupt();
+  unregisterStop?.();
   document.removeEventListener('visibilitychange', visibility);
-  window.removeEventListener('blur', interrupt);
+  window.removeEventListener('blur', blur);
   window.removeEventListener('pagehide', interrupt);
   window.removeEventListener('offline', interrupt);
 });
@@ -154,7 +185,7 @@ onBeforeUnmount(() => {
             Сканируй QR с экрана компьютера
           </h2>
           <video
-            v-if="cameraState === 'scanning'"
+            v-if="cameraState === 'scanning' && !nativeStop"
             ref="video"
             class="profile-browser-scanner__video"
             autoplay
@@ -166,10 +197,16 @@ onBeforeUnmount(() => {
             v-if="cameraState === 'idle'"
             class="profile-primary-button"
             type="button"
-            :disabled="approvalBusy || !ownerKey"
+            :disabled="approvalBusy || !ownerKey || deviceAccess?.state.camera.enabled === false"
             @click="startCamera"
           >
-            {{ cameraMessage ? 'Попробовать снова' : 'Сканировать QR' }}
+            {{
+              nativeUnavailable
+                ? 'Сканировать камерой браузера'
+                : cameraMessage
+                  ? 'Попробовать снова'
+                  : 'Сканировать QR'
+            }}
           </button>
           <template v-else>
             <p
@@ -195,6 +232,11 @@ onBeforeUnmount(() => {
             {{ cameraMessage }}
           </p>
         </section>
+        <p
+          v-if="deviceAccess?.state.camera.enabled === false"
+          class="profile-note__body"
+          >Камера выключена в приложении. Включи её в профиле: «Доступ к устройству».</p
+        >
         <BrowserLoginApprovalForm
           scan-only
           :key="ownerKey ?? ''"

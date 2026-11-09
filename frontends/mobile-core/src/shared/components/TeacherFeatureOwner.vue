@@ -7,6 +7,7 @@ import type { CampusMapClient } from '../../api/map-client';
 import MapScreen from '../../features/map/MapScreen.vue';
 import AccountHistoryScreen from '../../features/profile/AccountHistoryScreen.vue';
 import AppearanceScreen from '../../features/profile/AppearanceScreen.vue';
+import DeviceAccessScreen from '../../features/profile/DeviceAccessScreen.vue';
 import BrowserLoginScreen from '../../features/profile/BrowserLoginScreen.vue';
 import ProfileScreen from '../../features/profile/ProfileScreen.vue';
 import { ProfileState } from '../../features/profile/profile-state';
@@ -106,7 +107,7 @@ const emit = defineEmits<{
 type ProfileArea = 'sessions' | 'history';
 type ProfileAccountRoute = Extract<
   ProfileRoute,
-  'role-switch' | 'browser-login' | 'appearance' | 'security' | 'sessions' | 'history'
+  'role-switch' | 'browser-login' | 'device-access' | 'appearance' | 'security' | 'sessions' | 'history'
 >;
 
 const navigation: MobileNavigationStack = createMobileNavigationStack(
@@ -579,6 +580,7 @@ function navigateProfile(routeName: ProfileRoute): void {
   if (
     routeName === 'role-switch' ||
     routeName === 'browser-login' ||
+    routeName === 'device-access' ||
     routeName === 'appearance' ||
     routeName === 'security' ||
     routeName === 'sessions' ||
@@ -1088,6 +1090,7 @@ defineExpose({ openNotificationAction });
           :on-back="backRoute"
           :on-select-role="selectProfileRole"
         />
+        <DeviceAccessScreen v-else-if="route.id === 'profile/device-access'" :theme="resolvedTheme" @back="backRoute" />
         <BrowserLoginScreen
           v-else-if="route.id === 'profile/browser-login'"
           :port="browserLoginApproval"

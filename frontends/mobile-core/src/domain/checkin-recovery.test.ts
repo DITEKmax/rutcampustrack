@@ -17,6 +17,39 @@ const ack: StudentCheckinAck = {
 }
 
 describe('check-in command recovery', () => {
+  it('freezes coordinates and diagnostics from the first POST when its acknowledgement is lost', async () => {
+    const recovery = new CheckinCommandRecovery(() => 'immutable-key')
+    const original: StudentCheckinCommand = {
+      geo: { kind: 'COORDINATES', latitude: 55, longitude: 37 },
+      diagnostics: {
+        source: 'BROWSER',
+        accuracyMeters: 20,
+        sampleCount: 2,
+        completionReason: 'QUALITY_REACHED',
+        fixTimestamp: '2026-09-06T08:30:00Z',
+        receivedAt: '2026-09-06T08:30:01Z',
+        acquisitionDurationMs: 1000,
+      },
+    }
+    const sent: StudentCheckinCommand[] = []
+    const submit = vi.fn(async (attempt: { command: StudentCheckinCommand }) => {
+      sent.push(attempt.command)
+      if (sent.length === 1) throw new TypeError('response lost')
+      return ack
+    })
+    await expect(recovery.execute('77', async () => original, submit)).rejects.toThrow(
+      'response lost',
+    )
+    original.diagnostics!.accuracyMeters = 500
+    if (original.geo.kind === 'COORDINATES') original.geo.latitude = 56
+    const replacement = vi.fn(async () => command)
+    await expect(recovery.execute('77', replacement, submit)).resolves.toEqual(ack)
+    expect(replacement).not.toHaveBeenCalled()
+    expect(sent[1]).toBe(sent[0])
+    expect(sent[1]?.diagnostics?.accuracyMeters).toBe(20)
+    expect(sent[1]?.geo).toMatchObject({ latitude: 55 })
+    expect(Object.isFrozen(sent[1]?.diagnostics)).toBe(true)
+  })
   it('replays the exact logical command after a response is lost and single-flights concurrent acquisition', async () => {
     const recovery = new CheckinCommandRecovery(() => 'key-1')
     let acquired = 0
@@ -83,13 +116,16 @@ describe('check-in command recovery', () => {
   })
 
   it('discards unsent geolocation but retains a previously ambiguous command across route cancellation', async () => {
-    const recovery = new CheckinCommandRecovery(vi.fn().mockReturnValueOnce('discard').mockReturnValueOnce('keep'))
+    const recovery = new CheckinCommandRecovery(vi.fn().mockReturnValueOnce('discard').mockReturnValueOnce('keep'),
+    )
     const acquire = vi.fn(async () => command)
     const cancel = async () => { throw new CheckinBeforeSendCancelled() }
     const failAfterSend = async () => { throw new TypeError('response lost') }
-    await expect(recovery.execute('77', acquire, cancel)).rejects.toBeInstanceOf(CheckinBeforeSendCancelled)
+    await expect(recovery.execute('77', acquire, cancel)).rejects.toBeInstanceOf(CheckinBeforeSendCancelled,
+    )
     await expect(recovery.execute('77', acquire, failAfterSend)).rejects.toThrow('response lost')
-    await expect(recovery.execute('77', acquire, cancel)).rejects.toBeInstanceOf(CheckinBeforeSendCancelled)
+    await expect(recovery.execute('77', acquire, cancel)).rejects.toBeInstanceOf(CheckinBeforeSendCancelled,
+    )
     const send = vi.fn(async () => ack)
     await expect(recovery.execute('77', acquire, send)).resolves.toEqual(ack)
     expect(acquire).toHaveBeenCalledTimes(2)

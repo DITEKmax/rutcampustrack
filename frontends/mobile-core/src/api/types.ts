@@ -12,6 +12,7 @@ export type StudentHomeworkCompletionCommand =
 export type StudentHomeworkCompletion = components['schemas']['StudentHomeworkCompletion']
 export type StudentCheckinAck = components['schemas']['StudentCheckinAck']
 export type StudentCheckinCommand = components['schemas']['StudentCheckinCommand']
+export type CheckinDiagnostics = components['schemas']['CheckinDiagnostics']
 export type StudentExcuseRequest = components['schemas']['StudentExcuseRequest']
 export type StudentLateCheckinRequest = components['schemas']['StudentLateCheckinRequest']
 export type StudentRequestAttachment = components['schemas']['StudentRequestAttachment']

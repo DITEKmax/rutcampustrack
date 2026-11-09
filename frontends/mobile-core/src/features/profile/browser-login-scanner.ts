@@ -76,6 +76,8 @@ export function createBrowserLoginCamera(runtime: BrowserCameraRuntime) {
   let decoder: BrowserQrDecoder | null = null
   let video: HTMLVideoElement | null = null
   let timer: ReturnType<typeof setTimeout> | undefined
+  let deadline: ReturnType<typeof setTimeout> | undefined
+  let cancelStart: (() => void) | null = null
   let state: CameraState = 'idle'
   function setState(value: CameraState): void {
     state = value
@@ -83,6 +85,9 @@ export function createBrowserLoginCamera(runtime: BrowserCameraRuntime) {
   }
   function stop(): void {
     revision++
+    cancelStart?.()
+    cancelStart = null
+    clearTimeout(deadline)
     clearTimeout(timer)
     timer = undefined
     stream?.getTracks().forEach((track) => track.stop())
@@ -128,26 +133,40 @@ export function createBrowserLoginCamera(runtime: BrowserCameraRuntime) {
     const request = revision
     setState('starting')
     try {
-      const created = await runtime.decoder()
-      if (!current(request)) {
-        created.dispose()
-        return
-      }
-      decoder = created
-      const acquired = await runtime.acquire()
-      if (!current(request)) {
-        acquired.getTracks().forEach((track) => track.stop())
-        return
-      }
+      const cancellation = new Promise<never>((_, reject) => {
+        cancelStart = () => reject(new DOMException('Camera cancelled', 'AbortError'))
+        deadline = setTimeout(
+          () => reject(new DOMException('Camera permission timed out', 'TimeoutError')),
+          15_000,
+        )
+      })
+      // acquire() may throw synchronously (unsupported or blocked document).
+      void cancellation.catch(() => undefined)
+      // Preserve user activation: request video before the first await/import/decoder work.
+      const acquisition = runtime.acquire().then((acquired) => {
+        if (!current(request)) acquired.getTracks().forEach((track) => track.stop())
+        return acquired
+      })
+      const acquired = await Promise.race([acquisition, cancellation])
+      if (!current(request)) return
       stream = acquired
+      const creation = runtime.decoder().then((created) => {
+        if (!current(request)) created.dispose()
+        return created
+      })
+      const created = await Promise.race([creation, cancellation])
+      if (!current(request)) return
+      decoder = created
       setState('scanning')
-      const target = await runtime.video()
+      const target = await Promise.race([runtime.video(), cancellation])
       if (!current(request)) return
       if (!target) throw new Error('Camera view unavailable')
       video = target
       target.srcObject = acquired
-      await target.play()
+      await Promise.race([target.play(), cancellation])
       if (!current(request)) return
+      clearTimeout(deadline)
+      cancelStart = null
       void frame(request, created, target)
     } catch (error) {
       if (!current(request)) return
@@ -156,4 +175,20 @@ export function createBrowserLoginCamera(runtime: BrowserCameraRuntime) {
     }
   }
   return { start, stop }
+}
+
+export function cameraErrorMessage(error: unknown): string {
+  const name = error instanceof Error ? error.name : ''
+  if (name === 'NotAllowedError')
+    return 'Доступ к камере не разрешён. Проверь разрешение браузера, Telegram и устройства.'
+  if (name === 'NotFoundError') return 'Камера не найдена на этом устройстве.'
+  if (name === 'NotReadableError')
+    return 'Камера занята или недоступна системе. Закрой другие приложения с камерой и попробуй снова.'
+  if (name === 'SecurityError')
+    return 'Камера недоступна из-за политики безопасности. Проверь настройки сайта.'
+  if (name === 'NotSupportedError')
+    return 'Этот браузер или устройство не поддерживает доступ к камере.'
+  if (name === 'TimeoutError')
+    return 'Ожидание камеры завершено. Проверь разрешение и попробуй снова.'
+  return 'Камера или сканирование QR недоступны. Проверь камеру и попробуй снова.'
 }

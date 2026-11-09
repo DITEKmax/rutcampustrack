@@ -22,6 +22,7 @@ export type ProfileRoute =
   | 'appearance'
   | 'security'
   | 'browser-login'
+  | 'device-access'
   | 'sessions'
   | 'history'
 export type ProfileAuthMethod = 'PASSWORD' | 'OTP' | 'TMA' | 'QR'

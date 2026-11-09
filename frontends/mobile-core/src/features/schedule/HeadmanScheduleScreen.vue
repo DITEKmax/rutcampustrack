@@ -42,6 +42,7 @@ import type {
 import { DEFAULT_PASSWORD_POLICY, ProfileRequestError } from '../profile/profile-types';
 import { ProfileState } from '../profile/profile-state';
 import ProfileScreen from '../profile/ProfileScreen.vue';
+import DeviceAccessScreen from '../profile/DeviceAccessScreen.vue';
 import BrowserLoginScreen from '../profile/BrowserLoginScreen.vue';
 import RoleSwitchScreen from '../profile/RoleSwitchScreen.vue';
 import AppearanceScreen from '../profile/AppearanceScreen.vue';
@@ -570,10 +571,11 @@ async function openProfileArea(area: 'sessions' | 'history'): Promise<void> {
 function profileRoute(
   routeName: Extract<
     ProfileRoute,
-    'role-switch' | 'appearance' | 'security' | 'sessions' | 'history'
+    'role-switch' | 'device-access' | 'appearance' | 'security' | 'sessions' | 'history'
   >,
 ) {
   if (routeName === 'role-switch') return nestedRoute('profile', 'profile/role-switch', 'detail');
+  if (routeName === 'device-access') return nestedRoute('profile', 'profile/device-access', 'detail');
   if (routeName === 'appearance') return nestedRoute('profile', 'profile/appearance', 'detail');
   if (routeName === 'security') return nestedRoute('profile', 'profile/security', 'detail');
   if (routeName === 'sessions') return nestedRoute('profile', 'profile/sessions', 'detail');
@@ -594,6 +596,7 @@ function navigateProfile(
     return;
   }
   if (
+    routeName === 'device-access' ||
     routeName === 'role-switch' ||
     routeName === 'appearance' ||
     routeName === 'security' ||
@@ -2183,6 +2186,7 @@ defineExpose({ openNotificationAction });
         :on-back="handleTaskBack"
         :on-select-role="selectProfileRole"
       />
+      <DeviceAccessScreen v-else-if="route.id === 'profile/device-access'" :theme="resolvedTheme" @back="handleTaskBack" />
       <BrowserLoginScreen
         v-else-if="route.id === browserLoginRouteId"
         :port="browserLoginApproval"

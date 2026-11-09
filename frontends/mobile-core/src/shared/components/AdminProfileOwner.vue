@@ -2,6 +2,7 @@
 import { computed, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue';
 import AccountHistoryScreen from '../../features/profile/AccountHistoryScreen.vue';
 import AppearanceScreen from '../../features/profile/AppearanceScreen.vue';
+import DeviceAccessScreen from '../../features/profile/DeviceAccessScreen.vue';
 import BrowserLoginScreen from '../../features/profile/BrowserLoginScreen.vue';
 import ProfileScreen from '../../features/profile/ProfileScreen.vue';
 import { ProfileState } from '../../features/profile/profile-state';
@@ -222,6 +223,7 @@ function navigateProfile(routeName: ProfileRoute): void {
   if (routeName === 'browser-login' && !browserLoginApproval.value?.isOnline()) return;
   if (
     routeName === 'browser-login' ||
+    routeName === 'device-access' ||
     routeName === 'appearance' ||
     routeName === 'security' ||
     routeName === 'sessions' ||
@@ -313,6 +315,11 @@ onBeforeUnmount(() => {
       :on-navigate="navigateProfile"
       :on-logout="logout"
       :logout-busy="logoutBusy"
+    />
+    <DeviceAccessScreen
+      v-else-if="route.id === 'profile/device-access'"
+      :theme="resolvedTheme"
+      @back="backRoute"
     />
     <BrowserLoginScreen
       v-else-if="route.id === 'profile/browser-login'"

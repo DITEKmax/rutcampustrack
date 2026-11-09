@@ -1,4 +1,10 @@
 <script setup lang="ts">
+import {
+  provideDeviceAccess,
+  type AcquisitionOptions,
+} from '../../mobile-core/src/device-access/device-access';
+import { browserGeoSource } from '../../mobile-core/src/device-access/geolocation';
+import { fixtureGeoSource } from '../../mobile-core/src/dev/device-access-fixture';
 import AuthSuccessOverlay from '../../mobile-core/src/features/auth/AuthSuccessOverlay.vue';
 import { useAuthSuccess } from '../../mobile-core/src/features/auth/use-auth-success';
 import { createDeviceThemeMirror, createDeviceThemeTransport } from '../../shared/foundation';
@@ -59,7 +65,6 @@ import {
   createAssistantPermissionRefresher,
   isAssistantCapabilityForbiddenError,
   isAssistantPermissionReadForbidden,
-  commandFromCoordinates,
   createFixtureTransport,
   createGenerationBoundNotificationsV2Api,
   createGenerationBoundNotificationsRealtime,
@@ -70,8 +75,6 @@ import {
   studentFeatureScope,
   studentFeatureScopeIdentity,
   studentOfflineScopeKey,
-  unavailableCommand,
-  unavailableReason,
   type SemesterSnapshot,
   type SnapshotCleanupResult,
   type StudentCheckinCommand,
@@ -353,6 +356,22 @@ const authView = ref<
   | 'admin-role-switch'
 >(directPasswordRecoveryEntry ? 'password-recovery' : 'login');
 const authSnapshot = shallowRef<ProfileSnapshot | null>(null);
+const deviceAccess = provideDeviceAccess({
+  geo: fixtureMode
+    ? fixtureGeoSource('BROWSER', new URLSearchParams(window.location.search).get('fixtureGeo'))
+    : browserGeoSource(),
+});
+watch(
+  () =>
+    [
+      authSnapshot.value?.userId,
+      authSnapshot.value?.sessionId,
+      authSnapshot.value?.sessionVersion,
+    ] as const,
+  ([account, sid, version]) =>
+    deviceAccess.bindOwner(account ?? null, sid ? JSON.stringify([sid, version]) : null),
+  { immediate: true, flush: 'sync' },
+);
 watch(
   () =>
     [
@@ -2095,32 +2114,8 @@ async function persistHomework(homework: StudentHomework): Promise<void> {
   }
 }
 
-async function readPosition(): Promise<GeolocationPosition | GeolocationPositionError | null> {
-  if (!navigator.geolocation) return null;
-  return new Promise((resolve) =>
-    navigator.geolocation.getCurrentPosition(resolve, resolve, {
-      enableHighAccuracy: true,
-      timeout: 10_000,
-      maximumAge: 0,
-    }),
-  );
-}
-
-function acquireCheckinCommand(): Promise<StudentCheckinCommand> {
-  if (fixtureMode) return Promise.resolve(fixtureCheckinCommand());
-  return readPosition().then((result) =>
-    result && 'coords' in result
-      ? commandFromCoordinates(result)
-      : unavailableCommand(unavailableReason(result)),
-  );
-}
-
-/** Fixture-only browser control; production always uses the real GPS API. */
-function fixtureCheckinCommand(): StudentCheckinCommand {
-  const scenario = new URLSearchParams(window.location.search).get('fixtureGeo');
-  return scenario === 'coordinates'
-    ? { geo: { kind: 'COORDINATES', latitude: 55.75, longitude: 37.62 } }
-    : unavailableCommand('POSITION_UNAVAILABLE');
+function acquireCheckinCommand(options?: AcquisitionOptions): Promise<StudentCheckinCommand> {
+  return deviceAccess.acquire(options);
 }
 
 function openMaterial(url: string): void {
@@ -2320,10 +2315,10 @@ onBeforeUnmount(() => {
   <NotificationsEntryButton
     v-if="
       notificationsEntryVisible &&
-        !studentViewVisible &&
-        !headmanViewVisible &&
-        !teacherViewVisible &&
-        authSnapshot?.activeRole !== 'ADMIN'
+      !studentViewVisible &&
+      !headmanViewVisible &&
+      !teacherViewVisible &&
+      authSnapshot?.activeRole !== 'ADMIN'
     "
     floating
     :count="notificationUnread.count"

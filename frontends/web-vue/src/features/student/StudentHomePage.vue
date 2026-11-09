@@ -68,7 +68,7 @@ watch(scope.session, (value) => {
     subject.clear();
   }
 });
-const checkin = useStudentCheckin(scope, load);
+const checkin = useStudentCheckin(scope, load, () => (today.error.value ? null : today.data.value));
 const progress = computed(() => {
   const lesson = hero.value?.schedule,
     value = today.data.value;
@@ -146,13 +146,46 @@ const progress = computed(() => {
               class="web-button web-button-primary"
               :disabled="
                 !checkin.allowed(hero, today.data.value.serverNow) ||
-                  checkin.uncertain.value === hero.schedule.id
+                checkin.uncertain.value === hero.schedule.id
               "
               :aria-busy="checkin.busy.value"
               @click="checkin.submit(hero, today.data.value.serverNow)"
             >
               {{ checkin.label(hero, today.data.value.serverNow) }}
             </button>
+            <div
+              v-if="checkin.deviceAccess.state.stage || checkin.acquiring.value"
+              class="web-stack"
+              aria-label="Определение геолокации"
+            >
+              <p role="status">{{
+                checkin.deviceAccess.state.stage === 'review'
+                  ? 'Не удалось надёжно определить геолокацию. Ты можешь повторить или продолжить с полученным результатом. Если геолокация не подтвердит присутствие, запрос отправится старосте.'
+                  : checkin.deviceAccess.state.stage === 'refining'
+                    ? 'Уточняем геолокацию…'
+                    : 'Определяем геолокацию…'
+              }}</p>
+              <template v-if="checkin.deviceAccess.state.stage === 'review'">
+                <button
+                  class="web-button"
+                  type="button"
+                  @click="checkin.deviceAccess.choose('retry')"
+                  >Определить ещё раз</button
+                >
+                <button
+                  class="web-button web-button-primary"
+                  type="button"
+                  @click="checkin.deviceAccess.choose('continue')"
+                  >Продолжить</button
+                >
+              </template>
+              <button
+                class="web-button"
+                type="button"
+                @click="checkin.cancelAcquisition()"
+                >Отменить</button
+              >
+            </div>
             <button
               v-if="checkin.uncertain.value === hero.schedule.id"
               class="web-button"
@@ -237,12 +270,12 @@ const progress = computed(() => {
                     <RouterLink
                       v-if="
                         !scope.readOnly.value &&
-                          canRequestLesson(
-                            options.data.value?.lessons.find(
-                              (option) => option.lesson.id === lesson.schedule.id,
-                            ),
-                            kind,
-                          )
+                        canRequestLesson(
+                          options.data.value?.lessons.find(
+                            (option) => option.lesson.id === lesson.schedule.id,
+                          ),
+                          kind,
+                        )
                       "
                       class="web-button"
                       :to="{

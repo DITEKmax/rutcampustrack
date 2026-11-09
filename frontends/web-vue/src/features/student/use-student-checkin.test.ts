@@ -62,7 +62,10 @@ function fixture() {
     user: { id: '15' },
     capabilities: ['GEO_CHECKIN'],
   } as unknown as StudentSession)
-  const api = { checkin: vi.fn().mockResolvedValue({ lessonId: '77', outcome: 'PRESENT' }) }
+  const api = {
+    checkin: vi.fn().mockResolvedValue({ lessonId: '77', outcome: 'PRESENT' }),
+    reportCheckinAcquisition: vi.fn().mockResolvedValue(undefined),
+  }
   const scope = {
     identity: crypto.randomUUID(),
     session,
@@ -122,6 +125,40 @@ async function settle() {
   for (let i = 0; i < 10; i++) await Promise.resolve()
 }
 describe('Web consumer of shared acquisition and immutable recovery', () => {
+  it('keeps a run reporter bound to the captured API when the account changes during GPS', async () => {
+    const f = fixture()
+    const submit = f.checkin.submit(lesson, '2026-11-09T07:00:00Z')
+    await settle()
+    const replacementReport = vi.fn().mockResolvedValue(undefined)
+    f.scope.api = {
+      ...f.api,
+      reportCheckinAcquisition: replacementReport,
+    } as unknown as StudentScope['api']
+    f.scope.session.value = {
+      ...f.scope.session.value!,
+      user: { ...f.scope.session.value!.user, id: 'another-account' },
+    }
+    await submit
+    expect(replacementReport).not.toHaveBeenCalled()
+    expect(f.api.reportCheckinAcquisition).toHaveBeenCalledExactlyOnceWith({
+      source: 'BROWSER',
+      outcome: 'CANCELLED',
+      durationMs: 0,
+      sampleCount: 0,
+    })
+    expect(f.api.checkin).not.toHaveBeenCalled()
+  })
+  it('keeps an optional reporter rejection from changing a successful check-in', async () => {
+    const f = fixture()
+    f.api.reportCheckinAcquisition.mockRejectedValue(new TypeError('optional report unavailable'))
+    const submit = f.checkin.submit(lesson, '2026-11-09T07:00:00Z')
+    await settle()
+    f.emit(20)
+    await submit
+    expect(f.api.checkin).toHaveBeenCalledOnce()
+    expect(f.checkin.result.value).toContain('Отметка подтверждена')
+    expect(f.checkin.error.value).toBe('')
+  })
   it.each(['pagehide', 'offline', 'visibility'] as const)(
     'cancels %s in the GPS-to-preflight gap without the first POST',
     async (event) => {
@@ -148,6 +185,12 @@ describe('Web consumer of shared acquisition and immutable recovery', () => {
       expect(f.api.checkin).not.toHaveBeenCalled()
       expect(f.checkin.uncertain.value).toBeNull()
       expect(f.checkin.busy.value).toBe(false)
+      expect(f.api.reportCheckinAcquisition).toHaveBeenCalledExactlyOnceWith({
+        source: 'BROWSER',
+        outcome: 'QUALITY_REACHED',
+        durationMs: 0,
+        sampleCount: 1,
+      })
     },
   )
   it('discards an unsent browser fix that expires during the eligibility refresh', async () => {
@@ -203,6 +246,12 @@ describe('Web consumer of shared acquisition and immutable recovery', () => {
     expect(f.clearWatch).toHaveBeenCalledOnce()
     expect(f.checkin.uncertain.value).toBeNull()
     expect(f.checkin.busy.value).toBe(false)
+    expect(f.api.reportCheckinAcquisition).toHaveBeenCalledExactlyOnceWith({
+      source: 'BROWSER',
+      outcome: 'CANCELLED',
+      durationMs: 0,
+      sampleCount: 0,
+    })
   })
   it('uses the late server eligibility and does not POST a fix after the window closes', async () => {
     const f = fixture()
@@ -229,5 +278,6 @@ describe('Web consumer of shared acquisition and immutable recovery', () => {
     await f.checkin.submit(lesson, '2026-11-09T07:00:00Z', true)
     expect(f.watchPosition).toHaveBeenCalledOnce()
     expect(f.api.checkin.mock.calls[1]).toEqual(sent)
+    expect(f.api.reportCheckinAcquisition).toHaveBeenCalledOnce()
   })
 })

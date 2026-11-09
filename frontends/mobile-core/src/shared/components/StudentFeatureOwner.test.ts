@@ -1278,8 +1278,9 @@ describe('StudentFeatureOwner offline read models', () => {
     vi.stubGlobal('window', new EventTarget())
     vi.stubGlobal('document', Object.assign(new EventTarget(), { visibilityState: 'visible' }))
     let device!: DeviceAccess
+    const reportCheckinAcquisition = vi.fn().mockResolvedValue(undefined)
     const root = mountOwnerTest(
-      { getRequestOptions: async () => requestOptions() } as unknown as StudentApi,
+      { getRequestOptions: async () => requestOptions(), reportCheckinAcquisition } as unknown as StudentApi,
       { acquireCheckinCommand: (options: AcquisitionOptions) => device.acquire(options) },
       () => {
         device = provideDeviceAccess({ geo: { source: 'BROWSER', watch(sample) {
@@ -1305,6 +1306,7 @@ describe('StudentFeatureOwner offline read models', () => {
     finish()
     await vi.waitFor(() => expect(ownerTestOutput(root, 'test-acquiring')).toBe(''))
     expect(checkinSubmit).not.toHaveBeenCalled()
+    expect(reportCheckinAcquisition).toHaveBeenCalledExactlyOnceWith({ source: 'BROWSER', outcome: 'QUALITY_REACHED', durationMs: 0, sampleCount: 1 })
   })
 
   it('waits for real warm Vue Query GETs, keeps one read per feed, and accepts a later successful retry', async () => {

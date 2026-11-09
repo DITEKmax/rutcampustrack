@@ -29,6 +29,23 @@ export interface GeoResult {
   needsReview: boolean
   conflicting: boolean
 }
+export type GeoAcquisitionTerminal = Pick<GeoResult, 'source' | 'duration' | 'sampleCount'> & {
+  reason: GeoResult['reason'] | 'CANCELLED'
+}
+export type GeoTerminalHook = (event: GeoAcquisitionTerminal) => void | Promise<void>
+
+/** Only bounded, non-identifying terminal values leave the sensor owner. Never await telemetry. */
+export function notifyGeoTerminal(
+  hook: GeoTerminalHook | undefined,
+  event: GeoAcquisitionTerminal,
+): void {
+  if (!hook) return
+  try {
+    void Promise.resolve(hook(Object.freeze({ ...event }))).catch(() => undefined)
+  } catch {
+    /* Optional reporting must not affect acquisition or session state. */
+  }
+}
 
 export function isFreshBrowserFix(timestamp: number | null, now = Date.now()): boolean {
   return (
@@ -73,6 +90,7 @@ export function acquireGeolocation(
     signal?: AbortSignal
     progress?: (stage: 'determining' | 'refining') => void
     budgetMs?: number
+    terminal?: GeoTerminalHook
   } = {},
 ): Promise<GeoResult> {
   return new Promise((resolve, reject) => {
@@ -101,11 +119,18 @@ export function acquireGeolocation(
           )
             best = candidate
         }
+      const duration = Math.min(60_000, Math.max(0, Date.now() - started))
+      notifyGeoTerminal(options.terminal, {
+        source: source.source,
+        reason,
+        duration,
+        sampleCount: count,
+      })
       resolve({
         source: source.source,
         sample: best,
         sampleCount: count,
-        duration: Math.min(60_000, Math.max(0, Date.now() - started)),
+        duration,
         reason,
         needsReview: conflicting || !best || accuracy(best) > GEO_GOOD_METERS,
         conflicting,
@@ -117,6 +142,12 @@ export function acquireGeolocation(
       clearTimeout(timer)
       stop()
       options.signal?.removeEventListener('abort', abort)
+      notifyGeoTerminal(options.terminal, {
+        source: source.source,
+        reason: 'CANCELLED',
+        duration: Math.min(60_000, Math.max(0, Date.now() - started)),
+        sampleCount: count,
+      })
       reject(new DOMException('Определение геолокации отменено', 'AbortError'))
     }
     const timer = setTimeout(

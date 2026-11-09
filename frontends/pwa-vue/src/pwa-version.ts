@@ -32,7 +32,11 @@ export function createPwaFetcher(baseFetcher?: typeof fetch): typeof fetch {
     new Headers(init?.headers).forEach((value, key) => headers.set(key, value))
     headers.set('X-PWA-Version', APP_VERSION)
     const response = await fetcher(input, { ...init, headers })
-    if (response.status === 426) void notifyUpdateRequired(response)
+    const path = new URL(input instanceof Request ? input.url : String(input), 'http://localhost')
+      .pathname
+    // Optional acquisition reporting must not open a blocking update flow.
+    if (response.status === 426 && path !== '/api/v1/student/checkin/acquisition-reports')
+      void notifyUpdateRequired(response)
     return response
   }
 }

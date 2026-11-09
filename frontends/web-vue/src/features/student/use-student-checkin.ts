@@ -89,6 +89,7 @@ export function useStudentCheckin(
     error.value = ''
     result.value = ''
     const acquisition = new AbortController()
+    const reportApi = scope.api
     acquisitionController = acquisition
     const releaseAcquisitionStop = deviceAccess.registerStop(() => acquisition.abort())
     let firstSend = false
@@ -99,7 +100,16 @@ export function useStudentCheckin(
         async () => {
           firstSend = true
           acquiring.value = true
-          const command = await deviceAccess.acquire({ signal: acquisition.signal })
+          const command = await deviceAccess.acquire({
+            signal: acquisition.signal,
+            terminal: (event) =>
+              reportApi.reportCheckinAcquisition({
+                source: event.source,
+                outcome: event.reason,
+                durationMs: event.duration,
+                sampleCount: event.sampleCount,
+              }),
+          })
           scope.transport.assertCurrent()
           if (!scope.current() || acquisition.signal.aborted) throw new CheckinBeforeSendCancelled()
           await refresh()

@@ -2,6 +2,7 @@ import type {
   MobileProblemDetails,
   StudentCheckinAck,
   StudentCheckinCommand,
+  CheckinAcquisitionReport,
   StudentHomework,
   StudentHomeworkCompletion,
   StudentHomeworkCompletionCommand,
@@ -233,6 +234,66 @@ export class StudentApi {
     })
   }
 
+  /** One optional observation; never refresh authentication, retry, or decode an error body. */
+  async reportCheckinAcquisition(report: CheckinAcquisitionReport): Promise<void> {
+    const outcomes = new Set<CheckinAcquisitionReport['outcome']>([
+      'QUALITY_REACHED',
+      'BUDGET_EXPIRED',
+      'PERMISSION_DENIED',
+      'POSITION_UNAVAILABLE',
+      'TIMEOUT',
+      'UNSUPPORTED',
+      'APP_DISABLED',
+      'CANCELLED',
+    ])
+    const integer = (value: unknown, max: number) =>
+      typeof value === 'number' && Number.isInteger(value) && value >= 0 && value <= max
+    let timer: ReturnType<typeof setTimeout> | undefined
+    try {
+      if (
+        !['BROWSER', 'TMA'].includes(report.source) ||
+        !outcomes.has(report.outcome) ||
+        (report.durationMs !== undefined && !integer(report.durationMs, 60_000)) ||
+        (report.sampleCount !== undefined && !integer(report.sampleCount, 64))
+      )
+        return
+      // Generation-bound owners throw here after account drift; never read a replacement owner token.
+      const token = this.options.accessToken()
+      if (!token) return
+      const controller = new AbortController()
+      const deadline = new Promise<void>((resolve) => {
+        timer = setTimeout(() => {
+          controller.abort()
+          resolve()
+        }, 5_000)
+      })
+      const body: CheckinAcquisitionReport = {
+        source: report.source,
+        outcome: report.outcome,
+        ...(report.durationMs !== undefined ? { durationMs: report.durationMs } : {}),
+        ...(report.sampleCount !== undefined ? { sampleCount: report.sampleCount } : {}),
+      }
+      await Promise.race([
+        this.fetcher('/api/v1/student/checkin/acquisition-reports', {
+          method: 'POST',
+          credentials: 'include',
+          signal: controller.signal,
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(body),
+        }),
+        deadline,
+      ])
+    } catch {
+      // Observability is best-effort and cannot invalidate auth or a check-in result.
+    } finally {
+      clearTimeout(timer)
+    }
+  }
+
   listRequests(bucket: StudentRequestBucket = 'OPEN', page = 0): Promise<StudentRequestPage> {
     if (!Number.isInteger(page) || page < 0)
       throw new RangeError('Requests page must be a non-negative integer')
@@ -295,8 +356,11 @@ export class StudentApi {
   }
 
   async downloadAttendanceAttachment(
-    semesterId: string, lessonId: string, attachmentId: string,
-    expectedMarkRevision: string, signal?: AbortSignal,
+    semesterId: string,
+    lessonId: string,
+    attachmentId: string,
+    expectedMarkRevision: string,
+    signal?: AbortSignal,
   ): Promise<Blob> {
     const query = new URLSearchParams({ semesterId, expectedMarkRevision })
     const response = await this.requestResponse(

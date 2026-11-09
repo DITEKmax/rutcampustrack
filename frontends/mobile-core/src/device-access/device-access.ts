@@ -5,6 +5,8 @@ import {
   acquireGeolocation,
   browserGeoSource,
   isFreshBrowserFix,
+  notifyGeoTerminal,
+  type GeoTerminalHook,
   type GeoResult,
   type GeoSource,
 } from './geolocation'
@@ -32,6 +34,7 @@ export interface DevicePlatform {
 export interface AcquisitionOptions {
   signal?: AbortSignal
   progress?: (stage: 'determining' | 'refining') => void
+  terminal?: GeoTerminalHook
 }
 const key: InjectionKey<DeviceAccess> = Symbol('device-access')
 export type DeviceAccess = ReturnType<typeof createDeviceAccess>
@@ -151,11 +154,19 @@ export function createDeviceAccess(
             }
           : await acquireGeolocation(platform.geo, {
               signal: controller.signal,
+              ...(options.terminal ? { terminal: options.terminal } : {}),
               progress(stage) {
                 state.stage = stage
                 options.progress?.(stage)
               },
             })
+        if (result.reason === 'APP_DISABLED')
+          notifyGeoTerminal(options.terminal, {
+            source: result.source,
+            reason: result.reason,
+            duration: result.duration,
+            sampleCount: result.sampleCount,
+          })
         if (controller.signal.aborted) throw new CheckinBeforeSendCancelled()
         if (result.reason === 'PERMISSION_DENIED') state.location.permission = 'denied'
         if (result.reason === 'UNSUPPORTED') state.location.permission = 'unsupported'

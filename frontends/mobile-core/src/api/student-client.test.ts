@@ -3,6 +3,73 @@ import { decodeStatisticsRanking, StudentApi } from './student-client'
 
 afterEach(() => {
   vi.restoreAllMocks()
+  vi.useRealTimers()
+})
+
+describe('best-effort acquisition reporting', () => {
+  const report = {
+    source: 'BROWSER' as const,
+    outcome: 'QUALITY_REACHED' as const,
+    durationMs: 200,
+    sampleCount: 2,
+  }
+  it.each([204, 401, 403, 429, 500])(
+    'allows only bounded scalar report fields and isolates HTTP%s without auth refresh or retries',
+    async (status) => {
+      const fetcher = vi.fn<typeof fetch>().mockResolvedValue(new Response(null, { status }))
+      const onUnauthorized = vi.fn()
+      const api = new StudentApi({ accessToken: () => 'synthetic-token', fetcher, onUnauthorized })
+      await expect(
+        api.reportCheckinAcquisition({
+          ...report,
+          userId: 'must-not-leave',
+          latitude: 55.7,
+          qr: 'must-not-leave',
+        } as typeof report),
+      ).resolves.toBeUndefined()
+      expect(fetcher).toHaveBeenCalledOnce()
+      expect(fetcher.mock.calls[0]?.[0]).toBe('/api/v1/student/checkin/acquisition-reports')
+      expect(JSON.parse(String(fetcher.mock.calls[0]?.[1]?.body))).toEqual(report)
+      expect(new Headers(fetcher.mock.calls[0]?.[1]?.headers).get('Authorization')).toBe(
+        'Bearer synthetic-token',
+      )
+      expect(onUnauthorized).not.toHaveBeenCalled()
+    },
+  )
+  it('drops an old generation report instead of reading a new account token', async () => {
+    const { createGenerationBoundStudentApi } = await import('../shared/session-owner')
+    let generation = 1
+    const accessTokenFor = vi.fn((value: number) =>
+      value === 1 ? 'old-account-token' : 'new-account-token',
+    )
+    const refreshFor = vi.fn()
+    const fetcher = vi.fn<typeof fetch>().mockResolvedValue(new Response(null, { status: 204 }))
+    const owner = { currentGeneration: () => generation, accessTokenFor, refreshFor }
+    const oldApi = createGenerationBoundStudentApi(owner, fetcher)
+    generation = 2
+    await expect(
+      oldApi.reportCheckinAcquisition({ ...report, outcome: 'CANCELLED' }),
+    ).resolves.toBeUndefined()
+    expect(accessTokenFor).not.toHaveBeenCalled()
+    expect(fetcher).not.toHaveBeenCalled()
+    const currentApi = createGenerationBoundStudentApi(owner, fetcher)
+    await currentApi.reportCheckinAcquisition(report)
+    expect(new Headers(fetcher.mock.calls[0]?.[1]?.headers).get('Authorization')).toBe(
+      'Bearer new-account-token',
+    )
+    expect(refreshFor).not.toHaveBeenCalled()
+  })
+  it('bounds a hanging optional report without delaying the caller flow or retrying', async () => {
+    vi.useFakeTimers()
+    const fetcher = vi.fn<typeof fetch>(() => new Promise<Response>(() => {}))
+    const api = new StudentApi({ accessToken: () => 'synthetic-token', fetcher })
+    const pending = api.reportCheckinAcquisition(report)
+    await vi.advanceTimersByTimeAsync(5_000)
+    await expect(pending).resolves.toBeUndefined()
+    expect(fetcher).toHaveBeenCalledOnce()
+    expect(fetcher.mock.calls[0]?.[1]?.signal?.aborted).toBe(true)
+    expect(vi.getTimerCount()).toBe(0)
+  })
 })
 
 describe('StudentApi.getSemesterSchedule', () => {
@@ -37,7 +104,6 @@ describe('StudentApi.getSemesterSchedule', () => {
       etag: '"semester-v2"',
     })
   })
-
 })
 
 describe('StudentApi Requests transport', () => {
@@ -94,7 +160,7 @@ describe('StudentApi Requests transport', () => {
     ).rejects.toThrow('16–128')
     expect(calls).toBe(0)
     await expect(api.downloadRequestAttachment('request-1', 'file-1')).resolves.toBeInstanceOf(Blob)
-    expect(attachmentRequest?.url).toBe('/api/v1/student/requests/request-1/attachments/file-1');
+    expect(attachmentRequest?.url).toBe('/api/v1/student/requests/request-1/attachments/file-1')
     expect(attachmentRequest?.init.method ?? 'GET').toBe('GET')
     expect(attachmentRequest?.init.credentials).toBe('include')
     const attachmentHeaders = new Headers(attachmentRequest?.init.headers)

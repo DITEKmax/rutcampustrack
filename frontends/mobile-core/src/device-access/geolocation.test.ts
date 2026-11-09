@@ -142,6 +142,100 @@ describe('bounded shared geolocation policy', () => {
 })
 
 describe('permission owner and explicit choice before transport', () => {
+  it('reports one bounded terminal event without coordinates and does not await it or recolor it on later cancel', async () => {
+    vi.useFakeTimers()
+    const f = fixture()
+    const controller = new AbortController()
+    const terminal = vi.fn(() => new Promise<void>(() => {}))
+    const result = acquireGeolocation(f.source, { signal: controller.signal, terminal })
+    f.emit({ accuracy: 400 })
+    f.emit({ accuracy: 20 })
+    await expect(result).resolves.toMatchObject({ reason: 'QUALITY_REACHED' })
+    controller.abort()
+    f.emit({ accuracy: 1 })
+    expect(terminal).toHaveBeenCalledExactlyOnceWith({
+      source: 'BROWSER',
+      reason: 'QUALITY_REACHED',
+      duration: 0,
+      sampleCount: 2,
+    })
+  })
+  it('reports cancellation before terminal once and ignores late callbacks', async () => {
+    vi.useFakeTimers()
+    const f = fixture()
+    const controller = new AbortController()
+    const terminal = vi.fn()
+    const result = acquireGeolocation(f.source, { signal: controller.signal, terminal })
+    const rejected = expect(result).rejects.toMatchObject({ name: 'AbortError' })
+    f.emit({ accuracy: 500 })
+    await vi.advanceTimersByTimeAsync(200)
+    controller.abort()
+    controller.abort()
+    f.emit({ accuracy: 20 })
+    await rejected
+    expect(terminal).toHaveBeenCalledExactlyOnceWith({
+      source: 'BROWSER',
+      reason: 'CANCELLED',
+      duration: 200,
+      sampleCount: 1,
+    })
+  })
+  it('reports each improvement run once, but not settings probes or post-terminal cancellation', async () => {
+    vi.useFakeTimers()
+    const f = fixture()
+    const owner = createDeviceAccess({ geo: f.source }, null)
+    owner.bindOwner('alice', 's1')
+    const terminal = vi.fn()
+    const attempt = owner.acquire({ terminal })
+    f.emit({ accuracy: 500 })
+    await vi.advanceTimersByTimeAsync(28_000)
+    owner.choose('retry')
+    await settle()
+    f.fail('PERMISSION_DENIED')
+    await settle()
+    owner.choose('continue')
+    await attempt
+    owner.cancel()
+    const probe = owner.probe('location')
+    f.emit({ accuracy: 20 })
+    await probe
+    expect(terminal.mock.calls.map(([event]) => event.reason)).toEqual([
+      'BUDGET_EXPIRED',
+      'PERMISSION_DENIED',
+    ])
+  })
+  it('reports app-disabled as its own terminal run without requesting sensors', async () => {
+    const f = fixture()
+    const owner = createDeviceAccess({ geo: f.source }, null)
+    owner.bindOwner('alice', 's1')
+    owner.setEnabled('location', false)
+    const terminal = vi.fn()
+    const attempt = owner.acquire({ terminal })
+    owner.choose('continue')
+    await attempt
+    expect(f.watch).not.toHaveBeenCalled()
+    expect(terminal).toHaveBeenCalledExactlyOnceWith({
+      source: 'BROWSER',
+      reason: 'APP_DISABLED',
+      duration: 0,
+      sampleCount: 0,
+    })
+  })
+  it.each(['throws', 'rejects'] as const)(
+    'isolates a terminal reporter that %s',
+    async (failure) => {
+      const f = fixture()
+      const result = acquireGeolocation(f.source, {
+        terminal() {
+          if (failure === 'throws') throw new Error('report unavailable')
+          return Promise.reject(new Error('report unavailable'))
+        },
+      })
+      f.emit({ accuracy: 20 })
+      await expect(result).resolves.toMatchObject({ reason: 'QUALITY_REACHED' })
+      await settle()
+    },
+  )
   it('reacquires instead of returning a browser fix after a delayed Continue', async () => {
     vi.useFakeTimers()
     const f = fixture()

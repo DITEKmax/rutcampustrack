@@ -2128,6 +2128,7 @@ function performCheckin(
     !disposed && !offline.value && !props.readOnly &&
     ownerIdentity.value === requestIdentity && (isCurrent?.() ?? true);
   const acquisition = new AbortController();
+  const reportApi = props.api;
   acquisitionController = acquisition;
   const releaseAcquisitionStop = deviceAccess?.registerStop(() => acquisition.abort());
   let firstSend = false;
@@ -2139,7 +2140,12 @@ function performCheckin(
       async () => {
         firstSend = true;
         if (!canSend() || acquisition.signal.aborted) throw new CheckinBeforeSendCancelled();
-        const command = await props.acquireCheckinCommand({ signal: acquisition.signal });
+        const command = await props.acquireCheckinCommand({
+          signal: acquisition.signal,
+          terminal: (event) => reportApi?.reportCheckinAcquisition({
+            source: event.source, outcome: event.reason, durationMs: event.duration, sampleCount: event.sampleCount,
+          }),
+        });
         if (!canSend() || acquisition.signal.aborted) throw new CheckinBeforeSendCancelled();
         // A GPS warm-up may cross the server's eligibility window. Refresh before first POST.
         await today.query.refetch({ throwOnError: true, cancelRefetch: false });

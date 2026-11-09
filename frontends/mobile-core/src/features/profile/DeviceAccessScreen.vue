@@ -25,7 +25,7 @@ const devices = [
   },
 ] as const;
 const labels: Record<DevicePermission, string> = {
-  prompt: 'Система запросит разрешение',
+  prompt: 'Доступ ещё не запрошен',
   granted: 'Доступ разрешён системой',
   denied: 'Доступ запрещён системой',
   unsupported: 'Недоступно на этом устройстве',

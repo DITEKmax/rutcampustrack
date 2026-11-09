@@ -31,6 +31,10 @@ public final class MetricNames {
     /** Counter: late-checkin записи. */
     public static final String LATE_CHECKIN_CREATED = "late_checkin.created";
 
+    /** Gauge seconds: oldest still-open request. Closed labels: kind, origin; NaN means unknown. */
+    public static final String PENDING_REQUEST_OLDEST_AGE =
+            "attendance.requests.pending.oldest.age";
+
     /**
      * Counter: KI-2 — dual-mode internal JWT silent fallback на legacy header'ы. Tags: {@code
      * from}, {@code to}.

@@ -1,6 +1,7 @@
 package ru.rutcampustrack.attendance.config;
 
 import jakarta.annotation.PostConstruct;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -13,6 +14,7 @@ import org.springframework.data.mongodb.core.index.Index;
 import org.springframework.data.mongodb.core.index.IndexOperations;
 import org.springframework.data.mongodb.core.index.PartialIndexFilter;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
+
 import ru.rutcampustrack.shared.events.IdempotencyGuard;
 import ru.rutcampustrack.shared.events.IdempotencyStore;
 import ru.rutcampustrack.shared.outbox.mongo.MongoIdempotencyStore;
@@ -134,6 +136,18 @@ public class MongoConfig {
 
         // Student request union/list and owner-scoped attachment reads.
         IndexOperations excuseOps = mongoTemplate.indexOps("excuse_tickets");
+        // Cached global OPEN-age diagnostics: avoid sorting the complete request history.
+        excuseOps.ensureIndex(
+                new Index()
+                        .on("status", Sort.Direction.ASC)
+                        .on("created_at", Sort.Direction.ASC)
+                        .named("pending_age_excuse_status_created"));
+        lcrOps.ensureIndex(
+                new Index()
+                        .on("status", Sort.Direction.ASC)
+                        .on("origin", Sort.Direction.ASC)
+                        .on("created_at", Sort.Direction.ASC)
+                        .named("pending_age_late_status_origin_created"));
         excuseOps.ensureIndex(
                 new Index()
                         .on("student_id", Sort.Direction.ASC)

@@ -259,7 +259,7 @@ async def test_password_changed_fallback_uses_only_newly_confirmed_profile_with_
     assert menu.own_profile.await_count == menu.menu_scope.await_count == 2
 
 
-@pytest.mark.parametrize("failure", ["profile", "role", "card", "refresh", "send", "menu_send", "fallback_send"])
+@pytest.mark.parametrize("failure", ["profile", "role", "refresh", "send", "menu_send", "fallback_send"])
 async def test_start_failure_never_acknowledges_role_keyboard_and_startup_recovers(fake_redis, failure):
     client = KeyboardSyncClient(redis_client=fake_redis)
     scope = MenuScope(17, 2, 1, (BotGrant("TEACHER"), BotGrant("STUDENT", 10)))
@@ -273,8 +273,6 @@ async def test_start_failure_never_acknowledges_role_keyboard_and_startup_recove
         menu.own_profile.side_effect = RuntimeError("outage")
     elif failure == "role":
         menu.menu_scope.side_effect = RuntimeError("outage")
-    elif failure == "card":
-        cards.deliver.side_effect = RuntimeError("render unavailable")
     elif failure == "refresh":
         menu.own_profile.side_effect = [_profile(), RuntimeError("outage")]
     elif failure in {"send", "menu_send"}:
@@ -529,7 +527,7 @@ async def test_keyboard_publication_cancellation_releases_chat_without_blocking_
 
 async def test_start_waits_for_startup_delivery_and_receipt_before_its_fallback():
     client = _memory_keyboard_client()
-    await client.register_user(12345)
+    await client.register_user(12345, reactivate=True)
     scope = MenuScope(17, 2, 1, (BotGrant("TEACHER"), BotGrant("STUDENT", 10)))
     signature = keyboard_signature(**scope.keyboard_options)
     entered = asyncio.Event()

@@ -71,6 +71,9 @@ def _format_message(payload: dict) -> str:
     summary = html.escape(_truncate(str(payload.get("summary") or ""), 250))
     description = html.escape(_truncate(str(payload.get("description") or ""), _MAX_DESCRIPTION_CHARS))
 
+    if name == "DeploymentSucceeded" and status == "succeeded":
+        return f"✅ <b>RutCampusTrack успешно развёрнут</b>\n{description}"
+
     status_prefix = STATUS_EMOJI.get(status, "❓")
     severity_marker = SEVERITY_EMOJI.get(severity, "⚪")
 

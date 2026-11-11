@@ -16,6 +16,7 @@ images = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(images)
 MANIFEST = {'source_sha': SHA, 'images': {name: images.PREFIX + name + '@sha256:' + 'b' * 64 for name in images.IMAGES}}
 PASSWORD = "Synthetic-first-123!"
+ALERT_TOKEN = "synthetic-alert-token"
 
 
 def request():
@@ -36,7 +37,8 @@ class InitialAdminDeploymentControls(unittest.TestCase):
         scripts.mkdir()
         (root / 'release-images.json').write_text(json.dumps(MANIFEST))
         bindir.mkdir()
-        for name in ("deliver-release.sh", "deploy-release.sh", "bootstrap-initial-admin.py", "release-images.py"):
+        for name in ("deliver-release.sh", "deploy-release.sh", "bootstrap-initial-admin.py", "release-images.py",
+                     "notify-deployment-succeeded.py"):
             shutil.copyfile(ROOT / "scripts" / name, scripts / name)
         write(scripts / "deployment-secrets.py", "import sys\n")
         env = dict(os.environ, PATH=str(bindir) + os.pathsep + os.environ["PATH"],
@@ -218,18 +220,25 @@ os.execv(%r, [%r] + sys.argv[1:])
             write(incoming / name, value, 0o600)
         (root / "vault/active").mkdir(parents=True)
         write(root / "nginx/dhparam.pem", "synthetic")
-        write(root / "scripts/verify-served-web-panel.py", "pass\n")
+        write(root / "scripts/verify-served-web-panel.py", """import os
+from pathlib import Path
+if os.environ.get('RCT_TEST_BOOTSTRAP_FAIL') == 'web':
+    raise SystemExit(2)
+Path('verified-sha').write_text(os.environ['IMAGE_TAG'])
+""")
         release = root / "scripts/deploy-release.sh"
         source = release.read_text().replace("/opt/rutcampustrack-secrets", str(root / "vault"))
         source = source.replace("/opt/rutcampustrack", str(root / "server"))
         write(release, source)
+        if failure == "missing_alert_helper":
+            (root / "scripts/notify-deployment-succeeded.py").unlink()
         env["RCT_TEST_BOOTSTRAP_FAIL"] = failure
         write(root / "bin/openssl", """#!/usr/bin/env python3
 import pathlib, sys
 if '-out' in sys.argv: pathlib.Path(sys.argv[sys.argv.index('-out')+1]).write_text('SYNTHETIC-PUBLIC\\n')
 """)
         write(root / "bin/docker", """#!/usr/bin/env python3
-import hashlib, json, os, sys
+import hashlib, http.client, io, json, os, pathlib, sys
 args=sys.argv[1:]
 with open(os.environ['RCT_TEST_LOG'], 'a') as log:
     log.write(json.dumps([args, os.environ.get('IMAGE_TAG')])+'\\n')
@@ -239,6 +248,38 @@ if args[:2] == ['image', 'inspect']:
 if args[:2] == ['ps', '--format']: raise SystemExit(0)
 if args and args[0]=='run':
     print('SYNTHETIC-PUBLIC')
+if args and args[0]=='compose' and 'exec' in args:
+    command = args[args.index('exec')+1:]
+    token = 'synthetic-alert-token'
+    sha = os.environ['IMAGE_TAG']
+    assert pathlib.Path('verified-sha').read_text() == sha
+    assert pathlib.Path('server/.deployed-sha').read_text().strip() == sha
+    if command == ['-T', 'alertmanager', 'cat', '/run/secrets/alert-webhook-token']:
+        print(token)
+        raise SystemExit(0)
+    assert command[:4] == ['-T', 'notification-bot', 'python', '-c'] and command[-1] == sha
+    assert token not in repr(args)
+    if os.environ.get('RCT_TEST_BOOTSTRAP_FAIL') == 'alert':
+        print(token, file=sys.stderr)  # Simulate a noisy transport failure.
+        raise SystemExit(23)
+    class Connection:
+        def __init__(self, host, port, *, timeout):
+            assert (host, port, timeout) == ('notification-web', 9094, 5)
+        def request(self, method, path, *, body, headers):
+            assert (method, path) == ('POST', '/internal/alert')
+            assert headers['Authorization'] == 'Bearer ' + token
+            alerts = json.loads(body)['alerts']
+            assert len(alerts) == 1 and alerts[0]['status'] == 'succeeded'
+            assert alerts[0]['labels']['alertname'] == 'DeploymentSucceeded'
+            assert alerts[0]['annotations']['description'].endswith(sha)
+        def getresponse(self):
+            from types import SimpleNamespace
+            return SimpleNamespace(status=200, read=lambda size: b'{"published": 1}')
+        def close(self):
+            pass
+    http.client.HTTPConnection = Connection
+    sys.argv = ['-c', sha]
+    exec(command[4], {'__name__': '__main__'})
 if args and args[0]=='compose' and 'run' in args:
     body=json.load(sys.stdin)
     stage=args[-1]
@@ -259,22 +300,29 @@ if args and args[0]=='compose' and 'run' in args:
         return env, incoming
 
     def test_remote_explicit_context_health_order_failure_and_cleanup(self):
-        for enabled, failure in (("false", ""), ("true", ""), ("true", "prepare"), ("true", "finalize")):
+        for enabled, failure in (("false", ""), ("true", ""), ("true", "prepare"), ("true", "finalize"),
+                                 ("false", "web"), ("false", "alert"), ("false", "missing_alert_helper")):
             with self.subTest(enabled=enabled, failure=failure), tempfile.TemporaryDirectory() as tmp:
                 root = Path(tmp)
                 env, incoming = self.remote_sandbox(root, failure)
                 result = subprocess.run(["bash", "scripts/deploy-release.sh", SHA, str(incoming), enabled],
                                         cwd=root, env=env, capture_output=True, timeout=10)
-                self.assertEqual(result.returncode, 2 if failure else 0, result.stderr.decode())
+                alert_failure = failure in ("alert", "missing_alert_helper")
+                deployed_ok = not failure or alert_failure
+                self.assertEqual(result.returncode, 0 if deployed_ok else 2, result.stderr.decode())
                 self.assertNotIn(PASSWORD.encode(), result.stdout + result.stderr)
+                self.assertNotIn(ALERT_TOKEN.encode(), result.stdout + result.stderr)
+                self.assertEqual(b"ops notification could not be queued" in result.stderr, alert_failure)
                 self.assertNotIn("Администратов".encode(), result.stdout + result.stderr)
                 for name in ("INITIAL_ADMIN_REQUEST", "PROD_ENV", "PROD_SECRET_FILES_B64", "GHCR_TOKEN",
                              "docker-auth", "jwt-candidate"):
                     self.assertFalse((incoming / name).exists(), "remote cleanup: " + name)
                 deployed = root / "server/.deployed-sha"
-                self.assertEqual(deployed.exists(), not bool(failure))
+                self.assertEqual(deployed.exists(), deployed_ok)
                 calls = [json.loads(line) for line in (root / "calls").read_text().splitlines()]
                 commands = [call[0] for call in calls]
+                alert_calls = [args for args in commands if args[0] == "compose" and "exec" in args]
+                self.assertEqual(len(alert_calls), 2 if deployed_ok and failure != "missing_alert_helper" else 0)
                 oneshots = [(index, args, calls[index][1]) for index, args in enumerate(commands)
                             if args[0] == "compose" and "run" in args]
                 self.assertEqual(bool(oneshots), enabled == "true")
@@ -285,6 +333,7 @@ if args and args[0]=='compose' and 'run' in args:
                     self.assertEqual(tag, SHA)
                     self.assertGreater(index, next(i for i, command in enumerate(commands) if "--wait" in command))
                 self.assertNotIn(PASSWORD, repr(calls))
+                self.assertNotIn(ALERT_TOKEN, repr(calls))
 
     def test_remote_bad_request_refused_before_any_container_or_install(self):
         with tempfile.TemporaryDirectory() as tmp:

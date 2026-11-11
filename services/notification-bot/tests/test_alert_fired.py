@@ -161,6 +161,32 @@ async def test_handle_alert_fired_no_admins_dropped():
 
 
 @pytest.mark.asyncio
+async def test_deployment_success_is_sent_only_to_the_configured_alert_recipient():
+    bot = MagicMock()
+    bot.send_message = AsyncMock()
+    send_queue = MagicMock()
+    send_queue.put = AsyncMock()
+    sha = "a" * 40
+    event = {
+        "payload": {
+            "name": "DeploymentSucceeded",
+            "status": "succeeded",
+            "severity": "info",
+            "description": f"Версия {sha}",
+        },
+    }
+    await handle_alert_fired(event, bot=bot, send_queue=send_queue, admin_ids=[111])
+    send_queue.put.assert_awaited_once()
+    task = send_queue.put.await_args.args[0]
+    assert task.chat_id == 111 and task.system_alert
+    await task.coroutine_factory()
+    assert bot.send_message.await_args.kwargs["chat_id"] == 111
+    text = bot.send_message.await_args.kwargs["text"]
+    assert "успешно развёрнут" in text and sha in text
+    assert "Статус:" not in text
+
+
+@pytest.mark.asyncio
 async def test_handle_alert_fired_missing_payload_graceful():
     bot = MagicMock()
     send_queue = MagicMock()

@@ -1,3 +1,4 @@
+import json
 from dataclasses import replace
 from types import SimpleNamespace
 from unittest.mock import AsyncMock
@@ -56,6 +57,11 @@ class Authority:
         return self.scopes.get(telegram_id)
 
 
+async def request_menu(client, *telegram_ids):
+    for telegram_id in telegram_ids:
+        await client.register_user(telegram_id, reactivate=True)
+
+
 async def cycle(client, authority, bot, *, retry=0):
     await sync_registered_keyboards(bot, client, bot_menu_client=authority, delay_seconds=0, retry_delay_seconds=retry)
 
@@ -65,7 +71,7 @@ async def test_outage_beyond_three_attempts_recovers_three_pending_without_resta
     client = KeyboardSyncClient(redis_client=fake_redis)
     authority = Authority()
     for t in authority.scopes:
-        await client.register_user(t)
+        await client.register_user(t, reactivate=True)
     authority.fail = True
     bot = SimpleNamespace(send_message=AsyncMock())
     before = KEYBOARD_SYNC_USERS_FAILED._value.get()
@@ -84,9 +90,10 @@ async def test_outage_beyond_three_attempts_recovers_three_pending_without_resta
 
 
 @pytest.mark.asyncio
-async def test_restart_resumes_pending_and_same_content_authority_skips_deploy(fake_redis):
+async def test_restart_resumes_explicit_pending_and_skips_changed_markup_with_same_authority(fake_redis, monkeypatch):
     first = KeyboardSyncClient(redis_client=fake_redis)
     authority = Authority(1)
+    await request_menu(first, 1001)
     bot = SimpleNamespace(send_message=AsyncMock(side_effect=RuntimeError("network")))
     await cycle(first, authority, bot)
     pending = await first.state(1001)
@@ -98,16 +105,25 @@ async def test_restart_resumes_pending_and_same_content_authority_skips_deploy(f
     count = bot.send_message.await_count
     await cycle(KeyboardSyncClient(redis_client=fake_redis), authority, bot)
     assert bot.send_message.await_count == count
-    # A role version change needs fresh delivery even when visible buttons match.
-    authority.scopes[1001] = replace(authority.scopes[1001], roles_version=2)
+    import bot.services.keyboard_sync as module
+
+    old_receipt = await restarted.get_receipt(1001)
+    monkeypatch.setattr(module, "keyboard_signature", lambda **options: "new-" + keyboard_signature(**options))
+    await cycle(restarted, authority, bot)
+    assert bot.send_message.await_count == count
+    assert await restarted.get_receipt(1001) == old_receipt
+    assert KEYBOARD_SYNC_PENDING._value.get() == 0
+    await restarted.invalidate_user_keyboard(1001)
     await cycle(restarted, authority, bot)
     assert bot.send_message.await_count == count + 1
+    assert await restarted.get_receipt(1001) == receipt_for(authority.scopes[1001])
 
 
 @pytest.mark.asyncio
 async def test_receipt_write_failure_never_acknowledges_and_retries_after_ack(fake_redis, monkeypatch):
     client = KeyboardSyncClient(redis_client=fake_redis)
     authority = Authority(1)
+    await request_menu(client, *authority.scopes)
     bot = SimpleNamespace(send_message=AsyncMock())
     original = fake_redis.pipeline
 
@@ -138,6 +154,7 @@ async def test_receipt_write_failure_never_acknowledges_and_retries_after_ack(fa
 async def test_receipt_read_failure_is_error_not_missing_and_other_recipient_progresses(fake_redis, monkeypatch):
     client = KeyboardSyncClient(redis_client=fake_redis)
     authority = Authority(2)
+    await request_menu(client, *authority.scopes)
     original = fake_redis.hget
 
     async def hget(key, field):
@@ -160,6 +177,7 @@ async def test_partial_success_and_429_durable_global_rate_backoff(fake_redis, m
     monkeypatch.setattr(module.time, "time", lambda: clock[0])
     client = KeyboardSyncClient(redis_client=fake_redis)
     authority = Authority(3)
+    await request_menu(client, *authority.scopes)
     method = SendMessage(chat_id=1002, text="synthetic")
     bot = SimpleNamespace(
         send_message=AsyncMock(side_effect=[None, TelegramRetryAfter(method, "limited", 60), None, None])
@@ -179,9 +197,10 @@ async def test_partial_success_and_429_durable_global_rate_backoff(fake_redis, m
 
 @pytest.mark.parametrize("kind", ["blocked", "not_found"])
 @pytest.mark.asyncio
-async def test_terminal_provider_failure_reactivates_on_start_or_new_binding(fake_redis, kind):
+async def test_terminal_provider_failure_requires_a_new_explicit_request(fake_redis, kind):
     client = KeyboardSyncClient(redis_client=fake_redis)
     authority = Authority(1)
+    await request_menu(client, *authority.scopes)
     method = SendMessage(chat_id=1001, text="synthetic")
     error = (
         TelegramForbiddenError(method, "bot was blocked")
@@ -194,10 +213,7 @@ async def test_terminal_provider_failure_reactivates_on_start_or_new_binding(fak
     await cycle(KeyboardSyncClient(redis_client=fake_redis), authority, bot)
     assert bot.send_message.await_count == 1
     bot.send_message.side_effect = None
-    if kind == "blocked":
-        await client.invalidate_user_keyboard(1001)  # same operation used by /start
-    else:
-        authority.scopes[1001] = replace(authority.scopes[1001], telegram_binding_version=2)
+    await client.invalidate_user_keyboard(1001)  # same operation used by /start
     await cycle(client, authority, bot)
     assert bot.send_message.await_count == 2 and KEYBOARD_SYNC_TERMINAL._value.get() == 0
 
@@ -210,14 +226,136 @@ async def test_complete_paginated_authoritative_coverage_discovers_unregistered_
     await cycle(client, authority, bot)
     assert len(await client.get_registered_user_ids()) == 403
     assert authority.pages == [(0, 0, 200), (200, 403, 200), (400, 403, 200)]
-    assert bot.send_message.await_count == 403
+    bot.send_message.assert_not_awaited()
     assert KEYBOARD_SYNC_PENDING._value.get() == 0
+    assert (await client.state(1001))["status"] == "idle"
+    # Existing deployments can have legacy pending records from discovery.
+    await client.set_state(1001, dict(status="pending", attempts=0, next_at=0, since=1.0))
+    await cycle(KeyboardSyncClient(redis_client=fake_redis), authority, bot)
+    bot.send_message.assert_not_awaited()
+    assert (await client.state(1001))["status"] == "idle"
+    assert await client.get_receipt(1001) is None
+
+
+@pytest.mark.asyncio
+async def test_auth_outage_and_recovery_do_not_broadcast_to_existing_chats(fake_redis):
+    client = KeyboardSyncClient(redis_client=fake_redis)
+    authority = Authority()
+    bot = SimpleNamespace(send_message=AsyncMock())
+    for telegram_id, scope in authority.scopes.items():
+        await client.register_user(telegram_id)
+        await client.mark_user_synced(telegram_id, keyboard_signature(**scope.keyboard_options), scope)
+    authority.fail = True
+    await cycle(KeyboardSyncClient(redis_client=fake_redis), authority, bot)
+    assert STARTUP_COMPLETED.labels("keyboard_sync")._value.get() == 0
+    for telegram_id, scope in authority.scopes.items():
+        assert await client.get_receipt(telegram_id) == receipt_for(scope)
+    authority.fail = False
+    await cycle(KeyboardSyncClient(redis_client=fake_redis), authority, bot)
+    bot.send_message.assert_not_awaited()
+    assert KEYBOARD_SYNC_PENDING._value.get() == 0
+    assert STARTUP_COMPLETED.labels("keyboard_sync")._value.get() == 1
+
+
+@pytest.mark.asyncio
+async def test_identical_role_keyboard_keeps_ack_through_authority_and_later_markup_changes(fake_redis, monkeypatch):
+    import bot.services.keyboard_sync as module
+
+    client = KeyboardSyncClient(redis_client=fake_redis)
+    authority = Authority(1)
+    old = authority.scopes[1001]
+    await client.register_user(1001)
+    await client.mark_user_synced(1001, keyboard_signature(**old.keyboard_options), old)
+    bot = SimpleNamespace(send_message=AsyncMock())
+    await cycle(client, authority, bot)
+    authority.scopes[1001] = replace(old, roles_version=2, grants=(BotGrant("STUDENT", 11),))
+    await cycle(KeyboardSyncClient(redis_client=fake_redis), authority, bot)
+    bot.send_message.assert_not_awaited()
+    assert await client.get_receipt(1001) == receipt_for(old)
+    old_receipt = await client.get_receipt(1001)
+    monkeypatch.setattr(module, "keyboard_signature", lambda **options: "new-" + keyboard_signature(**options))
+    await cycle(KeyboardSyncClient(redis_client=fake_redis), authority, bot)
+    bot.send_message.assert_not_awaited()
+    assert await client.get_receipt(1001) == old_receipt
+    assert KEYBOARD_SYNC_PENDING._value.get() == 0
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    ("evidence", "legacy_signature"),
+    [
+        ("pre_eb7_receipt", "1c23dcdcaa1560c5"),
+        ("eb7_receipt", "c8dbd067ac8457e4"),
+        ("common_ack", None),
+        ("uncertain_role_send", None),
+    ],
+)
+async def test_common_keyboard_is_not_replaced_on_authority_loss_after_markup_change(
+    fake_redis, monkeypatch, evidence, legacy_signature
+):
+    import bot.services.keyboard_sync as module
+
+    client = KeyboardSyncClient(redis_client=fake_redis)
+    authority = Authority(1)
+    scope = replace(authority.scopes[1001], grants=(BotGrant("ADMIN"),))
+    authority.scopes[1001] = scope
+    await client.register_user(1001)
+    if legacy_signature is not None:
+        await client.mark_user_synced(1001, legacy_signature)
+        identity = [scope.user_id, scope.telegram_binding_version, scope.roles_version]
+        old_receipt = json.dumps([legacy_signature, identity])
+        await fake_redis.hset(client._RECEIPTS_KEY, "1001", old_receipt)
+    else:
+        await client.mark_user_synced(1001, keyboard_signature(), scope)
+        old_receipt = await client.get_receipt(1001)
+        if evidence == "uncertain_role_send":
+            await client.note_possible_publication(1001, keyboard_signature(homework_enabled=True))
+    bot = SimpleNamespace(send_message=AsyncMock())
+    await cycle(client, authority, bot)
+    bot.send_message.assert_not_awaited()
+
+    monkeypatch.setattr(module, "keyboard_signature", lambda **options: "new-" + keyboard_signature(**options))
+    authority.menu_scope = AsyncMock(return_value=replace(scope, grants=()))
+    await cycle(KeyboardSyncClient(redis_client=fake_redis), authority, bot)
+
+    if evidence == "uncertain_role_send":
+        bot.send_message.assert_awaited_once()
+        assert await client.get_receipt(1001) is None
+    else:
+        bot.send_message.assert_not_awaited()
+        assert await client.get_receipt(1001) == old_receipt
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("evidence", ["legacy_signature", "possible_publication"])
+async def test_idle_legacy_role_evidence_only_triggers_affirmative_revocation(fake_redis, evidence):
+    client = KeyboardSyncClient(redis_client=fake_redis)
+    authority = Authority(1)
+    scope = authority.scopes[1001]
+    signature = keyboard_signature(**scope.keyboard_options)
+    await client.register_user(1001)
+    if evidence == "legacy_signature":
+        await client.mark_user_synced(1001, signature)
+    else:
+        await client.note_possible_publication(1001, signature)
+    bot = SimpleNamespace(send_message=AsyncMock())
+    await cycle(KeyboardSyncClient(redis_client=fake_redis), authority, bot)
+    bot.send_message.assert_not_awaited()
+    assert await client.get_receipt(1001) is None
+    assert await client.ui_needs_cleanup(1001)
+    authority.menu_scope = AsyncMock(return_value=None)
+    await cycle(client, authority, bot)
+    bot.send_message.assert_awaited_once()
+    labels = [button.text for row in bot.send_message.await_args.kwargs["reply_markup"].keyboard for button in row]
+    assert HOMEWORK_TODAY_LABEL not in labels
+    assert not await client.ui_needs_cleanup(1001)
 
 
 @pytest.mark.asyncio
 async def test_missing_menu_is_retryable_not_unbound_and_failed_sweep_cannot_remove_recipient(fake_redis):
     client = KeyboardSyncClient(redis_client=fake_redis)
     authority = Authority(1)
+    await request_menu(client, 1001)
     catalogue = authority.list_keyboard_bindings
     authority.menu_scope = AsyncMock(return_value=None)  # fenced/no grants is not unbound
     bot = SimpleNamespace(send_message=AsyncMock())
@@ -233,6 +371,9 @@ async def test_missing_menu_is_retryable_not_unbound_and_failed_sweep_cannot_rem
     authority.scopes[1001] = MenuScope(1, 2, 1, (BotGrant("TEACHER"),))
     authority.menu_scope.return_value = authority.scopes[1001]
     await cycle(client, authority, bot)
+    bot.send_message.assert_not_awaited()
+    await request_menu(client, 1001)
+    await cycle(client, authority, bot)
     assert await client.get_receipt(1001) is not None
 
 
@@ -241,6 +382,7 @@ async def test_missing_menu_is_retryable_not_unbound_and_failed_sweep_cannot_rem
 async def test_role_race_never_records_stale_receipt_and_next_pass_delivers_current_keyboard(fake_redis, when):
     client = KeyboardSyncClient(redis_client=fake_redis)
     authority = Authority(1)
+    await request_menu(client, *authority.scopes)
     old = authority.scopes[1001]
     new = replace(old, roles_version=2, grants=(BotGrant("TEACHER"),))
     original = authority.menu_scope
@@ -282,7 +424,7 @@ async def test_registry_unavailable_not_empty_success(fake_redis):
 async def test_legacy_content_signature_cannot_skip_new_authoritative_receipt(fake_redis):
     client = KeyboardSyncClient(redis_client=fake_redis)
     authority = Authority(1)
-    await client.register_user(1001)
+    await client.register_user(1001, reactivate=True)
     await client.mark_user_synced(1001, keyboard_signature(**authority.scopes[1001].keyboard_options))
     bot = SimpleNamespace(send_message=AsyncMock())
     await cycle(client, authority, bot)
@@ -299,7 +441,7 @@ async def test_periodic_worker_recovers_after_fifth_failed_pass_without_restarti
     client = KeyboardSyncClient(redis_client=fake_redis)
     authority = Authority(3)
     for t in authority.scopes:
-        await client.register_user(t)
+        await client.register_user(t, reactivate=True)
     authority.fail = True
     bot = SimpleNamespace(send_message=AsyncMock())
     worker = asyncio.create_task(
@@ -332,6 +474,7 @@ async def test_periodic_worker_recovers_after_fifth_failed_pass_without_restarti
 async def test_missing_or_fenced_menu_clears_old_role_ui_once_but_never_acknowledges_fallback(fake_redis):
     client = KeyboardSyncClient(redis_client=fake_redis)
     authority = Authority(1)
+    await request_menu(client, *authority.scopes)
     bot = SimpleNamespace(send_message=AsyncMock())
     await cycle(client, authority, bot)
     original = authority.menu_scope
@@ -339,15 +482,15 @@ async def test_missing_or_fenced_menu_clears_old_role_ui_once_but_never_acknowle
     await cycle(client, authority, bot)
     assert bot.send_message.await_count == 2
     assert await client.get_receipt(1001) is None
-    assert (await client.state(1001))["status"] == "retryable"
+    assert (await client.state(1001))["status"] == "idle"
     labels = [b.text for row in bot.send_message.await_args.kwargs["reply_markup"].keyboard for b in row]
     assert HOMEWORK_TODAY_LABEL not in labels
     await cycle(client, authority, bot)
     assert bot.send_message.await_count == 2
     authority.menu_scope = original
     await cycle(client, authority, bot)
-    assert bot.send_message.await_count == 3
-    assert await client.get_receipt(1001) == receipt_for(authority.scopes[1001])
+    assert bot.send_message.await_count == 2
+    assert await client.get_receipt(1001) is None
 
 
 @pytest.mark.asyncio
@@ -356,6 +499,7 @@ async def test_completed_unbinding_keeps_cleanup_pending_until_common_ack_after_
 
     client = KeyboardSyncClient(redis_client=fake_redis)
     authority = Authority(1)
+    await request_menu(client, *authority.scopes)
     visible = []
 
     async def delivered(**kwargs):
@@ -391,6 +535,7 @@ async def test_authority_loss_preserves_unsafe_ui_across_restart_and_catalogue_r
 
     client = KeyboardSyncClient(redis_client=fake_redis)
     authority = Authority(1)
+    await request_menu(client, *authority.scopes)
     visible = []
 
     async def delivered(**kwargs):
@@ -422,12 +567,13 @@ async def test_authority_loss_preserves_unsafe_ui_across_restart_and_catalogue_r
     restarted = KeyboardSyncClient(redis_client=fake_redis)
     await cycle(restarted, authority, bot)
     assert visible[-1] == main_keyboard()
-    assert (await restarted.state(1001))["status"] == "retryable"
+    assert (await restarted.state(1001))["status"] == "idle"
     assert await restarted.get_receipt(1001) is None
     sends = bot.send_message.await_count
     await cycle(KeyboardSyncClient(redis_client=fake_redis), authority, bot)
     assert bot.send_message.await_count == sends  # Known common ACK is not repeated.
     authority.menu_scope = AsyncMock(return_value=authority.scopes[1001])
+    await request_menu(restarted, 1001)
     await cycle(restarted, authority, bot)
     assert await restarted.get_receipt(1001) == receipt_for(authority.scopes[1001])
     assert visible[-1] != main_keyboard()
@@ -437,6 +583,7 @@ async def test_authority_loss_preserves_unsafe_ui_across_restart_and_catalogue_r
 async def test_unbound_common_cleanup_provider_terminal_is_not_hot_retried(fake_redis):
     client = KeyboardSyncClient(redis_client=fake_redis)
     authority = Authority(1)
+    await request_menu(client, *authority.scopes)
     bot = SimpleNamespace(send_message=AsyncMock())
     await cycle(client, authority, bot)
     authority.scopes.clear()

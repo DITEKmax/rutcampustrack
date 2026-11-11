@@ -44,10 +44,13 @@ class AuthorityStub:
         self.render_outcome = None
         self.cleanup_outcome = None
         self.deny_register = False
+        self.fail_recheck = False
 
     async def read(self, sender, user_id, **versions):
         if self.is_invalidated:
             raise BotCredentialRequestDenied("synthetic generation changed")
+        if self.fail_recheck and versions:
+            raise RuntimeError("private-diagnostic-marker")
         return pb.BotOwnInitialCredentialsResponse(
             found=True,
             eligible=True,
@@ -126,6 +129,7 @@ class Provider:
         self.registered_before_edit = True
         self.delete_rejected = False
         self.drop_edit_reply = False
+        self.reject_credential_edit = False
         self.edit_entered = asyncio.Event()
         self.edit_gate = None
 
@@ -159,6 +163,11 @@ class Provider:
             # Telegram edit cannot recreate a successfully deleted message ID.
             if key not in self.cards:
                 return self.error("message to edit not found")
+            markup = self.reply_markups.get(key)
+            if markup is not None and "inline_keyboard" not in markup:
+                return self.error("message can't be edited")
+            if self.reject_credential_edit and "Пароль: <code>" in fields["text"]:
+                return self.error("can't parse entities: private-diagnostic-marker")
             self.cards[key] = fields["text"]
             if self.drop_edit_reply:
                 self.drop_edit_reply = False
@@ -300,13 +309,52 @@ async def test_native_dispatcher_first_start_keeps_menu_separate_from_registered
 
 
 @pytest.mark.asyncio
-async def test_register_fence_keeps_nonsecret_placeholder_and_never_edits():
+async def test_register_fence_discards_nonsecret_placeholder_and_never_edits():
     authority = AuthorityStub()
     authority.deny_register = True
     async with provider_context(authority) as (provider, bot):
         assert not await BotCredentialCards(bot=bot, client=authority).deliver(message(bot), profile())
-        assert not provider.has_secret()
+        assert not provider.cards
         assert provider.edits == 0
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("repeat", [False, True])
+@pytest.mark.parametrize("failure", ["recheck", "edit_rejected", "edit_reply_lost"])
+async def test_start_card_failure_keeps_authorized_profile_and_role_menu(repeat, failure, caplog):
+    authority = AuthorityStub()
+    async with provider_context(authority) as (provider, bot):
+        cards = BotCredentialCards(bot=bot, client=authority)
+        menu = SimpleNamespace(
+            own_profile=AsyncMock(return_value=profile()),
+            menu_scope=AsyncMock(return_value=MenuScope(17, 2, 1, (BotGrant("STUDENT", 10),))),
+        )
+        if repeat:
+            await cmd_start(message(bot), None, None, credential_cards=cards, bot_menu_client=menu)
+            assert len(provider.cards) == 2 and provider.has_secret()
+        previous = dict(provider.cards)
+        authority.fail_recheck = failure == "recheck"
+        provider.reject_credential_edit = failure == "edit_rejected"
+        provider.delete_rejected = failure == "edit_rejected"
+        provider.drop_edit_reply = failure == "edit_reply_lost"
+
+        await cmd_start(message(bot), None, None, credential_cards=cards, bot_menu_client=menu)
+
+        assert all(provider.cards[key] == text for key, text in previous.items())
+        current = {key: text for key, text in provider.cards.items() if key not in previous}
+        reply = next(key for key in current if key in provider.reply_markups)
+        markup = provider.reply_markups[reply]
+        assert HOMEWORK_TODAY_LABEL in {button["text"] for row in markup["keyboard"] for button in row}
+        assert "ordinary" in current[reply]
+        assert all("Сервис временно недоступен" not in text and "Готовим" not in text for text in current.values())
+        assert "private-diagnostic-marker" not in caplog.text
+        if failure == "edit_reply_lost":
+            assert authority.render_outcome == pb.BOT_CREDENTIAL_RENDER_OUTCOME_UNCERTAIN
+            assert len(current) == 2 and "Пароль: <code>" in current[(42, authority.reference.message_id)]
+        else:
+            assert authority.render_outcome == pb.BOT_CREDENTIAL_RENDER_OUTCOME_NO_EDIT
+            assert all("Пароль: <code>" not in text for text in current.values())
+            assert len(current) == (2 if provider.delete_rejected else 1)
 
 
 @pytest.mark.asyncio

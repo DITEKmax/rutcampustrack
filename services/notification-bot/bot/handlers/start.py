@@ -84,7 +84,7 @@ async def _require_profile_scope(client, sender: int, profile):
     if (
         scope is None
         or (scope.user_id, scope.telegram_binding_version, scope.roles_version) != expected
-        or not any(grant.role in {"TEACHER", "ADMIN"} or grant.group_id > 0 for grant in scope.grants)
+        or not scope.has_active_grant
     ):
         raise RuntimeError("Own profile authority unavailable or changed")
     return scope
@@ -97,6 +97,16 @@ async def _refresh_own_profile(client, sender: int, previous):
         raise RuntimeError("Own profile binding or grants changed")
     scope = await _require_profile_scope(client, sender, fresh)
     return fresh, scope
+
+
+async def _deliver_credentials(cards, message, profile, **content):
+    if cards is None:
+        return False
+    try:
+        return await cards.deliver(message, profile, **content)
+    except Exception:
+        logger.warning("Credential card unavailable; checking redacted profile authority")
+        return False
 
 
 @start_router.message(Command("start"))
@@ -114,13 +124,14 @@ async def cmd_start(
 async def _publish_start(message, telegram_id, keyboard_sync, credential_cards, bot_menu_client):
     keyboard_pending = keyboard_sync is None
     if keyboard_sync is not None:
-        # Keep failures discoverable by the bounded startup recovery, including
-        # first-time users and users whose old role signature is still current.
-        # Reactivation must persist even if the following receipt invalidation
-        # fails; a terminal /start must not become invisible to recovery again.
-        await keyboard_sync.register_user(telegram_id, reactivate=True)
-        keyboard_pending = await keyboard_sync.invalidate_user_keyboard(telegram_id)
+        try:
+            # Keep explicit requests discoverable even if receipt invalidation fails.
+            await keyboard_sync.register_user(telegram_id, reactivate=True)
+            keyboard_pending = await keyboard_sync.invalidate_user_keyboard(telegram_id)
+        except Exception:
+            logger.warning("/start keyboard preparation unavailable")
     keyboard = main_keyboard()
+    stage = "own_profile"
     try:
         if bot_menu_client is None:
             raise RuntimeError("Own Auth profile capability unavailable")
@@ -134,14 +145,15 @@ async def _publish_start(message, telegram_id, keyboard_sync, credential_cards, 
                 reply_markup=keyboard if keyboard_pending else None,
                 parse_mode="HTML",
             )
-            if keyboard_sync is not None and keyboard_pending:
-                await keyboard_sync.mark_common_keyboard(telegram_id)
+            await _record_common_reply(keyboard_sync, telegram_id, keyboard_pending)
             return
 
         # D-02: a found profile needs positive current authority before any own data/card.
+        stage = "profile_authority"
         scope = await _require_profile_scope(bot_menu_client, telegram_id, response)
         display_name = html.escape(str(response.display_name or ""))
-        card_delivered = credential_cards is not None and await credential_cards.deliver(
+        card_delivered = await _deliver_credentials(
+            credential_cards,
             message,
             response,
             intro=f"👋 <b>Добро пожаловать, {display_name}</b>\n\n",
@@ -150,6 +162,7 @@ async def _publish_start(message, telegram_id, keyboard_sync, credential_cards, 
         if card_delivered:
             text = "Меню бота"
         else:
+            stage = "profile_recheck"
             response, scope = await _refresh_own_profile(bot_menu_client, telegram_id, response)
             display_name = html.escape(str(response.display_name or ""))
             login = html.escape(str(response.login or ""))
@@ -164,22 +177,24 @@ async def _publish_start(message, telegram_id, keyboard_sync, credential_cards, 
             )
         options = scope.keyboard_options
         signature = keyboard_signature(**options)
-        if keyboard_sync is not None:
-            await keyboard_sync.note_possible_publication(telegram_id, signature)
-        if card_delivered and await _require_profile_scope(bot_menu_client, telegram_id, response) != scope:
-            raise RuntimeError("Menu authority changed during credential delivery")
-        await message.answer(text, reply_markup=main_keyboard(**options), parse_mode="HTML")
-        await mark_keyboard_synced(
-            keyboard_sync,
-            telegram_id,
-            signature,
-            scope=scope,
-            bot_menu_client=bot_menu_client,
+        if keyboard_sync is not None and keyboard_pending:
+            try:
+                await keyboard_sync.note_possible_publication(telegram_id, signature)
+            except Exception:
+                logger.warning("/start keyboard publication ledger unavailable")
+                keyboard_pending = False
+        stage = "menu_authority"
+        if card_delivered or keyboard_sync is not None:
+            if await _require_profile_scope(bot_menu_client, telegram_id, response) != scope:
+                raise RuntimeError("Menu authority changed before publication")
+        stage = "reply"
+        await message.answer(
+            text, reply_markup=main_keyboard(**options) if keyboard_pending else None, parse_mode="HTML"
         )
 
     except Exception:
         # D-14: service unavailability
-        logger.warning("Own Auth profile unavailable for /start")
+        logger.warning("/start response unavailable (stage=%s)", stage)
         await message.answer(
             "⚠️ <b>Сервис временно недоступен</b>\n\nПопробуйте ещё раз чуть позже.",
             # Redis may still hold the signature of the previous role keyboard.
@@ -187,8 +202,28 @@ async def _publish_start(message, telegram_id, keyboard_sync, credential_cards, 
             reply_markup=main_keyboard() if keyboard_pending else None,
             parse_mode="HTML",
         )
-        if keyboard_sync is not None and keyboard_pending:
+        await _record_common_reply(keyboard_sync, telegram_id, keyboard_pending)
+        return
+
+    if keyboard_pending:
+        try:
+            await mark_keyboard_synced(
+                keyboard_sync,
+                telegram_id,
+                signature,
+                scope=scope,
+                bot_menu_client=bot_menu_client,
+            )
+        except Exception:
+            logger.warning("/start keyboard receipt unavailable")
+
+
+async def _record_common_reply(keyboard_sync, telegram_id, keyboard_pending):
+    if keyboard_sync is not None and keyboard_pending:
+        try:
             await keyboard_sync.mark_common_keyboard(telegram_id)
+        except Exception:
+            logger.warning("/start common keyboard receipt unavailable")
 
 
 @start_router.message(Command("credentials"))
@@ -216,7 +251,7 @@ async def cmd_credentials(message: Message, academic_client, credential_cards=No
 
     try:
         await _require_profile_scope(bot_menu_client, telegram_id, response)
-        if credential_cards is not None and await credential_cards.deliver(message, response):
+        if await _deliver_credentials(credential_cards, message, response):
             return
         response, _ = await _refresh_own_profile(bot_menu_client, telegram_id, response)
     except Exception:

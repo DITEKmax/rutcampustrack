@@ -29,6 +29,10 @@ class MenuScope:
     grants: tuple[BotGrant, ...]
 
     @property
+    def has_active_grant(self) -> bool:
+        return any(grant.role in {"TEACHER", "ADMIN"} or grant.group_id > 0 for grant in self.grants)
+
+    @property
     def student_groups(self) -> frozenset[int]:
         return self.groups_for("STUDENT")
 
@@ -112,16 +116,20 @@ class BotMenuClient(Protocol):
     ) -> HeadmanCurrent: ...
 
 
-async def resolve_menu_scope(client: BotMenuClient | None, sender: int) -> MenuScope | None:
-    if client is None or type(sender) is not int or sender <= 0:
-        return None
+async def resolve_menu_scope(
+    client: BotMenuClient | None, sender: int, *, raise_unavailable: bool = False
+) -> MenuScope | None:
     try:
+        if client is None or type(sender) is not int or sender <= 0:
+            raise BotReadUnavailable("Own menu scope unavailable")
         result = await client.menu_scope(sender)
+        if result is None:
+            return None
         if not isinstance(result, MenuScope) or not all(
             type(value) is int and value > 0
             for value in (result.user_id, result.telegram_binding_version, result.roles_version)
         ):
-            return None
+            raise BotReadUnavailable("Own menu scope unavailable")
         grants = tuple(
             sorted(
                 {
@@ -138,6 +146,8 @@ async def resolve_menu_scope(client: BotMenuClient | None, sender: int) -> MenuS
         )
         return MenuScope(result.user_id, result.telegram_binding_version, result.roles_version, grants)
     except Exception:
+        if raise_unavailable:
+            raise BotReadUnavailable("Own menu scope unavailable") from None
         return None
 
 

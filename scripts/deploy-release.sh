@@ -89,3 +89,9 @@ if [[ "$bootstrap" == true ]]; then
     --compose-file docker-compose.prod.yml --compose-file docker-compose.operator.yml
 fi
 printf '%s\n' "$sha" > /opt/rutcampustrack/.deployed-sha
+# Reuse the private alert route after all deployment checks and the SHA marker.
+if ! alert_helper=$(cat scripts/notify-deployment-succeeded.py 2>/dev/null) || [[ -z "$alert_helper" ]] ||
+  ! "${compose[@]}" exec -T alertmanager cat /run/secrets/alert-webhook-token 2>/dev/null |
+    "${compose[@]}" exec -T notification-bot python -c "$alert_helper" "$sha" >/dev/null 2>&1; then
+  echo 'Deployment succeeded; ops notification could not be queued' >&2
+fi

@@ -28,13 +28,29 @@ from bot.services.bot_menu import MenuScope, resolve_menu_scope
 
 logger = logging.getLogger(__name__)
 
+# Common layouts written before receipts recorded whether role buttons were present.
+_HISTORICAL_COMMON_SIGNATURES = frozenset(
+    {
+        "1c23dcdcaa1560c5",  # Persistent layout before eb7c714b3.
+        "c8dbd067ac8457e4",  # Dismissible layout from eb7c714b3.
+    }
+)
+
 
 def authority_tuple(scope):
     return [scope.user_id, scope.telegram_binding_version, scope.roles_version]
 
 
 def receipt_for(scope):
-    return json.dumps([keyboard_signature(**scope.keyboard_options), authority_tuple(scope)], separators=(",", ":"))
+    options = scope.keyboard_options
+    return json.dumps(
+        [keyboard_signature(**options), authority_tuple(scope), any(options.values())], separators=(",", ":")
+    )
+
+
+def _parse_receipt(raw):
+    signature, authority, *metadata = json.loads(raw)
+    return signature, authority, metadata[0] if metadata else None
 
 
 class KeyboardSyncClient:
@@ -86,17 +102,17 @@ class KeyboardSyncClient:
         await self._redis.sadd(self._ACTIVE_USERS_KEY, str(telegram_id))
         if reactivate:
             await self.note_possible_publication(telegram_id, keyboard_signature())
-            await self.set_state(telegram_id, self._pending())
+            await self.set_state(telegram_id, self._start_pending())
         else:
-            await self._redis.hsetnx(self._STATE_KEY, str(telegram_id), json.dumps(self._pending()))
+            await self._redis.hsetnx(self._STATE_KEY, str(telegram_id), json.dumps(dict(status="idle")))
 
     @staticmethod
-    def _pending():
-        return dict(status="pending", attempts=0, next_at=0, since=time.time())
+    def _start_pending():
+        return dict(status="pending", start_requested=True, attempts=0, next_at=0, since=time.time())
 
     async def state(self, telegram_id):
         raw = await self._redis.hget(self._STATE_KEY, str(telegram_id))
-        return json.loads(raw) if raw is not None else self._pending()
+        return json.loads(raw) if raw is not None else dict(status="idle")
 
     async def set_state(self, telegram_id, state):
         await self._redis.hset(self._STATE_KEY, str(telegram_id), json.dumps(state))
@@ -105,12 +121,15 @@ class KeyboardSyncClient:
         """Receipt invalidation is not evidence that a previously visible UI vanished."""
         if await self._redis.hget(self._UNSAFE_UI_KEY, str(telegram_id)) is not None:
             return True
-        common = keyboard_signature()
+        common_signatures = {keyboard_signature(), *_HISTORICAL_COMMON_SIGNATURES}
         receipt = await self.get_receipt(telegram_id)
-        if receipt is not None and json.loads(receipt)[0] != common:
-            return True
+        if receipt is not None:
+            signature, _, role_buttons = _parse_receipt(receipt)
+            if role_buttons is True or (role_buttons is not False and signature not in common_signatures):
+                return True
+            common_signatures.add(signature)
         version = await self.get_user_keyboard_version(telegram_id)
-        if version is not None and version != common:
+        if version is not None and version not in common_signatures:
             return True
         # Preserve pending work written by the earlier fallback implementation.
         state = await self.state(telegram_id)
@@ -173,7 +192,7 @@ class KeyboardSyncClient:
                 pipe.hdel(self._USER_VERSION_KEY, str(telegram_id))
                 pipe.hdel(self._RECEIPTS_KEY, str(telegram_id))
                 if reactivate:
-                    pipe.hset(self._STATE_KEY, str(telegram_id), json.dumps(self._pending()))
+                    pipe.hset(self._STATE_KEY, str(telegram_id), json.dumps(self._start_pending()))
                 await pipe.execute()
             return True
         except Exception:
@@ -219,15 +238,27 @@ class KeyboardSyncClient:
                         await self.register_user(telegram_id)
                         old = await self._redis.hget(self._BINDINGS_KEY, str(telegram_id))
                         state = await self.state(telegram_id)
-                        # Terminal provider failures stay terminal for the same binding;
-                        # a new binding or a reappearing unbound identity reactivates it.
+                        # A catalogue entry alone never requests a publication.
                         if old != identity or state.get("reason") == "unbound":
-                            # The UI ledger and receipts survive this retry reset.
-                            # Promote only the former pending flag; do not make
-                            # discovery depend on a recipient's receipt read.
+                            # Preserve legacy cleanup evidence across retry resets.
                             if state.get("fallback_needed") and not state.get("fallback_sent"):
                                 await self._redis.hset(self._UNSAFE_UI_KEY, str(telegram_id), "1")
-                            await self.set_state(telegram_id, self._pending())
+                            if state.get("start_requested"):
+                                await self.set_state(telegram_id, self._start_pending())
+                            elif old is not None and old != identity:
+                                # A legacy role keyboard can outlive its v2 receipt.
+                                # The old catalogue tuple is evidence for a targeted
+                                # replacement only after a fresh own scope confirms change.
+                                reset = dict(
+                                    status="idle",
+                                    previous_authority=state.get("previous_authority", json.loads(old)),
+                                    role_replacement_pending=state.get("role_replacement_pending", False),
+                                )
+                                if "observed_authority" in state:
+                                    reset["observed_authority"] = state["observed_authority"]
+                                await self.set_state(telegram_id, reset)
+                            elif state["status"] != "synced":
+                                await self.set_state(telegram_id, dict(status="idle"))
                             await self._redis.hset(self._BINDINGS_KEY, str(telegram_id), identity)
                 next_after = page.next_after_user_id
                 if not next_after:
@@ -241,8 +272,10 @@ class KeyboardSyncClient:
                         state = before[telegram_id]
                         if state.get("reason") == "provider_unreachable":
                             continue
-                        if await self.ui_needs_cleanup(telegram_id):
-                            await self.note_possible_publication(telegram_id, keyboard_signature())
+                        cleanup_needed = await self.ui_needs_cleanup(telegram_id)
+                        if state.get("start_requested") or cleanup_needed:
+                            if cleanup_needed:
+                                await self.note_possible_publication(telegram_id, keyboard_signature())
                             if state.get("reason") != "unbound" or state["status"] == "terminal":
                                 await self.set_state(
                                     telegram_id,
@@ -289,7 +322,9 @@ async def mark_keyboard_synced(keyboard_sync, telegram_id, keyboard_version, *, 
     if keyboard_version == keyboard_signature():
         await keyboard_sync.mark_common_keyboard(telegram_id)
     # /start also checks after a potentially delayed Telegram ACK/card publication.
-    current = await resolve_menu_scope(bot_menu_client, telegram_id) if scope is not None else None
+    current = (
+        await resolve_menu_scope(bot_menu_client, telegram_id, raise_unavailable=True) if scope is not None else None
+    )
     if current != scope or scope is None:
         return
     await keyboard_sync.mark_user_synced(telegram_id, keyboard_version, scope)
@@ -303,26 +338,32 @@ def _terminal(error):
 
 async def _reconcile_user(bot, sync, menu, telegram_id, *, now, retry_delay_seconds):
     async with sync.publication(telegram_id):
-        state = await sync.state(telegram_id)
-        if state["status"] == "terminal" or state.get("next_at", 0) > now:
+        previous_state = await sync.state(telegram_id)
+        if previous_state["status"] == "terminal" or previous_state.get("next_at", 0) > now:
             return
         provider_backoff = await sync._redis.get(sync._PROVIDER_BACKOFF_KEY)
         if provider_backoff is not None and float(provider_backoff) > now:
             return
-        # A durable pending marker precedes authority, send and receipt. Preserve age.
-        state = dict(state, status="pending", since=state.get("since", now))
-        await sync.set_state(telegram_id, state)
+        start_requested = bool(previous_state.get("start_requested"))
+        state = dict(previous_state, status="pending", since=previous_state.get("since", now))
         try:
-            scope = await resolve_menu_scope(menu, telegram_id)
-            if scope is None:
-                # Revoke a previously published role UI safely, while keeping an
-                # uncertain/fenced/no-grant menu retryable. A common fallback is
-                # never an authoritative success receipt.
-                if await sync.ui_needs_cleanup(telegram_id):
+            cleanup_needed = await sync.ui_needs_cleanup(telegram_id)
+            receipt = await sync.get_receipt(telegram_id)
+            if not start_requested and not cleanup_needed and receipt is None:
+                # Drop legacy pending rows that were created by catalogue discovery.
+                if previous_state != {"status": "idle"}:
+                    await sync.set_state(telegram_id, dict(status="idle"))
+                return
+            # A failed RPC does not establish revocation. Wait for an authoritative answer.
+            scope = await resolve_menu_scope(menu, telegram_id, raise_unavailable=True)
+            if scope is None or not scope.has_active_grant:
+                if cleanup_needed:
+                    await sync.set_state(telegram_id, state)
                     await sync.note_possible_publication(telegram_id, keyboard_signature())
                     if not await sync.invalidate_user_keyboard(telegram_id, reactivate=False):
                         raise RuntimeError("Keyboard fallback pending unavailable")
-                    if await resolve_menu_scope(menu, telegram_id) is not None:
+                    fresh = await resolve_menu_scope(menu, telegram_id, raise_unavailable=True)
+                    if fresh is not None and fresh.has_active_grant:
                         raise RuntimeError("Keyboard authority recovered before fallback")
                     await bot.send_message(
                         chat_id=telegram_id,
@@ -334,31 +375,55 @@ async def _reconcile_user(bot, sync, menu, telegram_id, *, now, retry_delay_seco
                 if state.get("reason") == "unbound":
                     await sync.set_state(telegram_id, dict(status="terminal", reason="unbound"))
                     return
+                if not start_requested:
+                    await sync.set_state(telegram_id, dict(status="idle"))
+                    return
                 raise RuntimeError("Current keyboard authority unavailable")
-            receipt = receipt_for(scope)
-            if await sync.get_receipt(telegram_id) != receipt:
-                await sync.note_possible_publication(telegram_id, keyboard_signature(**scope.keyboard_options))
-                if not await sync.invalidate_user_keyboard(telegram_id, reactivate=False):
-                    raise RuntimeError("Keyboard receipt invalidation unavailable")
-                # Reread after storage waits, immediately before publication.
-                fresh = await resolve_menu_scope(menu, telegram_id)
-                if fresh != scope:
-                    raise RuntimeError("Keyboard authority changed before publication")
-                await bot.send_message(
-                    chat_id=telegram_id,
-                    text="Клавиатура обновлена.",
-                    reply_markup=main_keyboard(**scope.keyboard_options),
-                    disable_notification=True,
-                )
-                if keyboard_signature(**scope.keyboard_options) == keyboard_signature():
-                    state = await sync.mark_common_keyboard(telegram_id)
-                if await resolve_menu_scope(menu, telegram_id) != scope:
-                    raise RuntimeError("Keyboard authority changed during publication")
-            else:
-                # A catalogue tuple never authorizes skipping a fresh own read.
-                if await resolve_menu_scope(menu, telegram_id) != scope:
-                    raise RuntimeError("Keyboard authority changed before receipt reuse")
-            await sync.mark_user_synced(telegram_id, keyboard_signature(**scope.keyboard_options), scope)
+            signature = keyboard_signature(**scope.keyboard_options)
+            authority = authority_tuple(scope)
+            if receipt is not None:
+                old_signature, old_authority, _ = _parse_receipt(receipt)
+                authority_unchanged = authority in (old_authority, previous_state.get("observed_authority"))
+                if old_signature == signature or (not start_requested and (not cleanup_needed or authority_unchanged)):
+                    # Record the latest confirmed authority separately from the
+                    # original Telegram ACK so a later markup change stays silent.
+                    settled = dict(status="synced")
+                    if authority != old_authority:
+                        settled["observed_authority"] = authority
+                    if previous_state != settled:
+                        await sync.set_state(telegram_id, settled)
+                    return
+            elif not start_requested:
+                previous_authority = state.get("previous_authority")
+                authority_changed = previous_authority is not None and previous_authority != authority
+                if (
+                    not (authority_changed or state.get("role_replacement_pending"))
+                    or await sync.get_user_keyboard_version(telegram_id) == signature
+                ):
+                    # Keep legacy role risk available for affirmative revocation.
+                    if previous_state != {"status": "idle"}:
+                        await sync.set_state(telegram_id, dict(status="idle"))
+                    return
+            if not start_requested:
+                state["role_replacement_pending"] = True
+            await sync.set_state(telegram_id, state)
+            await sync.note_possible_publication(telegram_id, signature)
+            if not await sync.invalidate_user_keyboard(telegram_id, reactivate=False):
+                raise RuntimeError("Keyboard receipt invalidation unavailable")
+            fresh = await resolve_menu_scope(menu, telegram_id, raise_unavailable=True)
+            if fresh != scope:
+                raise RuntimeError("Keyboard authority changed before publication")
+            await bot.send_message(
+                chat_id=telegram_id,
+                text="Клавиатура обновлена.",
+                reply_markup=main_keyboard(**scope.keyboard_options),
+                disable_notification=True,
+            )
+            if signature == keyboard_signature():
+                state = await sync.mark_common_keyboard(telegram_id)
+            if await resolve_menu_scope(menu, telegram_id, raise_unavailable=True) != scope:
+                raise RuntimeError("Keyboard authority changed during publication")
+            await sync.mark_user_synced(telegram_id, signature, scope)
         except Exception as error:
             KEYBOARD_SYNC_USERS_FAILED.inc()
             if _terminal(error):

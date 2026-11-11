@@ -58,6 +58,13 @@ import java.util.stream.Collectors;
 @Service
 public class ExcuseService {
     private ru.rutcampustrack.attendance.audit.RequestActionRecorder requestActions;
+    private ru.rutcampustrack.attendance.studentrequest.RequestLessonCancellation requestCancellation;
+
+    @org.springframework.beans.factory.annotation.Autowired(required = false)
+    public void setRequestCancellation(
+            ru.rutcampustrack.attendance.studentrequest.RequestLessonCancellation requestCancellation) {
+        this.requestCancellation = requestCancellation;
+    }
 
     @org.springframework.beans.factory.annotation.Autowired
     public void setRequestActions(
@@ -242,6 +249,7 @@ public class ExcuseService {
      */
     public Page<ExcuseTicket> getMyTickets(Pageable pageable, ExcuseTicketStatus status) {
         Long userId = requestContext.getUserId();
+        if (requestCancellation != null) requestCancellation.reconcileStudent(userId);
         if (status != null) {
             return excuseRepository.findByStudentIdAndStatus(userId, status, pageable);
         }
@@ -252,6 +260,7 @@ public class ExcuseService {
     public Page<ExcuseTicket> getGroupTickets(
             Long groupId, Pageable pageable, ExcuseTicketStatus status) {
         requireExcuseManagement(groupId);
+        if (requestCancellation != null) requestCancellation.reconcileGroup(groupId);
         if (status != null) {
             return excuseRepository.findByGroupIdAndStatus(groupId, status, pageable);
         }
@@ -267,7 +276,18 @@ public class ExcuseService {
                 excuseRepository
                         .findById(id)
                         .orElseThrow(() -> new ResourceNotFoundException("ExcuseTicket", "id", id));
+        requireTicketReadAuthority(ticket);
+        if (requestCancellation != null
+                && requestCancellation.reconcileRequest(
+                        ru.rutcampustrack.attendance.contract.enums.StudentRequestKind.EXCUSE, id)) {
+            ticket = excuseRepository.findById(id)
+                    .orElseThrow(() -> new ResourceNotFoundException("ExcuseTicket", "id", id));
+            requireTicketReadAuthority(ticket);
+        }
+        return ticket;
+    }
 
+    private void requireTicketReadAuthority(ExcuseTicket ticket) {
         boolean isOwner = ticket.getStudentId().equals(requestContext.getUserId());
         boolean isGroupHeadman =
                 !isOwner
@@ -277,7 +297,6 @@ public class ExcuseService {
         if (!isOwner && !isGroupHeadman) {
             throw new AccessDeniedException("Доступ к тикету запрещён");
         }
-        return ticket;
     }
 
     /**

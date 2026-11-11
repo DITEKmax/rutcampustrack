@@ -50,6 +50,13 @@ import java.util.Objects;
 @Service
 public class LateCheckinService {
     private ru.rutcampustrack.attendance.audit.RequestActionRecorder requestActions;
+    private ru.rutcampustrack.attendance.studentrequest.RequestLessonCancellation requestCancellation;
+
+    @org.springframework.beans.factory.annotation.Autowired(required = false)
+    public void setRequestCancellation(
+            ru.rutcampustrack.attendance.studentrequest.RequestLessonCancellation requestCancellation) {
+        this.requestCancellation = requestCancellation;
+    }
 
     @org.springframework.beans.factory.annotation.Autowired
     public void setRequestActions(
@@ -199,6 +206,7 @@ public class LateCheckinService {
             throw new AccessDeniedException("Староста не привязан к группе");
         }
         requireExcuseManagement(groupId);
+        if (requestCancellation != null) requestCancellation.reconcileGroup(groupId);
         return repository.findByGroupIdAndStatusOrderByCreatedAtAsc(
                 groupId, LateCheckinRequestStatus.PENDING);
     }
@@ -222,6 +230,7 @@ public class LateCheckinService {
         requireExcuseManagement(groupId);
 
         Pageable effectivePageable = withDefaultSort(pageable);
+        if (requestCancellation != null) requestCancellation.reconcileGroup(groupId);
         Instant cutoff = clock.instant().minus(HEADMAN_HISTORY_DAYS, ChronoUnit.DAYS);
         if (status != null) {
             return repository.findByGroupIdAndStatusAndUpdatedAtGreaterThanEqual(

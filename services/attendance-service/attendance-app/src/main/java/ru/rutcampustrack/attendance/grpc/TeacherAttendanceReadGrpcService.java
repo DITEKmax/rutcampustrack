@@ -88,6 +88,13 @@ public final class TeacherAttendanceReadGrpcService
     private final ScheduleGrpcClient scheduleGrpcClient;
     private final AcademicGrpcClient academicGrpcClient;
     private final ExcuseRepository excuseRepository;
+    private ru.rutcampustrack.attendance.studentrequest.RequestLessonCancellation requestCancellation;
+
+    @org.springframework.beans.factory.annotation.Autowired(required = false)
+    public void setRequestCancellation(
+            ru.rutcampustrack.attendance.studentrequest.RequestLessonCancellation requestCancellation) {
+        this.requestCancellation = requestCancellation;
+    }
     private final RequestAttachmentRepository attachmentRepository;
     private final Clock clock;
     private final Clock educationalClock;
@@ -569,6 +576,16 @@ public final class TeacherAttendanceReadGrpcService
                                                     .withDescription("request not found")
                                                     .asRuntimeException());
             List<LessonResponse> lessons = authorizedTicketLessons(ticket, claims.userId());
+            if (!lessons.isEmpty()
+                    && requestCancellation != null
+                    && requestCancellation.reconcileRequest(
+                            ru.rutcampustrack.attendance.contract.enums.StudentRequestKind.EXCUSE,
+                            requestId)) {
+                ticket = excuseRepository.findById(requestId)
+                        .orElseThrow(() -> Status.NOT_FOUND
+                                .withDescription("request not found").asRuntimeException());
+                lessons = authorizedTicketLessons(ticket, claims.userId());
+            }
             if (lessons.isEmpty()) {
                 throw Status.NOT_FOUND.withDescription("request not found").asRuntimeException();
             }
@@ -815,6 +832,7 @@ public final class TeacherAttendanceReadGrpcService
     }
 
     private Map<Long, TicketMarker> ticketMarkers(long lessonId) {
+        if (requestCancellation != null) requestCancellation.reconcileExcusesForLesson(lessonId);
         Map<Long, TicketMarker> result = new HashMap<>();
         for (ExcuseTicket ticket :
                 excuseRepository.findByLessonIdsInAndStatusIn(

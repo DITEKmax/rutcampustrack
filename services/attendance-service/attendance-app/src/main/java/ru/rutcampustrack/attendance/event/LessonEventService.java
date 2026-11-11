@@ -28,6 +28,7 @@ import ru.rutcampustrack.attendance.grpc.ScheduleGrpcClient;
 import ru.rutcampustrack.attendance.marking.AttendanceAttachmentService;
 import ru.rutcampustrack.attendance.semester.SemesterCacheService;
 import ru.rutcampustrack.attendance.student.PairWriteCoordinator;
+import ru.rutcampustrack.attendance.studentrequest.RequestLessonCancellation;
 import ru.rutcampustrack.schedule.grpc.LessonResponse;
 
 import java.time.Instant;
@@ -54,6 +55,12 @@ public class LessonEventService {
 
     private final MongoTemplate mongoTemplate;
     private ru.rutcampustrack.attendance.audit.LessonActionService actions;
+    private RequestLessonCancellation requestCancellation;
+
+    @org.springframework.beans.factory.annotation.Autowired(required = false)
+    public void setRequestCancellation(RequestLessonCancellation requestCancellation) {
+        this.requestCancellation = requestCancellation;
+    }
 
     @org.springframework.beans.factory.annotation.Autowired
     public void setActions(ru.rutcampustrack.attendance.audit.LessonActionService actions) {
@@ -176,7 +183,7 @@ public class LessonEventService {
         resolveLegacyLessonAttendanceScope(lessonId, eventSemesterId);
 
         if ("cancelled".equalsIgnoreCase(lesson.getStatus())) {
-            ensureCancellationMarker(lessonId, eventSemesterId);
+            ensureCancellationMarker(lessonId, eventSemesterId, Instant.now());
             applyCancellation(lessonId, eventSemesterId);
             return;
         }
@@ -473,6 +480,12 @@ public class LessonEventService {
 
     @Transactional(transactionManager = "mongoTransactionManager")
     public void processLessonCancelled(Long lessonId, Long semesterId, Long groupId) {
+        processLessonCancelled(lessonId, semesterId, groupId, Instant.now());
+    }
+
+    @Transactional(transactionManager = "mongoTransactionManager")
+    public void processLessonCancelled(
+            Long lessonId, Long semesterId, Long groupId, Instant cancelledAt) {
         requirePositive(lessonId, "lessonId");
         requirePositive(semesterId, "semesterId");
         if (pairWriteCoordinator.isSubjectDeleted(lessonId, semesterId, groupId)) return;
@@ -492,8 +505,10 @@ public class LessonEventService {
         resolveLegacyLessonAttendanceScope(lessonId, semesterId);
         // The marker must be durable before any attendance update.  Retries
         // are idempotent because both operations are keyed by lesson_id.
-        ensureCancellationMarker(lessonId, semesterId);
+        ensureCancellationMarker(lessonId, semesterId, cancelledAt);
         applyCancellation(lessonId, semesterId);
+        if (requestCancellation != null)
+            requestCancellation.apply(lessonId, semesterId, groupId, cancelledAt);
         log.info("lesson.cancelled: lessonId={}, cancellation marker durable", lessonId);
     }
 
@@ -584,7 +599,7 @@ public class LessonEventService {
         }
     }
 
-    private void ensureCancellationMarker(Long lessonId, Long semesterId) {
+    private void ensureCancellationMarker(Long lessonId, Long semesterId, Instant cancelledAt) {
         if (lessonId == null || lessonId <= 0) {
             throw new IllegalArgumentException("lessonId must be positive");
         }
@@ -596,7 +611,7 @@ public class LessonEventService {
                 new Update()
                         .setOnInsert("lesson_id", lessonId)
                         .setOnInsert("semester_id", semesterId)
-                        .setOnInsert("marked_at", Instant.now());
+                        .setOnInsert("marked_at", cancelledAt);
         try {
             mongoTemplate.upsert(markerQuery, markerUpdate, LessonCancellationMarker.class);
         } catch (DuplicateKeyException race) {

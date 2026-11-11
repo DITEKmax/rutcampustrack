@@ -14,7 +14,9 @@ import ru.rutcampustrack.shared.events.AbstractEventConsumer;
 import ru.rutcampustrack.shared.events.EventIdempotent;
 import ru.rutcampustrack.shared.events.IdempotencyGuard;
 
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import java.util.Map;
 
 /**
@@ -112,6 +114,7 @@ public class EventConsumer extends AbstractEventConsumer {
 
         if ("lesson.cancelled".equals(eventType)) {
             Map<String, Object> payload = extractRequiredPayload(envelope);
+            Instant cancelledAt = lessonCancelledAt(payload, envelope);
             var scope =
                     lessonEventService.prepareLessonCancelledScope(
                             extractPositiveInteger(payload, "lesson_id"),
@@ -133,7 +136,8 @@ public class EventConsumer extends AbstractEventConsumer {
                                                         lessonEventService.processLessonCancelled(
                                                                 scope.lessonId(),
                                                                 scope.semesterId(),
-                                                                scope.groupId())));
+                                                                scope.groupId(),
+                                                                cancelledAt)));
                     });
             return;
         }
@@ -483,7 +487,15 @@ public class EventConsumer extends AbstractEventConsumer {
         Map<String, Object> payload = extractRequiredPayload(envelope);
         Long lessonId = extractPositiveInteger(payload, "lesson_id");
         Long semesterId = extractPositiveInteger(payload, "semester_id");
-        lessonEventService.processLessonCancelled(lessonId, semesterId);
+        lessonEventService.processLessonCancelled(
+                lessonId, semesterId, null, lessonCancelledAt(payload, envelope));
+    }
+
+    private static Instant lessonCancelledAt(
+            Map<String, Object> payload, Map<String, Object> envelope) {
+        Object timestamp = payload.get("cancelled_at");
+        if (timestamp == null) timestamp = envelope.get("occurred_at");
+        return timestamp == null ? Instant.now() : OffsetDateTime.parse(timestamp.toString()).toInstant();
     }
 
     @SuppressWarnings("unchecked")

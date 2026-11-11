@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
+import org.bson.Document;
 import ru.rutcampustrack.attendance.contract.enums.ExcuseTicketStatus;
 import ru.rutcampustrack.attendance.exception.BadRequestException;
 import ru.rutcampustrack.attendance.exception.ConflictException;
@@ -61,6 +62,47 @@ final class ExcuseDecisionSelections {
         return ticket.getStatus() != ExcuseTicketStatus.APPROVED
                 && ticket.getStatus() != ExcuseTicketStatus.REJECTED
                 && ticket.getStatus() != ExcuseTicketStatus.CANCELLED;
+    }
+
+    /** The original snapshots remain available in the archive after an automatic reduction. */
+    static List<StudentLessonSnapshotDocument> reducedPendingCoverage(ExcuseTicket ticket) {
+        if (!hasReducedPendingCoverage(ticket)) return null;
+        List<StudentLessonSnapshotDocument> snapshots =
+                ticket.getLessonSnapshots() == null ? List.of() : ticket.getLessonSnapshots();
+        return ticket.getLessonIds().stream()
+                .map(id -> snapshots.stream()
+                        .filter(snapshot -> Objects.equals(snapshot.getLessonId(), id))
+                        .findFirst()
+                        .orElseGet(() -> StudentLessonSnapshotDocument.builder()
+                                .lessonId(id)
+                                .groupId(ticket.getGroupId())
+                                .semesterId(ticket.getSemesterId())
+                                .status("unknown")
+                                .build()))
+                .toList();
+    }
+
+    static boolean hasReducedPendingCoverage(ExcuseTicket ticket) {
+        return open(ticket) && ticket.getOriginalLessonIds() != null;
+    }
+
+    static Document coverageSnapshots(boolean open) {
+        Document retained = new Document("$ifNull", List.of(
+                "$effective_lesson_snapshots",
+                new Document("$ifNull", List.of("$lesson_snapshots", List.of()))));
+        if (!open) return retained;
+        Document byId = new Document("$filter", new Document("input", retained)
+                .append("as", "snapshot")
+                .append("cond", new Document("$eq", List.of("$$snapshot.lesson_id", "$$id"))));
+        Document fallback = new Document("lesson_id", "$$id")
+                .append("group_id", "$group_id").append("semester_id", "$semester_id")
+                .append("status", "unknown");
+        Document reduced = new Document("$map", new Document("input", "$lesson_ids")
+                .append("as", "id")
+                .append("in", new Document("$ifNull", List.of(
+                        new Document("$arrayElemAt", List.of(byId, 0)), fallback))));
+        return new Document("$cond", List.of(
+                new Document("$isArray", "$original_lesson_ids"), reduced, retained));
     }
 
     static String revision(ExcuseTicket ticket, Map<Long, LessonResponse> lessons) {

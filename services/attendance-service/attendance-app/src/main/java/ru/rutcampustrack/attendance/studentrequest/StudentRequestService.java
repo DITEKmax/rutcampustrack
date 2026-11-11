@@ -116,6 +116,12 @@ import java.util.function.Supplier;
 @Service
 public class StudentRequestService {
     private ru.rutcampustrack.attendance.audit.RequestActionRecorder requestActions;
+    private RequestLessonCancellation requestCancellation;
+
+    @org.springframework.beans.factory.annotation.Autowired(required = false)
+    public void setRequestCancellation(RequestLessonCancellation requestCancellation) {
+        this.requestCancellation = requestCancellation;
+    }
 
     @Autowired
     public void setRequestActions(
@@ -402,6 +408,7 @@ public class StudentRequestService {
         int effectivePage = page == null ? 0 : page;
         int effectiveSize = size == null ? DEFAULT_PAGE_SIZE : size;
         validatePage(effectivePage, effectiveSize);
+        if (requestCancellation != null) requestCancellation.reconcileStudent(studentId);
 
         List<Document> countPipeline = unionPipeline(studentId, bucket, false);
         countPipeline.add(new Document("$count", "total"));
@@ -432,11 +439,23 @@ public class StudentRequestService {
         ExcuseTicket excuse = excuseRepository.findById(requestId).orElse(null);
         if (excuse != null) {
             requireOwner(identity, excuse.getStudentId());
+            if (requestCancellation != null
+                    && requestCancellation.reconcileRequest(StudentRequestKind.EXCUSE, requestId)) {
+                excuse = excuseRepository.findById(requestId).orElseThrow(
+                        () -> new ResourceNotFoundException("StudentRequest", "id", requestId));
+                requireOwner(identity, excuse.getStudentId());
+            }
             return toDetail(excuse);
         }
         LateCheckinRequest late = lateCheckinRepository.findById(requestId).orElse(null);
         if (late != null) {
             requireOwner(identity, late.getStudentId());
+            if (requestCancellation != null
+                    && requestCancellation.reconcileRequest(StudentRequestKind.LATE_CHECKIN, requestId)) {
+                late = lateCheckinRepository.findById(requestId).orElseThrow(
+                        () -> new ResourceNotFoundException("StudentRequest", "id", requestId));
+                requireOwner(identity, late.getStudentId());
+            }
             return toDetail(late);
         }
         throw new ResourceNotFoundException("StudentRequest", "id", requestId);
@@ -672,6 +691,7 @@ public class StudentRequestService {
             throw new BadRequestException("Вид заявки обязателен");
         }
         validateObjectId(requestId, "request_id");
+        if (requestCancellation != null) requestCancellation.reconcileRequest(kind, requestId);
         return switch (kind) {
             case EXCUSE -> {
                 ExcuseTicket ticket =
@@ -818,6 +838,12 @@ public class StudentRequestService {
                                         new ResourceNotFoundException(
                                                 "ExcuseTicket", "id", ticketId));
         authorizeBotDecisionActor(actorUserId, ticket);
+        if (requestCancellation != null
+                && requestCancellation.reconcileRequest(StudentRequestKind.EXCUSE, ticketId)) {
+            ticket = excuseRepository.findById(ticketId).orElseThrow(
+                    () -> new ResourceNotFoundException("ExcuseTicket", "id", ticketId));
+            authorizeBotDecisionActor(actorUserId, ticket);
+        }
         ExcuseTicketStatus expected =
                 approved ? ExcuseTicketStatus.APPROVED : ExcuseTicketStatus.REJECTED;
         if (ticket.getStatus() == expected
@@ -848,6 +874,12 @@ public class StudentRequestService {
                                         new ResourceNotFoundException(
                                                 "LateCheckinRequest", "id", requestId));
         authorizeBotDecisionActor(actorUserId, request.getGroupId());
+        if (requestCancellation != null
+                && requestCancellation.reconcileRequest(StudentRequestKind.LATE_CHECKIN, requestId)) {
+            request = lateCheckinRepository.findById(requestId).orElseThrow(
+                    () -> new ResourceNotFoundException("LateCheckinRequest", "id", requestId));
+            authorizeBotDecisionActor(actorUserId, request.getGroupId());
+        }
         LateCheckinRequestStatus expected =
                 approved ? LateCheckinRequestStatus.APPROVED : LateCheckinRequestStatus.REJECTED;
         if (request.getStatus() == expected
@@ -1719,6 +1751,7 @@ public class StudentRequestService {
 
     private RequestOptions optionsFor(
             long studentId, long semesterId, List<LessonSnapshot> lessons, boolean deferLateBudget) {
+        if (requestCancellation != null) requestCancellation.reconcileStudent(studentId);
         StudentLateCheckinBudgetDocument budget =
                 budgetRepository.findByStudentIdAndSemesterId(studentId, semesterId).orElse(null);
         int used = budget == null || budget.getUsed() == null ? 0 : budget.getUsed();
@@ -1945,8 +1978,7 @@ public class StudentRequestService {
                                                                 "default",
                                                                 new Document(
                                                                         "$toUpper", "$status"))))
-                                .append("lesson_snapshots", 1)
-                                .append("effective_lesson_snapshots", 1)
+                                .append("lesson_snapshots", ExcuseDecisionSelections.coverageSnapshots(bucketStatus != null))
                                 .append("effective_original_lesson_ids", 1)
                                 .append("lesson_ids", 1)
                                 .append("original_lesson_ids", 1)
@@ -2137,6 +2169,7 @@ public class StudentRequestService {
     }
 
     private RequestDetail toDetail(ExcuseTicket ticket, List<AttachmentDescriptor> attachments) {
+        List<StudentLessonSnapshotDocument> active = ExcuseDecisionSelections.reducedPendingCoverage(ticket);
         RequestSummary summary =
                 new RequestSummary(
                         ticket.getId(),
@@ -2144,7 +2177,7 @@ public class StudentRequestService {
                         mapStatus(ticket.getStatus()),
                         StudentRequestOrigin.MANUAL,
                         snapshots(
-                                ticket.getLessonSnapshots(),
+                                active == null ? ticket.getLessonSnapshots() : active,
                                 ticket.getOriginalLessonIds() == null
                                         ? ticket.getLessonIds()
                                         : ticket.getOriginalLessonIds(),
@@ -2421,6 +2454,8 @@ public class StudentRequestService {
                                                     ? allIds
                                                     : ExcuseDecisionSelections.included(
                                                             current, writeLessons, intent);
+                                    for (Long lessonId : includedIds)
+                                        requireApprovableLesson(writeLessons.get(lessonId));
                                     // These are current physical pairs under the same write fences
                                     // as the marks. A previous read or original ticket snapshot
                                     // cannot prove the attendance at the decision boundary.
@@ -2437,7 +2472,6 @@ public class StudentRequestService {
                                     Instant now = clock.instant();
                                     if (approved) {
                                         for (Long lessonId : includedIds) {
-                                            requireApprovableLesson(writeLessons.get(lessonId));
                                             AttendanceDocument attendance =
                                                     attendanceRepository
                                                             .findByLessonIdAndUserId(
@@ -2656,10 +2690,7 @@ public class StudentRequestService {
                                         throw new ConflictException(
                                                 "Решение по запросу уже принято");
                                     }
-                                    if (approved) {
-                                        requireApprovableLesson(
-                                                writeLessons.get(current.getLessonId()));
-                                    }
+                                    requireApprovableLesson(writeLessons.get(current.getLessonId()));
                                     Instant now = clock.instant();
                                     Map<String, Object> auditBefore =
                                             ru.rutcampustrack.attendance.audit.RequestActionRecorder

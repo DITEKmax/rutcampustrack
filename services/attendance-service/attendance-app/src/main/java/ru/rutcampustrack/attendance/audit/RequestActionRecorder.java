@@ -61,6 +61,24 @@ public class RequestActionRecorder {
                 at);
     }
 
+    public void excuseTargetCancelled(
+            ExcuseTicket ticket, Map<String, Object> before, long lessonId, Instant at) {
+        actions.local(
+                ticket.getGroupId(),
+                ticket.getSemesterId(),
+                lessonId,
+                "CANCELLED".equals(ticket.getStatus().name())
+                        ? "REQUEST_CANCELLED"
+                        : "REQUEST_COVERAGE_CHANGED",
+                null,
+                LessonActionService.person(ticket.getStudentId(), "STUDENT", ticket.getStudentName()),
+                before,
+                snapshot(ticket),
+                null,
+                reference("EXCUSE", ticket.getId(), ticket.getStatus().name()),
+                at);
+    }
+
     private static String action(Map<String, Object> before, String status) {
         return before == null
                 ? "REQUEST_SUBMITTED"

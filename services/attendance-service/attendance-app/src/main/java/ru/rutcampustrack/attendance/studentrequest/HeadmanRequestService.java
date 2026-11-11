@@ -73,6 +73,12 @@ public class HeadmanRequestService {
     private final ScheduleGrpcClient scheduleGrpcClient;
     private final MongoTemplate mongoTemplate;
     private final Clock clock;
+    private RequestLessonCancellation requestCancellation;
+
+    @org.springframework.beans.factory.annotation.Autowired(required = false)
+    public void setRequestCancellation(RequestLessonCancellation requestCancellation) {
+        this.requestCancellation = requestCancellation;
+    }
 
     public HeadmanRequestService(
             ExcuseRepository excuseRepository,
@@ -114,6 +120,7 @@ public class HeadmanRequestService {
                         coverageDateTo,
                         groupId,
                         mongoTemplate);
+        if (requestCancellation != null) requestCancellation.reconcileGroup(groupId);
 
         List<Document> countPipeline = unionPipeline(options, false);
         countPipeline.add(new Document("$count", "total"));
@@ -138,6 +145,13 @@ public class HeadmanRequestService {
     public HeadmanRequestDetailResponse get(Identity identity, String requestId) {
         Loaded loaded = load(requestId);
         requireHeadmanAuthority(identity, loaded.groupId());
+        if (requestCancellation != null
+                && requestCancellation.reconcileRequest(loaded.kind(), requestId)) {
+            Loaded refreshed = load(requestId);
+            if (!Objects.equals(loaded.groupId(), refreshed.groupId()))
+                throw new ConflictException("Заявка изменилась; обнови данные");
+            loaded = refreshed;
+        }
         return detail(identity, loaded);
     }
 
@@ -153,6 +167,7 @@ public class HeadmanRequestService {
 
         Loaded loaded = load(requestId);
         requireHeadmanAuthority(identity, loaded.groupId());
+        if (requestCancellation != null) requestCancellation.reconcileRequest(loaded.kind(), requestId);
         boolean approved = command.decision() == HeadmanRequestDecision.APPROVED;
         if (loaded.kind() == StudentRequestKind.EXCUSE) {
             studentRequestService.decideExcuse(
@@ -223,7 +238,10 @@ public class HeadmanRequestService {
                     currentExcuseLessons(loaded.excuse(), resolved);
             response =
                     new HeadmanRequestDetailResponse(
-                            summary(loaded.excuse(), lessons),
+                            summary(
+                                    loaded.excuse(),
+                                    ExcuseDecisionSelections.hasReducedPendingCoverage(loaded.excuse())
+                                            && current != null ? current : lessons),
                             lessons,
                             excuseAttachments(loaded.excuse()),
                             current,
@@ -911,8 +929,8 @@ public class HeadmanRequestService {
                                 .append("student_name", 1)
                                 .append("excuse_type", 1)
                                 .append("comment", 1)
-                                .append("lesson_snapshots", 1)
-                                .append("effective_lesson_snapshots", 1)
+                                .append("lesson_snapshots",
+                                        ExcuseDecisionSelections.coverageSnapshots(options.bucket() == QueryBucket.OPEN))
                                 .append("effective_original_lesson_ids", 1)
                                 .append("lesson_ids", 1)
                                 .append("original_lesson_ids", 1)
@@ -1003,7 +1021,7 @@ public class HeadmanRequestService {
         }
         List<Document> overlap = new ArrayList<>(2);
         if (options.coverageDateFrom() != null) {
-            Document maximum = coverageExtreme(false);
+            Document maximum = coverageExtreme(false, options.bucket() == QueryBucket.OPEN);
             Document knownMaximum = new Document("$ne", Arrays.asList(maximum, null));
             Document fromBound =
                     new Document(
@@ -1011,7 +1029,7 @@ public class HeadmanRequestService {
             overlap.add(new Document("$and", Arrays.asList(knownMaximum, fromBound)));
         }
         if (options.coverageDateTo() != null) {
-            Document minimum = coverageExtreme(true);
+            Document minimum = coverageExtreme(true, options.bucket() == QueryBucket.OPEN);
             Document knownMinimum = new Document("$ne", Arrays.asList(minimum, null));
             Document toBound =
                     new Document(
@@ -1027,7 +1045,7 @@ public class HeadmanRequestService {
      * array traversal. The accumulator remains a BSON date, and null/missing snapshot dates are
      * ignored.
      */
-    private static Document coverageExtreme(boolean minimum) {
+    private static Document coverageExtreme(boolean minimum, boolean open) {
         String comparator = minimum ? "$lt" : "$gt";
         String currentDate = "$$this.date";
         Document replace =
@@ -1046,13 +1064,7 @@ public class HeadmanRequestService {
                 "$reduce",
                 new Document(
                                 "input",
-                                new Document(
-                                        "$ifNull",
-                                        List.of(
-                                                "$effective_lesson_snapshots",
-                                                new Document(
-                                                        "$ifNull",
-                                                        List.of("$lesson_snapshots", List.of())))))
+                                ExcuseDecisionSelections.coverageSnapshots(open))
                         .append("initialValue", null)
                         .append(
                                 "in",

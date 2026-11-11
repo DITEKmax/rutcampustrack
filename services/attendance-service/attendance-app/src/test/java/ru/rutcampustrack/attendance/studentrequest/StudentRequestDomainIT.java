@@ -153,6 +153,8 @@ import java.util.stream.IntStream;
     ru.rutcampustrack.attendance.audit.RequestActionRecorder.class,
     StudentRequestService.class,
     HeadmanRequestService.class,
+    RequestLessonCancellation.class,
+    ru.rutcampustrack.attendance.event.LessonEventService.class,
     MongoConvertersConfig.class,
     ru.rutcampustrack.attendance.config.MongoConfig.class,
     StudentRequestDomainIT.TestConfig.class
@@ -191,7 +193,13 @@ class StudentRequestDomainIT {
     }
 
     @TestConfiguration(proxyBeanMethods = false)
+    @org.springframework.transaction.annotation.EnableTransactionManagement(proxyTargetClass = true)
     static class TestConfig {
+        @Bean("grpcTaskExecutor")
+        org.springframework.core.task.TaskExecutor grpcTaskExecutor() {
+            return Runnable::run;
+        }
+
         @Bean
         FaultInjectingTransactionTemplate transactionTemplate(MongoTransactionManager manager) {
             return new FaultInjectingTransactionTemplate(manager);
@@ -367,6 +375,7 @@ class StudentRequestDomainIT {
     @jakarta.annotation.Resource ru.rutcampustrack.attendance.config.MongoConfig mongoConfig;
     @jakarta.annotation.Resource StudentRequestService service;
     @jakarta.annotation.Resource HeadmanRequestService headmanRequestService;
+    @jakarta.annotation.Resource ru.rutcampustrack.attendance.event.LessonEventService lessonEvents;
     @jakarta.annotation.Resource MongoTemplate mongoTemplate;
     @jakarta.annotation.Resource AttendanceRepository attendanceRepository;
     @jakarta.annotation.Resource ExcuseRepository excuseRepository;
@@ -717,7 +726,7 @@ class StudentRequestDomainIT {
     }
 
     @Test
-    void cancellationAfterSubmissionRejectsBothMissingMarkApprovalsWithoutNewSideEffects() {
+    void cancellationAfterSubmissionRejectsBothDecisionsBeforeMarkerDelivery() {
         for (boolean late : List.of(false, true)) {
             long lessonId = late ? 76L : 75L;
             RequestDetail submitted =
@@ -735,20 +744,22 @@ class StudentRequestDomainIT {
             long events = mongoTemplate.getCollection(OUTBOX_COLLECTION).countDocuments();
             lessonStatuses.put(lessonId, "cancelled");
 
-            assertThatThrownBy(
-                            () -> {
-                                if (late) {
-                                    service.decideLateCheckin(
-                                            HEADMAN, submitted.summary().id(), true);
-                                } else {
-                                    service.decideExcuse(
-                                            HEADMAN,
-                                            submitted.summary().id(),
-                                            true,
-                                            "Подтверждено");
-                                }
-                            })
-                    .isInstanceOf(ConflictException.class);
+            for (boolean approved : List.of(true, false)) {
+                assertThatThrownBy(
+                                () -> {
+                                    if (late) {
+                                        service.decideLateCheckin(
+                                                HEADMAN, submitted.summary().id(), approved);
+                                    } else {
+                                        service.decideExcuse(
+                                                HEADMAN,
+                                                submitted.summary().id(),
+                                                approved,
+                                                "Решение");
+                                    }
+                                })
+                        .isInstanceOf(ConflictException.class);
+            }
 
             assertThat(attendanceRepository.findByLessonIdAndUserId(lessonId, STUDENT_ID))
                     .isEmpty();
@@ -779,6 +790,139 @@ class StudentRequestDomainIT {
                 assertThat(budgetRepository.findAll()).isEmpty();
             }
         }
+    }
+
+    @Test
+    void cancellationRemovesOnlyItsTargetsAndKeepsRestoredNewRequestsAndPastDecisions() {
+        long cancelledLesson = 74L;
+        long remainingLesson = 75L;
+        LessonResponse remaining = canonicalLesson(remainingLesson, 10075L);
+        doReturn(remaining).when(scheduleGrpcClient)
+                .getScopedLessonById(remainingLesson, GROUP_ID, SEMESTER_ID);
+        doReturn(remaining).when(scheduleGrpcClient)
+                .requireAttendanceMutationReady(remainingLesson, GROUP_ID);
+        seedAbsent(remainingLesson);
+        RequestDetail mixed = service.submitExcuse(STUDENT,
+                excuse(List.of(cancelledLesson, remainingLesson), "mixed-cancelled-coverage", List.of()));
+        RequestDetail late = service.submitLateCheckin(
+                STUDENT, new LateCheckinSubmission(cancelledLesson, "late-cancelled-coverage"));
+        Identity anotherStudent = student(101L);
+        RequestDetail earlier = service.submitExcuse(anotherStudent,
+                excuse(List.of(cancelledLesson), "decided-cancelled-coverage", List.of()));
+        RequestDetail approved = service.decideExcuse(HEADMAN, earlier.summary().id(), true, null);
+        Instant cancelledAt = START.plusSeconds(30);
+        clock.set(cancelledAt.plusSeconds(60));
+        lessonStatuses.put(cancelledLesson, "cancelled");
+        lessonEvents.processLessonCancelled(cancelledLesson, SEMESTER_ID, GROUP_ID, cancelledAt);
+
+        assertThat(service.list(STUDENT, RequestBucket.OPEN).content())
+                .singleElement().satisfies(summary -> {
+                    assertThat(summary.id()).isEqualTo(mixed.summary().id());
+                    assertThat(summary.lessons()).extracting(LessonSnapshot::lessonId)
+                            .containsExactly(remainingLesson);
+                });
+        assertThat(headmanRequestService.list(HEADMAN, "open", 0, 1, null, null, null, null))
+                .satisfies(page -> {
+                    assertThat(page.totalElements()).isEqualTo(1);
+                    assertThat(page.content()).singleElement().satisfies(summary -> {
+                        assertThat(summary.id()).isEqualTo(mixed.summary().id());
+                        assertThat(summary.lessonCount()).isEqualTo(1);
+                    });
+                });
+        assertThat(service.get(STUDENT, mixed.summary().id()).summary().lessons())
+                .extracting(LessonSnapshot::lessonId).containsExactly(remainingLesson);
+        var current = headmanRequestService.get(HEADMAN, mixed.summary().id());
+        assertThat(current.currentAffectedLessons())
+                .extracting(HeadmanRequestLessonResponse::lessonId).containsExactly(remainingLesson);
+        assertThat(current.lessons()).extracting(HeadmanRequestLessonResponse::lessonId)
+                .containsExactly(cancelledLesson, remainingLesson);
+        assertThat(current.decisionRevision()).isNotBlank();
+        assertThat(service.get(STUDENT, late.summary().id()).summary().status())
+                .isEqualTo(StudentRequestStatus.CANCELLED);
+        assertThatThrownBy(() -> service.decideLateCheckin(HEADMAN, late.summary().id(), true))
+                .isInstanceOf(ConflictException.class);
+        assertThat(service.get(anotherStudent, earlier.summary().id())).isEqualTo(approved);
+
+        service.decideExcuse(HEADMAN, mixed.summary().id(), true, null,
+                current.decisionRevision(), List.of(), UUID.randomUUID().toString());
+        assertThat(attendanceRepository.findByLessonIdAndUserId(remainingLesson, STUDENT_ID))
+                .get().extracting(AttendanceDocument::getStatus).isEqualTo(AttendanceStatus.EXCUSED);
+        assertThat(attendanceRepository.findByLessonIdAndUserId(cancelledLesson, STUDENT_ID)).isEmpty();
+        assertThat(service.get(STUDENT, mixed.summary().id()).summary().lessons())
+                .extracting(LessonSnapshot::lessonId).containsExactly(cancelledLesson, remainingLesson);
+
+        lessonStatuses.put(cancelledLesson, "closed");
+        RequestDetail restored = service.submitLateCheckin(
+                STUDENT, new LateCheckinSubmission(cancelledLesson, "restored-new-late-request"));
+        lessonEvents.processLessonCancelled(cancelledLesson, SEMESTER_ID, GROUP_ID, cancelledAt);
+        assertThat(service.get(STUDENT, restored.summary().id()).summary().status())
+                .isEqualTo(StudentRequestStatus.PENDING);
+
+        long restoredBeforeClosedDelivery = 79L;
+        lessonStatuses.put(restoredBeforeClosedDelivery, "cancelled");
+        var oldClosedSnapshot =
+                lessonEvents.prepareLessonClosed(restoredBeforeClosedDelivery, GROUP_ID, SEMESTER_ID);
+        lessonStatuses.put(restoredBeforeClosedDelivery, "closed");
+        RequestDetail afterRestore = service.submitLateCheckin(STUDENT,
+                new LateCheckinSubmission(restoredBeforeClosedDelivery, "new-after-stale-close"));
+        lessonEvents.applyLessonClosed(oldClosedSnapshot);
+        assertThat(service.get(STUDENT, afterRestore.summary().id()).summary().status())
+                .isEqualTo(StudentRequestStatus.PENDING);
+        assertThat(actualOutboxEvents("late_checkin.decided")).hasSize(1);
+    }
+
+    @Test
+    void historicalMarkersReconcileBothPendingRequestKindsBeforeListsAndBotDelivery() {
+        RequestDetail excuse = service.submitExcuse(STUDENT,
+                excuse(List.of(76L), "historic-cancelled-excuse", List.of()));
+        RequestDetail late = service.submitLateCheckin(
+                STUDENT, new LateCheckinSubmission(77L, "historic-cancelled-late"));
+        RequestDetail restored = service.submitLateCheckin(
+                STUDENT, new LateCheckinSubmission(78L, "historic-marker-restored-late"));
+        var lateDocuments = mongoTemplate.getCollection("late_checkin_requests");
+        var lateIdentity = com.mongodb.client.model.Filters.eq(
+                "_id", new ObjectId(late.summary().id()));
+        lateDocuments.updateOne(lateIdentity, com.mongodb.client.model.Updates.combine(
+                com.mongodb.client.model.Updates.set("status", "pending"),
+                com.mongodb.client.model.Updates.set("legacy_evidence", "retained")));
+        ExcuseTicket wrongGroup = excuseRepository.save(ExcuseTicket.builder()
+                .studentId(STUDENT_ID + 1).groupId(GROUP_ID + 1).semesterId(SEMESTER_ID)
+                .lessonIds(List.of(76L)).excuseType(ExcuseType.ILLNESS)
+                .createdAt(START).updatedAt(START).build());
+        Instant cancelledAt = START.plusSeconds(30);
+        clock.set(cancelledAt.plusSeconds(60));
+        for (long lessonId : List.of(76L, 77L, 78L)) {
+            mongoTemplate.insert(new ru.rutcampustrack.attendance.event.LessonCancellationMarker(
+                    null, lessonId, SEMESTER_ID, cancelledAt));
+        }
+        lessonStatuses.put(76L, "cancelled");
+        lessonStatuses.put(77L, "cancelled");
+
+        assertThat(service.resolveRequestNotification(StudentRequestKind.LATE_CHECKIN, late.summary().id())
+                .detail().summary().status()).isEqualTo(StudentRequestStatus.CANCELLED);
+        assertThat(lateDocuments.find(lateIdentity).first().getString("legacy_evidence"))
+                .isEqualTo("retained");
+        assertThat(service.list(STUDENT, RequestBucket.OPEN).content())
+                .extracting(summary -> summary.id()).containsExactly(restored.summary().id());
+        assertThat(headmanRequestService.list(HEADMAN, "open", 0, 1, null, null, null, null)
+                .totalElements()).isEqualTo(1);
+        Identity otherHeadman = new Identity(778L, UserRole.STUDENT, GROUP_ID + 1, true);
+        assertThat(headmanRequestService.list(otherHeadman, "open", 0, 1, null, null, null, null)
+                .content()).extracting(summary -> summary.id()).containsExactly(wrongGroup.getId());
+        assertThat(excuseRepository.findById(wrongGroup.getId())).get()
+                .extracting(ExcuseTicket::getStatus).isEqualTo(ExcuseTicketStatus.SUBMITTED);
+        assertThat(service.list(STUDENT, RequestBucket.ARCHIVE).content())
+                .extracting(summary -> summary.id())
+                .containsExactlyInAnyOrder(excuse.summary().id(), late.summary().id());
+        assertThat(excuseRepository.findById(excuse.summary().id())).get().satisfies(ticket -> {
+            assertThat(ticket.getStatus()).isEqualTo(ExcuseTicketStatus.CANCELLED);
+            assertThat(ticket.getLessonSnapshots()).extracting(snapshot -> snapshot.getLessonId())
+                    .containsExactly(76L);
+        });
+        assertThat(actualOutboxEvents("excuse.decided")).hasSize(1);
+        assertThat(actualOutboxEvents("late_checkin.decided")).hasSize(1);
+        assertThat(service.decideLateCheckin(HEADMAN, restored.summary().id(), true).summary().status())
+                .isEqualTo(StudentRequestStatus.APPROVED);
     }
 
     @Test

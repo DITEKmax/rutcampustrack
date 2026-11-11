@@ -553,9 +553,12 @@ class EventConsumerTest {
     void lessonCancelled_delegatesToLessonEventService() {
         when(lessonEventService.prepareLessonCancelledScope(1L, 3L))
                 .thenReturn(new LessonEventService.LessonCancellationScope(1, 3, 10L));
-        eventConsumer.onEvent(
-                scheduleEnvelope("lesson.cancelled", Map.of("lesson_id", 1, "semester_id", 3)));
-        verify(lessonEventService).processLessonCancelled(1L, 3L, 10L);
+        var cancelledAt = Instant.parse("2026-11-04T08:15:00Z");
+        eventConsumer.onEvent(scheduleEnvelope(
+                "lesson.cancelled",
+                Map.of("lesson_id", 1, "semester_id", 3,
+                        "cancelled_at", "2026-11-04T11:15:00+03:00")));
+        verify(lessonEventService).processLessonCancelled(1L, 3L, 10L, cancelledAt);
         verifyNoInteractions(semesterCacheService);
     }
 

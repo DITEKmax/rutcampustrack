@@ -208,6 +208,7 @@ public class AssignmentUnassignmentWriter {
                             ? null
                             : jdbc.queryForMap(
                                     "SELECT * FROM lessons WHERE id=? FOR UPDATE", lessonId);
+            // Retrospective adoption binds the original lesson without replacing its history.
             Boolean eligible =
                     lesson == null
                             ? jdbc.queryForObject(
@@ -215,19 +216,21 @@ public class AssignmentUnassignmentWriter {
                                     Boolean.class,
                                     occurrence.get("occurrence_date"))
                             : jdbc.queryForObject(
-                                    "SELECT status::text NOT IN ('active','closed') AND (date + start_time) AT TIME ZONE 'Europe/Moscow' > NOW() FROM lessons WHERE id=?",
+                                    """
+                                    SELECT (status NOT IN ('active', 'closed')
+                                            AND (date + start_time) AT TIME ZONE 'Europe/Moscow' > NOW())
+                                        OR (? AND (status = 'closed' OR (status = 'cancelled'
+                                                AND (date + end_time) AT TIME ZONE 'Europe/Moscow' <= NOW()))
+                                            AND constructor_natural_unassigned_origin(lessons.occurrence_id) IS NOT NULL
+                                            AND NOT EXISTS (
+                                                SELECT 1 FROM schedule_assignment_binding_ledger earlier
+                                                 WHERE earlier.occurrence_id = lessons.occurrence_id
+                                                   AND earlier.after_assignment_id IS NOT NULL))
+                                      FROM lessons WHERE id = ?
+                                    """,
                                     Boolean.class,
+                                    !close && occurrence.get("assignment_id") == null,
                                     lessonId);
-            // A retrospectively published assignment may bind an originally unassigned
-            // semester occurrence without replacing its physical row, marks or history.
-            if (!close && occurrence.get("assignment_id") == null && lesson != null
-                    && "closed".equals(lesson.get("status").toString())
-                    && jdbc.queryForObject(
-                            "SELECT constructor_natural_unassigned_origin(?) IS NOT NULL AND NOT EXISTS "
-                                    + "(SELECT 1 FROM schedule_assignment_binding_ledger WHERE occurrence_id=? AND after_assignment_id IS NOT NULL)",
-                            Boolean.class, occurrence.get("id"), occurrence.get("id"))) {
-                eligible = true;
-            }
             if (!Boolean.TRUE.equals(eligible)) {
                 held++;
                 continue;

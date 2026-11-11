@@ -7,9 +7,11 @@ import static org.mockito.Mockito.when;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.protobuf.ByteString;
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -96,25 +98,196 @@ class AssignmentReplacementServiceIT extends AbstractScheduleIntegrationTest {
     }
 
     @Test
-    void retrospectiveAssignmentAdoptsOnlyNeverAssignedNaturalClosedOccurrencesWithoutReplacingRows() {
-        var authority=new RecurringAssignmentAuthority(SOURCE_ASSIGNMENT_ID,SOURCE_TEACHER_ID,SUBJECT_ID,GROUP_ID,
-                SEMESTER_ID,"lecture",EFFECTIVE_FROM,ASSIGNMENT_END);
-        recurringWriter.write(request(SOURCE_ASSIGNMENT_ID),UUID.randomUUID(),ACTOR_ID,authority,SOURCE_FROM,GENERATION_END);
-        var allIds=jdbc.queryForList("SELECT id FROM lessons ORDER BY id",Long.class);
-        var natural=jdbc.queryForList("SELECT id FROM lessons WHERE assignment_id IS NULL AND status='closed' ORDER BY id",Long.class);
-        assertThat(natural).isNotEmpty();
-        var assigned=jdbc.queryForList("SELECT id FROM lessons WHERE assignment_id=? ORDER BY id",Long.class,SOURCE_ASSIGNMENT_ID);
-        UUID adopt=UUID.randomUUID();configureLifecycle(adopt,"ADOPT_UNASSIGNED",SOURCE_FROM,"PREPARED");
-        replacementService.install(lifecycleRequest(adopt,"ADOPT_UNASSIGNED",SOURCE_FROM));
-        configureLifecycle(adopt,"ADOPT_UNASSIGNED",SOURCE_FROM,"APPLIED");
-        var request=CommitAssignmentCloseRequest.newBuilder().setOperationId(adopt.toString()).setPayloadHash(ByteString.copyFrom(PAYLOAD_HASH)).build();
-        var receipt=replacementService.commit(request);
-        assertThat(receipt.getMovedCount()).isEqualTo(natural.size());
+    void retrospectiveAssignmentAdoptsNeverAssignedClosedAndEndedCancelledOccurrencesInPlace() {
+        var authority =
+                new RecurringAssignmentAuthority(
+                        SOURCE_ASSIGNMENT_ID, SOURCE_TEACHER_ID, SUBJECT_ID, GROUP_ID,
+                        SEMESTER_ID, "lecture", EFFECTIVE_FROM, ASSIGNMENT_END);
+        recurringWriter.write(
+                request(SOURCE_ASSIGNMENT_ID), UUID.randomUUID(), ACTOR_ID, authority,
+                SOURCE_FROM, GENERATION_END);
+        var allIds = jdbc.queryForList("SELECT id FROM lessons ORDER BY id", Long.class);
+        var natural =
+                jdbc.queryForList(
+                        "SELECT id FROM lessons WHERE assignment_id IS NULL AND status = 'closed' ORDER BY date",
+                        Long.class);
+        assertThat(natural).hasSizeGreaterThanOrEqualTo(4);
+        long outsideInterval = natural.get(0);
+        long cancelled = natural.get(1);
+        long active = natural.get(2);
+        lifecycleWriter.cancel(outsideInterval, "Outside the assignment interval", ACTOR_ID);
+        lifecycleWriter.cancel(cancelled, "Retained cancellation", ACTOR_ID);
+        jdbc.update("UPDATE lessons SET status = 'active' WHERE id = ?", active);
+
+        long assigned =
+                jdbc.queryForObject(
+                        "SELECT id FROM lessons WHERE assignment_id = ? AND status = 'closed' ORDER BY date LIMIT 1",
+                        Long.class, SOURCE_ASSIGNMENT_ID);
+        lifecycleWriter.cancel(assigned, "Retain the historical teacher", ACTOR_ID);
+        var protectedIds = List.of(outsideInterval, active, assigned);
+        var protectedRows = protectedIds.stream().map(this::bindingSnapshot).toList();
+        String unboundSnapshot = bindingSnapshot(cancelled);
+        String cancelledHistory =
+                jdbc.queryForObject(
+                        """
+                        SELECT jsonb_agg(to_jsonb(entry) ORDER BY entry.revision)::text
+                          FROM lesson_lifecycle_entries entry WHERE entry.lesson_id = ?
+                        """,
+                        String.class, cancelled);
+        assertThat(cancelledHistory).contains("CANCELLED", "Retained cancellation");
+        String cancelledSnapshot =
+                jdbc.queryForObject(
+                        """
+                        SELECT (to_jsonb(lesson) - ARRAY['assignment_id', 'assigned_teacher_id', 'revision'])::text
+                          FROM lessons lesson WHERE lesson.id = ?
+                        """,
+                        String.class, cancelled);
+        LocalDate cutoff =
+                jdbc.queryForObject(
+                        "SELECT date FROM lessons WHERE id = ?",
+                        (row, rowNumber) -> row.getObject("date", LocalDate.class), cancelled);
+        long occurrenceId =
+                jdbc.queryForObject("SELECT occurrence_id FROM lessons WHERE id = ?", Long.class, cancelled);
+
+        UUID adopt = UUID.randomUUID();
+        configureLifecycle(adopt, "ADOPT_UNASSIGNED", cutoff, "PREPARED");
+        replacementService.install(lifecycleRequest(adopt, "ADOPT_UNASSIGNED", cutoff));
+        configureLifecycle(adopt, "ADOPT_UNASSIGNED", cutoff, "APPLIED");
+
+        var transaction = new TransactionTemplate(transactionManager);
+        for (String table : List.of("lessons", "lesson_occurrences")) {
+            transaction.executeWithoutResult(
+                    status -> {
+                        selectBindingOperation(adopt);
+                        assertBindingGuard(
+                                () -> jdbc.update(
+                                        """
+                                        UPDATE %s SET assignment_id = ?, assigned_teacher_id = ?, revision = revision + 1
+                                         WHERE id = ?
+                                        """.formatted(table),
+                                        TARGET_ASSIGNMENT_ID, TARGET_TEACHER_ID,
+                                        "lessons".equals(table) ? cancelled : occurrenceId),
+                                "nullable binding change requires its exact lifecycle ledger");
+                        status.setRollbackOnly();
+                    });
+        }
+        long wrongSemester = natural.get(3);
+        var rejectedLedgers =
+                Map.of(
+                        outsideInterval, "binding history does not match current occurrence authority",
+                        active, "held or started lessons cannot change their binding",
+                        assigned, "held or started lessons cannot change their binding",
+                        wrongSemester, "binding history requires its exact applied operation");
+        for (var rejected : rejectedLedgers.entrySet()) {
+            long semester = rejected.getKey() == wrongSemester ? SEMESTER_ID + 1 : SEMESTER_ID;
+            transaction.executeWithoutResult(
+                    status -> {
+                        selectBindingOperation(adopt);
+                        assertThat(insertAdoptionLedger(adopt, SEMESTER_ID, cancelled)).isEqualTo(1);
+                        assertBindingGuard(
+                                () -> insertAdoptionLedger(adopt, semester, rejected.getKey()),
+                                rejected.getValue());
+                        status.setRollbackOnly();
+                    });
+            assertThat(
+                            jdbc.queryForObject(
+                                    "SELECT count(*) FROM schedule_assignment_binding_ledger WHERE operation_id = ?",
+                                    Long.class, adopt))
+                    .isZero();
+        }
+        assertThat(bindingSnapshot(cancelled)).isEqualTo(unboundSnapshot);
+
+        var expected = natural.stream().filter(id -> id != outsideInterval && id != active).toList();
+        var request =
+                CommitAssignmentCloseRequest.newBuilder()
+                        .setOperationId(adopt.toString())
+                        .setPayloadHash(ByteString.copyFrom(PAYLOAD_HASH))
+                        .build();
+        var receipt = replacementService.commit(request);
+        assertThat(receipt.getMovedCount()).isEqualTo(expected.size());
+        assertThat(receipt.getSkippedCount()).isEqualTo(1);
         assertThat(replacementService.commit(request)).isEqualTo(receipt);
-        assertThat(jdbc.queryForList("SELECT id FROM lessons ORDER BY id",Long.class)).containsExactlyElementsOf(allIds);
-        assertThat(jdbc.queryForList("SELECT id FROM lessons WHERE assignment_id=? ORDER BY id",Long.class,SOURCE_ASSIGNMENT_ID)).containsExactlyElementsOf(assigned);
-        assertThat(jdbc.queryForList("SELECT id FROM lessons WHERE assignment_id=? AND assigned_teacher_id=? AND status='closed' ORDER BY id",Long.class,TARGET_ASSIGNMENT_ID,TARGET_TEACHER_ID)).containsAll(natural);
-        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM schedule_assignment_binding_ledger WHERE operation_id=?",Long.class,adopt)).isEqualTo(natural.size());
+        assertThat(jdbc.queryForList("SELECT id FROM lessons ORDER BY id", Long.class))
+                .containsExactlyElementsOf(allIds);
+        assertThat(protectedIds.stream().map(this::bindingSnapshot).toList())
+                .containsExactlyElementsOf(protectedRows);
+        assertThat(
+                        jdbc.queryForList(
+                                """
+                                SELECT lesson.id FROM schedule_assignment_binding_ledger ledger
+                                JOIN lesson_occurrences occurrence ON occurrence.id = ledger.occurrence_id
+                                JOIN lessons lesson ON lesson.id = occurrence.current_lesson_id AND lesson.id = ledger.lesson_id
+                                WHERE ledger.operation_id = ? AND ledger.before_assignment_id IS NULL
+                                  AND ledger.before_teacher_id IS NULL
+                                  AND occurrence.assignment_id = ? AND occurrence.assigned_teacher_id = ?
+                                  AND lesson.assignment_id = occurrence.assignment_id
+                                  AND lesson.assigned_teacher_id = occurrence.assigned_teacher_id
+                                  AND occurrence.revision = ledger.after_occurrence_revision
+                                  AND lesson.revision = ledger.after_lesson_revision
+                                """,
+                                Long.class, adopt, TARGET_ASSIGNMENT_ID, TARGET_TEACHER_ID))
+                .containsExactlyInAnyOrderElementsOf(expected);
+        assertThat(
+                        jdbc.queryForObject(
+                                """
+                                SELECT (to_jsonb(lesson) - ARRAY['assignment_id', 'assigned_teacher_id', 'revision'])::text
+                                  FROM lessons lesson WHERE lesson.id = ?
+                                """,
+                                String.class, cancelled))
+                .isEqualTo(cancelledSnapshot);
+        assertThat(
+                        jdbc.queryForObject(
+                                """
+                                SELECT jsonb_agg(to_jsonb(entry) ORDER BY entry.revision)::text
+                                  FROM lesson_lifecycle_entries entry WHERE entry.lesson_id = ?
+                                """,
+                                String.class, cancelled))
+                .isEqualTo(cancelledHistory);
+    }
+
+    private String bindingSnapshot(long lessonId) {
+        return jdbc.queryForObject(
+                """
+                SELECT jsonb_build_array(to_jsonb(lesson), to_jsonb(occurrence))::text
+                  FROM lessons lesson JOIN lesson_occurrences occurrence ON occurrence.id = lesson.occurrence_id
+                 WHERE lesson.id = ?
+                """,
+                String.class, lessonId);
+    }
+
+    private void selectBindingOperation(UUID operationId) {
+        jdbc.queryForObject(
+                "SELECT set_config('rutcampustrack.assignment_binding_operation_id', ?, true)",
+                String.class, operationId.toString());
+    }
+
+    private static void assertBindingGuard(Runnable mutation, String expectedMessage) {
+        assertThatThrownBy(mutation::run)
+                .isInstanceOf(DataAccessException.class)
+                .rootCause()
+                .isInstanceOfSatisfying(
+                        SQLException.class,
+                        failure -> {
+                            assertThat(failure.getSQLState()).isEqualTo("P0001");
+                            assertThat(failure.getMessage()).contains(expectedMessage);
+                        });
+    }
+
+    private int insertAdoptionLedger(UUID operationId, long semesterId, long lessonId) {
+        return jdbc.update(
+                """
+                INSERT INTO schedule_assignment_binding_ledger (
+                    operation_id, semester_id, occurrence_id, lesson_id, occurrence_date,
+                    expected_occurrence_revision, after_occurrence_revision,
+                    expected_lesson_revision, after_lesson_revision,
+                    before_assignment_id, before_teacher_id, after_assignment_id, after_teacher_id)
+                SELECT ?, ?, occurrence.id, lesson.id, occurrence.occurrence_date,
+                       occurrence.revision, occurrence.revision + 1, lesson.revision, lesson.revision + 1,
+                       occurrence.assignment_id, occurrence.assigned_teacher_id, ?, ?
+                  FROM lessons lesson JOIN lesson_occurrences occurrence ON occurrence.id = lesson.occurrence_id
+                 WHERE lesson.id = ?
+                """,
+                operationId, semesterId, TARGET_ASSIGNMENT_ID, TARGET_TEACHER_ID, lessonId);
     }
 
     @Test

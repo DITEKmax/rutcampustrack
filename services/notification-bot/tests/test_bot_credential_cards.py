@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import json
 import uuid
 from contextlib import asynccontextmanager
 from types import SimpleNamespace
@@ -18,6 +19,7 @@ from aiohttp import web
 
 from bot.grpc_client import academic_pb2 as pb
 from bot.grpc_client.bot_credentials_client import BotCredentialRequestDenied, BotCredentialsGrpcClient
+from bot.handlers.prefs import HOMEWORK_TODAY_LABEL
 from bot.handlers.start import cmd_start
 from bot.services.bot_credential_cards import BotCredentialCards
 from bot.services.bot_menu import BotGrant, MenuScope
@@ -118,6 +120,7 @@ class Provider:
     def __init__(self, authority):
         self.authority = authority
         self.cards = {}
+        self.reply_markups = {}
         self.next_message = 1
         self.edits = 0
         self.registered_before_edit = True
@@ -133,7 +136,10 @@ class Provider:
         if method == "sendMessage":
             message = self.next_message
             self.next_message += 1
-            self.cards[(chat, message)] = fields["text"]
+            key = (chat, message)
+            self.cards[key] = fields["text"]
+            if "reply_markup" in fields:
+                self.reply_markups[key] = json.loads(fields["reply_markup"])
             return self.result(chat, message)
         key = (chat, int(fields["message_id"]))
         if method == "deleteMessage":
@@ -142,6 +148,7 @@ class Provider:
             if key not in self.cards:
                 return self.error("message to delete not found")
             del self.cards[key]
+            self.reply_markups.pop(key, None)
             return web.json_response({"ok": True, "result": True})
         if method == "editMessageText":
             self.edits += 1
@@ -236,7 +243,7 @@ def profile():
 
 
 @pytest.mark.asyncio
-async def test_native_dispatcher_first_start_renders_one_registered_html_escaped_card():
+async def test_native_dispatcher_first_start_keeps_menu_separate_from_registered_card():
     authority = AuthorityStub()
     async with provider_context(authority) as (provider, bot):
         cards = BotCredentialCards(bot=bot, client=authority)
@@ -272,8 +279,24 @@ async def test_native_dispatcher_first_start_renders_one_registered_html_escaped
         assert provider.has_secret() and provider.has_login()
         assert provider.registered_before_edit
         assert provider.edits == 1
-        assert len(provider.cards) == 1
         assert authority.render_outcome == pb.BOT_CREDENTIAL_RENDER_OUTCOME_CONFIRMED_EDIT
+        card = (42, authority.reference.message_id)
+        assert len(provider.cards) == 2
+        assert card in provider.cards
+        assert set(provider.reply_markups) == set(provider.cards) - {card}
+        (menu,) = provider.reply_markups
+        markup = provider.reply_markups[menu]
+        assert markup["is_persistent"] is False
+        assert markup["resize_keyboard"] is True
+        assert "one_time_keyboard" not in markup
+        assert "remove_keyboard" not in markup
+        assert HOMEWORK_TODAY_LABEL in {button["text"] for row in markup["keyboard"] for button in row}
+
+        authority.invalidate()
+        await cards.cleanup(user_id=17, credentials_version=2, event_id=str(uuid.uuid4()))
+        assert not provider.has_secret() and not provider.has_login()
+        assert set(provider.cards) == {menu}
+        assert provider.reply_markups == {menu: markup}
 
 
 @pytest.mark.asyncio

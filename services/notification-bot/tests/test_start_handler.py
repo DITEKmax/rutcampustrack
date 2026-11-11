@@ -90,7 +90,8 @@ async def test_private_bound_handler_uses_only_dedicated_card_service(handler):
     await _invoke(handler, message, academic, cards)
     academic.get_user_by_telegram_id.assert_awaited_once_with(12345)
     cards.deliver.assert_awaited_once()
-    message.answer.assert_not_awaited()
+    if handler is cmd_credentials:
+        message.answer.assert_not_awaited()
 
 
 @pytest.mark.asyncio
@@ -142,13 +143,13 @@ async def test_start_menu_uses_current_grants_and_preserves_dedicated_card_capab
         )
     )
     await _invoke(cmd_start, message, academic, cards, menu)
-    labels = [button.text for row in cards.deliver.await_args.kwargs["reply_markup"].keyboard for button in row]
+    labels = [button.text for row in message.answer.await_args.kwargs["reply_markup"].keyboard for button in row]
     assert (HOMEWORK_TODAY_LABEL in labels) is student
     assert (HOMEWORK_WEEK_LABEL in labels) is student
     academic.get_user_by_id.assert_not_awaited()
-    menu.menu_scope.assert_awaited_once_with(12345)
+    assert menu.menu_scope.await_count == 2
     cards.deliver.assert_awaited_once()
-    message.answer.assert_not_awaited()
+    message.answer.assert_awaited_once()
 
 
 async def test_start_authority_outage_denies_profile_and_credential_delivery():
@@ -258,7 +259,7 @@ async def test_password_changed_fallback_uses_only_newly_confirmed_profile_with_
     assert menu.own_profile.await_count == menu.menu_scope.await_count == 2
 
 
-@pytest.mark.parametrize("failure", ["profile", "role", "card", "refresh", "send", "fallback_send"])
+@pytest.mark.parametrize("failure", ["profile", "role", "card", "refresh", "send", "menu_send", "fallback_send"])
 async def test_start_failure_never_acknowledges_role_keyboard_and_startup_recovers(fake_redis, failure):
     client = KeyboardSyncClient(redis_client=fake_redis)
     scope = MenuScope(17, 2, 1, (BotGrant("TEACHER"), BotGrant("STUDENT", 10)))
@@ -276,7 +277,8 @@ async def test_start_failure_never_acknowledges_role_keyboard_and_startup_recove
         cards.deliver.side_effect = RuntimeError("render unavailable")
     elif failure == "refresh":
         menu.own_profile.side_effect = [_profile(), RuntimeError("outage")]
-    elif failure == "send":
+    elif failure in {"send", "menu_send"}:
+        cards.deliver.return_value = failure == "menu_send"
         message.answer.side_effect = [RuntimeError("provider failure"), None]
     if failure == "fallback_send":
         message.answer.side_effect = RuntimeError("provider failure")
@@ -288,6 +290,7 @@ async def test_start_failure_never_acknowledges_role_keyboard_and_startup_recove
         assert len(labels) == 4
     assert await client.get_registered_user_ids() == [12345]
     assert await client.get_user_keyboard_version(12345) is None
+    assert await client.get_receipt(12345) is None
     menu.menu_scope = AsyncMock(return_value=scope)
     bot = SimpleNamespace(send_message=AsyncMock())
     await sync_registered_keyboards(bot, client, None, delay_seconds=0, bot_menu_client=menu)
@@ -305,11 +308,11 @@ async def test_start_acknowledges_actual_role_keyboard_only_after_delivery(fake_
 
     async def send(*args, **kwargs):
         assert await client.get_user_keyboard_version(12345) is None
+        assert await client.get_receipt(12345) is None
         delivered.append(kwargs["reply_markup"])
 
     async def card(*args, **kwargs):
-        if card_delivered:
-            await send(**kwargs)
+        assert await client.get_receipt(12345) is None
         return card_delivered
 
     message = _message()
@@ -321,9 +324,10 @@ async def test_start_acknowledges_actual_role_keyboard_only_after_delivery(fake_
     assert len(labels) == len(set(labels))
     assert HOMEWORK_TODAY_LABEL in labels
     assert await client.get_user_keyboard_version(12345) == keyboard_signature(**scope.keyboard_options)
+    assert await client.get_receipt(12345) is not None
 
 
-@pytest.mark.parametrize("failure", ["profile", "role", "card", "card_after_keyboard", "unknown"])
+@pytest.mark.parametrize("failure", ["profile", "role", "card", "card_after_placeholder", "unknown"])
 async def test_start_preserves_truthful_role_keyboard_when_pending_invalidation_fails(fake_redis, monkeypatch, failure):
     client = KeyboardSyncClient(redis_client=fake_redis)
     scope = MenuScope(17, 2, 1, (BotGrant("TEACHER"), BotGrant("STUDENT", 10)))
@@ -360,8 +364,8 @@ async def test_start_preserves_truthful_role_keyboard_when_pending_invalidation_
     else:
 
         async def failed_card(*args, **kwargs):
-            if failure == "card_after_keyboard":
-                await message.answer("nonsecret placeholder", reply_markup=kwargs["reply_markup"])
+            if failure == "card_after_placeholder":
+                await message.answer("nonsecret placeholder")
             raise RuntimeError("credential card unavailable")
 
         cards.deliver.side_effect = failed_card
@@ -383,7 +387,7 @@ def _memory_keyboard_client():
     return KeyboardSyncClient(redis_client=fakeredis.FakeAsyncRedis(decode_responses=True))
 
 
-@pytest.mark.parametrize("outcome", ["rpc", "unknown", "send", "card_after_keyboard", "success"])
+@pytest.mark.parametrize("outcome", ["rpc", "unknown", "send", "card_after_placeholder", "success"])
 async def test_start_and_startup_publish_one_coherent_keyboard_per_chat(outcome):
     # Immediate in-memory Redis replies make the loop checkpoint causal: startup
     # either finishes or waits for the same-chat publisher, without clock timing.
@@ -407,7 +411,6 @@ async def test_start_and_startup_publish_one_coherent_keyboard_per_chat(outcome)
     role_send_failed = False
 
     async def deliver(*args, **kwargs):
-        nonlocal role_send_failed
         markup = kwargs.get("reply_markup")
         if markup is None:
             return
@@ -423,8 +426,8 @@ async def test_start_and_startup_publish_one_coherent_keyboard_per_chat(outcome)
         await deliver(*args, **kwargs)
 
     async def card(*args, **kwargs):
-        if outcome == "card_after_keyboard":
-            await deliver(**kwargs)
+        if outcome == "card_after_placeholder":
+            await start_deliver("nonsecret placeholder")
             raise RuntimeError("card completion unavailable")
         return False
 
@@ -564,18 +567,28 @@ async def test_start_waits_for_startup_delivery_and_receipt_before_its_fallback(
     assert await client.get_user_keyboard_version(12345) == signature
 
 
-async def test_start_delayed_send_role_change_keeps_pending_until_current_keyboard_recovers(fake_redis):
+@pytest.mark.parametrize("change_during", ["card", "menu_send", "profile_send"])
+async def test_start_role_change_keeps_pending_until_current_keyboard_recovers(fake_redis, change_during):
     client = KeyboardSyncClient(redis_client=fake_redis)
     old = MenuScope(17, 2, 1, (BotGrant("STUDENT", 10),))
     new = replace(old, roles_version=2, grants=(BotGrant("TEACHER"),))
     menu = SimpleNamespace(own_profile=AsyncMock(return_value=_profile()), menu_scope=AsyncMock(return_value=old))
     message = _message()
 
-    async def delayed_ack(*args, **kwargs):
-        menu.menu_scope.return_value = new
+    async def send(*args, **kwargs):
+        if change_during != "card":
+            menu.menu_scope.return_value = new
 
-    message.answer.side_effect = delayed_ack
-    await cmd_start(message, None, None, client, None, menu)
+    async def card(*args, **kwargs):
+        if change_during == "card":
+            menu.menu_scope.return_value = new
+        return change_during != "profile_send"
+
+    message.answer.side_effect = send
+    cards = SimpleNamespace(deliver=AsyncMock(side_effect=card))
+    await cmd_start(message, None, None, client, cards, menu)
+    if change_during == "card":
+        assert [call.kwargs["reply_markup"] for call in message.answer.await_args_list] == [main_keyboard()]
     assert await client.get_receipt(12345) is None
     assert (await client.state(12345))["status"] == "pending"
     bot = SimpleNamespace(send_message=AsyncMock())

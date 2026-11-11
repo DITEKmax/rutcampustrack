@@ -140,43 +140,39 @@ async def _publish_start(message, telegram_id, keyboard_sync, credential_cards, 
 
         # D-02: a found profile needs positive current authority before any own data/card.
         scope = await _require_profile_scope(bot_menu_client, telegram_id, response)
-        options = scope.keyboard_options
-        keyboard = main_keyboard(**options)
-        if keyboard_sync is not None:
-            await keyboard_sync.note_possible_publication(telegram_id, keyboard_signature(**options))
         display_name = html.escape(str(response.display_name or ""))
-        if credential_cards is not None and await credential_cards.deliver(
+        card_delivered = credential_cards is not None and await credential_cards.deliver(
             message,
             response,
             intro=f"👋 <b>Добро пожаловать, {display_name}</b>\n\n",
             footer=f"\n\n{_WHERE_TO_MARK_BLOCK}\n\n{_INSTALL_BLOCK}",
-            reply_markup=keyboard,
-        ):
-            await mark_keyboard_synced(
-                keyboard_sync, telegram_id, keyboard_signature(**options), scope=scope, bot_menu_client=bot_menu_client
-            )
-            return
-        response, scope = await _refresh_own_profile(bot_menu_client, telegram_id, response)
-        keyboard = main_keyboard(**scope.keyboard_options)
-        display_name = html.escape(str(response.display_name or ""))
-        login = html.escape(str(response.login or ""))
-        group_name = html.escape(str(response.group_name or ""))
-        if keyboard_sync is not None:
-            await keyboard_sync.note_possible_publication(telegram_id, keyboard_signature(**scope.keyboard_options))
-        await message.answer(
-            f"👋 <b>Добро пожаловать, {display_name}</b>\n\n"
-            "👤 <b>Профиль</b>\n"
-            f"Логин: <code>{login}</code>\n"
-            f"Группа: {group_name}\n\n"
-            f"{_WHERE_TO_MARK_BLOCK}\n\n"
-            f"{_INSTALL_BLOCK}",
-            reply_markup=keyboard,
-            parse_mode="HTML",
         )
+        if card_delivered:
+            text = "Меню бота"
+        else:
+            response, scope = await _refresh_own_profile(bot_menu_client, telegram_id, response)
+            display_name = html.escape(str(response.display_name or ""))
+            login = html.escape(str(response.login or ""))
+            group_name = html.escape(str(response.group_name or ""))
+            text = (
+                f"👋 <b>Добро пожаловать, {display_name}</b>\n\n"
+                "👤 <b>Профиль</b>\n"
+                f"Логин: <code>{login}</code>\n"
+                f"Группа: {group_name}\n\n"
+                f"{_WHERE_TO_MARK_BLOCK}\n\n"
+                f"{_INSTALL_BLOCK}"
+            )
+        options = scope.keyboard_options
+        signature = keyboard_signature(**options)
+        if keyboard_sync is not None:
+            await keyboard_sync.note_possible_publication(telegram_id, signature)
+        if card_delivered and await _require_profile_scope(bot_menu_client, telegram_id, response) != scope:
+            raise RuntimeError("Menu authority changed during credential delivery")
+        await message.answer(text, reply_markup=main_keyboard(**options), parse_mode="HTML")
         await mark_keyboard_synced(
             keyboard_sync,
             telegram_id,
-            keyboard_signature(**scope.keyboard_options),
+            signature,
             scope=scope,
             bot_menu_client=bot_menu_client,
         )

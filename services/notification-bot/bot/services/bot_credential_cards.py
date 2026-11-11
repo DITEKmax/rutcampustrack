@@ -40,7 +40,7 @@ class BotCredentialCards:
             self._locks[key] = lock
         return lock
 
-    async def deliver(self, message, profile, *, intro="", footer="", reply_markup=None) -> bool:
+    async def deliver(self, message, profile, *, intro="", footer="") -> bool:
         from bot.handlers.start import private_sender
 
         chat_id = private_sender(message)
@@ -62,9 +62,7 @@ class BotCredentialCards:
         snapshot = None
         try:
             async with asyncio.timeout(_PROVIDER_TIMEOUT):
-                placeholder = await message.answer(
-                    "🔐 Готовим твои данные для входа…", reply_markup=reply_markup, parse_mode="HTML"
-                )
+                placeholder = await message.answer("🔐 Готовим твои данные для входа…", parse_mode="HTML")
         except asyncio.CancelledError:
             raise
         except Exception:

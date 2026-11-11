@@ -72,7 +72,7 @@ def main_keyboard(
     headman_enabled: bool = False,
     teacher_enabled: bool = False,
 ) -> ReplyKeyboardMarkup:
-    """Persistent reply keyboard shown to user after /start.
+    """Reusable reply keyboard shown to user after /start.
 
     Сохранён параметр для обратной совместимости со старыми вызовами —
     значение больше не используется. Ролевые действия требуют свежего grant scope.
@@ -84,7 +84,7 @@ def main_keyboard(
             for row in _keyboard_layout(homework_enabled, headman_enabled, teacher_enabled)
         ],
         resize_keyboard=True,
-        is_persistent=True,
+        is_persistent=False,
     )
 
 

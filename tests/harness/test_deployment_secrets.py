@@ -35,11 +35,13 @@ class DeploymentSecrets(unittest.TestCase):
     def test_complete_bundle_and_native_cert_validation(self):
         M.validate(self.values, self.files, self.local / 'files')
         self.assertLess(len(self.bundle), 48 * 1024)
-        self.assertEqual(len(self.files), 43)
+        self.assertEqual(len(self.files), 44)
         self.assertEqual(M.FILES['CONSTRUCTOR_RPC_SCHEDULE_TO_ATTENDANCE_TOKEN_FILE'],
                          'constructor-rpc-schedule-to-attendance-token')
         self.assertEqual(M.FILES['CONSTRUCTOR_RPC_SCHEDULE_TO_ACADEMIC_TOKEN_FILE'],
                          'constructor-rpc-schedule-to-academic-token')
+        self.assertEqual(M.FILES['BOT_TO_ACADEMIC_SERVICE_TOKEN_FILE'],
+                         'bot-to-academic-service-token')
 
     def test_malicious_file_sets_and_duplicate_keys_are_rejected(self):
         original = json.loads(base64.b64decode(self.bundle))
@@ -62,7 +64,8 @@ class DeploymentSecrets(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'INDEPENDENT'):
             M.validate(self.values, files, self.local / 'files')
         for key in ('CONSTRUCTOR_RPC_SCHEDULE_TO_ATTENDANCE_TOKEN_FILE',
-                    'CONSTRUCTOR_RPC_SCHEDULE_TO_ACADEMIC_TOKEN_FILE'):
+                    'CONSTRUCTOR_RPC_SCHEDULE_TO_ACADEMIC_TOKEN_FILE',
+                    'BOT_TO_ACADEMIC_SERVICE_TOKEN_FILE'):
             files = dict(self.files)
             files[M.FILES[key]] = files[M.FILES['BOT_TO_READ_SERVICE_TOKEN_FILE']]
             with self.subTest(key=key), self.assertRaisesRegex(ValueError, 'DIRECTED_TOKENS_NOT_INDEPENDENT'):
@@ -80,6 +83,15 @@ class DeploymentSecrets(unittest.TestCase):
         files['auth-tls/auth-server.key'] = files['academic-tls/academic-server.key']
         with self.assertRaisesRegex(ValueError, 'KEY_CERT_MISMATCH'):
             M.validate(self.values, files, self.local / 'files')
+
+    def test_bot_homework_credential_rejects_whitespace_its_readers_do_not_share(self):
+        name = M.FILES['BOT_TO_ACADEMIC_SERVICE_TOKEN_FILE']
+        token = self.files[name].strip()
+        for ending, malformed in (('CRLF', token + b'\r\n'), ('leading space', b' ' + token),
+                                  ('trailing space', token + b' \n'), ('two lines', token + b'\n\n')):
+            with self.subTest(ending=ending), self.assertRaisesRegex(
+                    ValueError, 'BOT_TO_ACADEMIC_TOKEN_FILE_FORMAT'):
+                M.validate(self.values, {**self.files, name: malformed}, self.local / 'files')
 
     def test_monitor_password_format_and_independence_even_when_acl_matches(self):
         cache = Path(self.values['REDIS_CACHE_RUNTIME_PASSWORD_FILE']).read_text().strip()
@@ -176,9 +188,10 @@ class DeploymentSecrets(unittest.TestCase):
                            inventory['operator']['password'], inventory['glitchtip_admin']['password']]
             self.assertEqual(len(set(credentials)), 4)
             self.assertTrue(all(len(value) >= 43 for value in credentials))
-            self.assertEqual(len(list((destination / 'files').iterdir())), 3)
+            observer_files = {path.name for path in (destination / 'files').iterdir()}
+            self.assertEqual(len(observer_files), 3)
             self.assertFalse((destination / 'PROD_SECRET_FILES_B64').exists())
-            self.assertEqual(len(M.ALLOWED), 43)
+            self.assertFalse(observer_files & M.ALLOWED)
             inventories.append(credentials)
         self.assertFalse(set(inventories[0]).intersection(inventories[1]))
 

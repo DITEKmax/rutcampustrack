@@ -47,6 +47,12 @@ _OWN_SYNC = {
     "group.archived",
     "semester.activated",
 }
+_HEADMAN_STUDENT_SELF_EVENTS = {
+    "lesson.cancelled",
+    "homework.published",
+    "homework.updated",
+}
+_HEADMAN_STUDENT_ROLES = {"STUDENT", "HEADMAN"}
 _REQUESTS = {"excuse.requested", "excuse.decided", "late_checkin.requested", "late_checkin.decided"}
 _PRIVATE_FIELDS = {
     "ticket_id",
@@ -354,6 +360,7 @@ async def handle_business(event, *, bot, academic, queue, reminders, config, sta
     # Saved event/user role set prevents late grants from joining replay/queue delivery.
     saved = prepared_audience(event)
     delivered = set(event["_bot_prepared"].get("delivered_user_ids", []))
+    actor = payload.get("actor_user_id")
     lesson_id = payload.get("lesson_id")
     if kind == "attendance.marked" and payload.get("status") in {"present", "absent", "excused", "free_attendance"}:
         await reminders.mark_student_marked(lesson_id, payload["user_id"], payload["status"])
@@ -363,7 +370,9 @@ async def handle_business(event, *, bot, academic, queue, reminders, config, sta
             continue
         if kind == "attendance.marked" and payload.get("marked_by") != "headman":
             continue
-        if kind in _OWN_SYNC and positive(payload.get("actor_user_id")) and payload["actor_user_id"] == user_id:
+        own_sync = kind in _OWN_SYNC and positive(actor) and actor == user_id
+        self_notice = own_sync and kind in _HEADMAN_STUDENT_SELF_EVENTS and _HEADMAN_STUDENT_ROLES <= roles
+        if own_sync and not self_notice:
             continue
         if kind == "group.renamed" or kind == "group.archived":
             if payload.get("notification_cause") == "AUTOMATIC_GROUP_CYCLE":
@@ -386,10 +395,10 @@ async def handle_business(event, *, bot, academic, queue, reminders, config, sta
 
         live_roles = [roles]
 
-        async def authorized(uid=user_id, retained=roles, role_state=live_roles):
+        async def authorized(uid=user_id, retained=roles, role_state=live_roles, require_both=self_notice):
             live = await resolve_all(academic, requests)
             role_state[0] = retained & live.get(uid, frozenset())
-            if not role_state[0]:
+            if not role_state[0] or (require_both and not _HEADMAN_STUDENT_ROLES <= role_state[0]):
                 return False
             if uid in delivered or await state.completed(event_id, uid):
                 return False

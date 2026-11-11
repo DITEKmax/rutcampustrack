@@ -424,6 +424,8 @@ services:
       target: /run/rct-directed/constructor-rpc-schedule-to-academic-token
     - source: notification-to-academic-service-token
       target: /run/rct-directed/grpc.service-identity.notification-to-academic-token
+    - source: bot-to-academic-service-token
+      target: /run/rct-directed/grpc.service-identity.bot-to-academic-token
     - source: redis-cache-runtime-password
       target: /run/rct-cache/rct.cache.redis.password
     - source: pg-academic-service-runtime-password
@@ -791,9 +793,19 @@ services:
     image: ghcr.io/ditekmax/rutcampustrack/notification-bot:${IMAGE_TAG:-latest}
     container_name: rct-notification-bot
     logging: *bounded-logs
-    # The dedicated credential is not part of the shared Compose environment.
-    command: ['/bin/sh', '-ec', 'BOT_TO_AUTH_SERVICE_TOKEN="$$(cat /run/secrets/bot-to-auth-service-token)"; export BOT_TO_AUTH_SERVICE_TOKEN; BOT_TO_READ_SERVICE_TOKEN="$$(cat /run/secrets/bot-to-read-service-token)"; export BOT_TO_READ_SERVICE_TOKEN; exec python -m bot']
+    # Directed credentials are mounted only in the workloads that use them.
+    command:
+      - /bin/sh
+      - -ec
+      - |
+        BOT_TO_ACADEMIC_SERVICE_TOKEN="$$(cat /run/secrets/bot-to-academic-service-token)"
+        BOT_TO_AUTH_SERVICE_TOKEN="$$(cat /run/secrets/bot-to-auth-service-token)"
+        BOT_TO_READ_SERVICE_TOKEN="$$(cat /run/secrets/bot-to-read-service-token)"
+        export BOT_TO_ACADEMIC_SERVICE_TOKEN BOT_TO_AUTH_SERVICE_TOKEN BOT_TO_READ_SERVICE_TOKEN
+        exec python -m bot
     secrets:
+    - source: bot-to-academic-service-token
+      target: bot-to-academic-service-token
     - source: bot-to-read-service-token
       target: bot-to-read-service-token
     - source: bot-to-auth-service-token
@@ -1701,6 +1713,8 @@ volumes:
 secrets:
   bot-to-auth-service-token:
     file: ${BOT_TO_AUTH_SERVICE_TOKEN_FILE:?BOT_TO_AUTH_SERVICE_TOKEN_FILE must be set}
+  bot-to-academic-service-token:
+    file: ${BOT_TO_ACADEMIC_SERVICE_TOKEN_FILE:?BOT_TO_ACADEMIC_SERVICE_TOKEN_FILE must be set}
   alert-webhook-token:
     environment: ALERT_WEBHOOK_SECRET
   pg-academic-monitor-password:

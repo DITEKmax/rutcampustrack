@@ -254,7 +254,14 @@ async def test_direct_homework_rejects_non_private_chat_before_lookup(handler):
     academic.get_user_by_telegram_id.assert_not_awaited()
 
 
-async def test_today_uses_current_student_grant_group_and_only_today_for_multirole_user():
+@pytest.mark.parametrize(
+    "handler,end_date,period",
+    [
+        (cmd_homework_today, "2026-05-07", "сегодня"),
+        (cmd_homework_week, "2026-05-13", "ближайшую неделю"),
+    ],
+)
+async def test_headman_with_student_grant_reads_own_homework_for_requested_period(handler, end_date, period):
     message = _make_message()
     academic = MagicMock()
     academic.get_user_by_telegram_id = AsyncMock(return_value=_make_user_response(group_id=999))
@@ -263,13 +270,16 @@ async def test_today_uses_current_student_grant_group_and_only_today_for_multiro
             roles_version=1,
             id=77,
             telegram_id=12345,
-            role="teacher",
+            role="headman",
             group_id=999,
             roles=[
-                UserRoleGrant(role="TEACHER", status="ACTIVE"),
+                UserRoleGrant(role="HEADMAN", status="ACTIVE", group_id=10),
                 UserRoleGrant(role="STUDENT", status="ACTIVE", group_id=10),
             ],
         )
+    )
+    message.menu_client.menu_scope.return_value = MenuScope(
+        77, 2, 1, (BotGrant("HEADMAN", 10), BotGrant("STUDENT", 10))
     )
     academic.get_active_semester = AsyncMock(return_value=_make_semester())
     message.homework_client.homeworks = AsyncMock(
@@ -278,7 +288,7 @@ async def test_today_uses_current_student_grant_group_and_only_today_for_multiro
             _make_homework(2, title="Завтра", lesson_date="2026-05-08"),
         ]
     )
-    await cmd_homework_today(
+    await handler(
         message,
         academic,
         today=date(2026, 5, 7),
@@ -291,10 +301,11 @@ async def test_today_uses_current_student_grant_group_and_only_today_for_multiro
         expected_roles_version=1,
         expected_telegram_binding_version=2,
         date_from="2026-05-07",
-        date_to="2026-05-07",
+        date_to=end_date,
     )
     text = message.answer.await_args.args[0]
-    assert "Домашнее задание на сегодня" in text and "Сегодня" in text and "Завтра" not in text
+    assert f"Домашнее задание на {period}" in text and "Сегодня" in text
+    assert ("Завтра" in text) == (handler is cmd_homework_week)
 
 
 @pytest.mark.parametrize("handler", [cmd_homework_today, cmd_homework_week])

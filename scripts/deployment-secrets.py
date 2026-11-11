@@ -38,7 +38,7 @@ MOBILE_BFF_TO_ACADEMIC_SERVICE_TOKEN_FILE MOBILE_BFF_TO_ATTENDANCE_SERVICE_TOKEN
 MOBILE_BFF_TO_SCHEDULE_SERVICE_TOKEN_FILE ATTENDANCE_BOT_READ_TO_ACADEMIC_SERVICE_TOKEN_FILE
 ATTENDANCE_BOT_READ_TO_SCHEDULE_SERVICE_TOKEN_FILE ACADEMIC_REPORT_TO_ATTENDANCE_SERVICE_TOKEN_FILE
 ACADEMIC_REPORT_TO_SCHEDULE_SERVICE_TOKEN_FILE NOTIFICATION_TO_ACADEMIC_SERVICE_TOKEN_FILE
-BOT_TO_READ_SERVICE_TOKEN_FILE BOT_TO_AUTH_SERVICE_TOKEN_FILE
+BOT_TO_READ_SERVICE_TOKEN_FILE BOT_TO_AUTH_SERVICE_TOKEN_FILE BOT_TO_ACADEMIC_SERVICE_TOKEN_FILE
 CONSTRUCTOR_RPC_SCHEDULE_TO_ATTENDANCE_TOKEN_FILE CONSTRUCTOR_RPC_SCHEDULE_TO_ACADEMIC_TOKEN_FILE'''.split()
 FILES = {key: key.lower().removesuffix('_file').replace('_', '-') for key in FILE_NAMES}
 ALLOWED = set(FILES.values()) | {f'{name}-tls/{name}-server.{ext}' for name in TLS for ext in ('crt', 'key')}
@@ -197,7 +197,12 @@ def validate(values, files, path_root):
     passwords = []
     for key, name in FILES.items():
         require(values[key] == str(path_root / name), 'SECRET_PATH_' + key)
-        value = files[name].decode().strip()
+        content = files[name]
+        if key == 'BOT_TO_ACADEMIC_SERVICE_TOKEN_FILE':
+            # The bot's command substitution and Spring's config tree both remove the final LF.
+            require(re.fullmatch(rb'[A-Za-z0-9_-]{43}\n?', content) is not None,
+                    'BOT_TO_ACADEMIC_TOKEN_FILE_FORMAT')
+        value = content.decode().strip()
         if key.endswith('_SERVICE_TOKEN_FILE') or key in {
                 'CONSTRUCTOR_RPC_SCHEDULE_TO_ATTENDANCE_TOKEN_FILE',
                 'CONSTRUCTOR_RPC_SCHEDULE_TO_ACADEMIC_TOKEN_FILE'}:

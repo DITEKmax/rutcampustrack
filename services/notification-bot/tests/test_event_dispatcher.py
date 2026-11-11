@@ -1,5 +1,6 @@
 """Tests for EventDispatcher routing and error handling."""
 
+import asyncio
 import logging
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, MagicMock
@@ -49,6 +50,68 @@ async def test_dispatch_routes_lesson_reminder(fake_redis):
 @pytest.mark.asyncio
 async def test_dispatch_routes_lesson_cancelled(fake_redis):
     await assert_business_delivery(fake_redis, "lesson.cancelled", expected=("Занятие отменено",))
+
+
+@pytest.mark.parametrize(
+    "kind,heading",
+    [
+        ("lesson.cancelled", "Занятие отменено"),
+        ("lesson.transferred", "Занятие перенесено"),
+        ("lesson.updated", "Занятие изменено"),
+        ("homework.published", "Новое домашнее задание"),
+        ("homework.updated", "Домашнее задание изменено"),
+    ],
+)
+async def test_headman_action_reaches_the_same_student_chat_once(fake_redis, kind, heading):
+    harness = BusinessDelivery(fake_redis)
+    harness.roles = {1: ["STUDENT", "HEADMAN"]}
+    common = dict(group_id=7, subject_id=8, semester_id=9, lesson_type="lecture", lesson_date="2026-10-10")
+    lesson = dict(**common, lesson_id=11, lesson_number=2, room="А-305")
+    if kind == "lesson.cancelled":
+        payload = dict(**lesson, actor_user_id=1, cancelled_by=1, date=common["lesson_date"])
+    elif kind in {"lesson.transferred", "lesson.updated"}:
+        target = {**lesson, "room": "Б-306"}
+        if kind == "lesson.transferred":
+            target.update(lesson_id=12, lesson_date="2026-10-11")
+        payload = dict(actor_user_id=1, source=lesson, target=target)
+    else:
+        payload = dict(**common, actor_user_id=1, homework_id=13, title="ДЗ", binding_mode="LESSON", lesson_number=2)
+    event = {**fact_event(kind), "payload": payload}
+
+    harness.queue.start()
+    try:
+        harness.prefs_on = False
+        await harness.dispatch(event)
+        assert harness.sent == []
+
+        harness.prefs_on = True
+        await harness.dispatch(event)
+        await harness.dispatch(event)
+
+        assert len(harness.sent) == 1
+        assert harness.sent[0]["chat_id"] == 101
+        assert heading in harness.sent[0]["text"]
+        assert all(request.group_id == 7 for request in harness.audience_requests)
+    finally:
+        await harness.queue.shutdown()
+
+
+async def test_headman_action_is_suppressed_if_headman_grant_changes_before_send(fake_redis):
+    harness = BusinessDelivery(fake_redis)
+    harness.roles = {1: ["STUDENT", "HEADMAN"]}
+    release_send = asyncio.Event()
+    harness.queue._consume_token = release_send.wait
+    event = fact_event("homework.published", actor_user_id=1, homework_id=13)
+    prepared = await harness.dispatcher.prepare(event)
+    harness.queue.start()
+    try:
+        batch = await harness.dispatcher.dispatch(prepared)
+        harness.roles = {1: ["STUDENT"]}
+        release_send.set()
+        await asyncio.wait_for(batch.wait(), 2)
+        assert harness.sent == []
+    finally:
+        await harness.queue.shutdown()
 
 
 @pytest.mark.asyncio

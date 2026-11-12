@@ -114,8 +114,8 @@ public class AdminAttendanceExportService {
                                         + report.semester().dateTo(),
                                 "Поиск: " + report.search(),
                                 "Порядок: " + report.sort() + " " + report.direction(),
-                                "Учтены завершённые неотменённые пары; нет данных отличается от"
-                                        + " 0%"),
+                                "Учтены завершённые неотменённые пары. «—» означает, что данных"
+                                        + " для расчёта процента нет."),
                         List.of(
                                 "Группа",
                                 "%+",
@@ -190,7 +190,7 @@ public class AdminAttendanceExportService {
     }
 
     private static Object percentage(Double value) {
-        return value == null ? "Нет данных" : value;
+        return value == null ? "—" : value;
     }
 
     public record Download(String filename, String contentType, byte[] content, int rowCount) {

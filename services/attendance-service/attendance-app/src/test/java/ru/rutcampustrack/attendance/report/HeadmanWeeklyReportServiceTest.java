@@ -125,8 +125,9 @@ class HeadmanWeeklyReportServiceTest {
                 service.exportSelectedWeeks(
                         new HeadmanWeeklyExportRequest(List.of(WEEK_START), "docx"));
 
+        assertThat(result.fileName()).contains("27.04.2026_03.05.2026");
         assertThat(zipText(result.content(), "word/document.xml"))
-                .contains("UVPV511", "27.04.2026", "03.05.2026");
+                .contains("UVPV511", "27.04.2026", "02.05.2026", "Нет данных");
         verify(academicGrpcClient, org.mockito.Mockito.times(2))
                 .hasAssistantPermission(10L, "VIEW_STATS");
         verify(scheduleGrpcClient, org.mockito.Mockito.times(2))
@@ -196,17 +197,25 @@ class HeadmanWeeklyReportServiceTest {
                 .hasAssistantPermission(10L, "VIEW_STATS");
     }
 
-    @Test
-    void weeklyDocxUsesTheSameEducationalWindowAsTheMarkedLesson() throws Exception {
+    @ParameterizedTest
+    @ValueSource(
+            strings = {
+                "Проектирование цифровых платформ и сервисов",
+                "Предметно-ориентированное проектирование"
+            })
+    void weeklyDocxUsesTheSameEducationalWindowAsTheMarkedLesson(String subject) throws Exception {
         stubBase(semester("2026-04-01", "2026-05-31"));
         when(scheduleGrpcClient.getLessonsByGroup(10L, 1L, "2026-04-27", "2026-05-03"))
                 .thenReturn(
                         LessonsResponse.newBuilder()
                                 .addLessons(lesson(100L, "2026-04-27", "09:00", 1, "closed"))
-                                .addLessons(lesson(101L, "2026-05-02", "13:00", 2, "active"))
+                                .addLessons(
+                                        lesson(101L, "2026-05-02", "13:00", 2, "active")
+                                                .toBuilder()
+                                                .setLessonType("lab"))
                                 .build());
         when(academicGrpcClient.getSubjectDetailsByIds(List.of(5L)))
-                .thenReturn(Map.of(5L, new AcademicGrpcClient.SubjectDetails("Math", "lecture")));
+                .thenReturn(Map.of(5L, new AcademicGrpcClient.SubjectDetails(subject, "lecture")));
         for (LocalDate date : List.of(WEEK_START, LocalDate.of(2026, 5, 2))) {
             when(academicGrpcClient.getGroupMembers(10L, date, 1L))
                     .thenReturn(roster(date, List.of(student(1, "Boundary Student"))));
@@ -226,6 +235,7 @@ class HeadmanWeeklyReportServiceTest {
         beans.registerSingleton("schedule", scheduleGrpcClient);
         beans.registerSingleton("attendance", attendanceReadPort);
         beans.registerSingleton("docx", new TeacherAttendanceDocxRenderer());
+        beans.registerSingleton("legacyDocx", new DocxRenderer());
         beans.registerSingleton("tabular", new HeadmanWeeklyTabularRenderer());
         beans.registerSingleton("renderer", documentRendererGrpcClient);
         beans.registerSingleton("request", requestContext);
@@ -253,11 +263,20 @@ class HeadmanWeeklyReportServiceTest {
         assertThat(row.cellsByLessonId().get(101L).symbol()).isEqualTo("у");
         String xml =
                 zipText(weekly.exportSingleWeek(WEEK_START, "docx").content(), "word/document.xml");
-        assertThat(textValues(parseXml(xml), WORD_NS)).contains("Boundary Student", "+", "у");
+        var rows = ExportTableReader.wordRows(xml);
+        assertThat(rows).hasSize(40);
+        assertThat(rows.get(1)).contains("Группа: UVPV511, Spring 2026");
+        assertThat(rows.get(2).get(2)).isEqualTo(subject);
+        assertThat(xml).contains("<w:trHeight w:val=\"2346\" />");
+        assertThat(rows.get(3).get(2)).isEqualTo("ЛК");
+        assertThat(rows.get(3).get(28)).isEqualTo("ЛЗ");
+        assertThat(rows.get(4).subList(1, 4)).containsExactly("Boundary Student", "+", "");
+        assertThat(rows.get(4).get(28)).isEqualTo("у");
     }
 
     @Test
-    void weeklyMatrixUsesDatedRosterAndKeepsFutureAndMissingMarksBlankWithoutRosterCap() {
+    void weeklyMatrixUsesDatedRosterAndKeepsFutureAndMissingMarksBlankWithoutRosterCap()
+            throws Exception {
         stubBase(semester("2026-04-01", "2026-05-31"));
         List<StudentInfo> mondayRoster =
                 IntStream.rangeClosed(1, 40)
@@ -328,6 +347,52 @@ class HeadmanWeeklyReportServiceTest {
         assertThat(alpha.metrics()).isEmpty();
         verify(academicGrpcClient).getGroupMembers(10L, LocalDate.of(2026, 4, 27), 1L);
         verify(academicGrpcClient).getGroupMembers(10L, LocalDate.of(2026, 5, 2), 1L);
+        var docx = service.exportSingleWeek(WEEK_START, "docx");
+        assertThat(ExportTableReader.wordRows(zipText(docx.content(), "word/document.xml")))
+                .anySatisfy(cells -> assertThat(cells).contains("Student 40"));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"sunday", "sixth lesson", "duplicate slot", "long subject"})
+    void weeklyDocxPreservesLessonsAndMarksOutsideTheTemplateGrid(String outside) throws Exception {
+        stubBase(semester("2026-04-01", "2026-05-31"));
+        LocalDate lastWeek = WEEK_START.minusWeeks(1);
+        LocalDate extraDate = outside.equals("sunday") ? lastWeek.plusDays(6) : lastWeek;
+        int extraNumber = outside.equals("sixth lesson") ? 6 : outside.equals("long subject") ? 2 : 1;
+        String subject =
+                outside.equals("long subject")
+                        ? "Технологии проектирования, разработки и сопровождения больших программных систем"
+                        : "Math";
+        when(scheduleGrpcClient.getLessonsByGroup(
+                        10L, 1L, lastWeek.toString(), lastWeek.plusDays(6).toString()))
+                .thenReturn(
+                        LessonsResponse.newBuilder()
+                                .addLessons(lesson(100L, lastWeek.toString(), "09:00", 1, "closed"))
+                                .addLessons(
+                                        lesson(
+                                                101L,
+                                                extraDate.toString(),
+                                                "11:00",
+                                                extraNumber,
+                                                "closed"))
+                                .build());
+        when(academicGrpcClient.getSubjectDetailsByIds(List.of(5L)))
+                .thenReturn(Map.of(5L, new AcademicGrpcClient.SubjectDetails(subject, "lecture")));
+        for (LocalDate date : java.util.Set.copyOf(List.of(lastWeek, extraDate))) {
+            when(academicGrpcClient.getGroupMembers(10L, date, 1L))
+                    .thenReturn(roster(date, List.of(student(1L, "Student 1"))));
+        }
+        when(attendanceReadPort.findByGroupAndDateRange(10L, lastWeek, lastWeek.plusDays(6)))
+                .thenReturn(
+                        List.of(
+                                attendance(100L, 1L, lastWeek, 1, AttendanceStatus.PRESENT),
+                                attendance(101L, 1L, extraDate, extraNumber, AttendanceStatus.ABSENT)));
+
+        var docx = service.exportSingleWeek(lastWeek, "docx");
+        String xml = zipText(docx.content(), "word/document.xml");
+        assertThat(xml).contains("Посещаемость за неделю", subject);
+        assertThat(ExportTableReader.wordRows(xml))
+                .anySatisfy(cells -> assertThat(cells).containsSubsequence("Student 1", "+", "н"));
     }
 
     @Test
@@ -337,7 +402,7 @@ class HeadmanWeeklyReportServiceTest {
 
         String html = new String(renderer.renderHtml(List.of(model)), StandardCharsets.UTF_8);
         String sheet = zipText(renderer.renderXlsx(List.of(model)), "xl/worksheets/sheet1.xml");
-        var htmlRows = ExportTableReader.htmlRows(html);
+        var htmlRows = ExportTableReader.htmlRows(html.split("</table>", 2)[0]);
         var sheetRows = ExportTableReader.sheetRows(sheet);
         for (var rows : List.of(htmlRows, sheetRows)) {
             assertThat(rows).anySatisfy(cells -> assertThat(cells).contains("Alpha <script>", "+"));
@@ -366,7 +431,7 @@ class HeadmanWeeklyReportServiceTest {
 
         TeacherAttendanceExportModel model = service.buildReportModels(List.of(WEEK_START)).get(0);
         String wordXml =
-                zipText(new TeacherAttendanceDocxRenderer().render(model), "word/document.xml");
+                zipText(service.exportSingleWeek(WEEK_START, "docx").content(), "word/document.xml");
         String sheetXml =
                 zipText(
                         new HeadmanWeeklyTabularRenderer().renderXlsx(List.of(model)),

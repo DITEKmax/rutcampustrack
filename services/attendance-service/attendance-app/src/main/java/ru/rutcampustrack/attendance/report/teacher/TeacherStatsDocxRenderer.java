@@ -98,8 +98,11 @@ public final class TeacherStatsDocxRenderer {
                         paragraph(
                                 "Сформировано: " + GENERATED_AT.format(context.generatedAt()),
                                 false,
-                                16))
-                .append(table(model))
+                                16));
+        if (TeacherReportPresentation.noStats(model)) {
+            xml.append(paragraph(TeacherReportPresentation.NO_STATS, true, 18));
+        }
+        xml.append(table(model))
                 .append(
                         "<w:sectPr><w:pgSz w:w=\"16838\" w:h=\"11906\" w:orient=\"landscape\"/>"
                                 + "<w:pgMar w:top=\"720\" w:right=\"720\" w:bottom=\"720\" w:left=\"720\" w:header=\"360\" w:footer=\"360\" w:gutter=\"0\"/></w:sectPr>")
@@ -146,27 +149,20 @@ public final class TeacherStatsDocxRenderer {
             xml.append(cell(headers.get(index), widths[index], true));
         }
         xml.append("</w:tr>");
-        if (model.rows().isEmpty()) {
-            xml.append("<w:tr>").append(cell("По заданному фильтру данных нет.", widths[0], false));
-            for (int index = 1; index < widths.length; index++)
-                xml.append(cell("", widths[index], false));
-            xml.append("</w:tr>");
-        } else {
-            for (Row row : model.rows()) {
-                xml.append("<w:tr><w:trPr><w:cantSplit/></w:trPr>")
-                        .append(cell(row.label(), widths[0], false));
-                List<Metric> metrics = row.metricsInDisplayOrder();
-                for (int index = 0; index < metrics.size(); index++) {
-                    xml.append(cell(metricText(metrics.get(index)), widths[index + 1], false));
-                }
-                if (groups)
-                    xml.append(
-                            cell(
-                                    Integer.toString(row.lessonsCount()),
-                                    widths[widths.length - 1],
-                                    false));
-                xml.append("</w:tr>");
+        for (Row row : model.rows()) {
+            xml.append("<w:tr><w:trPr><w:cantSplit/></w:trPr>")
+                    .append(cell(row.label(), widths[0], false));
+            List<Metric> metrics = row.metricsInDisplayOrder();
+            for (int index = 0; index < metrics.size(); index++) {
+                xml.append(cell(metricText(metrics.get(index)), widths[index + 1], false));
             }
+            if (groups)
+                xml.append(
+                        cell(
+                                Integer.toString(row.lessonsCount()),
+                                widths[widths.length - 1],
+                                false));
+            xml.append("</w:tr>");
         }
         return xml.append("</w:tbl>").toString();
     }

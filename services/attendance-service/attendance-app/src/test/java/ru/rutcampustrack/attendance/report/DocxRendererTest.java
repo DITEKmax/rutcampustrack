@@ -33,7 +33,9 @@ class DocxRendererTest {
 
         String documentXml = DocxRenderer.readDocumentXml(docx);
 
-        assertThat(documentXml).doesNotContain("${");
+        assertThat(documentXml).doesNotContain("${").contains("w14:paraId=");
+        assertThat(documentXml.split("<w:tcMar>", -1)).hasSize(61);
+        assertThat(documentXml).doesNotContain("<w:noWrap /><w:textDirection");
         assertThat(documentXml)
                 .contains("UVPV511")
                 .contains("Math")
@@ -57,7 +59,7 @@ class DocxRendererTest {
 
         String documentXml = DocxRenderer.readDocumentXml(docx);
 
-        assertThat(documentXml).doesNotContain("${");
+        assertThat(documentXml).doesNotContain("${", "w14:paraId=", "w14:textId=");
         assertThat(documentXml).contains("w:type=\"page\"");
         assertThat(documentXml).contains("Math").contains("Physics");
         DocumentContents contents = readDocumentContents(docx);

@@ -66,10 +66,9 @@ class TeacherAttendanceExportServiceTest {
         assertThat(requested).containsExactlyInAnyOrderElementsOf(expected);
         assertThat(html)
                 .contains("2026-01-01 — 2026-12-31")
-                .contains("2026-10-01")
-                .contains("09:00 · Лекция")
-                .contains("Запланировано")
-                .doesNotContain("PLANNED")
+                .contains("2026-10-01 · Лекция</th>")
+                .contains("<td style=\"background-color:#DBF8EF\">+</td>", "<td></td>")
+                .doesNotContain("09:00 · Лекция", "Запланировано", "Завершено", "· №", "PLANNED")
                 .contains("Иван Петров")
                 .contains("100/100 (100%)");
         var rows = ru.rutcampustrack.attendance.report.ExportTableReader.htmlRows(html);
@@ -118,7 +117,12 @@ class TeacherAttendanceExportServiceTest {
                         .findFirst()
                         .orElseThrow();
         assertThat(student).contains("+", "");
-        assertThat(sheet).contains("Завершено", "Лекция").doesNotContain("CLOSED");
+        assertThat(sheet)
+                .contains("2026-01-01\nЛекция</t>", "2026-10-01\nЛекция</t>")
+                .doesNotContain("09:00", "№", "Завершено", "Запланировано", "CLOSED");
+        assertThat(sheet).contains("<c r=\"B7\" s=\"3\" t=\"inlineStr\">", "<c r=\"C7\" t=\"inlineStr\">");
+        assertThat(new String(entries.get("xl/styles.xml"), java.nio.charset.StandardCharsets.UTF_8))
+                .contains("FFDBF8EF", "FFFDF0D6", "FFFCE2E2");
         var headings =
                 rows.stream()
                         .filter(cells -> cells.contains("Знаменатель"))

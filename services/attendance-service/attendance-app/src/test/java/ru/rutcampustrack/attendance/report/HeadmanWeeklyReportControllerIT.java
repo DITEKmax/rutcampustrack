@@ -202,24 +202,28 @@ class HeadmanWeeklyReportControllerIT extends AbstractAttendanceIntegrationTest 
         assertThat(tables.getLength()).isEqualTo(18);
         assertThat(xml).doesNotContain("${");
         assertThat(document.getDocumentElement().getTextContent())
-                .contains("Посещаемость за неделю", "Semester subject", "05.01.2026");
+                .contains("Группа: UVPV511, 18 week synthetic semester", "Semester subject");
         for (int weekIndex = 0; weekIndex < 18; weekIndex++) {
             org.w3c.dom.Element table = (org.w3c.dom.Element) tables.item(weekIndex);
             var rows =
                     table.getElementsByTagNameNS(
                             "http://schemas.openxmlformats.org/wordprocessingml/2006/main", "tr");
-            assertThat(rows.getLength()).isEqualTo(31);
+            assertThat(rows.getLength()).isEqualTo(40);
             assertThat(table.getTextContent())
-                    .contains("Semester Student 100", "Semester Student 129");
-            for (int studentIndex = 1; studentIndex <= 30; studentIndex++) {
+                    .contains(
+                            weeks.get(weekIndex)
+                                    .format(java.time.format.DateTimeFormatter.ofPattern("dd.MM.uuuu")));
+            for (int studentIndex = 0; studentIndex < 30; studentIndex++) {
                 var cells =
-                        ((org.w3c.dom.Element) rows.item(studentIndex))
+                        ((org.w3c.dom.Element) rows.item(studentIndex + 4))
                                 .getElementsByTagNameNS(
                                         "http://schemas.openxmlformats.org/wordprocessingml/2006/main",
                                         "tc");
-                assertThat(cells.getLength()).isEqualTo(8);
-                for (int lessonIndex = 2; lessonIndex < 8; lessonIndex++) {
-                    assertThat(cells.item(lessonIndex).getTextContent())
+                assertThat(cells.getLength()).isEqualTo(32);
+                assertThat(cells.item(1).getTextContent())
+                        .isEqualTo("Semester Student " + (100 + studentIndex));
+                for (int day = 0; day < 6; day++) {
+                    assertThat(cells.item(2 + day * 5).getTextContent())
                             .isEqualTo(weekIndex == 17 ? "у" : "+");
                 }
             }
@@ -366,8 +370,15 @@ class HeadmanWeeklyReportControllerIT extends AbstractAttendanceIntegrationTest 
                                         org.hamcrest.Matchers.containsString(".pdf")))
                 .andExpect(content().bytes(PDF_BYTES));
 
+        var converted = org.mockito.ArgumentCaptor.forClass(byte[].class);
         verify(documentRendererGrpcClient)
-                .convertDocxForHeadmanWeeklyExport(any(byte[].class), eq(TargetFormat.PDF));
+                .convertDocxForHeadmanWeeklyExport(converted.capture(), eq(TargetFormat.PDF));
+        var rows = ExportTableReader.wordRows(documentXml(converted.getValue()));
+        assertThat(rows).hasSize(80);
+        assertThat(rows.get(0)).contains("27.04.2026").doesNotContain("04.05.2026");
+        assertThat(rows.get(40)).contains("11.05.2026").doesNotContain("04.05.2026");
+        assertThat(rows.get(4).subList(1, 3)).containsExactly("Alpha Student", "+");
+        assertThat(rows.get(44).subList(1, 3)).containsExactly("Alpha Student", "у");
     }
 
     @Test

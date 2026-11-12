@@ -58,10 +58,15 @@ class TeacherAttendanceDocxRendererTest {
                 .contains(
                         "Журнал посещаемости по предмету",
                         "Физика и астрономия",
-                        "Запланировано",
                         "Отменено",
-                        "25%");
+                        "25%")
+                .doesNotContain("Запланировано", "Проведено", "Идёт");
         assertMatrix(model, document);
+        var firstMatrix = rows((Element) tables.item(0));
+        assertThat(cells(firstMatrix.get(1)).stream().skip(2).map(TeacherAttendanceDocxRendererTest::cellFill))
+                .containsExactly("DBF8EF", "FDF0D6", "FFFFFF", "FFFFFF", "DBF8EF", "FCE2E2");
+        assertThat(cells(firstMatrix.get(2)).stream().skip(2).map(TeacherAttendanceDocxRendererTest::cellFill))
+                .containsOnly("F4F8FB");
         var logicalRows = ru.rutcampustrack.attendance.report.ExportTableReader.wordRows(xml);
         assertThat(logicalRows)
                 .anySatisfy(
@@ -167,7 +172,7 @@ class TeacherAttendanceDocxRendererTest {
     private static void assertMatrix(
             TeacherAttendanceExportModel model, org.w3c.dom.Document document) {
         var tables = document.getElementsByTagNameNS(WORD_NS, "tbl");
-        java.util.Set<Long> observed = new java.util.HashSet<>();
+        int observed = 0;
         for (int table = 0; table < tables.getLength(); table++) {
             var matrixRows = rows((Element) tables.item(table));
             if (matrixRows.isEmpty()) continue;
@@ -176,19 +181,16 @@ class TeacherAttendanceDocxRendererTest {
                             .map(TeacherAttendanceDocxRendererTest::cellText)
                             .toList();
             if (!headings.contains("№") || !headings.contains("Студент")) continue;
-            for (var column : model.columns()) {
+            for (int position = 2; position < headings.size(); position++) {
+                var column = model.columns().get(observed++);
                 String date =
                         column.date()
                                 .format(java.time.format.DateTimeFormatter.ofPattern("dd.MM.uuuu"));
-                int position = -1;
-                for (int index = 0; index < headings.size(); index++) {
-                    String heading = headings.get(index);
-                    if (heading.contains(date)
-                            && heading.contains(column.typeLabel())
-                            && heading.contains("№" + column.lessonNumber())) position = index;
-                }
-                if (position < 0) continue;
-                assertThat(observed.add(column.lessonId())).isTrue();
+                assertThat(headings.get(position))
+                        .isEqualTo(
+                                date
+                                        + column.typeLabel()
+                                        + (column.state().equals("CANCELLED") ? "Отменено" : ""));
                 for (var expected : model.rows()) {
                     var row =
                             matrixRows.stream()
@@ -214,9 +216,7 @@ class TeacherAttendanceDocxRendererTest {
                 }
             }
         }
-        assertThat(observed)
-                .containsExactlyInAnyOrderElementsOf(
-                        model.columns().stream().map(Column::lessonId).toList());
+        assertThat(observed).isEqualTo(model.columns().size());
     }
 
     private static TeacherAttendanceExportModel model(
@@ -244,7 +244,7 @@ class TeacherAttendanceDocxRendererTest {
 
         Map<Long, Cell> firstCells = new LinkedHashMap<>();
         firstCells.put(700L, new Cell("+", AttendanceStatus.PRESENT, true));
-        firstCells.put(701L, new Cell("у", AttendanceStatus.EXCUSED, true));
+        firstCells.put(701L, new Cell("у", AttendanceStatus.FREE_ATTENDANCE, true));
         // Cancelled and future lessons have no attendance record and stay blank.
         firstCells.put(704L, new Cell("+", AttendanceStatus.PRESENT, true));
         firstCells.put(705L, new Cell("н", AttendanceStatus.ABSENT, true));
@@ -461,6 +461,11 @@ class TeacherAttendanceDocxRendererTest {
             text.append(values.item(index).getTextContent());
         }
         return text.toString();
+    }
+
+    private static String cellFill(Element cell) {
+        var shading = (Element) cell.getElementsByTagNameNS(WORD_NS, "shd").item(0);
+        return shading.getAttributeNS(WORD_NS, "fill");
     }
 
     private static String visibleText(String xml) throws Exception {

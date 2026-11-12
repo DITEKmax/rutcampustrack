@@ -26,6 +26,7 @@ import ru.rutcampustrack.attendance.report.teacher.TeacherAttendanceExportModel.
 import ru.rutcampustrack.attendance.report.teacher.TeacherAttendanceExportModel.Metrics;
 import ru.rutcampustrack.attendance.report.teacher.TeacherAttendanceExportModel.ReportKind;
 import ru.rutcampustrack.attendance.report.teacher.TeacherAttendanceExportModel.Row;
+import ru.rutcampustrack.attendance.report.teacher.TeacherReportPresentation.MarkFill;
 
 /**
  * Renders the teacher's supplied attendance selection without recalculating its scope or metrics.
@@ -157,6 +158,7 @@ public final class TeacherAttendanceDocxRenderer {
 
     private static String matrixTable(
             TeacherAttendanceExportModel model, int firstColumn, int endColumn) {
+        boolean teacherJournal = model.context().kind() == ReportKind.SUBJECT_JOURNAL;
         int lessonCount = endColumn - firstColumn;
         int[] widths = matrixWidths(lessonCount);
         StringBuilder xml = new StringBuilder();
@@ -165,9 +167,13 @@ public final class TeacherAttendanceDocxRenderer {
         xml.append(cell("№", widths[0], true, true, false, 16));
         xml.append(cell("Студент", widths[1], true, false, false, 16));
         for (int lessonIndex = firstColumn; lessonIndex < endColumn; lessonIndex++) {
+            Column column = model.columns().get(lessonIndex);
             xml.append(
                     cell(
-                            lessonHeader(model.columns().get(lessonIndex)),
+                            teacherJournal
+                                    ? TeacherReportPresentation.journalLessonHeading(
+                                            column, column.date().format(DATE), "\n")
+                                    : lessonHeader(column),
                             widths[lessonIndex - firstColumn + 2],
                             true,
                             true,
@@ -194,7 +200,8 @@ public final class TeacherAttendanceDocxRenderer {
                                 false,
                                 true,
                                 alternate,
-                                19));
+                                19,
+                                teacherJournal ? MarkFill.forCell(column, mark).rgb : ""));
             }
             xml.append("</w:tr>");
         }
@@ -395,7 +402,19 @@ public final class TeacherAttendanceDocxRenderer {
             boolean centered,
             boolean alternate,
             int fontHalfPoints) {
-        String fill = header ? "DDEBF7" : alternate ? "F4F8FB" : "FFFFFF";
+        return cell(value, width, header, centered, alternate, fontHalfPoints, "");
+    }
+
+    private static String cell(
+            String value,
+            int width,
+            boolean header,
+            boolean centered,
+            boolean alternate,
+            int fontHalfPoints,
+            String markFill) {
+        String fill = markFill;
+        if (fill.isEmpty()) fill = header ? "DDEBF7" : alternate ? "F4F8FB" : "FFFFFF";
         StringBuilder text = new StringBuilder();
         String[] lines = Objects.requireNonNullElse(value, "").split("\\n", -1);
         for (int index = 0; index < lines.length; index++) {

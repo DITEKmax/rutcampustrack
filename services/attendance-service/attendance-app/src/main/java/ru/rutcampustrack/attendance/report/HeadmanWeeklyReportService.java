@@ -74,6 +74,7 @@ public class HeadmanWeeklyReportService {
     private final ReportScheduleReadPort scheduleGrpcClient;
     private final AttendanceReadPort attendanceReadPort;
     private final TeacherAttendanceDocxRenderer docxRenderer;
+    private final DocxRenderer weeklyTemplateRenderer;
     private final HeadmanWeeklyTabularRenderer tabularRenderer;
     private final DocumentRendererGrpcClient documentRendererGrpcClient;
     private final ReportActor requestContext;
@@ -96,6 +97,7 @@ public class HeadmanWeeklyReportService {
                 ReportScheduleReadPort.live(scheduleGrpcClient),
                 attendanceReadPort,
                 docxRenderer,
+                new DocxRenderer(),
                 tabularRenderer,
                 documentRendererGrpcClient,
                 ReportActor.live(requestContext),
@@ -109,6 +111,7 @@ public class HeadmanWeeklyReportService {
             ReportScheduleReadPort scheduleGrpcClient,
             AttendanceReadPort attendanceReadPort,
             TeacherAttendanceDocxRenderer docxRenderer,
+            DocxRenderer weeklyTemplateRenderer,
             HeadmanWeeklyTabularRenderer tabularRenderer,
             DocumentRendererGrpcClient documentRendererGrpcClient,
             ReportActor requestContext,
@@ -119,6 +122,7 @@ public class HeadmanWeeklyReportService {
         this.scheduleGrpcClient = scheduleGrpcClient;
         this.attendanceReadPort = attendanceReadPort;
         this.docxRenderer = docxRenderer;
+        this.weeklyTemplateRenderer = weeklyTemplateRenderer;
         this.tabularRenderer = tabularRenderer;
         this.documentRendererGrpcClient = documentRendererGrpcClient;
         this.requestContext = requestContext;
@@ -133,6 +137,7 @@ public class HeadmanWeeklyReportService {
             ScheduleGrpcClient scheduleGrpcClient,
             AttendanceReadPort attendanceReadPort,
             TeacherAttendanceDocxRenderer docxRenderer,
+            DocxRenderer weeklyTemplateRenderer,
             HeadmanWeeklyTabularRenderer tabularRenderer,
             DocumentRendererGrpcClient documentRendererGrpcClient,
             RequestContext requestContext,
@@ -140,17 +145,19 @@ public class HeadmanWeeklyReportService {
             ReportExecution reportExecution,
             ObjectProvider<EducationalTime> educationalTime) {
         this(
-                academicGrpcClient,
-                scheduleGrpcClient,
+                ReportAcademicReadPort.live(academicGrpcClient),
+                ReportScheduleReadPort.live(scheduleGrpcClient),
                 attendanceReadPort,
                 docxRenderer,
+                weeklyTemplateRenderer,
                 tabularRenderer,
                 documentRendererGrpcClient,
-                requestContext,
+                ReportActor.live(requestContext),
                 educationalTime == null
                         ? clock
                         : educationalTime.getIfAvailable(() -> new EducationalTime(clock)).clock(),
-                reportExecution);
+                reportExecution,
+                false);
     }
 
     public HeadmanWeeklyReportService forPlan(AdmittedReportPlan plan) {
@@ -159,6 +166,7 @@ public class HeadmanWeeklyReportService {
                 plan,
                 attendanceReadPort,
                 docxRenderer,
+                weeklyTemplateRenderer,
                 tabularRenderer,
                 documentRendererGrpcClient,
                 plan,
@@ -186,7 +194,7 @@ public class HeadmanWeeklyReportService {
         return execute(
                 ReportExecution.Report.WEEKLY,
                 format,
-                () -> export(buildReportModels(List.of(weekStart)), format));
+                () -> export(buildReportModels(List.of(weekStart)), format, false));
     }
 
     public HeadmanWeeklyExportResult exportSelectedWeeks(HeadmanWeeklyExportRequest request) {
@@ -200,11 +208,13 @@ public class HeadmanWeeklyReportService {
         return execute(
                 ReportExecution.Report.WEEKLY,
                 format,
-                () -> export(buildReportModels(request.weekStarts()), format));
+                () -> export(buildReportModels(request.weekStarts()), format, true));
     }
 
     private HeadmanWeeklyExportResult export(
-            List<TeacherAttendanceExportModel> models, HeadmanWeeklyReportFormat format) {
+            List<TeacherAttendanceExportModel> models,
+            HeadmanWeeklyReportFormat format,
+            boolean selectedWeeks) {
         if (models.isEmpty()) {
             throw new ReportValidationException("Выбери хотя бы одну неделю");
         }
@@ -215,11 +225,14 @@ public class HeadmanWeeklyReportService {
                         models.get(0).context().groupLabel(), weekStarts, format);
         byte[] content;
         switch (format) {
-            case DOCX -> content = docxRenderer.render(models);
-            case HTML -> content = tabularRenderer.renderHtml(models);
-            case XLSX -> content = tabularRenderer.renderXlsx(models);
+            case DOCX -> content = renderWeeklyDocument(models);
+            case HTML -> content = tabularRenderer.renderHtml(models, selectedWeeks);
+            case XLSX -> content = tabularRenderer.renderXlsx(models, selectedWeeks);
             case PDF, PNG -> {
-                byte[] docx = docxRenderer.render(models);
+                byte[] docx =
+                        format == HeadmanWeeklyReportFormat.PDF
+                                ? renderWeeklyDocument(models)
+                                : docxRenderer.render(models);
                 TargetFormat target =
                         format == HeadmanWeeklyReportFormat.PDF
                                 ? TargetFormat.PDF
@@ -250,6 +263,12 @@ public class HeadmanWeeklyReportService {
                             + " HTML/XLSX.");
         }
         return new HeadmanWeeklyExportResult(fileName, format.contentType(), content);
+    }
+
+    private byte[] renderWeeklyDocument(List<TeacherAttendanceExportModel> models) {
+        return models.stream().allMatch(DocxRenderer::fitsWeeklyTemplate)
+                ? weeklyTemplateRenderer.renderWeekly(models)
+                : docxRenderer.render(models);
     }
 
     List<TeacherAttendanceExportModel> buildReportModels(List<LocalDate> requestedWeekStarts) {

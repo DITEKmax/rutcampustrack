@@ -52,7 +52,13 @@ public final class TeacherStatsTabularRenderer {
                 .append(contextItem("Период данных", dataRange(context)))
                 .append(contextItem("Учтено пар", Integer.toString(context.lessonsCount())))
                 .append(contextItem("Сформировано", GENERATED_AT.format(context.generatedAt())))
-                .append("</dl><div class=\"table-wrap\"><table><thead><tr><th>")
+                .append("</dl>");
+        if (TeacherReportPresentation.noStats(model)) {
+            html.append("<p><strong>")
+                    .append(htmlText(TeacherReportPresentation.NO_STATS))
+                    .append("</strong></p>");
+        }
+        html.append("<div class=\"table-wrap\"><table><thead><tr><th>")
                 .append(groups ? "Группа" : "Студент")
                 .append("</th>");
         for (String label : METRIC_LABELS) {
@@ -62,22 +68,16 @@ public final class TeacherStatsTabularRenderer {
         }
         if (groups) html.append("<th class=\"metric\">Пар учтено</th>");
         html.append("</tr></thead><tbody>");
-        if (model.rows().isEmpty()) {
-            html.append("<tr><td colspan=\"")
-                    .append(groups ? 6 : 5)
-                    .append("\">По заданному фильтру данных нет.</td></tr>");
-        } else {
-            for (Row row : model.rows()) {
-                html.append("<tr><th scope=\"row\">").append(htmlText(row.label())).append("</th>");
-                for (Metric metric : row.metricsInDisplayOrder()) {
-                    html.append("<td class=\"metric\">")
-                            .append(htmlText(metricText(metric)))
-                            .append("</td>");
-                }
-                if (groups)
-                    html.append("<td class=\"metric\">").append(row.lessonsCount()).append("</td>");
-                html.append("</tr>");
+        for (Row row : model.rows()) {
+            html.append("<tr><th scope=\"row\">").append(htmlText(row.label())).append("</th>");
+            for (Metric metric : row.metricsInDisplayOrder()) {
+                html.append("<td class=\"metric\">")
+                        .append(htmlText(metricText(metric)))
+                        .append("</td>");
             }
+            if (groups)
+                html.append("<td class=\"metric\">").append(row.lessonsCount()).append("</td>");
+            html.append("</tr>");
         }
         html.append("</tbody></table></div></body></html>");
         return html.toString().getBytes(StandardCharsets.UTF_8);
@@ -87,9 +87,6 @@ public final class TeacherStatsTabularRenderer {
         Context context = model.context();
         boolean groups = context.scope() == Scope.GROUPS;
         int columns = 1 + 4 * 3 + (groups ? 1 : 0);
-        int headerRow = 10;
-        int firstDataRow = headerRow + 1;
-        int lastRow = Math.max(firstDataRow, firstDataRow + model.rows().size() - 1);
         Map<String, String> entries = new LinkedHashMap<>();
         entries.put(
                 "[Content_Types].xml",
@@ -121,7 +118,7 @@ public final class TeacherStatsTabularRenderer {
         entries.put("xl/styles.xml", stylesXml());
         entries.put(
                 "xl/worksheets/sheet1.xml",
-                sheetXml(model, headerRow, firstDataRow, lastRow, columns));
+                sheetXml(model, columns));
         try (ByteArrayOutputStream bytes = new ByteArrayOutputStream();
                 ZipOutputStream zip = new ZipOutputStream(bytes, StandardCharsets.UTF_8)) {
             for (Map.Entry<String, String> entry : entries.entrySet()) {
@@ -136,14 +133,13 @@ public final class TeacherStatsTabularRenderer {
         }
     }
 
-    private static String sheetXml(
-            TeacherStatsExportModel model,
-            int headerRow,
-            int firstDataRow,
-            int lastRow,
-            int columns) {
+    private static String sheetXml(TeacherStatsExportModel model, int columns) {
         Context context = model.context();
         boolean groups = context.scope() == Scope.GROUPS;
+        boolean showNotice = TeacherReportPresentation.noStats(model);
+        int headerRow = showNotice ? 11 : 10;
+        int firstDataRow = headerRow + 1;
+        int lastRow = headerRow + model.rows().size();
         String lastColumn = columnName(columns);
         StringBuilder xml = new StringBuilder(16_384);
         xml.append("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>")
@@ -187,6 +183,11 @@ public final class TeacherStatsTabularRenderer {
         appendContextRow(xml, 7, "Период данных", dataRange(context), 0);
         appendContextRow(xml, 8, "Учтено пар", Integer.toString(context.lessonsCount()), 0);
         appendContextRow(xml, 9, "Сформировано", GENERATED_AT.format(context.generatedAt()), 0);
+        if (showNotice) {
+            xml.append("<row r=\"10\">");
+            inlineCell(xml, "A10", TeacherReportPresentation.NO_STATS, 3);
+            xml.append("</row>");
+        }
         List<String> headers = new ArrayList<>();
         headers.add(groups ? "Группа" : "Студент");
         for (String label : METRIC_LABELS) {
@@ -198,17 +199,21 @@ public final class TeacherStatsTabularRenderer {
         appendHeaderRow(xml, headerRow, headers);
         int rowNumber = firstDataRow;
         for (Row row : model.rows()) appendDataRow(xml, rowNumber++, row, groups);
-        if (model.rows().isEmpty()) {
-            xml.append("<row r=\"").append(firstDataRow).append("\">");
-            inlineCell(xml, "A" + firstDataRow, "По заданному фильтру данных нет.", 0);
-            xml.append("</row>");
+        xml.append("</sheetData>");
+        if (!model.rows().isEmpty()) {
+            xml.append("<autoFilter ref=\"A")
+                    .append(headerRow)
+                    .append(":")
+                    .append(lastColumn)
+                    .append(lastRow)
+                    .append("\"/>");
         }
-        xml.append("</sheetData><autoFilter ref=\"A")
-                .append(headerRow)
-                .append(":")
-                .append(lastColumn)
-                .append(lastRow)
-                .append("\"/></worksheet>");
+        if (showNotice) {
+            xml.append("<mergeCells count=\"1\"><mergeCell ref=\"A10:")
+                    .append(lastColumn)
+                    .append("10\"/></mergeCells>");
+        }
+        xml.append("</worksheet>");
         return xml.toString();
     }
 

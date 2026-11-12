@@ -229,8 +229,6 @@ class PlannedReportRendererTest {
             var document = parse(xml);
             assertThat(document.getElementsByTagNameNS(WORD, "tbl").getLength())
                     .isEqualTo(selected.size());
-            assertThat(document.getElementsByTagNameNS(WORD, "tblHeader").getLength())
-                    .isEqualTo(selected.size());
             assertThat(xml)
                     .contains("Студент 1", "Студент 2", "Студент 3", "УИТ-311", "Математика")
                     .doesNotContain("${");
@@ -244,9 +242,22 @@ class PlannedReportRendererTest {
             var tables = document.getElementsByTagNameNS(WORD, "tbl");
             for (int index = 0; index < tables.getLength(); index++) {
                 var table = (org.w3c.dom.Element) tables.item(index);
-                assertThat(table.getElementsByTagNameNS(WORD, "tr").getLength()).isEqualTo(4);
-                assertThat(table.getTextContent())
-                        .contains("Студент 1", "Студент 2", "Студент 3", "+", "у");
+                var rows = table.getElementsByTagNameNS(WORD, "tr");
+                assertThat(rows.getLength()).isEqualTo(40);
+                assertThat(rows.item(0).getTextContent())
+                        .contains(
+                                LocalDate.parse(selected.get(index))
+                                        .format(
+                                                java.time.format.DateTimeFormatter.ofPattern(
+                                                        "dd.MM.uuuu")));
+                for (int student = 0; student < 3; student++) {
+                    var cells =
+                            ((org.w3c.dom.Element) rows.item(4 + student))
+                                    .getElementsByTagNameNS(WORD, "tc");
+                    assertThat(cells.item(1).getTextContent()).isEqualTo("Студент " + (student + 1));
+                    assertThat(cells.item(12).getTextContent())
+                            .isEqualTo(List.of("+", "у", "").get(student));
+                }
             }
         }
         assertThat(documents.get(0)).isNotEqualTo(documents.get(1));

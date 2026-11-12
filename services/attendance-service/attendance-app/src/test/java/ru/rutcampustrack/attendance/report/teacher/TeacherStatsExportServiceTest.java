@@ -427,6 +427,30 @@ class TeacherStatsExportServiceTest {
                                                                     : "xl/worksheets/sheet1.xml"),
                                             StandardCharsets.UTF_8);
                     assertThat(document).contains("Математика", "УИТ-311", "Лекция");
+                    String notice =
+                            "Нет данных о посещаемости за выбранный период. Отчёт сформирован по выбранным фильтрам.";
+                    switch (format) {
+                        case "docx" -> assertThat(document).containsPattern(notice + "[\\s\\S]*<w:tbl>");
+                        case "html" -> assertThat(document).containsPattern(notice + "[\\s\\S]*<table>");
+                        case "xlsx" -> {
+                            boolean groups = scope == ReportService.TeacherStatsScope.GROUPS;
+                            String lastColumn = groups ? "N" : "M";
+                            assertThat(document)
+                                    .contains(
+                                            "<mergeCell ref=\"A10:" + lastColumn + "10\"",
+                                            notice + "</t></is></c></row><row r=\"11\"");
+                            if (groups) {
+                                assertThat(document)
+                                        .contains(
+                                                "<dimension ref=\"A1:N12\"",
+                                                "<autoFilter ref=\"A11:N12\"");
+                            } else {
+                                assertThat(document)
+                                        .contains("<dimension ref=\"A1:M11\"")
+                                        .doesNotContain("<autoFilter");
+                            }
+                        }
+                    }
                     assertThat(response.getContent()).isNotEmpty();
                 }
             }

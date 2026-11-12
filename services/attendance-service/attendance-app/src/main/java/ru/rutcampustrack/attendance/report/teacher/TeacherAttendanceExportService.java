@@ -14,6 +14,7 @@ import ru.rutcampustrack.attendance.grpc.TeacherAcademicGrpcClient;
 import ru.rutcampustrack.attendance.journal.JournalLessonPolicy;
 import ru.rutcampustrack.attendance.report.ReportService;
 import ru.rutcampustrack.attendance.report.planned.*;
+import ru.rutcampustrack.attendance.report.teacher.TeacherReportPresentation.MarkFill;
 import ru.rutcampustrack.documentrenderer.grpc.TargetFormat;
 import ru.rutcampustrack.schedule.grpc.LessonResponse;
 import ru.rutcampustrack.teacher.grpc.TeacherAssignmentsResponse;
@@ -57,6 +58,8 @@ public final class TeacherAttendanceExportService {
     private static final String XLSX_MIME =
             "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
     private static final String HTML_MIME = "text/html; charset=UTF-8";
+    private static final List<MarkFill> XLSX_MARK_FILLS =
+            List.of(MarkFill.PRESENT, MarkFill.EXCUSED, MarkFill.ABSENT);
     private static final Map<String, String> TYPE_LABELS =
             Map.of(
                     "lecture", "Лекция",
@@ -546,17 +549,6 @@ public final class TeacherAttendanceExportService {
         };
     }
 
-    private static String stateLabel(String value) {
-        if (value == null) return "";
-        return switch (value.trim().toUpperCase(Locale.ROOT)) {
-            case "PLANNED" -> "Запланировано";
-            case "ACTIVE" -> "Идёт";
-            case "CLOSED" -> "Завершено";
-            case "CANCELLED" -> "Отменено";
-            default -> "";
-        };
-    }
-
     private static String typeLabel(String value) {
         String normalized = value == null ? "" : value.trim().toLowerCase(Locale.ROOT);
         return TYPE_LABELS.getOrDefault(normalized, value == null ? "" : value.trim());
@@ -621,15 +613,11 @@ public final class TeacherAttendanceExportService {
                             + " scope=\"col\">Студент</th>");
         for (TeacherAttendanceExportModel.Column column : model.columns()) {
             out.append("<th scope=\"col\">")
-                    .append(column.date())
-                    .append(" · ")
-                    .append(column.startTime() == null ? "" : column.startTime() + " · ")
-                    .append(escapeHtml(column.typeLabel()))
-                    .append(" · №")
-                    .append(column.lessonNumber());
-            String stateLabel = stateLabel(column.state());
-            if (!stateLabel.isBlank()) out.append(" · ").append(escapeHtml(stateLabel));
-            out.append("</th>");
+                    .append(
+                            escapeHtml(
+                                    TeacherReportPresentation.journalLessonHeading(
+                                            column, column.date().toString(), " · ")))
+                    .append("</th>");
         }
         out.append(
                         "<th scope=\"col\">Присутствовал</th><th scope=\"col\">Присутствовал или"
@@ -642,12 +630,13 @@ public final class TeacherAttendanceExportService {
                     .append(escapeHtml(row.displayName()))
                     .append("</th>");
             for (TeacherAttendanceExportModel.Column column : model.columns()) {
-                out.append("<td>")
-                        .append(
-                                escapeHtml(
-                                        safeCellValue(
-                                                row.cellsByLessonId().get(column.lessonId()))))
-                        .append("</td>");
+                var mark = row.cellsByLessonId().get(column.lessonId());
+                MarkFill fill = MarkFill.forCell(column, mark);
+                out.append("<td");
+                if (fill != MarkFill.NEUTRAL) {
+                    out.append(" style=\"background-color:#").append(fill.rgb).append("\"");
+                }
+                out.append(">").append(escapeHtml(safeCellValue(mark))).append("</td>");
             }
             TeacherAttendanceExportModel.Metrics metrics = row.metrics().orElseThrow();
             out.append("<td>")
@@ -733,9 +722,8 @@ public final class TeacherAttendanceExportService {
             List<SheetValue> values = new ArrayList<>(model.columns().size() + 10);
             values.add(SheetValue.text(row.displayName()));
             for (TeacherAttendanceExportModel.Column column : model.columns()) {
-                values.add(
-                        SheetValue.text(
-                                safeCellValue(row.cellsByLessonId().get(column.lessonId()))));
+                var mark = row.cellsByLessonId().get(column.lessonId());
+                values.add(SheetValue.mark(safeCellValue(mark), MarkFill.forCell(column, mark)));
             }
             TeacherAttendanceExportModel.Metrics metrics = row.metrics().orElseThrow();
             values.add(SheetValue.number(metrics.denominator()));
@@ -798,23 +786,7 @@ public final class TeacherAttendanceExportService {
                     + " Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles\""
                     + " Target=\"styles.xml\"/></Relationships>");
         entries.put("xl/worksheets/sheet1.xml", sheet.toString());
-        entries.put(
-                "xl/styles.xml",
-                "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><styleSheet"
-                    + " xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\"><fonts"
-                    + " count=\"1\"><font><sz val=\"11\"/><name"
-                    + " val=\"Calibri\"/></font></fonts><fills count=\"2\"><fill><patternFill"
-                    + " patternType=\"none\"/></fill><fill><patternFill"
-                    + " patternType=\"gray125\"/></fill></fills><borders"
-                    + " count=\"1\"><border><left/><right/><top/><bottom/><diagonal/></border></borders><cellStyleXfs"
-                    + " count=\"1\"><xf numFmtId=\"0\" fontId=\"0\" fillId=\"0\""
-                    + " borderId=\"0\"/></cellStyleXfs><cellXfs count=\"3\"><xf numFmtId=\"0\""
-                    + " fontId=\"0\" fillId=\"0\" borderId=\"0\" xfId=\"0\"/><xf numFmtId=\"0\""
-                    + " fontId=\"0\" fillId=\"0\" borderId=\"0\" xfId=\"0\""
-                    + " applyAlignment=\"1\"><alignment horizontal=\"center\" vertical=\"center\""
-                    + " wrapText=\"1\"/></xf><xf numFmtId=\"10\" fontId=\"0\" fillId=\"0\""
-                    + " borderId=\"0\" xfId=\"0\"/></cellXfs><cellStyles count=\"1\"><cellStyle"
-                    + " name=\"Normal\" xfId=\"0\" builtinId=\"0\"/></cellStyles></styleSheet>");
+        entries.put("xl/styles.xml", xlsxStyles());
         try (ByteArrayOutputStream bytes = new ByteArrayOutputStream();
                 ZipOutputStream zip = new ZipOutputStream(bytes, StandardCharsets.UTF_8)) {
             for (Map.Entry<String, String> entry : entries.entrySet()) {
@@ -829,20 +801,43 @@ public final class TeacherAttendanceExportService {
         }
     }
 
+    private static String xlsxStyles() {
+        StringBuilder fills = new StringBuilder();
+        StringBuilder markStyles = new StringBuilder();
+        for (int index = 0; index < XLSX_MARK_FILLS.size(); index++) {
+            fills.append("<fill><patternFill patternType=\"solid\"><fgColor rgb=\"FF")
+                    .append(XLSX_MARK_FILLS.get(index).rgb)
+                    .append("\"/><bgColor indexed=\"64\"/></patternFill></fill>");
+            markStyles.append("<xf numFmtId=\"0\" fontId=\"0\" fillId=\"")
+                    .append(index + 2)
+                    .append("\" borderId=\"0\" xfId=\"0\" applyFill=\"1\"/>");
+        }
+        return "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><styleSheet"
+                + " xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\"><fonts"
+                + " count=\"1\"><font><sz val=\"11\"/><name val=\"Calibri\"/></font></fonts>"
+                + "<fills count=\"" + (2 + XLSX_MARK_FILLS.size()) + "\"><fill><patternFill"
+                + " patternType=\"none\"/></fill><fill><patternFill patternType=\"gray125\"/></fill>"
+                + fills
+                + "</fills><borders count=\"1\"><border><left/><right/><top/><bottom/><diagonal/>"
+                + "</border></borders><cellStyleXfs count=\"1\"><xf numFmtId=\"0\" fontId=\"0\""
+                + " fillId=\"0\" borderId=\"0\"/></cellStyleXfs><cellXfs count=\""
+                + (3 + XLSX_MARK_FILLS.size()) + "\"><xf numFmtId=\"0\" fontId=\"0\" fillId=\"0\""
+                + " borderId=\"0\" xfId=\"0\"/><xf numFmtId=\"0\" fontId=\"0\" fillId=\"0\""
+                + " borderId=\"0\" xfId=\"0\" applyAlignment=\"1\"><alignment horizontal=\"center\""
+                + " vertical=\"center\" wrapText=\"1\"/></xf><xf numFmtId=\"10\" fontId=\"0\""
+                + " fillId=\"0\" borderId=\"0\" xfId=\"0\"/>"
+                + markStyles
+                + "</cellXfs><cellStyles count=\"1\"><cellStyle name=\"Normal\" xfId=\"0\""
+                + " builtinId=\"0\"/></cellStyles></styleSheet>";
+    }
+
     private static List<String> headers(TeacherAttendanceExportModel model) {
         List<String> result = new ArrayList<>(model.columns().size() + 10);
         result.add("Студент");
         for (TeacherAttendanceExportModel.Column column : model.columns()) {
             result.add(
-                    column.date()
-                            + "\n"
-                            + typeLabel(column.lessonType())
-                            + "\n№"
-                            + column.lessonNumber()
-                            + (column.startTime() == null ? "" : "\n" + column.startTime())
-                            + (stateLabel(column.state()).isBlank()
-                                    ? ""
-                                    : "\n" + stateLabel(column.state())));
+                    TeacherReportPresentation.journalLessonHeading(
+                            column, column.date().toString(), "\n"));
         }
         result.addAll(
                 List.of(
@@ -963,6 +958,12 @@ public final class TeacherAttendanceExportService {
     private record SheetValue(String text, String number, int style) {
         private static SheetValue text(String value) {
             return new SheetValue(value == null ? "" : value, null, 0);
+        }
+
+        private static SheetValue mark(String value, MarkFill fill) {
+            return fill == MarkFill.NEUTRAL
+                    ? text(value)
+                    : new SheetValue(value, null, XLSX_MARK_FILLS.indexOf(fill) + 3);
         }
 
         private static SheetValue number(int value) {

@@ -257,13 +257,24 @@ class AdminAttendanceReportIT extends AbstractAcademicIntegrationTest {
         var file = exports.generate(query, job, lease);
         assertThat(file.rowCount()).isEqualTo(4);
         String html = new String(file.content(), StandardCharsets.UTF_8);
-        assertThat(
-                        html.contains("Альфа")
-                                && html.contains("Бета")
-                                && html.contains("Гамма")
-                                && html.contains("Нет данных"))
-                .isTrue();
+        assertThat(html)
+                .contains("Альфа", "Бета", "Гамма", "<td>—</td>", "<td>0.0</td>")
+                .doesNotContain("Нет данных");
         assertThat(html.indexOf("Бета") < html.indexOf("Альфа")).isTrue();
+        Export empty =
+                new Export(
+                        semesterId,
+                        "Неизвестная группа",
+                        Sort.PRESENT_PERCENT,
+                        Direction.DESC,
+                        Format.html);
+        ((com.fasterxml.jackson.databind.node.ObjectNode) identity.get("report"))
+                .set("adminGroupAttendance", mapper.valueToTree(empty));
+        jdbc.update("UPDATE academic_export_jobs SET identity=?::jsonb", identity.toString());
+        var emptyFile = exports.generate(empty, job, lease);
+        assertThat(emptyFile.rowCount()).isZero();
+        assertThat(new String(emptyFile.content(), StandardCharsets.UTF_8))
+                .contains("Посещаемость групп", "<th>Группа</th>", ">Нет данных</td>");
         Export pdf = new Export(semesterId, "", Sort.PRESENT_PERCENT, Direction.DESC, Format.pdf);
         ((com.fasterxml.jackson.databind.node.ObjectNode) identity.get("report"))
                 .set("adminGroupAttendance", mapper.valueToTree(pdf));

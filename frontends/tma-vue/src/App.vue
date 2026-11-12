@@ -256,12 +256,13 @@ const teacherNotificationOwner = ref<{
 const session = shallowRef<StudentSession | null>(null);
 const scope = shallowRef<StudentFeatureScope | null>(null);
 const profile = shallowRef<ProfileSnapshot | null>(null);
+const fixtureDeviceGeo = fixtureMode
+  ? fixtureGeoSource('TMA', new URLSearchParams(window.location.search).get('fixtureGeo'))
+  : null;
 const deviceAccess = provideDeviceAccess({
   ...host.devicePlatform(),
-  ...(fixtureMode
-    ? {
-        geo: fixtureGeoSource('TMA', new URLSearchParams(window.location.search).get('fixtureGeo')),
-      }
+  ...(fixtureDeviceGeo
+    ? { geo: fixtureDeviceGeo, selectGeo: () => fixtureDeviceGeo, prepareGeo: () => undefined }
     : {}),
 });
 watch(

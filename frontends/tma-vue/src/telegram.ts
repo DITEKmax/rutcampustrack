@@ -26,6 +26,7 @@ interface TelegramButton {
 
 interface TelegramWebApp {
   version?: string
+  platform?: string
   isVersionAtLeast?: (version: string) => boolean
   showScanQrPopup?: (params: { text?: string }, callback: (value: string) => boolean) => void
   closeScanQrPopup?: () => void
@@ -266,7 +267,13 @@ export class TelegramHost implements MobileHostAdapter {
   }
 
   devicePlatform(): DevicePlatform {
-    return telegramDevicePlatform(this.app)
+    const platform = telegramDevicePlatform(this.app)
+    // Initialize the capability flags before the first check-in. This never prompts.
+    void platform.prepareGeo?.()
+    return {
+      ...platform,
+      openBrowserApp: () => this.openLink(new URL('/app/', window.location.origin).href),
+    }
   }
 }
 
@@ -281,45 +288,113 @@ function supports(app: TelegramWebApp | null, required: string): boolean {
 }
 
 export function telegramDevicePlatform(app: TelegramWebApp | null): DevicePlatform {
-  const manager = supports(app, '8.0') ? app?.LocationManager : undefined
-  const nativeQr = supports(app, '6.4') && app?.showScanQrPopup && app.closeScanQrPopup
+  const candidate = supports(app, '8.0') ? app?.LocationManager : undefined
+  const manager =
+    typeof candidate?.init === 'function' && typeof candidate.getLocation === 'function'
+      ? candidate
+      : undefined
+  const nativeQr =
+    app?.platform !== 'tdesktop' &&
+    supports(app, '6.4') &&
+    app?.showScanQrPopup &&
+    app.closeScanQrPopup
+  const browserGeo = browserGeoSource()
+  let nativeDenialObserved = false
+  let nativeNullObserved = false
+  let nativeRequest: object | null = null
+  const nativeDenied = () => {
+    if (manager?.isAccessGranted === true) {
+      nativeDenialObserved = false
+      nativeNullObserved = false
+    } else if (manager?.isAccessRequested === true) nativeDenialObserved = true
+    return nativeDenialObserved
+  }
+  // Unavailable clients can omit both access flags. Never switch sources after a known denial.
+  const browserFallback = () =>
+    !nativeDenied() &&
+    !nativeNullObserved &&
+    !nativeRequest &&
+    manager?.isInited === true &&
+    manager.isLocationAvailable === false &&
+    manager.isAccessGranted !== true
+  const prepareGeo = (signal?: AbortSignal, budgetMs = 3_000) => {
+    if (!manager || manager.isInited) return
+    return new Promise<void>((resolve) => {
+      const finish = () => {
+        clearTimeout(timer)
+        signal?.removeEventListener('abort', finish)
+        resolve()
+      }
+      const timer = setTimeout(finish, budgetMs)
+      signal?.addEventListener('abort', finish, { once: true })
+      if (signal?.aborted) return finish()
+      try {
+        manager.init(finish)
+      } catch {
+        finish()
+      }
+    })
+  }
   const geo: GeoSource = !manager
-    ? browserGeoSource()
+    ? browserGeo
     : {
         source: 'TMA',
-        watch(sample, failed, context) {
+        watch(sample, failed) {
+          if (!manager.isInited) {
+            failed('TIMEOUT')
+            return () => {}
+          }
           let cancelled = false
           let next: ReturnType<typeof setTimeout> | undefined
           const request = () => {
             if (cancelled) return
-            if (!context?.probe && manager.isLocationAvailable === false) {
-              failed('UNSUPPORTED')
+            if (manager.isLocationAvailable === false) {
+              failed(nativeDenied() ? 'PERMISSION_DENIED' : 'UNSUPPORTED')
               return
             }
-            manager.getLocation((location) => {
-              if (cancelled) return
-              if (!location) {
-                failed(
-                  manager.isAccessGranted === false ? 'PERMISSION_DENIED' : 'POSITION_UNAVAILABLE',
-                )
-                return
-              }
-              sample({
-                latitude: location.latitude,
-                longitude: location.longitude,
-                accuracy: location.horizontal_accuracy ?? null,
-                timestamp: null,
-                receivedAt: Date.now(),
+            // The SDK sends one response to all pending callbacks. Keep an unanswered
+            // request reserved after local cancellation until the bridge responds.
+            if (nativeRequest) {
+              failed('POSITION_UNAVAILABLE')
+              return
+            }
+            const requestToken = {}
+            nativeRequest = requestToken
+            try {
+              manager.getLocation((location) => {
+                if (nativeRequest !== requestToken) return
+                nativeRequest = null
+                if (location) {
+                  nativeDenialObserved = false
+                  nativeNullObserved = false
+                } else {
+                  nativeDenied()
+                  if (manager.isAccessGranted !== true) nativeNullObserved = true
+                }
+                if (cancelled) return
+                if (!location) {
+                  if (nativeDenied()) failed('PERMISSION_DENIED')
+                  else if (manager.isLocationAvailable === false) failed('UNSUPPORTED')
+                  else
+                    failed(manager.isAccessGranted ? 'POSITION_UNAVAILABLE' : 'PERMISSION_DENIED')
+                  return
+                }
+                sample({
+                  latitude: location.latitude,
+                  longitude: location.longitude,
+                  accuracy: location.horizontal_accuracy ?? null,
+                  timestamp: null,
+                  receivedAt: Date.now(),
+                })
+                // Never overlap native getLocation calls; the shared owner supplies the deadline.
+                if (!cancelled) next = setTimeout(request, 1_500)
               })
-              // Never overlap native getLocation calls; the shared owner supplies the deadline.
-              if (!cancelled) next = setTimeout(request, 1_500)
-            })
+            } catch {
+              if (nativeRequest === requestToken) nativeRequest = null
+              failed('POSITION_UNAVAILABLE')
+            }
           }
-          if (manager.isInited) request()
-          else
-            manager.init(() => {
-              if (!cancelled) request()
-            })
+          request()
           return () => {
             cancelled = true
             clearTimeout(next)
@@ -328,41 +403,41 @@ export function telegramDevicePlatform(app: TelegramWebApp | null): DevicePlatfo
       }
   return {
     geo,
-    async inspect(kind, signal) {
-      if (kind === 'camera') return nativeQr ? 'unknown' : inspectBrowserPermission(kind)
-      if (!manager) return inspectBrowserPermission(kind)
-      return new Promise<DevicePermission>((resolve) => {
-        let finished = false
-        const finishUnknown = () => {
-          if (finished) return
-          finished = true
-          clearTimeout(timer)
-          signal?.removeEventListener('abort', finishUnknown)
-          resolve('unknown')
-        }
-        const timer = setTimeout(finishUnknown, 3_000)
-        signal?.addEventListener('abort', finishUnknown, { once: true })
-        if (signal?.aborted) return finishUnknown()
-        const read = () => {
-          if (finished) return
-          finished = true
-          clearTimeout(timer)
-          signal?.removeEventListener('abort', finishUnknown)
-          resolve(
-            manager.isLocationAvailable === false
-              ? 'unsupported'
-              : manager.isAccessGranted
-                ? 'granted'
-                : manager.isAccessRequested
-                  ? 'unknown'
-                  : 'prompt',
-          )
-        }
-        if (manager.isInited) read()
-        else manager.init(read)
-      })
+    ...(manager ? { selectGeo: () => (browserFallback() ? browserGeo : geo), prepareGeo } : {}),
+    async inspect(kind, signal): Promise<DevicePermission> {
+      if (kind === 'camera' || !manager) return inspectBrowserPermission(kind, signal)
+      const preparation = prepareGeo(signal)
+      if (preparation) await preparation
+      if (signal?.aborted || !manager.isInited) return 'unknown'
+      if (browserFallback()) return inspectBrowserPermission(kind, signal)
+      if (nativeDenied()) return 'denied'
+      if (manager.isLocationAvailable === false) return 'unsupported'
+      if (manager.isAccessGranted) return 'granted'
+      return manager.isAccessRequested === false ? 'prompt' : 'unknown'
     },
-    ...(manager?.openSettings ? { openLocationSettings: () => manager.openSettings?.() } : {}),
+    ...(manager?.openSettings
+      ? {
+          openLocationSettings() {
+            if (
+              !manager.isInited ||
+              !manager.isLocationAvailable ||
+              manager.isAccessRequested !== true ||
+              manager.isAccessGranted === true
+            )
+              return false
+            manager.openSettings?.()
+            return true
+          },
+        }
+      : {}),
+    onDeviceReturn(listener) {
+      app?.onEvent?.('activated', listener)
+      app?.onEvent?.('locationManagerUpdated', listener)
+      return () => {
+        app?.offEvent?.('activated', listener)
+        app?.offEvent?.('locationManagerUpdated', listener)
+      }
+    },
     ...(nativeQr
       ? {
           scanQr(

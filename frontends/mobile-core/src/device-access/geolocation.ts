@@ -1,4 +1,5 @@
 import type { StudentToday } from '../api/types'
+import { browserDeviceContextAllows } from './browser-policy'
 
 /** Acquisition hints never override the server's final attendance decision. */
 export const GEO_BUDGET_MS = 28_000
@@ -20,11 +21,7 @@ export interface GeoSample {
 }
 export interface GeoSource {
   readonly source: 'BROWSER' | 'TMA'
-  watch(
-    sample: (sample: GeoSample) => void,
-    failed: (reason: GeoFailure) => void,
-    context?: { probe?: boolean },
-  ): () => void
+  watch(sample: (sample: GeoSample) => void, failed: (reason: GeoFailure) => void): () => void
 }
 export type GeoGeofence = NonNullable<StudentToday['checkinGeofence']>
 export interface GeoResult {
@@ -102,7 +99,6 @@ export function readGeolocationOnce(
     signal?: AbortSignal
     budgetMs?: number
     afterTimestamp?: number | null
-    probe?: boolean
   } = {},
 ): Promise<Reading> {
   return new Promise((resolve, reject) => {
@@ -149,7 +145,6 @@ export function readGeolocationOnce(
           finish({ sample, reason: null })
         },
         (reason) => finish({ sample: null, reason }),
-        { probe: options.probe === true },
       )
       if (done) stop()
     } catch {
@@ -166,6 +161,7 @@ export async function acquireGeolocation(
     budgetMs?: number
     geofence?: GeoGeofence | null
     terminal?: GeoTerminalHook
+    selectSource?: () => GeoSource | Promise<GeoSource>
   } = {},
 ): Promise<GeoResult> {
   const started = performance.now()
@@ -177,7 +173,7 @@ export async function acquireGeolocation(
   try {
     for (let attempt = 0; attempt < GEO_MAX_ATTEMPTS; attempt++) {
       if (options.signal?.aborted) throw new DOMException('Geolocation cancelled', 'AbortError')
-      const remaining = budget - elapsed()
+      let remaining = budget - elapsed()
       if (remaining <= 0) {
         reason = 'BUDGET_EXPIRED'
         break
@@ -186,6 +182,16 @@ export async function acquireGeolocation(
         options.progress?.(attempt === 0 ? 'determining' : 'refining')
       } catch {
         /* Presentation only. */
+      }
+      if (attempt === 0 && options.selectSource) {
+        const selected = options.selectSource()
+        source = selected instanceof Promise ? await selected : selected
+        if (options.signal?.aborted) throw new DOMException('Geolocation cancelled', 'AbortError')
+        remaining = budget - elapsed()
+        if (remaining <= 0) {
+          reason = 'BUDGET_EXPIRED'
+          break
+        }
       }
       const reading = await readGeolocationOnce(source, {
         ...(options.signal ? { signal: options.signal } : {}),
@@ -244,7 +250,7 @@ export function browserGeoSource(
   return {
     source: 'BROWSER',
     watch(sample, failed) {
-      if (!geo) {
+      if (!geo || !browserDeviceContextAllows('geolocation')) {
         failed('UNSUPPORTED')
         return () => {}
       }

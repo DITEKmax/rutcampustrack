@@ -13,20 +13,27 @@ import {
   type GeoSource,
 } from './geolocation'
 import { requestBrowserCamera } from './browser-camera'
+import { browserDeviceContextAllows } from './browser-policy'
 
-export type DevicePermission =
-  | 'prompt'
+export type DevicePermission = 'prompt' | 'granted' | 'denied' | 'unsupported' | 'unknown'
+export type DeviceCheck =
+  | 'checking'
   | 'granted'
   | 'denied'
   | 'unsupported'
-  | 'unknown'
-  | 'checking'
+  | 'cancelled'
+  | 'unconfirmed'
+  | 'timeout'
   | 'error'
 export type DeviceKind = 'location' | 'camera'
 export interface DevicePlatform {
   geo: GeoSource
+  selectGeo?(): GeoSource
+  prepareGeo?(signal?: AbortSignal, budgetMs?: number): Promise<void> | undefined
   inspect?(kind: DeviceKind, signal?: AbortSignal): Promise<DevicePermission>
-  openLocationSettings?(): void
+  openLocationSettings?(): boolean
+  openBrowserApp?(): void
+  onDeviceReturn?(listener: () => void): () => void
   scanQr?(
     scanned: (value: string) => void,
     closed: () => void,
@@ -40,6 +47,7 @@ export interface AcquisitionOptions {
   geofence?: GeoGeofence | null
 }
 const key: InjectionKey<DeviceAccess> = Symbol('device-access')
+const GEO_INIT_BUDGET_MS = 8_000
 export type DeviceAccess = ReturnType<typeof createDeviceAccess>
 export function useDeviceAccess(): DeviceAccess | null {
   return inject(key, null)
@@ -70,8 +78,18 @@ export function createDeviceAccess(
   storage: Pick<Storage, 'getItem' | 'setItem'> | null = safeStorage(),
 ) {
   const state = reactive({
-    location: { enabled: true, permission: 'unknown' as DevicePermission },
-    camera: { enabled: true, permission: 'unknown' as DevicePermission },
+    location: {
+      enabled: false,
+      permission: 'unknown' as DevicePermission,
+      check: null as DeviceCheck | null,
+      source: platform.geo.source,
+    },
+    camera: {
+      enabled: false,
+      permission: 'unknown' as DevicePermission,
+      check: null as DeviceCheck | null,
+    },
+    checking: null as DeviceKind | null,
     stage: null as 'determining' | 'refining' | null,
   })
   let account: string | null = null
@@ -86,8 +104,8 @@ export function createDeviceAccess(
     active?.abort()
     active = null
     state.stage = null
-    for (const kind of ['camera', 'location'] as const)
-      if (state[kind].permission === 'checking') state[kind].permission = 'unknown'
+    if (state.checking) state[state.checking].check = 'cancelled'
+    state.checking = null
     for (const cleanup of [...cleanups]) cleanup()
   }
   function storageKey(kind: DeviceKind): string {
@@ -99,8 +117,10 @@ export function createDeviceAccess(
     generation++
     account = nextAccount
     authority = nextAuthority
+    state.location.source = currentGeo().source
     for (const kind of ['location', 'camera'] as const) {
       state[kind].permission = 'unknown'
+      state[kind].check = null
       try {
         state[kind].enabled = !!account && storage?.getItem(storageKey(kind)) !== 'off'
       } catch {
@@ -119,18 +139,26 @@ export function createDeviceAccess(
       }
   }
   async function inspect(kind: DeviceKind): Promise<void> {
-    if (active) return
+    if (!authority || active) return
     const version = generation
     inspections.get(kind)?.abort()
     const inspection = new AbortController()
     inspections.set(kind, inspection)
-    state[kind].permission = 'checking'
-    const permission = await (
-      platform.inspect?.(kind, inspection.signal) ??
-      inspectBrowserPermission(kind, inspection.signal)
-    ).catch(() => 'error' as const)
-    if (version === generation && !inspection.signal.aborted) state[kind].permission = permission
-    if (inspections.get(kind) === inspection) inspections.delete(kind)
+    try {
+      const permission = await (platform.inspect?.(kind, inspection.signal) ??
+        inspectBrowserPermission(kind, inspection.signal))
+      if (version === generation && !inspection.signal.aborted) {
+        state[kind].permission = permission
+        if (kind === 'location') state.location.source = currentGeo().source
+      }
+    } catch {
+      if (version === generation && !inspection.signal.aborted) state[kind].permission = 'unknown'
+    } finally {
+      if (inspections.get(kind) === inspection) inspections.delete(kind)
+    }
+  }
+  function currentGeo(): GeoSource {
+    return platform.selectGeo?.() ?? platform.geo
   }
   async function acquire(options: AcquisitionOptions = {}): Promise<StudentCheckinCommand> {
     if (active) throw new CheckinBeforeSendCancelled()
@@ -141,16 +169,31 @@ export function createDeviceAccess(
     if (options.signal?.aborted) controller.abort()
     try {
       if (controller.signal.aborted || !authority) throw new CheckinBeforeSendCancelled()
+      const geo = currentGeo()
+      state.location.source = geo.source
       const result = !state.location.enabled
         ? {
-            source: platform.geo.source,
+            source: geo.source,
             sample: null,
             sampleCount: 0,
             duration: 0,
             reason: 'APP_DISABLED' as const,
           }
-        : await acquireGeolocation(platform.geo, {
+        : await acquireGeolocation(geo, {
             signal: controller.signal,
+            ...(platform.prepareGeo
+              ? {
+                  selectSource() {
+                    const preparation = platform.prepareGeo?.(controller.signal, GEO_INIT_BUDGET_MS)
+                    if (!preparation) return geo
+                    return preparation.then(() => {
+                      const selected = currentGeo()
+                      if (!controller.signal.aborted) state.location.source = selected.source
+                      return selected
+                    })
+                  },
+                }
+              : {}),
             ...(options.geofence ? { geofence: options.geofence } : {}),
             ...(options.terminal ? { terminal: options.terminal } : {}),
             progress(stage) {
@@ -188,71 +231,57 @@ export function createDeviceAccess(
     inspections.delete(kind)
     const controller = new AbortController()
     active = controller
-    state[kind].permission = 'checking'
+    state.checking = kind
+    state[kind].check = 'checking'
+    let result: DeviceCheck = 'error'
     try {
       if (kind === 'location') {
-        const result = await readGeolocationOnce(platform.geo, {
+        const startedAt = performance.now()
+        const preparation = platform.prepareGeo?.(controller.signal, GEO_INIT_BUDGET_MS)
+        if (preparation) await preparation
+        if (controller.signal.aborted) return
+        const geo = currentGeo()
+        state.location.source = geo.source
+        const reading = await readGeolocationOnce(geo, {
           signal: controller.signal,
-          probe: true,
+          budgetMs: 15_000 - (performance.now() - startedAt),
         })
-        if (version !== generation || controller.signal.aborted) return
-        state.location.permission = result.sample
-          ? 'granted'
-          : result.reason === 'PERMISSION_DENIED'
-            ? 'denied'
-            : result.reason === 'UNSUPPORTED'
-              ? 'unsupported'
-              : 'error'
-      } else if (platform.scanQr) {
-        // Telegram exposes no universal camera grant or permission request API.
-        state.camera.permission = 'unknown'
-      } else {
-        if (!navigator.mediaDevices?.getUserMedia) {
-          state.camera.permission = 'unsupported'
-          return
+        if (reading.sample) result = 'granted'
+        else if (reading.reason === 'UNSUPPORTED') result = 'unsupported'
+        else if (reading.reason === 'TIMEOUT' || reading.reason === 'BUDGET_EXPIRED')
+          result = 'timeout'
+        else if (reading.reason === 'PERMISSION_DENIED') {
+          const permission =
+            geo.source === 'BROWSER'
+              ? await inspectBrowserPermission(kind, controller.signal)
+              : await platform.inspect?.(kind, controller.signal)
+          result = permission === 'denied' ? 'denied' : 'unconfirmed'
         }
-        const streamPromise = requestBrowserCamera()
-        const stream = await new Promise<MediaStream>((resolve, reject) => {
-          const finish = () => {
-            clearTimeout(timer)
-            controller.signal.removeEventListener('abort', aborted)
-          }
-          const aborted = () => {
-            finish()
-            reject(new DOMException('Cancelled', 'AbortError'))
-          }
-          const timer = setTimeout(() => {
-            finish()
-            controller.abort()
-            reject(new DOMException('Camera timeout', 'TimeoutError'))
-          }, 15_000)
-          controller.signal.addEventListener('abort', aborted, { once: true })
-          void streamPromise.then(
-            (value) => {
-              finish()
-              if (controller.signal.aborted || version !== generation)
-                value.getTracks().forEach((track) => track.stop())
-              resolve(value)
-            },
-            (error: unknown) => {
-              finish()
-              reject(error)
-            },
-          )
-        })
-        stream.getTracks().forEach((track) => track.stop())
-        if (version === generation && !controller.signal.aborted)
-          state.camera.permission = 'granted'
+      } else {
+        result = await probeBrowserCamera(controller.signal)
       }
     } catch (error) {
-      if (
-        version === generation &&
-        (!controller.signal.aborted || (error instanceof Error && error.name === 'TimeoutError'))
-      )
-        state[kind].permission =
-          error instanceof Error && error.name === 'NotAllowedError' ? 'denied' : 'error'
+      const name = error instanceof Error ? error.name : ''
+      if (name === 'TimeoutError') result = 'timeout'
+      else if (name === 'AbortError') result = 'cancelled'
+      else if (name === 'SecurityError' || name === 'NotSupportedError' || name === 'NotFoundError')
+        result = 'unsupported'
+      else if (name === 'NotAllowedError')
+        result =
+          (await inspectBrowserPermission(kind, controller.signal)) === 'denied'
+            ? 'denied'
+            : 'unconfirmed'
     } finally {
-      if (active === controller) active = null
+      if (active === controller) {
+        active = null
+        state.checking = null
+        if (version === generation && !controller.signal.aborted) {
+          state[kind].check = result
+          if (result === 'granted' || result === 'denied' || result === 'unsupported')
+            state[kind].permission = result
+          else if (result === 'unconfirmed') state[kind].permission = 'unknown'
+        }
+      }
     }
   }
   function registerStop(stop: () => void): () => void {
@@ -269,12 +298,47 @@ export function createDeviceAccess(
     cancel,
     registerStop,
     openLocationSettings: platform.openLocationSettings,
+    openBrowserApp: platform.openBrowserApp,
+    onDeviceReturn: platform.onDeviceReturn,
     scanQr: platform.scanQr,
     dispose() {
       cancel()
       cleanups.clear()
     },
   }
+}
+
+function probeBrowserCamera(signal: AbortSignal): Promise<DeviceCheck> {
+  const stream = requestBrowserCamera()
+  return new Promise((resolve, reject) => {
+    const finish = () => {
+      clearTimeout(timer)
+      signal.removeEventListener('abort', abort)
+    }
+    const abort = () => {
+      finish()
+      resolve('cancelled')
+    }
+    const timer = setTimeout(() => {
+      finish()
+      resolve('timeout')
+    }, 15_000)
+    signal.addEventListener('abort', abort, { once: true })
+    // Browsers may deliver a stream after cancellation or timeout. Stop every track.
+    void stream.then(
+      (value) => {
+        finish()
+        const tracks = value.getTracks()
+        const live = tracks.some((track) => track.kind === 'video' && track.readyState === 'live')
+        for (const track of tracks) track.stop()
+        resolve(live ? 'granted' : 'error')
+      },
+      (error: unknown) => {
+        finish()
+        reject(error)
+      },
+    )
+  })
 }
 
 /** First-send guard only. An already-sent ambiguous command must replay unchanged. */
@@ -299,9 +363,10 @@ export async function inspectBrowserPermission(
   signal?: AbortSignal,
 ): Promise<DevicePermission> {
   if (
-    kind === 'location'
+    !browserDeviceContextAllows(kind === 'location' ? 'geolocation' : 'camera') ||
+    (kind === 'location'
       ? !globalThis.navigator?.geolocation
-      : !globalThis.navigator?.mediaDevices?.getUserMedia
+      : !globalThis.navigator?.mediaDevices?.getUserMedia)
   )
     return 'unsupported'
   if (!navigator.permissions?.query) return 'unknown'

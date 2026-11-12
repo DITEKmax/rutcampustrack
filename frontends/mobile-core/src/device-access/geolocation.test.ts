@@ -321,7 +321,7 @@ describe('permission retries and passive inspection', () => {
       receivedAt: Date.now(),
     })
     await settle()
-    expect(owner.state.location.permission).toBe('checking')
+    expect(owner.state.location.check).toBe('checking')
     f.emit(0, null)
     await second
     expect(owner.state.location.permission).toBe('granted')
@@ -375,9 +375,48 @@ describe('permission retries and passive inspection', () => {
     const probe = owner.probe('camera')
     await vi.advanceTimersByTimeAsync(15_000)
     await probe
+    expect(owner.state.camera.check).toBe('timeout')
     const stop = vi.fn()
     resolve({ getTracks: () => [{ stop }] } as unknown as MediaStream)
     await settle()
+    expect(stop).toHaveBeenCalledOnce()
+  })
+  it.each([
+    ['denied', 'denied'],
+    ['prompt', 'unconfirmed'],
+    ['unsupported', 'unconfirmed'],
+  ])(
+    'reports a browser camera rejection with permission metadata %s as %s',
+    async (state, check) => {
+      const getUserMedia = vi
+        .fn()
+        .mockRejectedValue(new DOMException('Access refused', 'NotAllowedError'))
+      const query =
+        state === 'unsupported'
+          ? vi.fn().mockRejectedValue(new TypeError())
+          : vi.fn().mockResolvedValue({ state })
+      vi.stubGlobal('navigator', { mediaDevices: { getUserMedia }, permissions: { query } })
+      const owner = createDeviceAccess({ geo: fixture().source }, null)
+      owner.bindOwner('a', 's')
+      const pending = owner.probe('camera')
+      expect(getUserMedia).toHaveBeenCalledExactlyOnceWith({ video: true, audio: false })
+      await pending
+      expect(owner.state.camera.check).toBe(check)
+    },
+  )
+  it('verifies a live browser video track and stops it without storing a stream', async () => {
+    const stop = vi.fn()
+    vi.stubGlobal('navigator', {
+      mediaDevices: {
+        getUserMedia: vi.fn().mockResolvedValue({
+          getTracks: () => [{ kind: 'video', readyState: 'live', stop }],
+        }),
+      },
+    })
+    const owner = createDeviceAccess({ geo: fixture().source }, null)
+    owner.bindOwner('a', 's')
+    await owner.probe('camera')
+    expect(owner.state.camera).toMatchObject({ check: 'granted', permission: 'granted' })
     expect(stop).toHaveBeenCalledOnce()
   })
 })

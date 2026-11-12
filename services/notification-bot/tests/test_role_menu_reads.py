@@ -157,7 +157,7 @@ async def test_headman_reads_all_rows_directly_and_distinguishes_unmarked_from_a
     await cmd_headman_current(msg, adapter)
     rendered = text(msg)
     assert "140. Студент 140" in rendered and "1. Студент 1" in rendered
-    assert "Отсутствуют: 1 · Не отмечены: 1" in rendered
+    assert "Отсутствуют: 1, Не отмечены: 1" in rendered
     assert "00:30:00 МСК" in rendered and "18.10.2026" in rendered
     assert len(msg.answer.await_args_list) > 1
     assert all(len(call.args[0]) <= 3900 for call in msg.answer.await_args_list)
@@ -178,9 +178,13 @@ async def test_no_current_lesson_is_explicit_and_unknown_state_fails_closed():
 
 async def test_teacher_today_uses_server_moscow_day_without_web_login_or_extra_buttons():
     msg = message()
-    adapter = client(scope("TEACHER"), teacher=TeacherToday("2026-10-17T21:30:00Z", "2026-10-18", (lesson(),)))
+    adapter = client(
+        scope("TEACHER"),
+        teacher=TeacherToday("2026-10-17T21:30:00Z", "2026-10-18", (lesson(lesson_type="PRACTICE"),)),
+    )
     await cmd_teacher_today(msg, adapter)
     assert "18.10.2026" in text(msg) and "Математика" in text(msg) and "00:30:00 МСК" in text(msg)
+    assert "Практика" in text(msg) and "PRACTICE" not in text(msg)
     assert all(not call.kwargs.get("reply_markup") for call in msg.answer.await_args_list)
     assert adapter.teacher_today.await_args.args == (123, scope("TEACHER"))
 
@@ -309,8 +313,54 @@ async def test_pinned_rich_table_support_escapes_data_and_provider_failure_falls
     if supported:
         msg.answer.assert_not_awaited()
     else:
-        assert "Студент <script> | Не отмечен" in text(msg)
+        assert "Студент <script> — Не отмечен" in text(msg)
         assert msg.answer.await_args.kwargs["parse_mode"] is None
+
+
+async def test_empty_headman_roster_reports_no_students_without_a_table():
+    msg = message()
+    bot = SimpleNamespace(send_rich_message=AsyncMock())
+    await cmd_headman_current(msg, client(scope("HEADMAN"), headman=ready()), bot=bot)
+    bot.send_rich_message.assert_not_awaited()
+    assert "В составе группы нет студентов." in text(msg)
+    assert "Аудитория: 101" in text(msg) and "Состояние: Идёт" in text(msg)
+
+
+async def test_roster_provider_failure_does_not_fall_back_after_authority_changes():
+    rows = (BotAttendanceRow(1, "Личные сведения", "PRESENT", True),)
+    adapter = client(scope("HEADMAN"), headman=ready(rows))
+
+    async def reject_rich(**_kwargs):
+        adapter.menu_scope.return_value = scope("ADMIN", version=5)
+        raise RuntimeError("Rich provider unavailable")
+
+    msg = message()
+    bot = SimpleNamespace(send_rich_message=AsyncMock(side_effect=reject_rich))
+    await cmd_headman_current(msg, adapter, bot=bot)
+    bot.send_rich_message.assert_awaited_once()
+    assert "временно недоступен" in text(msg) and "Личные сведения" not in text(msg)
+
+
+@pytest.mark.parametrize("teacher", [False, True])
+async def test_role_text_stops_sending_later_chunks_after_authority_changes(teacher):
+    rows = tuple(BotAttendanceRow(n, f"Строка {n} " + "Имя " * 20, "PRESENT", True) for n in range(1, 141))
+    if teacher:
+        lessons = tuple(lesson(n, subject_name=row.display_name) for n, row in enumerate(rows, 1))
+        result = TeacherToday("2026-10-17T21:30:00Z", "2026-10-18", lessons)
+        adapter = client(scope("TEACHER"), teacher=result)
+        handler = cmd_teacher_today
+    else:
+        adapter = client(scope("HEADMAN"), headman=ready(rows))
+        handler = cmd_headman_current
+
+    async def revoke_after_first_chunk(*_args, **_kwargs):
+        adapter.menu_scope.return_value = scope("ADMIN", version=5)
+
+    msg = message()
+    msg.answer.side_effect = revoke_after_first_chunk
+    await handler(msg, adapter)
+    assert "Строка 1" in text(msg) and "Строка 140" not in text(msg)
+    assert msg.answer.await_count == 2 and "временно недоступен" in msg.answer.await_args.args[0]
 
 
 async def test_native_aiogram_dispatcher_delivers_role_button_with_pinned_rich_method():

@@ -19,19 +19,37 @@ from bot.services.bot_menu import (
     educational_now,
     resolve_menu_scope,
 )
+from bot.services.homework_pager import split_message
 
 role_reads_router = Router()
 _CHOICE_PREFIX = "group-read:"
-_UNAVAILABLE = "Сервис временно недоступен. Попробуй ещё раз позже."
-_STALE = "Этот выбор устарел. Открой «Учёт группы» ещё раз."
+_UNAVAILABLE = "Сервис временно недоступен. Попробуйте ещё раз позже."
+_STALE = "Этот выбор устарел. Откройте «Учёт группы» ещё раз."
 _STATUS_LABELS = {
     "PRESENT": "Присутствует",
     "EXCUSED": "Уважительная причина",
     "FREE_ATTENDANCE": "Свободное посещение",
     "ABSENT": "Отсутствует",
     "CANCELLED": "Отменено",
+    "UNMARKED": "Не отмечен",
+    "UNKNOWN": "Статус неизвестен",
+}
+_SUMMARY_LABELS = {
+    "PRESENT": "Присутствуют",
+    "EXCUSED": "Уважительная причина",
+    "FREE_ATTENDANCE": "Свободное посещение",
+    "ABSENT": "Отсутствуют",
+    "UNMARKED": "Не отмечены",
+    "CANCELLED": "Отменено",
+    "UNKNOWN": "Статус неизвестен",
 }
 _LESSON_STATES = {"PLANNED": "Запланирована", "ACTIVE": "Идёт", "CLOSED": "Завершена", "CANCELLED": "Отменена"}
+_LESSON_TYPES = {
+    "LECTURE": "Лекция",
+    "PRACTICE": "Практика",
+    "LAB": "Лабораторная",
+    "LABORATORY": "Лабораторная",
+}
 
 
 @dataclass(frozen=True)
@@ -85,33 +103,25 @@ def _compact(value: str) -> str:
     return " ".join(str(value or "").split())
 
 
-def _lesson_text(lesson: BotLesson) -> str:
+def _lesson_lines(lesson: BotLesson) -> list[str]:
     flags = [label for enabled, label in ((lesson.moved, "перенесена"), (lesson.one_off, "разовая")) if enabled]
     status = "Отменена" if lesson.cancelled else _LESSON_STATES.get(lesson.status.upper(), "Статус неизвестен")
-    return (
-        f"Пара №{lesson.lesson_number} · {_compact(lesson.start_time)}–{_compact(lesson.end_time)}\n"
-        f"{_compact(lesson.subject_name)} · {_compact(lesson.lesson_type)}\n"
-        f"Группа: {_compact(lesson.group_name)} · Аудитория: {_compact(lesson.room) or 'не указана'}\n"
-        f"{status}" + (" · " + ", ".join(flags) if flags else "")
-    )
+    lesson_type = _compact(lesson.lesson_type)
+    lesson_type = _LESSON_TYPES.get(lesson_type.upper(), lesson_type or "Вид пары не указан")
+    return [
+        _compact(lesson.subject_name),
+        f"Вид пары: {lesson_type}",
+        f"Пара №{lesson.lesson_number}, {_compact(lesson.start_time)}–{_compact(lesson.end_time)} МСК",
+        f"Группа: {_compact(lesson.group_name)}",
+        f"Аудитория: {_compact(lesson.room) or 'не указана'}",
+        f"Состояние: {status}" + (f" ({', '.join(flags)})" if flags else ""),
+    ]
 
 
-def _chunks(text: str, limit: int = 3900) -> list[str]:
-    """Keep every roster row, including rows beyond Telegram's message limit."""
-    result = []
-    while len(text) > limit:
-        split = text.rfind("\n", 0, limit + 1)
-        if split <= 0:
-            split = limit
-        result.append(text[:split])
-        text = text[split:].lstrip("\n")
-    if text:
-        result.append(text)
-    return result
-
-
-async def _answer_text(message, text: str):
-    for chunk in _chunks(text):
+async def _answer_text(message, text: str, client, sender: int, scope: MenuScope):
+    for index, chunk in enumerate(split_message(text)):
+        if index:
+            await _unchanged(client, sender, scope)
         await message.answer(chunk, parse_mode=None)
 
 
@@ -124,7 +134,7 @@ async def _unchanged(client, sender: int, scope: MenuScope):
 async def cmd_teacher_today(message: Message, bot_menu_client=None):
     sender = private_sender(message)
     if sender is None:
-        await message.answer("Открой личный чат с ботом, чтобы посмотреть свои пары.")
+        await message.answer("Откройте личный чат с ботом, чтобы посмотреть свои пары.")
         return
     scope = await resolve_menu_scope(bot_menu_client, sender)
     if scope is None or not scope.teacher_enabled:
@@ -139,11 +149,11 @@ async def cmd_teacher_today(message: Message, bot_menu_client=None):
         ):
             raise BotReadUnavailable("Invalid teacher day snapshot")
         await _unchanged(bot_menu_client, sender, scope)
-        lines = ["Мои пары сегодня", f"{now:%d.%m.%Y} · по Москве", f"Данные на {now:%H:%M:%S} МСК", ""]
-        lines.extend(_lesson_text(lesson) + "\n" for lesson in result.lessons)
-        if not result.lessons:
-            lines.append("Сегодня у тебя нет пар.")
-        await _answer_text(message, "\n".join(lines))
+        header = f"📅 Мои пары сегодня\nДата: {now:%d.%m.%Y}\nДанные на {now:%H:%M:%S} МСК"
+        lessons = ["\n".join(_lesson_lines(lesson)) for lesson in result.lessons]
+        await _answer_text(
+            message, "\n\n".join([header, *(lessons or ["Сегодня у вас нет пар."])]), bot_menu_client, sender, scope
+        )
     except Exception:
         await message.answer(_UNAVAILABLE)
 
@@ -152,7 +162,7 @@ async def cmd_teacher_today(message: Message, bot_menu_client=None):
 async def cmd_headman_current(message: Message, bot_menu_client=None, bot_lesson_choices=None, bot=None):
     sender = private_sender(message)
     if sender is None:
-        await message.answer("Открой личный чат с ботом, чтобы посмотреть учёт своей группы.")
+        await message.answer("Откройте личный чат с ботом, чтобы посмотреть учёт своей группы.")
         return
     scope = await resolve_menu_scope(bot_menu_client, sender)
     if scope is None or not scope.headman_enabled:
@@ -168,8 +178,9 @@ async def _show_headman(message, client, choices, sender: int, scope: MenuScope,
     result = await client.headman_current(sender, scope, selected_lesson_id)
     now = educational_now(result.server_now, result.educational_date)
     await _unchanged(client, sender, scope)
+    heading = ["📋 Учёт группы", f"Дата: {now:%d.%m.%Y}", f"Данные на {now:%H:%M:%S} МСК"]
     if result.state == "NO_CURRENT":
-        await message.answer(f"Учёт группы\nСейчас нет текущей пары.\nДанные на {now:%d.%m.%Y %H:%M:%S} МСК")
+        await message.answer("\n".join([*heading, "", "Сейчас нет текущей пары."]))
         return
     if result.state == "CHOOSE":
         if choices is None or selected_lesson_id or len(result.choices) < 2:
@@ -182,16 +193,16 @@ async def _show_headman(message, client, choices, sender: int, scope: MenuScope,
         buttons = [
             [
                 InlineKeyboardButton(
-                    text=f"{_compact(lesson.group_name)} · №{lesson.lesson_number} · {_compact(lesson.subject_name)}"[
-                        :100
-                    ],
+                    text=(
+                        f"{_compact(lesson.group_name)}, пара №{lesson.lesson_number}, {_compact(lesson.subject_name)}"
+                    )[:100],
                     callback_data=f"{_CHOICE_PREFIX}{token}:{lesson.lesson_id}",
                 )
             ]
             for lesson in result.choices
         ]
         sent = await message.answer(
-            "Сейчас доступны несколько пар твоих групп. Выбери пару:",
+            "Сейчас доступны несколько пар ваших групп. Выберите пару.",
             reply_markup=InlineKeyboardMarkup(inline_keyboard=buttons),
         )
         choices.register(token, sender, scope, result.choices, sent.message_id)
@@ -207,34 +218,32 @@ async def _show_headman(message, client, choices, sender: int, scope: MenuScope,
         for row in result.rows
     ):
         raise BotReadUnavailable("Invalid attendance roster")
-    counts = Counter(row.status.upper() if row.record_present else "UNMARKED" for row in result.rows)
-    lines = [
-        "Учёт группы",
-        _lesson_text(lesson),
-        f"Данные на {now:%d.%m.%Y %H:%M:%S} МСК",
-        "",
-        "Студент | Посещаемость",
-    ]
-    for number, row in enumerate(result.rows, 1):
-        label = _STATUS_LABELS.get(row.status.upper(), "Статус неизвестен") if row.record_present else "Не отмечен"
-        lines.append(f"{number}. {_compact(row.display_name)} | {label}")
+    heading.extend(["", *_lesson_lines(lesson)])
     if not result.rows:
-        lines.append("В составе группы нет студентов.")
-    summary = [
-        "",
-        f"Всего: {len(result.rows)} · Присутствуют: {counts['PRESENT']} · Уважительная: {counts['EXCUSED']}",
-        f"Свободное посещение: {counts['FREE_ATTENDANCE']} · Отсутствуют: {counts['ABSENT']} · "
-        f"Не отмечены: {counts['UNMARKED']}",
-        "Не отмечен — запись посещаемости пока отсутствует.",
-    ]
-    unknown = sum(count for status, count in counts.items() if status not in {*_STATUS_LABELS, "UNMARKED"})
-    if counts["CANCELLED"]:
-        summary.append(f"Отменены: {counts['CANCELLED']}")
-    if unknown:
-        summary.append(f"Статус неизвестен: {unknown}")
-    lines.extend(summary)
-    if not await _try_rich_roster(bot, sender, result.rows, lines[:4], summary):
-        await _answer_text(message, "\n".join(lines))
+        await _answer_text(message, "\n".join([*heading, "", "В составе группы нет студентов."]), client, sender, scope)
+        return
+
+    counts = Counter()
+    roster = []
+    for row in result.rows:
+        status = row.status.upper()
+        if not row.record_present:
+            status = "UNMARKED"
+        elif status not in _STATUS_LABELS or status == "UNMARKED":
+            status = "UNKNOWN"
+        counts[status] += 1
+        roster.append((_compact(row.display_name), _STATUS_LABELS[status]))
+    summary = [f"Всего студентов: {len(roster)}"]
+    for statuses in (("PRESENT", "EXCUSED"), ("ABSENT", "UNMARKED"), ("FREE_ATTENDANCE", "CANCELLED", "UNKNOWN")):
+        totals = [f"{_SUMMARY_LABELS[status]}: {counts[status]}" for status in statuses if counts[status]]
+        if totals:
+            summary.append(", ".join(totals))
+    if not await _try_rich_roster(bot, sender, roster, heading, summary):
+        await _unchanged(client, sender, scope)
+        rows = [f"{number}. {name} — {status}" for number, (name, status) in enumerate(roster, 1)]
+        await _answer_text(
+            message, "\n".join([*heading, "", "Посещаемость", *rows, "", *summary]), client, sender, scope
+        )
 
 
 async def _try_rich_roster(bot, sender, rows, heading, footer):
@@ -243,13 +252,12 @@ async def _try_rich_roster(bot, sender, rows, heading, footer):
         return False
     rich = "".join(f"<p>{html.escape(line)}</p>" for line in heading if line)
     rich += "<table><tr><th>Студент</th><th>Посещаемость</th></tr>"
-    for row in rows:
-        status = _STATUS_LABELS.get(row.status.upper(), "Статус неизвестен") if row.record_present else "Не отмечен"
-        rich += f"<tr><td>{html.escape(_compact(row.display_name))}</td><td>{html.escape(status)}</td></tr>"
+    for name, status in rows:
+        rich += f"<tr><td>{html.escape(name)}</td><td>{html.escape(status)}</td></tr>"
     rich += "</table>"
     rich += "".join(f"<p>{html.escape(line)}</p>" for line in footer if line)
     # The plain renderer handles large rosters without relying on provider-specific rich limits.
-    if len(rich) > 3900:
+    if len(rich.encode("utf-16-le")) // 2 > 3900:
         return False
     try:
         await bot.send_rich_message(
@@ -283,7 +291,7 @@ async def cb_headman_lesson(callback: CallbackQuery, bot_menu_client=None, bot_l
         or getattr(chat, "type", None) != "private"
         or getattr(chat, "id", None) != sender
     ):
-        await callback.answer("Открой личный чат с ботом.", show_alert=True)
+        await callback.answer("Откройте личный чат с ботом.", show_alert=True)
         return
     try:
         prefix, token, raw_id = callback.data.split(":")

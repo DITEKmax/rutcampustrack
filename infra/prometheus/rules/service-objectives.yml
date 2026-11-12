@@ -30,10 +30,12 @@ groups:
       severity: critical
       owner: platform
     annotations:
-      summary: HTTP99.9% error-budget burn in {{ $labels.job }} {{ $labels.method }} {{ $labels.uri }}
-      description: Eligible=observed2xx/3xx/5xx businessHTTP; expected4xx/cancellations and actuator/docs excluded. Good=2xx/3xx; error=5xx. Both sustained
-        windows exceed budget. This observed-request SLI does not measure off-host reachability; inspect request/trace IDs and downstream failures. Minimum20
-        eligible samples in5m prevents one low-volume request from becoming a ratio page; absolute terminal failures have separate alerts.
+      summary: Быстро расходуется бюджет ошибок HTTP для цели 99,9% — {{ $labels.job }} {{ $labels.method }} {{ $labels.uri }}
+      description: В расчёт входят наблюдаемые HTTP-запросы к бизнес-операциям с ответами 2xx, 3xx и 5xx. Ожидаемые 4xx,
+        отмены, actuator и docs исключены. Успех — 2xx/3xx, ошибка — 5xx. Темп расхода бюджета превысил порог в обоих
+        окнах. SLI по наблюдаемым запросам не измеряет доступность извне. Проверьте идентификаторы запросов и
+        трассировок и сбои зависимостей. Нужно не меньше 20 запросов за 5 мин., чтобы единичная ошибка при низком
+        трафике не вызвала алерт по доле ошибок. Для отдельных окончательных сбоев предусмотрены свои алерты.
       runbook_url: https://github.com/DITEKmax/rutcampustrack/blob/main/docs/operations/monitoring/observability.md
   - alert: HttpAvailabilityBudgetBurnSlow
     expr: rct_sli:http_error_ratio30m > (6 * 0.001) and rct_sli:http_error_ratio6h > (6 * 0.001) and (sum by (job, instance, environment, method, uri, routeId)
@@ -43,10 +45,12 @@ groups:
       severity: warning
       owner: platform
     annotations:
-      summary: HTTP99.9% error-budget burn in {{ $labels.job }} {{ $labels.method }} {{ $labels.uri }}
-      description: Eligible=observed2xx/3xx/5xx businessHTTP; expected4xx/cancellations and actuator/docs excluded. Good=2xx/3xx; error=5xx. Both sustained
-        windows exceed budget. This observed-request SLI does not measure off-host reachability; inspect request/trace IDs and downstream failures. Minimum100
-        eligible samples in30m; low traffic is not a statistical availability verdict.
+      summary: Длительно расходуется бюджет ошибок HTTP для цели 99,9% — {{ $labels.job }} {{ $labels.method }} {{ $labels.uri }}
+      description: В расчёт входят наблюдаемые HTTP-запросы к бизнес-операциям с ответами 2xx, 3xx и 5xx. Ожидаемые 4xx,
+        отмены, actuator и docs исключены. Успех — 2xx/3xx, ошибка — 5xx. Темп расхода бюджета превысил порог в обоих
+        окнах. SLI по наблюдаемым запросам не измеряет доступность извне. Проверьте идентификаторы запросов и
+        трассировок и сбои зависимостей. Нужно не меньше 100 запросов за 30 мин. При низком трафике данных для оценки
+        доступности недостаточно.
       runbook_url: https://github.com/DITEKmax/rutcampustrack/blob/main/docs/operations/monitoring/observability.md
   - record: rct_sli:report_p95_seconds5m
     expr: histogram_quantile(0.95,sum by (job,instance,environment,report,format,le) (rate(attendance_report_duration_seconds_bucket{outcome!="rejected"}[5m])))
@@ -57,9 +61,10 @@ groups:
       severity: warning
       owner: platform
     annotations:
-      summary: DOCX eligible report p95 >30s
-      description: Completed report API attempts excluding expected rejected inputs. A transient retry is not a new business denominator. Inspect renderer
-        latency and capacity; preserve the complete18-week report.
+      summary: p95 времени формирования отчётов DOCX превышает 30 с
+      description: В расчёт входят завершённые попытки API отчётов, за исключением ожидаемых отклонений входных данных.
+        Временный сбой с повторной попыткой не считается отдельной операцией. Проверьте задержки и ёмкость сервиса
+        формирования документов. Сохраните полный отчёт за 18 недель.
       runbook_url: https://github.com/DITEKmax/rutcampustrack/blob/main/docs/operations/monitoring/observability.md
   - record: rct_sli:http_operation_p95_seconds5m
     expr: histogram_quantile(0.95,sum by (job, instance, environment, method, uri, routeId,le)(rate(http_server_requests_seconds_bucket{job!="api-gateway",status=~"2..|3..|5..",termination!="cancelled",uri!~"/actuator.*|/api-docs.*|/swagger.*",uri=~".*/(export|download)(/.*)?|.*/attachments/.*|.*/files/.*"}[5m])))
@@ -73,10 +78,12 @@ groups:
       owner: platform
       operation: file_export
     annotations:
-      summary: file_export p95 exceeds30s in {{ $labels.job }} {{ $labels.uri }}
-      description: ObservedHTTP response timing for a bounded URI template. Expected4xx/cancel/invalid excluded. File/download timing includes client transfer
-        and must be diagnosed separately from rendering; async admission is not terminal work. Gateway registered wildcard routes cannot distinguish file/report
-        operations and are excluded from URI latency classes; backend templated timers are authoritative. Gateway ingress availability remains measured.
+      summary: p95 времени экспорта файла (file_export) превышает 30 с — {{ $labels.job }} {{ $labels.uri }}
+      description: Время HTTP-ответа измеряется для конкретного шаблона URI. Ожидаемые 4xx, отменённые и невалидные
+        запросы исключены. Время выдачи файла включает передачу клиенту. Проверяйте его отдельно от времени
+        формирования. Для асинхронной операции это время приёма задачи, а завершение измеряется отдельно. Общие маршруты
+        Gateway не различают операции с файлами и отчётами, поэтому исключены из классов задержки URI. Источник данных —
+        таймеры по шаблонам URI на стороне сервисов. Доступность входящих запросов Gateway по-прежнему измеряется.
       runbook_url: https://github.com/DITEKmax/rutcampustrack/blob/main/docs/operations/monitoring/observability.md
   - record: rct_sli:http_operation_p95_seconds5m
     expr: histogram_quantile(0.95,sum by (job, instance, environment, method, uri, routeId,le)(rate(http_server_requests_seconds_bucket{job!="api-gateway",status=~"2..|3..|5..",termination!="cancelled",uri!~"/actuator.*|/api-docs.*|/swagger.*",uri=~"(/api)?/auth/.*|.*/mobile/session",uri!~".*/(export|download)(/.*)?|.*/attachments/.*|.*/files/.*"}[5m])))
@@ -90,10 +97,12 @@ groups:
       owner: platform
       operation: admission
     annotations:
-      summary: admission p95 exceeds2s in {{ $labels.job }} {{ $labels.uri }}
-      description: ObservedHTTP response timing for a bounded URI template. Expected4xx/cancel/invalid excluded. File/download timing includes client transfer
-        and must be diagnosed separately from rendering; async admission is not terminal work. Gateway registered wildcard routes cannot distinguish file/report
-        operations and are excluded from URI latency classes; backend templated timers are authoritative. Gateway ingress availability remains measured.
+      summary: p95 времени приёма операции (admission) превышает 2 с — {{ $labels.job }} {{ $labels.uri }}
+      description: Время HTTP-ответа измеряется для конкретного шаблона URI. Ожидаемые 4xx, отменённые и невалидные
+        запросы исключены. Время выдачи файла включает передачу клиенту. Проверяйте его отдельно от времени
+        формирования. Для асинхронной операции это время приёма задачи, а завершение измеряется отдельно. Общие маршруты
+        Gateway не различают операции с файлами и отчётами, поэтому исключены из классов задержки URI. Источник данных —
+        таймеры по шаблонам URI на стороне сервисов. Доступность входящих запросов Gateway по-прежнему измеряется.
       runbook_url: https://github.com/DITEKmax/rutcampustrack/blob/main/docs/operations/monitoring/observability.md
   - record: rct_sli:http_operation_p95_seconds5m
     expr: histogram_quantile(0.95,sum by (job, instance, environment, method, uri, routeId,le)(rate(http_server_requests_seconds_bucket{job!="api-gateway",status=~"2..|3..|5..",termination!="cancelled",uri!~"/actuator.*|/api-docs.*|/swagger.*",method=~"GET|HEAD",uri!~".*/(export|download)(/.*)?|.*/attachments/.*|.*/files/.*|(/api)?/auth/.*|.*/mobile/session"}[5m])))
@@ -107,10 +116,12 @@ groups:
       owner: platform
       operation: read
     annotations:
-      summary: read p95 exceeds2s in {{ $labels.job }} {{ $labels.uri }}
-      description: ObservedHTTP response timing for a bounded URI template. Expected4xx/cancel/invalid excluded. File/download timing includes client transfer
-        and must be diagnosed separately from rendering; async admission is not terminal work. Gateway registered wildcard routes cannot distinguish file/report
-        operations and are excluded from URI latency classes; backend templated timers are authoritative. Gateway ingress availability remains measured.
+      summary: p95 времени чтения (read) превышает 2 с — {{ $labels.job }} {{ $labels.uri }}
+      description: Время HTTP-ответа измеряется для конкретного шаблона URI. Ожидаемые 4xx, отменённые и невалидные
+        запросы исключены. Время выдачи файла включает передачу клиенту. Проверяйте его отдельно от времени
+        формирования. Для асинхронной операции это время приёма задачи, а завершение измеряется отдельно. Общие маршруты
+        Gateway не различают операции с файлами и отчётами, поэтому исключены из классов задержки URI. Источник данных —
+        таймеры по шаблонам URI на стороне сервисов. Доступность входящих запросов Gateway по-прежнему измеряется.
       runbook_url: https://github.com/DITEKmax/rutcampustrack/blob/main/docs/operations/monitoring/observability.md
   - record: rct_sli:http_operation_p95_seconds5m
     expr: histogram_quantile(0.95,sum by (job, instance, environment, method, uri, routeId,le)(rate(http_server_requests_seconds_bucket{job!="api-gateway",status=~"2..|3..|5..",termination!="cancelled",uri!~"/actuator.*|/api-docs.*|/swagger.*",method=~"POST|PUT|PATCH|DELETE",uri!~".*/(export|download)(/.*)?|.*/attachments/.*|.*/files/.*|(/api)?/auth/.*|.*/mobile/session"}[5m])))
@@ -124,10 +135,12 @@ groups:
       owner: platform
       operation: write
     annotations:
-      summary: write p95 exceeds3s in {{ $labels.job }} {{ $labels.uri }}
-      description: ObservedHTTP response timing for a bounded URI template. Expected4xx/cancel/invalid excluded. File/download timing includes client transfer
-        and must be diagnosed separately from rendering; async admission is not terminal work. Gateway registered wildcard routes cannot distinguish file/report
-        operations and are excluded from URI latency classes; backend templated timers are authoritative. Gateway ingress availability remains measured.
+      summary: p95 времени записи (write) превышает 3 с — {{ $labels.job }} {{ $labels.uri }}
+      description: Время HTTP-ответа измеряется для конкретного шаблона URI. Ожидаемые 4xx, отменённые и невалидные
+        запросы исключены. Время выдачи файла включает передачу клиенту. Проверяйте его отдельно от времени
+        формирования. Для асинхронной операции это время приёма задачи, а завершение измеряется отдельно. Общие маршруты
+        Gateway не различают операции с файлами и отчётами, поэтому исключены из классов задержки URI. Источник данных —
+        таймеры по шаблонам URI на стороне сервисов. Доступность входящих запросов Gateway по-прежнему измеряется.
       runbook_url: https://github.com/DITEKmax/rutcampustrack/blob/main/docs/operations/monitoring/observability.md
 - name: http-slo-window-rollup
   interval: 30m

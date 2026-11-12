@@ -8,9 +8,10 @@ groups:
       severity: warning
       owner: platform
     annotations:
-      summary: Retained DLQ message in {{ $labels.queue }}
-      description: A message exhausted bounded processing or is permanently invalid and remains isolated. Inspect safe reason/IDs
-        and the DLQ runbook; preserve the message and avoid an infinite redrive loop.
+      summary: В DLQ {{ $labels.queue }} осталось сообщение
+      description: Сообщение исчерпало допустимые попытки обработки или признано окончательно невалидным и остаётся
+        изолированным. Проверьте причину и идентификаторы, разрешённые к просмотру, и откройте инструкцию по DLQ.
+        Сохраните сообщение и избегайте бесконечного повторного запуска обработки.
       runbook_url: https://github.com/DITEKmax/rutcampustrack/blob/main/docs/operations/runbooks/dlq-triage.md
   - alert: RabbitMQQueueBacklog
     expr: rabbitmq_detailed_queue_messages{queue!~".*\\.(dlq|parked)"} > 1000
@@ -19,10 +20,9 @@ groups:
       severity: warning
       owner: platform
     annotations:
-      summary: "\u041E\u0447\u0435\u0440\u0435\u0434\u044C {{ $labels.queue }} > 1000 pending"
-      description: "{{ $value }} pending messages \u0432 {{ $labels.queue }} > 5 \u043C\u0438\u043D. Consumer \u043E\u0442\
-        \u0441\u0442\u0430\u0451\u0442 \u2014 \u043F\u0440\u043E\u0432\u0435\u0440\u044C thread pool / DB latency / external\
-        \ calls."
+      summary: "В очереди {{ $labels.queue }} больше 1000 сообщений"
+      description: "{{ $value }} сообщений в очереди {{ $labels.queue }} ждут обработки. Порог превышен более 5 мин.
+        Обработчик отстаёт — проверьте пул потоков, задержки БД и внешние вызовы."
       runbook_url: https://github.com/DITEKmax/rutcampustrack/blob/main/docs/operations/runbooks/dlq-triage.md
   - alert: RabbitMQConnectionLost
     expr: rabbitmq_connections == 0
@@ -33,11 +33,8 @@ groups:
     annotations:
       summary: "RabbitMQ \u0431\u0435\u0437 \u0430\u043A\u0442\u0438\u0432\u043D\u044B\u0445 \u043F\u043E\u0434\u043A\u043B\
         \u044E\u0447\u0435\u043D\u0438\u0439"
-      description: "\u041D\u0438 \u043E\u0434\u0438\u043D \u0441\u0435\u0440\u0432\u0438\u0441 \u043D\u0435 \u043F\u043E\u0434\
-        \u043A\u043B\u044E\u0447\u0451\u043D \u043A RabbitMQ. \u0412\u0441\u0435 consumer'\u044B \u043E\u0442\u0432\u0430\u043B\
-        \u0438\u043B\u0438\u0441\u044C \u0438\u043B\u0438 RabbitMQ \u043F\u0435\u0440\u0435\u0437\u0430\u043F\u0443\u0441\u0442\
-        \u0438\u043B\u0441\u044F \u0431\u0435\u0437 graceful reconnect. \u041F\u0440\u043E\u0432\u0435\u0440\u044C network\
-        \ + service logs."
+      description: "Ни один сервис не подключён к RabbitMQ. Все потребители могли потерять связь, либо RabbitMQ
+        перезапустился без восстановления подключений. Проверьте сеть и журналы сервисов."
       runbook_url: https://github.com/DITEKmax/rutcampustrack/blob/main/docs/operations/runbooks/dlq-triage.md
   - alert: RabbitMQConsumerMissing
     expr: rabbitmq_detailed_queue_consumers{queue!~".*\\.(dlq|retry|parked)"} == 0 and on (job, instance, vhost, queue) rabbitmq_detailed_queue_messages
@@ -47,7 +44,8 @@ groups:
       severity: critical
       owner: platform
     annotations:
-      summary: Pending queue {{ $labels.queue }} has no consumer
-      description: Messages cannot be processed. Inspect consumer readiness, broker connection and retry budget. Do not purge/requeue
-        poison messages blindly. Retry TTL and retained parked queues intentionally have no consumer and are excluded.
+      summary: В очереди {{ $labels.queue }} есть сообщения, но нет потребителя
+      description: Сообщения ждут обработки. Проверьте готовность потребителя, подключение к брокеру и оставшиеся
+        попытки. Не очищайте очередь и не возвращайте необрабатываемые сообщения без разбора. Очереди повторных попыток
+        с TTL и очереди отложенных сообщений без потребителей намеренно исключены.
       runbook_url: https://github.com/DITEKmax/rutcampustrack/blob/main/docs/operations/runbooks/dlq-triage.md

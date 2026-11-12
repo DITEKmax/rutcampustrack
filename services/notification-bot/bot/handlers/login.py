@@ -6,6 +6,7 @@ from aiogram.filters import Command
 from aiogram.types import Message
 
 from bot.handlers.prefs import LOGIN_LABEL
+from bot.handlers.start import ACCOUNT_LINK_HELP
 from bot.services.otp_message_tracker import OtpMessageTracker
 
 logger = logging.getLogger(__name__)
@@ -47,7 +48,7 @@ async def cmd_login(
         if e.status == 429:
             await message.answer("⏳ Слишком много попыток\n\nПодождите немного и запросите код снова.")
         elif e.status == 401:
-            await message.answer("⚠️ Аккаунт не найден\n\nОбратитесь к старосте, чтобы проверить привязку Telegram.")
+            await message.answer(f"⚠️ Аккаунт не найден\n\n{ACCOUNT_LINK_HELP}")
         else:
             logger.warning("OTP request failed: %s", e)
             await message.answer("⚠️ Сервис временно недоступен\n\nПопробуйте ещё раз чуть позже.")

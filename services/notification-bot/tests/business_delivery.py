@@ -30,6 +30,7 @@ class BusinessDelivery:
         self.roster_ids = (1, 2, 3)
         self.audience_requests = []
         self.sent, self.deleted, self.edited = [], [], []
+        self.edited_texts = []
         self.before_edit = None
         self.bad_delete = False
         self.prefs_on = True
@@ -95,11 +96,17 @@ class BusinessDelivery:
 
         async def edit(**kwargs):
             self.edited.append((kwargs["chat_id"], kwargs["message_id"], kwargs["reply_markup"]))
+            if "text" in kwargs:
+                self.edited_texts.append(kwargs["text"])
             if self.before_edit:
                 self.before_edit()
 
         self.bot = SimpleNamespace(
-            send_message=send, delete_message=delete, edit_message_reply_markup=edit, send_document=AsyncMock()
+            send_message=send,
+            delete_message=delete,
+            edit_message_text=edit,
+            edit_message_reply_markup=edit,
+            send_document=AsyncMock(),
         )
         self.academic = SimpleNamespace(
             resolve_notification_audience=audience,
@@ -427,6 +434,10 @@ async def assert_terminal_cards(redis, *, revoke_after_first=False, rebound=Fals
             await h.dispatch(event)
             assert [item["chat_id"] for item in h.sent] == [101]
             assert h.edited == ([(202, 71, None)] if revoke_after_first else [(202, 71, None), (202, 72, None)])
+            assert len(h.edited_texts) == len(h.edited)
+            for edited in h.edited_texts:
+                assert "Канонический &lt;студент&gt;" in edited and "private" not in edited
+                assert ("🚫" if cancelled else "✅") in edited
             remaining = await h.tracker.get_all(tracking, "request-1")
             assert [item["message_id"] for item in remaining] == ([72] if revoke_after_first else [])
             text = h.sent[0]["text"]

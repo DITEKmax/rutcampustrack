@@ -1,8 +1,11 @@
 """Tests for the homework notification handler."""
 
+from html import unescape
+
 import pytest
 
-from tests.business_delivery import assert_business_delivery
+from bot.services.send_queue import TelegramDeliveryFailed
+from tests.business_delivery import BusinessDelivery, assert_business_delivery, fact_event
 
 
 @pytest.mark.asyncio
@@ -164,8 +167,55 @@ async def test_homework_weekly_digest_formats_grouped_items(fake_redis):
             "Essay &lt;two&gt;",
         ),
         fact_groups=(
-            ("History &lt;snapshot&gt;", "12.10.2026", "Read &lt;chapter&gt;"),
-            ("Math &lt;snapshot&gt;", "13.10.2026", "Essay &lt;two&gt;"),
+            ("12.10.2026", "History &lt;snapshot&gt;", "Read &lt;chapter&gt;"),
+            ("13.10.2026", "Math &lt;snapshot&gt;", "Essay &lt;two&gt;"),
         ),
         absent=("private digest one", "private digest two", "https://private.test/one", "https://private.test/two"),
     )
+
+
+async def test_digest_resumes_all_unsent_pages_after_parking_and_redis_expiry(fake_redis):
+    h = BusinessDelivery(fake_redis)
+    h.roles = {1: ["STUDENT"]}
+    items = [
+        {
+            "subject_name": "Информатика",
+            "lesson_date": "2026-10-12",
+            "lesson_number": i + 1,
+            "title": f"Задание {i:03d} " + "😀<&>" * 80,
+            "description": "private detail",
+        }
+        for i in range(40)
+    ]
+    event = fact_event("homework.weekly_digest", week_start="2026-10-12", week_end="2026-10-18", items=items)
+    send = h.bot.send_message
+    failed = False
+
+    async def provider_send(**kwargs):
+        nonlocal failed
+        if "Страница 2 из" in kwargs["text"] and not failed:
+            failed = True
+            raise RuntimeError("synthetic provider failure before second page")
+        return await send(**kwargs)
+
+    h.bot.send_message = provider_send
+    h.queue._RETRY_DELAYS = []
+    h.queue.start()
+    try:
+        with pytest.raises(TelegramDeliveryFailed):
+            await h.dispatch(event)
+        prepared = await h.dispatcher.prepare(event)
+        parked = await h.dispatcher.snapshot_progress(prepared)
+        await fake_redis.delete(f"notification-bot:digest-pages:{event['event_id']}:1")
+        batch = await h.dispatcher.dispatch(parked)
+        await batch.wait()
+        await h.dispatch(event)
+        assert failed and len(h.sent) > 1
+        pages = [unescape(item["text"]) for item in h.sent]
+        assert all(f"Страница {i} из {len(pages)}" in page for i, page in enumerate(pages, 1))
+        assert all(len(page.encode("utf-16-le")) // 2 <= 4096 for page in pages)
+        display = "".join(pages)
+        assert "private detail" not in display and " · " not in display
+        assert all(display.count(f"Задание {i:03d}") == 1 for i in range(len(items)))
+    finally:
+        await h.queue.shutdown()

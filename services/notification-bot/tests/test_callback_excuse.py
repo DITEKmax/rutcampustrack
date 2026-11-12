@@ -2,7 +2,7 @@
 
 Проверяют:
 - approve/reject → publish с внутренним user_id, подтверждение отправки решения
-- document caption path (edit_caption вместо edit_text)
+- callback подтверждает отправку и оставляет редактирование итоговому событию
 - некорректный callback_data → answer без publish
 - publish error → callback.answer с error-текстом, нет edit_text
 - отсутствие event_publisher в workflow data → 503 answer
@@ -18,7 +18,7 @@ from bot.handlers.excuse import handle_excuse_decision
 
 
 @pytest.mark.asyncio
-async def test_approve_publishes_decision_and_edits_text(
+async def test_approve_publishes_decision_and_acknowledges_without_edit(
     callback_query_factory, event_publisher_mock, academic_client_mock
 ):
     cb = callback_query_factory("ex:approve:ticket-42", user_id=777)
@@ -29,11 +29,7 @@ async def test_approve_publishes_decision_and_edits_text(
         "excuse.decision",
         {"ticket_id": "ticket-42", "approved": True, "decision_by": 42},
     )
-    cb.message.edit_text.assert_awaited_once()
-    edited_text = cb.message.edit_text.await_args.args[0]
-    assert "Решение отправлено" in edited_text
-    assert "Одобрено" not in edited_text
-    assert "Иванов И." in edited_text
+    cb.message.edit_text.assert_not_awaited()
     cb.answer.assert_awaited_once_with("⏳ Решение отправлено")
 
 
@@ -49,14 +45,14 @@ async def test_reject_publishes_decision_with_approved_false(
         "excuse.decision",
         {"ticket_id": "ticket-99", "approved": False, "decision_by": 42},
     )
-    edited_text = cb.message.edit_text.await_args.args[0]
-    assert "Решение отправлено" in edited_text
-    assert "Отклонено" not in edited_text
+    cb.message.edit_text.assert_not_awaited()
     cb.answer.assert_awaited_once_with("⏳ Решение отправлено")
 
 
 @pytest.mark.asyncio
-async def test_document_caption_path_edits_caption(callback_query_factory, event_publisher_mock, academic_client_mock):
+async def test_document_callback_leaves_caption_untouched(
+    callback_query_factory, event_publisher_mock, academic_client_mock
+):
     cb = callback_query_factory(
         "ex:approve:ticket-1",
         message_text="",
@@ -66,24 +62,9 @@ async def test_document_caption_path_edits_caption(callback_query_factory, event
 
     await handle_excuse_decision(cb, event_publisher=event_publisher_mock, academic_client=academic_client_mock)
 
-    cb.message.edit_caption.assert_awaited_once()
-    cb.message.edit_text.assert_not_called()
-    edited_caption = cb.message.edit_caption.await_args.kwargs["caption"]
-    assert "Справка о болезни" in edited_caption
-    assert "Решение отправлено" in edited_caption
-    assert "Одобрено" not in edited_caption
-
-
-@pytest.mark.asyncio
-async def test_malformed_callback_data_only_answers(callback_query_factory, event_publisher_mock, academic_client_mock):
-    cb = callback_query_factory("ex:bogus")
-
-    await handle_excuse_decision(cb, event_publisher=event_publisher_mock, academic_client=academic_client_mock)
-
-    event_publisher_mock.publish.assert_not_called()
-    # Role check должен даже не происходить — shortcut по malformed callback.
-    academic_client_mock.get_user_by_telegram_id.assert_not_called()
-    cb.answer.assert_awaited_once_with("Некорректный запрос", show_alert=False)
+    cb.message.edit_caption.assert_not_awaited()
+    cb.message.edit_text.assert_not_awaited()
+    cb.answer.assert_awaited_once_with("⏳ Решение отправлено")
 
 
 @pytest.mark.asyncio
@@ -117,17 +98,6 @@ async def test_missing_event_publisher_returns_503_like(callback_query_factory, 
 
     cb.answer.assert_awaited_once_with("Сервис временно недоступен", show_alert=True)
     cb.message.edit_text.assert_not_called()
-
-
-@pytest.mark.asyncio
-async def test_edit_text_failure_still_answers(callback_query_factory, event_publisher_mock, academic_client_mock):
-    cb = callback_query_factory("ex:approve:ticket-42")
-    cb.message.edit_text = AsyncMock(side_effect=RuntimeError("message too old"))
-
-    await handle_excuse_decision(cb, event_publisher=event_publisher_mock, academic_client=academic_client_mock)
-
-    event_publisher_mock.publish.assert_awaited_once()
-    cb.answer.assert_awaited_once_with("⏳ Решение отправлено")
 
 
 # ================================================== M09 G6 (06 P1-1) role check

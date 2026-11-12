@@ -9,13 +9,11 @@ groups:
       severity: warning
       owner: platform
     annotations:
-      summary: "\u041A\u043E\u043D\u0442\u0435\u0439\u043D\u0435\u0440 {{ $labels.name }} > 90% memory"
-      description: "{{ $labels.name }} \u0438\u0441\u043F\u043E\u043B\u044C\u0437\u0443\u0435\u0442 \u0431\u043E\u043B\u0435\
-        \u0435 90% \u0441\u0432\u043E\u0435\u0433\u043E mem_limit \u0443\u0436\u0435 5 \u043C\u0438\u043D\u0443\u0442.\n\u0412\
-        \u043E\u0437\u043C\u043E\u0436\u043D\u0430 \u0443\u0442\u0435\u0447\u043A\u0430, cache overgrowth \u0438\u043B\u0438\
-        \ \u043D\u0435\u0434\u043E\u043E\u0446\u0435\u043D\u0451\u043D\u043D\u044B\u0439 budget \u2014\n\u043F\u0440\u043E\
-        \u0432\u0435\u0440\u0438\u0442\u044C docs/operations/deploy/resource-limits.md.\n\u0422\u0435\u043A\u0443\u0449\u0435\u0435 \u0438\u0441\
-        \u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u043D\u0438\u0435: {{ $value | humanizePercentage }}.\n"
+      summary: "Контейнер {{ $labels.name }} использует больше 90% лимита памяти"
+      description: "{{ $labels.name }} использует больше 90% лимита памяти (mem_limit) уже 5 минут.\n\
+        Возможны утечка памяти, рост кэша или слишком низкий лимит.\n\
+        См. docs/operations/deploy/resource-limits.md.\n\
+        Текущее использование — {{ $value | humanizePercentage }}.\n"
       runbook_url: https://github.com/DITEKmax/rutcampustrack/blob/main/docs/operations/deploy/resource-limits.md
   - alert: ContainerWithoutMemoryLimit
     expr: 'container_spec_memory_limit_bytes{name=~"rct-.*"} == 0
@@ -26,9 +24,8 @@ groups:
       severity: warning
       owner: platform
     annotations:
-      summary: "\u041A\u043E\u043D\u0442\u0435\u0439\u043D\u0435\u0440 {{ $labels.name }} \u0431\u0435\u0437 mem_limit"
-      description: "{{ $labels.name }} \u0437\u0430\u043F\u0443\u0449\u0435\u043D \u0431\u0435\u0437 mem_limit \u2014 \u043C\
-        \u043E\u0436\u0435\u0442 \u0437\u0430\u043D\u044F\u0442\u044C \u0432\u0441\u044E RAM\nVPS \u043F\u0440\u0438 \u0443\
-        \u0442\u0435\u0447\u043A\u0435. \u0414\u043E\u0431\u0430\u0432\u0438\u0442\u044C \u043B\u0438\u043C\u0438\u0442 \u0432\
-        \ docker-compose.prod.yml\n(\u0441\u043C. docs/operations/deploy/resource-limits.md).\n"
+      summary: "Контейнер {{ $labels.name }} запущен без лимита памяти"
+      description: "{{ $labels.name }} запущен без лимита памяти (mem_limit) и при утечке может занять всю
+        оперативную память VPS.\n\
+        Добавьте лимит в docker-compose.prod.yml (см. docs/operations/deploy/resource-limits.md).\n"
       runbook_url: https://github.com/DITEKmax/rutcampustrack/blob/main/docs/operations/deploy/resource-limits.md

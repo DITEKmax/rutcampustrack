@@ -1,3 +1,5 @@
+import asyncio
+from dataclasses import replace
 from datetime import date
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, MagicMock
@@ -5,8 +7,9 @@ from unittest.mock import AsyncMock, MagicMock
 import pytest
 
 from bot.grpc_client.academic_pb2 import UserResponse, UserRoleGrant
-from bot.handlers.homework import cmd_homework_today, cmd_homework_week
+from bot.handlers.homework import cb_homework_page, cmd_homework_today, cmd_homework_week
 from bot.services.bot_menu import BotGrant, MenuScope
+from bot.services.homework_pager import HomeworkPager, homework_pages
 
 
 def _make_message(user_id: int = 12345) -> MagicMock:
@@ -142,11 +145,11 @@ async def test_homework_week_formats_upcoming_homeworks():
 
     text = message.answer.call_args.args[0]
     assert "07.05.2026 — 13.05.2026" in text
-    assert "Физика · пара №2" in text
+    assert "Физика, пара №2" in text
     assert "Лабораторная работа" in text
     assert "Задачи 1-3" in text
     assert "https://example.com/hw.pdf" in text
-    assert "✅ Физика · пара №1" in text
+    assert "✅ Физика, пара №1" in text
     assert "Дальнее ДЗ" not in text
     message.homework_client.homeworks.assert_awaited_once()
 
@@ -327,3 +330,178 @@ async def test_missing_protected_capability_never_falls_back_to_legacy_student_r
     await handler(message, academic, today=date(2026, 5, 7), bot_menu_client=message.menu_client)
     academic.get_homeworks_for_week.assert_not_awaited()
     assert "Сервис временно недоступен" in message.answer.await_args.args[0]
+
+
+def _callback(data, *, sender=12345, chat_id=12345, chat_type="private", message_id=56):
+    return SimpleNamespace(
+        from_user=SimpleNamespace(id=sender),
+        message=SimpleNamespace(
+            chat=SimpleNamespace(id=chat_id, type=chat_type), message_id=message_id, edit_text=AsyncMock()
+        ),
+        data=data,
+        answer=AsyncMock(),
+    )
+
+
+def _button(call, label):
+    buttons = call.kwargs["reply_markup"].inline_keyboard[0]
+    return next(button.callback_data for button in buttons if button.text == label)
+
+
+async def test_direct_homework_pages_keep_long_unicode_task_and_several_open_snapshots():
+    pager = HomeworkPager()
+    msg = _make_message()
+    msg.answer.return_value = SimpleNamespace(message_id=56, chat=msg.chat)
+    academic = SimpleNamespace(get_active_semester=AsyncMock(return_value=_make_semester()))
+    long_description = "🧪" * 3500 + "конец <описания>"
+    msg.homework_client.homeworks.return_value = [
+        _make_homework(1, description=long_description, link="https://example.com/д/з"),
+        _make_homework(2, title="Второе задание", lesson_number=3),
+    ]
+    for command, receipt in [(cmd_homework_week, 56), (cmd_homework_today, 57)]:
+        msg.answer.return_value = SimpleNamespace(message_id=receipt, chat=msg.chat)
+        await command(msg, academic, date(2026, 5, 8), msg.homework_client, msg.menu_client, pager)
+
+    week, today = msg.answer.await_args_list
+    assert "ближайшую неделю" in week.args[0] and "на сегодня" in today.args[0]
+    first = _button(week, "Далее")
+    callback = _callback(first)
+    pages = [week.args[0]]
+    while True:
+        await cb_homework_page(callback, msg.menu_client, pager)
+        edit = callback.message.edit_text.await_args
+        pages.append(edit.args[0])
+        if not any(btn.text == "Далее" for btn in edit.kwargs["reply_markup"].inline_keyboard[0]):
+            break
+        callback = _callback(_button(edit, "Далее"))
+
+    joined = "".join(page.rsplit("\n\nСтраница ", 1)[0] for page in pages)
+    assert long_description in joined and "https://example.com/д/з" in joined and "Второе задание" in joined
+    assert all(len(page.encode("utf-16-le")) // 2 <= 4096 for page in pages)
+    previous = _callback(_button(edit, "Назад"))
+    await cb_homework_page(previous, msg.menu_client, pager)
+    assert previous.message.edit_text.await_args.args[0] == pages[-2]
+
+    duplicate = _callback(first)
+    await cb_homework_page(duplicate, msg.menu_client, pager)
+    duplicate.message.edit_text.assert_not_awaited()
+    today_callback = _callback(_button(today, "Далее"), message_id=57)
+    await cb_homework_page(today_callback, msg.menu_client, pager)
+    today_callback.message.edit_text.assert_awaited_once()
+
+
+@pytest.mark.parametrize(
+    "failure", ["wrong_actor", "wrong_chat", "wrong_message", "expired", "restart", "rebound", "role_revoked"]
+)
+async def test_homework_page_callbacks_deny_stale_or_foreign_snapshots(failure):
+    now = [0]
+    pager = HomeworkPager(clock=lambda: now[0], ttl_seconds=1)
+    scope = MenuScope(77, 2, 1, (BotGrant("STUDENT", 10),))
+    menu = SimpleNamespace(menu_scope=AsyncMock(return_value=scope))
+    send = AsyncMock(return_value=SimpleNamespace(message_id=56, chat=SimpleNamespace(id=12345, type="private")))
+    await pager.send(send, sender=12345, scope=scope, pages=("первая", "личное задание"))
+    callback = _callback(_button(send.await_args, "Далее"))
+    if failure == "wrong_actor":
+        callback.from_user.id = callback.message.chat.id = 12346
+    elif failure == "wrong_chat":
+        callback.message.chat.type = "group"
+    elif failure == "wrong_message":
+        callback.message.message_id += 1
+    elif failure == "expired":
+        now[0] += 2
+    elif failure == "restart":
+        pager = HomeworkPager()
+    elif failure == "rebound":
+        menu.menu_scope.return_value = replace(scope, telegram_binding_version=3)
+    elif failure == "role_revoked":
+        menu.menu_scope.return_value = replace(scope, roles_version=2, grants=())
+
+    await cb_homework_page(callback, menu, pager)
+    callback.message.edit_text.assert_not_awaited()
+    assert callback.answer.await_args.kwargs["show_alert"] is True
+    assert "личное задание" not in callback.answer.await_args.args[0]
+
+
+async def test_homework_concurrent_or_replayed_navigation_cannot_edit_twice():
+    pager = HomeworkPager()
+    scope = MenuScope(77, 2, 1, (BotGrant("STUDENT", 10),))
+    menu = SimpleNamespace(menu_scope=AsyncMock(return_value=scope))
+    send = AsyncMock(return_value=SimpleNamespace(message_id=56, chat=SimpleNamespace(id=12345, type="private")))
+    await pager.send(send, sender=12345, scope=scope, pages=("первая", "вторая"))
+    first = _button(send.await_args, "Далее")
+    editing = asyncio.Event()
+    release = asyncio.Event()
+
+    async def edit(*_args, **_kwargs):
+        editing.set()
+        await release.wait()
+
+    original = _callback(first)
+    original.message.edit_text.side_effect = edit
+    active = asyncio.create_task(cb_homework_page(original, menu, pager))
+    await asyncio.wait_for(editing.wait(), timeout=1)
+    try:
+        duplicate = _callback(first)
+        await cb_homework_page(duplicate, menu, pager)
+        duplicate.message.edit_text.assert_not_awaited()
+    finally:
+        release.set()
+        await active
+
+    await cb_homework_page(_callback(_button(original.message.edit_text.await_args, "Назад")), menu, pager)
+    replay = _callback(first)
+    await cb_homework_page(replay, menu, pager)
+    replay.message.edit_text.assert_not_awaited()
+
+
+@pytest.mark.parametrize("provider_applied_edit", [False, True])
+async def test_homework_navigation_recovers_after_missing_edit_receipt(provider_applied_edit):
+    pager = HomeworkPager()
+    scope = MenuScope(77, 2, 1, (BotGrant("STUDENT", 10),))
+    menu = SimpleNamespace(menu_scope=AsyncMock(return_value=scope))
+    send = AsyncMock(return_value=SimpleNamespace(message_id=56, chat=SimpleNamespace(id=12345, type="private")))
+    await pager.send(send, sender=12345, scope=scope, pages=("первая", "вторая", "третья"))
+    initial_data = _button(send.await_args, "Далее")
+    initial_click = _callback(initial_data)
+    initial_click.message.edit_text.side_effect = TimeoutError
+    await cb_homework_page(initial_click, menu, pager)
+    failed_edit = initial_click.message.edit_text.await_args
+    assert initial_click.answer.await_args.kwargs["show_alert"] is True
+
+    if provider_applied_edit:
+        pending_data = _button(failed_edit, "Далее")
+        foreign = _callback(pending_data, message_id=57)
+        await cb_homework_page(foreign, menu, pager)
+        foreign.message.edit_text.assert_not_awaited()
+        retry = _callback(pending_data)
+        expected = "третья"
+    else:
+        retry = _callback(initial_data)
+        expected = "вторая"
+    await cb_homework_page(retry, menu, pager)
+    actual_edit = retry.message.edit_text.await_args
+    assert actual_edit.args[0].startswith(expected)
+    if not provider_applied_edit:
+        assert actual_edit == failed_edit
+    retry.answer.assert_awaited_once_with()
+
+    replay = _callback(initial_data)
+    await cb_homework_page(replay, menu, pager)
+    replay.message.edit_text.assert_not_awaited()
+
+
+def test_homework_pages_preserve_authored_layout_and_complete_url_at_page_break():
+    link = "https://example.com/" + "x" * (2048 - len("https://example.com/"))
+    description = "Решите задачи.\n  1. Первый шаг\n\n  2. Второй шаг\n" + "т" * 1780
+    pages = homework_pages(
+        "Домашнее задание",
+        "08.05.2026",
+        "",
+        [{"title": "Письменная работа", "description": description, "link": link, "lesson_date": "2026-05-08"}],
+    )
+    rendered = "".join(pages)
+    # The full link would cross the unadjusted message boundary.
+    assert rendered.index(link) < 3900 < rendered.index(link) + len(link)
+    assert len(pages) > 1 and description in rendered
+    assert sum(link in page for page in pages) == 1
+    assert all(len(page.encode("utf-16-le")) // 2 <= 3900 for page in pages)

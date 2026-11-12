@@ -8,9 +8,10 @@ groups:
       severity: critical
       owner: platform
     annotations:
-      summary: PostgreSQLUnavailable {{ $labels.service }}
-      description: Exporter is running but cannot query the store. Check store readiness, least-privilege monitoring identity
-        and network. Do not reuse an application/admin credential.
+      summary: PostgreSQL недоступен ({{ $labels.service }})
+      description: Экспортёр работает, но не может выполнить запрос к хранилищу. Проверьте готовность хранилища, сетевое
+        подключение и права учётной записи мониторинга. Используйте отдельную учётную запись с минимальными правами, без
+        доступа приложения или администратора.
       runbook_url: https://github.com/DITEKmax/rutcampustrack/blob/main/docs/operations/monitoring/observability.md
   - alert: MongoDBUnavailable
     expr: mongodb_up == 0
@@ -19,9 +20,10 @@ groups:
       severity: critical
       owner: platform
     annotations:
-      summary: MongoDBUnavailable {{ $labels.service }}
-      description: Exporter is running but cannot query the store. Check store readiness, least-privilege monitoring identity
-        and network. Do not reuse an application/admin credential.
+      summary: MongoDB недоступна ({{ $labels.service }})
+      description: Экспортёр работает, но не может выполнить запрос к хранилищу. Проверьте готовность хранилища, сетевое
+        подключение и права учётной записи мониторинга. Используйте отдельную учётную запись с минимальными правами, без
+        доступа приложения или администратора.
       runbook_url: https://github.com/DITEKmax/rutcampustrack/blob/main/docs/operations/monitoring/observability.md
   - alert: RedisUnavailable
     expr: redis_up{redis_role!="cache"} == 0
@@ -30,9 +32,10 @@ groups:
       severity: critical
       owner: platform
     annotations:
-      summary: RedisUnavailable {{ $labels.service }}
-      description: Exporter is running but cannot query the store. Check store readiness, least-privilege monitoring identity
-        and network. Do not reuse an application/admin credential.
+      summary: Redis недоступен ({{ $labels.service }})
+      description: Экспортёр работает, но не может выполнить запрос к хранилищу. Проверьте готовность хранилища, сетевое
+        подключение и права учётной записи мониторинга. Используйте отдельную учётную запись с минимальными правами, без
+        доступа приложения или администратора.
       runbook_url: https://github.com/DITEKmax/rutcampustrack/blob/main/docs/operations/monitoring/observability.md
   - alert: RedisCacheUnavailable
     expr: redis_up{redis_role="cache"} == 0
@@ -41,8 +44,8 @@ groups:
       severity: warning
       owner: platform
     annotations:
-      summary: Disposable Redis cache unavailable
-      description: Academic uses PostgreSQL fallback. Restore the isolated cache and restart Academic to create a fresh cache namespace; do not flush critical Redis.
+      summary: Временный кэш Redis недоступен
+      description: Academic использует PostgreSQL в качестве резерва. Восстановите изолированный кэш и перезапустите Academic для создания нового пространства имён кэша. Не очищайте критический Redis.
       runbook_url: https://github.com/DITEKmax/rutcampustrack/blob/main/docs/operations/monitoring/observability.md
   - alert: RedisCriticalMemoryEviction
     expr: increase(redis_evicted_keys_total{redis_role="critical"}[5m]) > 0
@@ -50,6 +53,6 @@ groups:
       severity: critical
       owner: platform
     annotations:
-      summary: Critical Redis violated its noeviction policy
-      description: Verify critical Redis policy and process isolation. Preserve OTP, tickets and limits; do not redirect disposable caches to this endpoint.
+      summary: Критический Redis вытесняет ключи вопреки политике noeviction
+      description: Проверьте политику и изоляцию процесса критического Redis. Сохраните OTP, билеты и лимиты. Не перенаправляйте временные кэши на этот экземпляр.
       runbook_url: https://github.com/DITEKmax/rutcampustrack/blob/main/docs/operations/monitoring/observability.md

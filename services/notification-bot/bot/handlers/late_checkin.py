@@ -4,9 +4,8 @@ Callback data format: "lcr:approve:<request_id>" | "lcr:reject:<request_id>".
 
 On press the bot publishes a late_checkin.decision event via RabbitMQ; the
 attendance-service consumes it, applies the decision, and publishes
-late_checkin.decided which notifies the student. The bot also edits the original
-message so the headman sees immediate feedback. The callback only shows that the
-command was sent; the authoritative final verdict arrives in late_checkin.decided.
+late_checkin.decided, which notifies the student and updates the original
+card. The callback acknowledges that the command was sent.
 This matters when a geo retry has already cancelled the request.
 
 M09 G6 (06 P1-1): перед publish проверяем is_headman через academic_client
@@ -62,12 +61,5 @@ async def handle_late_checkin_decision(callback: CallbackQuery, **data) -> None:
         await callback.answer("Не удалось отправить решение, попробуйте ещё раз", show_alert=True)
         return
 
-    verdict_line = "⏳ Решение отправлено"
-    original = callback.message.text or ""
-    new_text = f"{original}\n\nРешение: {verdict_line}"
-    try:
-        await callback.message.edit_text(new_text, reply_markup=None)
-    except Exception:
-        logger.warning("Failed to edit message after decision — continuing", exc_info=True)
-
-    await callback.answer(verdict_line)
+    # Only the terminal event edits the card, even if it arrives before this acknowledgement.
+    await callback.answer("⏳ Решение отправлено")

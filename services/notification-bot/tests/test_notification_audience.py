@@ -566,7 +566,7 @@ async def test_terminal_owner_fact_separately_retires_only_authorized_existing_c
     entry = {"user_id": 1, "chat_id": 101, "message_id": 55}
     tracker = SimpleNamespace(get_all=AsyncMock(return_value=[entry]), delete_entry=AsyncMock())
     bot, reminders, state = resources()
-    bot.edit_message_reply_markup = AsyncMock()
+    bot.edit_message_text = AsyncMock()
 
     async def enabled(chat_id, category, *, user_id, notification_type):
         assert notification_type == f"EXCUSE_{outcome.upper()}"
@@ -593,16 +593,19 @@ async def test_terminal_owner_fact_separately_retires_only_authorized_existing_c
         assert bot.send_message.await_args.kwargs["chat_id"] == 102
         assert "privateDecision" not in bot.send_message.await_args.kwargs["text"]
         if gate == "allowed":
-            bot.edit_message_reply_markup.assert_awaited_once_with(chat_id=101, message_id=55, reply_markup=None)
+            bot.edit_message_text.assert_awaited_once()
+            edited = bot.edit_message_text.await_args.kwargs
+            assert edited["chat_id"] == 101 and edited["message_id"] == 55 and edited["reply_markup"] is None
+            assert ("✅" if outcome == "approved" else "❌") in edited["text"]
             tracker.delete_entry.assert_awaited_once_with("excuse", "request-1", entry)
         else:
-            bot.edit_message_reply_markup.assert_not_awaited()
+            bot.edit_message_text.assert_not_awaited()
             tracker.delete_entry.assert_not_awaited()
     finally:
         await queue.shutdown()
 
 
-@pytest.mark.parametrize("failure", ["authority", "identity", "edit"])
+@pytest.mark.parametrize("failure", ["authority", "identity", "group", "status", "edit"])
 async def test_cleanup_unknown_or_uncertain_edit_keeps_original_card_for_retry(failure):
     from bot.grpc_client import attendance_pb2 as apb
     from bot.services.send_queue import TelegramDeliveryFailed
@@ -622,6 +625,10 @@ async def test_cleanup_unknown_or_uncertain_edit_keeps_original_card_for_retry(f
     )
     if failure == "identity":
         context.student_id = 3
+    if failure == "group":
+        context.group_id = 8
+    if failure == "status":
+        context.detail.summary.status = apb.STUDENT_REQUEST_STATUS_REJECTED
     if failure == "authority":
         source.resolve_notification_audience.side_effect = RuntimeError("synthetic unknown")
     attendance = SimpleNamespace(resolve_request_notification=AsyncMock(return_value=context))
@@ -629,7 +636,7 @@ async def test_cleanup_unknown_or_uncertain_edit_keeps_original_card_for_retry(f
         get_all=AsyncMock(return_value=[{"user_id": 1, "chat_id": 101, "message_id": 55}]),
         delete_entry=AsyncMock(),
     )
-    bot = SimpleNamespace(edit_message_reply_markup=AsyncMock(side_effect=RuntimeError("synthetic edit unknown")))
+    bot = SimpleNamespace(edit_message_text=AsyncMock(side_effect=RuntimeError("synthetic edit unknown")))
     queue = TelegramSendQueue(SimpleNamespace(is_enabled=AsyncMock(return_value=True)))
     queue._RETRY_DELAYS = []
     queue.start()
@@ -637,18 +644,34 @@ async def test_cleanup_unknown_or_uncertain_edit_keeps_original_card_for_retry(f
         if failure == "edit":
             async with queue.staged() as batch:
                 await queue_request_cleanup(
-                    raw, bot=bot, academic=source, queue=queue, attendance=attendance, tracker=tracker
+                    raw,
+                    bot=bot,
+                    academic=source,
+                    queue=queue,
+                    attendance=attendance,
+                    tracker=tracker,
+                    state=None,
+                    decision_requests=audience_requests(raw),
+                    saved={},
                 )
             with pytest.raises(TelegramDeliveryFailed):
                 await asyncio.wait_for(batch.wait(), 2)
-            bot.edit_message_reply_markup.assert_awaited_once()
+            bot.edit_message_text.assert_awaited_once()
         else:
             with pytest.raises(NotificationPreferencesUnavailable):
                 async with queue.staged():
                     await queue_request_cleanup(
-                        raw, bot=bot, academic=source, queue=queue, attendance=attendance, tracker=tracker
+                        raw,
+                        bot=bot,
+                        academic=source,
+                        queue=queue,
+                        attendance=attendance,
+                        tracker=tracker,
+                        state=None,
+                        decision_requests=audience_requests(raw),
+                        saved={},
                     )
-            bot.edit_message_reply_markup.assert_not_awaited()
+            bot.edit_message_text.assert_not_awaited()
         tracker.delete_entry.assert_not_awaited()
     finally:
         await queue.shutdown()

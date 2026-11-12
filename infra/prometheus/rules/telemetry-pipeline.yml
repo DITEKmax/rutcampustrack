@@ -9,8 +9,8 @@ groups:
       severity: critical
       owner: platform
     annotations:
-      summary: cAdvisor scrape succeeds but Docker container telemetry is missing
-      description: A successful HTTP scrape with only host cgroups does not cover application memory, CPU or OOM. Inspect Docker/containerd compatibility and names before treating container dashboards as complete.
+      summary: cAdvisor отвечает, но метрики контейнеров Docker отсутствуют
+      description: Сбор по HTTP проходит, но метрики только по cgroups хоста не охватывают память, CPU и OOM приложений. Проверьте совместимость Docker и containerd и имена контейнеров, прежде чем полагаться на полноту данных на дашбордах.
       runbook_url: https://github.com/DITEKmax/rutcampustrack/blob/main/docs/operations/monitoring/observability.md
   - alert: PrometheusProcessRestarted
     expr: changes(process_start_time_seconds{job="prometheus"}[15m]) > 0
@@ -18,8 +18,8 @@ groups:
       severity: warning
       owner: platform
     annotations:
-      summary: Prometheus restarted in the last15minutes
-      description: Inspect container restart count, memory pressure and ingestion continuity. This observes scrape history; absence of an earlier process sample cannot prove no restart.
+      summary: Prometheus перезапустился за последние 15 мин.
+      description: Проверьте число перезапусков контейнера, нагрузку на память и непрерывность приёма метрик. Сигнал основан на истории сбора метрик. Если раннего замера процесса нет, исключить перезапуск нельзя.
       runbook_url: https://github.com/DITEKmax/rutcampustrack/blob/main/docs/operations/monitoring/observability.md
   - alert: PrometheusRuleEvaluationFailed
     expr: increase(prometheus_rule_evaluation_failures_total[5m]) > 0
@@ -28,9 +28,10 @@ groups:
       severity: warning
       owner: platform
     annotations:
-      summary: PrometheusRuleEvaluationFailed in {{ $labels.job }} / {{ $labels.instance }}
-      description: Telemetry loss, evaluation, delivery or storage capacity is degraded. Inspect the component logs and quota
-        before treating dashboards as complete; preserve persistent data.
+      summary: Сбой вычисления правил Prometheus — {{ $labels.job }} / {{ $labels.instance }}
+      description: Возможны потери телеметрии, сбои вычисления правил или доставки и нехватка места в хранилище.
+        Проверьте журналы компонента и квоты, прежде чем полагаться на полноту данных на дашбордах. Сохраните данные в
+        постоянном хранилище.
       runbook_url: https://github.com/DITEKmax/rutcampustrack/blob/main/docs/operations/monitoring/observability.md
   - alert: PrometheusNotificationFailed
     expr: increase(prometheus_notifications_errors_total[5m]) > 0
@@ -39,9 +40,10 @@ groups:
       severity: warning
       owner: platform
     annotations:
-      summary: PrometheusNotificationFailed in {{ $labels.job }} / {{ $labels.instance }}
-      description: Telemetry loss, evaluation, delivery or storage capacity is degraded. Inspect the component logs and quota
-        before treating dashboards as complete; preserve persistent data.
+      summary: Сбой отправки уведомлений Prometheus — {{ $labels.job }} / {{ $labels.instance }}
+      description: Возможны потери телеметрии, сбои вычисления правил или доставки и нехватка места в хранилище.
+        Проверьте журналы компонента и квоты, прежде чем полагаться на полноту данных на дашбордах. Сохраните данные в
+        постоянном хранилище.
       runbook_url: https://github.com/DITEKmax/rutcampustrack/blob/main/docs/operations/monitoring/observability.md
   - alert: PrometheusReloadFailed
     expr: prometheus_config_last_reload_successful == 0
@@ -50,9 +52,10 @@ groups:
       severity: warning
       owner: platform
     annotations:
-      summary: PrometheusReloadFailed in {{ $labels.job }} / {{ $labels.instance }}
-      description: Telemetry loss, evaluation, delivery or storage capacity is degraded. Inspect the component logs and quota
-        before treating dashboards as complete; preserve persistent data.
+      summary: Не удалось перечитать конфигурацию Prometheus — {{ $labels.job }} / {{ $labels.instance }}
+      description: Возможны потери телеметрии, сбои вычисления правил или доставки и нехватка места в хранилище.
+        Проверьте журналы компонента и квоты, прежде чем полагаться на полноту данных на дашбордах. Сохраните данные в
+        постоянном хранилище.
       runbook_url: https://github.com/DITEKmax/rutcampustrack/blob/main/docs/operations/monitoring/observability.md
   - alert: PrometheusStorageCompactionFailed
     expr: increase(prometheus_tsdb_compactions_failed_total[5m]) > 0
@@ -61,9 +64,10 @@ groups:
       severity: warning
       owner: platform
     annotations:
-      summary: PrometheusStorageCompactionFailed in {{ $labels.job }} / {{ $labels.instance }}
-      description: Telemetry loss, evaluation, delivery or storage capacity is degraded. Inspect the component logs and quota
-        before treating dashboards as complete; preserve persistent data.
+      summary: Сбой уплотнения хранилища Prometheus — {{ $labels.job }} / {{ $labels.instance }}
+      description: Возможны потери телеметрии, сбои вычисления правил или доставки и нехватка места в хранилище.
+        Проверьте журналы компонента и квоты, прежде чем полагаться на полноту данных на дашбордах. Сохраните данные в
+        постоянном хранилище.
       runbook_url: https://github.com/DITEKmax/rutcampustrack/blob/main/docs/operations/monitoring/observability.md
   - alert: AlertmanagerNotificationFailed
     expr: increase(alertmanager_notifications_failed_total[5m]) > 0
@@ -72,9 +76,10 @@ groups:
       severity: warning
       owner: platform
     annotations:
-      summary: AlertmanagerNotificationFailed in {{ $labels.job }} / {{ $labels.instance }}
-      description: Telemetry loss, evaluation, delivery or storage capacity is degraded. Inspect the component logs and quota
-        before treating dashboards as complete; preserve persistent data.
+      summary: Сбой отправки уведомлений Alertmanager — {{ $labels.job }} / {{ $labels.instance }}
+      description: Возможны потери телеметрии, сбои вычисления правил или доставки и нехватка места в хранилище.
+        Проверьте журналы компонента и квоты, прежде чем полагаться на полноту данных на дашбордах. Сохраните данные в
+        постоянном хранилище.
       runbook_url: https://github.com/DITEKmax/rutcampustrack/blob/main/docs/operations/monitoring/observability.md
   - alert: AlertmanagerReloadFailed
     expr: alertmanager_config_last_reload_successful == 0
@@ -83,9 +88,10 @@ groups:
       severity: warning
       owner: platform
     annotations:
-      summary: AlertmanagerReloadFailed in {{ $labels.job }} / {{ $labels.instance }}
-      description: Telemetry loss, evaluation, delivery or storage capacity is degraded. Inspect the component logs and quota
-        before treating dashboards as complete; preserve persistent data.
+      summary: Не удалось перечитать конфигурацию Alertmanager — {{ $labels.job }} / {{ $labels.instance }}
+      description: Возможны потери телеметрии, сбои вычисления правил или доставки и нехватка места в хранилище.
+        Проверьте журналы компонента и квоты, прежде чем полагаться на полноту данных на дашбордах. Сохраните данные в
+        постоянном хранилище.
       runbook_url: https://github.com/DITEKmax/rutcampustrack/blob/main/docs/operations/monitoring/observability.md
   - alert: LokiIngestDiscarded
     expr: sum by (job, environment, reason) (increase(loki_discarded_samples_total[5m])) > 0
@@ -94,9 +100,10 @@ groups:
       severity: warning
       owner: platform
     annotations:
-      summary: LokiIngestDiscarded in {{ $labels.job }} / {{ $labels.instance }}
-      description: Telemetry loss, evaluation, delivery or storage capacity is degraded. Inspect the component logs and quota
-        before treating dashboards as complete; preserve persistent data.
+      summary: Loki отбрасывает данные при приёме — {{ $labels.job }} / {{ $labels.instance }}
+      description: Возможны потери телеметрии, сбои вычисления правил или доставки и нехватка места в хранилище.
+        Проверьте журналы компонента и квоты, прежде чем полагаться на полноту данных на дашбордах. Сохраните данные в
+        постоянном хранилище.
       runbook_url: https://github.com/DITEKmax/rutcampustrack/blob/main/docs/operations/monitoring/observability.md
   - alert: AlloyLogDeliveryDropped
     expr: sum by (job, environment, reason) (increase(loki_write_dropped_entries_total[5m])) > 0
@@ -105,9 +112,10 @@ groups:
       severity: warning
       owner: platform
     annotations:
-      summary: AlloyLogDeliveryDropped in {{ $labels.job }} / {{ $labels.instance }}
-      description: Telemetry loss, evaluation, delivery or storage capacity is degraded. Inspect the component logs and quota
-        before treating dashboards as complete; preserve persistent data.
+      summary: Alloy отбрасывает записи при отправке журналов — {{ $labels.job }} / {{ $labels.instance }}
+      description: Возможны потери телеметрии, сбои вычисления правил или доставки и нехватка места в хранилище.
+        Проверьте журналы компонента и квоты, прежде чем полагаться на полноту данных на дашбордах. Сохраните данные в
+        постоянном хранилище.
       runbook_url: https://github.com/DITEKmax/rutcampustrack/blob/main/docs/operations/monitoring/observability.md
   - alert: TempoSpansDiscarded
     expr: sum by (job, environment, reason) (increase(tempo_discarded_spans_total[5m])) > 0
@@ -116,9 +124,10 @@ groups:
       severity: warning
       owner: platform
     annotations:
-      summary: TempoSpansDiscarded in {{ $labels.job }} / {{ $labels.instance }}
-      description: Telemetry loss, evaluation, delivery or storage capacity is degraded. Inspect the component logs and quota
-        before treating dashboards as complete; preserve persistent data.
+      summary: Tempo отбрасывает спаны трассировок — {{ $labels.job }} / {{ $labels.instance }}
+      description: Возможны потери телеметрии, сбои вычисления правил или доставки и нехватка места в хранилище.
+        Проверьте журналы компонента и квоты, прежде чем полагаться на полноту данных на дашбордах. Сохраните данные в
+        постоянном хранилище.
       runbook_url: https://github.com/DITEKmax/rutcampustrack/blob/main/docs/operations/monitoring/observability.md
   - alert: FilesystemInodesLow
     expr: (node_filesystem_files_free{fstype=~"ext4|xfs|btrfs"} / node_filesystem_files{fstype=~"ext4|xfs|btrfs"} < 0.10)
@@ -128,9 +137,10 @@ groups:
       severity: warning
       owner: platform
     annotations:
-      summary: FilesystemInodesLow in {{ $labels.job }} / {{ $labels.instance }}
-      description: Telemetry loss, evaluation, delivery or storage capacity is degraded. Inspect the component logs and quota
-        before treating dashboards as complete; preserve persistent data.
+      summary: На файловой системе свободно менее 10% inode — {{ $labels.job }} / {{ $labels.instance }}
+      description: Возможны потери телеметрии, сбои вычисления правил или доставки и нехватка места в хранилище.
+        Проверьте журналы компонента и квоты, прежде чем полагаться на полноту данных на дашбордах. Сохраните данные в
+        постоянном хранилище.
       runbook_url: https://github.com/DITEKmax/rutcampustrack/blob/main/docs/operations/monitoring/observability.md
   - alert: FilesystemHeadroomLow
     expr: (node_filesystem_avail_bytes{fstype=~"ext4|xfs|btrfs"} < 4 * 1024 * 1024 * 1024)
@@ -141,9 +151,10 @@ groups:
       severity: warning
       owner: platform
     annotations:
-      summary: FilesystemHeadroomLow in {{ $labels.job }} / {{ $labels.instance }}
-      description: Telemetry loss, evaluation, delivery or storage capacity is degraded. Inspect the component logs and quota
-        before treating dashboards as complete; preserve persistent data.
+      summary: На файловой системе свободно менее 4 ГиБ и менее 10% места — {{ $labels.job }} / {{ $labels.instance }}
+      description: Возможны потери телеметрии, сбои вычисления правил или доставки и нехватка места в хранилище.
+        Проверьте журналы компонента и квоты, прежде чем полагаться на полноту данных на дашбордах. Сохраните данные в
+        постоянном хранилище.
       runbook_url: https://github.com/DITEKmax/rutcampustrack/blob/main/docs/operations/monitoring/observability.md
   - alert: ReportProcessingFailed
     expr: attendance_report_last_failure_timestamp_seconds > 0 and time() - attendance_report_last_failure_timestamp_seconds
@@ -152,10 +163,10 @@ groups:
       severity: warning
       owner: platform
     annotations:
-      summary: Report processing failure in {{ $labels.report }} / {{ $labels.format }}
-      description: An eligible report processing attempt failed or exhausted admission capacity; expected400/403/422 rejections
-        do not update this gauge. First event is detectable even before a second counter sample. Inspect safe request/trace
-        IDs and the report/DLQ runbook.
+      summary: Сбой обработки отчёта {{ $labels.report }} / {{ $labels.format }}
+      description: Произошёл сбой обработки допустимого запроса на отчёт или исчерпан лимит приёма задач. Ожидаемые
+        отклонения с кодами 400/403/422 не обновляют эту метрику. Первое событие видно даже до второго замера счётчика.
+        Проверьте разрешённые к просмотру идентификаторы запроса и трассировки. См. инструкцию по отчётам и DLQ.
       runbook_url: https://github.com/DITEKmax/rutcampustrack/blob/main/docs/operations/runbooks/dlq-triage.md
 - name: business-producer-alerts
   rules:
@@ -173,10 +184,11 @@ groups:
       severity: critical
       owner: platform
     annotations:
-      summary: A durable export job failed
-      description: ERROR snapshot is durable current job state, not an attempt. Process last-failure timestamp covers the first observed terminal failure
-        and resets on restart; fresh persisted ERROR covers restart. Denied/rejected requests are excluded. Inspect job state and correlated logs; do not
-        delete retained jobs.
+      summary: Задача экспорта завершилась ошибкой
+      description: Свежий снимок ERROR показывает сохранённый окончательный результат задачи. Метка времени последнего
+        сбоя процесса фиксирует первую наблюдаемую окончательную ошибку и сбрасывается при перезапуске. Сохранённое
+        состояние ERROR учитывается и после перезапуска. Отклонённые запросы и отказы в доступе исключены. Проверьте
+        состояние задачи и связанные журналы. Не удаляйте сохранённые задачи.
       runbook_url: https://github.com/DITEKmax/rutcampustrack/blob/main/docs/operations/monitoring/observability.md
   - alert: ExportJobDeadlineExceeded
     expr: max by(job,environment,kind) (rct_export_jobs_oldest_nonterminal_age_seconds and on(job,instance,environment) (rct_export_jobs_snapshot_timestamp_seconds
@@ -186,9 +198,10 @@ groups:
       severity: warning
       owner: platform
     annotations:
-      summary: An accepted export exceeds its60s business deadline
-      description: Age is since durable admission, including queued retries; it is not the worker retry-due age. Inspect ready/error/queued/preparing states
-        and worker capacity; retain accepted work.
+      summary: Принятая задача экспорта выполняется дольше 60 с
+      description: Время отсчитывается с момента сохранения принятой задачи и включает ожидание в очереди между
+        повторными попытками. Проверьте состояния ready/error/queued/preparing и загрузку обработчиков.
+        Сохраните принятые задачи.
       runbook_url: https://github.com/DITEKmax/rutcampustrack/blob/main/docs/operations/monitoring/observability.md
   - alert: ExportJobLeaseStuck
     expr: max by(job,environment,kind) (rct_export_jobs_stuck_leases and on(job,instance,environment) (rct_export_jobs_snapshot_timestamp_seconds > time()
@@ -198,9 +211,10 @@ groups:
       severity: warning
       owner: platform
     annotations:
-      summary: Export worker lease remains expired
-      description: A fresh shared-DB snapshot sees expired running leases. Inspect bounded automatic reclaim/recovery and downstream availability; avoid
-        duplicate manual execution.
+      summary: У задачи экспорта в состоянии running истёк срок аренды
+      description: Свежий снимок общей БД показывает задачи в состоянии running с истёкшей арендой. Проверьте
+        автоматический повторный захват и восстановление в пределах установленных лимитов, а также доступность
+        зависимостей. Избегайте дублирующего ручного запуска.
       runbook_url: https://github.com/DITEKmax/rutcampustrack/blob/main/docs/operations/monitoring/observability.md
   - alert: ExportJobSnapshotStale
     expr: (time() - rct_export_jobs_snapshot_timestamp_seconds) > 30
@@ -209,9 +223,10 @@ groups:
       severity: warning
       owner: platform
     annotations:
-      summary: Export job state snapshot is stale
-      description: Scheduled5s SQL snapshot has not succeeded for30s. Queue/age gauges are filtered when stale; zero is not proof of no jobs. Inspect DB
-        connectivity and snapshot_failures_total.
+      summary: Снимок состояния задач экспорта устарел
+      description: SQL-снимок, запланированный каждые 5 с, не обновлялся более 30 с. Метрики очереди и возраста задач
+        исключаются при устаревшем снимке, поэтому нулевое значение не гарантирует отсутствия задач. Проверьте
+        подключение к БД и snapshot_failures_total.
       runbook_url: https://github.com/DITEKmax/rutcampustrack/blob/main/docs/operations/monitoring/observability.md
   - alert: NotificationBotTaskDown
     expr: notification_bot_task_alive{task=~"watchdog|polling"} == 0 or notification_bot_consumer_connected == 0
@@ -220,9 +235,9 @@ groups:
       severity: warning
       owner: platform
     annotations:
-      summary: Business notification bot task/consumer is down
-      description: Actual process task/consumer state is zero; queued work is not a delivered notification. Inspect task logs, broker connection and watchdog
-        recovery.
+      summary: Задача или потребитель бота уведомлений остановились
+      description: Метрика состояния задачи или потребителя равна нулю. Уведомления в очереди ещё не доставлены.
+        Проверьте журналы задачи, подключение к брокеру и восстановление через watchdog.
       runbook_url: https://github.com/DITEKmax/rutcampustrack/blob/main/docs/operations/monitoring/observability.md
   - alert: NotificationBotStartupFailed
     expr: notification_bot_keyboard_sync_registry_available != 1 or notification_bot_keyboard_sync_catalog_available != 1 or (time() - notification_bot_keyboard_sync_snapshot_timestamp_seconds) > 60 or notification_bot_task_alive{task="keyboard_sync"} == 0
@@ -230,8 +245,8 @@ groups:
       severity: warning
       owner: platform
     annotations:
-      summary: Notification bot keyboard recovery health is unavailable
-      description: Current durable registry, authoritative discovery, recovery worker or health snapshot is unavailable. A completed task does not prove keyboard delivery. Resolves after current health recovers.
+      summary: Недоступна проверка восстановления клавиатур бота уведомлений
+      description: Недоступны сохранённый реестр, источник данных о получателях, обработчик восстановления или снимок состояния. Завершение задачи само по себе не подтверждает доставку клавиатуры. Алерт закроется после восстановления работоспособности.
       runbook_url: https://github.com/DITEKmax/rutcampustrack/blob/main/docs/operations/monitoring/observability.md
   - alert: NotificationBotKeyboardSyncUsersFailed
     expr: notification_bot_keyboard_sync_pending > 0
@@ -239,8 +254,8 @@ groups:
       severity: warning
       owner: platform
     annotations:
-      summary: Notification bot has pending keyboard receipts
-      description: Current recipients still await authoritative scope, Telegram ACK and durable receipt. The periodic worker retries with backoff. Resolves when pending reaches zero; historical failure counters remain unchanged. Terminal unbound or unreachable chats are reported separately.
+      summary: Синхронизация клавиатур бота уведомлений ещё не подтверждена
+      description: Для части получателей ещё нужно подтвердить область доступа по основному источнику, получить подтверждение Telegram (ACK) и сохранить отметку о доставке. Периодическая задача повторяет попытки с увеличением интервала. Алерт закроется, когда ожидающих получателей не останется. Счётчики прошлых ошибок не сбрасываются. Чаты без привязки или без возможности доставки учитываются отдельно, когда попытки завершены.
       runbook_url: https://github.com/DITEKmax/rutcampustrack/blob/main/docs/operations/monitoring/observability.md
   - alert: NotificationBotSendExhausted
     expr: notification_bot_send_tasks_exhausted_total > 0
@@ -249,9 +264,10 @@ groups:
       severity: critical
       owner: platform
     annotations:
-      summary: Business notification send exhausted its retries
-      description: Process counter records actual exhausted send tasks; it is not a user delivery receipt. Absolute counter avoids hiding a first pre-scrape
-        failure. It resets on process restart; retained broker/DLQ state must be inspected.
+      summary: Бот уведомлений исчерпал попытки отправки
+      description: Счётчик процесса учитывает задачи отправки, исчерпавшие повторные попытки. Подтверждение доставки
+        пользователю учитывается отдельно. Абсолютное значение позволяет заметить первый сбой ещё до первого сбора
+        метрик. Счётчик сбрасывается при перезапуске процесса. Проверьте сохранённое состояние брокера и DLQ.
       runbook_url: https://github.com/DITEKmax/rutcampustrack/blob/main/docs/operations/monitoring/observability.md
   - alert: ExportJobBudgetBurnFast
     expr: rct_sli:export_bad_ratio5m > (14.4 * 0.005) and rct_sli:export_bad_ratio1h > (14.4 * 0.005) and (sum by(job,instance,environment,kind) (increase(rct_export_jobs_terminal_total{outcome=~"success|failure"}[5m]))
@@ -261,10 +277,11 @@ groups:
       severity: critical
       owner: platform
     annotations:
-      summary: Export60s/99.5% objective burns its budget
-      description: Eligible denominator is once-only committed terminal success/failure; good is successful completion within60s, including queue/retry
-        wait. Expected authority denied/size rejected and internal retry attempts are excluded. Low traffic remains NaN/insufficient; single terminal failure
-        and accepted-age alerts are separate.
+      summary: Быстро расходуется бюджет ошибок экспорта (99,5% задач за 60 с)
+      description: В расчёт один раз входит зафиксированный итог каждой задачи — успех или ошибка. Успехом считается
+        завершение за 60 с с учётом ожидания в очереди и повторных попыток. Ожидаемые отказы в доступе или по размеру и
+        внутренние повторы исключены. При низком трафике данных недостаточно, значение может быть NaN. Для отдельных
+        окончательных сбоев и превышения возраста принятой задачи есть свои алерты.
       runbook_url: https://github.com/DITEKmax/rutcampustrack/blob/main/docs/operations/monitoring/observability.md
 - name: export-slo-window-rollup
   interval: 30m

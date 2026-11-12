@@ -20,15 +20,18 @@ from bot.services.send_queue import SendTask, TelegramSendQueue
 
 logger = logging.getLogger(__name__)
 
-SEVERITY_EMOJI = {
-    "critical": "🔴",
-    "warning": "🟡",
-    "info": "🔵",
+SEVERITY_DISPLAY = {
+    "critical": ("🔴", "Критическое"),
+    "warning": ("🟡", "Предупреждение"),
+    "info": ("🔵", "Информация"),
+    "unknown": ("⚪", "Важность не указана"),
 }
 
-STATUS_EMOJI = {
-    "firing": "🔔",
-    "resolved": "✅",
+STATUS_DISPLAY = {
+    "firing": ("🔔", "Активно"),
+    "resolved": ("✅", "Закрыто"),
+    "succeeded": ("❓", "Успешно"),
+    "unknown": ("❓", "Не указан"),
 }
 
 
@@ -52,7 +55,7 @@ def _parse_admin_ids(raw: str | None) -> list[int]:
 # All plain fields and fixed labels together fit Telegram's 4096-unit limit.
 # Bound before escaping so entities and our HTML tags always remain complete.
 _MAX_DESCRIPTION_CHARS = 3500
-_TRUNCATION_SUFFIX = "…\n[truncated]"
+_TRUNCATION_SUFFIX = "…\n[текст сокращён]"
 
 
 def _truncate(text: str, limit: int) -> str:
@@ -66,19 +69,18 @@ def _format_message(payload: dict) -> str:
     name = html.escape(_truncate(str(payload.get("name", "unknown")), 200))
     severity = str(payload.get("severity", "unknown")).lower()
     status = str(payload.get("status", "unknown")).lower()
-    severity_text = html.escape(_truncate(severity.upper(), 32))
-    status_text = html.escape(_truncate(status, 32))
+    severity_marker, severity_label = SEVERITY_DISPLAY.get(severity, ("⚪", severity.upper()))
+    status_prefix, status_label = STATUS_DISPLAY.get(status, ("❓", status))
+    severity_text = html.escape(_truncate(severity_label, 32))
+    status_text = html.escape(_truncate(status_label, 32))
     summary = html.escape(_truncate(str(payload.get("summary") or ""), 250))
     description = html.escape(_truncate(str(payload.get("description") or ""), _MAX_DESCRIPTION_CHARS))
 
     if name == "DeploymentSucceeded" and status == "succeeded":
         return f"✅ <b>RutCampusTrack успешно развёрнут</b>\n{description}"
 
-    status_prefix = STATUS_EMOJI.get(status, "❓")
-    severity_marker = SEVERITY_EMOJI.get(severity, "⚪")
-
     lines = [
-        f"{status_prefix} <b>Alert: {severity_marker} {severity_text}</b>",
+        f"{status_prefix} <b>Оповещение: {severity_marker} {severity_text}</b>",
         f"Название: {name}",
         f"Статус: {status_text}",
     ]

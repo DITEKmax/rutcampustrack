@@ -14,7 +14,7 @@ from datetime import date
 
 from aiogram import Bot
 
-from bot.notifications.presentation import message_options
+from bot.notifications.presentation import message_options, private_request_event
 from bot.services.notification_prefs import type_for_event
 from bot.services.send_queue import SendTask, TelegramSendQueue
 
@@ -62,7 +62,7 @@ def _excluded_lesson_ref(raw) -> str:
     subject = lesson.get("subject_name")
     if isinstance(subject, str) and subject.strip():
         parts.append(_bounded_text(subject, 80))
-    return " · ".join(parts)
+    return ", ".join(parts)
 
 
 def _partial_approval_text(lessons: list) -> str:
@@ -102,7 +102,7 @@ async def handle_student_alert(
 
     if type_for_event(event) is None:
         return
-    options = message_options(event, config=kwargs.get("config"))
+    options = message_options(private_request_event(event), config=kwargs.get("config"))
 
     # Resolve student's telegram_id via gRPC (no local cache — fires rarely).
     # Let lookup failures reach the consumer boundary for reject/DLQ handling.

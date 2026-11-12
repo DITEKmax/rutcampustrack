@@ -20,8 +20,8 @@ groups:
         labels:
           severity: warning
         annotations:
-          summary: 'TLS-cert {{ $labels.instance }} истекает через {{ $value | printf "%.1f" }} дней'
-          description: 'Сертификат для {{ $labels.instance }} истекает через {{ $value | printf "%.1f" }} дней. Let''s Encrypt должен auto-renew (certbot loop sleep 12h), nginx auto-reload каждые 5 мин подхватит. Если cert не обновляется — см. docs/operations/runbooks/cert-renewal.md.'
+          summary: 'TLS-сертификат {{ $labels.instance }} истекает через {{ $value | printf "%.1f" }} дн.'
+          description: 'Сертификат для {{ $labels.instance }} истекает через {{ $value | printf "%.1f" }} дн. Certbot проверяет обновление Let''s Encrypt каждые 12 ч, nginx автоматически подхватывает новый сертификат при перезагрузке конфигурации каждые 5 мин. Если сертификат не обновляется, см. docs/operations/runbooks/cert-renewal.md.'
 
       # CRITICAL — < 7 дней. Если auto-renew всё ещё не сработал, надо
       # руками разбираться. ACME challenge может быть сломан (DNS,
@@ -34,8 +34,8 @@ groups:
         labels:
           severity: critical
         annotations:
-          summary: 'URGENT: cert {{ $labels.instance }} истекает через {{ $value | printf "%.1f" }} дней'
-          description: 'Auto-renew не сработал за 23+ дня. Manual intervention срочно: `docker exec rct-certbot certbot renew --force-renewal`. Если ACME challenge fail — проверь nginx /.well-known/acme-challenge/ + firewall :80.'
+          summary: 'Срочно — TLS-сертификат {{ $labels.instance }} истекает через {{ $value | printf "%.1f" }} дн.'
+          description: 'Автоматическое обновление не сработало за 23 дня или дольше. Срочно обновите сертификат вручную командой `docker exec rct-certbot certbot renew --force-renewal`. Если проверка ACME не проходит, проверьте путь nginx /.well-known/acme-challenge/ и правила файрвола для порта :80.'
 
       # Probe failure — не можем dotter cert info вообще. Cert может быть
       # уже expired либо HTTPS endpoint down.
@@ -45,5 +45,5 @@ groups:
         labels:
           severity: critical
         annotations:
-          summary: "Blackbox probe {{ $labels.instance }} fail'ит"
-          description: "Не удаётся probing'нуть HTTPS endpoint {{ $labels.instance }} 10 мин. Возможные причины: nginx down (см. ServiceDown alert), TLS handshake fail (cert expired/revoked), DNS issue."
+          summary: "Blackbox Exporter не может проверить HTTPS на {{ $labels.instance }}"
+          description: "Проверка HTTPS для {{ $labels.instance }} завершается ошибкой 10 мин. Возможные причины — nginx недоступен (см. ServiceDown), ошибка согласования TLS (сертификат истёк или отозван) или сбой DNS."

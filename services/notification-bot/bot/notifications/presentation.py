@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import date
+from datetime import date, datetime, time, timedelta, timezone
 from html import escape
 
 from aiogram.types import InlineKeyboardMarkup
@@ -45,11 +45,41 @@ HEADINGS = {
     "GROUP_ARCHIVED": "Группа архивирована",
 }
 MARKS = {
-    "present": "присутствует",
-    "absent": "отсутствует",
-    "excused": "уважительная причина",
-    "free_attendance": "свободное посещение",
+    "present": ("✅", "присутствует"),
+    "absent": ("❌", "отсутствует"),
+    "excused": ("📝", "уважительная причина"),
+    "free_attendance": ("ℹ️", "свободное посещение"),
 }
+LESSON_TYPES = {"lecture": "лекция", "practice": "практика", "lab": "лабораторная"}
+ICONS = {
+    "LESSON_CANCELLED": "🚫",
+    "LESSON_TRANSFERRED": "🗓",
+    "LESSON_UPDATED": "✏️",
+    "LESSON_RESTORED": "↩️",
+    "HOMEWORK_WEEKLY_DIGEST": "📚",
+    "EXCUSE_REQUESTED": "📩",
+    "LATE_CHECKIN_REQUESTED": "📩",
+    "EXCUSE_APPROVED": "✅",
+    "LATE_CHECKIN_APPROVED": "✅",
+    "EXCUSE_REJECTED": "❌",
+    "LATE_CHECKIN_REJECTED": "❌",
+    "EXCUSE_CANCELLED": "🚫",
+    "LATE_CHECKIN_CANCELLED": "🚫",
+}
+_REQUEST_FIELDS = {
+    "ticket_id",
+    "request_id",
+    "status",
+    "group_id",
+    "user_id",
+    "created_at",
+    "decided_at",
+    "excluded_lesson_ids",
+    "excluded_occurrence_ids",
+    "resolution_reason",
+}
+# All supported notification events postdate the last Moscow offset change.
+_MOSCOW = timezone(timedelta(hours=3), "МСК")
 
 
 def _text(value, limit=500):
@@ -66,27 +96,113 @@ def _date(value):
     return value
 
 
+def _moscow_datetime(value):
+    try:
+        stamp = datetime.fromisoformat(value.replace("Z", "+00:00"))
+        if stamp.tzinfo is not None:
+            return stamp.astimezone(_MOSCOW)
+    except (AttributeError, TypeError, ValueError, OverflowError):
+        pass
+    return None
+
+
+def _timestamp(value):
+    stamp = _moscow_datetime(value)
+    return stamp.strftime("%d.%m.%Y в %H:%M МСК") if stamp else ""
+
+
+def _lesson_time(value):
+    value = _text(value, 40)
+    stamp = _moscow_datetime(value)
+    if stamp is not None:
+        return stamp.strftime("%H:%M")
+    try:
+        if "T" in value:
+            return datetime.fromisoformat(value).strftime("%H:%M")
+        return time.fromisoformat(value).strftime("%H:%M")
+    except ValueError:
+        return value
+
+
+def _lesson_fields(payload):
+    number = _text(payload.get("lesson_number"), 10)
+    start, end = (_lesson_time(payload.get(key)) for key in ("start_time", "end_time"))
+    return {
+        "Предмет": _text(payload.get("subject_name"), 100),
+        "Вид занятия": LESSON_TYPES.get(_text(payload.get("lesson_type"), 60).lower(), ""),
+        "Дата": _date(payload.get("date") or payload.get("lesson_date")),
+        "Время": "–".join(part for part in (start, end) if part),
+        "Номер пары": f"Пара №{number}" if number and number != "0" else "",
+        "Аудитория": _text(payload.get("room") or payload.get("classroom"), 80),
+        "Группа": _text(payload.get("group_name"), 80),
+    }
+
+
 def lesson_context(payload):
     """Only display facts actually present; identifiers are action keys, never copy."""
-    lines = []
-    subject = _text(payload.get("subject_name"), 100)
-    kind = _text(payload.get("lesson_type"), 60)
-    if subject or kind:
-        lines.append(" · ".join(part for part in (subject, kind) if part))
-    day = _date(payload.get("date") or payload.get("lesson_date"))
-    start, end = _text(payload.get("start_time"), 40), _text(payload.get("end_time"), 40)
-    time = "–".join(part for part in (start, end) if part)
-    number = _text(payload.get("lesson_number"), 10)
-    when = " · ".join(part for part in (day, time, f"Пара №{number}" if number else "") if part)
-    if when:
-        lines.append(when)
-    room = _text(payload.get("room") or payload.get("classroom"), 80)
-    if room:
-        lines.append(f"Аудитория: {room}")
-    group = _text(payload.get("group_name"), 80)
-    if group:
-        lines.append(f"Группа: {group}")
-    return lines
+    fields = _lesson_fields(payload)
+    return [
+        ", ".join(part for part in (fields["Предмет"], fields["Вид занятия"]) if part),
+        ", ".join(part for part in (fields["Дата"], fields["Время"], fields["Номер пары"]) if part),
+        *[f"{label}: {fields[label]}" for label in ("Аудитория", "Группа") if fields[label]],
+    ]
+
+
+def _lesson_change(payload):
+    source, target = (payload.get(key) for key in ("source", "target"))
+    source = source if isinstance(source, dict) else {}
+    target = target if isinstance(target, dict) else {}
+    before, after = _lesson_fields(source), _lesson_fields(target)
+    changed = [label for label in before if before[label] != after[label]]
+    for field, label in (
+        ("subject_id", "Предмет"),
+        ("group_id", "Группа"),
+        ("assigned_teacher_id", "Преподаватель"),
+    ):
+        if _positive_id(source.get(field)) and _positive_id(target.get(field)) and source[field] != target[field]:
+            if label not in changed:
+                changed.append(label)
+    result = ["<b>Изменения:</b> " + ", ".join(label.lower() for label in changed), ""] if changed else []
+    for label, fields, style in (("Было", before, "s"), ("Стало", after, "b")):
+        if not any(fields.values()):
+            continue
+        if result and result[-1]:
+            result.append("")
+        result.append(f"<b>{label}</b>")
+        for field, value in fields.items():
+            if not value:
+                continue
+            text = escape(value)
+            if field in changed:
+                text = f"<{style}>{text}</{style}>"
+            result.append(f"{field}: {text}" if field != "Номер пары" else text)
+    return result
+
+
+def private_request_event(event):
+    return {
+        **event,
+        "payload": {key: value for key, value in (event.get("payload") or {}).items() if key in _REQUEST_FIELDS},
+    }
+
+
+def digest_pages(event):
+    from bot.services.homework_pager import homework_pages
+
+    payload = event["payload"]
+    period = " — ".join(part for part in (_date(payload.get("week_start")), _date(payload.get("week_end"))) if part)
+    items = payload.get("items") or []
+    return homework_pages(
+        f"{ICONS['HOMEWORK_WEEKLY_DIGEST']} {HEADINGS['HOMEWORK_WEEKLY_DIGEST']}",
+        period,
+        "Невыполненных заданий за этот период нет",
+        [
+            {key: item[key] for key in ("subject_name", "lesson_date", "lesson_number", "title") if key in item}
+            for item in items
+            if isinstance(item, dict)
+        ],
+        show_completion=False,
+    )
 
 
 def _excluded_lesson_context(lesson):
@@ -119,13 +235,7 @@ def render(event, *, facts=None):
         if name:
             lines = [f"Группа: {name}"]
     if notification_type in {"LESSON_TRANSFERRED", "LESSON_UPDATED"}:
-        lines = []
-        for key, label in (("source", "Было"), ("target", "Стало")):
-            snapshot = payload.get(key)
-            if isinstance(snapshot, dict):
-                context = lesson_context(snapshot)
-                if context:
-                    lines.append(label + ": " + " · ".join(context))
+        return _card(heading, notification_type, _lesson_change(payload))
     if notification_type == "GROUP_MEMBERSHIP_CHANGED":
         if payload.get("change") == "TRANSFERRED":
             lines.append("Перевод в другую группу")
@@ -173,18 +283,7 @@ def render(event, *, facts=None):
             lines = lesson_context(homework)
             payload = {**payload, **homework}
         if notification_type == "HOMEWORK_WEEKLY_DIGEST":
-            lines = [
-                " — ".join(part for part in (_date(payload.get("week_start")), _date(payload.get("week_end"))) if part)
-            ]
-            items = [item for item in payload.get("items", []) if isinstance(item, dict)]
-            for item in items[:8]:
-                context = " · ".join(lesson_context(item)[:2])
-                title = _text(item.get("title"), 160)
-                lines.append(" · ".join(part for part in (context, title) if part))
-            if len(items) > 8:
-                lines.append(f"Ещё заданий: {len(items) - 8}")
-            if not items:
-                lines.append("Невыполненных заданий за этот период нет")
+            return escape("\n\n".join(digest_pages(event)))
         else:
             title = _text(payload.get("title"), 250)
             if title:
@@ -204,9 +303,11 @@ def render(event, *, facts=None):
         if isinstance(lessons, list):
             for lesson in lessons[:4]:
                 if isinstance(lesson, dict):
-                    context = " · ".join(lesson_context(lesson)[:2])
+                    context = "\n  ".join(part for part in lesson_context(lesson)[:2] if part)
                     if context:
-                        lines.append(context)
+                        lines.append(f"• {context}")
+            if len(lessons) > 4:
+                lines.append(f"Ещё занятий: {len(lessons) - 4}")
         excluded = payload.get("excluded_lessons")
         excluded = excluded if isinstance(excluded, list) else []
         excluded_ids = payload.get("excluded_lesson_ids") or payload.get("excluded_occurrence_ids")
@@ -219,18 +320,24 @@ def render(event, *, facts=None):
             )
             for lesson in excluded[:3]:
                 if isinstance(lesson, dict):
-                    context = " · ".join(_excluded_lesson_context(lesson)[:2])
+                    context = ", ".join(part for part in _excluded_lesson_context(lesson)[:2] if part)
                     if context:
                         lines.append(f"Исключено: {context}")
             if len(excluded) > 3:
                 lines.append(f"Ещё исключено: {len(excluded) - 3}")
-        created_at = _date(payload.get("created_at"))
-        decided_at = _date(payload.get("decided_at") or payload.get("decision_at"))
-        if created_at and notification_type.endswith("REQUESTED"):
-            lines.append(f"Подано: {created_at}")
-        if decided_at:
-            lines.append(f"Решение: {decided_at}")
-        reason = _text(payload.get("decision_comment") or payload.get("reason_label") or payload.get("comment"), 500)
+        created_at = _timestamp(payload.get("created_at"))
+        decided_at = _timestamp(payload.get("decided_at")) or _timestamp(event.get("occurred_at"))
+        if notification_type.endswith("REQUESTED"):
+            submitted = created_at or _timestamp(event.get("occurred_at"))
+            if submitted:
+                lines.append(f"Подано: {submitted}")
+        else:
+            if created_at:
+                lines.append(f"Подано: {created_at}")
+            if decided_at:
+                label = "Отменено" if notification_type.endswith("CANCELLED") else "Решение"
+                lines.append(f"{label}: {decided_at}")
+        reason = _text(payload.get("reason_label"), 200)
         if reason:
             lines.append(f"Причина: {reason}")
         resolution = payload.get("resolution_reason")
@@ -241,20 +348,28 @@ def render(event, *, facts=None):
     if notification_type == "ATTENDANCE_MARKED_BY_HEADMAN":
         current = MARKS.get(payload.get("status"))
         previous = MARKS.get(payload.get("old_status") or payload.get("previous_status"))
+        details = [escape(line) for line in lines if line]
         if current:
-            lines.append(f"Отметка: {previous + ' → ' if previous else ''}{current}")
-        lines.append("Автор: староста")
-        comment = _text(payload.get("comment"), 500)
-        if comment:
-            lines.append(f"Комментарий: {comment}")
+            icon, status = current
+            before = f"{previous[1]} → " if previous and previous != current else ""
+            details.append(f"{icon} <b>Отметка: {before}{status}</b>")
+        details.append("Автор: староста")
+        stamp = _timestamp(event.get("occurred_at"))
+        if stamp:
+            details.append(f"Изменено: {stamp}")
+        return _card(heading, notification_type, details)
     if notification_type == "LESSON_CANCELLED":
         reason = _text(payload.get("cancel_reason"), 500)
         if reason:
             lines.append(f"Причина: {reason}")
+    return _card(heading, notification_type, [escape(line) for line in lines if line])
+
+
+def _card(heading, notification_type, lines):
     # Bound plain values before escaping; never cut HTML/entities after rendering.
-    return f"<b>{escape(heading)}</b>" + (
-        "\n\n" + "\n".join(escape(line) for line in lines if line) if any(lines) else ""
-    )
+    icon = ICONS.get(notification_type)
+    prefix = f"{icon} " if icon else ""
+    return f"<b>{prefix}{escape(heading)}</b>" + ("\n\n" + "\n".join(lines) if lines else "")
 
 
 def _positive_id(value):
@@ -332,8 +447,8 @@ def notification_action(event, *, facts=None, role="STUDENT"):
     return action if encode_notification_action(action) is not None else None
 
 
-def message_options(event, *, config=None, facts=None, fallback_markup=None, role="STUDENT"):
-    options = {"text": render(event, facts=facts), "parse_mode": "HTML"}
+def message_options(event, *, config=None, facts=None, fallback_markup=None, role="STUDENT", text=None):
+    options = {"text": render(event, facts=facts) if text is None else text, "parse_mode": "HTML"}
     base_url = None
     if config is not None:
         base_url = getattr(config, "mini_app_web_url", None) or getattr(config, "mini_app_url", None)

@@ -7,9 +7,7 @@
 - когда решение принято через web-панель, attendance-service публикует
   excuse.decided / late_checkin.decided; в event_dispatcher мы поднимаем
   записи и редактируем исходные сообщения в Telegram — убираем кнопки и
-  дописываем вердикт. Если решение пришло из TG — такой же edit делается
-  в callback-хендлере, а оставшиеся записи (у других старост той же группы)
-  поправит consumer.decided.
+  дописываем вердикт. Consumer применяет тот же финальный статус для решения из TG и из веба.
 
 Ключ: {key_prefix}{kind}:{request_id} — так excuse и late_checkin не
 конфликтуют по общему id-пространству.
@@ -49,31 +47,42 @@ class RequestMessageTracker:
     def _key(self, kind: str, request_id: str | int) -> str:
         return f"{self._key_prefix}{kind}:{request_id}"
 
-    async def add(self, kind: str, request_id: str | int, chat_id: int, message_id: int, user_id: int) -> None:
+    async def add(
+        self,
+        kind: str,
+        request_id: str | int,
+        chat_id: int,
+        message_id: int,
+        user_id: int,
+        *,
+        delivery_receipt: tuple[str, int] | None = None,
+    ) -> None:
         """Добавить одну пару (chat_id, message_id) в список запроса."""
         key = self._key(kind, request_id)
         payload = json.dumps({"chat_id": chat_id, "message_id": message_id, "user_id": user_id})
-        try:
-            await self._redis.rpush(key, payload)
-            await self._redis.expire(key, self._ttl)
-        except Exception:
-            logger.exception("Redis error storing request message_id (kind=%s, id=%s)", kind, request_id)
+        async with self._redis.pipeline(transaction=True) as transaction:
+            # An ambiguous Redis response can replay the same provider receipt.
+            transaction.lrem(key, 0, payload)
+            transaction.rpush(key, payload)
+            transaction.expire(key, self._ttl)
+            if delivery_receipt is not None:
+                receipt_key, receipt_ttl = delivery_receipt
+                transaction.set(receipt_key, "sent", ex=receipt_ttl)
+            await transaction.execute()
 
     async def get_all(self, kind: str, request_id: str | int) -> list[dict]:
         """Вернуть все сохранённые (chat_id, message_id) для запроса."""
         key = self._key(kind, request_id)
-        try:
-            raw = await self._redis.lrange(key, 0, -1)
-            out = []
-            for item in raw:
-                try:
-                    out.append(json.loads(item))
-                except (ValueError, TypeError):
-                    continue
-            return out
-        except Exception:
-            logger.exception("Redis error reading request message_ids (kind=%s, id=%s)", kind, request_id)
-            return []
+        raw = await self._redis.lrange(key, 0, -1)
+        out = []
+        for item in raw:
+            try:
+                entry = json.loads(item)
+            except (ValueError, TypeError):
+                continue
+            if isinstance(entry, dict):
+                out.append(entry)
+        return out
 
     async def delete_entry(self, kind: str, request_id: str | int, entry: dict) -> None:
         """Remove only a successfully delivered, identified entry; unknown legacy owners stay pending."""

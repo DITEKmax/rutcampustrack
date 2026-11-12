@@ -14,12 +14,15 @@ logger = logging.getLogger(__name__)
 
 start_router = Router()
 
-_WHERE_TO_MARK_BLOCK = (
-    "🌐 <b>Где отмечаться</b>\n"
+ACCOUNT_LINK_HELP = "Обратитесь к старосте вашей группы или системному администратору (zin.zin@internet.ru)."
+_ACCOUNT_NOT_FOUND = f"⚠️ <b>Аккаунт не найден</b>\n\nВаш Telegram пока не привязан к системе.\n\n{ACCOUNT_LINK_HELP}"
+
+_ACCESS_BLOCK = (
+    "🌐 <b>Как открыть RutCampusTrack</b>\n"
     "• Без VPN: https://ru.ruttrack.site\n"
     "• С VPN: https://ruttrack.site\n"
     "• Telegram Mini App\n"
-    "• Приложение на телефон: <code>ru.ruttrack.site/app</code>"
+    '• Приложение на телефон: <a href="https://ruttrack.site/app">https://ruttrack.site/app</a>'
 )
 
 _LINKS_BLOCK = (
@@ -67,7 +70,7 @@ def private_sender(message: Message) -> int | None:
 async def _private_only(message: Message) -> bool:
     if private_sender(message) is not None:
         return True
-    await message.answer("Открой личный чат с ботом, чтобы посмотреть свой аккаунт.")
+    await message.answer("Откройте личный чат с ботом, чтобы посмотреть свой аккаунт.")
     return False
 
 
@@ -139,9 +142,7 @@ async def _publish_start(message, telegram_id, keyboard_sync, credential_cards, 
         if not response.found:
             # D-03: unknown telegram_id
             await message.answer(
-                "⚠️ <b>Аккаунт не найден</b>\n\n"
-                "Ваш Telegram пока не привязан к системе.\n\n"
-                "Обратитесь к старосте вашей группы, чтобы он привязал ваш аккаунт.",
+                _ACCOUNT_NOT_FOUND,
                 reply_markup=keyboard if keyboard_pending else None,
                 parse_mode="HTML",
             )
@@ -157,7 +158,7 @@ async def _publish_start(message, telegram_id, keyboard_sync, credential_cards, 
             message,
             response,
             intro=f"👋 <b>Добро пожаловать, {display_name}</b>\n\n",
-            footer=f"\n\n{_WHERE_TO_MARK_BLOCK}\n\n{_INSTALL_BLOCK}",
+            footer=f"\n\n{_ACCESS_BLOCK}\n\n{_INSTALL_BLOCK}",
         )
         if card_delivered:
             text = "Меню бота"
@@ -172,7 +173,7 @@ async def _publish_start(message, telegram_id, keyboard_sync, credential_cards, 
                 "👤 <b>Профиль</b>\n"
                 f"Логин: <code>{login}</code>\n"
                 f"Группа: {group_name}\n\n"
-                f"{_WHERE_TO_MARK_BLOCK}\n\n"
+                f"{_ACCESS_BLOCK}\n\n"
                 f"{_INSTALL_BLOCK}"
             )
         options = scope.keyboard_options
@@ -244,7 +245,7 @@ async def cmd_credentials(message: Message, academic_client, credential_cards=No
 
     if not response.found:
         await message.answer(
-            "⚠️ <b>Аккаунт не найден</b>\n\nВаш Telegram пока не привязан к системе.",
+            _ACCOUNT_NOT_FOUND,
             parse_mode="HTML",
         )
         return
@@ -256,7 +257,7 @@ async def cmd_credentials(message: Message, academic_client, credential_cards=No
         response, _ = await _refresh_own_profile(bot_menu_client, telegram_id, response)
     except Exception:
         logger.warning("Own profile fallback authority unavailable")
-        await message.answer("Сервис временно недоступен. Попробуй ещё раз чуть позже.")
+        await message.answer("Сервис временно недоступен. Попробуйте ещё раз чуть позже.")
         return
 
     display_name = html.escape(str(response.display_name or ""))
@@ -279,7 +280,7 @@ async def cmd_credentials(message: Message, academic_client, credential_cards=No
             ]
         )
     else:
-        lines.append("Начальные данные входа сейчас недоступны. Попробуй ещё раз позже.")
+        lines.append("Начальные данные для входа сейчас недоступны. Попробуйте ещё раз позже.")
 
     await message.answer("\n".join(lines), parse_mode="HTML")
 

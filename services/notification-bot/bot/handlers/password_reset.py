@@ -24,7 +24,7 @@ async def cmd_password_reset(
 ) -> None:
     """Request a reset code while keeping unknown accounts indistinguishable."""
     if message.chat.type != "private":
-        await message.answer("Для сброса пароля открой личный чат с ботом и отправь команду /reset.")
+        await message.answer("Для сброса пароля откройте личный чат с ботом и отправьте команду /reset.")
         return
 
     telegram_id = message.from_user.id
@@ -39,7 +39,7 @@ async def cmd_password_reset(
         await auth_client.request_password_reset(telegram_id)
     except aiohttp.ClientResponseError as error:
         if error.status == 429:
-            await message.answer("⏳ Слишком много запросов. Подожди немного и попробуй снова.")
+            await message.answer("⏳ Слишком много запросов. Подождите немного и попробуйте снова.")
             return
         logger.warning(
             "Password-reset request failed: status=%s",
@@ -53,8 +53,8 @@ async def cmd_password_reset(
     else:
         await message.answer(
             "Если этот Telegram привязан к аккаунту, код придёт сюда. "
-            "Открой ссылку из сообщения бота, чтобы задать новый пароль."
+            "Откройте ссылку из сообщения бота, чтобы задать новый пароль."
         )
         return
 
-    await message.answer("⚠️ Сервис временно недоступен. Попробуй ещё раз чуть позже.")
+    await message.answer("⚠️ Сервис временно недоступен. Попробуйте ещё раз чуть позже.")

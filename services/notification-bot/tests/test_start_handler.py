@@ -78,7 +78,8 @@ async def test_unknown_binding_never_requests_credentials(handler):
     cards = SimpleNamespace(deliver=AsyncMock())
     await _invoke(handler, message, academic, cards)
     cards.deliver.assert_not_awaited()
-    assert "Аккаунт не найден" in message.answer.await_args.args[0]
+    text = message.answer.await_args.args[0]
+    assert "Аккаунт не найден" in text and "старосте" in text and "zin.zin@internet.ru" in text
 
 
 @pytest.mark.asyncio
@@ -92,6 +93,9 @@ async def test_private_bound_handler_uses_only_dedicated_card_service(handler):
     cards.deliver.assert_awaited_once()
     if handler is cmd_credentials:
         message.answer.assert_not_awaited()
+    else:
+        footer = cards.deliver.await_args.kwargs["footer"]
+        assert 'href="https://ruttrack.site/app">https://ruttrack.site/app</a>' in footer
 
 
 @pytest.mark.asyncio

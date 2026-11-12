@@ -1,12 +1,12 @@
 """Handlers for homework notification events."""
 
 import logging
-from collections import defaultdict
+from html import escape
 
 import grpc
 from aiogram import Bot
 
-from bot.notifications.presentation import message_options
+from bot.notifications.presentation import digest_pages, message_options
 from bot.services.notification_prefs import NotificationPreferencesUnavailable, type_for_event
 from bot.services.send_queue import SendTask, TelegramSendQueue, group_audience
 
@@ -101,16 +101,21 @@ async def _handle_weekly_digest(
         return
 
     event = {"event_type": "homework.weekly_digest", "payload": payload}
-    options = message_options(event, config=config)
-    await send_queue.put(
-        SendTask(
-            coroutine_factory=lambda chat=user.telegram_id: bot.send_message(chat_id=chat, **options),
-            user_id=user_id,
-            chat_id=user.telegram_id,
-            category="homework",
-            notification_type=type_for_event(event),
+    pages = digest_pages(event)
+    for index, page in enumerate(pages, start=1):
+        suffix = f"\n\nСтраница {index} из {len(pages)}" if len(pages) > 1 else ""
+        options = message_options(event, config=config, text=escape(page + suffix))
+        await send_queue.put(
+            SendTask(
+                coroutine_factory=lambda chat=user.telegram_id, page_options=options: bot.send_message(
+                    chat_id=chat, **page_options
+                ),
+                user_id=user_id,
+                chat_id=user.telegram_id,
+                category="homework",
+                notification_type=type_for_event(event),
+            )
         )
-    )
 
 
 async def _handle_due_reminder(
@@ -148,72 +153,3 @@ async def _resolve_user(user_id, academic_client):
             return None
         logger.warning("Could not resolve user_id=%s for homework notification", user_id, exc_info=True)
         raise NotificationPreferencesUnavailable("Current user identity is unavailable")
-
-
-def _build_due_reminder_text(payload: dict, homework: dict) -> str:
-    due_date = payload.get("due_date") or homework.get("lesson_date")
-    lines = [
-        "⏰ Напоминание о домашнем задании",
-        "",
-        f"Дедлайн: {_format_date(due_date)}",
-        _format_homework_item(homework, numbered=False),
-    ]
-    _add_optional(lines, "Описание", homework.get("description"))
-    _add_optional(lines, "Ссылка", homework.get("link"))
-    return _truncate("\n".join(line for line in lines if line is not None))
-
-
-def _build_weekly_digest_text(payload: dict) -> str:
-    week_start = _format_date(payload.get("week_start"))
-    week_end = _format_date(payload.get("week_end"))
-    items = [item for item in payload.get("items", []) if isinstance(item, dict)]
-    lines = [
-        "📚 Домашнее задание на следующую неделю",
-        f"{week_start} — {week_end}",
-        "",
-    ]
-    if not items:
-        lines.append("Невыполненных заданий на следующую неделю нет.")
-        return "\n".join(lines)
-
-    by_date: dict[str, list[dict]] = defaultdict(list)
-    for item in items:
-        by_date[str(item.get("lesson_date") or "")].append(item)
-
-    index = 1
-    for lesson_date in sorted(by_date):
-        lines.append(_format_date(lesson_date))
-        for item in sorted(by_date[lesson_date], key=lambda i: (i.get("lesson_number") or 0, i.get("title") or "")):
-            lines.append(_format_homework_item(item, number=index))
-            index += 1
-        lines.append("")
-
-    return _truncate("\n".join(lines).strip())
-
-
-def _format_homework_item(item: dict, numbered: bool = True, number: int | None = None) -> str:
-    prefix = f"{number}. " if numbered and number is not None else ""
-    subject = item.get("subject_name") or "Предмет"
-    title = item.get("title") or "Домашнее задание"
-    lesson_number = item.get("lesson_number")
-    lesson_part = f" · пара №{lesson_number}" if lesson_number else ""
-    return f"{prefix}{subject}{lesson_part}\n   {title}"
-
-
-def _add_optional(lines: list[str], label: str, value) -> None:
-    if isinstance(value, str) and value.strip():
-        lines.extend(["", f"{label}:", value.strip()])
-
-
-def _format_date(value) -> str:
-    if not isinstance(value, str) or len(value) < 10:
-        return str(value or "")
-    if value[4] == "-" and value[7] == "-":
-        return f"{value[8:10]}.{value[5:7]}.{value[0:4]}"
-    return value
-
-
-def _truncate(text: str, limit: int = 3900) -> str:
-    if len(text) <= limit:
-        return text
-    return text[: limit - 16].rstrip() + "\n\n..."

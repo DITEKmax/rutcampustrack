@@ -14,9 +14,17 @@ import structlog
 from opentelemetry import trace
 from opentelemetry.sdk.trace import TracerProvider
 
-from bot.consumers.event_consumer import MAX_RETRIES, PARKING_QUEUE_NAME, QUEUE_NAME, RETRY_HEADER, start_consumer
+from bot.consumers.event_consumer import (
+    DLQ_QUEUE_NAME,
+    MAX_RETRIES,
+    PARKING_QUEUE_NAME,
+    QUEUE_NAME,
+    RETRY_HEADER,
+    start_consumer,
+)
 from bot.observability import EVENT_OUTCOMES, setup_observability
 from bot.services.notification_prefs import NotificationPreferencesUnavailable
+from tests.business_delivery import BusinessDelivery, fact_event
 
 EVENT = {
     "event_id": "b1e5df89-f73c-4c06-9b3c-231fb56fe41c",
@@ -185,6 +193,63 @@ async def test_atomic_prepare_publish_ack_commit_preserves_facts_and_minimal_rol
     dispatcher.dispatch.assert_not_awaited()
     guard.complete.assert_not_awaited()
     guard.release.assert_awaited_once()
+
+
+async def test_provider_exhaustion_redrive_keeps_digest_progress_through_dlq_lifetime(monkeypatch, fake_redis):
+    h = BusinessDelivery(fake_redis)
+    h.roles = {1: ["STUDENT"]}
+    raw = fact_event(
+        "homework.weekly_digest",
+        week_start="2026-10-12",
+        week_end="2026-10-18",
+        items=[
+            {
+                "subject_name": "Информатика",
+                "lesson_date": "2026-10-12",
+                "lesson_number": index + 1,
+                "title": f"Задание {index:02d} " + "😀" * 125,
+            }
+            for index in range(40)
+        ],
+    )
+    prepared = await h.dispatcher.prepare(raw)
+    rejected, _, _, channel, guard = broker(monkeypatch, event=prepared, prepared_transport=True)
+    send = h.bot.send_message
+    failures = 0
+
+    async def exhausted_provider(**kwargs):
+        nonlocal failures
+        if "Страница 2 из" in kwargs["text"]:
+            failures += 1
+            raise RuntimeError("synthetic provider unavailable")
+        return await send(**kwargs)
+
+    h.bot.send_message = exhausted_provider
+    h.queue._RETRY_DELAYS = [0]
+    h.queue.start()
+    try:
+        await asyncio.wait_for(start_consumer("amqp://synthetic", h.dispatcher, guard), 3)
+        assert rejected.rejected and not rejected.acked and not rejected.published
+        assert failures == 2 and len(h.sent) == 1
+
+        dlq_ttl = next(
+            call.kwargs["arguments"]["x-message-ttl"] // 1000
+            for call in channel.declare_queue.await_args_list
+            if call.args[0] == DLQ_QUEUE_NAME
+        )
+        key = f"notification-bot:digest-pages:{raw['event_id']}:1"
+        # Simulate a manual redrive near DLQ expiry, including time spent processing before rejection.
+        await fake_redis.expire(key, (await fake_redis.ttl(key)) - dlq_ttl - 60)
+        h.bot.send_message = send
+        replayed, _, _, _, redrive_guard = broker(monkeypatch, event=prepared, prepared_transport=True)
+        await asyncio.wait_for(start_consumer("amqp://synthetic", h.dispatcher, redrive_guard), 3)
+        assert replayed.acked and not replayed.rejected and not replayed.published
+        assert len(h.sent) > 1
+        assert all(f"Страница {index} из {len(h.sent)}" in item["text"] for index, item in enumerate(h.sent, 1))
+        text = "".join(item["text"] for item in h.sent)
+        assert all(text.count(f"Задание {index:02d}") == 1 for index in range(40))
+    finally:
+        await h.queue.shutdown()
 
 
 async def test_commit_unavailable_retains_original_without_partial_replacement(monkeypatch):

@@ -35,6 +35,33 @@ _PENDING_STATUS = attendance_pb2.STUDENT_REQUEST_STATUS_PENDING
 _TERMINAL_LOOKUP_CODES = frozenset({grpc.StatusCode.NOT_FOUND, grpc.StatusCode.INVALID_ARGUMENT})
 
 
+def request_facts(context, *, show_student):
+    """Canonical display facts. Comments and attachments remain in the application."""
+    detail = context.detail
+    summary = detail.summary
+    facts = {"created_at": summary.created_at}
+    if detail.HasField("decision"):
+        facts["decided_at"] = detail.decision.decided_at
+    if show_student:
+        facts.update(
+            student_name=context.student_name,
+            lessons=[
+                {
+                    "date": lesson.date,
+                    "lesson_number": lesson.lesson_number,
+                    "subject_name": lesson.subject_name,
+                    "lesson_type": lesson.subject_type,
+                    "start_time": lesson.starts_at,
+                    "end_time": lesson.ends_at,
+                }
+                for lesson in summary.lessons
+            ],
+        )
+        if summary.kind == attendance_pb2.STUDENT_REQUEST_KIND_EXCUSE and detail.HasField("reason"):
+            facts["reason_label"] = _EXCUSE_REASON_LABELS.get(detail.reason, "")
+    return facts
+
+
 def request_audience(academic, attendance, kind, request_id, group_id, user_id, chat_id, *, pending=True):
     """Current canonical request group plus current headman grant, before each send."""
 
@@ -116,26 +143,8 @@ async def handle_headman_alert(
             ]
         )
 
-    lessons = [
-        {
-            "date": lesson.date,
-            "lesson_number": lesson.lesson_number,
-            "subject_name": lesson.subject_name,
-            "lesson_type": lesson.subject_type,
-            "start_time": lesson.starts_at,
-            "end_time": lesson.ends_at,
-        }
-        for lesson in detail.summary.lessons
-    ]
     request_field = "ticket_id" if event_type == "excuse.requested" else "request_id"
-    facts = {
-        request_field: detail.summary.id,
-        "student_name": result.student_name,
-        "lessons": lessons,
-        "created_at": detail.summary.created_at,
-    }
-    if event_type == "excuse.requested":
-        facts["reason_label"] = _EXCUSE_REASON_LABELS[detail.reason]
+    facts = {request_field: request_id, **request_facts(result, show_student=True)}
     options = message_options(
         {"event_type": event_type, "payload": {}},
         config=kwargs.get("config"),

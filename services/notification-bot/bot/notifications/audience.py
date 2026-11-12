@@ -3,15 +3,18 @@
 from __future__ import annotations
 
 from datetime import date, datetime
+from html import escape
 from uuid import UUID, uuid4
 
 from aiogram.exceptions import TelegramBadRequest
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
+from redis.exceptions import ConnectionError as RedisConnectionError
+from redis.exceptions import TimeoutError as RedisTimeoutError
 
 from bot.grpc_client import academic_pb2 as pb
 from bot.grpc_client import attendance_pb2
-from bot.notifications.headman_alerts import _EXCUSE_REASON_LABELS
-from bot.notifications.presentation import message_options
+from bot.notifications.headman_alerts import request_facts
+from bot.notifications.presentation import digest_pages, message_options, private_request_event, render
 from bot.services.notification_prefs import (
     BUSINESS_EVENTS,
     NotificationPreferencesUnavailable,
@@ -22,6 +25,9 @@ from bot.services.send_queue import RecipientSuppressed, SendTask
 
 ROLES = frozenset({"STUDENT", "HEADMAN", "TEACHER", "ADMIN"})
 RETENTION = 7 * 24 * 60 * 60
+# Provider exhaustion retains the original body in the seven-day DLQ. Allow
+# additional time for partial delivery and retry processing before it enters the DLQ.
+_DIGEST_PROGRESS_RETENTION = 14 * 24 * 60 * 60
 _PERSONAL = {
     "attendance.marked",
     "excuse.requested",
@@ -54,18 +60,6 @@ _HEADMAN_STUDENT_SELF_EVENTS = {
 }
 _HEADMAN_STUDENT_ROLES = {"STUDENT", "HEADMAN"}
 _REQUESTS = {"excuse.requested", "excuse.decided", "late_checkin.requested", "late_checkin.decided"}
-_PRIVATE_FIELDS = {
-    "ticket_id",
-    "request_id",
-    "status",
-    "group_id",
-    "user_id",
-    "created_at",
-    "decided_at",
-    "excluded_lesson_ids",
-    "excluded_occurrence_ids",
-    "resolution_reason",
-}
 _TEACHER_EVENTS = {
     "lesson.cancelled",
     "lesson.one_off.created",
@@ -245,7 +239,7 @@ def prepared_audience(event):
     if (
         not isinstance(envelope, dict)
         or not {"version", "event_id", "event_type", "recipients"} <= set(envelope)
-        or set(envelope) - {"version", "event_id", "event_type", "recipients", "delivered_user_ids"}
+        or set(envelope) - {"version", "event_id", "event_type", "recipients", "delivered_user_ids", "digest_progress"}
         or type(envelope["version"]) is not int
         or envelope["version"] != 1
         or envelope["event_id"] != event.get("event_id")
@@ -274,9 +268,34 @@ def prepared_audience(event):
             or not set(delivered) <= audience.keys()
         ):
             raise ValueError("Invalid internal delivery progress")
+        if "digest_progress" in envelope:
+            _digest_progress(event, audience.keys() - set(delivered))
         return audience
     except (ValueError, TypeError, NotificationPreferencesUnavailable) as error:
         raise ValueError("Invalid internal notification recipients") from error
+
+
+def _digest_progress(event, pending_users):
+    progress = event["_bot_prepared"]["digest_progress"]
+    if event["event_type"] != "homework.weekly_digest" or not isinstance(progress, list) or not progress:
+        raise ValueError("Invalid digest progress")
+    page_count = len(digest_pages(event))
+    by_user = {}
+    for entry in progress:
+        if not isinstance(entry, dict) or set(entry) != {"user_id", "pages_sent"}:
+            raise ValueError("Invalid digest progress entry")
+        user_id, pages_sent = entry["user_id"], entry["pages_sent"]
+        if (
+            not positive(user_id)
+            or user_id not in pending_users
+            or user_id in by_user
+            or not positive(pages_sent)
+            or not 1 <= pages_sent <= page_count
+            or page_count <= 1
+        ):
+            raise ValueError("Invalid digest progress receipt")
+        by_user[user_id] = pages_sent
+    return by_user
 
 
 async def prepare_business(event, academic):
@@ -302,15 +321,52 @@ class NotificationDeliveryState:
 
     async def completed(self, event_id, user_id):
         try:
-            return await self._redis.get(f"notification-bot:sent:{event_id}:{user_id}") == "sent"
+            return await self._redis.get(self._sent_key(event_id, user_id)) == "sent"
         except Exception as error:
             raise NotificationPreferencesUnavailable("Notification receipt unavailable") from error
 
     async def complete(self, event_id, user_id):
         try:
-            await self._redis.set(f"notification-bot:sent:{event_id}:{user_id}", "sent", ex=RETENTION)
+            await self._redis.set(self._sent_key(event_id, user_id), "sent", ex=RETENTION)
         except Exception as error:
             raise NotificationPreferencesUnavailable("Notification receipt unavailable") from error
+
+    @staticmethod
+    def _sent_key(event_id, user_id):
+        return f"notification-bot:sent:{event_id}:{user_id}"
+
+    async def complete_request(self, event_id, user_id, *, tracker, kind, request_id, chat_id, message_id):
+        # The runtime configures tracking and delivery state on the same Redis.
+        args = (kind, request_id, chat_id, message_id, user_id)
+        receipt = (self._sent_key(event_id, user_id), RETENTION)
+        try:
+            try:
+                await tracker.add(*args, delivery_receipt=receipt)
+            except (RedisConnectionError, RedisTimeoutError):
+                # Telegram already sent the card. Retry only the idempotent Redis write.
+                await tracker.add(*args, delivery_receipt=receipt)
+        except Exception as error:
+            raise NotificationPreferencesUnavailable("Request delivery receipt unavailable") from error
+
+    async def digest_pages_sent(self, event_id, user_id, page_count):
+        try:
+            raw = await self._redis.get(f"notification-bot:digest-pages:{event_id}:{user_id}")
+            if raw is None:
+                return 0
+            count = int(raw)
+            if str(count) != raw or not 1 <= count <= page_count:
+                raise ValueError("Invalid digest receipt")
+            return count
+        except Exception as error:
+            raise NotificationPreferencesUnavailable("Digest receipt unavailable") from error
+
+    async def record_digest_pages(self, event_id, user_id, count):
+        try:
+            await self._redis.set(
+                f"notification-bot:digest-pages:{event_id}:{user_id}", str(count), ex=_DIGEST_PROGRESS_RETENTION
+            )
+        except Exception as error:
+            raise NotificationPreferencesUnavailable("Digest receipt unavailable") from error
 
     async def snapshot(self, event):
         """Keep confirmed progress with the durable broker envelope across Redis TTL expiry."""
@@ -319,16 +375,40 @@ class NotificationDeliveryState:
         pending = sorted(audience.keys() - delivered)
         if pending:
             try:
-                values = await self._redis.mget([f"notification-bot:sent:{event['event_id']}:{uid}" for uid in pending])
+                values = await self._redis.mget([self._sent_key(event["event_id"], uid) for uid in pending])
                 if len(values) != len(pending) or any(value not in (None, "sent") for value in values):
                     raise ValueError("Invalid notification receipt snapshot")
                 delivered.update(uid for uid, value in zip(pending, values) if value == "sent")
             except Exception as error:
                 raise NotificationPreferencesUnavailable("Notification progress snapshot unavailable") from error
-        return {**event, "_bot_prepared": {**event["_bot_prepared"], "delivered_user_ids": sorted(delivered)}}
+        snapshot = {**event["_bot_prepared"], "delivered_user_ids": sorted(delivered)}
+        if event["event_type"] == "homework.weekly_digest":
+            saved_progress = {entry["user_id"]: entry["pages_sent"] for entry in snapshot.pop("digest_progress", [])}
+            page_count = len(digest_pages(event))
+            progress = []
+            for uid in sorted(audience.keys() - delivered) if page_count > 1 else ():
+                count = max(
+                    saved_progress.get(uid, 0), await self.digest_pages_sent(event["event_id"], uid, page_count)
+                )
+                if count:
+                    progress.append({"user_id": uid, "pages_sent": count})
+            if progress:
+                snapshot["digest_progress"] = progress
+        return {**event, "_bot_prepared": snapshot}
 
 
-async def handle_business(event, *, bot, academic, queue, reminders, config, state, attendance=None, tracker=None):
+async def handle_business(
+    event,
+    *,
+    bot,
+    academic,
+    queue,
+    reminders,
+    config,
+    state,
+    attendance=None,
+    tracker=None,
+):
     requests = audience_requests(event)
     request = requests[0]
     kind, payload, event_id = event["event_type"], event["payload"], event["event_id"]
@@ -360,6 +440,22 @@ async def handle_business(event, *, bot, academic, queue, reminders, config, sta
     # Saved event/user role set prevents late grants from joining replay/queue delivery.
     saved = prepared_audience(event)
     delivered = set(event["_bot_prepared"].get("delivered_user_ids", []))
+    tracked = set()
+    if kind in {"excuse.decided", "late_checkin.decided"} and tracker is not None:
+        tracked = await queue_request_cleanup(
+            event,
+            bot=bot,
+            academic=academic,
+            queue=queue,
+            attendance=attendance,
+            tracker=tracker,
+            state=state,
+            decision_requests=requests,
+            saved=saved,
+            delivered=delivered,
+            config=config,
+        )
+    pages = digest_pages(event) if kind == "homework.weekly_digest" else None
     actor = payload.get("actor_user_id")
     lesson_id = payload.get("lesson_id")
     if kind == "attendance.marked" and payload.get("status") in {"present", "absent", "excused", "free_attendance"}:
@@ -393,6 +489,9 @@ async def handle_business(event, *, bot, academic, queue, reminders, config, sta
         except Exception as error:
             raise NotificationPreferencesUnavailable("Recipient binding unavailable") from error
 
+        if user_id != payload.get("user_id") and (user_id, chat_id) in tracked:
+            continue
+
         live_roles = [roles]
 
         async def authorized(uid=user_id, retained=roles, role_state=live_roles, require_both=self_notice):
@@ -421,15 +520,15 @@ async def handle_business(event, *, bot, academic, queue, reminders, config, sta
             return True
 
         # One event/user, regardless of how many role projections are authorized.
-        display_event = event
-        if kind in _REQUESTS:
-            # Even private owner copy contains no reasons, files, comments or PII.
-            display_event = {
-                **event,
-                "payload": {key: value for key, value in payload.items() if key in _PRIVATE_FIELDS},
-            }
+        display_event = private_request_event(event) if kind in _REQUESTS else event
 
-        async def send(chat=chat_id, uid=user_id, display=display_event, check=authorized, role_state=live_roles):
+        async def send(
+            chat=chat_id,
+            uid=user_id,
+            display=display_event,
+            check=authorized,
+            role_state=live_roles,
+        ):
             async def eligible():
                 return await queue._eligible(
                     SendTask(
@@ -444,53 +543,59 @@ async def handle_business(event, *, bot, academic, queue, reminders, config, sta
 
             role_order = (
                 ("HEADMAN", "STUDENT", "TEACHER", "ADMIN")
-                if pending_context is not None
+                if pending_context is not None and uid != request.affected_user_id
                 else ("STUDENT", "HEADMAN", "TEACHER", "ADMIN")
             )
             role = next(role for role in role_order if role in role_state[0])
             fallback = None
             facts = None
-            if pending_context is not None and role == "HEADMAN":
-                detail = pending_context.detail
-                # Only protected canonical display facts reach the current headman.
-                # Comments, attachments and event-supplied personal data stay private.
-                facts = {
-                    "student_name": pending_context.student_name,
-                    "created_at": detail.summary.created_at,
-                    "lessons": [
-                        {
-                            "date": lesson.date,
-                            "lesson_number": lesson.lesson_number,
-                            "subject_name": lesson.subject_name,
-                            "lesson_type": lesson.subject_type,
-                            "start_time": lesson.starts_at,
-                            "end_time": lesson.ends_at,
-                        }
-                        for lesson in detail.summary.lessons
-                    ],
-                }
-                if kind == "excuse.requested" and detail.HasField("reason"):
-                    facts["reason_label"] = _EXCUSE_REASON_LABELS.get(detail.reason, "")
+            if pending_context is not None and role == "HEADMAN" and uid != request.affected_user_id:
+                facts = request_facts(pending_context, show_student=True)
                 prefix = "ex" if kind.startswith("excuse.") else "lcr"
                 fallback = InlineKeyboardMarkup(
                     inline_keyboard=[
                         [
-                            InlineKeyboardButton(text="Одобрить", callback_data=f"{prefix}:approve:{request_id}"),
+                            InlineKeyboardButton(
+                                text="Подтвердить" if prefix == "lcr" else "Одобрить",
+                                callback_data=f"{prefix}:approve:{request_id}",
+                            ),
                             InlineKeyboardButton(text="Отклонить", callback_data=f"{prefix}:reject:{request_id}"),
                         ]
                     ]
                 )
-            result = await bot.send_message(
-                chat_id=chat,
-                **message_options(display, config=config, facts=facts, role=role, fallback_markup=fallback),
-            )
-            # Persist receipt before best-effort auxiliary state.
-            await state.complete(event_id, uid)
-            if kind in {"lesson.started", "lesson.reminder"}:
-                await reminders.add_message_id(lesson_id, uid, result.message_id)
+            if pages is not None:
+                result = await send_digest(
+                    display,
+                    pages,
+                    bot=bot,
+                    chat=chat,
+                    user_id=uid,
+                    config=config,
+                    role=role,
+                    queue=queue,
+                    eligible=eligible,
+                    state=state,
+                )
+            else:
+                result = await bot.send_message(
+                    chat_id=chat,
+                    **message_options(display, config=config, facts=facts, role=role, fallback_markup=fallback),
+                )
             if pending_context is not None and tracker is not None:
                 tracking_kind = "excuse" if kind.startswith("excuse.") else "late_checkin"
-                await tracker.add(tracking_kind, str(request_id), chat, result.message_id, uid)
+                await state.complete_request(
+                    event_id,
+                    uid,
+                    tracker=tracker,
+                    kind=tracking_kind,
+                    request_id=str(request_id),
+                    chat_id=chat,
+                    message_id=result.message_id,
+                )
+            else:
+                await state.complete(event_id, uid)
+            if kind in {"lesson.started", "lesson.reminder"}:
+                await reminders.add_message_id(lesson_id, uid, result.message_id)
             return result
 
         await queue.put(
@@ -504,33 +609,70 @@ async def handle_business(event, *, bot, academic, queue, reminders, config, sta
             )
         )
 
-    if kind in {"excuse.decided", "late_checkin.decided"} and tracker is not None:
-        await queue_request_cleanup(
-            event,
-            bot=bot,
-            academic=academic,
-            queue=queue,
-            attendance=attendance,
-            tracker=tracker,
-        )
-
     # Preserve reminder lifecycle independently of whether a business notification is eligible.
     if kind == "lesson.closed" or kind == "attendance.marked":
         await cleanup_reminders(event, bot=bot, academic=academic, reminders=reminders)
 
 
-async def queue_request_cleanup(event, *, bot, academic, queue, attendance, tracker):
-    """Retire only saved cards with canonical identity and fresh current capability."""
+async def send_digest(
+    event,
+    pages,
+    *,
+    bot,
+    chat,
+    user_id,
+    config,
+    role,
+    queue,
+    eligible,
+    state,
+):
+    if len(pages) == 1:
+        return await bot.send_message(
+            chat_id=chat, **message_options(event, config=config, role=role, text=escape(pages[0]))
+        )
+
+    event_id = event["event_id"]
+    # Pages are delivered in order. The broker retains confirmed progress even after Redis expiry.
+    saved = next(
+        (
+            entry["pages_sent"]
+            for entry in event["_bot_prepared"].get("digest_progress", [])
+            if entry["user_id"] == user_id
+        ),
+        0,
+    )
+    start = max(saved, await state.digest_pages_sent(event_id, user_id, len(pages)))
+    result = None
+    for index in range(start, len(pages)):
+        if index != start:
+            await queue._consume_token()
+        if not await eligible():
+            raise RecipientSuppressed
+        text = escape(f"{pages[index]}\n\nСтраница {index + 1} из {len(pages)}")
+        result = await bot.send_message(chat_id=chat, **message_options(event, config=config, role=role, text=text))
+        await state.record_digest_pages(event_id, user_id, index + 1)
+    return result
+
+
+async def queue_request_cleanup(
+    event, *, bot, academic, queue, attendance, tracker, state, decision_requests, saved, delivered=(), config=None
+):
+    """Edit only original cards with canonical identity and current capability."""
     kind, payload = event["event_type"], event["payload"]
     tracking_kind = "excuse" if kind.startswith("excuse.") else "late_checkin"
-    tracking_id = payload.get("ticket_id" if tracking_kind == "excuse" else "request_id")
-    entries = await tracker.get_all(tracking_kind, str(tracking_id))
+    request_field = "ticket_id" if tracking_kind == "excuse" else "request_id"
+    tracking_id = payload.get(request_field)
+    try:
+        entries = await tracker.get_all(tracking_kind, str(tracking_id))
+    except Exception as error:
+        raise NotificationPreferencesUnavailable("Tracked request cards unavailable") from error
     cards = {}
     for entry in entries:
         if all(positive(entry.get(key)) for key in ("user_id", "chat_id", "message_id")):
             cards.setdefault((entry["user_id"], entry["chat_id"]), []).append(entry)
     if not cards:
-        return
+        return set()
     if attendance is None:
         raise NotificationPreferencesUnavailable("Canonical cleanup authority unavailable")
     request_kind = (
@@ -543,7 +685,13 @@ async def queue_request_cleanup(event, *, bot, academic, queue, attendance, trac
         "rejected": attendance_pb2.STUDENT_REQUEST_STATUS_REJECTED,
         "cancelled": attendance_pb2.STUDENT_REQUEST_STATUS_CANCELLED,
     }[payload["status"]]
-    decision_requests = audience_requests(event)
+    owner = payload.get("user_id")
+    capability_event = {
+        **event,
+        "event_type": f"{tracking_kind}.requested",
+        "payload": {"group_id": payload.get("group_id"), "user_id": owner, request_field: tracking_id},
+    }
+    capability_requests = audience_requests(capability_event)
 
     async def current_capability(uid):
         try:
@@ -553,70 +701,119 @@ async def queue_request_cleanup(event, *, bot, academic, queue, attendance, trac
                 summary.id != tracking_id
                 or summary.kind != request_kind
                 or context.group_id != payload.get("group_id")
-                or context.student_id != payload.get("user_id")
+                or context.student_id != owner
                 or not positive(context.group_id)
                 or not positive(context.student_id)
             ):
                 raise ValueError("Mismatched canonical cleanup identity")
             if summary.status != expected_status:
                 raise NotificationPreferencesUnavailable("Canonical request outcome not current")
-            if uid == context.student_id:
-                return bool((await resolve_all(academic, decision_requests)).get(uid))
-            capability_event = {
-                **event,
-                "event_type": f"{tracking_kind}.requested",
-                "payload": {
-                    "group_id": context.group_id,
-                    "user_id": context.student_id,
-                    "ticket_id" if tracking_kind == "excuse" else "request_id": tracking_id,
-                },
-            }
-            roles = (await resolve_all(academic, audience_requests(capability_event))).get(uid, frozenset())
-            return bool(roles & {"HEADMAN", "STUDENT"})
+            if uid == owner:
+                return context, (await resolve_all(academic, decision_requests)).get(uid, frozenset())
+            roles = (await resolve_all(academic, capability_requests)).get(uid, frozenset())
+            return context, roles & {"HEADMAN", "STUDENT"}
         except NotificationPreferencesUnavailable:
             raise
         except Exception as error:
             raise NotificationPreferencesUnavailable("Current cleanup authority unavailable") from error
 
     for (user_id, chat_id), saved_cards in cards.items():
+        authority = []
 
-        async def authorized(uid=user_id):
-            return await current_capability(uid)
+        async def authorized(uid=user_id, current=authority):
+            context, roles = await current_capability(uid)
+            current[:] = [context, roles]
+            return bool(roles)
 
-        async def cleanup(uid=user_id, chat=chat_id, retained=saved_cards, check=authorized):
-            for entry in retained:
-                if not await queue._eligible(
+        async def cleanup(uid=user_id, chat=chat_id, retained=saved_cards, check=authorized, current=authority):
+            async def eligible():
+                return await queue._eligible(
                     SendTask(
                         cleanup,
                         user_id=uid,
                         chat_id=chat,
-                        category=category_for_event(kind),
+                        category="tickets",
                         notification_type=type_for_event(event),
                         audience_check=check,
                     )
-                ):
+                )
+
+            replaces_push = uid != owner and uid in saved and payload["status"] == "cancelled"
+            for entry in retained:
+                if not await eligible():
                     raise RecipientSuppressed
-                try:
-                    await bot.edit_message_reply_markup(
-                        chat_id=chat,
-                        message_id=entry["message_id"],
-                        reply_markup=None,
-                    )
-                except TelegramBadRequest as error:
-                    if "message is not modified" not in str(error).lower():
-                        raise
+                context, roles = current
+                facts = request_facts(context, show_student=uid != owner and "HEADMAN" in roles)
+                text = render(private_request_event(event), facts=facts)
+                visible = await _edit_request_card(bot, chat, entry["message_id"], text, eligible)
+                if visible and replaces_push:
+                    # A visible terminal edit satisfies the cancellation push on broker replay.
+                    await state.complete(event["event_id"], uid)
                 await tracker.delete_entry(tracking_kind, str(tracking_id), entry)
+
+            if replaces_push and uid not in delivered and not await state.completed(event["event_id"], uid):
+                decision_roles = set()
+
+                async def may_send_fallback():
+                    live = await resolve_all(academic, decision_requests)
+                    decision_roles.update(saved[uid] & live.get(uid, frozenset()))
+                    return bool(decision_roles)
+
+                if await queue._eligible(
+                    SendTask(
+                        cleanup,
+                        user_id=uid,
+                        chat_id=chat,
+                        category="tickets",
+                        notification_type=type_for_event(event),
+                        audience_check=may_send_fallback,
+                    )
+                ):
+                    role = next(role for role in ("STUDENT", "HEADMAN", "TEACHER", "ADMIN") if role in decision_roles)
+                    await bot.send_message(
+                        chat_id=chat,
+                        **message_options(private_request_event(event), config=config, role=role),
+                    )
+                    await state.complete(event["event_id"], uid)
 
         await queue.put(
             SendTask(
                 cleanup,
                 user_id=user_id,
                 chat_id=chat_id,
-                category=category_for_event(kind),
+                category="tickets",
                 notification_type=type_for_event(event),
                 audience_check=authorized,
             )
         )
+
+    return set(cards)
+
+
+async def _edit_request_card(bot, chat_id, message_id, text, eligible):
+    try:
+        await bot.edit_message_text(
+            chat_id=chat_id, message_id=message_id, text=text, parse_mode="HTML", reply_markup=None
+        )
+        return True
+    except TelegramBadRequest as error:
+        message = error.message.lower()
+        if "message is not modified" in message:
+            return True
+        if "message to edit not found" in message:
+            return False
+        if "there is no text in the message to edit" not in message:
+            raise
+    # Legacy entries can refer to a document/photo. Leave its caption and contents intact.
+    if not await eligible():
+        raise RecipientSuppressed
+    try:
+        await bot.edit_message_reply_markup(chat_id=chat_id, message_id=message_id, reply_markup=None)
+    except TelegramBadRequest as error:
+        message = error.message.lower()
+        if "message is not modified" not in message and "message to edit not found" not in message:
+            raise
+    return False
 
 
 async def cleanup_reminders(event, *, bot, academic, reminders):

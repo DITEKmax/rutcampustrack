@@ -5,12 +5,14 @@ from types import SimpleNamespace
 from urllib.parse import parse_qs, urlsplit
 
 import pytest
+from aiogram.exceptions import TelegramBadRequest
+from redis.exceptions import ConnectionError as RedisConnectionError
 
 from bot.grpc_client import attendance_pb2 as pb
 from bot.notifications.presentation import message_options, notification_action, render
 from bot.services.mini_app_links import encode_notification_action
 from bot.services.notification_prefs import type_for_event
-from tests.business_delivery import assert_business_delivery, assert_terminal_cards
+from tests.business_delivery import BusinessDelivery, assert_business_delivery, assert_terminal_cards, fact_event
 
 
 def test_decision_remains_cancelled_and_untrusted_values_are_escaped_without_raw_ids():
@@ -26,7 +28,7 @@ def test_decision_remains_cancelled_and_untrusted_values_are_escaped_without_raw
     assert type_for_event(event) == "LATE_CHECKIN_CANCELLED"
     text = render(event)
     assert "<a href=" not in text and "<b>Предмет</b>" not in text
-    assert "&lt;a href=" in text and "&lt;b&gt;Предмет&lt;/b&gt;" in text
+    assert "evil.test" not in text and "&lt;b&gt;Предмет&lt;/b&gt;" in text
     partial = render(
         {
             "event_type": "excuse.decided",
@@ -69,15 +71,104 @@ async def test_requested_summary_uses_canonical_context_once_without_private_doc
     )
 
 
-async def test_multiple_legacy_cards_emit_one_decision_with_fresh_authority(fake_redis):
+async def test_multiple_legacy_text_cards_receive_final_status_in_place(fake_redis):
     await assert_terminal_cards(fake_redis)
+
+
+async def test_cancelled_cards_retry_keep_legacy_media_and_push_if_original_is_gone(fake_redis):
+    h = BusinessDelivery(fake_redis)
+    h.authority_by_event = {
+        "excuse.decided": {1: ["HEADMAN", "STUDENT"], 2: ["HEADMAN"], 4: ["STUDENT"], 5: ["STUDENT"]},
+        "excuse.requested": {2: ["HEADMAN"], 5: ["STUDENT"]},
+    }
+    h.chats.update({4: 404, 5: 505})
+    h.request_context.detail.summary.status = pb.STUDENT_REQUEST_STATUS_CANCELLED
+    h.request_context.detail.summary.created_at = "2026-10-10T00:30:00Z"
+    h.request_context.detail.decision.decided_at = "2026-10-10T01:00:00Z"
+    for chat, uid, mid in ((101, 1, 51), (202, 2, 71), (202, 2, 72), (505, 5, 73)):
+        await h.tracker.add("excuse", "request-1", chat, mid, uid)
+
+    edit_text = h.bot.edit_message_text
+    attempts = []
+
+    async def provider_edit(**kwargs):
+        mid = kwargs["message_id"]
+        attempts.append(mid)
+        if mid == 73:
+            raise TelegramBadRequest(method=SimpleNamespace(), message="message to edit not found")
+        if mid == 72:
+            raise TelegramBadRequest(method=SimpleNamespace(), message="there is no text in the message to edit")
+        if mid == 71 and attempts.count(71) == 1:
+            # Telegram applied the edit, but its response did not reach the worker.
+            await edit_text(**kwargs)
+            raise RuntimeError("synthetic connection drop after edit")
+        if mid == 71:
+            raise TelegramBadRequest(method=SimpleNamespace(), message="message is not modified")
+        await edit_text(**kwargs)
+
+    h.bot.edit_message_text = provider_edit
+    event = fact_event("excuse.decided", status="cancelled")
+    h.queue._RETRY_DELAYS = [0]
+    h.queue.start()
+    try:
+        await h.dispatch(event)
+        await h.dispatch(event)
+        assert sorted(item["chat_id"] for item in h.sent) == [101, 404, 505]
+        assert sorted(h.edited) == [(101, 51, None), (202, 71, None), (202, 72, None)]
+        assert attempts.count(71) == 2 and attempts.count(72) == 1
+        assert all("🚫" in text and "10.10.2026 в 04:00 МСК" in text for text in h.edited_texts)
+        assert sum("Канонический &lt;студент&gt;" in text for text in h.edited_texts) == 1
+        assert all("Канонический" not in item["text"] for item in h.sent)
+        assert "private" not in "".join(h.edited_texts)
+        assert await h.tracker.get_all("excuse", "request-1") == []
+    finally:
+        await h.queue.shutdown()
+
+
+@pytest.mark.parametrize("revoke", ["preferences", "binding"])
+async def test_request_tracking_finishes_after_provider_success_and_recipient_revocation(fake_redis, revoke):
+    h = BusinessDelivery(fake_redis)
+    h.authority_by_event = {"excuse.requested": {2: ["HEADMAN"]}, "excuse.decided": {1: ["STUDENT"]}}
+    record = h.tracker.add
+    attempts = []
+
+    async def flaky_tracker_add(*receipt, **options):
+        attempts.append((receipt, options))
+        if len(attempts) == 1:
+            # Attendance accepts a web decision while the first tracker write fails.
+            h.request_context.detail.summary.status = pb.STUDENT_REQUEST_STATUS_APPROVED
+            if revoke == "preferences":
+                h.prefs_on = False
+            else:
+                h.chats[2] = 204
+            raise RedisConnectionError("synthetic tracker unavailable")
+        await record(*receipt, **options)
+        await record(*receipt, **options)  # An identical Redis retry must leave one entry.
+
+    h.tracker.add = flaky_tracker_add
+    h.queue._RETRY_DELAYS = [0]
+    h.queue.start()
+    try:
+        request = fact_event("excuse.requested")
+        await h.dispatch(request)
+        assert [item["chat_id"] for item in h.sent] == [202]
+        assert len(attempts) == 2 and attempts[0] == attempts[1]
+        assert await h.tracker.get_all("excuse", "request-1") == [{"user_id": 2, "chat_id": 202, "message_id": 1001}]
+        assert await fake_redis.get(f"notification-bot:sent:{request['event_id']}:2") == "sent"
+        h.prefs_on = True
+        h.chats[2] = 202
+        await h.dispatch(fact_event("excuse.decided"))
+        assert [item["chat_id"] for item in h.sent] == [202, 101]
+        assert h.edited == [(202, 1001, None)]
+        assert "✅" in h.edited_texts[0]
+        assert await h.tracker.get_all("excuse", "request-1") == []
+    finally:
+        await h.queue.shutdown()
 
 
 @pytest.mark.parametrize("kind", ["excuse.requested", "late_checkin.requested"])
 @pytest.mark.parametrize("change", ["headman_revoked", "request_terminal"])
 async def test_queued_canonical_summary_is_private_after_authority_changes(kind, change, fake_redis):
-    from tests.business_delivery import BusinessDelivery, fact_event
-
     h = BusinessDelivery(fake_redis)
     h.roles = {2: ["HEADMAN"]}
     if kind == "late_checkin.requested":

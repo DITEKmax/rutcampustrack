@@ -174,7 +174,7 @@ async def cmd_open_settings(message: Message, prefs_client: NotificationPrefsCli
     try:
         text, markup = await _build_menu(prefs_client, message.from_user.id)
     except (NotificationPreferencesUnavailable, NotificationBindingMismatch):
-        await message.answer("⚠️ Настройки временно недоступны. Попробуй ещё раз позже.")
+        await message.answer("⚠️ Настройки временно недоступны. Попробуйте ещё раз позже.")
         return
     await message.answer(text, reply_markup=markup)
 
@@ -183,7 +183,7 @@ async def _apply(callback: CallbackQuery, prefs_client: NotificationPrefsClient,
     try:
         snapshot = await prefs_client.command(callback.from_user.id, callback.id, operation, **fields)
     except (NotificationPreferencesUnavailable, NotificationBindingMismatch):
-        await callback.answer("Настройки временно недоступны. Попробуй ещё раз позже.", show_alert=True)
+        await callback.answer("Настройки временно недоступны. Попробуйте ещё раз позже.", show_alert=True)
         return
     text, markup = await _build_menu(prefs_client, callback.from_user.id, snapshot)
     try:

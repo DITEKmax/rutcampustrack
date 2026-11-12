@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 _PROVIDER_TIMEOUT = 5.0
 _UNAVAILABLE_CARD_TEXT = "🔐 Начальные данные входа сейчас недоступны."
-_SAFE_CARD_TEXT = "🔐 Прежние данные входа удалены. Используй свой текущий пароль."
+_SAFE_CARD_TEXT = "🔐 Прежние данные входа удалены. Используйте свой текущий пароль."
 _RENDER_STATES = frozenset(
     {
         pb.BOT_CREDENTIAL_RENDER_STATE_IN_FLIGHT,
@@ -68,7 +68,7 @@ class BotCredentialCards:
             snapshot = None
             stage = "placeholder"
             async with asyncio.timeout(_PROVIDER_TIMEOUT):
-                placeholder = await message.answer("🔐 Готовим твои данные для входа…", parse_mode="HTML")
+                placeholder = await message.answer("🔐 Готовим ваши данные для входа…", parse_mode="HTML")
             message_id = getattr(placeholder, "message_id", None)
             returned_chat = getattr(getattr(placeholder, "chat", None), "id", None)
             if type(message_id) is not int or message_id <= 0 or returned_chat != chat_id:
@@ -147,7 +147,7 @@ class BotCredentialCards:
                         f"{intro}🔐 <b>Данные для входа</b>\n\n"
                         f"Логин: <code>{html.escape(fresh.login)}</code>\n"
                         f"Пароль: <code>{html.escape(fresh.initial_password)}</code>\n\n"
-                        f"После первого входа смени пароль.{footer}"
+                        f"После первого входа смените пароль.{footer}"
                     )
                     # From this point any unknown reply/cancellation is an unresolved provider edit.
                     outcome = pb.BOT_CREDENTIAL_RENDER_OUTCOME_UNCERTAIN
@@ -326,7 +326,9 @@ class BotCredentialCards:
             async with asyncio.timeout(_PROVIDER_TIMEOUT):
                 await self._bot.send_message(
                     chat_id=telegram_id,
-                    text="🔐 Пароль RutCampusTrack изменён. Если это сделал не ты, немедленно обратись в поддержку.",
+                    text=(
+                        "🔐 Пароль RutCampusTrack изменён. Если вы не меняли пароль, немедленно обратитесь в поддержку."
+                    ),
                 )
         except asyncio.CancelledError:
             raise

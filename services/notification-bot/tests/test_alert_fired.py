@@ -30,15 +30,15 @@ def test_format_message_critical():
             "name": "ServiceDown",
             "severity": "critical",
             "status": "firing",
-            "summary": "auth-service down",
-            "description": "scrape failed 1m",
+            "summary": "Сервис auth-service недоступен",
+            "description": "Не удалось собрать метрики за 1 мин.",
         }
     )
     assert "ServiceDown" in msg
-    assert "CRITICAL" in msg
-    assert "firing" in msg
-    assert "auth-service down" in msg
-    assert "scrape failed 1m" in msg
+    assert "🔔 <b>Оповещение: 🔴 Критическое</b>" in msg
+    assert "Статус: Активно" in msg
+    assert "Сервис auth-service недоступен" in msg
+    assert "Не удалось собрать метрики за 1 мин." in msg
 
 
 def test_format_message_resolved():
@@ -49,9 +49,9 @@ def test_format_message_resolved():
             "status": "resolved",
         }
     )
-    assert "resolved" in msg
+    assert "Статус: Закрыто" in msg
     assert "OutboxLagHigh" in msg
-    assert "WARNING" in msg
+    assert "✅ <b>Оповещение: 🟡 Предупреждение</b>" in msg
 
 
 @pytest.mark.asyncio
@@ -77,7 +77,8 @@ async def test_format_message_truncates_long_description(case):
     )
     await queue.put.await_args.args[0].coroutine_factory()
     text = bot.send_message.await_args.kwargs["text"]
-    assert "WARNING" in text and "firing" in text and "ServiceDown" in text
+    assert "Предупреждение" in text and "Статус: Активно" in text and "ServiceDown" in text
+    assert text.endswith("…\n[текст сокращён]")
     assert "<&>" not in text
     from html.parser import HTMLParser
 

@@ -4,6 +4,7 @@ from aiogram import Router
 from aiogram.filters import Command
 from aiogram.types import Message
 
+from bot.handlers.start import ACCOUNT_LINK_HELP
 from bot.services.attendance_http_client import TokenExpiredError
 
 logger = logging.getLogger(__name__)
@@ -40,7 +41,7 @@ async def cmd_status(
         # Look up user to get group_id
         user_response = await academic_client.get_user_by_telegram_id(telegram_id)
         if not user_response.found:
-            await message.answer("⚠️ Аккаунт не найден\n\nОбратитесь к старосте, чтобы проверить привязку.")
+            await message.answer(f"⚠️ Аккаунт не найден\n\n{ACCOUNT_LINK_HELP}")
             return
 
         group_id = user_response.group_id

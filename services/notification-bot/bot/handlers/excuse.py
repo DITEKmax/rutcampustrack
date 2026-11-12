@@ -4,8 +4,8 @@ Callback data format: "ex:approve:<ticket_id>" | "ex:reject:<ticket_id>".
 
 Симметрия с late_checkin.py: бот публикует excuse.decision в RabbitMQ, а
 attendance-service консумирует и применяет решение (включая каскад на
-attendance-документы, если APPROVED). Сообщение редактируем сразу —
-attendance-service авторитетен, дубли идемпотентны на его стороне.
+attendance-документы, если APPROVED). Решение подтверждается в исходной
+карточке после события Attendance.
 
 Файл-аттачмент (если был) приходит отдельным сообщением выше/ниже текста.
 Окончательный статус приходит только из authoritative ``excuse.decided``.
@@ -102,19 +102,5 @@ async def handle_excuse_decision(callback: CallbackQuery, **data) -> None:
         await callback.answer("Не удалось отправить решение, попробуйте ещё раз", show_alert=True)
         return
 
-    # Callback acknowledgement is deliberately pending.  The authoritative
-    # ``excuse.decided`` event supplies the final approved/rejected text after
-    # Attendance has committed the decision.
-    verdict_line = "⏳ Решение отправлено"
-    # Берём caption, если это document/photo, иначе — text.
-    original = callback.message.caption if callback.message.caption else (callback.message.text or "")
-    new_text = f"{original}\n\nРешение: {verdict_line}"
-    try:
-        if callback.message.caption is not None:
-            await callback.message.edit_caption(caption=new_text, reply_markup=None)
-        else:
-            await callback.message.edit_text(new_text, reply_markup=None)
-    except Exception:
-        logger.warning("Failed to edit message after excuse decision — continuing", exc_info=True)
-
-    await callback.answer(verdict_line)
+    # Only the terminal event edits the card, even if it arrives before this acknowledgement.
+    await callback.answer("⏳ Решение отправлено")

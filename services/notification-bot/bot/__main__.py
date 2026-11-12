@@ -39,6 +39,7 @@ from bot.services.attendance_http_client import AttendanceHttpClient
 from bot.services.auth_http_client import AuthHttpClient
 from bot.services.bot_credential_cards import BotCredentialCards
 from bot.services.event_publisher import EventPublisher
+from bot.services.homework_pager import HomeworkPager
 from bot.services.idempotency_guard import BotIdempotencyGuard
 from bot.services.jwt_redis_client import JwtRedisClient
 from bot.services.keyboard_sync import KeyboardSyncClient, run_keyboard_sync
@@ -261,6 +262,7 @@ async def main() -> None:
     dp["bot_homework_client"] = bot_credentials_client
     dp["bot_menu_client"] = bot_menu_client
     dp["bot_lesson_choices"] = LessonChoices()
+    dp["homework_pager"] = HomeworkPager()
     dp["schedule_client"] = schedule_client
     dp["jwt_redis"] = jwt_redis
     dp["auth_client"] = auth_client

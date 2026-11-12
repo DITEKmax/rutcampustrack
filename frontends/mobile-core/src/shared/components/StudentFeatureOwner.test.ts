@@ -14,6 +14,7 @@ import { QueryClient, VueQueryPlugin } from '@tanstack/vue-query'
 import type { MobileBottomNavItems, MobileNavigationStack } from '../navigation'
 import { StudentApiError, type StudentApi } from '../../api/student-client'
 import type { NotificationTargetIntent } from '../../features/notifications/notifications-client'
+import type { NotificationLaunchAction } from '../../features/notifications/notifications-launch'
 import { CheckinCommandRecovery } from '../../domain/checkin'
 import { provideDeviceAccess, type AcquisitionOptions, type DeviceAccess } from '../../device-access/device-access'
 import type {
@@ -555,6 +556,7 @@ vi.mock('../../features/today/use-today', async () => {
               data: (ownerQueryData.today = ref<StudentToday | null>(null)),
               error: ref(null),
               isPending: ref(false),
+              isFetching: ref(false),
               refetch: ownerQueryData.todayRefetch,
             },
             mutation: {
@@ -612,10 +614,11 @@ type OwnerTestHostNode = {
   props: Record<string, unknown>
   children: OwnerTestHostNode[]
   parent: OwnerTestHostNode | null
+  querySelector?: () => null
 }
 
 function ownerTestElement(tag: string): OwnerTestHostNode {
-  return { kind: 'element', tag, props: {}, children: [], parent: null }
+  return { kind: 'element', tag, props: {}, children: [], parent: null, querySelector: () => null }
 }
 
 function insertOwnerTestNode(
@@ -2198,6 +2201,127 @@ it('refreshes real active Student reads on a hint and cannot restore private dat
   resolveLate({ ...today, serverNow: 'late-private' })
   await settleOwnerTestRender()
   expect(ownerTestOutput(root, 'test-today-data')).toBe('null')
+  expect(checkinSubmit).not.toHaveBeenCalled()
+})
+
+function checkinLaunchToday() {
+  const serverNow = '2026-09-08T08:30:00Z'
+  const lesson: StudentToday['lessons'][number] = {
+    schedule: {
+      id: '7', date: '2026-09-08', startsAt: '11:00:00', endsAt: '12:30:00',
+      lessonNumber: 2, status: 'ACTIVE',
+      subject: { id: '8', name: 'Математика', type: 'LECTURE' },
+      room: { current: '401', previous: null, changeState: 'UNCHANGED' },
+    },
+    attendance: null,
+    request: null,
+    checkinEligibility: { allowed: true, reason: 'ELIGIBLE', retryAt: null },
+  }
+  const oldToday: StudentToday = {
+    date: lesson.schedule.date, serverNow, timeZone: 'Europe/Moscow', lessons: [lesson], _links: {},
+  }
+  const markedToday: StudentToday = {
+    ...oldToday,
+    lessons: [{
+      ...lesson,
+      attendance: { status: 'PRESENT', source: 'HEADMAN', markedAt: serverNow },
+      checkinEligibility: { allowed: false, reason: 'ALREADY_PRESENT', retryAt: null },
+    }],
+  }
+  return { oldToday, markedToday }
+}
+
+type StudentNotificationTestOwner = {
+  openNotificationAction(
+    action: NotificationLaunchAction,
+    isCurrent: () => boolean,
+  ): boolean | Promise<boolean>
+}
+
+const checkinLaunch: NotificationLaunchAction = { kind: 'checkin', role: 'STUDENT', lessonId: '7' }
+
+it('replaces an in-flight Today read before consuming a stale check-in link', async () => {
+  ownerQueryData.realReads = true
+  const { oldToday, markedToday } = checkinLaunchToday()
+  let resolveOld!: (value: StudentToday) => void
+  const getToday = vi.fn()
+    .mockImplementationOnce(() => new Promise(resolve => { resolveOld = resolve }))
+    .mockResolvedValue(markedToday)
+  const owner = ref<StudentNotificationTestOwner | null>(null)
+  vi.stubGlobal('window', { scrollTo: vi.fn() })
+  const root = mountOwnerTest({ getToday } as unknown as StudentApi, { ref: owner, ownerKey: 'owner' })
+  await vi.waitFor(() => expect(getToday).toHaveBeenCalledOnce())
+  expect(await owner.value?.openNotificationAction(checkinLaunch, () => true)).toBe(true)
+  expect(getToday).toHaveBeenCalledTimes(2)
+  resolveOld(oldToday)
+  await vi.waitFor(() => expect(ownerTestOutput(root, 'test-today-data')).toContain('HEADMAN'))
+  expect(findOwnerTestNode(root, node => node.props.class === 'checkin-impulse')).toBeUndefined()
+  expect(checkinSubmit).not.toHaveBeenCalled()
+})
+
+it('waits for the latest Today read when a stale link overlaps acquisition and a realtime mark', async () => {
+  ownerQueryData.realReads = true
+  const { oldToday, markedToday } = checkinLaunchToday()
+  let resolveLocation!: (value: StudentCheckinCommand) => void
+  let resolveLaunchRead!: (value: StudentToday) => void
+  let resolveMarkRead!: (value: StudentToday) => void
+  const getToday = vi.fn()
+    .mockResolvedValueOnce(oldToday)
+    .mockImplementationOnce(() => new Promise(resolve => { resolveLaunchRead = resolve }))
+    .mockImplementationOnce(() => new Promise(resolve => { resolveMarkRead = resolve }))
+  const acquireCheckinCommand = vi.fn(() => new Promise(resolve => { resolveLocation = resolve }))
+  const owner = ref<StudentNotificationTestOwner | null>(null)
+  const props = reactive({ realtimeRevision: 0 })
+  vi.stubGlobal('window', { scrollTo: vi.fn() })
+  const root = mountOwnerTest({ getToday, checkin: checkinSubmit } as unknown as StudentApi, {
+    ref: owner, ownerKey: 'owner', acquireCheckinCommand,
+    get realtimeRevision() { return props.realtimeRevision },
+  })
+  await vi.waitFor(() => expect(ownerTestOutput(root, 'test-today-data')).toContain('ELIGIBLE'))
+  clickOwnerTestButton(root, 'test-checkin')
+  await vi.waitFor(() => expect(acquireCheckinCommand).toHaveBeenCalledOnce())
+  const launching = owner.value?.openNotificationAction(checkinLaunch, () => true)
+  await vi.waitFor(() => expect(getToday).toHaveBeenCalledTimes(2))
+  resolveLocation(command)
+  await settleOwnerTestRender()
+  expect(getToday).toHaveBeenCalledTimes(2)
+  props.realtimeRevision += 1
+  await vi.waitFor(() => expect(getToday).toHaveBeenCalledTimes(3))
+  expect(findOwnerTestNode(root, node => node.props.class === 'checkin-impulse')).toBeUndefined()
+  resolveLaunchRead(oldToday)
+  resolveMarkRead(markedToday)
+  expect(await launching).toBe(true)
+  await vi.waitFor(() => expect(ownerTestOutput(root, 'test-today-data')).toContain('HEADMAN'))
+  expect(findOwnerTestNode(root, node => node.props.class === 'checkin-impulse')).toBeUndefined()
+  expect(checkinSubmit).not.toHaveBeenCalled()
+})
+
+it('starts a new Today read for an old link even when GPS already requested Today at the same revision', async () => {
+  ownerQueryData.realReads = true
+  const { oldToday, markedToday } = checkinLaunchToday()
+  let resolveGpsRead!: (value: StudentToday) => void
+  let resolveLinkRead!: (value: StudentToday) => void
+  const getToday = vi.fn()
+    .mockResolvedValueOnce(oldToday)
+    .mockImplementationOnce(() => new Promise(resolve => { resolveGpsRead = resolve }))
+    .mockImplementationOnce(() => new Promise(resolve => { resolveLinkRead = resolve }))
+  const owner = ref<StudentNotificationTestOwner | null>(null)
+  vi.stubGlobal('window', { scrollTo: vi.fn() })
+  const root = mountOwnerTest({ getToday, checkin: checkinSubmit } as unknown as StudentApi, {
+    ref: owner, ownerKey: 'owner',
+  })
+  await vi.waitFor(() => expect(ownerTestOutput(root, 'test-today-data')).toContain('ELIGIBLE'))
+  clickOwnerTestButton(root, 'test-checkin')
+  await vi.waitFor(() => expect(getToday).toHaveBeenCalledTimes(2))
+  const launching = owner.value?.openNotificationAction(checkinLaunch, () => true)
+  await vi.waitFor(() => expect(getToday).toHaveBeenCalledTimes(3))
+  resolveGpsRead(oldToday)
+  await settleOwnerTestRender()
+  expect(findOwnerTestNode(root, node => node.props.class === 'checkin-impulse')).toBeUndefined()
+  resolveLinkRead(markedToday)
+  expect(await launching).toBe(true)
+  await vi.waitFor(() => expect(ownerTestOutput(root, 'test-today-data')).toContain('HEADMAN'))
+  expect(findOwnerTestNode(root, node => node.props.class === 'checkin-impulse')).toBeUndefined()
   expect(checkinSubmit).not.toHaveBeenCalled()
 })
 

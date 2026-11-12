@@ -279,7 +279,7 @@ async def assert_business_delivery(
     if (cleanup or start_keys) and not no_messages:
         for uid, mids in own_messages.items():
             for mid in mids:
-                await h.reminders.add_message_id(11, uid, mid)
+                await h.reminders.add_message_id(11, uid, mid, chat_id=h.chats[uid] or None)
     else:
         own_messages = {uid: [] for uid in own_messages}
     if kind == "lesson.reminder" and not start_keys:
@@ -372,7 +372,7 @@ async def assert_business_delivery(
                 assert await h.reminders.get_message_ids(11, uid) == ([] if uid in targets else own_messages[uid])
             if kind == "lesson.closed":
                 for uid in h.roster_ids:
-                    assert await h.reminders.is_student_marked(11, uid) == (uid not in targets)
+                    assert await h.reminders.is_student_marked(11, uid)
             else:
                 assert await h.reminders.is_student_marked(11, 1)
         assert await h.reminders.get_message_ids(12, 1) == [1201]

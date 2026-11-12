@@ -313,6 +313,32 @@ class StudentCheckinTransactionIT {
     }
 
     @Test
+    void unavailableGeoAfterHeadmanPresentDoesNotCreateAnAutomaticRequest() {
+        when(requestContext.isHeadman()).thenReturn(true);
+        when(requestContext.getUserId()).thenReturn(777L);
+        when(requestContext.getGroupId()).thenReturn(10L);
+        when(academicGrpcClient.getGroupMembers(10L, LocalDate.of(2026, 9, 6), 30L))
+                .thenReturn(
+                        GroupMembersResponse.newBuilder()
+                                .setAsOfDate("2026-09-06")
+                                .setSemesterId(30L)
+                                .addStudents(StudentInfo.newBuilder().setUserId(100L).build())
+                                .build());
+        markingService.markAttendance(1L, 100L, new MarkRequest(AttendanceStatus.PRESENT));
+
+        Ack ack =
+                service.checkin(student, lesson(), "key-after-headman-01", new Unavailable("TIMEOUT"));
+
+        assertThat(ack.outcome()).isEqualTo(Outcome.PRESENT);
+        assertThat(ack.attendance().source()).isEqualTo(AttendanceSource.HEADMAN);
+        assertThat(ack.request()).isNull();
+        assertThat(ack.retryAt()).isNull();
+        assertThat(lateCheckinRepository.findAll()).isEmpty();
+        assertThat(receiptRepository.findAll()).isEmpty();
+        verifyNoInteractions(geofence, lateCheckinEvents);
+    }
+
+    @Test
     void unavailableGeoPersistsOnePendingRequestReceiptCooldownAndOutboxCallAtomically() {
         Ack ack =
                 service.checkin(student, lesson(), "key-000000000001", new Unavailable("TIMEOUT"));

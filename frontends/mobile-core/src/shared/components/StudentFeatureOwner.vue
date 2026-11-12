@@ -15,7 +15,11 @@ import type {
   StudentToday,
   TodayLesson,
 } from '../../api/types';
-import { CheckinBeforeSendCancelled, CheckinCommandRecovery } from '../../domain/checkin';
+import {
+  CheckinBeforeSendCancelled,
+  CheckinCommandRecovery,
+  isCheckinConfirmed,
+} from '../../domain/checkin';
 import type { NotificationLaunchAction } from '../../features/notifications/notifications-launch';
 import type {
   NotificationHomeworkTarget,
@@ -503,6 +507,60 @@ const homeworkLoading = computed(
 const ownerIdentity = computed(() =>
   scope.value ? studentFeatureScopeIdentity(scope.value) : null,
 );
+function todayLesson(lessonId: string): TodayLesson | undefined {
+  return today.query.data.value?.lessons.find((lesson) => lesson.schedule.id === lessonId);
+}
+type TodayRead = {
+  identity: string;
+  revision: number;
+  settled: boolean;
+  result: Promise<void>;
+};
+let latestTodayRead: TodayRead | null = null;
+async function readFreshToday(restart = false): Promise<void> {
+  const identity = ownerIdentity.value;
+  if (!identity) throw new CheckinBeforeSendCancelled();
+  const isCurrent = () => identity === ownerIdentity.value && !offline.value && !disposed;
+  let followingReplacement = false;
+  while (isCurrent()) {
+    const revision = props.realtimeRevision;
+    if (
+      restart ||
+      !latestTodayRead ||
+      latestTodayRead.identity !== identity ||
+      latestTodayRead.revision !== revision ||
+      (latestTodayRead.settled && !followingReplacement)
+    ) {
+      const result = Promise.resolve().then(async () => {
+        const isWinningRead = () =>
+          isCurrent() && latestTodayRead === read && revision === props.realtimeRevision;
+        if (!isWinningRead()) throw new CheckinBeforeSendCancelled();
+        if (today.query.isFetching.value) {
+          // Refetch can join an older GET when Today has no cached data.
+          await queryClient.cancelQueries({ queryKey: todayQueryKey(scope.value), exact: true });
+        }
+        if (!isWinningRead()) throw new CheckinBeforeSendCancelled();
+        await today.query.refetch({ throwOnError: true, cancelRefetch: false });
+      });
+      const read: TodayRead = { identity, revision, settled: false, result };
+      latestTodayRead = read;
+      restart = false;
+    }
+    const read = latestTodayRead;
+    const isWinningRead = () =>
+      isCurrent() && latestTodayRead === read && revision === props.realtimeRevision;
+    try {
+      await read.result;
+      if (isWinningRead()) return;
+    } catch (error) {
+      if (isWinningRead()) throw error;
+    } finally {
+      read.settled = true;
+    }
+    followingReplacement = true;
+  }
+  throw new CheckinBeforeSendCancelled();
+}
 const attendanceRefreshRevision = ref(0);
 let attendanceRefreshOwner: string | null = null;
 function queueAttendanceRefresh(): void {
@@ -527,9 +585,7 @@ const impulse = useCheckinImpulse({
   offline: () => offline.value,
   readOnly: () => props.readOnly || scope.value?.readOnly === true,
   data: () => today.query.data.value ?? null,
-  read: async () => {
-    await today.query.refetch({ throwOnError: true, cancelRefetch: false });
-  },
+  read: readFreshToday,
   pendingStage: (lessonId) => {
     if (acquiringLessonId.value === lessonId) return 'locating';
     if (today.mutation.isPending.value && today.mutation.variables.value?.lessonId === lessonId)
@@ -542,6 +598,7 @@ const impulse = useCheckinImpulse({
     const terminal = terminalAuthError(error);
     if (terminal) emit('ownerError', terminal);
   },
+  navigateImpulse: () => navigation.push(checkinImpulseRoute),
   navigateToday: () => {
     navigation.goRoot('today');
     if (typeof window.scrollTo === 'function') window.scrollTo(0, 0);
@@ -1700,6 +1757,7 @@ function openTodayRequest(lesson: TodayLesson, kind: RequestKind): void {
     disposed ||
     offline.value ||
     requestReadOnly.value ||
+    isCheckinConfirmed(todayLesson(lesson.schedule.id)) ||
     requests.view.optionsLoading ||
     requests.view.optionsError
   )
@@ -2117,6 +2175,8 @@ function performCheckin(
     disposed ||
     currentScope?.activeRole !== 'STUDENT' ||
     currentScope.readOnly ||
+    isCheckinConfirmed(lesson) ||
+    isCheckinConfirmed(todayLesson(lesson.schedule.id)) ||
     (isCurrent && !isCurrent()) ||
     checkinRunning.value ||
     today.mutation.isPending.value
@@ -2126,7 +2186,9 @@ function performCheckin(
   const requestIdentity = studentFeatureScopeIdentity(requestScope);
   const canSend = () =>
     !disposed && !offline.value && !props.readOnly &&
-    ownerIdentity.value === requestIdentity && (isCurrent?.() ?? true);
+    ownerIdentity.value === requestIdentity &&
+    !isCheckinConfirmed(todayLesson(lesson.schedule.id)) &&
+    (isCurrent?.() ?? true);
   const acquisition = new AbortController();
   const reportApi = props.api;
   acquisitionController = acquisition;
@@ -2149,11 +2211,9 @@ function performCheckin(
         });
         if (!canSend() || acquisition.signal.aborted) throw new CheckinBeforeSendCancelled();
         // A GPS warm-up may cross the server's eligibility window. Refresh before first POST.
-        await today.query.refetch({ throwOnError: true, cancelRefetch: false });
+        await readFreshToday();
         if (!canSend() || acquisition.signal.aborted) throw new CheckinBeforeSendCancelled();
-        const target = today.query.data.value?.lessons.find(
-          (item) => item.schedule.id === lesson.schedule.id,
-        );
+        const target = todayLesson(lesson.schedule.id);
         if (!target?.checkinEligibility.allowed || !hasFreshCheckinCoordinates(command))
           throw new CheckinBeforeSendCancelled();
         return command;
@@ -2215,6 +2275,12 @@ watch(
   },
   { flush: 'sync' },
 );
+watch(
+  () => acquiringLessonId.value !== null && isCheckinConfirmed(todayLesson(acquiringLessonId.value)),
+  (present) => {
+    if (present) acquisitionController?.abort();
+  },
+);
 
 function checkin(lesson: TodayLesson): void {
   const identity = ownerIdentity.value;
@@ -2222,7 +2288,12 @@ function checkin(lesson: TodayLesson): void {
   if (!result) return;
   checkinError.value = null;
   void result.catch((error: unknown) => {
-    if (!disposed && ownerIdentity.value === identity) checkinError.value = requestErrorText(error);
+    if (
+      !disposed &&
+      ownerIdentity.value === identity &&
+      !isCheckinConfirmed(todayLesson(lesson.schedule.id))
+    )
+      checkinError.value = requestErrorText(error);
   });
 }
 
@@ -2272,7 +2343,7 @@ onBeforeUnmount(() => {
 function openNotificationAction(
   action: NotificationLaunchAction,
   isCurrent: () => boolean,
-): boolean {
+): boolean | Promise<boolean> {
   if (
     !isCurrent() ||
     disposed ||
@@ -2284,9 +2355,8 @@ function openNotificationAction(
     return false;
   if (action.kind === 'checkin') {
     if (!props.ownerKey || !scope.value.userId) return false;
-    navigation.push(checkinImpulseRoute);
-    impulse.start(action.lessonId, isCurrent);
-    return true;
+    const origin = route.value;
+    return impulse.start(action.lessonId, isCurrent, () => route.value === origin);
   }
   if (action.kind === 'group') {
     if (scope.value.groupId !== action.groupId || !props.profilePort) return false;
@@ -2307,19 +2377,34 @@ const projectionRefreshBlocked = computed(
     today.mutation.isPending.value ||
     homework.mutation.isPending.value ||
     requests.view.mutation === 'submitting' ||
-    route.value.surface === 'task',
+    (route.value.surface === 'task' && route.value.id !== checkinImpulseRoute.id),
 );
 useProjectionRefresh(
   async () => {
     // Reads preserve the mounted form, request draft, and pending/unknown command owners.
     const id = route.value.id;
-    if (id === 'today') await today.refresh();
+    if (id === checkinImpulseRoute.id || id === 'today') await readFreshToday();
     else if (id === 'homework') await homework.query.refetch();
     else if (id.startsWith('more/statistics')) await statistics.query.refetch();
   },
   {
     revision: () => props.realtimeRevision,
     blocked: projectionRefreshBlocked,
+  },
+);
+useProjectionRefresh(
+  () => requests.loadOptions().catch(handleRequestsError),
+  {
+    revision: () => props.realtimeRevision,
+    blocked: () =>
+      offline.value ||
+      requestReadOnly.value ||
+      requests.view.mutation === 'submitting' ||
+      !(
+        /^(today|attendance|more\/requests)\/late$/.test(route.value.id) ||
+        route.value.id === 'more/requests/select-late' ||
+        (route.value.id === 'today' && todayActionLessonId.value !== null)
+      ),
   },
 );
 useProjectionRefresh(

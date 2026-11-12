@@ -4,6 +4,7 @@ import type { StudentCheckinAck, StudentToday, TodayLesson } from '../../api/typ
 import {
   CheckinBeforeSendCancelled,
   eligibilityLabel,
+  isCheckinConfirmed,
   isPendingCheckin,
 } from '../../domain/checkin'
 
@@ -31,11 +32,12 @@ interface ImpulseOptions {
   offline: () => boolean
   readOnly: () => boolean
   data: () => StudentToday | null
-  read: () => Promise<void>
+  read: (restart?: boolean) => Promise<void>
   pendingStage: (lessonId: string) => 'locating' | 'submitting' | null
   busy: () => boolean
   submit: (lesson: TodayLesson, isCurrent: () => boolean) => Promise<StudentCheckinAck> | null
   onReadError: (error: unknown) => void
+  navigateImpulse: () => void
   navigateToday: () => void
   focusToday: () => void
   measure: () => CheckinArrivalGeometry | null
@@ -82,6 +84,8 @@ export function useCheckinImpulse(options: ImpulseOptions) {
     if (!id) return null
     return options.data()?.lessons.find((item) => item.schedule.id === id) ?? null
   })
+  const confirmed = computed(() => isCheckinConfirmed(currentLesson.value))
+  const unavailable = computed(() => currentLesson.value === null || confirmed.value)
   const lesson = computed(() => {
     if (readState.value === 'loading') return null
     if (readState.value === 'error' && !pendingAck.value) return null
@@ -131,8 +135,7 @@ export function useCheckinImpulse(options: ImpulseOptions) {
       options.readOnly() ||
       rejectionCooldown.value ||
       success.value ||
-      value.attendance?.status === 'PRESENT' ||
-      value.checkinEligibility.reason === 'ALREADY_PRESENT' ||
+      confirmed.value ||
       (isPendingCheckin(value) && value.request?.origin !== 'AUTO_GEO_FAILURE') ||
       (pendingAck.value &&
         (pendingAck.value.request?.origin !== 'AUTO_GEO_FAILURE' || !pendingAck.value.retryAt))
@@ -150,11 +153,7 @@ export function useCheckinImpulse(options: ImpulseOptions) {
     if (readState.value === 'error') return 'error'
     if (readState.value === 'refreshing') return pending.value ? 'pending' : 'loading'
     if (!lesson.value) return 'unavailable'
-    if (
-      lesson.value.attendance?.status === 'PRESENT' ||
-      lesson.value.checkinEligibility.reason === 'ALREADY_PRESENT'
-    )
-      return 'present'
+    if (confirmed.value) return 'present'
     if (options.readOnly()) return 'readonly'
     if (canSubmit.value) return 'ready'
     if (pending.value) return 'pending'
@@ -245,15 +244,17 @@ export function useCheckinImpulse(options: ImpulseOptions) {
     try {
       await options.read()
       if (!isActive(value) || version !== readVersion) return
+      if (unavailable.value && options.pendingStage(value.lessonId) !== 'submitting') {
+        goToday()
+        return
+      }
       now.value = Date.now()
       const rejection = rejectionCooldown.value
       if (rejection) {
         const freshLesson = currentLesson.value
         const eligibility = freshLesson?.checkinEligibility
         const eligible = eligibility?.reason === 'ELIGIBLE' && eligibility.allowed
-        const canRetry =
-          freshLesson?.attendance?.status !== 'PRESENT' &&
-          (eligible || eligibility?.reason === 'COOLDOWN')
+        const canRetry = !confirmed.value && (eligible || eligibility?.reason === 'COOLDOWN')
         if (!canRetry || (eligible && now.value >= rejection.dueAt)) {
           rejectionCooldown.value = null
           commandError.value = ''
@@ -268,12 +269,35 @@ export function useCheckinImpulse(options: ImpulseOptions) {
     }
   }
 
-  function start(lessonId: string, authorized: () => boolean): void {
+  async function start(
+    lessonId: string,
+    authorized: () => boolean,
+    isOriginCurrent: () => boolean,
+  ): Promise<boolean> {
     reset()
     const authority = options.authority()
-    if (!authority) return
-    launch.value = { lessonId, authority, authorized }
-    void load()
+    if (!authority || options.offline()) return false
+    const value = { lessonId, authority, authorized }
+    launch.value = value
+    try {
+      await options.read(true)
+    } catch (error) {
+      if (isAuthorized(value) && isOriginCurrent()) options.onReadError(error)
+      if (launch.value === value) leaveInvalidatedRoute()
+      return false
+    }
+    if (!isAuthorized(value) || !isOriginCurrent()) {
+      if (launch.value === value) reset()
+      return false
+    }
+    if (unavailable.value) {
+      goToday()
+      return true
+    }
+    now.value = Date.now()
+    readState.value = 'ready'
+    options.navigateImpulse()
+    return true
   }
 
   async function showToday(value: Launch, started: number, cover: Arrival | null): Promise<void> {
@@ -341,8 +365,10 @@ export function useCheckinImpulse(options: ImpulseOptions) {
     try {
       const ack = await result
       if (!isCurrent() || ack.lessonId !== value.lessonId) return
-      if (ack.outcome === 'PRESENT') confirm(value)
-      else {
+      if (ack.outcome === 'PRESENT') {
+        if (ack.attendance?.source === 'HEADMAN') goToday()
+        else confirm(value)
+      } else {
         pendingAck.value = ack
         if (ack.retryAt) void load(value)
       }
@@ -378,7 +404,24 @@ export function useCheckinImpulse(options: ImpulseOptions) {
   watch(
     options.route,
     (route) => {
-      if (route !== 'impulse' && !(route === 'today' && arrivingToday.value)) reset()
+      if (route === 'impulse' && !launch.value) options.navigateToday()
+      else if (route !== 'impulse' && !(route === 'today' && arrivingToday.value)) reset()
+    },
+    { flush: 'sync', immediate: true },
+  )
+  watch(
+    unavailable,
+    (unavailable) => {
+      const value = launch.value
+      if (
+        unavailable &&
+        value &&
+        isActive(value) &&
+        readState.value !== 'loading' &&
+        !success.value &&
+        (currentLesson.value?.attendance?.source === 'HEADMAN' ||
+          options.pendingStage(value.lessonId) !== 'submitting')
+      ) goToday()
     },
     { flush: 'sync' },
   )

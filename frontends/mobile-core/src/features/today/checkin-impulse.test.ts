@@ -81,13 +81,16 @@ function setup(ack: StudentCheckinAck = present, reduced = false) {
   const scope = effectScope()
   scopes.push(scope)
   const data = ref(projection())
-  const route = ref<'impulse' | 'today' | 'other'>('impulse')
+  const route = ref<'impulse' | 'today' | 'other'>('today')
   const authority = ref('student|session')
   const authorized = ref(true)
   const read = vi.fn(async () => {})
   const submit = vi.fn<
     (lesson: TodayLesson, isCurrent: () => boolean) => Promise<StudentCheckinAck>
   >(async () => ack)
+  const navigateImpulse = vi.fn(() => {
+    route.value = 'impulse'
+  })
   const navigateToday = vi.fn(() => {
     route.value = 'today'
   })
@@ -107,13 +110,14 @@ function setup(ack: StudentCheckinAck = present, reduced = false) {
       pendingStage: () => null,
       busy: () => false,
       onReadError: vi.fn(),
+      navigateImpulse,
       navigateToday,
       focusToday,
       measure,
       reduceMotion: () => reduced,
     }),
   )!
-  const start = () => impulse.start(lessonId, () => authorized.value)
+  const start = () => impulse.start(lessonId, () => authorized.value, () => route.value === 'today')
   return {
     start,
     impulse,
@@ -123,6 +127,7 @@ function setup(ack: StudentCheckinAck = present, reduced = false) {
     data,
     read,
     submit,
+    navigateImpulse,
     navigateToday,
     focusToday,
     measure,
@@ -130,6 +135,44 @@ function setup(ack: StudentCheckinAck = present, reduced = false) {
 }
 
 describe('check-in impulse route', () => {
+  it('opens a stale Telegram link on Today when a fresh read sees the headman mark', async () => {
+    const test = setup()
+    test.read.mockImplementationOnce(async () => {
+      test.data.value = projection({
+        ...current,
+        attendance: { status: 'PRESENT', source: 'HEADMAN', markedAt: serverNow },
+        checkinEligibility: { allowed: false, reason: 'ALREADY_PRESENT', retryAt: null },
+      })
+    })
+    expect(await test.start()).toBe(true)
+    expect(test.navigateImpulse).not.toHaveBeenCalled()
+    expect(test.navigateToday).toHaveBeenCalledOnce()
+    await test.impulse.submit()
+    expect(test.submit).not.toHaveBeenCalled()
+  })
+
+  it('returns an open or directly navigated impulse to Today and fences a stale command', async () => {
+    const direct = setup()
+    direct.route.value = 'impulse'
+    expect(direct.route.value).toBe('today')
+    expect(direct.read).not.toHaveBeenCalled()
+
+    const test = setup()
+    expect(await test.start()).toBe(true)
+    let finish!: (ack: StudentCheckinAck) => void
+    test.submit.mockImplementationOnce(() => new Promise((resolve) => { finish = resolve }))
+    const command = test.impulse.submit()
+    test.data.value = projection({
+      ...current,
+      attendance: { status: 'PRESENT', source: 'HEADMAN', markedAt: serverNow },
+      checkinEligibility: { allowed: false, reason: 'ALREADY_PRESENT', retryAt: null },
+    })
+    expect(test.route.value).toBe('today')
+    expect(test.submit.mock.calls[0]?.[1]()).toBe(false)
+    finish(pending)
+    await command
+    expect(test.impulse.arrival.value).toBeNull()
+  })
   it('does not offer a command from cached data or substitute another active lesson', async () => {
     const test = setup()
     let completeRead!: () => void
@@ -148,7 +191,8 @@ describe('check-in impulse route', () => {
     })
     completeRead()
     await nextTick()
-    expect(test.impulse.state.value).toBe('unavailable')
+    expect(test.route.value).toBe('today')
+    expect(test.navigateImpulse).not.toHaveBeenCalled()
     await test.impulse.submit()
     expect(test.submit).not.toHaveBeenCalled()
   })

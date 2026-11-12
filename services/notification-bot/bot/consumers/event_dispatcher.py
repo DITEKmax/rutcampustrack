@@ -255,7 +255,7 @@ class EventDispatcher:
 
         if event_type in BUSINESS_EVENTS:
             async with self._send_queue.staged() as batch:
-                await handle_business(
+                batch.after_delivery = await handle_business(
                     event,
                     bot=self._bot,
                     academic=self._academic_client,

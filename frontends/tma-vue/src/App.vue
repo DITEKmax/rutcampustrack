@@ -245,7 +245,7 @@ const notificationLaunchNotice = ref<string | null>(
 );
 let notificationTargetIntentId = 0;
 const studentNotificationOwner = ref<{
-  openNotificationAction(action: NotificationLaunchAction, current: () => boolean): boolean;
+  openNotificationAction(action: NotificationLaunchAction, current: () => boolean): boolean | Promise<boolean>;
 } | null>(null);
 const headmanNotificationOwner = ref<{
   openNotificationAction(action: NotificationAction, current: () => boolean): Promise<boolean>;

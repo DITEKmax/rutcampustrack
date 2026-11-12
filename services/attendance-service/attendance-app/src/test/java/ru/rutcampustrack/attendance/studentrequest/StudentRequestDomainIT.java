@@ -926,6 +926,39 @@ class StudentRequestDomainIT {
     }
 
     @Test
+    void staleManualLateSelectionCannotCreateARequestAfterHeadmanPresent() {
+        long lessonId = 74L;
+        seedAbsent(lessonId);
+        seedBudget(5, 0);
+        assertThat(service.options(STUDENT, List.of(snapshot(lessonId))).lessons())
+                .singleElement()
+                .satisfies(option -> assertThat(option.lateCheckinEligible()).isTrue());
+
+        AttendanceDocument mark =
+                attendanceRepository.findByLessonIdAndUserId(lessonId, STUDENT_ID).orElseThrow();
+        mark.setStatus(AttendanceStatus.PRESENT);
+        mark.setSource(AttendanceSource.HEADMAN);
+        attendanceRepository.save(mark);
+
+        assertThatThrownBy(
+                        () ->
+                                service.submitLateCheckin(
+                                        STUDENT,
+                                        new LateCheckinSubmission(lessonId, "late-after-headman-01")))
+                .isInstanceOf(ConflictException.class);
+        assertThat(service.options(STUDENT, List.of(snapshot(lessonId))).lessons())
+                .singleElement()
+                .satisfies(option -> assertThat(option.lateCheckinEligible()).isFalse());
+        assertThat(lateCheckinRepository.findAll()).isEmpty();
+        assertThat(receiptRepository.findAll()).isEmpty();
+        assertThat(outboxStorage.findPending(10)).isEmpty();
+        assertThat(budgetRepository.findByStudentIdAndSemesterId(STUDENT_ID, SEMESTER_ID))
+                .get()
+                .extracting(StudentLateCheckinBudgetDocument::getUsed)
+                .isEqualTo(0);
+    }
+
+    @Test
     void sixConcurrentManualLateSubmissionsChargeExactlyFive() throws Exception {
         for (long lessonId = 1; lessonId <= 6; lessonId++) {
             seedAbsent(lessonId);

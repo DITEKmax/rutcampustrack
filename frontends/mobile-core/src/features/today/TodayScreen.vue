@@ -4,6 +4,7 @@ import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import {
   countdownLabel,
   eligibilityLabel,
+  isCheckinConfirmed,
   isPendingCheckin,
   remainingSeconds,
 } from '../../domain/checkin';
@@ -118,16 +119,16 @@ function option(lesson: TodayLesson): RequestLessonOption | undefined {
   return props.requestOptions.find((value) => value.lesson?.id === lesson.schedule.id);
 }
 function pendingRequest(lesson: TodayLesson): boolean {
-  return isPendingCheckin(lesson) || (option(lesson)?.pendingRequests?.length ?? 0) > 0;
-}
-function isConfirmed(lesson: TodayLesson): boolean {
-  return lesson.attendance?.status === 'PRESENT';
+  return (
+    !isCheckinConfirmed(lesson) &&
+    (isPendingCheckin(lesson) || (option(lesson)?.pendingRequests?.length ?? 0) > 0)
+  );
 }
 function isCurrent(lesson: TodayLesson): boolean {
-  return lesson.schedule.status === 'ACTIVE' && !isConfirmed(lesson);
+  return lesson.schedule.status === 'ACTIVE' && !isCheckinConfirmed(lesson);
 }
 function canCheckin(lesson: TodayLesson): boolean {
-  if (props.offline || props.readOnly || busy.value || isConfirmed(lesson)) return false;
+  if (props.offline || props.readOnly || busy.value || isCheckinConfirmed(lesson)) return false;
   const pending = isPendingCheckin(lesson);
   if (pending && lesson.request?.origin !== 'AUTO_GEO_FAILURE') return false;
   if (option(lesson)?.pendingRequests?.some((request) => request.origin !== 'AUTO_GEO_FAILURE'))
@@ -140,9 +141,9 @@ function canCheckin(lesson: TodayLesson): boolean {
   );
 }
 function heroActionLabel(lesson: TodayLesson): string {
+  if (isCheckinConfirmed(lesson)) return 'Отмечено';
   if (props.acquiringLessonId === lesson.schedule.id) return 'Проверяем геолокацию…';
   if (props.submittingLessonId === lesson.schedule.id) return 'Отправляем отметку…';
-  if (isConfirmed(lesson)) return 'Отмечено';
   if (props.offline) return 'Отметка доступна онлайн';
   if (props.readOnly) return 'Доступен только просмотр';
   if (canCheckin(lesson))
@@ -161,7 +162,14 @@ function retryText(lesson: TodayLesson): string {
   return 'Запрос на рассмотрении у старосты';
 }
 function canRequest(lesson: TodayLesson, kind: RequestKind): boolean {
-  if (props.offline || props.readOnly || props.optionsLoading || props.optionsError) return false;
+  if (
+    props.offline ||
+    props.readOnly ||
+    props.optionsLoading ||
+    props.optionsError ||
+    isCheckinConfirmed(lesson)
+  )
+    return false;
   return canRequestLesson(option(lesson), kind);
 }
 function requestMessage(lesson: TodayLesson): string | null {
@@ -322,9 +330,9 @@ function lessonKind(lesson: TodayLesson): string {
           v-if="hero"
           class="today-hero"
           :data-state="
-            isConfirmed(hero) ? 'confirmed' : isPendingCheckin(hero) ? 'pending' : 'default'
+            isCheckinConfirmed(hero) ? 'confirmed' : isPendingCheckin(hero) ? 'pending' : 'default'
           "
-          :aria-busy="busy"
+          :aria-busy="busy && !isCheckinConfirmed(hero)"
           aria-label="Текущая или ближайшая пара"
         >
           <p class="today-hero__time">
@@ -366,13 +374,16 @@ function lessonKind(lesson: TodayLesson): string {
             @click="emit('checkin', hero)"
           >
             <span
-              v-if="busy"
+              v-if="busy && !isCheckinConfirmed(hero)"
               class="today-state__spinner"
               aria-hidden="true"
             />{{ heroActionLabel(hero) }}
           </button>
           <p
-            v-if="isPendingCheckin(hero) || hero.checkinEligibility.reason === 'COOLDOWN'"
+            v-if="
+              !isCheckinConfirmed(hero) &&
+              (isPendingCheckin(hero) || hero.checkinEligibility.reason === 'COOLDOWN')
+            "
             class="today-hero__retry"
             role="status"
           >

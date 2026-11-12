@@ -15,6 +15,7 @@ from bot.observability import (
     telemetry_id,
 )
 from bot.services.notification_prefs import NotificationPreferencesUnavailable
+from bot.services.redis_client import ReminderLifecycleUnavailable
 
 logger = logging.getLogger(__name__)
 
@@ -35,6 +36,8 @@ def failure_reason(error):
     cause = error
     while cause is not None and id(cause) not in seen:
         seen.add(id(cause))
+        if isinstance(cause, ReminderLifecycleUnavailable):
+            return "reminder_lifecycle_unavailable", False
         if isinstance(cause, grpc.aio.AioRpcError):
             code = cause.code()
             reason = "grpc_" + code.name.lower()
@@ -317,7 +320,7 @@ async def start_consumer(
                         if claim_token is not None:
                             if not await idempotency_guard.complete(event_id, claim_token):
                                 raise NotificationPreferencesUnavailable("Event lease lost at completion")
-            except (NotificationPreferencesUnavailable, TimeoutError) as error:
+            except (NotificationPreferencesUnavailable, ReminderLifecycleUnavailable, TimeoutError) as error:
                 if preparation["publish_started"]:
                     raise  # Rollback whole prepare TX; never combine projection with raw NACK.
                 if batch is not None:

@@ -9,6 +9,7 @@ from typing import Any, Awaitable, Callable, Optional
 import grpc
 
 from bot.services.notification_prefs import NOTIFICATION_TYPES, NotificationPreferencesUnavailable
+from bot.services.redis_client import ReminderLifecycleUnavailable
 
 logger = logging.getLogger(__name__)
 
@@ -30,6 +31,7 @@ class DeliveryBatch:
         self.settled = {}
         self.cancelled = asyncio.Event()
         self.failure = None
+        self.after_delivery: Callable[[], Awaitable[None]] | None = None
 
     def cancel(self):
         self.cancelled.set()
@@ -44,6 +46,8 @@ class DeliveryBatch:
                 raise self.failure
             if self.cancelled.is_set():
                 raise asyncio.CancelledError
+            if self.after_delivery is not None:
+                await self.after_delivery()
         except BaseException:
             self.cancel()
             raise
@@ -258,7 +262,7 @@ class TelegramSendQueue:
                 return "SENT"
             except RecipientSuppressed:
                 return "SUPPRESSED"
-            except NotificationPreferencesUnavailable:
+            except (NotificationPreferencesUnavailable, ReminderLifecycleUnavailable):
                 raise
             except Exception as e:
                 if delay is not None and (

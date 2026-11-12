@@ -23,6 +23,13 @@ export class CheckinMismatchedAck extends Error {
   }
 }
 
+export function isCheckinConfirmed(lesson: TodayLesson | null | undefined): boolean {
+  return (
+    lesson?.attendance?.status === 'PRESENT' ||
+    lesson?.checkinEligibility.reason === 'ALREADY_PRESENT'
+  )
+}
+
 interface PendingCheckin {
   attempt: Promise<CheckinAttempt>
   inFlight: Promise<StudentCheckinAck> | null

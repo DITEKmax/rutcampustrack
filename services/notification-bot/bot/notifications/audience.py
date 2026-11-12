@@ -2,11 +2,19 @@
 
 from __future__ import annotations
 
+import logging
 from datetime import date, datetime
 from html import escape
 from uuid import UUID, uuid4
 
-from aiogram.exceptions import TelegramBadRequest
+import grpc
+from aiogram.exceptions import (
+    TelegramBadRequest,
+    TelegramForbiddenError,
+    TelegramNetworkError,
+    TelegramRetryAfter,
+    TelegramServerError,
+)
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from redis.exceptions import ConnectionError as RedisConnectionError
 from redis.exceptions import TimeoutError as RedisTimeoutError
@@ -21,7 +29,10 @@ from bot.services.notification_prefs import (
     category_for_event,
     type_for_event,
 )
+from bot.services.redis_client import ReminderLifecycleUnavailable
 from bot.services.send_queue import RecipientSuppressed, SendTask
+
+logger = logging.getLogger(__name__)
 
 ROLES = frozenset({"STUDENT", "HEADMAN", "TEACHER", "ADMIN"})
 RETENTION = 7 * 24 * 60 * 60
@@ -60,6 +71,8 @@ _HEADMAN_STUDENT_SELF_EVENTS = {
 }
 _HEADMAN_STUDENT_ROLES = {"STUDENT", "HEADMAN"}
 _REQUESTS = {"excuse.requested", "excuse.decided", "late_checkin.requested", "late_checkin.decided"}
+_CHECKIN_REMINDERS = {"lesson.started", "lesson.reminder"}
+_FINAL_MARKS = {"present", "absent", "excused", "free_attendance"}
 _TEACHER_EVENTS = {
     "lesson.cancelled",
     "lesson.one_off.created",
@@ -239,7 +252,10 @@ def prepared_audience(event):
     if (
         not isinstance(envelope, dict)
         or not {"version", "event_id", "event_type", "recipients"} <= set(envelope)
-        or set(envelope) - {"version", "event_id", "event_type", "recipients", "delivered_user_ids", "digest_progress"}
+        or set(envelope) - {
+            "version", "event_id", "event_type", "recipients", "delivered_user_ids",
+            "digest_progress", "reminder_recovery",
+        }
         or type(envelope["version"]) is not int
         or envelope["version"] != 1
         or envelope["event_id"] != event.get("event_id")
@@ -270,9 +286,28 @@ def prepared_audience(event):
             raise ValueError("Invalid internal delivery progress")
         if "digest_progress" in envelope:
             _digest_progress(event, audience.keys() - set(delivered))
+        if "reminder_recovery" in envelope:
+            validate_reminder_recovery(event, set(delivered))
         return audience
     except (ValueError, TypeError, NotificationPreferencesUnavailable) as error:
         raise ValueError("Invalid internal notification recipients") from error
+
+
+def validate_reminder_recovery(event, delivered):
+    entries = event["_bot_prepared"]["reminder_recovery"]
+    if event["event_type"] not in _CHECKIN_REMINDERS or not isinstance(entries, list) or not entries:
+        raise ValueError("Invalid reminder recovery context")
+    users = set()
+    for entry in entries:
+        if (
+            not isinstance(entry, dict)
+            or set(entry) != {"user_id", "chat_id", "message_id"}
+            or not all(positive(value) for value in entry.values())
+            or entry["user_id"] not in delivered
+            or entry["user_id"] in users
+        ):
+            raise ValueError("Invalid reminder recovery recipient")
+        users.add(entry["user_id"])
 
 
 def _digest_progress(event, pending_users):
@@ -379,6 +414,11 @@ class NotificationDeliveryState:
                 if len(values) != len(pending) or any(value not in (None, "sent") for value in values):
                     raise ValueError("Invalid notification receipt snapshot")
                 delivered.update(uid for uid, value in zip(pending, values) if value == "sent")
+            except (RedisConnectionError, RedisTimeoutError) as error:
+                if event["event_type"] not in _CHECKIN_REMINDERS:
+                    raise NotificationPreferencesUnavailable("Notification receipt snapshot unavailable") from error
+                # Every known Telegram response for these events is captured in the
+                # in-memory prepared body before any Redis operation.
             except Exception as error:
                 raise NotificationPreferencesUnavailable("Notification progress snapshot unavailable") from error
         snapshot = {**event["_bot_prepared"], "delivered_user_ids": sorted(delivered)}
@@ -412,6 +452,20 @@ async def handle_business(
     requests = audience_requests(event)
     request = requests[0]
     kind, payload, event_id = event["event_type"], event["payload"], event["event_id"]
+    lesson_id = payload.get("lesson_id")
+    final_mark = kind == "attendance.marked" and payload.get("status") in _FINAL_MARKS
+    if (final_mark or kind in _CHECKIN_REMINDERS) and not positive(lesson_id):
+        raise NotificationPreferencesUnavailable("Invalid reminder lesson")
+    saved = prepared_audience(event)
+    cleanup_failure = None
+    if final_mark:
+        await reminders.mark_student_marked(lesson_id, payload["user_id"], payload["status"], strict=True)
+        try:
+            await cleanup_reminders(event, bot=bot, academic=academic, reminders=reminders)
+        except (ReminderLifecycleUnavailable, grpc.aio.AioRpcError) as error:
+            cleanup_failure = error
+    for delivery in tuple(event["_bot_prepared"].get("reminder_recovery", ())):
+        await settle_reminder_delivery(event, delivery, bot, reminders, state)
     pending_context = None
     if kind.endswith(".requested") and kind in _REQUESTS:
         if attendance is None:
@@ -438,7 +492,6 @@ async def handle_business(
             raise NotificationPreferencesUnavailable("Canonical request context unavailable") from error
     current = await resolve_all(academic, requests)
     # Saved event/user role set prevents late grants from joining replay/queue delivery.
-    saved = prepared_audience(event)
     delivered = set(event["_bot_prepared"].get("delivered_user_ids", []))
     tracked = set()
     if kind in {"excuse.decided", "late_checkin.decided"} and tracker is not None:
@@ -457,14 +510,13 @@ async def handle_business(
         )
     pages = digest_pages(event) if kind == "homework.weekly_digest" else None
     actor = payload.get("actor_user_id")
-    lesson_id = payload.get("lesson_id")
-    if kind == "attendance.marked" and payload.get("status") in {"present", "absent", "excused", "free_attendance"}:
-        await reminders.mark_student_marked(lesson_id, payload["user_id"], payload["status"])
     for user_id, saved_roles in saved.items():
         roles = saved_roles & current.get(user_id, frozenset())
         if not roles or user_id in delivered or await state.completed(event_id, user_id):
             continue
-        if kind == "attendance.marked" and payload.get("marked_by") != "headman":
+        if kind == "attendance.marked" and (
+            payload.get("marked_by") != "headman" or user_id != payload["user_id"]
+        ):
             continue
         own_sync = kind in _OWN_SYNC and positive(actor) and actor == user_id
         self_notice = own_sync and kind in _HEADMAN_STUDENT_SELF_EVENTS and _HEADMAN_STUDENT_ROLES <= roles
@@ -475,7 +527,7 @@ async def handle_business(
                 roles -= {"ADMIN"}
                 if not roles:
                     continue
-        if kind == "lesson.reminder" and await reminders.is_student_marked(lesson_id, user_id):
+        if kind in _CHECKIN_REMINDERS and await reminders.is_student_marked(lesson_id, user_id, strict=True):
             continue
         try:
             user = await academic.get_user_by_id(user_id)
@@ -501,7 +553,7 @@ async def handle_business(
                 return False
             if uid in delivered or await state.completed(event_id, uid):
                 return False
-            if kind == "lesson.reminder" and await reminders.is_student_marked(lesson_id, uid):
+            if kind in _CHECKIN_REMINDERS and await reminders.is_student_marked(lesson_id, uid, strict=True):
                 return False
             if pending_context is not None:
                 try:
@@ -592,10 +644,14 @@ async def handle_business(
                     chat_id=chat,
                     message_id=result.message_id,
                 )
+            elif kind in _CHECKIN_REMINDERS:
+                delivery = {"user_id": uid, "chat_id": chat, "message_id": result.message_id}
+                prepared = event["_bot_prepared"]
+                prepared.setdefault("delivered_user_ids", []).append(uid)
+                prepared.setdefault("reminder_recovery", []).append(delivery)
+                await settle_reminder_delivery(event, delivery, bot, reminders, state)
             else:
                 await state.complete(event_id, uid)
-            if kind in {"lesson.started", "lesson.reminder"}:
-                await reminders.add_message_id(lesson_id, uid, result.message_id)
             return result
 
         await queue.put(
@@ -609,9 +665,16 @@ async def handle_business(
             )
         )
 
-    # Preserve reminder lifecycle independently of whether a business notification is eligible.
-    if kind == "lesson.closed" or kind == "attendance.marked":
+    if cleanup_failure is not None:
+        # Retry the original event only after its independent confirmation has a receipt.
+        async def report_cleanup_failure():
+            raise cleanup_failure
+
+        return report_cleanup_failure
+    if kind == "lesson.closed":
         await cleanup_reminders(event, bot=bot, academic=academic, reminders=reminders)
+    if kind in _CHECKIN_REMINDERS:
+        return lambda: cleanup_reminders(event, bot=bot, academic=academic, reminders=reminders)
 
 
 async def send_digest(
@@ -822,22 +885,52 @@ async def cleanup_reminders(event, *, bot, academic, reminders):
     if not positive(lesson_id):
         return
     if kind == "attendance.marked":
-        if payload.get("status") not in {"present", "absent", "excused", "free_attendance"}:
-            return
         user_ids = [payload["user_id"]]
+    elif kind in _CHECKIN_REMINDERS:
+        # The mark handler may have already scanned the list while Telegram was sending.
+        # Recheck after recording the send, including on replay with a delivery receipt.
+        user_ids = [
+            uid for uid in prepared_audience(event)
+            if await reminders.is_student_marked(lesson_id, uid, strict=True)
+        ]
     else:
         # Roster is used only to retire existing reminder artifacts, never to send facts.
         members = await academic.get_current_group_members(payload["group_id"])
         user_ids = [member.user_id for member in members if positive(member.user_id)]
+    # Markers expire by TTL, so a delayed start or reminder cannot recreate a retired CTA.
     for user_id in user_ids:
-        user = await academic.get_user_by_id(user_id)
-        if user.id != user_id or not positive(user.telegram_id):
-            continue
-        for message_id in await reminders.get_message_ids(lesson_id, user_id):
-            try:
-                await bot.delete_message(chat_id=user.telegram_id, message_id=message_id)
-            except TelegramBadRequest:
-                pass
-        await reminders.delete_key(lesson_id, user_id)
-        if kind == "lesson.closed":
-            await reminders.delete_marked_key(lesson_id, user_id)
+        for chat_id, message_id in await reminders.get_messages(lesson_id, user_id, strict=True):
+            if chat_id is None:
+                # Numeric legacy IDs have no chat provenance and expire with the list.
+                continue
+            await retire_reminder(bot, chat_id, message_id)
+            await reminders.remove_message_id(lesson_id, user_id, message_id, chat_id=chat_id)
+
+
+async def settle_reminder_delivery(event, delivery, bot, reminders, state):
+    lesson_id = event["payload"]["lesson_id"]
+    user_id, chat_id, message_id = delivery["user_id"], delivery["chat_id"], delivery["message_id"]
+    await reminders.add_message_id(lesson_id, user_id, message_id, chat_id=chat_id, strict=True)
+    # The mark event may have completed before the provider returned this message ID.
+    if await reminders.is_student_marked(lesson_id, user_id, strict=True):
+        await retire_reminder(bot, chat_id, message_id)
+        await reminders.remove_message_id(lesson_id, user_id, message_id, chat_id=chat_id)
+    await state.complete(event["event_id"], user_id)
+    prepared = event["_bot_prepared"]
+    prepared["reminder_recovery"].remove(delivery)
+    if not prepared["reminder_recovery"]:
+        del prepared["reminder_recovery"]
+
+
+async def retire_reminder(bot, chat_id, message_id):
+    try:
+        try:
+            await bot.delete_message(chat_id=chat_id, message_id=message_id)
+        except TelegramBadRequest as error:
+            if "message to delete not found" in error.message.lower():
+                return
+            await bot.edit_message_reply_markup(chat_id=chat_id, message_id=message_id, reply_markup=None)
+    except (TelegramRetryAfter, TelegramNetworkError, TelegramServerError) as error:
+        raise ReminderLifecycleUnavailable("Telegram reminder retirement unavailable") from error
+    except (TelegramBadRequest, TelegramForbiddenError) as error:
+        logger.info("Telegram cannot retire tracked reminder error=%s", type(error).__name__)

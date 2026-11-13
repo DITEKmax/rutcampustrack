@@ -47,3 +47,29 @@ describe('notification native Back claim', () => {
     expect(hide).toHaveBeenCalled()
   })
 })
+
+describe('viewer vertical swipe suspension', () => {
+  it.each([true, false])('restores the previous swipe setting (%s) after the final release', (enabled) => {
+    const disableVerticalSwipes = vi.fn()
+    const enableVerticalSwipes = vi.fn()
+    vi.stubGlobal('window', {
+      Telegram: {
+        WebApp: {
+          version: '7.7',
+          isVerticalSwipesEnabled: enabled,
+          disableVerticalSwipes,
+          enableVerticalSwipes,
+        },
+      },
+    })
+    const host = new TelegramHost()
+    const releaseFirst = host.suspendVerticalSwipes()
+    const releaseSecond = host.suspendVerticalSwipes()
+    expect(disableVerticalSwipes).toHaveBeenCalledTimes(enabled ? 1 : 0)
+    releaseFirst()
+    releaseFirst()
+    expect(enableVerticalSwipes).not.toHaveBeenCalled()
+    releaseSecond()
+    expect(enableVerticalSwipes).toHaveBeenCalledTimes(enabled ? 1 : 0)
+  })
+})

@@ -2911,6 +2911,7 @@ defineExpose({ openNotificationAction });
         :offline="offline"
         :on-back="backMore"
         :client="props.mapClient"
+        :host="props.host"
         :theme="resolvedTheme"
       />
       <RequestsScreen

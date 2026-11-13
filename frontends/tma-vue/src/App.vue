@@ -1626,6 +1626,7 @@ onBeforeUnmount(() => {
   <MapScreen
     v-else-if="mapViewVisible"
     :client="mapClient"
+    :host="host"
     :theme="resolvedTheme"
   />
   <AdminShell

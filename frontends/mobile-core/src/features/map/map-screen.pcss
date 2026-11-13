@@ -66,6 +66,62 @@
   display: grid;
   min-inline-size: 0;
 }
+.map-viewer-placeholder {
+  aspect-ratio: var(--map-aspect-ratio);
+  min-block-size: var(--rct-state-min-height);
+}
+.map-fullscreen {
+  position: fixed;
+  inset: 0;
+  box-sizing: border-box;
+  inline-size: 100%;
+  block-size: min(100%, var(--rct-host-viewport, 100%));
+  max-inline-size: none;
+  max-block-size: none;
+  margin: 0;
+  padding-block-start: max(
+    env(safe-area-inset-top),
+    var(--tg-content-safe-area-inset-top, 0rem),
+    var(--rct-space-2)
+  );
+  padding-block-end: max(
+    env(safe-area-inset-bottom),
+    var(--rct-host-safe-bottom, 0rem),
+    var(--tg-content-safe-area-inset-bottom, 0rem),
+    var(--rct-space-2)
+  );
+  padding-inline-start: max(
+    env(safe-area-inset-left),
+    var(--tg-content-safe-area-inset-left, 0rem),
+    var(--rct-space-2)
+  );
+  padding-inline-end: max(
+    env(safe-area-inset-right),
+    var(--tg-content-safe-area-inset-right, 0rem),
+    var(--rct-space-2)
+  );
+  border: 0;
+  overflow: hidden;
+  overscroll-behavior: contain;
+  color: inherit;
+  background: var(--rct-color-surface-base);
+}
+.map-fullscreen[open] {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: var(--rct-space-2);
+}
+.map-fullscreen .map-viewer {
+  grid-row: 2;
+}
+.map-fullscreen .map-preview {
+  aspect-ratio: auto;
+  min-block-size: 0;
+}
+.map-fullscreen__back {
+  grid-row: 1;
+  justify-self: start;
+}
 .map-zoom-controls {
   position: absolute;
   z-index: 1;
@@ -115,6 +171,9 @@
 }
 .map-preview::-webkit-scrollbar {
   display: none;
+}
+.map-preview--ready {
+  touch-action: none;
 }
 .map-preview img {
   position: absolute;

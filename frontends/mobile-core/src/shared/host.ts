@@ -22,6 +22,8 @@ export interface MobileHostAdapter {
   setBackVisible?: (visible: boolean) => void
   /** Temporarily suppresses host Back while an app-level overlay is active. */
   suspendBack?: () => () => void
+  /** Temporarily reserves vertical swipes for an in-app gesture or viewer. */
+  suspendVerticalSwipes?: () => () => void
   subscribeKeyboard?: (listener: (visible: boolean) => void) => () => void
   setPrimaryAction?: (action: MobileHostAction | null) => void
 }

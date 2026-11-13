@@ -1986,6 +1986,7 @@ defineExpose({ openNotificationAction });
       compact-presentation
       headman-presentation
       :client="mapClient"
+      :host="host"
       :theme="resolvedTheme"
       :offline="offline"
       :on-back="host?.backOwner === 'host' ? undefined : handleTaskBack"

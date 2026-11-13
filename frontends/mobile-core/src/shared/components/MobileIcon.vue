@@ -15,6 +15,7 @@ defineProps<{
     | 'copy'
     | 'geo-approved'
     | 'back'
+    | 'expand'
     | 'chevron-down'
     | 'room'
     | 'lesson'
@@ -65,6 +66,10 @@ defineProps<{
     <path
       v-else-if="name === 'chevron-down'"
       d="m3.5 6 4.5 4.5L12.5 6"
+    />
+    <path
+      v-else-if="name === 'expand'"
+      d="M6 2.5H2.5V6M10 2.5h3.5V6M2.5 10v3.5H6M13.5 10v3.5H10"
     />
     <template v-else-if="name === 'settings'">
       <path

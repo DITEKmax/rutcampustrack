@@ -1047,6 +1047,7 @@ defineExpose({ openNotificationAction });
       <MapScreen
         v-if="route.id === 'teacher-map' && mapClient"
         :client="mapClient"
+        :host="host"
         :theme="resolvedTheme"
         compact-presentation
       />

@@ -36,6 +36,9 @@ interface TelegramWebApp {
   expand(): void
   viewportHeight: number
   viewportStableHeight?: number
+  isVerticalSwipesEnabled?: boolean
+  disableVerticalSwipes?: () => void
+  enableVerticalSwipes?: () => void
   safeAreaInset?: { top: number; right: number; bottom: number; left: number }
   colorScheme?: 'light' | 'dark'
   themeParams?: Record<string, string>
@@ -125,6 +128,8 @@ export class TelegramHost implements MobileHostAdapter {
   private backRequestedVisible = false
   private backSuspensions = 0
   private backClaim: object | null = null
+  private verticalSwipeSuspensions = 0
+  private restoreVerticalSwipes: (() => void) | undefined
 
   close(): void {
     this.app?.close?.()
@@ -206,6 +211,28 @@ export class TelegramHost implements MobileHostAdapter {
     if (this.backSuspensions > 0 || (!this.backClaim && !this.backRequestedVisible))
       this.app?.BackButton?.hide?.()
     else this.app?.BackButton?.show?.()
+  }
+
+  suspendVerticalSwipes(): () => void {
+    const app = this.app
+    if (!app?.disableVerticalSwipes || !app.enableVerticalSwipes || !supports(app, '7.7'))
+      return () => undefined
+
+    if (this.verticalSwipeSuspensions === 0 && app.isVerticalSwipesEnabled !== false) {
+      app.disableVerticalSwipes()
+      this.restoreVerticalSwipes = () => app.enableVerticalSwipes?.()
+    }
+    this.verticalSwipeSuspensions += 1
+    let released = false
+    return () => {
+      if (released) return
+      released = true
+      this.verticalSwipeSuspensions -= 1
+      if (this.verticalSwipeSuspensions === 0) {
+        this.restoreVerticalSwipes?.()
+        this.restoreVerticalSwipes = undefined
+      }
+    }
   }
 
   subscribeKeyboard(listener: (visible: boolean) => void): () => void {

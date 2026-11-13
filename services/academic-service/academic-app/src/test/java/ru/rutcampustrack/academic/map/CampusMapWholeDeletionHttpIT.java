@@ -13,9 +13,12 @@ import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.*;
+import org.springframework.http.client.MultipartBodyBuilder;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -48,6 +51,45 @@ class CampusMapWholeDeletionHttpIT extends AbstractAcademicIntegrationTest {
         svg =
                 "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"2\" height=\"2\"/>"
                         .getBytes(StandardCharsets.UTF_8);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"0", "-1"})
+    void signedFloorRoundTripsThroughMultipartUploadTargetAndDeletionReceipt(String floorCode)
+            throws Exception {
+        var body = new MultipartBodyBuilder();
+        body.part("buildingCode", "971");
+        body.part("floorCode", floorCode);
+        body.part("png", png).filename("map.png").contentType(MediaType.IMAGE_PNG);
+        body.part("svg", svg).filename("map.svg").contentType(MediaType.parseMediaType("image/svg+xml"));
+        var headers = headers();
+        headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+        var uploaded =
+                http.postForEntity(
+                        "/academic/map/plans",
+                        new HttpEntity<>(body.build(), headers),
+                        UploadPlanResponse.class);
+        assertThat(uploaded.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+        var plan = uploaded.getBody().plan();
+
+        var target = get("/academic/map/plans/target?buildingCode=971&floorCode=" + floorCode);
+        assertThat(target.getStatusCode()).isEqualTo(HttpStatus.OK);
+        var found = mapper.readValue(target.getBody(), PlanTargetResponse.class);
+        assertThat(found.floorCode()).isEqualTo(floorCode);
+        assertThat(found.floor().id()).isEqualTo(plan.floorId());
+        assertAssets(plan, HttpStatus.OK);
+
+        var preview = preview(floorCode);
+        var request = request(floorCode, preview.path("previewDigest").asText());
+        assertThat(delete(request).getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(delete(request).getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(
+                        jdbc.queryForObject(
+                                "SELECT floor_code FROM campus_map_deletion_receipt WHERE operation_id=?",
+                                String.class,
+                                request.operationId()))
+                .isEqualTo(floorCode);
+        assertAssets(plan, HttpStatus.NOT_FOUND);
     }
 
     @Test

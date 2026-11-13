@@ -1,5 +1,5 @@
 import type { AdminMapBuildingResponse, AdminMapFloorResponse, AdminMapPlan } from '../api/types'
-import { AdminMapClient } from '../api/map-client'
+import { AdminMapClient, isAdminMapBuildingCode, isAdminMapFloorCode } from '../api/map-client'
 import type { AdminAccessProfile } from '../features/admin-access/admin-access-client'
 
 export const adminMapStates = [
@@ -159,7 +159,7 @@ export function createAdminMapFixtures(state: string) {
           ? String(body.buildingCode)
           : (url.searchParams.get('buildingCode') ?? '')
         const floorCode = body ? String(body.floorCode) : (url.searchParams.get('floorCode') ?? '')
-        if (![buildingCode, floorCode].every((code) => /^[1-9][0-9]{0,63}$/.test(code)))
+        if (!isAdminMapBuildingCode(buildingCode) || !isAdminMapFloorCode(floorCode))
           return Response.json(
             { detail: 'Введи номер без пробелов и ведущих нулей.' },
             { status: 400 },

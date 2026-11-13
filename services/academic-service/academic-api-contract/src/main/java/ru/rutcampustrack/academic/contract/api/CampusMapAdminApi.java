@@ -26,6 +26,7 @@ import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.Deletion
 import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.DeletionResult;
 import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.FloorResponse;
 import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.PlanResponse;
+import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.UpdateFloorRequest;
 import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.UpdateInventoryRequest;
 import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.UploadPlanResponse;
 
@@ -100,7 +101,7 @@ public interface CampusMapAdminApi {
     @Operation(summary = "Изменить код и название этажа в его корпусе")
     @PutMapping("/floors/{floorId}")
     ResponseEntity<FloorResponse> updateFloor(
-            @PathVariable String floorId, @Valid @RequestBody UpdateInventoryRequest request);
+            @PathVariable String floorId, @Valid @RequestBody UpdateFloorRequest request);
 
     @GetMapping("/floors/{floorId}/deletion-preview")
     ResponseEntity<DeletionPreview> previewFloorDeletion(@PathVariable String floorId);
@@ -123,7 +124,7 @@ public interface CampusMapAdminApi {
     @Operation(
             summary = "Создать или заменить схему по кодам корпуса и этажа одной операцией",
             description =
-                    "Коды: ASCII [1-9][0-9]*, максимум 64 символа, без пробелов. "
+                    "Коды ASCII: корпус [1-9][0-9]*, этаж 0 или -?[1-9][0-9]*, максимум 64 символа с учётом знака. "
                             + "Название схемы: максимум 255 символов. Нужен PNG или SVG. "
                             + "Не переданный формат сохраняется из текущей версии.")
     @ApiResponses({

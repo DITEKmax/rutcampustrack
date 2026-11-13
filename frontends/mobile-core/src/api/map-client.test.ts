@@ -229,7 +229,7 @@ describe('AdminMapClient atomic plan publication', () => {
     svg: slot('svg'),
   }
   const file = new File(['map'], 'plan.png', { type: 'image/png' })
-  it('preserves exact 64-digit codes and multipart fields while requiring the frozen ACK', async () => {
+  it('preserves exact 64-character codes and multipart fields while requiring the frozen ACK', async () => {
     const fetcher = vi.fn<typeof fetch>(async () =>
       Response.json(
         { status: 'created', buildingCreated: true, floorCreated: true, plan },
@@ -237,14 +237,15 @@ describe('AdminMapClient atomic plan publication', () => {
       ),
     )
     const client = new AdminMapClient({ accessToken: () => null, fetcher })
+    const floorCode = `-${'9'.repeat(63)}`
     expect(
-      await client.uploadPlan({ buildingCode: '9'.repeat(64), floorCode: '2', png: file }),
+      await client.uploadPlan({ buildingCode: '9'.repeat(64), floorCode, png: file }),
     ).toMatchObject({ status: 'created' })
     const [url, init] = fetcher.mock.calls[0]!
     expect(url).toBe('/api/academic/map/plans')
     const form = init!.body as FormData
     expect(form.get('buildingCode')).toBe('9'.repeat(64))
-    expect(form.get('floorCode')).toBe('2')
+    expect(form.get('floorCode')).toBe(floorCode)
     expect(form.get('label')).toBeNull()
     expect(form.get('png')).toBeInstanceOf(File)
     expect(new Headers(init!.headers).has('Content-Type')).toBe(false)
@@ -269,6 +270,12 @@ describe('AdminMapClient atomic plan publication', () => {
       await expect(
         client.uploadPlan({ buildingCode: code, floorCode: '1', png: file }),
       ).rejects.toBeInstanceOf(TypeError)
+    for (const code of [' 0', '-1\n', '01', '-01', '+1', '-0', '1e2', `-${'9'.repeat(64)}`]) {
+      await expect(client.resolvePlanTarget('1', code)).rejects.toBeInstanceOf(TypeError)
+      await expect(
+        client.uploadPlan({ buildingCode: '1', floorCode: code, png: file }),
+      ).rejects.toBeInstanceOf(TypeError)
+    }
     await expect(client.uploadPlan({ buildingCode: '1', floorCode: '1' })).rejects.toBeInstanceOf(
       TypeError,
     )

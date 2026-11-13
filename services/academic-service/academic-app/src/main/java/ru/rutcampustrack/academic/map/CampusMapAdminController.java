@@ -20,6 +20,7 @@ import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.Deletion
 import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.DeletionTarget;
 import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.FloorResponse;
 import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.PlanResponse;
+import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.UpdateFloorRequest;
 import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.UpdateInventoryRequest;
 import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.UploadPlanResponse;
 import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.UploadPlanStatus;
@@ -125,7 +126,7 @@ public class CampusMapAdminController implements CampusMapAdminApi {
             value = {ADMIN},
             admin = {"CAMPUS_MAP_MANAGE"})
     public ResponseEntity<FloorResponse> updateFloor(
-            String floorId, UpdateInventoryRequest request) {
+            String floorId, UpdateFloorRequest request) {
         return ResponseEntity.ok(service.updateFloor(floorId, request));
     }
 

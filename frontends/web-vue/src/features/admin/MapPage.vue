@@ -3,7 +3,12 @@ import WebSelect from '../../shared/WebSelect.vue';
 import { useWebLiveRefresh } from '../../app/live';
 import { computed, onBeforeUnmount, onMounted, ref, shallowRef } from 'vue';
 import { onBeforeRouteLeave, RouterLink } from 'vue-router';
-import { AdminMapClient, MapApiError } from '../../../../mobile-core/src/api/map-client';
+import {
+  ADMIN_MAP_BUILDING_CODE_PATTERN,
+  ADMIN_MAP_FLOOR_CODE_PATTERN,
+  AdminMapClient,
+  MapApiError,
+} from '../../../../mobile-core/src/api/map-client';
 import type {
   AdminMapBuildingResponse,
   AdminMapFloorResponse,
@@ -477,7 +482,7 @@ useWebLiveRefresh(
           <label class="web-field">Номер корпуса<input
             v-model="buildingCode"
             required
-            pattern="[1-9][0-9]{0,63}"
+            :pattern="ADMIN_MAP_BUILDING_CODE_PATTERN"
             inputmode="numeric"
             :readonly="!!selected"
             :list="selected ? undefined : 'admin-upload-buildings'"
@@ -485,8 +490,7 @@ useWebLiveRefresh(
           ></label><label class="web-field">Номер этажа<input
             v-model="floorCode"
             required
-            pattern="[1-9][0-9]{0,63}"
-            inputmode="numeric"
+            :pattern="ADMIN_MAP_FLOOR_CODE_PATTERN"
             :readonly="!!selected"
             :list="selected || !uploadFloors.length ? undefined : 'admin-upload-floors'"
             @input="uploadConfirmation = false"
@@ -696,7 +700,7 @@ useWebLiveRefresh(
         >
           <h3>{{ editKind === 'building' ? 'Корпус' : 'Этаж' }}</h3><label class="web-field">Номер<input
             v-model="editCode"
-            pattern="[1-9][0-9]{0,63}"
+            :pattern="editKind === 'floor' ? ADMIN_MAP_FLOOR_CODE_PATTERN : ADMIN_MAP_BUILDING_CODE_PATTERN"
             required
             :disabled="locked"
           ></label><label class="web-field">Подпись<input

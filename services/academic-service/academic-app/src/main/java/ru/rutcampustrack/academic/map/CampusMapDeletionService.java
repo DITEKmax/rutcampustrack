@@ -43,7 +43,7 @@ public class CampusMapDeletionService {
             String buildingCode, String floorCode, String rawFormat) {
         requireAdmin();
         String building = CampusMapAdminService.requireUploadCode(buildingCode, "buildingCode");
-        String floor = CampusMapAdminService.requireUploadCode(floorCode, "floorCode");
+        String floor = CampusMapAdminService.requireFloorCode(floorCode, "floorCode");
         Format format = null;
         if (rawFormat != null) {
             try {
@@ -58,7 +58,7 @@ public class CampusMapDeletionService {
     public PlanDeletionResult deletePlan(PlanDeleteRequest request) {
         requireAdmin();
         CampusMapAdminService.requireUploadCode(request.buildingCode(), "buildingCode");
-        CampusMapAdminService.requireUploadCode(request.floorCode(), "floorCode");
+        CampusMapAdminService.requireFloorCode(request.floorCode(), "floorCode");
         long originalFloorId = transaction.planConfirmationTarget(context.getUserId(), request);
         // Every replay still proves the live session/current password for the original identity.
         auth.confirm(

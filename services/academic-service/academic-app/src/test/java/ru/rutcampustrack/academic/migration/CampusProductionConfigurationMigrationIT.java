@@ -97,8 +97,8 @@ class CampusProductionConfigurationMigrationIT {
                 jdbc.queryForObject(
                         "SELECT checksum FROM flyway_schema_history WHERE version='15'",
                         Integer.class);
-        var latest = flyway(source, null);
-        assertThat(latest.migrate().migrationsExecuted).isEqualTo(1);
+        var geofenceUpgrade = flyway(source, "18");
+        assertThat(geofenceUpgrade.migrate().migrationsExecuted).isEqualTo(1);
         assertApproved(jdbc);
         String policyEvidence = System.getenv("RCT_GEO_POLICY_JSON");
         if (policyEvidence != null && !policyEvidence.isBlank()) {
@@ -125,8 +125,8 @@ class CampusProductionConfigurationMigrationIT {
         var primary = jdbc.queryForMap("SELECT * FROM campus_settings WHERE id=1");
         replay(jdbc, GEOFENCE);
         assertThat(jdbc.queryForMap("SELECT * FROM campus_settings WHERE id=1")).isEqualTo(primary);
-        latest.validate();
-        assertThat(latest.migrate().migrationsExecuted).isZero();
+        geofenceUpgrade.validate();
+        assertThat(geofenceUpgrade.migrate().migrationsExecuted).isZero();
         assertThat(jdbc.queryForObject("SELECT nextval('campus_settings_id_seq')", Long.class))
                 .isEqualTo(101L);
     }

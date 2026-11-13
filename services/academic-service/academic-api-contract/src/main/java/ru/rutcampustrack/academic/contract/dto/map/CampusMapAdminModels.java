@@ -12,6 +12,8 @@ import java.util.UUID;
 
 /** Wire models for the small, admin-owned campus map catalog API. */
 public final class CampusMapAdminModels {
+    public static final String FLOOR_CODE_PATTERN = "^(?:0|-?[1-9][0-9]*)$";
+
     private CampusMapAdminModels() {}
 
     public enum Format {
@@ -112,7 +114,7 @@ public final class CampusMapAdminModels {
 
     public record PlanDeleteRequest(
             @NotBlank @Size(max = 64) @Pattern(regexp = "[1-9][0-9]*") String buildingCode,
-            @NotBlank @Size(max = 64) @Pattern(regexp = "[1-9][0-9]*") String floorCode,
+            @NotBlank @Size(max = 64) @Pattern(regexp = FLOOR_CODE_PATTERN) String floorCode,
             Format format,
             @NotNull UUID operationId,
             @NotBlank @Pattern(regexp = "[0-9a-f]{64}") String previewDigest,
@@ -153,13 +155,14 @@ public final class CampusMapAdminModels {
                             requiredMode = Schema.RequiredMode.REQUIRED)
                     String buildingId,
             @Schema(
-                            description = "Numeric floor code",
-                            example = "2",
+                            description = "Canonical integer floor code",
+                            example = "\"-1\"",
                             requiredMode = Schema.RequiredMode.REQUIRED)
                     @NotBlank(message = "Код этажа обязателен")
+                    @Size(max = 64, message = "Код этажа не должен превышать 64 символа")
                     @Pattern(
-                            regexp = "[1-9][0-9]*",
-                            message = "Код этажа должен быть положительным числом")
+                            regexp = FLOOR_CODE_PATTERN,
+                            message = "Код этажа должен быть целым числом без пробелов, плюса и ведущих нулей")
                     String code,
             @Schema(description = "Human-readable label; defaults to the code")
                     @Size(max = 255, message = "Название этажа не должно превышать 255 символов")
@@ -172,6 +175,16 @@ public final class CampusMapAdminModels {
                             regexp = "[1-9][0-9]*",
                             message = "Код должен быть положительным числом")
                     @Size(max = 64, message = "Код не должен превышать 64 символа")
+                    String code,
+            @Size(max = 255, message = "Название не должно превышать 255 символов") String label) {}
+
+    @Schema(name = "CampusMapUpdateFloorRequest")
+    public record UpdateFloorRequest(
+            @NotBlank(message = "Код этажа обязателен")
+                    @Size(max = 64, message = "Код этажа не должен превышать 64 символа")
+                    @Pattern(
+                            regexp = FLOOR_CODE_PATTERN,
+                            message = "Код этажа должен быть целым числом без пробелов, плюса и ведущих нулей")
                     String code,
             @Size(max = 255, message = "Название не должно превышать 255 символов") String label) {}
 

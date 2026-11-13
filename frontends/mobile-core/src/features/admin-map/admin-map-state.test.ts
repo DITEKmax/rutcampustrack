@@ -5,7 +5,6 @@ import {
   captureAdminMapActionTarget,
   captureAdminMapUploadTarget,
   matchesAdminMapPreview,
-  normalizeAdminMapCode,
 } from './admin-map-state'
 
 const buildings: readonly AdminMapBuildingResponse[] = [
@@ -115,13 +114,5 @@ describe('admin map deletion target', () => {
         previewDigest: 'a'.repeat(64),
       }),
     ).toBe(false)
-  })
-})
-
-describe('exact admin map codes', () => {
-  it('keeps large exact codes and rejects numeric aliases', () => {
-    expect(normalizeAdminMapCode('9'.repeat(64))).toBe('9'.repeat(64))
-    for (const code of [' 1', '1 ', '01', '+1', '1e2', '0', '9'.repeat(65), '١'])
-      expect(normalizeAdminMapCode(code)).toBeNull()
   })
 })

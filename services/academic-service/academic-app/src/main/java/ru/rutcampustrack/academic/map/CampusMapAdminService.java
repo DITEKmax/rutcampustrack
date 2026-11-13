@@ -38,6 +38,7 @@ import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.CreateFl
 import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.FloorResponse;
 import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.FormatState;
 import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.PlanResponse;
+import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.UpdateFloorRequest;
 import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.UpdateInventoryRequest;
 import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.UploadPlanResponse;
 import ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels.UploadPlanStatus;
@@ -55,6 +56,7 @@ import ru.rutcampustrack.academic.exception.ConflictException;
 @Service
 public class CampusMapAdminService {
     private static final Pattern POSITIVE_DECIMAL = Pattern.compile("[1-9][0-9]*");
+    private static final Pattern FLOOR_CODE = Pattern.compile(CampusMapAdminModels.FLOOR_CODE_PATTERN);
     private static final Pattern UNSAFE_TEXT =
             Pattern.compile(
                     "(?is)(javascript:|data:text/html|expression\\s*\\(|@import|@font-face|url\\s*\\(\\s*(?:https?:|//|file:))");
@@ -81,7 +83,7 @@ public class CampusMapAdminService {
     public CampusMapAdminModels.PlanTargetResponse getPlanTarget(
             String buildingCode, String floorCode) {
         String building = requireUploadCode(buildingCode, "buildingCode");
-        String floorCodeValue = requireUploadCode(floorCode, "floorCode");
+        String floorCodeValue = requireFloorCode(floorCode, "floorCode");
         var target = repository.findActiveFloorByCodes(building, floorCodeValue);
         if (target.isEmpty()) {
             return new CampusMapAdminModels.PlanTargetResponse(
@@ -166,7 +168,7 @@ public class CampusMapAdminService {
                         .findActiveBuilding(buildingId)
                         .orElseThrow(
                                 () -> new ResourceNotFoundException("Корпус", "id", buildingId));
-        String code = requireNumericCode(request.code(), "code");
+        String code = requireFloorCode(request.code(), "code");
         if (repository.existsFloorCode(buildingId, code)) {
             throw new ConflictException(
                     "code", code, "Этаж с таким кодом уже существует в корпусе");
@@ -187,7 +189,7 @@ public class CampusMapAdminService {
             MultipartFile png,
             MultipartFile svg) {
         String buildingNumber = requireUploadCode(buildingCode, "buildingCode");
-        String floorNumber = requireUploadCode(floorCode, "floorCode");
+        String floorNumber = requireFloorCode(floorCode, "floorCode");
         if (label != null && label.length() > 255) {
             throw new BadRequestException(
                     "label", "Название схемы не должно превышать 255 символов");
@@ -362,9 +364,9 @@ public class CampusMapAdminService {
     }
 
     @Transactional(isolation = Isolation.READ_COMMITTED)
-    public FloorResponse updateFloor(String floorId, UpdateInventoryRequest request) {
+    public FloorResponse updateFloor(String floorId, UpdateFloorRequest request) {
         long id = parsePositiveId(floorId, "floorId");
-        String code = requireNumericCode(request.code(), "code");
+        String code = requireFloorCode(request.code(), "code");
         String label = defaultLabel(request.label(), "Этаж " + code);
         repository.lockCatalogForWrite();
         CampusMapAdminRepository.FloorRow floor =
@@ -1255,6 +1257,15 @@ public class CampusMapAdminService {
             throw new BadRequestException(
                     field,
                     "Код должен содержать положительное число без пробелов, максимум 64 цифры");
+        }
+        return value;
+    }
+
+    static String requireFloorCode(String value, String field) {
+        if (value == null || value.length() > 64 || !FLOOR_CODE.matcher(value).matches()) {
+            throw new BadRequestException(
+                    field,
+                    "Код этажа должен быть целым числом без пробелов, плюса и ведущих нулей, максимум 64 символа");
         }
         return value;
     }

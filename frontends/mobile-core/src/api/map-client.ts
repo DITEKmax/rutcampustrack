@@ -19,6 +19,26 @@ import type {
 } from './types'
 import { StaleSessionGenerationError } from '../shared/session-owner'
 
+export const ADMIN_MAP_BUILDING_CODE_PATTERN = '[1-9][0-9]{0,63}'
+export const ADMIN_MAP_FLOOR_CODE_PATTERN = '0|[1-9][0-9]{0,63}|-[1-9][0-9]{0,62}'
+const buildingCodePattern = new RegExp(`^${ADMIN_MAP_BUILDING_CODE_PATTERN}$`)
+const floorCodePattern = new RegExp(`^(?:${ADMIN_MAP_FLOOR_CODE_PATTERN})$`)
+
+export function isAdminMapBuildingCode(value: string): boolean {
+  return buildingCodePattern.test(value)
+}
+
+export function isAdminMapFloorCode(value: string): boolean {
+  return floorCodePattern.test(value)
+}
+
+function requireAdminMapCodes(buildingCode: string, floorCode: string): void {
+  if (!isAdminMapBuildingCode(buildingCode) || !isAdminMapFloorCode(floorCode))
+    throw new TypeError(
+      'Укажи положительный номер корпуса и целый номер этажа: до 64 символов без пробелов.',
+    )
+}
+
 export interface MapApiOptions {
   accessToken: () => string | null
   onUnauthorized?: () => Promise<void>
@@ -193,11 +213,9 @@ export class AdminMapClient {
   }
 
   private codeQuery(buildingCode: string, floorCode: string, format?: MapFormat): string {
-    if (
-      ![buildingCode, floorCode].every((code) => /^[1-9][0-9]*$/.test(code) && code.length <= 64) ||
-      (format !== undefined && format !== 'png' && format !== 'svg')
-    )
-      throw new TypeError('Укажи положительные номера корпуса и этажа.')
+    requireAdminMapCodes(buildingCode, floorCode)
+    if (format !== undefined && format !== 'png' && format !== 'svg')
+      throw new TypeError('Выбери формат PNG или SVG.')
     return new URLSearchParams({
       buildingCode,
       floorCode,
@@ -359,13 +377,7 @@ export class AdminMapClient {
   }
 
   async uploadPlan(payload: AdminMapPlanUploadRequest): Promise<AdminMapPlanUploadResult> {
-    if (
-      ![payload.buildingCode, payload.floorCode].every(
-        (code) => /^[1-9][0-9]*$/.test(code) && code.length <= 64,
-      )
-    ) {
-      throw new TypeError('Укажи положительные номера корпуса и этажа: до 64 цифр без пробелов.')
-    }
+    requireAdminMapCodes(payload.buildingCode, payload.floorCode)
     if (payload.label !== undefined && payload.label.length > 255)
       throw new TypeError('Название схемы слишком длинное.')
     if (!payload.png && !payload.svg) throw new TypeError('Приложи PNG или SVG.')

@@ -7,8 +7,12 @@ import type {
 } from '../../api/types';
 import type { AdminAccessProfile } from '../admin-access/admin-access-client';
 import { isAdminPasswordProofFailure } from '../../shared/admin-authority';
-import { AdminMapClient, MapApiError } from '../../api/map-client';
-import { normalizeAdminMapCode } from './admin-map-state';
+import {
+  AdminMapClient,
+  isAdminMapBuildingCode,
+  isAdminMapFloorCode,
+  MapApiError,
+} from '../../api/map-client';
 import AdminNotice from '../../shared/components/AdminNotice.vue';
 import MobileIcon from '../../shared/components/MobileIcon.vue';
 import { StaleSessionGenerationError } from '../../shared/session-owner';
@@ -71,18 +75,20 @@ const canDelete = computed(
 );
 const controlsLocked = computed(() => !canManage.value || saving.value || Boolean(deletion.value));
 const pair = computed(() => {
-  const building = normalizeAdminMapCode(buildingCode.value),
-    level = normalizeAdminMapCode(floorCode.value);
-  return building && level ? { buildingCode: building, floorCode: level } : null;
+  const building = buildingCode.value;
+  const floor = floorCode.value;
+  return isAdminMapBuildingCode(building) && isAdminMapFloorCode(floor)
+    ? { buildingCode: building, floorCode: floor }
+    : null;
 });
 const fieldErrors = computed(() => ({
   building:
-    buildingCode.value && !normalizeAdminMapCode(buildingCode.value)
+    buildingCode.value && !isAdminMapBuildingCode(buildingCode.value)
       ? 'Введи от 1 до 64 цифр, начиная с 1–9, без пробелов.'
       : '',
   floor:
-    floorCode.value && !normalizeAdminMapCode(floorCode.value)
-      ? 'Введи от 1 до 64 цифр, начиная с 1–9, без пробелов.'
+    floorCode.value && !isAdminMapFloorCode(floorCode.value)
+      ? 'Введи целое число без пробелов и ведущих нулей, до 64 символов. Например, -1, 0 или 2.'
       : '',
 }));
 let mounted = false;
@@ -586,8 +592,6 @@ function stateLabel(format: MapFormat): string {
             v-model="floorCode"
             data-field="floor-code"
             type="text"
-            inputmode="numeric"
-            maxlength="64"
             :disabled="controlsLocked || Boolean(pendingUpload)"
             :aria-invalid="Boolean(fieldErrors.floor)"
             :aria-describedby="fieldErrors.floor ? 'admin-map-floor-error' : undefined"

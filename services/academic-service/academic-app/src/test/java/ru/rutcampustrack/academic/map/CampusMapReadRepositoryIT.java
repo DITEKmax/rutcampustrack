@@ -256,7 +256,7 @@ class CampusMapReadRepositoryIT extends AbstractAcademicIntegrationTest {
         var floor =
                 admin.createFloor(
                         new ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels
-                                .CreateFloorRequest(building.id(), "1", "Первый"));
+                                .CreateFloorRequest(building.id(), "0", "Нулевой"));
         var other =
                 admin.createFloor(
                         new ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels
@@ -287,15 +287,16 @@ class CampusMapReadRepositoryIT extends AbstractAcademicIntegrationTest {
                 admin.updateFloor(
                         floor.id(),
                         new ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels
-                                .UpdateInventoryRequest("3", "Новый этаж"));
+                                .UpdateFloorRequest("-3", "Новый этаж"));
         assertThat(updated.id()).isEqualTo(floor.id());
+        assertThat(updated.code()).isEqualTo("-3");
         assertThat(updated.currentPlan().version()).isEqualTo("2");
         assertThatThrownBy(
                         () ->
                                 admin.updateFloor(
                                         floor.id(),
                                         new ru.rutcampustrack.academic.contract.dto.map
-                                                .CampusMapAdminModels.UpdateInventoryRequest(
+                                                .CampusMapAdminModels.UpdateFloorRequest(
                                                 "2", "Занят")))
                 .isInstanceOf(ru.rutcampustrack.academic.exception.ConflictException.class);
 
@@ -625,7 +626,7 @@ VALUES (?,?,?,?,?,?,?,?)
         admin.updateFloor(
                 original.floorId(),
                 new ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels
-                        .UpdateInventoryRequest("3", "Переименован"));
+                        .UpdateFloorRequest("3", "Переименован"));
         var reused = admin.uploadPlan("91", "2", null, png, null).plan();
         assertThat(reused.floorId()).isNotEqualTo(original.floorId());
         assertThat(deletion.planConfirmationTarget(ownerId, clear)).isEqualTo(confirmed);
@@ -719,11 +720,11 @@ VALUES (?,?,?,?,?,?,?,?)
         admin.updateFloor(
                 original.floorId(),
                 new ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels
-                        .UpdateInventoryRequest("2", "Второй"));
+                        .UpdateFloorRequest("2", "Второй"));
         admin.updateFloor(
                 original.floorId(),
                 new ru.rutcampustrack.academic.contract.dto.map.CampusMapAdminModels
-                        .UpdateInventoryRequest("1", "Первый"));
+                        .UpdateFloorRequest("1", "Первый"));
         assertThatThrownBy(() -> deletion.deletePlan(floor, ownerId, request))
                 .isInstanceOf(ru.rutcampustrack.academic.exception.ConflictException.class);
     }
@@ -1036,9 +1037,12 @@ VALUES (?,?,?,?,?,?,?,?)
                 jdbc(schema)
                         .queryForObject(
                                 "SELECT count(*) FROM campus_map_catalog_revision", Long.class);
-        for (String code : List.of("0", "01", " 20", "20 ", "+20", "２０", "1".repeat(65))) {
+        for (String code : List.of("0", "-1", "01", " 20", "20 ", "+20", "２０", "1".repeat(65))) {
             assertThatThrownBy(() -> admin.uploadPlan(code, "2", null, png, null))
                     .isInstanceOf(ru.rutcampustrack.academic.exception.BadRequestException.class);
+        }
+        for (String code :
+                List.of("-0", "-01", "01", " 20", "20 ", "+20", "２０", "-" + "1".repeat(64))) {
             assertThatThrownBy(() -> admin.uploadPlan("20", code, null, png, null))
                     .isInstanceOf(ru.rutcampustrack.academic.exception.BadRequestException.class);
         }

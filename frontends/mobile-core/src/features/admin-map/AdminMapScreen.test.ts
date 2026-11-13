@@ -282,32 +282,35 @@ describe('mounted typed admin map authority and session boundary', () => {
     expect(text(root)).toContain('Управление картой недоступно')
     expect(nodes(root).some((node) => node.tag === 'img')).toBe(false)
   })
-  it('uploads one exact target/files command without precreating inventory or DATA_DELETE', async () => {
-    const fetcher = vi.fn<typeof fetch>(async (url, init) =>
-      init?.method === 'POST'
-        ? Response.json(
-            { status: 'created', buildingCreated: false, floorCreated: false, plan },
-            { status: 201 },
-          )
-        : readyResponse(url, null),
-    )
-    const { root } = mount(
-      new AdminMapClient({ accessToken: () => null, currentGeneration: () => 1, fetcher }),
-      access(),
-    )
-    const file = await draft(root)
-    expect(nodes(root).filter((node) => node.props['data-action'] === 'delete')).toHaveLength(0)
-    click(button(root, 'Сохранить схему'))
-    await settle()
-    const posts = fetcher.mock.calls.filter(([, init]) => init?.method === 'POST')
-    expect(posts).toHaveLength(1)
-    expect(posts[0]![0]).toBe('/api/academic/map/plans')
-    const body = posts[0]![1]!.body as FormData
-    expect(body.get('buildingCode')).toBe('1')
-    expect(body.get('floorCode')).toBe('1')
-    expect((body.get('png') as File).name).toBe(file.name)
-    expect(text(root)).toContain('Схема добавлена')
-  })
+  it.each(['1', '0', '-1'])(
+    'uploads one exact target/files command for floor %s',
+    async (floor) => {
+      const fetcher = vi.fn<typeof fetch>(async (url, init) =>
+        init?.method === 'POST'
+          ? Response.json(
+              { status: 'created', buildingCreated: false, floorCreated: false, plan },
+              { status: 201 },
+            )
+          : readyResponse(url, null),
+      )
+      const { root } = mount(
+        new AdminMapClient({ accessToken: () => null, currentGeneration: () => 1, fetcher }),
+        access(),
+      )
+      const file = await draft(root, '1', floor)
+      expect(nodes(root).filter((node) => node.props['data-action'] === 'delete')).toHaveLength(0)
+      click(button(root, 'Сохранить схему'))
+      await settle()
+      const posts = fetcher.mock.calls.filter(([, init]) => init?.method === 'POST')
+      expect(posts).toHaveLength(1)
+      expect(posts[0]![0]).toBe('/api/academic/map/plans')
+      const body = posts[0]![1]!.body as FormData
+      expect(body.get('buildingCode')).toBe('1')
+      expect(body.get('floorCode')).toBe(floor)
+      expect((body.get('png') as File).name).toBe(file.name)
+      expect(text(root)).toContain('Схема добавлена')
+    },
+  )
   it('keeps password proof and format deletion protected and clears the dialog when rights are revoked', async () => {
     const fetcher = vi.fn<typeof fetch>(async (url, init) => {
       if (String(url).includes('/deletion-preview'))

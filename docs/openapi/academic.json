@@ -2331,7 +2331,7 @@
           "content" : {
             "application/json" : {
               "schema" : {
-                "$ref" : "#/components/schemas/CampusMapUpdateInventoryRequest"
+                "$ref" : "#/components/schemas/CampusMapUpdateFloorRequest"
               }
             }
           },
@@ -5855,7 +5855,7 @@
       "post" : {
         "tags" : [ "Campus map" ],
         "summary" : "Создать или заменить схему по кодам корпуса и этажа одной операцией",
-        "description" : "Коды: ASCII [1-9][0-9]*, максимум 64 символа, без пробелов. Название схемы: максимум 255 символов. Нужен PNG или SVG. Не переданный формат сохраняется из текущей версии.",
+        "description" : "Коды ASCII: корпус [1-9][0-9]*, этаж 0 или -?[1-9][0-9]*, максимум 64 символа с учётом знака. Название схемы: максимум 255 символов. Нужен PNG или SVG. Не переданный формат сохраняется из текущей версии.",
         "operationId" : "uploadPlan",
         "requestBody" : {
           "content" : {
@@ -15631,6 +15631,23 @@
         },
         "required" : [ "code" ]
       },
+      "CampusMapUpdateFloorRequest" : {
+        "type" : "object",
+        "properties" : {
+          "code" : {
+            "type" : "string",
+            "maxLength" : 64,
+            "minLength" : 0,
+            "pattern" : "^(?:0|-?[1-9][0-9]*)$"
+          },
+          "label" : {
+            "type" : "string",
+            "maxLength" : 255,
+            "minLength" : 0
+          }
+        },
+        "required" : [ "code" ]
+      },
       "CampusMapFloor" : {
         "type" : "object",
         "properties" : {
@@ -17111,7 +17128,7 @@
             "type" : "string",
             "maxLength" : 64,
             "minLength" : 0,
-            "pattern" : "[1-9][0-9]*"
+            "pattern" : "^(?:0|-?[1-9][0-9]*)$"
           },
           "format" : {
             "type" : "string",
@@ -17166,10 +17183,11 @@
           },
           "code" : {
             "type" : "string",
-            "description" : "Numeric floor code",
-            "example" : 2,
-            "minLength" : 1,
-            "pattern" : "[1-9][0-9]*"
+            "description" : "Canonical integer floor code",
+            "example" : "-1",
+            "maxLength" : 64,
+            "minLength" : 0,
+            "pattern" : "^(?:0|-?[1-9][0-9]*)$"
           },
           "label" : {
             "type" : "string",

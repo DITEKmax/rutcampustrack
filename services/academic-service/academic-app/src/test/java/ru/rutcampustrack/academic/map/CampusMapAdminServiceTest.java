@@ -30,9 +30,11 @@ class CampusMapAdminServiceTest {
 
     @Test
     void targetLookupRejectsNoncanonicalNumbersBeforeRepositoryAccess() {
-        for (String code : List.of("0", "01", " 1", "1 ", "١", "1".repeat(65))) {
+        for (String code : List.of("0", "-1", "01", " 1", "1 ", "١", "1".repeat(65))) {
             assertThatThrownBy(() -> service.getPlanTarget(code, "2"))
                     .isInstanceOf(BadRequestException.class);
+        }
+        for (String code : List.of("-0", "-01", "+1", "01", " -1", "-1\n", "١", "-" + "1".repeat(64))) {
             assertThatThrownBy(() -> service.getPlanTarget("1", code))
                     .isInstanceOf(BadRequestException.class);
         }

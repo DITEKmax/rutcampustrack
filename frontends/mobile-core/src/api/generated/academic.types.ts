@@ -520,7 +520,7 @@ export interface paths {
         put?: never;
         /**
          * Создать или заменить схему по кодам корпуса и этажа одной операцией
-         * @description Коды: ASCII [1-9][0-9]*, максимум 64 символа, без пробелов. Название схемы: максимум 255 символов. Нужен PNG или SVG. Не переданный формат сохраняется из текущей версии.
+         * @description Коды ASCII: корпус [1-9][0-9]*, этаж 0 или -?[1-9][0-9]*, максимум 64 символа с учётом знака. Название схемы: максимум 255 символов. Нужен PNG или SVG. Не переданный формат сохраняется из текущей версии.
          */
         post: operations["uploadPlan"];
         delete?: never;
@@ -2170,6 +2170,10 @@ export interface components {
             code: string;
             label?: string;
         };
+        CampusMapUpdateFloorRequest: {
+            code: string;
+            label?: string;
+        };
         CampusMapFloor: {
             id?: string;
             buildingId?: string;
@@ -2821,8 +2825,8 @@ export interface components {
              */
             buildingId: string;
             /**
-             * @description Numeric floor code
-             * @example 2
+             * @description Canonical integer floor code
+             * @example -1
              */
             code: string;
             /** @description Human-readable label; defaults to the code */
@@ -5568,7 +5572,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["CampusMapUpdateInventoryRequest"];
+                "application/json": components["schemas"]["CampusMapUpdateFloorRequest"];
             };
         };
         responses: {

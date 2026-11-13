@@ -9,12 +9,14 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
 import java.util.Map;
 import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
@@ -37,6 +39,7 @@ import ru.rutcampustrack.attendance.contract.enums.AttendanceStatus;
 import ru.rutcampustrack.attendance.contract.enums.UserRole;
 import ru.rutcampustrack.attendance.exception.AcademicServiceUnavailableException;
 import ru.rutcampustrack.attendance.exception.AccessDeniedException;
+import ru.rutcampustrack.attendance.exception.BadRequestException;
 import ru.rutcampustrack.attendance.exception.ScheduleServiceUnavailableException;
 import ru.rutcampustrack.attendance.grpc.AcademicGrpcClient;
 import ru.rutcampustrack.attendance.grpc.DocumentRendererGrpcClient;
@@ -748,15 +751,22 @@ class ReportServiceTest {
     void teacherStatsUsesClosedLessonsAndServerSideMetricCounts() {
         when(academicGrpcClient.getCurrentTeacherSubjects(USER_ID))
                 .thenReturn(twoSubjectAuthority());
+        var cancelled = statsLesson(3L, "cancelled", "2026-04-01").toBuilder()
+                .clearAssignmentId().clearTeacherId().build();
         when(scheduleGrpcClient.getLessonsByIds(List.of(1L, 2L, 3L, 4L)))
                 .thenReturn(
                         List.of(
-                                statsLesson(1L, "closed", "2026-04-01"),
+                                statsLesson(1L, "closed", "2026-04-01").toBuilder()
+                                        .clearAssignmentId().clearTeacherId().build(),
                                 statsLesson(2L, "active", "2026-04-01"),
-                                statsLesson(3L, "cancelled", "2026-04-02"),
+                                cancelled,
                                 statsLesson(4L, "closed", "2026-04-02").toBuilder()
                                         .setSubjectId(SUBJECT_ID_2)
                                         .build()));
+        when(scheduleGrpcClient.getCurrentLessonsByGroup(
+                        GROUP_ID, SEMESTER_ID, "2026-04-01", "2026-04-01", Set.of(1L, 3L)))
+                .thenReturn(List.of(unassignedLessonResponse(1L, "closed", "09:30"),
+                        unassignedLessonResponse(3L, "cancelled", "09:30")));
         when(academicGrpcClient.getGroup(GROUP_ID))
                 .thenReturn(
                         ru.rutcampustrack.academic.grpc.GroupResponse.newBuilder()
@@ -771,18 +781,12 @@ class ReportServiceTest {
                                 recordForUser(100L, SUBJECT_ID_1, AttendanceStatus.PRESENT),
                                 recordForUser(101L, SUBJECT_ID_1, AttendanceStatus.EXCUSED)));
 
-        ReportService.TeacherStatsResult result =
-                reportService.getTeacherStats(
-                        new ReportService.TeacherStatsQuery(
-                                List.of(1L, 2L, 3L, 4L),
-                                ReportService.TeacherStatsScope.STUDENTS,
-                                GROUP_ID,
-                                SUBJECT_ID_1,
-                                List.of("lecture"),
-                                List.of(),
-                                List.of(),
-                                SEMESTER_ID),
-                        USER_ID);
+        var query = new ReportService.TeacherStatsQuery(
+                List.of(1L, 2L, 3L, 4L), ReportService.TeacherStatsScope.STUDENTS,
+                GROUP_ID, SUBJECT_ID_1, List.of("lecture"), List.of(), List.of(), SEMESTER_ID);
+        assertThatThrownBy(() -> reportService.getTeacherStats(query, USER_ID))
+                .isInstanceOf(AccessDeniedException.class);
+        ReportService.TeacherStatsResult result = reportService.getTeacherStatsForRead(query, USER_ID);
 
         assertThat(result.semesterId()).isEqualTo(SEMESTER_ID);
         assertThat(result.lessonsCount()).isEqualTo(1);
@@ -806,7 +810,6 @@ class ReportServiceTest {
         assertThat(excused.excused().numerator()).isEqualTo(1);
         assertThat(excused.absent().numerator()).isZero();
         verify(attendanceReadPort).findByLessonIds(List.of(1L));
-        verify(scheduleGrpcClient).getLessonsByIds(List.of(1L, 2L, 3L, 4L));
         verify(scheduleGrpcClient, never()).getLessonById(anyLong());
     }
 
@@ -1751,6 +1754,79 @@ class ReportServiceTest {
                 .thenReturn(TeacherSubjectsResponse.getDefaultInstance());
         assertThatThrownBy(() -> reportService.getTeacherJournalMetrics(ids, USER_ID, null))
                 .isInstanceOf(AccessDeniedException.class);
+    }
+
+    @Test
+    void teacherReadsRejectMalformedAndOutOfScopeUnassignedHistoryBeforeAttendance() {
+        var ids = List.of(3L);
+        var unassigned = statsLesson(3L, "closed", "2026-04-01").toBuilder()
+                .clearAssignmentId().clearTeacherId().build();
+        for (var denied : List.of(
+                unassigned.toBuilder().setSubjectId(SUBJECT_ID_2).build(),
+                unassigned.toBuilder().setGroupId(GROUP_ID + 1).build(),
+                unassigned.toBuilder().setSemesterId(SEMESTER_ID + 1).build(),
+                unassigned.toBuilder().setAssignmentId(900L).build(),
+                unassigned.toBuilder().setTeacherId(USER_ID).build(),
+                unassigned.toBuilder().setAssignmentId(0L).setTeacherId(0L).build(),
+                unassigned.toBuilder().setStatus("planned").build(),
+                unassigned.toBuilder().setStatus("active").build(),
+                unassigned.toBuilder().setStatus("transferred").build(),
+                unassigned.toBuilder().setStartsAt("2026-04-01T12:00:01").build())) {
+            when(scheduleGrpcClient.getLessonsByIds(ids)).thenReturn(List.of(denied));
+            assertThatThrownBy(() -> reportService.getTeacherJournalMetrics(ids, USER_ID, null))
+                    .isInstanceOf(AccessDeniedException.class);
+        }
+        var query = new ReportService.TeacherStatsQuery(
+                ids, ReportService.TeacherStatsScope.STUDENTS, GROUP_ID, SUBJECT_ID_1,
+                List.of("lecture"), List.of(), List.of(), SEMESTER_ID);
+        when(scheduleGrpcClient.getLessonsByIds(ids))
+                .thenReturn(List.of(unassigned.toBuilder().setSemesterId(SEMESTER_ID + 1).build()));
+        assertThatThrownBy(() -> reportService.getTeacherStatsForRead(query, USER_ID))
+                .isInstanceOf(BadRequestException.class);
+
+        when(scheduleGrpcClient.getLessonsByIds(ids))
+                .thenReturn(List.of(unassigned.toBuilder().setStatus("cancelled").build()));
+        when(scheduleGrpcClient.getCurrentLessonsByGroup(
+                GROUP_ID, SEMESTER_ID, "2026-04-01", "2026-04-01", Set.of(3L)))
+                .thenReturn(List.of(unassignedLessonResponse(3L, "cancelled", "12:00:01")));
+        assertThatThrownBy(() -> reportService.getTeacherJournalMetrics(ids, USER_ID, null))
+                .isInstanceOf(AccessDeniedException.class);
+
+        when(scheduleGrpcClient.getCurrentLessonsByGroup(
+                GROUP_ID, SEMESTER_ID, "2026-04-01", "2026-04-01", Set.of(3L)))
+                .thenReturn(List.of(unassignedLessonResponse(3L, "cancelled", "09:30")
+                        .toBuilder().setRevision(2L).build()));
+        assertThatThrownBy(() -> reportService.getTeacherJournalMetrics(ids, USER_ID, null))
+                .isInstanceOf(ScheduleServiceUnavailableException.class);
+        when(scheduleGrpcClient.getLessonsByIds(ids)).thenReturn(List.of(unassigned));
+        when(scheduleGrpcClient.getCurrentLessonsByGroup(
+                GROUP_ID, SEMESTER_ID, "2026-04-01", "2026-04-01", Set.of(3L)))
+                .thenReturn(List.of(unassignedLessonResponse(3L, "closed", "12:00:01")));
+        assertThatThrownBy(() -> reportService.getTeacherStatsForRead(query, USER_ID))
+                .isInstanceOf(AccessDeniedException.class);
+        verify(attendanceReadPort, never()).findByLessonIds(any());
+    }
+
+    @Test
+    void teacherJournalRosterRequiresTheCurrentOccurrenceAndCurrentSemesterForUnassignedLessons() {
+        var unassigned = unassignedLessonResponse(3L, "closed", "09:30");
+        for (var denied : List.of(
+                unassigned.toBuilder().setCurrent(false).build(),
+                unassigned.toBuilder().setSemesterId(SEMESTER_ID + 1).build(),
+                unassigned.toBuilder().setStatus("planned").build(),
+                unassigned.toBuilder().setEndTime("12:00:01").build())) {
+            when(scheduleGrpcClient.getLessonById(3L)).thenReturn(denied);
+            assertThatThrownBy(() -> reportService.getTeacherJournalLessonRoster(3L, USER_ID))
+                    .isInstanceOf(AccessDeniedException.class);
+        }
+        verifyNoInteractions(attendanceReadPort);
+    }
+
+    private static LessonResponse unassignedLessonResponse(long id, String status, String endTime) {
+        return LessonResponse.newBuilder()
+                .setId(id).setGroupId(GROUP_ID).setSubjectId(SUBJECT_ID_1).setSemesterId(SEMESTER_ID)
+                .setDate("2026-04-01").setStartTime("08:00:00").setEndTime(endTime)
+                .setLessonType("lecture").setStatus(status).setCurrent(true).build();
     }
 
     private TeacherSubjectsResponse twoSubjectAuthority() {

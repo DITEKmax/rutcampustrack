@@ -20,6 +20,7 @@ import ru.rutcampustrack.schedule.grpc.LessonsResponse;
 import ru.rutcampustrack.schedule.grpc.ScheduleGrpcServiceGrpc;
 
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -154,18 +155,33 @@ public class ScheduleGrpcClient {
 
     public LessonsResponse getLessonsByGroup(
             Long groupId, Long semesterId, String dateFrom, String dateTo) {
+        LessonsResponse response = fetchLessonsByGroup(groupId, semesterId, dateFrom, dateTo);
+        response.getLessonsList().forEach(this::requireTransferReadable);
+        return response;
+    }
+
+    /** Read exact IDs among current group snapshots; unrelated transfers do not affect this read. */
+    public List<LessonResponse> getCurrentLessonsByGroup(
+            Long groupId, Long semesterId, String dateFrom, String dateTo, Set<Long> lessonIds) {
+        if (lessonIds.isEmpty()) return List.of();
+        var selected = fetchLessonsByGroup(groupId, semesterId, dateFrom, dateTo).getLessonsList().stream()
+                .filter(lesson -> lessonIds.contains(lesson.getId()))
+                .toList();
+        selected.forEach(this::requireTransferReadable);
+        return selected;
+    }
+
+    private LessonsResponse fetchLessonsByGroup(
+            Long groupId, Long semesterId, String dateFrom, String dateTo) {
         try {
-            LessonsResponse response =
-                    stub.withDeadlineAfter(3, TimeUnit.SECONDS)
-                            .getLessonsByGroup(
-                                    LessonsByGroupRequest.newBuilder()
-                                            .setGroupId(groupId)
-                                            .setSemesterId(semesterId)
-                                            .setDateFrom(dateFrom)
-                                            .setDateTo(dateTo)
-                                            .build());
-            response.getLessonsList().forEach(this::requireTransferReadable);
-            return response;
+            return stub.withDeadlineAfter(3, TimeUnit.SECONDS)
+                    .getLessonsByGroup(
+                            LessonsByGroupRequest.newBuilder()
+                                    .setGroupId(groupId)
+                                    .setSemesterId(semesterId)
+                                    .setDateFrom(dateFrom)
+                                    .setDateTo(dateTo)
+                                    .build());
         } catch (StatusRuntimeException e) {
             throw new ScheduleServiceUnavailableException(
                     "Schedule Service unavailable: " + e.getStatus().getCode(),

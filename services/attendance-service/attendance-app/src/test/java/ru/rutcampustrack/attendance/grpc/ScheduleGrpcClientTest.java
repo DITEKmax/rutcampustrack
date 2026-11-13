@@ -34,6 +34,7 @@ import ru.rutcampustrack.schedule.grpc.ScheduleGrpcServiceGrpc;
 
 import java.lang.reflect.Field;
 import java.util.List;
+import java.util.Set;
 
 @ExtendWith(MockitoExtension.class)
 class ScheduleGrpcClientTest {
@@ -115,6 +116,25 @@ class ScheduleGrpcClientTest {
                                 .setDateFrom("2026-02-01")
                                 .setDateTo("2026-06-30")
                                 .build());
+    }
+
+    @Test
+    void scopedGroupReadValidatesTransferStateOnlyForRequestedLessons() {
+        var readable = LessonResponse.newBuilder().setId(41L).setCurrent(true).build();
+        var pending = LessonResponse.newBuilder().setId(42L).setTransferState("PENDING").build();
+        var error = LessonResponse.newBuilder().setId(43L).setTransferState("ERROR").build();
+        when(mockStub.getLessonsByGroup(any())).thenReturn(LessonsResponse.newBuilder()
+                .addLessons(readable).addLessons(pending).addLessons(error).build());
+
+        assertEquals(List.of(readable),
+                client.getCurrentLessonsByGroup(5L, 1L, "2026-02-01", "2026-06-30", Set.of(41L)));
+        for (long blockedId : List.of(42L, 43L)) {
+            assertThrows(ScheduleServiceUnavailableException.class,
+                    () -> client.getCurrentLessonsByGroup(
+                            5L, 1L, "2026-02-01", "2026-06-30", Set.of(41L, blockedId)));
+        }
+        assertThrows(ScheduleServiceUnavailableException.class,
+                () -> client.getLessonsByGroup(5L, 1L, "2026-02-01", "2026-06-30"));
     }
 
     @Test

@@ -165,7 +165,8 @@ public final class TeacherAttendanceReadGrpcService
                         academicGrpcClient,
                         teacherAcademicGrpcClient,
                         documentRendererGrpcClient,
-                        this::readTeacherJournal);
+                        (teacherId, lessonIds, pastOnly) ->
+                                readTeacherJournal(teacherId, lessonIds, pastOnly, false));
         this.statsExportService =
                 new TeacherStatsExportService(
                         reportService,
@@ -228,7 +229,7 @@ public final class TeacherAttendanceReadGrpcService
                             : readTeacherJournal(
                                     claims.userId(),
                                     request.getLessonIdsList(),
-                                    request.getPastOnly());
+                                    request.getPastOnly(), true);
             if (request.getIncludeMetrics()) {
                 if (!request.getAggregateLessonIdsList().containsAll(request.getLessonIdsList())) {
                     throw new BadRequestException("Display lessons are outside metrics context");
@@ -280,7 +281,7 @@ public final class TeacherAttendanceReadGrpcService
     }
 
     private TeacherJournalResponse readTeacherJournal(
-            long teacherId, List<Long> requestedIds, boolean pastOnly) {
+            long teacherId, List<Long> requestedIds, boolean pastOnly, boolean interactiveRead) {
         List<Long> lessonIds = requestedIds.stream().filter(id -> id > 0).distinct().toList();
         if (lessonIds.isEmpty()
                 || lessonIds.size() > 100
@@ -292,9 +293,17 @@ public final class TeacherAttendanceReadGrpcService
         Instant teachingNow = educationalClock.instant();
         List<LessonRoster> rosters = new ArrayList<>();
         for (Long lessonId : lessonIds) {
-            LessonAttendanceResponse attendance =
-                    reportService.getTeacherLessonAttendance(lessonId, teacherId);
-            LessonResponse lesson = scheduleGrpcClient.getLessonById(lessonId);
+            LessonAttendanceResponse attendance;
+            LessonResponse lesson;
+            if (interactiveRead) {
+                TeacherLessonRoster roster =
+                        reportService.getTeacherJournalLessonRoster(lessonId, teacherId);
+                attendance = roster.attendance();
+                lesson = roster.lesson();
+            } else {
+                attendance = reportService.getTeacherLessonAttendance(lessonId, teacherId);
+                lesson = scheduleGrpcClient.getLessonById(lessonId);
+            }
             if (pastOnly && !completedHistoryLesson(lesson, teachingNow)) {
                 throw Status.INVALID_ARGUMENT
                         .withDescription("past_only requires completed history lessons")
@@ -417,7 +426,7 @@ public final class TeacherAttendanceReadGrpcService
             TeacherStatsScope scope = request.getScope();
             ReportService.TeacherStatsQuery query = statsQuery(request);
             ReportService.TeacherStatsResult result =
-                    reportService.getTeacherStats(query, claims.userId());
+                    reportService.getTeacherStatsForRead(query, claims.userId());
             TeacherStatsResponse.Builder response =
                     TeacherStatsResponse.newBuilder()
                             .setScope(scope)

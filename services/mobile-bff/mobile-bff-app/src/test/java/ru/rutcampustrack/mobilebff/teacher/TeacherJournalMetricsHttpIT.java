@@ -26,6 +26,7 @@ import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.LongStream;
@@ -80,6 +81,7 @@ import ru.rutcampustrack.teacher.grpc.TeacherJournalRequest;
 class TeacherJournalMetricsHttpIT {
     private static final Clock CLOCK = Clock.fixed(Instant.parse("2026-09-30T12:00:00Z"), ZoneOffset.UTC);
     private static final String JOURNAL = "/api/v1/teacher/journal";
+    private static final String STATS = "/api/v1/teacher/stats";
 
     @Test
     void mongoSeedTargetMustBeLoopback() {
@@ -134,6 +136,13 @@ class TeacherJournalMetricsHttpIT {
             return ids.stream().map(id -> info(lessons.stream()
                     .filter(lesson -> lesson.getId() == id).findFirst().orElseThrow())).toList();
         });
+        when(schedule.getCurrentLessonsByGroup(eq(33L), eq(9L), any(), any(), any()))
+                .thenAnswer(call -> {
+                    Set<Long> ids = call.getArgument(4);
+                    return inRange(lessons, LocalDate.parse(call.getArgument(2)),
+                            LocalDate.parse(call.getArgument(3))).stream()
+                            .filter(lesson -> ids.contains(lesson.getId())).toList();
+                });
 
         insert(mongo, lessons, 101, 501, AttendanceStatus.PRESENT);
         insert(mongo, lessons, 102, 501, AttendanceStatus.EXCUSED);
@@ -168,8 +177,9 @@ class TeacherJournalMetricsHttpIT {
             when(mobileAcademic.teacherAssignmentsForSemester(9L)).thenReturn(
                     TeacherAssignmentsResponse.newBuilder().setSemesterDateFrom("2026-09-01")
                             .setSemesterDateTo("2026-10-31").build());
-            when(mobileSchedule.lessons(eq(33L), eq(9L), any(), any())).thenReturn(
-                    LessonsResponse.newBuilder().addAllLessons(lessons).build());
+            when(mobileSchedule.lessons(eq(33L), eq(9L), any(), any())).thenAnswer(call ->
+                    LessonsResponse.newBuilder().addAllLessons(
+                            inRange(lessons, call.getArgument(2), call.getArgument(3))).build());
             var facade = new TeacherReadFacade(context, mobileAcademic, mobileSchedule, attendance, CLOCK);
             ObjectMapper json = Jackson2ObjectMapperBuilder.json()
                     .featuresToDisable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS).build();
@@ -189,6 +199,11 @@ class TeacherJournalMetricsHttpIT {
             assertThat(group.at("/metrics/series").size()).isEqualTo(105);
             assertThat(group.at("/metrics/students/0/studentId").isTextual()).isTrue();
             assertThat(group.at("/lessons/0/id").isTextual()).isTrue();
+            assertThat(group.at("/lessons/0/lessonType").asText()).isEqualTo("lecture");
+            assertThat(group.at("/lessons/1/lessonType").asText()).isEqualTo("practice");
+            assertThat(group.at("/lessons/0/assignmentId").isNull()).isTrue();
+            assertThat(group.at("/lessons/1/assignmentId").isNull()).isTrue();
+            assertThat(group.at("/lessons/2/assignmentId").asText()).isEqualTo("12");
             assertThat(group.at("/metrics/series/0/lessonId").isTextual()).isTrue();
             assertThat(group.at("/metrics/series/0/lessonId").asText()).isEqualTo("101");
             assertThat(group.at("/metrics/students/0/present/denominator").asInt()).isEqualTo(105);
@@ -209,6 +224,12 @@ class TeacherJournalMetricsHttpIT {
             assertThat(last.path("lessons").size()).isEqualTo(7);
             assertThat(last.path("hasMore").asBoolean()).isFalse();
             assertThat(last.path("metrics").isNull()).isTrue();
+            assertThat(last.at("/lessons/5/cancelled").asBoolean()).isTrue();
+            assertThat(last.at("/lessons/5/assignmentId").isNull()).isTrue();
+            var stats = read(mvc, json, statsRequest().header(header, teacher), "practice-stats");
+            assertThat(stats.path("lessonsCount").asInt()).isEqualTo(1);
+            assertThat(stats.at("/students/0/excused/numerator").asInt()).isEqualTo(1);
+            assertThat(stats.at("/students/0/excused/denominator").asInt()).isEqualTo(1);
             var selected = read(mvc, json, request("metricsStudentId", "502")
                     .header(header, teacher), "student-502-page-0");
             assertThat(selected.at("/metrics/selectedStudentId").asText()).isEqualTo("502");
@@ -226,6 +247,11 @@ class TeacherJournalMetricsHttpIT {
             var all = read(mvc, json, request("pastOnly", "false").header(header, teacher), "all-statuses");
             assertThat(all.path("totalLessons").asInt()).isEqualTo(109);
             assertThat(all.at("/metrics/series")).isEqualTo(group.at("/metrics/series"));
+            var allLast = read(mvc, json, request("pastOnly", "false", "includeMetrics", "false",
+                            "page", "1").header(header, teacher), "all-statuses-page-1");
+            assertThat(allLast.at("/lessons/6/status").asText()).isEqualTo("active");
+            assertThat(allLast.at("/lessons/7/status").asText()).isEqualTo("planned");
+            assertThat(allLast.at("/lessons/7/assignmentId").asText()).isEqualTo("12");
             var empty = read(mvc, json, request("dateFrom", "2026-10-02",
                     "dateTo", "2026-10-31").header(header, teacher), "empty");
             assertThat(empty.at("/metrics/students").size()).isZero();
@@ -236,10 +262,21 @@ class TeacherJournalMetricsHttpIT {
                     "STUDENT", "ACTIVE", 33L, false, false))).andExpect(status().isForbidden());
             mvc.perform(request("groupId", "99").header(header, teacher))
                     .andExpect(status().isNotFound());
+            mvc.perform(request("subjectId", "99").header(header, teacher))
+                    .andExpect(status().isNotFound());
             mvc.perform(request("metricsStudentId", "999").header(header, teacher))
                     .andExpect(status().isForbidden());
             mvc.perform(request("includeMetrics", "false", "metricsStudentId", "502")
                     .header(header, teacher)).andExpect(status().isBadRequest());
+            lessons.add(lesson(210, "2026-09-30", "closed").toBuilder()
+                    .setLessonType("practice").clearAssignmentId().build());
+            mvc.perform(request("dateFrom", "2026-09-30", "dateTo", "2026-09-30",
+                            "includeMetrics", "false").header(header, teacher))
+                    .andExpect(status().isForbidden());
+            mvc.perform(request("dateFrom", "2026-09-30", "dateTo", "2026-09-30",
+                            "page", "1").header(header, teacher))
+                    .andExpect(status().isForbidden());
+            mvc.perform(statsRequest().header(header, teacher)).andExpect(status().isForbidden());
             assertThatThrownBy(() -> TeacherAttendanceReadServiceGrpc.newBlockingStub(channel)
                     .getTeacherJournal(TeacherJournalRequest.newBuilder().setIncludeMetrics(true).build()))
                     .isInstanceOf(io.grpc.StatusRuntimeException.class)
@@ -253,13 +290,19 @@ class TeacherJournalMetricsHttpIT {
 
     private static MockHttpServletRequestBuilder request(String... overrides) {
         Map<String, String> values = new java.util.LinkedHashMap<>(Map.of(
-                "semesterId", "9", "groupId", "33", "subjectId", "22", "lessonType", "lecture,lab",
+                "semesterId", "9", "groupId", "33", "subjectId", "22",
+                "lessonType", "lecture,practice,lab",
                 "pastOnly", "true", "includeMetrics", "true", "page", "0", "pageSize", "100"));
         for (int index = 0; index < overrides.length; index += 2)
             values.put(overrides[index], overrides[index + 1]);
         var request = get(JOURNAL);
         values.forEach((key, value) -> request.param(key, value.split(",")));
         return request;
+    }
+
+    private static MockHttpServletRequestBuilder statsRequest() {
+        return get(STATS).param("semesterId", "9").param("groupId", "33")
+                .param("subjectId", "22").param("scope", "students").param("lessonType", "practice");
     }
 
     private static void requireLoopbackMongo(String value) {
@@ -294,11 +337,29 @@ class TeacherJournalMetricsHttpIT {
         List<LessonResponse> values = new ArrayList<>();
         LongStream.rangeClosed(101, 205).forEach(id -> values.add(lesson(id,
                 LocalDate.of(2026, 9, 1).plusDays((id - 101) / 5).toString(), "closed")));
-        values.add(lesson(206, "2026-09-22", "cancelled"));
+        values.set(0, values.get(0).toBuilder().clearAssignmentId().clearAssignedTeacherId().build());
+        values.set(1, values.get(1).toBuilder().setLessonType("practice")
+                .clearAssignmentId().clearAssignedTeacherId().build());
+        values.add(lesson(206, "2026-09-22", "cancelled").toBuilder().setLessonType("practice")
+                .clearAssignmentId().clearAssignedTeacherId().build());
         values.add(lesson(207, "2026-09-23", "active"));
         values.add(lesson(208, "2026-09-24", "planned"));
         values.add(lesson(209, "2026-10-01", "closed"));
+        values.add(lesson(211, "2026-10-03", "planned").toBuilder().setLessonType("practice")
+                .clearAssignmentId().clearAssignedTeacherId().build());
+        values.add(lesson(212, "2026-10-03", "cancelled").toBuilder().setLessonType("practice")
+                .clearAssignmentId().clearAssignedTeacherId().build());
+        values.add(lesson(213, "2026-10-03", "closed").toBuilder().setLessonType("practice")
+                .clearAssignmentId().clearAssignedTeacherId().build());
         return values;
+    }
+
+    private static List<LessonResponse> inRange(
+            List<LessonResponse> lessons, LocalDate from, LocalDate to) {
+        return lessons.stream().filter(lesson -> {
+            var date = LocalDate.parse(lesson.getDate());
+            return !date.isBefore(from) && !date.isAfter(to);
+        }).toList();
     }
 
     private static LessonResponse lesson(long id, String date, String status) {
@@ -307,14 +368,20 @@ class TeacherJournalMetricsHttpIT {
                 .setGroupId(33).setSubjectId(22).setSemesterId(9).setDate(date)
                 .setLessonNumber((int) ((id - 101) % 5) + 1).setStartTime("09:00:00").setEndTime("10:30:00")
                 .setLessonType(id % 2 == 0 ? "lab" : "lecture").setStatus(status)
-                .setRoom("Тест-101").setGeneration(1).setRevision(1).build();
+                .setRoom("Тест-101").setGeneration(1).setRevision(1).setCurrent(true).build();
     }
 
     private static LessonInfo info(LessonResponse lesson) {
-        return LessonInfo.newBuilder().setLessonId(lesson.getId()).setAssignmentId(12)
-                .setTeacherId(71).setGroupId(33).setSubjectId(22).setSemesterId(9)
+        var info = LessonInfo.newBuilder().setLessonId(lesson.getId())
+                .setGroupId(lesson.getGroupId()).setSubjectId(lesson.getSubjectId())
+                .setSemesterId(lesson.getSemesterId()).setOccurrenceId(lesson.getOccurrenceId())
+                .setGeneration(lesson.getGeneration()).setRevision(lesson.getRevision())
+                .setLessonNumber(lesson.getLessonNumber())
                 .setLessonType(lesson.getLessonType()).setDate(lesson.getDate())
-                .setStartsAt(lesson.getDate() + "T" + lesson.getStartTime()).setStatus(lesson.getStatus()).build();
+                .setStartsAt(lesson.getDate() + "T" + lesson.getStartTime()).setStatus(lesson.getStatus());
+        if (lesson.hasAssignmentId()) info.setAssignmentId(lesson.getAssignmentId());
+        if (lesson.hasAssignedTeacherId()) info.setTeacherId(lesson.getAssignedTeacherId());
+        return info.build();
     }
 
     private static void insert(MongoTemplate mongo, List<LessonResponse> lessons, long lessonId,

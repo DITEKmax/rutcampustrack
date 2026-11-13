@@ -1,11 +1,13 @@
 package ru.rutcampustrack.attendance.report.planned;
 
+import ru.rutcampustrack.attendance.exception.ScheduleServiceUnavailableException;
 import ru.rutcampustrack.attendance.grpc.ScheduleGrpcClient;
 import ru.rutcampustrack.schedule.grpc.LessonInfo;
 import ru.rutcampustrack.schedule.grpc.LessonResponse;
 import ru.rutcampustrack.schedule.grpc.LessonsResponse;
 
 import java.util.List;
+import java.util.Set;
 
 /** Exact typed schedule reads; an immutable plan implementation has no outbound transport. */
 public interface ReportScheduleReadPort {
@@ -14,6 +16,11 @@ public interface ReportScheduleReadPort {
     LessonsResponse getLessonsByGroup(Long groupId, Long semesterId, String from, String to);
 
     List<LessonInfo> getLessonsByIds(List<Long> lessonIds);
+
+    default List<LessonResponse> getCurrentLessonsByGroup(
+            Long groupId, Long semesterId, String from, String to, Set<Long> lessonIds) {
+        throw new ScheduleServiceUnavailableException("Interactive lesson snapshots are unavailable");
+    }
 
     static ReportScheduleReadPort live(ScheduleGrpcClient client) {
         if (client == null) return null;
@@ -27,6 +34,12 @@ public interface ReportScheduleReadPort {
             public LessonsResponse getLessonsByGroup(
                     Long group, Long semester, String from, String to) {
                 return client.getLessonsByGroup(group, semester, from, to);
+            }
+
+            @Override
+            public List<LessonResponse> getCurrentLessonsByGroup(
+                    Long group, Long semester, String from, String to, Set<Long> ids) {
+                return client.getCurrentLessonsByGroup(group, semester, from, to, ids);
             }
 
             @Override

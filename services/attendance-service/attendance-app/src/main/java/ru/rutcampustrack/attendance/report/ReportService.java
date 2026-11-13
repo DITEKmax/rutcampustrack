@@ -49,6 +49,8 @@ import ru.rutcampustrack.shared.web.time.EducationalTime;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -275,6 +277,21 @@ public class ReportService {
                 .attendance();
     }
 
+    public TeacherLessonRoster getTeacherJournalLessonRoster(Long lessonId, long teacherId) {
+        LessonResponse lesson = requireTeacherLessonSnapshot(lessonId);
+        requireTeacherLessonMetadata(lesson, teacherId);
+        TeacherSubjectsResponse authority =
+                authorizeTeacherSubject(lesson.getGroupId(), lesson.getSubjectId(), teacherId);
+        requireValidBinding(lesson.hasAssignmentId(), lesson.getAssignmentId(),
+                lesson.hasAssignedTeacherId(), lesson.getAssignedTeacherId());
+        if (!lesson.hasAssignmentId()) {
+            requireUnassignedScope(authority, lesson.getGroupId(), lesson.getSubjectId(),
+                    lesson.getSemesterId());
+            requireUnassignedHistory(lesson, clock.instant());
+        }
+        return buildTeacherLessonRoster(lesson, TeacherAttachmentSelection.NONE);
+    }
+
     public TeacherLessonRoster getTeacherLessonRoster(Long lessonId, long teacherId) {
         return getTeacherLessonRoster(lessonId, teacherId, TeacherAttachmentSelection.ALL_READABLE);
     }
@@ -289,6 +306,12 @@ public class ReportService {
 
     private TeacherLessonRoster getTeacherLessonRoster(
             Long lessonId, long teacherId, TeacherAttachmentSelection selection) {
+        LessonResponse lesson = requireTeacherLessonSnapshot(lessonId);
+        authorizeTeacherLesson(lesson, teacherId);
+        return buildTeacherLessonRoster(lesson, selection);
+    }
+
+    private LessonResponse requireTeacherLessonSnapshot(Long lessonId) {
         LessonResponse lesson = scheduleGrpcClient.getLessonById(lessonId);
         if (lesson == null) {
             throw new BadRequestException("Пара недоступна");
@@ -296,7 +319,11 @@ public class ReportService {
         if (lesson.getId() != lessonId) {
             throw new ScheduleServiceUnavailableException("Schedule returned a mismatched lesson");
         }
-        authorizeTeacherLesson(lesson, teacherId);
+        return lesson;
+    }
+
+    private TeacherLessonRoster buildTeacherLessonRoster(
+            LessonResponse lesson, TeacherAttachmentSelection selection) {
         LessonAttendanceData roster = buildLessonAttendance(lesson, selection);
         return new TeacherLessonRoster(lesson, roster.attendance(), roster.manualAttachmentExpiries());
     }
@@ -907,6 +934,10 @@ public class ReportService {
         return getAuthorizedTeacherStats(query, teacherId).stats();
     }
 
+    public TeacherStatsResult getTeacherStatsForRead(TeacherStatsQuery query, long teacherId) {
+        return getAuthorizedTeacherStats(query, teacherId, true).stats();
+    }
+
     public record AuthorizedTeacherStats(
             TeacherStatsResult stats,
             TeacherReportScope scope,
@@ -933,6 +964,11 @@ public class ReportService {
 
     public AuthorizedTeacherStats getAuthorizedTeacherStats(
             TeacherStatsQuery query, long teacherId) {
+        return getAuthorizedTeacherStats(query, teacherId, false);
+    }
+
+    private AuthorizedTeacherStats getAuthorizedTeacherStats(
+            TeacherStatsQuery query, long teacherId, boolean allowUnassignedHistory) {
         validateTeacherStatsQuery(query, teacherId);
         List<Long> requestedLessonIds =
                 query.lessonIds() == null
@@ -996,10 +1032,8 @@ public class ReportService {
             }
             semesterId = responseSemesterId;
         }
-        for (LessonInfo lesson : authoritativeLessons) {
-            authorizeTeacherStatsLesson(lesson, teacherAuthority);
-            requireStatsLessonStatus(lesson);
-        }
+        authorizeTeacherStatsLessons(
+                authoritativeLessons, teacherAuthority, allowedSubjects, allowUnassignedHistory);
         if (query.studentId() != null) {
             var result = selectedStudentStats(query, teacherAuthority, authoritativeLessons);
             requireSelectedTeacherStats(result, teacherId);
@@ -1017,7 +1051,6 @@ public class ReportService {
                 throw new ScheduleServiceUnavailableException(
                         "Schedule returned no lesson authority response");
             }
-            authorizeTeacherStatsLesson(lesson, teacherAuthority);
             LocalDate date = parseLessonDate(lesson.getDate());
             if (!allGroups && lesson.getGroupId() != query.groupId()) {
                 throw new AccessDeniedException(
@@ -1246,7 +1279,8 @@ public class ReportService {
             throw new BadRequestException("Invalid journal metrics context");
         }
         TeacherSubjectsResponse authority = academicGrpcClient.getCurrentTeacherSubjects(teacherId);
-        if (authority == null || currentTeacherSubjectKeys(authority).isEmpty()) {
+        Set<TeacherStatsSubjectKey> allowedSubjects = currentTeacherSubjectKeys(authority);
+        if (allowedSubjects.isEmpty()) {
             throw new AccessDeniedException("Teacher assignment authority is unavailable");
         }
         List<LessonInfo> lessons =
@@ -1255,15 +1289,16 @@ public class ReportService {
             throw new ScheduleServiceUnavailableException("Incomplete journal metrics lessons");
         }
         Map<Long, LessonInfo> byId = new java.util.HashMap<>();
-        LessonInfo context = null;
         for (LessonInfo lesson : lessons) {
             if (lesson == null
                     || !lessonIds.contains(lesson.getLessonId())
                     || byId.put(lesson.getLessonId(), lesson) != null) {
                 throw new ScheduleServiceUnavailableException("Malformed journal metrics lessons");
             }
-            authorizeTeacherStatsLesson(lesson, authority);
-            requireStatsLessonStatus(lesson);
+        }
+        authorizeTeacherStatsLessons(lessons, authority, allowedSubjects, true);
+        LessonInfo context = null;
+        for (LessonInfo lesson : lessons) {
             parseLessonDate(lesson.getDate());
             if (context != null
                     && (lesson.getSemesterId() != context.getSemesterId()
@@ -1311,13 +1346,17 @@ public class ReportService {
 
     private static boolean journalMetricsEligible(LessonInfo lesson, java.time.Instant now) {
         if (!isCompleted(lesson) || isCancelled(lesson)) return false;
+        // Schedule owns CLOSED after physical end+grace; a future start is
+        // still ineligible even if its stored status is inconsistent.
+        return !journalStartsAt(lesson).isAfter(now);
+    }
+
+    private static Instant journalStartsAt(LessonInfo lesson) {
         try {
-            java.time.LocalDateTime startsAt = java.time.LocalDateTime.parse(lesson.getStartsAt());
+            LocalDateTime startsAt = LocalDateTime.parse(lesson.getStartsAt());
             if (!startsAt.toLocalDate().equals(parseLessonDate(lesson.getDate())))
                 throw new IllegalArgumentException("Inconsistent physical lesson timing");
-            // Schedule owns CLOSED after physical end+grace; a future start is
-            // still ineligible even if its stored status is inconsistent.
-            return !startsAt.atZone(JournalLessonPolicy.MOSCOW).toInstant().isAfter(now);
+            return startsAt.atZone(JournalLessonPolicy.MOSCOW).toInstant();
         } catch (RuntimeException error) {
             throw new ScheduleServiceUnavailableException("Journal lesson timing is unavailable");
         }
@@ -1501,21 +1540,150 @@ public class ReportService {
         return List.copyOf(result);
     }
 
-    private void authorizeTeacherStatsLesson(LessonInfo lesson, TeacherSubjectsResponse response) {
-        if (lesson == null
-                || lesson.getLessonId() <= 0
-                || lesson.getGroupId() <= 0
-                || lesson.getSubjectId() <= 0
-                || lesson.getAssignmentId() <= 0
-                || lesson.getSemesterId() <= 0
-                || lesson.getTeacherId() <= 0
-                || lesson.getLessonType() == null
-                || lesson.getLessonType().isBlank()) {
-            throw new AccessDeniedException("Teacher cannot read this lesson");
+    private void authorizeTeacherStatsLessons(
+            List<LessonInfo> lessons,
+            TeacherSubjectsResponse authority,
+            Set<TeacherStatsSubjectKey> allowedSubjects,
+            boolean allowUnassignedHistory) {
+        List<LessonInfo> unassigned = new ArrayList<>();
+        for (LessonInfo lesson : lessons) {
+            if (lesson.getLessonId() <= 0 || lesson.getSemesterId() <= 0
+                    || lesson.getLessonType().isBlank()) {
+                throw new AccessDeniedException("Teacher cannot read this lesson");
+            }
+            if (!allowedSubjects.contains(
+                    new TeacherStatsSubjectKey(lesson.getGroupId(), lesson.getSubjectId()))) {
+                throw new AccessDeniedException("Teacher is not active in this group and subject");
+            }
+            requireValidBinding(lesson.hasAssignmentId(), lesson.getAssignmentId(),
+                    lesson.hasTeacherId(), lesson.getTeacherId());
+            if (!lesson.hasAssignmentId()) {
+                if (!allowUnassignedHistory) {
+                    throw new AccessDeniedException("Teacher cannot read this lesson");
+                }
+                requireUnassignedScope(authority, lesson.getGroupId(), lesson.getSubjectId(),
+                        lesson.getSemesterId());
+                unassigned.add(lesson);
+            }
+            requireStatsLessonStatus(lesson);
         }
-        if (!currentTeacherSubjectKeys(response)
-                .contains(new TeacherStatsSubjectKey(lesson.getGroupId(), lesson.getSubjectId()))) {
-            throw new AccessDeniedException("Teacher is not active in this group and subject");
+        if (!unassigned.isEmpty()) authorizeUnassignedHistory(unassigned);
+    }
+
+    private static void requireValidBinding(
+            boolean hasAssignmentId, long assignmentId, boolean hasTeacherId, long teacherId) {
+        if (hasAssignmentId != hasTeacherId
+                || hasAssignmentId && (assignmentId <= 0 || teacherId <= 0)) {
+            throw new AccessDeniedException("Teacher lesson binding is invalid");
+        }
+    }
+
+    private static void requireUnassignedScope(
+            TeacherSubjectsResponse authority, long groupId, long subjectId, long semesterId) {
+        if (authority.getSubjectsList().stream().noneMatch(subject ->
+                subject.getGroupId() == groupId && subject.getSubjectId() == subjectId
+                        && subject.getSemesterId() == semesterId)) {
+            throw new AccessDeniedException("Teacher cannot read unassigned lessons in this semester");
+        }
+    }
+
+    private record JournalScheduleScope(long groupId, long semesterId) {}
+
+    private void authorizeUnassignedHistory(List<LessonInfo> lessons) {
+        Instant now = clock.instant();
+        Map<JournalScheduleScope, List<LessonInfo>> byScope = new HashMap<>();
+        for (LessonInfo lesson : lessons) {
+            requireUnassignedHistoryStatus(lesson.getStatus());
+            if (journalStartsAt(lesson).isAfter(now)) {
+                throw new AccessDeniedException("Unassigned lesson is outside completed history");
+            }
+            byScope.computeIfAbsent(
+                            new JournalScheduleScope(lesson.getGroupId(), lesson.getSemesterId()),
+                            ignored -> new ArrayList<>())
+                    .add(lesson);
+        }
+        for (var entry : byScope.entrySet()) {
+            requireUnassignedHistorySnapshots(entry.getKey(), entry.getValue(), now);
+        }
+    }
+
+    // The compact ID lookup cannot prove end time or the current occurrence pointer.
+    // Fetch full current snapshots in one date window per group and semester.
+    private void requireUnassignedHistorySnapshots(
+            JournalScheduleScope scope, List<LessonInfo> lessons, Instant now) {
+        List<String> dates = lessons.stream()
+                .map(lesson -> parseLessonDate(lesson.getDate()).toString())
+                .sorted()
+                .toList();
+        Set<Long> ids = lessons.stream().map(LessonInfo::getLessonId).collect(Collectors.toSet());
+        var response = scheduleGrpcClient.getCurrentLessonsByGroup(
+                scope.groupId(), scope.semesterId(), dates.getFirst(), dates.getLast(), ids);
+        if (response == null || response.size() != ids.size()) {
+            throw new ScheduleServiceUnavailableException("Incomplete unassigned lesson snapshots");
+        }
+        Map<Long, LessonResponse> details = new HashMap<>();
+        for (LessonResponse lesson : response) {
+            if (lesson == null || !ids.contains(lesson.getId())
+                    || details.put(lesson.getId(), lesson) != null) {
+                throw new ScheduleServiceUnavailableException("Malformed unassigned lesson snapshots");
+            }
+        }
+        for (LessonInfo lesson : lessons) {
+            LessonResponse full = details.get(lesson.getLessonId());
+            if (full == null
+                    || full.getGroupId() != lesson.getGroupId()
+                    || full.getSubjectId() != lesson.getSubjectId()
+                    || full.getSemesterId() != lesson.getSemesterId()
+                    || full.getLessonNumber() != lesson.getLessonNumber()
+                    || full.getOccurrenceId() != lesson.getOccurrenceId()
+                    || full.getGeneration() != lesson.getGeneration()
+                    || full.getRevision() != lesson.getRevision()
+                    || !full.getDate().equals(lesson.getDate())
+                    || !full.getLessonType().equalsIgnoreCase(lesson.getLessonType())
+                    || !full.getStatus().equalsIgnoreCase(lesson.getStatus())
+                    || full.hasAssignmentId()
+                    || full.hasAssignedTeacherId()) {
+                throw new ScheduleServiceUnavailableException("Unassigned lesson snapshot changed");
+            }
+            var timing = requireUnassignedHistory(full, now);
+            if (!timing.startsAt().equals(journalStartsAt(lesson))) {
+                throw new ScheduleServiceUnavailableException("Unassigned lesson snapshot changed");
+            }
+        }
+    }
+
+    private static JournalLessonPolicy.Timing requireUnassignedHistory(
+            LessonResponse lesson, Instant now) {
+        requireUnassignedHistoryStatus(lesson.getStatus());
+        if (!lesson.getCurrent()) {
+            throw new AccessDeniedException("Unassigned lesson is not the current occurrence");
+        }
+        if (!Set.of("lecture", "practice", "lab").contains(normalize(lesson.getLessonType()))) {
+            throw new ScheduleServiceUnavailableException("Schedule returned an unknown lesson type");
+        }
+        JournalLessonPolicy.Timing timing;
+        Instant end;
+        try {
+            timing = JournalLessonPolicy.requireTiming(lesson);
+            end = timing.date().atTime(LocalTime.parse(lesson.getEndTime()))
+                    .atZone(JournalLessonPolicy.MOSCOW).toInstant();
+        } catch (RuntimeException invalidTiming) {
+            throw new ScheduleServiceUnavailableException("Unassigned lesson timing is unavailable");
+        }
+        if (!end.isAfter(timing.startsAt())) {
+            throw new ScheduleServiceUnavailableException("Unassigned lesson timing is inconsistent");
+        }
+        // Schedule owns the physical CLOSED transition after end and grace. A cancelled
+        // occurrence has no such transition; both still need a valid end in the past.
+        if (end.isAfter(now)) {
+            throw new AccessDeniedException("Unassigned lesson is outside completed history");
+        }
+        return timing;
+    }
+
+    private static void requireUnassignedHistoryStatus(String status) {
+        if (!Set.of("closed", "cancelled").contains(normalize(status))) {
+            throw new AccessDeniedException("Unassigned lesson is outside completed history");
         }
     }
 
@@ -2094,6 +2262,11 @@ public class ReportService {
 
     /** Current group and subject authority permits historical reading, including replaced teachers. */
     public void authorizeTeacherLesson(LessonResponse lesson, Long teacherId) {
+        requireTeacherLessonMetadata(lesson, teacherId);
+        authorizeTeacherSubject(lesson.getGroupId(), lesson.getSubjectId(), teacherId);
+    }
+
+    private static void requireTeacherLessonMetadata(LessonResponse lesson, Long teacherId) {
         if (lesson == null
                 || lesson.getId() <= 0
                 || lesson.getSemesterId() <= 0
@@ -2107,18 +2280,18 @@ public class ReportService {
         } catch (RuntimeException invalid) {
             throw new AccessDeniedException("Teacher lesson date unavailable");
         }
-        authorizeTeacherSubject(lesson.getGroupId(), lesson.getSubjectId(), teacherId);
     }
 
-    private void authorizeTeacherSubject(long groupId, long subjectId, long teacherId) {
-        if (groupId <= 0
-                || subjectId <= 0
-                || teacherId <= 0
-                || !currentTeacherSubjectKeys(
-                                academicGrpcClient.getCurrentTeacherSubjects(teacherId))
-                        .contains(new TeacherStatsSubjectKey(groupId, subjectId))) {
+    private TeacherSubjectsResponse authorizeTeacherSubject(long groupId, long subjectId, long teacherId) {
+        if (groupId <= 0 || subjectId <= 0 || teacherId <= 0) {
             throw new AccessDeniedException("Teacher is not active in this group and subject");
         }
+        TeacherSubjectsResponse authority = academicGrpcClient.getCurrentTeacherSubjects(teacherId);
+        if (!currentTeacherSubjectKeys(authority)
+                .contains(new TeacherStatsSubjectKey(groupId, subjectId))) {
+            throw new AccessDeniedException("Teacher is not active in this group and subject");
+        }
+        return authority;
     }
 
     private static boolean matchesAssignment(

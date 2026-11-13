@@ -516,6 +516,7 @@ public final class TeacherReadFacade {
                                                                                 lesson
                                                                                         .getLessonType())))
                         .filter(lesson -> inRange(lesson, range))
+                        .filter(lesson -> journalReadCandidate(lesson, teachingNow))
                         .filter(lesson -> !pastOnly || completedHistoryLesson(lesson, teachingNow))
                         .sorted(
                                 Comparator.comparing(LessonResponse::getDate)
@@ -576,6 +577,27 @@ public final class TeacherReadFacade {
                         .toList(),
                 value.hasSelectedStudentId() ? Long.toString(value.getSelectedStudentId()) : null,
                 parseInstant(value.getServerNow()));
+    }
+
+    // A semester's schedule also includes rows that are not eligible for the historical
+    // read exception. Leave bound and partial bindings to Attendance's normal validation.
+    private static boolean journalReadCandidate(LessonResponse lesson, Instant now) {
+        if (lesson.hasAssignmentId() || lesson.hasAssignedTeacherId()) return true;
+        return switch (lesson.getStatus().toLowerCase(Locale.ROOT)) {
+            case "planned", "active", "transferred" -> false;
+            case "closed", "cancelled" -> {
+                try {
+                    LocalDate date = LocalDate.parse(lesson.getDate());
+                    LocalTime start = LocalTime.parse(lesson.getStartTime());
+                    LocalTime end = LocalTime.parse(lesson.getEndTime());
+                    if (!end.isAfter(start)) throw incompleteCatalog();
+                    yield !date.atTime(end).atZone(MOSCOW).toInstant().isAfter(now);
+                } catch (java.time.DateTimeException invalidTiming) {
+                    throw incompleteCatalog();
+                }
+            }
+            default -> true; // Attendance must reject an inconsistent snapshot.
+        };
     }
 
     private static boolean completedHistoryLesson(LessonResponse lesson, Instant now) {
@@ -704,7 +726,8 @@ public final class TeacherReadFacade {
                                 selectedSubjectId,
                                 lessonTypes,
                                 sortValues,
-                                filterValues)));
+                                filterValues,
+                                true)));
     }
 
     public TeacherApiModels.ExportFormatsResponse statsExportFormats() {
@@ -738,7 +761,8 @@ public final class TeacherReadFacade {
                         selectedSubjectId,
                         lessonTypes,
                         sortValues,
-                        filterValues);
+                        filterValues,
+                        false);
         TeacherStatsExportResponse response =
                 attendance.exportTeacherStats(request, selectedFormat.code());
         String filename = response.getFileName();
@@ -779,7 +803,8 @@ public final class TeacherReadFacade {
             Long selectedSubjectId,
             List<String> lessonTypes,
             List<String> sortValues,
-            List<String> filterValues) {
+            List<String> filterValues,
+            boolean historyRead) {
         if (semesterId <= 0) {
             throw invalidStats("semesterId должен быть положительным");
         }
@@ -833,6 +858,7 @@ public final class TeacherReadFacade {
                     "Статистика недоступна в текущем scope");
         }
         DateRange range = semesterRange(academic.teacherAssignmentsForSemester(semesterId));
+        Instant teachingNow = educationalClock.instant();
         Map<Long, LessonResponse> concreteById = new HashMap<>();
         for (Long groupId :
                 (allGroups || studentId != null && selectedGroupId == null
@@ -861,6 +887,7 @@ public final class TeacherReadFacade {
                         || !Set.of("planned", "active", "closed", "cancelled", "transferred")
                                 .contains(lesson.getStatus().toLowerCase(Locale.ROOT)))
                     throw incompleteCatalog();
+                if (historyRead && !journalReadCandidate(lesson, teachingNow)) continue;
                 LessonResponse previous = concreteById.putIfAbsent(lesson.getId(), lesson);
                 if (previous != null && !previous.equals(lesson)) throw incompleteCatalog();
                 if (concreteById.size() > 5_000) throw incompleteCatalog();

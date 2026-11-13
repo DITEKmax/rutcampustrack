@@ -73,7 +73,7 @@ public class TeacherAttendanceReadGrpcServiceTest {
         AcademicGrpcClient academic = mock(AcademicGrpcClient.class);
         ExcuseRepository excuses = mock(ExcuseRepository.class);
         RequestAttachmentRepository attachments = mock(RequestAttachmentRepository.class);
-        when(report.getTeacherStats(any(), eq(71L)))
+        when(report.getTeacherStatsForRead(any(), eq(71L)))
                 .thenThrow(new ScheduleServiceUnavailableException("schedule unavailable"));
 
         TeacherAttendanceReadGrpcService service =
@@ -327,9 +327,6 @@ public class TeacherAttendanceReadGrpcServiceTest {
                         .build();
         LessonResponse foreignContext =
                 LessonResponse.newBuilder(own).setId(303L).setGroupId(44L).build();
-        when(schedule.getLessonById(101L)).thenReturn(own);
-        when(schedule.getLessonById(202L)).thenReturn(practice);
-        when(schedule.getLessonById(303L)).thenReturn(foreignContext);
         when(academic.getGroup(33L))
                 .thenReturn(GroupResponse.newBuilder().setId(33L).setName("УИТ-311").build());
         when(academic.getSubjectDetailsByIds(List.of(22L)))
@@ -337,11 +334,14 @@ public class TeacherAttendanceReadGrpcServiceTest {
                         Map.of(
                                 22L,
                                 new AcademicGrpcClient.SubjectDetails("Математика", "lecture")));
-        when(report.getTeacherLessonAttendance(101L, 71L)).thenReturn(attendance(101L));
+        when(report.getTeacherJournalLessonRoster(101L, 71L))
+                .thenReturn(journalRoster(own, attendance(101L)));
         when(report.getTeacherLessonRoster(101L, 71L))
                 .thenReturn(new ReportService.TeacherLessonRoster(own, attendance(101L), Map.of()));
-        when(report.getTeacherLessonAttendance(202L, 71L)).thenReturn(attendance(202L));
-        when(report.getTeacherLessonAttendance(303L, 71L)).thenReturn(attendance(303L));
+        when(report.getTeacherJournalLessonRoster(202L, 71L))
+                .thenReturn(journalRoster(practice, attendance(202L)));
+        when(report.getTeacherJournalLessonRoster(303L, 71L))
+                .thenReturn(journalRoster(foreignContext, attendance(303L)));
         when(excuses.findByLessonIdsInAndStatusIn(
                         List.of(101L),
                         List.of(ExcuseTicketStatus.SUBMITTED, ExcuseTicketStatus.APPROVED)))
@@ -437,8 +437,6 @@ public class TeacherAttendanceReadGrpcServiceTest {
                                         .extracting(cell -> cell.getLessonId())
                                         .containsExactly(101L, 202L));
         verify(report).getTeacherLessonRoster(101L, 71L);
-        verify(report).getTeacherLessonAttendance(101L, 71L);
-        verify(report).getTeacherLessonAttendance(202L, 71L);
 
         RecordingObserver<TeacherJournalResponse> journalObserver = new RecordingObserver<>();
         Context.current()
@@ -463,8 +461,6 @@ public class TeacherAttendanceReadGrpcServiceTest {
         ScheduleGrpcClient schedule = mock(ScheduleGrpcClient.class);
         AcademicGrpcClient academic = mock(AcademicGrpcClient.class);
         ExcuseRepository excuses = mock(ExcuseRepository.class);
-        when(schedule.getLessonById(101L)).thenReturn(lesson(101L, 12L, 71L));
-        when(schedule.getLessonById(102L)).thenReturn(lesson(102L, 12L, 71L));
         when(academic.getGroup(33L))
                 .thenReturn(GroupResponse.newBuilder().setName("УИТ-311").build());
         when(academic.getSubjectDetailsByIds(List.of(22L)))
@@ -488,21 +484,15 @@ public class TeacherAttendanceReadGrpcServiceTest {
                         null,
                         false,
                         null);
-        when(report.getTeacherLessonAttendance(101L, 71L))
-                .thenReturn(
+        var closed = lesson(101L, 12L, 71L);
+        var closedAttendance = new LessonAttendanceResponse(
+                101L, 33L, 22L, "2025-12-01", 9L, "CLOSED", false, List.of(missing));
+        when(report.getTeacherJournalLessonRoster(101L, 71L))
+                .thenReturn(journalRoster(closed, closedAttendance));
+        when(report.getTeacherJournalLessonRoster(102L, 71L))
+                .thenReturn(journalRoster(lesson(102L, 12L, 71L),
                         new LessonAttendanceResponse(
-                                101L,
-                                33L,
-                                22L,
-                                "2025-12-01",
-                                9L,
-                                "CLOSED",
-                                false,
-                                List.of(missing)));
-        when(report.getTeacherLessonAttendance(102L, 71L))
-                .thenReturn(
-                        new LessonAttendanceResponse(
-                                102L, 33L, 22L, "2025-12-01", 9L, "CLOSED", false, List.of()));
+                                102L, 33L, 22L, "2025-12-01", 9L, "CLOSED", false, List.of())));
         var service =
                 new TeacherAttendanceReadGrpcService(
                         report,
@@ -549,8 +539,9 @@ public class TeacherAttendanceReadGrpcServiceTest {
                                                 .build(),
                                         legacy));
         assertThat(legacy.value.getStudents(0).getCells(0).getStatus()).isEmpty();
-        when(schedule.getLessonById(101L))
-                .thenReturn(lesson(101L, 12L, 71L).toBuilder().setStatus("planned").build());
+        when(report.getTeacherJournalLessonRoster(101L, 71L))
+                .thenReturn(journalRoster(
+                        closed.toBuilder().setStatus("planned").build(), closedAttendance));
         var planned = new RecordingObserver<TeacherJournalResponse>();
         teacherContext(71L)
                 .run(
@@ -570,18 +561,10 @@ public class TeacherAttendanceReadGrpcServiceTest {
                         .setStatus("cancelled")
                         .setEndTime("11:00")
                         .build();
-        when(schedule.getLessonById(101L)).thenReturn(cancelled);
-        when(report.getTeacherLessonAttendance(101L, 71L))
-                .thenReturn(
-                        new LessonAttendanceResponse(
-                                101L,
-                                33L,
-                                22L,
-                                "2025-12-02",
-                                9L,
-                                "CANCELLED",
-                                false,
-                                List.of(missing)));
+        var cancelledAttendance = new LessonAttendanceResponse(
+                101L, 33L, 22L, "2025-12-02", 9L, "CANCELLED", false, List.of(missing));
+        when(report.getTeacherJournalLessonRoster(101L, 71L))
+                .thenReturn(journalRoster(cancelled, cancelledAttendance));
         var ended = new RecordingObserver<TeacherJournalResponse>();
         teacherContext(71L)
                 .run(
@@ -612,12 +595,12 @@ public class TeacherAttendanceReadGrpcServiceTest {
                             assertThat(cell.getTicketId()).isEmpty();
                         });
         for (String status : List.of("cancelled", "active", "planned", "unknown")) {
-            when(schedule.getLessonById(101L))
-                    .thenReturn(
+            when(report.getTeacherJournalLessonRoster(101L, 71L))
+                    .thenReturn(journalRoster(
                             cancelled.toBuilder()
                                     .setStatus(status)
                                     .setEndTime("11:00:00.000000001")
-                                    .build());
+                                    .build(), cancelledAttendance));
             var future = new RecordingObserver<TeacherJournalResponse>();
             teacherContext(71L)
                     .run(
@@ -631,7 +614,9 @@ public class TeacherAttendanceReadGrpcServiceTest {
             assertThat(io.grpc.Status.fromThrowable(future.error).getCode())
                     .isEqualTo(io.grpc.Status.Code.INVALID_ARGUMENT);
         }
-        when(schedule.getLessonById(101L)).thenReturn(cancelled.toBuilder().setEndTime("").build());
+        when(report.getTeacherJournalLessonRoster(101L, 71L))
+                .thenReturn(journalRoster(
+                        cancelled.toBuilder().setEndTime("").build(), cancelledAttendance));
         var invalidTime = new RecordingObserver<TeacherJournalResponse>();
         teacherContext(71L)
                 .run(
@@ -644,6 +629,11 @@ public class TeacherAttendanceReadGrpcServiceTest {
                                         invalidTime));
         assertThat(io.grpc.Status.fromThrowable(invalidTime.error).getCode())
                 .isEqualTo(io.grpc.Status.Code.UNAVAILABLE);
+    }
+
+    private static ReportService.TeacherLessonRoster journalRoster(
+            LessonResponse lesson, LessonAttendanceResponse attendance) {
+        return new ReportService.TeacherLessonRoster(lesson, attendance, Map.of());
     }
 
     private static LessonAttendanceResponse attendance(long lessonId) {

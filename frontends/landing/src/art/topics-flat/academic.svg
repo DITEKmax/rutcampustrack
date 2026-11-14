@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 220" fill="none">
+  <style>
+    .back{fill:#181221;stroke:#4b3a62}.plane{fill:#251b35;stroke:#674d89}.card{fill:#35264c;stroke:#8d6ab8}
+    .strong{fill:#624982;stroke:#c7a3fb}.bright{fill:#c7a3fb}.guide{stroke:#56436e}.line{stroke:#896ba8}
+    .flow{stroke:#bd94f3}.light{stroke:#e5d0ff}.ghost{stroke:#8665aa;stroke-dasharray:3 5}
+    .label{fill:#e5d0ff;font:600 10px ui-monospace,Consolas,monospace;letter-spacing:.3px}.dim{fill:#b799d3;font:600 8px ui-monospace,Consolas,monospace;letter-spacing:.3px}
+    .ok{stroke:#7bdfbc}.warn{stroke:#edbd83}
+  </style>
+  <defs>
+    <pattern id="dot-grid" width="10" height="10" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r=".85" fill="#9c78c8" opacity=".27"/>
+    </pattern>
+  </defs>
+  <g stroke-linecap="round" stroke-linejoin="round">
+    <path d="M17 15H303V204H17z" fill="url(#dot-grid)"/>
+    <path class="guide" d="M16 28V15h13m262 0h13v13M16 186v13h13m262 0h13v-13" opacity=".68"/>
+
+    <path class="guide" d="M38 66h244M38 111h244M38 185h244m-223-147v162m202-162v162" opacity=".54"/>
+    <path class="ghost" d="M59 82H39v26h26m196-26h20v26h-29M98 192h123"/>
+    <rect class="strong" x="108" y="36" width="104" height="39" rx="7"/>
+    <path class="light" stroke-width="1.3" d="M118 48h14v14h-14zM118 52h14m-10-6v4m6-4v4"/>
+    <text class="label" x="141" y="59">СЕМЕСТР</text>
+    <path class="flow" stroke-width="1.6" d="M160 75v14m-75 16V89h150v16m-75-16v16"/>
+    <circle class="bright" cx="160" cy="89" r="2.5"/>
+    <rect class="plane" x="49" y="105" width="71" height="72" rx="6"/>
+    <rect class="plane" x="125" y="105" width="71" height="72" rx="6"/>
+    <rect class="plane" x="201" y="105" width="71" height="72" rx="6"/>
+    <path class="line" d="M49 124h71m5 0h71m5 0h71"/>
+    <path class="light" stroke-width="1.4" d="M58 114h19m58 0h20m57 0h28"/>
+    <path class="back" d="M57 132h55v16H57zm0 20h55v16H57zm76-20h55v16h-55zm0 20h55v16h-55zm76-20h55v36h-55z"/>
+    <path class="flow" stroke-width="1.5" d="M74 138h24m-24 4h17m-17 16h21m-21 4h14m62-24h24m-24 4h15m-15 16h18m-18 4h26"/>
+    <path class="light" d="M62 141a3 3 0 0 1 6 0m-6 20a3 3 0 0 1 6 0m70-20a3 3 0 0 1 6 0m-6 20a3 3 0 0 1 6 0"/>
+    <path class="line" stroke-width="2.2" d="M65 137h.1m-.1 20h.1m75.9-20h.1m-.1 20h.1"/>
+    <path class="light" stroke-width="1.5" d="M216 140h8v18h-8zM228 141h27m-27 6h16m-16 9h23"/>
+    <path class="ok" stroke-width="1.5" d="m247 161 3 3 5-5"/>
+    <path class="ghost" d="M84 177v12h75v-12m77 0v12h-77"/>
+    <path class="flow" d="M48 190h16m-8-8v15m198-7h16m-8-8v15"/>
+  </g>
+</svg>

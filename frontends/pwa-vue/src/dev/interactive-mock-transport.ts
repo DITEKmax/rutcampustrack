@@ -12,19 +12,32 @@ import type {
 } from '../../../mobile-core/src/features/headman-group/headman-group-client'
 import type { ProfileSnapshot } from '../../../mobile-core/src/features/profile/profile-types'
 
+export type PreviewRole = 'STUDENT' | 'HEADMAN' | 'TEACHER' | 'ADMIN'
+type BodyReader = () => Promise<Record<string, unknown>>
+export type PreviewHandler = (url: URL, method: string, body: BodyReader, role: PreviewRole, source: RequestInit['body'], headers: Headers) => Promise<Response | null>
+
+interface InteractiveMockOptions {
+  persist?: boolean
+  handle?: PreviewHandler
+  notificationSeed?: (role: PreviewRole) => typeof initialNotifications
+}
+
 /** Isolated PWA state; wire fixtures and role handlers are shared with the WEB preview. */
-export function createInteractiveMockTransport(): typeof fetch {
-  let items = structuredClone(initialNotifications)
+export function createInteractiveMockTransport({ persist = true, handle, notificationSeed }: InteractiveMockOptions = {}): typeof fetch {
+  const notifications = new Map<PreviewRole, typeof initialNotifications>()
+  const notificationState = (role: PreviewRole) => {
+    if (!notifications.has(role)) notifications.set(role, structuredClone(notificationSeed?.(role) ?? initialNotifications))
+    return notifications.get(role)!
+  }
   let homeworkItems = structuredClone(homework.items)
   const headmanGroup = createHeadmanGroupPreview()
   let deviceTheme: string | null = null
   let themeRevision = 1
   const roleKey = 'rct:pwa-interactive:active-role'
   const roles = ['STUDENT', 'HEADMAN', 'TEACHER', 'ADMIN'] as const
-  type PreviewRole = typeof roles[number]
   const isRole = (value: unknown): value is PreviewRole => roles.some(role => role === value)
   let activeRole: PreviewRole = 'STUDENT'
-  try { const saved = sessionStorage.getItem(roleKey); if (isRole(saved)) activeRole = saved } catch { /* In-memory role still works. */ }
+  try { const saved = persist && sessionStorage.getItem(roleKey); if (isRole(saved)) activeRole = saved } catch { /* In-memory role still works. */ }
   let sessionVersion = 1
   const session = (): ProfileSnapshot => ({ ...profile, activeRole, sessionVersion: String(sessionVersion),
     roles: [{ grantId: '1', role: 'STUDENT', status: 'ACTIVE', selectable: true, readOnly: false, groupId: '17' },
@@ -32,22 +45,23 @@ export function createInteractiveMockTransport(): typeof fetch {
       { grantId: '3', role: 'TEACHER', status: 'ACTIVE', selectable: true, readOnly: false },
       { grantId: '4', role: 'ADMIN', status: 'ACTIVE', selectable: true, readOnly: false }] }) as ProfileSnapshot
   const avatarStorageKey = 'rct:pwa-interactive:avatar:42'
-  let avatarId: string | null = null
-  try { avatarId = findPreset(localStorage.getItem(avatarStorageKey))?.id ?? null } catch { /* The preview still works without persistence. */ }
-  const unread = () => items.filter((item) => item.readAt === null).length
+  const avatars = new Map<PreviewRole, string | null>()
+  try { if (persist) avatars.set(activeRole, findPreset(localStorage.getItem(avatarStorageKey))?.id ?? null) } catch { /* The preview still works without persistence. */ }
   const json = (value: unknown, status = 200) => Response.json(value, { status })
   // No fallback to native fetch: every unknown request is diagnosed and stays local.
   return async (input, init) => {
     const url = new URL(input instanceof Request ? input.url : String(input), location.origin)
     const method = (init?.method ?? (input instanceof Request ? input.method : 'GET')).toUpperCase()
     const path = url.pathname
+    const items = notificationState(activeRole)
+    const unread = () => items.filter((item) => item.readAt === null).length
     const body = async (): Promise<Record<string, unknown>> => {
       const value: unknown = init?.body ? JSON.parse(String(init.body)) : input instanceof Request ? await input.clone().json() : {}
       return value && typeof value === 'object' ? value as Record<string, unknown> : {}
     }
     if (url.origin === location.origin) {
-      if (path === '/version.json' && method === 'GET') return json({ latest: '0.0.0', minimumSupported: '0.0.0', force: false })
-      if (path === '/api/auth/refresh' && method === 'POST') return json({ accessToken: 'local-visual-preview-only' })
+      if ((path === '/version.json' || path === '/presentation/version.json') && method === 'GET') return json({ latest: '0.0.0', minimumSupported: '0.0.0', force: false })
+      if (['/api/auth/refresh', '/api/auth/login', '/api/auth/otp/verify-by-code'].includes(path) && method === 'POST') return json({ accessToken: 'local-visual-preview-only' })
       if (path === '/api/auth/session' && method === 'GET') return json(session())
       if (path === '/api/auth/session/active-role' && method === 'PUT') {
         const command = await body()
@@ -55,17 +69,18 @@ export function createInteractiveMockTransport(): typeof fetch {
         if (!isRole(command.role)) return json({ title: 'Роль недоступна в preview' }, 400)
         activeRole = command.role
         sessionVersion++
-        try { sessionStorage.setItem(roleKey, activeRole) } catch { /* In-memory role still works. */ }
+        try { if (persist) sessionStorage.setItem(roleKey, activeRole) } catch { /* In-memory role still works. */ }
         return json({ accessToken: 'local-visual-preview-only', expiresIn: 3600, session: session() })
       }
       if (path === '/api/academic/users/me/avatar' && method === 'PATCH') {
         const command = await body()
         if (command.avatarId !== '' && !findPreset(String(command.avatarId)))
           return json({ title: 'Неизвестный аватар' }, 400)
-        avatarId = command.avatarId ? String(command.avatarId) : null
+        const avatarId = command.avatarId ? String(command.avatarId) : null
+        avatars.set(activeRole, avatarId)
         try {
-          if (avatarId) localStorage.setItem(avatarStorageKey, avatarId)
-          else localStorage.removeItem(avatarStorageKey)
+          if (persist && avatarId) localStorage.setItem(avatarStorageKey, avatarId)
+          else if (persist) localStorage.removeItem(avatarStorageKey)
         } catch { /* Current-page synthetic state remains usable. */ }
         return new Response(null, { status: 204 })
       }
@@ -78,7 +93,12 @@ export function createInteractiveMockTransport(): typeof fetch {
         return json({ theme: deviceTheme, revision: String(themeRevision) })
       }
       // Intentionally no websocket ticket: realtime cannot reach any backend.
-      if (path === '/api/auth/ws-ticket') return json({ title: 'Realtime отключён в визуальном preview' }, 503)
+      if (path === '/api/auth/ws-ticket' || path === '/api/auth/logout') {
+        if (path.endsWith('/logout')) return new Response(null, { status: 204 })
+        return json({ title: 'Realtime отключён в визуальном preview' }, 503)
+      }
+      const local = await handle?.(url, method, body, activeRole, init?.body, new Headers(init?.headers ?? (input instanceof Request ? input.headers : undefined)))
+      if (local) return local
       if (activeRole === 'HEADMAN') {
         const response = (await headmanGroup(url, method, body)) ?? (await headmanPreview(url, method, body))
         if (response) return response
@@ -97,7 +117,7 @@ export function createInteractiveMockTransport(): typeof fetch {
         if (response) return response
       }
       if (method === 'GET') {
-        if (path === '/api/academic/users/me') return json({ id: 42, firstName: 'Анна', lastName: 'Смирнова', middleName: null, telegramId: null, avatarId })
+        if (path === '/api/academic/users/me') return json({ id: 42, firstName: 'Анна', lastName: 'Смирнова', middleName: null, telegramId: null, avatarId: avatars.get(activeRole) ?? null })
         if (path === '/api/auth/sessions' || path === '/api/auth/account-history') return json({ items: [], nextCursor: null })
         if (path === '/api/academic/assistants/me/permissions') return json([])
         if (path === '/api/v1/student/session') return json({ ...studentSession, sessionVersion: String(sessionVersion), rolesVersion: profile.rolesVersion })
@@ -147,7 +167,10 @@ export function createInteractiveMockTransport(): typeof fetch {
         }
       }
       if (path === '/api/notifications/inbox/mark-all-read' && method === 'POST') {
-        items = items.map((item) => ({ ...item, readAt: previewNow, revision: String(Number(item.revision) + 1) }))
+        for (const item of items) {
+          item.readAt = previewNow
+          item.revision = String(Number(item.revision) + 1)
+        }
         return json({ role: activeRole, unreadCount: 0 })
       }
       const completion = path.match(/^\/api\/v1\/student\/homework\/([^/]+)\/completion$/)

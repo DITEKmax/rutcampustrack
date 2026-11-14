@@ -1,0 +1,146 @@
+.landing-metrics {
+  padding-block: clamp(2.4rem, 6vw, 5.75rem) clamp(3.5rem, 8vw, 7rem);
+  border-block-start: var(--landing-rule) solid var(--landing-border);
+}
+
+.landing-metrics__header h2 {
+  font-size: clamp(2rem, 4.55vw, 4.15rem);
+  line-height: 1.04;
+  letter-spacing: -.055em;
+  text-wrap: balance;
+}
+
+.landing-metrics__header p {
+  margin-block-start: .85rem;
+  color: var(--landing-muted);
+}
+
+.landing-metrics :where(dl, dd) { margin: 0; }
+
+.landing-metrics__measured {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-block-start: clamp(1.55rem, 4vw, 3rem);
+  border-block: var(--landing-rule) solid var(--landing-border);
+}
+
+.landing-metrics__measured > div {
+  display: flex;
+  flex-direction: column;
+  padding-block: clamp(1.35rem, 3.4vw, 2.65rem);
+  padding-inline-end: clamp(.75rem, 2.4vw, 2rem);
+}
+
+.landing-metrics__measured > div + div {
+  padding-inline-start: clamp(.75rem, 2.4vw, 2rem);
+  border-inline-start: var(--landing-rule) solid var(--landing-border);
+}
+
+.landing-metrics__value {
+  order: -1;
+  margin-block-end: .75rem;
+  color: var(--landing-accent);
+  font-size: clamp(2.15rem, 5.45vw, 5rem);
+  font-weight: 670;
+  line-height: .96;
+  letter-spacing: -.06em;
+  white-space: nowrap;
+}
+
+.landing-metrics__unit {
+  margin-inline-start: .06em;
+  font-size: .57em;
+  letter-spacing: -.03em;
+}
+
+.landing-metrics__measured dt {
+  max-inline-size: 24ch;
+  font-size: clamp(1rem, 1.55vw, 1.3rem);
+  font-weight: 625;
+  line-height: 1.25;
+}
+
+.landing-metrics__detail {
+  margin-block-start: .32rem;
+  color: var(--landing-muted);
+  font-size: .875rem;
+  line-height: 1.4;
+}
+
+.landing-metrics__product {
+  padding-block-start: clamp(1.35rem, 3.4vw, 2.65rem);
+}
+
+.landing-metrics__product h3 {
+  margin-block-end: 1.1rem;
+  color: var(--landing-muted);
+  font-size: .9rem;
+  font-weight: 550;
+}
+
+.landing-metrics__product dl {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: .95rem clamp(.75rem, 2.5vw, 2rem);
+}
+
+.landing-metrics__product dl > div {
+  display: flex;
+  flex-direction: column;
+}
+
+.landing-metrics__count {
+  order: -1;
+  font-size: 1.52rem;
+  font-weight: 650;
+  line-height: 1.15;
+}
+
+.landing-metrics__product dt {
+  margin-block-start: .25rem;
+  font-size: .95rem;
+  line-height: 1.3;
+}
+
+.landing-metrics__sr {
+  position: absolute;
+  inline-size: .0625rem;
+  block-size: .0625rem;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .landing-metrics[data-metrics-motion] [data-metric-card]:not([data-visible]) {
+    opacity: 0;
+  }
+
+  .landing-metrics[data-metrics-motion] [data-metric-card][data-visible] {
+    animation: landing-metric-enter 700ms cubic-bezier(.18, .72, .25, 1) both;
+  }
+}
+
+@keyframes landing-metric-enter {
+  from { opacity: 0; transform: translateY(1.65rem); }
+  to { opacity: 1; transform: none; }
+}
+
+@media (max-width: 46rem) {
+  .landing-metrics__measured {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .landing-metrics__measured > div + div {
+    padding-inline-start: 0;
+    border-inline-start: 0;
+    border-block-start: var(--landing-rule) solid var(--landing-border);
+  }
+
+  .landing-metrics__value { font-size: clamp(2.8rem, 9vw, 4.25rem); }
+
+  .landing-metrics__product dl {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.35rem 1rem;
+  }
+}

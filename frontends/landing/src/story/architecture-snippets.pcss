@@ -1,0 +1,213 @@
+.architecture-glass {
+  position: relative;
+  min-inline-size: 0;
+  padding: 2.6rem clamp(.65rem, 4vw, 3rem);
+  border: var(--landing-rule) solid var(--landing-border);
+  border-radius: var(--landing-radius);
+  background:
+    radial-gradient(ellipse at 15% 5%, color-mix(in srgb, var(--landing-accent) 38%, transparent), transparent 58%),
+    radial-gradient(ellipse at 90% 105%, var(--landing-purple), transparent 65%),
+    var(--landing-surface);
+}
+
+.architecture-glass .rct-story__ide--glass {
+  position: relative;
+  border-color: color-mix(in srgb, var(--landing-accent) 42%, transparent);
+  border-radius: calc(var(--landing-radius) / 1.5);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--landing-surface) 75%, transparent),
+    color-mix(in srgb, var(--landing-bg) 64%, transparent));
+  box-shadow: 0 .85rem 2.5rem color-mix(in srgb, var(--landing-bg) 46%, transparent);
+  backdrop-filter: blur(.75rem);
+}
+
+.rct-story__ide--glass .rct-story__ide-bar {
+  flex-wrap: wrap;
+  padding-block: .24rem;
+  border-color: var(--landing-border);
+}
+
+.rct-story__ide--glass .rct-story__ide-bar strong {
+  flex: 1 1 3rem;
+  font-family: var(--story-mono);
+  font-weight: 550;
+}
+
+.rct-story__glass-scroll {
+  overflow-x: auto;
+  scrollbar-color: var(--landing-accent) transparent;
+}
+
+.architecture-glass--snapshot .rct-story__glass-scroll {
+  max-block-size: 22rem;
+  overflow: auto;
+}
+
+@media (max-width: 44rem) {
+  .architecture-glass--snapshot .rct-story__glass-scroll { max-block-size: 13rem; }
+}
+
+.rct-story__glass-scroll:focus-visible {
+  outline-offset: -.1875rem;
+}
+
+.rct-story__glass-scroll .rct-story__ide-lines {
+  inline-size: max-content;
+  min-inline-size: 100%;
+}
+
+.rct-story__glass-scroll .rct-story__ide-lines code {
+  white-space: pre;
+  overflow-wrap: normal;
+}
+
+.rct-story__glass-tags {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.rct-story__glass-tags span {
+  position: absolute;
+  z-index: 1;
+  max-inline-size: calc(100% - 1.3rem);
+  padding: .3rem .58rem;
+  border: var(--landing-rule) solid color-mix(in srgb, var(--landing-accent) 46%, transparent);
+  border-radius: .45rem;
+  color: var(--landing-text);
+  background: color-mix(in srgb, var(--landing-surface) 80%, var(--landing-purple));
+  font: 500 .72rem/1.4 var(--story-mono);
+  overflow-wrap: anywhere;
+  box-shadow: 0 .3rem .9rem color-mix(in srgb, var(--landing-bg) 32%, transparent);
+}
+
+.rct-story__glass-tags span:first-child {
+  inset-block-start: -1.65rem;
+  inset-inline-end: .65rem;
+  rotate: 3deg;
+}
+
+.rct-story__glass-tags span:last-child {
+  inset-block-end: -1.55rem;
+  inset-inline-start: .65rem;
+  rotate: -3deg;
+}
+
+@media (max-width: 44rem) {
+  .architecture-glass { padding-block-end: 3.6rem; }
+
+  .rct-story__glass-tags span:last-child {
+    inset-block-start: calc(100% + var(--space-1));
+    inset-block-end: auto;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .rct-story__glass-tags span:first-child {
+    animation: architecture-glass-float 5s ease-in-out -1s infinite;
+  }
+
+  .rct-story__glass-tags span:last-child {
+    animation: architecture-glass-float 6s ease-in-out -3.5s infinite;
+  }
+}
+
+@keyframes architecture-glass-float {
+  50% { translate: 0 -.38rem; }
+}
+
+.architecture-terminal {
+  margin-block-end: .8rem;
+  border: var(--landing-rule) solid color-mix(in srgb, var(--landing-check) 32%, transparent);
+  border-radius: calc(var(--landing-radius) / 1.5);
+  background: color-mix(in srgb, var(--landing-bg) 94%, var(--landing-check));
+  overflow-wrap: anywhere;
+}
+
+.architecture-terminal__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-4);
+  min-block-size: calc(var(--control-min-touch) + 2 * var(--space-1));
+  border-block-end: var(--landing-rule) solid color-mix(in srgb, var(--landing-check) 24%, transparent);
+  background: color-mix(in srgb, var(--landing-bg) 89%, var(--landing-check));
+  border-start-start-radius: inherit;
+  border-start-end-radius: inherit;
+}
+
+.architecture-terminal__header h3 {
+  font-size: 1rem;
+}
+
+.architecture-terminal__toggle {
+  min-block-size: var(--control-min-touch);
+  padding-inline: var(--space-3);
+  border: var(--landing-rule) solid var(--landing-border);
+  border-radius: var(--rct-radius-full);
+  background: var(--landing-bg);
+  color: var(--landing-text);
+  font-size: var(--rct-font-size-caption);
+  cursor: pointer;
+  opacity: 0;
+}
+
+.architecture-terminal:is(:hover, :focus-within) .architecture-terminal__toggle,
+.architecture-terminal__toggle[aria-pressed='true'] { opacity: 1; }
+.architecture-terminal__toggle:is(:hover, [aria-pressed='true']) { border-color: var(--landing-check); }
+
+@media (hover: none) {
+  .architecture-terminal__toggle { opacity: 1; }
+}
+
+.architecture-terminal__body {
+  min-inline-size: 0;
+  padding: .85rem;
+  font: 500 .76rem/1.55 var(--story-mono);
+}
+
+.architecture-terminal__body li {
+  display: grid;
+  grid-template-columns: minmax(5.9rem, .2fr) minmax(0, 1fr);
+  gap: .5rem;
+}
+
+.architecture-terminal__command {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: .5rem;
+  padding-block-end: .55rem;
+}
+
+.architecture-terminal__command > span,
+.architecture-terminal__body li strong {
+  color: var(--landing-check);
+}
+
+.architecture-terminal__body li {
+  padding-block: .22rem;
+  color: var(--landing-muted);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .architecture-terminal[data-playing='true'] .architecture-terminal__body li {
+    --terminal-line-start: 8%;
+    animation: architecture-terminal-output 4.6s infinite
+      linear(0 0% var(--terminal-line-start), 1 calc(var(--terminal-line-start) + 4%) 97%, 0);
+  }
+
+  .architecture-terminal[data-playing='true'] li:nth-child(2) { --terminal-line-start: 22%; }
+  .architecture-terminal[data-playing='true'] li:nth-child(3) { --terminal-line-start: 36%; }
+  .architecture-terminal[data-playing='true'] li:nth-child(4) { --terminal-line-start: 50%; }
+  .architecture-terminal[data-playing='true'] li:nth-child(5) { --terminal-line-start: 59%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .architecture-terminal__toggle { display: none; }
+}
+
+@keyframes architecture-terminal-output {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}

@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 220" fill="none">
+  <style>
+    .back{fill:#181221;stroke:#4b3a62}.plane{fill:#251b35;stroke:#674d89}.card{fill:#35264c;stroke:#8d6ab8}
+    .strong{fill:#624982;stroke:#c7a3fb}.bright{fill:#c7a3fb}.guide{stroke:#56436e}.line{stroke:#896ba8}
+    .flow{stroke:#bd94f3}.light{stroke:#e5d0ff}.ghost{stroke:#8665aa;stroke-dasharray:3 5}
+    .label{fill:#e5d0ff;font:600 10px ui-monospace,Consolas,monospace;letter-spacing:.3px}.dim{fill:#b799d3;font:600 8px ui-monospace,Consolas,monospace;letter-spacing:.3px}
+    .ok{stroke:#7bdfbc}.warn{stroke:#edbd83}
+  </style>
+  <defs>
+    <pattern id="dot-grid" width="10" height="10" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r=".85" fill="#9c78c8" opacity=".27"/>
+    </pattern>
+  </defs>
+  <g stroke-linecap="round" stroke-linejoin="round">
+    <path d="M17 15H303V204H17z" fill="url(#dot-grid)"/>
+    <path class="guide" d="M16 28V15h13m262 0h13v13M16 186v13h13m262 0h13v-13" opacity=".68"/>
+
+    <path class="guide" d="M30 53h260M30 166h260M64 36v157m192-157v157" opacity=".58"/>
+    <path class="ghost" d="M51 82H33v70h31m189-69h34v71h-18M111 76h21m58 0h18"/>
+    <rect class="plane" x="47" y="57" width="61" height="112" rx="7"/>
+    <path class="line" d="M47 76h61"/>
+    <path class="flow" d="M57 67h18"/>
+    <rect class="back" x="55" y="88" width="44" height="22" rx="4"/>
+    <path class="light" stroke-width="1.5" d="M62 94h10v7H62zM64 103h6"/>
+    <path class="ok" stroke-width="1.7" d="m80 99 3 3 6-6"/>
+    <rect class="back" x="55" y="117" width="44" height="22" rx="4"/>
+    <path class="line" stroke-width="1.5" d="M63 121h7v13h-7zM65 131h3"/>
+    <path class="warn" stroke-width="1.7" d="m80 125 8 8m0-8-8 8"/>
+    <path class="guide" d="M57 150h37m-37 7h29"/>
+    <rect class="plane" x="212" y="57" width="61" height="112" rx="7"/>
+    <path class="line" d="M212 76h61"/>
+    <path class="flow" d="M222 67h20"/>
+    <path class="card" d="M222 87h42v24h-42zm0 32h42v24h-42z"/>
+    <path class="line" d="M233 89v20m0 12v20m7-25h16m-18 34h22m-38 7h26"/>
+    <path class="light" stroke-width="1.4" d="m225 98 2 2 4-5m7 2h18m-18 6h12m0 22h-12m0 7h18"/>
+    <path class="flow" stroke-width="1.7" d="M108 99h24m56 0h24m-5-4 5 4-5 4m-75 31h-24m5-4-5 4 5 4m75 0h24"/>
+    <path class="strong" d="M143 62h34l15 15v45h-64V77z" stroke-width="1.6"/>
+    <path class="flow" d="M133 115h54m-54-35 12-12h30l12 12"/>
+    <circle class="light" cx="153" cy="92" r="7.5" stroke-width="2.5"/>
+    <path class="light" stroke-width="2.5" d="M158.5 97.5l14 14m-5-5 4-4m-1 7 4-4"/>
+    <rect class="card" x="131" y="125" width="58" height="21" rx="5"/>
+    <text class="label" x="160" y="139" text-anchor="middle">РОЛЬ</text>
+    <path class="ghost" d="M106 179h108"/>
+    <path class="flow" d="M146 179h28m-28-3v6m14-6v6m14-6v6"/>
+  </g>
+</svg>

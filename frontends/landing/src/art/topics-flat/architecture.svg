@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 220" fill="none">
+  <style>
+    .back{fill:#181221;stroke:#4b3a62}.plane{fill:#251b35;stroke:#674d89}.card{fill:#35264c;stroke:#8d6ab8}
+    .strong{fill:#624982;stroke:#c7a3fb}.bright{fill:#c7a3fb}.guide{stroke:#56436e}.line{stroke:#896ba8}
+    .flow{stroke:#bd94f3}.light{stroke:#e5d0ff}.ghost{stroke:#8665aa;stroke-dasharray:3 5}
+    .label{fill:#e5d0ff;font:600 10px ui-monospace,Consolas,monospace;letter-spacing:.3px}.dim{fill:#b799d3;font:600 8px ui-monospace,Consolas,monospace;letter-spacing:.3px}
+    .ok{stroke:#7bdfbc}.warn{stroke:#edbd83}
+  </style>
+  <defs>
+    <pattern id="dot-grid" width="10" height="10" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r=".85" fill="#9c78c8" opacity=".27"/>
+    </pattern>
+  </defs>
+  <g stroke-linecap="round" stroke-linejoin="round">
+    <path d="M17 15H303V204H17z" fill="url(#dot-grid)"/>
+    <path class="guide" d="M16 28V15h13m262 0h13v13M16 186v13h13m262 0h13v-13" opacity=".68"/>
+
+    <path class="guide" d="M30 163h260M40 169v6m15-6v3m15-3v3m15-3v6m15-6v3m15-3v3m15-3v6m15-6v3m15-3v3m15-3v6m15-6v3m15-3v3m15-3v6m15-6v3m15-3v3m15-3v6m15-6v3" opacity=".65"/>
+    <path class="ghost" d="M40 90V38h126m-19 102v42h91"/>
+    <rect class="plane" x="31" y="61" width="80" height="63" rx="7"/>
+    <path class="line" d="M31 77h80"/>
+    <circle class="bright" cx="40" cy="69" r="1.6"/><circle class="bright" cx="46" cy="69" r="1.6" opacity=".65"/><circle class="bright" cx="52" cy="69" r="1.6" opacity=".4"/>
+    <rect class="back" x="42" y="85" width="56" height="28" rx="4"/>
+    <path class="light" stroke-width="1.5" d="m54 94-5 5 5 5m9-10 5 5-5 5"/>
+    <path class="line" stroke-width="1.6" d="M76 96h12m-12 6h7"/>
+    <path class="flow" stroke-width="1.6" d="M71 61v-9h37m-4-3 4 3-4 3m51-3h6v18m-3-4 3 4 3-4m27 29h18m0-37v75m0-75h18m-18 37h18m-18 38h18"/>
+    <rect class="card" x="109" y="42" width="46" height="20" rx="4"/>
+    <text class="dim" x="132" y="55" text-anchor="middle">Nginx</text>
+    <rect class="strong" x="131" y="71" width="60" height="48" rx="8"/>
+    <path class="light" stroke-width="1.7" d="M148 91v-7h26v7m-17-4 4-3 4 3"/>
+    <text class="label" x="161" y="106" text-anchor="middle">Gateway</text>
+    <circle class="bright" cx="209" cy="95" r="3"/>
+    <path class="back" d="M235 44h49a5 5 0 0 1 5 5v17a5 5 0 0 1-5 5h-49a5 5 0 0 1-5-5V49a5 5 0 0 1 5-5Zm0 37h49a5 5 0 0 1 5 5v17a5 5 0 0 1-5 5h-49a5 5 0 0 1-5-5V86a5 5 0 0 1 5-5Zm0 38h49a5 5 0 0 1 5 5v17a5 5 0 0 1-5 5h-49a5 5 0 0 1-5-5v-17a5 5 0 0 1 5-5Z"/>
+    <path class="line" stroke-width="1.6" d="M241 54h25m-25 7h17m-17 30h22m-22 7h17m-17 31h26m-26 7h15"/>
+    <path class="ok" stroke-width="2.4" d="M280 58h.1m0 37h-.1m0 37h.1"/>
+    <rect class="card" x="50" y="137" width="147" height="23" rx="4"/>
+    <text class="dim" x="60" y="151">HTTP</text>
+    <path class="light" d="M91 148h8m-2-2 2 2-2 2"/>
+    <text class="dim" x="107" y="151">gRPC</text>
+    <path class="line" d="M141 143v11"/>
+    <text class="dim" x="152" y="151">200 OK</text>
+    <path class="flow" stroke-width="1.2" d="M85 48h9v7h-9zM199 130h8v6h-8z"/>
+  </g>
+</svg>

@@ -1,0 +1,12 @@
+{
+  "extends": "../tsconfig.foundation.json",
+  "compilerOptions": {
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "types": ["node", "vite/client"],
+    "paths": {
+      "@rct/mobile-core": ["../mobile-core/src/index.ts"]
+    },
+    "noEmit": true
+  },
+  "include": ["src/**/*.ts", "src/**/*.vue", "vite.config.ts"]
+}

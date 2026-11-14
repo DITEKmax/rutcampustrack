@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 220" fill="none">
+  <defs>
+    <linearGradient id="phone" x1="116" y1="32" x2="197" y2="182" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#9B76C5"/>
+      <stop offset="1" stop-color="#5C437E"/>
+    </linearGradient>
+    <linearGradient id="bell" x1="168" y1="71" x2="221" y2="168" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#DFC5F9"/>
+      <stop offset="1" stop-color="#AE88D7"/>
+    </linearGradient>
+  </defs>
+  <g transform="rotate(-12 128 110)">
+    <rect x="83" y="29" width="101" height="171" rx="26" fill="#4B3567" transform="translate(6 4)"/>
+    <rect x="83" y="29" width="101" height="171" rx="26" fill="url(#phone)"/>
+    <rect x="92" y="38" width="83" height="153" rx="20" fill="#674B8B"/>
+    <path d="M118 43h31m-29 137h27" stroke="#C2A3E4" stroke-width="3.5" stroke-linecap="round"/>
+  </g>
+  <path d="M200 160a13 13 0 0 1-26 0Z" fill="#E6CEF9"/>
+  <path d="M148 113c0-20 16-36 36-36v-5a7 7 0 0 1 14 0v5c20 0 36 16 36 36v15c0 10 6 14 12 20a8 8 0 0 1-6 14H142a8 8 0 0 1-6-14c6-6 12-10 12-20v-15Z" fill="#5A427A" transform="translate(4 5)"/>
+  <path d="M148 113c0-20 16-36 36-36v-5a7 7 0 0 1 14 0v5c20 0 36 16 36 36v15c0 10 6 14 12 20a8 8 0 0 1-6 14H142a8 8 0 0 1-6-14c6-6 12-10 12-20v-15Z" fill="url(#bell)"/>
+  <path d="M157 112c0-12 7-21 17-26" stroke="#F4E6FF" stroke-opacity=".8" stroke-width="2" stroke-linecap="round"/>
+  <path d="M228 35h38a14 14 0 0 1 14 14v11a14 14 0 0 1-14 14h-25l-13 9v-9a14 14 0 0 1-14-14V49a14 14 0 0 1 14-14Z" fill="#ADDCCB"/>
+  <path d="M231 46h30" stroke="#E4FBF2" stroke-opacity=".7" stroke-width="2" stroke-linecap="round"/>
+</svg>

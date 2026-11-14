@@ -1659,8 +1659,8 @@ services:
 
   landing-nginx:
     build:
-      context: ./frontends/landing
-      dockerfile: Dockerfile
+      context: ./frontends
+      dockerfile: landing/Dockerfile
     image: ghcr.io/ditekmax/rutcampustrack/landing-nginx:${IMAGE_TAG:-latest}
     container_name: rct-landing-nginx
     logging: *bounded-logs

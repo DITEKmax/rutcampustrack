@@ -75,6 +75,10 @@ export function adminGroupsAuthority(state: string): AdminAccessProfile | null {
       }
 }
 export function createAdminGroupsFixture(state: string): AdminGroupsClient {
+  return createAdminGroupsReviewApi(state).client
+}
+
+export function createAdminGroupsReviewApi(state: string) {
   let createdCount = 0
   let reads = 0
   document.documentElement.dataset.adminFixtureRequests = '0'
@@ -108,6 +112,7 @@ export function createAdminGroupsFixture(state: string): AdminGroupsClient {
   let conflictResolved = false
   const newGroupTemplate = { ...groups.find((group) => group.status === 'DRAFT')! }
   let currentHeadman = 11
+  const deletions = new Map<string, { operationId: string; groupId: string; phase: 'COMPLETED'; retryable: false; counts: Record<string, number>; failure: null }>()
   function plan(groupId: number | null, executed = false): PromotionSummary {
     return {
       toPromote: [
@@ -160,9 +165,7 @@ export function createAdminGroupsFixture(state: string): AdminGroupsClient {
   }
   const json = (value: unknown, status = 200) =>
     new Response(JSON.stringify(value), { status, headers: { 'Content-Type': 'application/json' } })
-  return new AdminGroupsClient({
-    accessToken: () => 'synthetic-admin-groups',
-    fetcher: async (input, init) => {
+  const fetcher: typeof fetch = async (input, init) => {
       const url = new URL(String(input), window.location.origin),
         method = init?.method ?? 'GET'
       reads += 1
@@ -257,9 +260,27 @@ export function createAdminGroupsFixture(state: string): AdminGroupsClient {
         return state === 'promotion-stale'
           ? json({ detail: 'План изменился. Проверь обновлённый предпросмотр.' }, 409)
           : json(plan(typeof body.groupId === 'number' ? body.groupId : null, true))
+      const operation = url.pathname.match(/^\/api\/academic\/(?:group-deletions\/([^/]+)|groups\/\d+\/deletions\/([^/]+)\/resolve)$/)
+      if (operation) {
+        const saved = deletions.get(operation[1] ?? operation[2] ?? '')
+        return saved ? json(saved) : json({ detail: 'Операция не найдена.' }, 404)
+      }
       const match = url.pathname.match(/\/groups\/(\d+)(.*)$/),
         group = groups.find((item) => item.id === Number(match?.[1]))
       if (!group) return json({ detail: 'Группа не найдена.' }, 404)
+      if (match?.[2] === '/deletion-preview' || match?.[2] === '/deletions') {
+        const counts = { accountsAffected: group.studentCount, memberships: group.studentCount,
+          headmanAssignments: group.headmanFio ? 1 : 0, assistantAssignments: 0, academicRows: 0,
+          scheduleRows: 0, attendanceRows: 0, authGrants: group.studentCount }
+        const groupId = String(group.id)
+        if (match[2] === '/deletion-preview') return json({ groupId, groupName: group.name, previewDigest: 'a'.repeat(64), counts })
+        const operationId = new Headers(init?.headers).get('Idempotency-Key')
+        if (!operationId) return json({ detail: 'Не указан ключ операции.' }, 400)
+        const saved = { operationId, groupId, counts, phase: 'COMPLETED' as const, retryable: false as const, failure: null }
+        deletions.set(operationId, saved)
+        groups.splice(groups.indexOf(group), 1)
+        return json(saved)
+      }
       if (match?.[2] === '/headman/roster')
         return json({
           groupId: group.id,
@@ -319,6 +340,6 @@ export function createAdminGroupsFixture(state: string): AdminGroupsClient {
         return json(group)
       }
       throw new Error(`Unsupported synthetic group request: ${method} ${url.pathname}`)
-    },
-  })
+  }
+  return { client: new AdminGroupsClient({ accessToken: () => 'synthetic-admin-groups', fetcher }), fetcher }
 }

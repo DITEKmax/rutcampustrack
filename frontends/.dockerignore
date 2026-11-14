@@ -1,9 +1,12 @@
 **/node_modules/
 **/dist/
+**/dist-vue/
+**/.vite-landing/
+!landing/dist/assets/fonts/google/JetBrainsMono-cyrillic.woff2
+!landing/dist/assets/fonts/google/JetBrainsMono-latin.woff2
 **/coverage/
 **/*.log
 .env
 .env.*
 *.pem
 *.key
-

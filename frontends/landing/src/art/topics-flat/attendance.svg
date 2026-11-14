@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 220" fill="none">
+  <style>
+    .back{fill:#181221;stroke:#4b3a62}.plane{fill:#251b35;stroke:#674d89}.card{fill:#35264c;stroke:#8d6ab8}
+    .strong{fill:#624982;stroke:#c7a3fb}.bright{fill:#c7a3fb}.guide{stroke:#56436e}.line{stroke:#896ba8}
+    .flow{stroke:#bd94f3}.light{stroke:#e5d0ff}.ghost{stroke:#8665aa;stroke-dasharray:3 5}
+    .label{fill:#e5d0ff;font:600 10px ui-monospace,Consolas,monospace;letter-spacing:.3px}.dim{fill:#b799d3;font:600 8px ui-monospace,Consolas,monospace;letter-spacing:.3px}
+    .ok{stroke:#7bdfbc}.warn{stroke:#edbd83}
+  </style>
+  <defs>
+    <pattern id="dot-grid" width="10" height="10" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r=".85" fill="#9c78c8" opacity=".27"/>
+    </pattern>
+  </defs>
+  <g stroke-linecap="round" stroke-linejoin="round">
+    <path d="M17 15H303V204H17z" fill="url(#dot-grid)"/>
+    <path class="guide" d="M16 28V15h13m262 0h13v13M16 186v13h13m262 0h13v-13" opacity=".68"/>
+
+    <path class="guide" d="M38 60h244m-244 99h244M58 40v145m203-145v145" opacity=".56"/>
+    <path class="ghost" d="M43 84H31v57h21m227-57h12v57h-16"/>
+    <circle class="back" cx="101" cy="110" r="53"/>
+    <circle class="plane" cx="101" cy="110" r="43"/>
+    <path class="guide" d="M62 97h78m-77 30h76M86 71v78m30-78v78m-15-96v20m0 74v19m-58-56h22m73 0h22"/>
+    <circle class="ghost" cx="101" cy="110" r="32"/>
+    <circle class="line" cx="101" cy="110" r="21"/>
+    <path class="strong" d="M101 90a13 13 0 0 1 13 13c0 9-13 23-13 23s-13-14-13-23a13 13 0 0 1 13-13Z"/>
+    <circle cx="101" cy="103" r="7" fill="#181221"/>
+    <path class="ok" stroke-width="2" d="m98 103 2 2 4-4"/>
+    <path class="flow" stroke-width="1.5" d="M154 110h30m-5-4 5 4-5 4"/>
+    <rect class="plane" x="186" y="63" width="77" height="95" rx="6"/>
+    <path class="line" d="M186 80h77"/>
+    <text class="dim" x="195" y="75">ОТМЕТКА</text>
+    <path class="back" d="M194 87h61v17h-61zm0 22h61v17h-61zm0 22h61v17h-61z"/>
+    <path class="line" stroke-width="1.4" d="M217 95h27m-27 22h17m-17 22h20"/>
+    <path class="ok" stroke-width="1.8" d="m201 95 3 3 6-6"/>
+    <path class="warn" stroke-width="1.8" d="M205 114v4m0 3h.1"/>
+    <path class="light" stroke-width="1.8" d="M201 139h8"/>
+    <path class="card" d="M242 142h27l9 9v32h-36z"/>
+    <path class="flow" d="M269 142v9h9"/>
+    <path class="light" stroke-width="1.6" d="M249 157h20m-20 6h16m-16 6h9"/>
+    <path class="ghost" d="M100 164v17h119v-23"/>
+    <path class="line" d="M61 181h11m-5-5v10m80-7h24m-24 5h24"/>
+  </g>
+</svg>

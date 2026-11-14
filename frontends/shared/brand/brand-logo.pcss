@@ -1,0 +1,27 @@
+[data-theme='light'] {
+  --ruttrack-logo-light: block;
+  --ruttrack-logo-dark: none;
+}
+
+[data-theme='dark'] {
+  --ruttrack-logo-light: none;
+  --ruttrack-logo-dark: block;
+}
+
+.ruttrack-logo {
+  display: block;
+  min-inline-size: 0;
+}
+
+.ruttrack-logo img {
+  inline-size: 100%;
+  block-size: auto;
+}
+
+.ruttrack-logo__light {
+  display: var(--ruttrack-logo-light, none);
+}
+
+.ruttrack-logo__dark {
+  display: var(--ruttrack-logo-dark, block);
+}

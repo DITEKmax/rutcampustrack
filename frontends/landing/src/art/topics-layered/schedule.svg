@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 220" fill="none">
+  <defs>
+    <linearGradient id="paper" x1="117" y1="51" x2="198" y2="188" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#DBC4F8"/>
+      <stop offset="1" stop-color="#AC88D1"/>
+    </linearGradient>
+  </defs>
+  <g transform="rotate(-9 150 108)">
+    <path d="M88 51h118a21 21 0 0 1 21 21v99a21 21 0 0 1-21 21H88a21 21 0 0 1-21-21V72a21 21 0 0 1 21-21Z" fill="#574071"/>
+    <path d="M83 44h118a21 21 0 0 1 21 21v102a19 19 0 0 1-19 19H83a21 21 0 0 1-21-21V65a21 21 0 0 1 21-21Z" fill="url(#paper)"/>
+    <path d="M83 44h118a21 21 0 0 1 21 21v12H62V65a21 21 0 0 1 21-21Z" fill="#8B67B3"/>
+    <path d="M102 35v18m80-18v18" stroke="#DCC2FA" stroke-width="11" stroke-linecap="round"/>
+    <rect x="83" y="97" width="99" height="16" rx="8" fill="#71529B"/>
+    <rect x="97" y="124" width="104" height="15" rx="7.5" fill="#A38AD0"/>
+    <rect x="83" y="151" width="67" height="15" rx="7.5" fill="#7958A3"/>
+    <path d="M75 82h133" stroke="#F2DFFF" stroke-opacity=".6" stroke-width="2" stroke-linecap="round"/>
+  </g>
+  <g transform="rotate(12 247 136)">
+    <path d="M228 99h38a8 8 0 0 1 8 8v58l-19-11-19 11v-58a8 8 0 0 0-8-8Z" fill="#583E70" transform="translate(3 5)"/>
+    <path d="M228 99h38a8 8 0 0 1 8 8v58l-19-11-19 11v-58a8 8 0 0 0-8-8Z" fill="#E4BC9E"/>
+    <path d="M241 105h24" stroke="#FFE6C9" stroke-opacity=".8" stroke-width="2" stroke-linecap="round"/>
+  </g>
+</svg>

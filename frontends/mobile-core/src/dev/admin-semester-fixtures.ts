@@ -75,6 +75,10 @@ export function adminSemesterAuthority(state: string): AdminAccessProfile | null
       }
 }
 export function createAdminSemesterFixture(state: string): AdminSemesterClient {
+  return createAdminSemesterReviewApi(state).client
+}
+
+export function createAdminSemesterReviewApi(state: string) {
   let reads = 0
   let deletionPolls = 0
   document.documentElement.dataset.adminFixtureRequests = '0'
@@ -183,10 +187,7 @@ export function createAdminSemesterFixture(state: string): AdminSemesterClient {
         operationId: '20100000-0000-4000-8000-000000000001',
       }),
     )
-  return new AdminSemesterClient({
-    accessToken: () => 'synthetic-admin-semester',
-    sessionScopeFor: () => scope,
-    fetcher: async (input, init) => {
+  const fetcher: typeof fetch = async (input, init) => {
       const url = new URL(String(input), window.location.origin),
         method = init?.method ?? 'GET'
       reads += 1
@@ -207,7 +208,7 @@ export function createAdminSemesterFixture(state: string): AdminSemesterClient {
         })
       if (url.pathname === '/api/academic/semesters') {
         if (method === 'POST') {
-          const created = { ...semesters[1]!, ...body, id: 9, active: false }
+          const created = { ...semesters[1]!, ...body, id: Math.max(8, ...semesters.map(item => item.id)) + 1, active: false }
           semesters.push(created as (typeof semesters)[number])
           return json(created, 201)
         }
@@ -359,6 +360,6 @@ export function createAdminSemesterFixture(state: string): AdminSemesterClient {
       }
       if (method === 'GET' && match?.[2] === '') return json(semester)
       throw new Error(`Unsupported synthetic semester request: ${method} ${url.pathname}`)
-    },
-  })
+  }
+  return { client: new AdminSemesterClient({ accessToken: () => 'synthetic-admin-semester', sessionScopeFor: () => scope, fetcher }), fetcher }
 }

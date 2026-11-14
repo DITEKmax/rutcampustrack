@@ -133,6 +133,7 @@ const props = withDefaults(
     offline: boolean;
     readOnly?: boolean;
     overlayActive?: boolean;
+    now?: () => Date;
     todayFallback?: StudentToday | null;
     homeworkFallback?: StudentHomework | null;
     semesterStartsOn?: string;
@@ -271,10 +272,9 @@ const notificationTargetRouteIds = new Set<string>([
   requestNotificationRoute.id,
   lessonNotificationRoute.id,
 ]);
-const selectedDate = ref(new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Moscow' }));
-const attendanceSelectedDate = ref(
-  new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Moscow' }),
-);
+const localDay = () => (props.now?.() ?? new Date()).toLocaleDateString('en-CA', { timeZone: 'Europe/Moscow' });
+const selectedDate = ref(localDay());
+const attendanceSelectedDate = ref(localDay());
 const attendanceMode = ref<AttendanceMode>('days');
 const attendanceGraphRange = ref<AttendanceGraphRange>('days');
 const attendanceExpandedSubjectId = ref<string | null>(null);
@@ -1027,7 +1027,7 @@ watch(ownerIdentity, (identity, previous) => {
   checkinError.value = null;
   checkinRecovery = new CheckinCommandRecovery();
   checkinRunning.value = false;
-  const todayDate = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Moscow' });
+  const todayDate = localDay();
   attendanceSelectedDate.value = todayDate;
 });
 watch(
@@ -2348,7 +2348,12 @@ function studentHostBack(): void {
   else navigation.back();
 }
 
-defineExpose({ openNotificationAction });
+function openStudentMap(): void {
+  navigate('more');
+  navigateMore('map');
+}
+
+defineExpose({ openNotificationAction, navigate, openStudentMap });
 </script>
 
 <template>

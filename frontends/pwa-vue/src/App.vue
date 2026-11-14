@@ -4,6 +4,7 @@ import {
   type AcquisitionOptions,
 } from '../../mobile-core/src/device-access/device-access';
 import { browserGeoSource } from '../../mobile-core/src/device-access/geolocation';
+import type { GeoSource } from '../../mobile-core/src/device-access/geolocation';
 import { fixtureGeoSource } from '../../mobile-core/src/dev/device-access-fixture';
 import AuthSuccessOverlay from '../../mobile-core/src/features/auth/AuthSuccessOverlay.vue';
 import { useAuthSuccess } from '../../mobile-core/src/features/auth/use-auth-success';
@@ -108,7 +109,7 @@ import {
 import { createMoscowDayClock, useOfflineTodayFallback } from './offline-today-fallback';
 import type { ProfilePort, ProfileRole, ProfileSnapshot } from '@rct/mobile-core';
 import { AuthRequestError } from './auth-client';
-import { PwaAuthError, usePwaAuth, type PwaAuthInvalidationReason } from './auth';
+import { PwaAuthError, usePwaAuth, type PwaAuthInvalidationReason, type PwaAuthInvalidationChannel } from './auth';
 import LoginScreen from './LoginScreen.vue';
 import PasswordRecoveryScreen from './features/password-recovery/PasswordRecoveryScreen.vue';
 import {
@@ -129,7 +130,18 @@ import { createPushController } from './features/push/push-controller';
 import { createBrowserPushPort } from './features/push/browser-push';
 import './pwa-host.pcss';
 
-const props = defineProps<{ installPrompt: InstallPromptController }>();
+const props = defineProps<{
+  installPrompt: InstallPromptController;
+  demo?: {
+    geo: GeoSource;
+    clock: () => Date;
+    authChannel: PwaAuthInvalidationChannel;
+    snapshots: Pick<SemesterSnapshotStore, 'write' | 'read' | 'readCurrent' |
+      'clearMismatchedCurrent' | 'switchToDetailed' | 'clearDetailed' |
+      'invalidatePendingWrites' | 'hasUnresolvedCleanup' | 'retryCleanup'>;
+    openMaterial: (url: string) => void;
+  };
+}>();
 const installPrompt = props.installPrompt;
 
 const authSuccess = useAuthSuccess();
@@ -144,7 +156,7 @@ const pwaFetcher = createPwaFetcher();
 const requestFetcher: typeof fetch = fixtureTransport ?? pwaFetcher;
 const push = createPushController(
   createBrowserPushPort(
-    !fixtureMode && import.meta.env.MODE === 'production',
+    !props.demo && !fixtureMode && import.meta.env.MODE === 'production',
     import.meta.env.BASE_URL,
   ),
   requestFetcher,
@@ -152,6 +164,7 @@ const push = createPushController(
 let currentOnlyGeneration: number | null = null;
 const auth = usePwaAuth({
   fetcher: requestFetcher,
+  ...(props.demo ? { channel: props.demo.authChannel, logoutMarkerStorage: null } : {}),
   beforeClear: () => push.invalidate(),
   // Disabled queries can still finish an already scheduled retry. A retained
   // offline owner must not turn that background 401 into another rotation.
@@ -192,7 +205,7 @@ const mapClient = new CampusMapClient({
 const adminMapClient = shallowRef<AdminMapClient | null>(null);
 const host = new PwaHostAdapter(push);
 const themePreference = createMobileThemePreference(() =>
-  typeof window === 'undefined' ? null : window.localStorage,
+  props.demo || typeof window === 'undefined' ? null : window.localStorage,
 );
 const theme =
   typeof document === 'undefined'
@@ -215,7 +228,7 @@ const themeMirror = theme
       transport: createDeviceThemeTransport(requestFetcher),
     })
   : null;
-const snapshotStore = new SemesterSnapshotStore();
+const snapshotStore = props.demo?.snapshots ?? new SemesterSnapshotStore();
 
 const api = shallowRef<StudentApi | null>(null);
 const teacherApi = shallowRef<TeacherApi | null>(null);
@@ -292,6 +305,8 @@ const notificationLaunchNotice = ref<string | null>(
 let notificationTargetIntentId = 0;
 const studentNotificationOwner = ref<{
   openNotificationAction(action: NotificationLaunchAction, current: () => boolean): boolean;
+  navigate(route: 'today' | 'attendance' | 'homework'): void;
+  openStudentMap(): void;
 } | null>(null);
 const headmanNotificationOwner = ref<{
   openNotificationAction(action: NotificationAction, current: () => boolean): Promise<boolean>;
@@ -357,9 +372,9 @@ const authView = ref<
 >(directPasswordRecoveryEntry ? 'password-recovery' : 'login');
 const authSnapshot = shallowRef<ProfileSnapshot | null>(null);
 const deviceAccess = provideDeviceAccess({
-  geo: fixtureMode
+  geo: props.demo?.geo ?? (fixtureMode
     ? fixtureGeoSource('BROWSER', new URLSearchParams(window.location.search).get('fixtureGeo'))
-    : browserGeoSource(),
+    : browserGeoSource()),
 });
 watch(
   () =>
@@ -412,7 +427,7 @@ let stopAuthInvalidation = (): void => undefined;
 let queuedBootstrapAfterInvalidation = false;
 let pendingOnlineGeneration: number | null = null;
 
-const moscowDayClock = createMoscowDayClock();
+const moscowDayClock = createMoscowDayClock(props.demo ? { now: props.demo.clock } : {});
 const cachedToday = useOfflineTodayFallback(
   () => snapshot.value?.schedule ?? null,
   moscowDayClock.currentDate,
@@ -2119,6 +2134,10 @@ function acquireCheckinCommand(options?: AcquisitionOptions): Promise<StudentChe
 }
 
 function openMaterial(url: string): void {
+  if (props.demo) {
+    props.demo.openMaterial(url);
+    return;
+  }
   // HomeworkScreen already validates this boundary. Revalidate at the shell
   // edge so an adapter callback can never open a relative or non-HTTP target.
   try {
@@ -2129,6 +2148,18 @@ function openMaterial(url: string): void {
     // Unsupported server data remains inert.
   }
 }
+
+async function openDemoStudentRoute(route: 'today' | 'attendance' | 'homework' | 'map'): Promise<void> {
+  if (!props.demo || !authSnapshot.value) return;
+  if (authSnapshot.value.activeRole !== 'STUDENT') {
+    await selectRole('STUDENT', authSnapshot.value.sessionVersion);
+    await nextTick();
+  }
+  if (route === 'map') studentNotificationOwner.value?.openStudentMap();
+  else studentNotificationOwner.value?.navigate(route);
+}
+
+defineExpose({ openDemoStudentRoute });
 
 function onOwnerError(error: unknown): void {
   if (sessionEnded.value || error instanceof StaleSessionGenerationError) return;
@@ -2344,7 +2375,7 @@ onBeforeUnmount(() => {
     />
   </Teleport>
   <InstallOffer
-    v-if="studentViewVisible && authSnapshot?.activeRole === 'STUDENT' && session"
+    v-if="!props.demo && studentViewVisible && authSnapshot?.activeRole === 'STUDENT' && session"
     :controller="installPrompt"
     :eligible="studentViewVisible && authSnapshot?.activeRole === 'STUDENT' && session !== null"
   />
@@ -2690,6 +2721,7 @@ onBeforeUnmount(() => {
   </AdminShell>
   <StudentFeatureOwner
     :overlay-active="notificationsOpen"
+    v-bind="props.demo ? { now: props.demo.clock } : {}"
     v-else-if="studentViewVisible"
     :realtime-revision="notificationRealtimeRevision"
     ref="studentNotificationOwner"

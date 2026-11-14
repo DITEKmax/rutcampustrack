@@ -110,11 +110,19 @@ os.execv(%r, [%r] + sys.argv[1:])
 
     def test_workflow_variable_and_conditional_secret_require_manual_nonprepare(self):
         workflow = (ROOT / ".github/workflows/deploy.yml").read_text()
-        self.assertNotIn("workflow_run:", workflow)
         self.assertNotIn("      bootstrap_initial_admin:", workflow)
-        expressions = {}
-        for name in ("BOOTSTRAP_INITIAL_ADMIN", "INITIAL_ADMIN_REQUEST"):
-            expressions[name] = re.search(r"          " + name + r": \$\{\{ (.+) \}\}", workflow)[1]
+        expressions = {
+            name: re.search(r"          " + name + r": \$\{\{ (.+) \}\}", workflow)[1]
+            for name in ("RAW_BOOTSTRAP_INITIAL_ADMIN", "BOOTSTRAP_INITIAL_ADMIN", "INITIAL_ADMIN_REQUEST")
+        }
+
+        def evaluate(name, fields):
+            expression = expressions[name].replace(" == false", " == False")
+            expression = expression.replace("&&", " and ").replace("||", " or ")
+            expression = re.sub(r"\b(?:github|inputs|vars|steps|secrets)(?:\.[\w-]+)+\b",
+                                lambda match: repr(fields[match[0]]), expression)
+            return eval(expression, {"__builtins__": {}}, {})
+
         recheck = workflow.split("      - name: Recheck current main and same-SHA checks", 1)[1]
         run = recheck.split("        run: |\n", 1)[1].split("      - name:", 1)[0]
         # Execute actual shell normalization after the unchanged quality command.
@@ -124,25 +132,28 @@ os.execv(%r, [%r] + sys.argv[1:])
                 ("workflow_dispatch", "false", False), ("workflow_dispatch", "TRUE", False),
                 ("workflow_dispatch", "true", True), ("workflow_dispatch", "true", False)):
             with self.subTest(event=event, enabled=enabled, prepare=prepare), tempfile.TemporaryDirectory() as tmp:
+                manual = event == "workflow_dispatch"
+                fields = {
+                    "github.event_name": event,
+                    "inputs.prepare_only": prepare,
+                    "vars.PRODUCTION_BOOTSTRAP_INITIAL_ADMIN": enabled,
+                    "secrets.INITIAL_ADMIN_REQUEST": PASSWORD,
+                }
+                raw_flag = evaluate("RAW_BOOTSTRAP_INITIAL_ADMIN", fields)
+                self.assertEqual(raw_flag, (enabled or "false") if manual else "false")
                 output = Path(tmp) / "output"
                 normalized = subprocess.run(["bash", "-e", "-c", normalization], capture_output=True,
-                    env=dict(os.environ, RAW_BOOTSTRAP_INITIAL_ADMIN=enabled, GITHUB_OUTPUT=str(output)), timeout=5)
+                    env=dict(os.environ, RAW_BOOTSTRAP_INITIAL_ADMIN=raw_flag, GITHUB_OUTPUT=str(output)), timeout=5)
                 self.assertEqual(normalized.returncode, 0, normalized.stderr.decode())
                 flag = output.read_text().strip().removeprefix("bootstrap_initial_admin=")
-                self.assertEqual(flag, "true" if enabled == "true" else "false")
-                values = {}
-                for name, expression in expressions.items():
-                    expression = (expression.replace("github.event_name", repr(event))
-                                  .replace("inputs.prepare_only", repr(prepare))
-                                  .replace("steps.apply-inputs.outputs.bootstrap_initial_admin", repr(flag))
-                                  .replace("secrets.INITIAL_ADMIN_REQUEST", repr(PASSWORD))
-                                  .replace(" == false", " == False")
-                                  .replace("&&", " and ").replace("||", " or "))
-                    # Expressions compare only normalized booleans; raw case policy ran in Bash.
-                    values[name] = eval(expression, {"__builtins__": {}}, {})
-                authorized = event == "workflow_dispatch" and enabled == "true" and not prepare
-                self.assertEqual(values["BOOTSTRAP_INITIAL_ADMIN"], "true" if authorized else "false")
-                self.assertEqual(values["INITIAL_ADMIN_REQUEST"], PASSWORD if authorized else "")
+                self.assertEqual(flag, "true" if manual and enabled == "true" else "false")
+                authorized = manual and enabled == "true" and not prepare
+                # Automatic delivery must ignore the bootstrap flag even if the previous step outputs true.
+                for delivery_flag in (flag,) if manual else (flag, "true"):
+                    with self.subTest(delivery_flag=delivery_flag):
+                        fields["steps.apply-inputs.outputs.bootstrap_initial_admin"] = delivery_flag
+                        self.assertEqual(evaluate("BOOTSTRAP_INITIAL_ADMIN", fields), "true" if authorized else "false")
+                        self.assertEqual(evaluate("INITIAL_ADMIN_REQUEST", fields), PASSWORD if authorized else "")
 
     def test_disabled_ignores_present_malformed_request_and_does_not_transfer_it(self):
         with tempfile.TemporaryDirectory() as tmp:

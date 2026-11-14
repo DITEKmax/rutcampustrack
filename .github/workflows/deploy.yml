@@ -1,8 +1,12 @@
 name: Deploy
 
-# One exact source revision: quality gate → build digests → explicit apply.
+# One exact source revision: quality gate → build digests → production apply.
 # Owner decision 2026-11-03: Deploy scan/sign/SBOM temporarily removed.
 on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
   workflow_dispatch:
     inputs:
       commit_sha:
@@ -24,23 +28,47 @@ on:
 # уничтожает active sessions). `cancel-in-progress: false` — не отменяем
 # уже идущий deploy, просто ждём.
 concurrency:
-  group: production-deploy
+  # An ineligible event must not replace a pending eligible release.
+  group: >-
+    ${{ ((github.event_name == 'workflow_dispatch' &&
+          github.ref == 'refs/heads/main' &&
+          (inputs.prepare_only || vars.PRODUCTION_DEPLOY_ENABLED == 'true')) ||
+         (github.event_name == 'workflow_run' &&
+          vars.PRODUCTION_DEPLOY_ENABLED == 'true' &&
+          vars.PRODUCTION_AUTO_DEPLOY_ENABLED == 'true' &&
+          github.event.workflow_run.conclusion == 'success' &&
+          github.event.workflow_run.head_branch == 'main' &&
+          github.event.workflow_run.event == 'push' &&
+          github.event.workflow_run.head_repository.full_name == github.repository)) &&
+        'production-deploy' || format('production-deploy-ineligible-{0}', github.run_id) }}
   cancel-in-progress: false
+  # CI can finish out of order. Keep pending runs so a stale SHA cannot replace one.
+  queue: max
 
 env:
-  DEPLOY_SHA: ${{ github.event.inputs.commit_sha }}
+  DEPLOY_SHA: >-
+    ${{ github.event_name == 'workflow_dispatch' && inputs.commit_sha ||
+        github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || '' }}
 
 jobs:
   release-gate:
     name: Require all same-SHA quality checks
-    if: github.event_name == 'workflow_dispatch'
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'workflow_run' &&
+       vars.PRODUCTION_DEPLOY_ENABLED == 'true' &&
+       vars.PRODUCTION_AUTO_DEPLOY_ENABLED == 'true' &&
+       github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.head_branch == 'main' &&
+       github.event.workflow_run.event == 'push' &&
+       github.event.workflow_run.head_repository.full_name == github.repository)
     runs-on: ubuntu-latest
     timeout-minutes: 65
     permissions:
       contents: read
       actions: read
     steps:
-      - name: Reject disabled apply and non-main manual workflow
+      - name: Validate source SHA and main workflow ref; reject disabled apply
         env:
           PRODUCTION_DEPLOY_ENABLED: ${{ vars.PRODUCTION_DEPLOY_ENABLED }}
           PREPARE_ONLY: ${{ github.event_name == 'workflow_dispatch' && inputs.prepare_only && 'true' || 'false' }}
@@ -308,7 +336,8 @@ jobs:
     needs: [release-gate, build-push]
     if: >-
       vars.PRODUCTION_DEPLOY_ENABLED == 'true' &&
-      github.event_name == 'workflow_dispatch' && inputs.prepare_only == false
+      ((github.event_name == 'workflow_dispatch' && inputs.prepare_only == false) ||
+       (github.event_name == 'workflow_run' && vars.PRODUCTION_AUTO_DEPLOY_ENABLED == 'true'))
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -338,7 +367,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           PRODUCTION_DEPLOY_ENABLED: ${{ vars.PRODUCTION_DEPLOY_ENABLED }}
-          RAW_BOOTSTRAP_INITIAL_ADMIN: ${{ vars.PRODUCTION_BOOTSTRAP_INITIAL_ADMIN }}
+          RAW_BOOTSTRAP_INITIAL_ADMIN: ${{ github.event_name == 'workflow_dispatch' && vars.PRODUCTION_BOOTSTRAP_INITIAL_ADMIN || 'false' }}
         run: |
           python3 -I release-control/scripts/release-quality-gate.py --sha "$DEPLOY_SHA" --repository "$GITHUB_REPOSITORY" --apply --wait-seconds 0
           bootstrap=false

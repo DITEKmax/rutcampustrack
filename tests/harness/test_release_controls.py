@@ -41,6 +41,20 @@ def jobs(workflow='ci.yml'):
             for name in gate.REQUIRED[workflow]]
 
 
+def condition(definition):
+    return definition.split('    if: >-\n', 1)[1].split('    runs-on:', 1)[0]
+
+
+def check_policy(expression, fields):
+    # Evaluate the operators used by the workflow guard with synthetic event contexts.
+    expression = ' '.join(expression.strip().removeprefix('${{').removesuffix('}}').split())
+    values = {'true': True, 'false': False, **fields}
+    expression = re.sub(r"(?<!')(?:\b(?:github|inputs|vars)(?:\.[A-Za-z_]+)+|\btrue\b|\bfalse\b)(?!')",
+                        lambda match: repr(values.get(match[0], '')), expression)
+    return eval(expression.replace('&&', ' and ').replace('||', ' or '),
+                {'__builtins__': {}, 'format': lambda template, value: template.format(value)}, {})
+
+
 class QualityCounterexamples(unittest.TestCase):
     def test_complete_inventory_success_and_academic_omission_rejected(self):
         self.assertEqual([len(value) for value in gate.REQUIRED.values()], [25, 9, 3, 1])
@@ -53,9 +67,10 @@ class QualityCounterexamples(unittest.TestCase):
                 gate.assess(workflow, [run(workflow)], lambda _: omitted, SHA, REPOSITORY)
 
     def test_newer_failed_run_never_falls_back_to_green(self):
-        newer = dict(run(number=2), conclusion='failure')
-        with self.assertRaises(gate.GateFailure):
-            gate.assess('ci.yml', [run(), newer], lambda _: jobs(), SHA, REPOSITORY)
+        for workflow in gate.REQUIRED:
+            newer = dict(run(workflow, number=2), conclusion='failure')
+            with self.subTest(workflow=workflow), self.assertRaises(gate.GateFailure):
+                gate.assess(workflow, [run(workflow), newer], lambda _: jobs(workflow), SHA, REPOSITORY)
 
     def test_wrong_source_repository_event_workflow_and_unknown_jobs_rejected(self):
         for field in ({'head_sha': 'c' * 40}, {'head_repository': {'full_name': 'fork/repo'}},
@@ -268,7 +283,7 @@ except module.GateFailure:
         build = workflow.split('  build-push:\n', 1)[1].split('  deploy:\n', 1)[0]
         deploy = workflow.split('  deploy:\n', 1)[1]
         guard = textwrap.dedent(release.split('        run: |\n', 1)[1].split('      - uses:', 1)[0])
-        expression = ' '.join(deploy.split('    if: >-\n', 1)[1].split('    runs-on:', 1)[0].split())
+        expression = condition(deploy)
         for prepare, enabled, ref, expected in ((True, 'false', 'refs/heads/main', 0),
                                                 (False, 'false', 'refs/heads/main', 1),
                                                 (False, 'true', 'refs/heads/main', 0),
@@ -278,12 +293,12 @@ except module.GateFailure:
                     PREPARE_ONLY=str(prepare).lower(), PRODUCTION_DEPLOY_ENABLED=enabled,
                     DEPLOY_SHA=SHA, GITHUB_REF=ref), capture_output=True, timeout=5)
                 self.assertEqual(checked.returncode, expected)
-                policy = (expression.replace('vars.PRODUCTION_DEPLOY_ENABLED', repr(enabled))
-                          .replace('github.event_name', repr('workflow_dispatch'))
-                          .replace('inputs.prepare_only', repr(prepare))
-                          .replace('false', 'False').replace('true', 'True')
-                          .replace('&&', ' and ').replace('||', ' or '))
-                self.assertEqual(bool(eval(policy, {'__builtins__': {}}, {})), not prepare and enabled == 'true')
+                self.assertEqual(bool(check_policy(expression, {
+                    'github.event_name': 'workflow_dispatch',
+                    'inputs.prepare_only': prepare,
+                    'vars.PRODUCTION_DEPLOY_ENABLED': enabled,
+                })), not prepare and enabled == 'true')
+        self.assertIn('    needs: release-gate\n', build)
         needs = re.search(r'    needs: \[([^\]]+)\]', deploy)[1]
         self.assertEqual({value.strip() for value in needs.split(',')}, {'release-gate', 'build-push'})
         self.assertNotIn('always()', expression, 'failed quality or build jobs must retain default success() dependency gating')
@@ -299,6 +314,73 @@ except module.GateFailure:
         for definition in (release, build):
             for secret in ('PROD_ENV', 'PROD_SECRET_FILES_B64', 'SSH_PRIVATE_KEY', 'INITIAL_ADMIN_REQUEST', 'VPS_HOST'):
                 self.assertNotIn('secrets.' + secret, definition)
+
+
+    def test_auto_deploy_uses_only_successful_main_push_in_same_repository(self):
+        workflow = (ROOT / '.github/workflows/deploy.yml').read_text()
+        self.assertIn('  workflow_run:\n    workflows: [CI]\n    types: [completed]\n    branches: [main]\n', workflow)
+        concurrency = workflow.split('  group: >-\n', 1)[1].split('  cancel-in-progress: false', 1)[0]
+        concurrency_policy = workflow.split('\nconcurrency:\n', 1)[1].split('\nenv:', 1)[0]
+        self.assertRegex(concurrency_policy, r'(?m)^  queue: max$',
+                         'a late CI result for an older SHA must not replace a pending release')
+        revision = workflow.split('  DEPLOY_SHA: >-\n', 1)[1].split('\njobs:', 1)[0]
+        release = workflow.split('  release-gate:\n', 1)[1].split('  build-push:\n', 1)[0]
+        deploy = workflow.split('  deploy:\n', 1)[1]
+        eligible = {
+            'github.event_name': 'workflow_run',
+            'github.ref': 'refs/heads/main',
+            'github.repository': REPOSITORY,
+            'github.run_id': 123,
+            'github.sha': 'b' * 40,
+            'github.event.workflow_run.conclusion': 'success',
+            'github.event.workflow_run.head_branch': 'main',
+            'github.event.workflow_run.event': 'push',
+            'github.event.workflow_run.head_repository.full_name': REPOSITORY,
+            'github.event.workflow_run.head_sha': SHA,
+            'vars.PRODUCTION_AUTO_DEPLOY_ENABLED': 'true',
+            'vars.PRODUCTION_DEPLOY_ENABLED': 'true',
+            'vars.PRODUCTION_BOOTSTRAP_INITIAL_ADMIN': 'true',
+            'inputs.commit_sha': 'c' * 40,
+            'inputs.prepare_only': True,
+        }
+        self.assertEqual(check_policy(concurrency, eligible), 'production-deploy')
+        self.assertTrue(check_policy(condition(release), eligible))
+        self.assertTrue(check_policy(condition(deploy), eligible))
+        self.assertEqual(check_policy(revision, eligible), SHA)
+        for prepare in re.findall(r'PREPARE_ONLY: (.+)', release):
+            self.assertEqual(check_policy(prepare, eligible), 'false')
+        bootstrap = re.search(r'RAW_BOOTSTRAP_INITIAL_ADMIN: (.+)', deploy)[1]
+        self.assertEqual(check_policy(bootstrap, eligible), 'false')
+        for name in ('BOOTSTRAP_INITIAL_ADMIN', 'INITIAL_ADMIN_REQUEST'):
+            delivery_input = re.search(r'^          ' + name + r': (.+)', deploy, re.M)[1]
+            self.assertIn("github.event_name == 'workflow_dispatch' &&", delivery_input)
+
+        for field, value in (
+            ('github.event_name', 'push'),
+            ('github.event.workflow_run.conclusion', 'failure'),
+            ('github.event.workflow_run.conclusion', 'cancelled'),
+            ('github.event.workflow_run.conclusion', 'skipped'),
+            ('github.event.workflow_run.head_branch', 'dev'),
+            ('github.event.workflow_run.event', 'pull_request'),
+            ('github.event.workflow_run.event', 'workflow_dispatch'),
+            ('github.event.workflow_run.head_repository.full_name', 'fork/rutcampustrack'),
+            ('vars.PRODUCTION_AUTO_DEPLOY_ENABLED', ''),
+            ('vars.PRODUCTION_AUTO_DEPLOY_ENABLED', 'false'),
+            ('vars.PRODUCTION_DEPLOY_ENABLED', 'false'),
+        ):
+            with self.subTest(field=field, value=value):
+                ineligible = {**eligible, field: value}
+                self.assertFalse(check_policy(condition(release), ineligible))
+                self.assertEqual(check_policy(concurrency, ineligible), 'production-deploy-ineligible-123')
+
+        self.assertEqual(check_policy(revision, {**eligible, 'github.event.workflow_run.head_sha': ''}), '')
+        manual = {**eligible, 'github.event_name': 'workflow_dispatch',
+                  'vars.PRODUCTION_AUTO_DEPLOY_ENABLED': '', 'inputs.prepare_only': False}
+        self.assertEqual(check_policy(concurrency, manual), 'production-deploy')
+        self.assertTrue(check_policy(condition(release), manual))
+        self.assertTrue(check_policy(condition(deploy), manual))
+        self.assertEqual(check_policy(revision, manual), manual['inputs.commit_sha'])
+        self.assertEqual(check_policy(revision, {**manual, 'inputs.commit_sha': ''}), '')
 
 
 if __name__ == '__main__':

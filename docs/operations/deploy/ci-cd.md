@@ -9,7 +9,7 @@ M06 Группа 5 (NEW-105).
 ┌──────────────────────────────────────────────────────────────────┐
 │  GitHub Actions (.github/workflows/)                              │
 │                                                                   │
-│  ┌──────────┐    manual dispatch ┌──────────┐                    │
+│  ┌──────────┐    main CI / вручную ┌──────────┐                  │
 │  │  ci.yml  │ ── quality gate ──> │deploy.yml│                    │
 │  │(M06 G7)  │                     │          │                    │
 │  └──────────┘                     └──────────┘                    │
@@ -56,15 +56,22 @@ M06 Группа 5 (NEW-105).
 
 ### deploy.yml — продакшен-деплой
 
-- Trigger: только `workflow_dispatch` на main. Решение владельца 2026-11-02
-  отменяет автоматический Deploy после CI; merge/push и успешный CI его не запускают.
-- Укажи полный `commit_sha` и причину. Все четыре quality workflows
-  (CI, Coverage, Security, OpenAPI) должны успешно пройти на этом SHA;
-  перед apply повторно проверяются current main и тот же SHA.
-- `prepare_only=true` по умолчанию: build, blocking scan и подписи всех 13
-  image digests без production inputs или SSH.
-- Apply требует `prepare_only=false` и repository variable
-  `PRODUCTION_DEPLOY_ENABLED` ровно `true`. Отсутствующее/другое значение запрещает apply.
+- Автоматический Deploy использует SHA успешного CI, запущенного push в
+  `main` этого репозитория. Для него нужны обе repository variables со
+  значением `true`: `PRODUCTION_AUTO_DEPLOY_ENABLED` и `PRODUCTION_DEPLOY_ENABLED`.
+  Чтобы остановить новые автоматические запуски, выключи
+  `PRODUCTION_AUTO_DEPLOY_ENABLED`; ручной запуск сохранится. Уже запущенные
+  или ожидающие Deploy проверь отдельно в Actions.
+- Для ручного `workflow_dispatch` выбери `main`, укажи полный `commit_sha` и
+  причину. `prepare_only=true` по умолчанию: сборка и публикация 13 образов
+  с фиксацией digest без production inputs или SSH. Ручной apply требует
+  `prepare_only=false` и `PRODUCTION_DEPLOY_ENABLED=true`.
+- Перед сборкой все четыре quality workflows (CI, Coverage, Security, OpenAPI)
+  должны успешно пройти на том же SHA. Для apply этот SHA должен совпадать с
+  текущим `main`; SHA и все четыре проверки проверяются повторно перед apply.
+  Готовые к проверкам ручные и автоматические запуски ждут в общей очереди.
+  Если CI более старого коммита завершится позже, он не вытеснит ожидающий
+  запуск. Проверка текущего `main` отклонит устаревший SHA.
 - Создание первого FULL администратора — отдельная repository variable
   `PRODUCTION_BOOTSTRAP_INITIAL_ADMIN` ровно `true` при ручном non-prepare apply.
   Checkbox отсутствует. При отсутствующей/выключенной переменной запрос
@@ -72,9 +79,8 @@ M06 Группа 5 (NEW-105).
   При включённой используется существующий приватный идемпотентный протокол
   после readiness Compose и проверки served web. См.
   [initial-administrator-deploy.md](../../runbooks/initial-administrator-deploy.md).
-- На 2026-11-02 обе repository variables выключены. Документация и commit
-  сами по себе их не включают и не разрешают работу на VPS.
-- Release доставляется по проверенным digest/signatures и точной revision.
+- Автоматический Deploy не запускает bootstrap и не получает `INITIAL_ADMIN_REQUEST`.
+- Release доставляется по проверенным digest и точной revision.
   Ошибка readiness/web/bootstrap не записывает `.deployed-sha`.
 - PWA build получает `VITE_APP_VERSION=1-${DEPLOY_SHA}` и генерирует
   forced `version.json`; см. [pwa-forced-updates.md](pwa-forced-updates.md).
@@ -124,21 +130,23 @@ Validate: `npx --package renovate -- renovate-config-validator`.
 - Allow force pushes: **off**.
 - Allow deletions: **off**.
 
-Ручной Deploy не обходит same-SHA quality gate: failing, missing или pending
-результат любого из четырёх обязательных workflows блокирует выпуск.
+Deploy в любом режиме требует успешного результата всех четырёх обязательных
+workflows на том же SHA. При ошибке, отсутствии или ожидании результата
+выпуск не проходит.
 
-## Release process (QD7, manual)
+## Release process (QD7)
 
-1. Feature merge в main → quality workflows. Deploy запускается владельцем
-   отдельно через workflow_dispatch после их успешного завершения на точном SHA.
+1. Merge в `main` запускает quality workflows. Если обе переменные включены,
+   успешный CI запускает Deploy, который проверяет остальные результаты на
+   том же SHA. Если автоматический запуск выключен, запусти Deploy вручную
+   через `workflow_dispatch` на точном SHA текущего `main` после проверок.
 2. Для semver-тэга `vX.Y.Z`:
    - `CHANGELOG.md` → перенести `[Unreleased]` → `[vX.Y.Z] - YYYY-MM-DD`.
    - Commit: `chore(release): vX.Y.Z`.
    - `git tag vX.Y.Z && git push --tags`.
    - GitHub → Releases → «Create release from tag» → скопировать
      CHANGELOG-раздел.
-3. Ручной Deploy выбирает точный commit_sha; semver tag и GitHub Release
-   не запускают его автоматически.
+3. Semver tag и публикация GitHub Release не запускают Deploy.
 
 ## Откат (rollback)
 
@@ -159,7 +167,8 @@ IMAGE_TAG=<previous_sha> docker compose \
 ```bash
 git revert <bad-commit-sha>
 git push origin main
-# После quality checks запусти Deploy вручную с точным SHA revert commit.
+# При включённом auto Deploy дождись запуска после успешного CI на revert SHA.
+# Иначе после quality checks запусти Deploy вручную с точным SHA revert commit.
 ```
 
 ## История изменений

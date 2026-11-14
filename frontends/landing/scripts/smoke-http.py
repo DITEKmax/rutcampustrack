@@ -4,6 +4,7 @@ import argparse
 import gzip
 import re
 from urllib.error import HTTPError
+from urllib.parse import urljoin, urlsplit
 from urllib.request import HTTPRedirectHandler, Request, build_opener
 
 
@@ -64,9 +65,19 @@ def smoke(origin, prefix):
     demo = representation(prefix + '/demo-pwa.html', 'text/html', 'no-cache', revalidate=True)
     expect(b'Content-Security-Policy' in demo, prefix + '/demo-pwa.html', 'missing demo CSP')
     representation(prefix + '/schedule/', 'text/html', 'no-cache', revalidate=True)
-    redirect, _ = get(prefix + '/schedule?landing=1', 301)
-    expect(redirect.get('Location') == prefix + '/schedule/?landing=1', prefix + '/schedule',
-           'expected a canonical redirect with the query intact')
+    redirect_path = prefix + '/schedule?landing=1'
+    redirect, _ = get(redirect_path, 301)
+    target = urlsplit(urljoin(origin + redirect_path, redirect.get('Location', '')))
+    expected = urlsplit(origin + prefix + '/schedule/?landing=1')
+    default_port = 443 if expected.scheme == 'https' else 80
+    target_port = default_port if target.port is None else target.port
+    expected_port = default_port if expected.port is None else expected.port
+    expect(
+        (target.scheme, target.hostname, target_port) == (expected.scheme, expected.hostname, expected_port)
+        and (target.path, target.query, target.fragment) == (expected.path, expected.query, expected.fragment)
+        and target.username is None,
+        redirect_path, 'expected a same-origin canonical redirect with the query intact',
+    )
     representation('/robots.txt', 'text/plain', 'no-cache', revalidate=True)
     representation('/llms.txt', 'text/plain', 'no-cache', compressed=True, revalidate=True)
     representation('/sitemap.xml', 'application/xml', 'no-cache', revalidate=True)

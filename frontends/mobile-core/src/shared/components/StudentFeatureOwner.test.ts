@@ -9,7 +9,7 @@ import {
   type Ref,
   type SetupContext,
 } from 'vue'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, onTestFinished, vi } from 'vitest'
 import { QueryClient, VueQueryPlugin } from '@tanstack/vue-query'
 import type { MobileBottomNavItems, MobileNavigationStack } from '../navigation'
 import { StudentApiError, type StudentApi } from '../../api/student-client'
@@ -851,7 +851,7 @@ function attendanceWithRequest(pendingRequest: boolean): StudentAttendanceRespon
   const emptyMetric = { count: 0, percent: 0 }
   return {
     semester: { id: 'semester-1', name: 'Осень', startsOn: '2026-09-01', endsOn: '2026-12-31' },
-    serverNow: '2026-09-30T10:00:00Z',
+    serverNow: '2026-09-08T10:00:00Z',
     terminalReadOnly: false,
     metrics: {
       present: emptyMetric,
@@ -2345,5 +2345,47 @@ it('coalesces realtime hints received off Attendance and refreshes the visible m
 
   clickOwnerTestButton(root, 'test-owner-attendance')
   await vi.waitFor(() => expect(attendanceStatusAction(root)).toContain('Действия для отметки'))
+  expect(getAttendance).toHaveBeenCalledTimes(2)
+})
+
+it('opens Attendance on Saturday in Moscow on Sunday, preserves a selected empty day on refetch, and uses the new date on tab return', async () => {
+  let runtimeNow = Date.parse('2030-10-15T08:00:00Z')
+  const runtimeClock = vi.spyOn(Date, 'now').mockImplementation(() => runtimeNow)
+  onTestFinished(() => runtimeClock.mockRestore())
+  const response = attendanceWithRequest(false)
+  const getAttendance = vi.fn()
+    .mockResolvedValueOnce({ ...response, serverNow: '2026-09-13T20:59:30Z' })
+    .mockResolvedValueOnce({ ...response, serverNow: '2026-09-13T20:59:45Z' })
+  const props = reactive({ realtimeRevision: 0, now: () => new Date(runtimeNow) })
+  const root = mountOwnerTest({ getAttendance } as unknown as StudentApi, props)
+  const selectedDay = () => findOwnerTestNode(
+    root,
+    (node) => node.tag === 'button' && node.props['aria-pressed'] === true &&
+      String(node.props.class).includes('attendance-day-rail__item'),
+  )?.props['aria-label']
+
+  await settleOwnerTestRender()
+  clickOwnerTestButton(root, 'test-owner-attendance')
+  await vi.waitFor(() => expect(selectedDay()).toBe('12 сентября'))
+  expect(findOwnerTestNode(root, (node) => node.text === 'Заслуженный отдых')).toBeDefined()
+
+  const friday = findOwnerTestNode(root, (node) => node.props['aria-label'] === '11 сентября')
+  expect(friday?.props.onClick).toBeTypeOf('function')
+  ;(friday!.props.onClick as () => void)()
+  await settleOwnerTestRender()
+  expect(selectedDay()).toBe('11 сентября')
+  props.realtimeRevision += 1
+  await vi.waitFor(() => {
+    expect(getAttendance).toHaveBeenCalledTimes(2)
+    expect(ownerTestQueryClients.at(-1)?.isFetching()).toBe(0)
+  })
+  expect(selectedDay()).toBe('11 сентября')
+
+  clickOwnerTestButton(root, 'test-owner-today')
+  await settleOwnerTestRender()
+  runtimeNow += 30_000
+  clickOwnerTestButton(root, 'test-owner-attendance')
+  await vi.waitFor(() => expect(selectedDay()).toBe('14 сентября'))
+  expect(findOwnerTestNode(root, (node) => node.text === 'Заслуженный отдых')).toBeDefined()
   expect(getAttendance).toHaveBeenCalledTimes(2)
 })

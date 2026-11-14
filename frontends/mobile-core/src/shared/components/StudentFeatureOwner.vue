@@ -29,6 +29,7 @@ import type {
   NotificationTargetIntent,
 } from '../../features/notifications/notifications-client';
 import AttendanceScreen from '../../features/attendance/AttendanceScreen.vue';
+import { academicToday, civilDate, shiftDate } from '../../features/attendance/attendance-periods';
 import {
   findAttendanceLesson,
   type AttendanceGraphRange,
@@ -279,6 +280,7 @@ const notificationTargetRouteIds = new Set<string>([
 const localDay = () => (props.now?.() ?? new Date()).toLocaleDateString('en-CA', { timeZone: 'Europe/Moscow' });
 const selectedDate = ref(localDay());
 const attendanceSelectedDate = ref(localDay());
+let attendanceDateSelected = false;
 const attendanceMode = ref<AttendanceMode>('days');
 const attendanceGraphRange = ref<AttendanceGraphRange>('days');
 const attendanceExpandedSubjectId = ref<string | null>(null);
@@ -336,6 +338,35 @@ const requestDraft = shallowRef<RequestsDraft | null>(
     : null,
 );
 const attendance = useAttendance(api.value, scope, offline);
+const attendanceServerNow = computed(() => attendance.query.data.value?.serverNow);
+let attendanceClockObservedAt = 0;
+
+function defaultAttendanceDate(): string {
+  const now = Date.now();
+  const date = academicToday(
+    attendanceServerNow.value,
+    now - attendanceClockObservedAt,
+    props.now?.().getTime() ?? now,
+  );
+  return civilDate(date).getUTCDay() === 0 ? shiftDate(date, -1) : date;
+}
+
+function selectAttendanceDate(date: string): void {
+  attendanceDateSelected = true;
+  attendanceSelectedDate.value = date;
+}
+
+watch(
+  attendanceServerNow,
+  () => {
+    // An optimistic request update keeps serverNow and must not reset the clock.
+    attendanceClockObservedAt = attendance.query.dataUpdatedAt.value;
+    if (route.value.root === 'attendance' && !attendanceDateSelected)
+      attendanceSelectedDate.value = defaultAttendanceDate();
+  },
+  { immediate: true },
+);
+
 const statistics = useStatistics(api.value, scope, offline);
 const stopRequestsScope = watch(
   () => props.scope,
@@ -355,7 +386,14 @@ const stopRequestsScope = watch(
 );
 
 const stopNavigation = navigation.subscribe(() => {
-  route.value = navigation.current;
+  const next = navigation.current;
+  if (next.root === 'attendance' && route.value.root !== 'attendance') {
+    attendanceDateSelected = false;
+    attendanceSelectedDate.value = defaultAttendanceDate();
+    attendanceMode.value = 'days';
+    attendanceActionLessonId.value = null;
+  }
+  route.value = next;
   ensureProfileRoute(route.value);
   ensureRequestsRoute(route.value);
 });
@@ -928,7 +966,7 @@ function loadLessonNotificationTarget(request: NotificationTargetIntent, navigat
         };
         return;
       }
-      attendanceSelectedDate.value = lesson.date;
+      selectAttendanceDate(lesson.date);
       attendanceMode.value = 'days';
       attendanceActionLessonId.value = null;
       attendanceExpandedSubjectId.value = null;
@@ -1084,19 +1122,9 @@ watch(ownerIdentity, (identity, previous) => {
   checkinError.value = null;
   checkinRecovery = new CheckinCommandRecovery();
   checkinRunning.value = false;
-  const todayDate = localDay();
-  attendanceSelectedDate.value = todayDate;
+  attendanceDateSelected = false;
+  attendanceSelectedDate.value = defaultAttendanceDate();
 });
-watch(
-  () => attendance.data.value?.days,
-  (days) => {
-    if (!days || days.length === 0) return;
-    if (!days.some((day) => day.date === attendanceSelectedDate.value)) {
-      attendanceSelectedDate.value = days[0]!.date;
-    }
-  },
-  { immediate: true },
-);
 const reportedAuthErrors = new Set<unknown>();
 const profilePublication = createProfileViewPublication(
   () => profileState?.view ?? null,
@@ -1722,6 +1750,7 @@ function openAttendanceRequest(
   )
     return;
   attendanceRequestLesson.value = lesson;
+  selectAttendanceDate(lesson.date);
   attendanceActionLessonId.value = null;
   requests.selectBucket('open');
   requestSubmitError.value = null;
@@ -2695,7 +2724,7 @@ defineExpose({ openNotificationAction, navigate, openStudentMap });
         :terminal="offline || props.readOnly || attendance.terminalReadOnly.value"
         :focused-lesson-id="focusedNotificationLessonId"
         :theme="resolvedTheme"
-        @select-date="attendanceSelectedDate = $event"
+        @select-date="selectAttendanceDate"
         @set-mode="setAttendanceMode"
         @set-graph-range="attendanceGraphRange = $event"
         @toggle-subject="toggleAttendanceSubject"

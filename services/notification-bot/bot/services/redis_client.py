@@ -63,9 +63,7 @@ class ReminderRedisClient:
     async def get_message_ids(self, lesson_id: int, user_id: int) -> list[int]:
         return [message_id for _, message_id in await self.get_messages(lesson_id, user_id)]
 
-    async def get_messages(
-        self, lesson_id: int, user_id: int, *, strict=False
-    ) -> list[tuple[int | None, int]]:
+    async def get_messages(self, lesson_id: int, user_id: int, *, strict=False) -> list[tuple[int | None, int]]:
         key = self._key(lesson_id, user_id)
         try:
             raw = await self._redis.lrange(key, 0, -1)
@@ -85,9 +83,7 @@ class ReminderRedisClient:
             )
             return []
 
-    async def remove_message_id(
-        self, lesson_id: int, user_id: int, message_id: int, *, chat_id: int | None
-    ) -> None:
+    async def remove_message_id(self, lesson_id: int, user_id: int, message_id: int, *, chat_id: int | None) -> None:
         value = f"{chat_id}:{message_id}" if chat_id is not None else message_id
         try:
             await self._redis.lrem(self._key(lesson_id, user_id), 0, value)

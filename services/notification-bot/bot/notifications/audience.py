@@ -252,9 +252,15 @@ def prepared_audience(event):
     if (
         not isinstance(envelope, dict)
         or not {"version", "event_id", "event_type", "recipients"} <= set(envelope)
-        or set(envelope) - {
-            "version", "event_id", "event_type", "recipients", "delivered_user_ids",
-            "digest_progress", "reminder_recovery",
+        or set(envelope)
+        - {
+            "version",
+            "event_id",
+            "event_type",
+            "recipients",
+            "delivered_user_ids",
+            "digest_progress",
+            "reminder_recovery",
         }
         or type(envelope["version"]) is not int
         or envelope["version"] != 1
@@ -514,9 +520,7 @@ async def handle_business(
         roles = saved_roles & current.get(user_id, frozenset())
         if not roles or user_id in delivered or await state.completed(event_id, user_id):
             continue
-        if kind == "attendance.marked" and (
-            payload.get("marked_by") != "headman" or user_id != payload["user_id"]
-        ):
+        if kind == "attendance.marked" and (payload.get("marked_by") != "headman" or user_id != payload["user_id"]):
             continue
         own_sync = kind in _OWN_SYNC and positive(actor) and actor == user_id
         self_notice = own_sync and kind in _HEADMAN_STUDENT_SELF_EVENTS and _HEADMAN_STUDENT_ROLES <= roles
@@ -890,8 +894,7 @@ async def cleanup_reminders(event, *, bot, academic, reminders):
         # The mark handler may have already scanned the list while Telegram was sending.
         # Recheck after recording the send, including on replay with a delivery receipt.
         user_ids = [
-            uid for uid in prepared_audience(event)
-            if await reminders.is_student_marked(lesson_id, uid, strict=True)
+            uid for uid in prepared_audience(event) if await reminders.is_student_marked(lesson_id, uid, strict=True)
         ]
     else:
         # Roster is used only to retire existing reminder artifacts, never to send facts.

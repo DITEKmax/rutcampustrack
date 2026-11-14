@@ -158,8 +158,7 @@ async def test_transient_retirement_failure_replays_cleanup_without_repeating_co
         await h.dispatch(event)
         assert len(h.sent) == 1
         assert await h.reminders.get_message_ids(11, 1) == []
-        assert all(call.kwargs == {"chat_id": 100, "message_id": 111}
-                   for call in h.bot.delete_message.await_args_list)
+        assert all(call.kwargs == {"chat_id": 100, "message_id": 111} for call in h.bot.delete_message.await_args_list)
     finally:
         await h.queue.shutdown()
 
@@ -224,9 +223,7 @@ async def test_reminder_retry_retains_provider_id_when_tracking_and_retirement_f
             with pytest.raises(ReminderLifecycleUnavailable):
                 await (await h.dispatcher.dispatch(event)).wait()
             event = json.loads(json.dumps(await h.dispatcher.snapshot_progress(event)))
-        assert event["_bot_prepared"]["reminder_recovery"] == [
-            {"user_id": 1, "chat_id": 101, "message_id": 1001}
-        ]
+        assert event["_bot_prepared"]["reminder_recovery"] == [{"user_id": 1, "chat_id": 101, "message_id": 1001}]
         with pytest.raises(ReminderLifecycleUnavailable):
             await h.dispatcher.dispatch(event)
         event = json.loads(json.dumps(await h.dispatcher.snapshot_progress(event)))

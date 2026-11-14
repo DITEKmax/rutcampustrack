@@ -42,6 +42,19 @@ const legacyGroups: Readonly<Record<string, ChapterId>> = {
 const chapterTopics = topics.flatMap(topic => topic.chapters.map(chapter => ({ chapter, topic })))
   .sort((a, b) => b.chapter.length - a.chapter.length)
 
+const removedDemoTargets = new Map([
+  ['demo-tabs', '#transactions-revision'],
+  ['demo-lesson-transfer', '#lesson-changes-schedule'],
+  ['demo-student-transfer', '#student-transfer-history-journal'],
+  ['demo-campus-versions', '#campus-map-versions'],
+  ['demo-attendance-calculator', '#attendance-statistics-denominator'],
+  ['demo-student-ranking', '#student-ranking-ties'],
+  ['demo-journal-threshold', '#attendance-journal-threshold'],
+  ['demo-journal-export', '#attendance-journal-export-teacher-file'],
+  ['demo-outbox-recovery', '#resilience-outbox'],
+  ['demo-homework-notifications', '#notification-actions-read'],
+])
+
 export function legacyTopicHref(hash: string): string | undefined {
   const id = hash.slice(1).replace(/(?:-json)?-title$/, '')
   if (!id) return undefined
@@ -49,5 +62,5 @@ export function legacyTopicHref(hash: string): string | undefined {
   const owner = chapterTopics.find(({ chapter }) => group
     ? group === chapter
     : id === chapter || id.startsWith(chapter + '-'))
-  return owner && topicHref(owner.topic, hash)
+  return owner && topicHref(owner.topic, removedDemoTargets.get(id) ?? hash)
 }

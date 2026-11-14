@@ -63,7 +63,7 @@
     />
     <meta
       property="og:image"
-      content="https://ruttrack.site/presentation/assets/og/ruttrack-og-1200x630.png"
+      content="https://ruttrack.site/presentation/assets/brand-20b-g08/og-titlecase-purple.png"
     />
     <meta
       property="og:image:type"
@@ -79,7 +79,7 @@
     />
     <meta
       property="og:image:alt"
-      content="RutTrack — учёт посещаемости РУТ МИИТ. Градиентная буква R и слоган «Учёт посещаемости, который движется вместе с вами»."
+      content="RutTrack"
     />
 
     <!-- Twitter card -->
@@ -97,11 +97,11 @@
     />
     <meta
       name="twitter:image"
-      content="https://ruttrack.site/presentation/assets/og/ruttrack-og-1200x630.png"
+      content="https://ruttrack.site/presentation/assets/brand-20b-g08/og-titlecase-purple.png"
     />
     <meta
       name="twitter:image:alt"
-      content="RutTrack — учёт посещаемости РУТ МИИТ."
+      content="RutTrack"
     />
 
     <!-- JSON-LD — Organization + WebApplication -->
@@ -114,7 +114,7 @@
             "@id": "https://ruttrack.site/#org",
             "name": "RutTrack",
             "url": "https://ruttrack.site/",
-            "logo": "https://ruttrack.site/presentation/favicon.svg",
+            "logo": "https://ruttrack.site/presentation/brand-20b-g08/favicon.svg",
             "description": "Система учёта посещаемости для студентов и преподавателей РУТ МИИТ."
           },
           {
@@ -161,11 +161,22 @@
       href="assets/vendor/phosphor/regular.css"
     />
 
-    <!-- Unified RutTrack brand favicon (gradient R) -->
+    <link
+      rel="icon"
+      href="/presentation/brand-20b-g08/favicon.ico"
+      sizes="16x16 32x32 48x48 64x64"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="32x32"
+      href="/presentation/brand-20b-g08/favicon-32x32.png"
+    />
     <link
       rel="icon"
       type="image/svg+xml"
-      href="favicon.svg"
+      sizes="any"
+      href="/presentation/brand-20b-g08/favicon.svg"
     />
 
     <style>
@@ -428,40 +439,20 @@
       .brand {
         display: inline-flex;
         align-items: center;
-        gap: var(--space-3);
-        font-family: var(--font-display);
-        font-weight: 700;
-        font-size: 1.125rem;
-        letter-spacing: -0.01em;
-        color: var(--text-primary);
+        inline-size: min(12rem, 100%);
+        min-inline-size: 0;
       }
-      .brand__mark {
-        width: 34px;
-        height: 34px;
-        border-radius: 10px;
-        background: var(--gradient-brand);
-        display: grid;
-        place-items: center;
-        color: var(--accent-primary-contrast);
-        font-weight: 700;
-        font-family: var(--font-display);
-        font-size: 1rem;
-        box-shadow: var(--glow-primary);
-        position: relative;
+      .brand__logo {
+        inline-size: 100%;
+        block-size: auto;
       }
-      .brand__mark::after {
-        content: '';
-        position: absolute;
-        top: 6px;
-        right: 6px;
-        width: 6px;
-        height: 6px;
-        border-radius: 50%;
-        background: #fff;
-        box-shadow: 0 0 8px rgba(255, 255, 255, 0.8);
+      .brand__logo--light,
+      html[data-theme='light'] .brand__logo--dark {
+        display: none;
       }
-      .brand__name {
-        white-space: nowrap;
+      .brand__logo--dark,
+      html[data-theme='light'] .brand__logo--light {
+        display: block;
       }
 
       .nav-links {
@@ -1474,12 +1465,20 @@
           class="brand"
           aria-label="RutTrack — на главную"
         >
-          <span
-            class="brand__mark"
-            aria-hidden="true"
-            >R</span
-          >
-          <span class="brand__name">RutTrack</span>
+          <img
+            class="brand__logo brand__logo--light"
+            src="assets/brand-20b-g08/horizontal-titlecase-on-light.svg"
+            width="685"
+            height="192"
+            alt=""
+          />
+          <img
+            class="brand__logo brand__logo--dark"
+            src="assets/brand-20b-g08/horizontal-titlecase-on-dark.svg"
+            width="685"
+            height="192"
+            alt=""
+          />
         </a>
 
         <nav
@@ -2268,13 +2267,22 @@
         <a
           href="#hero"
           class="brand"
+          aria-label="RutTrack — к началу"
         >
-          <span
-            class="brand__mark"
-            aria-hidden="true"
-            >R</span
-          >
-          <span class="brand__name">RutTrack</span>
+          <img
+            class="brand__logo brand__logo--light"
+            src="assets/brand-20b-g08/horizontal-titlecase-on-light.svg"
+            width="685"
+            height="192"
+            alt=""
+          />
+          <img
+            class="brand__logo brand__logo--dark"
+            src="assets/brand-20b-g08/horizontal-titlecase-on-dark.svg"
+            width="685"
+            height="192"
+            alt=""
+          />
         </a>
         <nav
           class="site-footer__links"

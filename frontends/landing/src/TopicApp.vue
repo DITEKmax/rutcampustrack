@@ -1,21 +1,20 @@
 <script setup lang="ts">
-import { defineAsyncComponent, onBeforeUnmount, onMounted, ref } from 'vue'
+import { onBeforeUnmount, onMounted, ref, type Component } from 'vue'
 import BrandLogo from '../../shared/brand/BrandLogo.vue'
 import BackToTop from './BackToTop.vue'
 import LandingIcon from './art/LandingIcon.vue'
 import TopicFlatIllustration from './art/TopicFlatIllustration.vue'
+import CampusFloorPlans from './campus/CampusFloorPlans.vue'
 import { lessonId, useDemo } from './demo/model'
+import ReportExamples from './reports/ReportExamples.vue'
 import TechnicalStory from './story/TechnicalStory.vue'
 import type { LoadedChapter } from './story/topic-chapters'
-import type { TopicScenarios } from './story/topic-scenarios'
 import { createLandingScrollEffects } from './story/story-scroll'
 import { presentationHome, type Topic } from './topics'
 import { takeTopicFlight } from './topic-flight'
 
-const DesignReport = defineAsyncComponent(() => import('./design/DesignReport.vue'))
-
-defineProps<{ topic: Topic; chapters: LoadedChapter[]; scenarios: TopicScenarios }>()
-const { snapshot, markState, mark, markMember } = useDemo()
+defineProps<{ topic: Topic; chapters: LoadedChapter[]; report?: Component }>()
+const { markState, mark } = useDemo()
 const main = ref<HTMLElement | null>(null)
 const header = ref<HTMLElement | null>(null)
 const illustration = ref<HTMLElement | null>(null)
@@ -94,9 +93,6 @@ onBeforeUnmount(() => {
       <a class="wordmark" :href="presentationHome" aria-label="RutTrack — на главную">
         <BrandLogo alt="" />
       </a>
-      <a v-if="topic.slug !== 'architecture'" class="header-cta" :href="presentationHome + '#demo'">
-        К демо <LandingIcon name="arrow" />
-      </a>
     </div>
   </header>
 
@@ -115,9 +111,11 @@ onBeforeUnmount(() => {
         </div>
       </div>
     </div>
-    <DesignReport v-if="topic.slug === 'design'" @ready="alignAnchor" />
-    <TechnicalStory v-if="chapters.length" :topic="topic.slug" :chapters="chapters" :scenarios="scenarios" :mark-state="markState"
-      :demo-snapshot="snapshot" :apply-demo-mark="markMember" @replay="mark(lessonId)" />
+    <component :is="report" v-if="report" />
+    <TechnicalStory v-if="chapters.length" :topic="topic.slug" :chapters="chapters" :mark-state="markState"
+      @replay="mark(lessonId)" />
+    <ReportExamples v-if="topic.slug === 'reports'" />
+    <CampusFloorPlans v-if="topic.slug === 'campus'" />
   </main>
   <BackToTop focus-target="topic-title" />
 </template>

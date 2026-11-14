@@ -1,0 +1,94 @@
+.campus-plans__viewport {
+  --campus-plans-gap: var(--landing-gutter);
+  container-type: inline-size;
+  padding-block: var(--rct-space-4) var(--rct-space-8);
+  overflow-x: auto;
+}
+
+.campus-plans__viewport:focus-visible {
+  outline-offset: calc(-1 * var(--rct-focus-offset));
+}
+
+.campus-plans__rail {
+  display: flex;
+  inline-size: max-content;
+}
+
+.campus-plans__group {
+  display: flex;
+  flex: none;
+  gap: var(--campus-plans-gap);
+  padding-inline: var(--campus-plans-gap);
+}
+
+.campus-plans__group[aria-hidden='true'] {
+  display: none;
+}
+
+.campus-plans__group li {
+  inline-size: min(70cqi, 64rem);
+}
+
+@media (max-width: 47rem) {
+  .campus-plans__group li {
+    inline-size: 82cqi;
+  }
+}
+
+.campus-plans__group img {
+  display: block;
+  inline-size: 100%;
+  block-size: auto;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .campus-plans__viewport {
+    overflow: clip;
+  }
+
+  @media (width > 47rem) {
+    .campus-plans__viewport {
+      mask-image: linear-gradient(
+        to right,
+        transparent 7%,
+        rgb(0 0 0 / 6%) 10%,
+        rgb(0 0 0 / 25%) 14%,
+        rgb(0 0 0 / 65%) 20%,
+        rgb(0 0 0 / 92%) 25%,
+        black 29% 71%,
+        rgb(0 0 0 / 92%) 75%,
+        rgb(0 0 0 / 65%) 80%,
+        rgb(0 0 0 / 25%) 86%,
+        rgb(0 0 0 / 6%) 90%,
+        transparent 93%
+      );
+    }
+  }
+
+  .campus-plans__rail {
+    animation: campus-plans-scroll 60s linear infinite;
+  }
+
+  .campus-plans__group {
+    /* A leading gap on each group keeps spacing identical at the loop boundary. */
+    padding-inline-end: 0;
+  }
+
+  .campus-plans__group[aria-hidden='true'] {
+    display: flex;
+  }
+
+  .campus-plans__viewport:focus-visible .campus-plans__rail {
+    animation-play-state: paused;
+  }
+
+  @media (hover: hover) {
+    .campus-plans__viewport:hover .campus-plans__rail {
+      animation-play-state: paused;
+    }
+  }
+}
+
+@keyframes campus-plans-scroll {
+  to { transform: translateX(-50%); }
+}

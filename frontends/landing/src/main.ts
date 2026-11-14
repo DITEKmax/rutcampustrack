@@ -1,5 +1,3 @@
-import { createApp } from 'vue'
-import LandingApp from './LandingApp.vue'
-import './landing.pcss'
+import { startLanding } from './start-landing'
 
-createApp(LandingApp).mount('#app')
+void startLanding(async () => (await import('./landing-app')).createLandingApp())

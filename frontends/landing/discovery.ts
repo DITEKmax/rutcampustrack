@@ -1,5 +1,7 @@
+import { readFileSync } from 'node:fs'
 import { relative } from 'node:path'
 import type { Plugin } from 'vite'
+import { sitemapLastmod } from './scripts/sitemap-lastmod'
 import { loadTopic } from './src/story/topic-chapters'
 import { presentationHome, topicHref, topics, type Topic } from './src/topics'
 
@@ -9,6 +11,7 @@ const image = origin + presentationHome + 'assets/brand-20b-g08/og-titlecase-pur
 const homeTitle = 'За каждой отметкой целая система'
 const homeLead = 'Расписание, посещаемость и учебный контекст.'
 const homeDescription = 'RutCampusTrack: расписание, посещаемость и учебный контекст. Попробуй учебный день в интерактивной демонстрации.'
+const criticalStylePath = new URL('./src/landing-loading.pcss', import.meta.url)
 
 const description = (topic: Topic) => topic.lead ||
   'Как устроен интерфейс RutCampusTrack: экран учебного дня, типографика Onest и цветовые токены для светлой и тёмной темы.'
@@ -33,6 +36,80 @@ const escapeHtml = (value: string) => value.replace(/[&<>"']/g, char => htmlEnti
 const escapeMarkdown = (value: string) => value.replace(/[\\`*_[\]<>]/g, '\\$&')
 const htmlParagraph = (value: string) => '<p>' + escapeHtml(value) + '</p>'
 const markdownPath = (page: Page) => page.path + 'index.md'
+
+const illustrations: Record<Topic['slug'], string> = {
+  academic: 'panels', architecture: 'panels', attendance: 'phone', campus: 'map',
+  data: 'panels', design: 'panels', notifications: 'phone', reliability: 'panels',
+  reports: 'pages', schedule: 'panels', security: 'shield',
+}
+
+function topicLoading(topic: Topic): string {
+  return `<div class="landing-loading-topic">
+  <div class="landing-loading-topic-copy">
+    <div class="landing-loading-back"><span class="landing-loading-mask">← Все темы</span></div>
+    <div class="landing-loading-topic-title"><span class="landing-loading-mask">${escapeHtml(topic.title)}</span></div>
+    ${topic.lead ? `<div class="landing-loading-topic-lead"><span class="landing-loading-mask">${escapeHtml(topic.lead)}</span></div>` : ''}
+  </div>
+  <div class="landing-loading-illustration" data-shape="${illustrations[topic.slug]}">
+    <span></span><span></span><span></span>
+  </div>
+</div>`
+}
+
+const homeLoading = `<div class="landing-loading-home">
+  <div class="landing-loading-home-copy">
+    <div class="landing-loading-kicker"><span class="landing-loading-mask">Учебный день становится понятнее</span></div>
+    <div class="landing-loading-home-title"><span class="landing-loading-mask">За каждой отметкой<br> целая система.</span></div>
+    <div class="landing-loading-home-lead"><span class="landing-loading-mask">${escapeHtml(homeLead)}</span></div>
+  </div>
+  <div class="landing-loading-orbit">
+    <div class="landing-loading-rings"></div>
+    <span class="landing-loading-orbit-first"></span>
+    <span class="landing-loading-orbit-center"></span>
+    <span class="landing-loading-orbit-last"></span>
+  </div>
+  <div class="landing-loading-stack">${'<span></span>'.repeat(8)}</div>
+</div>`
+
+const loadingLines = '<span></span><span></span><span></span>'
+const loadingCode = `<div class="landing-loading-code">${loadingLines}</div>`
+const loadingPhone = '<div class="landing-loading-phone"></div>'
+
+const homeLoadingAnchors = `
+<div class="landing-loading-anchor landing-loading-tiles">
+  ${topics.map(topic => `<span data-tile="${topic.slug}"></span>`).join('')}
+</div>
+<div class="landing-loading-anchor landing-loading-demo">
+  <div class="landing-loading-trace">${loadingCode.repeat(2)}</div>${loadingPhone}
+</div>`
+
+const storyLoadingAnchor = `
+<div class="landing-loading-anchor landing-loading-story">
+  <div class="landing-loading-lines">${loadingLines}</div>${loadingCode}
+</div>`
+
+const designLoadingAnchors = `
+<div class="landing-loading-anchor landing-loading-design">
+  <div class="landing-loading-lines">${loadingLines}</div>
+  <div class="landing-loading-design-layout">
+    ${loadingPhone}
+    <div class="landing-loading-scale">${loadingLines}</div>
+    <div class="landing-loading-lines">${loadingLines}</div>
+  </div>
+  <div class="landing-loading-palette">${'<span></span>'.repeat(5)}</div>
+</div>`
+
+function loadingShell(page: Page): string {
+  const topic = 'topic' in page ? page.topic : undefined
+  return `<div id="landing-loading"${topic ? ` data-loading-topic="${topic.slug}"` : ''} hidden>
+  <p class="landing-loading-status" role="status">Загрузка страницы</p>
+  <div aria-hidden="true">
+    <div class="landing-loading-header"><span></span></div>
+    ${topic ? topicLoading(topic) : homeLoading}
+    ${topic ? topic.slug === 'design' ? designLoadingAnchors : storyLoadingAnchor : homeLoadingAnchors}
+  </div>
+</div>`
+}
 
 function metadata(page: Page): string {
   const canonical = origin + page.path
@@ -77,7 +154,7 @@ async function pageContent(page: Page) {
   if (!('topic' in page)) {
     return {
       html: '<main class="landing-shell landing-static"><header id="top"><p>' + name +
-        '</p><h1>' + homeTitle + '</h1>' + htmlParagraph(homeLead) + '</header>' + topicNavigation() + '</main>',
+        '</p><h1>' + homeTitle + '</h1><p id="demo">' + homeLead + '</p></header>' + topicNavigation() + '</main>',
       markdown: [
         '# ' + name,
         homeDescription,
@@ -99,7 +176,8 @@ async function pageContent(page: Page) {
     if (chapter.lead) markdown.push(escapeMarkdown(chapter.lead))
     const heading = chapter.title ? 'h3' : 'h2'
     for (const operation of chapter.operations) {
-      section.push(`<section id="${escapeHtml(operation.id)}"><${heading}>${escapeHtml(operation.title)}</${heading}>` +
+      const alias = operation.alias ? `<span id="${escapeHtml(operation.alias)}"></span>` : ''
+      section.push(`<section id="${escapeHtml(operation.id)}">${alias}<${heading}>${escapeHtml(operation.title)}</${heading}>` +
         htmlParagraph(operation.description) + '</section>')
       markdown.push((chapter.title ? '### ' : '## ') + escapeMarkdown(operation.title), escapeMarkdown(operation.description))
     }
@@ -127,11 +205,19 @@ const designSections = [
   { id: 'design-palette', title: 'Палитра проекта', lead: 'Цвета фона, текста и акцентов в светлой и тёмной теме.' },
 ]
 
-const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
+function sitemap(root: string): string {
+  const dates = sitemapLastmod(root)
+  const entries = pages.map(({ path }) => {
+    const lastmod = dates[path]
+    return '  <url><loc>' + escapeHtml(origin + path) + '</loc>' +
+      (lastmod ? '<lastmod>' + lastmod + '</lastmod>' : '') + '</url>'
+  })
+  return `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${pages.map(page => '  <url><loc>' + escapeHtml(origin + page.path) + '</loc></url>').join('\n')}
+${entries.join('\n')}
 </urlset>
 `
+}
 
 const llms = [
   '# ' + name,
@@ -143,9 +229,8 @@ const llms = [
   ).join('\n'),
 ].join('\n\n') + '\n'
 
-const assets = [
+const discoveryAssets = [
   { fileName: 'robots.txt', mime: 'text/plain', content: () => 'User-agent: *\nAllow: /\n\nSitemap: ' + origin + '/sitemap.xml\n' },
-  { fileName: 'sitemap.xml', mime: 'application/xml', content: () => sitemap },
   { fileName: 'llms.txt', mime: 'text/plain', content: () => llms },
   ...pages.map(page => ({
     fileName: markdownPath(page).slice(presentationHome.length),
@@ -159,11 +244,18 @@ const assets = [
 
 export function discovery(): Plugin {
   let root = ''
+  let buildStyles: string
+  let cachedSitemap: string | undefined
+  const assets = [
+    { fileName: 'sitemap.xml', mime: 'application/xml', content: () => cachedSitemap ??= sitemap(root) },
+    ...discoveryAssets,
+  ]
   const byFilename = new Map(pages.map(page => [page.path.slice(presentationHome.length) + 'index.html', page]))
   return {
     name: 'rct-landing-discovery',
     configResolved(config) {
       root = config.root
+      if (config.command === 'build') buildStyles = readFileSync(criticalStylePath, 'utf8')
     },
     transformIndexHtml: {
       order: 'pre',
@@ -171,12 +263,17 @@ export function discovery(): Plugin {
         const page = byFilename.get(relative(root, context.filename).replaceAll('\\', '/'))
         if (!page) return html
         const content = await pageContent(page)
+        const criticalStyles = context.server ? readFileSync(criticalStylePath, 'utf8') : buildStyles
         return html
+          .replace(/(<meta charset="utf-8"\s*\/?>)/, (_match, charset) =>
+            charset + '\n    <meta name="color-scheme" content="dark">\n    <style>' + criticalStyles + '</style>')
           .replace(/<title>[^<]*<\/title>/, () => metadata(page))
-          .replace(/(<div id="app"[^>]*>)<\/div>/, (_match, open) => open + '\n' + content.html + '\n</div>')
+          .replace(/(<div id="app"[^>]*>)<\/div>/, (_match, open) =>
+            loadingShell(page) + '\n' + open + '\n' + content.html + '\n</div>')
       },
     },
     async generateBundle() {
+      cachedSitemap = undefined
       for (const asset of assets) {
         this.emitFile({ type: 'asset', fileName: asset.fileName, source: await asset.content() })
       }

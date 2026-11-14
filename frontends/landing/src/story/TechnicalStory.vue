@@ -5,10 +5,8 @@ import ArchitectureRequestFlow from './ArchitectureRequestFlow.vue'
 import ArchitectureTerminal from './ArchitectureTerminal.vue'
 import StoryIde from './StoryIde.vue'
 import TopicRequestFlow from './TopicRequestFlow.vue'
-import type { DemoSnapshot, EditableMemberId, ManualMark } from '../demo/model'
 import { topicFlows } from './topic-flows'
 import { topicTerminals } from './topic-terminals'
-import type { TopicScenarios } from './topic-scenarios'
 import type { LoadedChapter } from './topic-chapters'
 import type { StoryLanguage } from './story-source'
 import { presentationHome, type Topic } from '../topics'
@@ -17,10 +15,7 @@ import './technical-story.pcss'
 const props = defineProps<{
   topic: Topic['slug']
   chapters: readonly LoadedChapter[]
-  scenarios: TopicScenarios
   markState: 'ready' | 'saved' | 'replayed'
-  demoSnapshot: DemoSnapshot
-  applyDemoMark: (lesson: string, member: EditableMemberId, value: ManualMark, expectedRevision: number) => boolean
 }>()
 defineEmits<{ replay: [] }>()
 
@@ -92,7 +87,6 @@ const statusContexts: Readonly<Record<string, string>> = {
                   </a>
                 </li>
               </ul>
-              <component :is="scenarios.tabs" v-if="operation.id === 'transactions-revision'" :snapshot="demoSnapshot" :apply-mark="applyDemoMark" />
               <div v-if="operation.id === 'transaction' && markState !== 'ready'" class="rct-story__replay">
                 <p role="status">{{ stateLabel }}</p>
                 <button type="button" @click="$emit('replay')">Повторить команду</button>
@@ -110,33 +104,6 @@ const statusContexts: Readonly<Record<string, string>> = {
           </div>
           <div v-else-if="operation.flow" class="rct-story__wrap">
             <TopicRequestFlow :id="operation.id" :flow="operation.flow" />
-          </div>
-          <div v-else-if="operation.id === 'lesson-changes-schedule'" class="rct-story__wrap">
-            <component :is="scenarios.lessonTransfer" />
-          </div>
-          <div v-else-if="operation.id === 'student-transfer-history-journal'" class="rct-story__wrap">
-            <component :is="scenarios.studentTransfer" />
-          </div>
-          <div v-else-if="operation.id === 'campus-map-versions'" class="rct-story__wrap">
-            <component :is="scenarios.campus" />
-          </div>
-          <div v-else-if="operation.id === 'attendance-statistics-denominator'" class="rct-story__wrap">
-            <component :is="scenarios.calculator" />
-          </div>
-          <div v-else-if="operation.id === 'student-ranking-ties'" class="rct-story__wrap">
-            <component :is="scenarios.rank" />
-          </div>
-          <div v-else-if="operation.id === 'attendance-journal-threshold'" class="rct-story__wrap">
-            <component :is="scenarios.threshold" />
-          </div>
-          <div v-else-if="operation.id === 'attendance-journal-export-teacher-file'" class="rct-story__wrap">
-            <component :is="scenarios.journalExport" />
-          </div>
-          <div v-else-if="operation.id === 'resilience-outbox'" class="rct-story__wrap">
-            <component :is="scenarios.outbox" />
-          </div>
-          <div v-else-if="operation.id === 'notification-actions-read'" class="rct-story__wrap">
-            <component :is="scenarios.homework" />
           </div>
         </section>
       </template>

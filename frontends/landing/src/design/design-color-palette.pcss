@@ -19,6 +19,21 @@
   background: var(--swatch-fill);
   color: var(--swatch-ink, var(--rct-color-text-on-accent));
   forced-color-adjust: none;
+  cursor: grab;
+  user-select: none;
+  -webkit-touch-callout: none;
+  translate: var(--swatch-shift-x, 0) var(--swatch-shift-y, 0);
+}
+
+.design-color-palette__swatch[data-dragging] {
+  z-index: 1;
+  cursor: grabbing;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .design-color-palette__swatch:not([data-dragging]) {
+    transition: translate 260ms cubic-bezier(.2, .7, .3, 1);
+  }
 }
 
 .design-chapter .design-color-palette__swatch code {

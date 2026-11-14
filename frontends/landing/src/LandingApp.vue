@@ -62,8 +62,8 @@ onBeforeUnmount(() => {
 <template>
   <a
     class="skip-link"
-    href="#demo"
-    >Перейти к демо</a
+    href="#main-content"
+    >К содержанию</a
   >
   <header
     ref="header"
@@ -86,7 +86,7 @@ onBeforeUnmount(() => {
     ></div>
   </header>
 
-  <main ref="main">
+  <main id="main-content" ref="main" tabindex="-1">
     <LandingHero />
     <LandingDemo />
 

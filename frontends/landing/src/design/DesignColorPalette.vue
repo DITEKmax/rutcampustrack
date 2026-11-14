@@ -1,5 +1,9 @@
 <script setup lang="ts">
+import { usePaletteDrag } from './use-palette-drag'
 import './design-color-palette.pcss'
+
+const { onPointerDown, onPointerMove, onPointerEnd, onTouchStart, onTouchMove, onTouchEnd, finish, onContextMenu } =
+  usePaletteDrag()
 
 // Each chip uses its theme token, including the student background in light mode.
 const swatches = [
@@ -24,7 +28,11 @@ const swatches = [
       <header class="design-chapter-heading">
         <h2 id="design-palette-title">Палитра проекта</h2>
       </header>
-      <ul class="design-color-palette" role="list">
+      <ul class="design-color-palette" role="list"
+        @pointerdown="onPointerDown" @pointermove="onPointerMove" @pointerup="onPointerEnd"
+        @pointercancel="onPointerEnd" @lostpointercapture="onPointerEnd"
+        @touchstart.passive="onTouchStart" @touchmove="onTouchMove" @touchend="onTouchEnd"
+        @touchcancel="finish" @contextmenu="onContextMenu">
         <li v-for="swatch in swatches" :key="swatch.id" class="design-color-palette__swatch"
           :data-swatch="swatch.id" :data-size="swatch.size" :data-theme="swatch.theme">
           <code>{{ swatch.hex }}</code>

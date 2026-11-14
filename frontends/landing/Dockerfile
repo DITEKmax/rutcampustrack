@@ -21,6 +21,7 @@ COPY pwa-vue pwa-vue
 COPY shared shared
 COPY web-vue web-vue
 COPY landing landing
+ARG LANDING_SITEMAP_LASTMOD
 RUN npm run build:landing
 RUN find landing/dist-vue -type f \( -name '*.html' -o -name '*.css' -o -name '*.js' \
         -o -name '*.mjs' -o -name '*.json' -o -name '*.svg' -o -name '*.md' \

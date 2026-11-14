@@ -1,0 +1,584 @@
+/* Inline first paint. Fallback values mirror the dark foundation tokens because the app stylesheet loads later. */
+html {
+  color-scheme: dark;
+  background: var(--rct-color-surface-base, #0b0b0c);
+  color: var(--rct-color-text-primary, #edeaf3);
+  font-family: var(--rct-font-family-sans, system-ui, sans-serif);
+}
+
+body {
+  margin: 0;
+}
+
+.landing-static {
+  display: grid;
+  gap: 1.5rem;
+  inline-size: min(55rem, calc(100% - 2 * clamp(1rem, 4vw, 3.5rem)));
+  margin-inline: auto;
+  padding-block: 4.5rem;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+
+.landing-static h1 {
+  font-size: clamp(2.55rem, 5.2vw, 4.65rem);
+  line-height: 1.05;
+}
+
+.landing-static a {
+  color: var(--rct-color-accent-now, #b79cfa);
+  text-decoration: underline;
+}
+
+.landing-static p {
+  margin-block: 0.6rem;
+}
+
+.landing-static section section,
+.landing-static li + li {
+  margin-block-start: 0.75rem;
+}
+
+.landing-static :focus-visible {
+  outline: 0.125rem solid var(--rct-color-border-focus, #9e7aff);
+  outline-offset: 0.25rem;
+}
+
+@media (scripting: enabled) {
+  #landing-loading {
+    --loading-canvas: var(--rct-color-surface-base, #0b0b0c);
+    --loading-art: var(--rct-color-surface-raised, #1c1922);
+    --loading-fill: var(--rct-color-skeleton-fill, #3d3846);
+    --loading-gutter: clamp(1rem, 4vw, 3.5rem);
+    --loading-header: 4.5rem;
+    --loading-line: var(--rct-color-border-subtle, #292531);
+    --loading-pill: var(--rct-radius-full, 62.4375rem);
+    --loading-radius: var(--rct-radius-xl, 1rem);
+    overflow: hidden;
+    display: block;
+    position: fixed;
+    z-index: 40;
+    inset: 0;
+    pointer-events: none;
+    background: var(--loading-canvas);
+    animation: landing-hide-loading 8s steps(1, end) both;
+  }
+
+  #landing-loading + #app {
+    animation: landing-allow-fallback 8s steps(1, end) both;
+  }
+
+  @keyframes landing-allow-fallback {
+    from { visibility: hidden; }
+    to { visibility: visible; }
+  }
+
+  @keyframes landing-hide-loading {
+    from { visibility: visible; }
+    to { visibility: hidden; }
+  }
+
+  .landing-loading-status {
+    position: absolute;
+    inline-size: 0.0625rem;
+    block-size: 0.0625rem;
+    margin: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .landing-loading-header {
+    display: grid;
+    align-items: center;
+    min-block-size: var(--loading-header);
+    padding-inline: max(var(--loading-gutter), calc((100% - 92rem) / 2));
+    border-block-end: 0.0625rem solid var(--loading-art);
+  }
+
+  .landing-loading-header span {
+    inline-size: min(12rem, 100%);
+    block-size: 1.15rem;
+    border-radius: var(--loading-pill);
+    background: var(--loading-fill);
+  }
+
+  /* The real text supplies line lengths and wraps; only its line bars are painted. */
+  .landing-loading-mask {
+    color: transparent;
+    background: linear-gradient(
+      to bottom, transparent 14%, var(--loading-fill) 14% 86%, transparent 86%
+    );
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+    forced-color-adjust: none;
+  }
+
+  .landing-loading-home {
+    display: grid;
+    grid-template-rows: auto minmax(15rem, 1fr) auto;
+    min-block-size: max(44rem, calc(100svh - var(--loading-header)));
+    overflow: clip;
+    background: radial-gradient(ellipse at 50% 72%, var(--loading-art), transparent 57%);
+  }
+
+  .landing-loading-home-copy {
+    padding: clamp(4rem, 11vh, 8.6rem) var(--loading-gutter) 0;
+    text-align: center;
+  }
+
+  .landing-loading-kicker {
+    margin-block-end: clamp(1.15rem, 3vh, 1.85rem);
+    font-size: 0.82rem;
+  }
+
+  .landing-loading-home-title {
+    font-size: clamp(3.1rem, 7.2vw, 6.65rem);
+    font-weight: 500;
+    line-height: 1.02;
+    letter-spacing: -0.068em;
+    text-wrap: balance;
+  }
+
+  .landing-loading-home-lead {
+    margin: clamp(1rem, 3vh, 1.7rem) auto 0;
+    font-size: clamp(0.92rem, 1.4vw, 1.1rem);
+    line-height: 1.65;
+  }
+
+  .landing-loading-orbit {
+    position: relative;
+    inline-size: min(100%, 76rem);
+    margin-inline: auto;
+  }
+
+  .landing-loading-rings {
+    position: absolute;
+    inset: 20% 5%;
+    border: 0.0625rem solid var(--loading-line);
+    border-radius: 50%;
+    transform: rotate(-10deg);
+  }
+
+  .landing-loading-rings::before,
+  .landing-loading-rings::after {
+    position: absolute;
+    border: 0.0625rem solid var(--loading-fill);
+    border-radius: inherit;
+    content: '';
+  }
+
+  .landing-loading-rings::before { inset: 12% 12%; }
+  .landing-loading-rings::after { inset: 24% 23%; border-style: dashed; }
+
+  .landing-loading-orbit > span {
+    position: absolute;
+    transform: rotate(-7deg);
+    border: 0.0625rem solid var(--loading-line);
+    background: var(--loading-art);
+  }
+
+  .landing-loading-orbit > span::before,
+  .landing-loading-orbit > span::after {
+    position: absolute;
+    inset-block-start: 50%;
+    translate: 0 -50%;
+    content: '';
+    background: var(--loading-fill);
+  }
+
+  .landing-loading-orbit > span::before {
+    inset-inline-start: 0.65rem;
+    inline-size: 0.9rem;
+    aspect-ratio: 1;
+    border-radius: 50%;
+  }
+
+  .landing-loading-orbit > span::after {
+    inset-inline: 2rem 0.9rem;
+    block-size: 0.45rem;
+    border-radius: var(--loading-pill);
+  }
+
+  .landing-loading-orbit .landing-loading-orbit-center {
+    inset: 47% auto auto 50%;
+    inline-size: min(17rem, 66%);
+    block-size: 4.5rem;
+    transform: translate(-50%, -50%) rotate(-5deg);
+    border-radius: 1.28rem;
+  }
+
+  .landing-loading-orbit .landing-loading-orbit-center::before {
+    inline-size: min(18%, 2.85rem);
+    border-radius: 0.75rem;
+  }
+
+  .landing-loading-orbit .landing-loading-orbit-center::after {
+    inset-inline: 27% 22%;
+    block-size: 0.55rem;
+    box-shadow: 0 0.9rem var(--loading-fill);
+    margin-block-start: -0.45rem;
+  }
+
+  .landing-loading-orbit-first,
+  .landing-loading-orbit-last {
+    inline-size: clamp(6rem, 18vw, 10rem);
+    block-size: 2.35rem;
+    border-radius: var(--loading-pill);
+  }
+  .landing-loading-orbit-first { inset: 24% auto auto 17%; }
+  .landing-loading-orbit-last { inset: auto 12% 31% auto; }
+
+  .landing-loading-stack {
+    display: flex;
+    justify-content: center;
+    gap: clamp(1.15rem, 3.5vw, 3.15rem);
+    padding: 1.3rem var(--loading-gutter);
+    overflow: hidden;
+    border-block: 0.0625rem solid var(--loading-line);
+  }
+
+  .landing-loading-stack span {
+    flex: 0 0 clamp(2.7rem, 7vw, 6rem);
+    block-size: 0.6rem;
+    border-radius: var(--loading-pill);
+    background: var(--loading-fill);
+  }
+
+  .landing-loading-topic,
+  .landing-loading-anchor {
+    inline-size: min(76rem, calc(100% - 2 * var(--loading-gutter)));
+    margin-inline: auto;
+  }
+
+  .landing-loading-topic {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 0.72fr);
+    align-items: center;
+    gap: clamp(1rem, 3vw, 3rem);
+    min-block-size: clamp(22rem, 34vw, 33rem);
+    padding-block: clamp(1.6rem, 4vw, 4.1rem);
+    box-sizing: border-box;
+  }
+
+  .landing-loading-back {
+    display: inline-grid;
+    place-items: center;
+    min-inline-size: 7.9rem;
+    min-block-size: var(--rct-control-min-touch, 2.75rem);
+    margin-block-end: clamp(1rem, 3vw, 2.5rem);
+    border-radius: var(--loading-pill);
+    background: var(--loading-art);
+    font-size: 0.875rem;
+  }
+
+  .landing-loading-topic-title {
+    font-size: clamp(2rem, 5.6vw, 5.35rem);
+    font-weight: 670;
+    letter-spacing: -0.055em;
+    line-height: 1.04;
+    text-wrap: balance;
+    hyphens: auto;
+    overflow-wrap: anywhere;
+  }
+
+  [data-loading-topic='academic'] .landing-loading-topic-title {
+    font-size: clamp(1.62rem, 4.65vw, 4.25rem);
+  }
+
+  .landing-loading-topic-lead {
+    max-inline-size: 37rem;
+    margin-block-start: clamp(0.85rem, 3vw, 1.5rem);
+    font-size: clamp(1rem, 1.6vw, 1.3rem);
+    line-height: 1.5;
+  }
+
+  .landing-loading-illustration {
+    position: relative;
+    justify-self: end;
+    inline-size: min(100%, 34rem);
+    aspect-ratio: 320 / 220;
+  }
+
+  .landing-loading-illustration span {
+    position: absolute;
+    inset: var(--art-top, 21%) auto auto var(--art-left, 20%);
+    inline-size: var(--art-width, 54%);
+    block-size: var(--art-height, 49%);
+    transform: rotate(var(--art-angle, -9deg));
+    border: 0.0625rem solid var(--loading-fill);
+    border-radius: var(--art-radius, clamp(0.65rem, 1.5vw, 1.45rem));
+    background: var(--loading-art);
+  }
+
+  .landing-loading-illustration span:nth-child(2) {
+    --art-top: 41%;
+    --art-left: 46%;
+    --art-width: 33%;
+    --art-height: 35%;
+    --art-angle: 9deg;
+  }
+
+  .landing-loading-illustration span:nth-child(3) {
+    --art-top: 66%;
+    --art-left: 29%;
+    --art-width: 26%;
+    --art-height: 14%;
+    --art-angle: -6deg;
+    background: var(--loading-line);
+  }
+
+  .landing-loading-illustration[data-shape='phone'] span:first-child {
+    --art-top: 15%;
+    --art-left: 23%;
+    --art-width: 30%;
+    --art-height: 68%;
+  }
+
+  .landing-loading-illustration[data-shape='pages'] span:first-child {
+    --art-width: 40%;
+    --art-height: 59%;
+  }
+
+  .landing-loading-illustration[data-shape='map'] span:first-child {
+    --art-top: 27%;
+    --art-width: 60%;
+    --art-height: 44%;
+  }
+
+  .landing-loading-illustration[data-shape='shield'] span:first-child {
+    --art-top: 16%;
+    --art-width: 45%;
+    --art-height: 67%;
+    --art-radius: 22% 22% 49% 49%;
+    --art-angle: 0deg;
+  }
+
+  /* The lightweight entry selects the target before fetching the interactive page. */
+  .landing-loading-anchor { display: none; }
+
+  #landing-loading[data-anchor] :is(.landing-loading-home, .landing-loading-topic) {
+    display: none;
+  }
+
+  #landing-loading[data-anchor='tiles'] .landing-loading-tiles,
+  #landing-loading[data-anchor='demo'] .landing-loading-demo,
+  .landing-loading-story,
+  .landing-loading-design {
+    display: grid;
+  }
+
+  .landing-loading-tiles {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: clamp(0.65rem, 1.7vw, 1.25rem);
+    padding-block: clamp(2.25rem, 6vw, 5rem);
+  }
+
+  .landing-loading-tiles span {
+    display: grid;
+    align-content: end;
+    min-block-size: clamp(11rem, 17vw, 15rem);
+    padding: clamp(0.8rem, 1.55vw, 1.4rem);
+    box-sizing: border-box;
+    border-radius: var(--loading-radius);
+    border: 0.0625rem solid var(--loading-line);
+    background: radial-gradient(ellipse at 77% 23%, var(--loading-line), transparent 65%), var(--loading-art);
+  }
+
+  .landing-loading-tiles span::after {
+    inline-size: min(65%, 9rem);
+    block-size: 0.8rem;
+    border-radius: var(--loading-pill);
+    background: var(--loading-fill);
+    content: '';
+  }
+
+  @media (width > 67rem) {
+    .landing-loading-tiles [data-tile='architecture'] { grid-column: span 2; }
+  }
+
+  @media (49rem < width <= 67rem) {
+    .landing-loading-tiles { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .landing-loading-tiles [data-tile='design'] { grid-column: span 2; }
+  }
+
+  @media (max-width: 49rem) {
+    .landing-loading-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .landing-loading-tiles [data-tile='academic'] { grid-column: span 2; }
+  }
+
+  .landing-loading-demo,
+  .landing-loading-story,
+  .landing-loading-design-layout {
+    align-items: start;
+    gap: clamp(1rem, 4vw, 3.5rem);
+  }
+
+  .landing-loading-demo {
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+    padding-block-start: calc(clamp(4rem, 9vw, 8.5rem) + clamp(1.4rem, 4vw, 3.3rem));
+  }
+
+  .landing-loading-story {
+    grid-template-columns: minmax(0, 0.58fr) minmax(0, 1.42fr);
+    padding-block-start: clamp(1.75rem, 4.8vw, 4rem);
+  }
+
+  .landing-loading-trace {
+    display: grid;
+    grid-template-rows: minmax(0, 1fr) minmax(0, 2fr);
+    gap: 0.75rem;
+    align-self: stretch;
+  }
+
+  .landing-loading-code,
+  .landing-loading-phone,
+  .landing-loading-scale {
+    box-sizing: border-box;
+    border: 0.0625rem solid var(--loading-line);
+    background: var(--loading-art);
+  }
+
+  .landing-loading-code,
+  .landing-loading-scale {
+    display: grid;
+    align-content: start;
+    gap: 1rem;
+    padding: 1.25rem;
+    border-radius: var(--loading-radius);
+  }
+
+  .landing-loading-story .landing-loading-code { min-block-size: clamp(15rem, 35vw, 31rem); }
+
+  .landing-loading-phone {
+    justify-self: center;
+    inline-size: min(100%, 27.5rem);
+    aspect-ratio: 6 / 13;
+    padding: 18% 8% 0;
+    border-radius: clamp(1.5rem, 5vw, 3rem);
+  }
+
+  .landing-loading-phone::before {
+    display: block;
+    block-size: 40%;
+    border-radius: var(--loading-radius);
+    background: repeating-linear-gradient(
+      to bottom, var(--loading-line) 0 19%, transparent 19% 25%
+    );
+    content: '';
+  }
+
+  .landing-loading-lines span,
+  .landing-loading-code span,
+  .landing-loading-scale span {
+    display: block;
+    block-size: 0.55rem;
+    inline-size: 70%;
+    border-radius: var(--loading-pill);
+    background: var(--loading-fill);
+  }
+
+  .landing-loading-lines span { margin-block: 0.75rem; }
+  .landing-loading-lines span:first-child { block-size: 1.4rem; }
+  .landing-loading-lines span:last-child { inline-size: 55%; }
+  .landing-loading-code span:nth-child(2) { inline-size: 54%; margin-inline-start: 1.5rem; }
+  .landing-loading-code span:last-child { inline-size: 43%; margin-inline-start: 1.5rem; }
+
+  .landing-loading-design {
+    gap: clamp(1rem, 3vw, 2.5rem);
+    padding-block-start: clamp(2.75rem, 7vw, 6.5rem);
+  }
+
+  .landing-loading-design-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.08fr) minmax(0, 1fr);
+  }
+
+  .landing-loading-design-layout .landing-loading-phone {
+    inline-size: min(100%, 23rem);
+  }
+
+  .landing-loading-scale {
+    display: none;
+    min-block-size: clamp(13rem, 31vw, 26rem);
+    gap: 1.75rem;
+    padding-block-start: 2rem;
+  }
+
+  .landing-loading-scale span:nth-child(1) { block-size: 2.5rem; }
+  .landing-loading-scale span:nth-child(2) { block-size: 1.85rem; inline-size: 58%; }
+  .landing-loading-scale span:nth-child(3) { block-size: 1.2rem; inline-size: 42%; }
+  .landing-loading-palette { display: none; }
+
+  #landing-loading[data-anchor='scale'] .landing-loading-scale { display: grid; }
+  #landing-loading[data-anchor='scale'] .landing-loading-design-layout .landing-loading-phone,
+  #landing-loading[data-anchor='palette'] .landing-loading-design-layout { display: none; }
+
+  #landing-loading[data-anchor='palette'] .landing-loading-palette {
+    display: block;
+    position: relative;
+    inline-size: min(100%, 68rem);
+    aspect-ratio: 768 / 460;
+    margin-inline: auto;
+  }
+
+  .landing-loading-palette span {
+    position: absolute;
+    inset: var(--swatch-top, 31%) auto auto var(--swatch-left, 39%);
+    inline-size: var(--swatch-width, 22%);
+    aspect-ratio: 1;
+    border: 0.0625rem solid var(--loading-line);
+    border-radius: var(--loading-radius);
+    background: var(--loading-art);
+  }
+
+  .landing-loading-palette span:nth-child(2) { --swatch-top: 27%; --swatch-left: 16%; --swatch-width: 19%; }
+  .landing-loading-palette span:nth-child(3) { --swatch-top: 14%; --swatch-left: 64%; --swatch-width: 19%; }
+  .landing-loading-palette span:nth-child(4) { --swatch-top: 68%; --swatch-left: 62%; --swatch-width: 19%; }
+  .landing-loading-palette span:nth-child(5) { --swatch-top: 70%; --swatch-left: 26%; --swatch-width: 14%; }
+
+  @media (max-width: 52rem) {
+    .landing-loading-demo { grid-template-columns: minmax(0, 1fr); }
+    .landing-loading-demo .landing-loading-phone { grid-row: 1; }
+    .landing-loading-trace { min-block-size: clamp(26rem, 62svh, 35rem); }
+  }
+
+  @media (max-width: 47rem) {
+    .landing-loading-story,
+    .landing-loading-design-layout { grid-template-columns: minmax(0, 1fr); }
+  }
+
+  @media (max-width: 46rem) {
+    #landing-loading { --loading-header: 4.25rem; }
+    .landing-loading-home { min-block-size: max(38rem, calc(100svh - var(--loading-header))); }
+    .landing-loading-home-copy { padding-block-start: clamp(2.7rem, 9vh, 5.5rem); }
+    .landing-loading-home-title { font-size: clamp(2.7rem, 8.9vw, 4.5rem); }
+    .landing-loading-home-title br { display: none; }
+    .landing-loading-home-lead { max-inline-size: 23rem; }
+    .landing-loading-rings { inset-inline: -25%; }
+    .landing-loading-orbit .landing-loading-orbit-center {
+      inline-size: min(13.4rem, 66%);
+      block-size: 3.65rem;
+    }
+    .landing-loading-orbit-first { inset: 13% auto auto 5%; }
+    .landing-loading-orbit-last { inset: auto 5% 15% auto; }
+  }
+
+  @media (max-width: 44rem) {
+    [data-loading-topic] .landing-loading-header { padding-block-start: 0.6rem; box-sizing: border-box; }
+
+    .landing-loading-topic {
+      grid-template-columns: minmax(0, 1fr);
+      min-block-size: auto;
+      gap: 0;
+      padding-block: 1.25rem 0.85rem;
+    }
+
+    .landing-loading-topic-title { font-size: clamp(2rem, 8vw, 3.25rem); }
+
+    .landing-loading-illustration {
+      inline-size: min(92%, 22rem);
+      margin-block-start: 0.45rem;
+    }
+  }
+}

@@ -184,7 +184,16 @@ h3 {
   flex-shrink: 0;
 }
 .web-header .web-brand { display: grid; place-items: center; text-decoration: none; }
-.web-brand-monogram { color: var(--color-text-primary); font-size: var(--font-size-dense); font-weight: var(--font-weight-bold); line-height: 1; }
+.web-brand .ruttrack-logo {
+  inline-size: var(--space-7);
+}
+.web-brand:focus-visible {
+  outline: var(--focus-width) solid var(--color-border-focus);
+  outline-offset: var(--focus-offset);
+}
+.web-auth-brand {
+  inline-size: min(100%, calc(var(--control-height) * 5));
+}
 .web-auth-panel {
   display: grid;
   gap: var(--space-6);

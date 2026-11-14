@@ -112,28 +112,11 @@ button {
   justify-content: space-between;
   gap: 1.2rem;
 }
-.wordmark,
-.header-cta {
+.wordmark {
   display: inline-flex;
   align-items: center;
-}
-.wordmark {
   inline-size: min(12rem, 100%);
   min-inline-size: 0;
-}
-.header-cta {
-  gap: 0.6rem;
-  background: var(--landing-text);
-  color: var(--landing-bg);
-  padding: 0.65rem 1rem;
-  min-height: 2.75rem;
-  border-radius: var(--landing-pill);
-  font-size: 0.84rem;
-  font-weight: 650;
-  white-space: nowrap;
-}
-.header-cta:hover {
-  background: var(--landing-accent);
 }
 .reading-progress {
   position: absolute;
@@ -563,12 +546,6 @@ button {
     grid-template-columns: minmax(0, 1fr) auto;
     gap: 0.1rem 0.7rem;
     padding-top: 0.6rem;
-  }
-  .header-cta {
-    grid-column: 2;
-    grid-row: 1;
-    min-height: 2.45rem;
-    padding-inline: 0.75rem;
   }
   .landing-hero {
     min-height: max(38rem, calc(100svh - var(--landing-header)));

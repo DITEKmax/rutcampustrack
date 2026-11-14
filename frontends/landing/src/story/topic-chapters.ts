@@ -257,6 +257,23 @@ export interface LoadedChapter extends Omit<Chapter, 'load'> {
   operations: readonly StoryOperation[]
 }
 
+// Most chapter modules use the chapter ID in their filename.
+const chapterSourceOverrides: Partial<Record<ChapterId, readonly string[]>> = {
+  architecture: ['story-source'],
+  security: [
+    'auth-lifecycle-source', 'admin-access-source', 'qr-login-source', 'role-switch-source',
+    'password-recovery-source', 'security-source',
+  ],
+  databases: ['database-source'],
+  'api-statuses': ['api-status-source'],
+}
+
+export function topicChapterContentPaths(topic: Topic): string[] {
+  return topic.chapters.flatMap(id =>
+    (chapterSourceOverrides[id] ?? [id + '-source']).map(source => 'src/story/' + source + '.ts'),
+  )
+}
+
 export function loadTopic(topic: Topic): Promise<LoadedChapter[]> {
   return Promise.all(topic.chapters.map(async (id) => {
     const { load, ...heading } = chapters[id]

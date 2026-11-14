@@ -32,7 +32,7 @@ npm --prefix frontends run preview:landing
 В CI проверяются типы и production-сборка лендинга. Для проверки того же контейнера локально выполни из корня:
 
 ```sh
-docker build -f frontends/landing/Dockerfile -t rct-landing:local frontends
+docker build --build-arg "LANDING_SITEMAP_LASTMOD=$(node frontends/landing/scripts/sitemap-lastmod.ts --build-arg)" -f frontends/landing/Dockerfile -t rct-landing:local frontends
 docker run --rm -p 127.0.0.1:14321:80 rct-landing:local
 ```
 

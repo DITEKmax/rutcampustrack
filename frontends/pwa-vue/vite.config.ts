@@ -77,9 +77,13 @@ function appShellPrecachePlugin(): Plugin {
             fileName !== 'sw.js' && fileName !== 'sw-assets.js' && fileName !== 'version.json',
         )
         .sort()
+      const manifest = JSON.parse(
+        readFileSync(new URL('./public/manifest.webmanifest', import.meta.url), 'utf8'),
+      ) as { icons: { src: string }[] }
       const precache = [
         './',
         './manifest.webmanifest',
+        ...manifest.icons.map(({ src }) => src),
         ...generatedFiles.map((fileName) => `./${fileName}`),
       ]
       this.emitFile({

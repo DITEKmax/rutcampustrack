@@ -8,6 +8,7 @@ import RoleSwitcher from './RoleSwitcher.vue';
 import { useRoute } from 'vue-router';
 import AssistantRouteBoundary from './AssistantRouteBoundary.vue';
 import MobileIcon from '../../../mobile-core/src/shared/components/MobileIcon.vue';
+import BrandLogo from '../../../shared/brand/BrandLogo.vue';
 import SvgIcon from '../../../shared/foundation/SvgIcon.vue';
 import menuIcon from '../shared/assets/header-menu.svg';
 import logoutIcon from '../shared/assets/log-out.svg';
@@ -71,7 +72,9 @@ const navigation = computed(() => {
           class="web-brand"
           to="/"
           aria-label="RutTrack — главная"
-        ><span class="web-brand-monogram" aria-hidden="true">РТ</span></RouterLink>
+        >
+          <BrandLogo compact alt="" />
+        </RouterLink>
         <div class="web-header-role">
           <RoleSwitcher />
         </div>

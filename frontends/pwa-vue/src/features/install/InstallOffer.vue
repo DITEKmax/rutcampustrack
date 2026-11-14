@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
+import installIcon from '../../../../shared/brand/assets/app-any.svg?no-inline';
 import './install-offer.pcss';
 import type { InstallPromptController, InstallPromptState } from './install-prompt';
 
@@ -52,10 +53,13 @@ function dismiss(): void {
     :data-install-mode="mode"
     aria-label="Установка RutCampusTrack"
   >
-    <span
+    <img
       class="install-offer__mark"
-      aria-hidden="true"
-    >↗</span>
+      :src="installIcon"
+      width="1024"
+      height="1024"
+      alt=""
+    />
     <div class="install-offer__copy">
       <h2 class="install-offer__title">
         Добавь RutCampusTrack на главный экран

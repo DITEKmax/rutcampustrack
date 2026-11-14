@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import BrandLogo from '../../../shared/brand/BrandLogo.vue';
 import ThemeSelect from '../shared/ThemeSelect.vue';
 defineProps<{ screen: string }>();
 </script>
@@ -12,10 +13,7 @@ defineProps<{ screen: string }>();
       <ThemeSelect />
     </div>
     <div class="web-auth-content">
-      <div
-        class="web-brand"
-        aria-label="RutTrack"
-      />
+      <BrandLogo class="web-auth-brand" />
       <section class="web-auth-panel">
         <slot />
       </section>

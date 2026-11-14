@@ -242,6 +242,18 @@ jobs:
           cache-from: type=gha,scope=web-panel
           cache-to: type=gha,scope=web-panel,mode=max
 
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '24.14.0'
+
+      - name: Read landing page dates from release checkout
+        id: landing_lastmod
+        run: |
+          if [[ -f frontends/landing/scripts/sitemap-lastmod.ts ]]; then
+            dates=$(node frontends/landing/scripts/sitemap-lastmod.ts --build-arg)
+            echo "build_arg=LANDING_SITEMAP_LASTMOD=$dates" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Build and push landing
         id: build_landing_nginx
         uses: docker/build-push-action@bcafcacb16a39f128d818304e6c9c0c18556b85f # v7.1.0
@@ -250,6 +262,7 @@ jobs:
           file: frontends/landing/Dockerfile
           push: true
           tags: ghcr.io/ditekmax/rutcampustrack/landing-nginx:${{ env.DEPLOY_SHA }},ghcr.io/ditekmax/rutcampustrack/landing-nginx:latest
+          build-args: ${{ steps.landing_lastmod.outputs.build_arg }}
           cache-from: type=gha,scope=landing
           cache-to: type=gha,scope=landing,mode=max
 

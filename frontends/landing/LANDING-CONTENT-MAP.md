@@ -95,6 +95,8 @@
 Как публикуют планы этажей, читают версии и учитывают открытия.
 
 [Карта кампуса](http://127.0.0.1:14312/presentation/#campus-map) · [Статистика карты](http://127.0.0.1:14312/presentation/#campus-map-statistics)
+[Планы из Figma · корпус 1, этажи 0–5.](http://127.0.0.1:14312/presentation/campus/#campus-floor-plans)
+
 
 ### Дизайн и типографика
 
@@ -387,9 +389,6 @@
 - MongoDB: отметка и квитанция · [`#transactions-mongo`](http://127.0.0.1:14312/presentation/#transactions-mongo)
 - A и B отправляют одну геоотметку · [`#transactions-mongo-ab`](http://127.0.0.1:14312/presentation/#transactions-mongo-ab)
 - Ручная отметка и ожидаемая версия · [`#transactions-revision`](http://127.0.0.1:14312/presentation/#transactions-revision)
-  - Две вкладки · одна строка · [`#demo-tabs-title`](http://127.0.0.1:14312/presentation/#demo-tabs-title)
-  - Вкладка A
-  - Вкладка B
 - Откат, неизвестный коммит и повтор · [`#transactions-retry`](http://127.0.0.1:14312/presentation/#transactions-retry)
 - Границы между сервисами · [`#transactions-boundary`](http://127.0.0.1:14312/presentation/#transactions-boundary)
 
@@ -404,8 +403,6 @@
 - PWA в режиме чтения · [`#resilience-offline`](http://127.0.0.1:14312/presentation/#resilience-offline)
 - Если недоступна проверка Auth · [`#resilience-authority`](http://127.0.0.1:14312/presentation/#resilience-authority)
 - RabbitMQ недоступен после коммита · [`#resilience-outbox`](http://127.0.0.1:14312/presentation/#resilience-outbox)
-  - Сбой и восстановление · [`#demo-outbox-recovery-title`](http://127.0.0.1:14312/presentation/#demo-outbox-recovery-title)
-  - Локальное состояние · JSON · [`#demo-outbox-recovery-json-title`](http://127.0.0.1:14312/presentation/#demo-outbox-recovery-json-title)
 - Возобновление операции между сервисами · [`#resilience-resume`](http://127.0.0.1:14312/presentation/#resilience-resume)
 - Готовность и перезапуск контейнера · [`#resilience-restart`](http://127.0.0.1:14312/presentation/#resilience-restart)
 
@@ -511,8 +508,6 @@
 - Выбрать новый слот в журнале · [`#lesson-changes-choose`](http://127.0.0.1:14312/presentation/#lesson-changes-choose)
 - Что проверяет Schedule · [`#lesson-changes-guards`](http://127.0.0.1:14312/presentation/#lesson-changes-guards)
 - Исходная и новая пара · [`#lesson-changes-schedule`](http://127.0.0.1:14312/presentation/#lesson-changes-schedule)
-  - Перенести пару · [`#demo-lesson-transfer-title`](http://127.0.0.1:14312/presentation/#demo-lesson-transfer-title)
-  - Локальное состояние · JSON · [`#demo-lesson-transfer-json-title`](http://127.0.0.1:14312/presentation/#demo-lesson-transfer-json-title)
 - Отметки и заявки при переносе · [`#lesson-changes-participants`](http://127.0.0.1:14312/presentation/#lesson-changes-participants)
 - Проверить итог переноса · [`#lesson-changes-completion`](http://127.0.0.1:14312/presentation/#lesson-changes-completion)
 - Отменить пару из журнала · [`#lesson-changes-cancel`](http://127.0.0.1:14312/presentation/#lesson-changes-cancel)
@@ -661,8 +656,6 @@
 [`#attendance-statistics`](http://127.0.0.1:14312/presentation/#attendance-statistics)
 
 - Как считается процент · [`#attendance-statistics-denominator`](http://127.0.0.1:14312/presentation/#attendance-statistics-denominator)
-  - Калькулятор четырёх пар · [`#demo-attendance-calculator-title`](http://127.0.0.1:14312/presentation/#demo-attendance-calculator-title)
-  - Локальное состояние · JSON · [`#demo-attendance-calculator-json-title`](http://127.0.0.1:14312/presentation/#demo-attendance-calculator-json-title)
 - Студент · личная статистика · [`#attendance-statistics-student`](http://127.0.0.1:14312/presentation/#attendance-statistics-student)
 - Студент · предмет и график · [`#attendance-statistics-student-filters`](http://127.0.0.1:14312/presentation/#attendance-statistics-student-filters)
 - Староста · сводка группы · [`#attendance-statistics-headman`](http://127.0.0.1:14312/presentation/#attendance-statistics-headman)
@@ -680,8 +673,6 @@
 - Кто входит в состав · [`#student-ranking-cohort`](http://127.0.0.1:14312/presentation/#student-ranking-cohort)
 - Общий знаменатель группы · [`#student-ranking-held`](http://127.0.0.1:14312/presentation/#student-ranking-held)
 - Почему места идут 1, 2, 2, 4 · [`#student-ranking-ties`](http://127.0.0.1:14312/presentation/#student-ranking-ties)
-  - Место по точной доле · [`#demo-student-ranking-title`](http://127.0.0.1:14312/presentation/#demo-student-ranking-title)
-  - Локальное состояние · JSON · [`#demo-student-ranking-json-title`](http://127.0.0.1:14312/presentation/#demo-student-ranking-json-title)
 - Своё место и отсутствие данных · [`#student-ranking-empty`](http://127.0.0.1:14312/presentation/#student-ranking-empty)
 - Что может увидеть староста · [`#student-ranking-headman`](http://127.0.0.1:14312/presentation/#student-ranking-headman)
 - Как раскрывается список · [`#student-ranking-pages`](http://127.0.0.1:14312/presentation/#student-ranking-pages)
@@ -698,8 +689,6 @@
 - Страницы и общий итог · [`#attendance-journal-pages`](http://127.0.0.1:14312/presentation/#attendance-journal-pages)
 - График группы и студента · [`#attendance-journal-chart`](http://127.0.0.1:14312/presentation/#attendance-journal-chart)
 - Порог подсвечивает долю · [`#attendance-journal-threshold`](http://127.0.0.1:14312/presentation/#attendance-journal-threshold)
-  - Порог и округление · [`#demo-journal-threshold-title`](http://127.0.0.1:14312/presentation/#demo-journal-threshold-title)
-  - Локальное состояние · JSON · [`#demo-journal-threshold-json-title`](http://127.0.0.1:14312/presentation/#demo-journal-threshold-json-title)
 
 ### Выгрузка журнала посещаемости
 
@@ -712,8 +701,6 @@
 - Преподаватель · период или пара · [`#attendance-journal-export-teacher`](http://127.0.0.1:14312/presentation/#attendance-journal-export-teacher)
 - Отбор пар и исторического состава · [`#attendance-journal-export-plan`](http://127.0.0.1:14312/presentation/#attendance-journal-export-plan)
 - Отметки и итоги преподавателя · [`#attendance-journal-export-teacher-file`](http://127.0.0.1:14312/presentation/#attendance-journal-export-teacher-file)
-  - Превью выгрузки журнала · [`#demo-journal-export-title`](http://127.0.0.1:14312/presentation/#demo-journal-export-title)
-  - Локальное состояние · JSON · [`#demo-journal-export-json-title`](http://127.0.0.1:14312/presentation/#demo-journal-export-json-title)
 - Формирование и скачивание файла · [`#attendance-journal-export-binary`](http://127.0.0.1:14312/presentation/#attendance-journal-export-binary)
 
 ### Карта кампуса
@@ -722,8 +709,6 @@
 
 - Публикация плана этажа · [`#campus-map-publish`](http://127.0.0.1:14312/presentation/#campus-map-publish)
 - Версия плана и ревизия каталога · [`#campus-map-versions`](http://127.0.0.1:14312/presentation/#campus-map-versions)
-  - Версии плана этажа · [`#demo-campus-versions-title`](http://127.0.0.1:14312/presentation/#demo-campus-versions-title)
-  - Локальное состояние · JSON · [`#demo-campus-versions-json-title`](http://127.0.0.1:14312/presentation/#demo-campus-versions-json-title)
 - Каталог корпусов и этажей · [`#campus-map-manifest`](http://127.0.0.1:14312/presentation/#campus-map-manifest)
 - От этажа к файлу · [`#campus-map-asset`](http://127.0.0.1:14312/presentation/#campus-map-asset)
 - Формат и масштаб на устройстве · [`#campus-map-viewer`](http://127.0.0.1:14312/presentation/#campus-map-viewer)
@@ -781,8 +766,6 @@
 - Команда перевода · [`#student-transfer-history-command`](http://127.0.0.1:14312/presentation/#student-transfer-history-command)
 - Одна дата для двух интервалов · [`#student-transfer-history-memberships`](http://127.0.0.1:14312/presentation/#student-transfer-history-memberships)
 - Состав на дату пары · [`#student-transfer-history-journal`](http://127.0.0.1:14312/presentation/#student-transfer-history-journal)
-  - Состав групп после перевода · [`#demo-student-transfer-title`](http://127.0.0.1:14312/presentation/#demo-student-transfer-title)
-  - Локальное состояние · JSON · [`#demo-student-transfer-json-title`](http://127.0.0.1:14312/presentation/#demo-student-transfer-json-title)
 - Своя история и рейтинг · [`#student-transfer-history-ranking`](http://127.0.0.1:14312/presentation/#student-transfer-history-ranking)
 
 ### Переходы из уведомлений
@@ -792,8 +775,6 @@
 - От события к действию · [`#notification-actions-contract`](http://127.0.0.1:14312/presentation/#notification-actions-contract)
 - Сеанс и выбранная роль · [`#notification-actions-identity`](http://127.0.0.1:14312/presentation/#notification-actions-identity)
 - Загрузка объекта перед показом · [`#notification-actions-read`](http://127.0.0.1:14312/presentation/#notification-actions-read)
-  - Одно задание · два канала · [`#demo-homework-notifications-title`](http://127.0.0.1:14312/presentation/#demo-homework-notifications-title)
-  - Локальное состояние · JSON · [`#demo-homework-notifications-json-title`](http://127.0.0.1:14312/presentation/#demo-homework-notifications-json-title)
 
 ### Telegram-бот
 

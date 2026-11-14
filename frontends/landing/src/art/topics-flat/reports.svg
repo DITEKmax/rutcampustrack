@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 220" fill="none">
+  <style>
+    .back{fill:#181221;stroke:#4b3a62}.plane{fill:#251b35;stroke:#674d89}.card{fill:#35264c;stroke:#8d6ab8}
+    .strong{fill:#624982;stroke:#c7a3fb}.bright{fill:#c7a3fb}.guide{stroke:#56436e}.line{stroke:#896ba8}
+    .flow{stroke:#bd94f3}.light{stroke:#e5d0ff}.ghost{stroke:#8665aa;stroke-dasharray:3 5}
+    .label{fill:#e5d0ff;font:600 10px ui-monospace,Consolas,monospace;letter-spacing:.3px}.dim{fill:#b799d3;font:600 8px ui-monospace,Consolas,monospace;letter-spacing:.3px}
+    .ok{stroke:#7bdfbc}.warn{stroke:#edbd83}
+  </style>
+  <defs>
+    <pattern id="dot-grid" width="10" height="10" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r=".85" fill="#9c78c8" opacity=".27"/>
+    </pattern>
+  </defs>
+  <g stroke-linecap="round" stroke-linejoin="round">
+    <path d="M17 15H303V204H17z" fill="url(#dot-grid)"/>
+    <path class="guide" d="M16 28V15h13m262 0h13v13M16 186v13h13m262 0h13v-13" opacity=".68"/>
+
+    <path class="guide" d="M34 54h252m-252 126h252M48 43v144m216-144v144" opacity=".62"/>
+    <path class="ghost" d="M27 85v61h20m229-55h16v69h-20"/>
+    <rect class="plane" x="40" y="59" width="142" height="110" rx="7"/>
+    <path class="card" d="M40 77V66a7 7 0 0 1 7-7h128a7 7 0 0 1 7 7v11z"/>
+    <path class="light" stroke-width="1.7" d="M50 68h33"/>
+    <path class="flow" d="M149 68h23"/>
+    <path class="back" d="M49 84h124v74H49z"/>
+    <path fill="#47355f" d="M106 84h21v74h-21zM49 127h124v16H49z"/>
+    <path class="line" d="M80 84v74m25-74v74m22-74v74m23-74v74M49 98h124m-124 14h124m-124 15h124m-124 16h124"/>
+    <path class="strong" d="M105 127h22v16h-22z"/>
+    <path class="line" stroke-width="1.5" d="M55 91h16m-16 14h14m-14 14h18m-18 15h14m-14 16h16m18-60h7m18 0h6m17 0h5m17 0h5"/>
+    <path class="ok" stroke-width="1.6" d="m89 104 2 2 5-4m42 2 2 2 4-4m15 17 2 2 4-4m-76 32 2 2 5-4m17 4 3 3 5-5"/>
+    <path class="warn" stroke-width="1.6" d="M138 134h6m15 0h6m-76-15h6"/>
+    <path class="light" stroke-width="1.7" d="m111 134 3 3 6-6"/>
+    <path class="flow" stroke-width="1.5" d="M182 104h17m-4-3 4 3-4 3"/>
+    <rect class="plane" x="201" y="49" width="76" height="70" rx="6"/>
+    <path class="line" d="M201 64h76"/>
+    <path class="guide" d="M209 108h60m-55-36v36m-5-21h60"/>
+    <path class="light" stroke-width="1.6" d="M213 101l13-11 13 5 13-15 13-6"/>
+    <path class="light" stroke-width="3.5" d="M226 90h.1m12.9 5h.1m12.9-15h.1m12.9-6h.1"/>
+    <path class="ghost" d="M240 119v13m-58 24h44m-6-4 5 4-5 4"/>
+    <path class="card" d="M229 131h27l12 12v39h-39z"/>
+    <path class="flow" d="M256 131v12h12"/>
+    <text class="label" x="238" y="163">PDF</text>
+    <path class="light" d="M238 169h22"/>
+  </g>
+</svg>

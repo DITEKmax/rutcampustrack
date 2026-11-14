@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 220" fill="none">
+  <style>
+    .back{fill:#181221;stroke:#4b3a62}.plane{fill:#251b35;stroke:#674d89}.card{fill:#35264c;stroke:#8d6ab8}
+    .strong{fill:#624982;stroke:#c7a3fb}.bright{fill:#c7a3fb}.guide{stroke:#56436e}.line{stroke:#896ba8}
+    .flow{stroke:#bd94f3}.light{stroke:#e5d0ff}.ghost{stroke:#8665aa;stroke-dasharray:3 5}
+    .label{fill:#e5d0ff;font:600 10px ui-monospace,Consolas,monospace;letter-spacing:.3px}.dim{fill:#b799d3;font:600 8px ui-monospace,Consolas,monospace;letter-spacing:.3px}
+    .ok{stroke:#7bdfbc}.warn{stroke:#edbd83}
+  </style>
+  <defs>
+    <pattern id="dot-grid" width="10" height="10" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r=".85" fill="#9c78c8" opacity=".27"/>
+    </pattern>
+  </defs>
+  <g stroke-linecap="round" stroke-linejoin="round">
+    <path d="M17 15H303V204H17z" fill="url(#dot-grid)"/>
+    <path class="guide" d="M16 28V15h13m262 0h13v13M16 186v13h13m262 0h13v-13" opacity=".68"/>
+
+    <path class="guide" d="M30 48h255m-250 129h250M42 43v139m237-139v139" opacity=".65"/>
+    <path class="ghost" d="M29 81h18m235 15h9v60h-22m-155 26h115"/>
+    <rect class="plane" x="39" y="51" width="242" height="119" rx="7"/>
+    <path class="line" d="M39 70h242m-184 0v79m-58 0h242"/>
+    <path class="ghost" d="M104 86h161m-161 21h161m-161 21h161"/>
+    <path class="guide" d="M110 75v68m29-68v68m29-68v68m29-68v68m29-68v68m30-68v68"/>
+    <path class="flow" stroke-width="1.7" d="M51 60h59m107 0h19"/>
+    <path class="line" stroke-width="1.4" d="M51 85h33m-33 22h22m-22 22h26"/>
+    <path class="strong" d="M109 82h86v8h-86z"/>
+    <path class="card" d="M123 103h42v8h-42zm50 21h26v8h-26z"/>
+    <path class="flow" stroke-width="1.4" d="M121 90v17h2m42 0h5v21h3"/>
+    <path class="warn" d="M199 75v68" stroke-dasharray="4 4"/>
+    <path class="warn" stroke-width="1.8" d="m195 124 8 8m0-8-8 8"/>
+    <path class="ok" stroke-width="1.7" d="M208 128h11v-21h22m-5-4 5 4-5 4"/>
+    <path class="ok" stroke-width="1.9" d="m248 106 3 3 5-5"/>
+    <rect class="back" x="46" y="153" width="222" height="46" rx="6"/>
+    <path class="guide" d="M51 166h210m-210 18h210m-176-28v38m29-38v38m29-38v38m29-38v38m29-38v38m29-38v38"/>
+    <path class="flow" stroke-width="1.8" d="M55 177h20l7-7 6 7h24l6-7 5 7h12l9-17 9 22 5-5h19"/>
+    <path class="ok" stroke-width="1.8" d="M177 177h20l5-6 6 6h14l6-6 5 6h24"/>
+    <text class="dim" x="48" y="43">TRACE</text>
+    <text class="dim" x="205" y="43">TIMEOUT</text>
+  </g>
+</svg>

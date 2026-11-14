@@ -1,0 +1,151 @@
+.rct-story {
+  --story-bg: var(--landing-bg, #0b0b0c);
+  --story-text: var(--landing-text, #edeaf3);
+  --story-muted: var(--landing-muted, #c8c2d6);
+  --story-accent: var(--landing-accent, #b79cfa);
+  --story-line: color-mix(in srgb, var(--story-accent) 22%, transparent);
+  --story-mono: 'JetBrains Mono', ui-monospace, monospace;
+  --story-wrap: var(--landing-width, 76rem);
+  --story-gutter: var(--landing-gutter, clamp(1rem, 4vw, 3.5rem));
+  --story-header: var(--landing-header, 4.5rem);
+  --story-space: clamp(3.5rem, 8vw, 8rem);
+  --story-gap: clamp(1rem, 3vw, 2.5rem);
+  --story-type-large: var(--landing-title-size, clamp(2rem, 5.6vw, 5rem));
+  --story-type-body: clamp(1rem, 1.6vw, 1.22rem);
+
+  background-color: var(--story-bg);
+  color: var(--story-text);
+}
+.rct-story :where(h2, h3, p, figure, ol, ul) { margin: 0; }
+.rct-story :where(ul, ol) { list-style: none; padding: 0; }
+.rct-story code { font-family: var(--story-mono); overflow-wrap: anywhere; }
+.rct-story > section,
+.rct-story__alias { scroll-margin-block-start: var(--story-header); }
+.rct-story__alias { display: block; }
+
+.rct-story__section {
+  padding-block: var(--story-space);
+  border-block-start: 1px solid var(--story-line);
+}
+.rct-story__wrap {
+  width: min(calc(100% - 2 * var(--story-gutter)), var(--story-wrap));
+  margin-inline: auto;
+}
+.rct-story__heading {
+  max-width: 55rem;
+  margin-block-end: var(--story-gap);
+}
+.rct-story__heading h2 {
+  font-size: var(--story-type-large);
+  line-height: 1.02;
+  font-weight: 670;
+  letter-spacing: -.055em;
+  text-wrap: balance;
+}
+.rct-story__heading > p:last-child {
+  margin-block-start: 1rem;
+  max-width: 37rem;
+  color: var(--story-muted);
+  font-size: var(--story-type-body);
+  line-height: 1.55;
+}
+.rct-story__operation {
+  overflow-anchor: none;
+  border-block-start: 1px solid var(--story-line);
+}
+.rct-story__operation-grid {
+  display: grid;
+  grid-template-columns: minmax(0, .58fr) minmax(0, 1.42fr);
+  align-items: start;
+  gap: clamp(1rem, 4vw, 3.5rem);
+  padding-block: clamp(1.75rem, 4.8vw, 4rem);
+}
+.rct-story__operation-copy {
+  overflow-wrap: anywhere;
+}
+
+.rct-story__operation-copy h2 {
+  font-size: clamp(1.6rem, 3.1vw, 2.7rem);
+  font-weight: 670;
+  letter-spacing: -.045em;
+  line-height: 1.08;
+}
+.rct-story__operation-copy > p {
+  max-width: 32ch;
+  margin-block-start: .65rem;
+  color: var(--story-muted);
+  font-size: clamp(.9rem, 1.35vw, 1.03rem);
+  line-height: 1.56;
+}
+.rct-story__operation-code {
+  min-width: 0;
+}
+.rct-story__replay {
+  display: grid;
+  justify-items: start;
+  gap: .55rem;
+  margin-block-start: 1rem;
+}
+.rct-story__replay > p {
+  color: #b9d8ca;
+  font-size: .83rem;
+}
+.rct-story__replay button {
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  padding-inline: .8rem;
+  border: 1px solid #664e80;
+  border-radius: .42rem;
+  color: #ead7fa;
+  background: #221831;
+  font: 590 .85rem var(--rct-font-family-sans);
+  cursor: pointer;
+}
+.rct-story__replay button:hover {
+  border-color: #bf96e5;
+}
+.rct-story__replay button:focus-visible {
+  outline: 2px solid #f0caff;
+  outline-offset: 3px;
+}
+@media (max-width: 47rem) {
+  .rct-story__operation-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .rct-story__operation-copy > p {
+    max-width: 45ch;
+  }
+}
+
+
+
+.rct-story__chapter {
+  scroll-margin-block-start: calc(var(--story-header) + .25rem);
+  padding-block: clamp(2rem, 5vw, 3.75rem) clamp(1.2rem, 3vw, 2.3rem);
+  border-block-start: .0625rem solid var(--story-line);
+  background: linear-gradient(170deg, var(--story-line), transparent 50%);
+}
+.rct-story__chapter h2 {
+  color: var(--story-text);
+  font-size: clamp(2.15rem, 5.6vw, 4.2rem);
+  font-weight: 670;
+  letter-spacing: -.05em;
+  line-height: 1.05;
+  overflow-wrap: anywhere;
+  hyphens: auto;
+}
+@media (max-width: 24rem) {
+  #resilience-title,
+  #performance-title {
+    font-size: clamp(1.8rem, 8.5vw, 2.15rem);
+  }
+}
+
+.rct-story__chapter p {
+  margin-block-start: .55rem;
+  color: var(--story-muted);
+  font-size: var(--story-type-body);
+  line-height: 1.5;
+  max-width: 47ch;
+}

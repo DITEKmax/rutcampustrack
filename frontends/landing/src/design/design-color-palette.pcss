@@ -1,0 +1,142 @@
+.design-color-palette {
+  position: relative;
+  inline-size: min(100%, 68rem);
+  aspect-ratio: 768 / 460;
+  margin: 0 auto;
+  padding: 0;
+  list-style: none;
+}
+
+.design-color-palette__swatch {
+  position: absolute;
+  inset-block-start: var(--swatch-y);
+  inset-inline-start: var(--swatch-x);
+  display: grid;
+  place-items: center;
+  inline-size: var(--swatch-size);
+  aspect-ratio: 1;
+  border-radius: var(--rct-radius-2xl);
+  background: var(--swatch-fill);
+  color: var(--swatch-ink, var(--rct-color-text-on-accent));
+  forced-color-adjust: none;
+}
+
+.design-chapter .design-color-palette__swatch code {
+  font-size: var(--rct-font-size-caption);
+  font-weight: var(--rct-font-weight-bold);
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.design-color-palette__swatch[data-size='primary'] { --swatch-size: 18.75%; }
+.design-color-palette__swatch[data-size='secondary'] { --swatch-size: 13.54%; }
+.design-color-palette__swatch[data-size='occasional'] { --swatch-size: 9.375%; }
+
+.design-color-palette__swatch[data-swatch='brand'] {
+  --swatch-fill: var(--rct-color-accent-now);
+  --swatch-size: 21.875%;
+  --swatch-x: 39.0625%;
+  --swatch-y: 31.74%;
+}
+
+.design-color-palette__swatch[data-swatch='base'] {
+  --swatch-fill: var(--rct-color-surface-base);
+  --swatch-x: 15.89%;
+  --swatch-y: 27.61%;
+}
+
+.design-color-palette__swatch[data-swatch='raised'] {
+  --swatch-fill: var(--rct-color-surface-raised);
+  --swatch-x: 64.19%;
+  --swatch-y: 13.7%;
+}
+
+.design-color-palette__swatch[data-swatch='text'] {
+  --swatch-fill: var(--rct-color-text-primary);
+  --swatch-x: 62.5%;
+  --swatch-y: 68.26%;
+}
+
+.design-color-palette__swatch[data-swatch='light-base'] {
+  --swatch-fill: var(--rct-color-surface-base);
+  --swatch-ink: var(--rct-color-text-primary);
+  --swatch-x: 26.17%;
+  --swatch-y: 70.22%;
+}
+
+.design-color-palette__swatch[data-swatch='float'] {
+  --swatch-fill: var(--rct-color-surface-float);
+  --swatch-x: 10.42%;
+  --swatch-y: 67.61%;
+}
+
+.design-color-palette__swatch[data-swatch='secondary-text'] {
+  --swatch-fill: var(--rct-color-text-secondary);
+  --swatch-x: 44.79%;
+  --swatch-y: 7.17%;
+}
+
+.design-color-palette__swatch[data-swatch='light-accent'] {
+  --swatch-fill: var(--rct-color-accent-now);
+  --swatch-ink: var(--rct-color-accent-on-now);
+  --swatch-x: 82%;
+  --swatch-y: 47.61%;
+}
+
+.design-color-palette__swatch[data-swatch='present'] {
+  --swatch-fill: var(--rct-color-status-present-fill);
+  --swatch-x: 5.08%;
+  --swatch-y: 21.3%;
+}
+
+.design-color-palette__swatch[data-swatch='excused'] {
+  --swatch-fill: var(--rct-color-status-excused-fill);
+  --swatch-x: 85.03%;
+  --swatch-y: 20.43%;
+}
+
+.design-color-palette__swatch[data-swatch='absent'] {
+  --swatch-fill: var(--rct-color-status-absent-fill);
+  --swatch-x: 85.42%;
+  --swatch-y: 75.22%;
+}
+
+.design-color-palette__swatch[data-swatch='focus'] {
+  --swatch-fill: var(--rct-color-border-focus);
+  --swatch-x: 41.41%;
+  --swatch-y: 75.22%;
+}
+
+.design-color-palette__swatch:is([data-swatch='base'], [data-swatch='raised'], [data-swatch='float']) {
+  --swatch-ink: var(--rct-color-text-primary);
+  box-shadow: inset 0 0 0 var(--rct-border-hairline) var(--rct-color-border-default);
+}
+
+@media (max-width: 44rem) {
+  .design-color-palette {
+    inline-size: min(100%, 27rem);
+    aspect-ratio: 320 / 628;
+  }
+
+  .design-chapter .design-color-palette__swatch code {
+    font-size: var(--rct-font-size-micro);
+    letter-spacing: -.04em;
+  }
+
+  .design-color-palette__swatch[data-size='primary'] { --swatch-size: 36.56%; }
+  .design-color-palette__swatch[data-size='secondary'] { --swatch-size: 26.875%; }
+  .design-color-palette__swatch[data-size='occasional'] { --swatch-size: 21.875%; }
+
+  .design-color-palette__swatch[data-swatch='brand'] { --swatch-size: 40%; --swatch-x: 30%; --swatch-y: 39.81%; }
+  .design-color-palette__swatch[data-swatch='base'] { --swatch-x: 6.875%; --swatch-y: 1.59%; }
+  .design-color-palette__swatch[data-swatch='raised'] { --swatch-x: 59.375%; --swatch-y: 67.04%; }
+  .design-color-palette__swatch[data-swatch='text'] { --swatch-x: 3.125%; --swatch-y: 63.06%; }
+  .design-color-palette__swatch[data-swatch='light-base'] { --swatch-x: 54.375%; --swatch-y: 6.85%; }
+  .design-color-palette__swatch[data-swatch='float'] { --swatch-x: 67.5%; --swatch-y: 23.41%; }
+  .design-color-palette__swatch[data-swatch='secondary-text'] { --swatch-x: 6.56%; --swatch-y: 23.41%; }
+  .design-color-palette__swatch[data-swatch='light-accent'] { --swatch-x: 28.75%; --swatch-y: 82.8%; }
+  .design-color-palette__swatch[data-swatch='present'] { --swatch-x: 41.25%; --swatch-y: 22.93%; }
+  .design-color-palette__swatch[data-swatch='excused'] { --swatch-x: 75.625%; --swatch-y: 45.54%; }
+  .design-color-palette__swatch[data-swatch='absent'] { --swatch-x: 5.625%; --swatch-y: 43%; }
+  .design-color-palette__swatch[data-swatch='focus'] { --swatch-x: 68.75%; --swatch-y: 87.74%; }
+}

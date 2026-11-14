@@ -1,0 +1,355 @@
+.descent-scene {
+  --descent-view: max(24rem, calc(100svh - var(--landing-header)));
+  --descent-distance: clamp(31rem, 96svh, 62rem);
+  --descent-overlap: clamp(6.5rem, 20svh, 12rem);
+  --descent-vault-width: min(76vw, 55rem);
+  --descent-vault-aspect: 1.62;
+  --descent-depth: 57rem;
+  --descent-drop: -18rem;
+  --descent-line: color-mix(in srgb, var(--landing-accent) 45%, #31233e);
+  --descent-bright: color-mix(in srgb, var(--landing-accent) 80%, var(--landing-text));
+  --descent-opening: 0;
+  --descent-travel: 0;
+  --descent-pitch: 0;
+  --descent-dissolve: 0;
+  position: relative;
+  isolation: isolate;
+  min-height: calc(var(--descent-view) + var(--descent-distance));
+  margin-block-end: calc(-1 * var(--descent-overlap));
+  pointer-events: none;
+}
+
+.descent-stage {
+  position: sticky;
+  top: var(--landing-header);
+  height: var(--descent-view);
+  overflow: clip;
+  background: var(--landing-bg);
+}
+
+.descent-scene + .rct-story {
+  position: relative;
+}
+
+.descent-world {
+  position: absolute;
+  inset: 0;
+  perspective: clamp(22rem, 75vw, 76rem);
+  perspective-origin: 50% 49%;
+  background: radial-gradient(ellipse at 50% 46%, #291a36 0%, #17101e 38%, var(--landing-bg) 76%);
+}
+.descent-camera,
+.descent-vault,
+.descent-shaft,
+.descent-door {
+  transform-style: preserve-3d;
+}
+.descent-camera {
+  position: absolute;
+  inset: 0;
+  transform: translate3d(
+      0,
+      calc(var(--descent-travel) * var(--descent-drop)),
+      calc(var(--descent-travel) * 52rem)
+    )
+    rotateX(calc(var(--descent-pitch) * -5deg));
+  transform-origin: 50% 49%;
+}
+.descent-vault {
+  position: absolute;
+  width: var(--descent-vault-width);
+  aspect-ratio: var(--descent-vault-aspect);
+  inset: 49% auto auto 50%;
+  transform: translate(-50%, -50%);
+}
+
+.descent-shaft {
+  position: absolute;
+  inset: 0.45rem;
+  transform: translateZ(-1.15rem) rotateX(17deg);
+}
+.descent-wall,
+.descent-layer,
+.descent-exit {
+  position: absolute;
+  display: block;
+}
+.descent-wall {
+  border: 0.0625rem solid #59427552;
+}
+.descent-wall--left,
+.descent-wall--right {
+  inset-block: 0;
+  width: var(--descent-depth);
+  background:
+    repeating-linear-gradient(0deg, transparent 0 3rem, #af83e01c 3rem 3.06rem),
+    linear-gradient(90deg, #251732, #100c18 46%, #1d1328 86%, #342047);
+}
+.descent-wall--left {
+  left: 0;
+  transform-origin: left;
+  transform: rotateY(90deg);
+}
+.descent-wall--right {
+  right: 0;
+  transform-origin: right;
+  transform: rotateY(-90deg);
+  background:
+    repeating-linear-gradient(0deg, transparent 0 3rem, #af83e01c 3rem 3.06rem),
+    linear-gradient(270deg, #251732, #100c18 46%, #1d1328 86%, #342047);
+}
+.descent-wall--ceiling,
+.descent-wall--floor {
+  inset-inline: 0;
+  height: var(--descent-depth);
+  background:
+    repeating-linear-gradient(90deg, transparent 0 3.25rem, #af83e02b 3.25rem 3.31rem),
+    linear-gradient(#171020, #100b16 42%, #2c1a3d 92%, #39214b);
+}
+.descent-wall--ceiling {
+  top: 0;
+  transform-origin: top;
+  transform: rotateX(-90deg);
+}
+.descent-wall--floor {
+  bottom: 0;
+  transform-origin: bottom;
+  transform: rotateX(90deg);
+  background:
+    repeating-linear-gradient(90deg, transparent 0 3.25rem, #af83e02b 3.25rem 3.31rem),
+    linear-gradient(#39214b, #1d1229 32%, #110c18 82%, #281935);
+}
+.descent-layer {
+  inset: 0;
+  transform: translateZ(calc(var(--descent-layer) * -5.25rem));
+  border: 0.32rem solid #413051;
+  border-radius: 0.55rem;
+  box-shadow:
+    inset 0 0 0 0.0625rem #a880cf,
+    0 0 0 0.08rem #201729;
+}
+.descent-layer:nth-of-type(3n + 5) {
+  border-color: #53356a;
+  box-shadow:
+    inset 0 0 0 0.08rem #cfadfca8,
+    0 0 1.7rem #8253a854;
+}
+.descent-layer i {
+  position: absolute;
+  width: 8%;
+  min-width: 1.3rem;
+  height: 0.14rem;
+  border-radius: 0.3rem;
+  background: var(--descent-bright);
+  box-shadow: 0 0 0.75rem #b88beaa3;
+}
+.descent-layer i:nth-child(1) {
+  inset: 0.3rem auto auto 6%;
+}
+.descent-layer i:nth-child(2) {
+  inset: 0.3rem 6% auto auto;
+}
+.descent-layer i:nth-child(3) {
+  inset: auto auto 0.3rem 6%;
+}
+.descent-layer i:nth-child(4) {
+  inset: auto 6% 0.3rem auto;
+}
+.descent-exit {
+  display: grid;
+  place-items: center;
+  inset: 0;
+  border: 0.125rem solid #936fc0;
+  transform: translateZ(calc(-1 * var(--descent-depth)));
+  background: radial-gradient(ellipse at center, #7242a96b, #2c1a3b 49%, #100b17 78%);
+}
+.descent-exit i {
+  width: 19%;
+  aspect-ratio: 1;
+  border: 0.14rem solid #c8a3f3;
+  border-radius: 24%;
+  transform: rotate(45deg);
+  background: #9d67dc31;
+  box-shadow:
+    0 0 5rem #a16adb8c,
+    inset 0 0 3rem #c89bfc61;
+}
+
+.descent-frame {
+  position: absolute;
+  inset: 0;
+  transform: translateZ(0.62rem);
+  border: 0.56rem solid #34273f;
+  border-block-start-color: #514062;
+  border-block-end-color: #201729;
+  border-radius: 0.95rem;
+  box-shadow:
+    0 0 0 0.0625rem #997cbf,
+    inset 0 0 0 0.08rem #806696,
+    0 1.4rem 4.5rem #050308c9;
+}
+.descent-door {
+  position: absolute;
+  inset-block: 0.48rem;
+  width: calc(50% - 0.54rem);
+}
+.descent-door--left {
+  left: 0.46rem;
+  transform-origin: left center;
+  transform: rotateY(calc(var(--descent-opening) * -99deg));
+}
+.descent-door--right {
+  right: 0.46rem;
+  transform-origin: right center;
+  transform: rotateY(calc(var(--descent-opening) * 99deg));
+}
+.descent-door__face,
+.descent-door__rear {
+  position: absolute;
+  inset: 0;
+  border: 0.0625rem solid #69547e;
+  backface-visibility: hidden;
+}
+.descent-door__face {
+  transform: translateZ(0.28rem);
+  overflow: hidden;
+  border-block-start-color: #a486b9;
+  border-block-end-color: #241b2f;
+  background:
+    linear-gradient(150deg, #76628c49, transparent 43%),
+    repeating-linear-gradient(0deg, #bd9ad803 0 0.12rem, transparent 0.12rem 0.34rem),
+    linear-gradient(90deg, #21192b, #30253e 48%, #3e2d4c 96%, #7c5d9c 100%);
+  box-shadow:
+    inset 0 0 0 0.27rem #19131e63,
+    inset 0 -1.5rem 3.8rem #0d0915a1;
+}
+.descent-door--left .descent-door__face {
+  border-start-start-radius: 0.54rem;
+  border-end-start-radius: 0.54rem;
+}
+.descent-door--right .descent-door__face {
+  border-start-end-radius: 0.54rem;
+  border-end-end-radius: 0.54rem;
+  background:
+    linear-gradient(210deg, #76628c49, transparent 43%),
+    repeating-linear-gradient(0deg, #bd9ad803 0 0.12rem, transparent 0.12rem 0.34rem),
+    linear-gradient(270deg, #21192b, #30253e 48%, #3e2d4c 96%, #7c5d9c 100%);
+}
+.descent-door__panel {
+  position: absolute;
+  inset: 10% 9%;
+  border: 0.0625rem solid #9479ad76;
+  border-radius: 0.45rem;
+  background:
+    linear-gradient(150deg, #49385875, #251b31 51%, #2c2139),
+    linear-gradient(90deg, #342743, #251b30);
+  box-shadow:
+    inset 0 0 0 0.28rem #1a132461,
+    0 0.38rem 0.85rem #0d091473;
+}
+.descent-door__panel::after {
+  content: '';
+  position: absolute;
+  inset: 13% 16%;
+  border: 0.0625rem solid #9a7aba2e;
+  clip-path: polygon(0 0, 60% 0, 60% 7%, 7% 7%, 7% 90%, 100% 90%, 100% 100%, 0 100%);
+}
+.descent-door__lock {
+  position: absolute;
+  z-index: 1;
+  top: 50%;
+  width: clamp(3.3rem, 8vw, 6rem);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  transform: translateY(-50%);
+  border: 0.12rem solid #cba5f7;
+  background: radial-gradient(circle, #d7b3ff 0 5%, #9267c3 6% 15%, #3b2750 16% 56%, #21172c 57%);
+  box-shadow:
+    0 0 1.65rem #bc89ef59,
+    inset 0 0 0 0.34rem #b58add2c;
+}
+.descent-door--left .descent-door__lock {
+  right: calc(clamp(3.3rem, 8vw, 6rem) / -2);
+}
+.descent-door--right .descent-door__lock {
+  left: calc(clamp(3.3rem, 8vw, 6rem) / -2);
+}
+.descent-door__bolts {
+  position: absolute;
+  inset: 4% 4.6%;
+  background:
+    radial-gradient(circle at 0.22rem 0.22rem, #8d74a5 0 0.12rem, transparent 0.16rem),
+    radial-gradient(circle at calc(100% - 0.22rem) 0.22rem, #8d74a5 0 0.12rem, transparent 0.16rem),
+    radial-gradient(circle at 0.22rem calc(100% - 0.22rem), #624b78 0 0.12rem, transparent 0.16rem),
+    radial-gradient(
+      circle at calc(100% - 0.22rem) calc(100% - 0.22rem),
+      #624b78 0 0.12rem,
+      transparent 0.16rem
+    );
+}
+.descent-door__edge {
+  position: absolute;
+  inset-block: 0;
+  width: 0.58rem;
+  background: linear-gradient(90deg, #281d32, #78568b, #35243f);
+}
+.descent-door--left .descent-door__edge {
+  right: 0;
+  transform-origin: right;
+  transform: rotateY(90deg) translateX(0.29rem);
+}
+.descent-door--right .descent-door__edge {
+  left: 0;
+  transform-origin: left;
+  transform: rotateY(-90deg) translateX(-0.29rem);
+}
+.descent-door__rear {
+  transform: translateZ(-0.29rem) rotateY(180deg);
+  background: linear-gradient(110deg, #32233e, #201729);
+}
+.descent-vignette,
+.descent-stage::after {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+.descent-vignette {
+  background: linear-gradient(var(--landing-bg), transparent 13% 84%, var(--landing-bg));
+}
+.descent-stage::after {
+  content: '';
+  background: var(--landing-bg);
+  opacity: var(--descent-dissolve);
+}
+
+@media (max-width: 46rem) {
+  .descent-scene {
+    --descent-vault-width: calc(100vw - 2.1rem);
+    --descent-vault-aspect: 1.04;
+    --descent-drop: -11.5rem;
+    --descent-distance: clamp(26rem, 86svh, 47rem);
+    --descent-overlap: clamp(6.5rem, 19svh, 10rem);
+  }
+  .descent-world {
+    perspective: 33rem;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .descent-scene {
+    --descent-opening: 0.9;
+    --descent-travel: 0;
+    --descent-pitch: 0;
+    --descent-dissolve: 0;
+    min-height: 0;
+    margin-block-end: 0;
+  }
+  .descent-stage {
+    position: relative;
+    top: auto;
+    height: clamp(14rem, 44vw, 22rem);
+  }
+  .descent-vault {
+    width: min(65vw, 30rem);
+  }
+}

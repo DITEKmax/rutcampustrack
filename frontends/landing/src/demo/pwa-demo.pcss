@@ -1,0 +1,164 @@
+.pwa-demo-grid {
+  gap: clamp(1rem, 4vw, 3.5rem);
+}
+
+.pwa-demo-trace {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) minmax(0, 2fr);
+  gap: 0.75rem;
+  /* Let the phone set the shared row height regardless of trace length. */
+  contain: size;
+  align-self: stretch;
+}
+
+.pwa-demo-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--rct-space-2);
+}
+
+.pwa-demo-toolbar .demo-reset {
+  text-align: start;
+}
+
+.pwa-demo-pane {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  min-inline-size: 0;
+  min-block-size: 0;
+  align-self: stretch;
+  overflow: hidden;
+}
+
+.pwa-demo-pane-title {
+  margin: 0;
+  padding: 0.5rem clamp(0.75rem, 2vw, 1.25rem);
+  border-block-end: var(--landing-rule) solid var(--landing-border);
+  background: color-mix(in srgb, var(--landing-accent) 8%, transparent);
+  font: 620 0.82rem/1.4 var(--rct-font-family-sans);
+}
+
+.pwa-demo-editor {
+  min-inline-size: 0;
+  min-block-size: 0;
+  padding: clamp(0.75rem, 2vw, 1.25rem);
+  overflow: auto;
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--landing-accent) 65%, var(--landing-surface)) var(--landing-surface);
+  overscroll-behavior: contain;
+  font: 400 clamp(0.72rem, 1.05vw, 0.82rem)/1.62 'JetBrains Mono', ui-monospace, monospace;
+}
+
+.pwa-demo-editor:focus-visible {
+  outline-offset: -0.1875rem;
+}
+
+.pwa-demo-exchange + .pwa-demo-exchange {
+  margin-block-start: 0.75rem;
+  padding-block-start: 0.75rem;
+  border-block-start: var(--landing-rule) solid var(--landing-border);
+}
+
+.pwa-demo-editor pre {
+  margin: 0;
+  font: inherit;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.pwa-demo-editor code {
+  font: inherit;
+}
+
+.pwa-demo-exchange > :first-child {
+  margin-block-end: 0.375rem;
+}
+
+.landing-phone.pwa-demo-phone {
+  inline-size: min(100%, 27.5rem);
+  aspect-ratio: 6 / 13;
+}
+
+@media (max-width: 52rem) {
+  .pwa-demo-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .pwa-demo-grid .demo-stage {
+    grid-row: 1;
+  }
+
+  .pwa-demo-trace {
+    block-size: clamp(26rem, 62svh, 35rem);
+  }
+}
+
+.pwa-demo-scroll-locked {
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+.pwa-demo-grid.pwa-demo-grid--fullscreen {
+  position: fixed;
+  z-index: 40;
+  inset: 0 0 auto;
+  block-size: 100vh;
+  block-size: 100dvh;
+  grid-template: auto minmax(0, 1fr) / minmax(0, 1fr);
+  align-items: stretch;
+  gap: var(--rct-space-2);
+  margin: 0;
+  padding-block: max(var(--rct-space-2), env(safe-area-inset-top))
+    max(var(--rct-space-2), env(safe-area-inset-bottom));
+  padding-inline: max(var(--rct-space-2), env(safe-area-inset-left))
+    max(var(--rct-space-2), env(safe-area-inset-right));
+  overflow: hidden;
+  background: var(--landing-bg);
+}
+
+.pwa-demo-grid--fullscreen .pwa-demo-trace {
+  grid-template-rows: auto;
+  grid-row: 1;
+  inline-size: min(100%, 27.5rem);
+  block-size: auto;
+  contain: none;
+  justify-self: center;
+}
+
+.pwa-demo-grid--fullscreen .pwa-demo-toolbar {
+  justify-content: center;
+}
+
+.pwa-demo-grid--fullscreen .demo-reset {
+  margin-block-start: 0;
+}
+
+.pwa-demo-grid--fullscreen .demo-stage {
+  grid-row: 2;
+  min-block-size: 0;
+  margin: 0;
+}
+
+.pwa-demo-grid--fullscreen .demo-orbit-bg {
+  display: none;
+}
+
+.pwa-demo-grid--fullscreen .pwa-demo-phone {
+  block-size: 100%;
+  aspect-ratio: auto;
+  border-radius: 0;
+}
+
+.pwa-demo-focus-guard {
+  position: absolute;
+  inline-size: 0;
+  block-size: 0;
+  overflow: hidden;
+}
+
+@media (forced-colors: active) {
+  .pwa-demo-editor {
+    scrollbar-color: auto;
+  }
+}

@@ -135,6 +135,7 @@ export function createAdminUsersReviewApis(state: string): {
   client: AdminUsersClient
   accessClient: AdminAccessClient
   authority: AdminAccessProfile
+  fetcher: typeof fetch
   observations: {
     recoveryPosts: number
     archivePosts: number
@@ -426,7 +427,7 @@ export function createAdminUsersReviewApis(state: string): {
       const payload = JSON.parse(String(init?.body)) as Record<string, unknown>
       const created = {
         ...fixtureUser(
-          4,
+          Math.max(3, ...users.map((user) => user.id)) + 1,
           String(payload.firstName),
           String(payload.lastName),
           payload.role as 'STUDENT' | 'TEACHER' | 'ADMIN',
@@ -574,6 +575,7 @@ export function createAdminUsersReviewApis(state: string): {
     client: new AdminUsersClient(options),
     accessClient: new AdminAccessClient(options),
     authority,
+    fetcher,
     observations,
   }
 }

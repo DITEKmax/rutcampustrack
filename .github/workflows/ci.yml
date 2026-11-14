@@ -1204,6 +1204,8 @@ jobs:
           node --test pwa-vue/tests/*.test.mjs
           node ../tests/load/scenario-controls.cjs
           npm run build
+          npm run typecheck:landing
+          npm run build:landing
       - name: Verify deterministic PWA reconnect and bootstrap ordering
         working-directory: frontends
         run: |

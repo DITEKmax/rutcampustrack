@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 220" fill="none">
+  <defs>
+    <linearGradient id="front" x1="105" y1="58" x2="213" y2="169" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#D5BBF8"/>
+      <stop offset="1" stop-color="#9370C4"/>
+    </linearGradient>
+    <linearGradient id="side" x1="219" y1="35" x2="235" y2="174" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#A080CB"/>
+      <stop offset="1" stop-color="#55416F"/>
+    </linearGradient>
+  </defs>
+  <path d="M67 101h36v36h42v42a17 17 0 0 1-17 17H70a23 23 0 0 1-23-23v-52a20 20 0 0 1 20-20Z" fill="#5E457E"/>
+  <path d="M47 132v-11a20 20 0 0 1 20-20h36" stroke="#8F6BB8" stroke-width="2" stroke-linecap="round"/>
+  <path d="M210 27h41a21 21 0 0 1 21 21v93a24 24 0 0 1-24 24h-60v-37h35V91h-32V46a19 19 0 0 1 19-19Z" fill="url(#side)"/>
+  <path d="M210 28h41a20 20 0 0 1 20 20v17" stroke="#D1B4F3" stroke-opacity=".55" stroke-width="2" stroke-linecap="round"/>
+  <path fill="url(#front)" fill-rule="evenodd" d="M98 54h102a18 18 0 0 1 18 18v27h25v30h-25v27a18 18 0 0 1-18 18h-51v-26h-32v26H98a19 19 0 0 1-19-19V73a19 19 0 0 1 19-19Zm39 39-23 21 23 21 7-8-14-13 14-13-7-8Zm31 0-7 8 15 13-15 13 7 8 24-21-24-21Z"/>
+  <path d="M80 91V73a18 18 0 0 1 18-18h78" stroke="#F0DFFF" stroke-opacity=".68" stroke-width="2" stroke-linecap="round"/>
+</svg>

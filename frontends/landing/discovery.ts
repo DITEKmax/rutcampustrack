@@ -1,0 +1,196 @@
+import { relative } from 'node:path'
+import type { Plugin } from 'vite'
+import { loadTopic } from './src/story/topic-chapters'
+import { presentationHome, topicHref, topics, type Topic } from './src/topics'
+
+const origin = 'https://ruttrack.site'
+const name = 'RutCampusTrack'
+const image = origin + presentationHome + 'assets/brand-20b-g08/og-titlecase-purple.png'
+const homeTitle = 'За каждой отметкой целая система'
+const homeLead = 'Расписание, посещаемость и учебный контекст.'
+const homeDescription = 'RutCampusTrack: расписание, посещаемость и учебный контекст. Попробуй учебный день в интерактивной демонстрации.'
+
+const description = (topic: Topic) => topic.lead ||
+  'Как устроен интерфейс RutCampusTrack: экран учебного дня, типографика Onest и цветовые токены для светлой и тёмной темы.'
+
+const pages = [
+  { path: presentationHome, label: name, title: name + ' — ' + homeTitle, description: homeDescription },
+  ...topics.map(topic => ({
+    path: topicHref(topic),
+    label: topic.title,
+    title: topic.title + ' — ' + name,
+    description: description(topic),
+    topic,
+  })),
+]
+
+type Page = (typeof pages)[number]
+
+const htmlEntities: Record<string, string> = {
+  '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+}
+const escapeHtml = (value: string) => value.replace(/[&<>"']/g, char => htmlEntities[char]!)
+const escapeMarkdown = (value: string) => value.replace(/[\\`*_[\]<>]/g, '\\$&')
+const htmlParagraph = (value: string) => '<p>' + escapeHtml(value) + '</p>'
+const markdownPath = (page: Page) => page.path + 'index.md'
+
+function metadata(page: Page): string {
+  const canonical = origin + page.path
+  const meta = (attribute: 'name' | 'property', key: string, value: string) =>
+    `<meta ${attribute}="${key}" content="${escapeHtml(value)}" />`
+  return [
+    '<title>' + escapeHtml(page.title) + '</title>',
+    meta('name', 'description', page.description),
+    '<link rel="canonical" href="' + escapeHtml(canonical) + '" />',
+    '<link rel="alternate" type="text/markdown" href="' + escapeHtml(origin + markdownPath(page)) + '" />',
+    '<link rel="describedby" href="' + origin + '/llms.txt" />',
+    meta('property', 'og:type', 'website'),
+    meta('property', 'og:site_name', name),
+    meta('property', 'og:locale', 'ru_RU'),
+    meta('property', 'og:title', page.title),
+    meta('property', 'og:description', page.description),
+    meta('property', 'og:url', canonical),
+    meta('property', 'og:image', image),
+    meta('property', 'og:image:type', 'image/png'),
+    meta('property', 'og:image:width', '1200'),
+    meta('property', 'og:image:height', '630'),
+    meta('property', 'og:image:alt', name),
+    meta('name', 'twitter:card', 'summary_large_image'),
+    meta('name', 'twitter:title', page.title),
+    meta('name', 'twitter:description', page.description),
+    meta('name', 'twitter:image', image),
+    meta('name', 'twitter:image:alt', name),
+  ].join('\n    ')
+}
+
+function topicNavigation(): string {
+  const links = topics.map(topic =>
+    '<li><a href="' + topicHref(topic) + '">' + escapeHtml(topic.title) + '</a>' +
+    htmlParagraph(description(topic)) + '</li>',
+  )
+  return '<nav id="topics" aria-labelledby="topics-title"><h2 id="topics-title">Темы проекта</h2><ul>' +
+    links.join('\n') + '</ul></nav>'
+}
+
+async function pageContent(page: Page) {
+  const home = '<a href="' + presentationHome + '#topics">Все темы RutCampusTrack</a>'
+  if (!('topic' in page)) {
+    return {
+      html: '<main class="landing-shell landing-static"><header id="top"><p>' + name +
+        '</p><h1>' + homeTitle + '</h1>' + htmlParagraph(homeLead) + '</header>' + topicNavigation() + '</main>',
+      markdown: [
+        '# ' + name,
+        homeDescription,
+        '## Темы проекта\n\n' + pages.slice(1).map(topic =>
+          `- [${escapeMarkdown(topic.label)}](${origin + markdownPath(topic)}): ${escapeMarkdown(topic.description)}`,
+        ).join('\n'),
+      ],
+    }
+  }
+
+  const chapters = await loadTopic(page.topic)
+  const sections: string[] = []
+  const markdown = ['# ' + escapeMarkdown(page.label), escapeMarkdown(page.description)]
+  for (const chapter of chapters) {
+    const section = chapter.title
+      ? ['<h2>' + escapeHtml(chapter.title) + '</h2>', ...(chapter.lead ? [htmlParagraph(chapter.lead)] : [])]
+      : []
+    if (chapter.title) markdown.push('## ' + escapeMarkdown(chapter.title))
+    if (chapter.lead) markdown.push(escapeMarkdown(chapter.lead))
+    const heading = chapter.title ? 'h3' : 'h2'
+    for (const operation of chapter.operations) {
+      section.push(`<section id="${escapeHtml(operation.id)}"><${heading}>${escapeHtml(operation.title)}</${heading}>` +
+        htmlParagraph(operation.description) + '</section>')
+      markdown.push((chapter.title ? '### ' : '## ') + escapeMarkdown(operation.title), escapeMarkdown(operation.description))
+    }
+    sections.push(chapter.title
+      ? '<section id="' + escapeHtml(chapter.id) + '">' + section.join('\n') + '</section>'
+      : section.join('\n'))
+  }
+  if (page.topic.slug === 'design') {
+    for (const entry of designSections) {
+      sections.push('<section id="' + entry.id + '"><h2>' + escapeHtml(entry.title) + '</h2>' + htmlParagraph(entry.lead) + '</section>')
+      markdown.push('## ' + escapeMarkdown(entry.title), escapeMarkdown(entry.lead))
+    }
+  }
+  return {
+    html: '<main class="landing-shell landing-static">' + home + '<h1>' + escapeHtml(page.label) + '</h1>' +
+      (page.topic.lead ? htmlParagraph(page.topic.lead) : '') + sections.join('\n') + '</main>',
+    markdown,
+  }
+}
+
+const designSections = [
+  { id: 'design-today', title: 'Учебный день', lead: 'Текущая пара, время занятий и изменения аудитории на экране «Сегодня».' },
+  { id: 'design-type', title: 'Буквы, цифры и ритм', lead: 'Onest Variable для заголовков, расписания и таблиц журнала. Табличные цифры удерживают время в колонках.' },
+  { id: 'design-tokens', title: 'Цвет и переменные', lead: 'Один цветовой токен выделяет текущую пару в светлой и тёмной теме.' },
+  { id: 'design-palette', title: 'Палитра проекта', lead: 'Цвета фона, текста и акцентов в светлой и тёмной теме.' },
+]
+
+const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${pages.map(page => '  <url><loc>' + escapeHtml(origin + page.path) + '</loc></url>').join('\n')}
+</urlset>
+`
+
+const llms = [
+  '# ' + name,
+  '> Публичная презентация системы учебного дня: расписание, посещаемость и учебный контекст.',
+  'Презентация описывает работу приложения для студентов, старост, преподавателей и администраторов. Интерактивные сценарии используют демонстрационные данные.',
+  '## Обзор\n\n- [RutCampusTrack](' + origin + presentationHome + 'index.md): Обзор презентации и список тем.',
+  '## Темы проекта\n\n' + pages.slice(1).map(page =>
+    `- [${escapeMarkdown(page.label)}](${origin + markdownPath(page)}): ${escapeMarkdown(page.description)}`,
+  ).join('\n'),
+].join('\n\n') + '\n'
+
+const assets = [
+  { fileName: 'robots.txt', mime: 'text/plain', content: () => 'User-agent: *\nAllow: /\n\nSitemap: ' + origin + '/sitemap.xml\n' },
+  { fileName: 'sitemap.xml', mime: 'application/xml', content: () => sitemap },
+  { fileName: 'llms.txt', mime: 'text/plain', content: () => llms },
+  ...pages.map(page => ({
+    fileName: markdownPath(page).slice(presentationHome.length),
+    mime: 'text/markdown',
+    async content() {
+      const { markdown } = await pageContent(page)
+      return [...markdown, '[Презентация](' + origin + page.path + ')'].join('\n\n') + '\n'
+    },
+  })),
+]
+
+export function discovery(): Plugin {
+  let root = ''
+  const byFilename = new Map(pages.map(page => [page.path.slice(presentationHome.length) + 'index.html', page]))
+  return {
+    name: 'rct-landing-discovery',
+    configResolved(config) {
+      root = config.root
+    },
+    transformIndexHtml: {
+      order: 'pre',
+      async handler(html, context) {
+        const page = byFilename.get(relative(root, context.filename).replaceAll('\\', '/'))
+        if (!page) return html
+        const content = await pageContent(page)
+        return html
+          .replace(/<title>[^<]*<\/title>/, () => metadata(page))
+          .replace(/(<div id="app"[^>]*>)<\/div>/, (_match, open) => open + '\n' + content.html + '\n</div>')
+      },
+    },
+    async generateBundle() {
+      for (const asset of assets) {
+        this.emitFile({ type: 'asset', fileName: asset.fileName, source: await asset.content() })
+      }
+    },
+    configureServer(server) {
+      server.middlewares.use((request, response, next) => {
+        const pathname = request.url?.split('?')[0]
+        const asset = assets.find(item => pathname === presentationHome + item.fileName)
+        if (!asset || (request.method !== 'HEAD' && request.method !== 'GET')) return next()
+        void Promise.resolve(asset.content()).then(content => {
+          response.setHeader('Content-Type', asset.mime + '; charset=utf-8')
+          response.end(request.method === 'HEAD' ? undefined : content)
+        }).catch(next)
+      })
+    },
+  }
+}

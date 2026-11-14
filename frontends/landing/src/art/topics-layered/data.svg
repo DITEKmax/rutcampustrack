@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 220" fill="none">
+  <defs>
+    <linearGradient id="paper" x1="109" y1="32" x2="210" y2="162" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#D8BFF7"/>
+      <stop offset="1" stop-color="#A17ECB"/>
+    </linearGradient>
+  </defs>
+  <path d="m64 109 136-14a17 17 0 0 1 19 15l6 54a17 17 0 0 1-15 19L74 197a17 17 0 0 1-19-15l-6-54a17 17 0 0 1 15-19Z" fill="#553D73"/>
+  <path d="m59 93 147-15a17 17 0 0 1 19 15l6 54a17 17 0 0 1-15 19L69 181a17 17 0 0 1-19-15l-6-54a17 17 0 0 1 15-19Z" fill="#74579B"/>
+  <path d="m56 78 149-16a17 17 0 0 1 19 15l7 54a17 17 0 0 1-15 19L67 166a17 17 0 0 1-19-15l-7-54a17 17 0 0 1 15-19Z" fill="#9C7DC3"/>
+  <path fill="url(#paper)" fill-rule="evenodd" d="m59 61 144-15a17 17 0 0 1 19 15l6 52a17 17 0 0 1-15 19L69 147a17 17 0 0 1-19-15l-6-52a17 17 0 0 1 15-19Zm26 26a7 7 0 1 0-14 2 7 7 0 0 0 14-2Zm4 25a7 7 0 1 0-14 2 7 7 0 0 0 14-2Z"/>
+  <path d="m57 67 107-11" stroke="#F6E7FF" stroke-opacity=".58" stroke-width="2" stroke-linecap="round"/>
+  <path fill="#57416F" fill-rule="evenodd" d="M277 119a47 47 0 1 0-94 0 47 47 0 0 0 94 0Zm-39 0a8 8 0 1 0-16 0 8 8 0 0 0 16 0Z"/>
+  <path d="M197 117a33 33 0 0 1 33-31m0 66a33 33 0 0 0 33-31" stroke="#BA99E2" stroke-width="2" stroke-linecap="round" opacity=".8"/>
+</svg>

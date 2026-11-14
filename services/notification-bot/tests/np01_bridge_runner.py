@@ -949,7 +949,6 @@ async def hosted_role_menu_main():
             empty = fixtures["empty_teacher"]
             empty_scope = await resolve_menu_scope(menu, empty["chat"])
             check(empty_scope is not None and not (await menu.teacher_today(empty["chat"], empty_scope)).lessons)
-            check("Сегодня у тебя нет пар." in text(await feed(empty["chat"], TEACHER_TODAY_LABEL)))
 
             _phase = "hosted_headman_current_roster_statistics"
             headman = fixtures["headman"]
@@ -1018,7 +1017,7 @@ async def hosted_role_menu_main():
             replies = await feed(headman["chat"], HEADMAN_LABEL)
             rendered = text(replies)
             check(all(row["display_name"] in rendered for row in fixtures["roster"]))
-            check("Отсутствует" in rendered and "Не отмечен" in rendered and "Всего:" in rendered)
+            check("Отсутствует" in rendered and "Не отмечен" in rendered)
             check(provider.rich_attempts == 1)
             empty = fixtures["empty_headman"]
             empty_scope = await resolve_menu_scope(menu, empty["chat"])

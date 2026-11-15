@@ -877,9 +877,9 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
-    # Observed249MiB resident+149MiB swap; 512m includes about25% headroom.
-    mem_limit: 512m
-    memswap_limit: 768m
+    # 1 GiB RAM with up to 256 MiB of additional swap.
+    mem_limit: 1024m
+    memswap_limit: 1280m
     mem_reservation: 128m
     restart: unless-stopped
     healthcheck:

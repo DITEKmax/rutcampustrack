@@ -68,11 +68,15 @@ describe('owner-requested automatic geofence acquisition', () => {
       expect.objectContaining({ reason: 'CANCELLED', sampleCount: 1 }),
     )
   })
-  it.each([1000, null])(
-    'finishes the first inside position immediately without an accuracy hurdle (%s)',
-    async (accuracy) => {
+  it.each([
+    ['BROWSER', 1000],
+    ['BROWSER', null],
+    ['TMA', null],
+  ] as const)(
+    'finishes the first inside %s position immediately without an accuracy hurdle',
+    async (source, accuracy) => {
       vi.useFakeTimers()
-      const f = fixture()
+      const f = fixture(source)
       const terminal = vi.fn()
       const run = acquireGeolocation(f.source, { geofence: policy, terminal })
       f.emit(300, accuracy)
@@ -84,7 +88,7 @@ describe('owner-requested automatic geofence acquisition', () => {
       expect(f.watch).toHaveBeenCalledOnce()
       expect(f.stop).toHaveBeenCalledOnce()
       expect(terminal).toHaveBeenCalledExactlyOnceWith({
-        source: 'BROWSER',
+        source,
         reason: 'WITHIN_GEOFENCE',
         duration: 0,
         sampleCount: 1,
@@ -138,20 +142,34 @@ describe('owner-requested automatic geofence acquisition', () => {
     expect(terminal).toHaveBeenCalledOnce()
     expect(vi.getTimerCount()).toBe(0)
   })
-  it('uses three readings with absent or invalid policy without any hardcoded campus rule', async () => {
+  it('returns the latest distinct native reading with an invalid policy at the refinement deadline', async () => {
     vi.useFakeTimers()
     const f = fixture('TMA')
-    const run = acquireGeolocation(f.source, { geofence: { ...policy, radiusMeters: NaN } })
-    f.emit(0, null)
-    await next()
-    f.emit(1, null)
-    await next()
-    f.emit(2, null)
+    const terminal = vi.fn()
+    const run = acquireGeolocation(f.source, {
+      geofence: { ...policy, radiusMeters: NaN },
+      terminal,
+    })
+    f.emit(500, null)
+    await vi.advanceTimersByTimeAsync(1_500)
+    const receivedAt = Date.now()
+    f.emit(1200, 500)
+    await vi.advanceTimersByTimeAsync(1_500)
+    f.emit(500, 1)
+    await vi.advanceTimersByTimeAsync(1_500)
+    f.emit(1200, 1)
+    await vi.advanceTimersByTimeAsync(5_499)
+    expect(terminal).not.toHaveBeenCalled()
+    await vi.advanceTimersByTimeAsync(1)
     await expect(run).resolves.toMatchObject({
       reason: 'ATTEMPTS_EXHAUSTED',
-      sampleCount: 3,
-      sample: { latitude: at(2), timestamp: null },
+      sampleCount: 2,
+      duration: 10_000,
+      sample: { latitude: at(1200), accuracy: 500, timestamp: null, receivedAt },
     })
+    f.emit(200)
+    expect(terminal).toHaveBeenCalledOnce()
+    expect(vi.getTimerCount()).toBe(0)
   })
   it('retries a transient error within the same three-attempt budget', async () => {
     vi.useFakeTimers()
@@ -230,6 +248,108 @@ describe('owner-requested automatic geofence acquisition', () => {
     })
     expect(vi.getTimerCount()).toBe(0)
   })
+})
+describe('native refinement budget and termination', () => {
+  it('uses the remaining overall budget when the first outside position is late', async () => {
+    vi.useFakeTimers()
+    const f = fixture('TMA')
+    const terminal = vi.fn()
+    const run = acquireGeolocation(f.source, { geofence: policy, terminal })
+    await vi.advanceTimersByTimeAsync(24_000)
+    f.emit(650, null)
+    await vi.advanceTimersByTimeAsync(1_500)
+    f.emit(700, null)
+    await vi.advanceTimersByTimeAsync(2_499)
+    expect(terminal).not.toHaveBeenCalled()
+    await vi.advanceTimersByTimeAsync(1)
+    await expect(run).resolves.toMatchObject({
+      reason: 'BUDGET_EXPIRED',
+      sampleCount: 2,
+      duration: 28_000,
+      sample: { latitude: at(700), timestamp: null },
+    })
+    f.emit(100)
+    expect(terminal).toHaveBeenCalledOnce()
+    expect(vi.getTimerCount()).toBe(0)
+  })
+
+  it.each(['POSITION_UNAVAILABLE', 'TIMEOUT'] as const)(
+    'returns %s when the refinement window yields no position',
+    async (reason) => {
+      vi.useFakeTimers()
+      const f = fixture('TMA')
+      const terminal = vi.fn()
+      const run = acquireGeolocation(f.source, { geofence: policy, terminal })
+      f.fail(reason)
+      await vi.advanceTimersByTimeAsync(1_499)
+      expect(f.watch).toHaveBeenCalledOnce()
+      await vi.advanceTimersByTimeAsync(1)
+      expect(f.watch).toHaveBeenCalledTimes(2)
+      f.fail(reason)
+      await vi.advanceTimersByTimeAsync(8_500)
+      await expect(run).resolves.toMatchObject({ reason, sample: null, sampleCount: 0 })
+      expect(terminal).toHaveBeenCalledExactlyOnceWith({
+        source: 'TMA',
+        reason,
+        duration: 10_000,
+        sampleCount: 0,
+      })
+      expect(vi.getTimerCount()).toBe(0)
+    },
+  )
+
+  it.each([1, 1_500])(
+    'cancels native refinement at %d ms without emitting a result',
+    async (duration) => {
+      vi.useFakeTimers()
+      const f = fixture('TMA')
+      const controller = new AbortController()
+      const terminal = vi.fn()
+      const run = acquireGeolocation(f.source, {
+        geofence: policy,
+        signal: controller.signal,
+        terminal,
+      })
+      const rejected = expect(run).rejects.toMatchObject({ name: 'AbortError' })
+      f.emit(600)
+      await vi.advanceTimersByTimeAsync(duration)
+      controller.abort()
+      f.emit(100)
+      await rejected
+      const started = duration === 1 ? 1 : 2
+      expect(f.watch).toHaveBeenCalledTimes(started)
+      expect(f.stop).toHaveBeenCalledTimes(started)
+      expect(terminal).toHaveBeenCalledExactlyOnceWith({
+        source: 'TMA',
+        reason: 'CANCELLED',
+        duration,
+        sampleCount: 1,
+      })
+      expect(vi.getTimerCount()).toBe(0)
+    },
+  )
+
+  it.each(['PERMISSION_DENIED', 'UNSUPPORTED', 'APP_DISABLED'] as const)(
+    'discards a prior outside reading and stops on %s during refinement',
+    async (reason) => {
+      vi.useFakeTimers()
+      const f = fixture('TMA')
+      const terminal = vi.fn()
+      const run = acquireGeolocation(f.source, { geofence: policy, terminal })
+      f.emit(600)
+      await vi.advanceTimersByTimeAsync(1_500)
+      f.fail(reason)
+      await expect(run).resolves.toMatchObject({ reason, sample: null, sampleCount: 1 })
+      expect(f.watch).toHaveBeenCalledTimes(2)
+      expect(terminal).toHaveBeenCalledExactlyOnceWith({
+        source: 'TMA',
+        reason,
+        duration: 1_500,
+        sampleCount: 1,
+      })
+      expect(vi.getTimerCount()).toBe(0)
+    },
+  )
 })
 describe('permission retries and passive inspection', () => {
   it('clears a real browser watch on cancellation and rejects its late callback', async () => {

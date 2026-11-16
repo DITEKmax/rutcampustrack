@@ -203,7 +203,7 @@ describe('Telegram bounded sensor adapters', () => {
     owner.bindOwner('a', 's')
     const terminal = vi.fn()
     const command = owner.acquire({ terminal })
-    await vi.advanceTimersByTimeAsync(8_000)
+    await vi.advanceTimersByTimeAsync(18_000)
     await expect(command).resolves.toMatchObject({
       diagnostics: { source: 'TMA', completionReason: 'TIMEOUT' },
     })
@@ -211,6 +211,7 @@ describe('Telegram bounded sensor adapters', () => {
       expect.objectContaining({
         source: 'TMA',
         reason: 'TIMEOUT',
+        duration: 18_000,
         sampleCount: 0,
       }),
     )
@@ -229,6 +230,60 @@ describe('Telegram bounded sensor adapters', () => {
     await vi.advanceTimersByTimeAsync(28_000)
     await expect(result).resolves.toMatchObject({ source: 'TMA', reason: 'BUDGET_EXPIRED' })
     expect(getLocation).toHaveBeenCalledOnce()
+    expect(vi.getTimerCount()).toBe(0)
+  })
+  it('paces check-in reads through an unavailable result and repeated points until a distinct inside fix', async () => {
+    vi.useFakeTimers()
+    const outside = { latitude: 0.01, longitude: 0 }
+    const inside = { latitude: 0.002, longitude: 0 }
+    const readings = [null, outside, outside, outside, outside, inside]
+    const startedAt = Date.now()
+    const requestTimes: number[] = []
+    const getLocation = vi.fn((respond: (value: (typeof readings)[number]) => void) => {
+      requestTimes.push(Date.now() - startedAt)
+      const reading = readings.shift()
+      if (reading !== undefined) setTimeout(() => respond(reading), 100)
+    })
+    const owner = createDeviceAccess(
+      telegramDevicePlatform(
+        app({
+          LocationManager: {
+            isInited: true,
+            isLocationAvailable: true,
+            isAccessGranted: true,
+            init() {},
+            getLocation,
+          },
+        }),
+      ),
+      null,
+    )
+    owner.bindOwner('a', 's')
+    const terminal = vi.fn()
+    const command = owner.acquire({
+      geofence: { latitude: 0, longitude: 0, radiusMeters: 400 },
+      terminal,
+    })
+    await vi.advanceTimersByTimeAsync(8_099)
+    expect(terminal).not.toHaveBeenCalled()
+    await vi.advanceTimersByTimeAsync(1)
+    await expect(command).resolves.toMatchObject({
+      geo: { kind: 'COORDINATES', ...inside },
+      diagnostics: {
+        source: 'TMA',
+        fixTimestamp: null,
+        accuracyMeters: null,
+        sampleCount: 2,
+        completionReason: 'WITHIN_GEOFENCE',
+      },
+    })
+    expect(requestTimes).toEqual([0, 1_600, 3_200, 4_800, 6_400, 8_000])
+    expect(terminal).toHaveBeenCalledExactlyOnceWith({
+      source: 'TMA',
+      reason: 'WITHIN_GEOFENCE',
+      duration: 8_100,
+      sampleCount: 2,
+    })
     expect(vi.getTimerCount()).toBe(0)
   })
   it('serializes requests, preserves unknown fix timestamp and fences a late callback after cancel', async () => {

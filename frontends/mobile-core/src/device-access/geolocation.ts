@@ -5,6 +5,8 @@ import { browserDeviceContextAllows } from './browser-policy'
 export const GEO_BUDGET_MS = 28_000
 export const GEO_FRESH_MS = 30_000
 export const GEO_MAX_ATTEMPTS = 3
+const TMA_REFINEMENT_MS = 10_000
+const TMA_RETRY_INTERVAL_MS = 1_500
 export type GeoFailure =
   | 'PERMISSION_DENIED'
   | 'POSITION_UNAVAILABLE'
@@ -152,7 +154,19 @@ export function readGeolocationOnce(
     }
   })
 }
-/** Initial reading plus two automatic retries, one shared deadline and one terminal event. */
+function waitForNativeRetry(delayMs: number, signal: AbortSignal | undefined): Promise<void> {
+  return new Promise((resolve) => {
+    const finish = () => {
+      clearTimeout(timer)
+      signal?.removeEventListener('abort', finish)
+      resolve()
+    }
+    const timer = setTimeout(finish, Math.ceil(delayMs))
+    signal?.addEventListener('abort', finish, { once: true })
+    if (signal?.aborted) finish()
+  })
+}
+/** Browser retries and Telegram refinement share one acquisition deadline and terminal event. */
 export async function acquireGeolocation(
   source: GeoSource,
   options: {
@@ -167,22 +181,31 @@ export async function acquireGeolocation(
   const started = performance.now()
   const elapsed = () => Math.max(0, performance.now() - started)
   const budget = Math.max(0, Math.min(GEO_BUDGET_MS, options.budgetMs ?? GEO_BUDGET_MS))
+  const nativePositions = new Set<string>()
+  let refinementDeadline = Infinity
   let latest: GeoSample | null = null
   let count = 0
   let reason: GeoResult['reason'] = 'POSITION_UNAVAILABLE'
+  const reportProgress = (stage: 'determining' | 'refining') => {
+    try {
+      options.progress?.(stage)
+    } catch {
+      /* Presentation only. */
+    }
+  }
   try {
-    for (let attempt = 0; attempt < GEO_MAX_ATTEMPTS; attempt++) {
+    for (let attempt = 0; source.source === 'TMA' || attempt < GEO_MAX_ATTEMPTS; attempt++) {
       if (options.signal?.aborted) throw new DOMException('Geolocation cancelled', 'AbortError')
-      let remaining = budget - elapsed()
+      const deadline = Math.min(budget, refinementDeadline)
+      const reasonOnExpiry: GeoResult['reason'] =
+        refinementDeadline < budget ? reason : 'BUDGET_EXPIRED'
+      let remaining = deadline - elapsed()
       if (remaining <= 0) {
-        reason = 'BUDGET_EXPIRED'
+        reason = reasonOnExpiry
         break
       }
-      try {
-        options.progress?.(attempt === 0 ? 'determining' : 'refining')
-      } catch {
-        /* Presentation only. */
-      }
+      if (attempt === 0) reportProgress('determining')
+      else if (source.source === 'BROWSER') reportProgress('refining')
       if (attempt === 0 && options.selectSource) {
         const selected = options.selectSource()
         source = selected instanceof Promise ? await selected : selected
@@ -198,16 +221,30 @@ export async function acquireGeolocation(
         budgetMs: remaining,
         afterTimestamp: latest?.timestamp ?? null,
       })
-      if (reading.sample) count++
+      const expired =
+        reading.reason === 'BUDGET_EXPIRED' ||
+        (!reading.sample && source.source === 'TMA' && elapsed() > deadline)
+      let sample = reading.sample
+      if (sample && source.source === 'TMA') {
+        // Telegram has no fix timestamp, so count each coordinate pair only once.
+        const key = `${sample.latitude},${sample.longitude}`
+        if (nativePositions.has(key)) sample = null
+        else nativePositions.add(key)
+      }
+      if (sample) count++
       if (options.signal?.aborted) throw new DOMException('Geolocation cancelled', 'AbortError')
-      if (reading.sample) {
-        latest = reading.sample
+      if (expired) {
+        reason = reasonOnExpiry
+        break
+      }
+      if (sample) {
+        latest = sample
         reason = 'ATTEMPTS_EXHAUSTED'
         if (validGeofence(options.geofence) && withinGeofence(latest, options.geofence)) {
           reason = 'WITHIN_GEOFENCE'
           break
         }
-      } else {
+      } else if (!reading.sample) {
         reason = reading.reason ?? 'POSITION_UNAVAILABLE'
         if (
           reason === 'PERMISSION_DENIED' ||
@@ -217,7 +254,17 @@ export async function acquireGeolocation(
           latest = null
           break
         }
-        if (reason === 'BUDGET_EXPIRED') break
+      }
+      if (source.source === 'TMA') {
+        if (refinementDeadline === Infinity) {
+          refinementDeadline = elapsed() + TMA_REFINEMENT_MS
+          reportProgress('refining')
+        }
+        const delay = Math.min(
+          TMA_RETRY_INTERVAL_MS,
+          Math.min(budget, refinementDeadline) - elapsed(),
+        )
+        if (delay > 0) await waitForNativeRetry(delay, options.signal)
       }
     }
     if (latest && !valid(latest, source.source)) {

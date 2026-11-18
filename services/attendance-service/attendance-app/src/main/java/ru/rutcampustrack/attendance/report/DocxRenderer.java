@@ -17,6 +17,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,6 +25,7 @@ import java.util.Objects;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
@@ -58,48 +60,70 @@ public class DocxRenderer {
     private static final String SUBJECT_CELL_LAYOUT = "<w:noWrap /><w:textDirection";
     private static final String TEMPLATE_SUBJECT_ROW_HEIGHT = "<w:trHeight w:val=\"1986\" />";
     private static final String TALL_SUBJECT_ROW_HEIGHT = "<w:trHeight w:val=\"2346\" />";
-    // At the two header heights, rotated lines have about 97 or 115 points of usable length.
+    private static final String EXTENDED_SUBJECT_ROW_HEIGHT = "<w:trHeight w:val=\"2706\" />";
+    // Rotated lines have about 97, 115 or 133 points of usable length at these heights.
     private static final int SUBJECT_LINE_HALF_POINTS = 194;
     private static final int TALL_SUBJECT_LINE_HALF_POINTS = 231;
+    private static final int EXTENDED_SUBJECT_LINE_HALF_POINTS = 267;
     private static final int SUBJECT_SPACE_HALF_POINTS = 5;
 
     public byte[] render(List<HeadmanWeeklyReportModel> models) {
-        return renderTemplate(models, DocxRenderer::valuesFor, false);
+        return renderTemplate(models, DocxRenderer::valuesFor, TEMPLATE_SUBJECT_ROW_HEIGHT);
     }
 
     byte[] renderWeekly(List<TeacherAttendanceExportModel> models) {
-        boolean tallSubjectRow =
-                models != null
-                        && models.stream()
-                                .flatMap(model -> model.columns().stream())
-                                .anyMatch(
-                                        column ->
-                                                !fitsSubjectCell(
-                                                        column.subjectLabel(),
-                                                        SUBJECT_LINE_HALF_POINTS));
-        return renderTemplate(models, DocxRenderer::weeklyValuesFor, tallSubjectRow);
+        String subjectRowHeight = TEMPLATE_SUBJECT_ROW_HEIGHT;
+        if (models != null) {
+            for (var model : models) {
+                for (Column column : model.columns()) {
+                    if (!fitsSubjectCell(column.subjectLabel(), TALL_SUBJECT_LINE_HALF_POINTS)) {
+                        return renderTemplate(
+                                models, DocxRenderer::weeklyValuesFor, EXTENDED_SUBJECT_ROW_HEIGHT);
+                    }
+                    if (!fitsSubjectCell(column.subjectLabel(), SUBJECT_LINE_HALF_POINTS)) {
+                        subjectRowHeight = TALL_SUBJECT_ROW_HEIGHT;
+                    }
+                }
+            }
+        }
+        return renderTemplate(models, DocxRenderer::weeklyValuesFor, subjectRowHeight);
     }
 
     static boolean fitsWeeklyTemplate(TeacherAttendanceExportModel model) {
         if (model.rows().size() > HeadmanWeeklyReportModel.MAX_STUDENTS) {
             return false;
         }
-        boolean[][] occupied =
-                new boolean[DAYS.size()][HeadmanWeeklyReportModel.MAX_LESSONS_PER_DAY];
-        for (Column column : model.columns()) {
-            long day = ChronoUnit.DAYS.between(model.context().periodFrom(), column.date());
-            int number = column.lessonNumber();
+        for (var entry : weeklyColumnsByDay(model).entrySet()) {
+            long day = ChronoUnit.DAYS.between(model.context().periodFrom(), entry.getKey());
             if (day < 0
                     || day >= DAYS.size()
-                    || number < 1
-                    || number > HeadmanWeeklyReportModel.MAX_LESSONS_PER_DAY
-                    || occupied[(int) day][number - 1]
-                    || !fitsSubjectCell(column.subjectLabel(), TALL_SUBJECT_LINE_HALF_POINTS)) {
+                    || entry.getValue().size() > HeadmanWeeklyReportModel.MAX_LESSONS_PER_DAY) {
                 return false;
             }
-            occupied[(int) day][number - 1] = true;
+            for (Column column : entry.getValue()) {
+                if (column.lessonNumber() < 1
+                        || !fitsSubjectCell(
+                                column.subjectLabel(), EXTENDED_SUBJECT_LINE_HALF_POINTS)) {
+                    return false;
+                }
+            }
         }
         return true;
+    }
+
+    private static Map<LocalDate, List<Column>> weeklyColumnsByDay(
+            TeacherAttendanceExportModel model) {
+        return model.columns().stream()
+                .sorted(
+                        Comparator.comparing(Column::date)
+                                .thenComparing(
+                                        Column::startTime,
+                                        Comparator.nullsLast(Comparator.naturalOrder()))
+                                .thenComparingInt(Column::lessonNumber)
+                                .thenComparingLong(Column::lessonId))
+                .collect(
+                        Collectors.groupingBy(
+                                Column::date, LinkedHashMap::new, Collectors.toList()));
     }
 
     private static boolean fitsSubjectCell(String subject, int maxLineWidth) {
@@ -138,16 +162,13 @@ public class DocxRenderer {
     }
 
     private static <T> byte[] renderTemplate(
-            List<T> models, Function<T, Map<String, String>> valuesForModel, boolean tallSubjectRow) {
+            List<T> models, Function<T, Map<String, String>> valuesForModel, String subjectRowHeight) {
         if (models == null || models.isEmpty()) {
             throw new ReportValidationException("At least one report model is required");
         }
         TemplatePackage template = readTemplate();
         String fittedXml =
-                tallSubjectRow
-                        ? template.documentXml()
-                                .replace(TEMPLATE_SUBJECT_ROW_HEIGHT, TALL_SUBJECT_ROW_HEIGHT)
-                        : template.documentXml();
+                template.documentXml().replace(TEMPLATE_SUBJECT_ROW_HEIGHT, subjectRowHeight);
         // Copied weekly bodies cannot share Word paragraph identifiers.
         String templateXml =
                 models.size() == 1
@@ -226,12 +247,15 @@ public class DocxRenderer {
         LocalDate weekStart = context.periodFrom();
         Map<String, String> values = blankValues(groupHeader, weekStart);
         Map<Long, String> slotByLesson = new LinkedHashMap<>();
-        for (Column column : model.columns()) {
-            String day = DAYS.get((int) ChronoUnit.DAYS.between(weekStart, column.date()));
-            String slot = day + "_" + column.lessonNumber();
-            slotByLesson.put(column.lessonId(), slot);
-            values.put("subject_" + slot, column.subjectLabel());
-            values.put("type_" + slot, HeadmanTabularAttendance.shortType(column));
+        for (var entry : weeklyColumnsByDay(model).entrySet()) {
+            String day = DAYS.get((int) ChronoUnit.DAYS.between(weekStart, entry.getKey()));
+            for (int index = 0; index < entry.getValue().size(); index++) {
+                Column column = entry.getValue().get(index);
+                String slot = day + "_" + (index + 1);
+                slotByLesson.put(column.lessonId(), slot);
+                values.put("subject_" + slot, column.subjectLabel());
+                values.put("type_" + slot, HeadmanTabularAttendance.shortType(column));
+            }
         }
         for (int index = 0; index < model.rows().size(); index++) {
             var row = model.rows().get(index);

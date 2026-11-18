@@ -3,19 +3,32 @@ package ru.rutcampustrack.attendance.report;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.xml.sax.Attributes;
 import org.xml.sax.helpers.DefaultHandler;
+
+import ru.rutcampustrack.attendance.contract.enums.AttendanceStatus;
+import ru.rutcampustrack.attendance.report.teacher.TeacherAttendanceExportModel;
+import ru.rutcampustrack.attendance.report.teacher.TeacherAttendanceExportModel.Cell;
+import ru.rutcampustrack.attendance.report.teacher.TeacherAttendanceExportModel.Column;
+import ru.rutcampustrack.attendance.report.teacher.TeacherAttendanceExportModel.Context;
+import ru.rutcampustrack.attendance.report.teacher.TeacherAttendanceExportModel.ReportKind;
+import ru.rutcampustrack.attendance.report.teacher.TeacherAttendanceExportModel.Row;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -24,6 +37,87 @@ import javax.xml.parsers.SAXParserFactory;
 class DocxRendererTest {
 
     private final DocxRenderer renderer = new DocxRenderer();
+
+    @Test
+    void weeklySlotsCompactSparseAndDuplicateNumbersAndKeepEveryLessonIdMark() throws Exception {
+        LocalDate start = LocalDate.of(2026, 4, 27);
+        List<Column> columns =
+                List.of(
+                        weeklyColumn(15, start, "12:00", 7),
+                        weeklyColumn(14, start, "11:00", 3),
+                        weeklyColumn(13, start, "11:00", 3),
+                        weeklyColumn(12, start, "11:00", 2),
+                        weeklyColumn(31, start.plusDays(2), "08:00", 7),
+                        weeklyColumn(11, start, "09:00", 6));
+        Map<Long, Cell> first = new LinkedHashMap<>();
+        Map<Long, Cell> second = new LinkedHashMap<>();
+        for (long id : List.of(11L, 12L, 13L, 14L, 15L, 31L)) {
+            first.put(id, new Cell("A" + id, AttendanceStatus.PRESENT, true));
+            second.put(id, new Cell("B" + id, AttendanceStatus.ABSENT, true));
+        }
+        var model =
+                new TeacherAttendanceExportModel(
+                        weeklyContext(start),
+                        columns,
+                        List.of(
+                                new Row(1, "Student A", first, Optional.empty()),
+                                new Row(2, "Student B", second, Optional.empty())));
+
+        assertThat(DocxRenderer.fitsWeeklyTemplate(model)).isTrue();
+        var rows =
+                ExportTableReader.wordRows(
+                        DocxRenderer.readDocumentXml(renderer.renderWeekly(List.of(model))));
+
+        assertThat(rows).hasSize(40);
+        assertThat(rows.get(2).subList(2, 7))
+                .containsExactly("Lesson 11", "Lesson 12", "Lesson 13", "Lesson 14", "Lesson 15");
+        assertThat(rows.get(2).subList(7, 12)).containsOnly("");
+        assertThat(rows.get(2).get(12)).isEqualTo("Lesson 31");
+        assertThat(rows.get(4).subList(2, 7))
+                .containsExactly("A11", "A12", "A13", "A14", "A15");
+        assertThat(rows.get(5).subList(2, 7))
+                .containsExactly("B11", "B12", "B13", "B14", "B15");
+        assertThat(rows.get(4).get(12)).isEqualTo("A31");
+        assertThat(rows.get(5).get(12)).isEqualTo("B31");
+        assertThat(model.columns()).containsExactlyElementsOf(columns);
+    }
+
+    private static Column weeklyColumn(long id, LocalDate date, String time, int number) {
+        return new Column(
+                id, date, LocalTime.parse(time), number, 5, "Lesson " + id,
+                "lecture", "Лекция", "CLOSED");
+    }
+
+    private static Context weeklyContext(LocalDate start) {
+        return new Context(
+                ReportKind.WEEKLY_ATTENDANCE, 1, "Spring", 10, "Group", null, "",
+                start, start.plusDays(6), List.of("Лекция"), Instant.EPOCH);
+    }
+
+    @ParameterizedTest
+    @CsvSource(
+            delimiter = '|',
+            value = {
+                "Math|1986",
+                "Проектирование цифровых платформ и сервисов|2346",
+                "Системы искусственного интеллекта и машинное обучение|2706"
+            })
+    void weeklySubjectHeaderUsesSmallestSufficientHeight(String subject, int height) throws Exception {
+        LocalDate start = LocalDate.of(2026, 4, 27);
+        var model =
+                new TeacherAttendanceExportModel(
+                        weeklyContext(start),
+                        List.of(
+                                new Column(
+                                        11, start, LocalTime.of(9, 0), 7, 5, subject,
+                                        "lecture", "Лекция", "CLOSED")),
+                        List.of());
+
+        assertThat(DocxRenderer.fitsWeeklyTemplate(model)).isTrue();
+        String xml = DocxRenderer.readDocumentXml(renderer.renderWeekly(List.of(model)));
+        assertThat(xml).contains("<w:trHeight w:val=\"" + height + "\" />");
+        assertThat(ExportTableReader.wordRows(xml).get(2).get(2)).isEqualTo(subject);
+    }
 
     @Test
     void renderSingleWeekReplacesEveryPlaceholder() throws Exception {

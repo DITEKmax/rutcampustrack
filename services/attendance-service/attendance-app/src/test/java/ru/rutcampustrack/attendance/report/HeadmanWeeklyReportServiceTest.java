@@ -269,9 +269,9 @@ class HeadmanWeeklyReportServiceTest {
         assertThat(rows.get(2).get(2)).isEqualTo(subject);
         assertThat(xml).contains("<w:trHeight w:val=\"2346\" />");
         assertThat(rows.get(3).get(2)).isEqualTo("ЛК");
-        assertThat(rows.get(3).get(28)).isEqualTo("ЛЗ");
+        assertThat(rows.get(3).get(27)).isEqualTo("ЛЗ");
         assertThat(rows.get(4).subList(1, 4)).containsExactly("Boundary Student", "+", "");
-        assertThat(rows.get(4).get(28)).isEqualTo("у");
+        assertThat(rows.get(4).get(27)).isEqualTo("у");
     }
 
     @Test
@@ -353,29 +353,35 @@ class HeadmanWeeklyReportServiceTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"sunday", "sixth lesson", "duplicate slot", "long subject"})
+    @ValueSource(strings = {"sunday", "six lessons", "long subject"})
     void weeklyDocxPreservesLessonsAndMarksOutsideTheTemplateGrid(String outside) throws Exception {
         stubBase(semester("2026-04-01", "2026-05-31"));
         LocalDate lastWeek = WEEK_START.minusWeeks(1);
         LocalDate extraDate = outside.equals("sunday") ? lastWeek.plusDays(6) : lastWeek;
-        int extraNumber = outside.equals("sixth lesson") ? 6 : outside.equals("long subject") ? 2 : 1;
+        int extraNumber = outside.equals("sunday") ? 1 : 2;
         String subject =
                 outside.equals("long subject")
                         ? "Технологии проектирования, разработки и сопровождения больших программных систем"
                         : "Math";
+        var lessons =
+                LessonsResponse.newBuilder()
+                        .addLessons(lesson(100L, lastWeek.toString(), "09:00", 1, "closed"))
+                        .addLessons(
+                                lesson(101L, extraDate.toString(), "11:00", extraNumber, "closed"));
+        if (outside.equals("six lessons")) {
+            for (int number = 3; number <= 6; number++) {
+                lessons.addLessons(
+                        lesson(
+                                99L + number,
+                                lastWeek.toString(),
+                                "%02d:00".formatted(9 + number),
+                                number,
+                                "closed"));
+            }
+        }
         when(scheduleGrpcClient.getLessonsByGroup(
                         10L, 1L, lastWeek.toString(), lastWeek.plusDays(6).toString()))
-                .thenReturn(
-                        LessonsResponse.newBuilder()
-                                .addLessons(lesson(100L, lastWeek.toString(), "09:00", 1, "closed"))
-                                .addLessons(
-                                        lesson(
-                                                101L,
-                                                extraDate.toString(),
-                                                "11:00",
-                                                extraNumber,
-                                                "closed"))
-                                .build());
+                .thenReturn(lessons.build());
         when(academicGrpcClient.getSubjectDetailsByIds(List.of(5L)))
                 .thenReturn(Map.of(5L, new AcademicGrpcClient.SubjectDetails(subject, "lecture")));
         for (LocalDate date : java.util.Set.copyOf(List.of(lastWeek, extraDate))) {
@@ -393,6 +399,82 @@ class HeadmanWeeklyReportServiceTest {
         assertThat(xml).contains("Посещаемость за неделю", subject);
         assertThat(ExportTableReader.wordRows(xml))
                 .anySatisfy(cells -> assertThat(cells).containsSubsequence("Student 1", "+", "н"));
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints = {5, 6})
+    void selectedWeeksShareDocxAndPdfRoutingAndKeepAllMarksAtDailyCapacity(int count)
+            throws Exception {
+        stubBase(semester("2026-04-01", "2026-05-31"));
+        when(academicGrpcClient.getSubjectDetailsByIds(List.of(5L)))
+                .thenReturn(Map.of(5L, new AcademicGrpcClient.SubjectDetails("Math", "lecture")));
+        for (LocalDate week : List.of(WEEK_START.minusWeeks(1), WEEK_START)) {
+            int dailyCount = week.equals(WEEK_START) ? count : 2;
+            var lessons = LessonsResponse.newBuilder();
+            var marks = new java.util.ArrayList<AttendanceRecord>();
+            for (int index = dailyCount; index >= 1; index--) {
+                lessons.addLessons(
+                        lesson(
+                                100L + index,
+                                week.toString(),
+                                "%02d:00".formatted(8 + index),
+                                6 + index,
+                                "closed"));
+                marks.add(
+                        attendance(
+                                100L + index,
+                                1,
+                                week,
+                                6 + index,
+                                index % 2 == 1 ? AttendanceStatus.PRESENT : AttendanceStatus.ABSENT));
+            }
+            when(scheduleGrpcClient.getLessonsByGroup(
+                            10L, 1L, week.toString(), week.plusDays(6).toString()))
+                    .thenReturn(lessons.build());
+            when(academicGrpcClient.getGroupMembers(10L, week, 1L))
+                    .thenReturn(roster(week, List.of(student(1, "Student 1"))));
+            when(attendanceReadPort.findByGroupAndDateRange(10L, week, week.plusDays(6)))
+                    .thenReturn(marks);
+        }
+        when(documentRendererGrpcClient.convertDocxForHeadmanWeeklyExport(
+                        any(byte[].class), eq(TargetFormat.PDF)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
+        String docxXml =
+                zipText(
+                        service.exportSelectedWeeks(
+                                        new HeadmanWeeklyExportRequest(
+                                                List.of(WEEK_START, WEEK_START.minusWeeks(1)), "docx"))
+                                .content(),
+                        "word/document.xml");
+        String pdfInputXml =
+                zipText(
+                        service.exportSelectedWeeks(
+                                        new HeadmanWeeklyExportRequest(
+                                                List.of(WEEK_START, WEEK_START.minusWeeks(1)), "pdf"))
+                                .content(),
+                        "word/document.xml");
+
+        assertThat(pdfInputXml).isEqualTo(docxXml);
+        if (count == 5) {
+            assertThat(docxXml).doesNotContain("Посещаемость за неделю");
+            assertThat(ExportTableReader.wordRows(docxXml)).hasSize(80);
+        } else {
+            assertThat(docxXml).contains("Посещаемость за неделю");
+        }
+        var studentRows =
+                ExportTableReader.wordRows(docxXml).stream()
+                        .filter(cells -> cells.contains("Student 1"))
+                        .toList();
+        assertThat(studentRows).hasSize(2);
+        for (int week = 0; week < 2; week++) {
+            int marks = week == 0 ? 2 : count;
+            assertThat(studentRows.get(week).subList(2, 2 + marks))
+                    .containsExactlyElementsOf(
+                            IntStream.rangeClosed(1, marks)
+                                    .mapToObj(index -> index % 2 == 1 ? "+" : "н")
+                                    .toList());
+        }
     }
 
     @Test

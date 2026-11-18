@@ -1323,7 +1323,7 @@ jobs:
 
   e2e-auth:
     name: Playwright E2E auth flow (${{ matrix.group }})
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: ${{ matrix.group == 'client' && 90 || 50 }}
     strategy:
       fail-fast: false
@@ -3753,7 +3753,7 @@ jobs:
 
   observability-apps:
     name: Isolated GlitchTip, Java CPU profiles and protected operator links
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 18
     env:
       RCT_OBSERVABILITY_APPS_RUNTIME: isolated-ci
